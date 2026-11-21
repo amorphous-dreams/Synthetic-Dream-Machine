@@ -4,9 +4,9 @@
  * The lifecycle itself lives in @lararium/tw5 `runSovereignKernel` — ONE flow
  * both vessels compose. This file supplies only the browser platform pieces:
  *   - transport : Web Worker self (self.postMessage / self.addEventListener)
- *   - storage   : ordinary manifests retain their IndexedDB partition keyed by
- *                 wikiUri; a D-VR daemon manifest opts its primary Repo into memory
- *                 and supplies an explicit owned-document IDB scope separately
+ *   - storage   : the daemon island's own IndexedDB partition, the one store a
+ *                 manifest names (`{ type: "idb" }`); every other island relays in
+ *                 memory through the vessel's Repo
  *   - ready     : self.postMessage(mkReady()) — IoC handshake; the WASM
  *                 top-level await in this ES-module Worker completes before the
  *                 kernel fires it, so the vessel may send a manifest only after.
@@ -24,6 +24,7 @@
  */
 
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
+import { islandRestGuard, shoreStorage, vesselRestAsker } from "@lararium/mesh";
 import {
   runSovereignKernel,
   type IslandHostShore,
@@ -33,28 +34,48 @@ import type { IslandMsg_Manifest, IslandToVesselMsg } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
-/** Browser storage composition: preserve ordinary wiki durability while the
- * D-VR daemon primary crossing stays ephemeral. */
-export function browserIslandStorage(msg: IslandMsg_Manifest) {
-  if (msg.storage?.type === "idb") return new IndexedDBStorageAdapter(msg.storage.dbName);
-  if (msg.storage?.type === "memory" || msg.ownedDocument) return undefined;
-  return new IndexedDBStorageAdapter(msg.wikiUri);
+/** Browser storage composition: the daemon island's own IndexedDB partition, the one store a manifest names, behind the
+ * vessel's rest guard. Any other manifest stands no store. */
+export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel?: (documentId: string) => Promise<boolean>) {
+  if (msg.storage?.type !== "idb") return undefined;
+  // V2: the daemon island's own store rests no document the vessel's rest seals (`islandRestGuard`).
+  const inner = shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
+  return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
+}
+
+export interface BrowserIslandScope {
+  post(msg: IslandToVesselMsg): void;
+  listen(cb: (msg: unknown) => void): void;
+  ready(): void;
+  onStop?(cb: () => void): void;
 }
 
 // ── runBrowserSovereignWorker — browser host shore over the shared kernel ────
 
 export function runBrowserSovereignWorker(
   behaviorOrFactory: IslandBehavior | ((manifest: IslandMsg_Manifest) => IslandBehavior),
+  scope?: BrowserIslandScope,
+  opts?: { caps?: { receipt?: true } },
 ): void {
+  const post = (msg: unknown): void => { if (scope) scope.post(msg as IslandToVesselMsg); else self.postMessage(msg); };
+  const restsAtVessel = vesselRestAsker({
+    post,
+    listen: (cb) => {
+      if (scope) scope.listen(cb);
+      else self.addEventListener("message", (e: MessageEvent) => cb(e.data));
+      return () => {};
+    },
+  }, { idPrefix: `island-${Math.random().toString(36).slice(2, 10)}` });
   const host: IslandHostShore = {
-    post:    (msg: IslandToVesselMsg) => self.postMessage(msg),
-    listen:  (onMessage) => self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
-    storage: browserIslandStorage,
-    ready:   () => self.postMessage(mkReady()),
+    post:    (msg: IslandToVesselMsg) => post(msg),
+    listen:  (onMessage) => scope ? scope.listen(onMessage) : self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
+    storage: (msg) => browserIslandStorage(msg, restsAtVessel),
+    restsAtVessel,
+    ready:   () => scope ? scope.ready() : self.postMessage(mkReady()),
     // The breath path: pull engine + plugin bytes by CID from the OPFS CAS the vessel
     // populated on genesis-load — never CRDT-synced over the port.
     resolveByCid: (cid) => readCasBlobFromOpfs(cid),
   };
 
-  runSovereignKernel(host, behaviorOrFactory);
+  runSovereignKernel(host, behaviorOrFactory, opts?.caps?.receipt ? { caps: { receipt: true } } : undefined);
 }

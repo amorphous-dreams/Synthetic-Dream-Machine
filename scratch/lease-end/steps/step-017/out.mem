@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-017/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-017/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-017/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-017/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-017/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-017/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-17-hand-back`>>
+
+! Step 17 hand-back
+
+Head `19048159c1c5beec52f72c049e5c53dc20cb6779`; state counter remains 17; no live seats, commit, or push. Request 031's late receipt arrived and reports success: `packages/lararium-node/tests/edge-shadow-ring.test.ts`, 15 passed, 0 failed, exit 0, duration 140.61 seconds. The earlier 120-second receipt timeout did not mean the test failed. The receipt resolves request 031; it does not independently prove the broker currently remains alive. Next unused request: 032.
+
+The two uncommitted files remain `packages/lararium-node/src/edge-shadow-ring.ts` and `packages/lararium-node/tests/edge-shadow-ring.test.ts`. Request 030 established red, request 031 established green, and `git diff --check` passes. The change adds a synchronous `onInvalidate` callback after the reading goes dark and refold queues. It has no consumer yet and does not by itself fence cross-worker proof changes.
+
+Continue with step 16's hand-back constraints: wire lifecycle-safe browser and node wake transport or prove equivalent subscriptions; test movement during refold and initial attachment. `onRefold` currently fires even after refold rejection, so it cannot alone certify a published fold. Ingest can mutate authority before its await returns; establish and test a guarded or serialized commit boundary, not merely a post-await version check. Founder lineage freshness, tri-state ring, blind-read residues and daemon join TOCTOU, independently complete dyad census, and the three named authority readers remain owed. Preserve roll guard and epoch fields until the later burn. Run whole non-daemon suites before ready, daemon tests as named single files via broker, and e2e in CI. Obtain blind Opus custody read before land; no push without controller go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;udfxUS7uueBlxKcTYa1rM18ByyIZuYaYMRur_vNVWqI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,167 @@
+========================================
+a one-line pair with text between stays one block pair, as the plugin reads it (RED)
+========================================
+<<~ heihei name=`x`>>the body rides here<<~/heihei>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    inline: (inline_body)
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+a macrocall holding a double-quoted >> stays one block, as stock TW5 reads it (RED)
+========================================
+<<m a:"x >> y">>
+---
+
+(document
+  (macrocall_block))
+
+========================================
+a macrocall holding a >> inside [[…]] stays one block, as stock TW5 reads it (RED)
+========================================
+<<m [[x >> y]]>>
+---
+
+(document
+  (macrocall_block))
+
+========================================
+a sigil holding a >> inside a ticked value stays one block sigil, as the plugin reads it (RED)
+========================================
+<<~ set note=`a >> b`>>
+---
+
+(document
+  (sigil
+    body: (sigil_body)))
+
+========================================
+the sealed foot stays one control sigil (CONTROL)
+========================================
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;abc`>>
+---
+
+(document
+  (control_sigil
+    body: (sigil_body)))
+
+========================================
+an apostrophe inside an unquoted value opens no quote, and text after the >> still reads as text (CONTROL)
+========================================
+<<m it's>> after
+<<m "a">>b
+---
+
+(document
+  (text_line)
+  (text_line))
+
+========================================
+a same-line pair of ANOTHER name never closes an open target, even when the names share a length (RED)
+========================================
+<<~ ahu slot=`#/a`>>
+body
+<<~ xyz>>t<<~/ahu>>
+---
+
+(document
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (text_line)
+  (text_line))
+
+========================================
+a same-line pair inside a target's body pairs, and the target still closes (CONTROL)
+========================================
+<<~ ahu slot=`#/a`>>
+<<~ heihei name=`x`>>t<<~/heihei>>
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (ahu_block
+      open: (sigil
+        body: (sigil_body))
+      inline: (inline_body)
+      close: (sigil_close
+        body: (sigil_body)))
+    (blank_line)
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+an ahu closer with a tail pairs nothing: the opener stands alone, as scanAhu and the plugin read it (CONTROL)
+========================================
+root
+
+<<~ ahu slot=`#/a`>>
+CHILD
+<<~/ahu>> tail
+
+after
+---
+
+(document
+  (text_line)
+  (blank_line)
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (text_line)
+  (text_line)
+  (blank_line)
+  (text_line))
+
+========================================
+an ahu opener with a lead pairs nothing: the closer stands alone, as scanAhu and the plugin read it (CONTROL)
+========================================
+root
+
+<<~ ahu slot=`#/a`>> lead
+CHILD
+<<~/ahu>>
+
+after
+---
+
+(document
+  (text_line)
+  (blank_line)
+  (text_line)
+  (text_line)
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (blank_line)
+  (text_line))
+
+========================================
+an ahu closer that ends its line without opening it pairs nothing, as TW5, scanAhu and the plugin read it (CONTROL)
+========================================
+root
+
+<<~ ahu slot=`#/a`>>
+CHILD text <<~/ahu>>
+
+after
+---
+
+(document
+  (text_line)
+  (blank_line)
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (text_line)
+  (blank_line)
+  (text_line))

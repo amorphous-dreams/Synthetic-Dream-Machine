@@ -26,6 +26,7 @@ type: text/vnd.tiddlywiki
 </$list>
 <$list filter="[all[tiddlers]prefix[$:/temp/lares/notify/]sort[title]]" variable="lar-note">
 <div class="tc-notification lar-notify" role="status">
+<$button class="lar-notify-dismiss" aria-label="Dismiss notification" actions="""<$action-deletetiddler $tiddler=<<lar-note>>/>""">×</$button>
 <$setmultiplevariables $names="[<lar-note>get[lar-variables]jsonindexes[]]" $values="[<lar-note>get[lar-variables]jsonindexes[]] :map[<lar-note>get[lar-variables]jsonget<currentTiddler>]">
 <$let currentTiddler={{{ [<lar-note>get[text]] }}}>
 <$transclude $tiddler=<<currentTiddler>> $mode="block"/>

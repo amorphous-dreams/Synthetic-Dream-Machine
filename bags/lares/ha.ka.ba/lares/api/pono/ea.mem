@@ -1,14 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/ea">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/ea`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/ea.mem"
 l-space   = "stable"
-mana      = 16
-manao     = 15
 namespace = "&#x2299;"
 role      = "ontology invariant: ea — sovereignty, breath, life — the declaration pattern for any self-standing causal island group or node on the DreamNet"
 tags      = ["lar:///ha.ka.ba/lararium/mesh/island-protocol"]
@@ -17,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/ea"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Ea — Sovereignty, Breath, Life
 
@@ -35,7 +32,7 @@ On the DreamNet, any entity that holds its own CRDT state, owns its own timing, 
 
 <<~/ahu>>
 
-<<~ ahu #/doctrine>>
+<<~ ahu slot=`#/doctrine`>>
 
 !! Doctrine
 
@@ -51,7 +48,7 @@ When all three hold, the island may emit `ea` — the sovereignty declaration th
 
 <<~/ahu>>
 
-<<~ ahu #/protocol>>
+<<~ ahu slot=`#/protocol`>>
 
 !! Protocol Pattern
 
@@ -73,28 +70,28 @@ The courier (main thread, orchestrator, or peer) acts as a delivery surface only
 | Mount breath | island → courier | `"breath"` |
 | Ea declaration | island → courier | `"ea"` |
 
-''The ea-breath law (2026-06-12):'' between manifest and settle, a mounting island breathes — `(phase, progress)` evidence on a steady interval. The courier's watchdog re-arms on each breath and judges frozen evidence by a stall budget; ''silence alone reads dead'', never elapsed mount time. A deadline counts the courier's clock; breath listens to the island's own act — readiness reads local.
+''The ea-breath law'' (#/rulings): between manifest and settle, a mounting island breathes — `(phase, progress)` evidence on a steady interval. The courier's watchdog re-arms on each breath and judges frozen evidence by a stall budget; ''silence alone reads dead'', never elapsed mount time. A deadline counts the courier's clock; breath listens to the island's own act — readiness reads local.
 
 <<~/ahu>>
 
-<<~ ahu #/scope>>
+<<~ ahu slot=`#/scope`>>
 
 !! Scope — What Can Declare Ea
 
-`ea` applies wherever a node or island on the DreamNet satisfies the three conditions. Current known sites:
+`ea` applies wherever a node or island on the DreamNet satisfies the three conditions. The sites that declare it:
 
 | Site | Vessel | Ea condition |
 |---|---|---|
 | Browser wiki island | `@lararium/browser` | Repo-in-island wired, the landing queue draining on the worker's host task, first frame ready |
 | Node wiki island | `@lararium/node` | Repo-in-island wired, the landing queue draining on `setImmediate`, initial tiddlers applied |
-| Future: UEFN device | — | Own CRDT peer, own tick loop |
-| Future: mobile island | — | Own CRDT peer, own timing |
+
+The three conditions also fit sites no vessel builds: a UEFN device (own CRDT peer, own tick loop) and a mobile island (own CRDT peer, own timing). Either declares `ea` once a vessel carries it and the three conditions hold.
 
 The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liveness// surface but not the sovereignty model. A heartbeat checks that something external still runs. `ea` names the island's own declaration of standing — it does not depend on a watcher.
 
 <<~/ahu>>
 
-<<~ ahu #/contrast>>
+<<~ ahu slot=`#/contrast`>>
 
 !! Contrast — What Ea Does Not Mean
 
@@ -104,15 +101,23 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/rulings`>>
 
-!! Edges
+!! Rulings
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
+# Ruling 2026-06-12, the ea-breath law: a mounting island breathes `(phase, progress)` evidence between manifest and settle; the courier's watchdog re-arms on each breath and judges frozen evidence by a stall budget, never by elapsed mount time.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;20B2f2Kuzj-niAoYOPFfdM4SrLF_qcBuyuPeGL-QWEU
+<<~ ahu slot=`#/edges`>>
 
-<<^ code="&#x0004;" -> to="?">>
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h64mhrWn2vidc50q1KzAWaTrekpG2047OnvGo7rdBRM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

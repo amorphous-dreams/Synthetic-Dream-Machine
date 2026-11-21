@@ -1,14 +1,14 @@
 /**
  * capture-engine frontier-thread — the live-path proof that the turn-DAG fork-frontier rides
- * enqueue → annotate → buildPatch's 3rd arg, so a same-session FORK derives DISTINCT handles
- * end-to-end through the capture cell (not just in buildPatch's unit). Mirrors the real node
- * annotate (harvestTurnGradient + buildPatch).
+ * enqueue → annotate's `branch` arg, so a same-session FORK derives DISTINCT handles end-to-end
+ * through the capture cell. The annotate here stamps the handle the branch-frontier derivations
+ * read (deriveBranchFrontier + deriveHandle).
  */
 import { describe, test, expect } from "vitest";
 import {
   makeCaptureEngine,
-  harvestTurnGradient,
-  buildPatch,
+  deriveBranchFrontier,
+  deriveHandle,
   mkTelemetryPlaceVerb,
   mkStructurepalaceKapae,
   isVesselToIslandMsg,
@@ -31,14 +31,19 @@ function stubReserve(): CaptureReserve {
 
 const SPIRIT = "Mapper__agent-abc123__run-sessXYZ.jsonl";
 
-describe("frontier threads enqueue → annotate → buildPatch (the live cell)", () => {
+/** A branch-aware annotate: the worldline handle, keyed by the fork frontier the engine threads. */
+const handleAnnotate = (_turn: string, src: string, branch?: BranchContext): Record<string, string> => {
+  const handle = deriveHandle(src, deriveBranchFrontier(branch));
+  return handle ? { lar_agent_handle: handle } : {};
+};
+
+describe("frontier threads enqueue → annotate (the live cell)", () => {
   test("two same-session forks flush DISTINCT lar_agent_handle through the engine", async () => {
     const flushed: CaptureRecord[] = [];
     const engine = makeCaptureEngine({
       reserve: stubReserve(),
       flush: async (batch) => { flushed.push(...batch); return batch.length; },
-      // the real node annotate, branch-aware
-      annotate: (turn, src, branch?: BranchContext) => buildPatch(harvestTurnGradient(turn), src, branch),
+      annotate: handleAnnotate,
       gate: GATE,
     });
 
@@ -54,12 +59,12 @@ describe("frontier threads enqueue → annotate → buildPatch (the live cell)",
     expect(String(hA)).toMatch(/^sessXYZ~[0-9a-f]{8}\.abc123$/);
   });
 
-  test("no frontier ⇒ the handle stays byte-identical to the unforked case", async () => {
+  test("no frontier ⇒ the handle stays exactly the unforked run.agentId", async () => {
     const flushed: CaptureRecord[] = [];
     const engine = makeCaptureEngine({
       reserve: stubReserve(),
       flush: async (batch) => { flushed.push(...batch); return batch.length; },
-      annotate: (turn, src, branch?: BranchContext) => buildPatch(harvestTurnGradient(turn), src, branch),
+      annotate: handleAnnotate,
       gate: GATE,
     });
     await engine.enqueue("Lares (Mapper): the verb leads", SPIRIT);
@@ -85,7 +90,7 @@ describe("strand-B: the turn_key + the structurepalace-kapae signal (the transpo
     const engine = makeCaptureEngine({
       reserve: stubReserve(),
       flush: async (batch) => { flushed.push(...batch); return batch.length; },
-      annotate: (turn, src, branch?: BranchContext) => buildPatch(harvestTurnGradient(turn), src, branch),
+      annotate: handleAnnotate,
       gate: GATE,
     });
     await engine.enqueue("Lares (Mapper): the verb leads", SPIRIT, undefined, "turn-uuid-1");
@@ -98,7 +103,7 @@ describe("strand-B: the turn_key + the structurepalace-kapae signal (the transpo
     const engine = makeCaptureEngine({
       reserve: stubReserve(),
       flush: async (batch) => { flushed.push(...batch); return batch.length; },
-      annotate: (turn, src, branch?: BranchContext) => buildPatch(harvestTurnGradient(turn), src, branch),
+      annotate: handleAnnotate,
       gate: GATE,
     });
     await engine.enqueue("Lares (Mapper): the verb leads", SPIRIT);

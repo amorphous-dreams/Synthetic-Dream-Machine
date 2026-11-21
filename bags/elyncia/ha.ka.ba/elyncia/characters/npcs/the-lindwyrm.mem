@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm.mem"
 l-space   = "stable"
-mana      = 15
-manao     = 15
-manaoio   = 14
 rating    = "ano"
 role      = "NPC, public view — the Lindwyrm of New Delos: Patroness, embodied immortal, founder of the League of Free Cities, reluctant infrastructure matriarch"
 title     = "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Lindwyrm ~ Patroness of New Delos
 
@@ -43,7 +39,7 @@ meet at somebody's table, and the only table nobody had ever fought at was hers.
 
 <<~/ahu>>
 
-<<~ ahu #/deeds>>
+<<~ ahu slot=`#/deeds`>>
 
 !! The Deeds on Record
 
@@ -58,7 +54,7 @@ meet at somebody's table, and the only table nobody had ever fought at was hers.
 
 <<~/ahu>>
 
-<<~ ahu #/manner>>
+<<~ ahu slot=`#/manner`>>
 
 !! How She Reads in a Room
 
@@ -77,14 +73,14 @@ only as much as suits her.''
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5kFO2BoSbIgMcupeorEWwuDv6LCYOnnArDLZ5mrLQIo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C4bp9IRcUdOzJGndgFyaRFR8uXdOpEpkyt5L349OkQ0`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

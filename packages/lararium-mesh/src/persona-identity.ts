@@ -151,8 +151,8 @@ export function selfRecoveryIndex(): number {
  *
  * THE MULTITUDE-OF-ONE, NAMED: whoever holds the persona seed holds recovery — explicit and ARMED,
  * so `mintPersonaRotation` works from day one (lose the device, hold the seed cards, rotate). A real
- * guardian set arrives by the face's typed first enrolment, which its current op-key signs
- * (`mintGuardianEnrolment`); every later change takes the guardians' rotation.
+ * recovery contact set arrives by the face's typed first enrolment, which its current op-key signs
+ * (`mintRecoveryContactEnrolment`); every later change takes the recovery contacts' rotation.
  */
 export async function deriveSelfRecoveryKey(
   personaSeed: Uint8Array,

@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/reference-ci`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/reference-ci.mem"
 l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
 role      = "reproducible external witness acquisition and GitHub Actions verification"
@@ -15,9 +14,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/projection-loom/reference-ci"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 ! Fetch testimony; do not fetch certainty
 
 The projection loom MAY acquire separately licensed source files through their
@@ -27,7 +26,7 @@ execute CAD and synthetic image tests without acquiring any third-party asset.
 
 <<~/ahu>>
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 !! Source identity and build reproducibility
 
 * ''An URL does not pin content.'' A bootstrap fetch yields an unreviewed
@@ -51,11 +50,11 @@ execute CAD and synthetic image tests without acquiring any third-party asset.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-MdCLXERFJ288V8taY0zCHTUKBHbvJaW9rd8pzDYbGs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JZQhU4VOXeA19OLQpwGk-3X-Jm7wKkBJWfeO5WbqGzE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

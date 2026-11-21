@@ -1,3 +1,4 @@
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 /**
  * The herm-mesh witnesses' readers, held to a KNOWN POSITIVE. The partition witness once read a pointer field
  * that no pointer carries, so every read fell to one default and "advanced" could never hold: a witness that
@@ -12,6 +13,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import * as mesh from "../packages/lararium-mesh/dist/index.js";
 import { CARRIAGE_PIN_ABSENT } from "../packages/lararium-mesh/dist/index.js";
 import { actOf, dialsOf, pointerAdvanced, pullHop } from "./herm-mesh-reader.mjs";
 
@@ -20,7 +22,7 @@ const SEED = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 /** A pointer from the real builder over a content address standing for one published state. */
 async function publish(text, parents = []) {
   const cid = Buffer.from(text.padEnd(32, ".")).toString("hex").slice(0, 64);
-  return buildFlowPointer({ snapshot: { cid, heads: [cid], bytes: new Uint8Array() }, parents, signerSeed: SEED });
+  return buildFlowPointer({ snapshot: { cid, heads: [cid], bytes: new Uint8Array() }, parents, signer: mesh.placeSignerFromSeed(SEED) });
 }
 
 test("a re-published act reads as advanced (the known positive)", async () => {
@@ -36,7 +38,7 @@ test("the same act reads as frozen (the control)", async () => {
 
 test("a pointer without an act identity is refused, never read as one shared default", () => {
   assert.throws(() => actOf({ cid: "c" }), /no actCid/);
-  assert.throws(() => pointerAdvanced({ version: 1 }, { version: 2 }), /no actCid/);
+  assert.throws(() => pointerAdvanced({ cid: "a" }, { cid: "b" }), /no actCid/);
 });
 
 test("dialsOf reads the bearings a decoded FLOW-map carries", () => {
@@ -64,7 +66,12 @@ test("RED: a reader carried nowhere holds no floor pin for the hop, so it knocks
   assert.equal((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading, "opens");
   node.seatCustody(holder);
   const ident = await import("../packages/lararium-node/dist/src/node-vessel-identity.js");
-  await ident.generateOrLoadVesselIdentity();
+  // test-ward-env seats spawned CLI entries only. This node:test process mints the reader's place key itself,
+  // so the harness must answer its card here; neither the staged marker nor the child's seat reaches here.
+  const priorReadBack = node.readBackStandInSeated();
+  node.seatReadBackStandIn(true);
+  try { await ident.generateOrLoadVesselIdentity(); }
+  finally { node.seatReadBackStandIn(priorReadBack); }
   const r = await pullHop(`http://127.0.0.1:9#${"ab".repeat(32)}`);
   assert.equal(r.ok, false);
   assert.equal(r.reason, CARRIAGE_PIN_ABSENT);

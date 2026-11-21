@@ -7,10 +7,10 @@ module-type: widget
  * action-meme-place — the placement law's door inside a wiki.
  *
  * ── WHY A WIDGET ────────────────────────────────────────────────────────────────────────────────
- * `$tw.lares.meme.place` stands published by the meme-face startup, and until now only a script
- * reached it: a button in a wiki could render a meme, project it, link to it — and never place one.
- * Every other skin over `placeMeme` (the HTTP routes, the CLI, the daemon reactors, the MCP twin)
- * had a door an author could type. The wiki, which holds the author, had none.
+ * `$tw.lares.meme.place` stands published by the meme-face startup, and a script alone reaches it:
+ * without this widget a button in a wiki could render a meme, project it, link to it — and never place
+ * one. Every other skin over `placeMeme` (the HTTP routes, the CLI, the daemon reactors, the MCP twin)
+ * holds a door an author can type; this is the wiki's, which holds the author.
  *
  * ── THE SAME LAW, NO SECOND COPY ────────────────────────────────────────────────────────────────
  * This calls the FACE, never `placeMeme` directly: one gate, one grade, one canonical hash, whichever

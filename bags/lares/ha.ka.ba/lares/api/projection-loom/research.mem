@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/research">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/research`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem"
 namespace = "&#x0950; &#x0901;"
-title = "lar:///ha.ka.ba/lares/api/projection-loom/research"
-uri-path = "ha.ka.ba/lares/api/projection-loom/research"
-type = "text/memetic-wikitext+tiddlywiki"
-role = "kept research testimony, measurement contracts and open questions"
-tags = ["api/pono/meme", "projection-loom", "research"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/research"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/research"
+type      = "text/memetic-wikitext+tiddlywiki"
+role      = "kept research testimony, measurement contracts and open questions"
+tags      = ["api/pono/meme", "projection-loom", "research"]
 ```
 
-<<~ ahu #/markdown-otakiage-20261031>>
+<<~ ahu slot=`#/markdown-otakiage-20261031`>>
 
 !! Evergreen routing after the operator-approved Markdown fire
 
@@ -24,7 +23,7 @@ Root-bag Lares carriers remain the semantic owners; no second authority or evolu
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! The Research Ledger Holds Many Witnesses
 
@@ -41,7 +40,7 @@ and retains the historical experiments, literature and present-day boundaries.
 
 <<~/ahu>>
 
-<<~ ahu #/catmas>>
+<<~ ahu slot=`#/catmas`>>
 
 !! Pattern-Integrity Rhymes
 
@@ -58,7 +57,7 @@ and retains the historical experiments, literature and present-day boundaries.
 
 <<~/ahu>>
 
-<<~ ahu #/witness-ladder>>
+<<~ ahu slot=`#/witness-ladder`>>
 
 !! Source Ladder and Gauge
 
@@ -68,7 +67,7 @@ The unobserved stays unobserved. An image without metric control never confers m
 
 <<~/ahu>>
 
-<<~ ahu #/athenaion-hard-reference>>
+<<~ ahu slot=`#/athenaion-hard-reference`>>
 
 !! Operator-kept hard external reference
 
@@ -85,7 +84,7 @@ claiming an upstream technique has transferred.
 
 <<~/ahu>>
 
-<<~ ahu #/relational-inheritance-design>>
+<<~ ahu slot=`#/relational-inheritance-design`>>
 
 !! Design witness · relation before shape
 
@@ -95,7 +94,7 @@ The retired research register and detailed engineering design remain in the Git 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/witness">>
@@ -104,6 +103,6 @@ The retired research register and detailed engineering design remain in the Git 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5vBfg8PmdkyDFcoxJzBgtIXFxIE_GSOPnWKvU4obYrw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ltrVhEKgrvpGCgkZTQKin3mgLQe6gOuWQ5CztuWPVUw`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

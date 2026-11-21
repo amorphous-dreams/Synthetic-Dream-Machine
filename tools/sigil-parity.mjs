@@ -100,7 +100,7 @@ for (const rel of files) {
     const head = /^<<~?[ \t]*([A-Za-z][\w-]*)/.exec(src)?.[1]?.toLowerCase() ?? "";
     const isCall = REGISTERED.has(head);
     for (const [name, mine] of ours) {
-      if (mine.kind !== "string") continue;
+      if (mine.kind !== "string" && mine.kind !== "substituted") continue;
       const theirs = n.attributes[name];
       if (theirs && !theirs.isPositional) continue;
       if (!isCall) { proseOnly.push({ rel, head, name }); continue; }
@@ -109,18 +109,21 @@ for (const rel of files) {
 
     for (const [name, attr] of Object.entries(n.attributes)) {
       if (name === "$variable" || attr.isPositional) continue;
-      if (attr.type !== "string") { carried++; continue; }
+      // A TICKED VALUE IS THE HOUSE'S ONE SPELLING (the kupono cut): TiddlyWiki types it `substituted`
+      // and reports its interior as `rawValue`, which `readSigilAttrs` hands back as the value.
+      if (attr.type !== "string" && attr.type !== "substituted") { carried++; continue; }
+      const parserValue = attr.type === "substituted" ? attr.rawValue : attr.value;
       attrCount++;
       const mine = ours.get(name);
       if (!mine) {
         // THE POSITIONAL-LOSS CLASS: the parser invented this name out of a scheme, so our reader
         // rightly has no such parameter. Counted as debt, never as drift.
-        if (/^\/\//.test(attr.value)) { positionalLoss.push({ rel, name, src }); continue; }
-        drift.push({ rel, src, name, parser: attr.value, ours: "(absent)" });
+        if (/^\/\//.test(parserValue)) { positionalLoss.push({ rel, name, src }); continue; }
+        drift.push({ rel, src, name, parser: parserValue, ours: "(absent)" });
         continue;
       }
-      if (mine.kind !== "string") { carried++; continue; }
-      if (mine.value !== attr.value) drift.push({ rel, src, name, parser: attr.value, ours: mine.value });
+      if (mine.kind !== "string" && mine.kind !== "substituted") { carried++; continue; }
+      if (mine.value !== parserValue) drift.push({ rel, src, name, parser: parserValue, ours: mine.value });
     }
   }
 }

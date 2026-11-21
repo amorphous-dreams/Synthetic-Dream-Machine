@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/the-empty-subject.mem"
-mana      = 16
-manao     = 16
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "craft failure law — a gate that RAN, measured NOTHING, and reported SUCCESS. The detector question a hand asks before building any instrument (if its subject vanished tomorrow, would this go red?), the three sanctioned cure shapes, and the measured instances that paid for the law."
 tags      = ["api/pono/meme"]
@@ -17,11 +13,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/the-empty-subject"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Empty Subject
 
@@ -33,7 +27,7 @@ It wears no defect of its own. The logic holds, the assertion stands correct, th
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect any gate, witness, weld or `--check` that WALKS a set, SCANS for a spelling, or refuses a condition.
 ⏿ orient by the one question below — never by reading the assertion, which reads correct in every instance.
@@ -43,7 +37,7 @@ It wears no defect of its own. The logic holds, the assertion stands correct, th
 
 <<~/ahu>>
 
-<<~ ahu #/the-question>>
+<<~ ahu slot=`#/the-question`>>
 
 !! The one question
 
@@ -61,7 +55,7 @@ Three answers sort every instrument:
 
 <<~/ahu>>
 
-<<~ ahu #/cures>>
+<<~ ahu slot=`#/cures`>>
 
 !! The three cure shapes
 
@@ -75,7 +69,7 @@ The house sanctions three and wants no fourth. They compose; the strongest cures
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The law
 
@@ -93,19 +87,19 @@ A cure MUST ship its planted red, quoted. The node MUST NOT claim a cure it has 
 
 <<~/ahu>>
 
-<<~ ahu #/diagnostic>>
+<<~ ahu slot=`#/diagnostic`>>
 
 !! The tells, each measured
 
 Every coat below was worn by a live instrument in this tree.
 
-* ''A retired spelling.'' The probe binds a form the corpus stopped writing — a colon where a call binds with `=`, a decorator with empty parentheses where one now carries an argument. Greppable: run the literal against the corpus and read the count. Zero names it.
+* ''A dead spelling.'' The probe binds a form the corpus never writes — a colon where a call binds with `=`, a decorator with empty parentheses where one now carries an argument. Greppable: run the literal against the corpus and read the count. Zero names it.
 * ''An absent subject read as a clean one.'' A missing file, a moved surface, an unbuilt shore — reported as //nothing to compare// and exited 0.
 * ''A window narrower than the carrier.'' A byte prefix, a `slice(0, N)`, a flat read where the tree nests. The instrument goes blind in the direction that reports clean.
 * ''A scan that cannot reach where its subject must appear.'' A self-clearing weld scanning one package while the caller it waits for can only land in another certifies an absence it never looked for.
 * ''A floor beneath the ground.'' A count-floor set below what the corpus already holds, so half the subject could vanish under it.
 * ''A check over an empty span.'' A hash over nothing matches its own recomputation.
-* ''A condition that cannot arise.'' A one-row ledger produces no crossing, so the vector proving the gate REFUSES passes by having nothing to refuse.
+* ''A condition that cannot arise.'' A one-entry ledger produces no crossing, so the vector proving the gate REFUSES passes by having nothing to refuse.
 * ''A comment claiming the floor the code omits.'' The header states the law and nothing beneath it counts — worse than a plain omission, because a hand auditing the instrument is told the guard stands.
 * ''A weld counting the declaring file's own export as a caller.''
 * ''A `test.todo`, or a skipped vector nobody re-reads.''
@@ -114,7 +108,7 @@ Every coat below was worn by a live instrument in this tree.
 
 <<~/ahu>>
 
-<<~ ahu #/worked>>
+<<~ ahu slot=`#/worked`>>
 
 !! Worked examples, by commit
 
@@ -122,7 +116,7 @@ Each cure below planted its red, quoted it, and reverted it.
 
 * `e103acd1d` — the `carrier-shape` family floors, cured by a SUBSTITUTION WALK. The floors stood over a corpus where the second code of each family appears exactly ONCE and no carrier's marks turn on it, so a reader could drop half of every family and stay green.
 * `185dae028` — `offering-antigen.test.ts`, a self-clearing weld whose caller scan read one `src/` while its first honest caller could only land in another package. Green forever, certifying an absence it never looked for.
-* `tools/hearths-gate-witness.sh` — the ★ RED vector drove off the ledger's first two `trailer =` lines; at one standing hearth no path can cross, so the vector proving the gate REFUSES would have passed by having nothing to refuse. Cured by ARMING against a fixture built from the ledger's OWN rows, live and closed, while every pass-through CONTROL keeps reading the real ledger — and the run PRINTS which ledger each half read.
+* `tools/hearths-gate-witness.sh` — the ★ RED vector drove off the ledger's first two `trailer =` lines; at one standing hearth no path can cross, so the vector proving the gate REFUSES would have passed by having nothing to refuse. Cured by ARMING against a fixture built from the ledger's OWN entries, live and closed, while every pass-through CONTROL keeps reading the real ledger — and the run PRINTS which ledger each half read.
 * `522ee4479` — `tools/frame-parity.mjs`, DEAD. Its corpus probe asked `code:"&#x00NN;"` where the corpus writes `code="&#x00NN;"` 2848 times and the colon form zero times, so all seven marks routed to //stands on paper alone// and BOTH pattern seams were skipped on every run. Cured by admitting both bindings and flooring on the count PROBED. The revert-verify: a pattern deliberately aimed at a mark nothing writes, under the uncured tool, exits 0 printing //every mark ... patterns against a real carrier//.
 * `530c76ce7` — `tools/surface-parity-witness.sh`, three holes in a file already keeping the cure on its own other side. Its uncured reading states the family in the instrument's own words: //MCP tools: 0   CLI doors reachable: 0// followed by //every MCP tool answers to a CLI door//, exit 0.
 * `156ee3bfe` — `tools/typecheck-witness.sh`, whose comment read //A run that checked nothing must not read as a run that found nothing// with nothing beneath it counting.
@@ -131,12 +125,12 @@ Each cure below planted its red, quoted it, and reverted it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional">> · <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/corpus-conformance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/corpus-conformance`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6q2liQKtm7eItGr9IUOF2ANRBP-wYOt_-SjeeGm5KzI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Uy61ODEhnqwMONdZYoU_q5aG6RojWBQL-aATyZGT5-0`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

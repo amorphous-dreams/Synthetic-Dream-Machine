@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-answer/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-answer/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-answer/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-answer/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Answer-Wright: Lares (Tasked Spirit). Read CLAUDE.md once for house law, then implement. This is an IMPLEMENTATION task: start editing code within your first few actions. Do not write a plan file, do not stop at a trace. Done means the diff below exists and the listed tests pass.
+
+WHY: verb outcomes now rest in the vessel CONTROL document (no wiki mounts it, no mirror names it — placement). A page that dispatches a verb through a TW5 button (`<$action-setfield $tiddler="lar:///lararium.local.vm/verb/<verb>" verb="<verb>" lares-dispatch="1" arg-…/>`) used to read the answer with a filter over `lar:///ha.ka.ba/bags/daemon/outcomes/…`; that read is dead. The operator authors this pattern by hand in QA, so the house must show the answer in the page — in memory only.
+
+CONTEXT (measured): the dispatch marker `lares-dispatch` is read in packages/lararium-tw5/tiddlers/src/reaction-router.js (~206-311); the daemon-side dispatch lifecycle lives in packages/lararium-tw5/src/verb-vm.ts (`dispatchVerb`, `copyEffectOutcome` ~209-215) and packages/lararium-tw5/src/verb-dispatcher.ts, writing the outcome through the control store (`control` / `controlOf(ctx)`). The `lar:///lararium.local.vm/` plane is volatile: it never persists and never projects (placement), so a page-visible answer may rest there. `kahua-propose` answers `{ id, cid }` (packages/lararium-node/src/kahua-door.ts:127; the store-door dispatcher wraps it, packages/lararium-node/src/store-door-verbs.ts:372).
+
+CHANGE:
+# When a dispatch summoned from a page (the `lares-dispatch` marker) settles, write its answer back onto the SAME verb tiddler in the volatile VM plane: fields `answer-status` (`done` | `error`), `answer` (the verb's output as JSON text, or the error message), `answer-request` (the request id). The outcome record still lands in the control document exactly as now. Find the one place where a page-summoned dispatch's outcome is known on the island side (follow `lares-dispatch` from reaction-router.js into verb-vm / verb-dispatcher) and add the write there; it must go only to the `lar:///lararium.local.vm/verb/<verb>` title, never to a wiki bag, the daemon document or the control document's own titles.
+# packages/lararium-web/tests/e2e/stage-walk.e2e.test.ts: PROPOSE_BODY's outcome list (`[prefix[lar:///ha.ka.ba/bags/daemon/outcomes/]field:verb[kahua-propose]]`) reads the verb tiddler's `answer` field instead (e.g. <code>&lt;$list filter="&#91;[lar:&#47;&#47;/lararium.local.vm/verb/kahua-propose]get[answer]]" variable="a"><div class="walk-outcome">&lt;<a>></div>&lt;/$list></code>), keeping `proposalIds`' `"id":"<64 hex>"` parse working. Update the comment above PROPOSE_TITLE.
+# Any built-in daemon UI tiddler that lists `…/bags/daemon/outcomes/` (grep `bags/daemon/outcomes` in packages/lararium-tw5/src/*-tiddlers.ts and packages/lararium-tw5/tiddlers) reads the verb tiddler's answer the same way.
+
+TESTS (red first): a tw5 unit test that a page-summoned dispatch (a verb tiddler carrying `lares-dispatch`) ends with `answer-status`/`answer`/`answer-request` on that verb tiddler, that the outcome still lands in the control store, and CONTROL: a dispatch WITHOUT the marker writes no answer fields; and that nothing outside `lar:///lararium.local.vm/` receives the answer. Build + stamp (<code>pnpm &#45;-filter &#64;lararium/tw5 build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lararium-tw5</code>, and web if touched), typecheck tw5 and web, run the touched test files, then the full tw5 suite with `--maxWorkers=4`. Do NOT run the e2e suite (the controller runs it); make sure the stage-walk file typechecks. `node tools/evergreen-boundary.mjs`; `bash tools/placement-residency-witness.sh`.
+
+LIMITS: do not touch Keyhive, commands/init.ts, the found path, the sealed map, the control-home module's own API, or the slot-doc resolver. No git commit, no push, no stash. Never touch ~/.lares or docker.
+
+FINAL MESSAGE: files changed, where the answer write sits (file:line), each test's result with counts, anything you could not do.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CGa-rO3RUGsOkXO2MFgVAFO5_c_UzPOTsmAS0rpC87s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

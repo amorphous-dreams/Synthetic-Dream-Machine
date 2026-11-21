@@ -6,11 +6,12 @@
  *
  *   lares walk                          where this vessel walks: per hearth, the Nexus, whether its invite still
  *                                       waits to settle, the grant it holds, and how many invites its wallet holds
- *   lares walk take <lar-invite:…>      keep a carried invite; this vessel's hearth dial walks in on it, as the
- *                                       face it wears
+ *   lares walk take <lar-invite:…> [--face N]
+ *                                       keep a carried invite; this vessel's hearth dial walks in on it, as the
+ *                                       face named (else the one face standing open)
  *   lares walk invite                   hand the newest invite out of the wallet, as one string to carry
  *
- * A vessel walks at one hearth, as the face it wears; a take for a second hearth refuses aloud and writes nothing.
+ * A vessel walks at one hearth, as one face; a take for a second hearth refuses aloud and writes nothing.
  * A node carries none of its documents at a hearth — it is its own durable store.
  *
  * THE CUSTODY DOOR. A walk record holds bearer invites, the hearth's grant and one key per carried document, so it
@@ -22,6 +23,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { faceOption } from "../face-option.js";
 import { SealedActRefused, WalkRefusal } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -83,7 +85,7 @@ async function walkTake(args: ParsedArgs): Promise<number> {
   const carried = args.positional[1];
   if (!carried) return refuseUsage(args, "walk", helpLines("walk"), "walk take needs the carried `lar-invite:` string");
   try {
-    const { output: r, via } = await walkDoor("walk.take", { carried });
+    const { output: r, via } = await walkDoor("walk.take", { carried, ...faceOption(args) });
     emit(args, {
       ok: true,
       data: { gatePubKey: r["gatePubKey"], nexusAid: r["nexusAid"], relay: r["relay"], leaf: r["leaf"], dialing: r["dialing"], via },

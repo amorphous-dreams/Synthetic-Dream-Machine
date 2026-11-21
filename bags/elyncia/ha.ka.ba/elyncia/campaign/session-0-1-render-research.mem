@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-render-research.mem"
 l-space   = "adjacent"
-mana      = 14
-manao     = 14
-manaoio   = 13
 rating    = "ano"
 role      = "research substrate for the Session 0.1 Painter of Words and Light — the AI renderer assistant Lares; carries the fae-casting, visual-canon, world-dress, Midjourney V8.2, and Delos-archaeology research verbatim, plus the negentropy proposals for the open canon gaps (the venue settled as The House of Masks; six ride open)"
 title     = "lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/session-0-1-render-research"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Painter's Substrate ~ Session 0.1 Render Research
 
@@ -32,7 +28,7 @@ fix ''first canon'' (the six open proposals in #negentropy) go to the operator b
 
 <<~/ahu>>
 
-<<~ ahu #/painter-red>>
+<<~ ahu slot=`#/painter-red`>>
 
 !! The Painter's Red ~ boot handoff
 
@@ -42,7 +38,7 @@ fix ''first canon'' (the six open proposals in #negentropy) go to the operator b
 
 <<~/ahu>>
 
-<<~ ahu #/midjourney>>
+<<~ ahu slot=`#/midjourney`>>
 
 !! Midjourney V8.2 ~ prompt anatomy and workflow (net research, 2026-08-13)
 
@@ -71,7 +67,7 @@ fix ''first canon'' (the six open proposals in #negentropy) go to the operator b
 
 <<~/ahu>>
 
-<<~ ahu #/delos-archaeology>>
+<<~ ahu slot=`#/delos-archaeology`>>
 
 !! Delos Archaeology ~ verified against the live net (2026-08-14)
 
@@ -92,7 +88,7 @@ Real Delos grounds the venue:
 
 <<~/ahu>>
 
-<<~ ahu #/negentropy>>
+<<~ ahu slot=`#/negentropy`>>
 
 !! Negentropy ~ the canon gaps (five settled 2026-08-15, two open)
 
@@ -154,7 +150,7 @@ skin-count, the archaic-Gorgon bronze-hands attribution, the huautli compression
 
 <<~/ahu>>
 
-<<~ ahu #/bag-sweep>>
+<<~ ahu slot=`#/bag-sweep`>>
 
 !! Repo Bag Sweep ~ character canon in the bags
 
@@ -181,7 +177,7 @@ skin-count, the archaic-Gorgon bronze-hands attribution, the huautli compression
 
 <<~/ahu>>
 
-<<~ ahu #/witness-heritage>>
+<<~ ahu slot=`#/witness-heritage`>>
 
 !! Spirit Witness ~ the Fae Casting Bench (FTLS ch03)
 
@@ -196,8 +192,8 @@ Glimmer-Count's hand-back, ''verbatim'' — the full heritage inventory: 34 fae 
 
 | File | Status |
 |---|---|
-| `/home/joshu/Synthetic-Dream-Machine/ftls/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md` | **COMPLETE** — all 1,629 lines read (catalogue L89–342, heritages L344–1629) |
-| `/home/joshu/Synthetic-Dream-Machine/ftls/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md` | **STUB read** — headings + keyword grep only. **VERDICT: effectively zero heritage/fae content.** Only 3 incidental hits: L429 "Brimstone Fae Mining Kit" (toolkit name), L694 "Fairy's Death (OGA)" `[illegal][glass][anti-fae][concealed]` knife, L14 company framing. Chapter is RSS logistics/salvage/recipes. Not usable for casting. |
+| `ftls/Flying_Triremes_and_Laser_Swords_03_OSR_Heritage_Trait.md` | **COMPLETE** — all 1,629 lines read (catalogue L89–342, heritages L344–1629) |
+| `ftls/Flying_Triremes_and_Laser_Swords_04_Recon_Salvage_Secrets.md` | **STUB read** — headings + keyword grep only. **VERDICT: effectively zero heritage/fae content.** Only 3 incidental hits: L429 "Brimstone Fae Mining Kit" (toolkit name), L694 "Fairy's Death (OGA)" `[illegal][glass][anti-fae][concealed]` knife, L14 company framing. Chapter is RSS logistics/salvage/recipes. Not usable for casting. |
 | Other ftls chapters | grep-only, line refs below |
 
 ---
@@ -334,12 +330,12 @@ Copy-ready for prompt building (all `03:` unless noted):
 ## 6. LOCATION / DELOS CONTEXT (thin — flagging the gap)
 
 Ch03 contains **zero** Delos references. Corpus-wide, Delos appears only at:
-- `/home/joshu/Synthetic-Dream-Machine/ftls/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md:179` — Lindwyrm, Patron of New Delos (embodied immortal class)
+- `ftls/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md:179` — Lindwyrm, Patron of New Delos (embodied immortal class)
 - `.../01_Title_Introduction.md:216` — "Hexagram Voss, Floating Librarians of Mu - **High Delos Archive**"
-- `/home/joshu/Synthetic-Dream-Machine/ftls/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md:489` — "a 'soulbound lash' said to hold Rakshasa's anger—has been unearthed by scavengers in **Low Delos**" (establishes a **High/Low Delos** vertical split)
+- `ftls/Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md:489` — "a 'soulbound lash' said to hold Rakshasa's anger—has been unearthed by scavengers in **Low Delos**" (establishes a **High/Low Delos** vertical split)
 - `.../10:551` — "A **faerie-touched tavern** on the edge of the Violet Grasslands serves stew so good it heals **burdens**—for a price." (closest venue analogue in the corpus)
 
-No cabaret, no High Delos venue description exists in ftls. If the parent needs Delos setting detail, it must come from elsewhere in `/home/joshu/Synthetic-Dream-Machine/` (I did not search outside `ftls/`).
+No cabaret, no High Delos venue description exists in ftls. If the parent needs Delos setting detail, it must come from elsewhere in the repository (I did not search outside `ftls/`).
 
 ---
 
@@ -350,7 +346,7 @@ Finding: Ch03 read COMPLETE — 34 heritages + full effect catalogue, every one 
 
 <<~/ahu>>
 
-<<~ ahu #/witness-elyncia>>
+<<~ ahu slot=`#/witness-elyncia`>>
 
 !! Spirit Witness ~ the Elyncia Visual Canon
 
@@ -362,7 +358,7 @@ Thread: elyncia visual canon harvest
 Finding: The tree carries no High Delos *interior* venue text and zero Dionysian/cabaret text — but the New Delos Spice Quarter compitale passage (Elyncia_04, lines 84–98) is a full specification-grade interior render, and it is the single best transferable substrate for an intimate maze-Inn interior. Everything below is quotable canon with refs.
 
 **TREE (18 .md/.txt of 103 files; rest = Caverns of Thracia maps/images/zip)**
-`/home/joshu/Synthetic-Dream-Machine/elyncia/` — `Elyncia_01_A_Broken_World.md` (739L), `Elyncia_02_The_Lares_DreamNet.md` (256L), `Elyncia_03_Daemons_and_the_Metaphysics_of_Play.md` (169L), `Elyncia_04_Style_Base_Layer.md` (70L), `Elyncia_04_The_Referee_Noosphere_Guide.md` (786L), `package.json`, `images/Elyncia_overworld_FLAT.png`, `Lares/` (png + chat export 62L), `Shattered Isles/` (8 files: Lady_Aki ×4, Faerie_Ring_Strandbeest_Shrine_Sheet, Powered_Symbiote_Trait_and_Ichi_Construct_Golem, Sidebar_Alpha_Playtest…, Sidebar_Lindwyrm…), `New Delos/NPCs/Captain_Melantha_Vex.md` (264L — the ONLY file under `New Delos/`), `Neo-Thracia/` (3 worksheets + NPCs/Rask + two Caverns dirs).
+`elyncia/` — `Elyncia_01_A_Broken_World.md` (739L), `Elyncia_02_The_Lares_DreamNet.md` (256L), `Elyncia_03_Daemons_and_the_Metaphysics_of_Play.md` (169L), `Elyncia_04_Style_Base_Layer.md` (70L), `Elyncia_04_The_Referee_Noosphere_Guide.md` (786L), `package.json`, `images/Elyncia_overworld_FLAT.png`, `Lares/` (png + chat export 62L), `Shattered Isles/` (8 files: Lady_Aki ×4, Faerie_Ring_Strandbeest_Shrine_Sheet, Powered_Symbiote_Trait_and_Ichi_Construct_Golem, Sidebar_Alpha_Playtest…, Sidebar_Lindwyrm…), `New Delos/NPCs/Captain_Melantha_Vex.md` (264L — the ONLY file under `New Delos/`), `Neo-Thracia/` (3 worksheets + NPCs/Rask + two Caverns dirs).
 
 ---
 
@@ -472,7 +468,7 @@ Rendering-relevant laws:
 
 <<~/ahu>>
 
-<<~ ahu #/witness-ftls>>
+<<~ ahu slot=`#/witness-ftls`>>
 
 !! Spirit Witness ~ the FTLS Visual Vocabulary
 
@@ -485,7 +481,7 @@ Note on paths: actual filenames are `Flying_Triremes_and_Laser_Swords_NN_*.md`, 
 
 ## 1. DELOS (all of it — thin, 4 hits corpus-wide excl. ch03)
 
-- `/home/joshu/Synthetic-Dream-Machine/ftls/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md:179` — "**The Lindwyrm, Patron of New Delos**" — classed as *embodied immortal / durable avatar-being*, not distributed god: "They may rule cities, command fleets, bargain face-to-face, or appear repeatedly in the same body."
+- `ftls/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md:179` — "**The Lindwyrm, Patron of New Delos**" — classed as *embodied immortal / durable avatar-being*, not distributed god: "They may rule cities, command fleets, bargain face-to-face, or appear repeatedly in the same body."
 - `...01...md:216` — attribution line: "**— Hexagram Voss, Floating Librarians of Mu - High Delos Archive**". High Delos hosts a Floating Librarian archive; Voss's voice (quoted 199-214) is the tonal register of a High Delos intellectual: dry, bureaucratic-mystic ("a temporary user interface spun up when too many people query the same idea at once"; "keep your syntax loose, your metaphors polite, and your exits memorized"; "Erisian avatars: they insist they are not glitches at all, merely punchlines that arrived before the joke finished loading").
 - `.../Flying_Triremes_and_Laser_Swords_10_Appendix_Null_Referee_Resources.md:489` — "**Low Delos**", scavenger-tier stratum; unearthed there: "an ancient tiger weapon—a 'soulbound lash' said to hold Rakshasa's anger". Establishes High/Low vertical class geography.
 - GAP: zero architectural, street-level, or venue description of Delos anywhere in scope. No cabaret, no tavern interior, no High Delos skyline. "cabaret" = 0 hits corpus-wide.
@@ -605,14 +601,14 @@ Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item tabl
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f3xrQd2Tvv2AYGzP5AcOpdIGqKHPHfSHuMnpppbeWfo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IuOEw7eioRKU_KdG0-dfX2N88LuuxOzjTHgPKBeaHaA`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -36,10 +36,13 @@ export type { Heads, Doc as AutomergeDoc } from "@automerge/automerge";
 export * from "./base-doc.js";
 export * from "./stored-value.js";
 export * from "./stored-record.js";
-export * from "./oracle-doc.js";
+export * from "./catalog-entry.js";
 export * from "./floor-manifest.js";
+export * from "./floor-offering.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
+export * from "./record-port.js";
+export * from "./port-lease.js";
 export * from "./resolver.js";
 export * from "./bag-residency.js";
 // WHERE a bag's bytes rest — repository | hearth | ley — the third self-describing axis beside the cap-tier
@@ -62,11 +65,64 @@ export * from "./persona-petname.js";
 export * from "./persona-declare.js";
 export * from "./persona-glamour.js";
 export * from "./recovery-keel-core.js";
-export * from "./guardian-card.js";
+export * from "./custodian-card.js";
 export * from "./recovery-registration.js";
 export * from "./capability.js";
 export * from "./domains.js";
 export * from "./face-atom.js";
+export * from "./face-leaf-bond.js";
+export * from "./face-anchor.js";
+export * from "./face-anchor-custody.js";
+export * from "./signed-act.js";
+export * from "./hand-lineage.js";
+export * from "./persona-act.js";
+export * from "./persona-act-board.js";
+export * from "./intent-entry.js";
+export * from "./intent-verbs.js";
+export * from "./intent-read.js";
+export * from "./intent-view.js";
+export * from "./intent-issue.js";
+export * from "./ward-cosign.js";
+export * from "./ward-cosign-gate.js";
+export * from "./ward-answer.js";
+export * from "./vessel-face-tag.js";
+export * from "./kahua-stage.js";
+export * from "./kahua-staged.js";
+export * from "./promote.js";
+export * from "./promote-kapae.js";
+export * from "./promote-board.js";
+export * from "./swarm-lei-rite.js";
+export * from "./swarm-tiddlers.js";
+export * from "./swarm-tessera.js";
+export * from "./swarm-board.js";
+export * from "./swarm-door.js";
+export * from "./exec-lei.js";
+export * from "./doc-swarm-wiki.js";
+export * from "./kukulu-vouch.js";
+export * from "./face-relation.js";
+export * from "./promote-door.js";
+export * from "./promote-command.js";
+export * from "./promote-board-door.js";
+export * from "./promote-boot.js";
+export * from "./promote-wiring.js";
+export * from "./promote-wiki-items.js";
+export * from "./kahua-stage-store.js";
+export * from "./kahua-adopt.js";
+export * from "./intent-relay-door.js";
+export * from "./intent-delegation.js";
+export * from "./intent-rubric.js";
+export * from "./lease-advance.js";
+export * from "./charter-hand-lineage.js";
+export * from "./quorum-lease.js";
+export * from "./face-boot-proof.js";
+export * from "./face-reading.js";
+export * from "./join-face-documents.js";
+export * from "./edge-frontier-board.js";
+export * from "./fleet-frontier.js";
+export * from "./realm-frontier.js";
+export * from "./frontier-carry.js";
+export * from "./realm-admit-bundle.js";
+export * from "./edge-frontier.js";
 export * from "./face-atom-custody.js";
 export * from "./place-signer.js";
 export * from "./custody-carrier-context.js";
@@ -75,15 +131,21 @@ export * from "./agile-digest.js";
 export * from "./projection-registry.js";
 export * from "./readiness.js";
 export * from "./lar-uris.js";
+export { PROJECTION_FILTER, PROJECTION_FILTER_TEXT, projectionFilterTitle, filterSelects, projectionWithheld, ProjectionFilterUnreadable, type ProjectionClass, type ProjectionFilterText } from "./projection-filter.js";
 export * from "./boot-resolver.js";
-export * from "./capture/build-patch.js";
+export * from "./plane-labels.js";
 export * from "./capture/branch-frontier.js";
 export * from "./capture/gone-turns.js";
 export * from "./stream-adapter.js";
 export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
+export * from "./entropy-door.js";
+export * from "./ddate.js";
+export * from "./oracle-cast.js";
 export * from "./epoch-lease.js";
+export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
+export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
 export { holderSessionProofBytes, signHolderSessionProof, verifyHolderSessionProof } from "./holder-session-proof.js";
@@ -98,16 +160,16 @@ export * from "./offering-antigen.js";
 export * from "./offering-inspection.js";
 export * from "./mesh-palace.js";
 export * from "./pronaos.js";
-export * from "./capture/bearing-harvest.js";
-export * from "./capture/turn-harvest.js";
-export * from "./capture/stamp-filter.js";
 export * from "./mirror-paths.js";
 export * from "./tiddler-store.js";
 export * from "./recipe.js";
 export * from "./flow.js";
 export { bagStackFromRec } from "./bag-stack-from-rec.js";
 export * from "./composite-store.js";
+export * from "./carrier-form.js";
+export * from "./override-base.js";
 export * from "./find-or-throw.js";
+export { stoodDocumentBytes, landStoodDocument, landBindingDocuments } from "./stood-document.js";
 export * from "./sensorium-consistency.js";
 export * from "./sensorium-contract.js";
 export * from "./sensorium-fusion.js";
@@ -123,14 +185,18 @@ export * from "./capture-nalu.js";
 export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./host-task.js";
+export * from "./iris.js";
+export * from "./lent-faces.js";
+export * from "./chore-ask.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";
 export * from "./automerge-doc-store.js";
+export { seatRepoWear, wearOf } from "./repo-wear.js";
 export * from "./parallel-drafts.js";
 export * from "./lar-vessel.js";
 export * from "./lararium-vessel.js";
-export type { IdentitySlot, CapabilityToken, ActorId } from "./identity-slot.js";
+export type { IdentitySlot, CapabilityToken } from "./identity-slot.js";
 export {
   makePersonaGroupIdentityRing, governedPlaneDocIds, provenVesselKeyOf,
   type PersonaGroupIdentityRing, type PersonaGroupGrantReading, type PlaneCatalog,
@@ -141,6 +207,8 @@ export * from "./persona-group-secret.js";
 export * from "./persona-kel-drop.js";
 export type { FederationGate, SiblingShare, ShadowConsult } from "./federation-gate.js";
 export { presenterStandsAside } from "./federation-gate.js";
+export { gateSweep } from "./gate-sweep.js";
+export type { GateSweepSeat, GateSweep, GateSweepPorts } from "./gate-sweep.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, siblingShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
 export type { IdentityRing } from "./federation-gate.js";
@@ -158,11 +226,11 @@ export {
   RENEW_ELAPSED, WARN_ELAPSED, URGENT_ELAPSED,
 } from "./cert-expiry-gauge.js";
 // The bag's sharing-posture as SELF-DESCRIBING DATA — the 4-tier total order + the tighten-only keystone.
-export type { CapTier, TierFloorOracle, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
+export type { CapTier, TierFloorSource, DeclaredTierSource, CapTierRing } from "./cap-tier.js";
 export {
   CAP_TIER_ORDER, DEFAULT_CAP_TIER, capTierRank, parseCapTier, meetCapTier, resolveTier,
   refineBagTierWithTiddlers, mayDeclareTier, mayDeclassify, structuralFloorFor, resolveTierForDoc,
-  tierPermitsRelayPeer, makeTierFloorOracle,
+  tierPermitsRelayPeer, makeTierFloorSource,
 } from "./cap-tier.js";
 // The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap.
 export {
@@ -196,10 +264,12 @@ export { DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
 export * from "./quorum-entry.js";
 export * from "./sealed-box.js";
 export * from "./ed25519-door.js";
+export * from "./veil-lift.js";
 export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
 export * from "./carriage-registry.js";
+export * from "./carriage-log.js";
 // The root of one Nexus as a vessel holds it, and the one door a presented admit reads through: the socket
 // seat, the raise and the admit bundle hand the verifier a held root, never a roster of their own making.
 export {
@@ -222,12 +292,16 @@ export * from "./meme-provider.js";
 export * from "./reaction-graph.js";
 export * from "./wiki-recipe.js";
 export * from "./verb-tiddler.js";
+export * from "./face-scoped-id.js";
+export * from "./durability-receipt.js";
+export * from "./session-receipt.js";
 export * from "./residency-actions.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
 export * from "./effect-record.js";
 export * from "./kumu-device.js";
 export * from "./genesis-doc.js";
+export * from "./genesis-compare.js";
 export * from "./genesis-intake.js";
 export * from "./island-protocol.js";
 export * from "./conformance-verb-breathing.js";
@@ -239,8 +313,17 @@ export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-pla
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
-export { makeIslandRepo, attachMessageChannelSync, replicaHeads } from "./island-repo.js";
-export { GatedSyncLeg, oneWayDocumentsGate } from "./gated-sync-leg.js";
+export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival, markWikiIslandPeer, wikiIslandPeersOf } from "./island-repo.js";
+export { wikiIslandWithholds, vesselDocBags, wikiSlotOf, type WikiIslandMount } from "./wiki-island-reach.js";
+export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
+export { wireIdentityOf, seatDialLeg } from "./wire-identity.js";
+export type { WireIdentity, WireAlias, WireLegAt, WireLegSeat, WireLegRefusal, WornFace } from "./wire-identity.js";
+export { answerReceiptWithHeads, receiptInStore, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
+export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
+export { islandCustodyWriter, answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
+export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner, type FaceFold } from "./session-sign-book.js";
+export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
+export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";
 export type { IslandRepoConfig } from "./island-repo.js";
 export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
@@ -250,7 +333,7 @@ export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from ".
 export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiSpecResolution } from "./wiki-activation.js";
-export type { VesselIslandPoolCoreOptions, DiskMirrorGrant } from "./vessel-island-pool-core.js";
+export type { VesselIslandPoolCoreOptions, VesselRestState, DiskMirrorGrant } from "./vessel-island-pool-core.js";
 export { isPresentedAdmit, isPresented, mkLarSessionMsg, isLarSessionMsg } from "./leaf-presentation.js";
 export type { LarSessionMsg, LeafIdentity, PresentedAdmit, PresentedAdmitArm, PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented } from "./leaf-presentation.js";
 export {
@@ -278,6 +361,8 @@ export type { CarryOutcome } from "./walk-carry.js";
 export { LEAF_RETRY_CAP_MS, LEAF_SILENCE_LOG_EVERY, LarWSClientAdapter } from "./lar-ws-client-adapter.js";
 export type { LarWSClientOptions, LarLeafSession, FacePresentation } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";
+export * from "./mint-census.js";
+export * from "./doc-census.js";
 export * from "./carriage-caps.js";
 export * from "./persona-hd.js";
 export * from "./persona-identity.js";
@@ -298,7 +383,7 @@ export * from "./nexus-partial.js";
 export * from "./roll-circle.js";
 // PRIVATE AUTHORITY FOR THE FACE PROOF, named here by its first caller: the device removal door, which signs a
 // certificate withdrawal beside each dyad raise (`device-removal`).
-export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_ROWS } from "./face-authority.js";
+export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_RECORDS } from "./face-authority.js";
 export {
   NEXUS_KEY_HAND_OVER_DOMAIN, NEXUS_KEY_HAND_OVER_PREFIX, NEXUS_KEY_LINE_BOUND,
   nexusKeyHandOverBytes, nexusKeyHandOverId, nexusKeyHandOverKey, signNexusKeyHandOver, readNexusKeyHandOver,
@@ -319,9 +404,15 @@ export { requestCertificate, issueCertificate, mintVesselFaceKey, checkVesselCha
 export type { VesselFaceKeyCustody, MintedKey, VesselChainVerdict } from "./face-authority.js";
 export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey, FaceKey } from "./face-proof-subjects.js";
 export * from "./fleet-join.js";
+// THE SEAT a face's root holder gives one joining device (the tag law, the admission, the edge): one core for the node's
+// `device-admit` and the browser's `browser-fleet-root`.
+export * from "./device-seat.js";
 // THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
 // hands it the vessel's own certificate, grant, key and custody door. The session table stays private to the mesh.
-export { openJoinedFaceSession } from "./session-face.js";
+export { openJoinedFaceSession, prepareJoinedFace, type JoinedFaceTarget } from "./session-face.js";
+export { preparePlaceFace, supplyPlaceFace, type PlaceFaceTarget, type PlaceReading } from "./session-face.js";
+export { placeProofSubjectRef, readPlaceSessionCertificate, readPlaceSessionSignature, type PlaceScope, type PlaceSessionCertificate } from "./face-proof-subjects.js";
+export { PlaceSessionSigner, type PlaceAnchorWatch } from "./session-signer.js";
 export type { JoinedFaceSessionRefusal, FaceGrantReading } from "./session-face.js";
 // THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
 // door and the custody seat the custody root's. The bundle itself joins the barrel below, with the gate.
@@ -333,7 +424,7 @@ export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.
 // (the carriage registry and the hearth dial pin); the floor's signed announcement, read only against a pin its reader
 // already holds (no caller yet; it stands for the floor's announce route).
 export {
-  SEALED_FRAME_VERSION, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
+  SEALED_FRAME_TAG, SEALED_KINDS, SEALED_HEADER_BYTES, SEALED_SEAL_OVERHEAD, SEALED_PART_BODY_MAX, SEALED_MESSAGE_MAX_BYTES,
   SEALED_CONCURRENT_MAX, SEALED_BUFFER_MAX_BYTES, SEALED_REFUSALS, SealedIdsSpent, sealedParts, sealedWriter, sealedReader,
 } from "./sealed-carriage.js";
 export type { SealedKind, SealedMessage, SealedRefusal, SealedReader } from "./sealed-carriage.js";
@@ -341,24 +432,33 @@ export { CHANNEL_CLOSE_REASONS, GateChannelClosed, seatedChannel, dialedChannel,
 export type { ChannelSocket, ChannelCloseReason, GateChannelBounds, GateSessionChannel, SeatedChannel } from "./gate-session-channel.js";
 // THE FLOOR PIN SET, named here by its callers: the node's sync gate server sends it on a verified sovereign session, the
 // client adapter files it, and the fleet-join answer carries it signed (house ruling "The admit's gate pin").
-export { HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard } from "./hearth-floor-pins.js";
-export type { HearthFloorCard } from "./hearth-floor-pins.js";
+export {
+  HEARTH_FLOOR_PINS_SESSION_KIND, HEARTH_FLOOR_PIN_BOUND, FLOOR_CARD_KEL_BOUND, readHearthFloorPins, hearthFloorPinsBody, readHearthFloorPinsBody,
+  readHearthFloorProofBody, fileSessionClaims, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, readHearthFloorCard, FLOOR_CARD_CARRIAGE_KIND, floorCardCarriageText, readFloorCardCarriage, verifyHearthFloorCard,
+  fileHearthFloorCard, lastSyncNote,
+} from "./hearth-floor-pins.js";
+export type { ClaimDoor, HearthFloorCard, HearthFloorProof, FloorAnchor, VerifiedFloorCard, FloorCardFiling } from "./hearth-floor-pins.js";
 export {
   PLACE_FLOOR_PIN_KIND, PLACE_FLOOR_PIN_PREFIX, PLACE_FLOOR_PIN_REFUSALS, placeFloorPinImage, signPlaceFloorPin, readPlaceFloorPin,
-  placeFloorPinKey, writePlaceFloorPin, placeFloorPinsFromBoard, filePlaceFloorPins, placeArmFor,
-  type PlaceFloorPinStatement, type PlaceFloorPinRefusal,
+  placeFloorPinKey, writePlaceFloorPin, placeFloorPinsFromBoard, filePlaceFloorPins, placeArmFor, foldClaimHead,
+  type PlaceFloorPinStatement, type PlaceFloorPinRefusal, type PlaceFloorPinReading, type ClaimReadAt, type ClaimStanding,
+  type ClaimHeadReading, type ClaimFilingReport, type ClaimIndex,
 } from "./place-floor-pin.js";
 export { gateNativeCarriagePull, CARRIAGE_PIN_ABSENT, type GateNativeCarriagePullDeps } from "./carriage-pull.js";
 export { SOVEREIGN_SYNC_ROUTE, ADMIT_GATE_PIN_REFUSALS, readAdmitGatePin, readAdmitGatePinAt, admitGatePinDigest, dialPinKeyOf, hearthPinIndex } from "./admit-gate-pin.js";
 // The session table a dialer keeps for the sessions it opened (`dialSessions`), and the binding each rides.
 export { SessionTable, sessionBinding } from "./session-contract.js";
+// The five-step fence that switches one session's face in place (the node's session socket, the browser holder).
+export { switchSession, SwitchActsSetAsideFull, SESSION_SWITCH_REFUSALS, type SessionSwitchPorts, type SessionSwitchResult, type SessionSwitchTarget, type SwitchIntent, type SwitchOutcome } from "./session-switch.js";
 export type { SessionBinding } from "./session-contract.js";
-export type { AdmitGatePinRefusal, DialPinKey, HearthPinIndex } from "./admit-gate-pin.js";
+export type {
+  AdmitGatePinRefusal, DialPinKey, HearthPinIndex, PlaceClaimStand, PlaceClaimFiling, PlaceClaimFork, PlaceKelForkNote,
+} from "./admit-gate-pin.js";
 export {
-  FLOOR_ANNOUNCEMENT_VERSION, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
-  gateAnnouncementImage, signFloorAnnouncement, readFloorAnnouncement,
+  FLOOR_ANNOUNCEMENT_KIND, FLOOR_ANNOUNCE_ROUTE, FLOOR_STANDINGS, FLOOR_ANNOUNCEMENT_REFUSALS, FloorAnnouncementRefused,
+  gateAnnouncementImage, floorAnnouncementDigest, signFloorAnnouncement, readFloorAnnouncement, foldFloorAnnouncements,
 } from "./floor-announcement.js";
-export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal } from "./floor-announcement.js";
+export type { FloorStanding, FloorAnnouncementBody, FloorAnnouncement, FloorAnnouncementRefusal, FloorAnnouncementStanding, FloorAnnouncementSetAside } from "./floor-announcement.js";
 // THE GATE AND ITS DIAL, named here by their callers: the node's gate server stands `makeFaceGate` per (Nexus, route)
 // behind the upgrade's knock and its first flight, the composer derives each bundle, and the dialers speak
 // `dialFaceGate` over their own sockets.
@@ -373,7 +473,11 @@ export type {
   GateFaceGrantRing, GateSortInput, GateSortVerdict, GateSorter, GateWithdrawalMemory, GateSession, GateSeat, GateSessionTable,
   GateSilenceReason, GateSilenceDetail, GateOutcome,
 } from "./face-gate.js";
-export { GATE_PROTOCOL, GATE_FLIGHT_BYTES, GATE_FLIGHT_REFUSALS, gateFlightProtocols, readGateFlightHeader, gateProtocolSelected } from "./gate-exchange.js";
+export {
+  GATE_PROTOCOL, GATE_FLIGHT_BYTES, GATE_FLIGHT_REFUSALS, gateFlightProtocols, readGateFlightHeader, gateProtocolSelected,
+  GATE_FRAME, GATE_FRAME_DIRECTION, GATE_FINISH_BYTES, GATE_VERDICT_BYTES, GATE_FRAME_BODY_MAX, GATE_SUBJECT_MAX_BYTES,
+  gateFrameTagReserved, gateFrameTableRefusal,
+} from "./gate-exchange.js";
 export type { GateFlightRefusal, PresentationArm, PlaceArm } from "./gate-exchange.js";
 export { dialFaceGate, dialPlaceGate, FACE_DIAL_REFUSALS } from "./face-dial.js";
 export type { DialSocket, FaceDialArgs, FaceDialOutcome, FaceDialRefusal, PlaceDialArgs, PlaceDialOutcome } from "./face-dial.js";
@@ -381,10 +485,10 @@ export type { DialSocket, FaceDialArgs, FaceDialOutcome, FaceDialRefusal, PlaceD
 export { wsDialSocket } from "./ws-dial-socket.js";
 export type { WsFactory, WsFactoryOptions, WsLike } from "./ws-dial-socket.js";
 // The one Noise bound the node's gate server caps a frame at (`face-gate-server`); the handshake doors stay out.
-export { NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
-// THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).
-export { GATE_MEMORY_ROW_MAX_BYTES, storedWithdrawals, GateMemoryRowTorn } from "./gate-withdrawal-store.js";
-export type { GateMemoryRows } from "./gate-withdrawal-store.js";
+export { NOISE_MAX_MESSAGE_BYTES, MIN_MESSAGE1_BYTES, MIN_MESSAGE2_BYTES } from "./noise-ik.js";
+// THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-records`).
+export { GATE_MEMORY_RECORD_MAX_BYTES, storedWithdrawals, GateMemoryRecordTorn } from "./gate-withdrawal-store.js";
+export type { GateMemoryRecords } from "./gate-withdrawal-store.js";
 export * from "./device-removal.js";
 export * from "./re-anchoring.js";
 export * from "./realm-steward-map.js";
@@ -392,8 +496,16 @@ export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
+export * from "./executable-class.js";
+export * from "./seat-startup-offer.js";
+export * from "./rendered-derives.js";
+export * from "./house-canon-doc.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
+export * from "./floor-pin.js";
+export * from "./floor-shadow.js";
+export * from "./canon-offer.js";
+export * from "./family.js";
 export * from "./lineage-rank.js";
 export * from "./admission-price.js";
 export * from "./vouch-dag.js";
@@ -414,9 +526,13 @@ export * from "./handle-announce.js";
 export * from "./who-face.js";
 export * from "./who-face-cap.js";
 export * from "./deterministic-doc.js";
+export { standFaceDaemonCanon, type FaceDaemonCanon } from "./face-daemon-canon.js";
+export * from "./catalog-view.js";
 export { pinnedDoc, PINNED_ACTOR } from "./pinned-doc.js";
 export * from "./cabal-realm-clock.js";
 export * from "./realm-bag.js";
+export * from "./workbench.js";
+export * from "./protected-doc-guard.js";
 export * from "./realm-index.js";
 export * from "./me-circle.js";
 export * from "./veil-crossing.js";
@@ -431,6 +547,7 @@ export * from "./recovery-seat.js";
 export * from "./wax-stamp.js";
 // The two-founder act and the engine cadence it seats (kahu#/seed-and-nexus, kahu#/contract); the cofound ceremony calls them.
 export * from "./cadence-lineage.js";
+export * from "./cadence-offer.js";
 export * from "./cofound.js";
 export * from "./cold-key-card.js";
 export * from "./persona-kel.js";
@@ -504,7 +621,7 @@ export { waitHandle, LOCAL_READY_MS } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
-export { deriveRegisterBags, catalogNamedBags, isVesselGround } from "./register-bags.js";
+export { deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, isVesselGround, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
 export * from "./persona-scope.js";
 export * from "./persona-planes.js";
 export * from "./holdings-witness.js";
@@ -526,31 +643,45 @@ export { crossingDirection, type CrossingDirection, type CrossingCost } from "./
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";
 export { KEY_CLASSES, isKeyClass, isRelationClass } from "./key-class.js";
 export type { KeyClass } from "./key-class.js";
-// The VK custody spine: the keyslot tree that commits to its VK, and the ONE writer of VK-sealed carriers, which
-// proves every VK in hand against the standing tree under one custody holder — see `sealed-writer`.
+export { FCK_SEAL_MAGIC, FCK_SEAL_NONCE_LENGTH, FCK_SEAL_TAG_LENGTH, FCK_SEAL_MIN_LENGTH, readFckCarrier, splitFckFrame, joinFckFrame } from "./fck-envelope.js";
+export type { FckCarrierReading } from "./fck-envelope.js";
+export { mintFck, faceCarrierContext, sealUnderFck, openUnderFck } from "./fck.js";
+export type { FaceCustodyKey, FaceCarrier, FckOpening } from "./fck.js";
+// The ward: the face's root seed under a key that opens fresh per hand act, over human routes alone.
+export { WARD_SEAL_MAGIC, WARD_STORE, WardRefused, bindWardSlot, mintWardKey, openUnderWard, openWardKey, readWardCarrier, refusePasskeyTree, sealUnderWard } from "./ward-slots.js";
+export type { WardKey, WardCarrierReading, WardOpening } from "./ward-slots.js";
+// The tree key custody spine: the keyslot tree that commits to its tree key, and the ONE writer of tree-key-sealed carriers, which
+// proves every tree key in hand against the standing tree under one custody holder — see `sealed-writer`.
 export {
-  writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateVk, settleRotation, assertNoOldCustodyShape,
-  CustodyRefusal, TreeVkRefusal, CensusRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
+  writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, openSealedCarrier, commitSlotTree, rotateTreeKey, settleRotation, assertStoreUnoccupied,
+  CustodyRefusal, TreeKeyRefusal, CensusRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX,
+  writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, openFaceCarrier, rotateFck, settleFaceRotation, assertFaceStoreUnoccupied, commitFaceTree,
+  writeWardCarrier, updateWardCarrier, openWardCarrier, commitWardTree,
 } from "./sealed-writer.js";
 export type {
-  CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeVkReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateVkArgs, SettleRotationArgs,
+  CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeKeyReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateTreeKeyArgs, SettleRotationArgs,
+  WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs, WriteWardCarrierArgs,
 } from "./sealed-writer.js";
-export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
-export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
-export { mintVk, vkEquals } from "./vk.js";
-// The serving key and the serving tree that wraps it under the VK's entry — see `serving-key`.
-export { mintServingKey, foundServingTree, openServingKey, encodeServingTree, decodeServingTree, skCheckOf, SK_LENGTH } from "./serving-key.js";
-export type { ServingKey, ServingTree, ServingVkEntry, ServingKeyOpening, ServingTreeReading } from "./serving-key.js";
-export type { VesselKey, VkOpening } from "./vk.js";
-// The VK's sealed-carrier frame: the magic that names the scheme, with no version byte — see `vk-envelope`.
-export { VK_SEAL_MAGIC, LARK_MAGIC, VK_SEAL_NONCE_LENGTH, VK_SEAL_TAG_LENGTH, VK_SEAL_MIN_LENGTH, readVkCarrier, splitVkFrame, joinVkFrame } from "./vk-envelope.js";
-export type { VkCarrierReading } from "./vk-envelope.js";
+export { bindSlot, unbindSlot, openTreeKey, slotsOpenedBy, nobleKdf, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
+export type { ProvedSlot, KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
+export { mintTreeKey, treeKeyEquals } from "./tree-key.js";
+// The keep pair: a keep bundle's roster seals to its public half; its secret rests wrapped under the human's routes — see `keep-seat`.
+export { mintKeepSeat, mintKeepSeatUnder, openKeepSecret, bindKeepSlot, sealToKeep, openFromKeep, encodeKeepSeat, decodeKeepSeat, signKeepCut, verifyKeepCut, keepVerifyKeyOf } from "./keep-seat.js";
+export type { KeepSeat, KeepMint, KeepSecretOpening, KeepSlotBinding, KeepSeatReading } from "./keep-seat.js";
+// The serving key and the serving tree that wraps it under the tree key's entry — see `serving-key`.
+export { mintServingKey, SK_LENGTH } from "./serving-key.js";
+export type { ServingKey } from "./serving-key.js";
+export type { TreeKey, TreeKeyOpening } from "./tree-key.js";
+// The tree key's sealed-carrier frame: the magic that names the scheme, with no version byte — see `s-envelope`.
+export { S_SEAL_MAGIC, S_SEAL_NONCE_LENGTH, S_SEAL_TAG_LENGTH, S_SEAL_MIN_LENGTH, readSCarrier, splitSFrame, joinSFrame } from "./s-envelope.js";
+export type { SCarrierReading } from "./s-envelope.js";
 // SLIP-39: the paper pin's encoder, over the house's own GF(256) field ops — see `slip39`.
 export { Slip39Error, decodeShare, encodeShare, generateMnemonics, combineMnemonics, readBackMismatch } from "./slip39.js";
 export type { Slip39Share, ReadBackMismatch } from "./slip39.js";
-// The floor key's own inception: the key signed by itself, committing no next key — see `vessel-kel`.
-export { inceptVesselKel, verifyVesselKelInception, decodeVesselKelInception } from "./vessel-kel.js";
-export type { VesselKelInception } from "./vessel-kel.js";
+// The place KEL commits cold successors while online signers carry floor duties.
+export * from "./vessel-kel.js";
+export * from "./place-kel-board.js";
+export * from "./place-founding-card.js";
 export * from "./vessel-journal.js";
 // ── The sealed store's records, lineage, lockboxes, rest and content-key holder ────────────────────────
 // Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store. The key shore (`@lararium/keyhive`) and the node's
@@ -560,9 +691,26 @@ export * from "./content-key-lineage.js";
 export * from "./sealed-store-rest.js";
 export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
+export * from "./sealed-doc-store.js";
+export * from "./sealed-rest.js";
+export { deviceDaemonDocs, vesselHeldBagOf, daemonSlotTitle, hearthDaemonOf, DAEMON_SLOT_PREFIX, FLOOR_REGISTRY_ROOT, FLOOR_SLOT_ROOT, FLOOR_DAEMON_SLOT_ROOT, floorSlotTitle, floorDaemonSlotTitle, isFloorRegistryTitle, floorSlotOf, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
+export * from "./published-bag-key.js";
+export * from "./held-rest-key.js";
+export { floorRegistryOf, floorRefusalOf, FloorUnavailable, FLOOR_UNAVAILABLE, FLOOR_UNKEYED, type FloorRegistry, type FloorKeyRefusal } from "./floor-registry.js";
+export * from "./secret-home.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
 export * from "./face-log-view.js";
 // The one parser of a Nexus seal file's text, platform-blind: the node's disk adapter and a browser leaf's landed
 // fleet-join answer read a charter through it — see `nexus-doc-text`.
 export { parseNexusDoc, readNexusDocFence, nexusDocFenceRe, NEXUS_DOC_FENCES } from "./nexus-doc-text.js";
+
+export * from "./intent-admission.js";
+export { censusOutcomeLinkage, type OutcomeLinkage } from "./outcome-census.js";
+
+export * from "./promote-panel-api.js";
+
+
+export * from "./promote-main-verbs.js";
+export * from "./share-config.js";
+export * from "./face-label.js";

@@ -14,7 +14,7 @@
  */
 
 import { createConnection } from "node:net";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { newRequestId } from "@lararium/mesh";
@@ -39,8 +39,7 @@ export function udsSocketPath(dataDir?: string | null): string {
   }
   // ONE DERIVATION, BOTH SIDES. The daemon binds `rendezvousPath` over its resolved substrate dir; this
   // reads the same function over the same default. A `--storage`/`LAR_STORAGE` override moves the
-  // daemon's dir and not this one — that divergence predates the relocation and is inherited here
-  // rather than widened; `lares vessel read` prints the resolved path when the two must be compared.
+  // daemon's dir and not this one; `lares vessel read` prints the resolved path when the two must be compared.
   return rendezvousPath({ root: dataDir ?? larDataDir(), uid: process.getuid?.() ?? 0 });
 }
 
@@ -87,6 +86,7 @@ export async function udsAlive(dataDir?: string | null, timeoutMs = 1_500): Prom
       resolve(alive);
     };
     const sock = createConnection(path);
+    // LIVENESS: a bound but wedged socket may never connect or report an error.
     sock.setTimeout(timeoutMs);
     sock.once("connect", () => done(true));
     sock.once("error",   () => done(false));   // ECONNREFUSED on a stale inode → DOWN, never an error
@@ -135,8 +135,43 @@ export function socketHolderPids(path: string): number[] {
       const pid = Number(line.trim().split(/\s+/)[1]);
       if (Number.isFinite(pid)) pids.push(pid);
     }
-    return uniq(pids);
+    if (pids.length > 0) return uniq(pids);
+  } catch { /* lsof absent or refused — fall to the kernel's own tables */ }
+  return uniq(procHolderPids(prefix));
+}
+
+/**
+ * PIDs holding a LISTENING UNIX socket bound under `prefix`, read off the kernel's own tables: `/proc/net/unix` names each bound
+ * path with its socket inode, and `/proc/<pid>/fd/*` links a descriptor to `socket:[inode]`. It needs neither `ss` nor
+ * `lsof` (a minimal container image carries neither), and it reads only the descriptors this user may read, so a holder of
+ * another user stays unnamed, as it does for `lsof`. Empty = none found, or no `/proc`.
+ */
+export function procHolderPids(prefix: string): number[] {
+  const inodes = new Set<string>();
+  try {
+    for (const line of readFileSync("/proc/net/unix", "utf8").split("\n").slice(1)) {
+      const cols = line.trim().split(/\s+/);
+      const bound = cols[7] ?? "";
+      // Flags column: __SO_ACCEPTCON (0x10000) marks a LISTENING socket, the same set `ss -xl` names.
+      const listening = (Number.parseInt(cols[3] ?? "0", 16) & 0x10000) !== 0;
+      if (listening && bound.startsWith(prefix)) inodes.add(cols[6] ?? "");
+    }
   } catch { return []; }
+  if (inodes.size === 0) return [];
+  const pids: number[] = [];
+  let procs: string[] = [];
+  try { procs = readdirSync("/proc").filter((n) => /^\d+$/.test(n)); } catch { return []; }
+  for (const pid of procs) {
+    let fds: string[] = [];
+    try { fds = readdirSync(`/proc/${pid}/fd`); } catch { continue; }
+    for (const fd of fds) {
+      let link = "";
+      try { link = readlinkSync(`/proc/${pid}/fd/${fd}`); } catch { continue; }
+      const m = /^socket:\[(\d+)\]$/.exec(link);
+      if (m && inodes.has(m[1]!)) { pids.push(Number(pid)); break; }
+    }
+  }
+  return pids;
 }
 
 /**
@@ -146,9 +181,9 @@ export function socketHolderPids(path: string): number[] {
  * TWO READINGS OF "NOTHING ANSWERED", NEVER FUSED (M4). Before this, every non-answer — an immediate
  * `ECONNREFUSED`/`ENOENT` (nobody there at all) AND a connection the OS accepted into its backlog but
  * whose process never read a byte (frozen, SIGSTOPped, wedged) — read as the SAME `null`, "no
- * discoverable holder". A live probe proved the difference matters: a SIGSTOPped holder answered
- * `null` at its timeout exactly as an unbound socket would, so a caller budgeting "unbound" patience
- * for a holder that was there the whole time spent the WRONG patience and named the wrong story.
+ * discoverable holder". The difference matters: a SIGSTOPped holder would answer `null` at its
+ * timeout exactly as an unbound socket does, so a caller budgeting "unbound" patience for a holder
+ * standing the whole time would spend the WRONG patience and name the wrong story.
  *   - `error` (ECONNREFUSED/ENOENT, before any `connect`) → UNBOUND: `null`, nothing to connect to.
  *   - `timeout` after a successful `connect` but before any line arrives → WEDGED: something accepted
  *     the connection and then never answered. `socketHolderPids` names it when it can.
@@ -173,6 +208,7 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<Wh
       resolve(v);
     };
     const sock = createConnection(path);
+    // LIVENESS: a holder may accept the query and remain silent.
     sock.setTimeout(timeoutMs);
     sock.setEncoding("utf8");
     let buf = "";
@@ -250,6 +286,8 @@ export interface ReceiptAnswer {
   readonly errorMessage?: string;
   /** The vessel's own name for a refusal it answers with (a torn fact reads `receipt-fact-torn`). */
   readonly refusal?: { readonly reason: string };
+  /** The chore's receipt mark the outcome rests with: the acting face, the asker's hand (`seat`, `cli`, `tab`), its session. */
+  readonly chore?: { readonly acting: number; readonly asker: string; readonly session: string | null };
 }
 
 /** This READ's own patience ended with no line back — mirrors `LocalWaitExpired` for the dispatch
@@ -282,6 +320,7 @@ function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: stri
       clearTimeout(timer);
       fn();
     };
+    // LIVENESS: a daemon may never answer the receipt query; close and error settle separately.
     const timer = setTimeout(() => {
       settle(() => { try { sock.destroy(); } catch { /* already gone */ } resolve({ requestId, state: "unanswered" }); });
     }, patienceMs);
@@ -309,10 +348,9 @@ function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: stri
 }
 
 /**
- * Read a request id's receipt WITHOUT dispatching anything (H1). Replaces the old pattern of
- * calling `invokeLocal` a second time with the same request id as a "read-back" — that second call
- * went through the EXACT SAME dispatch path as the original, so an id this vessel had already
- * dropped as abandoned got run a second time, never a read. `queryReceipt` rides a dedicated
+ * Read a request id's receipt WITHOUT dispatching anything (H1). A second `invokeLocal` with the
+ * same request id as a "read-back" would ride the EXACT SAME dispatch path as the original, so an id
+ * this vessel already dropped as abandoned would run a second time, never a read. `queryReceipt` rides a dedicated
  * `{op:"receipt"}` line the vessel's own connection handler answers from its ledger + the durable
  * outcome doc alone.
  *
@@ -334,13 +372,29 @@ export function cancelRequest(requestId: string, opts: { dataDir?: string | null
   return readOnlyQuery("cancel", requestId, opts);
 }
 
+/**
+ * THE HARNESS'S OWN MARK, read and never minted: true where the environment carries a mark an AI harness sets on the
+ * shells it runs (Claude Code's `CLAUDECODE=1`; Codex's sandbox marks, `CODEX_SANDBOX` and `CODEX_SANDBOX_NETWORK_DISABLED`).
+ * A CLI line asked from such a shell is the AI seat asking, so it carries the seat's mark (`seat: "ai"`) and meets the
+ * seat's gates (`seat-canon-reach`, the lend's face wall). The operator's own terminal carries none. The mark stays a
+ * designation, never a proof (`seat-hand`): it closes the honest road, not a hostile one.
+ */
+export function harnessSeatMarked(env: NodeJS.ProcessEnv = process.env): boolean {
+  if (env["CLAUDECODE"] === "1") return true;
+  return Boolean(env["CODEX_SANDBOX"]) || Boolean(env["CODEX_SANDBOX_NETWORK_DISABLED"]);
+}
+
+/** The marks `harnessSeatMarked` reads, by name: the one list a suite clears so a run inside a harness reads as CI does. */
+export const HARNESS_SEAT_MARKS: readonly string[] = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"];
+
 export async function invokeLocal(
   verb:        string,
   args:        Record<string, unknown>,
   requestedBy: string,
-  opts:        SubmitOptions & { readonly dataDir?: string | null; readonly signal?: AbortSignal } = {},
+  opts:        SubmitOptions & { readonly dataDir?: string | null; readonly signal?: AbortSignal; readonly env?: NodeJS.ProcessEnv } = {},
 ): Promise<SubmitResult> {
   const socketPath = udsSocketPath(opts.dataDir);
+  const seat = harnessSeatMarked(opts.env ?? process.env);
   const timeoutMs  = opts.timeoutMs ?? 30_000;
   // THE REQUEST ID RIDES BEFORE DISPATCH, NEVER AFTER. A caller-generated nonce (never one the vessel
   // mints on read) is the one thing that survives a lost response: this call's own local wait may end
@@ -365,6 +419,7 @@ export async function invokeLocal(
     };
     const onAbort = (): void => settle(() => reject(new LocalInvocationAborted(`local verb "${verb}" aborted by its own caller`)));
     opts.signal?.addEventListener("abort", onAbort, { once: true });
+    // LIVENESS: a daemon may remain silent while the verb continues; reply or socket failure settles earlier.
     const timer = setTimeout(
       () => settle(() => reject(new LocalWaitExpired(verb, timeoutMs, requestId))),
       timeoutMs,
@@ -374,7 +429,7 @@ export async function invokeLocal(
       // THE ASK RIDES WITH THE INVOCATION. The daemon runs its own servo, and a caller that knows its
       // pass runs long — a bulk backfill over a whole corpus — can only say so if the number crosses.
       // Left off the wire, this side waited an hour while the daemon cut the same pass at two minutes.
-      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, requestId, ...(opts.effectKey !== undefined && { effectKey: opts.effectKey }) }) + "\n");
+      sock.write(JSON.stringify({ verb, args, requestedBy, timeoutMs, requestId, ...(opts.effectKey !== undefined && { effectKey: opts.effectKey }), ...(seat && { seat: "ai" }) }) + "\n");
     });
     sock.on("data", (chunk: string) => {
       buf += chunk;

@@ -4,13 +4,12 @@
  * ── WHY THE GRAPH NEEDS ITS OWN READING ─────────────────────────────────────────────────────────
  * A `lar:` URI names; it does not fetch. So a carrier whose target moved keeps rendering, keeps
  * round-tripping, and keeps passing every gate this tree stands — `carrier-shape` asks whether a file
- * is whole, `meme-coordinates` asks whether its own two coordinates agree, `bcc` asks whether its bytes
+ * is whole, `meme-coordinates` asks whether its own coordinate agrees, `bcc` asks whether its bytes
  * match their check. **None of them looks outward.** An edge that resolves to nothing is invisible to
  * all three at once.
  *
- * Measured: retiring one carrier and moving two left 66 references naming addresses that no longer
- * answered, across 28 carriers — found by hand, after the commit. Folding 37 carriers up one level
- * touched 197 references and broke none, because that scan ran BEFORE the move. This is that scan,
+ * A move that runs this scan BEFORE it lands breaks no reference; a move without it leaves references
+ * naming addresses that answer nothing, found only by hand after the commit. This is that scan,
  * made an instrument instead of a habit.
  *
  * ── FIVE SPELLINGS, ONE RELATION ────────────────────────────────────────────────────────────────
@@ -26,49 +25,34 @@
 import { fencedSpans, inMask } from "@lararium/memetic-frame";
 
 /** How a carrier spelled the reference. */
-export type EdgeForm = "loulou" | "pranala" | "kahea" | "wikilink" | "md-target";
+export type EdgeForm = "loulou" | "pranala" | "kahea" | "wikilink";
 
 export interface CarrierEdge {
-  /**
-   * The address named, fragment stripped — what a resolver would look up.
-   *
-   * An `md-target` edge names a FILE rather than an address, so it has none: a reader cannot resolve
-   * it without guessing which carrier that file became, and a guess is what the resolver must not do.
-   */
-  readonly address: string | null;
+  /** The address named, fragment stripped — what a resolver would look up. */
+  readonly address: string;
   /** The address as written, fragment included. */
   readonly written: string;
   readonly form: EdgeForm;
 }
 
-// AND THE QUOTE IS NOT PART OF THE ADDRESS. TiddlyWiki reads `name:value` as call syntax, so an
-// UNQUOTED `lar:///x` in a positional slot binds a phantom parameter named `lar` and the positional
-// receives nothing — the corpus quotes them for that reason, and every scan here strips the pair.
+// EVERY ADDRESS RIDES A NAMED, TICKED VALUE (the kupono cut): ``<<~ loulou uri=`lar:///x`>>``,
+// ``<<~ pranala from=`…` to=`lar:///x`>>``, ``<<~ kahea uri=`lar:///x`>>``. The tick is not part of the
+// address, and every scan here strips the pair. A form that stopped matching reports no edges at all,
+// silently, so `tests/kupono-readers.test.ts` holds a known positive for each.
+//
+// A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS — TiddlyWiki's own `reUnquotedAttribute` law — so
+// every scan spells its run `(?:[^>]|>(?!>))*?`. Measured: a scan of `[^>]*?` once found 0 of the
+// corpus's 84 `pranala` edges.
+//
+// AN EDGE IS THE END IT POINTS AT. A `pranala` names both ends, and only `to=` is the edge — `from=` is
+// where the carrier already stands. Anchored on the NAME, never on position: the writer emits `from`
+// first and a reader accepts either order, so position is not the relation.
 const PATTERNS: ReadonlyArray<readonly [EdgeForm, RegExp]> = [
-  ["loulou",   /<<~\s*loulou\s+"?lar:\/\/\/([^"\s>]+?)"?\s*>>/g],
-  // A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS — TiddlyWiki's own `reUnquotedAttribute` law. A
-  // `pranala` states its target past a bearing arrow, so a scan of `[^>]*?` stops at that arrow and the
-  // sigil never reaches its own address — silently, as a form that simply reports no edges. Every scan in this grammar spells it
-  // `(?:[^>]|>(?!>))*?`, for that reason. Measured: without it this reader found 0 of the corpus's 84 `pranala` edges, and reported
-  // 163 dangling where 194 stand.
-  //
-  // AN EDGE IS THE END IT POINTS AT. A `pranala` names both ends, and only `to=` is the edge — `from=`
-  // is where the carrier already stands. Anchored on `to=` rather than on position, because a scan for
-  // the first address after the sigil reads whichever end is written first: it agrees wherever the
-  // source is `?` and inverts wherever the source is an address, counting a carrier's own ground as a
-  // dangling edge while the target it points at goes uncounted. Position is not the relation.
-  ["pranala",  /<<~\s*pranala(?:[^>]|>(?!>))*?\bto="?lar:\/\/\/([^"\s>]+?)"?[\s>]/g],
-  ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?"?lar:\/\/\/([^"\s>]+?)"?[\s>]/g],
+  ["loulou",   /<<~\s*loulou(?:[^>]|>(?!>))*?\suri=`lar:\/\/\/([^`\s]+?)`/g],
+  ["pranala",  /<<~\s*pranala(?:[^>]|>(?!>))*?\sto=`lar:\/\/\/([^`\s]+?)`/g],
+  ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?\suri=`lar:\/\/\/([^`\s]+?)`/g],
   ["wikilink", /\[\[[^\]|]*\|lar:\/\/\/([^\]]+)\]\]/g],
   ["wikilink", /\[\[lar:\/\/\/([^\]|]+)\]\]/g],
-  // THE FORM THAT PREDATES THE ADDRESS. Before the corpus poured to `.mem`, a carrier linked its
-  // neighbours by FILE. Those links still stand, and a reader counting only `lar:///` targets does not
-  // see them — 70 of them sat outside this instrument while it reported the graph whole.
-  //
-  // They carry no address, so they never count as dangling and never count as resolving. They are
-  // named so a sweep can find them, and left unresolved because matching a file to a carrier means
-  // guessing which one it became.
-  ["md-target", /\[\[[^\]|]*\|((?:\.\.?\/)*[^\]:]*\.md)\]\]/g],
 ];
 
 /**
@@ -87,8 +71,21 @@ export function readCarrierEdges(text: string): CarrierEdge[] {
       if (inMask(spans, m.index)) continue;
       // A trailing period or comma belongs to the prose, never to the name.
       const written = m[1]!.replace(/[.,;]+$/, "");
-      out.push({ written, address: form === "md-target" ? null : written.split("#")[0]!, form });
+      out.push({ written, address: written.split("#")[0]!, form });
     }
   }
   return out;
+}
+
+/**
+ * HOMED IN THE KAHU WORKBENCH, OUTSIDE THE CORPUS — the one class of unheld edge that names a carrier
+ * standing somewhere this reader cannot see. The operator's ruling of 2026-11-20 moved the founding
+ * road (`docs/stable-founding-road`, `docs/road-ashes`, every `docs/road/*` rank and ruling) out of
+ * canon and into the shared Kahu workbench wiki (slug `kahu`, `--recipe kahu`): an engineer's working
+ * plan, not shared canon. A canon loulou to the road still names a live carrier; it answers in the
+ * workbench, never in `bags/`. The class names that prefix exactly and nothing beside it, and the
+ * corpus test holds its own ceiling, so no other broken edge hides inside it.
+ */
+export function homedInTheKahuWorkbench(address: string): boolean {
+  return /^ha\.ka\.ba\/lares\/docs\/(?:stable-founding-road|road-ashes|road\/[^/]+)$/.test(address);
 }

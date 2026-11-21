@@ -12,17 +12,26 @@
  *                  cursor); `uris` narrows the answer to named carriers
  *   sense          look at the disk for the named carriers (the watcher sends what vanished or returned)
  *   settle         answer once the projection that landed records cause has run (`lares ingest --apply`
- *                  names each carrier it landed and the hash its records render)
+ *                  names each carrier it landed, the hash its records render and the causal heads it landed;
+ *                  the word ends when the wiki holds them, or by name when the far side closes first)
  *   take-records   take the records' side of one standoff, named by its key
+ *   render         answer the records' render one standoff weighed, named by its key (`take-disk` merges it)
  *   restore        write a vanished file back from the records and pin its base
  *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
+ *   census         name every carrier the projector has not settled: each its queue still owes (`pending`) and
+ *                  each whose latest reconcile threw (`failed`), after a bounded wait for the queue to drain
+ *                  (`lares vessel census`, read before a stop); its first page also names, by path, each file a
+ *                  mirror's checkout never tracked (`untracked`, an owed commit) and each checkout git could not
+ *                  read (`untrackedUnread`)
  *
  * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
  * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
  * settles toward the disk, and no projector performs that: no disk byte reaches a record through the
  * projecting leg. The CLI reads the standoff's states here (`list`, by carrier), proves the key and the
  * file's bytes still name them, and sends the file through the ingest leg with the records the person
- * read as its base, so the gate lands the disk's words only where those records still stand.
+ * read as its base, so the gate lands the disk's words only where those records still stand. Where the
+ * records moved one slot and the file another, the CLI first reads the render this island weighed under the
+ * key (`render`) and merges it with the file against the base's words, slot by slot, so neither edit drowns.
  *
  * Every answer names the state the person read: a standoff's key, and for more than one pending removal
  * the count that stood pending. An answer that names a state which moved since takes nothing and says so:
@@ -36,7 +45,7 @@ import type { LarDiskProjector } from "./disk-projector.js";
 export const SHORE_VERB = "shore";
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "restore", "remove"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -107,6 +116,51 @@ function shoreCounts(projector: LarDiskProjector, bag: string | null): { standof
 const uriList = (v: unknown): string[] | null =>
   Array.isArray(v) && v.every((u) => typeof u === "string" && u !== "") ? (v as string[]) : null;
 
+/** How long a census's first page waits for the projector's queue to drain before it names what still waits. */
+export const CENSUS_SETTLE_MS = 5_000;
+
+/** One carrier the projector has not settled, as the census names it: its state, its title and its bag. */
+export interface CensusCarrier { readonly state: "pending" | "failed"; readonly uri: string; readonly bagId: string | null }
+
+/** One file a mirror's checkout never tracked, as the census names it: its path and the mirror's bag. */
+export interface CensusUntracked { readonly path: string; readonly bagId: string }
+
+/**
+ * THE CENSUS: what this island's projector has not settled, a page at a time. The first page (no `after`) waits up
+ * to `settleMs` for the queue to drain, so a routine stop reads clean; a page past it reads the state that stands.
+ * `drained` says whether the wait saw the queue drain. Rows order by state, then title, code unit by code unit.
+ */
+export async function shoreCensus(
+  projector: LarDiskProjector, after: string | null = null, settleMs = CENSUS_SETTLE_MS,
+): Promise<{
+  carriers: CensusCarrier[]; carrierCount: number; drained: boolean; next: string | null;
+  untracked?: readonly CensusUntracked[]; untrackedUnread?: ReadonlyArray<{ readonly root: string; readonly why: string }>;
+}> {
+  let drained = true;
+  if (after === null) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const bound = new Promise<false>((resolve) => { timer = setTimeout(() => resolve(false), settleMs); });
+    drained = await Promise.race([projector.idle().then(() => true as const), bound]).finally(() => { if (timer) clearTimeout(timer); });
+  }
+  const { pending, failed } = projector.unsettled();
+  const failedUris = new Set(failed.map((f) => f.uri));
+  const rows = [
+    ...failed.map((f) => ({ state: "failed" as const, ...f })),
+    // A carrier whose reconcile threw and waits again reads once, as failed.
+    ...pending.filter((p) => !failedUris.has(p.uri)).map((p) => ({ state: "pending" as const, ...p })),
+  ].map((row) => ({ cursor: JSON.stringify([row.state, row.uri]), row })).sort((a, b) => byCode(a.cursor, b.cursor));
+  const behind = after === null ? rows : rows.filter((r) => r.cursor > after);
+  const taken = behind.slice(0, SHORE_LIST_PAGE);
+  const next = behind.length > taken.length ? taken[taken.length - 1]!.cursor : null;
+  // THE OWED COMMITS ride the first page alone, whole: a file the checkout never tracked, by path.
+  const owed = after === null ? projector.untrackedCarriers() : { files: [], unread: [] };
+  return {
+    carriers: taken.map((r) => r.row), carrierCount: rows.length, drained, next,
+    ...(owed.files.length > 0 ? { untracked: owed.files } : {}),
+    ...(owed.unread.length > 0 ? { untrackedUnread: owed.unread } : {}),
+  };
+}
+
 /**
  * Answer one shore act against one projector. A refusal comes back as `{ ok: false, refusal, why }` under
  * a stable name; an act that ran comes back `{ ok: true, ... }`.
@@ -141,11 +195,15 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
   if (op === "settle") {
     // THE SETTLE WORD: answer once the projection the named records cause has run (`settled`). A bag that no
     // mirror of this island holds answers at once (`mirrored: false`): this island projects nothing of it.
+    // A carrier may name the causal heads its gesture landed (`heads`: a list of head hashes). The word follows
+    // them through the view, and it ends by name when the far side closes before they arrive.
+    const headsOf = (c: Record<string, unknown>): readonly string[] | null | undefined =>
+      c["heads"] === undefined ? undefined : Array.isArray(c["heads"]) && (c["heads"] as unknown[]).every((h) => typeof h === "string" && h !== "") ? (c["heads"] as string[]) : null;
     const carriers = Array.isArray(args["carriers"])
-      && (args["carriers"] as unknown[]).every((c) => c !== null && typeof c === "object" && text((c as Record<string, unknown>)["uri"]) !== null && text((c as Record<string, unknown>)["records"]) !== null)
-      ? (args["carriers"] as Array<{ uri: string; records: string }>).map((c) => ({ uri: c.uri, records: c.records }))
+      && (args["carriers"] as unknown[]).every((c) => c !== null && typeof c === "object" && text((c as Record<string, unknown>)["uri"]) !== null && text((c as Record<string, unknown>)["records"]) !== null && headsOf(c as Record<string, unknown>) !== null)
+      ? (args["carriers"] as Array<Record<string, unknown>>).map((c) => { const heads = headsOf(c); return { uri: c["uri"] as string, records: c["records"] as string, ...(heads ? { heads } : {}) }; })
       : null;
-    if (bag === null || carriers === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "settle names the bag the records landed in (`bag`) and each carrier with the hash its records render (`carriers`: `{ uri, records }`)" };
+    if (bag === null || carriers === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "settle names the bag the records landed in (`bag`) and each carrier with the hash its records render (`carriers`: `{ uri, records, heads? }`, `heads` a list of head hashes)" };
     const answer = await projector.settled(bag, carriers);
     if (!answer.mirrored) return { ok: true, op, bag, mirrored: false, settledCount: 0, elsewhereCount: 0, supersededCount: 0 };
     // Counts ride every answer; the rows of what never settled ride too (the outcome caps them past 32). A
@@ -155,6 +213,9 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     const counts = { settledCount: answer.settled.length, elsewhereCount: answer.elsewhere.length, supersededCount: answer.superseded.length, settled: answer.settled, elsewhere: answer.elsewhere, superseded: answer.superseded };
     if (answer.failed.length > 0) {
       return { ok: false, op, bag, refusal: "projection-failed", why: `the reconcile threw for ${answer.failed.length} carrier(s); their files stand as the failure left them`, failed: answer.failed, failedCount: answer.failed.length, ...(answer.stopped.length > 0 ? { stopped: answer.stopped, stoppedCount: answer.stopped.length } : {}), ...counts };
+    }
+    if (answer.closed.length > 0) {
+      return { ok: false, op, bag, refusal: "far-side-closed", why: `the far side closed before the heads of ${answer.closed.length} carrier(s) arrived; their records can no longer come through that link`, closed: answer.closed, closedCount: answer.closed.length, ...(answer.stopped.length > 0 ? { stopped: answer.stopped, stoppedCount: answer.stopped.length } : {}), ...counts };
     }
     return answer.stopped.length > 0
       ? { ok: false, op, bag, refusal: "projector-stopped", why: `the projection stopped before ${answer.stopped.length} carrier(s) settled`, stopped: answer.stopped, stoppedCount: answer.stopped.length, ...counts }
@@ -202,6 +263,30 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     return answer.took
       ? { ok: true, op, bag: named.bagId, uri, key, took: "records" }
       : { ok: false, op, refusal: "standoff-key-moved", why: answer.why ?? "the states moved while the answer travelled" };
+  }
+  if (op === "render") {
+    const uri = text(args["uri"]);
+    const key = text(args["key"]);
+    if (uri === null || key === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "render names a carrier (`uri`) and the standoff's key (`key`)" };
+    const stands = projector.standing().filter((s) => s.uri === uri && (text(args["bag"]) === null || s.bagId === args["bag"]));
+    const named = stands.find((s) => s.standoff === key);
+    if (named === undefined) {
+      return {
+        ok: false, op, refusal: stands.length === 0 ? "no-standoff-stands" : "standoff-key-moved",
+        why: stands.length === 0
+          ? `no standoff stands for ${uri} at this island's shore`
+          : `the standoff for ${uri} stands under key ${stands.map((s) => s.standoff).join(", ")}; the answer names ${key}`,
+      };
+    }
+    const render = projector.standoffRender(named.bagId, uri, key);
+    return render === null
+      ? { ok: false, op, refusal: "standoff-render-unheld", why: `the standoff for ${uri} holds no text render a merge can read (a sidecar, a pointer or a binary body)` }
+      : { ok: true, op, bag: named.bagId, uri, key, records: render.records, text: render.text };
+  }
+  if (op === "census") {
+    const after = args["after"] === undefined ? null : text(args["after"]);
+    if (args["after"] !== undefined && after === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "census names the page behind by the cursor the page before answered (`after`), or none for the first page" };
+    return { ok: true, op, ...(await shoreCensus(projector, after)) };
   }
   return { ok: false, op, refusal: "shore-op-unknown", why: `the shore verb carries ${SHORE_OPS.join(", ")}; it names no "${op}"` };
 }

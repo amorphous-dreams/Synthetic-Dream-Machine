@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/seats/opus-land-queue/` — 1 record(s) here, 1 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/seats/opus-land-queue/`
+
+The scratch planning records of `.lares-scratch/controller/seats/opus-land-queue/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 1 record(s) stand here and 1 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/seats/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[design|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/opus-land-queue/design]] | plan | 2026-11-01 | `design.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KjoexH5bp_IBp_xPgIMhWmXtrRseFzMIja4nuhSBABI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

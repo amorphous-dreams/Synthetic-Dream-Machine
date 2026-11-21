@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/cap-stack-b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94
+read: blind Opus over the first build 0d5eee8d0 (cured); Terra cold read at c5d7f4f5a = HOLD on three P2s (cleanup boundary, unsupported digest tag accepted as SHA-256, herm claim untested through real composition) -> cured; Terra re-read at 2103b33c2 = HOLD on test strength (witness bypassed the daemon island; cas-fetch raw existence; the flake wait) -> cured at b7ac04f3ab201fc3daa5a33b87eb2f9a7e170c94 (CI 42078809312 green). Terra confirmed no OTHER reader trusts an unsupported tag. Security-class paths: the capability record, worker-handle session-sign door, node-cas verification. Owed: workerData path behaviour, the herm-daemon inventory row.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0DBpOa9CdVmTYtJFMmoIvEqCHOyxnwSfsRQ26NdLluk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

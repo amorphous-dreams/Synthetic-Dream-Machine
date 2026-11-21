@@ -5,7 +5,7 @@
  * when its binding stands. A mount without that document has no default writable,
  * seeds an empty pointer, and refuses a save until the binding attaches.
  *
- * Canon: lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/shore-law
+ * Canon: lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/shore-law
  */
 
 import { describe, test, expect } from "vitest";
@@ -14,7 +14,6 @@ import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { routeBag, type CascadeWiki } from "../src/bag-cascade.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { IslandAdaptor, UnroutedSaveRefusal } from "../src/island-adaptor.js";
-import { HandGate } from "../src/hand-gate.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { CompositeStore, wikiSlotUri, wikiBagUri } from "@lararium/mesh";
 import type { LarDoc, DocHandle, LarTiddlerRecord, SlotUri } from "@lararium/mesh";
@@ -109,8 +108,9 @@ describe("buildIslandRecipe — the write-layer seed gate", () => {
     expect(await currentWikiBag("daemon", stores)).toBe("");
     expect(composite.defaultWritableBagId()).toBeNull();
     const adaptor = new IslandAdaptor(tw5, composite, "daemon");
-    await expect(adaptor.saveTiddler({ fields: { title: "lar:///before-attach", text: "held" } }))
-      .rejects.toBeInstanceOf(UnroutedSaveRefusal);
+    const held = adaptor.saveTiddler({ fields: { title: "lar:///before-attach", text: "held" } });
+    void adaptor.boundary().catch(() => {});
+    await expect(held).rejects.toBeInstanceOf(UnroutedSaveRefusal);
     expect((alerts[0] as { fields?: { "alert-kind"?: string } } | undefined)?.fields?.["alert-kind"]).toBe("unrouted-save");
 
   });
@@ -170,14 +170,14 @@ describe.skipIf(wikiSkip)(`buildIslandRecipe — the slot pointers reach the wik
     await seedDrained(engine);
     const wiki = engine.$tw.wiki as never as CascadeWiki & { addTiddler(t: unknown): void };
     expect(wiki.getTiddlerText!(SEEDED, ""), "the canon seed never reached the wiki").toBe("canon holds this");
-    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
+    await adaptor.handsRested();
     const held = (h: DocHandle<LarDoc>): string[] => Object.keys((h.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers);
     expect(held(working), "the seed wave echoed into the working layer").toEqual([]);
     expect(held(canon)).toEqual([SEEDED]);
     // CONTROL — a hand edit after the drain does leave, into the working layer the pointer names.
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
     wiki.addTiddler(new Tiddler({ title: "lar:///t/recipe/hand-edit", text: "typed" }));
-    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
+    await adaptor.handsRested();
     expect(held(working)).toEqual(["lar:///t/recipe/hand-edit"]);
     stop();
   }, 120_000);
@@ -208,12 +208,12 @@ describe.skipIf(wikiSkip)(`the outbound bridge holds until the seed stands${skip
     // The engine's own startup write, standing in the wiki ahead of the paced seed.
     wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted" }));
     await seedDrained(engine);
-    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
+    await adaptor.handsRested();
     expect(Object.keys(held(personal)), "the engine's startup story left for the personal layer").toEqual([]);
     expect(wiki.filterTiddlers("[all[tiddlers]tag[$:/tags/Alert]field:alert-kind[unrouted-save]]"), "a startup write raised a refusal").toEqual([]);
     // CONTROL — the wiki stands resident; a person opening a tiddler moves the story, and that leaves.
     wiki.addTiddler(new Tiddler({ title: "$:/StoryList", list: "GettingStarted [[Lady Aki]]" }));
-    await new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 150));
+    await adaptor.handsRested();
     expect(Object.keys(held(personal))).toEqual(["$:/StoryList"]);
     stop();
   }, 120_000);
@@ -250,11 +250,27 @@ describe.skipIf(wikiSkip)(`seedDrained — the checkpoint the kernel awaits befo
     expect(wiki.getTiddlerText!(CURRENT_WIKI_BAG, "")).toBe(wikiSlotUri(slug, "working"));
   }, 120_000);
 
-  test("★ the kernel awaits `seedDrained(tw5)` after the recipe and before `behavior.onEa` ★", () => {
+  test("the seed drain breathes as it works: a seed of several slices tells the kernel's breath once per slice before the checkpoint resolves; a drain nobody listens to still resolves (control)", async () => {
+    const seedOf = (slug: string, rows: number) => {
+      const canon = fakeHandle();
+      const tiddlers = (canon.doc() as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
+      for (let i = 0; i < rows; i++) { const title = `lar:///t/recipe/breath/${i}`; tiddlers[title] = { tiddler: { title, text: `row ${i}` } }; }
+      const engine = fakeTw5();
+      buildIslandRecipe({ tw5: engine, composite: new CompositeStore(), recipe: { wikiSlug: slug }, ready: [{ slot: wikiBagUri(slug), handle: canon }, { slot: wikiSlotUri(slug, "working"), handle: fakeHandle() }] });
+      return engine;
+    };
+    let breaths = 0;
+    await seedDrained(seedOf("breathing", 450), () => { breaths++; });
+    expect(breaths, "a slow drain that moves must read as moving: one breath per landed slice").toBeGreaterThanOrEqual(3);
+    // CONTROL: the same seed with no listener resolves as before.
+    await expect(seedDrained(seedOf("silent", 450))).resolves.toBeUndefined();
+  }, 120_000);
+
+  test("★ the kernel awaits `seedDrained(tw5, …)` after the recipe and before `behavior.onEa`, and hands it the breath's own tick ★", () => {
     const src = readFileSync(new URL("../src/sovereign-kernel.ts", import.meta.url), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     const recipe = src.indexOf("buildIslandRecipe({");
-    const drained = src.indexOf("await seedDrained(tw5)");
+    const drained = src.indexOf("await seedDrained(tw5, () => tick())");
     const behavior = src.indexOf("await behavior.onEa(");
     expect(recipe, "the kernel builds no recipe").toBeGreaterThan(-1);
     expect(drained, "the kernel never awaits the shore's seed checkpoint").toBeGreaterThan(recipe);

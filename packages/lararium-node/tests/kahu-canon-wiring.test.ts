@@ -17,8 +17,9 @@ const boot = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vess
 const code = boot.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`\\])\/\/.*$/gm, "$1");
 
 describe("the node boot's Kahu canon wiring", () => {
-  test("the keel's system canon rests on standKahuCanon, over the face pin the bootstrap carries", () => {
-    expect(code).toMatch(/systemCanon:\s*async\s*\(\)\s*=>\s*\{[\s\S]{0,400}standKahuCanon\(\{[\s\S]{0,300}PERSONA_GROUP_ID_TIDDLER/);
+  test("the keel's system canon rests on standKahuCanon, over the face sealed custody names (never the bootstrap's group text)", () => {
+    expect(code).toMatch(/systemCanon:\s*async\s*\(\)\s*=>\s*\{[\s\S]{0,400}standKahuCanon\(\{[\s\S]{0,300}personaGroupId: custodyGroup/);
+    expect(code).not.toMatch(/standKahuCanon\(\{[\s\S]{0,300}PERSONA_GROUP_ID_TIDDLER/);
   });
   test("no genesis office mints a system document and no reconcile writes a catalog row for one", () => {
     expect(code).not.toMatch(/mintLaresIfAbsent|mintLarariumIfAbsent|reconcileWellKnownTiddlers/);
@@ -27,8 +28,9 @@ describe("the node boot's Kahu canon wiring", () => {
     expect(code).toMatch(/\.\.\.\(kahuCanon\.lares \|\| kahuCanon\.lararium \? \{ systemCanon: true \} : \{\}\)/);
   });
   test("each bags/ mirror is granted only where the keel named that bag's document", () => {
-    expect(code).toMatch(/\.\.\.\(kahuCanon\.lares\s*\?\s*\[\{ bagId: LARES_DOC_URI,[^\]]*bags\/lares"/);
-    expect(code).toMatch(/\.\.\.\(kahuCanon\.lararium\s*\?\s*\[\{ bagId: LARARIUM_DOC_URI,[^\]]*bags\/lararium"/);
+    // The mirror's root splits by origin (`projectionRoots`): the grant names its bag's root through `bagRoot`.
+    expect(code).toMatch(/\.\.\.\(kahuCanon\.lares\s*\?\s*\[\{ bagId: LARES_DOC_URI,[^\]]*bagRoot\("lares"\)/);
+    expect(code).toMatch(/\.\.\.\(kahuCanon\.lararium\s*\?\s*\[\{ bagId: LARARIUM_DOC_URI,[^\]]*bagRoot\("lararium"\)/);
     expect(code).not.toMatch(/^\s*\{ bagId: LARES_DOC_URI,/m);                   // never a literal grant beside the conditional one
   });
 });

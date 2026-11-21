@@ -1,23 +1,22 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/capability-composition`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/capability-composition.mem"
-l-space = "stable"
+l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
-role = "one fractal OODA-HA helm commanding per-entity capability DAGs, separate kernel witnesses and inherited generative recipes"
-tags = ["api/pono/meme"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom/capability-composition"
+role      = "one fractal OODA-HA helm commanding per-entity capability DAGs, separate kernel witnesses and inherited generative recipes"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/capability-composition"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/yin-living>>
+<<~ ahu slot=`#/yin-living`>>
 
 !! Current executable relation
 
@@ -25,7 +24,7 @@ The architectural interpretation flows through `spatial_intent.py` → `place_ob
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 ! Identity carries capabilities; one helm carries their becoming
 
 A pet-named location holds relations among entities. An entity MAY grow through
@@ -35,7 +34,7 @@ not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 !! One OODA-HA authority
 
 * ''One helm.'' All living capability epochs MUST enter the executable
@@ -83,13 +82,13 @@ not an OpenCascade face, a mesh vertex, or one compulsory geometry language.
 
 <<~/ahu>>
 
-<<~ ahu #/executable>>
+<<~ ahu slot=`#/executable`>>
 
 This historical reading moved to [[ashes|#ashes]] within the same carrier. The original section bytes remain below verbatim. For live work use #/yin-living and the branch-current `HANDOFF.md`.
 
 <<~/ahu>>
 
-<<~ ahu #/typed-receipts-and-ci-gates>>
+<<~ ahu slot=`#/typed-receipts-and-ci-gates`>>
 
 !! Typed witnesses must not merge evidence authority
 
@@ -116,7 +115,7 @@ the stepwise red-first commits, not relaxing native evidence checks.
 
 <<~/ahu>>
 
-<<~ ahu #/git-ashes>>
+<<~ ahu slot=`#/git-ashes`>>
 
 !! Git ledger — no recursively embedded history
 
@@ -124,13 +123,13 @@ The operator released this carrier's displaced historical ahu from the living te
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/ooda-ha">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FsFxr7asmVs1TA0WQD-VHv1i7cNLLFjGdCncBpZ8aog
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GgCHQZjjZ2wwPvnJ-b2wWokv1hZrNyiDA3VU3NJDiAU`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

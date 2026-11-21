@@ -148,7 +148,7 @@ describe("daemon VM worker storage accounting", () => {
     repos.push(repo);
     const daemon = repo.create<LarDoc>(emptyLarDoc());
     const events: IslandMsg_Event[] = [];
-    const core = await openDaemonVm({
+    const core = await openDaemonVm({ caps: {},
       repo,
       daemonUrl: daemon.url,
       coreHash: null,

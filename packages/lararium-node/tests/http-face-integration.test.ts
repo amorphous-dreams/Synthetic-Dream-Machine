@@ -33,16 +33,16 @@ function projection(): PronaosProjection {
 }
 
 describe("production face dispatcher integration", () => {
-  test("keeps readiness, Pronaos, and Oracle ownership distinct with terminal refusals", async () => {
+  test("keeps readiness, Pronaos, and Flow ownership distinct with terminal refusals", async () => {
     const server = createServer(); servers.push(server);
     const dispatcher = mountHttpFaceDispatcher(server);
     const readiness = mountReadinessFace({ httpServer: server, state: createReadinessState(), standing: "lararium", dispatcher });
     const pronaos = mountPronaosReadFace(server, projection(), dispatcher);
-    const oracleUnregister = dispatcher.register({
-      name: "oracle-test",
-      routeKeys: ["oracle:/oracle"],
-      owns: (req) => new URL(req.url ?? "/", "http://localhost").pathname.startsWith("/oracle"),
-      handle: (_req, res) => { res.writeHead(200, { "content-type": "application/json" }); res.end(JSON.stringify({ face: "oracle" })); },
+    const flowUnregister = dispatcher.register({
+      name: "flow-test",
+      routeKeys: ["flow:/flow"],
+      owns: (req) => new URL(req.url ?? "/", "http://localhost").pathname.startsWith("/flow"),
+      handle: (_req, res) => { res.writeHead(200, { "content-type": "application/json" }); res.end(JSON.stringify({ face: "flow" })); },
     });
     const base = await origin(server);
 
@@ -55,16 +55,16 @@ describe("production face dispatcher integration", () => {
     const worker = await fetch(base + "/assets/wiki.worker-test.js");
     expect(worker.status).toBe(200);
     expect(await worker.text()).toBe("worker");
-    const oracle = await fetch(base + "/oracle/pointer");
-    expect(oracle.status).toBe(200);
-    expect(await oracle.text()).toBe(JSON.stringify({ face: "oracle" }));
+    const flow = await fetch(base + "/flow/pointer");
+    expect(flow.status).toBe(200);
+    expect(await flow.text()).toBe(JSON.stringify({ face: "flow" }));
     const undeclared = await fetch(base + "/undeclared");
     expect(undeclared.status).toBe(404);
     expect(undeclared.headers.get("cache-control")).toBe("no-store");
     const plainWs = await fetch(base + "/ws");
     expect(plainWs.status).toBe(404);
 
-    oracleUnregister();
+    flowUnregister();
     readiness.dispose();
     pronaos.dispose();
     dispatcher.dispose();

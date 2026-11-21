@@ -95,8 +95,7 @@ export function hasCapture(opts: CaptureCapOptions): IslandCap {
             gate_maxDepth: frame.gate.maxDepth,
           },
         });
-      // Pass ctx so the vessel can wire the IN-VM annotate ($tw.lares.captureAnnotateVm via ctx.tw5.$tw)
-      // — the parse/harvest runs inside this island's TW5 engine, not the worker around it.
+      // Pass ctx so the vessel wires the engine against this island's own TW5 engine.
       const e = makeEngine(post, ctx);
       engine = e;
       await e.recover(); // open sessions survive a restart (WAL replay)
@@ -108,6 +107,7 @@ export function hasCapture(opts: CaptureCapOptions): IslandCap {
       // `performance.now()`, matching the engine's own default clock (`makeCaptureEngine`): an
       // adversarial or operator wall-clock jump can neither stall a flush forever (set-back)
       // nor flush early / collapse the backoff instantly (set-forward).
+      // PACING: ticks pace local flush and retry work; the engine decides when work is due.
       timer = setInterval(() => {
         e.tick(performance.now()).catch((err: unknown) => {
           console.warn(`[has-capture] tick flush failed — WAL/backoff will retry: ${err instanceof Error ? err.message : String(err)}`);

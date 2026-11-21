@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/peer-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/k15-bonds/luna/peer-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/peer-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/peer-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! peer-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/k15-bonds/luna/peer-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/k15-bonds/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol-Bondwright: Lares (Tasked Spirit) · Ink-Clerk, Map-Wisp, Breach-Watch
+
+&lt;&lt;~ lares aim from="lar:&#47;/operator:operator@lararium/k15.bonds.map" -> to="lar:&#47;/bondwright:agent@lararium/census.endstate.orders">>
+&lt;&lt;~ set hud="aim" mode="draft" stance="philosopher" aperture="16/arc" ooda-ha="7/declare-glyphs" drift-ward="the census catches seed spellings, while transitive consumers may escape it">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-observe-live-bonds`>>
+
+!! 1. ✶ Observe — live bonds
+
+MEASURED: the census names 14 K15 exceptions across 12 files, while its token matcher only catches selected seed spellings (`tools/seed-census.mjs:10-38,65-76`). These groups cover every named exception; downstream callees still need an authority audit.
+
+* ''Place Individual/card.'' `foundThePlace` initializes a Keyhive Individual from `vesselSeed`, emits an identifier, ContactCard and secret Archive; `mintPlaceCard` repeats that mint (`packages/lararium-keyhive/src/ceremony-core.ts:255-286,290-304`). Node founding and joinee card filing load the place seed (`packages/lararium-node/src/commands/init.ts:398-405`; `src/place-card.ts:27-41`). Browser founding/admission passes its common seed into the same ceremonies, keeps the place Archive and face card separately (`packages/lararium-browser/src/open-browser-vessel.ts:568,695-722,768-800`). ''Bytes:'' yes: remove place Keyhive DID/card/archive and their gate presentation; a face card names its atom instead. Precede X0.
+* ''Bare place leaf.'' A face leaf already loads atom/card; the fallback loads place seed/card and signs a peer proof (`packages/lararium-node/src/leaf-identity.ts:41-57`). `carriageIdentity` selects that fallback for a faceless node or herm (`src/open-node-vessel.ts:3300-3307,3442`). Browser only constructs the face presentation; no joined face means no sovereign dial (`packages/lararium-browser/src/open-browser-vessel.ts:863-869,903`). ''Bytes:'' yes: retire place-arm ContactCard proof; retain a distinct public floor-card/carry proof at its floor gate.
+* ''Relay gate.'' Node derives the relay gate seed by HMAC of the place seed unless config supplies another seed (`packages/lararium-node/src/carriage-relay.ts:48-76`; `src/open-node-vessel.ts:1449`). Its public key pins a sibling's relay address (`src/open-node-vessel.ts:336-342`). Browser acts as dialer here, with its face atom signing the sibling channel and opening its seal (`packages/lararium-browser/src/open-browser-vessel.ts:1485-1502`); node already does the same (`packages/lararium-node/src/open-node-vessel.ts:2415-2434`). ''Bytes:'' yes: durable random relay public key, address fragment and stored secret replace derived key; old pins refuse or migrate explicitly.
+* ''Daemon Individual/auth.'' Node passes place seed/key to `daemonAuth` (`src/open-node-vessel.ts:2287-2300`); browser passes its common seed/key and Archive (`packages/lararium-browser/src/open-browser-vessel.ts:1320-1340`). The daemon initializes that Individual, checks its DID against the vessel key, and also initializes a separate atom Individual when worn (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:921-969`; `src/boot-daemon-keyhive.ts:100-138`). ''Bytes:'' yes: remove common Individual, its Archive and DID gate; boot face hives from selected atom and FCK sealed Archive, and a faceless daemon carries no Keyhive authority.
+* ''Device, join, sibling, internal asks.'' Browser seed still enters founding and daemon work (`open-browser-vessel.ts:701,771,1321`), though its edge countersign, dial, sibling sign/open already use atom (`:689-690,863-869,1499-1502`). Node likewise uses atom for device book, seat duties, sibling sign/open (`open-node-vessel.ts:1258-1266,1315-1317,2428-2434`), but still threads `vesselSeed` into daemon and carriage (`:2289,3197,3333,3455`). The `nodeSeedHex` carriage input drives cadence, not a proof (`packages/lararium-mesh/src/carriage-caps.ts:350,420`); replace its secret input with a public place identifier or random local jitter. ''Bytes:'' face edge/enrolment/daemon proof formats must name atom; old vessel-key signatures refuse. Cadence changes no identity bytes.
+* ''Floor children.'' `vesselFloorKeyDoor` supplies sync, carriage and flow pins (`open-node-vessel.ts:713,1375,1518`; `commands/fleet-join.ts:232`; `commands/nexus-contract.ts:267`; `main.ts:732`). The direct place seed signs carriage/floor acts (`commands/nexus-contract.ts:260-273`; `open-node-vessel.ts:1505`). ''Bytes:'' yes where a floor child or verifier pins the old key: derive only a public floor pin from the current place-KEL head and its allowed duty; retain the five framed duties, never a free signer (`w29-place-kel-lane.mem:34-36,54`). W14–W16 must change readers with writers.
+* ''CLI meme.'' Promotion passes the place-seed signer while the seat's DID names its proposer and approver (`packages/lares-cli/src/commands/meme.ts:1098-1119`). ''Bytes:'' yes: sign as the proved, explicitly selected face atom through its session; a faceless CLI refuses promotion. No automatic h0.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-orient-decide-authority-and-storage`>>
+
+!! 2. ⏿ Orient → ◇ Decide — authority and storage
+
+Operator canon: “Custody and identity read by capability, never by host” (`stable-founding-road.mem:208`); “A shared act never makes a shared secret” (`:207`); one Keyhive identity per PersonaGroup (`:203`). A session chooses ''one'' face from its sealed anchor and signed admission, then unlocks that face's FCK and atom; several mounted faces grant no union. A face's veil signs its dial, join, device edge, enrolment, sibling channel, daemon proof, internal face ask and meme. Each atom and Archive occupy D rows bound to PersonaGroup, row name and kind (`k15-wave-d-lane.mem:33-35`). An absent/locked face grants no fallback.
+
+Derived from those laws: retire the place Keyhive Individual, ContactCard and Archive rather than replace them with a second omnipotent key. A place KEL plus scoped online signer proves only its enumerated floor duties; a browser without a floor holds no place signer. A faceless herm signs carriage carrier, place floor pin, flow pointer, raise challenge or gate place finish only when its floor duty calls for one; it carries ciphertext and public cards, and refuses face gate, Keyhive creation, daemon face auth, group-secret open and meme signature. A floor-only node follows the same rule (`stable-founding-road.mem:207-208`; `w29-place-kel-lane.mem:36`). A foreign floor's public shelf needs its card pin, no private proof.
+
+''Operator choice, lean:'' relay gate authentication falls outside the five floor duties. Option A mints a random, durable, relay-only node S row with the relay service as principal and its protected service opener; option B rotates the relay protocol into a named sixth place duty under a new ruling. Lean A, with no derivation from place seed, no broad S unlock, no environment override and no face or daemon authority. A future browser relay gains the same capability only with its own named secret row. The current config-seed arm needs the same custody and pin audit (`carriage-relay.ts:74-76`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-act-build-order-files-lane-seams`>>
+
+!! 4. ▶ Act — build order, files, lane seams
+
+Use ''one K15 bond lane'' for the authority model and format migration, with small patches handed to active owners. First freeze a producer/consumer table for every old DID, ContactCard, Archive, device edge, relay pin, floor pin and signature; decide old-byte refusal and X0 readiness. Next split place founding from face founding and remove place Keyhive creation (`ceremony-core`, node `commands/init`, `place-card`, browser `open-browser-vessel`, `browser-vessel-identity`, `boot-daemon-keyhive`, `operator-daemon-behavior`). Then replace leaf proof and daemon/crossing dependencies (`leaf-identity`, both vessel opens, carriage caps). Mint relay S and rotate its address (`carriage-relay`, herm relay port). Move meme signer behind explicit face selection (`lares-cli/commands/meme`). Burn each census exception only after its replacement and positive control land.
+
+W14–W16 own floor pin/verifier changes in `place-floor-pin`, `admit-gate-pin`, `hearth-gate-pins`, `herm-carriage`, `nexus-contract`, `carry-bundle`, `browser-gate-pins`, `browser-floor-read`, browser card filing and web `main.ts`/`live-status.ts`; pass those hunks to their owner. D2 owns `tw5` port/island, hand gate, projection, web `projection-sink`, and node port hunks; alter the daemon-auth contract once, then let D2 adapt its boundary. G15 owns node `afterRollChain` and `build-plugin-tiddler`; send an atom-scoped interface, avoid parallel edits. X0 waits for all identity formats and the W14–W16 readers, not a date (`stable-founding-road.mem:545`). No suite ran; this handback maps the cut.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-hooko-reds-controls-prior-art`>>
+
+!! 3. ↺ Hoʻoko — reds, controls, prior art
+
+Run one ''place-seed thief'' across the table: it yields no face proof, Keyhive Individual, daemon face authority, relay identity or meme signature. Controls: selected unlocked A atom proves A's dial, enrolment, sibling, daemon and meme; B stays unopened; a faceless herm signs an allowed floor duty and carries public ciphertext; a separately opened relay S key proves only its relay address; a place card rotates its KEL head. Repeat on node and browser with A/B and no face. Refuse old-format credentials by name, and verify each positive on the same gate that rejects the thief (`stable-founding-road.mem:459,545`; `k15-custody-step-zero.mem:170-178`).
+
+Red pairs by bond: place Individual/card—thief cannot mint or restore either; A atom mints/rehydrates its face card. Bare leaf—thief cannot enter a face gate; A atom enters, faceless floor card reads only F. Relay—thief cannot reproduce relay pin; S row authenticates its pinned address. Daemon—thief cannot clear face gate or register A's bags; A's FCK/atom clear only A. Device/join/sibling/internal asks—thief cannot sign an edge, enrol or open group seal; A atom does each for A, while B and no-face refuse. Floor children—thief cannot sign outside five duties; the current place signer signs each allowed duty, and old head/foreign domain refuse. Meme—thief cannot promote; selected A atom promotes, faceless CLI refuses. Apply the same pair to browser where the capability exists.
+
+Prior art fits by boundary: [[KERI|https://trustoverip.github.io/kswg-keri-specification/]] supports pre-rotation and delegated control but a place-delegated face would expose the unwanted place link; [[Keyhive/Beelay|https://www.inkandswitch.com/project/keyhive/]] distinguishes individual authority from encrypted group access; [[Signal Sesame|https://signal.org/docs/specifications/sesame/]] permits per-device identity keys; [[Matrix cross-signing|https://spec.matrix.org/latest/client-server-api/#cross-signing]] separates user and device keys but its user master would link faces; [[WebAuthn|https://www.w3.org/TR/webauthn-3/]] supports scoped credentials, useful for FCK unlock, not a shared face identity. Derived: keep one name and one relation, with no global now and no PersonaGroup called a family.
+
+&lt;&lt;~ oracle "↯14 ✲ ⚂(3) ⁂:🜃◈⟁">>
+&lt;&lt;~ set hud="yield" drift-ward="trace transitive gate consumers before freezing old-byte refusal · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/bondwright:agent@lararium/k15.endstate.handed" -> to="?">>
+WORDS=1392
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MKImueqs3-FZtrcUEm4yrIOS-_RFlFMfVxPzrzclubw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -37,9 +37,9 @@ export type BagUrl = string;
  *   wela ("hot")  — live + reacting; handle in cache; the island's Worker runs.
  *   anu  ("cold") — torn down; URL known, doc not loaded; resume by spawn + `ea`.
  *
- * TWO states only. The `warm` (mahana) middle tier was cut: a suspended Worker
- * still holds its heap, so warm did NOT shed the memory this model exists to
- * bound, and it had no actor-system precedent (the Orleans/Akka two-state
+ * TWO states only, no `warm` (mahana) middle tier: a suspended Worker
+ * still holds its heap, so warm would NOT shed the memory this model exists to
+ * bound, and it carries no actor-system precedent (the Orleans/Akka two-state
  * virtual-actor model). Reintroduce only behind a measured resume-cost problem
  * AND a real memory-shedding suspend (isolate evicted, handle-cache retained).
  *
@@ -375,6 +375,10 @@ export class BagStowage {
   /** Start the background sweeper. Idempotent — calling twice is a no-op. */
   startSweeper(): void {
     if (this.sweeperTimer) return;
+    // Idle cooling reads a grain's silence, and no event says "idle" (the absence of a touch has no
+    // edge). The CAPACITY side already runs on events: enforceCap fires on every touch/load (above). This tick only
+    // frees handles that no one touched past `idle`; a missed tick delays a cooling, never a mount, seal or lock.
+    // LIVENESS: the tick below frees idle handles on a cadence; no event says "idle".
     this.sweeperTimer = setInterval(() => {
       void this.sweepOnce().catch((err) => {
         console.error("[residency] sweep crashed:", err);

@@ -33,7 +33,7 @@
 import { fencedSpans, maskedExec, type MaskSpan, META_OPEN_RE } from "@lararium/memetic-frame";
 /**
  * The media type comes from the ONE place that spells it. A hand-spelled constant drifts the moment
- * the real one moves, and a `type` that no longer matches simply stops projecting — no throw, no
+ * the real one moves, and a `type` that drifts from it simply stops projecting — no throw, no
  * diagnostic.
  */
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -48,6 +48,20 @@ export const SUBMODULES: readonly string[] = [
   "mempalace",
   "elyncia",
   "ftls",
+];
+
+/**
+ * Frozen specimens: files that stand as written on purpose. A fixture pins a grammar version for its
+ * own reader (the tree-sitter grammar's specimens), and a holding folder keeps lane logs and notes
+ * verbatim until the house reads them, so each one's form marks it frozen, never a straggler (working-procedures, "a `git ls-files '*.mem'` sweep
+ * reaches frozen fixtures"). They still declare, so a declaration-only finder enrolled them and every
+ * per-carrier law read their older form as drift. A grammar cut leaves them as they stand.
+ */
+export const FROZEN_SPECIMENS: readonly string[] = [
+  "packages/tree-sitter-memetic-wikitext/fixtures/specimens",
+  // The holding folder of the re-found's carry, kept verbatim (lane logs and transcripts quote whole frames) for a close
+  // read with the house's full capabilities; each piece folds into the house by O-TAKIAGE, never by the corpus laws.
+  "scratch/lares-scratch-2026-11-19",
 ];
 
 /** How a file says it carries: a doctype line, or its `type`. */
@@ -70,7 +84,7 @@ export interface CarrierDeclaration {
  * any file is written in.
  */
 function standsAlone(form: CarrierDeclarationForm, line: string): boolean {
-  if (form === "doctype") return /^<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>$/.test(line);
+  if (form === "doctype") return /^<<!DOCTYPE\s+type=`memetic-wikitext[^\n>]*>>$/.test(line);
   return ALONE_TYPE_RE.test(line);
 }
 
@@ -78,7 +92,7 @@ function standsAlone(form: CarrierDeclarationForm, line: string): boolean {
  * The doctype sigil a carrier opens with. It declares only standing alone on its line: inside a
  * comment it renders as nothing and reaches no reader, so it declares nothing.
  */
-const DOCTYPE_RE = /<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>/;
+const DOCTYPE_RE = /<<!DOCTYPE\s+type=`memetic-wikitext[^\n>]*>>/;
 
 /** A `.tid` field line, where no sigil may precede the fields. */
 const TID_TYPE_RE = new RegExp(String.raw`^\s*type\s*:\s*` + CARRIER_TYPE.replace("+", "\\+"), "m");
@@ -142,6 +156,20 @@ export function inSubmodule(rel: string): boolean {
   return SUBMODULES.some((s) => rel === s || rel.startsWith(s + "/"));
 }
 
+/** Whether a repo-relative path stands under a frozen-specimen dir. */
+export function inFrozenSpecimen(rel: string): boolean {
+  return FROZEN_SPECIMENS.some((s) => rel === s || rel.startsWith(s + "/"));
+}
+
+/**
+ * Whether a repo-relative path stands outside this repo's corpus: a vendored tree or a frozen
+ * specimen. The ONE path test the finder applies, and the one a gate walking `git ls-files` on its
+ * own reuses, so the corpus boundary reads the same everywhere.
+ */
+export function outsideCorpus(rel: string): boolean {
+  return inSubmodule(rel) || inFrozenSpecimen(rel);
+}
+
 /** A file that declares, with the declaration it carries. */
 export interface CarrierFile extends CarrierDeclaration {
   /** Repo-relative, forward-slashed — the spelling `git ls-files` reports. */
@@ -155,7 +183,7 @@ export interface CarrierFile extends CarrierDeclaration {
  * report reads the same twice.
  */
 /**
- * ONE WALK PER TREE PER PROCESS. The enumeration reads every tracked file's opening bytes; a witness
+ * ONE WALK PER TREE PER PROCESS. The enumeration reads every tracked file's bytes; a witness
  * that asks three times pays for three walks, and two corpus laws timed out at five seconds the first
  * time they did. A git working tree does not move under a running gate, so the answer is cached by
  * resolved root. A caller that has changed the tree and needs a fresh read calls `forgetCarrierFiles`.
@@ -187,15 +215,16 @@ export function readCarrierFiles(repo: string): CarrierFile[] {
 
   const out: CarrierFile[] = [];
   for (const rel of tracked) {
-    if (inSubmodule(rel)) continue;
-    let text: string;
-    // A file git tracks may still refuse to read as text — a symlink to nowhere, a binary blob.
-    // Refusing to read is refusing to declare.
-    try { text = readFileSync(join(repo, rel), "utf8"); } catch { continue; }
-    // The declaration stands near the top of every carrier this corpus holds; the cheap prefilter
-    // keeps the fence mask off the several thousand files that name neither the doctype nor the type.
-    if (!text.includes("DOCTYPE") && !text.includes(CARRIER_TYPE)) continue;
-    const d = declaresCarrier(text);
+    if (outsideCorpus(rel)) continue;
+    let bytes: Buffer;
+    // A file git tracks may still refuse to read — a symlink to nowhere. Refusing to read is refusing to declare.
+    try { bytes = readFileSync(join(repo, rel)); } catch { continue; }
+    // THE PREFILTER READS BYTES, AND ONLY A FILE THAT NAMES THE DOCTYPE OR THE TYPE DECODES. Both needles spell in
+    // ASCII, and UTF-8 decoding keeps every ASCII byte as itself, so the bytes hold a needle exactly where the text
+    // would. The tracked tree carries hundreds of megabytes of maps, scans and fixtures; decoding each to a string to
+    // ask one `includes` cost the walk two seconds, charged to whichever corpus law asked first.
+    if (!bytes.includes("DOCTYPE") && !bytes.includes(CARRIER_TYPE)) continue;
+    const d = declaresCarrier(bytes.toString("utf8"));
     if (d) out.push({ path: rel, ...d });
   }
   WALKED.set(repo, out);

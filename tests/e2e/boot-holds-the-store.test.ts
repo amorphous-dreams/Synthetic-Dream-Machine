@@ -106,6 +106,7 @@ describe("a booting vessel holds its store", () => {
       expect(bootLog.includes(CLAIMED), "the vessel claimed a store a direct act still held").toBe(false);
       // A command run now meets the act's own answer at the store's name. It refuses by name and opens nothing.
       besideTheAct = via(await cli(PROBE));
+      // barrier: the vessel said it waits (word(WAITS)) and the probe command answered, both awaited above
       expect(besideTheAct, "a command opened the store beside a direct act").not.toBe("direct");
       expect(besideTheAct, "a command reached a vessel that held nothing yet").not.toBe("daemon");
       expect(besideTheAct, "the refusal names the store the act holds").toMatch(/^error:.*store/i);

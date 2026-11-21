@@ -68,8 +68,8 @@ describe("a named parameter is written key=value", () => {
 
   test("★ a scheme colon is never a separator ★", () => {
     for (const src of [
-      '<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>',
-      '<<~ aka lar:///ha.ka.ba/turn?confidence=P:14#/normative-language>>',
+      '<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>',
+      '<<~ aka uri=`lar:///ha.ka.ba/turn?confidence=P:14#/normative-language`>>',
       '<<~ kau t(u:"ni:///sha-256;abc")>>'.replace('u:', 'u='),
       'A line naming ni:///sha-256;abc and https://example.com in prose.',
     ]) {
@@ -164,11 +164,12 @@ describe("★ a DEFINITION under any shelf spelling keeps its colon ★", () => 
     }
   });
 
-  test("CONTROL: a call-side `param:value` still takes the equals sign; a call-side positional still quotes", () => {
+  test("CONTROL: a call-side `param:value` still takes the equals sign; a named ticked value reads whole and never moves", () => {
     expect(norm('<<~ kahea greeting(name:"Operator")>>')).toBe('<<~ kahea greeting(name="Operator")>>');
     expect(norm('<<~ procedure-call x(a:"1")>>')).toBe('<<~ procedure-call x(a="1")>>');
-    const positional = normalizeMemeSource('<<~ loulou lar:///ha.ka.ba/x>>', { grammar: true }).text;
-    expect(positional).toMatch(/<<~ loulou "lar:\/\/\/ha\.ka\.ba\/x">>|<<~ loulou lar:\/\/\/ha\.ka\.ba\/x>>/);
+    // The kupono cut retired the positional slot: a call names every value, so nothing is left to quote.
+    const named = normalizeMemeSource('<<~ loulou uri=`lar:///ha.ka.ba/x`>>', { grammar: true }).text;
+    expect(named).toBe('<<~ loulou uri=`lar:///ha.ka.ba/x`>>');
   });
 
   test("★ a call SHOWN inside a code span or a fence declares nothing and never moves ★", () => {

@@ -1,24 +1,23 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/poc0">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/poc0`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/poc0.mem"
-l-space = "stable"
+l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
-mana = 14
-manao = 14
-manaoio = 14
-role = "first unscaled Necrospire image witness; real operator steering and source-specific PoC 0 receipt"
-tags = ["api/pono/meme"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom/poc0"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom/poc0"
+mana      = 14
+manao     = 14
+manaoio   = 14
+role      = "first unscaled Necrospire image witness; real operator steering and source-specific PoC 0 receipt"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/poc0"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/poc0"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! PoC 0: A source without a known camera
 
@@ -39,7 +38,7 @@ reads as a constructive-grammar ceiling, not as measurement certainty.
 
 <<~/ahu>>
 
-<<~ ahu #/operator-and-model>>
+<<~ ahu slot=`#/operator-and-model`>>
 
 !! Two pilots at one helm
 
@@ -58,7 +57,7 @@ reads as a constructive-grammar ceiling, not as measurement certainty.
 
 <<~/ahu>>
 
-<<~ ahu #/hard-reference-talk-story>>
+<<~ ahu slot=`#/hard-reference-talk-story`>>
 
 !! The hard-reference fork remains open at the Operator's hand
 
@@ -77,6 +76,6 @@ choice of method diversity versus architectural/circulation diversity.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/witness">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 
-<<^ code="&#x0003;">>ni:///sha-256;kb2aEL59OpHaABtDm5GdNQTQRAz4xTiW6atvoulowVc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2u4r3lLHK2OtJJiv8mxU39v6FnJ-C_tT-ejD3JjiFSg`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

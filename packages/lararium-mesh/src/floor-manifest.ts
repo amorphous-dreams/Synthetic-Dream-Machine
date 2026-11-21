@@ -1,6 +1,7 @@
 /**
- * floor-manifest — a CID names history-free system snapshots beside the engine CIDs.
- * The floor lends every wiki a read-only @oracle face; edits copy into that wiki's
+ * floor-manifest — a CID names one history-free snapshot per house-canon bag beside the engine digest and the plugins offering
+ * (`lararium-floor`: `snapshots` keyed by slug; a manifest that names any other format refuses by naming the shape it
+ * lacks). The floor lends every wiki a read-only oracle-floor face; edits copy into that wiki's
  * working layer. Kit: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane, first slice.
  */
 
@@ -8,27 +9,73 @@ import { getAllChanges, load, save } from "@automerge/automerge";
 import { sha256HexBytesSync } from "./crypto.js";
 import { pinnedDoc } from "./pinned-doc.js";
 import { storedRecord } from "./stored-record.js";
-import { plainRecord, type StoredLarRecord } from "./stored-value.js";
-import type { LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
+import { plainRecord, ownEntry, hasOwnEntry, type StoredLarRecord } from "./stored-value.js";
+import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
+import { docPrototypeKeyFault } from "./prototype-key-shore.js";
+import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
+import { bagUri } from "./lar-uris.js";
+import type { CapTier } from "./cap-tier.js";
+import type { PluginOffering } from "./plugin-offering.js";
 
-export const FLOOR_MANIFEST_FORMAT = "lararium-floor/v1";
+/** The floor manifest's shape name. It carries no counter: a shape reads by its fields, and its bytes name it (the CID). */
+import { FLOOR_MANIFEST_FORMAT } from "./wire-names.js";
+export { FLOOR_MANIFEST_FORMAT };
 /** The seed witness row naming the genesis floor's manifest CID (sha256 hex) in its `cid` field, shaped as the region witnesses stand. */
 export const GENESIS_FLOOR_TIDDLER = "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor";
+/** The snapshots every floor carries: the system canon, house canon on every vessel. */
+export const FLOOR_REQUIRED_SLUGS: readonly string[] = SYSTEM_CANON_SLUGS;
 
+/**
+ * THE FLOOR CARRIES PUBLIC BAGS ALONE. Every recipe composes the floor read-only by a public CID, a faceless browser at the
+ * veil among its readers, so the floor's holder-set reads `{world}`: a bag rides it only where the bag's OWN declaration
+ * (`meta.mem` `cap-tier`) names `public`. A bag declared `contract`, `personagroup` or `veil` reaches a reader through its
+ * realm document and the cap that tier names, never through a snapshot. The system canon (`FLOOR_REQUIRED_SLUGS`) stands on
+ * every floor. Derived from the declaration at each cut; no slug list decides.
+ */
+export function floorCarriesTier(tier: CapTier): boolean { return tier === "public"; }
+
+/** The mime the plugins offering record rides in a seed's blob rows: never `application/json`, so it never loads as a boot plugin. */
+export const FLOOR_OFFERING_MIME = "application/vnd.lararium.plugin-offering+json";
+/** The seed blob row id the genesis floor's plugins offering record stands under. */
+export const FLOOR_OFFERING_BLOB_ID = "floor-plugin-offering";
+
+/** Null where `offered` names exactly the {id, sha256} pairs of `mount`, else the first id that differs. Pure. */
+export function floorOfferingSetDiff(
+  offered: readonly { readonly id: string; readonly sha256: string }[],
+  mount: readonly { readonly id: string; readonly sha256: string }[],
+): string | null {
+  const want = new Map(mount.map((r) => [r.id, r.sha256]));
+  const have = new Map(offered.map((r) => [r.id, r.sha256]));
+  for (const [id, sha] of want) if (have.get(id) !== sha) return `${id} ${have.has(id) ? "carries other bytes" : "rides the mount but not the offering"}`;
+  for (const id of have.keys()) if (!want.has(id)) return `${id} rides the offering but not the mount`;
+  return null;
+}
+
+/**
+ * A floor manifest keys ONE snapshot per house-canon bag (`houseCanonSlugs`), encoded with its slugs sorted; `lares` and
+ * `lararium` always stand in it. Beside them: `engine`, the core's folded digest, and `plugins`, the CAS address (sha256 hex)
+ * of ONE signed PluginOffering record carrying every non-core blob a mount loads (`floor-offering.ts`), so a release's bytes
+ * travel with it. The floor names no grammar: the parser's bytes ride in the offering, and the formal grammar rides canon.
+ */
 export interface FloorManifest {
   readonly format: typeof FLOOR_MANIFEST_FORMAT;
   readonly engine: string;
-  readonly grammar: string;
   readonly plugins: string;
-  readonly lares: string;
-  readonly lararium: string;
+  readonly snapshots: Readonly<Record<string, string>>;
 }
 
-const MANIFEST_KEYS = ["format", "engine", "grammar", "plugins", "lares", "lararium"] as const;
+const MANIFEST_KEYS = ["format", "engine", "plugins", "snapshots"] as const;
+const SCALAR_KEYS = ["format", "engine", "plugins"] as const;
+const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const CONTROL = /[\u0000-\u001f\u007f]/;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8", { fatal: true });
+
+/** What a manifest naming another format lacks: the floor's own format name, over one snapshot per house-canon bag. */
+function formatLack(format: unknown): string {
+  return `Floor manifest names the format ${JSON.stringify(format)}, not ${JSON.stringify(FLOOR_MANIFEST_FORMAT)}: it lacks the floor shape, one snapshot per house-canon bag under \`snapshots\``;
+}
 
 export class FloorManifestRefusal extends Error {
   readonly code: string;
@@ -49,18 +96,37 @@ export class FloorWriteRefusal extends Error {
   }
 }
 
-/** Encode only the fixed fields, in their fixed order. */
+/** The manifest's slugs, sorted: the order its bytes encode and every reader walks. */
+export function floorSlugs(m: FloorManifest): string[] {
+  return Object.keys(m.snapshots).sort();
+}
+
+/** Encode only the fixed fields, in their fixed order, the snapshot slugs sorted. */
 export function floorManifestBytes(m: FloorManifest): Uint8Array {
-  for (const key of MANIFEST_KEYS) {
+  for (const key of SCALAR_KEYS) {
     const value = m?.[key];
     if (typeof value !== "string" || value.length === 0 || CONTROL.test(value)) {
       throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest field: ${key}`);
     }
   }
-  return encoder.encode(JSON.stringify({
-    format: m.format, engine: m.engine, grammar: m.grammar,
-    plugins: m.plugins, lares: m.lares, lararium: m.lararium,
-  }));
+  if (m.format !== FLOOR_MANIFEST_FORMAT) throw new FloorManifestRefusal("floor-manifest-format", formatLack(m.format));
+  if (!HEX64.test(m.plugins)) throw new FloorManifestRefusal("floor-manifest-malformed", "Invalid floor manifest field: plugins names no offering record's CAS address (sha256 hex)");
+  const snaps = m.snapshots;
+  if (snaps === null || typeof snaps !== "object" || Array.isArray(snaps)) {
+    throw new FloorManifestRefusal("floor-manifest-malformed", "Invalid floor manifest field: snapshots");
+  }
+  const snapshots: Record<string, string> = {};
+  for (const slug of Object.keys(snaps).sort()) {
+    const cid = (snaps as Record<string, unknown>)[slug];
+    if (!SLUG.test(slug) || typeof cid !== "string" || cid.length === 0 || CONTROL.test(cid)) {
+      throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest snapshot: ${slug}`);
+    }
+    snapshots[slug] = cid;
+  }
+  for (const slug of FLOOR_REQUIRED_SLUGS) {
+    if (!Object.hasOwn(snapshots, slug)) throw new FloorManifestRefusal("floor-manifest-malformed", `Floor manifest names no ${slug} snapshot`);
+  }
+  return encoder.encode(JSON.stringify({ format: m.format, engine: m.engine, plugins: m.plugins, snapshots }));
 }
 
 export function floorManifestCid(m: FloorManifest): string {
@@ -74,8 +140,13 @@ export function readFloorManifest(bytes: Uint8Array):
     const value: unknown = JSON.parse(decoder.decode(bytes));
     if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error("Manifest must hold one object");
     const raw = value as Record<string, unknown>;
+    // EVERY OTHER FORMAT REFUSES BY THE SHAPE IT LACKS: a floor names its format `lararium-floor` and keys one snapshot per
+    // house-canon bag, and no reader folds a manifest named or keyed any other way.
     if (raw.format !== FLOOR_MANIFEST_FORMAT && typeof raw.format === "string") {
-      return { refusal: "floor-manifest-format", reason: `Unknown floor manifest format: ${raw.format}` };
+      return { refusal: "floor-manifest-format", reason: formatLack(raw.format) };
+    }
+    if (Object.hasOwn(raw, "grammar")) {
+      throw new Error("Manifest names a grammar field: a floor carries none, and the parser's bytes ride in the plugins offering");
     }
     if (Object.keys(raw).length !== MANIFEST_KEYS.length || MANIFEST_KEYS.some((key) => !Object.hasOwn(raw, key))) {
       throw new Error("Manifest fields differ from the fixed format");
@@ -106,7 +177,7 @@ function ordered(value: unknown): unknown {
 export function cutFloorSnapshot(rows: Readonly<Record<string, LarTiddlerRecord>>): FloorSnapshot {
   const tiddlers: Record<string, StoredLarRecord> = {};
   for (const title of Object.keys(rows).sort()) {
-    const row = rows[title];
+    const row = ownEntry(rows, title);
     if (!row || row.tiddler?.title !== title) {
       throw new FloorManifestRefusal("floor-snapshot-malformed", `Snapshot title differs from row: ${title}`);
     }
@@ -124,6 +195,9 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
       return { refusal: "floor-snapshot-cid-mismatch", reason: "Snapshot bytes differ from their CID" };
     }
     const doc = load<Record<string, unknown>>(bytes);
+    // A prototype key refuses ahead of every by-key read (`prototype-key-shore.ts`; KEEP: a live hostile form).
+    const poisoned = docPrototypeKeyFault(doc);
+    if (poisoned) throw new Error(`prototype-key: ${poisoned}`);
     if (getAllChanges(doc).length !== 1 || Object.keys(doc).length !== 1 || !Object.hasOwn(doc, "tiddlers")) {
       throw new Error("Snapshot must hold one pinned change and its tiddlers map");
     }
@@ -151,8 +225,54 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
   }
 }
 
+/**
+ * CUT A FLOOR FROM LIVE CANON: a fresh snapshot for each slug whose rows the caller read off its canon document (a promotion's
+ * writes among them), every other slug keeping the prior floor's snapshot, and the engine CIDs carried from the prior manifest.
+ * A live row keeps its `tiddler` fields alone (meta, residency stamps and tombstones stay out), so one canon cuts one CID on
+ * every vessel; the floor the release names is the floor a reader resolves. It writes nothing: the caller stages the blobs.
+ */
+export function cutCanonFloor(args: {
+  readonly prior: FloorManifest;
+  readonly canon: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
+  /** Slugs the prior floor names that this cut leaves off (a bag whose declared tier rides no floor of this cut, `floorCarriesTier`). */
+  readonly drop?: readonly string[];
+  /** The engine digest this vessel's genesis names. A prior whose engine differs refuses `floor-engine-unoffered`: no cut offers an engine. */
+  readonly genesisEngine?: string;
+}): { readonly manifest: FloorManifest; readonly manifestCid: string; readonly manifestBytes: Uint8Array; readonly snapshots: Readonly<Record<string, FloorSnapshot>> } {
+  if (args.genesisEngine !== undefined && args.prior.engine !== args.genesisEngine) {
+    throw new FloorManifestRefusal("floor-engine-unoffered", `The prior floor names engine ${args.prior.engine}, not the ${args.genesisEngine} this genesis names; a canon cut carries the engine and never offers one`);
+  }
+  const snapshots: Record<string, FloorSnapshot> = {};
+  const cids: Record<string, string> = { ...args.prior.snapshots };
+  for (const slug of args.drop ?? []) delete cids[slug];
+  for (const slug of Object.keys(args.canon).sort()) {
+    if (!SLUG.test(slug)) throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest snapshot: ${slug}`);
+    const rows: Record<string, LarTiddlerRecord> = {};
+    for (const [title, record] of Object.entries(args.canon[slug]!)) {
+      if (!record || record.meta?.deleted === true) continue;
+      const tiddler: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(record.tiddler as Record<string, unknown>)) {
+        if (k === "bag" || k === "$origin-bag" || v === undefined || v === null) continue;
+        tiddler[k] = Array.isArray(v) ? [...v] : v;
+      }
+      rows[title] = { tiddler: { ...tiddler, title } as LarTiddlerRecord["tiddler"] };
+    }
+    snapshots[slug] = cutFloorSnapshot(rows);
+    cids[slug] = snapshots[slug]!.cid;
+  }
+  const manifest: FloorManifest = { format: args.prior.format, engine: args.prior.engine, plugins: args.prior.plugins, snapshots: cids };
+  const manifestBytes = floorManifestBytes(manifest);
+  return { manifest, manifestCid: sha256HexBytesSync(manifestBytes), manifestBytes, snapshots };
+}
+
+/** A floor resolved whole: its manifest and each slug's snapshot rows, keyed by the manifest's slugs. */
+export interface ResolvedFloor {
+  readonly manifest: FloorManifest;
+  readonly snapshots: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
+}
+
 export async function resolveFloor(manifestCid: string, resolveByCid: (cid: string) => Promise<Uint8Array | null>): Promise<
-  | { readonly manifest: FloorManifest; readonly lares: Readonly<Record<string, LarTiddlerRecord>>; readonly lararium: Readonly<Record<string, LarTiddlerRecord>> }
+  | ResolvedFloor
   | { readonly refusal: "floor-absent" | "floor-manifest-format" | "floor-manifest-malformed" | "floor-snapshot-cid-mismatch" | "floor-snapshot-malformed"; readonly reason: string }> {
   try {
     const manifestBytes = await resolveByCid(manifestCid);
@@ -163,30 +283,67 @@ export async function resolveFloor(manifestCid: string, resolveByCid: (cid: stri
     const opened = readFloorManifest(manifestBytes);
     if ("refusal" in opened) return opened;
     const { manifest } = opened;
-    const laresBytes = await resolveByCid(manifest.lares);
-    if (!laresBytes) return { refusal: "floor-absent", reason: `Lares snapshot absent: ${manifest.lares}` };
-    const lares = openFloorSnapshot(laresBytes, manifest.lares);
-    if ("refusal" in lares) return lares;
-    const larariumBytes = await resolveByCid(manifest.lararium);
-    if (!larariumBytes) return { refusal: "floor-absent", reason: `Lararium snapshot absent: ${manifest.lararium}` };
-    const lararium = openFloorSnapshot(larariumBytes, manifest.lararium);
-    if ("refusal" in lararium) return lararium;
-    return { manifest, lares: lares.rows, lararium: lararium.rows };
+    const snapshots: Record<string, Readonly<Record<string, LarTiddlerRecord>>> = {};
+    for (const slug of floorSlugs(manifest)) {
+      const cid = manifest.snapshots[slug]!;
+      const bytes = await resolveByCid(cid);
+      if (!bytes) return { refusal: "floor-absent", reason: `Floor snapshot ${slug} absent: ${cid}` };
+      const snap = openFloorSnapshot(bytes, cid);
+      if ("refusal" in snap) return { refusal: snap.refusal, reason: `${slug}: ${snap.reason}` };
+      snapshots[slug] = snap.rows;
+    }
+    return { manifest, snapshots };
   } catch (error) {
     return { refusal: "floor-absent", reason: String(error) };
   }
 }
 
+/**
+ * The CIDs a floor names: the manifest's own, each snapshot's (slugs sorted) and the plugins offering record's; handed the
+ * offering that record holds, each blob it carries too (sorted by id, each CID once). A caller holding no offering bytes
+ * still names the record, and a reader that resolves it widens to the blobs.
+ */
+export function floorBlobCids(manifestCid: string, m: FloorManifest, offering?: Pick<PluginOffering, "blobs">): string[] {
+  const cids = [manifestCid, ...floorSlugs(m).map((slug) => m.snapshots[slug]!), m.plugins];
+  const seen = new Set(cids);
+  const blobs = [...(offering?.blobs ?? [])].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const blob of blobs) if (!seen.has(blob.sha256)) { seen.add(blob.sha256); cids.push(blob.sha256); }
+  return cids;
+}
+
+/** Each snapshot's rows in the manifest's slug order: the read-only layers the oracle floor stacks. */
+export function floorRecordsInOrder(floor: ResolvedFloor): Readonly<Record<string, LarTiddlerRecord>>[] {
+  return floorSlugs(floor.manifest).map((slug) => floor.snapshots[slug]!);
+}
+
+/**
+ * A BAG'S OWN SNAPSHOT OFF A RESOLVED FLOOR, by bag uri (`lar:///ha.ka.ba/bags/<slug>`): the rows of the one slug the manifest
+ * names, or null where the floor carries no snapshot of it. The oracle's read face stacks every snapshot into one layer; a door
+ * that reads ONE house canon bag from the floor (a face that holds no read on the live document) asks here.
+ */
+export function floorCanonReader(floor: ResolvedFloor): (bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null {
+  const prefix = bagUri("");
+  return (bag) => {
+    const slug = bag.startsWith(prefix) ? bag.slice(prefix.length) : "";
+    return slug.length > 0 && hasOwnEntry(floor.snapshots, slug) ? floor.snapshots[slug]! : null;
+  };
+}
+
 export function floorReadFace(opts: {
   readonly rows: readonly Readonly<Record<string, LarTiddlerRecord>>[];
   readonly base?: LarTiddlerStore;
-}): LarTiddlerStore {
+  /** The slot this face stands in: every change it tells carries it, as a doc slot's own replay does. */
+  readonly bagId?: string;
+}): LarTiddlerStore & { emitInitialReplay(): void; markSyncComplete(): void } {
   const rowFor = (title: string): LarTiddlerRecord | null => {
-    for (const rows of opts.rows) if (Object.hasOwn(rows, title)) return rows[title] ?? null;
+    for (const rows of opts.rows) if (hasOwnEntry(rows, title)) return ownEntry(rows, title) ?? null;
     return null;
   };
-  const shadows = (title: string): boolean => opts.rows.some((rows) => Object.hasOwn(rows, title));
+  const shadows = (title: string): boolean => opts.rows.some((rows) => hasOwnEntry(rows, title));
   const baseReader = opts.base as (LarTiddlerStore & { readNow?: (title: string) => { record: LarTiddlerRecord | null; heads?: readonly string[] } }) | undefined;
+  const replaying = opts.base as (LarTiddlerStore & { emitInitialReplay?: () => void; markSyncComplete?: () => void }) | undefined;
+  const listeners = new Set<(change: LarTiddlerChange) => void>();
+  const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: opts.bagId ?? "oracle-floor" };
   return {
     async get(title) { return shadows(title) ? rowFor(title) : (opts.base?.get(title) ?? null); },
     ...(typeof baseReader?.readNow === "function" ? {
@@ -212,8 +369,25 @@ export function floorReadFace(opts: {
     async tombstone(title) { throw new FloorWriteRefusal(title); },
     async remove(title) { throw new FloorWriteRefusal(title); },
     subscribe(fn: (change: LarTiddlerChange) => void) {
-      return opts.base?.subscribe((change) => { if (!shadows(change.title)) fn(change); }) ?? (() => {});
+      listeners.add(fn);
+      const off = opts.base?.subscribe((change) => { if (!shadows(change.title)) fn(change); }) ?? (() => {});
+      return () => { listeners.delete(fn); off(); };
     },
+    // THE FLOOR REACHES THE WIKI: the recipe replays each slot to the projections it fans (the island adaptor that lands records
+    // in the engine), and the face replays its pinned rows first-wins, then the live seed's replay beneath, filtered of every title
+    // a floor row shadows. Without it the floor read through the composite and never landed in an engine.
+    emitInitialReplay() {
+      const seen = new Set<string>();
+      for (const rows of opts.rows) for (const [title, record] of Object.entries(rows)) {
+        if (seen.has(title)) continue;
+        seen.add(title);
+        if (record.meta?.deleted) continue;
+        const change: LarTiddlerChange = { title, record, origin, ...(opts.bagId !== undefined ? { bag: opts.bagId } : {}) };
+        for (const fn of [...listeners]) fn(change);
+      }
+      replaying?.emitInitialReplay?.();
+    },
+    markSyncComplete() { replaying?.markSyncComplete?.(); },
     async getHeads() { return null; },
   };
 }

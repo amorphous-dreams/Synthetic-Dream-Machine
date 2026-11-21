@@ -3,10 +3,10 @@
  *
  * The emitter lives next door (genesis-doc.ts: buildGenesisDoc /
  * verifyGenesisArtifact); this module carries the receiving side every
- * vessel runs: validate bytes → import → post-import verify, and the
- * CID-diverge reconcile. This logic once lived twice —
- * genesis-artifact.ts (node) ⇆ browser-genesis.ts — and drifted
- * (record shape, authority string). One hull now; the platform
+ * vessel runs: validate bytes → import → post-import verify. The island
+ * stays the founding record: no path merges one genesis document into
+ * another, and a differing shipped seed stays an offer. One hull, so the node and browser intake
+ * cannot drift apart on record shape or authority string; the platform
  * wrappers keep only their byte SOURCES (fs · bundle/IDB/OPFS/peer)
  * and their held offices (mintLaresIfAbsent stays in the node genesis
  * office — the gate enforces by placement).
@@ -19,21 +19,11 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { load as automergeLoad } from "@automerge/automerge";
 import type { LarDoc } from "./base-doc.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
-import { plainField } from "./stored-value.js";
+import { ownEntry } from "./stored-value.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
-import {
-  GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  materializeGenesisDoc, oracleGenesisDocUrl, type GenesisSeed,
-} from "./genesis-doc.js";
+import { materializeGenesisDoc, oracleGenesisDocUrl, type GenesisSeed } from "./genesis-doc.js";
 import { resolveBootDoc } from "./boot-resolver.js";
-import { storedLarRecord } from "./stored-record.js";
-
-/** Read a region content-CID recorded in a live/incoming island doc, or null when absent. */
-function regionCid(handle: DocHandle<LarDoc>, title: string): string | null {
-  const cid = plainField(handle.doc()?.tiddlers?.[title], "cid");
-  return typeof cid === "string" ? cid : null;
-}
-const short = (c: string | null): string => c?.slice(0, 12) ?? "none";
+import { assertNoPrototypeKeys } from "./prototype-key-shore.js";
 
 /**
  * Validate genesis bytes before any import: Automerge format, TW5 core blob,
@@ -47,13 +37,15 @@ export function validateGenesisBytes(bytes: Uint8Array, label: string): LarDoc {
   } catch (err) {
     throw new Error(`[${label}] genesis bytes failed Automerge.load() validation: ${err}`);
   }
-  if (!preview.blobs?.[ENGINE_CORE_ID]) {
+  // Every by-key read below (`blobs`, `tiddlers`) stands on own keys only: a prototype key refuses by name.
+  assertNoPrototypeKeys(preview, `${label}: genesis bytes`);
+  if (!ownEntry(preview.blobs, ENGINE_CORE_ID)) {
     throw new Error(
       `[${label}] genesis artifact missing TW5 core blob (${ENGINE_CORE_ID}) — ` +
       `CID mismatch or corrupt artifact; rebuild genesis`,
     );
   }
-  if (!preview.blobs?.[LARES_MEMETIC_WIKITEXT_PLUGIN_URI]) {
+  if (!ownEntry(preview.blobs, LARES_MEMETIC_WIKITEXT_PLUGIN_URI)) {
     throw new Error(
       `[${label}] genesis artifact missing packed Lares TW5 plugin — rebuild genesis after build:plugin`,
     );
@@ -77,7 +69,7 @@ export async function importGenesisIsland(
   await handle.whenReady();
 
   const doc = handle.doc();
-  if (!doc?.blobs?.[ENGINE_CORE_ID]) {
+  if (!doc || !ownEntry(doc.blobs, ENGINE_CORE_ID)) {
     throw new Error(`[${label}] handle.whenReady() resolved but TW5 core blob absent — import failed silently`);
   }
 
@@ -89,7 +81,7 @@ export async function importGenesisIsland(
 }
 
 /**
- * materializeGenesisIsland — the slice-2 boot intake: RELOAD-OR-MATERIALIZE the oracle doc.
+ * materializeGenesisIsland — the boot intake: RELOAD-OR-MATERIALIZE the oracle doc.
  *
  * The oracle island is a LIVE CRDT, not a shipped binary. This boot path reads no Automerge-binary
  * boot seed and never merges into a stale doc:
@@ -120,7 +112,7 @@ export async function materializeGenesisIsland(
   } catch {
     existing = null;   // unavailable → first boot, materialize below
   }
-  if (existing?.doc()?.blobs?.[ENGINE_CORE_ID]) {
+  if (existing && ownEntry(existing.doc()?.blobs, ENGINE_CORE_ID)) {
     const d = existing.doc()!;
     console.log(
       `[${label}] oracle doc reloaded (persisted)  url=${existing.url}  ` +
@@ -142,7 +134,7 @@ export async function materializeGenesisIsland(
   await handle.whenReady();
 
   const doc = handle.doc();
-  if (!doc?.blobs?.[ENGINE_CORE_ID]) {
+  if (!doc || !ownEntry(doc.blobs, ENGINE_CORE_ID)) {
     throw new Error(`[${label}] oracle doc materialized but TW5 core blob absent — corrupt genesis seed`);
   }
   if (handle.url !== url) {
@@ -173,97 +165,11 @@ export function genesisCasCidsFromOracle(doc: LarDoc): readonly string[] {
     }
     return entry.sha256;
   });
-  if (!cids.includes(doc.blobs?.[ENGINE_CORE_ID]?.sha256 ?? "")) {
+  if (!cids.includes(ownEntry(doc.blobs, ENGINE_CORE_ID)?.sha256 ?? "")) {
     throw new Error(`[genesis-intake] persisted oracle is missing TW5 core CAS metadata (${ENGINE_CORE_ID})`);
   }
   if (new Set(cids).size !== cids.length) {
     throw new Error("[genesis-intake] persisted oracle carries duplicate CAS member CIDs");
   }
   return [...cids].sort();
-}
-
-export interface GenesisReconcileResult {
-  /** True when ANY region CID differed from the live doc — the genesis merged. */
-  updated: boolean;
-  /** Incoming engine content-CID (the hearth true-name; slow ratchet), or null. */
-  incomingEngineCid:  string | null;
-  /** Incoming grammar content-CID (kāhuli's fast ratchet — the required grammar alone), or null. */
-  incomingGrammarCid: string | null;
-  /** Incoming plugins content-CID (this operator's own collection), or null. */
-  incomingPluginsCid: string | null;
-  /** Engine CID recorded in the live doc before reconcile, or null when absent. */
-  previousEngineCid:  string | null;
-  /** Grammar CID recorded in the live doc before reconcile, or null when absent. */
-  previousGrammarCid: string | null;
-  /** Plugins CID recorded in the live doc before reconcile, or null when absent. */
-  previousPluginsCid: string | null;
-}
-
-/**
- * Compare the live island doc's two recorded region CIDs against the incoming doc's,
- * reading both straight from the incoming witness tiddlers (the source of truth in the
- * doc — no caller need pass them). Two ratchets, one merge: the engine (slow) OR the
- * plugins (fast) moving triggers a single additive Automerge merge (operator-authored
- * content survives under LWW); both CIDs re-record so the next boot skips the merge.
- * Both stable → no-op.
- */
-export function reconcileGenesisCid(
-  liveHandle:     DocHandle<LarDoc>,
-  incomingHandle: DocHandle<LarDoc>,
-): GenesisReconcileResult {
-  const incomingEngineCid  = regionCid(incomingHandle, GENESIS_CID_ENGINE_TIDDLER);
-  const incomingGrammarCid = regionCid(incomingHandle, GENESIS_CID_GRAMMAR_TIDDLER);
-  const incomingPluginsCid = regionCid(incomingHandle, GENESIS_CID_PLUGINS_TIDDLER);
-
-  // Self-merge guard: a fresh boot falls the island back to the genesis handle
-  // itself (the bootstrap path — open-node-vessel waitHandle fallback). A
-  // doc merged into itself trips automerge 3.x's wasm borrow-checker ("recursive
-  // use of an object … unsafe aliasing"); automerge 2.x silently no-op'd it.
-  // When the live doc IS the genesis doc there is nothing to reconcile.
-  if (liveHandle.url === incomingHandle.url) {
-    return {
-      updated: false, incomingEngineCid, incomingGrammarCid, incomingPluginsCid,
-      previousEngineCid: incomingEngineCid, previousGrammarCid: incomingGrammarCid, previousPluginsCid: incomingPluginsCid,
-    };
-  }
-
-  const previousEngineCid  = regionCid(liveHandle, GENESIS_CID_ENGINE_TIDDLER);
-  const previousGrammarCid = regionCid(liveHandle, GENESIS_CID_GRAMMAR_TIDDLER);
-  const previousPluginsCid = regionCid(liveHandle, GENESIS_CID_PLUGINS_TIDDLER);
-
-  // EVERY region is asked. The grammar folds the required grammar ALONE and the plugins region excludes
-  // it, so a pure kāhuli grammar overturn moves grammarCid and nothing else — a reconcile that asked only
-  // engine+plugins would read two stable regions and decline the merge, and the fast ratchet would advance
-  // on the wire and never land. A region added later must be asked here in the same act it is minted.
-  const engineMoved  = previousEngineCid  !== incomingEngineCid;
-  const grammarMoved = previousGrammarCid !== incomingGrammarCid;
-  const pluginsMoved = previousPluginsCid !== incomingPluginsCid;
-  if (!engineMoved && !grammarMoved && !pluginsMoved) {
-    return { updated: false, incomingEngineCid, incomingGrammarCid, incomingPluginsCid, previousEngineCid, previousGrammarCid, previousPluginsCid };
-  }
-
-  liveHandle.merge(incomingHandle);
-  liveHandle.change((doc) => {
-    if (incomingEngineCid !== null) {
-      doc.tiddlers[GENESIS_CID_ENGINE_TIDDLER] = storedLarRecord(
-        GENESIS_CID_ENGINE_TIDDLER, { cid: incomingEngineCid }, "genesis-reconcile");
-    }
-    if (incomingGrammarCid !== null) {
-      doc.tiddlers[GENESIS_CID_GRAMMAR_TIDDLER] = storedLarRecord(
-        GENESIS_CID_GRAMMAR_TIDDLER, { cid: incomingGrammarCid }, "genesis-reconcile");
-    }
-    if (incomingPluginsCid !== null) {
-      doc.tiddlers[GENESIS_CID_PLUGINS_TIDDLER] = storedLarRecord(
-        GENESIS_CID_PLUGINS_TIDDLER, { cid: incomingPluginsCid }, "genesis-reconcile");
-    }
-  });
-
-  console.log(
-    `[genesis-intake] genesis merged  ` +
-    `engine ${engineMoved ? `${short(previousEngineCid)}→${short(incomingEngineCid)} (slow)` : "stable"}  ` +
-    `grammar ${grammarMoved ? `${short(previousGrammarCid)}→${short(incomingGrammarCid)} (fast)` : "stable"}  ` +
-    `plugins ${pluginsMoved ? `${short(previousPluginsCid)}→${short(incomingPluginsCid)} (operator)` : "stable"}`,
-  );
-
-  return { updated: true, incomingEngineCid, incomingGrammarCid, incomingPluginsCid, previousEngineCid, previousGrammarCid, previousPluginsCid };
 }

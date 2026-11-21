@@ -24,6 +24,10 @@
  * here writes its own `title:` — in the `.tid` field block, the `.json` array, or the
  * `.meta` sidecar. `flattenedRelPath` supplies the candidate it starts from.
  *
+ * The bytes rendered here and the carrier form `carrierFormOf` (`@lararium/mesh`) defines for a record name one carrier:
+ * `carrier-form-agreement.test.ts` pins them together, the mesh form standing as the engine-free author of the record's
+ * carrier identity.
+ *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-file-info
  */
 

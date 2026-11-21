@@ -266,7 +266,7 @@ describe("the signed bytes", () => {
 
   test("carry NOTHING of the vessel's contents — a challenge is not a disclosure", () => {
     const text = Buffer.from(raiseChallengeBytes(challenge())).toString("utf8");
-    const fields = Object.keys(JSON.parse(text) as Record<string, unknown>).sort();
+    const fields = Object.keys(JSON.parse(text.slice(4 + RAISE_CHALLENGE_DOMAIN.length)) as Record<string, unknown>).sort();
     expect(fields).toEqual(["epoch", "kind", "nexus", "nonce", "vesselId"]);
   });
 });

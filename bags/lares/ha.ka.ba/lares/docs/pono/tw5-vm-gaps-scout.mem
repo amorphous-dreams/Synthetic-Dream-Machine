@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "tw5-vm-gaps-scout — VERBATIM handoff of two tasked Opus spirits, TIDDLY and WIKI, in two waves (2026-10-16): how the house turned the TiddlyWiki engine into a worker-thread VM (the third runtime, the CRDT as truth, whole frames to a shadow root, the render-id relay) and the gaps they found, many probed in scratch with file and line: the textarea revert, the blanket click preventDefault, radio and select painting, the absent root tm-* handlers, no frame resend on a surface switch, the boot-shadows push, and the layer-3 glass contract. Held as a collision surface; the red tests of dreamdom-roadmap's D0 and D1 begin from it."
@@ -21,19 +17,19 @@ uri-path          = "ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! tw5-vm-gaps-scout ~ a spirit's handoff, held unedited
 
 ''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what tasked spirits reported on the as-built worker-thread VM and its gaps, probed in scratch, kept whole, as a ''collision surface'' rather than a briefing. It came home from the project's shared reports so a session that holds only the repository can still read the evidence the DreamDOM carriers cite.
 
-''Where the house's reading lives.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> carries the model and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> the build order; where they and this handoff differ, they carry the house's word.
+''Where the house's reading lives.'' <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> carries the model and <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> the build order; where they and this handoff differ, they carry the house's word.
 
 ''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, code, or unreached); inferred claims stand marked. Collide it; do not inherit it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -68,7 +64,7 @@ TW5 no longer lives in the page. It boots inside a module Web Worker (browser) o
  │  CompositeStore [temp > draft > personal > working > bags/* > libraries > oracle]     │
  │       │ IslandAdaptor → WaveLanding → $tw.lares.applyNalu                │            │
  │  ┌────▼──── $tw (browser = node = null) ──────────────────────────┐    │            │
- │  │ $tw.wiki ── "change" ─┬─► outbound-bridge → HandGate → bag-paths cascade → CRDT │
+ │  │ $tw.wiki ── "change" ─┬─► outbound-bridge → Drain → bag-paths cascade → CRDT │
  │  │                       ├─► CoalesceGate 24ms → serialize RootTemplate ─┘           │
  │  │                       └─► reaction-router → tm-verse-event → vessel               │
  │  │ ridMap: data-lar-rid → TW5's stored handler ◄── dispatchProjectedEvent/Input      │
@@ -91,7 +87,7 @@ TW5 no longer lives in the page. It boots inside a module Web Worker (browser) o
 ### 3.2 Store and direction of truth (TIDDLY)
 - **Truth is the CRDT**, one Automerge doc per bag (`sovereign-kernel.ts:292-313`). `buildIslandRecipe` (`island-recipe.ts:52-130`) stacks the CompositeStore and replays every doc.
 - **In:** doc → MemeProvider → `IslandAdaptor.onUriChanged` → `WaveLanding` → `$tw.lares.applyNalu` (sync add/delete stamped `$origin-bag`).
-- **Out:** `change` → `bridgeWikiToAdaptor` (`outbound-bridge.ts:27-47`) skips "foam" (values the LandedLedger just landed), HandGate paces writes (400 ms trailing, 2 s cap, `hand-gate.ts:18-38`), and the in-wiki `bag-paths` cascade routes each title (`$:/temp`, `$:/state`, history to temp; drafts to draft; personal to personal; everything else to working). Draft save, rename and cancel are discrete acts (`island-adaptor.ts:968-1127`).
+- **Out:** `change` → `bridgeWikiToAdaptor` (`outbound-bridge.ts:27-47`) skips "foam" (values the LandedLedger just landed), the HandGate paced writes at scouting (400 ms trailing, 2 s cap, `hand-gate.ts:18-38`; since retired for the Drain, which paces by the durable ack), and the in-wiki `bag-paths` cascade routes each title (`$:/temp`, `$:/state`, history to temp; drafts to draft; personal to personal; everything else to working). Draft save, rename and cancel are discrete acts (`island-adaptor.ts:968-1127`).
 - **Disk** is a one-way projection, store → disk (`lararium-node/src/disk-projector.ts`). `bags/*` is canon, written only by residency verbs.
 - The plugin also ships tiddlyweb routes, door-charm and backstop for a stock-TW5-server mode, a second, syncer-based integration that stays inert inside islands.
 
@@ -100,7 +96,7 @@ TW5 no longer lives in the page. It boots inside a module Web Worker (browser) o
 - Lifecycle: `manifest`, `teardown`, `hooanu` in; `ready`, `breath`, `ea`, `fault`, `teardown:ack` out.
 - Wiki island: `wiki:place-verb` → VerbTable → `wiki:verb-result`; `wiki:dom-event` / `wiki:dom-input` → projection return leg (`has-island-watches.ts:38-60`). Both DOM messages are fire-and-forget, no requestId (`vessel-island-pool-core.ts:854-878`). The input value is capped at 65 536 chars, checked three times.
 - Daemon island: `daemon:place-verb` / `telemetry:place-verb` → VerbDispatcher; functors on `$tw.lares.*` (derive-skeleton, worldline-compare, verify, resolve-binding, residency-op, evict).
-- Back-channels: `cas:want/block`, `doc:rest`, `custody:write`, `dyad:ask`, `view:*`.
+- Back-channels: `cas:want/block`, `receipt:request`, `custody:write`, `dyad:ask`, `view:*`.
 - **No generic filter, render or eval RPC exists on the live island.** The only such surface, `meme-worker-script.ts`, is orphaned.
 
 ### 3.4 Rendering (both)
@@ -158,7 +154,7 @@ Owner column: **E** = engine/worker, **G** = glass/page, **E+G** = both shores.
 | 14 | MED | **Browser vm shim hides errors.** `runInCtx` catches and returns `undefined`, so a module's real error surfaces as a generic TypeError. | E | `tw5-host-bridge.ts:89-99`, `boot.js:598-629` |
 | 15 | MED | **Direct wiki writes bypass the landing discipline.** `ingestCarrier`/`setTiddler` write straight in and read as hands, so the daemon's born-from-source UI and persona seeds rewrite working-layer records each boot, and `$:/lares/surface` ("never synced") falls through to the working bag *(inferred)*. | E | `tw5-vm.ts:92-120, 177`, `daemon-ui-tiddlers.ts:44` |
 | 16 | MED | **Capability bypass and verb duplication.** Wiki island cap answers `worker-trust`, against AGENTS.md's "capability layer is the only authority gate"; wiki islands run their own VerbTable though the dispatcher says only the daemon dispatches. No per-act signature or persona on glass writes. | E | `wiki-behavior.ts:150`, `verb-dispatcher.ts:1-40` |
-| 17 | LOW-MED | **Boot order.** TW5 startups run before the bag corpus lands, so bag-carried `$:/tags/StartupAction` and `$:/DefaultTiddlers` never fire *(inferred)*; `carrier-filetype` never registers `.mem`. | E | `modules/carrier-filetype.ts:47` |
+| 17 | LOW-MED | **Boot order.** TW5 startups run before the bag corpus lands, so bag-carried `$:/tags/StartupAction` and `$:/DefaultTiddlers` never fire *(inferred)*; `carrier-filetype` never registers `.mem`. ''The default story CLOSED (2026-11-11)'': no engine opens a story inside boot, and `openDefaultStory` opens the wiki's own landing at its first whole snapshot (`default-story.ts`; d3-glass-lane #/the-visible-mirror). The `$:/tags/StartupAction` re-run and the `.mem` registration stay owed. | E | `modules/carrier-filetype.ts:47` |
 | 18 | LOW-MED | **Single-tab law.** A second tab refuses without `?holder`; with it, every tab shares the daemon's single fake DOM and rid space. | G | `vessel-lock.ts`, `shared-holder-core.ts:5-6` |
 | 19 | LOW | **`$eventcatcher` delegation.** Worker `target` is the nearest rid node, not the clicked child, and fake nodes lack `closest`/`matches` *(inferred)*. | E | `tw5-projection.ts:238-252` |
 | 20 | LOW | **Dead or duplicate surfaces.** Orphaned `meme-worker-script.ts` (second VM protocol, bypasses nalu, uses `self` on node); main-thread `mountPanel`/`setPalette`/`setBootSplash` contradict §9; `fake-dom.ts` VDom converter unused; coherence sink unmounted (`main.ts` passes no `onCoherence`). | E+G | `tw5-browser-surface.ts`, `index.ts:102`, `main.ts:285-299` |
@@ -238,7 +234,7 @@ These scratch files die with this container; the probes are described well enoug
 - **#14** drop the swallowing `try/catch` in `runInCtx` (`tw5-host-bridge.ts:89-115`), or rethrow with filename. Test: a syntax error throws `SyntaxError`.
 - **#15** route `$:/lares/surface` to temp (rename to `$:/temp/lares/surface` or add a cascade rule). Add a second-boot zero-writes test to pin the foam claim.
 - **#16** replace `worker-trust` (`wiki-behavior.ts:150`) with the admin-auth gate plus keyhive check over `requestedBy`. Test: non-admin `wiki:place-verb MOVE` refused.
-- **#17** re-invoke `$:/tags/StartupAction` after `seedDrained` (`sovereign-kernel.ts:450-466`), reopen default tiddlers only if no personal StoryList landed, drop `platforms` from `carrier-filetype.ts:47`.
+- **#17** re-invoke `$:/tags/StartupAction` after `seedDrained` (`sovereign-kernel.ts:450-466`), drop `platforms` from `carrier-filetype.ts:47`. The default-story half landed: the island opens its story after `seedDrained` and keeps a landed personal StoryList; the mirror opens its story after the port's greeting.
 - Ship the scratch boot harness as `tests/genesis-boot.harness.ts`, skipped when the CAS is absent, so all of these can run in CI.
 
 ### 5.4 Revised top of the list
@@ -258,13 +254,13 @@ These scratch files die with this container; the probes are described well enoug
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZylNcPepCFP96O9bV-azygDAFOK2v_iorMu-U3VMFF0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dZbw9c3X7CUb6Sb7ZgdUX-dZz5Y0vVYji8J0Wgm0QVQ`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

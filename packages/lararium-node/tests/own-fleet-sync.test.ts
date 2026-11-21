@@ -41,7 +41,7 @@ import { gateGrantRing } from "../src/gate-rings.js";
 import { faceDeviceBook } from "../src/face-device-book.js";
 import { faceFleetViews } from "../src/face-fleet-view.js";
 import { noteIssuedFaceKeys, readFaceJoinRecord } from "../src/fleet-join-custody.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
@@ -106,11 +106,11 @@ async function standHearth(founder: { w: World; p: Presenter }, joinee: Presente
   const sib = personaSiblingBagIds(personaBagIdFor(GROUP));
   const bootstrap: Record<string, { text?: string }> = {
     [DAEMON_BAG_ID]: { text: generateAutomergeUrl() }, [PERSONA_GROUP_ID_TIDDLER]: { text: GROUP },
-    [sib.identities]: { text: generateAutomergeUrl() }, [sib.circles]: { text: generateAutomergeUrl() }, [sib.sessions]: { text: generateAutomergeUrl() },
+    [sib.identities]: { text: generateAutomergeUrl() }, [sib.circles]: { text: generateAutomergeUrl() }, [sib.sessions]: { text: generateAutomergeUrl() }, [sib.intents]: { text: generateAutomergeUrl() },
   };
   for (const e of personaMembershipEntries({ personaGroupId: GROUP, url: planeHandle.url })) bootstrap[e.title] = { text: e.text ?? undefined };
   for (const e of personaMembershipEntries({ personaGroupId: GROUP_B, url: planeB.url })) bootstrap[e.title] = { text: e.text ?? undefined };
-  const views = faceFleetViews(() => bootstrap);
+  const views = faceFleetViews(() => bootstrap, undefined, () => new Set([String(interpretAsDocumentId(wiki.url))]));   // the catalog names the wiki as a book
   const shelfId = interpretAsDocumentId(shelfHandle.url);
   const shelfGate: FederationGate = { mayFederate: (d) => d === shelfId };
 
@@ -135,8 +135,9 @@ async function standHearth(founder: { w: World; p: Presenter }, joinee: Presente
     const session = sessions.get(peerId);
     if (!session) return false;
     return selfSlotShareDecision({
-      hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: null, membership: null, planeSeal: null,
+      hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId, documentId, sessionFace: views.gateFor(peerId),
+      shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
   }
 

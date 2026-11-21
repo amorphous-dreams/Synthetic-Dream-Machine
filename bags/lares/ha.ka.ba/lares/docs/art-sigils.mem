@@ -1,32 +1,39 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/art-sigils">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/docs/art-sigils"
-title     = "lar:///ha.ka.ba/lares/docs/art-sigils"
-file-path = "bags/lares/ha.ka.ba/lares/docs/art-sigils.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Art Sigils examples index"
-status    = "stable"
-retain    = true
+uri-path = "ha.ka.ba/lares/docs/art-sigils"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Art Sigils examples index"
+status   = "stable"
+retain   = true
 ```
 
-<<~ ahu #/index>>
+<<~ ahu slot=`#/index`>>
 ! Art Sigils — Examples
 
 * **Zero · Shattered Olympos:** [[Inscription|ha.ka.ba/lares/docs/art-sigils/example-zero-inscription]] · [[Folio|ha.ka.ba/lares/docs/art-sigils/example-zero-folio]]
 * **One · Tide-Clock Monastery:** [[Inscription|ha.ka.ba/lares/docs/art-sigils/example-one-inscription]] · [[Folio|ha.ka.ba/lares/docs/art-sigils/example-one-folio]]
 
+* **Two · Photograph:** [[Single Photograph|ha.ka.ba/lares/docs/art-sigils/example-two-photograph]]
+* **Three · Color Field:** [[Nonrepresentational Field|ha.ka.ba/lares/docs/art-sigils/example-three-color-field]]
+* **Four · Transparent Component:** [[Veil|ha.ka.ba/lares/docs/art-sigils/example-four-transparent-veil]]
+* **Five · Mixed Media:** [[Material Counterpoint|ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media]]
+* **Six · Exact Text:** [[Typographic Poster|ha.ka.ba/lares/docs/art-sigils/example-six-exact-type]]
+
+[[Art Sigils Practice|ha.ka.ba/lares/docs/art-sigils/practice]] · [[Art Research|ha.ka.ba/lares/docs/art-sigils/research/art-methods]] · [[Cartography|ha.ka.ba/lares/docs/art-sigils/research/cartography]]
+
 [[Art Sigils API|ha.ka.ba/lares/api/art-sigils]]
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 Examples demonstrate the grammar without defining its defaults.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PrAan2ZIMJO_h-y-juT_WqJ5zexzfJLhqiLP5SSPwuc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wsstueS3hLE8fGzuLK0f3Y2EhMvph1VHzmulH5ijp9k`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

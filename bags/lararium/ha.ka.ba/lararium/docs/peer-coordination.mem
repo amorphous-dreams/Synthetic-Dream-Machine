@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/peer-coordination">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/peer-coordination`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/peer-coordination.mem"
-mana      = 18
-manao     = 18
-manaoio   = 17
 role      = "Peer rendezvous + doc coordination doctrine — derived doc addresses, the pinned first boot, minted pointers on the oracle, the Keyhive path as built, reaction write-back invariants as design law"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/local-first"]
 title     = "lar:///ha.ka.ba/lararium/docs/peer-coordination"
@@ -75,9 +71,9 @@ boot or a synced peer holds it. Otherwise the vessel imports a blank doc under t
 so two vessels racing to stand first import byte-identical bytes, share one history, and merge.
 
 ''The rest mint at random.'' A vessel's private docs come from `repo.create()`, so no peer derives their
-ids. The shared lares and lararium corpus docs mint the same way in the node's genesis office, which records
-each URL on the oracle doc; two node homes federating one oracle may race that mint, LWW settles it, and
-each re-reads and adopts the winner (`packages/lararium-node/src/genesis-artifact.ts`).
+ids. The live house-canon documents mint apart: the founding derives each id from the steward's seed and
+registers it in the Kahu realm (`kahuBagDocUrl`, `packages/lararium-node/src/kahu-realm.ts`), so no genesis
+office mints one and no race between node homes arises.
 
 ''UNBUILT: the committed island file.'' No `lararium-island.ts`, no `ISLAND.catalogDocUrl` and no
 `ISLAND.wikis` table stand in source. Derivation carries the author-time rendezvous instead.
@@ -147,9 +143,8 @@ plane's random 16-byte id carries its confidentiality against a peer that cannot
 ''receives an "add member" signed op referencing its Ed25519 key, then joins''
 ''via `repo.find(url)`, with the url exchanged out-of-band (invitation link, DID''
 ''service endpoint, or social graph record)'', and a Keyhive capability check answers `sharePolicy`.
-`KeyhiveIdentitySlot` stands specified in code and tested as that check, out of its package barrel; no
-production call site constructs it, and both vessels fill the inner ring with the PersonaGroup ring
-(`packages/lararium-keyhive/src/keyhive-identity-slot.ts`).
+The Keyhive identity slot that once stood specified as that check retired (road `K23`): a self-DID verifier binds
+no presenter, and both vessels fill the inner ring with the PersonaGroup ring.
 
 !! Reaction Write-Back Invariants
 
@@ -188,8 +183,7 @@ Automerge's LWW conflict resolution uses actor IDs + Lamport timestamps. If a
 reaction writes as "the system," that actor must carry a persistent identity
 derived from the node's keypair — never regenerated per boot. Unstable actor IDs
 cause spurious conflicts and make LWW resolution non-deterministic across restarts.
-`KeyhiveIdentitySlot.deriveActorId` derives a stable actor id from the identity's DID, and no production
-call site invokes it.
+No identity-derived actor id stands: the Keyhive slot's derivation retired with it (road `K23`).
 
 !! Automerge-Repo: What the Official Docs Say
 
@@ -216,17 +210,17 @@ from the genesis seed under its derived id.
 with their IDs as a single import payload — relevant for shipping an initial
 doc bundle to new nodes.
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/island">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/keyhive">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/beelay">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/island`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reaction-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/keyhive`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/beelay`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RJxTx9znYbRKdMcGWE2jJFuyAlx5wh5g9hTa-D8vjBY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tkIq5unAzw-s2Jzla0ZNKnpwW6bAeDfAzXLLQOc1uc4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

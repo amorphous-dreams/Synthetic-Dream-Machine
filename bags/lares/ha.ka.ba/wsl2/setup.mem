@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/setup">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/wsl2/setup`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/wsl2/setup.mem"
 l-space    = "stable"
-mana       = 14
-manao      = 15
-manaoio    = 15
 role       = "repeatable Windows 11 + WSL2 developer-host runbook; it selects no personal machine, distro name, disk, or security exception as a universal requirement"
 status-why = "the scripts derive bounded resource intents from the machine they inspect, preserve unrelated host configuration, report any operator-owned choice instead of guessing it, and keep sparse VHD opt-in behind Microsoft's own data-corruption gate (WSL 2.5.6+)"
 tags       = ["api/wsl2", "lifecycle/standing", "environment/onboarding"]
@@ -18,7 +14,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/wsl2/setup"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Windows 11 + WSL2 developer host
 
@@ -32,7 +28,7 @@ Windows-side steps run in PowerShell. Linux-side steps run inside the selected W
 
 <<~/ahu>>
 
-<<~ ahu #/preflight>>
+<<~ ahu slot=`#/preflight`>>
 
 !! 1 · Preconditions — Windows
 
@@ -71,7 +67,7 @@ Keep repositories under the distro's ext4 filesystem, such as `~/src/Synthetic-D
 
 <<~/ahu>>
 
-<<~ ahu #/scripts>>
+<<~ ahu slot=`#/scripts`>>
 
 !! 2 · Idempotent stands
 
@@ -108,7 +104,7 @@ The Windows stand reads the host first without elevation (edition, Windows accou
 
 <<~/ahu>>
 
-<<~ ahu #/resource-profile>>
+<<~ ahu slot=`#/resource-profile`>>
 
 !! 3 · Bounded VM profile — Windows
 
@@ -134,7 +130,7 @@ Run `wsl --shutdown` from Windows after a `.wslconfig` change, when no shell, da
 
 <<~/ahu>>
 
-<<~ ahu #/linux-profile>>
+<<~ ahu slot=`#/linux-profile`>>
 
 !! 4 · Linux profile — systemd and memory recovery
 
@@ -156,11 +152,11 @@ With inherited Windows PATH entries disabled, invoke the few Windows tools neede
 
 `earlyoom` receives `-m 5 -s 50`: it acts only when available memory falls below five percent and swap usage reaches fifty percent. `vm.swappiness=10` retains swap as a short recovery buffer. The combination protects interactive use from a runaway native compiler, parser, test, or WebAssembly process without pretending that a VM resource limit alone supplies graceful recovery.
 
-The memory-guard reasoning and the historical incident remain at <<~ loulou "lar:///ha.ka.ba/wsl2/memory-guard">> and <<~ loulou "lar:///ha.ka.ba/wsl2/incident-2026-09-18">>. They explain the pattern; they do not prescribe one operator's former machine layout.
+The memory-guard reasoning and the historical incident remain at <<~ loulou uri=`lar:///ha.ka.ba/wsl2/memory-guard`>> and <<~ loulou uri=`lar:///ha.ka.ba/wsl2/incident-2026-09-18`>>. They explain the pattern; they do not prescribe one operator's former machine layout.
 
 <<~/ahu>>
 
-<<~ ahu #/project>>
+<<~ ahu slot=`#/project`>>
 
 !! 5 · Repository tools — Linux
 
@@ -181,7 +177,9 @@ sudo apt update && sudo apt install docker.io docker-compose-v2 && sudo usermod 
 pnpm install --frozen-lockfile
 ```
 
-Open a new terminal tab between the Docker line and the stand: group membership and the nvm shell hook both land at the next login. The Linux stand reads for Node 24+, Corepack, and a reachable Docker daemon and prints these same lines as `needs-you` while any one stays absent; it runs none of them for you. The stand's own `corepack enable` exposes `pnpm`; the first `pnpm` command then fetches pnpm 10, which satisfies the repository's `engines` (pnpm 9 or later).
+Open a new terminal tab between the Docker line and the stand: group membership and the nvm shell hook both land at the next login. The Linux stand reads for Node 24+, Corepack, and a reachable Docker daemon and prints these same lines as `needs-you` while any one stays absent; it runs none of them for you. The stand's own `corepack enable` exposes `pnpm`; the first `pnpm` command in the clone then fetches the exact pnpm the root `package.json` pins in `packageManager` (above the `engines` floor of pnpm 9).
+
+''Next:'' a house of your own on this host walks <<~ loulou uri=`lar:///ha.ka.ba/wsl2/new-hearth`>>, from the clone to a founded, lit hearth with the MCP seat.
 
 The script creates one `~/.venv` and records the digest of `requirements.txt` only after a successful install. A changed requirements file causes the next stand to repair that venv. The repository's own dependencies stay the operator's line.
 
@@ -196,7 +194,7 @@ Use the first form for a process that respects a virtual-address cap. Prefer the
 
 <<~/ahu>>
 
-<<~ ahu #/verify>>
+<<~ ahu slot=`#/verify`>>
 
 !! 6 · Verify and repair
 
@@ -211,7 +209,7 @@ A witness drift states the local condition it could not verify. Repair only that
 
 <<~/ahu>>
 
-<<~ ahu #/settle>>
+<<~ ahu slot=`#/settle`>>
 
 !! 7 · Settle the host — stand, back up, update, heal, in that order
 
@@ -244,14 +242,14 @@ wsl -d <Distro>
 ```
 
 ```sh
-tools/wsl2/witness.sh                       # every row ok; the Windows stand's memory and swap now read live
+tools/wsl2/witness.sh                       # every check ok; the Windows stand's memory and swap now read live
 ```
 
 The update swaps the engine, never the distro: files, `/etc/wsl.conf`, the stand's drop-in all stay. When `--compact` refuses — a Running line, or an engine below 3.0.1 — the community `diskpart` recipe in section 3 does the same job from an Administrator window. Nothing in this sequence passes `-Sparse`, and nothing unregisters a distro.
 
 <<~/ahu>>
 
-<<~ ahu #/backup>>
+<<~ ahu slot=`#/backup`>>
 
 !! 8 · Back up and restore a distro — two ways
 
@@ -294,11 +292,11 @@ The registered path comes from the registry, never from memory: `Get-ItemPropert
 | `--export --format vhd` | the whole disk image, free space included | the vhdx's size | faster | any PC, WSL 2 only |
 | file copy | identical bytes | the vhdx's size | fastest | this machine; the VM must be down |
 
-`--import-in-place` and the `--vhd` pair arrived with the Store build (0.58, 2022); `--export --format` and `--manage --set-default-user` with 2.x — all present before 3.0.1, so a restore never waits on the update. None of them carries `%UserProfile%\.wslconfig` (the device record in `~/.infrastructure` snapshots it), the registry row (a fresh import rebuilds it), or Docker Desktop's own distro. A rhythm: monthly, and before every compact or major `wsl --update`.
+`--import-in-place` and the `--vhd` pair arrived with the Store build (0.58, 2022); `--export --format` and `--manage --set-default-user` with 2.x — all present before 3.0.1, so a restore never waits on the update. None of them carries `%UserProfile%\.wslconfig` (the device record in `~/.infrastructure` snapshots it), the registry entry (a fresh import rebuilds it), or Docker Desktop's own distro. A rhythm: monthly, and before every compact or major `wsl --update`.
 
 <<~/ahu>>
 
-<<~ ahu #/troubleshooting>>
+<<~ ahu slot=`#/troubleshooting`>>
 
 !! 9 · The seven errors a household meets
 
@@ -315,5 +313,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8a6r7BttDgh8C828NY9Gb13qIvrNtCFmTmtxQ2QXuvk
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j1K58BGgpqj9BA_fol28fjtkY9XbwpLM_7UMkoTxIJ4`>>
+<<^ code=`&#x0004;` to=`?`>>

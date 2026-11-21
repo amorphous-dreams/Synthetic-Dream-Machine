@@ -22,9 +22,8 @@
  *   N7 THE GATE'S ADMIT READER reads the root of its own Nexus alone (`gateHeldRoot`): an admit for another
  *      Nexus reads no held root / at that Nexus's own gate the same admit reads held.
  */
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { describe, expect } from "vitest";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ed from "@noble/ed25519";
@@ -43,6 +42,7 @@ import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { scratchRoot as root, test } from "./support/scratch-fixture.js";
 
 const pubOf    = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 const signerOf = (s: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, s).then(hex);
@@ -131,11 +131,6 @@ describe("the held root at the socket seat", () => {
 });
 
 describe("the held root at the take, on a real seal home", () => {
-  let root: string;
-  let prior: string | undefined;
-  beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lares-held-root-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root; });
-  afterEach(() => { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
-
   const leaves = async (): Promise<readonly NexusLeaf[]> => [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }];
 
   test("N3 a bundle for a Nexus this vessel keeps no charter for refuses no-held-root and writes nothing; control: with the charter it lands", async () => {

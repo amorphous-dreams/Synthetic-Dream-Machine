@@ -18,7 +18,7 @@ import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
 import { dialFaceGate, dialedChannel, gateFlightProtocols, type GateSession, type GateSessionChannel } from "@lararium/mesh";
 import { faceGateServer, gateSessionRegistry, type FaceGateServer, type FaceGateServerOptions } from "../src/face-gate-server.js";
-import { AUDIENCE, presenter, world, type Presenter, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
+import { AUDIENCE, presenter, validFlight, world, type Presenter, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { WebSocket as WsSocket } from "ws";
 
@@ -120,16 +120,16 @@ describe("what one peer may hold at the gate's server", () => {
     expect(member.state).toBe("verified");
     await until(() => opened.length === 1);
     // One socket holds the one pending place: a flight that parses and opens to nothing, its socket left open.
-    const knock = (fill: number) => new Promise<WsSocket>((resolve, reject) => {
-      const ws = new WsSocket(s.base(stood.path), [...gateFlightProtocols(new Uint8Array(96).fill(fill))], { perMessageDeflate: false });
+    const knock = () => new Promise<WsSocket>((resolve, reject) => {
+      const ws = new WsSocket(s.base(stood.path), [...gateFlightProtocols(validFlight(w))], { perMessageDeflate: false });
       ws.on("open", () => resolve(ws));
       ws.on("error", reject);
     });
-    const holder = await knock(3);
+    const holder = await knock();
     expect(await until(() => w.gate.pending === 1)).toBe(true);
     let holderClosed = false;
     holder.on("close", () => { holderClosed = true; });
-    const newest = await knock(4);
+    const newest = await knock();
     let newestClosed = false;
     newest.on("close", () => { newestClosed = true; });
     expect(await until(() => newestClosed)).toBe(true);                                  // the newest arrival is dropped
@@ -147,7 +147,7 @@ describe("what one peer may hold at the gate's server", () => {
     const stood = s.server.stand({ gate: w.gate, pin: w.pin });
     // A flight that parses and opens to nothing: the gate holds the socket silent until its deadline, which never fires.
     const open = (autoPong: boolean) => new Promise<WsSocket>((resolve, reject) => {
-      const ws = new WsSocket(s.base(stood.path), [...gateFlightProtocols(new Uint8Array(96).fill(3))], { autoPong, perMessageDeflate: false });
+      const ws = new WsSocket(s.base(stood.path), [...gateFlightProtocols(validFlight(w))], { autoPong, perMessageDeflate: false });
       ws.on("open", () => resolve(ws));
       ws.on("error", reject);
     });

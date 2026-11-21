@@ -14,11 +14,10 @@
  *       the store; one that opens to another length refuses `malformed`; one whose secret answers another key
  *       than its name commits to refuses `names-another-key`.
  *   S7  at the floor the door, the mint, the store and the retirement refuse `CustodyLocked` and no file moves.
- *   S8  TAMPER PROBE. A WRONG VESSEL KEY REPLACES NO SEAT KEY: under a holder that kept a retired key the door
- *       refuses `key-fails`, a store lands nothing, a retirement removes nothing, and a stranger key handed to the
- *       sealed writer refuses; no byte moves.     control: a holder over the tree's own key signs and retires
+ *   S8  TAMPER PROBE. S key rotation leaves the face-sealed seat key byte-identical; a holder over the
+ *       retired S key can still sign and store the same key. Control: a holder over the current S key signs and retires
  *   S9  a retirement removes the row and the key then reads `absent`; retiring a key no row holds answers false.
- *   S10 the carrier table names the row `seat-key`: cold, a seed, of ONE face, and no bundle carries it.
+ *   S10 the carrier table names the row `seat-key`: face-cold, a seed, of ONE face, and no bundle carries it.
  *   S11 a retirement reads the row first: a row that holds another key, or another length, under this key's name
  *       refuses by name and stays.                control: the row's own key retires it
  *   S12 two stores of one key under two faces, started together, land ONE row; the look and the write share one
@@ -26,17 +25,17 @@
  *   S13 a store seals the bytes it received, whatever the caller does to its array afterwards.
  */
 import { createPrivateKey, createPublicKey, verify } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintVk, readVkCarrier, writeSealedCarrier, TreeVkRefusal } from "@lararium/mesh";
+import { readFckCarrier } from "@lararium/mesh";
 import {
   SEAT_KEY_FILE, heldSeatKey, listSeatKeys, mintSeatKey, retireSeatKey, seatKeyFile, seatKeyName, signAsSeat, storeSeatKey,
 } from "../src/seat-key-store.js";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
-import { bundleRows, carrierCensus, carrierTable, vkSlotsPath } from "../src/vault-carriers.js";
+import { bundleCarriers, carrierCensus, carrierTable } from "../src/vault-carriers.js";
+import { faceRecordNames, handleRecordPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -54,8 +53,8 @@ const KEY = publicOf(SECRET);
 const IMAGE = new TextEncoder().encode("synthetic image a chair signs");
 
 let c: SeatedScratchCustody;
-const at = (file: string): string => join(c.homes.identity, file);
-const seatFiles = (): string[] => readdirSync(c.homes.identity).filter((f) => SEAT_KEY_FILE.test(f)).sort();
+const at = (file: string): string => handleRecordPathIn(c.homes.identity, file);
+const seatFiles = (): string[] => faceRecordNames().filter((f) => SEAT_KEY_FILE.test(f)).sort();
 beforeEach(async () => { c = await seatScratchCustody("seat-key"); });
 afterEach(async () => { await c.drop(); });
 
@@ -69,7 +68,7 @@ describe("a seat's own key on the custody seat", () => {
     // The name commits to the key by a digest and carries none of it.
     expect(file.includes(key.slice(0, 16))).toBe(false);
     const rest = readFileSync(at(file));
-    expect(readVkCarrier(rest)).toBe("sealed");
+    expect(readFckCarrier(rest)).toBe("sealed");
     const signature = await signAsSeat(key, IMAGE);
     expect(signature).toHaveLength(64);
     expect(verifies(key, IMAGE, signature)).toBe(true);
@@ -78,7 +77,7 @@ describe("a seat's own key on the custody seat", () => {
     // An upper-case spelling of the same key reaches the same row.
     expect(verifies(key, IMAGE, await signAsSeat(key.toUpperCase(), IMAGE))).toBe(true);
     // cold: a hot read of the row refuses; it opens per act alone
-    await expect(c.holder.readRow("identity", file)).rejects.toThrow(/cold rows require openColdRow/);
+    await expect(c.holder.readRecord("identity", file)).rejects.toThrow(/cold rows require openColdRecord/);
     // A stored secret rests sealed too, and no byte of it reads in the clear.
     await storeSeatKey(0, SECRET);
     expect(readFileSync(at(seatKeyFile(KEY, 0))).includes(Buffer.from(SECRET))).toBe(false);
@@ -106,7 +105,7 @@ describe("a seat's own key on the custody seat", () => {
   });
 
   test("S4 — a key no row holds refuses absent and signs nothing", async () => {
-    await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRowUnavailable);
+    await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRecordUnavailable);
     await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(/reads absent/);
     expect(seatFiles()).toEqual([]);
   });
@@ -120,7 +119,7 @@ describe("a seat's own key on the custody seat", () => {
     await expect(storeSeatKey(1, SECRET)).rejects.toThrow(/stands under another face/);
     expect(seatFiles()).toEqual([file]);
     // Other bytes standing under this key's own name refuse, and stay.
-    await c.holder.writeRow("identity", file, secretOf(60));
+    await c.holder.writeRecord("identity", file, secretOf(60));
     const planted = readFileSync(at(file));
     await expect(storeSeatKey(0, SECRET)).rejects.toThrow(/reads names-another-key/);
     expect(readFileSync(at(file)).equals(planted)).toBe(true);
@@ -136,18 +135,18 @@ describe("a seat's own key on the custody seat", () => {
     expect(moved.equals(intact)).toBe(false);
     for (const [damaged, reading] of [[moved, /reads (key-fails|torn)/], [Buffer.from(SECRET), /reads bare/]] as const) {
       writeFileSync(at(file), damaged);
-      await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRowUnavailable);
+      await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRecordUnavailable);
       await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(reading);
       await expect(storeSeatKey(0, SECRET)).rejects.toThrow(reading);
-      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRowUnavailable);
+      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRecordUnavailable);
       expect(readFileSync(at(file)).equals(damaged)).toBe(true);
     }
     writeFileSync(at(file), intact);
     expect(verifies(KEY, IMAGE, await signAsSeat(KEY, IMAGE)), "control: the intact row signs again").toBe(true);
-    await c.holder.writeRow("identity", file, new Uint8Array(31));
+    await c.holder.writeRecord("identity", file, new Uint8Array(31));
     await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(/reads malformed/);
     // A whole secret of ANOTHER key under this key's name: the door signs nothing under it.
-    await c.holder.writeRow("identity", file, secretOf(60));
+    await c.holder.writeRecord("identity", file, secretOf(60));
     await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(/reads names-another-key/);
   });
 
@@ -167,34 +166,25 @@ describe("a seat's own key on the custody seat", () => {
     expect(readFileSync(at(file)).equals(standing)).toBe(true);
   });
 
-  test("S8 — TAMPER PROBE: a wrong vessel key replaces no seat key, signs under none and retires none", async () => {
+  test("S8 — S key rotation leaves a seat's face-sealed key usable and unchanged", async () => {
     await storeSeatKey(0, SECRET);
     const file = seatKeyFile(KEY, 0);
     const before = readFileSync(at(file));
-    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldTreeKey: c.treeKey, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
     const standing = readFileSync(at(file));
-    expect(standing.equals(before), "the rotation re-sealed the row: its encoding moved").toBe(false);
-    // The seated holder kept the retired key.
-    await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(/reads key-fails/);
-    await expect(storeSeatKey(0, SECRET)).rejects.toThrow(/key-fails/);
-    // A retirement and a mint reach the sealed writer, which proves the key in hand against the tree first.
-    await expect(retireSeatKey(KEY)).rejects.toThrow(TreeVkRefusal);
-    // A mint draws a fresh key, so it names a fresh row: the retired key seals nothing into this tree.
-    await expect(mintSeatKey(0)).rejects.toThrow(TreeVkRefusal);
-    const keyB = mintVk();
-    await expect(writeSealedCarrier({
-      io: c.io, vk: keyB, treePath: vkSlotsPath(c.homes.identity),
-      carrier: { name: `identity/${file}`, path: at(file), keyClass: "seed" }, plaintext: secretOf(200),
-    })).rejects.toThrow(TreeVkRefusal);
-    expect(seatFiles()).toEqual([file]);
-    expect(readFileSync(at(file)).equals(standing), "the row never moved").toBe(true);
-    expect(existsSync(`${at(file)}.vk-sealing`)).toBe(false);
-    // control: a holder over the tree's own key signs under the row, and retires it
+    expect(standing.equals(before), "S key rotation leaves the face-sealed row untouched").toBe(true);
+    // The seated holder kept the retired S key, but the seat key opens under its face's key.
+    expect(verifies(KEY, IMAGE, await signAsSeat(KEY, IMAGE))).toBe(true);
+    expect(await storeSeatKey(0, SECRET)).toBe(KEY);
+    expect(readFileSync(at(file)).equals(standing)).toBe(true);
+    // A holder over the current S key still opens the same face key and retires it.
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes });
-    await fresh.adopt(rotated.vk);
+    await fresh.adopt(rotated.treeKey);
+    await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(fresh);
     expect(verifies(KEY, IMAGE, await signAsSeat(KEY, IMAGE))).toBe(true);
     expect(await retireSeatKey(KEY)).toBe(true);
+    expect(existsSync(at(file))).toBe(false);
     expect(seatFiles()).toEqual([]);
     await fresh.lock();
     seatCustody(c.holder);
@@ -215,14 +205,14 @@ describe("a seat's own key on the custody seat", () => {
     await storeSeatKey(0, SECRET);
     const file = seatKeyFile(KEY, 0);
     for (const [planted, reading] of [[secretOf(60), /reads names-another-key/], [new Uint8Array(31), /reads malformed/]] as const) {
-      await c.holder.writeRow("identity", file, planted);
+      await c.holder.writeRecord("identity", file, planted);
       const standing = readFileSync(at(file));
-      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRowUnavailable);
+      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRecordUnavailable);
       await expect(retireSeatKey(KEY)).rejects.toThrow(reading);
       expect(readFileSync(at(file)).equals(standing), "the planted row stays, byte for byte").toBe(true);
     }
     // control: the row's own key retires it
-    await c.holder.writeRow("identity", file, SECRET);
+    await c.holder.writeRecord("identity", file, SECRET);
     expect(await retireSeatKey(KEY)).toBe(true);
     expect(seatFiles()).toEqual([]);
   });
@@ -252,14 +242,15 @@ describe("a seat's own key on the custody seat", () => {
 
   test("S10 — the carrier table names the row: cold, a seed, of one face, in no bundle", async () => {
     const file = seatKeyFile(KEY, 4);
-    const row = carrierTable().find((r) => r.home === "identity" && r.match.test(file))!;
-    expect([row.row, row.custody, row.keyClass, row.bundle, row.bare]).toEqual(["seat-key", "cold", "seed", "stays", null]);
+    const row = carrierTable().find((r) => r.home === "identity" && (r.faceRecord?.inner.test(file) ?? r.match.test(file)))!;
+    expect([row.row, row.custody, row.keyClass, row.bundle, row.bare]).toEqual(["seat-key", "face-cold", "seed", "stays", null]);
     // The table spells the file as the store does (the table cannot import the store: the store stands on the seat).
-    expect(row.match.source).toBe(SEAT_KEY_FILE.source);
-    expect(row.face(row.match.exec(file)!)).toBe(4);
-    expect(row.name(row.match.exec(file)!)).toBe(`seat-key-h4-${seatKeyName(KEY)}`);
-    expect(bundleRows().map((r) => r.row)).not.toContain("seat-key");
+    expect(row.match.test(`faces/${"ab".repeat(16)}/${file}`)).toBe(true);
+    expect(SEAT_KEY_FILE.test(file)).toBe(true);
+    expect(row.face(row.match.exec(`faces/${"ab".repeat(16)}/${file}`)!)).toBe(4);
+    expect(row.name(row.match.exec(`faces/${"ab".repeat(16)}/${file}`)!)).toBe(`seat-key-h4-${seatKeyName(KEY)}`);
+    expect(bundleCarriers().map((r) => r.row)).not.toContain("seat-key");
     await storeSeatKey(4, SECRET);
-    expect(carrierCensus(c.homes).find((e) => e.file === file)).toMatchObject({ row: "seat-key", custody: "cold", keyClass: "seed", face: 4 });
+    expect(carrierCensus(c.homes).find((e) => e.file.endsWith(`/${file}`))).toMatchObject({ row: "seat-key", custody: "face-cold", keyClass: "seed", face: 4 });
   });
 });

@@ -1,0 +1,68 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/i2-relay/luna/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i2-relay/luna/brief.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Luna-Relaywright: Lares (Tasked Spirit)
+
+Handback to /home/joshu/.lares-scratch/research/i2-relay/luna/out.md (NOT final.md), under 1300 words, ending WORDS=&lt;n>. Your seat dir: /home/joshu/.lares-scratch/research/i2-relay/luna.
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in your seat dir. No git writes,
+no suites. Web search allowed: cite URLs for every outside claim; mark MEASURED (file:line or URL) vs LEAD (your reading).
+
+GROUND. Code in the main checkout /home/joshu/Synthetic-Dream-Machine at the span head (read only). I1 (the face intent
+plane) landed as PR #99 on 2026-10-26: read its kit bags/lares/ha.ka.ba/lares/docs/pono/i1-intent-lane.mem and the carrier
+bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem whole, above all #/the-far-agent and its red ("A far agent's
+intent, admitted by a relay, verifies on a device that never saw the relay; a revoked delegation refuses on read, the
+revocation arriving first or after; a relay that alters an argument breaks the signature"). The road row: `I2` in
+bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem may not yet show (it lands with W14's road commit); its research
+row reads: "the least relay trust and attestation that stops capability escalation and argument substitution while
+keeping causal provenance. Lenses: protocol security / distributed failure semantics." Neighbours to measure: the
+<code>&#64;intents-&lt;tag></code> entry kinds and their signing domain, the `lares intent` CLI, the effect door, the ring rules and door
+gating (grep "ring", "door", relay access rings), the face's sealed anchor and KEL (persona-kel), device edges, the
+operator daemon's socket, the carriage relay (`carriage-relay.ts`, a different relay: do not fuse them), K17's frontier,
+and K15's bonds brief (a relay-only S row: /home/joshu/.lares-scratch/k15-bonds/brief.md).
+House law to respect: no global now (a causal bound, never an expiry time); no CRDT document survives until the X0 bake
+(no migration); one name, one relation; capability read by capability, never by host; build the end state.
+
+THE TASK: scout I2 before any build, so a lane kit stands on a ruled model.
+# MEASURE what stands that I2 extends, file:line, node and browser alike.
+# THE MODEL GAPS: the delegation's shape and signing (who signs it, under which key and domain; how it names verb
+prefix, argument policy and causal bound; where it rests and syncs); revocation and its read-side rule
+(revoked-after-acting); the relay seat's door (transport, opened per face, ring, off by default, how it turns on);
+what the relay verifies and countersigns; what a reader verifies with no trust in the relay; the agent's own key and
+how a face pins it; replay and duplicate admission; a relay down or hostile. For each: canon already rules it (quote),
+house law derives it (name the law), or the operator owns it (options + one lean).
+# SLICING: the lane's slices in build order, red-first, each red with its control and known positive; the files each
+holds; overlap with live lanes (D2 DreamDOM port: tw5 island and port files, hand-gate, projection-sink; G15: the
+after-roll chain and a genesis re-bake; K15 bonds queued: face-operation signing by the selected atom, the relay S
+row). Whether I2 lands as one lane.
+# YOUR LENS: distributed failure semantics. Revocation racing an act across partitions, a relay that dies mid-admission, duplicate admission through two relays, a device asleep across revocation, causal bounds with no clock (how a bound is named and read), and what each reader sees in each order. Prior art: Automerge/local-first revocation, CRDT capability revocation (Keyhive), OCAP revocation patterns, KERI duplicity detection. Name the reds a storm witness should run.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M4O3zDXhNkLNkHdXEDftvAMPPhiLdrkXicvsZLX0J2M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

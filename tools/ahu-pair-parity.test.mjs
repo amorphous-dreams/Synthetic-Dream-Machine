@@ -17,7 +17,9 @@ import { stampWasm } from "./stamp-build.mjs";
 const ROOT = resolve(import.meta.dirname, "..");
 const WITNESS = join(ROOT, "tools/ahu-pair-parity.mjs");
 const CORPUS_READ = join(ROOT, "tools/corpus-read.mjs");
-const HEAD = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n`;
+// The declaration is the writer's own constant, never a second literal (type-parity reads a spelled one as a fork).
+const { CARRIER_DECLARATION } = await import(join(ROOT, "packages/lararium-memetic-frame/dist/index.js"));
+const HEAD = `${CARRIER_DECLARATION}\n\n`;
 
 function sweep(env = {}) {
   return spawnSync(process.execPath, [WITNESS], { cwd: ROOT, encoding: "utf8", env: { ...process.env, ...env } });
@@ -52,32 +54,57 @@ await test("CONTROL: the real corpus reads green, with a counted positive on bot
 });
 
 await test("CONTROL: a planted balanced pair reads green — 1 of 1, so the scratch sweep is not a silent zero", () => {
-  const run = plant("<<~ ahu #/a>>\nx\n<<~/ahu>>\n");
+  const run = plant("<<~ ahu slot=`#/a`>>\nx\n<<~/ahu>>\n");
   assert.equal(run.status, 0, run.stdout + run.stderr);
   assert.match(run.stdout, /1 carriers · scanAhu pairs 1 · the grammar reproduces 1 of 1/);
 });
 
-await test("a planted unpaired close mid-line reads red: scanAhu closes on it, the grammar does not", () => {
-  const run = plant("<<~ ahu #/a>>\ntext <<~/ahu>> more\n<<~/ahu>>\n");
-  assert.equal(run.status, 1, run.stdout + run.stderr);
-  assert.match(run.stdout, new RegExp(`MISPLACED bags/planted\\.mem:${OFFSET} \\(line 3\\)`));
-  assert.match(run.stdout, /balance faults \(cut no pair — reported\): 1/);
+await test("a PLANTED divergence reads red: a mutated scanAhu shifts one close, and the witness names it MISPLACED", () => {
+  // No live divergence is kept to prove the witness can see: the plant is a mutated READER, written
+  // here, that wraps the real scanAhu and moves its first close by one byte.
+  const dir = mkdtempSync(join(tmpdir(), "ahu-pair-mutant-"));
+  try {
+    const mutant = join(dir, "mutant-scan.mjs");
+    writeFileSync(mutant, `import { scanAhu as real } from ${JSON.stringify(join(ROOT, "packages/lararium-tw5/dist/meme-ast/ahu-scan.js"))};
+export function scanAhu(text) {
+  const r = real(text);
+  return { ...r, blocks: r.blocks.map((b, i) => (i === 0 ? { ...b, bodyEnd: b.bodyEnd - 1 } : b)) };
+}
+`);
+    const repo = mkdtempSync(join(tmpdir(), "ahu-pair-parity-"));
+    try {
+      mkdirSync(join(repo, "bags"), { recursive: true });
+      writeFileSync(join(repo, "bags", "planted.mem"), HEAD + "<<~ ahu slot=`#/a`>>\nx\n<<~/ahu>>\n");
+      for (const a of [["init", "-q"], ["add", "bags/planted.mem"]]) assert.equal(spawnSync("git", a, { cwd: repo }).status, 0);
+      const run = sweep({ REPO: repo, AHU_PARITY_MUTANT_SCAN: mutant });
+      assert.equal(run.status, 1, run.stdout + run.stderr);
+      assert.match(run.stdout, /MUTANT READER/);
+      assert.match(run.stdout, new RegExp(`MISPLACED bags/planted\\.mem:${OFFSET} \\(line 3\\)`));
+    } finally { rmSync(repo, { recursive: true, force: true }); }
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+await test("CONTROL (parity): a closer that does not open its line, and an ahu under a tilde run, read alike in both readers", () => {
+  for (const body of ["<<~ ahu slot=`#/a`>>\ntext <<~/ahu>>\n<<~/ahu>>\n", "<<~ ahu slot=`#/a`>>\n~~~\n<<~/ahu>>\n~~~\n<<~/ahu>>\n"]) {
+    const run = plant(body);
+    assert.doesNotMatch(run.stdout, /MISPLACED|MISSING /, run.stdout);
+  }
 });
 
 await test("a planted mismatched pair reads red: an ahu opener closed by `<</fragment>>`", () => {
-  const run = plant("<<~ ahu #/a>>\nx\n<</fragment>>\n");
+  const run = plant("<<~ ahu slot=`#/a`>>\nx\n<</fragment>>\n");
   assert.equal(run.status, 1, run.stdout + run.stderr);
   assert.match(run.stdout, new RegExp(`MISSING  bags/planted\\.mem:${OFFSET} \\(line 3\\)`));
 });
 
 await test("a carrier the grammar parses in error reads red, even holding no pair the two dispute", () => {
-  const run = plant("<<~ ahu #/a>>\nx\n<<~/ahu>>\n\n```\nunclosed fence\n");
+  const run = plant("<<~ ahu slot=`#/a`>>\nx\n<<~/ahu>>\n\n```\nunclosed fence\n");
   assert.equal(run.status, 1, run.stdout + run.stderr);
   assert.match(run.stdout, /ERROR    bags\/planted\.mem:\d+ \(line \d+\) the grammar failed to parse/);
 });
 
 await test("grammar-only pairs are reported by name and never refused", () => {
-  const run = plant("<<~ ahu #/a>>\nx\n<<~/ahu>>\n<<~ kue>>\ndissent\n<<~/kue>>\n");
+  const run = plant("<<~ ahu slot=`#/a`>>\nx\n<<~/ahu>>\n<<~ kue>>\ndissent\n<<~/kue>>\n");
   assert.equal(run.status, 0, run.stdout + run.stderr);
   assert.match(run.stdout, /grammar-only pairs [^:]*: 1 — kue 1/);
 });

@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/door-fix-2f176658484bcc2a5a7d956033026c3962fdb5ae.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP door-fix 2f176658484bcc2a5a7d956033026c3962fdb5ae
+read: 2f1766584 re-stamps the two canon carriers this lane edited (CI web-tw5 stale seals; controller: build green, bcc-slot-corpus + carrier-shape 35/35, witness-all &#45;-fast exit 0; .mem-only diff read); over: blind Opus (Blind-Warden-Door) over e5a4848bc..1fed7d8ab: LAND-AFTER-CURES (P2 unbounded pool walk-back + a softened RED; P3s); cures at 41bfdbe2f red-first; blind re-read over 1fed7d8ab..41bfdbe2f: LAND, nothing new reaches outside the wall (/home/joshu/.lares-scratch/door-fix/seats/blind-opus-door-2.md); controller ran launch-codex, test-door-build, test-door, commit-relay outside the wall 162/162.
+owed: lane store-wall: hardlinked node_modules shared with the main checkout (P1, older than this lane, confirmed by inode 161959 x8) + readHeldAsync (commit-relay.mjs:48) reads req-*.json without the O_NONBLOCK/regular-file guard (a planted FIFO stalls the broker); P3: two launches in a burst can share one stale pool record (the third refuses); a planted receipt's true answer lives only in broker stderr.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SMkJaIBpd9BZc5WAbXSdjhnxAzdEYayXWwpT4EI5Yec`>>
+
+<<^ code=`&#x0004;` to=`?`>>

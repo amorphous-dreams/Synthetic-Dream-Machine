@@ -16,6 +16,8 @@ import { describe, test, expect } from "vitest";
 import { Repo, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { shareConfigOf } from "@lararium/mesh";
+import { vesselOnlyShareVerdict } from "../src/vessel-only-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 type Doc = { text?: string };
 
@@ -39,6 +41,21 @@ const settle = async <T,>(p: Promise<T>, ms: number): Promise<"ready" | "unavail
   ]);
 
 describe("the sharePolicy verdict gates a peer's REQUEST, not only the vessel's ANNOUNCE", () => {
+  test("vessel-only access refuses same-operator sockets and admits only house islands", async () => {
+    const docs = new Set(["control"]);
+    const islands = new Set(["worker"]);
+    const verdict = async (peer: string, doc: string, socket: boolean) =>
+      vesselOnlyShareVerdict(docs, islands, peer, doc, socket) ?? selfSlotShareDecision({
+        hasWsSocket: socket, peerClass: "same-operator", selfSlotFedGate: null,
+        sessionFace: { mayFederate: () => true }, antigenRing: NO_BANS, shadow: NOBODY_ASIDE,
+        protectedDocs: NOTHING_CLASSED, membership: null, planeSeal: null,
+        peerId: peer, documentId: doc as DocumentId,
+      });
+    expect(await verdict("device", "control", true)).toBe(false);
+    expect(await verdict("device", "face", true)).toBe(true);
+    expect(await verdict("worker", "control", false)).toBe(true);
+    expect(await verdict("worker", "control", true)).toBe(false);
+  });
   test("RED — under a legacy sharePolicy, a DENIED doc still crosses to a peer that asks for it by id", async () => {
     const denied = new Set<DocumentId>();
     const { A, B } = await pair("legacy", (id) => !denied.has(id));

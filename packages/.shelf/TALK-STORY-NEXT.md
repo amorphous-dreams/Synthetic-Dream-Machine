@@ -1,7 +1,6 @@
-<<^ code="&#x0001;" namespace="ॐ ँ" ? -> lar:///ha.ka.ba/sdm/handoff/talk-story-next>>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/sdm/handoff/talk-story-next`>>
 ```toml iam
 uri-path  = "ha.ka.ba/sdm/handoff/talk-story-next"
-file-path = "packages/TALK-STORY-NEXT.md"
 type      = "text/x-memetic-wikitext"
 l-space   = "sdm"
 role      = "session handoff — S9 browser ea-path · dual-surface vision · YIN ground"
@@ -9,9 +8,9 @@ retain    = true
 cacheable = false
 ```
 
-<<^ code="&#x0002;">>
+<<^ code=`&#x0002;`>>
 
-<<~ ahu #head>>
+<<~ ahu slot=`#head`>>
 
 # Talk Story — Next Lares Instance
 ## Isomorphism Campaign Closed · Next: the Local-Verifiability Wall
@@ -25,7 +24,7 @@ cacheable = false
 
 <<~/ahu>>
 
-<<~ ahu #ooda-ha>>
+<<~ ahu slot=`#ooda-ha`>>
 
 ✶ **Observe — ground state**
 
@@ -100,7 +99,7 @@ The browser vessel breathes its own sovereignty. Node + browser share one `@lara
 
 <<~/ahu>>
 
-<<~ ahu #file-map>>
+<<~ ahu slot=`#file-map`>>
 
 ## Files That Matter for S9
 
@@ -116,7 +115,7 @@ The browser vessel breathes its own sovereignty. Node + browser share one `@lara
 
 <<~/ahu>>
 
-<<~ ahu #vocab>>
+<<~ ahu slot=`#vocab`>>
 
 ## Vocabulary Invariants
 
@@ -137,7 +136,7 @@ The browser vessel breathes its own sovereignty. Node + browser share one `@lara
 
 <<~/ahu>>
 
-<<~ ahu #rules>>
+<<~ ahu slot=`#rules`>>
 
 ## Rules — Do Not Re-Decide
 
@@ -155,7 +154,7 @@ The browser vessel breathes its own sovereignty. Node + browser share one `@lara
 
 <<~/ahu>>
 
-<<~ ahu #smokes>>
+<<~ ahu slot=`#smokes`>>
 
 ## Useful Smokes
 
@@ -169,6 +168,6 @@ pnpm --filter @lararium/tw5 exec tsx scripts/smoke-plugin-boot.ts
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>
+<<^ code=`&#x0003;`>>
 
-<<^ code="&#x0004;" -> ?>>
+<<^ code=`&#x0004;` to=`?`>>

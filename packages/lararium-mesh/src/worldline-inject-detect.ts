@@ -3,7 +3,7 @@
  * SendMessage-continue reaching a RUNNING spirit) in a spirit's transcript, and turn each into a
  * `prov:Communication` edge (the rhizome's merge-where-messages-land leg, mesh/worldline-edge).
  *
- * ## Feasibility (the slice-2 flag, confirmed)
+ * ## Feasibility
  *
  * The current Claude-Code subagent model is mostly ONE-HANDOFF / run-to-completion: a spirit's
  * transcript carries one initial task prompt then its own assistant turns + tool-result echoes, and

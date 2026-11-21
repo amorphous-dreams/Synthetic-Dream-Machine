@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/hands-room/luna/` — 8 record(s) here, 8 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/hands-room/luna/`
+
+The scratch planning records of `.lares-scratch/research/hands-room/luna/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 8 record(s) stand here and 8 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[research/hands-room/|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/brief]] | brief | 2026-10-26 | `brief.md` |
+| [[brief2|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/brief2]] | brief | 2026-10-26 | `brief2.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final]] | research | 2026-10-26 | `final.md` |
+| [[final2|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/final2]] | research | 2026-10-26 | `final2.md` |
+| [[out|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/out]] | research | 2026-10-26 | `out.md` |
+| [[out2|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/out2]] | research | 2026-10-26 | `out2.md` |
+| [[own-wave1|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/own-wave1]] | research | 2026-10-26 | `own-wave1.md` |
+| [[peer-wave1|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/peer-wave1]] | research | 2026-10-26 | `peer-wave1.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Dvwyk6-uMI16DVJUYNTrzpqzhz0Dqm-Y9oIfN4dro6s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

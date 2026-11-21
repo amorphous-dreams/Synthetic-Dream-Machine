@@ -15,10 +15,11 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { catalogNamedBags, deriveRegisterBags, isVesselGround, type FleetMembership } from "../src/register-bags.js";
+import { catalogFaceSlotBags, catalogNamedBags, deriveRegisterBags, isFaceSlotBag, isVesselGround, litFaceOwnBags, wornFaceWikiBags, type FleetMembership } from "../src/register-bags.js";
+import { wikiBagUri, wikiSlotUri } from "../src/wiki-recipe.js";
 import { personaBagIdFor } from "../src/persona-scope.js";
-import { BAG_IDS, DAEMON_BAG_ID, PERSONA_NAMESPACE } from "../src/lar-uris.js";
-import { personaScopedBagIds, personaTagFromBagId } from "../src/persona-scope.js";
+import { BAG_IDS, DAEMON_BAG_ID, PERSONA_NAMESPACE, recipeUri } from "../src/lar-uris.js";
+import { personaScopedBagIds, personaTagFromBagId, personaSiblingBagIds, isFaceScopedBag, faceTagOfBag } from "../src/persona-scope.js";
 
 const WIKI = ["lar:///ha.ka.ba/bags/my-wiki", "lar:///ha.ka.ba/bags/my-wiki/draft"];
 const WORK = ["lar:///ha.ka.ba/bags/elyncia", "lar:///ha.ka.ba/bags/notes"];
@@ -46,12 +47,25 @@ describe("the ground every vessel stands on", () => {
     }
   });
 
+  test("RED: a face outside the cabal that stands a house canon wiki registers that wiki's slots and never its canon bag", () => {
+    // The active wiki's own canon bag rides `wikiBags` (`wornFaceWikiBags`). Where that wiki composes house canon (`lares`), the
+    // bag's live document rests in the Kahu realm: a face the cabal never admitted that registered the bag id held a read cap
+    // by name over a document it holds no seat in, so `meme get --bag lares` read the live document where the floor answers.
+    const slots = ["lar:///ha.ka.ba/wikis/lares/working", "lar:///ha.ka.ba/wikis/lares/draft"];
+    const outside = deriveRegisterBags({ fleets: [standingIn("g1")], wikiBags: [BAG_IDS.lares, ...slots] });
+    expect(outside).not.toContain(BAG_IDS.lares);
+    for (const slot of slots) expect(outside).toContain(slot);
+    // CONTROLS: the admitted vessel registers it; a wiki whose canon carries no house canon registers its own bag as before.
+    expect(deriveRegisterBags({ fleets: [standingIn("g1")], wikiBags: [BAG_IDS.lares, ...slots], systemCanon: true })).toContain(BAG_IDS.lares);
+    expect(deriveRegisterBags({ fleets: [standingIn("g1")], wikiBags: WIKI })).toEqual(expect.arrayContaining(WIKI));
+  });
+
   test("★ a face's relations are NOT ground — a vessel standing in nothing carries no one's circles ★", () => {
     // A single vessel-wide circles plane would put one persona's blocked list in the same document as another's
     // follows, where anything reading it correlates the faces a multitude exists to hold apart. So the
     // three planes that travel with a face arrive through a MEMBERSHIP, exactly as the persona plane does.
     const bags = deriveRegisterBags({ fleets: [] });
-    for (const stem of ["circles", "identities", "sessions"]) {
+    for (const stem of ["circles", "identities", "sessions", "intents"]) {
       expect(bags.some((b) => b.includes(stem))).toBe(false);
     }
   });
@@ -59,21 +73,21 @@ describe("the ground every vessel stands on", () => {
   test("★ standing in a group brings the WHOLE face, all four planes sharing ONE tag ★", () => {
     const bags = deriveRegisterBags({ fleets: [standingIn("g1")] });
     const face = personaScopedBagIds("g1");
-    for (const b of [face.persona, face.circles, face.identities, face.sessions]) expect(bags).toContain(b);
+    for (const b of [face.persona, face.circles, face.identities, face.sessions, face.intents]) expect(bags).toContain(b);
     // The tag is what binds them: read it off the persona plane and the other three follow from it.
     const tag = personaTagFromBagId(face.persona);
     expect(tag).not.toBeNull();
-    for (const b of [face.circles, face.identities, face.sessions]) expect(b.endsWith(`-${tag}`)).toBe(true);
+    for (const b of [face.circles, face.identities, face.sessions, face.intents]) expect(b.endsWith(`-${tag}`)).toBe(true);
   });
 
   test("★ two faces on one vessel keep DISJOINT sets — no plane is shared between them ★", () => {
     const a = personaScopedBagIds("g1");
     const b = personaScopedBagIds("g2");
-    const setA = new Set([a.persona, a.circles, a.identities, a.sessions]);
-    for (const id of [b.persona, b.circles, b.identities, b.sessions]) expect(setA.has(id)).toBe(false);
+    const setA = new Set([a.persona, a.circles, a.identities, a.sessions, a.intents]);
+    for (const id of [b.persona, b.circles, b.identities, b.sessions, b.intents]) expect(setA.has(id)).toBe(false);
     // and a vessel standing in both registers all eight, none collapsing into another
     const bags = deriveRegisterBags({ fleets: [standingIn("g1"), standingIn("g2")] });
-    for (const id of [...setA, b.persona, b.circles, b.identities, b.sessions]) expect(bags).toContain(id);
+    for (const id of [...setA, b.persona, b.circles, b.identities, b.sessions, b.intents]) expect(bags).toContain(id);
   });
 
   test("★ an anon dyad stands in no group, so it carries NO persona plane and no one's work ★", () => {
@@ -163,7 +177,6 @@ describe("no platform appears in the answer", () => {
 describe("★ the registry admits only its OWN kind ★", () => {
   const rec = (title: string, text: string) => ({ tiddler: { title, text }, meta: { authority: "t" } });
   const catalog = {
-    schemaVersion: "0.1",
     tiddlers: {
       "lar:///ha.ka.ba/bags/notes":                       rec("lar:///ha.ka.ba/bags/notes", "automerge:aaa"),
       // A wiki slot's per-device draft pointer: same title prefix, same automerge text, NOT a bag.
@@ -189,5 +202,65 @@ describe("★ the registry admits only its OWN kind ★", () => {
 
   test("an entry that never minted stays skipped — a doc that cannot resolve is not registered", () => {
     expect(catalogNamedBags(catalog)).not.toContain("lar:///ha.ka.ba/bags/never-minted");
+  });
+});
+
+describe("a group registers its own four planes and never another face's, by the derived shape", () => {
+  test("RED: the catalog names another face's plane bags and no list of faces is consulted: they stay out; CONTROL: ordinary catalog bags and the group's own four register", () => {
+    const mine = "ab".repeat(16), theirs = "cd".repeat(16);
+    const other = personaScopedBagIds(theirs);
+    const own = personaScopedBagIds(mine);
+    const bags = deriveRegisterBags({ fleets: [{ personaGroupId: mine, catalogNamed: [...WORK, other.persona, other.circles, other.identities, other.sessions, other.intents, own.circles] }] });
+    for (const foreign of [other.persona, other.circles, other.identities, other.sessions, other.intents]) expect(bags, foreign).not.toContain(foreign);
+    for (const bag of [...WORK, own.persona, own.circles, own.identities, own.sessions, own.intents]) expect(bags, bag).toContain(bag);
+  });
+  test("RED: an intents bag takes only a full lowercase 16-hex tag; CONTROL: its sibling set and wiki bag resolve", () => {
+    const tag = "a1".repeat(8);
+    const id = `lar:///ha.ka.ba/bags/intents-${tag}`;
+    expect(isFaceScopedBag(id)).toBe(true);
+    expect(faceTagOfBag(id)).toBe(tag);
+    expect(personaSiblingBagIds(`lar:///ha.ka.ba/bags/persona-${tag}`)?.intents).toBe(id);
+    for (const malformed of ["intents-xyz", `intents-${tag.slice(1)}`]) {
+      expect(isFaceScopedBag(`lar:///ha.ka.ba/bags/${malformed}`)).toBe(false);
+      expect(faceTagOfBag(`lar:///ha.ka.ba/bags/${malformed}`)).toBeNull();
+    }
+    expect(isFaceScopedBag(WIKI[0]!)).toBe(false);
+  });
+});
+
+describe("the boot's register set carries every layer the worn face's catalog announces", () => {
+  const row = (title: string, meta: Record<string, unknown> = {}) => ({ tiddler: { title, text: "" }, meta: { authority: "t", ...meta } });
+  const catalogOf = (...slugs: string[]) => ({ tiddlers: Object.fromEntries(slugs.map((slug) => [recipeUri("catalog", slug), row(recipeUri("catalog", slug))])) }) as unknown as Parameters<typeof catalogFaceSlotBags>[0];
+  const SLOT = { wikiBagId: wikiBagUri("lares"), workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
+  const layers = (slug: string) => [wikiSlotUri(slug, "personal"), wikiSlotUri(slug, "draft")];
+
+  test("each wiki the catalog names by its recipe row announces its personal layer and its draft; a working layer, the daemon wiki and a tombstoned row announce none", () => {
+    const catalog = { tiddlers: {
+      [recipeUri("catalog", "notes")]: row(recipeUri("catalog", "notes")),
+      [recipeUri("catalog", "daemon")]: row(recipeUri("catalog", "daemon")),
+      [recipeUri("catalog", "burned")]: row(recipeUri("catalog", "burned"), { deleted: true }),
+      [`${recipeUri("catalog", "notes")}/inner`]: row("inner"),
+      "lar:///ha.ka.ba/bags/notes": row("lar:///ha.ka.ba/bags/notes"),
+    } } as unknown as Parameters<typeof catalogFaceSlotBags>[0];
+    expect(catalogFaceSlotBags(catalog)).toEqual(layers("notes"));
+    expect(catalogFaceSlotBags(null)).toEqual([]);
+  });
+
+  test("the mount's own personal layer rides the lit face's set with no catalog row and no naming; the floor registers none", () => {
+    expect(wornFaceWikiBags({ slot: SLOT, lit: true }).registered).toContain(wikiSlotUri("lares", "personal"));
+    expect(wornFaceWikiBags({ slot: SLOT, lit: true }).sealed).toContain(wikiSlotUri("lares", "personal"));
+    expect(wornFaceWikiBags({ slot: SLOT, lit: false }).registered).not.toContain(wikiSlotUri("lares", "personal"));
+    expect(wornFaceWikiBags({ slot: SLOT, lit: false, announced: catalogFaceSlotBags(catalogOf("notes")) }).registered).toEqual([SLOT.wikiBagId, SLOT.workingBagId, SLOT.draftBagId]);
+  });
+
+  test("TWO FACES LIT: the worn face's set carries the layers its own catalog announces and none a sibling's catalog names; the sibling's own set carries no wiki's layer", () => {
+    const wornCatalog = catalogOf("notes"), siblingCatalog = catalogOf("ledger");
+    const worn = deriveRegisterBags({ fleets: [{ personaGroupId: "ab".repeat(16) }], wikiBags: wornFaceWikiBags({ slot: SLOT, lit: true, announced: catalogFaceSlotBags(wornCatalog) }).registered });
+    for (const bag of [...layers("lares"), ...layers("notes")]) expect(worn, bag).toContain(bag);
+    for (const bag of catalogFaceSlotBags(siblingCatalog)) expect(worn, bag).not.toContain(bag);
+    // The sibling registers what a lit face owns beside the worn one (`joined-face-auth`): no user wiki's personal layer or draft.
+    const sibling = deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags("0a1b2c3d-0a1b-4a1b-8a1b-0a1b2c3d4e5f") });
+    expect(sibling.filter(isFaceSlotBag)).toEqual([]);
+    for (const bag of [...layers("lares"), ...layers("notes"), ...layers("ledger")]) expect(sibling, bag).not.toContain(bag);
   });
 });

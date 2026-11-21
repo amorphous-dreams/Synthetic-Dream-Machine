@@ -6,9 +6,11 @@ import { faceAtomKeyFromSeed, fleetJoinOffer, mintFaceAtomSeed } from "@lararium
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFleetJoinAbandon, runFleetJoinRequest } from "../src/commands/fleet-join.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
+import { generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { atomSeedOf, seedFaceAtom } from "./atom-fixture.js";
-import { sealTestCustody } from "./found-route.js";
+import { sealTestCustody, TEST_PASSPHRASE } from "./found-route.js";
+import { wardCredential } from "../src/ward-credential.js";
 
 const GROUP_A = "0x" + "a1".repeat(16);
 const GROUP_B = "0x" + "b2".repeat(16);
@@ -39,10 +41,13 @@ describe("a fleet request keeps each face's atom", () => {
   test("an own-group offer carries A's key; a B offer carries a distinct key and leaves A's row", async () => {
     await withLarRoot(root, async () => {
       await sealTestCustody();
+      // The joining vessel stands founded; each join's tag rests in its own face's row.
+      await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       const atomA = await seedFaceAtom(0, GROUP_A);
       const seedA = await atomSeedOf(0);
 
-      const own = await runFleetJoinRequest({ offer: offerFor(GROUP_A) });
+      // Face A stood before the join, so its ward key's pop asks the face's own route for this one act.
+      const own = await runFleetJoinRequest({ offer: offerFor(GROUP_A), ward: wardCredential([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]) });
       expect(own.atomKey).toBe(atomA.key);
       expect(await runFleetJoinAbandon()).toBe(true);
 

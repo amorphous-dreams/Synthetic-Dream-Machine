@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-carry/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-carry/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-carry/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-carry/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:operator@workbench/import.mirror.requests` to=`lar://carry-wright:agent@workbench/carry.mirror.restores` ooda-ha=`5/declare-glyphs` drift-ward=`the full suite reports failures outside carry`>>
+
+Carry-Wright: Lares (Tasked Spirit): ->↺ Implemented mirror restoration before ingest. Differing mirror files stay untouched and stand off; journaled candidates do not repeat.
+
+Changed [[carry.ts|/home/joshu/.lares-scratch/placement-carry/wt/packages/lares-cli/src/commands/carry.ts]] and [[carry-verbs.test.ts|/home/joshu/.lares-scratch/placement-carry/wt/packages/lares-cli/tests/carry-verbs.test.ts]].
+
+* Carry tests: ''16 passed''.
+* Full CLI suite: ''1,809 passed, 19 failed'' across 164 files. The failures occur in unrelated founding and persona tests; they report `secret-home-unavailable`.
+* Build and stamp: passed.
+* Typecheck: passed.
+* Evergreen boundary: passed, checking 3,877 files.
+
+The full suite did not pass. No commit, push, or stash occurred.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the full suite needs a vessel secret document to clear its founding failures · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://carry-wright:agent@workbench/carry.mirror.restored` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FUU-tpzrsMwClsymDKgj7f1oV9-B75e6S2Dd2_NjVLI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

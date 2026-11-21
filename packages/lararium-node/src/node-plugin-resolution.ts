@@ -15,7 +15,7 @@
  * the local CAS (`verifyCasBytes`) — missing or corrupt bytes refuse by name, never silently as
  * an empty or trimmed set.
  *
- * `nodeOfferingLookup` builds the node Crossroads board's offering lookup: a verified selection
+ * `nodeOfferingLookup` builds the offering lookup over the node's publication board (`publicationDocUrl`): a verified selection
  * re-verifies every offering it resolves (`selectPluginBlobs` → `verifyPluginOffering`), so this
  * lookup stays a shape-only projection (`offeringAnnouncesFromDoc`) — never a second, redundant
  * certify pass.
@@ -37,6 +37,8 @@ export type NodePluginResolutionVerdict =
 export interface ResolveNodeIslandPluginCidsOpts {
   readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
   readonly recipe: WikiRecipe;
+  readonly onPromotedVoided?: (wiki: string, digests: readonly string[]) => void;
+  readonly promoted?: (wikiSlug: string) => Promise<readonly string[]>;
   readonly lookup: OfferingLookup;
   readonly readBytes: (cid: string) => Uint8Array | null;
 }
@@ -44,17 +46,17 @@ export interface ResolveNodeIslandPluginCidsOpts {
 /**
  * The node vessel's plugin selection for one recipe. The selection itself stands in mesh
  * (`resolveRecipePluginCids`), the one function the surface mount's resolver and the browser read too; this
- * door hands it the node's own inputs: the island document's blobs, the Crossroads lookup and the filesystem
+ * door hands it the node's own inputs: the island document's blobs, the publication board's lookup and the filesystem
  * content store.
  */
 export function resolveNodeIslandPluginCids(
   opts: ResolveNodeIslandPluginCidsOpts,
 ): Promise<NodePluginResolutionVerdict> {
-  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: opts.readBytes });
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: opts.readBytes, ...(opts.promoted ? { promoted: opts.promoted } : {}), ...(opts.onPromotedVoided ? { onPromotedVoided: opts.onPromotedVoided } : {}) });
 }
 
 /** @see the module docblock. */
-export function nodeOfferingLookup(crossroadsDoc: LarDoc | undefined | null): OfferingLookup {
-  const byOfferingCid = new Map(offeringAnnouncesFromDoc(crossroadsDoc).map((a) => [a.offeringCid, a.offering]));
+export function nodeOfferingLookup(publicationDoc: LarDoc | undefined | null): OfferingLookup {
+  const byOfferingCid = new Map(offeringAnnouncesFromDoc(publicationDoc).map((a) => [a.offeringCid, a.offering]));
   return (cid) => byOfferingCid.get(cid);
 }

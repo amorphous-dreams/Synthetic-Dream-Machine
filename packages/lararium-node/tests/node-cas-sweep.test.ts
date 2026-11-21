@@ -19,10 +19,10 @@
  *     clock moves neither verdict.
  */
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, type CasReferenceEntry, type GenesisCasManifest } from "@lararium/mesh";
+import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, ENGINE_CORE_ID, type CasReferenceEntry, type GenesisCasManifest, type LarDoc } from "@lararium/mesh";
 import { casSweep, listCasBlobs, writeCasEntriesFs, readCasPins, pinCas, releaseCas } from "../src/node-cas.js";
 import { genesisProtectSet } from "../src/genesis-artifact.js";
 
@@ -38,13 +38,16 @@ const pointer = (bagId: string, title: string, cid: string): CasReferenceEntry =
   ({ title, bagId, record: { tiddler: { title, _is_skinny: "yes", textCid: cid } } });
 /** A CAUSAL age reading, supplied by the caller — never a file's mtime, never `Date.now()`. */
 const OLD = 999_999;
+/** This vessel's life, as its store claim would mint it; another life spelled beside it. */
+const LIFE = "a".repeat(32);
+const NEXT_LIFE = "b".repeat(32);
 const YOUNG = 0;
 /** Still used by the `installCasSweep` tests below, whose own `ageOf` reads rolls off a fake realm
  *  clock and ignores mtime entirely — the file's mtime carries no meaning there either way. */
 const age = (_cid: string): void => { /* vestigial — age is supplied, not read from the fs */ };
 
 const genesis: GenesisCasManifest = {
-  format: "lararium-genesis-cas/v1", engineCid: "", pluginsCid: "",
+  format: "lararium-genesis-cas", engineCid: "", pluginsCid: "",
   blobs: [{ cid: blob("the engine core").cid, id: "tiddlywikicore", mimeType: "application/javascript", version: "1" }],
 };
 
@@ -52,11 +55,11 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("a landed pointer holds its blob; DROP the bag → grace 0 sweeps it", () => {
     const photo = blob("png bytes");
     writeCasEntriesFs([photo], casDir);
-    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
+    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), grace: 0, ageOf: () => OLD, currentLife: LIFE });
     expect(held.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
     // DROP <bag> — the bag's records leave the composite, so the derived count reads zero.
-    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
+    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), grace: 0, ageOf: () => OLD, currentLife: LIFE });
     expect(dropped.swept).toEqual([photo.cid]);
     expect(existsSync(join(casDir, photo.cid))).toBe(false);
   });
@@ -64,7 +67,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("CONTROL: a genesis blob never sweeps, referenced by nothing", () => {
     const core = blob("the engine core");
     writeCasEntriesFs([core], casDir);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), grace: 0, ageOf: () => OLD, currentFence: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), grace: 0, ageOf: () => OLD, currentLife: LIFE });
     expect(r.swept).toEqual([]);
     expect(r.protected).toEqual([core.cid]);
     expect(existsSync(join(casDir, core.cid))).toBe(true);
@@ -76,7 +79,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     const two = [pointer("lares", "lar:///t.w.b/photo", photo.cid), pointer("crossroads", "lar:///t.w.b/photo", photo.cid)];
     expect(casReferences(two).get(photo.cid)?.size).toBe(2);
     const afterDrop = two.filter((e) => e.bagId !== "lares");
-    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
+    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), grace: 0, ageOf: () => OLD, currentLife: LIFE });
     expect(r.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
   });
@@ -84,10 +87,10 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("the grace holds a young unreferenced blob; a dry run deletes nothing", () => {
     const fresh = blob("just staged, not yet landed");
     writeCasEntriesFs([fresh], casDir);
-    const young = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 60_000, ageOf: () => YOUNG, currentFence: 0 });
+    const young = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 60_000, ageOf: () => YOUNG, currentLife: LIFE });
     expect(young.swept).toEqual([]);
     expect(young.kept).toContain(fresh.cid);
-    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, dryRun: true, ageOf: () => OLD, currentFence: 0 });
+    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, dryRun: true, ageOf: () => OLD, currentLife: LIFE });
     expect(dry.swept).toEqual([fresh.cid]);
     expect(existsSync(join(casDir, fresh.cid))).toBe(true);
   });
@@ -96,7 +99,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     writeFileSync(join(casDir, "operator-sidecar.txt"), "{}");
     const b = blob("x");
     writeCasEntriesFs([b], casDir);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, currentFence: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, currentLife: LIFE });
     expect(r.swept).toEqual([b.cid]);
     expect(existsSync(join(casDir, "operator-sidecar.txt"))).toBe(true);
     writeCasEntriesFs([b], casDir);
@@ -105,11 +108,11 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
 });
 
 // ── GRACE AND PIN, NO GLOBAL NOW (basket-one #/grace-and-pin, ruled 2026-09-11) ──────────
-// A PIN `{cid, tier, holder, fence?}` beside the bag's caps holds its blob past any grace; the grace itself
+// A PIN `{cid, tier, holder, life?}` beside the bag's caps holds its blob past any grace; the grace itself
 // reads PER TIER off the realm's baseline (`graceForTier`), so two unreferenced blobs of different tiers
 // sweep at different ages. A pin stands by PRESENCE in the array `casSweep` is handed — never by comparing
 // a clock. `PinCap` (mesh) carries NO clock field at all (M7); this suite proves `casSweep` never reads
-// even the OPTIONAL `fence` to decide a sweep, with a pin that carries one a far-forward clock would have
+// a clock to decide a sweep, even through the OPTIONAL `life`, with a pin that carries one a far-forward clock would have
 // no bearing on still holding, and one absent from the array sweeping the instant its sidecar entry is
 // withdrawn.
 import { graceForTier, type PinCap } from "@lararium/mesh";
@@ -119,7 +122,7 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
     const b = blob("a working the Librarian will re-stand");
     writeCasEntriesFs([b], casDir);
     const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1" }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentLife: LIFE });
     expect(r.swept).toEqual([]);
     expect(r.pinned).toEqual([b.cid]);
     expect(existsSync(join(casDir, b.cid))).toBe(true);
@@ -130,23 +133,23 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
     writeCasEntriesFs([b], casDir);
     // `releaseCas` would have dropped it from the sidecar before this array was read — the production
     // caller never passes a withdrawn pin, so an absent pin is exactly what a release looks like here.
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins: [], currentFence: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins: [], currentLife: LIFE });
     expect(r.pinned).toEqual([]);
     expect(r.swept).toEqual([b.cid]);
   });
 
   test("CONTROL — SET-BACK and SET-FORWARD: a mocked wall clock changes NEITHER verdict — only presence\n" +
-       "        in `pins` decides, whether or not a `fence` rides along", () => {
-    const standing = blob("a pin whose optional fence a forward jump would have no bearing on");
+       "        in `pins` decides, whether or not a `life` rides along", () => {
+    const standing = blob("a pin whose optional life a forward jump would have no bearing on");
     const released = blob("an unpinned blob a backward jump would 'revive'");
     writeCasEntriesFs([standing, released], casDir);
     const realNow = Date.now();
-    const pins: PinCap[] = [{ cid: standing.cid, tier: "veil", holder: "vessel-1", fence: realNow - 1 }];
+    const pins: PinCap[] = [{ cid: standing.cid, tier: "veil", holder: "vessel-1", life: LIFE }];
     for (const skew of [-10 * 365 * 86_400_000, 10 * 365 * 86_400_000]) {   // 10y back, 10y forward
       vi.spyOn(Date, "now").mockReturnValue(realNow + skew);
       try {
         // dryRun: the same two files must still be standing for the NEXT skew's reading too.
-        const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, dryRun: true, currentFence: 0 });
+        const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, dryRun: true, currentLife: LIFE });
         expect(r.pinned, `skew ${skew}`).toEqual([standing.cid]);     // present → still stands
         expect(r.swept, `skew ${skew}`).toEqual([released.cid]);      // absent → still sweeps, every time
       } finally { vi.restoreAllMocks(); }
@@ -161,62 +164,80 @@ describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
     const rollsOld = 2;
     const tierOf = (cid: string) => (cid === veil.cid ? "veil" : "public") as const;
     const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0,
-                         ageOf: () => rollsOld, currentFence: 0,
+                         ageOf: () => rollsOld, currentLife: LIFE,
                          graceFor: (cid) => graceForTier(tierOf(cid), 1) });
     expect(r.swept).toEqual([pub.cid]);
     expect(r.kept).toContain(veil.cid);
   });
 });
 
-// ── M7′: the boot-epoch FENCE a `--held` pin reads against, and fail-toward-KEEPING on a torn sidecar ──────
-// Spec: a `--held` pin stamps a `fence` (this vessel's own boot epoch at pin time); `casSweep`'s new
-// `currentFence` option — when a caller supplies this vessel's CURRENT epoch — holds the pin only while
-// the epoch has not yet rolled past the stamp (the SAME law `cas-caps.ts`'s `pinnedCids` states). No
-// `currentFence` → every pin reads presence-only, exactly as before. A torn PER-RECORD field (a mistyped
-// `fence`) must still hold its cid (fail toward KEEPING); a torn WHOLE sidecar must REFUSE the read outright
-// (never silently "no pins"), so the sweep that depends on it refuses its run rather than un-pinning
-// everything the sidecar could not prove was ever un-pinned.
-describe("casSweep — M7′ the boot-epoch FENCE a `--held` pin reads against", () => {
-  test("a `--held` pin (fence stamped) KEEPS while the current epoch has not yet rolled past it", () => {
-    const b = blob("a held pin, boot epoch 3");
+// ── M7′: the vessel LIFE a `--held` pin reads against, and fail-toward-KEEPING on a torn sidecar ──────────
+// Spec: a `--held` pin stamps a `life` (this vessel's own life at pin time); `casSweep`'s REQUIRED `currentLife`
+// holds the pin only while that life IS the current one (the SAME law `cas-caps.ts`'s `pinnedCids` states):
+// equality alone, never an order. A torn PER-RECORD field (a mistyped `life`) must still hold its cid (fail
+// toward KEEPING); a torn WHOLE sidecar must REFUSE the read outright (never silently "no pins"), so the sweep
+// that depends on it refuses its run rather than un-pinning everything the sidecar could not prove un-pinned.
+describe("casSweep — M7′ the vessel LIFE a `--held` pin reads against", () => {
+  test("a `--held` pin (life stamped) KEEPS while that life stands", () => {
+    const b = blob("a held pin, this life");
     writeCasEntriesFs([b], casDir);
-    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", fence: 3 }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 3 });
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", life: LIFE }];
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentLife: LIFE });
     expect(r.pinned).toEqual([b.cid]);
     expect(r.swept).toEqual([]);
   });
 
-  test("a `--held` pin SWEEPS once a later boot moves the current epoch past the stamped fence", () => {
-    const b = blob("a held pin, superseded by the next boot");
-    writeCasEntriesFs([b], casDir);
-    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", fence: 3 }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 4 });
-    expect(r.pinned).toEqual([]);
-    expect(r.swept).toEqual([b.cid]);
+  test("a `--held` pin SWEEPS once another life holds the store, whichever way the two ids would sort", () => {
+    for (const [stamped, now] of [[LIFE, NEXT_LIFE], [NEXT_LIFE, LIFE]] as const) {
+      const b = blob(`a held pin of ${stamped}, another life standing`);
+      writeCasEntriesFs([b], casDir);
+      const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", life: stamped }];
+      const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentLife: now, dryRun: true });
+      expect(r.pinned).toEqual([]);
+      expect(r.swept).toContain(b.cid);
+    }
   });
 
-  test("CONTROL: a bare pin (no `fence` at all) keeps regardless of `currentFence` — the operator's own explicit pin", () => {
-    const b = blob("an operator pin, no fence, standing across any boot");
+  test("CONTROL: a bare pin (no `life` at all) keeps regardless of `currentLife` — the operator's own explicit pin", () => {
+    const b = blob("an operator pin, no life, standing across every life");
     writeCasEntriesFs([b], casDir);
     const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "operator" }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentFence: 1_000_000 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, ageOf: () => OLD, pins, currentLife: NEXT_LIFE });
     expect(r.pinned).toEqual([b.cid]);
     expect(r.swept).toEqual([]);
   });
 
-  // `CasSweepOptions.currentFence` is now REQUIRED (M7″ closed, G3 c4) — there is no more "omit it" escape to
-  // prove here; TypeScript itself refuses a `casSweep` call with no `currentFence` at every call site above.
+  // `CasSweepOptions.currentLife` stands REQUIRED — TypeScript itself refuses a `casSweep` call without it.
 });
 
 describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", () => {
-  test("a torn PER-RECORD fence (wrong type) still holds that cid — presence-only, not dropped whole", () => {
-    const held = blob("torn fence, should still pin");
-    writeFileSync(join(casDir, held.cid), "bytes");
-    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid: held.cid, tier: "veil", holder: "x", fence: "7" }]));
-    const pins = readCasPins(casDir);
-    expect(pins).toHaveLength(1);
-    expect(pins[0]!.cid).toBe(held.cid);
-    expect(pins[0]!.fence).toBeUndefined();   // the torn fence read as ABSENT, never as 0, never dropped
+  test("a torn PER-RECORD life (a counter where a life name stands, or an empty one) still holds that cid — presence-only, not dropped whole", () => {
+    for (const torn of [7, ""]) {
+      const held = blob(`torn life ${String(torn)}, should still pin`);
+      writeFileSync(join(casDir, held.cid), "bytes");
+      writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid: held.cid, tier: "veil", holder: "x", life: torn }]));
+      const pins = readCasPins(casDir);
+      expect(pins).toHaveLength(1);
+      expect(pins[0]!.cid).toBe(held.cid);
+      expect(pins[0]!.life).toBeUndefined();   // the torn life read as ABSENT, never dropped
+    }
+  });
+
+  test("RED: a sidecar record that carries a `fence` (a pin stamped under the retired boot count) and no `life` reads as a pin of an ended life: released, never a refusal; the next write rests the sidecar clean", () => {
+    const kept = "c".repeat(64), ended = "d".repeat(64), both = "e".repeat(64);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([
+      { cid: kept, tier: "veil", holder: "operator" },
+      { cid: ended, tier: "veil", holder: "import-job", fence: 3 },
+      { cid: both, tier: "veil", holder: "import-job", fence: 3, life: LIFE },
+    ]));
+    expect(readCasPins(casDir)).toEqual([
+      { cid: kept, tier: "veil", holder: "operator" },
+      { cid: both, tier: "veil", holder: "import-job", life: LIFE },
+    ]);
+    pinCas(casDir, { cid: "f".repeat(64), tier: "veil", holder: "operator" });
+    const rested = JSON.parse(readFileSync(join(casDir, ".pins.json"), "utf8")) as Array<Record<string, unknown>>;
+    expect(rested.map((p) => p["cid"])).toEqual([kept, both, "f".repeat(64)]);
+    expect(rested.some((p) => "fence" in p), "the rewrite carries no fence").toBe(false);
   });
 
   test("a record missing holder/tier still holds by cid alone", () => {
@@ -266,10 +287,10 @@ describe("readCasPins — a record shape PinCap never named refuses the read", (
     expect(() => readCasPins(casDir)).toThrow(/unknown field "notes"/);
   });
 
-  test("CONTROL: a record with ONLY PinCap's own fields (cid/tier/holder/fence) reads clean, no refusal", () => {
+  test("CONTROL: a record with ONLY PinCap's own fields (cid/tier/holder/life) reads clean, no refusal", () => {
     const cid = "f".repeat(64);
-    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", fence: 2 }]));
-    expect(readCasPins(casDir)).toEqual([{ cid, tier: "veil", holder: "x", fence: 2 }]);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", life: LIFE }]));
+    expect(readCasPins(casDir)).toEqual([{ cid, tier: "veil", holder: "x", life: LIFE }]);
   });
 
   test("MUTATION PROOF: a reader that silently drops the stray field and keeps the record lets a clock field in", () => {
@@ -300,7 +321,7 @@ describe("readCasPins — a record shape PinCap never named refuses the read", (
       protect: new Set(),
       pins: () => readCasPins(casDir),   // THROWS on the clock-field sidecar — the production wiring shape
       realmClock: () => clockAt(5),
-      currentFence: () => 0,
+      currentLife: () => LIFE,
       log: (line) => logs.push(line),
     });
     await expect(installed.sweep(false)).rejects.toThrow(/unknown field "until"/);
@@ -319,7 +340,7 @@ describe("installCasSweep — M7′ a corrupt sidecar REFUSES the tick's sweep r
     const sweep = installCasSweep({
       registry, casDir, references: async () => [], protect: new Set(),
       pins: () => readCasPins(casDir),   // THROWS on the torn sidecar — exactly the production wiring shape
-      currentFence: () => 0,
+      currentLife: () => LIFE,
       realmClock: () => clockAt(20), log: (line) => { logs.push(line); },
     });
     try {
@@ -340,7 +361,7 @@ describe("installCasSweep — M7′ a corrupt sidecar REFUSES the tick's sweep r
       const sweep = installCasSweep({
         registry, casDir, references: async () => [], protect: new Set(),
         pins: () => readCasPins(casDir),
-        currentFence: () => 0,
+        currentLife: () => LIFE,
         realmClock: () => clockAt(20), log: (line) => { logs.push(line); },
       });
       try {
@@ -387,7 +408,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
       references: async () => [],
       protect: new Set(genesis.blobs.map((b) => b.cid)),
       pins: () => [{ cid: kept.cid, tier: "veil", holder: "operator" }],
-      currentFence: () => 0,
+      currentLife: () => LIFE,
       realmClock: () => clockAt(epoch),
       log: () => {},
     });
@@ -424,7 +445,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
       const swept: string[][] = [];
       const sweep = installCasSweep({
         registry, casDir, references: async () => [], protect: new Set(), pins: () => [],
-        currentFence: () => 0,
+        currentLife: () => LIFE,
         realmClock: () => clockAt(epoch), log: () => {}, onSweep: (r) => { swept.push(r.swept); },
       });
       try {
@@ -454,7 +475,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
       const swept: string[][] = [];
       const sweep = installCasSweep({
         registry, casDir, references: async () => [], protect: new Set(), pins: () => [],
-        currentFence: () => 0,
+        currentLife: () => LIFE,
         realmClock: () => clock, log: () => {}, onSweep: (r) => { swept.push(r.swept); },
       });
       try {
@@ -479,7 +500,7 @@ describe("the sweep tick and the cas-sweep verb", () => {
     let refs: CasReferenceEntry[] = [];
     const sweep = installCasSweep({
       registry, casDir, references: async () => refs, protect: new Set(), pins: () => [],
-      currentFence: () => 0,
+      currentLife: () => LIFE,
       realmClock: () => clockAt(epoch), log: () => {},
     });
     try {
@@ -546,7 +567,7 @@ describe("the genesis protect set, when the seed will not read", () => {
 
   test("CONTROL — a WELL-FORMED seed answers its blob cids, so the guard still guards", () => {
     const cid = "a".repeat(64);
-    const seed = { format: "lararium-genesis-seed/v1", actorSeed: "actor",
+    const seed = { format: "lararium-genesis-seed", actorSeed: "actor",
       blobs: { x: { id: "x", sha256: cid, mimeType: "application/json", version: "1" } },
       tiddlers: {
         "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },
@@ -560,134 +581,200 @@ describe("the genesis protect set, when the seed will not read", () => {
   });
 });
 
-// ── M7′: THE BOOT EPOCH — bumped ONLY on a VESSEL's own claim, never a one-shot direct act ─────────────────
-// `owned-store.ts`'s `claimStore` bumps `<storageDir>/.boot-epoch` inline with the claim it already
-// serializes through one bound socket name. The single writer is whoever takes the claim; here that is
-// this one test process, in series, each claim released before the next opens — no second claimant ever
-// stands beside it, so a bump here races nothing. Proofs: a vessel claim bumps the epoch by exactly one
-// each time; a DIRECT (one-shot CLI) claim bumps nothing — the churn of unrelated `lares` commands must
-// never retire a `--held` pin; `readBootEpoch` answers 0 for a vessel that has never booted, never missing.
-import { claimStore, readBootEpoch, bootEpochPath } from "../src/owned-store.js";
+/**
+ * THE STORED ISLAND OUTLIVES THE SEED IT WAS BORN FROM. A vessel founded on an explicit genesis reloads its
+ * persisted oracle island at every boot under the fixed doc id, so after a rebuild that declares a new seed it
+ * still serves its grammar and canon floor from the blobs that island names. The sweep must keep those bytes:
+ * a protect set drawn from the declared seed alone leaves the stored island's own blobs (its grammar, its floor
+ * manifest, its floor snapshots) unguarded, and a realm clock that ages them out leaves the mounts reading
+ * bytes that are gone. The protect set reads the UNION of the declared seed and the stored island.
+ */
+describe("the genesis protect set, when the stored island names blobs the declared seed does not", () => {
+  let genesisDir = "";
+  beforeEach(() => { genesisDir = mkdtempSync(join(tmpdir(), "lares-genesisdir-")); });
+  afterEach(() => { rmSync(genesisDir, { recursive: true, force: true }); });
 
-describe("owned-store — M7′ the boot epoch bumps on a VESSEL claim only", () => {
-  let storeDir = "";
-  beforeEach(() => { storeDir = mkdtempSync(join(tmpdir(), "lr-boot-epoch-")); });
-  afterEach(() => { rmSync(storeDir, { recursive: true, force: true }); });
+  const seedCid = "a".repeat(64), oldCore = "b".repeat(64), oldFloor = "c".repeat(64);
+  const writeSeed = (): void => {
+    const seed = { format: "lararium-genesis-seed", actorSeed: "actor",
+      blobs: { x: { id: "x", sha256: seedCid, mimeType: "application/json", version: "1" } },
+      tiddlers: {
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar": { tiddler: { cid: "g" } },
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins": { tiddler: { cid: "p" } },
+      } };
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed), "utf8");
+  };
+  const storedIsland = (): LarDoc => ({
+    blobs: {
+      [ENGINE_CORE_ID]: { id: ENGINE_CORE_ID, version: "1", sha256: oldCore, mimeType: "application/javascript" },
+      "floor-lares":    { id: "floor-lares", version: "1", sha256: oldFloor, mimeType: "application/json", kind: "floor" },
+    },
+  }) as unknown as LarDoc;
 
-  test("a vessel that has never claimed reads epoch 0 — never missing, never a made-up high one", () => {
-    expect(readBootEpoch(storeDir)).toBe(0);
+  test("★ the stored island's blobs stand protected beside the declared seed's ★", () => {
+    writeSeed();
+    const set = genesisProtectSet(genesisDir, storedIsland());
+    expect(set).not.toBe("unreadable");
+    expect([...(set as ReadonlySet<string>)].sort()).toEqual([seedCid, oldCore, oldFloor]);
   });
 
-  test("a VESSEL claim bumps the epoch by exactly one; a second vessel claim (the next boot) bumps it again", async () => {
-    const first = await claimStore(storeDir, { holder: "vessel" });
-    expect(readBootEpoch(storeDir)).toBe(1);
-    await first.release();
-    const second = await claimStore(storeDir, { holder: "vessel" });
-    expect(readBootEpoch(storeDir)).toBe(2);
-    await second.release();
+  test("★ a stored island with no declared seed still protects its own blobs ★", () => {
+    const set = genesisProtectSet(genesisDir, storedIsland());
+    expect(set).not.toBe("unreadable");
+    expect([...(set as ReadonlySet<string>)].sort()).toEqual([oldCore, oldFloor]);
   });
 
-  test("CONTROL: a DIRECT (one-shot) claim bumps NOTHING — unrelated `lares` commands never retire a `--held` pin", async () => {
-    const claim = await claimStore(storeDir, { holder: "direct" });
-    expect(readBootEpoch(storeDir)).toBe(0);
-    await claim.release();
-    expect(readBootEpoch(storeDir)).toBe(0);
-  });
-
-  test("the bump is ATOMIC (temp + rename) — a reader never observes a torn counter", async () => {
-    const claim = await claimStore(storeDir, { holder: "vessel" });
-    try {
-      const raw = readFileSync(bootEpochPath(storeDir), "utf8");
-      expect(raw.trim()).toBe("1");
-      expect(existsSync(`${bootEpochPath(storeDir)}.${process.pid}.tmp`)).toBe(false);   // no stranded temp
-    } finally { await claim.release(); }
-  });
-
-  test("a torn `.boot-epoch` file reads as 0 — fail toward the OLDEST epoch, never a made-up high one", () => {
-    writeFileSync(bootEpochPath(storeDir), "not-a-number\n");
-    expect(readBootEpoch(storeDir)).toBe(0);
-  });
-
-  test("`claimStore`'s own StoreClaim carries the bumped epoch on `bootEpoch` — vessel holder only", async () => {
-    const vessel = await claimStore(storeDir, { holder: "vessel" });
-    try { expect(vessel.bootEpoch).toBe(1); } finally { await vessel.release(); }
-    const direct = await claimStore(storeDir, { holder: "direct" });
-    try { expect(direct.bootEpoch).toBeUndefined(); } finally { await direct.release(); }
+  test("★ a stored island whose blob metadata will not read withholds the sweep ★", () => {
+    writeSeed();
+    const torn = { blobs: { "floor-lares": { id: "floor-lares", version: "1", sha256: "not-a-cid", mimeType: "application/json" } } } as unknown as LarDoc;
+    expect(genesisProtectSet(genesisDir, torn)).toBe("unreadable");
   });
 });
 
-// ── M7″: `InstallCasSweepOptions.currentFence` WIRED into the production sweep — the last wire ────────────
-// M7′ left `casSweep`'s own `currentFence` option built but UNREACHED by any caller. M7″ closes that gap at
-// exactly the production boundary: `InstallCasSweepOptions.currentFence` is now REQUIRED, and the install
-// threads it straight into every `casSweep` call the tick and the verb make — never a cached boot-time
-// reading, read fresh every sweep. The live wiring (`open-node-vessel.ts:2299`) supplies `() => storeClaim.bootEpoch`,
-// the epoch THIS boot's own `claimStore({holder:"vessel"})` call bumped — never a second re-read of the
-// `.boot-epoch` sidecar file, which could race a concurrent bump. Proven here at the `installCasSweep` grain
-// (a real epoch cell standing in for the live `StoreClaim`); proven end to end over a real UDS vessel across
-// a real reboot in `probe-m7.sh` (ep4 shape).
-describe("installCasSweep — M7″ the production sweep threads a live `currentFence` through to `casSweep`", () => {
-  test("a `--held` pin (fence stamped at boot 1) sweeps once `currentFence` reports boot 2 — the live-reboot shape", async () => {
-    const held = blob("a held pin, fenced at boot 1");
+// ── THE VESSEL LIFE — minted ONLY on a VESSEL's own claim, never a one-shot direct act ──────────────────────
+// `owned-store.ts`'s `claimStore` mints `<storageDir>/.life` inside the claim it already serializes through one
+// bound socket name. Proofs: each vessel claim mints a fresh life, never the one at rest; a DIRECT (one-shot CLI)
+// claim mints none — the churn of unrelated `lares` commands never ends a `--held` pin; a store that names no
+// life, or a torn one, reads null; a life record restored or reused from an earlier life never comes back as the
+// claim's own life.
+import { claimStore, readVesselLife, vesselLifePath } from "../src/owned-store.js";
+
+describe("owned-store — a VESSEL claim mints a fresh life", () => {
+  let storeDir = "";
+  beforeEach(() => { storeDir = mkdtempSync(join(tmpdir(), "lr-vessel-life-")); });
+  afterEach(() => { rmSync(storeDir, { recursive: true, force: true }); });
+
+  test("a store no vessel ever claimed names no life", () => {
+    expect(readVesselLife(storeDir)).toBeNull();
+  });
+
+  test("each VESSEL claim mints its own life and rides it on the claim; the next claim names another", async () => {
+    const first = await claimStore(storeDir, { holder: "vessel" });
+    expect(readVesselLife(storeDir)).toBe(first.life);
+    await first.release();
+    const second = await claimStore(storeDir, { holder: "vessel" });
+    expect(readVesselLife(storeDir)).toBe(second.life);
+    expect(second.life).not.toBe(first.life);
+    await second.release();
+  });
+
+  test("CONTROL: a DIRECT (one-shot) claim mints no life and moves none — unrelated `lares` commands never end a `--held` pin", async () => {
+    const vessel = await claimStore(storeDir, { holder: "vessel" });
+    const life = vessel.life;
+    await vessel.release();
+    const direct = await claimStore(storeDir, { holder: "direct" });
+    try { expect(direct.life).toBeUndefined(); } finally { await direct.release(); }
+    expect(readVesselLife(storeDir)).toBe(life);
+  });
+
+  test("the mint is ATOMIC (temp + rename) — a reader never observes a torn id", async () => {
+    const claim = await claimStore(storeDir, { holder: "vessel" });
+    try {
+      expect(readFileSync(vesselLifePath(storeDir), "utf8").trim()).toBe(claim.life);
+      expect(existsSync(`${vesselLifePath(storeDir)}.${process.pid}.tmp`)).toBe(false);   // no stranded temp
+    } finally { await claim.release(); }
+  });
+
+  test("a torn life record names no life — never a made-up one", () => {
+    for (const torn of ["not-a-life\n", "7\n", `${"a".repeat(31)}\n`, ""]) {
+      writeFileSync(vesselLifePath(storeDir), torn);
+      expect(readVesselLife(storeDir), JSON.stringify(torn)).toBeNull();
+    }
+  });
+
+  test("RED: a mint that throws releases the claim it bound, so the next claim stands", async () => {
+    const dir = join(storeDir, "life-unwritable");
+    mkdirSync(join(dir, ".life"), { recursive: true });   // a directory where the life file rests: the atomic rename refuses
+    await expect(claimStore(dir, { holder: "vessel" })).rejects.toThrow();
+    rmSync(join(dir, ".life"), { recursive: true, force: true });
+    const next = await claimStore(dir, { holder: "vessel" });
+    try { expect(readVesselLife(dir)).toBe(next.life); } finally { await next.release(); }
+  });
+
+  test("RED: a life record restored or reused from an earlier life never revives it — the next claim mints past it", async () => {
+    const first = await claimStore(storeDir, { holder: "vessel" });
+    const earlier = first.life;
+    await first.release();
+    const second = await claimStore(storeDir, { holder: "vessel" });
+    await second.release();
+    writeFileSync(vesselLifePath(storeDir), `${earlier}\n`);   // a backup restored over the record
+    const third = await claimStore(storeDir, { holder: "vessel" });
+    try {
+      expect(third.life).not.toBe(earlier);
+      expect(readVesselLife(storeDir)).toBe(third.life);
+    } finally { await third.release(); }
+  });
+});
+
+// ── `InstallCasSweepOptions.currentLife` WIRED into the production sweep ────────────────────────────────────
+// The install threads `currentLife` straight into every `casSweep` call the tick and the verb make, read fresh
+// every sweep. The live wiring (`open-node-vessel.ts`) supplies `() => storeClaim.life`, the life THIS vessel's
+// own `claimStore({holder:"vessel"})` minted. Proven here at the `installCasSweep` grain (a life cell standing in
+// for the live `StoreClaim`).
+describe("installCasSweep — the production sweep threads a live `currentLife` through to `casSweep`", () => {
+  test("a `--held` pin (life stamped in life one) sweeps once `currentLife` reports another life — the live-reboot shape", async () => {
+    const held = blob("a held pin, stamped in life one");
     writeCasEntriesFs([held], casDir);
     const registry = fakeRegistry();
-    let epoch = 1;                                            // this boot's own epoch, as `claimStore` would hand it
-    let pace = 2;                                              // the realm's own roll — independent of the boot epoch (realmPace reads < 2 as "no pace yet")
+    let life = LIFE;                                           // this life's own id, as `claimStore` would hand it
+    let pace = 2;                                              // the realm's own roll — independent of the life (realmPace reads < 2 as "no pace yet")
     const sweep = installCasSweep({
       registry, casDir, references: async () => [], protect: new Set(),
-      pins: () => [{ cid: held.cid, tier: "veil", holder: "import-job", fence: 1 }],
-      currentFence: () => epoch,                               // the LIVE wire under test
+      pins: () => [{ cid: held.cid, tier: "veil", holder: "import-job", life: LIFE }],
+      currentLife: () => life,                                 // the LIVE wire under test
       realmClock: () => clockAt(pace), log: () => {},
     });
     try {
-      // Boot 1: currentFence (1) has not moved past the stamped fence (1) — the held pin still stands.
+      // Life one: the stamped life stands — the held pin still stands.
       // (This call also seeds the ledger: `held` is first seen unreferenced at roll 1.)
-      const bootOne = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
-      expect(bootOne.pinned).toEqual([held.cid]);
-      expect(bootOne.swept).toEqual([]);
-      // Boot 2 (a real reboot bumps the epoch) — and the realm has rolled past the floor grace too, so the
-      // pin law alone decides: the SAME sidecar entry now reads superseded and the blob is old enough to go.
-      epoch = 2;
+      const lifeOne = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
+      expect(lifeOne.pinned).toEqual([held.cid]);
+      expect(lifeOne.swept).toEqual([]);
+      // Another life (a real reboot mints one) — and the realm has rolled past the floor grace too, so the pin
+      // law alone decides: the SAME sidecar entry now reads ended and the blob has aged enough to go.
+      life = NEXT_LIFE;
       pace = 11;                                               // 9 rolls past the first-seen roll (2) — past the 8-roll floor
-      const bootTwo = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
-      expect(bootTwo.pinned).toEqual([]);
-      expect(bootTwo.swept).toEqual([held.cid]);
+      const lifeTwo = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
+      expect(lifeTwo.pinned).toEqual([]);
+      expect(lifeTwo.swept).toEqual([held.cid]);
     } finally { sweep.stop(); }
   });
 
-  test("CONTROL: a bare pin (no `fence`) keeps standing across every reboot, however `currentFence` moves", async () => {
-    const operatorPin = blob("the operator's own standing pin, no fence");
+  test("CONTROL: a bare pin (no `life`) keeps standing across every life", async () => {
+    const operatorPin = blob("the operator's own standing pin, no life");
     writeCasEntriesFs([operatorPin], casDir);
     const registry = fakeRegistry();
-    let epoch = 1;
+    let life = LIFE;
     const sweep = installCasSweep({
       registry, casDir, references: async () => [], protect: new Set(),
       pins: () => [{ cid: operatorPin.cid, tier: "veil", holder: "operator" }],
-      currentFence: () => epoch,
+      currentLife: () => life,
       realmClock: () => clockAt(20), log: () => {},
     });
     try {
-      for (const nextEpoch of [1, 2, 7]) {
-        epoch = nextEpoch;
+      for (const next of [LIFE, NEXT_LIFE, "c".repeat(32)]) {
+        life = next;
         const r = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
-        expect(r.pinned, `epoch ${nextEpoch}`).toEqual([operatorPin.cid]);
-        expect(r.swept, `epoch ${nextEpoch}`).toEqual([]);
+        expect(r.pinned, `life ${next}`).toEqual([operatorPin.cid]);
+        expect(r.swept, `life ${next}`).toEqual([]);
       }
     } finally { sweep.stop(); }
   });
 
-  test("MUTATION: a caller that never advances `currentFence` past the stamped boot (the 'drop the live wire' shape) leaves a superseded held pin standing", async () => {
-    const held = blob("a held pin a frozen fence wrongly keeps");
+  test("MUTATION: a caller that never re-reads `currentLife` (the 'drop the live wire' shape) leaves an ended held pin standing", async () => {
+    const held = blob("a held pin a frozen life wrongly keeps");
     writeCasEntriesFs([held], casDir);
     const registry = fakeRegistry();
     const sweep = installCasSweep({
       registry, casDir, references: async () => [], protect: new Set(),
-      pins: () => [{ cid: held.cid, tier: "veil", holder: "import-job", fence: 1 }],
-      currentFence: () => 1,                                   // MUTATION: frozen at boot 1 forever — never re-reads the live claim
+      pins: () => [{ cid: held.cid, tier: "veil", holder: "import-job", life: LIFE }],
+      currentLife: () => LIFE,                                 // MUTATION: frozen at life one forever — never re-reads the live claim
       realmClock: () => clockAt(20), log: () => {},
     });
     try {
-      // A real reboot happened (boot 2 is the live fact), but this caller's frozen `currentFence` never
-      // learns it — exactly the fault `open-node-vessel.ts`'s live `() => storeClaim.bootEpoch` wiring closes.
+      // Another life stands (the live fact), but this caller's frozen `currentLife` never learns it — exactly the
+      // fault `open-node-vessel.ts`'s live `() => storeClaim.life` wiring closes.
       const r = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
       expect(r.pinned, "the held pin WRONGLY still stands — the mutation this proof names").toEqual([held.cid]);
       expect(r.swept).toEqual([]);
@@ -695,3 +782,18 @@ describe("installCasSweep — M7″ the production sweep threads a live `current
   });
 });
 
+
+describe("installCasSweep — the daemon names its protect set to a reader (the one union, never re-derived)", () => {
+  test("the `cas-protect` verb answers the exact set the sweep guards: seed blobs and the stored island's together", async () => {
+    const seedBlob = blob("a seed-named engine blob"), islandBlob = blob("a blob only the stored island names");
+    const verbs = new Map<string, (a: Record<string, unknown>) => Promise<Record<string, unknown>>>();
+    const installed = installCasSweep({
+      registry: { register: (name, handler) => { verbs.set(name, handler); } },
+      casDir, references: () => [], protect: new Set([seedBlob.cid, islandBlob.cid]),
+      pins: () => [], realmClock: () => clockAt(5), currentLife: () => LIFE, log: () => {},
+    });
+    const answer = await verbs.get("cas-protect")?.({});
+    expect(answer?.["protect"]).toEqual([islandBlob.cid, seedBlob.cid].sort());
+    installed.stop();
+  });
+});

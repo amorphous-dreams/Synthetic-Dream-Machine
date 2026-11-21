@@ -30,7 +30,9 @@ describe.skipIf(genesisSkip)(`the genesis boot${genesisNote}`, () => {
     const engine = await bootGenesisWiki();
     engines.push(engine);
     const tw = loose(engine);
-    expect(tw.wiki.getTiddler("$:/palette")?.fields["text"]).toBe("lar:///ha.ka.ba/lares/api/lararium/palette/gruvbox-dark");
+    // The pointer names the gruvbox-dark palette; the tree's boot shadows name its `#/palette` dictionary slot, and the baked genesis
+    // carries whichever pointer its last bake read (genesis/unbaked.json declares the gap), so the vector reads the palette, not the bake.
+    expect(tw.wiki.getTiddler("$:/palette")?.fields["text"]).toMatch(/\/palette\/gruvbox-dark(#\/palette)?$/);
     expect(tw.wiki.getTiddler("$:/tags/LarariumKumu")?.fields["tags"]).toEqual(["$:/tags/Global"]);
     expect(tw.wiki.getTiddler("$:/config/FileTypeMappings/text/x-memetic-wikitext")?.fields["text"]).toBe("text/x-memetic-wikitext");
     // CONTROL: a title the seed never carried reads absent, so presence above comes from the seed alone.
@@ -112,10 +114,9 @@ describe.skipIf(genesisSkip)(`the genesis boot${genesisNote}`, () => {
     expect(leaks, "lent names reported as global assignments").toEqual([]);
     // CONTROL: the fork's leak check still sees a plain enumerable assignment on the global.
     const g = globalThis as Record<string, unknown>;
-    g["larProbeLeak"] = 1;
     try {
       warned.clear();
-      loose(engine).utils.evalSandboxed("exports.ok = true;", { exports: {} }, "control.js");
+      loose(engine).utils.evalSandboxed("globalThis.larProbeLeak = 1; exports.ok = true;", { exports: {} }, "control.js");
       expect(warned.has("larProbeLeak")).toBe(true);
     } finally {
       delete g["larProbeLeak"];

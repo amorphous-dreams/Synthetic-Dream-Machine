@@ -8,7 +8,7 @@ import {
 } from "../src/pronaos.js";
 
 const artifactRecord = () => ({
-  schema: "lararium-pronaos-artifact/v1" as const,
+  schema: "lararium-pronaos-artifact" as const,
   routes: [
     { path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store" as const, sha256: "a".repeat(64) },
     { path: "/manifest.webmanifest", file: "manifest.webmanifest", contentType: "application/manifest+json", cache: "no-store" as const, sha256: "b".repeat(64) },
@@ -33,6 +33,8 @@ const inventory = (): PronaosRouteInventory => ({
 describe("Pronaos route inventory", () => {
   it("accepts the exact artifact delivery facts", () => {
     expect(() => validatePronaosArtifactRecord(artifactRecord())).not.toThrow();
+    // A schema carrying a counter names no artifact record: it refuses by the shape it lacks, naming no version of its own.
+    expect(() => validatePronaosArtifactRecord({ ...artifactRecord(), schema: "lararium-pronaos-artifact/v1" } as never)).toThrow(/lacks the artifact shape/);
   });
 
   it("refuses artifact route collisions, traversal, unknown files, bad digests, and weakened delivery facts", () => {

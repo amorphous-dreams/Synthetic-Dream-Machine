@@ -1,0 +1,78 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/` — 15 record(s) here, 189 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/`
+
+The scratch planning records of `.lares-scratch/controller/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 15 record(s) stand here and 189 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[ash/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ash/index]] | 1 |
+| [[luna-rulings/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/index]] | 2 |
+| [[luna-unwired/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-unwired/index]] | 2 |
+| [[placement-plans/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/index]] | 18 |
+| [[scouts/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/index]] | 26 |
+| [[seats/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/index]] | 31 |
+| [[ship/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]] | 71 |
+| [[staged-memes/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/staged-memes/index]] | 1 |
+| [[terra-boot-order/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-boot-order/index]] | 2 |
+| [[terra-build-push/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/index]] | 2 |
+| [[terra-dial-fault/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-dial-fault/index]] | 2 |
+| [[terra-golden-road/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/index]] | 2 |
+| [[terra-no-receipt/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/index]] | 2 |
+| [[terra-shore-writes/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-shore-writes/index]] | 2 |
+| [[terra-spend-scout/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-spend-scout/index]] | 2 |
+| [[terra-tier-source/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/index]] | 2 |
+| [[terra-unwired-depth/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-depth/index]] | 2 |
+| [[terra-unwired-review/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-unwired-review/index]] | 2 |
+| [[terra-vault-civic/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-vault-civic/index]] | 2 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[awakens-harness-handback|lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-harness-handback]] | hand-back | 2026-11-07 | `awakens-harness-handback.md` |
+| [[awakens-resume|lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-resume]] | resume | 2026-11-06 | `awakens-resume.md` |
+| [[awakens-to-kiai-handoff|lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-to-kiai-handoff]] | hand-back | 2026-11-07 | `awakens-to-kiai-handoff.md` |
+| [[awakens-trueup-owed|lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-trueup-owed]] | plan | 2026-11-07 | `awakens-trueup-owed.md` |
+| [[canon-batch-2026-11-06|lar:///ha.ka.ba/lares/docs/history/workshop/controller/canon-batch-2026-11-06]] | plan | 2026-11-05 | `canon-batch-2026-11-06.md` |
+| [[canon-owed|lar:///ha.ka.ba/lares/docs/history/workshop/controller/canon-owed]] | plan | 2026-11-06 | `canon-owed.md` |
+| [[dogfood-stand-runbook|lar:///ha.ka.ba/lares/docs/history/workshop/controller/dogfood-stand-runbook]] | plan | 2026-11-08 | `dogfood-stand-runbook.md` |
+| [[handoff-awakens-to-kiai|lar:///ha.ka.ba/lares/docs/history/workshop/controller/handoff-awakens-to-kiai]] | hand-back | 2026-11-06 | `handoff-awakens-to-kiai.md` |
+| [[kiai-to-awakens-harness|lar:///ha.ka.ba/lares/docs/history/workshop/controller/kiai-to-awakens-harness]] | plan | 2026-11-07 | `kiai-to-awakens-harness.md` |
+| [[kiai-trueup-owed|lar:///ha.ka.ba/lares/docs/history/workshop/controller/kiai-trueup-owed]] | plan | 2026-11-12 | `kiai-trueup-owed.md` |
+| [[pr-canon-1107|lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-canon-1107]] | PR body | 2026-11-06 | `pr-canon-1107.md` |
+| [[pr-tag-burn|lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-tag-burn]] | PR body | 2026-11-06 | `pr-tag-burn.md` |
+| [[pr-test-door|lar:///ha.ka.ba/lares/docs/history/workshop/controller/pr-test-door]] | PR body | 2026-11-06 | `pr-test-door.md` |
+| [[state-2026-11-06|lar:///ha.ka.ba/lares/docs/history/workshop/controller/state-2026-11-06]] | plan | 2026-11-05 | `state-2026-11-06.md` |
+| [[survive-carry-notes|lar:///ha.ka.ba/lares/docs/history/workshop/controller/survive-carry-notes]] | plan | 2026-11-08 | `survive-carry-notes.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8LsmYjlQkWwO7cW-nNd8KO9_KMXPWV-0RmCawfDba6U`>>
+
+<<^ code=`&#x0004;` to=`?`>>

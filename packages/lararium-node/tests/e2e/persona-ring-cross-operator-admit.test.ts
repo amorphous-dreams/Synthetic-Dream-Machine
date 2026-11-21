@@ -20,7 +20,7 @@
  *      a real self-signed device edge, a real persona-KEL inception. It then boots LIVE
  *      (`openNodeVessel`) with its sync gate behind a real HTTP face dispatcher.
  *   2. A grant-holder wears a face (a synthetic chain at the founder's Nexus) and the test hand-signs a
- *      REAL `face-join-grant/v1` record for its face key — mirroring `face-grant-record.test.ts`'s
+ *      REAL `face-join-grant` record for its face key — mirroring `face-grant-record.test.ts`'s
  *      `founderEdge`/`signFaceGrantRecord` recipe and the production `face-join` verb's publish step
  *      (`operator-daemon-behavior.ts`) — and writes it onto the face's OWN PersonaGroup persona-plane
  *      bag, live, through the SAME `makeCatalogAccessor`/`storeOf` the ring itself reads.
@@ -72,7 +72,7 @@ import { makeCatalogAccessor } from "@lararium/tw5";
 // `CustodyLocked`.
 import {
   runInit, runFoundTheFace, foundSeedCharter, loadIdentityAnchors, openNodeVessel,
-  larSealHome, readNexusDoc, writeNexusDoc,
+  larSealHome, readNexusDoc, writeNexusDoc, seatWardGatherer, seatFaceRoute,
 } from "../../dist/src/index.js";
 import { mountHttpFaceDispatcher } from "../../dist/src/http-face-dispatcher.js";
 import { hearthSovereignPin } from "../../dist/src/hearth-sovereign-pin.js";
@@ -83,7 +83,11 @@ let seedCharter: NexusDoc | null = null;
 const charterDocAt = (federationPosture: "open" | "private"): NexusDoc => ({ ...seedCharter!, federationPosture });
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
-import { TEST_CUSTODY, openTestCustody } from "../found-route.js";
+import { TEST_CUSTODY, TEST_SLOT, openTestCustody } from "../found-route.js";
+// The founding runs from dist/, so the face route seats on dist/'s copy of the seam.
+seatFaceRoute(async () => [TEST_SLOT]);
+// A root act this suite drives with no ward route asks its "person", who answers the same test route (seat-harness#/the-ward).
+seatWardGatherer(async () => TEST_SLOT.pins.flatMap((pin) => (pin.kind === "passphrase" ? [{ kind: "passphrase" as const, passphrase: pin.passphrase }] : [])));
 import { loadFaceAtomOfGroup } from "../../src/face-atom-store.js";
 
 // ---------------------------------------------------------------------------
@@ -91,7 +95,7 @@ import { loadFaceAtomOfGroup } from "../../src/face-atom-store.js";
 // ---------------------------------------------------------------------------
 
 const TEST_ROOT = join(tmpdir(), `lar-persona-ring-e2e-${Date.now()}`);
-const FOUNDER   = { root: TEST_ROOT, storage: join(TEST_ROOT, "data", "lares", "vessel"), genesis: join(TEST_ROOT, "genesis") };
+const FOUNDER   = { root: TEST_ROOT, storage: join(TEST_ROOT, "hearth", "vessel"), genesis: join(TEST_ROOT, "genesis") };
 
 const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", "..", "genesis");
 
@@ -183,7 +187,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
 
   beforeAll(async () => {
     // ── Found + wear a face ──────────────────────────────────────────────────────────────────
-    await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis, custody: TEST_CUSTODY }));
+    await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));
     // The seed charter seats before the face, as the Stable founding act seats it: the face binds its AID.
     await withLarRoot(FOUNDER.root, () => foundSeedCharter({ name: "founder", readBack: async () => {} }));
     seedCharter = await withLarRoot(FOUNDER.root, async () => readNexusDoc(larSealHome()));
@@ -206,12 +210,12 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     if (!aid) throw new Error("[persona-ring-cross-operator-admit] the seed charter names no Nexus identifier");
     nexusAid = aid;
 
-    // ── The grant-holder's face + a REAL, live-published face-join-grant/v1 record naming its face key ───
+    // ── The grant-holder's face + a REAL, live-published face-join-grant record naming its face key ───
     const holder = await makePeerFace(nexusAid, grantHolderLabel);
     grantHolderFaceKey = holder.faceKey;
     const joineeAgentIdHex = `0x${holder.faceKey}`;
     const rec = await signFaceGrantRecord({
-      kind: "face-join-grant/v1",
+      kind: "face-join-grant",
       groupId: personaGroupId,
       joineeAgentIdHex,
       founderCard: "test-founder-card",
@@ -252,7 +256,8 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     // face-join verb's publish step writes (operator-daemon-behavior.ts).
     const catalog = makeCatalogAccessor(vessel.repo, vessel.catalogHandleUrl);
     const personaBagUri = personaScopedBagIds(personaGroupId).persona;
-    const store = await catalog.storeOf(personaBagUri);
+    // The plane rests as a private-synced home: its grant writer takes the home road, as the production face-join does.
+    const store = await catalog.homeStoreOf!(personaBagUri);
     if (!store) throw new Error("[persona-ring-cross-operator-admit] the face's persona-plane bag is unresolved");
     await store.put(
       { tiddler: { title: grantTitle, text: JSON.stringify(rec), kind: "face-join-grant" }, meta: { authority: "test-mint" } },
@@ -279,13 +284,22 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
   test("★ a cross-operator peer holding a VALID face-join grant record reaches the face's persona-plane doc ★", async () => {
     const holder = await makePeerFace(nexusAid, grantHolderLabel);
     expect(holder.faceKey).toBe(grantHolderFaceKey);
+    const lines: string[] = [];
+    const realLog = console.log;
+    console.log = (...args: unknown[]) => { lines.push(args.map(String).join(" ")); realLog(...args); };
     const { client } = dialFounder(syncUrl, gatePin, holder.face);
     const joineeRepo = new Repo({ network: [client] });
     try {
       const grantTitle = faceGrantTitle(personaGroupId, `0x${holder.faceKey}`);
       const outcome = await awaitTitle(joineeRepo, personaBagUrl, grantTitle, 8_000);
       expect(outcome, "the grant-holder never synced the persona-plane doc — the ring did not admit it").toBe("synced");
+      const admission = lines.filter((line) => line.startsWith("[lar-gate] session "));
+      expect(admission).toHaveLength(1);
+      expect(admission[0]).toMatch(/^\[lar-gate\] session .+: stranger$/);
+      // CONTROL: neither the proven face key nor the full peer identifier appears in the log.
+      expect(admission[0]).not.toContain(holder.faceKey);
     } finally {
+      console.log = realLog;
       client.disconnect();
       await joineeRepo.shutdown();
     }

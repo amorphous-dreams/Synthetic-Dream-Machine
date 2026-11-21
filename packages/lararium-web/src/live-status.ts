@@ -1,5 +1,6 @@
-import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import type { HearthFloorCard } from "@lararium/mesh";
+import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser/page";
+import type { FloorAnchor, HearthFloorCard } from "@lararium/mesh";
+import { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
 
 export interface ServedLocation {
   readonly origin: string;
@@ -18,35 +19,71 @@ export function sameOriginRelayUrl(location: Pick<ServedLocation, "protocol" | "
 }
 
 /**
- * The hearth's floor card the arrival URL carries in its fragment (`#floor=<card>`), which never reaches a server: the
- * oracle's floor pin and the key its snapshot is signed under, read by the mesh's one reader (`readHearthFloorCard`). A torn
- * card reads none.
+ * The relay a page dials: the one its own origin answers with, where that origin stands as a lararium's Pronaos. No URL names a relay.
+ *
+ * The proof stands on a capability, never a host: the same-origin arrival descriptor (`/.well-known/lar`)
+ * answers JSON whose `format` reads `lar-arrival`. A Vite dev server answers every unknown path with its
+ * index.html at 200, so the status proves nothing and the format decides; a file page has no origin to ask.
+ * Every miss reads undefined, the pure local boot. No timer decides: the origin answers or fails on its own.
+ *
+ * `bootLocal` is the person's own word: a promise a "boot local" button resolves. It races the probe, and its press
+ * aborts the fetch and reads undefined, so a probe that never answers never holds the boot.
  */
-export function floorCardOf(
-  hash: string,
-  read: (text: string) => HearthFloorCard | null,
-): { readonly text: string; readonly card: HearthFloorCard | null } | null {
-  const text = new URLSearchParams(hash.replace(/^#/, "")).get("floor");
-  return text ? { text, card: read(text) } : null;
-}
-
-/** The relay a page dials: the `?relay=` its URL names (the hearth's banner prints it), or none for a pure local boot. */
-export function resolveRelayUrl(params: URLSearchParams): string | undefined {
-  return params.get("relay") || undefined;
+export const ARRIVAL_DESCRIPTOR_PATH = "/.well-known/lar";
+export async function arrivalRelayUrl(
+  location: Pick<ServedLocation, "origin" | "protocol" | "host">,
+  fetchFn: (input: string, init?: { readonly signal: AbortSignal }) => Promise<Response>,
+  bootLocal?: Promise<void>,
+): Promise<string | undefined> {
+  if (location.protocol !== "http:" && location.protocol !== "https:") return undefined;
+  const abort = new AbortController();
+  const probe = async (): Promise<string | undefined> => {
+    try {
+      const response = await fetchFn(`${location.origin}${ARRIVAL_DESCRIPTOR_PATH}`, { signal: abort.signal });
+      if (!response.ok) return undefined;
+      const body: unknown = JSON.parse(await response.text());
+      return (body as { format?: unknown } | null)?.format === ARRIVAL_FORMAT ? sameOriginRelayUrl(location) : undefined;
+    } catch {
+      return undefined;
+    }
+  };
+  if (bootLocal === undefined) return probe();
+  const pressed = bootLocal.then((): undefined => { abort.abort(); return undefined; });
+  return Promise.race([probe(), pressed]);
 }
 
 /**
- * The line the web status owes when `?oracle=` names a hearth other than the relay's: a read at another hearth
- * dials under no Nexus the page holds, so the browser reads only its own hearth's oracle until a carried pin set
- * reaches browsers. Null when `?oracle=` is absent or names the relay's own host.
+ * WHAT THE FLOOR'S CARRIAGE DOOR TAKES (paste, file or QR; never a URL): the hearth's floor card as its carried file
+ * (the mesh's `floorCardCarriageText`, read by its `readFloorCardCarriage`: the place's signed floor pin claim for the flow route and the KEL rows that fold to its head, read by
+ * the mesh's one reader), or the place AID alone (W14 first contact: a deliberate person-to-person transfer, conveyed APART from
+ * the card). A torn card reads as a card that does not read; any other text reads as nothing. The card never anchors itself: a
+ * card file that carries a second key refuses whole, so no anchor rides beside it.
  */
-export function oracleElsewhereNote(oracleParam: string | null, relayUrl: string | undefined): string | null {
-  if (oracleParam === null || oracleParam === "") return null;
-  const hostOf = (url: string): string | null => { try { return new URL(url).host; } catch { return null; } };
-  const here = hostOf(oracleParam);
-  const relayHost = relayUrl === undefined ? null : hostOf(relayUrl);
-  if (here !== null && here === relayHost) return null;
-  return "the browser reads only its own hearth's oracle until a carried pin set reaches browsers; an ?oracle= naming another host is not read";
+export type FloorCarriage =
+  | { readonly kind: "card"; readonly text: string; readonly card: HearthFloorCard | null }
+  | { readonly kind: "anchor"; readonly aid: string };
+export function readFloorCarriage(
+  text: string,
+  read: { readonly file: (text: string) => string | null; readonly card: (text: string) => HearthFloorCard | null },
+): FloorCarriage | null {
+  const carried = text.trim();
+  if (/^[0-9a-f]{64}$/.test(carried)) return { kind: "anchor", aid: carried };
+  const card = read.file(carried);
+  return card === null ? null : { kind: "card", text: card, card: read.card(card) };
+}
+
+/**
+ * What this origin KEPT from the carriage door (and, for the anchor, from an authenticated admit): the card through the one reader,
+ * and the anchor where its AID reads. Each stands alone; the card adds no weight toward the anchor.
+ */
+export function keptFloorOf(
+  kept: { readonly card: string | null; readonly anchor: { readonly aid: string; readonly via: "admit" | "transfer" | "genesis" } | null },
+  read: (text: string) => HearthFloorCard | null,
+): { readonly floor: { readonly text: string; readonly card: HearthFloorCard | null } | null; readonly anchor: FloorAnchor | null } {
+  return {
+    floor: kept.card ? { text: kept.card, card: read(kept.card) } : null,
+    anchor: kept.anchor && /^[0-9a-f]{64}$/.test(kept.anchor.aid) ? { aid: kept.anchor.aid, via: kept.anchor.via } : null,
+  };
 }
 
 export interface ConnectionPresentation {
@@ -109,7 +146,7 @@ function setOrRemove(element: HTMLElement, name: string, value: string | null): 
 }
 
 /** Paint the vessel's replica of its current relay state; this reports the adapter's causal edges. */
-export function mountLiveStatus(parent: HTMLElement, state: BrowserConnectionState): () => void {
+export function mountLiveStatus(parent: HTMLElement, state: Pick<BrowserConnectionState, "getSnapshot" | "subscribe">): () => void {
   const connectionRow = makeRow(parent, "crossing", "connection");
   const modeRow = makeRow(parent, "mode", "mode");
   let authenticatedBefore = false;

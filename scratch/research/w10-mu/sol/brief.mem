@@ -1,0 +1,81 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/w10-mu/sol/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-mu/sol/brief.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-mu/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Sol-Muwright: Lares (Tasked Spirit)
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in your seat dir. Handback to
+/home/joshu/.lares-scratch/research/w10-mu/sol/out.md (NOT final.md), under 1200 words, ending WORDS=&lt;n>. No git writes, no suites. You hold web search: cite
+URLs for every outside claim, and mark MEASURED (file:line or URL) vs LEAD (your reading).
+
+PRIOR ROUNDS (read first): /home/joshu/.lares-scratch/research/w10-knock/{sol,luna}/out.md and out2.md, and the
+controller's synthesis below. Code: /home/joshu/.lares-scratch/w28-gate/wt (gate-bundle.ts, face-gate-server.ts,
+face-gate.ts, face-dial.ts, fleet-join.ts, device-admit.ts; canon face-proof.mem, w28-gate-lane.mem).
+
+THE SYNTHESIS. The knock (an HMAC over the gate bundle's digest, which hashes the public pin) rides the dial's URL path
+and selects the gate at an exact `<route>/<knock>` path. On the floor route the pin goes to strangers by design: no harm.
+On the sovereign route, a party holding BOTH the pin and the request path (a household TLS terminator's log, a herm that
+sees the upgrade) learns which Nexus route a dial targets: the target only, never which face, never content. The
+joinee's first dial needs the sovereign pin before its grant lands, so no secret beyond the fleet answer reaches it.
+Two end states stand:
+A (operator's lean, the house's lean): name the sovereign leak under an operator ruling, with its attacker spelled
+out; keep the public knock; dispatch stays one exact lookup; custody unchanged.
+B: a per-(Nexus, route) knock key rides the pin bundle in the fleet answer and the admit; the URL carries a fresh tag
+per dial; every kapae removal rotates and redistributes the key causally to all remaining devices; moves admission
+bytes before X0.
+A controller candidate (DH between face-scoped key and gate key, trial-matched) already burned: no gate roster, early
+vessel naming, Ed25519 keys.
+
+THE OPERATOR ASKS FOR A MU TEST OF A. "Mu" unasks a malformed question: first test whether "A or B" frames the problem
+well, or whether a third shape, or no question at all, stands under it. Then test A against:
+# PRIOR ART, measured on the web. Probing resistance and access-gated rendezvous: obfs4 / Tor bridge lines (the bridge
+line carries a secret so a prober who knows the address cannot confirm the bridge), Tor v3 onion services (blinded
+keys, HSDir, client authorization and its revocation cost), WireGuard (mac1 public-key-keyed, the psk option),
+fwknop SPA, Signal sealed sender (delivery tokens from profile keys, rotation on block), I2P/garlic tunnels, ECH,
+Nym/Loopix mixnets. Where did each project land on "public selector + leak" vs "secret selector + rotation", why,
+and what did it cost them later? Find any postmortem or regret.
+# GOLDEN PRINCIPLES. Saltzer & Schroeder (economy of mechanism, least privilege, open design), Kerckhoffs, the
+end-to-end argument, contextual integrity (Nissenbaum), "metadata is the message", threat-model-before-mechanism
+(e.g. STRIDE, LINDDUN for privacy). Does A honour them, and which does B serve better?
+# PATTERN-INTEGRITY RHYMES in deep knowledge domains. Find structural rhymes, not decorative metaphors, and say where
+each rhyme breaks: biology (immune self/non-self recognition, MHC presentation, quorum sensing's public signals),
+information theory (side channels, the leak's capacity in bits per dial), physics or thermodynamics of information,
+ecology (aposematism vs crypsis: when does a visible signal pay?), linguistics (the shibboleth as a public test),
+Polynesian wayfinding or other knowledge systems where a route stays known yet a landing stays protected.
+# HOUSE LAWS. One name, one relation (does B make the pin carry two relations: gate authentication AND access
+secret?); no global now; build the end state; the herm carries and never reads; a user introduces, an operator
+admits; DreamNet as pre-SIN Shadowland (local, invited, pseudonymous). Does A's leak cut against any of these?
+# THE FLIP. State the precise attacker A names, the bits it leaks, and the concrete event that would flip A to B
+(e.g. a pin pasted outside the members). Name the red tests and known-positive controls that would pin A's claim.
+
+Hand back: the Mu verdict first (well-formed or unasked, and why), then per section, then ONE lean with what flips it.
+Lens: weigh the ENGINEERING and operational side hardest; seek what B would cost over years.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1iFHxANuNKXo7rL4twWaD-tSMUEMiEXzHWQjri1gz4E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/reaction-graph.mem"
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 16
 namespace     = "&#x2299;"
 role          = "invariant capability: in-memory reaction graph — subscribe, fire, load, UEFN dispatch semantics"
 source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
@@ -19,7 +15,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/reaction-graph"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Reaction Graph
 
@@ -28,7 +24,7 @@ Routes (fromUri, listenable) → (toUri, subscribable) bindings; wired and subsc
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the incoming binding set — fromUri, listenable, toUri, subscribable, source (wired|subscribed)
 ⏿ orient dispatch mode: fireSync for view-layer; fire/fireAll for async; fireRace/fireRush reserved
@@ -38,7 +34,7 @@ Routes (fromUri, listenable) → (toUri, subscribable) bindings; wired and subsc
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -53,7 +49,7 @@ The graph defines the Tier 0 dispatch surface — all kumu event crossings route
 
 <<~/ahu>>
 
-<<~ ahu #/binding-shape>>
+<<~ ahu slot=`#/binding-shape`>>
 
 !! Binding Shape
 
@@ -71,11 +67,13 @@ source       = "wired | subscribed"
 
 <<~/ahu>>
 
-<<~ ahu #/dispatch-modes>>
+<<~ ahu slot=`#/dispatch-modes`>>
 
 !! Dispatch Modes
 
-Four fire semantics — all run per (fromUri, trigger):
+Four fire semantics name the dispatch design — all run per (fromUri, trigger). `ReactionGraph`
+(`packages/lararium-mesh/src/reaction-graph.ts`) implements `fireSync` alone; the other three name
+the semantics the concurrency sigils carry, and no method implements them:
 
 ```
 fire / fireAll   — hui: wait for all handlers to complete (async)
@@ -86,11 +84,11 @@ fireRush         — puka: first to resolve wins; others receive AbortSignal
 
 `fireSync` sets the default for view-layer reactions (navigation, zoom, relay).
 `fire` / `fireAll` for async workflows (store operations, TW5 hydration).
-`fireRace` / `fireRush` reserved for competitive dispatch (future: multi-realm routing).
+`fireRace` / `fireRush` stay reserved for competitive dispatch (multi-realm routing names their first use).
 
 <<~/ahu>>
 
-<<~ ahu #/subscription-api>>
+<<~ ahu slot=`#/subscription-api`>>
 
 !! Subscription API
 
@@ -112,7 +110,7 @@ The returned Promise resolves when the listenable fires once; `cancel()` rejects
 
 <<~/ahu>>
 
-<<~ ahu #/update-invariant>>
+<<~ ahu slot=`#/update-invariant`>>
 
 !! Update Invariant
 
@@ -125,7 +123,7 @@ This preserves in-flight kukali suspensions across TW5 wiki-change events.
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -140,15 +138,15 @@ reaction-roles = ["listenable", "subscribable", "observes", "throttles", "deboun
 
 <<~/ahu>>
 
-<<~ ahu #/yin-collapse-target>>
+<<~ ahu slot=`#/yin-collapse-target`>>
 
-!! Yin-Collapse — Completed (2026-05-15)
+!! Yin-Collapse
 
-`ReactionEngine` (TS inline dispatch class) removed. The TW5 wiki IS the reactive engine.
-The yin-collapse is not provisional — it landed and shipped. `reaction-router.ts` is
-the target architecture, not a bridge to it.
+No `ReactionEngine` (TS inline dispatch class) stands. The TW5 wiki carries the reactive engine.
+The yin-collapse holds as the architecture, never as a provisional step. `reaction-router.ts` carries
+the target architecture and bridges to nothing.
 
-!!! What shipped
+!!! What stands
 
 ```
 packages/lararium-tw5/src/modules/reaction-router.ts
@@ -164,15 +162,15 @@ packages/lararium-tw5/src/modules/reaction-router.ts
     → posts IslandMsg_Event to vessel (cross-island boundary)
 ```
 
-`ReactionGraph` and `extractReactionBindings` reside in `reaction-graph.ts`
-(imported by `reaction-router.ts`). `ReactionEngine` class removed from
-`kumu-device.ts`. No inline `re.onChangeset()` call remains anywhere.
+`ReactionGraph` and `extractReactionBindings` reside in `packages/lararium-mesh/src/reaction-graph.ts`
+(imported by `reaction-router.ts`). No inline dispatch class and no `re.onChangeset()` call stands in TS;
+the record keeps how the collapse reached this shape (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/reaction-surface-record`>>).
 
-TS irreducible layer carries only: `MemeSyncAdaptor` + `LarTiddlerStore` + `VesselIslandPool` + Keyhive.
+TS irreducible layer carries only: the wiki shore (`IslandAdaptor`) + `LarTiddlerStore` + `VesselIslandPool` + Keyhive.
 
 !!! Cross-island boundary (Path M)
 
-`reaction-router.ts` fires `IslandMsg_Event` when a nalu-triggered reaction dispatches.
+When a nalu-triggered reaction dispatches, `reaction-router.ts` fires `tm-verse-event` and the island kernel posts it as `IslandMsg_Event`.
 Vessel receives `IslandMsg_Event` → routes to `VerbDispatcher` via `placeVerb()`.
 Outcome tiddler written to shared admin CRDT. CRDT convergence = distributed promise.
 Promise-pipelining law: islands fire without waiting for vessel ACK.
@@ -194,22 +192,22 @@ exclusively through `wiki.dispatchEvent("tm-verse-event")` inside the nalu hook.
 
 <<~/ahu>>
 
-<<~ ahu #/scope-1-networking>>
+<<~ ahu slot=`#/scope-1-networking`>>
 
-!! Scope 1 ~ the CRDT-wave surface [surgical 2026-07-03]
+!! Scope 1 ~ the CRDT-wave surface
 
-The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the two-scopes ruling — the CID / CAD-blob / CRDT DreamNet→Meshpalace networking pipe TS reaches through the full tools-stack, coordinated by `@daemon` verbs (the cross-island `IslandMsg_Event` → `placeVerb()` path, #yin-collapse-target). Its ''CRDT-causal clock runs in TS'' (structural causality — CRDT convergence as the distributed promise, heads/ITC-shaped), distinct from the py/R FFZ-rhythm sensorium gates of ''Scope 2'' (the general Sensorium-palaces). Both scopes consume the whole model and braid TS-coordination with py/R-tooling. the ruling seats the reaction-wave on the TS structural clock.
-
-<<~/ahu>>
-
-<<~ ahu #/edges>>
-
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kukali">>
+The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the two-scopes ruling — the CID / CAD-blob / CRDT DreamNet→Meshpalace networking pipe TS reaches through the full tools-stack, coordinated by `@daemon` verbs (the cross-island `IslandMsg_Event` → `placeVerb()` path, #yin-collapse-target). Its ''CRDT-causal clock runs in TS'' (structural causality — CRDT convergence as the distributed promise, heads/ITC-shaped), distinct from the py/R FFZ-rhythm sensorium gates of ''Scope 2'' (the general Sensorium-palaces). Both scopes consume the whole model and braid TS-coordination with py/R-tooling. The ruling seats the reaction-wave on the TS structural clock.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;62nleymhqoZiW9IcJ0R4LiHnhyk3VQS975wR5IEOUMQ
+<<~ ahu slot=`#/edges`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kukali`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QM96DzFxOr1tOL0KIpaIZJQ0dNemm5f32qKxjkjTPaw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

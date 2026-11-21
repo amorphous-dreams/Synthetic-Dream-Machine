@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/books/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/books/index.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "landing page — the Elyncia books as a TW5 ToC over the spine memes; each spine walks its chapter's chunks through the graph"
 title     = "lar:///ha.ka.ba/elyncia/books/index"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/books/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Elyncia Books
 
@@ -29,7 +25,7 @@ uplift to live wikitext last.
 
 <<~/ahu>>
 
-<<~ ahu #/toc>>
+<<~ ahu slot=`#/toc`>>
 
 \procedure BookShelf() <<toc-selective-expandable "ha.ka.ba/elyncia/books/index" sort="uri-path">>
 
@@ -38,9 +34,9 @@ uplift to live wikitext last.
 //(The ToC walks the spines by their `books/index` tag. Until the live wiki renders it, the
 shelf reads plainly:)//
 
-# [[Elyncia 01 ~ A Broken World|a-broken-world/spine.md]]
-# [[Elyncia 02 ~ The Lares DreamNet|the-lares-dreamnet/spine.md]] //(the pilot)//
-# [[Elyncia 03 ~ Daemons and the Metaphysics of Play|daemons-and-metaphysics/spine.md]]
+# [[Elyncia 01 ~ A Broken World|lar:///ha.ka.ba/elyncia/books/a-broken-world/spine]]
+# [[Elyncia 02 ~ The Lares DreamNet|lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine]] //(the pilot)//
+# [[Elyncia 03 ~ Daemons and the Metaphysics of Play|lar:///ha.ka.ba/elyncia/books/daemons-and-metaphysics/spine]]
 # Elyncia 04 ~ The Referee Noosphere Guide — ''referee tier'': the spine rides `elyncia-referee`
   and renders only in referee recipes
 # The Style Base Layer — migrates as a ''single meme'' (already chunk-sized), referee-side,
@@ -48,6 +44,6 @@ shelf reads plainly:)//
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LK7uS3ljZssSjDcIEFQsJ5wzjlVZ4fAr8GuZcg81lR8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sCLInSk1kZNp8rCD6baX510DEq6ykjf105X9N0c0SJw`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -49,7 +49,7 @@ fi
 LAR_ROOT="$TB" node --input-type=module -e '
 import { readPersonaPlanes, PERSONA_GROUP_ID_TIDDLER } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
 import fs from "node:fs";
-const path = process.argv[1] + "/data/lares/vessel/social-bootstrap.json";
+const path = process.argv[1] + "/hearth/vessel/social-bootstrap.json";
 const t = JSON.parse(JSON.parse(fs.readFileSync(path, "utf8")).text).tiddlers;
 const entries = Object.entries(t).map(([title, v]) => ({ title, text: v.text ?? null }));
 const fail = (m) => { console.error("  MISMATCH (place): " + m); process.exitCode = 1; };
@@ -82,7 +82,7 @@ fi
 LAR_ROOT="$TB" node --input-type=module -e '
 import { readPersonaPlanes, personaBagIdFor, mountedPlaneBagId, PERSONA_GROUP_ID_TIDDLER } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
 import fs from "node:fs";
-const path = process.argv[1] + "/data/lares/vessel/social-bootstrap.json";
+const path = process.argv[1] + "/hearth/vessel/social-bootstrap.json";
 const t = JSON.parse(JSON.parse(fs.readFileSync(path, "utf8")).text).tiddlers;
 const entries = Object.entries(t).map(([title, v]) => ({ title, text: v.text ?? null }));
 

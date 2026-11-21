@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-s7-1/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-s7-1/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ The shim now snapshots enumerable host globals before each sandboxed module runs and filters the warning against that snapshot. The new regression reproduced the fault before the fix: both the clean-module and leaking-module cases failed.
+
+The green run stopped at the ''stale dist guard''. Seat law assigns the rebuild to the lead, so the fix and the requested browser-host and genesis controls still need verification after that rebuild. Typecheck passed before a small final edit that narrowed the replacement to the check epilogue.
+
+The seat hand-back appears in [[out.md|/home/joshu/.local/state/lares-broker/seats/seat-lvhZg1/out.md]] and [[final.md|/home/joshu/.local/state/lares-broker/seats/seat-lvhZg1/final.md]]. No commit or e2e run occurred.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:☕⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`rebuild and run the three requested test files to check the fix · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://codex:agent@seat/shim.fix.awaiting-verification` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EtT8r1wFNPJyGUC-Dadh5lssqbrq5kpAGIcgTzbg1Gc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

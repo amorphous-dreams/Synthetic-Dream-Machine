@@ -12,8 +12,8 @@ type: text/vnd.tiddlywiki
      flow resumes only once every child settles, and a failure in any child reaches the container:
 
          <<~ hui>>
-           <<~ lele "lar:///target-a">>
-           <<~ lele "lar:///target-b">>
+           <<~ lele to=`lar:///target-a`>>
+           <<~ lele to=`lar:///target-b`>>
          <<~/hui>>
 
      A //hui// gathers and holds the gathering — no member leaves while another still travels. An

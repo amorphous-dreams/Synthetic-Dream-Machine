@@ -9,17 +9,19 @@
  *
  * Scratch custody, synthetic keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import * as ed from "@noble/ed25519";
 import { hex } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "../src/custody-holder.js";
-import { removeCustodyRow } from "../src/custody-seat.js";
+import { CustodyRecordUnavailable } from "../src/custody-holder.js";
+import { removeCustodyRecord } from "../src/custody-seat.js";
 import {
   generateOrLoadPersonaGroupRoot, landPersonaRoot, listPersonaRosterLines, loadPersonaGroupRootSeed, orphanPersonaRootKey,
 } from "../src/node-vessel-identity.js";
-import { larIdentityDir } from "../src/vessel-paths.js";
+import { faceRecordNames, handleRecordPath } from "./face-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -29,10 +31,10 @@ const pairOf = async (fill: number) => {
   return { signingKey: hex(seed), verifyingKey: hex(await ed.getPublicKeyAsync(seed)) };
 };
 const bytesOf = (): Record<string, string> =>
-  Object.fromEntries(readdirSync(larIdentityDir()).filter((n) => /persona-(group-root|roster)/.test(n)).map((n) => [n, readFileSync(join(larIdentityDir(), n)).toString("hex")]));
+  Object.fromEntries(faceRecordNames().filter((n) => /persona-(group-root|roster)/.test(n)).map((n) => [n, readFileSync(handleRecordPath(n)).toString("hex")]));
 const readingOf = async (p: Promise<unknown>): Promise<string> => {
   const e = await p.then(() => null, (err: unknown) => err);
-  return e === null ? "LANDED" : e instanceof CustodyRowUnavailable ? e.reading : `threw: ${(e as Error).message.slice(0, 60)}`;
+  return e === null ? "LANDED" : e instanceof CustodyRecordUnavailable ? e.reading : `threw: ${(e as Error).message.slice(0, 60)}`;
 };
 
 let seat: SeatedScratchCustody;
@@ -72,8 +74,8 @@ describe("a restore lands a carried root", () => {
     expect(await orphanPersonaRootKey(1), "a root the roster names counts as held, never as an orphan").toBeNull();
     expect(await orphanPersonaRootKey(4)).toBeNull();
     // The roster row leaves: the root row stands with no line, an orphan.
-    const roster = readdirSync(larIdentityDir()).find((n) => /persona-roster/.test(n))!;
-    expect(await removeCustodyRow("identity", roster)).toBe(true);
+    const roster = ".persona-roster-h1.json";
+    expect(await removeCustodyRecord("identity", roster)).toBe(true);
     expect(await orphanPersonaRootKey(1)).toBe(carried.verifyingKey);
     // Another key refuses over the orphan, and the refusal adopts nothing: no roster line appears.
     const before = bytesOf();

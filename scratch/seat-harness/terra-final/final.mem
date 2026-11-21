@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The relay and watchdog have material boundary gaps. The findings below are ''LEAD'': conclusions from source and test inspection, not reproductions. The supplied 21/21 local result and green CI are ''MEASURED'' reports from the hand-off; I did not rerun tests because the review was read-only.
+
+# ''P0 — The lead has authority around the relay.'' [[launch-codex.mjs:134|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:134]] grants a lead network access and write access to the Git common directory, and [[launch-codex.mjs:384|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:384]] supplies that directory. The lead law itself instructs direct commits and permits launcher use ([[launch-codex.mjs:210|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:210]]). Thus the relay’s go check, check receipt, branch restrictions and ban on launching a lead are not an enforced boundary for that seat. The relay’s refusal tests cover requests //through the relay//, while the launcher test explicitly pins the broader lead arguments ([[commit-relay.test.mjs:86|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:86]], [[commit-relay.test.mjs:113|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:113]], [[launch-codex.test.mjs:59|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:59]]).
+
+# ''P0 — The receipt key is not isolated from the lead.'' [[commit-relay.mjs:35|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:35]] places the key outside writable roots, but the lead’s workspace-write sandbox does not make paths outside those roots unreadable. A key readable by the shared user can therefore be read by the lead and used with the public signing algorithm in [[seat-walls.mjs:55|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:55]]. The wall test proves that a ''check seat'' cannot read a test credential; it does not establish key secrecy from a lead ([[commit-relay.test.mjs:318|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:318]]). The MAC binds tree, names and definitions only while the key remains secret.
+
+# ''P1 — A receipt can describe a tree different from the files checked.'' [[seat-walls.mjs:83|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:83]] exports once, then binds the entire work directory writable for every check ([[seat-walls.mjs:105|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:105]]). A check or code it invokes can change the exported tree before later checks run; the resulting receipt still signs the original tree ID ([[seat-walls.mjs:117|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:117]]). The existing receipt test verifies MAC inputs and wall restrictions, not immutable check inputs ([[commit-relay.test.mjs:340|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:340]]).
+
+# ''P1 — Relay path validation is vulnerable to replacement after validation.'' [[commit-relay.mjs:48|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:48]] resolves a lane path and later passes its pathname to operations with broker authority. For worktree creation, a lead-controlled parent can change between that resolution and Git/export writes; [[tree-export.mjs:43|/home/joshu/.lares-scratch/seat-harness/wt/tools/tree-export.mjs:43]] also writes by pathname without anchoring directory handles. The race test covers `readSafe` file and parent swaps, not worktree creation or export ([[commit-relay.test.mjs:294|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:294]]). Likewise, the relay resolves the worktree’s mutable `.git` pointer on each request ([[commit-relay.mjs:41|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:41]]), so its repository target is not pinned at startup.
+
+# ''P1 — The watchdog cannot identify a seat reliably.'' [[launch-codex.mjs:88|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:88]] selects the earliest new rollout with a matching cwd, then caches it ([[launch-codex.mjs:341|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:341]]). Overlapping launches sharing a worktree and snapshots can select the same rollout, causing one watchdog to count another session and miss its own. The test explicitly chooses the earlier shared-cwd rollout rather than establishing a one-to-one association ([[launch-codex.test.mjs:389|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:389]]). Process identity is also captured only after the watchdog starts; if the child exits and its PID is reused before then, or between an `alive` check and a signal, the start-tick check cannot guarantee the signal targets the original seat ([[launch-codex.mjs:329|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:329]]).
+
+# ''P2 — Missing walls refuse, but do not name the requested check or install.'' Both wall entry points return the generic `no wall available` before running lane code ([[seat-walls.mjs:68|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:68]], [[seat-walls.mjs:161|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:161]]). That supports refusal rather than an unwalled fallback, but does not satisfy the requested by-name refusal.
+
+The broker’s fixed Git environment, disabled hooks, raw blob hashing and filter-free export have targeted tests for planted hooks, filters, submodules and environment poisoning ([[commit-relay.test.mjs:180|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:180]]). Those tests do not close the separate authority and pathname gaps above. The launcher tests pin the existing mode arguments and floors, as well as the new used-percent thresholds ([[launch-codex.test.mjs:38|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:38]], [[launch-codex.test.mjs:346|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:346]]); I found no additional floor regression in the reviewed logic. The four bubblewrap-dependent proofs reported as skipped in CI remain dependent on the supplied local result.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d2aBCvrpJq6y_Ud79tGuqLhwqstIluoyB-0pglBiQHE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

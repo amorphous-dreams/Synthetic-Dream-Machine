@@ -10,6 +10,16 @@
 // inputs print identical bytes. The operator builds and pushes the multi-arch index as a separate release act;
 // this tool emits and verifies the record and publishes nothing. The CIDs follow the genesis directory it reads,
 // so a release cut after the engine fold names the folded CIDs with no change here.
+//
+// THE FLOOR RIDES RELEASES. A `main` release bakes genesis with `pnpm --filter @lararium/node build:genesis-release`
+// (code and founding floor re-cut from canon) before it builds the image and emits this record; every develop bake
+// between releases re-cuts code alone and carries the floor (lar:///ha.ka.ba/lararium/node/genesis-island#/the-floor-rides-releases).
+//
+// THE FLOOR'S SHAPE. The engine CID reads off the genesis floor manifest (format, engine, plugins, snapshots: a
+// manifest naming grammar refuses `floor-manifest-malformed`), and must agree with the seed's engine witness; the
+// floor's `plugins` must name the sha256 of the `floor-plugin-offering` row's bytes. GRAMMAR STAYS IN THE RECORD:
+// the cofound offer reads exactly image, genesis, engine and grammar (`cofound.ts` `readManifest`), so the record
+// keeps its grammar CID, read off the seed's grammar witness, until the joint R2 sweep retires both together.
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -18,6 +28,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const node = await import(pathToFileURL(resolve(ROOT, "packages/lararium-node/dist/src/index.js")).href);
+const mesh = await import(pathToFileURL(resolve(ROOT, "packages/lararium-mesh/dist/index.js")).href);
 // Each address rides the record in the spelling the house itself reads: the seed CID as the sha256 hex of the
 // published seed bytes (`genesisSeedCid`), the engine and grammar CIDs as the genesis CAS manifest spells them
 // (CIDv1, base32).
@@ -72,19 +83,36 @@ function readGenesisCids(genesisDir) {
     throw new Error(`[release-manifest] genesis directory has no readable seed or CAS manifest: ${genesisDir}`);
   }
   // An address binds bytes only where the bytes stand: every blob the seed names hashes to the name it rests under.
-  for (const [id, blob] of Object.entries(JSON.parse(bytes.toString("utf8")).blobs ?? {})) {
-    let held;
-    try { held = readFileSync(resolve(genesisDir, "cas", String(blob.sha256))); }
+  const blobs = JSON.parse(bytes.toString("utf8")).blobs ?? {};
+  const held = {};
+  for (const [id, blob] of Object.entries(blobs)) {
+    try { held[id] = readFileSync(resolve(genesisDir, "cas", String(blob.sha256))); }
     catch { throw new Error(`[release-manifest] genesis CAS holds no blob for ${id} (${blob.sha256})`); }
-    if (createHash("sha256").update(held).digest("hex") !== blob.sha256) throw new Error(`[release-manifest] genesis CAS blob ${id} does not hash to its address ${blob.sha256}`);
+    if (createHash("sha256").update(held[id]).digest("hex") !== blob.sha256) throw new Error(`[release-manifest] genesis CAS blob ${id} does not hash to its address ${blob.sha256}`);
   }
+  const floor = readGenesisFloor(blobs, held, node.readGenesisEngineCid(genesisDir));
   const cids = {
     seedCid: node.genesisSeedCid(bytes),
-    engineCid: node.readGenesisEngineCid(genesisDir),
+    engineCid: floor.engine,
     grammarCid: node.readGenesisGrammarCid(genesisDir),
   };
   assertCids(cids, "genesis");
   return cids;
+}
+
+/**
+ * The genesis floor a release ships, read at its own shape: the manifest row parses as a floor (four keys, no grammar),
+ * its engine agrees with the seed's engine witness, and its plugins names the offering row's bytes.
+ */
+function readGenesisFloor(blobs, held, engineWitness) {
+  if (!held["floor-manifest"]) throw new Error("[release-manifest] genesis seed names no floor-manifest: a release binds the floor it ships");
+  const read = mesh.readFloorManifest(new Uint8Array(held["floor-manifest"]));
+  if (!("manifest" in read)) throw new Error(`[release-manifest] genesis floor manifest refuses ${read.refusal}: ${read.reason}`);
+  const floor = read.manifest;
+  if (floor.engine !== engineWitness) throw new Error(`[release-manifest] genesis floor engine ${floor.engine} differs from the seed's engine witness ${String(engineWitness)}`);
+  const offering = blobs[mesh.FLOOR_OFFERING_BLOB_ID];
+  if (floor.plugins !== offering?.sha256) throw new Error(`[release-manifest] genesis floor plugins ${floor.plugins} differs from the ${mesh.FLOOR_OFFERING_BLOB_ID} row (${String(offering?.sha256)})`);
+  return floor;
 }
 
 /** Build the content-address-only release record. */
@@ -94,7 +122,7 @@ export function buildReleaseManifest({ image, genesisDir = resolve(ROOT, "genesi
   assertPlatforms(named);
   const cids = readGenesisCids(genesisDir);
   return {
-    format: "lararium-release-manifest/v1",
+    format: "lararium-release-manifest",
     image: { digest, platforms: named },
     genesis: { seedCid: cids.seedCid },
     engine: { cid: cids.engineCid },
@@ -119,7 +147,7 @@ export function verifyReleaseManifest(manifest, { genesisDir = resolve(ROOT, "ge
   const compare = (field, actual, wanted) => {
     if (actual !== wanted) differences.push(`${field}: manifest=${String(actual)} expected=${String(wanted)}`);
   };
-  compare("format", manifest?.format, "lararium-release-manifest/v1");
+  compare("format", manifest?.format, "lararium-release-manifest");
   compare("genesis.seedCid", manifest?.genesis?.seedCid, expected.seedCid);
   compare("engine.cid", manifest?.engine?.cid, expected.engineCid);
   compare("grammar.cid", manifest?.grammar?.cid, expected.grammarCid);

@@ -1,0 +1,110 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/full-mirror/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/full-mirror/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/full-mirror/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/full-mirror/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/full-mirror/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/full-mirror/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/full-mirror-lane-out-2026-11-11`>>
+
+! Full mirror lane: out (Mirror-Seer: Lares (Tasked Spirit), 2026-11-11)
+
+Branch `feature/green-jello-dinosaur-5--full-mirror`, pushed; span head 6f097dc94 merged in (bb252eef5). Design: `design.md` beside this file.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits
+* `231e0c6a4 lar:///mirror.boots.handed/whole-handoff`: the boot shape, the port handoff, the rip-out.
+* `2eeef99fe lar:///mirror.opens.doors/glass-root`: the doors and the stock-shaped pane.
+* `07c88ef94 lar:///canon.trues.mirror/whole-handoff`: canon, weld M6, changelog.
+* `bb252eef5` merge of the span; `fd20249aa lar:///tests.keep.type/port-boot`: a test typing fix after it.
+
+Co-author line reads `Claude Fable 5.2` (the model that wrote the commits), not the `Opus 5.5` line the brief named.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/built`>>
+
+!! Built
+* ''Port.'' `port:open{boot}` and `port:boot` (mesh `record-port.ts`, browser `holder-routes.ts`); the island serves its boot set ahead of the snapshot (`record-port-handler.ts` `postBoot`, `island-context.ts` `bootSet`, set in `sovereign-kernel.ts` for node and browser alike).
+* ''Page boot.'' `glass-handoff.ts` (reader, three named refusals), `glass/stand.ts` rewritten (handoff, then engine, then story, then paint; full first; the one step in both seats), `glass-mirror.ts` `censusRecords` + `bootSetTitles`, `glass-port-adaptor.ts` `opened`, `glassPortOpen`, `glassLocalTitle`.
+* ''Doors.'' `glass-root.ts` (modal, notify, pane scroller, focus, rename, relink, clipboard, download, open-surface, full screen, http refusal), `glass-camera.ts` (engine's own root, stock-shaped pane, refresh hooks, pane-scoped shortcuts), `glass/doors.ts`, `page-doors.ts`, `page-mirror.ts`, `main.ts` (reload re-stands the mirror).
+* ''Ripped out.'' `glass/cas.ts`, `glass/cid.ts`, the page export of `readCasBlobFromOpfs`, skinny-then-promote in `stand.ts`, `adaptor.widen`, the `promoted` event, the promotion wait, `glass-promote.page.test.ts` (became `glass-full-first`), `e2e/glass-edit-under-promotion`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/page-paths-touched`>>
+
+!! Page paths touched
+* `#mirror` shadow root: `.lar-mirror.tc-body` now holds `.tc-page-container-wrapper` as first child; modals (`.tc-modal-wrapper`) and notifications (`.tc-notification`) append beside it.
+* `data-lar-mirror-why` reads `full-boot-unfinished` where it read `full-promotion-unfinished`.
+* `#mirror.larMirrorReading.handed = { members, records }`: new read-only field.
+* The mirror reads `full` at first paint; no skinny first paint on a clean tab.
+* No change to `index.html`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tests-proved-alone`>>
+
+!! Tests proved alone (chromium for page tests; firefox and WebKit not run here)
+* tw5 (node): record-port-boot (new), glass-census-records (new), glass-port-adaptor-races (adopted-open test replaces the widen test), glass-port-adaptor, glass-door-census (extended: new sources, no page store), glass-census, glass-census-promoted, record-port-handler, record-port-widen, record-port-lease, mirror-browser-mode-control, island-story-owes-no-save.
+* mesh: record-port. tools: browser-weld-mirror (12/12, M6 new).
+* web page: glass-full-first (new, 17), glass-doors (new, 11), glass-stepdown (rewritten), glass-mirror, glass-page-mirror, glass-boot, mirror-plugin-gate, mirror-savers, mirror-browser-mode, glass-theme, glass-topology, glass-walk, projection-sink-services: 13 files, 93 tests green after the merge.
+* Gates: `pnpm -r typecheck` clean; tw5 test typecheck at its ceiling (219). Web test typecheck read 73 in this worktree against a ceiling of 71; I did not establish a base reading here, and the worktree lacks node's probe dist, so that count stays unverified.
+* NOT run: any e2e, the weld, tree-clean, firefox, `witness-all`, the full suites.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/genesis-unbaked-json-rows`>>
+
+!! genesis/unbaked.json rows
+None. No packed plugin byte moved; the doors live in page-side code, not in the house plugin.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-decided`>>
+
+!! Forks decided (canon `d3-glass-lane` #/moolelo, each overrulable)
+Full first (overturns the 2026-10-28 promote order on G7's pass) · the kernel rides inside the engine blob, not split from `$:/core` · the vessel's CIDs kept as a second speaker · held records land after boot · a wiki's StartupAction records never run on the surface · the address bar untouched, links go to the clipboard · no draft throttle timer.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed
+* Interaction goldens 01-13 at full against stock TW5: untouched.
+* The e2e files `glass-mirror`, `glass-tabs`, `mirror-boot-makes-no-request`, `rest-before-reload` were edited only in comments or not at all and never run; they may still wait on a skinny word or a `full-promotion-unfinished` reason.
+* The weld's M1 `settleOf` and M5 were not changed; M6 proves only in CI.
+* Skinny's projection carries no system or plugin bodies: a held or stepped mirror paints unstyled with every plugin held.
+* `sealedRest` reaches no mirror; code plugins stay held everywhere.
+* `http-request` door (D15), `open-surface`, route-in from a link, `$:/tags/StartupAction/PostRender`.
+* The node page door: the island serves `port:boot` on Node, and no node-served page asks it.
+* Switching the mirror to another wiki; the daemon surface stays at width none.
+* `port:boot` carries no ack and rides outside the lag budget; a plugin record above 1 MiB still fails the wire reader.
+* The follower tab path with `port:boot` over the BroadcastChannel: `glass-topology` passes with the seam, the real handoff over the bus stays unproven.
+* Stock's language switcher still writes `lang`/`dir` on the page's `documentElement`.
+* The island's `port:widen` row stays in the contract, though no mirror sends one (`tab-bus.ts` no longer rewrites a remembered open on it).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SF6KRlkLPDXSjoqYyjQV1A-6DvyVE_BgvhV0-_YVbok`>>
+
+<<^ code=`&#x0004;` to=`?`>>

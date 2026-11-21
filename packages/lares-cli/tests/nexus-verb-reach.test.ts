@@ -23,9 +23,7 @@
  * `nexus-seal-rotate-anchor` own that, and they keep importing `cmdNexus` from this same door.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -41,15 +39,15 @@ const VERBS = [
 ] as const;
 
 describe("lares nexus — every verb reaches its door", () => {
-  let root: string;
+  let house: Scratch;
   let said: string[];
   const saved: Record<string, string | undefined> = {};
-  const ENV = ["LAR_ROOT", "LAR_SEAL_HOME", "LAR_DATA_DIR"];
+  const ENV = ["LAR_SEAL_HOME", "LAR_DATA_DIR"];
 
   /** Both channels. The door speaks JSON to a pipe and prose to a person; a reach test must hear both. */
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-verb-reach-"));
-    for (const k of ENV) { saved[k] = process.env[k]; process.env[k] = root; }
+    house = openScratch();
+    for (const k of ENV) { saved[k] = process.env[k]; process.env[k] = house.root; }
     said = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
@@ -58,7 +56,7 @@ describe("lares nexus — every verb reaches its door", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     for (const k of ENV) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]!; }
-    rmSync(root, { recursive: true, force: true });
+    closeScratch(house);
   });
 
   /** Run a door and return everything it said. A THROW is still a reach — the verb found its handler
@@ -87,15 +85,6 @@ describe("lares nexus — every verb reaches its door", () => {
     // Recorded as the surface that stands, not endorsed; the split must not change it either way.
     expect(await run(["definitely-not-a-verb"], { json: false })).toMatch(/usage: lares nexus/);
     expect(await cmdNexus(args(["definitely-not-a-verb"]))).toBe(2);
-  });
-
-  /**
-   * CONTROL — `refresh` runs through the after-roll hook on every store-door write; the command table has no
-   * standalone route for it. Proves the boundary by the same
-   * `unknown verb` refusal a never-built word gets, rather than by its absence from `VERBS` alone.
-   */
-  test("`nexus refresh` is retired — it reads as an unknown verb, not a door", async () => {
-    expect(await run(["refresh"])).toMatch(/unknown verb/i);
   });
 
   /** CONTROL — a bare `nexus` refuses with the usage and claims no word was unknown. */

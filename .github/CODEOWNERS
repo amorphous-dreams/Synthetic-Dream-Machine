@@ -8,18 +8,3 @@
 # --- Governance & Meta ---
 /.github/                 @amorphous-dreams/admins @joshuafontany
 /AGENTS.md                @amorphous-dreams/admins @joshuafontany
-
-# --- Lares agent architecture (canon-protected) ---
-/lares/                   @amorphous-dreams/admins @joshuafontany
-
-# --- API: True Named Invariants (TRIPLE PROTECTED) ---
-/lares/ha-ka-ba/api/     @amorphous-dreams/admins @joshuafontany
-
-# --- Game content (operator-owned) ---
-/elyncia/                 @joshuafontany
-/ftls/                    @joshuafontany
-/sdm/                     @joshuafontany
-/wtf/                     @joshuafontany
-
-# --- Tests ---
-/tests/                   @joshuafontany

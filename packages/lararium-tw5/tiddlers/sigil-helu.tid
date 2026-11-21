@@ -3,14 +3,14 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: pragma
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/helu
 lar-see-also: \function
-lar-open-pattern: <<~!?\s*helu\s+([\w-]+)(?:\s*\(([^)]*)\))?(?:\s+([^>]*?))?\s*>>
+lar-open-pattern: <<~!?\s*helu\s+name=`([\w-]+)`(?:\s+params=`([^`]*)`)?(?:\s+filter=`([^`]*)`)?\s*>>
 lar-close-pattern: <<~\/helu\s*>>
-lar-example: <<~ helu tally "[tag[x]count[]]">>
+lar-example: <<~ helu name=`tally` filter=`[tag[x]count[]]`>>
 type: text/vnd.tiddlywiki
 
 <!-- helu — a NAMED FILTER FUNCTION and the filter it reckons. THE NAME FIRST, THE FILTER SECOND:
 
-         <<~ helu tally "[tag[x]count[]]">>
+         <<~ helu name=`tally` filter=`[tag[x]count[]]`>>
 
      //helu// counts, enumerates, reckons. Where `wehe` declares a body that RENDERS, helu declares
      one that COMPUTES — the body yields a filter result set, never wikitext.
@@ -19,9 +19,9 @@ type: text/vnd.tiddlywiki
      output", so the definition hands the compile layer a data annotation and leaves the reader
      nothing to step over.
 
-     THE FILTER RIDES QUOTED. It carries brackets, colons and prose; unquoted, every `word:` binds a
-     parameter nobody named and the slot receives nothing. -->
+     THE FILTER RIDES TICKED, named `filter`. It carries brackets, colons and prose; one pair of ticks
+     makes it ONE value. -->
 
-\procedure ~helu(p1:"" p2:"")
-<span class="lar-helu" data-helu-name=<<p1>> data-helu-filter=<<p2>> hidden="true"/>
+\procedure ~helu(name:"" params:"" filter:"")
+<span class="lar-helu" data-helu-name=<<name>> data-helu-filter=<<filter>> hidden="true"/>
 \end

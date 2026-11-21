@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-pi`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "Pi"
+hexagram      = "pi"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-pi"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-pi"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! Pi
+
+<<<
+Sometimes 3.141592653589793238462643383279502884197169399 etc...
+<<<
+
+This is the only hexagram displayed here that was not in the I-Ching. We felt it was important to add a hexagram in case a stick or coin ends up on its edge. This Hexagram stands for uncertainty in the quantum reality. The authors of this sacred tome recommend that if you get this hexagram you either poison a cat or don't in a box where no one can see it to divine the correct path to take. Under no circumstances should you record the results of this experiment, or even try to discover for yourself the results of this experiment, since that will drastically change its outcome, and there will be a 50% chance that you will therefore be reading the results of the experiment incorrectly.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QjjV-cJ5CPiAh_pZVYByR9NqnWaJd_h-2cnwb8OgDkI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

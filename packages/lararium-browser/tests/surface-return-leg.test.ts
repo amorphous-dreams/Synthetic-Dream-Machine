@@ -10,7 +10,7 @@
  * island does: a live id under the current epoch applies, a retired id or another epoch answers `stale-target`.
  */
 import { describe, expect, test } from "vitest";
-import { LAR_CAMERA_STORY, mkLarControlEvent, type LarMsg_ControlEvent } from "@lararium/mesh";
+import { LAR_CAMERA_STORY, mkLarControlEvent, readLarControlResult, type LarMsg_ControlEvent, type LarMsg_ControlResult } from "@lararium/mesh";
 import { makeSurfaceReturnLeg } from "../src/surface-return-leg.js";
 
 const DAEMON = "daemon";
@@ -41,6 +41,7 @@ function vessel() {
   const daemon = island("daemon", ["7", "8"]);
   const wiki = island("lares", ["7", "9"]);        // id 7 stands on BOTH surfaces
   const refusals: string[] = [];
+  const answers: Array<{ surface: string; result: LarMsg_ControlResult }> = [];
   const sessions: Array<string | undefined> = [];
   let active = "lares";
   const leg = makeSurfaceReturnLeg({
@@ -52,10 +53,11 @@ function vessel() {
       resendProjection: (_id, cameraId, session) => { sessions.push(session); wiki.resend(cameraId); },
     }),
     onRefusal: (line) => refusals.push(line),
+    answer: (surface, result) => answers.push({ surface, result }),
   });
   /** What a leg that read the active pointer would do: the measured fault, kept as the control. */
   const byActivePointer = (e: LarMsg_ControlEvent): void => (active === DAEMON ? daemon.take(e) : wiki.take(e));
-  return { daemon, wiki, refusals, sessions, leg, byActivePointer, setActive: (s: string) => { active = s; } };
+  return { daemon, wiki, refusals, answers, sessions, leg, byActivePointer, setActive: (s: string) => { active = s; } };
 }
 
 describe("the return leg routes on the surface an event carries", () => {
@@ -101,11 +103,18 @@ describe("the return leg routes on the surface an event carries", () => {
     expect(v.sessions).toEqual([undefined, undefined, undefined]);   // no session names itself on this leg yet
   });
 
-  test("a surface this vessel does not hold refuses by name and posts nothing", () => {
+  test("RED (exit a): an act naming a surface this vessel does not hold answers the page refused: surface-unknown", () => {
     const v = vessel();
     expect(v.leg.sendControlEvent("elsewhere", ev("7"))).toBe("surface-unknown");
-    expect(v.leg.sendControlEvent("", ev("7", "lar:sense"))).toBe("surface-unknown");
+    expect(v.leg.sendControlEvent("", ev("9", "lar:sense"))).toBe("surface-unknown");
     expect(v.leg.resend("elsewhere")).toBe("surface-unknown");
+    // Each act answers on the page's result rail under the surface it named, carrying its reason.
+    expect(v.answers.map((a) => a.surface)).toEqual(["elsewhere", ""]);
+    expect(v.answers.map((a) => readLarControlResult(a.result))).not.toContain(null);
+    expect(v.answers[0]!.result).toMatchObject({ eventId: ev("7").eventId, cameraId: LAR_CAMERA_STORY, mountEpoch: 1,
+      renderId: "7", status: "refused", reason: "surface-unknown" });
+    expect(v.answers[1]!.result).toMatchObject({ eventId: ev("9", "lar:sense").eventId, status: "refused", reason: "surface-unknown" });
+    // A resend carries no event to answer; it refuses by name on the console alone.
     expect(v.refusals).toHaveLength(3);
     expect(v.refusals[0]).toMatch(/surface-unknown: lar:click for render-id 7 names surface "elsewhere"/);
     expect(v.refusals[2]).toMatch(/surface-unknown: lar:resend names surface "elsewhere"/);
@@ -113,14 +122,38 @@ describe("the return leg routes on the surface an event carries", () => {
     expect(v.daemon.log).toEqual([]);
   });
 
-  test("NONSENSE CONTROL: an event the contract's reader refuses posts nowhere, whatever surface it names", () => {
+  test("RED (exit b): an act the contract's reader refuses answers refused: event-malformed and reaches no island", () => {
     const v = vessel();
     const twoTargets = { ...ev("7"), controlId: "also" } as LarMsg_ControlEvent;
     expect(v.leg.sendControlEvent("lares", twoTargets)).toBe("event-malformed");
-    expect(v.leg.sendControlEvent(DAEMON, { ...ev("7"), mountEpoch: -1 } as LarMsg_ControlEvent)).toBe("event-malformed");
+    expect(v.leg.sendControlEvent(DAEMON, { ...ev("8"), mountEpoch: -1 } as LarMsg_ControlEvent)).toBe("event-malformed");
     expect(v.wiki.log).toEqual([]);
     expect(v.daemon.log).toEqual([]);
     expect(v.refusals[0]).toMatch(/event-malformed/);
+    expect(v.answers.map((a) => [a.surface, a.result.eventId, a.result.status, a.result.reason])).toEqual([
+      ["lares", ev("7").eventId, "refused", "event-malformed"],
+      [DAEMON, ev("8").eventId, "refused", "event-malformed"],
+    ]);
+    // The answer reads whole on the page's reader even where the event's own epoch fails it.
+    expect(v.answers.map((a) => readLarControlResult(a.result))).not.toContain(null);
+    expect(v.answers[1]!.result.mountEpoch).toBe(0);
+  });
+
+  test("CONTROL: an act with no readable event id names nothing a page waits on, so it answers nothing", () => {
+    const v = vessel();
+    expect(v.leg.sendControlEvent("lares", { ...ev("7"), eventId: "" } as LarMsg_ControlEvent)).toBe("event-malformed");
+    expect(v.leg.sendControlEvent("lares", null as unknown as LarMsg_ControlEvent)).toBe("event-malformed");
+    expect(v.answers).toEqual([]);
+    expect(v.refusals).toHaveLength(2);
+  });
+
+  test("CONTROL: a routed act takes its answer from its island, never from the leg", () => {
+    const v = vessel();
+    expect(v.leg.sendControlEvent("lares", ev("7"))).toBe("routed");
+    expect(v.leg.sendControlEvent(DAEMON, ev("8"))).toBe("routed");
+    expect(v.wiki.log).toEqual(["lares:lar:click:7"]);
+    expect(v.daemon.log).toEqual(["daemon:lar:click:8"]);
+    expect(v.answers).toEqual([]);
   });
 
   test("the old DOM doors left the leg whole", () => {

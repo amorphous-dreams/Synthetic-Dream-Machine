@@ -83,8 +83,8 @@ export function makeGateSorter(deps: GateSorterDeps): GateSorter {
 }
 
 /**
- * The admitted sessions a refold no longer holds: a contracted session whose admit the membership no longer
- * reads held, and any stranger (or classless) session, once this gate's Nexus no longer answers strangers.
+ * The admitted sessions a refold drops: a contracted session whose admit the membership reads unheld,
+ * and any stranger (or classless) session, once this gate's Nexus stops answering strangers.
  * Same-operator and walker sessions are never dropped here. Pure; the caller drops each one silently.
  */
 export function socketsNoLongerHeld<S>(

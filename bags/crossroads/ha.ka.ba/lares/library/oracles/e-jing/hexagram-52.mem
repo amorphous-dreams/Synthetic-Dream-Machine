@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-52`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "52. Mt. Olympus"
+hexagram      = "52"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "001001"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-52"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-52"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷳ 52. Mt. Olympus
+
+<<<
+"Mount Olympus. We all know it's a major feature of Arborea, and the home of a pantheon of powers called the Olympians or Greek "Gods." 'Course, as an Athar, I have to tell you these so-called Gods are not all they claim to be. They bicker and argue among themselves more than a Xaositect and a Guvner playing knucklebones, and over such petty things. If they are "supreme beings," I'll stay inferior, thanks." - Leir the Explorer
+<<<
+
+This hexagram stands for keeping still (as a mountain does throughout the millenia). It implies the need for meditation, yoga, or some other immobile exercise.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JKHEi4QXy-LwcBlnV2dQy6rxb0UWugdfPbGKJN6SLv0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

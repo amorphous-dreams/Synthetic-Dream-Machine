@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/index.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "place-shelf index for the New Delos Nexus — the fractal worksheet law and the Destination roster across all strata"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index"
@@ -17,19 +13,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! New Delos ~ Places Index
 
 ''The fractal worksheet law:'' the Realm-hex worksheet
-([[region-worksheet|../region-worksheet.md]]) holds the 30-mile view; each named Destination
+([[region-worksheet|lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet]]) holds the 30-mile view; each named Destination
 earns a Travel-hex place meme on this shelf; Sites and Areas that matter (extraction, delving,
 RSS profiles) nest beneath their Destinations. ''Every place meme declares its stratum and its
 hex-scale.'' Feed every hex: horizon · hidden handle · bleed.
 
 <<~/ahu>>
 
-<<~ ahu #/roster>>
+<<~ ahu slot=`#/roster`>>
 
 !! The Destination Roster
 
@@ -50,6 +46,6 @@ miles (near the Izmir-coast) — constellation members hanging over other Realms
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oZo8mC1dO4EtJ1gGemmQgUx3S-DfyWIOF9c8QfRjK-c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zW6trHj5C-IgcezUB6i6JG9hFV7QOxdqrcamEkbLuWI`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

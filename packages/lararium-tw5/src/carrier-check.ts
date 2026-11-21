@@ -29,10 +29,10 @@ function error(code: string, message: string, length: number): MemeDiagnostic {
 }
 
 /**
- * WHAT MAY STAND BETWEEN ETX AND EOT — the block check, and nothing else.
+ * WHAT MAY STAND BETWEEN ETX AND EOT — nothing.
  *
- * ETX ends the text; the slot after it carries the check, never payload (memetic-frame `check.ts`
- * holds the why). Content there reaches no reader and no render reproduces it: two `#edges` blocks
+ * ETX ends the text and carries its own check in its `bcc` slot; the bytes after it carry no payload
+ * (memetic-frame `check.ts` holds the why). Content there reaches no reader and no render reproduces it: two `#edges` blocks
  * vanished that way before anyone diffed a round-trip. So the slot is classified, and foreign content
  * is the NAK the original protocol answered with. The slot is the one carrier's own, read by the span
  * reader that divided it.
@@ -41,8 +41,8 @@ function strandedPastEtx(reading: CarrierReading): MemeDiagnostic[] {
   const slot = classifyPostamble(reading.slotText);
   if (slot.kind !== "foreign") return [];
   return [error("postamble-content",
-    `${slot.lines} line(s) stand between ETX and EOT. The text ends at ETX; that slot `
-    + `carries the block check alone. Move the content above the \`<<^ code="${ETX_CODE}">>\` close.`, reading.text.length)];
+    `${slot.lines} line(s) stand between ETX and EOT. The text ends at ETX, and the block check rides `
+    + `the ETX mark's \`bcc\` slot; nothing stands after it. Move the content above the \`\`<<^ code=\`${ETX_CODE}\`>>\`\` close.`, reading.text.length)];
 }
 
 /**
@@ -93,7 +93,7 @@ function slotTextKeys(rootUri: string, text: string, blocks: readonly AhuBlock[]
 /**
  * NESTED-SLOT-OUTSIDE-PARENT — canon: a nested open carries its WHOLE path from the carrier root, so
  * it must stand a STRICT DESCENDANT of its enclosing open's path. Three shapes fault here, each a
- * tolerance the no-back-compat law forbids a reader from silently resolving:
+ * tolerance a strict reader never silently resolves:
  *   - a RELATIVE form (`#/fern` inside `#/ridge`, meant as `#/ridge/fern`) — unnormalized authoring;
  *   - an address EQUAL to its parent (`#/a` inside `#/a`) — a collision with the parent's own address;
  *   - a DIFFERENT BRANCH entirely (neither equal nor a descendant).

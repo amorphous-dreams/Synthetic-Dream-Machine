@@ -20,8 +20,8 @@ const { carrierFiles } = await distCarrierFiles(REPO, "empty-room");
 
 const { frameAlt } = await distModule(
   REPO, "packages/lararium-memetic-frame/dist/index.js", "empty-room", "pnpm --filter @lararium/memetic-frame build");
-const STX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code="${frameAlt("STX")}"[^>\\n]*>>`);
-const ETX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code="${frameAlt("ETX")}"`);
+const STX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code=\`${frameAlt("STX")}\`[^>\\n]*>>`);
+const ETX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code=\`${frameAlt("ETX")}\``);
 
 const carriers = carrierFiles(REPO);
 

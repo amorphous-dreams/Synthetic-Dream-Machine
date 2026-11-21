@@ -672,8 +672,11 @@ async function run(script: Script): Promise<void> {
           // The island asks; the page gates, opens and answers on the return leg; the island takes the answer in.
           const before = sent.length;
           await sink.applyService({ ...ask, surface });
-          expect(sent.length, "the page answered the ask once").toBe(before + 1);
-          const reply = sent.at(-1)!.ev;
+          // The act that raised the ask still waits for its answer, so the page resends it first (the same id,
+          // the retry law); the ask itself draws exactly one `lar:service-result`.
+          const replies = sent.slice(before).filter((s) => s.ev.kind === "lar:service-result");
+          expect(replies.length, "the page answered the ask once").toBe(1);
+          const reply = replies[0]!.ev;
           expect([reply.kind, reply.requestId]).toEqual(["lar:service-result", ask.requestId]);
           const taken = isl.receive(reply);
           if (taken) sink.applyResult(taken);

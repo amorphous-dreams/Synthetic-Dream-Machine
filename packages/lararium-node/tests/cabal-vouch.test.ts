@@ -1,7 +1,7 @@
 /**
  * cabal-vouch — one hand stakes its own standing, end-to-end through the node.
  *
- * Proven against a real vessel identity, a seated charter and a worn face on a temp LAR_ROOT: the worn face's key
+ * Proven against a real vessel identity, a seated charter and one acting face on a temp LAR_ROOT: the acting face's key
  * at the charter's Nexus signs (never a persona root, cabal-realm#/the-steward-signer); a vouch lands on the
  * board and reads back through the VERIFYING read (the only read that stands), a voucher's out-degree grows
  * with each distinct joiner and NOT with re-minting, and every fail-closed shore refuses before writing.
@@ -9,10 +9,10 @@
  * What this deliberately does NOT assert: that the vouch admitted anyone. A vouch grants nothing on its
  * own — it rides as signal-2 on the lineage, and the crossing runs elsewhere (`admitOnLineage`).
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { afterEach, beforeEach, describe, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
@@ -23,14 +23,14 @@ import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
-import { seatOwnCharter, wear } from "./worn-face-fixture.js";
+import { seatOwnCharter, presentFace } from "./acting-face-fixture.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runCabalVouch, CabalVouchError } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 
 const REALM  = "a".repeat(64);
 const JOINER = "b".repeat(64);
@@ -39,23 +39,21 @@ const OTHER  = "c".repeat(64);
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
 
-beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-vouch-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();   // the REALM's key — scopes the board
+// The house stands once per file (kept-house): a founding's worth of derivations per case ran past the 10 s hook
+// default on a loaded runner. Each case takes its own copy, so no case reads another's vouches.
+const house = keepHouse("lares-vouch-", async () => {
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });   // the REALM's key — scopes the board
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
   await seedFaceAtom(0);
   await seatOwnCharter([0]);              // the Nexus the realm stands under
-  face = await wear(0);                   // the worn face's key there — the key that signs
+  face = await presentFace(0);            // the acting face's key there — the key that signs
 });
+beforeEach(() => house.into(root, scratchHome));
 let face: string;
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 /** Read the board back the way any consumer must — through the verifying read. */
@@ -68,7 +66,7 @@ async function boardVouches(realm = REALM) {
 }
 
 describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that made it", () => {
-  it("mints a vouch that reads back through the VERIFYING read, signed by the worn face's key at the realm's Nexus", async () => {
+  it("mints a vouch that reads back through the VERIFYING read, signed by the acting face's key at the realm's Nexus", async () => {
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
 
     expect(r.voucherDid).toBe(face);
@@ -184,7 +182,7 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
     expect(src).not.toMatch(/expiresAt/);
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
     expect(Object.keys(r).sort()).toEqual(
-      ["boardUrl", "boundEpoch", "edgeId", "joiner", "nexusAid", "outDegreeFloor", "reMinted", "realm", "voucherDid"],
+      ["boardUrl", "boundEpoch", "bundle", "edgeId", "joiner", "nexusAid", "outDegreeFloor", "reMinted", "realm", "voucherDid"],
     );
   });
 });

@@ -15,10 +15,13 @@
  *   C4  a board that holds a rotation away from the root refuses `root-superseded`, with the restore's own name
  *       passing through and no row moved.   control: a board that holds the inception alone lands.
  *   C5  paper opens no memory: the built body's memory section holds nothing, and the reader keeps no secret half
- *       for it; the guardian-card split restores through the same reader.
+ *       for it; the custodian-card split restores through the same reader.
  *
  * Scratch roots, synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
@@ -26,7 +29,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  GUARDIAN_SLOT_CUSTODIAN, attestAndRotate, deriveSelfRecoveryKey, faceAtomKeyFromSeed, hex, splitToGuardianCards,
+  CUSTODIAN_SLOT_TAG, attestAndRotate, deriveSelfRecoveryKey, faceAtomKeyFromSeed, hex, splitToCustodianCards,
   type PersonaKelEvent, type RandomProvider,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
@@ -36,6 +39,7 @@ import {
   CARD_REFUSALS, CardRestoreRefused, buildCardBody, restoreFaceFromCards, type FaceNamed, type PresentedCard,
 } from "../src/face-card-restore.js";
 import { FACE_PROOF_KEY_FILE } from "../src/face-key-custody.js";
+import { faceRecordNames } from "./face-paths.js";
 import { RestoreRefused } from "../src/face-bundle-restore.js";
 import { loadIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
@@ -47,6 +51,7 @@ import { ownedStore } from "../src/owned-store.js";
 import { readLocalPersonaKelChain, seatLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
+import { fixtureWard } from "./custody-seat-fixture.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 
@@ -105,7 +110,7 @@ async function splitOnDestroyedVessel(label: string): Promise<Faces> {
   const cards = new Map<number, { recordedCode: string; escrowCarrier: string }>();
   const keys = new Map<number, { rootKey: string; prefix: string; group: string; atomKey: string }>();
   for (const index of [0, 1]) {
-    const armed = await armRecoveryAtFounding(larDataDir(), index);
+    const armed = await armRecoveryAtFounding(larDataDir(), index, undefined, fixtureWard());
     expect(armed.minted, `setup: the split of h${index} armed`).toBe(true);
     cards.set(index, { recordedCode: armed.recordedCode, escrowCarrier: armed.escrowCarrier });
     const anchors = (await loadIdentityAnchors(index))!;
@@ -142,9 +147,9 @@ function homeTree(): string {
   walk(larDataDir());
   return h.digest("hex");
 }
-/** The names of every file under the identity home. */
-const identityNames = (): string[] => readdirSync(larIdentityDir()).sort();
-const pendingStands = (): boolean => existsSync(join(larIdentityDir(), RESTORE_PENDING_FILE));
+/** The identity home's files and every file in its indexed face directories. */
+const identityNames = (): string[] => [...readdirSync(larIdentityDir()), ...faceRecordNames()].sort();
+const pendingStands = (): boolean => faceRecordNames().some((n) => RESTORE_PENDING_FILE.test(n));
 
 describe("the root cards re-land a face's lineage and root, and open no memory", () => {
   test("C1 — two cards restore the face onto a fresh hearth at a free index, under a new seat, holding no key and no memory", async () => {
@@ -160,13 +165,13 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(restored.face).toEqual({ handleIndex: 1, verifyingKey: face.rootKey });
     expect(restored.prefix).toBe(face.prefix);
     expect(restored.resumed).toBe(false);
-    expect(restored.guardianSet).toBe("none");
+    expect(restored.recoveryContactSet).toBe("none");
     // PAPER LANDED THE ROOT AND NOTHING ELSE: no proof key, no name, no handle-book record, no memory entry.
     expect(restored.landed).toEqual({ faceProofKeys: 0, petname: false, handle: false, handleBook: { landed: 0, kept: 0 } });
     expect(restored.holds, "the memory section holds no key version").toEqual([]);
-    expect(readdirSync(larIdentityDir()).filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(0);
+    expect(faceRecordNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(0);
     expect(await (await makeNodePersonaPetnameStore()).get(1)).toBeUndefined();
-    expect((await loadNodeHandleBook()).snapshotFor(face.rootKey).records).toEqual([]);
+    expect((await loadNodeHandleBook(1)).snapshotFor(face.rootKey).records).toEqual([]);
 
     // THE LINEAGE RETURNED: the same root, the same fixed prefix, the same signer name, at a NEW seat.
     expect(await listPersonaRosterLines()).toEqual([own, { handleIndex: 1, verifyingKey: face.rootKey }]);
@@ -268,8 +273,8 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     const recovery = await deriveSelfRecoveryKey(seed);
     const fresh = Uint8Array.from({ length: 32 }, (_, i) => (i * 7 + 41) & 0xff);
     const rotated = await attestAndRotate({
-      head: body.kel[0]!, freshOpKeyDid: `0x${hex(await ed.getPublicKeyAsync(fresh))}`, guardianRecoveryKeys: [recovery.verifyingKey], recoveryThreshold: 1,
-      guardianSigners: [{ signer: recovery.verifyingKey, sign: (bytes) => ed.signAsync(bytes, Buffer.from(recovery.signingKey, "hex")).then(hex) }],
+      head: body.kel[0]!, freshOpKeyDid: `0x${hex(await ed.getPublicKeyAsync(fresh))}`, recoveryContactKeys: [recovery.verifyingKey], recoveryThreshold: 1,
+      recoveryContactSigners: [{ signer: recovery.verifyingKey, sign: (bytes) => ed.signAsync(bytes, Buffer.from(recovery.signingKey, "hex")).then(hex) }],
     });
     if (!rotated.ok) throw new Error(`setup: the rotation refused: ${rotated.reason}`);
     const newer: PersonaKelEvent[] = [body.kel[0]!, rotated.event];
@@ -290,7 +295,7 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(landed.checked).toEqual({ seq: 0, from: "board" });
   });
 
-  test("C5 — paper opens no memory: the built body holds an empty section and no key, and a guardian-card split restores through the same reader", async () => {
+  test("C5 — paper opens no memory: the built body holds an empty section and no key, and a custodian-card split restores through the same reader", async () => {
     const a = await splitOnDestroyedVessel("a");
     await foundVessel("b");
     const body = await buildCardBody({ cards: paper(a, 0), face: named(a, 0), as: 1 });
@@ -298,7 +303,7 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(body.faceProofKeys).toEqual([]);
     expect(body.handleBook.records).toEqual([]);
     expect(body.names).toEqual({});
-    expect(body.guardianSet).toBeNull();
+    expect(body.recoveryContactSet).toBeNull();
     expect(body.kel).toHaveLength(1);
     expect(body.rosterLine).toEqual({ handleIndex: 1, verifyingKey: a.keys.get(0)!.rootKey });
     // The section reads as base64 of a sealed box, and two builds seal to two throwaway keys: no pair the bundle key
@@ -307,14 +312,14 @@ describe("the root cards re-land a face's lineage and root, and open no memory",
     expect(body.memory.section).toMatch(/^[A-Za-z0-9+/]+=*$/);
     expect(again.memory.section).not.toBe(body.memory.section);
 
-    // A GUARDIAN-CARD SPLIT of the same root (mine, guardian-A, guardian-B) rebuilds it from any two cards.
+    // A CUSTODIAN-CARD SPLIT of the same root (mine, custodian-A, custodian-B) rebuilds it from any two cards.
     const rng: RandomProvider = { getRandomValues: (b) => globalThis.crypto.getRandomValues(b) };
     const seed = Uint8Array.from(Buffer.from(body.root.signingKey, "hex"));
-    const split = splitToGuardianCards(seed, "Ana", "Bo", 1, rng);
-    const guardians = split.cards.filter((c) => c.slot !== "mine").map((c): PresentedCard => ({ code: c.shareCode, custodian: GUARDIAN_SLOT_CUSTODIAN[c.slot] }));
-    expect(guardians.map((c) => c.custodian)).toEqual(["guardian", "escrow-peer"]);
-    expect(await refusalOf(restoreFaceFromCards({ cards: guardians.slice(0, 1), face: named(a, 0), as: 1, withRepo }))).toBe("cards-too-few");
-    const landed = await restoreFaceFromCards({ cards: guardians, face: named(a, 0), as: 1, withRepo });
+    const split = splitToCustodianCards(seed, "Ana", "Bo", 1, rng);
+    const custodians = split.cards.filter((c) => c.slot !== "mine").map((c): PresentedCard => ({ code: c.shareCode, custodian: CUSTODIAN_SLOT_TAG[c.slot] }));
+    expect(custodians.map((c) => c.custodian)).toEqual(["custodian", "escrow-peer"]);
+    expect(await refusalOf(restoreFaceFromCards({ cards: custodians.slice(0, 1), face: named(a, 0), as: 1, withRepo }))).toBe("cards-too-few");
+    const landed = await restoreFaceFromCards({ cards: custodians, face: named(a, 0), as: 1, withRepo });
     expect(landed.face).toEqual({ handleIndex: 1, verifyingKey: a.keys.get(0)!.rootKey });
     expect(landed.holds).toEqual([]);
   });

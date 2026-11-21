@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/found-ux-782e24bb3`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/ship/found-ux-782e24bb3.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/found-ux-782e24bb3"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/found-ux-782e24bb3"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! found-ux-782e24bb3.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/ship/found-ux-782e24bb3.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-found-ux-782e24bb3`>>
+
+! SHIP found-ux 782e24bb3
+
+read: controller (Kiaʻi) read the whole diff line by line, then added two refusals to `reset` (a running container binding the state dir; a state dir holding HOME) with tests. Seat: Found-Wright, gpt-6.1-terra high, build.
+security-class paths: tools/lares-container.sh (host shim: deletes inside LARES_STATE).
+checks (local, lane worktree): node &#45;-test tools/lares-container.test.mjs 72/72; vitest readback-process-seat + offline-custody 12/12; rite-commands witness clean; git diff &#45;-check clean.
+land: direct fast-forward of the span ahead of remote CI, by operator ruling 2026-11-08 ("I approve of commiting this and merging to the span branch before running remote CI"); CI dispatched after the push.
+credential surface: no credential enters a flag, env var or pipe; reset reads only a typed confirm word; no sudo.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qBFIMnP088NE-o9SkCCiESkUZdQGTp8KBr_S0WfKHKc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

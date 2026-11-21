@@ -2,7 +2,7 @@
  * lares-config — the per-daemon resource-override reader + the composable daemon resource caps.
  *
  * An operator sites ONE daemon's corpus resources (bags · genesis · cas) away from the repo-relative
- * default by writing `~/.lares/config.json`. Genesis artifacts ride the repo checkout BY DEFAULT (tracked
+ * default by writing `<root>/config/config.json`. Genesis artifacts ride the repo checkout BY DEFAULT (tracked
  * seed), so the base stays repo-relative and a fresh clone with no config boots exactly as before; the
  * config file OVERRIDES a resource to a `~`-derived dir when the operator sites one.
  *
@@ -20,10 +20,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { larHome } from "./vessel-paths.js";
+import { resolveGenesis } from "./genesis-resolve.js";
+import { HouseRootUnnamed, larConfigHome } from "./vessel-paths.js";
 import type { ExplicitOriginComposition } from "./lan-address.js";
 
-/** Per-resource root overrides an operator may site in `~/.lares/config.json`. Each sites INDEPENDENTLY. */
+/** Per-resource root overrides an operator may site in `<root>/config/config.json`. Each sites INDEPENDENTLY. */
 export interface LaresResourceRoots {
   /** The daemon's holdings tree — overrides `<corpus>/bags`. */
   readonly bags?:    string;
@@ -43,17 +44,17 @@ export interface LaresVesselState {
   readonly cas?: string;
 }
 
-/** Explicit Web/relay/oracle reach composition. `LAR_PUBLIC_URL` remains the relay face only. */
+/** Explicit Web/relay/flow reach composition. `LAR_PUBLIC_URL` remains the relay face only. */
 export interface LaresOriginConfig {
-  /** Declare that Web, relay, and oracle share the relay face's origin. */
+  /** Declare that Web, relay, and flow share the relay face's origin. */
   readonly sameOrigin?: boolean;
   /** The Web-surface origin. Required unless `sameOrigin` is true. */
   readonly web?: string;
-  /** The oracle/read-face origin. Required unless `sameOrigin` is true. */
-  readonly oracle?: string;
+  /** The flow/read-face origin. Required unless `sameOrigin` is true. */
+  readonly flow?: string;
 }
 
-/** The `~/.lares/config.json` shape. `resources` carries corpus-root overrides; `vessel` carries
+/** The `<root>/config/config.json` shape. `resources` carries corpus-root overrides; `vessel` carries
  *  vessel-STATE overrides — the two kept apart so corpus and state never blur. */
 export interface LaresConfig {
   readonly resources?: LaresResourceRoots;
@@ -63,6 +64,50 @@ export interface LaresConfig {
   readonly herm?: LaresHermConfig;
   /** What this hearth gives the walkers it hosts. Absent, the house defaults stand. */
   readonly hosting?: LaresHostingConfig;
+  /** The projection knobs. `temp.<slug>` consents to projecting that wiki's user temp layer (absent = no projection); `tempExpiryDays.<slug>`
+   *  opts that layer into age expiry through the trash (`temp-layer.ts`). Each keys by the wiki's slug, which survives
+   *  a re-founding. */
+  readonly projection?: {
+    readonly temp?: Readonly<Record<string, boolean>>;
+    readonly tempExpiryDays?: Readonly<Record<string, number>>;
+  };
+}
+
+/** One `projection.<key>` map read whole: absent reads empty, a non-object throws so a typo surfaces. */
+function projectionMap(cfg: LaresConfig, key: "temp" | "tempExpiryDays"): Readonly<Record<string, unknown>> {
+  const projection: unknown = cfg.projection;
+  if (projection === undefined) return {};
+  if (projection === null || typeof projection !== "object" || Array.isArray(projection)) throw new Error("[lares config] projection must be an object");
+  const map: unknown = (projection as Record<string, unknown>)[key];
+  if (map === undefined) return {};
+  if (map === null || typeof map !== "object" || Array.isArray(map)) throw new Error(`[lares config] projection.${key} must be an object keyed by wiki slug`);
+  return map as Record<string, unknown>;
+}
+
+/** The wiki slugs whose user temp layer the operator consents to project: each `projection.temp.<slug>` set true.
+ *  A non-boolean row throws. */
+export function tempConsentedSlugs(cfg: LaresConfig): string[] {
+  const out: string[] = [];
+  for (const [slug, value] of Object.entries(projectionMap(cfg, "temp"))) {
+    if (typeof value !== "boolean") throw new Error(`[lares config] projection.temp.${slug} must be true or false`);
+    if (value) out.push(slug);
+  }
+  return out.sort();
+}
+
+/** Whether `projection.temp.<slug>` consents to projecting that wiki's user temp layer. */
+export function tempProjectionConsented(cfg: LaresConfig, slug: string): boolean {
+  return tempConsentedSlugs(cfg).includes(slug);
+}
+
+/** The age-expiry window a wiki's temp layer opts into (`projection.tempExpiryDays.<slug>`, whole days, at least 1), or
+ *  null where the config names none: housekeeping alone runs then. */
+export function tempExpiryDays(cfg: LaresConfig, slug: string): number | null {
+  const map = projectionMap(cfg, "tempExpiryDays");
+  if (!Object.hasOwn(map, slug)) return null;
+  const value = map[slug];
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1) throw new Error(`[lares config] projection.tempExpiryDays.${slug} must be a whole number of days, at least 1`);
+  return value;
 }
 
 /** The hearth's hosting knobs. */
@@ -108,19 +153,27 @@ export function hermWaymarkDeclared(cfg: LaresConfig): boolean {
   return originBoolean((herm as { waymark?: unknown }).waymark, "herm.waymark") ?? false;
 }
 
-/** The per-daemon config file — `~/.lares/config.json`. LAR_ROOT-isolated for staged pairs (larHome
- *  honors LAR_ROOT), so each isolated instance reads its OWN overrides. */
+/** The per-daemon config file — `<root>/config/config.json`, under the house root LAR_ROOT names, so each
+ *  house reads its OWN overrides. An unnamed root refuses (`HouseRootUnnamed`). */
 export function laresConfigPath(): string {
-  return join(larHome(), "config.json");
+  return join(larConfigHome(), "config.json");
 }
 
 /**
- * Read `~/.lares/config.json` — PURE + well-guarded. A missing file yields `{}` (the repo-relative
- * defaults stand); an unreadable or malformed file THROWS a clear error naming the path (a typo
- * SURFACES, never silently degrades the boot). The `path` param stays injectable so the reader tests
- * without touching the operator's home.
+ * Read `<root>/config/config.json` — PURE + well-guarded. A missing file yields `{}` (the repo-relative
+ * defaults stand), and so does an unnamed house root: no house names no config, and the house-state
+ * resolvers refuse on their own when a caller reaches them. An unreadable or malformed file THROWS a clear
+ * error naming the path (a typo SURFACES, never silently degrades the boot). The `path` param stays
+ * injectable so the reader tests without touching a house.
  */
-export function loadLaresConfig(path: string = laresConfigPath()): LaresConfig {
+export function loadLaresConfig(given?: string): LaresConfig {
+  let path: string;
+  try {
+    path = given ?? laresConfigPath();
+  } catch (err) {
+    if (err instanceof HouseRootUnnamed) return {};   // no house root named — no house config to read
+    throw err;
+  }
   if (!existsSync(path)) return {};   // no override sited — the repo-relative defaults stand
   let raw: string;
   try {
@@ -151,8 +204,8 @@ function originBoolean(value: unknown, label: string): boolean | undefined {
  * Resolve the explicit origin declaration once at the configuration shore.
  *
  * Environment values are ephemeral overrides of the per-daemon config. `LAR_PUBLIC_URL` deliberately
- * does not participate here: it names the relay reach face and never becomes Web or oracle authority.
- * Missing Web/oracle values remain missing so `originCompositionForFace` can refuse at the boot/banner edge.
+ * does not participate here: it names the relay reach face and never becomes Web or flow authority.
+ * Missing Web/flow values remain missing so `originCompositionForFace` can refuse at the boot/banner edge.
  */
 export function originDeclaration(cfg: LaresConfig = loadLaresConfig()): ExplicitOriginComposition {
   const envSame = process.env["LAR_SAME_ORIGIN"];
@@ -164,11 +217,11 @@ export function originDeclaration(cfg: LaresConfig = loadLaresConfig()): Explici
         throw new Error("[lares config] LAR_SAME_ORIGIN must be true or false");
       })();
   const webOrigin = process.env["LAR_WEB_ORIGIN"] ?? cfg.origins?.web;
-  const oracleOrigin = process.env["LAR_ORACLE_ORIGIN"] ?? cfg.origins?.oracle;
+  const flowOrigin = process.env["LAR_FLOW_ORIGIN"] ?? cfg.origins?.flow;
   return {
     ...(sameOrigin === undefined ? {} : { sameOrigin }),
     ...(webOrigin === undefined ? {} : { webOrigin }),
-    ...(oracleOrigin === undefined ? {} : { oracleOrigin }),
+    ...(flowOrigin === undefined ? {} : { flowOrigin }),
   };
 }
 
@@ -184,10 +237,13 @@ export function daemonCorpusRoot(): string {
   return process.env["LAR_ROOT"] ?? repoRoot;
 }
 
-/** The genesis dir — `LAR_GENESIS` → `config.resources.genesis` → `<corpus>/genesis`. Tracked seed
+/** The genesis dir — `LAR_GENESIS` → `config.resources.genesis` → `<corpus>/genesis` when it holds a seed → the build's shipped genesis (genesis-resolve). Tracked seed
  *  (seed.json + cas/ — the tracked bundle; the bootstrap rides the vessel store). */
 export function daemonGenesisDir(cfg: LaresConfig = loadLaresConfig()): string {
-  return process.env["LAR_GENESIS"] ?? cfg.resources?.genesis ?? join(daemonCorpusRoot(), "genesis");
+  return resolveGenesis({
+    explicit: process.env["LAR_GENESIS"], configured: cfg.resources?.genesis,
+    corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot,
+  }).dir;
 }
 
 /** The bags dir — `LAR_BAGS` → `config.resources.bags` → `<corpus>/bags`. The daemon's holdings tree. */

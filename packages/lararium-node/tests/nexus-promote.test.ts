@@ -11,7 +11,11 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road ("Planes ~ cabal, realm, Nexus")
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { keepHouse } from "./support/kept-house.js";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -33,23 +37,23 @@ const BYTES = new TextEncoder().encode("the exact bytes a promotion approves");
 const fileOf = (bytes: Uint8Array, name = "promoted.txt"): string => { const path = join(roots[0]!, name); writeFileSync(path, bytes); return path; };
 const at = (index: number) => { process.env["LAR_ROOT"] = roots[index]!; return larSealHome(); };
 
-async function stand(index: number, face: number) {
-  process.env["LAR_ROOT"] = roots[index]!;
-  await generateOrLoadVesselIdentity();
+beforeAll(async () => {
+  chairA = await chairKey(0);
+  chairB = await chairKey(1);
+  genesis = heldCharter({ keys: [chairA, chairB], threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });
+});
+const houses = [0, 1].map((face) => keepHouse(`lares-nexus-promote-h${face}-`, async () => {
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(face);
   await seatChairs([face]);
   writeNexusDoc(larSealHome(), genesis.doc());
-}
+}));
 
-beforeEach(async () => {
+beforeEach(() => {
   priorLarRoot = process.env["LAR_ROOT"];
   roots = [mkdtempSync(join(tmpdir(), "lares-promote-a-")), mkdtempSync(join(tmpdir(), "lares-promote-b-"))];
-  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(0);
-  chairA = (await seatChairs([0])).keys[0]!;
-  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(1);
-  chairB = (await seatChairs([1])).keys[0]!;
-  genesis = heldCharter({ keys: [chairA, chairB], threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });
-  await stand(0, 0); await stand(1, 1);
+  houses.forEach((house, index) => house.into(roots[index]!));
+  process.env["LAR_ROOT"] = roots[1]!;
 });
 afterEach(() => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;

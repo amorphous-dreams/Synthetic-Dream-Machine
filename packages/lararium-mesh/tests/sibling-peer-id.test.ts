@@ -114,7 +114,7 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const yRepo = new Repo({ peerId: NODE, network: [yAdapter], shareConfig: shareConfigOf(async () => true) });
     yAdapter.bindRepo(yRepo);
     try {
-      const derived = siblingPeerIdOf(ySelf.deviceKey);
+      const derived = siblingPeerIdOf(ySelf.deviceKey, inception.prefix);
       await until(() => x.adapter.provenKeyOf(derived) === ySelf.deviceKey, "y proven under the id its key derives");
       expect(x.adapter.provenKeyOf(NODE)).toBeNull();
       const daemon = x.repo.create<{ line: string }>({ line: "x's own @daemon" });
@@ -137,7 +137,7 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
     try {
       await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the pair");
-      expect(peersOf(x)).toEqual([siblingPeerIdOf(y.self.deviceKey)]);
+      expect(peersOf(x)).toEqual([siblingPeerIdOf(y.self.deviceKey, inception.prefix)]);
       const daemon = x.repo.create<{ line: string }>({ line: "x's own @daemon" });
       const plane = x.repo.create<{ line: string }>({ line: "x's face plane" });
       planes.add(interpretAsDocumentId(plane.url));
@@ -163,7 +163,7 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const relay2 = memoryRelay();
     const x2 = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay2);
     const ySelf = await leafUnder(SEEDS.deviceY, ey, [inception]);
-    const close2 = await hostileSibling(relay2, ySelf, siblingPeerIdOf(ySelf.deviceKey));
+    const close2 = await hostileSibling(relay2, ySelf, siblingPeerIdOf(ySelf.deviceKey, inception.prefix));
     try {
       await until(() => peersOf(x2).length === 1, "the lawfully named sibling");
       expect(x2.refusals).toEqual([]);
@@ -177,20 +177,20 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
     const ey = await enrol(SEEDS.opA, SEEDS.deviceY, inception.prefix);
     const yKey = (await leafUnder(SEEDS.deviceY, ey, [inception])).deviceKey;
     const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
-    x.repo.networkSubsystem.addNetworkAdapter(new OtherCarrier([siblingPeerIdOf(yKey)]));
-    await until(() => x.repo.peers.includes(siblingPeerIdOf(yKey)), "the other carrier to hold the id");
+    x.repo.networkSubsystem.addNetworkAdapter(new OtherCarrier([siblingPeerIdOf(yKey, inception.prefix)]));
+    await until(() => x.repo.peers.includes(siblingPeerIdOf(yKey, inception.prefix)), "the other carrier to hold the id");
     const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
     try {
       await until(() => x.refusals.length > 0 && y.refusals.length > 0, "both sides to say why");
-      expect(x.refusals[0]).toMatchObject({ suspect: "route", peerKey: yKey, peerId: siblingPeerIdOf(yKey) });
+      expect(x.refusals[0]).toMatchObject({ suspect: "route", peerKey: yKey, peerId: siblingPeerIdOf(yKey, inception.prefix) });
       expect(y.refusals[0]).toMatchObject({ suspect: "peer", reason: expect.stringMatching(/another adapter/) });
-      expect(x.adapter.provenKeyOf(siblingPeerIdOf(yKey))).toBeNull();
+      expect(x.adapter.provenKeyOf(siblingPeerIdOf(yKey, inception.prefix))).toBeNull();
       expect(peersOf(y)).toEqual([]);
     } finally { await shutdown(x, y); }
   });
 
   test("RED: an adapter that announces a standing sibling's id takes the route — the sibling leaves, said as `route`", async () => {
-    const { x, y } = await (async () => {
+    const { x, y, inception } = await (async () => {
       const { inception } = await founded();
       const relay = memoryRelay();
       const ex = await enrol(SEEDS.opA, SEEDS.deviceX, inception.prefix);
@@ -198,11 +198,11 @@ describe("a sibling stands under the peer id its proven key derives — one id, 
       const x = standLeaf(SEEDS.deviceX, ex, await leafOf(SEEDS.deviceX, ex, [inception]), relay);
       const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay);
       await until(() => peersOf(x).length === 1 && peersOf(y).length === 1, "the pair");
-      return { x, y };
+      return { x, y, inception };
     })();
     const taker = new OtherCarrier();
     try {
-      const id = siblingPeerIdOf(y.self.deviceKey);
+      const id = siblingPeerIdOf(y.self.deviceKey, inception.prefix);
       x.repo.networkSubsystem.addNetworkAdapter(taker);
       taker.announce(id);
       expect(x.refusals[0]).toMatchObject({ suspect: "route", peerKey: y.self.deviceKey, peerId: id });

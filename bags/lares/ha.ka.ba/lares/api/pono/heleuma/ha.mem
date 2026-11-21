@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ha">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/heleuma/ha`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ha.mem"
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant capability: heleuma-ha — body/structure anchor; permanent compiled artifact with quine record"
 tags      = ["api/pono/heleuma"]
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma/ha"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Heleuma-Ha (Body / Structure)
 
@@ -27,7 +23,7 @@ A heleuma-ha anchor exists outside the `lar:///` corpus ''by nature, not by stag
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ locate the compiled artifact and confirm it is structural territory, not a traveling soul.
 ⏿ orient: does removing it break the containing form? If yes, this is ha.
@@ -37,7 +33,7 @@ A heleuma-ha anchor exists outside the `lar:///` corpus ''by nature, not by stag
 
 <<~/ahu>>
 
-<<~ ahu #/required-fields>>
+<<~ ahu slot=`#/required-fields`>>
 
 !! Required Fields (SHALL)
 
@@ -53,10 +49,10 @@ It SHALL NOT declare `source-sha256` — ha does not promote.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ywcBigCbNtHTp21QVqr8uwNEq-0Bwg7jcgP_59FuxC8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QJMRKat0b9lFgRnli0P6NjCaCrf9kIh2cEw8bfhiBjk`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

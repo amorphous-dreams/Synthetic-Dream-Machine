@@ -68,3 +68,23 @@ describe("the late dial stands one adapter", () => {
     expect(SRC).toMatch(/representIfMoved = lateDialOnce\(\{/);
   });
 });
+
+describe("a take's ward route is never dropped (S2 re-read, P3)", () => {
+  test("RED: a take carrying a route that joins a dial in flight with none refuses `ward-dial-in-flight`; CONTROL: a take with a route that starts the dial carries it to the stand", async () => {
+    const { wardCredential } = await import("../src/ward-credential.js");
+    const route = wardCredential([{ kind: "passphrase", passphrase: "a take's route" }]);
+    let release!: () => void;
+    const carried: unknown[] = [];
+    let standing = false;
+    const ask = lateDialOnce({ standing: () => standing, tornDown: () => false, stand: async (_live, ward) => { carried.push(ward); await new Promise<void>((r) => { release = r; }); } });
+    const first = ask();
+    await Promise.resolve(); await Promise.resolve();
+    await expect(ask(route)).rejects.toThrow(/ward-dial-in-flight/);
+    release(); await first;
+    const second = ask(route);
+    await Promise.resolve(); await Promise.resolve();
+    release(); await second;
+    standing = true;
+    expect(carried).toEqual([undefined, route]);
+  });
+});

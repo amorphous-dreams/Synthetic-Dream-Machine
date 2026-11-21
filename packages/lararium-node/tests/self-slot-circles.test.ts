@@ -18,7 +18,7 @@
 import { describe, expect, test } from "vitest";
 import { interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import { DeterministicFederationGate, crossroadsDocUrl } from "@lararium/mesh";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 const NEXUS   = "ab".repeat(32);           // this operator's Nexus key
 const OTHER   = "cd".repeat(32);           // a different key — its doc models the circles doc's random private id
@@ -35,7 +35,7 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
   test("a SAME-OPERATOR WS peer syncs the circles doc through its face's gate, and never by class (D3)", async () => {
     const base = {
       hasWsSocket: true, peerClass: "same-operator" as const,
-      selfSlotFedGate: gate, antigenRing: null, membership: null, planeSeal: null,
+      selfSlotFedGate: gate, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "same-op-device", documentId: circlesStandIn,
     };
     expect(await selfSlotShareDecision(base)).toBe(false);   // RED: the class alone opens no private plane
@@ -46,7 +46,7 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
   test("a CROSS-OPERATOR peer is DENIED the circles doc even with the Nexus OPEN", async () => {
     const base = {
       hasWsSocket: true, peerClass: "stranger" as const,
-      selfSlotFedGate: gate, antigenRing: null, membership: null, planeSeal: null,
+      selfSlotFedGate: gate, antigenRing: NO_BANS, shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED, membership: null, planeSeal: null,
       federationPosture: "open" as const, peerId: "stranger",
     };
     // The public shelf DOES cross under OPEN — proving the denial below is SELECTIVE, not a blanket block.
@@ -58,8 +58,9 @@ describe("circles fleet-sync-but-never-federate (structural)", () => {
   test("a CROSS-OPERATOR peer is denied the circles doc under a PRIVATE Nexus too", async () => {
     const denied = await selfSlotShareDecision({
       hasWsSocket: true, peerClass: "stranger",
-      selfSlotFedGate: gate, antigenRing: null, membership: null, planeSeal: null,
+      selfSlotFedGate: gate, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId: "stranger", documentId: circlesStandIn,
+      shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     });
     expect(denied).toBe(false);
   });

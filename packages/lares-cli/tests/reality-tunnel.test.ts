@@ -1,0 +1,826 @@
+/**
+ * reality tunnel — one door per radius over one declared reality tunnel (lar:///ha.ka.ba/lares/cli/reality-tunnel). Every
+ * red plants against a scratch clone or a scratch home; nothing here writes the live tree or a real
+ * home.
+ */
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item, type Row } from "../src/reality-tunnel/engine.js";
+import { windowsProfile } from "../src/reality-tunnel/homes.js";
+import { radiusLock } from "../src/reality-tunnel/lock.js";
+import { briefLine, externalLines, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
+import {
+  claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
+  tomlTableKey, tomlTableUnset, tomlTopFloor,
+} from "../src/reality-tunnel/kinds.js";
+import { CARRIER, declared, homeItems, repoItems } from "../src/reality-tunnel/catalog.js";
+import { finalHash, judgeLoads, verifyLoads } from "../src/reality-tunnel/verify.js";
+
+const REPO = join(import.meta.dirname, "..", "..", "..");
+let dir: string;
+beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "tunnel-")); });
+afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
+
+const MCP = { command: "/usr/bin/python3", args: ["/clone/lares_mcp.py"], env: { PYTHONPATH: "/clone/mp" } };
+
+/** A git clone carrying the carrier, the seed and the hook scripts the home items aim at. */
+function clone(): string {
+  const root = mkdtempSync(join(dir, "clone-"));
+  for (const rel of [CARRIER, declared(REPO).seed]) {
+    mkdirSync(join(root, dirname(rel)), { recursive: true });
+    writeFileSync(join(root, rel), readFileSync(join(REPO, rel), "utf8"));
+  }
+  for (const s of declared(REPO).home) {
+    const script = s["script"] ?? s["target"];
+    if (typeof script === "string") { mkdirSync(join(root, dirname(script)), { recursive: true }); writeFileSync(join(root, script), "#\n"); }
+  }
+  execFileSync("git", ["init", "-q", root]);
+  return root;
+}
+
+const ledger = (): Ledger => new Ledger(mkdtempSync(join(dir, "ledger-")));
+
+describe("the memory guard never lowers", () => {
+  it("raises a low value and keeps a higher one", () => {
+    const f = jsonFloor("cleanupPeriodDays", 99999);
+    expect(JSON.parse(f('{"cleanupPeriodDays": 30}')!).cleanupPeriodDays).toBe(99999);
+    expect(f('{"cleanupPeriodDays": 200000}')).toBe('{"cleanupPeriodDays": 200000}');
+  });
+});
+
+describe("hooks re-aim at the resolved path rather than standing beside a stale one", () => {
+  it("Claude: the stale group yields to the resolved one at its place; a foreign group stays", () => {
+    const f = claudeHook("Stop", "hook.sh", { type: "command", command: 'bash "/new/hook.sh"', timeout: 30 });
+    const o = JSON.parse(f('{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash \\"/old/hook.sh\\""}]},{"hooks":[{"type":"command","command":"other"}]}]}}')!);
+    expect(o.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: 'bash "/new/hook.sh"', timeout: 30 }] }, { hooks: [{ type: "command", command: "other" }] }]);
+  });
+  it("Claude: an operator's own hook and a group's matcher stand beside the house's, untouched", () => {
+    const f = claudeHook("SessionStart", "wake.mjs", { type: "command", command: "node", args: ["/new/wake.mjs"], timeout: 15 });
+    const mine = { type: "command", command: "echo mine" };
+    const o = JSON.parse(f(JSON.stringify({ hooks: { SessionStart: [{ matcher: "startup", hooks: [mine, { type: "command", command: "node", args: ["/old/wake.mjs"] }] }] } }))!);
+    expect(o.hooks.SessionStart[0]).toEqual({ matcher: "startup", hooks: [mine, { type: "command", command: "node", args: ["/new/wake.mjs"], timeout: 15 }] });
+    expect(f(JSON.stringify(o))).toBe(JSON.stringify(o));
+  });
+  it("Codex: a block that mixes the house's hook with another reads foreign, never stripped", () => {
+    const mixed = "[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"/old/hook.sh\"\ntimeout = 60\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"mine.sh\"\n";
+    expect(tomlHookForeign("Stop", "hook.sh")(mixed)).toMatch(/shares/);
+    expect(tomlHookForeign("Stop", "hook.sh")("[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"/old/hook.sh\"\n")).toBeNull();
+  });
+  it("Codex: one block names the resolved path", () => {
+    const t = tomlHook("Stop", "hook.sh", "/new/hook.sh", 60)("[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = \"command\"\ncommand = \"/old/hook.sh\"\ntimeout = 60\n")!;
+    expect(t).toContain('"/new/hook.sh"');
+    expect(t).not.toContain("/old/");
+  });
+});
+
+describe("pointer lines and prose", () => {
+  it("a pointer is a link, an import or a bare path; prose naming the file is not", () => {
+    expect(["-> [noosphere-boot.mem](x)", "@.claude/noosphere-boot", "bags/x/noosphere-boot.mem"].every(namesSeed)).toBe(true);
+    expect(["- never hand-edit noosphere-boot.mem", "the link `.claude/noosphere-boot`"].some(namesSeed)).toBe(false);
+  });
+  it("a file whose pointer was all it carried, frontmatter and all, lifts whole", () => {
+    expect(seedless()("---\npaths: ['**']\n---\n\n-> [noosphere-boot.mem](x)\n")).toBeNull();
+  });
+});
+
+describe("the engine", () => {
+  const file = (p: string, what: Partial<Item>): Item => ({ id: `t.${p}`, radius: "home", host: "t", path: join(dir, p), what: p, ...what });
+
+  it("tend writes only on difference, records a generation, and a second tend writes nothing", async () => {
+    const l = ledger();
+    const it1 = file("a.json", { transform: jsonFloor("n", 5), foreign: jsonForeign });
+    const r1 = await tend([it1], l);
+    expect(r1.wrote).toEqual([join(dir, "a.json")]);
+    expect(r1.generation?.gen).toBe(1);
+    const r2 = await tend([it1], l);
+    expect(r2.wrote).toEqual([]);
+    expect(r2.generation).toBeNull();
+    expect(exitOf(r2.rows)).toBe(EXIT.aligned);
+  });
+
+  it("items on one file compose, and the file writes once", async () => {
+    const l = ledger();
+    const items = [file("s.json", { transform: jsonFloor("a", 1) }), file("s.json", { transform: jsonFloor("b", 2) })];
+    const r = await tend(items, l);
+    expect(r.wrote.length).toBe(1);
+    expect(JSON.parse(readFileSync(join(dir, "s.json"), "utf8"))).toEqual({ a: 1, b: 2 });
+  });
+
+  it("read writes nothing and names drift with exit 1", () => {
+    const rows = read([file("absent.json", { transform: jsonFloor("n", 5) })], ledger());
+    expect(rows[0]!.state).toBe("drift");
+    expect(exitOf(rows)).toBe(EXIT.drift);
+    expect(existsSync(join(dir, "absent.json"))).toBe(false);
+  });
+
+  it("foreign bytes refuse with exit 3; --force takes them and the ledger keeps them", async () => {
+    writeFileSync(join(dir, "bad.json"), "{not json");
+    const it1 = file("bad.json", { transform: jsonFloor("n", 5), foreign: jsonForeign });
+    const l = ledger();
+    const r = await tend([it1], l);
+    expect(r.refused.length).toBe(1);
+    expect(readFileSync(join(dir, "bad.json"), "utf8")).toBe("{not json");
+    expect(exitOf(r.rows)).toBe(EXIT.foreign);
+  });
+
+  it("a hand edit after the house wrote reads as touched", async () => {
+    const l = ledger();
+    const it1 = file("t.json", { transform: jsonFloor("n", 5) });
+    await tend([it1], l);
+    writeFileSync(join(dir, "t.json"), '{"n": 9, "mine": true}\n');
+    const row = read([it1], l)[0]!;
+    expect(row.touched).toBe(true);
+    expect(row.state).toBe("aligned");
+  });
+
+  it("undo restores a generation's prior bytes and records the restore", async () => {
+    const l = ledger();
+    writeFileSync(join(dir, "u.json"), '{"n": 1}\n');
+    await tend([file("u.json", { transform: jsonFloor("n", 5) })], l);
+    const g = undo(l).generation!;
+    expect(readFileSync(join(dir, "u.json"), "utf8")).toBe('{"n": 1}\n');
+    expect(g.act).toBe("undo");
+    expect(g.undoes).toBe(1);
+    undo(l, g.gen);
+    expect(JSON.parse(readFileSync(join(dir, "u.json"), "utf8")).n).toBe(5);
+  });
+
+  it("a link item links, a regular file in its place refuses, and undo restores the link's absence", async () => {
+    const l = ledger();
+    const it1 = file("link", { link: "target" });
+    await tend([it1], l);
+    expect(readlinkSync(join(dir, "link"))).toBe("target");
+    undo(l);
+    expect(existsSync(join(dir, "link")) || (() => { try { lstatSync(join(dir, "link")); return true; } catch { return false; } })()).toBe(false);
+    writeFileSync(join(dir, "link"), "a file");
+    expect(read([it1], l)[0]!.state).toBe("foreign");
+  });
+
+  it("an absent host leaves the exit alone; an unreachable piece reads 4", () => {
+    expect(exitOf(read([file("x", { absent: "codex stands unset" })], ledger()))).toBe(EXIT.aligned);
+    expect(exitOf(read([file("y", { unreachable: "no python" })], ledger()))).toBe(EXIT.unreachable);
+  });
+});
+
+describe("the repo radius", () => {
+  it("CONTROL: a bare clone tends whole, then reads aligned, and a second tend writes nothing", async () => {
+    const root = clone();
+    const items = repoItems(root);
+    const l = ledger();
+    const r = await tend(items, l);
+    expect(r.refused).toEqual([]);
+    expect(exitOf(read(items, l))).toBe(EXIT.aligned);
+    expect((await tend(repoItems(root), l)).wrote).toEqual([]);
+    expect(readlinkSync(join(root, ".claude/noosphere-boot"))).toBe(`../${declared(REPO).seed}`);
+    expect(readFileSync(join(root, "CLAUDE.md"), "utf8").split("\n")[0]).toBe("@.claude/noosphere-boot");
+    expect(readFileSync(join(root, ".claude/agents/Explore.md"), "utf8")).toContain("disallowedTools: Agent, Edit, Write");
+  });
+
+  it("a scout edited by hand without its marker refuses; a seed edit moves the projection", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    writeFileSync(join(root, declared(REPO).seed), `${readFileSync(join(root, declared(REPO).seed), "utf8")}\nmore\n`);
+    expect(read(repoItems(root), l).filter((x) => /scout/.test(x.id)).every((x) => x.state === "drift")).toBe(true);
+    writeFileSync(join(root, ".claude/agents/Plan.md"), "my own Plan agent\n");
+    expect(read(repoItems(root), l).find((x) => x.id === "claude.scout-plan")!.state).toBe("foreign");
+  });
+
+  it("the live tree's checkout holds its reality tunnel, read without a write", () => {
+    const rows = read(repoItems(REPO), new Ledger(join(dir, "never-written")));
+    // The clone's git config rests outside the tree, and a lane's runner never tends the operator's clone; the scratch
+    // clones below prove the driver's rows.
+    expect(rows.filter((r) => r.state !== "aligned" && r.host !== "git")).toEqual([]);
+    expect(existsSync(join(dir, "never-written"))).toBe(false);
+  });
+});
+
+describe("the repo radius seats the seal merge driver in the clone's shared git config", () => {
+  const DRIVER = "node tools/mem-merge-driver.mjs %O %A %B %P %L";
+  const NAME = "a .mem conflict on its seal alone re-seals";
+  const git = (root: string, ...args: string[]): string | null => {
+    try { return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); }
+    catch { return null; }
+  };
+  const configBytes = (root: string): string => readFileSync(join(root, ".git", "config"), "utf8");
+
+  it("the carrier declares both driver keys as repo items", () => {
+    const rows = declared(REPO).repo.filter((s) => s.kind === "git-config");
+    expect(rows.map((s) => [s["key"], s["value"]])).toEqual([["merge.mem-seal.name", NAME], ["merge.mem-seal.driver", DRIVER]]);
+  });
+
+  it("a scratch clone reads drift unset; tend sets both keys; a second tend changes nothing", async () => {
+    const root = clone();
+    const l = ledger();
+    const before = read(repoItems(root), l).filter((r) => r.host === "git");
+    expect(before.map((r) => r.state)).toEqual(["drift", "drift"]);
+    expect(before.every((r) => /unset/.test(r.detail))).toBe(true);
+    const r1 = await tend(repoItems(root), l);
+    expect(r1.set.sort()).toEqual(["git.merge-driver", "git.merge-driver-name"]);
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.name")).toBe(NAME);
+    const bytes = configBytes(root);
+    const r2 = await tend(repoItems(root), l);
+    expect(r2.wrote).toEqual([]);
+    expect(r2.set).toEqual([]);
+    expect(r2.generation).toBeNull();
+    expect(configBytes(root)).toBe(bytes);
+    const after = r2.rows.filter((r) => r.host === "git");
+    expect(after.map((r) => [r.state, r.touched])).toEqual([["aligned", false], ["aligned", false]]);
+  });
+
+  it("a worktree's tend lands in the clone's shared config, so every worktree of the clone reads it", async () => {
+    const root = clone();
+    execFileSync("git", ["-C", root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "--no-verify", "-m", "root"]);
+    const wt = join(dir, "wt");
+    execFileSync("git", ["-C", root, "worktree", "add", "-q", wt]);
+    for (const rel of [CARRIER, declared(REPO).seed]) {
+      mkdirSync(join(wt, dirname(rel)), { recursive: true });
+      writeFileSync(join(wt, rel), readFileSync(join(root, rel), "utf8"));
+    }
+    await tend(repoItems(wt), ledger());
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+  });
+
+  it("a value set by another hand reads drift naming it, and tend sets the tunnel's", async () => {
+    const root = clone();
+    execFileSync("git", ["-C", root, "config", "merge.mem-seal.driver", "node elsewhere.mjs"]);
+    const row = read(repoItems(root), ledger()).find((r) => r.id === "git.merge-driver")!;
+    expect(row.state).toBe("drift");
+    expect(row.detail).toContain("node elsewhere.mjs");
+    await tend(repoItems(root), ledger());
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+  });
+
+  it("undo puts the keys back unset", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    const items = repoItems(root);
+    undo(l, undefined, { externals: new Map(items.filter((i) => i.external).map((i) => [i.id, i.external!] as const)) });
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBeNull();
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.name")).toBeNull();
+  });
+
+  it("the commit gate reads the index alone, so an unset driver reads absent there", () => {
+    const root = clone();
+    const show = (rel: string): string | null => { try { return execFileSync("git", ["-C", root, "show", `:${rel}`], { encoding: "utf8" }); } catch { return null; } };
+    execFileSync("git", ["-C", root, "add", "-A"]);
+    const rows = read(repoItems(root, declared(root, show), show, { staged: true }), ledger(), indexReader(root)).filter((r) => r.host === "git");
+    expect(rows.map((r) => r.state)).toEqual(["absent", "absent"]);
+  });
+
+  it("a tree outside any git repository reads the driver absent", () => {
+    const root = mkdtempSync(join(dir, "nogit-"));
+    for (const rel of [CARRIER, declared(REPO).seed]) {
+      mkdirSync(join(root, dirname(rel)), { recursive: true });
+      writeFileSync(join(root, rel), readFileSync(join(REPO, rel), "utf8"));
+    }
+    const rows = read(repoItems(root), ledger()).filter((r) => r.host === "git");
+    expect(rows.map((r) => r.state)).toEqual(["absent", "absent"]);
+  });
+
+  it("tend's report names what it set and what it found already set, in plain words", async () => {
+    const root = clone();
+    const l = ledger();
+    const first = await tend(repoItems(root), l);
+    const set = externalLines(repoItems(root), first);
+    expect(set).toContain(`  set merge.mem-seal.driver = ${DRIVER} (git.merge-driver)`);
+    const second = await tend(repoItems(root), l);
+    expect(externalLines(repoItems(root), second)).toContain(`  already set merge.mem-seal.driver = ${DRIVER} (git.merge-driver)`);
+  });
+});
+
+describe("the home radius", () => {
+  function homes(): { native: string; windows: string } {
+    const native = mkdtempSync(join(dir, "home-"));
+    const windows = mkdtempSync(join(dir, "win-"));
+    for (const d of [".claude", ".codex", ".copilot", ".local/bin"]) mkdirSync(join(native, d), { recursive: true });
+    mkdirSync(join(windows, ".claude"));
+    return { native, windows };
+  }
+
+  it("every Claude home carries the memory guard, the Windows profile included", async () => {
+    const root = clone();
+    const h = homes();
+    const items = homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+    await tend(items, ledger());
+    for (const home of [h.native, h.windows]) {
+      expect(JSON.parse(readFileSync(join(home, ".claude/settings.json"), "utf8")).cleanupPeriodDays).toBe(99999);
+    }
+    expect(existsSync(join(h.windows, ".claude/rules"))).toBe(false);
+  });
+
+  it("each harness's retention holds at its maximum: Codex saves all, uncapped; Copilot keeps 1000", async () => {
+    const root = clone();
+    const h = homes();
+    writeFileSync(join(h.native, ".codex/config.toml"), "[history]\npersistence = \"none\"\nmax_bytes = 4096\n");
+    writeFileSync(join(h.native, ".copilot/settings.json"), '{"commandHistoryMaxSize": 50, "model": "m"}\n');
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    const toml = readFileSync(join(h.native, ".codex/config.toml"), "utf8");
+    expect(toml).toContain('persistence = "save-all"');
+    expect(toml).not.toContain("max_bytes");
+    expect(JSON.parse(readFileSync(join(h.native, ".copilot/settings.json"), "utf8"))).toEqual({ commandHistoryMaxSize: 1000, model: "m" });
+  });
+
+  it("hooks and the bin link aim at the main clone, and a tend converges", async () => {
+    const root = clone();
+    const h = homes();
+    const l = ledger();
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l);
+    const settings = readFileSync(join(h.native, ".claude/settings.json"), "utf8");
+    expect(settings).toContain(`${root}/packages/lares-cli/.claude-plugin/hooks/lares-loads-hook.mjs`);
+    expect(readlinkSync(join(h.native, ".local/bin/lares"))).toBe(join(root, "packages/lares-cli/bin/lares.mjs"));
+    expect((await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l)).wrote).toEqual([]);
+  });
+
+  it("a tend seats the compaction hook on PreCompact beside the wake on SessionStart (road L35, L43)", async () => {
+    const root = clone();
+    const h = homes();
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
+    const at = (name: string) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`], timeout: 15 });
+    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs")] }]);
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-wake-hook.mjs")] }]);
+  });
+
+  it("a tend seats the keep hook on SessionEnd, so each session's end runs `lares rite keep --if-due` (cross-and-keep, K11)", async () => {
+    const root = clone();
+    const h = homes();
+    const l = ledger();
+    // The operator's own SessionEnd command stands beside the house's, untouched.
+    const mine = { hooks: [{ type: "command", command: "echo mine" }] };
+    mkdirSync(join(h.native, ".claude"), { recursive: true });
+    writeFileSync(join(h.native, ".claude/settings.json"), `${JSON.stringify({ hooks: { SessionEnd: [mine] } }, null, 2)}\n`);
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l);
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
+    expect(hooks["SessionEnd"]).toEqual([mine, { hooks: [{ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/lares-keep-hook.mjs`], timeout: 10 }] }]);
+    expect((await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l)).wrote).toEqual([]);
+    // The row stands in the carrier, and the script it names stands in the house's hooks folder and runs the due keep.
+    const row = declared(REPO).home.find((s) => s.id === "claude.keep-hook");
+    expect(row).toMatchObject({ host: "claude", kind: "claude-hook", file: ".claude/settings.json", event: "SessionEnd", runner: "node" });
+    expect(readFileSync(join(REPO, String(row!["script"])), "utf8")).toContain('"rite", "keep", "--if-due"');
+  });
+
+  // ── THE HOUSE OWNS ITS HOOKS FOLDER: a hook file names no script there that no row declares for it ──────────────
+  const HOOKS = "packages/lares-cli/.claude-plugin/hooks";
+  const STRAY = "lares-stray-hook.sh";
+  /**
+   * A scratch home whose three hook files name scripts under the house's hooks folder that no row declares, each beside
+   * another hand's command; `lares-unlisted-hook.sh` stands in for any script at all, one no carrier names.
+   */
+  function plantStrays(native: string, root: string): void {
+    const under = (name: string): string => `${root}/${HOOKS}/${name}`;
+    writeFileSync(join(native, ".claude/settings.json"), `${JSON.stringify({
+      model: "m",
+      hooks: {
+        Stop: [{ hooks: [{ type: "command", command: `bash "${under(STRAY)}"`, timeout: 30 }, { type: "command", command: "my-own-stop" }] }],
+        SessionEnd: [{ hooks: [{ type: "command", command: `bash "${under(STRAY)}"`, timeout: 60 }] }],
+        SessionStart: [{ hooks: [{ type: "command", command: `bash /old/clone/${HOOKS}/lares-wake-hook.sh` }] }],
+        Notification: [{ matcher: "idle", hooks: [{ type: "command", command: "node", args: [under("lares-unlisted-hook.sh")] }, { type: "command", command: "bash /opt/mine/hooks/lares-notes.sh" }] }],
+      },
+    }, null, 2)}\n`);
+    writeFileSync(join(native, ".codex/config.toml"),
+      `model = "m"\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = ${JSON.stringify(under(STRAY))}\ntimeout = 60\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "my-own-stop"\n`);
+    mkdirSync(join(native, ".copilot/hooks"), { recursive: true });
+    writeFileSync(join(native, ".copilot/hooks/lares.json"),
+      `${JSON.stringify({ version: 1, hooks: { sessionEnd: [{ type: "command", bash: under(STRAY), timeoutSec: 60 }, { type: "command", bash: "my-own-end" }] } }, null, 2)}\n`);
+  }
+  const OWNED = ["claude.hooks-owned", "codex.hooks-owned", "copilot.hooks-owned"];
+
+  it("a hook file that names a house hook script no row declares reads as drift by script, and the wake's line names the cure", () => {
+    const root = clone();
+    const h = homes();
+    plantStrays(h.native, root);
+    const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    const owned = OWNED.map((id) => rows.find((r) => r.id === id)!);
+    expect(owned.map((r) => r?.state)).toEqual(["drift", "drift", "drift"]);
+    expect(owned[0]!.lifts).toEqual([STRAY, "lares-unlisted-hook.sh", "lares-wake-hook.sh"]);
+    expect(owned[0]!.detail).toBe(`names house hook script(s) no row declares (${STRAY}, lares-unlisted-hook.sh, lares-wake-hook.sh); tend lifts each`);
+    expect(owned[1]!.lifts).toEqual([STRAY]);
+    expect(owned[2]!.lifts).toEqual([STRAY]);
+    expect(briefLine(rows)).toMatch(/; 3 item\(s\) name a house hook script no row declares: claude\.hooks-owned, codex\.hooks-owned, copilot\.hooks-owned \(lares home tend lifts each\)$/);
+  });
+
+  it("a tend lifts every such command under any event, keeps each other hand's command, and a second tend writes nothing", async () => {
+    const root = clone();
+    const h = homes();
+    plantStrays(h.native, root);
+    const l = ledger();
+    const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+    const before = read(items(), l);
+    const r = await tend(items(), l);
+    const settings = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8"));
+    for (const gone of [STRAY, "lares-wake-hook.sh", "lares-unlisted-hook.sh"]) expect(JSON.stringify(settings), gone).not.toContain(gone);
+    expect(settings.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: "my-own-stop" }] }]);
+    // The stray leaves SessionEnd, and the house's own keep hook stands there alone.
+    expect(settings.hooks.SessionEnd).toEqual([{ hooks: [{ type: "command", command: "node", args: [`${root}/${HOOKS}/lares-keep-hook.mjs`], timeout: 10 }] }]);
+    // CONTROL: a command of another hand that names no script under the house's folder never moves, its matcher with it.
+    expect(settings.hooks.Notification).toEqual([{ matcher: "idle", hooks: [{ type: "command", command: "bash /opt/mine/hooks/lares-notes.sh" }] }]);
+    expect(settings.model).toBe("m");
+    // The rows' own hooks stand: the wake at SessionStart, where the undeclared one stood.
+    expect(JSON.stringify(settings.hooks.SessionStart)).toContain(`${root}/${HOOKS}/lares-wake-hook.mjs`);
+    const toml = readFileSync(join(h.native, ".codex/config.toml"), "utf8");
+    expect(toml).not.toContain(STRAY);
+    expect(toml).toContain('command = "my-own-stop"');
+    const copilot = JSON.parse(readFileSync(join(h.native, ".copilot/hooks/lares.json"), "utf8"));
+    expect(copilot.hooks.sessionEnd).toEqual([{ type: "command", bash: "my-own-end" }]);
+    expect(liftedLines(before, r.rows)).toEqual([
+      `  lifted ${STRAY}, lares-unlisted-hook.sh, lares-wake-hook.sh from ${join(h.native, ".claude/settings.json")} (claude.hooks-owned)`,
+      `  lifted ${STRAY} from ${join(h.native, ".codex/config.toml")} (codex.hooks-owned)`,
+      `  lifted ${STRAY} from ${join(h.native, ".copilot/hooks/lares.json")} (copilot.hooks-owned)`,
+    ]);
+    const after = read(items(), l);
+    expect(OWNED.map((id) => after.find((x) => x.id === id)!.state)).toEqual(["aligned", "aligned", "aligned"]);
+    expect(briefLine(after)).not.toContain("no row declares");
+    const second = await tend(items(), l);
+    expect(second.wrote).toEqual([]);
+    expect(liftedLines(after, second.rows)).toEqual([]);
+  });
+
+  it("a fresh home takes nothing from the rule: its rows read aligned, and no hook file it lacked appears", async () => {
+    const root = clone();
+    const h = homes();
+    const l = ledger();
+    const first = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l);
+    expect(OWNED.map((id) => first.find((x) => x.id === id)!.state)).toEqual(["aligned", "aligned", "aligned"]);
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l);
+    expect(existsSync(join(h.native, ".copilot/hooks/lares.json"))).toBe(false);
+    expect(readFileSync(join(h.native, ".codex/config.toml"), "utf8")).not.toContain("hooks");
+  });
+
+  it("Codex: a block that shares an undeclared house hook with another command reads foreign, never stripped", () => {
+    const root = clone();
+    const h = homes();
+    const mixed = `[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "${root}/${HOOKS}/${STRAY}"\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "mine.sh"\n`;
+    writeFileSync(join(h.native, ".codex/config.toml"), mixed);
+    const row = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger()).find((r) => r.id === "codex.hooks-owned")!;
+    expect(row.state).toBe("foreign");
+    expect(row.detail).toMatch(/shares a house hook script no row declares/);
+  });
+
+  it("the live carrier names the house's hooks folder, and every script a home row names stands in the tree under it", () => {
+    const d = declared(REPO);
+    const missing = d.home.filter((s) => typeof (s["script"] ?? s["target"]) === "string" && !existsSync(join(REPO, String(s["script"] ?? s["target"]))));
+    expect(missing.map((s) => s.id)).toEqual([]);
+    expect(d.hooks).toBe(HOOKS);
+    expect(d.home.filter((s) => typeof s["script"] === "string" && !String(s["script"]).startsWith(`${d.hooks}/`)).map((s) => s.id)).toEqual([]);
+    expect(d.home.filter((s) => /-hooks-owned$/.test(s.kind)).map((s) => s.id)).toEqual(OWNED);
+  });
+
+  it("every script in the house's hooks folder stands declared by a home row, or loaded by one a row declares", () => {
+    const d = declared(REPO);
+    const held = d.home.filter((s) => typeof s["script"] === "string").map((s) => String(s["script"]).split("/").at(-1)!);
+    const loaded = (name: string): boolean => held.some((h) => readFileSync(join(REPO, d.hooks, h), "utf8").includes(name));
+    const scripts = readdirSync(join(REPO, d.hooks)).filter((f) => f !== "hooks.json");
+    expect(scripts.filter((f) => !held.includes(f) && !loaded(f))).toEqual([]);
+  });
+
+  it("a host whose home stands absent reads absent; a seat whose MCP pieces stand absent reads unreachable", () => {
+    const root = clone();
+    const native = mkdtempSync(join(dir, "bare-"));
+    const rows = read(homeItems({ repo: root, homes: { native, windows: null }, mcp: null, claudeCli: false }), ledger());
+    expect(rows.find((r) => r.id === "codex.mcp-seat")!.state).toBe("absent");
+    mkdirSync(join(native, ".copilot"));
+    const again = read(homeItems({ repo: root, homes: { native, windows: null }, mcp: null, claudeCli: false }), ledger());
+    expect(again.find((r) => r.id === "copilot.mcp-seat")!.state).toBe("unreachable");
+  });
+
+  it("the seed rule refuses a same-named file the house never wrote", () => {
+    const root = clone();
+    symlinkSync(`../${declared(REPO).seed}`, (mkdirSync(join(root, ".claude"), { recursive: true }), join(root, ".claude/noosphere-boot")));
+    const h = homes();
+    mkdirSync(join(h.native, ".claude/rules"), { recursive: true });
+    writeFileSync(join(h.native, ".claude/rules/lares-seed-seat.md"), "the operator's own words\n");
+    const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    expect(rows.find((r) => r.id === "claude.seed-rule")!.state).toBe("foreign");
+  });
+});
+
+describe("verify reads what the host loaded", () => {
+  const seed = "/c/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
+  it("one load of one real path holds; two loads red; a compact reload never counts", () => {
+    expect(judgeLoads([{ session_id: "s", file_path: seed, load_reason: "include", cwd: "/c" }], "home", "/c").ok).toBe(true);
+    expect(judgeLoads([{ session_id: "s", file_path: seed, load_reason: "include" }, { session_id: "s", file_path: "/w/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", load_reason: "include" }], "home", "/c").ok).toBe(false);
+    expect(judgeLoads([{ session_id: "s", file_path: seed, load_reason: "include" }, { session_id: "s", file_path: seed, load_reason: "compact" }], "home", "/c").ok).toBe(true);
+  });
+  it("no session in the log reads unverified", () => {
+    expect(judgeLoads([], "home", "/c").ok).toBe(false);
+  });
+  it("the repo radius reads the latest session inside the checkout", () => {
+    const r = judgeLoads([
+      { session_id: "in", file_path: seed, load_reason: "include", cwd: REPO },
+      { session_id: "out", file_path: "/x/CLAUDE.md", load_reason: "session_start", cwd: "/elsewhere" },
+    ], "repo", REPO);
+    expect(r.ok).toBe(true);
+  });
+  it("the seed's final hash reads off its last block-check line", () => {
+    expect(finalHash(readFileSync(join(REPO, declared(REPO).seed), "utf8"))).toMatch(/^[A-Za-z0-9_-]{8}$/);
+  });
+});
+
+describe("the carrier", () => {
+  it("parses whole, and every item names a kind the engine knows", () => {
+    const d = declared(REPO);
+    expect(d.repo.length).toBeGreaterThan(5);
+    expect(d.home.length).toBeGreaterThan(10);
+    expect(() => repoItems(REPO, d)).not.toThrow();
+    expect(() => homeItems({ repo: REPO, homes: { native: dir, windows: null }, mcp: null, claudeCli: false }, d)).not.toThrow();
+  });
+});
+
+describe("the brief line", () => {
+  it("prints one line with no terminal, the way the wake hook reads it", () => {
+    // The exit reads the clone's own state (an untended clone's git config reads drift); the line's shape holds either way.
+    const r = spawnSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
+    expect([0, 1]).toContain(r.status);
+    const out = r.stdout;
+    expect(out.trim().split("\n")).toHaveLength(1);
+    expect(out).toMatch(/^reality tunnel: /);
+  });
+});
+
+describe("the brief line's count", () => {
+  const row = (id: string, state: Row["state"], touched = false): Row => ({ id, state, touched, path: `/h/${id}`, detail: "", radius: "home" } as unknown as Row);
+
+  it("counts drift alone as off the tunnel; a row touched since the house wrote it and still aligned reads apart", () => {
+    const line = briefLine([row("a", "aligned", true), row("b", "aligned", true), row("c", "aligned")]);
+    expect(line).not.toMatch(/off the tunnel/);
+    expect(line).toBe("reality tunnel: every item holds (2 aligned item(s) rewritten by another hand since the house wrote them: a, b)");
+    // CONTROL: real drift counts, and a touched row that drifted counts once, as drift.
+    expect(briefLine([row("a", "drift", true), row("b", "foreign"), row("c", "unreachable"), row("d", "aligned", true), row("e", "aligned")]))
+      .toBe("reality tunnel: 3 item(s) off the tunnel — a, b, c (lares home read); 1 aligned item(s) rewritten by another hand since the house wrote them: d");
+    expect(briefLine([row("e", "aligned")])).toBe("reality tunnel: every item holds");
+  });
+
+  it("names the read of the radius that printed it: lares repo read for the checkout, lares home read for the home", () => {
+    const off = [row("git.merge-driver", "drift"), row("c", "aligned")];
+    expect(briefLine(off, "repo")).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares repo read)");
+    // CONTROL: the home radius, named or left to its default, keeps its own read.
+    expect(briefLine(off, "home")).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares home read)");
+    expect(briefLine(off)).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares home read)");
+  });
+
+  it("names a row the house once wrote whose host now stands absent here: apart from drift, never dropped from the line", () => {
+    const line = briefLine([row("gone", "absent", true), row("c", "aligned")]);
+    expect(line).toBe("reality tunnel: every item holds (1 item(s) the house once wrote, changed since, on a host now absent here: gone)");
+    // Beside real drift and a rewritten aligned row, each reads in its own clause and the off count holds drift alone.
+    expect(briefLine([row("a", "drift"), row("d", "aligned", true), row("gone", "absent", true)]))
+      .toBe("reality tunnel: 1 item(s) off the tunnel — a (lares home read); 1 aligned item(s) rewritten by another hand since the house wrote them: d; 1 item(s) the house once wrote, changed since, on a host now absent here: gone");
+    // CONTROL: an absent host the house never wrote (or left as it wrote it) draws no word.
+    expect(briefLine([row("never", "absent"), row("c", "aligned")])).toBe("reality tunnel: every item holds");
+  });
+});
+
+describe("the cold reader's findings, each a red first", () => {
+  const free = { release: async (): Promise<void> => {} };
+  const file = (p: string, what: Partial<Item>): Item => ({ id: `t.${p}`, radius: "home", host: "t", path: join(dir, p), what: p, ...what });
+
+  it("tend reads under the lock: a writer that finished while tend waited keeps its change", async () => {
+    const p = join(dir, "s.json");
+    writeFileSync(p, '{"a": 1}\n');
+    const lock = async (path: string) => { writeFileSync(path, '{"a": 1, "theirs": true}\n'); return free; };
+    await tend([file("s.json", { transform: jsonFloor("n", 5), foreign: jsonForeign })], ledger(), { lock });
+    expect(JSON.parse(readFileSync(p, "utf8"))).toEqual({ a: 1, theirs: true, n: 5 });
+  });
+
+  it("a tend that fails midway still records a generation for what it wrote", async () => {
+    const l = ledger();
+    mkdirSync(join(dir, "adir"));
+    const items = [file("ok.json", { transform: jsonFloor("n", 5) }), file("adir", { transform: () => "x" })];
+    await expect(tend(items, l)).rejects.toThrow();
+    expect(l.generations().at(-1)?.entries.map((e) => e.path)).toEqual([join(dir, "ok.json")]);
+  });
+
+  it("undo refuses a target a hand touched after the tend, and --force takes it", async () => {
+    const l = ledger();
+    const p = join(dir, "u.json");
+    writeFileSync(p, '{"n": 1}\n');
+    await tend([file("u.json", { transform: jsonFloor("n", 5) })], l);
+    writeFileSync(p, '{"n": 9, "mine": true}\n');
+    const r = undo(l);
+    expect(r.refused).toEqual([p]);
+    expect(readFileSync(p, "utf8")).toBe('{"n": 9, "mine": true}\n');
+    undo(l, undefined, { force: true });
+    expect(readFileSync(p, "utf8")).toBe('{"n": 1}\n');
+  });
+
+  it("an external seat records a snapshot, and undo restores it", async () => {
+    const l = ledger();
+    let seat: string | null = "old";
+    const ext: External = {
+      observe: () => ({ aligned: seat === "new", detail: String(seat) }),
+      apply: () => { seat = "new"; return { ok: true, detail: "" }; },
+      snapshot: () => JSON.stringify(seat),
+      restore: (s) => { seat = JSON.parse(s) as string | null; return { ok: true, detail: "" }; },
+    };
+    const it1 = file("seat", { external: ext });
+    await tend([it1], l);
+    expect(seat).toBe("new");
+    undo(l, undefined, { externals: new Map([[it1.id, ext]]) });
+    expect(seat).toBe("old");
+  });
+
+  it("--force takes bytes that do not parse, and the ledger keeps them", async () => {
+    const l = ledger();
+    writeFileSync(join(dir, "bad.json"), "{not json");
+    await tend([file("bad.json", { transform: jsonFloor("n", 5), foreign: jsonForeign })], l, { force: true });
+    expect(JSON.parse(readFileSync(join(dir, "bad.json"), "utf8"))).toEqual({ n: 5 });
+    expect(l.generations().at(-1)?.entries[0]?.prior).toMatchObject({ kind: "file", bytes: "{not json" });
+  });
+
+  it("an unreachable piece outranks ordinary drift in the exit", () => {
+    expect(exitOf(read([file("d", { transform: () => "x" }), file("u", { unreachable: "no script" })], ledger()))).toBe(EXIT.unreachable);
+  });
+
+  it("the Windows profile comes from Windows itself; an unverified guess never stands", () => {
+    const guessed = mkdtempSync(join(dir, "Users-"));
+    const real = mkdtempSync(join(dir, "real-"));
+    const state = mkdtempSync(join(dir, "state-"));
+    expect(windowsProfile(guessed, { state, ask: () => real, persist: true })).toBe(real);
+    expect(windowsProfile(guessed, { state: mkdtempSync(join(dir, "s2-")), ask: () => null })).toBeNull();
+    expect(windowsProfile(guessed, { state, ask: () => { throw new Error("cached, never asked"); } })).toBe(real);
+  });
+
+  it("--staged reads the carrier and the seed the commit carries", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    execFileSync("git", ["-C", root, "add", "-A"]);
+    const seedRel = declared(REPO).seed;
+    writeFileSync(join(root, seedRel), `${readFileSync(join(root, seedRel), "utf8")}\nunstaged\n`);
+    await tend(repoItems(root), l);
+    execFileSync("git", ["-C", root, "add", ".claude/agents"]);
+    const show = (rel: string): string | null => { try { return execFileSync("git", ["-C", root, "show", `:${rel}`], { encoding: "utf8" }); } catch { return null; } };
+    const rows = read(repoItems(root, declared(root, show), show), l, indexReader(root));
+    const scouts = rows.filter((r) => /scout/.test(r.id));
+    expect(scouts.map((r) => r.id).sort()).toEqual(["claude.scout-explore", "claude.scout-plan"]);
+    expect(scouts.every((r) => r.state === "drift")).toBe(true);
+  });
+
+  it("verify fails when a probe's host does not answer", () => {
+    const v = verifyLoads({ door: "repo", repo: REPO, home: dir, probe: true, entries: [{ session_id: "s", file_path: join(REPO, declared(REPO).seed), load_reason: "include", cwd: REPO }], probes: () => [{ ok: true, line: "claude ✓" }, { ok: false, line: "codex: does not answer" }] });
+    expect(v.ok).toBe(false);
+  });
+});
+
+describe("the second cold reader's findings, each a red first", () => {
+  const free = { release: async (): Promise<void> => {} };
+  const file = (p: string, what: Partial<Item>): Item => ({ id: `t.${p}`, radius: "home", host: "t", path: join(dir, p), what: p, ...what });
+
+  it("two tends in one radius serialize: neither loses the other's write or its generation", async () => {
+    const l = ledger();
+    const order: string[] = [];
+    let held = false;
+    const radiusLock = async () => {
+      while (held) await new Promise((r) => setTimeout(r, 5));
+      held = true; order.push("in");
+      return { release: async () => { order.push("out"); held = false; } };
+    };
+    await Promise.all([
+      tend([file("c.toml", { transform: (c) => `${c ?? ""}a = 1\n` })], l, { radiusLock }),
+      tend([file("c.toml", { transform: (c) => (c ?? "").includes("b =") ? c : `${c ?? ""}b = 2\n` })], l, { radiusLock }),
+    ]);
+    expect(order).toEqual(["in", "out", "in", "out"]);
+    expect(l.generations().map((g) => g.gen)).toEqual([1, 2]);
+  });
+
+  it("tend keeps a target's mode, and undo puts the prior mode back", async () => {
+    const l = ledger();
+    const p = join(dir, "secret.json");
+    writeFileSync(p, '{"n": 1}\n', { mode: 0o600 });
+    chmodSync(p, 0o600);
+    await tend([file("secret.json", { transform: jsonFloor("n", 5) })], l);
+    expect(statSync(p).mode & 0o777).toBe(0o600);
+    undo(l);
+    expect(statSync(p).mode & 0o777).toBe(0o600);
+  });
+
+  it("an external undo refuses a seat a hand changed after the tend", async () => {
+    const l = ledger();
+    let seat: string | null = "old";
+    const ext: External = {
+      observe: () => ({ aligned: seat === "new", detail: "" }),
+      apply: () => { seat = "new"; return { ok: true, detail: "" }; },
+      snapshot: () => JSON.stringify(seat),
+      restore: (s) => { seat = JSON.parse(s) as string | null; return { ok: true, detail: "" }; },
+    };
+    const it1 = file("seat", { external: ext });
+    await tend([it1], l);
+    seat = "hand-set";
+    expect(undo(l, undefined, { externals: new Map([[it1.id, ext]]) }).refused).toEqual([it1.path]);
+    expect(seat).toBe("hand-set");
+  });
+
+  it("a host that fails its apply reads unreachable, never drift", async () => {
+    const ext: External = {
+      observe: () => ({ aligned: false, detail: "" }), apply: () => ({ ok: false, detail: "claude does not answer" }),
+      snapshot: () => "null", restore: () => ({ ok: true, detail: "" }),
+    };
+    const r = await tend([file("seat", { external: ext })], ledger());
+    expect(r.failed.map((f) => f.detail)).toEqual(["claude does not answer"]);
+  });
+
+  it("reading the homes asks Windows but writes no cache; tending keeps it", () => {
+    const state = mkdtempSync(join(dir, "state-"));
+    const real = mkdtempSync(join(dir, "real-"));
+    expect(windowsProfile(dir, { state, ask: () => real, persist: false })).toBe(real);
+    expect(existsSync(join(state, "windows-profile"))).toBe(false);
+    windowsProfile(dir, { state, ask: () => real, persist: true });
+    expect(existsSync(join(state, "windows-profile"))).toBe(true);
+  });
+
+  it("verify judges the newest session, not the one that logged last, and only this tree's seed", () => {
+    const seed = join(REPO, declared(REPO).seed);
+    const entries = [
+      { session_id: "old", file_path: seed, load_reason: "include", cwd: REPO },
+      { session_id: "new", file_path: "/elsewhere/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", load_reason: "include", cwd: REPO },
+      { session_id: "old", file_path: join(REPO, "x/CLAUDE.md"), load_reason: "nested_traversal", cwd: REPO },
+    ];
+    const v = judgeLoads(entries, "repo", REPO, [seed]);
+    expect(v.lines[0]).toContain("session new");
+    expect(v.ok).toBe(false);
+  });
+});
+
+describe("the pre-commit gate cannot be staged away", () => {
+  it("a commit that stages the gate's deletion beside the carrier refuses", () => {
+    const root = mkdtempSync(join(dir, "hook-"));
+    execFileSync("git", ["init", "-q", root]);
+    mkdirSync(join(root, ".githooks"), { recursive: true });
+    writeFileSync(join(root, ".githooks/pre-commit"), readFileSync(join(REPO, ".githooks/pre-commit"), "utf8"), { mode: 0o755 });
+    mkdirSync(join(root, dirname(CARRIER)), { recursive: true });
+    writeFileSync(join(root, CARRIER), "carrier\n");
+    execFileSync("git", ["-C", root, "add", CARRIER]);
+    let refused = false;
+    try { execFileSync(join(root, ".githooks/pre-commit"), { cwd: root, stdio: "pipe" }); } catch (e) { refused = /reality-tunnel carrier/.test(String((e as { stderr?: Buffer }).stderr)); }
+    expect(refused).toBe(true);
+  });
+  it("CONTROL: a tree that carries neither the carrier nor the gate passes the gate's branch", () => {
+    const root = mkdtempSync(join(dir, "hook-"));
+    execFileSync("git", ["init", "-q", root]);
+    mkdirSync(join(root, ".githooks"), { recursive: true });
+    writeFileSync(join(root, ".githooks/pre-commit"), readFileSync(join(REPO, ".githooks/pre-commit"), "utf8"), { mode: 0o755 });
+    writeFileSync(join(root, "x.txt"), "x");
+    execFileSync("git", ["-C", root, "add", "x.txt"]);
+    expect(String(execFileSync(join(root, ".githooks/pre-commit"), { cwd: root, encoding: "utf8" }))).toContain("repo-tunnel-staged.sh — that gate does not apply here");
+  });
+});
+
+describe("the staged gate asks for a build only when a commit stages the seat", () => {
+  /** A scratch repo carrying the real carrier and gate, its staged paths named, read with no CLI built. */
+  function gate(stage: readonly string[]): { code: number; err: string } {
+    const root = mkdtempSync(join(dir, "gate-"));
+    execFileSync("git", ["init", "-q", root]);
+    mkdirSync(join(root, "tools"), { recursive: true });
+    writeFileSync(join(root, "tools/repo-tunnel-staged.sh"), readFileSync(join(REPO, "tools/repo-tunnel-staged.sh"), "utf8"), { mode: 0o755 });
+    mkdirSync(join(root, dirname(CARRIER)), { recursive: true });
+    writeFileSync(join(root, CARRIER), readFileSync(join(REPO, CARRIER), "utf8"));
+    execFileSync("git", ["-C", root, "add", CARRIER]);
+    execFileSync("git", ["-C", root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--no-verify", "-m", "carrier"]);
+    for (const f of stage) {
+      mkdirSync(join(root, dirname(f)), { recursive: true });
+      writeFileSync(join(root, f), `${f}\n`);
+      execFileSync("git", ["-C", root, "add", f]);
+    }
+    try {
+      execFileSync(join(root, "tools/repo-tunnel-staged.sh"), { cwd: root, stdio: "pipe", env: { ...process.env, LARES_BIN: join(root, "no-such-cli.js") } });
+      return { code: 0, err: "" };
+    } catch (e) {
+      const x = e as { status?: number; stderr?: Buffer };
+      return { code: x.status ?? -1, err: String(x.stderr ?? "") };
+    }
+  }
+
+  it("a commit that stages none of the seat's paths passes without a build", () => {
+    expect(gate(["docs/notes.md", "packages/x/src/y.ts"]).code).toBe(0);
+  });
+
+  it.each([["CLAUDE.md"], [declared(REPO).seed], [".claude/agents/Explore.md"], ["AGENTS.override.md"]])(
+    "a commit that stages %s refuses without a build, naming the build", (f) => {
+      const r = gate([f]);
+      expect(r.code).toBe(1);
+      expect(r.err).toMatch(/no built CLI/);
+    });
+
+  it("CONTROL: a commit that edits the carrier itself refuses without a build", () => {
+    const r = gate([CARRIER]);
+    expect(r.code).toBe(1);
+    expect(r.err).toMatch(/no built CLI/);
+  });
+});
+
+describe("the lock holds on any path length", () => {
+  it("a target path longer than a socket name allows still locks and releases", async () => {
+    const deep = join(dir, "a".repeat(60), "b".repeat(60), "ledger");
+    const held = await radiusLock(deep);
+    await held.release();
+    const again = await radiusLock(deep);
+    await again.release();
+  });
+});

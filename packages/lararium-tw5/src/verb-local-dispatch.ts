@@ -11,14 +11,17 @@
 
 import {
   DAEMON_BAG_ID,
-  isSystemCanonBag,
+  isHouseCanonBag,
+  refuseSeatCanonReach,
   type CapabilityAccess,
   type CapabilityVerifyResult,
   type CapabilityVerifier,
   type CompositeStore,
   type Verb,
 } from "@lararium/mesh";
-import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
+import type { Hand } from "@lararium/mesh/session-contract";
+import { wikiSlugOfBag } from "@lararium/mesh";
+import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 
 export type CapVerify = (access: CapabilityAccess, bagUrl: string) => Promise<CapabilityVerifyResult>;
 
@@ -30,6 +33,13 @@ export interface RunLocalVerbOptions {
   readonly presenterOf?: (invocation: Verb) => string;
   /** True for a verb the vessel's own presence channel took. */
   readonly localOf?: (invocation: Verb) => boolean;
+  readonly surfaceOf?: (invocation: Verb) => boolean;
+  /** The face a session wore for this ask, as the vessel's main thread booked it; absent where none. */
+  readonly wornOf?: (invocation: Verb) => SessionWorn | undefined;
+  /** The asker's hand the island booked for this ask (`VerbContext.asker`); absent where none. */
+  readonly askerOf?: (invocation: Verb) => Hand | undefined;
+  /** The vessel's exec-lei port (`VerbContext.execLei`): a write door spends a standing exec lei's return through it. */
+  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
 }
 
 export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string, local = false): CapVerify {
@@ -52,16 +62,19 @@ export function makeCapVerify(verifier: CapabilityVerifier | undefined, requeste
 export function deriveRoutedCap(invocation: Verb): { access: CapabilityAccess; bagUrl: string } {
   const a = invocation.args as Record<string, unknown>;
   const pick = (k: string): string | null => (typeof a[k] === "string" ? (a[k] as string) : null);
-  // A hand asking to keep a realm-carried book seals its ask under its own worn face; the book is the realm's, and
+  // A hand asking to keep a realm-carried book seals its ask under its own daemon mount; the book is the realm's, and
   // the stewards' consent on the realm doc decides. The ask therefore answers to the asking vessel's own ground.
   if (invocation.action === "realm-bag" && a["join"] === true) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   const bagUrl = pick("bagUrl") ?? pick("toBag") ?? pick("dest") ?? pick("bag") ?? pick("targetBag") ?? DAEMON_BAG_ID;
+  // A CREATE over house canon writes nothing (the realm holds its one document; another face reads the floor), so it answers
+  // to the asking vessel's own ground, never to the canon bag's cap: the seed reads clean on every face.
+  if (invocation.action === "CREATE" && isHouseCanonBag(bagUrl)) return { access: "admin", bagUrl: DAEMON_BAG_ID };
   return { access: "admin", bagUrl };
 }
 
 /**
  * The bags a routed verb names INSIDE its envelope (`wiki-act` carries its real destination and source in `args.args`):
- * the ones `deriveRoutedCap` never reads. The gate asks the Kahu predicate about each system canon one.
+ * the ones `deriveRoutedCap` never reads. The gate asks the Kahu predicate about each house canon one.
  */
 export function routedInnerBags(invocation: Verb): string[] {
   const outer = invocation.args as Record<string, unknown>;
@@ -71,26 +84,107 @@ export function routedInnerBags(invocation: Verb): string[] {
   const bags: string[] = [];
   for (const k of ["to-bag", "from-bag", "bag", "toBag", "fromBag"]) {
     const v = a[k];
-    if (typeof v === "string" && isSystemCanonBag(v) && !bags.includes(v)) bags.push(v);
+    if (typeof v === "string" && !bags.includes(v)) bags.push(v);
   }
   return bags;
 }
 
 /**
+ * True for a routed envelope that addresses a wiki (`wiki-act` names its wiki and carries its act inside `args.args`):
+ * main acts on that wiki's bags under worker trust, so the table's fence asks first. A face row addresses no wiki;
+ * the store door acts on the face its session wears, so a sibling's session routes it.
+ */
+export function routedAddressesWiki(invocation: Verb): boolean {
+  const a = invocation.args as Record<string, unknown>;
+  const inner = a["args"];
+  return typeof a["wiki"] === "string" || (inner !== null && typeof inner === "object" && !Array.isArray(inner));
+}
+
+/**
+ * The wiki a routed `wiki-act` aims at, by the same reading the main handler uses to choose its island: the envelope's
+ * own `wiki`, else a MOVE's source slot, else the destination slot. The daemon wiki stands on the daemon's own reach and
+ * a bag outside the wiki slots names none, so both read null (nothing to mount).
+ */
+export function routedWikiSlug(invocation: Verb): string | null {
+  if (invocation.action !== "wiki-act") return null;
+  const outer = invocation.args as Record<string, unknown>;
+  const inner = outer["args"] !== null && typeof outer["args"] === "object" && !Array.isArray(outer["args"]) ? outer["args"] as Record<string, unknown> : {};
+  // The daemon wiki stands on the daemon's own reach, so a daemon slot names no wiki to mount, and the main handler
+  // drops it BEFORE it prefers a source over a destination: so does this reading.
+  const slot = (bag: unknown): string | null => {
+    if (typeof bag !== "string" || !/^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag)) return null;
+    const slug = wikiSlugOfBag(bag);
+    return slug && slug !== "daemon" ? slug : null;
+  };
+  // The main handler compares the verb's own spelling, so this reading does the same: a case the handler would not
+  // match names no wiki here either (the mount and the act then never aim at two wikis).
+  const verb = typeof outer["verb"] === "string" ? outer["verb"] as string : "";
+  const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
+  const slug = typeof outer["wiki"] === "string" && outer["wiki"]
+    ? outer["wiki"] as string
+    : (verb === "MOVE" ? slot(inner["from-bag"]) : null) ?? (wikiVerb ? slot(inner["to-bag"] ?? inner["bag"]) : null);
+  return slug && slug !== "daemon" ? slug : null;
+}
+
+/**
  * THE ROUTED VERB'S GATE, the one place the keyholder island clears a verb before main (and a wiki island behind it)
  * trusts it: the cap `deriveRoutedCap` names, then — for a verifier that carries the Kahu predicate — the predicate for
- * every system canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki
+ * every house canon bag the envelope names inside its args. A refusal throws and the verb is never routed. The wiki
  * island's own clearance (`kahuReachClearedAtGate`) is a composition option set in code at the island's behavior, never a
  * field the envelope can carry, so nothing a caller sends lifts it.
  */
+/** A routed verb's capability denial; the typed kinds a verifier answers ride along, so a reader never parses the message. */
+export class RoutedCapDenied extends Error {
+  constructor(message: string, readonly kind?: "bag-not-registered", readonly bagUrl?: string) {
+    super(message);
+    this.name = "RoutedCapDenied";
+  }
+}
+
+/**
+ * THE SEAT'S HALF OF THE ROUTED GATE: an AI seat asker (`VerbContext.asker`) names no house canon bag a routed act writes or
+ * deletes (`seat-canon-reach`), with or without a verifier, since the wiki island behind main skips its own Kahu call
+ * (`kahuReachClearedAtGate`) and never sees the asker. A COPY's read-only source asks nothing.
+ */
+export function refuseSeatCanonRouted(invocation: Verb, asker: Hand | undefined): void {
+  if (asker !== "seat") return;
+  const readOnly = routedReadOnlyBags(invocation);
+  for (const bag of routedInnerBags(invocation)) if (!readOnly.has(bag)) refuseSeatCanonReach(bag, invocation.action, asker);
+}
+
+/** The bags a routed envelope only reads: a COPY's source, where the act names it nowhere else. */
+function routedReadOnlyBags(invocation: Verb): Set<string> {
+  const outer = invocation.args as Record<string, unknown>;
+  const innerArgs = outer["args"];
+  const innerVerb = typeof outer["verb"] === "string" ? (outer["verb"] as string).toUpperCase() : "";
+  const readOnly = new Set<string>();
+  if (innerVerb === "COPY" && innerArgs !== null && typeof innerArgs === "object" && !Array.isArray(innerArgs)) {
+    const a = innerArgs as Record<string, unknown>;
+    const elsewhere = new Set(["to-bag", "bag", "toBag"].map((k) => a[k]).filter((v): v is string => typeof v === "string"));
+    for (const k of ["from-bag", "fromBag"]) { const v = a[k]; if (typeof v === "string" && !elsewhere.has(v)) readOnly.add(v); }
+  }
+  return readOnly;
+}
+
 export async function gateRoutedVerb(invocation: Verb, verifier: CapabilityVerifier, presenter: string, local: boolean): Promise<void> {
   const { access, bagUrl } = deriveRoutedCap(invocation);
   const proof = await verifier.verify({ presenter, bagUrl, access, ...(local ? { channel: "local" as const } : {}) });
   if (!proof.ok) {
-    throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
+    throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`, proof.kind, proof.bagUrl);
+  }
+  // Every inner bag clears its own cap, its grade read off the act the envelope carries: only a COPY reads its source
+  // (a copy out of canon stays open to a reader); a MOVE deletes at its source, and any other act takes the outer
+  // access. A bag named twice takes the stronger grade.
+  const readOnly = routedReadOnlyBags(invocation);
+  for (const bag of routedInnerBags(invocation)) {
+    if (bag === bagUrl) continue;
+    const need: CapabilityAccess = readOnly.has(bag) ? "read" : access;
+    const inner = await verifier.verify({ presenter, bagUrl: bag, access: need, ...(local ? { channel: "local" as const } : {}) });
+    if (!inner.ok) throw new RoutedCapDenied(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bag}, access=${need}): ${inner.reason ?? "no grant"}`, inner.kind, inner.bagUrl);
   }
   if (verifier.kahuReach) {
-    for (const bag of routedInnerBags(invocation)) await verifier.kahuReach(bag, invocation.action);
+    // House canon takes the Kahu hand wherever the act writes or deletes; a COPY's read-only source asks none.
+    for (const bag of routedInnerBags(invocation)) if (isHouseCanonBag(bag) && !readOnly.has(bag)) await verifier.kahuReach(bag, invocation.action, presenter);
   }
 }
 
@@ -101,6 +195,10 @@ export async function runLocalVerb(invocation: Verb, opts: RunLocalVerbOptions):
     throw new Error(`no handler registered for "${invocation.action}"`);
   }
 
-  const cap = makeCapVerify(opts.verifier, opts.presenterOf?.(invocation) ?? invocation.requestedBy, opts.localOf?.(invocation) ?? false);
-  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, ...(opts.signal ? { signal: opts.signal } : {}) });
+  const presenter = opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+  const local = opts.localOf?.(invocation) ?? false;
+  const cap = makeCapVerify(opts.verifier, presenter, local);
+  const worn = opts.wornOf?.(invocation);
+  const asker = opts.askerOf?.(invocation);
+  return handler(invocation.args, { daemon: opts.daemon, invocation, cap, presenter, local, surface: opts.surfaceOf?.(invocation) === true, ...(worn ? { worn } : {}), ...(asker ? { asker } : {}), ...(opts.execLei ? { execLei: opts.execLei } : {}), ...(opts.signal ? { signal: opts.signal } : {}) });
 }

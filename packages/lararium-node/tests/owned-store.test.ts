@@ -315,11 +315,13 @@ describe("claimStore — one holder at every instant", () => {
   });
 
   it("CONTROL: a parked caller still inside its own deadline is served once handOver runs", async () => {
-    const claim = await claimStore(dir, { holder: "vessel" });
+    let parkedIt!: () => void;
+    const parkedFirst = new Promise<void>((resolve) => { parkedIt = resolve; });
+    const claim = await claimStore(dir, { holder: "vessel", onPark: () => parkedIt() });
     try {
       let ran = false;
       const asked = ask(socketOf(dir), { verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20_000 });
-      await new Promise((r) => setTimeout(r, 10));                 // well short of its 20s deadline
+      await parkedFirst;                                           // the claim's own park event, not a timer
       claim.serve((sock) => {
         ran = true;
         sock.setEncoding("utf8");
@@ -481,5 +483,31 @@ describe("ownedStore — crash-atomic saves", () => {
     }
     expect(fault.attempted.length).toBeGreaterThan(0);
     expect(tears.length).toBeGreaterThan(0);
+  });
+});
+
+describe("ownedStore — T2: the direct holder never writes clear over a sealed rest", () => {
+  it("a document whose rest holds a sealed value takes no clear byte from the direct holder; an unsealed document still writes (control)", async () => {
+    const { DurableNodeFSStorageAdapter } = await import("../src/durable-storage-adapter.js");
+    const A = await import("@automerge/automerge");
+    // A sealed bag's document at rest: the vessel's store left a pointer to its sealed value, and no clear byte.
+    const sealedDoc = "4NMNnkMhL8jXrxRQAdy5DpbKHvBg";
+    const seed = new DurableNodeFSStorageAdapter(dir);
+    await seed.save([sealedDoc, "snapshot", "aa".repeat(32)], new TextEncoder().encode(`lares-sealed-value:${"b".repeat(64)}`));
+    await seed.close();
+    const clearOf = () => readdirSync(dir, { recursive: true }).map(String).filter((p) => p.includes(sealedDoc.slice(2)) || p.includes(sealedDoc));
+    const before = clearOf().length;
+    let wrote: unknown = null;
+    await ownedStore(dir, async (repo) => {
+      try { const h = repo.import<{ n?: number }>(A.save(A.from({ n: 1 })), { docId: sealedDoc as never }); h.change((d) => { d.n = 2; }); await repo.flush(); }
+      catch (e) { wrote = e; }
+      const plain = repo.create<{ n: number }>({ n: 3 });
+      await repo.flush();
+      return plain.url;
+    }).catch((e: unknown) => { wrote = e; });
+    // No new chunk landed beside the sealed value.
+    expect(clearOf().length).toBe(before);
+    const named = (e: unknown): string => [String((e as { refusal?: string })?.refusal ?? e), ...((e as { errors?: unknown[] })?.errors ?? []).map(named)].join(" ");
+    expect(named(wrote)).toMatch(/bag-unmapped/);
   });
 });

@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hoike
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: metadata
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/hoike
+lar-pattern: <<~\s*hoike(?=[\s>])(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sslot=`([^`]*)`)|)(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sheld=`([^`]*)`)|)(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>
+lar-example: <<~ hoike slot=`#substrate-clause` held=`no boot clause; sovereignty by indifference`>>
+lar-render: literal
+type: text/vnd.tiddlywiki
+
+<!-- hoike — a kept record of a contested ruling: its `slot` fragment and the position it `held`. Recognized in the tree, rendered as plain
+     literal text for now. Its kue and saksi blocks carry their own named keys; the prose line form (`hoike · q: … · held: …`) is not a call. -->

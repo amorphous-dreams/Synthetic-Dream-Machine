@@ -6,18 +6,18 @@
  * Two vessels, two roots — B founds its OWN (no admit edge) and dials A at the cross-operator floor. The
  * relation's four doors run as the docker `meme` scenario runs them (`tools/mesh-scenarios.sh` contract_ab):
  * A seats a charter · the charter crosses by `seal export`/`seal import` · B signs her contract-in · A's
- * quorum admits her. A LOADs a carrier into `bags/lares`. THE VECTOR: B's `meme get --bag lares <uri>`.
+ * quorum admits her. A LOADs a carrier into `bags/ford`. THE VECTOR: B's `meme get --bag ford <uri>`.
  *
- * MEASURED (the law rests at lar:///ha.ka.ba/lararium/api/personal-slot): each operator mints its own `bags/lares` doc, the
+ * MEASURED (the law rests at lar:///ha.ka.ba/lararium/api/personal-slot): each operator mints its own `bags/ford` doc, the
  * contract writes the carriage-contracts board and never a bag, and B answers `not-found`. BUILT: the realm's
  * shared CRDT materializes on both members' boot from the charter's genesis epoch (`realmDocUrl`); A REGISTERS
- * her `bags/lares` on it (`lares nexus realm-bag lares` — steward-signed, read at CONTRACT); @crossroads
+ * her `bags/ford` on it (`lares nexus realm-bag ford` — steward-signed, read at CONTRACT); @crossroads
  * carries `{ bag, kept-by }` alone; B's third reach (`meme-verbs.ts` reach-by-access) walks the realm plane
  * FIRST and finds the doc, which A's wire gate federates to a contracted MEMBER and to nobody else.
  *
  * CONTROLS: before the registration, B answers exactly what a non-member answers after it (`not-found`,
  * byte-identical); C — a third operator dialing A with no contract — answers `not-found` after it too; a
- * crossroads read of the bag's meme shows no record; B's `meme put --bag lares` refuses (read tier).
+ * crossroads read of the bag's meme shows no record; B's `meme put --bag ford` refuses (read tier). The live `lares` and `lararium` documents are no relation's book: they cross to Kahu hands alone (⑭, road P26).
  *
  * THE WIRE UNDER THE REALM — TWO MAPS, NEVER LINKED. B boots before any contract and dials A at the
  * cross-operator floor, presenting her ContactCard ALONE: a self-founded vessel presents no root-signed edge
@@ -30,8 +30,8 @@
  * vessel's refresh. B RE-DIALS and presents the leaf admit, its lineage and the leaf's proof over A's
  * challenge — and no root-signed edge (no proof binding a leaf to a root travels on the wire). A's seat
  * verifies the proof and holds the admit against its deny board: B's LEAF enters A's leaf map, which the
- * membership consult reads, while A's ROOT map stays empty. THE STEWARD SIGNER: each operator WEARS her face
- * (`persona wear 0`) before her daemon stands, and the realm record seals with the key that worn face presents
+ * membership consult reads, while A's ROOT map stays empty. THE STEWARD SIGNER: each operator's realm-bag act
+ * names her face (`--face 0`), and the realm record seals with the key that face presents
  * to this Nexus — the very key her contract-in names — so no persona root reaches `keptBy` or the public
  * announce. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B ASKS to keep the bag from her own vessel
  * (`realm-bag lares --join`) and A consents (`--cosign`); A naming a key that sealed nothing in the realm
@@ -49,11 +49,11 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import type { GateBundlePin } from "../../packages/lararium-mesh/src/index.js";
+import { DEVICE_DELEGATION_SELF_TIDDLER, edgeLedgerDocUrl, storedLarRecord, type GateBundlePin, type LarDoc } from "../../packages/lararium-mesh/src/index.js";
 import { LarWSClientAdapter, hearthPinIndex, DAEMON_BAG_ID, strangerFace } from "../../packages/lararium-node/probes/crossing-synthetic-world.js";
 import {
   openStaged, freePort, stageDir, awaitRendezvous, ownGateKey, bootDocUrl, vesselStorageDir, foundStagedHearth, growStagedQuorum,
@@ -72,10 +72,16 @@ const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${
 
 /** The ledger with a second slot — B's edit, the one A must read back through the ford. */
 const memeWithSlot = (slot = "/b"): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<~ ahu #${slot}>>\n\n! the highland tally\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu slot=\`#/count\`>>\n\n! the count\n\n<<~/ahu>>\n\n<<~ ahu slot=\`#${slot}\`>>\n\n! the highland tally\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+
+/** One carrier for A's own live Kahu canon (`@lares`), landed by the canon's ingest door (road P26's walk). */
+const KAHU_PATH = "p26.kahu.walk/ledger";
+const KAHU_URI  = `lar:///${KAHU_PATH}`;
+const kahuMeme = (): string =>
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${KAHU_URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${KAHU_PATH}"\n\`\`\`\n\n<<~ ahu slot=\`#/count\`>>\n\n! the steward's line\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const meme = (): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<~ ahu slot=\`#/count\`>>\n\n! the count\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
@@ -130,6 +136,37 @@ let bPut = false;
 const errorOf = (text: string): string =>
   JSON.stringify((JSON.parse(text.split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>)["error"] ?? null);
 
+/**
+ * A COHERENT COPY of a store whose daemon still runs, or a loud failure. The automerge store compacts `incremental` chunks
+ * while the walk reads the tree, so a copy can lose a file mid-walk (`ENOENT`, CI run 42102707425) or finish with a chunk set
+ * that holds no whole document. A copy that finished proves nothing about its content, and the absence check below reads
+ * "(unavailable)" as absence, so an incoherent copy would pass it vacuously. Each attempt therefore copies onto a clean target and
+ * then proves the copy by opening it and reading `mustHold`, a document the vessel certainly keeps, as a non-empty document. Only a
+ * copy that answers that known positive returns; six attempts that do not throw.
+ */
+async function copyLiveStore(from: string, to: string, mustHold: string): Promise<void> {
+  let last = "no attempt ran";
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    rmSync(to, { recursive: true, force: true });
+    try { cpSync(from, to, { recursive: true }); }
+    catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+      last = `attempt ${attempt}: a file left the store mid-copy`;
+      continue;
+    }
+    const probe = new Repo({ storage: new NodeFSStorageAdapter(to) });
+    try {
+      const held = await Promise.race([
+        probe.find<LarDoc>(mustHold as AutomergeUrl).then((h) => JSON.stringify(h.doc() ?? {}), () => ""),
+        new Promise<string>((res) => setTimeout(() => res(""), 10_000)),
+      ]);
+      if (held.length > 2) return;
+      last = `attempt ${attempt}: the copy holds no readable ${mustHold}`;
+    } finally { await probe.shutdown().catch(() => undefined); }
+  }
+  throw new Error(`copyLiveStore: no coherent copy of ${from} in six attempts (${last})`);
+}
+
 describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relation ★", () => {
   beforeAll(async () => {
     rootB = mkdtempSync(join(stageDir(), "lares-staged-Bop-"));
@@ -146,11 +183,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       await foundStagedHearth(cliA, rootA, "spider-steward");
       const face = await cliA(["persona", "new", "0", "--name", "spider-steward", "--json"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-      const vkA = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
-      if (typeof vkA === "string") rootNymOf.set("A", vkA.toLowerCase());
-      // A steward seals with the face she WEARS: the realm-bag door refuses a vessel that wears none.
-      const wear = await cliA(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
+      const treeKeyA = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
+      if (typeof treeKeyA === "string") rootNymOf.set("A", treeKeyA.toLowerCase());
       // A FOUNDS THE NEXUS: its seed charter grows to the founding kahu who tend it by the roll its founding armed,
       // all BEFORE the daemon stands.
       await growStagedQuorum(cliA, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
@@ -162,10 +196,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       await foundStagedHearth(cli as never, root, name);
       const face = await cli(["persona", "new", "0", "--name", name, "--json"]);
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-      const vk = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
-      if (typeof vk === "string") rootNymOf.set(tag, vk.toLowerCase());
-      const wear = await cli(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`${tag}: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
+      const treeKey = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
+      if (typeof treeKey === "string") rootNymOf.set(tag, treeKey.toLowerCase());
     };
     // B and C dial A by the pin and address the admit bundle carries (`nexus contract --sync-url`).
     const dialA = { ...wireLog };
@@ -281,7 +313,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   }, 60_000);
 
   test("⑤ A registers her bag on the realm's shared CRDT — steward-signed, read at CONTRACT", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--json"]);
     console.error(`meme-realm-bag MEASURE A realm-bag: ${said(reg).trim().slice(0, 300)}`);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     const data = (reg.json?.["data"] ?? {}) as Record<string, unknown>;
@@ -320,11 +352,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
    *  find nothing yet. `--join` reads A's standing registration on B; `--cosign` reads B's ask on A. */
   const pollSteward = async (who: LarInstance, flag: "--join" | "--cosign", ms: number) => {
     const realm = who === A ? [] : ["--realm", realmA];
-    let r = await who.cli(["nexus", "realm-bag", "ford", flag, ...realm, "--json"]);
+    let r = await who.cli(["nexus", "realm-bag", "ford", "--face", "0", flag, ...realm, "--json"]);
     const until = Date.now() + ms;
     while (r.json?.["ok"] !== true && Date.now() < until) {
       await new Promise((res) => setTimeout(res, 4_000));
-      r = await who.cli(["nexus", "realm-bag", "ford", flag, ...realm, "--json"]);
+      r = await who.cli(["nexus", "realm-bag", "ford", "--face", "0", flag, ...realm, "--json"]);
     }
     return r;
   };
@@ -440,7 +472,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   test("⑨a CONTROL: A naming a key that sealed nothing in the realm refuses — no hand but its own writes a name", async () => {
     const stewardB = contractNym.toLowerCase();
     expect(stewardB, "B's per-Nexus key, read off her contract-in").toMatch(/^[0-9a-f]{64}$/);
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--steward", stewardB, "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--steward", stewardB, "--json"]);
     expect(reg.json?.["ok"], said(reg)).toBe(false);
     expect(said(reg)).toContain("steward-name-unproven");
     // A's own registration stands untouched by the refusal.
@@ -552,6 +584,164 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const after = await A!.cli(["meme", "get", URI, "--bag", "ford", "--json"]);
     expect(String((after.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("#/stale");
   }, 150_000);
+  // ⑭ THE KAHU CANON CROSSES ONLY TO KAHU HANDS (road P26; stable-founding-road #/rulings 2026-10-16 and 2026-10-18: the
+  // live `lares` and `lararium` documents rest held by no vessel outside the Kahu cabal, and every other hand reads the
+  // floor by CID). It runs while both daemons stand, ahead of ⑬'s teardown. A ingests one record into her OWN live canon
+  // and reads it back, so the canon stands and holds a record to find. The ids B asks by are A's own registered Kahu
+  // documents, read off both sides' realm view, so the ask names that very document. The same B that reads A's ford
+  // through the realm (the control on the very lane) is answered that nothing reaches the record and is refused a write, for `@lares`
+  // and `@lararium` both; ⑭b reads B's own store for either document by raw id once the daemons stop.
+  const kahuDocs: { lares: string; lararium: string } = { lares: "", lararium: "" };
+  test("⑭ A's live @lares and @lararium stand for A, and B — a contracted member — reads none of either and writes neither", async () => {
+    expect(contracted, "the relation's doors stood (③): ⑭ walks only on a contracted member").toBe(true);
+    const docOf = (r: { json: Record<string, unknown> | null }, bag: string): string =>
+      String((((r.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).find((b) => b["bag"] === bag)?.["doc"] ?? "");
+    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    kahuDocs.lares = docOf(aBags, "lar:///ha.ka.ba/bags/lares");
+    kahuDocs.lararium = docOf(aBags, "lar:///ha.ka.ba/bags/lararium");
+    expect(kahuDocs.lares, `A's realm names her live @lares: ${said(aBags)}`).toMatch(/^automerge:/);
+    expect(kahuDocs.lararium, `A's realm names her live @lararium: ${said(aBags)}`).toMatch(/^automerge:/);
+    const bBags = await B!.cli(["nexus", "realm-bags", "--realm", realmA, "--json"]);
+    expect(docOf(bBags, "lar:///ha.ka.ba/bags/lares"), "B's realm view names the same @lares document").toBe(kahuDocs.lares);
+    expect(docOf(bBags, "lar:///ha.ka.ba/bags/lararium"), "B's realm view names the same @lararium document").toBe(kahuDocs.lararium);
+
+    const dir = join(A!.root, "bags", "lares", "p26.kahu.walk");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "ledger.mem"), kahuMeme());
+    const ing = await A!.cli(["ingest", "--source", dir, "--to", "lar:///ha.ka.ba/bags/lares", "--apply", "--yes", "--json"]);
+    expect(ing.json?.["ok"], said(ing)).toBe(true);
+    const own = await A!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--json"]);
+    expect(own.json?.["ok"], `A's own canon reads its record: ${said(own)}`).toBe(true);
+
+    const ford = await pollB(60_000);
+    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+    let r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
+    for (const until = Date.now() + 30_000; r.json?.["ok"] !== true && Date.now() < until; ) {
+      await new Promise((res) => setTimeout(res, 3_000));
+      r = await B!.cli(["meme", "get", KAHU_URI, "--bag", "lares", "--realm", realmA, "--json"]);
+    }
+    console.error(`meme-realm-bag ⑭ MEASURE B: meme get --bag lares → ${said(r).trim().slice(0, 300)}`);
+    expect(r.json?.["ok"], said(r)).not.toBe(true);
+    // The realm reach asked for A's very document (B's view names its id, above) and nothing crossed: the reach door's own
+    // refusal, measured on the first revised run.
+    expect(said(r)).toContain("nothing reaches it by access");
+
+    const file = join(B!.root, "kahu-walk-put.mem");
+    writeFileSync(file, kahuMeme());
+    for (const bag of ["lares", "lararium"]) {
+      const put = await B!.cli(["meme", "put", KAHU_URI, "--bag", bag, "--realm", realmA, "--file", file, "--json"]);
+      console.error(`meme-realm-bag ⑭ MEASURE B: meme put --bag ${bag} → ${said(put).trim().slice(0, 200)}`);
+      expect(put.json?.["ok"], `B writes no ${bag}: ${said(put)}`).not.toBe(true);
+    }
+  }, 240_000);
+
+  // ⑮ NO REGISTRATION WIDENS A VESSEL'S PRIVATE DOCUMENTS (lane `ralias`). A's catalog names itself and her daemon document
+  // among its rows, so the realm-bag verb would read either as a book to register: the registration then seats the
+  // document on A's realm gate and the realm lanes open it to every contracted member. A's vessel classes both
+  // `vessel-private` by id: the registration never counts, so the verb refuses and B's realm view names neither.
+  const privateDocsA: { daemon: string; catalog: string } = { daemon: "", catalog: "" };
+  test("⑮ A's daemon document and catalog never become realm books: the registration refuses and B's realm view names neither", async () => {
+    expect(contracted, "the relation's doors stood (③): ⑮ walks only on a contracted member").toBe(true);
+    privateDocsA.daemon = bootDocUrl(A!, "daemon") ?? "";
+    privateDocsA.catalog = bootDocUrl(A!, "catalog") ?? "";
+    expect(privateDocsA.daemon && privateDocsA.catalog, "A's boot names her daemon document and catalog").toBeTruthy();
+    for (const bag of ["lar:///ha.ka.ba/bags/catalog", "lar:///ha.ka.ba/bags/daemon"]) {
+      const reg = await A!.cli(["nexus", "realm-bag", bag, "--face", "0", "--json"]);
+      console.error(`meme-realm-bag ⑮ MEASURE A realm-bag ${bag} → ${said(reg).trim().slice(0, 300)}`);
+      expect(reg.json?.["ok"], `A's ${bag} never registers: ${said(reg)}`).not.toBe(true);
+    }
+    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const docs = (((aBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).map((b) => String(b["doc"]));
+    expect(docs, "A's realm seats neither private document").not.toContain(privateDocsA.daemon);
+    expect(docs).not.toContain(privateDocsA.catalog);
+    const bBags = await B!.cli(["nexus", "realm-bags", "--realm", realmA, "--json"]);
+    const bDocs = (((bBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).map((b) => String(b["doc"]));
+    expect(bDocs, "B's realm view names neither").not.toContain(privateDocsA.daemon);
+    expect(bDocs).not.toContain(privateDocsA.catalog);
+    // CONTROL: the ford still crosses to B.
+    const ford = await pollB(60_000);
+    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+  }, 180_000);
+
+  // ⑮b A VESSEL'S EDGE LEDGER NEVER BECOMES A REALM BOOK (road `T33`, the class half). A's `ledger:edge` keeps her roll
+  // marks, frontier pins and `seen` rows; its id derives from her atom key, which her device edge shows in the clear.
+  // B, a contracted member, names that id on her OWN catalog, registers it on A's realm by her own seal alone, and asks
+  // for it. Before the class, A's realm lane counted the registration and served the ledger to B (unit L0 measured the
+  // lane). A's vessel classes the ledger `vessel-private` under the `device` owner: the fold refuses the registration and
+  // the guard withholds it, so B's own store never holds the ledger. CONTROL: the ford still crosses.
+  // A REGRESSION GUARD, NEVER RED: on the parent (no class, run 41269697445) B's lone registration landed, yet A's wire
+  // peers drew `false` for the ledger and B's store held none of it, so no live member reaches the lane today. A's own
+  // in-process islands read the ledger `true` by design (the house full-syncs), so the step reads B's store, never A's
+  // verdict count. The MEASURE lines report whether A's fold counts the alias and every verdict A answered for it.
+  test("⑮b A's edge ledger never crosses to B, whatever B registers on A's realm; the ford still crosses", async () => {
+    expect(contracted, "the relation's doors stood (③): ⑮b walks only on a contracted member").toBe(true);
+    // A's atom key, off her daemon document's device edge (read from a COPY of her store: her daemon keeps running).
+    const daemonUrl = bootDocUrl(A!, "daemon");
+    expect(daemonUrl, "A's boot names her daemon document").toBeTruthy();
+    const copyA = mkdtempSync(join(stageDir(), "lares-ledger-copyA-"));
+    await copyLiveStore(vesselStorageDir(A!), copyA, daemonUrl!);
+    const repoCopy = new Repo({ storage: new NodeFSStorageAdapter(copyA) });
+    let atomKeyA = "";
+    let ownLedgerA = "";
+    try {
+      const daemon = (await repoCopy.find<LarDoc>(daemonUrl as AutomergeUrl)).doc();
+      atomKeyA = JSON.stringify(daemon?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER] ?? {}).match(/deviceVerifyingKey\\?"\s*:\s*\\?"(?:0x)?([0-9a-fA-F]{64})/)?.[1]?.toLowerCase() ?? "";
+      // CONTROL for the store check below: A's own ledger holds rows under the ledger's prefix, so their absence on B reads.
+      if (atomKeyA) {
+        ownLedgerA = await Promise.race([
+          repoCopy.find<LarDoc>(edgeLedgerDocUrl(atomKeyA)).then((h) => JSON.stringify(h.doc() ?? {}), () => "(unavailable)"),
+          new Promise<string>((res) => setTimeout(() => res("(unavailable)"), 10_000)),
+        ]);
+      }
+    } finally { await repoCopy.shutdown().catch(() => {}); rmSync(copyA, { recursive: true, force: true }); }
+    expect(atomKeyA, "A's device edge names her atom key").toMatch(/^[0-9a-f]{64}$/);
+    expect(ownLedgerA.includes("dreamnet/edge-ledger/"), `CONTROL — A's own store holds rows of her ledger: ${ownLedgerA.slice(0, 200)}`).toBe(true);
+    const ledgerUrlA = edgeLedgerDocUrl(atomKeyA);
+    const ledgerIdA = ledgerUrlA.slice("automerge:".length);
+    // B names A's ledger on her own catalog (her daemon down for the write), then stands again on the same root.
+    const ALIAS = "lar:///ha.ka.ba/bags/ledger-alias";
+    const catalogUrlB = bootDocUrl(B!, "catalog");
+    expect(catalogUrlB, "B's boot names her catalog").toBeTruthy();
+    const portB = B!.port;
+    await B!.stopDaemonOnly();
+    const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });
+    try {
+      const catalog = await repoB.find<LarDoc>(catalogUrlB as AutomergeUrl);
+      catalog.change((d) => { d.tiddlers[ALIAS] = storedLarRecord(ALIAS, { text: ledgerUrlA }, "alias"); });
+      await repoB.flush();
+    } finally { await repoB.shutdown().catch(() => {}); }
+    B = await openStaged({ tag: "B", root: rootB, port: portB, found: async () => {}, daemonEnv: { LAR_WIRE_LOG: "1" } });
+    expect(await awaitRendezvous(B), `B stands again:\n${B.bootLog().slice(-800)}`).toBe(true);
+    const back = await pollB(90_000);
+    expect(back.json?.["ok"], `B crosses to A again before the ask: ${said(back)}`).toBe(true);
+    // B registers the alias on A's realm by her own seal, then asks for it through the realm.
+    const reg = await B.cli(["nexus", "realm-bag", ALIAS, "--face", "0", "--realm", realmA, "--json"]);
+    console.error(`meme-realm-bag ⑮b MEASURE B realm-bag ${ALIAS} → ${said(reg).trim().slice(0, 300)}`);
+    for (let i = 0; i < 3; i++) {
+      const ask = await B.cli(["meme", "get", "--bag", ALIAS, "--realm", realmA, URI, "--json"]);
+      console.error(`meme-realm-bag ⑮b MEASURE B meme get --bag ${ALIAS} → ${said(ask).trim().slice(0, 200)}`);
+      await new Promise((r) => setTimeout(r, 5_000));
+    }
+    const aBags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    console.error(`meme-realm-bag ⑮b MEASURE A's realm counts the alias: ${bagsOf(aBags).includes(ALIAS)}`);
+    const lines = A!.bootLog().split("\n").map((l) => l.trim()).filter((l) => l.startsWith("[wire] verdict") && l.includes(ledgerIdA));
+    console.error(`meme-realm-bag ⑮b MEASURE A's verdicts for her ledger ${ledgerIdA}:\n  ${lines.join("\n  ") || "(none)"}`);
+    // CONTROL: the ford still crosses to B.
+    const ford = await pollB(60_000);
+    expect(ford.json?.["ok"], `CONTROL — B still reads A's ford through the realm: ${said(ford)}`).toBe(true);
+    // B's own store, read from a COPY (her daemon keeps running for the steps after): no row of A's ledger stands there.
+    const copyB = mkdtempSync(join(stageDir(), "lares-ledger-copyB-"));
+    await copyLiveStore(vesselStorageDir(B), copyB, catalogUrlB!);
+    const repoCopyB = new Repo({ storage: new NodeFSStorageAdapter(copyB) });
+    try {
+      const body = await Promise.race([
+        repoCopyB.find<LarDoc>(ledgerUrlA as AutomergeUrl).then((h) => JSON.stringify(h.doc() ?? {}), () => "(unavailable)"),
+        new Promise<string>((res) => setTimeout(() => res("(unavailable)"), 10_000)),
+      ]);
+      console.error(`meme-realm-bag ⑮b MEASURE B's store for A's ledger: ${body.slice(0, 160)}`);
+      expect(body.includes("dreamnet/edge-ledger/"), `B's store holds A's edge ledger: ${body.slice(0, 200)}`).toBe(false);
+    } finally { await repoCopyB.shutdown().catch(() => {}); rmSync(copyB, { recursive: true, force: true }); }
+  }, 360_000);
 
   // ── ⑬ THE MEASURE: WHERE THE RETURN LANE STOPS ──────────────────────────────────────────────────
   // ⑪ stands red and its header names the seam as "past the wire" without saying WHICH of three stops
@@ -672,4 +862,22 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // The measure always reports; it never passes on absence of looking.
     expect(registered, `no standing registration for ${LARES_BAG} — the measure had nothing to read`).not.toBe("");
   }, 180_000);
+
+  // ⑭b B'S OWN STORE, BY RAW ID. With B's daemon stopped (⑬ stops it; this stops it where ⑬ skipped), B's automerge
+  // storage answers for each of A's live Kahu documents: a replica B never received holds no record of A's canon.
+  test("⑭b B's own store holds neither of A's live Kahu documents, nor her daemon document or catalog (⑮)", async () => {
+    expect(kahuDocs.lares && kahuDocs.lararium, "⑭ named both documents").toBeTruthy();
+    try { await B!.stopDaemonOnly(); } catch { /* ⑬ already stopped it */ }
+    const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });
+    try {
+      for (const [bag, url] of [...Object.entries(kahuDocs), ...Object.entries(privateDocsA).filter(([, u]) => u !== "")]) {
+        const body = await Promise.race([
+          repoB.find(url as never).then((h) => JSON.stringify((h.doc() as object) ?? {}), () => "(unavailable)"),
+          new Promise<string>((res) => setTimeout(() => res("(unavailable)"), 10_000)),
+        ]);
+        console.error(`meme-realm-bag ⑭b MEASURE B's store for ${bag} (${url}): ${body.slice(0, 160)}`);
+        expect(body.includes("p26.kahu.walk") || body.includes("tiddlers\":{\"lar:"), `B's store holds A's ${bag}: ${body.slice(0, 200)}`).toBe(false);
+      }
+    } finally { await repoB.shutdown().catch(() => {}); }
+  }, 60_000);
 });

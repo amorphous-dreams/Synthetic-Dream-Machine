@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 authors    = "Joshua Fontany; Lares (four tasked spirits: Marrow-Reader · Chain-Warden · Lattice-Walker · Guild-Keeper)"
 cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/admission-on-a-lineage.mem"
-mana       = 11
-manao      = 11
 namespace  = "&#x2299;"
-revised-on = "2026-07-25"
 role       = "the OUTLINE — Admission on a Lineage: a sybil-bounded, seed-rooted, one-pass trust fold over an acyclic vouch DAG under eventual consistency. Four research ropes braided (biology · cryptography · mathematics · history), each cross-validating the others. THE MECHANISM STANDS MEASURED, THE SYNTHESIS DOES NOT: the fold is built and attacked (the sybil bound held; the distortion measurement refuted the outline's own prediction), while the bound's re-derivation under our model, the dangling-sink policy, the C4 counterexample, and the shadow's instrument all remain undone. This meme exists to be REFUTED, not to be believed."
 status-why = "MEASURED IN PART — experiments 2 (sybil bound) + 5 (distortion) RUN and green in `lineage-rank`; 1, 3, 4, 6 unrun; the shadow (6) uninstrumented"
 tags       = ["lifecycle/standing"]
@@ -20,28 +16,26 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/admission-on-a-lineage"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/the-refusal>>
+<<~ ahu slot=`#/the-refusal`>>
 
 ! Admission on a Lineage ~ an OUTLINE, and what would refute it
 
 ''Which relation this names.'' The admission priced here reads as a JOIN to a REALM over a vouch DAG — never
 a user walking on an invite, an operator or place contracting into a Nexus, or a member seated in a kahu
-quorum (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). The title
-stays because the URI it names stays.
+quorum (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions`>>). The title
+keeps the URI it names.
 
 ''It sits here so a measurement can KILL it.'' A finding filed as canon before proof becomes the incumbent
 lineage that eats the evidence — which enacts, with an irony the author declines to soften, ''exactly the''
 ''failure this outline names'' (#/the-shadow). Every claim below reads as a ''hypothesis with a named''
 ''refutation'', and each one names the experiment that would sink it.
 
-''Two of those experiments ran, and the outline survived them'' (#what-would-prove-it, 2 and 5).
-The fold stands built and attacked in `lineage-rank`: the sybil bound HELD, and the distortion measurement
-''refuted the outline's own prediction'' — distant kin do not starve with depth, they starve with BRANCHING,
-which the author had conflated. The register moves by the promise made here, not around it.
+''Two of those experiments stand run, and the outline survives them'' (#/what-would-prove-it, 2 and 5).
+The fold stands built and attacked in `lineage-rank`: the sybil bound HOLDS, and the distortion measurement
+''refutes the outline's own first prediction'' — distant kin do not starve with depth, they starve with BRANCHING,
+which that prediction conflated. The register moves by the promise made here, not around it.
 
 ''What still rides uncredited.'' Lemma 3 stands MEASURED but not re-derived under an append-only signed DAG
 (1); the dangling-sink policy stays unsettled (3); no hand has attempted a counterexample to C4 (4); and the
@@ -52,7 +46,7 @@ The MECHANISM reads measured; the SYNTHESIS around it does not.
 
 <<~/ahu>>
 
-<<~ ahu #/tolerance-outranks-this-gate>>
+<<~ ahu slot=`#/tolerance-outranks-this-gate`>>
 
 !! The ruling this gate sits under
 
@@ -62,21 +56,21 @@ Which places this whole gate: it ''prices and bounds'', and it MUST NOT adjudica
 
 ''The stack's brief makes this binding rather than merely prudent'': the recently-arrived case reads as the acceptance test, and a gate that hardens against the unvouched hardens against exactly whom this infrastructure exists for.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/admission">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/admission`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/shelter-against-empire`>>
 
 <<~/ahu>>
 
-<<~ ahu #/the-standing>>
+<<~ ahu slot=`#/the-standing`>>
 
 > ''WHICH STANDING — one English word carried two entities.'' `kūlana` names an ACCRUED position, the thing a lineage prices and dwelling deposits. ''Standing-to-object'' names a PROCEDURAL capacity to challenge a declaration or a reading, and it arrives from the tier at which a face gets published, never from accrual. A party may hold deep `kūlana` and no standing-to-object, or the reverse. ''Everything below reads `kūlana`.''
 
-!! The Standing ~ what stays limiting (operator, 2026-07-25)
+!! The Standing ~ what stays limiting (#/rulings)
 
 ''This meme addresses the design-of-record `admission-price` and `lineage-rank` cite.'' Standing in
 canon buys it no register — only the measurement does, and only for what the measurement touched
 (#/the-refusal).
 
-''The limiting resource stands SELF-STANDING'' (operator, 2026-07-25) — a voucher's own accrued
+''The limiting resource stands SELF-STANDING'' (#/rulings) — a voucher's own accrued
 standing, and nothing external. No pool, no fee, no balance. C6 names the germinal centre's shape
 without its substance; this names the substance.
 
@@ -110,7 +104,7 @@ and compares against nothing. What the crossing costs, the voucher already paid 
 
 <<~/ahu>>
 
-<<~ ahu #/the-problem>>
+<<~ ahu slot=`#/the-problem`>>
 
 !! The Problem
 
@@ -124,7 +118,7 @@ whose conductance stays terrible by construction, and ''nobody has done our grap
 
 <<~/ahu>>
 
-<<~ ahu #/the-claim>>
+<<~ ahu slot=`#/the-claim`>>
 
 !! The Claim ~ four braids, one knot
 
@@ -196,7 +190,7 @@ verified the travelling stranger. ''They shrank what admission granted until a w
 
 <<~/ahu>>
 
-<<~ ahu #/the-shadow>>
+<<~ ahu slot=`#/the-shadow`>>
 
 !! The Shadow ~ what this design will do to itself
 
@@ -244,7 +238,7 @@ So the outline owes a ''one-sentence answer'' and makes only this claim: ''the p
 
 <<~/ahu>>
 
-<<~ ahu #/the-open-door-costs>>
+<<~ ahu slot=`#/the-open-door-costs`>>
 
 !! An open door answers strangers ~ and that names the oracle
 
@@ -281,11 +275,11 @@ So the outline owes a ''one-sentence answer'' and makes only this claim: ''the p
 
 <<~/ahu>>
 
-<<~ ahu #/re-declaration>>
+<<~ ahu slot=`#/re-declaration`>>
 
 !! When the frame changes, LABEL rather than convert
 
-''A re-declaration lands its cost on whoever holds the most legacy and the least budget to re-observe.'' Measured outside our field: every transformation between reference frames floors WORSE than the observations it carries, so a migration ''can only relabel legacy data at degraded accuracy, never improve it''. And a technical re-declaration by a body the affected party has no standing before moves that party's legal exposure directly — with no hostile actor anywhere in the loop. ''Assume it lands harder when someone means it.''
+''A re-declaration lands its cost on whoever holds the most prior observations and the least budget to re-observe.'' Measured outside our field: every transformation between reference frames floors WORSE than the observations it carries, so a migration ''can only relabel prior data at degraded accuracy, never improve it''. And a technical re-declaration by a body the affected party has no standing before moves that party's legal exposure directly — with no hostile actor anywhere in the loop. ''Assume it lands harder when someone means it.''
 
 ''The cure found by the field that paid for it'': run BOTH declarations valid concurrently, indefinitely, with every dataset carrying its declaration as metadata. ''The burden shifts from CONVERTING your data to LABELLING it'' — the cheapest survivable ask for a party with no budget, and it preserves their original accuracy instead of grinding it through a transform.
 
@@ -293,7 +287,7 @@ So the outline owes a ''one-sentence answer'' and makes only this claim: ''the p
 
 <<~/ahu>>
 
-<<~ ahu #/what-would-prove-it>>
+<<~ ahu slot=`#/what-would-prove-it`>>
 
 !! What Would Prove It ~ the experiments, two run and four owed
 
@@ -307,7 +301,7 @@ So the outline owes a ''one-sentence answer'' and makes only this claim: ''the p
 # ''Settle the dangling-sink policy'' (C2's refutation). Seed-return versus uniform — does either launder?
 # ''Attempt the counterexample to C4.'' A monotone, mass-conserving fold. ''Failing to find one makes no''
 ''   proof, and this outline must never say otherwise.''
-# ''RUN — Measure the DISTORTION, and it REFUTED the prediction.'' The prediction conflated depth and branching.
+# ''RUN — Measure the DISTORTION: it REFUTES the first prediction,'' which conflated depth and branching.
    ''DEPTH costs little'': a chain splits nothing, so only the reset leaks and a 20th-generation member still
    holds ≈4.6% of a first — Neo-Thracia reads FAINT, and still audible. ''BRANCHING starves'':
    mass divides by Π(outdeg), so a branch-4 tree of depth 5 leaves a leaf under a thousandth of what the
@@ -315,21 +309,29 @@ So the outline owes a ''one-sentence answer'' and makes only this claim: ''the p
 # ''Instrument the shadow.'' Build the meter for original antigenic sin ''before'' the loop runs, because
    the failure stays invisible from inside and ''every gate we own would glow green through it.''
 
-''(2) ran and failed to kill it, so the register moved by the promise''
-''this meme made.'' The four owed experiments hold it there: until (1) re-derives the bound under our own
+''(2) runs and fails to kill it, so the register moves by the promise''
+''this meme makes.'' The four owed experiments hold it there: until (1) re-derives the bound under our own
 model, (3) settles the sink, (4) hunts C4's counterexample, and (6) instruments the shadow, ''what stands''
 ''measured names the FOLD, never the synthesis around it.''
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/rulings`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-lease">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
+!! Rulings
+
+# Operator ruling 2026-07-25: the limiting resource stands SELF-STANDING — a voucher's own accrued standing, and nothing external; no pool, no fee, no balance.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E-gblmxvpYFXeeC-RHHgoDrXDUoL2b2x-ft_WKmwaWk
+<<~ ahu slot=`#/edges`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-lease`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XGS3CBPYRKEJW3yRp9eb9HjN17gi6Te9y7g7w7kKYPo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

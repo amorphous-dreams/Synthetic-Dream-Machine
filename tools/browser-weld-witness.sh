@@ -103,16 +103,25 @@ if [ "$ready" -ne 1 ]; then
   exit 1
 fi
 
+# THE BROWSER MAY RIDE THE PINNED PLAYWRIGHT IMAGE. A caller that names `WELD_PW_IMAGE` (the CI cell does) gets both drivers run
+# inside it through tools/pw-container.sh: the system libraries and the engine are already there, so no apt step runs. The
+# dev server stays on this host and the container shares its network, so `localhost` answers the same. Unset, the drivers
+# run on the host's own Playwright, as a desk run does.
+driver_run=()
+if [ -n "${WELD_PW_IMAGE:-}" ]; then
+  driver_run=(env "PW_IMAGE=$WELD_PW_IMAGE" "PW_ENV=WELD_WEB_URL WELD_SETTLE_MS LEAF_BOOT_MS LEAF_BOOT_TRACE" tools/pw-container.sh)
+fi
+
 status=0
 # L-Prime receipt boundary: run both drivers and aggregate only after both exits are visible.
 echo "browser-weld: starting Weld driver"
 if [ -n "$ARTIFACT_DIR" ]; then
   # L-Prime artifact boundary: keep Weld's receipt separate from Vite's log.
-  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs 2>&1 | tee "$ARTIFACT_DIR/weld.log"
+  WELD_WEB_URL="http://localhost:$PORT" "${driver_run[@]}" node tools/browser-weld/weld.mjs 2>&1 | tee "$ARTIFACT_DIR/weld.log"
   weld_pipeline=(${PIPESTATUS[@]})
   weld_status="${weld_pipeline[0]}"
 else
-  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs
+  WELD_WEB_URL="http://localhost:$PORT" "${driver_run[@]}" node tools/browser-weld/weld.mjs
   weld_status=$?
 fi
 echo "browser-weld: Weld driver exited $weld_status"
@@ -120,11 +129,11 @@ echo "browser-weld: Weld driver exited $weld_status"
 echo "browser-weld: starting C4 leaf driver"
 if [ -n "$ARTIFACT_DIR" ]; then
   # L-Prime artifact boundary: keep C4's receipt separate from Weld's log.
-  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs 2>&1 | tee "$ARTIFACT_DIR/c4.log"
+  WELD_WEB_URL="http://localhost:$PORT" "${driver_run[@]}" node tools/browser-weld/leaf-continuity.mjs 2>&1 | tee "$ARTIFACT_DIR/c4.log"
   c4_pipeline=(${PIPESTATUS[@]})
   c4_status="${c4_pipeline[0]}"
 else
-  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs
+  WELD_WEB_URL="http://localhost:$PORT" "${driver_run[@]}" node tools/browser-weld/leaf-continuity.mjs
   c4_status=$?
 fi
 echo "browser-weld: C4 leaf driver exited $c4_status"

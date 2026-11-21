@@ -35,9 +35,9 @@ describe("★ a nested ahu open addresses its full path exactly once ★", () =>
     const text = frameCarrier({
       head: { uri },
       body:
-        "<<~ ahu #/a>>\n\n" +
-        "<<~ ahu #/a/b>>\n\n" +
-        "<<~ ahu #/a/b/c>>\n\nleaf\n\n<<~/ahu>>\n\n" +
+        "<<~ ahu slot=`#/a`>>\n\n" +
+        "<<~ ahu slot=`#/a/b`>>\n\n" +
+        "<<~ ahu slot=`#/a/b/c`>>\n\nleaf\n\n<<~/ahu>>\n\n" +
         "<<~/ahu>>\n\n" +
         "<<~/ahu>>\n",
     });

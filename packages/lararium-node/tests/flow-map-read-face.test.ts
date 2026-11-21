@@ -1,7 +1,8 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
- * flow-map-read-face — a Herm serves its FLOW-map to a proven peer over its floor-gated oracle socket. The serve →
+ * flow-map-read-face — a Herm serves its FLOW-map to a proven peer over its floor-gated flow socket. The serve →
  * pull → verify round trip and the disclosure shore at the wire (only the coarse public projection crosses; the
- * vessel-local dial-records never leave) are proven beside the gate in oracle-floor-gate.test; what this suite
+ * vessel-local dial-records never leave) are proven beside the gate in flow-floor-gate.test; what this suite
  * keeps is the durable lineage: a restart re-serves the exact pointer it published, then makes a causal child on
  * change.
  * Canon: lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales
@@ -14,7 +15,7 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { exportFlowSnapshot, type MeshPalaceDoc } from "@lararium/mesh";
 import { mountFlowReadFace } from "../src/flow-read-face.js";
-import { floorGates, presenter, pullFloor } from "./oracle-floor-rig.js";
+import { floorGates, presenter, pullFloor } from "./flow-floor-rig.js";
 import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const SEED = new Uint8Array(32).fill(7); // a fixed, valid ed25519 seed (deterministic)
@@ -22,7 +23,7 @@ const SEED = new Uint8Array(32).fill(7); // a fixed, valid ed25519 seed (determi
 describe("the FLOW-map read-face — a Herm serves the public projection, shore at the wire", () => {
   test("restart re-serves the exact durable pointer, then makes a causal child on change", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
-    const handle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const handle = repo.create<MeshPalaceDoc>({ tiddlers: {} });
     const server = createServer();
     await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
     const port = (server.address() as { port: number }).port;
@@ -31,7 +32,7 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     // The gates survive the restart: a Herm's floor pin is its bundle's, not the process's.
     const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
     const mount = () => mountFlowReadFace({
-      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, gates: rig.gates, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
+      httpServer: server, oracleHandle: handle, signer: placeSignerFromSeed(SEED), storageDir, gates: rig.gates, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
       ...(onLog ? { onLog } : {}),
     });
     let onLog: ((line: string) => void) | null = null;

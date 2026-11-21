@@ -136,8 +136,8 @@ if node "$LARES" help >/dev/null 2>&1; then ok; else bad "build first: pnpm buil
 # tracked genesis tree, so an isolated root must carry it before a founding can stand. Its own error names
 # this step verbatim — the harness performs it rather than making a reader discover it.
 # SEED FROM DISK, NEVER FROM THE INDEX. `git ls-files` names what the index tracks, and a genesis rebake
-# writes new content-addressed blobs while the old ones stay listed until someone commits the change. A
-# seed built from that list fails on files the disk no longer holds — and worse, when it succeeds it
+# writes new content-addressed blobs while the index keeps listing the replaced ones until a commit. A
+# seed built from that list fails on files absent from disk — and worse, when it succeeds it
 # founds from a genesis no vessel would ever read, because a vessel reads the disk.
 seed_genesis() {
   ( cd "$REPO_ROOT" && find genesis -type f -print0 | xargs -0 -I{} cp --parents "{}" "$1/" ) 2>/dev/null
@@ -155,7 +155,7 @@ stage_custody() {
 assert_founded() {
   step "$2's founding left an identity on disk"
   # The social bootstrap is the founding's invariant artifact: it stands under every identity name, with or without a git email.
-  if [ -f "$1/data/lares/vessel/social-bootstrap.json" ]; then ok
+  if [ -f "$1/hearth/vessel/social-bootstrap.json" ]; then ok
   else bad "NoIdentityAfterFounding"; say "ABANDONED — $2's founding wrote no identity; every check below would measure an unfounded vessel."; exit 2; fi
 }
 
@@ -173,7 +173,7 @@ if FOUND=$(as_a vessel found --hearth --name adc-0 --skip-build --json 2>&1) && 
   A_AID=$(printf '%s' "$FOUND" | grep -oE '"nexusAid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$SEEDCARD" ]; then ok; else bad "the founding printed no seed card on a staged root"; fi
 else bad "$(printf '%s' "$FOUND" | tail -3 | tr '\n' ' ')"; fi
-run_a "A stands"                        vessel stand --install --skip-build
+run_a "A stands"                        vessel stand --init --skip-build
 unlock_root "$A_ROOT" A || exit 1
 assert_founded "$A_ROOT" A
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
@@ -192,7 +192,7 @@ for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
 done
 step "A rolls its seed charter to the three chairs (the seed card reveals; the roll prints each chair's card)"
 CARDS=""
-if SEAT=$(as_a nexus seal rotate --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
+if SEAT=$(as_a nexus seal rotate --face 0 --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
   CARDS=$(printf '%s' "$SEAT" | grep -oE '"code":"[0-9a-f-]+"' | cut -d'"' -f4 | paste -sd, -)
   if [ -n "$CARDS" ]; then ok; else bad "the roll printed no card on a staged root"; fi
 else bad "$(printf '%s' "$SEAT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
@@ -216,7 +216,7 @@ step "B names its own persona"
 if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
   ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
 else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
-run_b "B stands"                              vessel stand --install --skip-build
+run_b "B stands"                              vessel stand --init --skip-build
 unlock_root "$B_ROOT" B || exit 1
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
@@ -232,11 +232,11 @@ step "★ B's key is FOREIGN to A — no shared seed on disk ★"
 # own key, so no grep of a root finds one, on either vessel. B's own `persona list` opens B's custody and names
 # the probe; an absence claim over a name nothing ever wrote would read green by vacancy. Then A answers, and its
 # answer must read as an answer: a `persona list` that faulted names nothing either. A's custody names no such
-# persona, A's root holds the name in no cleartext file, the key B's mint printed sits among none of the kahu
+# persona, A's root holds the name nowhere, the key B's mint printed sits among none of the kahu
 # keys A minted, and the two vessels' own floor keys differ.
 # UNMEASURED HERE: whether a sealed copy of B's seed rests under A's root. Nothing in this run carries one there,
 # and no reading of A's sealed rows by this harness could tell B's seed from A's own.
-vessel_key_of() { cat "$1"/data/lares/identity/.vessel-key*.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
+vessel_key_of() { cat "$1"/hearth/identity/.vessel-key.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
 A_LIST=$(as_a persona list --json 2>/dev/null); B_LIST=$(as_b persona list --json 2>/dev/null)
 A_VESSEL=$(vessel_key_of "$A_ROOT"); B_VESSEL=$(vessel_key_of "$B_ROOT")
 if ! printf '%s' "$B_LIST" | grep -qs '"ok":true'; then bad "B's persona list gave no answer"
@@ -249,8 +249,9 @@ elif [ -z "$A_VESSEL" ] || [ -z "$B_VESSEL" ]; then bad "a vessel key went unrea
 elif [ "$A_VESSEL" = "$B_VESSEL" ]; then bad "the two vessels share one floor key"
 elif [ -d "$A_ROOT" ] && ! grep -rqs "$B_PROBE" "$A_ROOT" 2>/dev/null; then ok
 else bad "B's material reachable from A's root"; fi
-step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root"
-if grep -rqs "$B_PROBE" "$B_ROOT" 2>/dev/null; then bad "B's pet-name reads in the clear at rest"; else ok; fi
+# A PET NAME RESTS WHERE THE OPERATOR READS IT (operator ruling 2026-11-19): it is the human-scale grip on the crypto identities
+# beneath it, so no rule here asks it to stay out of cleartext. The absences measured above (A holds none of B's key, seed or
+# persona) guard keys and custody; the name served only as B's marker in them.
 
 # ── ③ THE PREREQUISITE — carry A's public charter to B ───────────────────────────────────────────
 say "③ the prerequisite the one-vessel run hid"
@@ -327,6 +328,7 @@ seatCustodyWhenNeeded(
   async (holder) => {
     const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
     if (opened.reading !== "opens" && opened.reading !== "already-unlocked") throw new Error(`the staged custody reads ${opened.reading} under the test route`);
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   },
 );
 
@@ -528,7 +530,7 @@ step "★ (1) B's presented admit reads HELD at A ★"
 if [ -s "$PRESENTED" ] && [ "$(s6_a verdict "$PRESENTED" 2>&1)" = "held" ]; then ok
 else bad "$(s6_a verdict "$PRESENTED" 2>&1 | tail -1)"; fi
 
-# THE SOCKET IS THE SEALED FACE GATE. The old leaf proof over a socket's nonce and the old auth frame's guard are gone;
+# THE SOCKET IS THE SEALED FACE GATE. No leaf proof over a socket's nonce and no auth-frame guard stands at the socket;
 # the presentation a gate reads is the admit riding INSIDE the sealed exchange (`dialFaceGate` -> `makeFaceGate`), read
 # against the root the gate's vessel holds. The rig runs in B's environment (B's own leaf is the face key) over A's
 # held root, which A copies out as public bytes.
@@ -628,7 +630,7 @@ if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && SC=$(s6_a sign-closing "$B_NYM" "$B_SIG
 else bad "${SC:-no token}"; fi
 
 step "A rotates the charter (the committed reveal)"
-if ROT=$(as_a nexus seal rotate --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+if ROT=$(as_a nexus seal rotate --face 0 --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
 else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 
 step "the rotate landed a ROLL ANCHOR on A's board"
@@ -675,27 +677,6 @@ else bad "${LM:-no token}"; fi
 step "★ CONTROL: the pre-roll presentation, carrying no anchor, reads WRONG-EPOCH ★"
 VE=$(s6_a verdict "$PRESENTED" 2>&1)
 if [ "$VE" = "wrong-epoch" ]; then ok; else bad "$VE"; fi
-
-# ── ⑪ THE RE-LIGHT ───────────────────────────────────────────────────────────────────────────────────
-# B named its face before it stood, so that label rests on B's sealed rows alone. A person who names the face
-# again while it stands lit re-lights it, and the face's persona plane stands open beside the act. That plane's
-# document rests through the vessel's own storage, in the clear, so the label never rides onto it: it rests on the
-# sealed row and nowhere else (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed). B stops before
-# the search, so every write its Repo holds reaches rest first, and nothing below needs B standing.
-say "⑪ the re-light — a lit face's new label rests sealed"
-B_RELIT="brelit-$$-qzx"
-run_b "B re-lights its lit face under a fresh label"   persona new 0 --name "$B_RELIT"
-step "the fresh label reads through B's own custody"
-if as_b persona list --json 2>/dev/null | grep -qs "$B_RELIT"; then ok
-else bad "the label names nothing under B — the absence below would measure the grep"; fi
-run_b "B stops, so its Repo's writes reach rest"       vessel stop
-step "CONTROL: the search reads B's own root"
-if [ -n "$B_VESSEL" ] && grep -rqs "$B_VESSEL" "$B_ROOT" 2>/dev/null; then ok
-else bad "B's own vessel key reads nowhere under B's root"; fi
-step "★ B's re-lit label rests in no cleartext file of B's own root ★"
-if grep -rqs "$B_RELIT" "$B_ROOT" 2>/dev/null; then
-  bad "the re-lit label reads in the clear at rest: $(grep -rls "$B_RELIT" "$B_ROOT" 2>/dev/null | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
-else ok; fi
 
 say "═══ RESULT ═══"
 if [ "$FAILED" -eq 0 ]; then

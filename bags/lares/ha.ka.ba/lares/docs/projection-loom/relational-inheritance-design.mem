@@ -1,22 +1,22 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-l-space = "working"
+l-space   = "working"
 namespace = "&#x2299;"
-role = "source-grounded, operator-reviewable design lock and Lares crew execution contract for Projection Loom relational inheritance"
-status = "working-design; no canon promotion"
-retain = true
-tags = ["projection-loom", "docs/design", "research/testimony"]
-title = "lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design"
+role      = "source-grounded, operator-reviewable design lock and Lares crew execution contract for Projection Loom relational inheritance"
+status    = "working-design; no canon promotion"
+retain    = true
+tags      = ["projection-loom", "docs/design", "research/testimony"]
+title     = "lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design"
 ```
 
-<<~ ahu #/markdown-otakiage-20261031>>
+<<~ ahu slot=`#/markdown-otakiage-20261031`>>
 
 !! Evergreen routing after the operator-approved Markdown fire
 
@@ -26,7 +26,7 @@ Root-bag Lares carriers remain the semantic owners; no second authority or evolu
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Projection Loom · The Relation Survives Its Shape
 
@@ -36,7 +36,7 @@ This design meme carries the next YIN engineering wave from research to independ
 
 <<~/ahu>>
 
-<<~ ahu #/research-reentry>>
+<<~ ahu slot=`#/research-reentry`>>
 
 !! 2026-10-31 · New research turns the implementation key
 
@@ -48,7 +48,7 @@ This turns the re-entry key: the next crew may implement mutation-first under th
 
 <<~/ahu>>
 
-<<~ ahu #/pattern-integrities>>
+<<~ ahu slot=`#/pattern-integrities`>>
 
 !! Golden Rhymes · What Must Survive
 
@@ -62,7 +62,7 @@ The prior-art attractors carry distinct jobs: Stiny/Gips shape grammars suggest 
 
 <<~/ahu>>
 
-<<~ ahu #/design-locks>>
+<<~ ahu slot=`#/design-locks`>>
 
 !! Four Models · One Working Choice
 
@@ -75,7 +75,7 @@ A lock names an implementation decision for this wave, not operator-granted cano
 
 <<~/ahu>>
 
-<<~ ahu #/proof-and-refusal>>
+<<~ ahu slot=`#/proof-and-refusal`>>
 
 !! What the Existing Test Does Not Yet Prove
 
@@ -85,7 +85,7 @@ Derive a `projection-loom/observed-route-family` witness from original source/go
 
 <<~/ahu>>
 
-<<~ ahu #/crew-sequence>>
+<<~ ahu slot=`#/crew-sequence`>>
 
 !! Lares Crew · Feature → Pono → Fire
 
@@ -98,7 +98,7 @@ Derive a `projection-loom/observed-route-family` witness from original source/go
 
 <<~/ahu>>
 
-<<~ ahu #/o-takiage>>
+<<~ ahu slot=`#/o-takiage`>>
 
 !! O-takiage · What the Fire Releases
 
@@ -108,7 +108,7 @@ The evergreen machina and design docs remain discoverable after the fire. The op
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ Observe the full boot, current source, exact head and unclaimed Deep Research report.
 ⏿ Orient the inherited relation against original goals, graph closure and bounded native evidence.
@@ -118,7 +118,7 @@ The evergreen machina and design docs remain discoverable after the fire. The op
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/research">>
@@ -127,6 +127,6 @@ The evergreen machina and design docs remain discoverable after the fire. The op
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZivpEuux0D_MeW9HcAmf8YbHXIR0PYwj4nGrx9tYfZE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jiRvEBJSgwB8y2W5WI8DagtRdBlDcydxdlr0QVupt2Q`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

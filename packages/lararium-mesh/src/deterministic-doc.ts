@@ -19,14 +19,27 @@ import { save as automergeSave } from "@automerge/automerge";
 import { pinnedDoc } from "./pinned-doc.js";
 import { sha256BytesSync, utf8Bytes } from "./crypto.js";
 import { resolveBootDoc } from "./boot-resolver.js";
-import { CROSSROADS_DOC_URI, nexusHandlesUri, nexusRegistryUri } from "./lar-uris.js";
+import { CROSSROADS_DOC_URI, bagUri, nexusHandlesUri, nexusRegistryUri } from "./lar-uris.js";
 import { emptyLarDoc, type LarDoc } from "./base-doc.js";
 
 /** Derive a deterministic automerge: URL from a seed string — the first 16 bytes of its sha256 as the doc-id. */
 export function deterministicDocUrl(seed: string): AutomergeUrl {
   const binId = sha256BytesSync(utf8Bytes(seed)).slice(0, 16) as BinaryDocumentId;
-  return stringifyAutomergeUrl({ documentId: binId });
+  const url = stringifyAutomergeUrl({ documentId: binId });
+  if (!derived.has(url)) derived.set(url, seedLabel(seed));
+  return url;
 }
+
+/**
+ * THE DERIVED ADDRESSES THIS PROCESS COMPUTED, by URL: each names the document a derivation reaches (`deterministicDocUrl`),
+ * labelled by the seed's head (the part before any `#`, so no key a seed carries after it rides the label) or by the board
+ * label a materialize names (`materializeSharedLarDoc`). The document census reads them as `derived` names.
+ */
+const derived = new Map<string, string>();
+const seedLabel = (seed: string): string => (seed.split("#")[0] ?? seed).slice(0, 96);
+
+/** The derived addresses this process computed, by URL, each with its label. */
+export function derivedDocAddresses(): ReadonlyMap<string, string> { return derived; }
 
 /** The Nexus's crossroads doc URL — the public plane's per-island address (deterministic). */
 export function crossroadsDocUrl(nexusPubkey: string): AutomergeUrl {
@@ -59,6 +72,42 @@ export function kapaeAntigenDocUrl(nexusPubkey: string): AutomergeUrl {
  */
 export function carriageDocUrl(nexusPubkey: string): AutomergeUrl {
   return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#carriage`);
+}
+
+/**
+ * The Nexus's REALM-ANNOUNCE board URL — deterministic, so every island member and every carrier resolves the one board
+ * that carries each realm's public announces (`writeRealmBagAnnounce`). It stands apart from the crossroads document: the
+ * crossroads bag mounts in a recipe and mirrors to its canon source, and a board no recipe mounts reaches no mirror, so a
+ * house-minted announce never writes to disk and a file under the crossroads mirror never folds as a book. The federation
+ * gate federates it beside the crossroads document, so a carrier replicates it the way it replicates the public plane.
+ */
+export function realmAnnounceDocUrl(nexusPubkey: string): AutomergeUrl {
+  return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#realm-announce`);
+}
+
+/**
+ * The Nexus's PUBLICATION board URL — deterministic, so every island member, joinee and carrier resolves the one board that
+ * carries the Nexus's signed publications: each plugin offering's announce (`writeOfferingAnnounce`, `nexus publish`) and
+ * each floor release (`writeFloorRelease`, `nexus release`), which the porch answers from. Each row self-certifies, so a
+ * reader re-verifies it off the board alone; that sets it apart from the realm-announce board, whose rows project a record
+ * kept on the realm doc and carry no signature to re-check. Like that board it stands apart from the crossroads document: the
+ * crossroads bag mounts in a recipe and mirrors to its canon source, and a board no recipe mounts reaches no mirror, so a
+ * house-minted publication never writes to disk and a file under the crossroads mirror never reads as one. The federation
+ * gate federates it beside the crossroads document.
+ */
+export function publicationDocUrl(nexusPubkey: string): AutomergeUrl {
+  return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#publication`);
+}
+
+/**
+ * The Nexus's OFFER TABLE — deterministic over the Nexus AID, so every face of every vessel in the Nexus resolves the one board
+ * that carries signed canon offers (`canon-offer`) and the steward's retirements of them. It stands BESIDE the Kahu realm, never
+ * in it: a row self-certifies (its CID re-derives from its body, its signature verifies under the key it names), no recipe mounts
+ * it and no mirror names it, so an offer reaches no canon document and no disk. Appending an offer grants nothing; only the
+ * steward's promotion, under the Kahu reach, moves canon.
+ */
+export function canonOfferDocUrl(nexusAid: string): AutomergeUrl {
+  return deterministicDocUrl(`${nexusRegistryUri(nexusAid.trim())}#canon-offer`);
 }
 
 /**
@@ -100,6 +149,16 @@ export function realmEdgeBoardDocUrl(realmId: string): AutomergeUrl {
 }
 
 /**
+ * One REALM's WORKBENCH for one shared wiki — the wiki's SHARED working layer, ONE CRDT every member face syncs, a sibling of
+ * the realm's vouch and edge boards. Deterministic over the realm's own id and the wiki's slug (NFC), so the address never
+ * derives from a rotating key: a member added or removed moves no byte of it, and every member computes it from the realm id
+ * alone. Who may READ it rides the realm's Keyhive Document (its members), never this address; knowing the url grants nothing.
+ */
+export function realmWorkbenchDocUrl(realmId: string, slug: string): AutomergeUrl {
+  return deterministicDocUrl(`${REALM_BOARD_URI}/${realmId.trim().toLowerCase()}#working/${slug.normalize("NFC")}`);
+}
+
+/**
  * One FLEET's EDGE board URL — the acts that set a device's dyad aside, keyed by the fleet root that bound it.
  * It crosses to the face's own devices alone (the sibling channel, same-operator sync): a dyad shown as set
  * aside on a Nexus board would tell that Nexus one device left one person.
@@ -114,6 +173,17 @@ export function fleetEdgeBoardDocUrl(fleetRootDid: string): AutomergeUrl {
  */
 export function edgeLedgerDocUrl(vesselKey: string): AutomergeUrl {
   return deterministicDocUrl(`${EDGE_LEDGER_URI}/${vesselKey.trim().toLowerCase().replace(/^0x/, "")}`);
+}
+
+/**
+ * A vessel's OWN meshpalace FLOW-map URL — deterministic over the vessel's own key, so every compose of one vessel finds
+ * the one map a prior boot rested and two vessels never stand one map between them. A compose mints nothing it cannot
+ * find again: a map minted fresh at each compose, with no pointer read back, leaves one orphan per boot in the root store.
+ * The map carries PUBLIC reachability (each vessel's own dials and routing slots, and what its carriage merges in), so a
+ * derived address grants nothing: peers reach it through the signed read-face, never by its id.
+ */
+export function meshPalaceDocUrl(vesselKey: string): AutomergeUrl {
+  return deterministicDocUrl(`${bagUri("meshpalace")}#vessel/${vesselKey.trim().toLowerCase().replace(/^0x/, "")}`);
 }
 
 /**
@@ -153,6 +223,7 @@ export async function materializeSharedLarDoc(
   url: AutomergeUrl,
   label: string,
 ): Promise<DocHandle<LarDoc>> {
+  derived.set(url, label);
   try {
     const existing = await resolveBootDoc<LarDoc>(repo, url, { tideline: "hearth-private", label });
     return existing;   // present (persisted or synced) → use it

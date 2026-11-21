@@ -1,0 +1,290 @@
+import { test, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, renameSync, existsSync, copyFileSync, linkSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { openHeldSync, readHeld } from './held-dir.mjs';
+import { scratchDoorTree, checkoutDistSnapshot } from './door-fixture.mjs';
+
+// Controller runs: this integration fixture spawns git, the relay and a walled test child.
+const relay = fileURLToPath(new URL('./commit-relay.mjs', import.meta.url));
+const roots = [];
+afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
+function fixture() {
+  const home = mkdtempSync(path.join(path.dirname(path.dirname(path.dirname(relay))), 'test-door-home-'));
+  roots.push(home);
+  const lane = path.join(home, '.lares-scratch', 'lane'), wt = path.join(lane, 'wt');
+  mkdirSync(path.join(lane, 'relay'), { recursive: true }); mkdirSync(wt);
+  const git = (...args) => execFileSync('git', ['-C', wt, ...args], { stdio: 'ignore' });
+  git('init', '-b', 'test-door'); git('config', 'user.name', 'Test'); git('config', 'user.email', 'test@example.invalid');
+  writeFileSync(path.join(wt, 'ok.test.mjs'), "import { test } from 'node:test'; test('control', () => {});\n");
+  git('add', 'ok.test.mjs'); git('commit', '-m', 'initial');
+  const launcher = path.join(home, 'launcher.mjs'); writeFileSync(launcher, '');
+  const checks = path.join(home, 'checks.json'); writeFileSync(checks, '[]');
+  const run = (request) => {
+    writeFileSync(path.join(lane, 'relay', 'req-001.json'), JSON.stringify(request));
+    const child = spawnSync(process.execPath, [relay, '--lane-root', lane, '--worktree', wt, '--branch', 'test-door', '--launcher', launcher, '--remote-url', path.join(home, 'remote'), '--checks', checks, '--once'], { encoding: 'utf8', env: { ...process.env, HOME: home } });
+    assert.equal(child.status, 0, child.stderr);
+    const result = JSON.parse(readFileSync(path.join(lane, 'relay', 'res-001.json'), 'utf8'));
+    rmSync(path.join(lane, 'relay', 'req-001.json')); rmSync(path.join(lane, 'relay', 'res-001.json'));
+    return result;
+  };
+  return { home, wt, run };
+}
+const request = files => ({ kind: 'test', runner: 'node', files });
+for (const [name, files, refusal] of [
+  ['absolute path', ['/tmp/escape.test.mjs'], /absolute path/i],
+  ['parent traversal', ['../escape.test.mjs'], /parent traversal/i],
+  ['glob', ['*.test.mjs'], /glob/i],
+]) {
+  test(`test door refuses ${name} by name`, () => {
+    const x = fixture(), result = x.run(request(files));
+    assert.equal(result.ok, false); assert.match(result.output, refusal);
+  });
+}
+test('test door refuses a symlink escaping the worktree by name', () => {
+  const x = fixture(); writeFileSync(path.join(x.home, 'escape.test.mjs'), '');
+  symlinkSync(path.join(x.home, 'escape.test.mjs'), path.join(x.wt, 'escape.test.mjs'));
+  const result = x.run(request(['escape.test.mjs']));
+  assert.equal(result.ok, false); assert.match(result.output, /symlink/i);
+});
+test('test door refuses a named file whose parent symlinks outside the worktree', () => {
+  const x = fixture(), outside = path.join(x.home, 'outside-parent');
+  mkdirSync(outside); writeFileSync(path.join(outside, 'sample.test.mjs'), '');
+  symlinkSync(outside, path.join(x.wt, 'linked-parent'));
+  const result = x.run(request(['linked-parent/sample.test.mjs']));
+  assert.equal(result.ok, false); assert.match(result.output, /symlink/i);
+});
+test('test door refuses an unknown runner by name', () => {
+  const x = fixture(), result = x.run({ ...request(['ok.test.mjs']), runner: 'shell' });
+  assert.equal(result.ok, false); assert.match(result.output, /unknown runner.*shell/i);
+});
+test('test door refuses an unknown field by name', () => {
+  const x = fixture(), result = x.run({ ...request(['ok.test.mjs']), extra: true });
+  assert.equal(result.ok, false); assert.match(result.output, /unknown field.*extra/i);
+});
+test('vitest refuses when the test package has no local installation', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'nested'));
+  writeFileSync(path.join(x.wt, 'nested', 'package.json'), JSON.stringify({ name: 'nested-fixture' }));
+  writeFileSync(path.join(x.wt, 'nested', 'sample.test.mjs'), '');
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['nested/sample.test.mjs'] });
+  assert.equal(result.ok, false);
+  assert.ok(Number.isInteger(result.exitCode) && result.exitCode !== 0);
+  assert.match(result.output, /stderr tail: [\s\S]*(?:Cannot find module|ERR_MODULE_NOT_FOUND)/);
+});
+test('a post-execution refusal carries the exit code and bounded stderr tail', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'node_modules', 'vitest'), { recursive: true });
+  writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'broken-fixture' }));
+  writeFileSync(path.join(x.wt, 'node_modules', 'vitest', 'vitest.mjs'), "process.stderr.write('x'.repeat(3000) + ' END'); process.exitCode = 7;\n");
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['ok.test.mjs'] });
+  assert.equal(result.ok, false); assert.equal(result.exitCode, 7);
+  assert.match(result.output, /unparseable vitest output/); assert.match(result.output, /exitCode: 7; stderr tail: x+ END$/);
+  assert.ok(Buffer.byteLength(result.output.split('stderr tail: ')[1]) <= 2048);
+});
+test('docker socket stays absent inside the test namespace; a named control runs', () => {
+  const x = fixture();
+  writeFileSync(path.join(x.wt, 'socket.test.mjs'), `import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+test('docker socket absent', () => assert.equal(existsSync('/var/run/docker.sock'), false));
+`);
+  const result = x.run(request(['socket.test.mjs', 'ok.test.mjs']));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.pass, 2); assert.equal(result.fail, 0); assert.equal(result.exitCode, 0);
+});
+
+test('test door reports passing and failing tallies, with a passing control', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'tally-fixture'));
+  writeFileSync(path.join(x.wt, 'tally-fixture', 'pass.test.mjs'), "import { test } from 'node:test'; test('passes', () => {});\n");
+  writeFileSync(path.join(x.wt, 'tally-fixture', 'fail.test.mjs'), "import { test } from 'node:test'; import assert from 'node:assert/strict'; test('fails', () => assert.fail('planted failure'));\n");
+  const files = ['tally-fixture/pass.test.mjs', 'tally-fixture/fail.test.mjs'];
+  const result = x.run(request(files));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.runner, 'node'); assert.deepEqual(result.files, files);
+  assert.equal(result.pass, 1); assert.equal(result.fail, 1); assert.equal(result.skip, 0);
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(typeof result.logTail, 'string'); assert.ok(result.logTail.length <= 16384);
+  const control = x.run(request([files[0]]));
+  assert.equal(control.ok, true, JSON.stringify(control));
+  assert.equal(control.fail, 0); assert.equal(control.exitCode, 0);
+});
+
+test('RED: the door self-test runs a named vitest file in a scratch tree and leaves every checkout dist untouched; CONTROL its own package built and passed', () => {
+  const temp = mkdtempSync(path.join(os.tmpdir(), 'test-door-vitest-'));
+  const lane = mkdtempSync(path.join(os.tmpdir(), 'test-door-vitest-lane-'));
+  roots.push(temp, lane);
+  mkdirSync(path.join(lane, 'relay'));
+  const launcher = path.join(temp, 'launcher.mjs'); writeFileSync(launcher, '');
+  const checks = path.join(temp, 'checks.json'); writeFileSync(checks, '[]');
+  // The relay resolves HOME/.lares-scratch and requires the worktree beneath it; the worktree is scratch, never the checkout,
+  // since the door builds the named file's package in place and a sibling self-test may be importing that dist.
+  const { wt, pkg } = scratchDoorTree(path.join(temp, '.lares-scratch', 'door', 'wt'));
+  const dir = pkg('door-vitest', {
+    'package.json': JSON.stringify({ name: 'door-vitest', type: 'module', scripts: { build: 'tsc -p tsconfig.json' } }),
+    'tsconfig.json': JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'dist', rootDir: 'src', skipLibCheck: true, types: [] }, include: ['src'] }),
+    'src/value.ts': 'export const value: number = 1;',
+    'tests/value.test.mjs': "import { test, expect } from 'vitest'; import { value } from '../dist/value.js'; test('value', () => expect(value).toBe(1));",
+  });
+  const files = ['packages/door-vitest/tests/value.test.mjs'];
+  const before = checkoutDistSnapshot();
+  writeFileSync(path.join(lane, 'relay', 'req-001.json'), JSON.stringify({ kind: 'test', runner: 'vitest', files }));
+  const child = spawnSync(process.execPath, [relay, '--lane-root', lane, '--worktree', wt, '--branch', 'test-door', '--launcher', launcher, '--remote-url', path.join(temp, 'remote'), '--checks', checks, '--once'], { encoding: 'utf8', env: { ...process.env, HOME: temp, LARES_BROKER_ROOT: path.join(temp, 'broker') } });
+  assert.equal(child.status, 0, child.stderr);
+  const result = JSON.parse(readFileSync(path.join(lane, 'relay', 'res-001.json'), 'utf8'));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.runner, 'vitest'); assert.deepEqual(result.files, files);
+  assert.equal(result.pass, 1); assert.equal(result.fail, 0); assert.equal(result.exitCode, 0);
+  // CONTROL: the door built the scratch package (its dist exists) and stamped it in the scratch tree.
+  assert.match(readFileSync(path.join(dir, 'dist', 'value.js'), 'utf8'), /value = 1/);
+  assert.ok(existsSync(path.join(wt, 'node_modules', '.lares-build', 'pkg', 'door-vitest')));
+  const after = checkoutDistSnapshot();
+  const moved = Object.keys(before).filter(file => after[file] !== before[file]);
+  assert.deepEqual(moved.slice(0, 5), [], `${moved.length} checkout dist or stamp file(s) rewritten by a self-test`);
+});
+
+test('C1 package directory symlink outside the worktree refuses without disclosing its target', () => {
+  const x = fixture(), secret = 'PLANTED-PRIVATE-PACKAGE-CONTENT';
+  const outside = path.join(x.home, 'outside'); mkdirSync(outside);
+  writeFileSync(path.join(outside, 'package.json'), secret);
+  writeFileSync(path.join(outside, 'sample.test.mjs'), '');
+  symlinkSync(outside, path.join(x.wt, 'external'));
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['external/sample.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /symlink/i);
+  assert.ok(!JSON.stringify(result).includes(secret));
+});
+
+test('C1 package.json leaf symlink refuses without disclosing its target', () => {
+  const x = fixture(), secret = 'PLANTED-PRIVATE-PACKAGE-CONTENT';
+  const outside = path.join(x.home, 'outside-package'); writeFileSync(outside, secret);
+  mkdirSync(path.join(x.wt, 'nested'));
+  writeFileSync(path.join(x.wt, 'nested', 'sample.test.mjs'), '');
+  symlinkSync(outside, path.join(x.wt, 'nested', 'package.json'));
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['nested/sample.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /symlink|package\.json unreadable/i);
+  assert.ok(!JSON.stringify(result).includes(secret));
+});
+
+test('C1 malformed package.json refuses by name without echoing its contents', () => {
+  const x = fixture(), secret = 'PLANTED-PRIVATE-PACKAGE-CONTENT';
+  writeFileSync(path.join(x.wt, 'package.json'), secret);
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['ok.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /package\.json unreadable/i);
+  assert.ok(!JSON.stringify(result).includes(secret.slice(0, 10)));
+});
+
+test('RED: held result reads refuse FIFOs without blocking; CONTROL regular files read', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'held-results-')); roots.push(root);
+  const heldModule = new URL('./held-dir.mjs', import.meta.url).href;
+  for (const name of ['build-ok', 'vitest.json']) {
+    const file = path.join(root, name);
+    execFileSync('/usr/bin/mkfifo', [file]);
+    const child = spawnSync(process.execPath, ['--input-type=module', '-e', `
+      import { openHeldSync, readHeld } from ${JSON.stringify(heldModule)};
+      const held = openHeldSync(process.argv[1], process.argv[1]);
+      try { readHeld(held, process.argv[2]); process.exitCode = 1; }
+      catch (error) { console.log(error.message); }
+      finally { held.close(); }
+    `, root, name], { encoding: 'utf8', timeout: 1500 });
+    assert.equal(child.error, undefined, 'FIFO read must return before the probe timeout');
+    assert.equal(child.status, 0, child.stderr); assert.match(child.stdout, /not a regular file/);
+    rmSync(file); writeFileSync(file, 'control');
+  }
+  const held = openHeldSync(root, root);
+  try { assert.equal(readHeld(held, 'build-ok'), 'control'); assert.equal(readHeld(held, 'vitest.json'), 'control'); }
+  finally { held.close(); }
+});
+
+test('C2 silent hanging test receives a liveness refusal', () => {
+  const x = fixture();
+  // The fallback ends the pre-cure run, so controller proof cannot wedge the relay forever.
+  writeFileSync(path.join(x.wt, 'hang.test.mjs'), "import { test } from 'node:test'; test('hang', async () => { await new Promise(resolve => setTimeout(resolve, 90000)); });\n");
+  const result = x.run(request(['hang.test.mjs']));
+  assert.equal(result.ok, false); assert.match(result.output, /liveness: silent \d+s/i);
+});
+
+test('C3 test code cannot write into /work/.git', () => {
+  const x = fixture();
+  writeFileSync(path.join(x.wt, 'git-write.test.mjs'), "import { test } from 'node:test'; import { writeFileSync } from 'node:fs'; test('write git', () => writeFileSync('/work/.git/planted', 'changed'));\n");
+  const result = x.run(request(['git-write.test.mjs']));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.fail, 1); assert.notEqual(result.exitCode, 0);
+  assert.match(result.logTail, /EACCES|EROFS|permission denied|read-only file system/i);
+});
+
+test('C3 a worktree gitlink stays read-only inside the test namespace', () => {
+  const x = fixture();
+  const gitDir = path.join(x.home, 'git-dir');
+  renameSync(path.join(x.wt, '.git'), gitDir);
+  writeFileSync(path.join(x.wt, '.git'), `gitdir: ${gitDir}\n`);
+  writeFileSync(path.join(x.wt, 'gitlink-write.test.mjs'), "import { test } from 'node:test'; import { writeFileSync } from 'node:fs'; test('write gitlink', () => writeFileSync('/work/.git', 'changed'));\n");
+  const result = x.run(request(['gitlink-write.test.mjs']));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.fail, 1); assert.notEqual(result.exitCode, 0);
+  assert.match(result.logTail, /EACCES|EROFS|permission denied|read-only file system/i);
+  assert.equal(readFileSync(path.join(x.wt, '.git'), 'utf8'), `gitdir: ${gitDir}\n`);
+});
+
+test('RED: a tree whose node_modules shares an inode with another tree refuses by name before any code runs; CONTROL a copied module file runs', () => {
+  const x = fixture();
+  const outside = path.join(x.home, 'store-file'); writeFileSync(outside, 'shared tooling\n');
+  mkdirSync(path.join(x.wt, 'packages/demo/node_modules/dep'), { recursive: true });
+  copyFileSync(outside, path.join(x.wt, 'packages/demo/node_modules/dep/index.js'));
+  const control = x.run(request(['ok.test.mjs']));
+  assert.equal(control.ok, true, JSON.stringify(control));
+  rmSync(path.join(x.wt, 'packages/demo/node_modules/dep/index.js')); linkSync(outside, path.join(x.wt, 'packages/demo/node_modules/dep/index.js'));
+  const refused = x.run(request(['ok.test.mjs']));
+  assert.equal(refused.ok, false);
+  assert.match(refused.output, /refused: 1 node_modules file\(s\) share an inode .*packages\/demo\/node_modules\/dep\/index\.js/);
+  assert.equal(readFileSync(outside, 'utf8'), 'shared tooling\n');
+});
+
+test('RED: a symlinked root node_modules refuses by name (it would escape the read-only bind); CONTROL no node_modules at all runs', () => {
+  const x = fixture();
+  const control = x.run(request(['ok.test.mjs']));
+  assert.equal(control.ok, true, JSON.stringify(control));
+  const farm = path.join(x.home, 'farm'); mkdirSync(farm); symlinkSync(farm, path.join(x.wt, 'node_modules'));
+  const refused = x.run(request(['ok.test.mjs']));
+  assert.equal(refused.ok, false); assert.match(refused.output, /root node_modules must be a real directory/);
+});
+
+test('C5 test code cannot write node_modules inside the wall (root and package farms read-only); CONTROL dist/ still writes', () => {
+  const x = fixture();
+  for (const dir of ['node_modules/pkg', 'packages/demo/node_modules/dep']) { mkdirSync(path.join(x.wt, dir), { recursive: true }); writeFileSync(path.join(x.wt, dir, 'index.js'), 'original\n'); }
+  writeFileSync(path.join(x.wt, 'store-write.test.mjs'), `import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdirSync, writeFileSync } from 'node:fs';
+test('rewrite root tooling', () => writeFileSync('/work/node_modules/pkg/index.js', 'planted'));
+test('plant root tooling', () => writeFileSync('/work/node_modules/planted.js', 'planted'));
+test('rewrite package tooling', () => writeFileSync('/work/packages/demo/node_modules/dep/index.js', 'planted'));
+test('control: dist builds', () => { mkdirSync('/work/packages/demo/dist', { recursive: true }); writeFileSync('/work/packages/demo/dist/out.js', 'built'); });
+`);
+  const result = x.run(request(['store-write.test.mjs']));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  assert.equal(result.fail, 3, result.logTail); assert.equal(result.pass, 1, result.logTail);
+  assert.match(result.logTail, /EROFS|read-only file system/i);
+  assert.equal(readFileSync(path.join(x.wt, 'node_modules/pkg/index.js'), 'utf8'), 'original\n');
+  assert.equal(readFileSync(path.join(x.wt, 'packages/demo/node_modules/dep/index.js'), 'utf8'), 'original\n');
+  assert.equal(readFileSync(path.join(x.wt, 'packages/demo/dist/out.js'), 'utf8'), 'built', 'CONTROL: the build output landed');
+});
+
+test('C4 empty node test file refuses because no tests ran', () => {
+  const x = fixture(); writeFileSync(path.join(x.wt, 'empty.test.mjs'), '');
+  const result = x.run(request(['empty.test.mjs']));
+  assert.equal(result.ok, false); assert.match(result.output, /no tests ran/i);
+});
+
+test('C4 vitest report with zero total tests refuses by name', () => {
+  const x = fixture();
+  mkdirSync(path.join(x.wt, 'node_modules', 'vitest'), { recursive: true });
+  writeFileSync(path.join(x.wt, 'package.json'), JSON.stringify({ name: 'empty-fixture' }));
+  writeFileSync(path.join(x.wt, 'empty.test.mjs'), '');
+  writeFileSync(path.join(x.wt, 'node_modules', 'vitest', 'vitest.mjs'), "import { writeFileSync } from 'node:fs'; writeFileSync('/scratch/vitest.json', JSON.stringify({ numTotalTests: 0, numPassedTests: 0, numFailedTests: 0, numPendingTests: 0 }));\n");
+  const result = x.run({ kind: 'test', runner: 'vitest', files: ['empty.test.mjs'] });
+  assert.equal(result.ok, false); assert.match(result.output, /no tests ran/i);
+});
+

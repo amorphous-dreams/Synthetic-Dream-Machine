@@ -27,7 +27,7 @@ import { startCarriageRelay, type CarriageRelay } from "../../packages/lararium-
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/ed25519-door.js";
 import type { PersonaKelEvent } from "../../packages/lararium-mesh/src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../packages/lararium-mesh/src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../../packages/lararium-mesh/src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../../packages/lararium-mesh/src/recovery-registration.js";
 import { knockSegment } from "../../packages/lararium-mesh/src/gate-bundle.js";
 import { countersignDeviceDelegation } from "../../packages/lararium-mesh/src/device-delegation.js";
 import { pinnedRelayAddress } from "../../packages/lararium-mesh/src/persona-kel-drop.js";
@@ -45,7 +45,7 @@ const seed     = (b: number) => new Uint8Array(32).fill(b);
 const ROOT     = seed(101);                            // the PersonaGroup's persona root (the KEL's founding op-key)
 const ROTATED  = seed(106);                            // the op-key a rotation seats
 const STRANGER = seed(102);
-const GUARDIANS = [seed(103), seed(104), seed(105)];
+const RECOVERY_CONTACTS = [seed(103), seed(104), seed(105)];
 const NEXUS    = "4e".repeat(32);
 
 let herm: CarriageRelay | null = null;
@@ -55,7 +55,7 @@ let secondUrl = "";
 let relayUrl = "";
 let relayPort = 0;
 let inception: PersonaKelEvent;
-let guardianKeys: string[] = [];
+let recoveryContactKeys: string[] = [];
 /** The herm's whole sight of the sibling channels: every frame it carried, as it carried it. */
 const carriedByHerm: string[] = [];
 
@@ -130,11 +130,11 @@ const enrol = async (root: Uint8Array, device: Uint8Array) =>
   enrolDevice({ opSeed: root, prefix: inception.prefix, deviceVerifyingKey: await pubOf(device), hearthTrueName: "", boundEpoch: 0 });
 
 beforeAll(async () => {
-  guardianKeys = await Promise.all(GUARDIANS.map(pubOf));
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
+  recoveryContactKeys = await Promise.all(RECOVERY_CONTACTS.map(pubOf));
+  const slots = ["mine", "contact-a", "contact-b"] as const;
   inception = provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid: await didOf(ROOT),
-    guardians: guardianKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null)),
+    recoveryContacts: recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null)),
     recoveryThreshold: 2,
   }).inception;
 
@@ -214,8 +214,8 @@ describe("leaf kind 3 — siblings sync through a herm with no listening vessel"
     if (!rotation) {
       const devices = await Promise.all([seed(131), seed(132)].map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
       const rot = await attestAndRotate({
-        head: inception, freshOpKeyDid: await didOf(ROTATED), guardianRecoveryKeys: guardianKeys, recoveryThreshold: 2,
-        guardianSigners: await Promise.all(GUARDIANS.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: ed25519SignerFromSeed(s) }))),
+        head: inception, freshOpKeyDid: await didOf(ROTATED), recoveryContactKeys: recoveryContactKeys, recoveryThreshold: 2,
+        recoveryContactSigners: await Promise.all(RECOVERY_CONTACTS.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: ed25519SignerFromSeed(s) }))),
         enrolments: await rollEnrolments({ prefix: inception.prefix, opSeed: ROTATED, devices }),
       });
       if (!rot.ok) throw new Error(rot.reason);

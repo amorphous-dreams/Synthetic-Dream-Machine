@@ -1,0 +1,87 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/collide`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/COLLIDE.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/collide"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/collide"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! COLLIDE.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/COLLIDE.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/collision-brief-wave-2-of-the-cut-reads`>>
+
+! Collision brief, wave 2 of the cut reads (2026-10-31)
+
+Operator, verbatim: "collide each spirit's findings with another Sonnet cold reader that has internet research caps, then land all of their 2-wave researches into the meme."
+
+You collide with ONE wave-1 cut-read report. You read cold: you wrote neither the code nor the report. Your job is adversarial. Try to BREAK each finding and each verdict, and keep only what survives.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/read-first`>>
+
+!! Read first
+* /home/joshu/.lares-scratch/controller/scouts/cut-reads/COMMON.md: the wave-1 brief. Its laws and fences bind you too.
+* Your target report: /home/joshu/.lares-scratch/controller/scouts/cut-reads/&lt;batch>.md
+* The design meme: /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/test-recut-road.mem
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/do`>>
+
+!! Do
+# ''Re-verify every FINDING against the code, in full.'' Read the whole function and its callers, not the reporter's excerpt. Trace the actual runtime order, including async/microtask order, event listeners and the order composeCoreVessel calls stages in. For each finding, rule CONFIRMED, REFUTED or NARROWED, and give your evidence (file:line). Say whether it fails open or closed, and its real reach. Sketch the smallest red test that would prove it.
+# ''Re-verify every verdict'' (CUT-READY / NEEDS-RULING / DO-NOT-CUT). Look for hidden callers the reporter missed, including tools/, tests, string-keyed lookups, TW5 module titles and `.mem` canon. For each NEEDS-RULING lean, say whether you agree, and why.
+# ''Internet research.'' Use WebSearch/WebFetch, or the web-fetch agent if the tools aren't direct. Prefer primary sources and date-stamp them (today is 2026-10-31). Find outside precedent and pitfalls for each finding's class and each cut's pattern, for example:
+#* fail-closed defaults and TOCTOU in access gates
+#* stale-read/refresh ordering in membership revocation
+#* Automerge Repo `sharePolicy` semantics
+#* TiddlyWiki module-type startup ordering
+#* vitest fixture and characterization-test practice
+#* dependency injection without process globals
+#* functional core / imperative shell
+
+Mark each source read or search-only. Weigh outside practice against house law (web3-only, no global now, capability not host, red-first, old shapes burn), and say where they conflict.
+# ''Find what wave 1 missed'' in its span: new findings, at the TOP.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/fences`>>
+
+!! Fences
+READ-ONLY on the repo. No edits except your one output file. No git writes, suites, boots or builds.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/output`>>
+
+!! Output
+Write /home/joshu/.lares-scratch/controller/scouts/cut-reads/&lt;batch>-collide.md. If the write is refused, return it as text. Shape:
+* New findings
+* Per-finding rulings
+* Per-verdict rulings
+* Sources
+* Merged recommendation per candidate: the final verdict, its red-first shape, and its lean
+
+Hand back under 300 words.
+
+Stand the whole house (CLAUDE.md seed: Personas by name, L-Prime). Your tag: `<Name>: Lares (Tasked Spirit)`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WUxGvgw4gfnQru3Th93cwygskJ66lw8idtFW8q3K8vw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

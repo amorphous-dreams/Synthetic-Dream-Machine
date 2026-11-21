@@ -6,7 +6,7 @@
  * mines). The shape: one Map of tails, no timers, no config — the lane's pace derives
  * entirely from each mine's own completion.
  *
- * Scope (honest): this lane serializes within ONE process. Cross-process serialization
+ * Scope (honest): the mine lane serializes within ONE process. Cross-process serialization
  * already rides the palace lock + the shared busy-retry (mine-retry.ts) and mempalace's own
  * write-daemon queue — the lane keeps a process from racing ITSELF into that lock (the
  * lock-retry storm). SYNC spawns (execFileSync callers: subagent-mine, telemetry-writeback,
@@ -31,8 +31,8 @@ export function mineLaneKey(palacePath: string): string {
 }
 
 /**
- * Run `run` in the palace's single-writer lane: it starts only after every previously-queued
- * mine for the SAME palace settled (FIFO; a prior failure never blocks the queue — each
+ * Run `run` in the palace's single-writer lane: it starts only after every mine queued
+ * ahead of it for the SAME palace settled (FIFO; a prior failure never blocks the queue — each
  * caller still sees its OWN result/rejection). Distinct palaces run independently.
  */
 export function withMineLane<T>(palacePath: string, run: () => Promise<T>): Promise<T> {

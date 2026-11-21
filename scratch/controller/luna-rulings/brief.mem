@@ -1,0 +1,63 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-05 (file date) — source `.lares-scratch/controller/luna-rulings/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/luna-rulings/brief.md` (brief, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/luna-rulings/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Ruling-Reader: Lares (Tasked Spirit). A read-only cold read of ten house decisions the operator approved on 2026-11-06, against the house's own laws in the memegraph, BEFORE they get written into canon as rulings. Repo: /home/joshu/Synthetic-Dream-Machine (the span head). Read canon only: bags/**/*.mem — especially bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem #/rulings and #/decisions, bags/lares/ha.ka.ba/lares/api/pono/*.mem (waking-floor, session-contract, system-pattern-integrities, working-procedures, kapae, face-proof), bags/lararium/ha.ka.ba/lararium/mesh/*.mem (sealed-store, custody, membership-doctrine, ember, pronaos, secure-context), bags/lares/ha.ka.ba/lares/docs/pono/*.mem (k15-custody-step-zero, k15-wave-b-lane, k19-hive-lane, dreamdom, seat-harness, kahua-memory-stage), and the house seed .claude/noosphere-boot. Write nothing.
+
+THE TEN DECISIONS:
+D1 Ward key in the admission: each device's per-face ward public key rides its signed admission (`wardKey`, inside `vesselSig` over group/atom/wardKey) with a proof of possession (`wardPop`, the ward key signing group/atom/wardKey); a ward-act approval carries that key's signature over the answer, the ask digest and the frontier the answerer read.
+D2 "The asker seals" rewording: "the asker's session seals, on the vessel worker's thread, while that face's session stands unlocked"; `seal-awaits-session` stays; only another admitted unlocked session of the SAME face may seal when the asker can't.
+D3 Set-aside voiding: a reader that sees a device set aside refuses that device's outcomes (from "a raise shadows its target at once for every reader that sees it"); a refused cap tip reads the tightest cap that ever stood.
+D4 Sealing scope: every wiki content store (each bag's CRDT document, node and browser) and the CAD/CAS store rest sealed; planes and boards (signed acts the locked floor folds) stay clear; cleartext rests only in the disk projection and the live wiki in memory; a public bag rests under its published key.
+D5 The catalog split: no vessel-wide content key; the catalog dissolves into a per-face catalog (D, sealed under the face) and a floor catalog of public bags only (F); the daemon bag splits into the floor core (F, signed) and each face's daemon wiki content (D).
+D6 Timer saves: every change books the session that wrote it; the store's save signs under that session; the lock and the stand-down flush first; an unbooked save refuses and waits in memory, never written clear, never dropped.
+D7 Same-face tabs: the vessel worker lights one Keyhive provider per face at the face's first unlock; each later tab still proves its own unlock; the face's last session closing drops the provider and its keys.
+D8 The ceremony's answer kinds: the clean ceremony document hosts a passphrase answer (custody and ward) and a WebAuthn PRF answer (custody only); the ward refuses a passkey; a PRF slot never stands as the sole copy.
+D9 Durability: the vessel reads its own storage durability (`persisted()`, the storage class); a founding or join on erasable storage (e.g. Safari's 7-day rule) names it before it binds; a wiped keystore boots as a new vessel by name.
+D10 One route for place and face: at the browser founding, one typed route binds both the place tree and the founder face's tree (the node asks each time).
+
+FOR EACH: Mu it through the Five Tools, one line each: 🜂 * (what shows on the surface), 🜄 ? (what it relates to: which ruling or law it meets, cite carrier:line), 🜁 ! (the sharp test: does it hold against that law's text, quote it), 🜃 _ (what hides: a residual, a case it misses, a law it quietly bends), 🜍 0 (unask: does the question dissolve into something simpler or truer). Then a verdict: HOLDS / HOLDS-WITH-A-NOTE (name the note) / CONFLICTS (name the law, quote it, and say which side should change).
+Also flag any decision that contradicts another of the ten, and any that bends the L-Prime/evergreen register or uses "realm" for a JavaScript execution context.
+OUTPUT (final message, under 1100 words): the ten Mu passes and verdicts, then a short list of what must change before these become rulings.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SeLoAWBVes1TxtaB4CV7g3x2qbVpQ4gYsMpuWaBjLnI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

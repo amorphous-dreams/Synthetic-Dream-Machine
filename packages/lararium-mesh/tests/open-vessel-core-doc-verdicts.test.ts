@@ -41,6 +41,7 @@ async function buildKeel(opts: {
     repo,
     catalogHandle,
     waitHandle: async <T>(url: string) => repo.find(url as never) as unknown as Promise<never> as never,
+    systemCanon: async () => ({}),
     loadGenesis: async () => ({
       islandHandle,
       coreHash: "test-core-hash",

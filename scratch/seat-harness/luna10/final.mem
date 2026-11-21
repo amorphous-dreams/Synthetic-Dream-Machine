@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna10/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna10/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna10/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna10/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna10/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna10/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+* ''MED — install door rejects every broker-made worktree.'' Worktree links resolve to staging paths outside the lane, so `lanePath()` refuses them. Launch and removal consult `made`; install does not. Install requests for newly created worktrees therefore fail before reaching the install seat. [[commit-relay.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:98]]
+
+* ''MED — the five-minute blind timeout can stop a valid idle start.'' Before any token reading appears, 100 three-second ticks trigger SIGTERM. A slow startup or a seat waiting for its first response is treated as unmeterable and killed. [[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:136]]
+
+* ''MED — rollout polling has unbounded I/O and memory cost.'' Before finding the marker, each tick scans every new rollout from the start; after finding it, each tick reads and splits the entire growing file. Large rollouts can stall or exhaust the supervisor, delaying ceiling enforcement. [[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:99]] [[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:379]]
+
+* ''LOW — a crash can orphan a staged worktree.'' The lane symlink is created before `made.json` is saved. If the broker exits in that gap, restart loses the mapping; removal then resolves the link outside the lane and refuses it. [[seat-broker.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:485]] [[commit-relay.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:86]]
+
+The held directory uses an `O_RDONLY | O_DIRECTORY` handle, and spawned children do not receive it through the configured stdio. I found no actionable defect there.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0zIY1680BVwkBdlnMZU7xQKut1KneJo6HETEUHtxZVs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

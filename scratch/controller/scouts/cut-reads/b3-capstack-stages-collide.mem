@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages-collide`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b3-capstack-stages-collide.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages-collide"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages-collide"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b3-capstack-stages-collide.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b3-capstack-stages-collide.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b3-capstack-stages-collide-2026-10-31-narrow-bri`>>
+
+! b3-capstack-stages collide (Anvil-Three, Sonnet), 2026-10-31. Narrow brief: (a) compose order, (b) floor vs systemCanon, F5 seats. No internet research run (not asked in the narrow brief); no outside sources cited.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-findings`>>
+
+!! New findings
+None live. One order-pin gap (below, N1).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/composecorevessel-call-order-confirmed-safe-by-a`>>
+
+!! (a) composeCoreVessel call order: CONFIRMED safe, by array position AND dependency
+* core-caps.ts:241-267: stack = [substrate, wikislot, daemon, wiki, pool, mount, ...extra]. cap-compose.ts:61-120 visits in stack order (DFS, deps first), builds sequentially with await. Order: substrate, wikislot, daemon, wiki, pool, mount, extras. composeHerm (node-caps.ts:191) also lists substrate first, daemon second.
+* substrateCap.build = assembleVessel(keel) (core-caps.ts:100); assembleVessel awaits keel.systemCanon at open-vessel-core.ts:191, before any other cap builds.
+* The line order in open-node-vessel.ts differs and does not matter: `standSyncGates` is DEFINED at 1514 (before systemCanon at 1973) but INVOKED at 3272-3273 inside openDaemon (2034), which only daemonCap.build calls (core-caps.ts:121), after substrate. The dial (2339) and sibling channel (2669) also sit inside openDaemon.
+* N1 (pin gap): nothing I found asserts this order. A future extraCap with no `requires` still builds after substrate only because it is listed after it; reordering the array would not fail. Red-first: a composeCoreVessel/composeHerm test recording build order, asserting systemCanon fired before openDaemon's first call (control: a stack with daemon listed first still builds substrate first via `requires`; the pin guards the Herm/extras). Cheap, CUT-READY ahead of T11.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/floor-not-fail-open-finding-f1-stays-latent-not`>>
+
+!! (b) Floor (sovereign=null): NOT fail-open. Finding F1 stays LATENT, not security-live
+* keel.systemCanon is defined unconditionally (open-node-vessel.ts:1973), so a floor runs it. With custodyGroup null (custodyGroup derives from `sovereign ?` at prepareNodeBootOn), standKahuCanon returns {} at once (kahu-realm.ts:269-271); the holder still stands (1986-1989) and recounts, so kahuProtected is non-null (empty ids) before openDaemon.
+* No peer can arrive at the floor before then, and few after: standSyncGates returns early when `!sovereign` (1514-1521): no gate, no registerUpgrade, so no inbound wire peer at all. The sibling channel needs personaGroupId (2655), absent at floor. The only floor ingress is the outbound dial (2339), in openDaemon after substrate; a dialed hearth reads weakest (dialRelation, shelf lane). I took the shelf lane's closure from the wave-1 walk, not re-read.
+* Narrowing worth a note, not a fault: protection follows the canon a vessel NAMES. A vessel that names none (floor, or sovereign but faceless/outside the cabal) protects none, by design (kahu-realm.ts:262-264). A floor booted on a store holding Kahu docs from an earlier sovereign run reads them unclassed; it is reachable only by a dialed peer on the shelf lane. Ask the controller if that wants a ruling; I did not prove a leak.
+* Ruling: no security-class finding. T11's cell-tightening lean stands as defense in depth (null cell = withhold), red-first.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/f5-settle-the-conflict`>>
+
+!! F5: settle the conflict
+* peerContractNymMap: REFUTED as a burn candidate. Nym-map scout stands. Declared 876, readers live (1366, 2226, nexus-carriage.ts:567/584), fails closed (empty map -> null nym -> stranger). Held by membership-doctrine.mem #/two-maps clause 3 (operator-ruled: realm consult reads a separate ROOT map) and road :251 (house ruling 2026-10-16, flips only if a root edge proven at the reading seat fills a realm map). Wave 1 conflated "no writer today" with "dead". Old-shapes-burn does not reach an unborn seat the operator ruled.
+* walkerBoard: NARROWED. Production never passes it (only self-slot-share.test.ts:214) and walker arms ship shut (open-node-vessel.ts:3267-3270), but the lane is the reader half of the owed E walker arm: road :492 (H8, grant public-half verifier specified in walker-grant.ts), :751 and :774 ("before E's walker arm"). A "walker" class sorter exists (face-gate.ts:463, socket-sorter.ts:97, hosting-mint/carry). Not old shape; unborn. Do NOT burn with T11. The branch fails closed (carriage-board walker read returns false, 122).
+* Rule: separate DEAD (old shape, no seat) from UNBORN (seat held by canon/road). Both here are unborn. Cure is wording: restate 873-875 and 3267-3270 as law with the owed row named ("a root edge proven at the reading seat fills this"; "E's walker arm wires walkerBoard"), per nym scout.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdicts`>>
+
+!! Verdicts
+* T11 stays NEEDS-RULING; F5 burn lean DROPPED for both. Tighten null cells red-first stays the lean. Add N1 pin as its first red.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/web-pass-searched-2026-10-31-all-search-only`>>
+
+! Web pass (coordinator follow-up), searched 2026-10-31. All SEARCH-ONLY (snippets via WebSearch; no page read in full).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources`>>
+
+!! Sources
+* Automerge Repo API, SharePolicy / ShareConfig / RepoConfig (search-only): https://automerge.org/automerge-repo/types/_automerge_react..ShareConfig.html , https://automerge.org/automerge-repo/types/_automerge_automerge_repo.SharePolicy.html . Snippets: sharePolicy runs when a doc is created/discovered (e.g. a peer starts syncing); shareConfig = `access` then `announce` (announce only after access); DEFAULT is announce-to-all and allow-all; marked experimental. NOT confirmed: behaviour for a peer connecting while an async policy input is unready.
+* Saltzer and Schroeder 1975 "fail-safe defaults" (search-only): https://comp97109.doc.ic.ac.uk/reading/look-at-1975.pdf , https://shostack.org/blog/the-security-principles-of-saltzer-and-schroeder ; SoK on safe defaults https://arxiv.org/html/2412.17329v2 (generalises to defaults beyond access control; Massacci critique: deny is not always safe in cyber-physical systems).
+* OWASP 2025 A10 "Mishandling of Exceptional Conditions" fail-closed vs fail-open (search-only, SECONDARY mirror, check owasp.org before citing): https://yisus-offsec.gitbook.io/offensive-and-defensive-security/documentation/offensive-security/publish-your-docs/owasp-top-10-2025/a10-2025-mishandling-of-exceptional-conditions ; CWE-636 summary https://shoulder.dev/threats/cwe/CWE-636 .
+* Order-pin precedent: MIT krb5 plugorder.c (search-only) https://socsvn.freebsd.org/socsvn/mirror/FreeBSD/vendor-crypto/krb5/dist/src/tests/plugorder.c : registers modules, prints the order load_all returns, test diffs it. Also an IntelliJ forum thread noting a declared dependency may enforce availability, not init order (search-only). Search found no named JS-composer convention; weak evidence.
+* Dead-code tooling: Knip (search-only; results were forks, check webpro-nl docs): exempt entry files, <code>&#64;public</code> JSDoc tag, `entry` array; advises specific exemptions over broad `ignore`. https://github.com/webpro/knip/blob/9f924ce4be4bf44fb6607150ced4d49a1a49c71f/docs/handling-issues.md
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/weighed-against-house-law`>>
+
+!! Weighed against house law
+* Fail-closed: precedent agrees with T11's lean (null cell = withhold). Automerge's own default is allow-all, so the house guard is the sole deny layer; a Repo-level default offers no backstop. Nothing found on pre-ready peers, so the "no peer before the cells stand" argument must be pinned by OUR test (N1), not borrowed. Massacci's caveat does not bite: deny here only withholds a doc, never a safety action.
+* Order pin: krb5 pattern (record the order, assert it) fits; house-law fit good (red-first, no global: record via an injected list, no process global). Weak outside evidence, so this rests on house law.
+* Unborn vs dead: the tooling answer is an explicit, named exemption (Knip <code>&#64;public</code>/entry), never silent. Maps to house law: an unborn seat carries its owed road row in the comment (the cure already ruled); a seat with no row and no canon is dead and burns. Conflict: tools key on reachability, the house keys on canon; the house rule wins, and a witness test could grep that each unborn seat names its row.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/floor-on-a-stale-store-smallest-red`>>
+
+!! Floor-on-a-stale-store: smallest red
+Claim to prove/refute: floor (sovereign null, custodyGroup null -> canon {} -> empty protected ids) on a storageDir holding a Kahu canon doc, a dialed peer asks for that doc id.
+* Smallest (no boot): ShareInputs table through selfSlotShareDecision with protectedDocs ids = EMPTY (what the floor yields), hasWsSocket true / peerClass of a dial peer (weakest dialRelation), documentId = the Kahu canon id, selfSlotFedGate as the floor holds it. Assert false. REFUTES the leak if false (shelf/DenyAll closes it); PROVES it if true. Control: same peer asks a shelf-public doc, expect true; and the same Kahu ask with ids = {that id} expects false via the guard, to show the table moves.
+* Boot form (confirmation only): floor boot on a scratch LAR_ROOT store pre-seeded with the canon doc + a stub dial peer; assert the doc never syncs out. Not run (read-only fence). Open input I did not read: what fedGate the floor hands the shelf for that doc id.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6LxoBmrp1uj6vk6EQLwPe6yh5xRzAP6P2Co58OrWgOQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

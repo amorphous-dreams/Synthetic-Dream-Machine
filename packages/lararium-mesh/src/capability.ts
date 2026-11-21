@@ -27,6 +27,12 @@ export interface CapabilityVerifyArgs {
 export interface CapabilityVerifyResult {
   readonly ok:      boolean;
   readonly reason?: string;
+  /**
+   * A refusal's TYPE, for a reader that acts on the kind of denial and never on its words. `bag-not-registered` names a
+   * bag no provider registered yet, carrying its uri in `bagUrl`.
+   */
+  readonly kind?:   "bag-not-registered";
+  readonly bagUrl?: string;
 }
 
 export interface CapabilityVerifier {
@@ -34,7 +40,7 @@ export interface CapabilityVerifier {
   /**
    * A verifier that carries the Kahu predicate also answers it for a bag a routed verb names INSIDE its args (the
    * `wiki-act` envelope carries the real destination and source in `args.args`, where `verify`'s bag derivation
-   * never looks). Throws a `kahu-reach` refusal for a system canon bag the hand's cabal does not reach.
+   * never looks). Throws a `kahu-reach` refusal for a house canon bag the hand's cabal does not reach.
    */
-  kahuReach?(bagUrl: string, act: string): Promise<void>;
+  kahuReach?(bagUrl: string, act: string, presenter?: string): Promise<void>;
 }

@@ -13,20 +13,28 @@
  * receipt. An act's arguments and its answer ride the custody frame alone: no receipt, no outcome, no log line
  * carries either. This module logs nothing it sends or receives.
  *
+ * ── AN ACT THAT ACTS AS A FACE ──────────────────────────────────────────────────────────────────
+ * The acts that sign, read or write as one face (`SESSION_ACTS`: its key or root, its handle book, its own plane),
+ * named by `face` or `handleIndex`, so on a running vessel each rides a session of that face (`session:act`): the
+ * vessel binds the session's face to the act, and the receipt it leaves names the act and the face alone, never an
+ * argument or the answer.
+ *
  * ── WHAT A VESSEL'S ANSWER MEANS ────────────────────────────────────────────────────────────────
  *   · an `act` answer with a `result`       the act ran inside the vessel; the result returns to the caller.
  *   · an `act` answer with a refusal        the same refusal the act throws in process, under its own class:
  *                                           `CustodyLocked` (the vessel stands locked: `lares vault unlock`),
- *                                           `CustodyRowUnavailable`, `SealedActRefused`, or a plain error.
+ *                                           `CustodyRecordUnavailable`, `SealedActRefused`, or a plain error.
  *   · any other answer, or none             no vessel's custody door stands at the socket (nothing listens, or
  *                                           another command holds the store for one act): the act runs here.
  */
 import {
-  CustodyLocked, CustodyRowUnavailable, SealedActRefused, runSealedAct, readHearthDialPin, larBootstrapPath, ownedStore, larDataDir,
+  CustodyLocked, CustodyRecordUnavailable, SealedActRefused, SESSION_ACTS, runSealedAct, readHearthDialPin, larBootstrapPath, ownedStore, larDataDir,
   type SealedActContext, type SealedActName, type SealedActRefusalReason,
 } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { storeVerb } from "./store-door.js";
+import { openLocalSession, SessionRefused, type LocalSession } from "./session-connector.js";
+import { UdsUnreachable, udsAlive } from "./local-connector.js";
 
 /** Where an act ran: inside the standing vessel, or in this process. */
 export type SealedActVia = "vessel" | "direct";
@@ -39,6 +47,7 @@ export type SealedActVia = "vessel" | "direct";
  */
 const directContext: SealedActContext = {
   personaSelves: null,
+  island: null,
   // No composition stands in a command's own process, so no island takes a bundle's memory section: an import
   // there refuses by name and names the standing vessel.
   backup: null,
@@ -63,10 +72,33 @@ function refusalOf(answer: Readonly<Record<string, unknown>>): Error {
   if (reason === "custody-locked") return new CustodyLocked();
   if (reason === "row-unavailable" && (refusal.home === "identity" || refusal.home === "storage" || refusal.home === "seal")
       && typeof refusal.file === "string" && typeof refusal.reading === "string") {
-    return new CustodyRowUnavailable(refusal.home, refusal.file, refusal.reading);
+    return new CustodyRecordUnavailable(refusal.home, refusal.file, refusal.reading);
   }
   if (ACT_REASONS.has(reason)) return new SealedActRefused(reason as SealedActRefusalReason, message);
   return new Error(message);
+}
+
+/**
+ * AN ACT THAT ACTS AS A FACE RIDES A SESSION of that face (`SESSION_ACTS`): the face the act names, else the one the vessel
+ * resolves (`face.resolve`, which stays at the custody door). Answers the vessel's answer, or null where no vessel stands.
+ */
+async function actInSession(act: SealedActName, args: Readonly<Record<string, unknown>>): Promise<Record<string, unknown> | null> {
+  if (!(await udsAlive())) return null;
+  // An act names its face by `face` or by `handleIndex`; naming none, it acts as the face the vessel resolves.
+  const named = typeof args["handleIndex"] === "number" ? args["handleIndex"] : args["face"];
+  const face = typeof named === "number" ? named : (await sealedAct<{ face: number }>("face.resolve", {})).face;
+  let session: LocalSession;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) return null;
+    if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
+    throw e;
+  }
+  try { return (await session.act(act, typeof args["handleIndex"] === "number" ? args : { ...args, face })).answer; }
+  catch (e) {
+    if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
+    throw e;
+  } finally { await session.close().catch(() => { /* the socket already went */ }); }
 }
 
 /**
@@ -74,7 +106,7 @@ function refusalOf(answer: Readonly<Record<string, unknown>>): Error {
  * otherwise. Answers the act's result and where it ran; a refusal throws under its own class on either path.
  */
 export async function sealedActVia(act: SealedActName, args: Readonly<Record<string, unknown>> = {}): Promise<{ readonly result: Record<string, unknown>; readonly via: SealedActVia }> {
-  const answer = await sendCustodyFrame({ op: "act", act, args });
+  const answer = SESSION_ACTS.has(act) ? await actInSession(act, args) : await sendCustodyFrame({ op: "act", act, args });
   if (answer !== null && answer["op"] === "act") {
     if (answer["status"] === "error") throw refusalOf(answer);
     const result = answer["result"];

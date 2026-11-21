@@ -6,8 +6,8 @@
  * off `daemonAuth`, the lease epoch scanned from real daemon slots, and the standing-bag set the re-grant
  * walks. A join can pass every other test and still, on a real hearth, seat a member that reaches nothing.
  *
- * So these vectors ride the daemon's own verb surface, over its UDS channel, exactly as a summons relayed from
- * the daemon doc would arrive:
+ * So these vectors ride the face's intents plane: each issues a `face-join` intent through the vessel's store-door
+ * row over its UDS channel, the hearth's door answers it, and the outcome on the plane carries the receipt:
  *
  *   V1 — an edge THIS hearth's root signed admits, seats, and RE-GRANTS its standing bags (regranted > 0)
  *   V2 — a repeat of the same summons hands V1's act back: the operation replays its outcome, and no epoch moves
@@ -18,14 +18,15 @@
  * V1's `regranted` assertion is the one that cannot be inferred: membership WITHOUT reach looks identical to a
  * healthy join from every other angle — admitted, re-keyed, events flowing — and only the count says so.
  *
- * THE RECORD OVER THE SUMMARY. The verb's outcome is a bounded VIEW: past the outcome cap its `capEvents` fold to
- * `{boundedArrayCount, tallies, sha256, sample}`. The act is the signed `face-join-grant/v1` record the verb writes
+ * THE RECORD OVER THE SUMMARY. The outcome is a bounded RECEIPT (names, counts, flags and reasons; `capEvents` folds to
+ * `capEventsCount`). The act is the signed `face-join-grant/v1` record the verb writes
  * to the PersonaGroup plane, and the outcome NAMES it without carrying it: `recordTitle`, `recordCid` (tagged
  * sha256 over the record's canonical bytes) and `recordHeads` (the plane's heads just after the write). V1–V3 read
- * THAT record off the vessel's own storage through a throwaway repo: the catalog names the plane, and the read
+ * THAT record off the vessel's own storage through a throwaway repo: the bootstrap names the plane, and the read
  * waits CAUSALLY — until the stored plane's history holds `recordHeads` — then reads the record AS OF those heads,
  * so a later join's overwrite never answers for an earlier one. The record must verify under the root that
- * signed the joinee's edge, and its recomputed CID must equal `recordCid`. The view is held to the record as a
+ * signed the joinee's edge and under its founder's standing (the hearth's persona-KEL and the founder's dyad, read as
+ * the daemon reads them), and its recomputed CID must equal `recordCid`. The view is held to the record as a
  * CONTROL: its digest and count match the record's array, or, unbounded, its array equals the record's.
  *
  * None of these vectors asserts RECOVERY. A summons returns a seat and public ops, never prekey secrets, so a
@@ -34,23 +35,33 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { Repo, type AutomergeUrl, type UrlHeads } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl } from "../harness/instance.js";
+import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir, bootDocUrl, awaitOwnGateKey } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
 import {
   verifyFaceGrantRecord, faceGrantRecordCid, faceGrantTitle, FACE_GRANT_PREFIX, type FaceGrantRecord,
 } from "../../packages/lararium-keyhive/src/face-grant-record.js";
-import { canonicalJsonBytes, sha256HexBytesSync } from "../../packages/lararium-mesh/src/crypto.js";
 import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.js";
+import { boardDyadReader } from "../../packages/lararium-keyhive/src/board-dyad-reader.js";
+import { personaKelBoardDocUrl } from "../../packages/lararium-mesh/src/deterministic-doc.js";
+import { personaKelChainsFromBoard } from "../../packages/lararium-mesh/src/persona-kel-board.js";
+import { readFace } from "../../packages/lararium-mesh/src/face-reading.js";
+import { nodeNexusIsland } from "../../packages/lararium-node/src/nexus-standing.js";
+import type { EdgeStanding } from "../../packages/lararium-mesh/src/edge-kapae.js";
+import type { PersonaKelEvent } from "../../packages/lararium-mesh/src/persona-kel.js";
+import type { LarDoc } from "../../packages/lararium-mesh/src/base-doc.js";
+import { readBootTiddlers } from "../../packages/lararium-node/src/vessel-private.js";
+import { bootFacePlanes } from "../../packages/lararium-node/src/boot-face-planes.js";
 import { plainField, plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
+import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
 import { countersignDeviceDelegation, type DeviceDelegationRootHalf, type DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
 import { composeFleetJoinRequest, fleetJoinSealPair, readFleetJoinOffer } from "../../packages/lararium-mesh/src/fleet-join.js";
 import { mintVesselFaceKey } from "../../packages/lararium-mesh/src/face-authority.js";
+import { testVesselTagDoor } from "../../packages/lararium-mesh/tests/vessel-tag-fixture.js";
 import { createPrivateKey, sign as edSign } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 let lar: LarInstance;
 let dataDir = "";
@@ -72,10 +83,7 @@ function signUnder(seed: Uint8Array, image: Uint8Array): Uint8Array {
  *  resolves, so a single sample races it — and a raced sample reads as "no socket" rather than "not yet". */
 
 async function summon(body: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", ...body } },
-    `0x${"0".repeat(64)}`, { dataDir, timeoutMs: 30_000 });
-  return (r as { results?: { summary?: { output?: Record<string, unknown> } } })
-    .results?.summary?.output ?? (r as unknown as Record<string, unknown>);
+  return faceJoinOutcome(lar, await requestFaceJoin(lar, body));
 }
 
 type PlaneDoc = { tiddlers?: Record<string, { tiddler?: { text?: string }; meta?: { deleted?: boolean } }> };
@@ -89,23 +97,22 @@ type PlaneDoc = { tiddlers?: Record<string, { tiddler?: { text?: string }; meta?
  * doc's storage once. The bound guards a hang; the answer is the heads.
  */
 async function recordOffPlane(title: string, group: string, heads: UrlHeads): Promise<{ rec: FaceGrantRecord | null; why: string }> {
-  const catalogUrl = bootDocUrl(lar, "catalog");
-  if (!catalogUrl) return { rec: null, why: "the boot log names no catalog doc" };
+  // THE PLANE'S ADDRESS RIDES THE BOOTSTRAP the founding wrote (boot-face-planes), the one source a boot reads a face's
+  // planes from; the floor's catalog never names a lit face's plane (sealed-store#/U1 lays the face's catalog over it).
+  const bootTiddlers = readBootTiddlers(join(vesselStorageDir(lar), "social-bootstrap.json"));
+  if (!bootTiddlers) return { rec: null, why: "the vessel holds no readable social bootstrap" };
+  const planeUrl = bootFacePlanes(bootTiddlers, group).personaUrl;
+  if (!planeUrl) return { rec: null, why: `the bootstrap names no plane for ${personaBagIdFor(group)}` };
   let why = "never attempted";
   for (let attempt = 0; attempt < 60; attempt++) {
     const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(lar)) });
     try {
-      const cat = await repo.find<PlaneDoc>(catalogUrl as AutomergeUrl);
-      const planeUrl = plainField(cat.doc()?.tiddlers?.[personaBagIdFor(group)] as never, "text") as string | undefined;
-      if (!planeUrl) { why = `the catalog names no plane for ${personaBagIdFor(group)}`; }
-      else {
-        const plane = await repo.find<PlaneDoc>(planeUrl as AutomergeUrl);
-        const missing = heads.filter((h) => plane.metadata(h) === undefined);
-        if (missing.length > 0) throw new Error(`${missing.length} of ${heads.length} head(s) not yet in the stored history`);
-        const row = plane.view(heads).doc()?.tiddlers?.[title];
-        const text = row && !row.meta?.deleted ? plainField(row as never, "text") : undefined;
-        return { rec: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null, why: "read at the reported heads" };
-      }
+      const plane = await repo.find<PlaneDoc>(planeUrl as AutomergeUrl);
+      const missing = heads.filter((h) => plane.metadata(h) === undefined);
+      if (missing.length > 0) throw new Error(`${missing.length} of ${heads.length} head(s) not yet in the stored history`);
+      const row = plane.view(heads).doc()?.tiddlers?.[title];
+      const text = row && !row.meta?.deleted ? plainField(row as never, "text") : undefined;
+      return { rec: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null, why: "read at the reported heads" };
     } catch (err) {
       why = `the stored plane does not yet hold the reported heads (${err instanceof Error ? err.message : String(err)})`;
     } finally {
@@ -140,23 +147,42 @@ async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecor
   expect(rec!, "the grant record carries a wall-clock stamp").not.toHaveProperty("issuedAt");
   // Nor does the founder's edge it carries: the lease is the edge's only decay.
   expect(Object.keys(rec!.founderEdge).filter((k) => /^(issuedAt|expiresAt)$/.test(k)), "the founder's edge carries a wall-clock stamp").toEqual([]);
+  // The verifier takes a grant only under its founder's authority (anchor-pinned lineage + remove-wins standing, lease-end
+  // road M6), so the verify carries the proof the live hearth holds, read as its daemon reads it.
+  const root = (edge as DeviceDelegationTiddler).personaRootDid;
   const verdict = await verifyFaceGrantRecord(rec, {
-    personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupId: rec!.groupId,
+    personaRootDid: root, selfVerifyingKey: joineeKey, groupId: rec!.groupId,
+    ...(await founderProof(root, rec!.founderEdge.deviceVerifyingKey)),
   });
-  expect(verdict, "the grant record does not verify as signed under the hearth's root").toEqual({ ok: true });
+  expect(verdict, "the grant record does not verify as signed under the hearth's root and its founder's standing").toEqual({ ok: true });
   expect(rec!.capEvents.length).toBeGreaterThan(0);
 
   // CONTROL — the view carries the record's digest. A bounded summary names the record's array by its sha256 over
   // canonical JSON and by its count; an unbounded one IS the record's array.
-  const view = g["capEvents"];
-  if (Array.isArray(view)) {
-    expect(view).toEqual(rec!.capEvents);
-  } else {
-    const bounded = view as { boundedArrayCount: number; sha256: string };
-    expect(bounded.sha256).toBe(sha256HexBytesSync(canonicalJsonBytes(rec!.capEvents)));
-    expect(bounded.boundedArrayCount).toBe(rec!.capEvents.length);
-  }
+  expect(g["capEventsCount"], "the outcome counts the record's cap events").toBe(rec!.capEvents.length);
   return rec!;
+}
+
+/**
+ * THE FOUNDER'S PROOF, read off the hearth's OWN storage the way its daemon reads it before it signs a grant: the persona-KEL
+ * chain on the KEL board of the island the boot resolves (`nodeNexusIsland` over this root's seal home and bootstrap) that
+ * incepts at the hearth's root, and
+ * the founder device's standing folded off the fleet's edge board under that chain's lineage (`boardDyadReader`). The grant
+ * verifier refuses without both, so the e2e verify carries them; a missing chain or board reads as a named failure.
+ */
+async function founderProof(personaRootDid: string, founderKey: string): Promise<{ personaKel: { prefix: string; chain: PersonaKelEvent[] }; dyad: (key: string) => EdgeStanding }> {
+  const vessel = vesselStorageDir(lar);
+  const island = nodeNexusIsland({ ownVesselKey: await awaitOwnGateKey(lar), sealHome: join(dirname(vessel), "nexus"), bootstrapPath: join(vessel, "social-bootstrap.json") });
+  const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(lar)) });
+  try {
+    const board = await repo.find<LarDoc>(personaKelBoardDocUrl(island));
+    const root = personaRootDid.toLowerCase();
+    const found = [...personaKelChainsFromBoard(board.doc()).entries()].find(([, chain]) => chain[0]?.opKeyDid.toLowerCase() === root);
+    if (!found) throw new Error(`the hearth's persona-KEL board (island ${island.slice(0, 16)}…) carries no chain incepting at ${root.slice(0, 18)}…`);
+    const [prefix, chain] = found;
+    const standing = await boardDyadReader(repo, undefined, undefined, undefined, undefined, undefined, readFace(chain)?.lineage ?? null)(personaRootDid, founderKey);
+    return { personaKel: { prefix, chain }, dyad: (key) => key.toLowerCase() === founderKey.toLowerCase() ? standing : "unknown" };
+  } finally { await repo.shutdown().catch(() => {}); }
 }
 
 /** The key this hearth's own face signs under, read off its daemon doc: the delegate of its own device edge (its atom). */
@@ -192,7 +218,7 @@ beforeAll(async () => {
   // throwaway joinee requests under its own key (its face-scoped keys rest in this process alone), the hearth answers.
   courier = mkdtempSync(join(tmpdir(), "lares-face-join-courier-"));
   const files = { offer: join(courier, "offer.json"), request: join(courier, "request.json"), answer: join(courier, "answer.json") };
-  const offered = await lar.cli(["fleet", "join", "offer", "--out", files.offer]);
+  const offered = await lar.cli(["fleet", "join", "offer", "--face", "0", "--out", files.offer]);
   if (offered.code !== 0) throw new Error(`fleet join offer failed (${offered.code})\n${offered.stderr.slice(-800)}`);
   const offer = readFleetJoinOffer(JSON.parse(readFileSync(files.offer, "utf8")));
   if ("refusal" in offer) throw new Error(`the hearth's offer refuses: ${offer.refusal}`);
@@ -202,10 +228,11 @@ beforeAll(async () => {
     mintFaceKey: async () => { const m = await mintVesselFaceKey(); faceKeys.set(m.publicKey, m.secret); return m.publicKey; },
     custody: { signAsVesselFace: async (_scope, key, image) => signUnder(faceKeys.get(key)!, image) },
     sign: async (image) => Buffer.from(signUnder(seed, image)).toString("hex"),
+    vesselTag: testVesselTagDoor(88),
   });
   if ("refusal" in request) throw new Error(`the joinee's request refuses: ${request.refusal}`);
   writeFileSync(files.request, JSON.stringify(request));
-  const answered = await lar.cli(["fleet", "join", "answer", files.request, "--out", files.answer]);
+  const answered = await lar.cli(["fleet", "join", "answer", files.request, "--face", "0", "--out", files.answer]);
   if (answered.code !== 0) throw new Error(`fleet join answer failed (${answered.code})\n${answered.stderr.slice(-800)}`);
   // The answer carries the root's half; the joinee countersigns it with its own atom, as a landing does.
   const half = (JSON.parse(readFileSync(files.answer, "utf8")) as { edge?: { deviceEdge?: DeviceDelegationRootHalf } }).edge?.deviceEdge ?? null;
@@ -223,8 +250,7 @@ describe("e2e/face-join — the join against a live hearth", () => {
   test("V1 — a licensed edge seats the joinee in the hearth's PersonaGroup", async () => {
     const g = await summon({ contactCard: joineeCard, deviceEdge: edge });
     expect(g["admitted"]).toBe(true);
-    expect(typeof g["founderCard"]).toBe("string");
-    const rec = await recordedGrant(g);
+      const rec = await recordedGrant(g);
     // The seat moved the group: a Keyhive group carries the seat into every bag it reaches, with no re-grant.
     expect(rec.reKeyed).toBe(true);
     v1Outcome = g; v1Record = rec;
@@ -252,10 +278,8 @@ describe("e2e/face-join — the join against a live hearth", () => {
   }, 120_000);
 
   test("V5 — a hearth refuses to seat ITSELF, so one summons never draws two writers", async () => {
-    // A summons rides the daemon doc, and the daemon doc fleet-syncs across the operator's own devices — so the joinee's own
-    // island sees it too, runs this same verb over the same group under the same root, and would pass its own
-    // gate. Two writers racing to seat one member and re-key one group. The joinee knows itself by the key it
-    // just presented, and stands down.
+    // The request pins one hearth, yet a hearth handed its own edge in the summons still stands down: it knows itself by
+    // the key it presented.
     // The verb knows itself by its own device edge's delegate, which is this hearth's face atom (not the place key).
     const ownKey = await ownAtomKey();
     const selfEdge = { ...(edge as DeviceDelegationTiddler), deviceVerifyingKey: ownKey, deviceDid: `0x${ownKey}` };

@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-09`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "9. The Discordian"
+hexagram    = "9"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "111011"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-09"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-09"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷈ 9. The Discordian
+
+<<<
+"""
+GP: Is Eris true?
+M2: Everything is true.
+GP: Even false things?
+M2: Even false things are true.
+GP: How can that be?
+M2: I dont know man, I didnt do it.
+"""
+<<<
+
+This hexagram represents the power of small - the power of the individual against the mammoth corporation, organization or government. It implies that the strong can be whittled slowly down by the constant wear of the weak, as the wind erodes rock over time. It instructs one not to blindly charge ahead and attack, but to gradually move ahead, a step at a time, when battling outrageous jabberwockies.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Zz5XZABdIhmcIHEl_7iOyt00nNciqfzn3ykzYwcvPHk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

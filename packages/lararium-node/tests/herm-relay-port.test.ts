@@ -17,7 +17,7 @@ import WS from "ws";
 import * as net from "node:net";
 import { request as httpRequest, Agent } from "node:http";
 import {
-  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate, enrolmentDigestOf,
+  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, attestAndRotate, enrolmentDigestOf,
   personaEventCidOf, personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors, depositPersonaKelChain,
   sha256HexSync, hex, knockSegment, type PersonaKelEvent,
 } from "@lararium/mesh";
@@ -61,19 +61,19 @@ describe("the drop door over a live herm", () => {
   };
   const addressOf = (r: HermRelayPort) => `ws://127.0.0.1:${r.port}#${r.gatePubKey}`;
 
-  /** A founded KEL rotated once by its guardian quorum. */
+  /** A founded KEL rotated once by its recovery contact quorum. */
   async function rotated(): Promise<[PersonaKelEvent, PersonaKelEvent]> {
-    const guardianSeeds = [seed(61), seed(62), seed(63)];
-    const guardianRecoveryKeys = await Promise.all(guardianSeeds.map(pubOf));
-    const slots = ["mine", "guardian-a", "guardian-b"] as const;
+    const recoveryContactSeeds = [seed(61), seed(62), seed(63)];
+    const recoveryContactKeys = await Promise.all(recoveryContactSeeds.map(pubOf));
+    const slots = ["mine", "contact-a", "contact-b"] as const;
     const prov = provisionThresholdRecoveryAtFounding({
       foundingOpKeyDid: `0x${await pubOf(seed(51))}`,
-      guardians: guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null)),
+      recoveryContacts: recoveryContactKeys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null)),
       recoveryThreshold: 2,
     });
     const rot = await attestAndRotate({
-      head: prov.inception, freshOpKeyDid: `0x${await pubOf(seed(52))}`, guardianRecoveryKeys, recoveryThreshold: 2,
-      guardianSigners: await Promise.all(guardianSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)) }))),
+      head: prov.inception, freshOpKeyDid: `0x${await pubOf(seed(52))}`, recoveryContactKeys, recoveryThreshold: 2,
+      recoveryContactSigners: await Promise.all(recoveryContactSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, s)) }))),
     });
     if (!rot.ok) throw new Error(rot.reason);
     return [prov.inception, rot.event];

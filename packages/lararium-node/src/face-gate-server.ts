@@ -10,8 +10,9 @@
  *     every other alone (it returns false, and the vessel's dispatcher destroys that socket before any 101). Two
  *     Nexuses, or two tiers, on one route stand two paths, and a flight written to one pin decrypts at no other.
  *   · THE FIRST FLIGHT rides the upgrade's `Sec-WebSocket-Protocol` (`readGateFlightHeader`): the fixed name, then
- *     the flight as one token. A claimed upgrade whose header reads no flight gets its socket destroyed before any
- *     101. The 101 selects `GATE_PROTOCOL` alone and never echoes the token. No compression rides the socket, and
+ *     the flight as one token. A claimed upgrade whose header reads no flight, or whose flight decrypts under no bundle of the stood gate
+ *     (`FaceGate.preflight`, one decryption before the upgrade; `accept` decrypts the same bytes once more), gets its socket
+ *     destroyed before any 101. The 101 selects `GATE_PROTOCOL` alone and never echoes the token. No compression rides the socket, and
  *     no frame outweighs a Noise message.
  *   · THE GATE SOCKET (`wsGateSocket`). Binary frames alone carry the gate's sealed frames; a text frame cuts the
  *     socket. Frames wait in a queue for the gate (and, after the seat, its channel) to read them, bounded TWICE:
@@ -52,7 +53,13 @@ import {
   GATE_PROTOCOL, NOISE_MAX_MESSAGE_BYTES, channelSessionTable, gateKnock, readGateBundlePin, readGateFlightHeader,
   type FaceGate, type GateBundlePin, type GateChannelBounds, type GateDeadlines, type GateFlightRefusal, type GateOutcome, type GateSeat, type GateSession,
   type GateSessionChannel, type GateSessionTable, type GateSocket,
+  type IntentRelayResult,
 } from "@lararium/mesh";
+
+export type IntentRelayOutcome = { readonly outcome: "relay-answered"; readonly status: IntentRelayResult["status"] };
+export interface StandableGate extends Pick<FaceGate, "preflight" | "pending"> {
+  accept(socket: GateSocket): Promise<GateOutcome | IntentRelayOutcome>;
+}
 
 // ── The gate socket ─────────────────────────────────────────────────────────────────────────────
 
@@ -179,6 +186,7 @@ export function timerGateDeadlines(opts: {
     throw new RangeError(`face-gate-server: the deadline's base names a whole number of milliseconds from one to ${GATE_DEADLINE_MAX_BASE_MS}`);
   }
   const random = opts.random ?? randomInt;
+  // LIVENESS: an outside peer can leave an upgrade unanswered indefinitely.
   const setTimer = opts.setTimer ?? ((lapse: () => void, ms: number) => setTimeout(lapse, ms));
   const clearTimer = opts.clearTimer ?? ((timer: unknown) => clearTimeout(timer as ReturnType<typeof setTimeout>));
   return {
@@ -203,7 +211,7 @@ export interface GateSessionRegistry {
   readonly table: GateSessionTable;
   /** The sessions opened and not yet closed, in the order they opened. */
   live(): readonly SeatedGateSession[];
-  /** Close every live session `which` names (a refold whose standing no longer holds); answers how many it closed. */
+  /** Close every live session `which` names (a refold that reads its standing lapsed); answers how many it closed. */
   drop(which: (session: GateSession) => boolean): number;
   /** Close every live session. */
   close(): void;
@@ -291,14 +299,15 @@ export function gateSessionRegistry(
 export interface StoodGate {
   /** The exact upgrade pathname: `<route>/<knock>`. */
   readonly path: string;
-  /** Stop answering on this path; a socket already accepted runs on. Idempotent. */
+  /** Stop answering on this path and cut every socket this gate seated: a gate stood down keeps no session it opened
+   *  (a Nexus this vessel stopped carrying keeps no stranger). Idempotent. */
   unstand(): void;
 }
 
 /** Why a claimed upgrade drew no gate, for the vessel's own log. Nothing of it crosses the wire. */
-export type GateUpgradeRefusal = GateFlightRefusal | "server-closed" | "server-full";
+export type GateUpgradeRefusal = GateFlightRefusal | "server-closed" | "server-full" | "flight-undecrypted";
 
-export interface FaceGateServerOptions {
+export interface FaceGateServerOptions<Outcome extends GateOutcome | IntentRelayOutcome = GateOutcome | IntentRelayOutcome> {
   /** How many frames wait unread per socket before it pauses. */
   readonly queueBound?: number;
   /** How many bytes wait unread per socket before it pauses. */
@@ -308,14 +317,14 @@ export interface FaceGateServerOptions {
   /** How often the server pings each socket (`GATE_SERVER_HEARTBEAT_MS`); one that answered no ping since is cut. */
   readonly heartbeatMs?: number;
   /** What each accepted socket came to, by the path it knocked on. */
-  readonly onOutcome?: (path: string, outcome: GateOutcome) => void;
+  readonly onOutcome?: (path: string, outcome: Outcome) => void;
   /** A claimed upgrade destroyed before any 101, and why. */
   readonly onRefuse?: (path: string, refusal: GateUpgradeRefusal) => void;
 }
 
 export interface FaceGateServer {
   /** Stand `gate` on the path its pin's knock names. A second gate on a path already stood throws. */
-  stand(entry: { readonly gate: FaceGate; readonly pin: GateBundlePin }): StoodGate;
+  stand(entry: { readonly gate: StandableGate; readonly pin: GateBundlePin }): StoodGate;
   /** Claim an upgrade whose pathname names a stood gate; false (the socket untouched) for every other. */
   handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): boolean;
   /** The pathnames stood now. */
@@ -331,7 +340,7 @@ export function gatePath(pin: GateBundlePin): string {
   return `${read.pin.route}/${gateKnock(read.pin)}`;
 }
 
-export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer {
+export function faceGateServer<Outcome extends GateOutcome | IntentRelayOutcome = GateOutcome>(opts: FaceGateServerOptions<Outcome> = {}): FaceGateServer {
   const bound = opts.queueBound ?? GATE_SOCKET_QUEUE_BOUND;
   if (!Number.isInteger(bound) || bound < 1) throw new RangeError("face-gate-server: the queue bound names a count of at least one");
   const byteBound = opts.byteBound ?? GATE_SOCKET_BYTE_BOUND;
@@ -340,8 +349,9 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
   if (!Number.isInteger(maxSockets) || maxSockets < 1) throw new RangeError("face-gate-server: the socket bound names a count of at least one");
   const heartbeatMs = opts.heartbeatMs ?? GATE_SERVER_HEARTBEAT_MS;
   if (!Number.isSafeInteger(heartbeatMs) || heartbeatMs < 1 || heartbeatMs > GATE_DEADLINE_MAX_BASE_MS) throw new RangeError("face-gate-server: the heartbeat names a whole number of milliseconds");
-  const gates = new Map<string, { readonly gate: FaceGate; readonly knock: string }>();
-  // Paths this server once stood: a knock on one after the close is claimed and destroyed by name.
+  // Each stood gate holds the sockets it seated, so standing it down cuts them (T19, test-recut-road).
+  const gates = new Map<string, { readonly gate: StandableGate; readonly knock: string; readonly seated: Set<WebSocket> }>();
+  // Every path this server has stood: a knock on one after the close is claimed and destroyed by name.
   const once = new Set<string>();
   const sockets = new Set<WebSocket>();
   // THE HEARTBEAT: each socket answered a ping since the last beat, or the beat cuts it. The timer stands while a
@@ -359,6 +369,7 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
   const follow = (ws: WebSocket): void => {
     answered.set(ws, true);
     ws.on("pong", () => { answered.set(ws, true); });
+    // LIVENESS: a silent peer may never close; missed pongs expose that silence.
     if (beat === null) { beat = setInterval(beatOnce, heartbeatMs); beat.unref?.(); }
   };
   // Upgrades claimed and not yet handed a socket: they count against the bound too.
@@ -376,12 +387,17 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
       if (closed) throw new Error("face-gate-server: the server stands closed");
       const path = gatePath(pin);
       if (gates.has(path)) throw new Error(`face-gate-server: a gate already stands on ${path}`);
-      const entry = Object.freeze({ gate, knock: gateKnock(pin) });
+      const entry = Object.freeze({ gate, knock: gateKnock(pin), seated: new Set<WebSocket>() });
       gates.set(path, entry);
       once.add(path);
       return Object.freeze({
         path,
-        unstand() { if (gates.get(path) === entry) gates.delete(path); },
+        unstand() {
+          if (gates.get(path) !== entry) return;
+          gates.delete(path);
+          for (const ws of [...entry.seated]) { try { ws.terminate(); } catch { /* already gone */ } }
+          entry.seated.clear();
+        },
       });
     },
     handleUpgrade(req, socket, head) {
@@ -397,23 +413,30 @@ export function faceGateServer(opts: FaceGateServerOptions = {}): FaceGateServer
       const header = req.headers["sec-websocket-protocol"];
       const flight = readGateFlightHeader(Array.isArray(header) ? header.join(", ") : header);
       if (!flight.ok) { refuse(path, flight.refusal); socket.destroy(); return true; }
+      // The flight decrypts under this gate's bundle BEFORE any 101: a token that opens nothing draws the same
+      // destroyed socket the other pre-upgrade refusals draw. Bounded by size (one fixed-length flight) and work
+      // (one decryption), never by time; `accept` decrypts the same bytes once more.
+      if (!stood.gate.preflight(flight.message1)) { refuse(path, "flight-undecrypted"); socket.destroy(); return true; }
       upgrading++;
       let settled = false;
       const settle = (): void => { if (!settled) { settled = true; upgrading--; } };
       socket.once("close", settle);
       wss.handleUpgrade(req, socket, head, (ws) => {
         settle();
-        if (closed) { ws.terminate(); return; }
+        // An upgrade that completes after its gate stood down reaches nobody, as one after the close does.
+        if (closed || gates.get(path) !== stood) { ws.terminate(); return; }
         sockets.add(ws);
+        stood.seated.add(ws);
+        ws.once("close", () => stood.seated.delete(ws));
         follow(ws);
         ws.once("close", () => sockets.delete(ws));
         const gateSocket = wsGateSocket(ws as unknown as GateWire, { knock: stood.knock, message1: flight.message1 }, bound, byteBound);
-        let accepting: Promise<GateOutcome>;
+        let accepting: Promise<GateOutcome | IntentRelayOutcome>;
         try { accepting = Promise.resolve(stood.gate.accept(gateSocket)); } catch (error) { accepting = Promise.reject(error); }
         accepting.then((outcome) => {
           // A socket the gate turned away for want of a pending place holds nothing for it: cut it now.
           if (outcome.outcome === "silence" && outcome.reason === "pending-full") gateSocket.cut();
-          try { opts.onOutcome?.(path, outcome); } catch { /* a log never decides */ }
+          try { (opts.onOutcome as ((path: string, outcome: GateOutcome | IntentRelayOutcome) => void) | undefined)?.(path, outcome); } catch { /* a log never decides */ }
         }, () => {
           // A gate whose accept threw reads as silence: its socket is cut, never left open.
           gateSocket.cut();

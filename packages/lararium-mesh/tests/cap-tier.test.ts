@@ -117,15 +117,15 @@ describe("mayDeclassify — loosening is an operator-root act (one-way ratchet)"
 });
 
 describe("structuralFloorFor — where the floor comes from on a real bag", () => {
-  const oracle = {
+  const source = {
     isPublicPlane: (d: string) => d === "pub",
     isSealedPlane: (d: string) => d === "sealed",
     isContractSecretsPlane: () => false
   };
-  test("federatable-public → PUBLIC; sealed → CONTRACT; cleartext-local → VEIL; null oracle → VEIL", () => {
-    expect(structuralFloorFor(oracle, "pub")).toBe("public");
-    expect(structuralFloorFor(oracle, "sealed")).toBe("contract");
-    expect(structuralFloorFor(oracle, "cleartext")).toBe("veil");
+  test("federatable-public → PUBLIC; sealed → CONTRACT; cleartext-local → VEIL; null source → VEIL", () => {
+    expect(structuralFloorFor(source, "pub")).toBe("public");
+    expect(structuralFloorFor(source, "sealed")).toBe("contract");
+    expect(structuralFloorFor(source, "cleartext")).toBe("veil");
     expect(structuralFloorFor(null, "pub")).toBe("veil");
   });
 });

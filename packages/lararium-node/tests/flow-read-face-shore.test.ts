@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "@lararium/mesh";
 /**
  * flow-read-face-shore — the read-face serves what its export shore projects and nothing else: the rows the
  * projection names, at their live values, as ONE change with no history. A vessel's private keys and the values they
@@ -17,12 +18,12 @@ import {
   type GenesisSeed, type LarDoc,
 } from "@lararium/mesh";
 import { mountFlowReadFace } from "../src/flow-read-face.js";
-import { floorGates, presenter, pullFloor as pullFromFloor } from "./oracle-floor-rig.js";
+import { floorGates, presenter, pullFloor as pullFromFloor } from "./flow-floor-rig.js";
 
 const SEED   = new Uint8Array(32).fill(7);
 
 const GENESIS = {
-  format: "lararium-genesis-seed/v1", actorSeed: "ab".repeat(16),
+  format: "lararium-genesis-seed", actorSeed: "ab".repeat(16),
   blobs: { "lar:///core": { id: "core", version: "1", sha256: "c".repeat(64), mimeType: "application/javascript" } },
   tiddlers: {
     "lar:///seeded": { tiddler: { title: "lar:///seeded", text: "seed value" } },
@@ -38,7 +39,7 @@ afterEach(async () => {
 });
 
 /** The vessel's oracle doc: the materialized seed, then the vessel's own private writes over it. */
-function liveOracle(repo: Repo): DocHandle<LarDoc> {
+function liveIslandDoc(repo: Repo): DocHandle<LarDoc> {
   const handle = repo.import<LarDoc>(materializeGenesisDoc(GENESIS));
   handle.change((d) => {
     const t = (d as unknown as { tiddlers: Record<string, unknown> }).tiddlers;
@@ -55,16 +56,16 @@ function liveOracle(repo: Repo): DocHandle<LarDoc> {
 
 async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) => Promise<{ dispose: () => void }>) {
   const repo = new Repo({ sharePolicy: async () => true });
-  const handle = liveOracle(repo);
+  const handle = liveIslandDoc(repo);
   const server = createServer();
   servers.push(server);
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  const storageDir = mkdtempSync(join(tmpdir(), "oracle-shore-")); dirs.push(storageDir);
+  const storageDir = mkdtempSync(join(tmpdir(), "flow-shore-")); dirs.push(storageDir);
   const logs: string[] = [];
   const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
   const face = await mount({
-    httpServer: server, oracleHandle: handle as DocHandle<unknown>, signerSeed: SEED, storageDir,
+    httpServer: server, oracleHandle: handle as DocHandle<unknown>, signer: placeSignerFromSeed(SEED), storageDir,
     gates: rig.gates, onLog: (l) => logs.push(l),
     exportSnapshot: undefined as never,
   });
@@ -78,7 +79,7 @@ async function pullFloor(mount: (args: Parameters<typeof mountFlowReadFace>[0]) 
 const projectSeeded = async (doc: LarDoc) => {
   const tiddlers: Record<string, unknown> = {};
   for (const title of Object.keys(GENESIS.tiddlers).sort()) if (doc.tiddlers?.[title] !== undefined) tiddlers[title] = plainRecord(doc.tiddlers[title]!);
-  return exportFlowSnapshot(pinnedDoc({ schemaVersion: doc.schemaVersion, blobs: {}, tiddlers } as unknown as Record<string, unknown>));
+  return exportFlowSnapshot(pinnedDoc({ blobs: {}, tiddlers } as unknown as Record<string, unknown>));
 };
 const mountAsMain: Parameters<typeof pullFloor>[0] = (a) => mountFlowReadFace({ ...a, exportSnapshot: (doc) => projectSeeded(doc as LarDoc) });
 

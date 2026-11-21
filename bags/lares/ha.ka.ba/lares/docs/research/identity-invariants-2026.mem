@@ -1,7 +1,7 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
@@ -9,21 +9,20 @@ l-space   = "lares"
 role      = "field and code research, a two-wave traded Codex and Copilot pass (2026-10-20), on where a face's identity invariants rest: what the Binding Gate verifies and what it takes on trust, which pins read as invariant, local or shared, and why sync carries while verification decides"
 status    = "research; read 2026-10-20; the operator approved its recommendation the same day"
 tags      = ["research", "identity", "crdt", "custody", "kel", "persona-group", "no-global-now"]
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/identity-invariants-2026.mem"
 title     = "lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/identity-invariants-2026"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Identity invariants, 2026 ~ sync carries, verification decides
 
-The operator un-asked a founding choice on 2026-10-20: //"When we started, all we had was direct API calls and CRDT docs, so that's where I put everything that should auto-sync based on the capabilities of the currently-in-context keys. But does setting these identity invariants on a mutable CRDT read pono?"// A Codex seat read the code and a Copilot seat read the field, each in two traded waves. Claims read MEASURED (read in code, with file and line) or LEAD (inference, or a recalled source). The ruling stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> #/rulings, //sync carries; verification decides//.
+The operator un-asked a founding choice on 2026-10-20: //"When we started, all we had was direct API calls and CRDT docs, so that's where I put everything that should auto-sync based on the capabilities of the currently-in-context keys. But does setting these identity invariants on a mutable CRDT read pono?"// A Codex seat read the code and a Copilot seat read the field, each in two traded waves. Claims read MEASURED (read in code, with file and line) or LEAD (inference, or a recalled source). The ruling stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings, //sync carries; verification decides//.
 
 <<~/ahu>>
 
-<<~ ahu #/findings>>
+<<~ ahu slot=`#/findings`>>
 
 !! Findings
 
@@ -35,7 +34,7 @@ The operator un-asked a founding choice on 2026-10-20: //"When we started, all w
 
 <<~/ahu>>
 
-<<~ ahu #/the-sort>>
+<<~ ahu slot=`#/the-sort`>>
 
 !! The sort ~ where each pin rests
 
@@ -45,21 +44,21 @@ The operator un-asked a founding choice on 2026-10-20: //"When we started, all w
 | lease epochs | signed advances in the per-writer shape, beside a sealed local frontier that never falls |
 | dyads | a CRDT of signed entries, verified on read |
 | plane URLs and membership | signed founding and admission acts, projected into the planes |
-| the group secret's seal | a sealed custody row |
+| the group secret's seal | a sealed custody record |
 | the cabal doc, the catalog, working content | shared mutable CRDT, with access checks at use |
 
 <<~/ahu>>
 
-<<~ ahu #/recommendation>>
+<<~ ahu slot=`#/recommendation`>>
 
 !! The recommendation ~ both seats converged
 
 A sealed anchor per face per device; signed records carried by sync under immutable ids and verified against the anchor and the KEL; the face planes as verified projections; per-vessel records off the mirrored daemon doc; summonses on `@intents`. In-context keys and held grants decide what a vessel may //receive//; the anchor decides which face it //wears//; verification decides what //counts//.
 
-''Reds'': a forged selector row, and a coherent valid foreign bundle, switch no pinned face, and a missing anchor refuses boot; two signed acts at one sequence surface as a fork; a deleted, replayed or forged epoch never lowers the local frontier; reordering face rows moves no pin from its owner on either host; a join bootstraps offline from its admission bundle and the anchor; the floor gains no face authority from an unverified pin; capability-driven sync still converges every plane that carries no authority.
+''Reds'': a forged selector record, and a coherent valid foreign bundle, switch no pinned face, and a missing anchor refuses boot; two signed acts at one sequence surface as a fork; a deleted, replayed or forged epoch never lowers the local frontier; reordering face records moves no pin from its owner on either host; a join bootstraps offline from its admission bundle and the anchor; the floor gains no face authority from an unverified pin; capability-driven sync still converges every plane that carries no authority.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kOXTc_Dqf0CQbmeebgMwnkNF3obPfRT1YgAjl93Tbxs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4SGyQfJRe9LoRNyLeMsWw07Lm9RZ-lA-X-aZ6wRkmq8`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

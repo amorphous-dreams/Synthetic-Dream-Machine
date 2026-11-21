@@ -1,0 +1,46 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-51`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "51. Mr. Crowley"
+hexagram      = "51"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "100100"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-51"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-51"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷲ 51. Mr. Crowley
+
+<<<
+"""
+CHEN: Fire! Beware, but smile with mein divine!
+Let nothing scare thee into spilling wine!
+Here's trouble; watch thy ways, but drink thy wine!
+Take lofty ground; the tide will ebb and flow.
+Distraught? May danger teach thee low to go!
+Fight fire with fire, or sink in mud supine!
+Troubles mean profits for the men who know.
+Caution! Foresee the action of the foe!
+"""
+<<<
+
+This hexagram was very complicated in the original I-Ching, standing for arousal, but also terror, shock, fear, and trembling. The classic situation suggested above would probably be the virgin bride on her wedding night. Explore the possibility of interpreting your situation by using that image. This is the hexagram that Crowley did not agree with and changed (thus its name here). Crowley suggested changing its meaning to "Fight Fire With Fire". Therefore, to Discordians, this hexagram stands for the bold and self-important.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Aa1NLUw5cj3w1MWuo0wl5egueQrDiv9oJIhfgbFumbw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-004/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-004/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-004/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-004/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-004/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-004/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-4-mesh-relation-red-prepared`>>
+
+! Step 4 — mesh relation red prepared
+
+`relay/res-004.json` reports commit success at `1e82c0d472ac9a93bd3d937a49ae9ed457a5cb2b`; state now records that head. The controller's supplied targeted result verifies both grant reds and their controls at that head, including the named signature refusal. No tests or git ran inside this wall.
+
+Added an ''uncommitted, unverified'' mesh red at `packages/lararium-mesh/tests/device-delegation.test.ts:157`: it constructs the epoch-free two-signature edge, and asks the pinned-root verifier to accept it. Before that assertion, controls exercise an accepted legacy edge, the named wrong-root refusal, and the named atom-signature refusal. Those controls must migrate to the epoch-free shape once it verifies. This establishes cryptography only; it does not certify standing, lineage, or rollback protection.
+
+''controller runs packages/lararium-mesh/tests/device-delegation.test.ts'' outside the faulty Vitest door. Verify all three controls reach and pass, and the new red reaches line 173 and fails for the missing epoch-free shape. Obtain blind Opus review before landing this custody slice; do not treat this unrun red as proof. No commit request has been sent for this unverified change.
+
+Fork: 🜁 philosopher weighs signature-only verification against complete authority: `device-delegation.ts:226-244` makes a missing epoch cryptographically valid but unavailable, and `face-join-operation.ts:73` consumes the wrapper without a freshness witness. 🜄 considers the user losing access under partition versus accepting a removed device after its removal arrives. Decide: preserve a pure pinned-signature primitive, but require each authority consumer to prove anchored lineage, a non-rolled-back local frontier, and remove-wins dyad standing; unknown, forked, or rolled-back proof refuses by name. A disconnected device acts on its last verified local view; once removal arrives its affected dyad refuses subsequent authority and reconciliation must not resurrect it. Already disclosed keys and plaintext cannot be recalled. This carries causal islands and no global now; the next slices must implement and test that contract, not infer it from this red.
+
+Canon collision: `device-delegation.ts:20-30,226-244` and `convergent-mesh.mem#/two-revocation-modes` (lines 47-54) describe the face epoch lease, while `stable-founding-road.mem#/rulings` line 348 retires that face lease. Follow the later specific ruling and true up the older carrier in the final burn, preserving other leases. `face-boot-proof.ts:45-63` checks a fork and pinned act CID at boot; `face-reading.ts:43-60` alone does not establish the same proof for every consumer. A reader census and tests remain essential; retain the roll guard.
+
+No b5b-owned sibling or composer hunks changed. No seats launched. Remaining: blind custody reviews, mesh and grant cures, sibling readers after b5b, complete dyad census with incomplete-view refusal, anti-rollback and offline reconciliation tests, K18's independent row, and the last lease/guard burn. Preserve quorum and bag-capability leases.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9qzOkwN3LY_ASu7gL8LJDJU2gxSPnxgiGqwngQreti0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

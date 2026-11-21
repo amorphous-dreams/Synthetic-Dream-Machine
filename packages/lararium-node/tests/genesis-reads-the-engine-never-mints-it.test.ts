@@ -1,7 +1,7 @@
 /**
- * THE ENGINE EPOCH MOVES BY AN ACT, NEVER BY HYGIENE. The sha256 of the vendored TW5 core blob IS
- * `hearthTrueName`, riding inside the signed preimage of every device-delegation edge — so re-rendering
- * the blob re-binds every vessel that ever joined. `build:genesis` reads the blob that stands and fails
+ * THE ENGINE EPOCH MOVES BY AN ACT, NEVER BY HYGIENE. The sha256 of the vendored TW5 core blob names the engine
+ * every vessel of a mesh boots (`engineCid`), so re-rendering the blob moves the engine under every vessel that
+ * ever joined. (No edge signs it: an edge's `hearthTrueName` names the seed-charter Nexus AID, or "" on a leaf.) `build:genesis` reads the blob that stands and fails
  * loud when none does, naming `build:tw5-vendor` as the intentional act; it never runs that act itself.
  * The e2e harness founds its staged root from the standing `build:genesis` artifact, so a re-render there moved the epoch
  * on every staged boot.
@@ -17,6 +17,12 @@ const pkg = JSON.parse(readFileSync(join(HERE, "..", "package.json"), "utf8")) a
 describe("★ build:genesis reads the engine, never mints it ★", () => {
   test("the script spells no vendor render", () => {
     expect(pkg.scripts["build:genesis"]).not.toMatch(/build:tw5-vendor|build:vendor|build-tw5-vendor/);
+    expect(pkg.scripts["build:genesis-release"]).not.toMatch(/build:tw5-vendor|build:vendor|build-tw5-vendor/);
+  });
+  test("two bakes by intent: the develop bake carries the floor, the release bake alone re-cuts it", () => {
+    expect(pkg.scripts["build:genesis"]).not.toMatch(/--release/);
+    expect(pkg.scripts["build:genesis-release"]).toMatch(/build:plugin/);
+    expect(pkg.scripts["build:genesis-release"]).toMatch(/build-genesis-island\.ts --release$/);
   });
   test("CONTROL: the script still packs the plugin and bakes the island", () => {
     expect(pkg.scripts["build:genesis"]).toMatch(/build:plugin/);

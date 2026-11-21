@@ -29,7 +29,7 @@ let stoodAt: { nexus: string; faceKey: string } | null = null;
 
 const readJson = (path: string): Record<string, unknown> => JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
 const bootstrapOf = (root: string): string => {
-  try { return readFileSync(join(root, "data", "lares", "vessel", "social-bootstrap.json"), "utf8"); } catch { return ""; }
+  try { return readFileSync(join(root, "hearth", "vessel", "social-bootstrap.json"), "utf8"); } catch { return ""; }
 };
 
 beforeAll(async () => {

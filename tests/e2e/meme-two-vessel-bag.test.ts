@@ -39,9 +39,9 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { joinedDeviceEdge, joinedFaceCard, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStagedJoinee, wikiWorkbenchDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
-import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
+import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -60,9 +60,9 @@ const BAG_LINE = new RegExp(`^bag\\s+= "${INVENTORY}"$`, "m");
 
 /** The NPC meme: the author's `bag` rides the meta, the named slots ride the body. */
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
@@ -105,7 +105,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("④ the admit ceremony crosses: B founds by A's signed edge, holding its own key", () => {
     expect(admitted?.code, said(admitted ?? { stdout: "", stderr: "no founding ran" })).toBe(0);
     expect(admitted?.stdout).toContain("joined the PersonaGroup");
-    expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
+    expect(existsSync(join(rootB, "hearth/vessel/social-bootstrap.json"))).toBe(true);
   });
 
   test("⑤ on A: `get` hands the author's `bag` line back byte-whole", async () => {
@@ -127,14 +127,14 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // The wiki island mounts the SAME working doc the recipe seat wrote (the ONE slot-doc resolver), and
     // its disk mirror sites the working layer under wikis/{slug}/ — a file here is the running wiki's own
     // projection of the placement, never the daemon's.
-    const f = join(A!.root, "wikis/lares", `${PATH}.mem`);
+    const f = join(wikiWorkbenchDir(A!.root, "lares"), `${PATH}.mem`);
     const deadline = Date.now() + 60_000;
     while (!existsSync(f)) {
       if (Date.now() > deadline) throw new Error(`A's running wiki never surfaced the placement at ${f}`);
       await new Promise((r) => setTimeout(r, 1000));
     }
     const text = readFileSync(f, "utf8");
-    expect(text).toContain("<<~ ahu #/a>>");
+    expect(text).toContain("<<~ ahu slot=`#/a`>>");
     expect(text).toMatch(BAG_LINE);
   });
 
@@ -172,7 +172,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
       console.error(`meme-two-vessel-bag MEASURE ${tag}: bag stats\n${stats.stdout.trim()}\nwiki which ${URI}\n${which.stdout.trim()}`);
     }
     // CONTROL for the projection witness below: nothing sits on B's disk before the promotion.
-    expect(existsSync(join(B!.root, "bags/lares", `${PATH}.mem`))).toBe(false);
+    expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
     const refused = await A!.cli(["meme", "put", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
     console.error(`meme-two-vessel-bag MEASURE A: meme put --bag lares → ${said(refused).trim().slice(0, 300)}`);
     expect(refused.json?.["ok"]).toBe(false);
@@ -203,10 +203,10 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const wiki = await B!.cli(["meme", "get", URI, ...WIKI, "--json"]);
     const which = await B!.cli(["wiki", "which", URI, "--no-json"]);
     console.error(`meme-two-vessel-bag MEASURE B: bag → ${said(bag).trim().slice(0, 240)}; wiki → ${said(wiki).trim().slice(0, 240)}`);
-    expect(String((bag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu #/a>>");
-    expect(String((wiki.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu #/a>>");
+    expect(String((bag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
+    expect(String((wiki.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
     expect(which.stdout).not.toContain(`  ${LARES_BAG}`);
-    expect(existsSync(join(B!.root, "bags/lares", `${PATH}.mem`))).toBe(false);
+    expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
   });
 
   test("⑧ A's lares record stays whole while B, holding no board source yet, draws kahu-reach on lares", async () => {
@@ -220,8 +220,8 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     expect(JSON.stringify(mv.json), "a missing source refuses closed, by name").toContain("kahu-reach");
     const a = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
     const aText = String((a.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
-    expect(aText).toContain("<<~ ahu #/a>>");
-    expect(aText).not.toContain("<<~ ahu #/b>>");
+    expect(aText).toContain("<<~ ahu slot=`#/a`>>");
+    expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
   // OWED ROW (`w26-floor-lane` #/owed, "a sibling device of a seat-holding face"): B is a joined sibling device of the
@@ -237,16 +237,16 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     await promoteLoadedTitles(B!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const local = await B!.cli(["meme", "get", URI, ...BAG, "--json"]);
     const localText = String((local.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
-    expect(localText).toContain("<<~ ahu #/b>>");
+    expect(localText).toContain("<<~ ahu slot=`#/b`>>");
     expect(localText).toMatch(BAG_LINE);
     expect(localText).not.toContain("$origin-bag");
     const a = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
     const aText = String((a.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
-    expect(aText).toContain("<<~ ahu #/a>>");
-    expect(aText).not.toContain("<<~ ahu #/b>>");
+    expect(aText).toContain("<<~ ahu slot=`#/a`>>");
+    expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
-  // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's `face-join` seats B in the group
+  // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's door answers B's `face-join` intent and seats B in the group
   // AND writes the grant as a SIGNED RECORD on the PersonaGroup plane (the doc both sync by membership).
   // B's own kit, on its next present (a `meme put --recipe lares` resolves the binding → `faceSeated`),
   // reads the record, verifies it offline against the persona root it pinned at admit and A's root-signed
@@ -256,17 +256,20 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
   test("⑨ the later grant lands as a record on the PersonaGroup plane; B's kit takes the seat; a put rides the face", async () => {
     const before = B!.bootLog();
     expect(before, "CONTROL: B stood pinned, not seated").toMatch(/pinned, not yet seated/);
-    expect(before).not.toMatch(/grant record taken/);
-    // B's summons — ITS card (the identity dir sits beside the vessel store) + the edge A signed for it.
-    const contactCard = await joinedFaceCard(pair!);
-    const deviceEdge = await joinedDeviceEdge(pair!);
-    expect(deviceEdge, "the join carried no device edge").toBeDefined();
-    // A seats B — the verb runs where A's booted provider lives; the record lands on the plane.
-    const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
-      `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
-      { results?: { summary?: { output?: Record<string, unknown> } } };
-    const grant = r.results?.summary?.output ?? {};
-    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${Array.isArray(grant["reSealed"]) ? grant["reSealed"].length : "(none)"} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
+    // JOIN = INTENT (the Founding Walk, W4, 2026-10-29): B's own daemon island issues the one face-join summons the moment it
+    // stands joined and unseated, pinned to the founding hearth (`face-seat-summons`); the hand step below REPLAYS it and
+    // answers the standing intent's id, so the plane holds one summons of B however many times a hand asks.
+    const summonsDeadline = Date.now() + 90_000;
+    while (!/the seat summons issued/.test(B!.bootLog()) && Date.now() < summonsDeadline) await new Promise((res) => setTimeout(res, 1000));
+    // B's boot log is the only witness of which bind holds a summons back: a summons that never issues names it here.
+    const summonsLines = B!.bootLog().split("\n").filter((l) => /summons|face intent door|face-join|nexus-join|\[realm\]|lar-leaf/.test(l)).slice(-16).join("\n  ");
+    expect(B!.bootLog(), `B's own island summoned its seat:\n  ${summonsLines}`).toMatch(/the seat summons issued/);
+    // THE DIAL'S SEAT, kept in the run's log (road `P26`): the relation B's own records proved for the hearth it dials.
+    console.error(`meme-two-vessel-bag MEASURE B: the dial's seat and the summons\n  ${summonsLines}`);
+    expect(B!.bootLog(), "B seats its dialed hearth as its face's own").toMatch(/the dialed hearth \S+ seats as same-face/);
+    const requested = await requestFaceJoin(B!);
+    const grant = await faceJoinOutcome(B!, requested);
+    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${String(grant["reSealedCount"] ?? "(none)")} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
     expect(grant["admitted"], JSON.stringify(grant).slice(0, 400)).toBe(true);
     expect(typeof grant["recordTitle"], "the grant landed on no plane — A's log names why").toBe("string");
     // B's next present: the binding resolves, the kit reads the record and takes the seat by its own act.

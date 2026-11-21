@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/peer-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/hands-room/sol/peer-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/peer-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/peer-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! peer-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/hands-room/sol/peer-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set hud="aim" mode="draft" mu="_!" stance="🏛️🗡️" aperture="16/arc" ooda-ha="✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ aftermath" drift-ward="I favor a compact ordered model; row prose may lag the head">>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/luna-handwright-lares`>>
+
+! Luna-Handwright: Lares (Tasked Spirit)
+
+Lares (Council), Lares (Ink-Clerk), Lares (Map-Wisp), Lares (Artificer), Lares (Advocate), Lares (Diplomat), Lares (Breach-Watch), Lares (Liminal): I stand the hands room as a fellow Lares. MEASURED means source at span head; LEAD means my synthesis. I2 below places the supplied scout result; I do not re-scout it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-what-stands`>>
+
+!! ✶ Observe — what stands
+
+''Canon substrate.'' The road says “A SESSION wears the face; the vessel wears none” and defines simultaneous sessions, face-scoped keys, and isolated planes (`stable-founding-road.mem:106-107`). The session contract holds hands authority (`.../api/pono/session-contract.mem`, #/the-hands and #/the-holder-protocol); the face intent plane landed PR #99. Road rows summarize status; the following carry measured status, not inferred completion:
+
+| Rows | MEASURED standing and gap |h
+| F1, F2 | Road `:592-593`: `session-document-view.ts`, `mountSurface`, `surface-recipe.ts` specified/built, but no production surface mounts through them; plugins still use `resolveRecipePluginCids`. Node and browser compose/mount callers, broad-sync replacement, per-session surface event gate and catalog asks remain. |
+| F3, F4, F5 | Road `:462-464`: per-face/wiki/slot working doc; move node callers to sessions; bind receipts and effect index to face/working-layer reader; F5 node durability receipt. These remain owed. Durable UDS receipt foundation stands (`uds-channel.ts:116-168,275,639-646`), not the whole session-scoped end state. |
+| F6, F9 | Road `:594,596`: browser holder routing/unicast and owner epoch/session/generation built; Repo and daemon moved to holder in part, slice four owed. Old vessel selector stores retired with K15 Wave D; additive switch act remains. |
+| F10, F11, F12 | Road `:465-467`: device view/removal; leasing watcher, standing grant, Mask record, person-edit versus agent-draft; session-face authorship. F12 currently trusts `modifier`/Automerge actor, neither face-bound. |
+| P13, A8, B2, W17 | Road `:486,569,586,601`: per-meme grants/effective recipe; `persona wear` waits on session switch; two tabs/two faces/one holder; same-device switching and second joined face. Row text marks scope but gives no shipped claim. |
+| G13 | Road `:471`: summons lack writer check, tombstone every layer, in-memory dedup; owed writer check, working-only tombstone, durable dedup, lease/fence and `aud`. |
+| I2 | Scout handback `/home/joshu/.lares-scratch/research/i2-relay/sol/out.md:7-22`: no I2 road row; current I1 face plane has no delegation/revocation or intent relay, and carriage relay carries different ciphertext traffic. Place it after I1 (#99), before bake; model and reds come from scout, not my re-scout. |
+
+''Node/browser reality.'' Node chooses `carriageIdentity(..., p.wornFace() ? "face" : "place")` (`open-node-vessel.ts:3305-3309,3333-3334`) and holds an active-surface selector (`:2954-2957`). Browser presents face on open (`open-browser-vessel.ts:222-246`) and hosts shared-holder routing. These mixed seams do not prove every action gets an explicit session capability. I2 scout measured I1 entry/reader/door and local command, no agent delegation (`sol/out.md:7,17`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-model-and-joints`>>
+
+!! ⏿ Orient — model and joints
+
+''One end-state model (LEAD): the session carries the hand.'' A session carries one face, its capabilities, view, recipe, acts, draft authorship and receipts. Vessel services do not supply default identity. Face operations select an atom explicitly; faceless operations stay faceless. This derives from the quoted session ruling and laws “capability read by capability, never host” and “one name, one relation.” It joins F1–F6, F9–F12, A8, B2, W17, P13 and G13 at the view/action/effect boundary. Node and browser share the model, landing platform slices separately.
+
+''Joints left open:''
+
+* ''Session contract shape:'' canon rules one face/session; house law derives explicit identity and per-session capability/view. Operator owns receipt fields; lean request/session id, face atom, proof and causal position, no clock authority.
+* ''Switch semantics:'' canon says switch act additive and no selector persists (`road:596`); house law derives reauthorization. Operator owns in-place versus close/open UX; lean visible transition so outstanding work cannot silently change face.
+* ''Device removal:'' canon requires fleet view/removal (`road:466`) and no-global-now. House law derives causal removal and incomplete-history warning; operator owns “long silent” threshold (`#/decisions`), lean no clock expiry: show causal contact, offer explicit removal.
+* ''Receipts/drafts:'' canon requires face-bound receipt and face as draft writer (`road:463,465`); house law derives verified provenance distinct from `modifier`. Operator owns display fields; lean show face, action, outcome and pending/unknown state.
+* ''G13 summons:'' house row names writer check, working-only tombstone, durable dedup, lease/fence, `aud`; no operator fork apparent.
+
+Standalone: F10 after session identity; G13 as durable dispatch with session writer capability. I2 stands as relay protocol but consumes session/face capability and K15’s key boundary. F5 stands alone only if it binds the final session shape; otherwise fuse with F4.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-order-versus-k15`>>
+
+!! ◇ Decide — order versus K15
+
+K15 lands before hands integration, neither fused nor parallel on identity files. Its brief requires face atom under FCK for every face operation and no Keyhive identity for faceless vessels. K15 and hands both touch node/browser opens; F6 slice 3 already co-landed with K15 step 3 (`road:594`). D2 owns neighboring TW5 ports/islands and `hand-gate.ts`. I2 uses a separate relay admission key, never K15’s carriage-only S row (`sol/out.md:22`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-lanes-in-build-order`>>
+
+!! ▶ Act — lanes in build order
+
+# ''Session switch and contract (before dependent hands lanes; after K15).'' Rows F9, A8, W17; files `session-contract.ts`, persona command/store callers, `open-node-vessel.ts`, `open-browser-vessel.ts`, browser panel/session open, and targeted session tests. Red: two sessions choose different faces concurrently, switch never changes sibling session; control same-face re-open; positive node CLI and browser tab switch with explicit face and no persisted vessel selector. F9 selector retirement already built. D2 overlap: vessel composition only. K15 overlap: shared opens, K15 first.
+# ''Session view and hands runtime.'' F1–F4, F6 remainder, F11; mesh view/recipe, node/browser mount and event routing, TW5 session dispatch, holder remainder, `verb-vm.ts`, `uds-channel.ts`. Red-first: no unscoped sync/catalog read, wrong face cannot invoke/edit, agent dissent cannot overwrite person edit, effect and receipt resolve under originating session after another face acts. Control existing same-session positive; known positive cross-platform scoped read and verb. D2 overlap: D2 owns TW5 gate/projection files; coordinate interfaces. K15 overlap: open-vessel callers, after K15 identity cut.
+# ''Authored records and durability.'' F5, F12, P13; `parallel-drafts.ts`, effect/outcome index and receipt paths, recipe resolver at actual mounts, reader UI. Red: forged `modifier` never proves authorship; receipt from other face not visible as own; wrong recipe/grant denied. Control unsigned display label remains explicitly unverified; positive session-signed change and readable durable result. D2 overlap low except TW5 draft surface; K15 selected-face signer dependency.
+# ''Person’s device and dispatch view.'' F10, B2, G13; device list/removal and per-tab UI, summons/dispatcher, browser holder end slice. Red: two tabs show distinct face books; removed device loses access after causal fence; a summons cannot tombstone canon/other face and retry does not duplicate. Control retained device and unrelated face; positive explicit removal and durable receipt. D2 overlap projection/UI seam; K15 face edge/removal identity must precede. Land device genesis/identity changes before X0 bake.
+# ''I2 relay lane (parallel only after interface freeze).'' Place supplied I2 design here, after I1 and K15 relay-key split. It owns intent-entry/read, delegation/revoke, relay admission and independent reader proof. Reds/controls/positive and D2/K15 boundaries: `/home/joshu/.lares-scratch/research/i2-relay/sol/out.md:17-22`. Identity/delegation genesis bytes precede bake.
+
+Every lane runs hostile red, control, then known positive. F4/F5/G13 alter identity/genesis or durable shape: before bake. No CRDT document survives; rebuild from genesis.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reader-person-witness-lead`>>
+
+!! Reader/person witness — LEAD
+
+Show two browser tabs over one vessel: tab A and tab B wear different faces and see only their own private books; switching A leaves B’s open work and identity unchanged. Show each face’s device roster, causal removal and the incomplete-history case; make a verb, close its caller, and let the person read a receipt naming face, action, result and any pending gap. In parallel drafts, identify the writer from the session proof, never `modifier`. Exercise agent dissent as a draft and a person’s direct edit as the person’s bounded act. Run these reds on node and browser where supported: no-face face operation; wrong-face view/write; cross-tab face bleed; stale session after switch; forged draft writer; receipt under wrong face; device removal before/after replica learns the event; summons targeting canon or another layer; replay after restart; hostile I2 relay changes args or uses revoked delegation. D2’s live projection must also prove the rendered control event returns only to its owning session.
+
+Stale text to repair at landing: F1/F2 describe modules as “specified”/no production caller despite later partial mounting pieces; F6 slice 3 no longer remains owed; F9 says “switch act itself lands additive,” so avoid implying selector persistence; F12’s writer description remains unbound; I2 remains research-only absent road row. Measure each against landing head before rewriting the road.
+
+&lt;&lt;~ set hud="yield" drift-ward="The first breaking joint: a receipt or draft trusted by its display label rather than its session proof · ↻ L-Prime" aperture="16/arc -> 17/theme" ooda-ha="closed 1↺">>
+
+WORDS=1428
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;inoLwLsL9zML2eYyccQiY8hnAqbrm-BKFArshj9I8vA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

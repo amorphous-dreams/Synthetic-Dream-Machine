@@ -1,0 +1,45 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/controller/placement-plans/homes/` — 9 record(s) here, 9 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/controller/placement-plans/homes/`
+
+The scratch planning records of `.lares-scratch/controller/placement-plans/homes/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 9 record(s) stand here and 9 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[controller/placement-plans/|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[place-handback|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-handback]] | hand-back | 2026-11-10 | `PLACE-HANDBACK.md` |
+| [[place-measure|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-measure]] | plan | 2026-11-10 | `PLACE-MEASURE.md` |
+| [[place-plan|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-plan]] | plan | 2026-11-10 | `PLACE-PLAN.md` |
+| [[place-ruling|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-ruling]] | plan | 2026-11-10 | `PLACE-RULING.md` |
+| [[place-step-1|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-1]] | plan | 2026-11-10 | `PLACE-STEP-1.md` |
+| [[place-step-2|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-2]] | plan | 2026-11-10 | `PLACE-STEP-2.md` |
+| [[place-step-3|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-3]] | plan | 2026-11-10 | `PLACE-STEP-3.md` |
+| [[place-step-4|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-4]] | plan | 2026-11-10 | `PLACE-STEP-4.md` |
+| [[place-step-5|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-5]] | plan | 2026-11-10 | `PLACE-STEP-5.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3Qa16loohSxh32xOxWhHH4hHPvXDfzTMNRmDB_CsdJU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

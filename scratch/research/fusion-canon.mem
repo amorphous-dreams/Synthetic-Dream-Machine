@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/fusion-canon`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-25 (file date) — source `.lares-scratch/research/fusion-canon.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/fusion-canon"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/fusion-canon"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! fusion-canon.md — plan, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/fusion-canon.md` (plan, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/fusion-stack-canon-says-retired-code-still-stand`>>
+
+! Fusion stack: canon says retired, code still stands
+
+Verdict: (A), with one small ruling check. The canon holds the present truth. The code is crud.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-what-the-carrier-says`>>
+
+!! 1. What the carrier says
+File: bags/lararium/ha.ka.ba/lararium/api/living-grammar-palace.mem
+* L306: "!!! The fused Measure ~ RETIRED. The tower answers the question the pool was invented to ask."
+* L325: "So the whole fusion stack retires &#45;- the precision-weighted log-opinion-pool, the shared-hazard multivariate BOCPD, the sparsified threshold-then-sum, the corroboration ladder."
+* L333 replacement: drift "reads as a change in DESCRIPTION LENGTH" of `l(G)+l(D|G)`. "One currency, one ledger, no pooling."
+* L335-336: the paragraphs below "record the retired mechanism ... they name no live surface."
+* L338-362 and L371-392 then still describe the pool, gong ladder and whitening in present tense. L396 says "the quorum-servo gongs the Measure". These are the contradiction. They are leftover prose, not a second ruling.
+* L264 also names the product's "log-opinion-pool" weights as sins of the wrong algebra.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-what-the-code-implements`>>
+
+!! 2. What the code implements
+packages/lararium-mesh/src/ffz-project.ts (793 lines). The retired stack, in full:
+* L354 MEASURE_PLANES, L382 jacobiEigen, L433 symInvSqrt (the whitening).
+* L458-495 QuorumServoConfig and defaults (gate, vetoGate, screamZ, coFireWindow, quorumFirm).
+* L511 MeasureLevel "none|provisional|firm|gong" (the ladder).
+* L571-603 schmittGongCore. L642 quorumStep (whitened multiplicative pool, BOCPD lambda at L481/L574, conflict guard).
+* L333 comment: "Survivors pool MULTIPLICATIVELY as a log-opinion ...".
+* The file's own L349-351 comment: orchestrator "BUILT and tested; it runs live as a daemon verb post-re-harvest ..., no daemon caller wired yet."
+
+Not part of the stack, and live: address helpers ffzMembershipAddress/ffzTruncate/ffzCoDepth/ffzLca (L111-185), ffzArcClosed (L771), ffzAcceptRecluster (L783). Also centroidDriftStep (L294) and SERVO_DEFAULTS (L246), whose use I checked only in the orchestrator.
+
+Callers (grep of packages/*/src, tests, scripts):
+* quorumStep, quorumServoInit and centroidDriftStep have one src caller: packages/lararium-sensorium/src/ffz-orchestrator.ts (L55-57, L288, L325, L380-398), inside deriveMeasureLabels (L354).
+* deriveMeasureLabels, computePlaneDrifts and orchestrateWing/orchestrateWingLive (L428, L698) have NO caller outside that file. The only link is `export *` in packages/lararium-sensorium/src/index.ts:6.
+* No Python calls it. scripts/loci_io.py only mentions the orchestrator in comments.
+* lares worldline enrich (packages/lares-cli/src/commands/worldline.ts:348) runs runFfzEnrich, which spawns worldline_ffz.py. That is a different path (Beat-cell fill). It does not touch the quorum stack.
+* Tests only: packages/lararium-mesh/tests/ffz-quorum-servo.test.ts, ffz-measure-servo.test.ts, ffz-project.test.ts, parity-manifest.test.ts, and packages/lararium-sensorium/tests/ffz-orchestrator.test.ts.
+* packages/lararium-mesh/src/capture/build-patch.ts imports ffz-project. It does not use the quorum symbols (grep shows none).
+Status: the stack is exported but unwired. No production path reaches it. It is dead in production, live in tests.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-history-and-rulings`>>
+
+!! 3. History and rulings
+* Code: bad196fae "quorum.servo.stands" (the fusion pure logic) and 0cdb2a2ed "measureStep subset quorumStep". Both came before the canon turn.
+* Canon turn: 7b4afb741 (2026-07-12) "keystone.product.falls &#45;- the planes NEST; a chain, never a product". It is the commit that introduced "log-opinion-pool" retirement prose in bags (git log -S, with fbf68c0ad as the keystone canon that first held the term).
+* No commit, memory note or roadmap line ever ruled the code's removal. I found no plan to burn it.
+* Roadmap stable-founding-road.mem:806 lists "Band-ladder residue: one five-band ladder, the measure-servo aliases in `ffz-project.ts`, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time." So the house knows the residue and parked it behind the Sensorium. That is a deferral, not a keep ruling.
+* Memory: project_living_grammar_palace.md (2026-06-29) predates the retirement. Its only live FFZ ruling concerns the clock binding. Nothing in memory grep for "opinion pool" rules for keeping the stack.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-the-burn`>>
+
+!! 4. The burn
+* project_next_arc_sensorium_sidecar.md, section "2026-10-13": ~/.mempalace and the memory sensorium store were burned. Re-stand is "priority 1 ... after all DreamNet roadmap work finishes." The operator also ruled 2026-10-11 that the sensorium reads pono-not-working until then.
+* ffz-orchestrator is a sensorium subsystem (packages/lararium-sensorium, mempalace readers). The quorum stack exists only to feed it. So yes, the stack belongs to the burned/parked subsystem.
+* Caution: the burn took the DATA stores, not the code. The re-stand could want a gong. But the carrier's present ruling says the re-stand's drift reads in description-length bits, not a pool. A re-stand following canon would not use quorumStep.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recommendation`>>
+
+!! Recommendation: (A)
+* The carrier L306-333 is a clear, dated, explicit ruling (retire the whole stack). Code is its only dissent, and no production caller holds it.
+* Evergreen law (a72afb259 "the past leaves the code") burns refusals of the house's earlier shape. A retired algorithm kept only by tests is that class.
+* Burn in code: ffz-project.ts L333-L770 span (MEASURE_PLANES through quorumStep, plus the SERVO aliases at L246-261 if unused after), ffz-quorum-servo.test.ts, ffz-measure-servo.test.ts, the quorum cases in ffz-project.test.ts and parity-manifest.test.ts, and in ffz-orchestrator.ts deriveMeasureLabels/computePlaneDrifts/orchestrateWing (or the whole file with its test). Re-check index.ts exports and plugin-tiddler.generated.ts / memetic-wikitext-sensorium.ts, which also mention ffz-project.
+* Carrier: delete L335-L392 residue (retired-mechanism paragraphs, the whitening warning, the "two operators" quorum line at L396 as written), and keep L306-L333 rewritten as present law: the chain, the residual priced in bits, no pool. Roadmap L806 residue line then drops its `ffz-project.ts` clause.
+* Do not touch the live address helpers (L111-185, L771, L783).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/residual-risk-one-question-for-the-operator`>>
+
+!! Residual risk / one question for the operator (soft)
+Not strictly needed, but flag it: the roadmap parks the residue "behind the Sensorium's wait". If the operator wants the Sensorium re-stand to inherit a segmenter, the burn deletes ~450 lines they may expect to reuse. Question: "The fused Measure retired 2026-07-12; may its code (quorumStep, schmittGongCore, whitening, ffz-orchestrator) burn now, with the re-stand drift built on description length?" My read: yes, since the canon already answers it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iB5kzsXRtfHeMxsrIJxrIt64qdpM5Z-Vr4LOlQTfoFM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

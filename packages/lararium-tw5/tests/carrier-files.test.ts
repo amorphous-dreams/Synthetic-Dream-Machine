@@ -15,7 +15,7 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { carrierFiles, declaresCarrier, readCarrierFiles, SUBMODULES } from "../src/carrier-files.js";
+import { carrierFiles, declaresCarrier, FROZEN_SPECIMENS, readCarrierFiles, SUBMODULES } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { CARRIER_DECLARATION as DECL } from "@lararium/memetic-frame";
 import { REPO } from "./test-wiki.js";
@@ -60,7 +60,7 @@ describe("declaresCarrier — a file counts as a carrier when it says so", () =>
 
   /** A meta block standing above a frame's STX still declares — the finder asks nothing about STX. */
   test("a meta block above STX still declares", () => {
-    const d = declaresCarrier(`\`\`\`toml meta\ntype = "${CARRIER_TYPE}"\n\`\`\`\n<<^ code="&#x0002;">>\n`);
+    const d = declaresCarrier(`\`\`\`toml meta\ntype = "${CARRIER_TYPE}"\n\`\`\`\n<<^ code=\`&#x0002;\`>>\n`);
     expect(d?.form).toBe("type-field");
   });
 
@@ -130,6 +130,26 @@ describe("carrierFiles — the corpus, from the declarations that make it", () =
   });
 
   /**
+   * FROZEN SPECIMENS STAND IN AN OLDER FORM ON PURPOSE (working-procedures, "a `git ls-files '*.mem'`
+   * sweep reaches frozen fixtures"). They pin a grammar version, never the corpus, and every
+   * per-carrier law that met them read their older form as a straggler.
+   */
+  test("CONTROL — a real bags carrier rides in", () => {
+    // The sensorium fixtures come from a live writer in the kupono frame, so they ride in as carriers.
+    expect(found).toContain("packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/kumulipo-beckwith.mem");
+    expect(found).toContain("bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
+  });
+
+  test("no frozen-specimen path rides in", () => {
+    expect(FROZEN_SPECIMENS.length).toBeGreaterThan(0);
+    for (const dir of FROZEN_SPECIMENS) {
+      // The specimens now stand as plain text and declare nothing; the exclusion still guards the dir
+      // against a future specimen that does declare.
+      expect(found.filter((f) => f.startsWith(dir + "/"))).toEqual([]);
+    }
+  });
+
+  /**
    * TRACKED ONLY. A filesystem walk would enrol untracked scratch — a half-written draft, a build
    * artifact — into the corpus and fail the gates on files nobody committed.
    */
@@ -174,7 +194,6 @@ describe("no reader enumerates the corpus by its own glob", () => {
     // Not a corpus finder: it asks which files bags/ TRACKS, carrier or not, to catch an uncarried one.
     ["packages/lararium-tw5/tests/carrier-shape.test.ts", "asks what bags/ tracks, not what declares — an uncarried file is its finding"],
     // Not a corpus finder: it sweeps prose and source for a retired photocopy verb.
-    ["tools/photocopies-to-has.mjs", "sweeps prose and source for a verb spelling, never the corpus"],
     // Not a corpus finder: it asks which carriers the WORKING TREE shows dirty, to refuse a blind stamp.
   ]);
 

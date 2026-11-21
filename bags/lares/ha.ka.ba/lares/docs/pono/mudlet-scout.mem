@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/mudlet-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/mudlet-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/mudlet-scout.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "mudlet-scout — VERBATIM handoff of a tasked Fable spirit: Mudlet (the Lua 5.1 MUD client) surveyed 2026-10-16 as a host where a lararium joins any game or world as a capability, never as the game. Carries Mudlet's capability surface (Lua, GMCP and its kin, HTTP without WebSocket, Geyser panes, the mapper, packages, the loopback MCP server merged into development), four integration patterns (virtual-MUD projection, proxy, package over HTTP, server-side module), the TiddlyWiki mapping across store, engine and projection, AI co-player squads under wizard approval on Islands of Myth, the sensorium and live-3D deferral, a phased plan riding the portable-engine plan, and seven open rulings. Held as a collision surface."
@@ -21,7 +17,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/mudlet-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Mudlet ~ a spirit's handoff, held unedited
 
@@ -35,7 +31,7 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -365,13 +361,13 @@ All work outside the tracked tree under a scratch `LAR_ROOT`; e2e vessels per th
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/page-controls`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2IFZXAJozmr9TiOG92RVHNEo5TBlmaoOjXI-aeQsKkg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QdkPBEjSXSSA2yplGtbtepAq9RzxATrP8GJDXjWMf8g`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

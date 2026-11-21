@@ -45,7 +45,7 @@ describe.skipIf(wikiSkip)(`hana interpreter lookup${skipNote}`, () => {
   }, 60_000);
 
   test("RED→GREEN — a REGISTERED grammar-key's interpreter branch fires (title lookup, not tag)", () => {
-    const html = renderWikitext(e, `<<~ hana "${REGISTERED_KEY}">>\npayload text\n<<~/hana>>`);
+    const html = renderWikitext(e, `<<~ hana grammar=\`${REGISTERED_KEY}\`>>\npayload text\n<<~/hana>>`);
     expect(html, "the registered interpreter never transcluded — lookup still self-referencing/tag-keyed").toContain("probe-interp");
     expect(html).toContain("payload text");
     // the verbatim fallback must NOT also fire alongside a matched interpreter
@@ -53,7 +53,7 @@ describe.skipIf(wikiSkip)(`hana interpreter lookup${skipNote}`, () => {
   });
 
   test("CONTROL — an UNREGISTERED grammar-key still falls to the verbatim, escaped fallback", () => {
-    const html = renderWikitext(e, '<<~ hana "no-such-interpreter">>\n<script>evil</script>\n<<~/hana>>');
+    const html = renderWikitext(e, "<<~ hana grammar=`no-such-interpreter`>>\n<script>evil</script>\n<<~/hana>>");
     expect(html, "the verbatim fallback pre/code wrapper is gone").toContain("lar-hana");
     // the fallback must escape the body, never render it as live markup
     expect(html).not.toContain("<script>evil</script>");

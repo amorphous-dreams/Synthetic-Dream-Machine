@@ -30,13 +30,14 @@
  *   - A MOUNT NEVER SHOWS BLANK. Until a surface's mount epoch paints its first `lar:surface` key, a loading
  *     plate beside the pane reads the island's latest breath for that surface (`setBreath`). On a switch the
  *     old frame stays visible, inert, under the plate, and the plate drops in the paint that lands the first key.
- *   - NOTHING LEAKS ACROSS A SWITCH. Islands share no render-id space: the old surface's nodes, words and popup
+ *   - NOTHING LEAKS ACROSS A SWITCH. Islands share no render-id space: the outgoing surface's nodes, words and popup
  *     placement end with it; each surface keeps its own revisions, sheet and local revisions.
  *   - A HOST DOOR OPENS UNDER A PERSON'S ACT AND THE SURFACE'S MANIFEST. A `lar:service` ask opens its door only
  *     while the person's last act on the page stands fresh (or the browser's own transient activation does), one
  *     door per act, and only for a kind the manifest the surface opened with names; any other answers by name,
  *     with the words beside the control the person acted on. Every ask gets its `lar:service-result`.
  */
+import { PAGE_DOORS } from "./page-doors.js";
 import { Idiomorph } from "idiomorph";
 // The contract module carries no imports of its own; its own subpath keeps the mesh barrel (and its wasm) out of
 // the page sink.
@@ -96,6 +97,8 @@ export interface ProjectionSink {
   apply(frame: LarSurfaceFrame): FrameVerdict;
   /** Take an answer: `applied` clears its control's words, `stale-target` and `refused` paint them. */
   applyResult(result: LarMsg_ControlResult): ResultVerdict;
+  /** The vessel's named reply to a resend that met an act still waiting (`control-event-pending`): that send counts no attempt. */
+  applyPending(eventId: string): void;
   /** The island's latest breath for a surface, read by the loading plate while that surface's mount waits. */
   setBreath(surface: string, breath: LarBreath): void;
   /** The vessel moved its gate to a surface: the plate stands over the shown frame until that surface paints. */
@@ -111,6 +114,10 @@ export interface ProjectionSink {
   /** Take an island's host-door ask: open it under a fresh act and the manifest, or refuse it by name; either
    *  way answer `lar:service-result` on the return leg. */
   applyService(ask: LarSurfaceService): Promise<ServiceVerdict>;
+  /** How many reliable acts this page relayed and holds no answer for. */
+  pendingActs(): number;
+  /** Release the page's unload hold. */
+  dispose(): void;
   /** The manifest this surface opened with, for the vessel's surface-open (`lar:resend{manifest}`). */
   manifest(): LarSurfaceManifest;
 }
@@ -129,6 +136,9 @@ export const LAR_REFUSAL_WORDS: Readonly<Partial<Record<LarRefusal, string>>> = 
   "continuous-event-refused": "This event streams continuously and cannot cross this surface.",
   "pointer-capture-refused": "Pointer capture cannot cross this surface.",
   "reserved-chord": "This shortcut belongs to the browser or system.",
+  "surface-unknown": "This control's surface no longer stands in this vessel. Your action has not applied.",
+  "event-malformed": "This action did not read whole and has not applied. Try it again.",
+  "receipt-refused": "Your change stands on this page, but the vessel did not keep it in its store. It has not saved yet.",
 };
 const wordsFor = (reason: LarRefusal, bound: number): string =>
   reason === "input-too-long"
@@ -312,7 +322,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const waitingOn = awaited ?? shownSurface;
     const up = waitingOn === null || waitingOn !== shownSurface || !stateOf(waitingOn).painted;
     plateEl.hidden = !up;
-    paneEl.inert = up;                         // the old frame stays visible; its nodes reach no island
+    paneEl.inert = up;                         // the outgoing frame stays visible; its nodes reach no island
     if (!up) { plateEl.removeAttribute("data-lar-loading"); plateEl.replaceChildren(); return; }
     const breath = waitingOn === null ? [...surfaces.values()].map((s) => s.breath).findLast((b) => b !== null) ?? null : stateOf(waitingOn).breath;
     plateEl.dataset["larLoading"] = breath?.phase ?? "";
@@ -335,6 +345,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     if (readLarFrame(frame) === null || typeof frame.surface !== "string" || frame.surface === "") return "malformed";
     const switching = frame.surface !== shownSurface;
     const st = stateOf(frame.surface);
+    if (st.epoch !== null && st.epoch !== frame.mountEpoch) endEpochPending(frame.surface, st.epoch);
     const newEpoch = switching || st.epoch !== frame.mountEpoch;
     if (newEpoch) {
       if (st.epoch !== frame.mountEpoch) st.hintSequence = 0;
@@ -347,6 +358,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       return true;
     });
     if (!newEpoch && fresh.length === 0) return "stale-frame";
+    if (!newEpoch && frame.surface === shownSurface) resendPending(frame.surface);
     const style = fresh.find((k) => k.key === LAR_KEY_STYLE);
     if (style) st.sheet = style.tombstone ? "" : style.css ?? "";
     const membership = fresh.find((k) => k.key === LAR_KEY_MEMBERSHIP);
@@ -361,7 +373,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     }
 
     if (switching) {
-      // Another island's frame: its render-ids name other nodes, so the old surface's nodes, the words standing
+      // Another island's frame: its render-ids name other nodes, so the outgoing surface's nodes, the words standing
       // beside them and the popup placement measured there all end with it.
       paneEl.replaceChildren();
       dropAllRefusals();
@@ -469,13 +481,64 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   /** Hint selectors the console already named. */
   const refusedHintSelectors = new Set<string>();
   /** Every reliable act this page relayed and has no answer for yet, by event id. */
-  const pending = new Map<string, { readonly surface: string; readonly target: string }>();
+  const pending = new Map<string, { readonly surface: string; readonly target: string; readonly ev: LarMsg_ControlEvent; readonly mountEpoch: number; attempts: number }>();
   const PENDING_MAX = 1024;
+  const RESEND_ATTEMPTS = 3;
+  const endPending = (id: string, reason: LarRefusal): void => {
+    const asked = pending.get(id);
+    if (!asked) return;
+    pending.delete(id);
+    const fieldId = endFieldAct(id);
+    const picker = pickers.get(id);
+    if (picker) { pickers.delete(id); picker.setStatus("refused"); }
+    if (asked.surface === shownSurface) paintRefusal(fieldId ?? asked.target, reason);
+  };
+  /**
+   * THE BOUND FIRES, AND A LATE ANSWER STILL LANDS. An act's answer waits on its rest while the frames its own write painted stream
+   * ahead of it on the same channel, so the bound can fire with the answer already queued behind them. The act leaves `pending` with
+   * its words painted, and stays named here: the answer that follows clears those words or paints its own. Bounded like `pending`.
+   */
+  const exhausted = new Map<string, { readonly surface: string; readonly target: string; readonly mountEpoch: number }>();
+  const exhaust = (id: string, asked: { readonly surface: string; readonly target: string; readonly mountEpoch: number }): void => {
+    endPending(id, "binding-unavailable");
+    exhausted.set(id, { surface: asked.surface, target: asked.target, mountEpoch: asked.mountEpoch });
+    if (exhausted.size > PENDING_MAX) exhausted.delete(exhausted.keys().next().value!);
+  };
+  const endEpochPending = (surface: string, epoch: number): void => {
+    for (const [id, asked] of pending) {
+      if (asked.surface === surface && asked.mountEpoch === epoch) endPending(id, "stale-target");
+    }
+  };
+  const resendPending = (surface: string): void => {
+    if (!doors || surface !== shownSurface) return;
+    const epoch = stateOf(surface).epoch;
+    for (const [id, asked] of pending) {
+      if (asked.surface !== surface || asked.mountEpoch !== epoch) continue;
+      if (asked.attempts >= RESEND_ATTEMPTS) { exhaust(id, asked); continue; }
+      asked.attempts++;
+      doors.sendControlEvent(surface, asked.ev);
+    }
+  };
+  const holdPending = (surface: string, target: string, ev: LarMsg_ControlEvent): void => {
+    pending.set(ev.eventId, { surface, target, ev, mountEpoch: ev.mountEpoch, attempts: 1 });
+    if (pending.size > PENDING_MAX) endPending(pending.keys().next().value!, "binding-unavailable");
+  };
+  // THE PAGE HOLDS ITS UNLOAD while a relayed act still waits for its result: a confirmed edit answers once its
+  // document rests, and a page that leaves first would lose it. The hold rides the browser's own leave prompt and
+  // reads the pending count at the moment of the leave: no timer decides. `pagehide` gives a page no way to hold.
+  const holdUnload = (event: BeforeUnloadEvent): void => {
+    if (pending.size === 0) return;
+    event.preventDefault();
+    event.returnValue = "";
+  };
+  const leaving = host.ownerDocument.defaultView;
+  leaving?.addEventListener("beforeunload", holdUnload);
   type EventBody = Omit<LarMsg_ControlEvent, "type" | "eventId" | "cameraId" | "mountEpoch" | "seenFrameRev" | "seenMembershipRev" | "controlId" | "renderId" | "kind">;
   const relay = (target: Target, kind: LarControlKind, body: EventBody): LarMsg_ControlEvent | undefined => {
     if (!doors || shownSurface === null || !plateEl.hidden) return;    // under the plate the shown frame names no live mount
     const st = stateOf(shownSurface);
     if (st.epoch === null) return;
+    if (kind !== "lar:sense") resendPending(shownSurface);
     const membershipRev = st.revs.get(LAR_KEY_MEMBERSHIP);
     const ev = mkLarControlEvent({
       eventId: mintEventId(), cameraId: LAR_CAMERA_STORY, mountEpoch: st.epoch, kind,
@@ -484,10 +547,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       ...(target.field === "controlId" ? { controlId: target.id } : { renderId: target.id }),
       ...body,
     });
-    if (kind !== "lar:sense") {
-      pending.set(ev.eventId, { surface: shownSurface, target: target.id });
-      if (pending.size > PENDING_MAX) pending.delete(pending.keys().next().value!);
-    }
+    if (kind !== "lar:sense") holdPending(shownSurface, target.id, ev);
     doors.sendControlEvent(shownSurface, ev);
     if (kind === "lar:act") activation = { at: performance.now(), surface: shownSurface, target: target.id };
     return ev;
@@ -663,6 +723,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     composingFields.delete(src);
     compositionEndValue.set(src, (src as LiveControl).value);
     holdKeysAfterComposition = true;
+    // PACING: the next task releases the temporary key hold after composition ends.
     setTimeout(() => { holdKeysAfterComposition = false; }, 0);
     relayWholeValue(event, "sense", true);
   });
@@ -946,7 +1007,15 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   let lastField: LarFieldNode | null = null;
   let lastActivated: HTMLElement | null = null;
   /** Each toolbar act in flight, by event id: its field, the revision it carried and the one it reserved. */
-  const fieldActs = new Map<string, { readonly id: string; readonly node: LarFieldNode; readonly carried: number; readonly reserved: number }>();
+  const fieldActs = new Map<string, { readonly surface: string; readonly id: string; readonly node: LarFieldNode; readonly carried: number; readonly reserved: number }>();
+  const endFieldAct = (eventId: string): string | undefined => {
+    const act = fieldActs.get(eventId);
+    if (!act) return undefined;
+    fieldActs.delete(eventId);
+    const st = stateOf(act.surface);
+    if (st.localRev.get(act.id) === act.reserved) st.localRev.set(act.id, act.carried);
+    return act.id;
+  };
   /** A node's own control id or render id, never an ancestor's. */
   const ownId = (el: Element): string | null => el.getAttribute("data-control-id") ?? el.getAttribute("data-lar-rid");
 
@@ -968,7 +1037,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     const act = fieldActs.get(result.eventId);
     if (!act || shownSurface === null) return undefined;
     fieldActs.delete(result.eventId);
-    const st = stateOf(shownSurface);
+    const st = stateOf(act.surface);
     const rev = st.localRev.get(act.id);
     if (result.status === "applied" && result.want && rev === act.reserved && paneEl.contains(act.node)) {
       applyWholeValue(act.node, result.want.value, result.want.selStart, result.want.selEnd);
@@ -1008,7 +1077,7 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
       selection: { start: field.selectionStart ?? 0, end: field.selectionEnd ?? 0 }, localRev: carried,
     });
     if (!ev) { st.localRev.set(fieldTarget.id, carried); return; }
-    fieldActs.set(ev.eventId, { id: fieldTarget.id, node: field, carried, reserved: carried + 1 });
+    fieldActs.set(ev.eventId, { surface: shownSurface, id: fieldTarget.id, node: field, carried, reserved: carried + 1 });
     if (fieldActs.size > PENDING_MAX) fieldActs.delete(fieldActs.keys().next().value!);
   }, true);
   paneEl.addEventListener(LAR_FIELD_TAKE_THEIRS, (event) => {
@@ -1037,10 +1106,19 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   const applyResult = (result: LarMsg_ControlResult): ResultVerdict => {
     if (readLarControlResult(result) === null) return "ignored";
     settleOffer(result);                                           // S6: a file picker's status
+    const late = exhausted.get(result.eventId);
+    if (late) {
+      exhausted.delete(result.eventId);
+      if (late.surface !== shownSurface || result.mountEpoch !== late.mountEpoch || result.mountEpoch !== stateOf(late.surface).epoch) return "ignored";
+      if (result.status === "applied") { dropRefusal(late.target); return "cleared"; }
+      const lateReason: LarRefusal = result.status === "stale-target" ? "stale-target" : result.reason ?? "binding-unavailable";
+      if (lateReason !== "unclaimed") paintRefusal(late.target, lateReason);
+      return "painted";
+    }
     const asked = pending.get(result.eventId);
     if (!asked) return "ignored";                                  // an answer to nothing this page relayed
-    if (asked.surface !== shownSurface) { pending.delete(result.eventId); return "ignored"; }
-    if (result.mountEpoch !== stateOf(asked.surface).epoch) return "ignored";
+    if (asked.surface !== shownSurface) { pending.delete(result.eventId); endFieldAct(result.eventId); return "ignored"; }
+    if (result.mountEpoch !== asked.mountEpoch || result.mountEpoch !== stateOf(asked.surface).epoch) return "ignored";
     pending.delete(result.eventId);
     const refusalBeside = settleFieldAct(result)?.id ?? asked.target;  // a toolbar act's words stand beside its field
     if (result.status === "applied") { dropRefusal(refusalBeside); return "cleared"; }
@@ -1058,41 +1136,27 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
   let activation: { readonly at: number; readonly surface: string; readonly target: string } | null = null;
   const manifestKinds: readonly LarServiceKind[] = opts.services ?? LAR_SURFACE_DEFAULT_SERVICES;
   const carried = new Set<LarServiceKind>(manifestKinds);
-  const pageDoors: Partial<Record<LarServiceKind, LarHostDoor>> = {
-    clipboard: async (args) => { await navigator.clipboard.writeText(String(args["text"] ?? "")); },
-    download: (args) => {
-      const url = URL.createObjectURL(new Blob([String(args["text"] ?? "")], { type: String(args["type"] ?? "text/plain") }));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = String(args["filename"] ?? "download.txt");
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
-    },
-    print: () => { window.print(); },
-    fullscreen: async (args, at) => {
-      const mode = String(args["mode"] ?? "toggle");
-      if (mode === "exit" || (mode === "toggle" && document.fullscreenElement)) await document.exitFullscreen();
-      else await at.requestFullscreen();
-    },
-    "open-external": (args) => {
-      if (!window.open(String(args["url"] ?? ""), String(args["windowName"] ?? "_blank"), "noopener,noreferrer")) throw new Error("the browser opened no window");
-    },
-  };
+  const pageDoors = PAGE_DOORS;
   const doorFor = (kind: LarServiceKind): LarHostDoor | undefined => opts.doors?.[kind] ?? pageDoors[kind];
+  // LIVENESS: this window bounds how long an unspent act licenses a door. The token already spends once (one act opens one
+  // door) and a later act replaces it, but an act that no ask ever claims has no event that ends it
+  // (a cause outlives its click): only age separates the person's click from an unprompted island ask. It mirrors the browser's own transient
+  // activation, which gates the same doors (fullscreen, open, clipboard) on its own clock.
   const activeAct = (surface: string): boolean =>
     (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation?.isActive === true
+    // LIVENESS: the act's freshness window, as above.
     || (activation !== null && activation.surface === surface && performance.now() - activation.at <= ACTIVATION_MS);
   /** Answer one ask on the document leg of the surface that asked, under the epoch the page holds for it. */
   const answerService = (ask: LarSurfaceService, status: "ok" | LarRefusal): void => {
     const st = stateOf(ask.surface);
     if (!doors || st.epoch === null) return;
+    if (ask.surface === shownSurface) resendPending(ask.surface);
     const ev = mkLarControlEvent({
       eventId: mintEventId(), cameraId: LAR_CAMERA_STORY, mountEpoch: st.epoch, kind: "lar:service-result",
       controlId: "lar:document", action: "lar:service-result", seenFrameRev: st.revs.get(LAR_KEY_SURFACE) ?? 0,
       requestId: ask.requestId, status,
     });
-    pending.set(ev.eventId, { surface: ask.surface, target: "lar:document" });
-    if (pending.size > PENDING_MAX) pending.delete(pending.keys().next().value!);
+    holdPending(ask.surface, "lar:document", ev);
     doors.sendControlEvent(ask.surface, ev);
   };
   const applyService = async (ask: LarSurfaceService): Promise<ServiceVerdict> => {
@@ -1119,14 +1183,24 @@ export function createProjectionSink(host: HTMLElement, opts: ProjectionSinkOpti
     return "opened";
   };
 
+  // THE RETRY BOUND COUNTS ONLY SENDS THE VESSEL NEVER ACKNOWLEDGED (dreamdom-port-contract #/retry-law). A resend that met the act
+  // still waiting at the vessel draws its named reply, a causal event: the act stands held, so that send refunds its attempt.
+  const applyPending = (eventId: string): void => {
+    const asked = pending.get(eventId);
+    if (asked && asked.attempts > 1) asked.attempts--;
+  };
+
   return {
     apply,
     applyResult,
+    applyPending,
     applyService,
+    pendingActs: () => pending.size,
+    dispose: () => { leaving?.removeEventListener("beforeunload", holdUnload); },
     manifest: () => ({ services: [...manifestKinds] }),
     setBreath: (surface, breath) => { stateOf(surface).breath = breath; renderPlate(); },
     awaitSurface: (surface) => { awaited = surface === shownSurface ? null : surface; renderPlate(); },
-    arm: (d) => { doors = d; },
+    arm: (d) => { const rearming = doors !== null; doors = d; if (rearming && shownSurface !== null) resendPending(shownSurface); },
     surface: () => shownSurface,
     members: () => (shownSurface === null ? null : stateOf(shownSurface).members),
     route: () => (shownSurface === null ? null : routeOf(stateOf(shownSurface))),

@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-tier-source/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-tier-source/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-tier-source/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+MEASURED: The repository is at `ffe05bc79`. This is a read-only design; no files were written.
+
+''Tier source.'' MEASURED: The catalog maps bag URI to Automerge URL; its in-memory bag-to-document registration must be rebuilt at boot ([[register-bags.ts:49|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/register-bags.ts:49]]). Bag-root `meta.mem` supplies `cap-tier`; missing or torn values parse as VEIL ([[bag-manifest.ts:69|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/bag-manifest.ts:69]]). A tiddler’s `capTier` refines the bag by meet ([[recipe.ts:53|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/recipe.ts:53]]).
+
+INFER: Build a live, authoritative reverse document-to-bag index from registered catalog and realm bindings, plus explicit bindings for system planes. Read the manifest from the bag’s resolved home and meet its default with every present per-tiddler `capTier`. An absent //individual refinement// adds nothing; a present malformed refinement becomes VEIL. An unresolved bag, unreadable registry, missing or torn manifest, or incomplete cascade must deny crossings, not return the existing interface’s inert `null`. Reserve inert `null` for an explicitly established non-bag plane whose policy says no declaration applies.
+
+MEASURED: A CID does not encode its bag: `casReferences` derives CID → `{bag, title}` from records’ `textCid` or `_canonical_uri` ([[cas.ts:165|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/cas.ts:165]]). Ciphertext CID → synthetic document ID is only a digest transformation ([[ciphertext-cas-seal.ts:61|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/ciphertext-cas-seal.ts:61]]). INFER: retain an authoritative CID-to-bag binding at sealing/registration and derive cleartext bindings from complete live references. Meet all applicable bindings; missing, ambiguous or unreadable ownership denies. Do not treat a synthetic ID as proof of ownership.
+
+''One predicate.'' INFER: Use `tighten(base: boolean, resource: DocId | CID, audience: "in-process" | "fleet" | "contract" | "world", sources: TierSources): Promise<boolean>`. Return false immediately on structural denial; otherwise resolve declaration ∧ structural floor and test the proven audience. In-process remains allowed after structural checks; a same-face sibling is a vessel crossing and must be tightened. PERSONAGROUP requires proven fleet, CONTRACT fleet or contracted membership, PUBLIC anyone, VEIL only in-process. The existing relay helper merges fleet and contracted peers, so it cannot implement this distinction ([[cap-tier.ts:255|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/cap-tier.ts:255]]).
+
+INFER: Apply it to the ''result'' of each allowing branch, preserving all earlier denials:
+
+* Node repo: [[self-slot-share.ts:135|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:135]], [[141|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:141]], [[146|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:146]], [[151|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:151]], [[157|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:157]], and [[169|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/self-slot-share.ts:169]].
+* Browser repo: [[federation-gate.ts:186|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:186]], [[189|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:189]], [[191|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:191]], and [[193|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/federation-gate.ts:193]]; wire through [[open-browser-vessel.ts:2138|/home/joshu/Synthetic-Dream-Machine/packages/lararium-browser/src/open-browser-vessel.ts:2138]].
+* Bulb read face: guard each public-CAS allow at [[bulb-read-face.ts:162|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bulb-read-face.ts:162]], [[170|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bulb-read-face.ts:170]], and [[175|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bulb-read-face.ts:175]], and the separately served bulb bytes at [[224|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/bulb-read-face.ts:224]]. Give verified release/genesis material explicit provenance.
+* CAS block door: guard both cleartext and ciphertext block returns at [[cas-wire.ts:100|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/cas-wire.ts:100]] and [[122|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/cas-wire.ts:122]]; refusal remains Mu.
+
+''Secrets registry.'' MEASURED: Today’s registry is an initially empty in-memory set ([[plane-secrets.ts:43|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/plane-secrets.ts:43]]); the sealed-store `own` shelf supports replaceable vessel notes ([[sealed-store-rest.ts:47|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/sealed-store-rest.ts:47]]). INFER: Add an authenticated, versioned per-face secrets-plane catalog record in sealed custody, populated by the trusted store-creation act, with explicit initialized-empty state. I could not establish an existing per-face secrets catalog in this read; the `own` shelf alone does not establish encryption or face authority. Load and validate all relevant records before the Repo can issue its first external verdict; keep external gates shut until ready. Missing initialization, locked custody, malformed or unreadable records refuse boot or all external crossings—not an empty registry. The existing roster-before-composition pattern is at [[open-node-vessel.ts:810|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/open-node-vessel.ts:810]].
+
+''Reds first.'' INFER: Assert denial for a VEIL bag at node sibling, browser sibling, public bulb CID, and fleet CAS block respectively; assert a PUBLIC-declared registered secrets plane remains CONTRACT after restart; and assert omitted/unreadable ownership or secrets registry refuses rather than becoming inert. Include positive authorized controls and structural-deny controls. Socket-dependent integration tests are ''lead runs''.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SXNoEk-fkA8StXjHkJMH-O2MU3x_YWkx2lNmi_8h9KA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

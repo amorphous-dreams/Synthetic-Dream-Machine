@@ -1,22 +1,21 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/athenaion">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/athenaion`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/athenaion.mem"
-l-space = "stable"
+l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
-role = "Operator-pinned external research reference for Projection Loom composition, sites, multi-view matching and modular procedural world generation; noncanonical upstream"
-tags = ["api/pono/meme", "projection-loom", "research", "external-reference"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom/athenaion"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom/athenaion"
-written = "2026-10-27"
+role      = "Operator-pinned external research reference for Projection Loom composition, sites, multi-view matching and modular procedural world generation; noncanonical upstream"
+tags      = ["api/pono/meme", "projection-loom", "research", "external-reference"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/athenaion"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/athenaion"
+written   = "2026-10-27"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Athenaion ~ Hard External Research Reference
 
@@ -28,7 +27,7 @@ choices, camera calibration, execution model, or Elyncia canon.
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Pin, License and Witness Scope
 
@@ -47,7 +46,7 @@ choices, camera calibration, execution model, or Elyncia canon.
 
 <<~/ahu>>
 
-<<~ ahu #/transfer>>
+<<~ ahu slot=`#/transfer`>>
 
 !! Concrete Architecture Rhymes
 
@@ -77,7 +76,7 @@ choices, camera calibration, execution model, or Elyncia canon.
 
 <<~/ahu>>
 
-<<~ ahu #/limits>>
+<<~ ahu slot=`#/limits`>>
 
 Athenaion does not demonstrate native BRep validation, autonomous genetic
 lineage selection, certified multi-view photogrammetry, a generic intent
@@ -91,12 +90,12 @@ Neither document claims the new functionality already executed.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/research">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/growth">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ai8vqVi0O2wKgsiqapsO1zKdkWUv_fT8FdbGFFVTlqc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YcbYrQIs9smRc_3ioLTbhMCFl_88VAHKkwNFHz1v2XU`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -20,7 +20,7 @@
 
 import type { GrammarRules } from "./types.js";
 import type { MemeAstNode, MemeNode, PranalaEdge, ParseFailure } from "./types.js";
-import { collectEvents } from "./scanner.js";
+import { collectEvents, trailingTextFailures } from "./scanner.js";
 import { buildMemeAst } from "./builder.js";
 import { edgesFromMemeAst } from "./edges.js";
 
@@ -52,6 +52,7 @@ export function parseMemeText(
   const events   = collectEvents(text, grammar);
   const failures: ParseFailure[] = [];
   const nodes    = buildMemeAst(events, uri, grammar, text, failures);
+  failures.push(...trailingTextFailures(text, events, grammar?.sigils));
   const edges    = edgesFromMemeAst(nodes, uri);
   const meme: MemeNode = { kind: "Meme", uri, body: nodes };
   return { meme, nodes, edges, failures };

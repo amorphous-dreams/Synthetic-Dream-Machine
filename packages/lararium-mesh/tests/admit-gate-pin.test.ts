@@ -47,8 +47,8 @@ describe("the admit's pin", () => {
   test("RED: a floor-tier pin refuses pin-other-tier", () => {
     expect(refusalOf({ ...floPin("nexus-a.synthetic", "/ws") })).toBe("pin-other-tier");
   });
-  test("RED: a sovereign pin on /oracle refuses pin-other-route", () => {
-    expect(refusalOf({ ...sovPin("nexus-a.synthetic", "/oracle") })).toBe("pin-other-route");
+  test("RED: a sovereign pin on /flow refuses pin-other-route", () => {
+    expect(refusalOf({ ...sovPin("nexus-a.synthetic", "/flow") })).toBe("pin-other-route");
   });
   test("RED: a pin for nexus-b read with expect nexus-a refuses pin-other-nexus; CONTROL: nexus-b expected reads", () => {
     const b = sovPin("nexus-b.synthetic");
@@ -130,11 +130,11 @@ describe("the pair index", () => {
   });
   test("two routes under one hearth, Nexus and tier keep two keys", () => {
     const ix = hearthPinIndex();
-    const oracle = floPin(A, "/oracle"), announce = floPin(A, "/announce");
-    expect(ix.put("h", oracle)).toBe(true);
+    const flow = floPin(A, "/flow"), announce = floPin(A, "/announce");
+    expect(ix.put("h", flow)).toBe(true);
     expect(ix.put("h", announce)).toBe(true);
     expect(ix.size).toBe(2);
-    expect(ix.get(dialPinKeyOf("h", oracle))).toEqual(oracle);
+    expect(ix.get(dialPinKeyOf("h", flow))).toEqual(flow);
     expect(ix.get(dialPinKeyOf("h", announce))).toEqual(announce);
   });
   test("the same route and Nexus under another tier keeps another key", () => {

@@ -48,6 +48,7 @@ export function laresVenvPython(): string {
 function holdsMempalace(python: string, submoduleRoot: string): boolean {
   try {
     const r = spawnSync(python, ["-c", "import mempalace"], {
+      // LIVENESS: the external interpreter can hang without reporting an exit.
       timeout: 20_000,
       stdio: "ignore",
       env: { ...process.env, PYTHONPATH: submoduleRoot },
@@ -107,7 +108,7 @@ export function resolveMempalaceSpawn(): MempalaceSpawn {
 
 /**
  * The resolved inputs ANY sensorium holder spawn needs — the ONE shape every holder shares,
- * a `serve` holder (structurepalace · form_encoder) OR a batch holder (structure_router · bands
+ * a `serve` holder (structurepalace · content) OR a batch holder (structure_router · bands
  * · form_induction): the venv-aware python, the helper SCRIPT (CODE at the repo root under
  * @lararium/sensorium's scripts, never LAR_ROOT), the mempalace `submoduleRoot` (spawn cwd + PYTHONPATH
  * so `import mempalace` resolves the nakama), and whether the script is present on disk. This resolver
@@ -124,9 +125,9 @@ export interface ResolvedHolderSpawn {
 
 /** Resolve a {@link ResolvedHolderSpawn} for a script under `packages/lararium-sensorium/scripts/`.
  *  ONE body; each named resolver below binds its own `scriptFile` — the only per-holder divergence. */
-function resolveHolderSpawn(scriptFile: string): ResolvedHolderSpawn {
-  const submoduleRoot = join(repoRoot, "mempalace");
-  const script = join(repoRoot, "packages", "lararium-sensorium", "scripts", scriptFile);
+function resolveHolderSpawn(scriptFile: string, root: string = repoRoot): ResolvedHolderSpawn {
+  const submoduleRoot = join(root, "mempalace");
+  const script = join(root, "packages", "lararium-sensorium", "scripts", scriptFile);
   return { python: resolveMempalacePython(), script, submoduleRoot, scriptPresent: existsSync(script) };
 }
 
@@ -139,24 +140,21 @@ function resolveHolderSpawn(scriptFile: string): ResolvedHolderSpawn {
  * kapae · un_kapae). NOT a palace holder — it takes `--palace <sensorium dir>` (the sensorium ROOT,
  * not a leaf store; it resolves `<palace>/content` itself) and speaks MCP over stdio to a harness.
  *
- * The seat `lares vessel stand --claude/--codex/--copilot/--vscode` registers: a harness reaches memory
+ * `clone` names the MAIN clone the seat aims at, never the worktree a command runs from: a harness
+ * keeps the path it was handed long after a lane's worktree goes.
+ *
+ * The seat `lares home tend` registers: a harness reaches memory
  * THROUGH the lares house, never around it into a palace of its own. One owner per palace.
  */
 export type LaresMcpSpawn = ResolvedHolderSpawn;
-export function resolveLaresMcpSpawn(): LaresMcpSpawn {
-  return resolveHolderSpawn("lares_mcp.py");
+export function resolveLaresMcpSpawn(clone: string): LaresMcpSpawn {
+  return resolveHolderSpawn("lares_mcp.py", clone);
 }
 
 /** `structurepalace_io.py` — the persistent NDJSON `serve` holder for the `.structurepalace` AST store. */
 export type StructurePalaceSpawn = ResolvedHolderSpawn;
 export function resolveStructurePalaceSpawn(): StructurePalaceSpawn {
   return resolveHolderSpawn("structurepalace_io.py");
-}
-
-/** `form_encoder.py` — the persistent NDJSON `serve` holder for the living-grammar FORM store. */
-export type FormEncoderSpawn = ResolvedHolderSpawn;
-export function resolveFormEncoderSpawn(): FormEncoderSpawn {
-  return resolveHolderSpawn("form_encoder.py");
 }
 
 /** `persistence_io.py` — the persistent NDJSON `serve` holder for a PersistencePalace (testimony) store. */

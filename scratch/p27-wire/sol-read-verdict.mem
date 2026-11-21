@@ -1,0 +1,60 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/sol-read-verdict`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/sol-read-verdict.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/sol-read-verdict"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/sol-read-verdict"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sol-read-verdict.md — research, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/sol-read-verdict.md` (research, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''Sol — HOLD.'' Reviewed `e1d801042..ed44bf39a`. The four crossings reach one `tightenShare` predicate; the decision matrix has not multiplied per vessel. The production readers and audience proofs remain incomplete.
+
+# ''P1 — The secrets registry gates documents outside its face.'' [[held-share-floor.ts:80|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-mesh/src/held-share-floor.ts:80]] queries the registry for every ordinary document. A persona-less Herm therefore refuses even a known public board with `secrets-registry-unread`. `faceScopedSecrets` exists but has no production caller. ''Smallest cure:'' supply a proven ownership reader and apply that helper here; unresolved ownership must still refuse.
+
+# ''P1 — Browser audience defaults grant authority without proving a relation.'' [[open-browser-vessel.ts:2400|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-browser/src/open-browser-vessel.ts:2400]] assigns unclassified peers `"in-process"` and a relay with a null gate `"fleet"`. The structural helper also allows these cases. An unclassified peer consequently bypasses tier readings altogether. ''Smallest cure:'' require positive house-peer membership and positive fleet proof; pass unresolved relations to the named refusal. This retains the old default-share assumption despite the new predicate.
+
+# ''P2 — No production act initializes the required registry.'' [[open-node-vessel.ts:2657|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/open-node-vessel.ts:2657]] binds the face catalog without initializing its registry. Production packages contain no caller of the new initializer or registration act. A fresh, bound catalog therefore remains `secrets-registry-uninitialized`, independently of finding 1. ''Smallest cure:'' mint and durably flush the initialization row during sealed face creation; wire registration when a secrets store stands. Do not add an implicit empty-registry fallback.
+
+# ''P2 — Public realm CAS loses its document relation.'' [[bulb-read-face.ts:181|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/bulb-read-face.ts:181]] recovers a realm book’s document through the Herm’s local bag bindings, although the realm readers already had—and discarded—its document URL. Announced books need not occur in that catalog. Moreover, the production public-floor reader recognizes only the deterministic boards. Fixing registry scope alone therefore cannot restore this lane. ''Smallest cure:'' retain the actual book document binding and feed its proven public standing into the common floor reader.
+
+# ''P2 — A present malformed refinement can disappear.'' [[share-tighten.ts:135|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-mesh/src/share-tighten.ts:135]] discards `null` alongside absent `undefined`. The reader contract distinguishes absence from a present torn value, and `parseCapTier(null)` correctly returns VEIL. Currently `[null]` leaves a PUBLIC bag public. ''Smallest cure:'' filter only `undefined`; parse `null`.
+
+# ''P2 — Node session CAS refusals travel as ordinary misses.'' [[worker-handle.ts:119|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/worker-handle.ts:119]] replies with `bytes: null` but no refusal. The shared asker resolves that as a miss, while the browser sends `"CasRefused"`. ''Smallest cure:'' include the refusal field and assert rejection through `vesselCasAsker`.
+
+# ''P3 — Dead substrate plumbing obscures the new byte door.'' [[vessel-island-pool.ts:96|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/vessel-island-pool.ts:96]] still passes CAS directories into workers whose direct readers were removed. Its option comments still promise those reads. ''Smallest cure:'' remove unused directory options and worker data, and update the comments. The node/browser scoped-content adapters also duplicate the same audience/member checks; one shared adapter would keep their refusal behavior aligned.
+
+The island audience reader otherwise uses host-held recipe/face relations, and forged worker audience fields are ignored. The new predicate and immutable genesis inventory require no clock or global lookup.
+
+The tests contain honest reds: `share-tighten.test.ts` exercises the matrix; the P27 Repo tests make a structurally allowed VEIL crossing fail; `p27-cas-floor.test.ts` proves denial before storage and withdrawal after an await; `p27-worker-cas.test.ts` proves repeated reads cross the door and preserve refusals; `p27-island-audience.test.ts` exercises the node handlers with changing relations.
+
+Their limits matter:
+
+* `face-scoped-secrets.test.ts` proves the helper, leaving its missing production wiring undetected.
+* “Both shores” in `p27-cas-floor.test.ts` means two resolver spies, not the production storage adapters.
+* `p27-public-cas.test.ts` supplies the missing binding itself; its positive control short-circuits through the released-floor lane.
+* Permissive `publicShareTiers` fixtures preserve older tests but do not validate the production floor.
+* The worker source-regex check proves code shape, not runtime authorization.
+
+Dist freshness guards passed. Read-only probes confirmed the faceless refusal, uninitialized-catalog refusal, and null-refinement opening. No files changed; no build, test suite, worker, socket, or daemon started. Browser-mode and socket-dependent witnesses remain ''lead runs''.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dgL3Iiwu1oDuwErvVgKMa2bsrIyAOxlZ5udT8B1JxPE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

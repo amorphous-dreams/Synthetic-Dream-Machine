@@ -18,12 +18,16 @@
  *   · THE CARRIED ADMIT: an admit emits a bundle (entry · lineage · AID · this vessel's gate key) the joinee's
  *     take verifies offline and keeps; a revoke emits none.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { emptyFoundingCharterDoc } from "@lararium/mesh";
 import { beginNexusKeyReissue, faceProofKeyFile, listFaceProofKeys, mintNexusKey, nexusKeyPublicOf } from "../src/face-key-custody.js";
 import { runNexusKeyReissue } from "../src/nexus-key-reissue.js";
 import { keepKeyLine, readKeyLine } from "../src/carried-set.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { signNexusKeyHandOver, writeNexusKeyHandOver } from "@lararium/mesh";
+import { handleRecordPath } from "./face-paths.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -35,7 +39,7 @@ import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-
 import { hearthSovereignPin } from "../src/hearth-sovereign-pin.js";
 import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   nexusAidOf, signerClass } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey, wearPersona,
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
   listPersonaRoots } from "../src/node-vessel-identity.js";
 
 /** The hands over `keys`: the seat keys this suite names (faces 0-6 across the used generations). */
@@ -113,7 +117,7 @@ async function seatCharter(keys: string[], threshold = 2): Promise<string> {
 
 describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   it("ADMIT (self-contract) → board → fold → holdsCarriage: a 2-of-3 held-root admit contracts the operator", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     // The vessel holds 4 persona-roots: 0-2 are the founding kahu; 3 is the joining operator it self-contracts.
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
@@ -135,7 +139,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("accept-carriage → admit --contract: a joiner's out-of-band token admits it", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
 
@@ -148,13 +152,13 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("★ THE TWO FOLDS STAY TWO — a carry lands carrierHeld alone, an admit lands memberHeld alone ★", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
 
     // The place signs its own carrier seal with its VESSEL key (this vessel stands in for the place).
     const seal  = await runNexusCarryFor({ sealHome: sealHome() });
-    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, sealHome: sealHome() });
+    const carry = await direct(runNexusContract)({ action: "carry", nym: seal.nym, carrierSig: seal.carrierSig, floorPin: JSON.stringify({ floorPin: seal.floorPin, placeKel: seal.placeKel }), sealHome: sealHome() });
     expect(carry.carrierHeld).toBe(true);
     expect(carry.memberHeld).toBe(false);
 
@@ -168,7 +172,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("★ CARRY-FOR --nexus signs the seal and the floor pin at the NAMED Nexus, not the primary; an AID never carried refuses ★", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const primaryEpoch = await seatCharter(roots.map((r) => r.verifyingKey));
     // A second charter this vessel holds as a carried partner: other chairs, so another epoch and another AID.
@@ -195,7 +199,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("REVOKE as a causal descendant drops membership", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = await leafOf(3);
@@ -211,7 +215,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("★ ADMIT emits the CARRIED bundle — the entry, its lineage, the AID and this hearth's sovereign gate key; the take keeps it ★", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = await leafOf(3);
@@ -243,7 +247,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("does not parent a new act to policy-rejected same-nym evidence", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = await leafOf(3);
@@ -273,7 +277,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("SUB-QUORUM admit REFUSES (one held root against a 2-of-3 roster) — nothing written", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const held = await generateOrLoadPersonaGroupRoot(0);
     const s1 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(7)));
     const s2 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(8)));
@@ -291,14 +295,14 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("UNSEATED charter REFUSES", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await expect(direct(runNexusContract)({ action: "admit", nym: "ab".repeat(32), contractSig: "00".repeat(64), sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusContractError);
   });
 
   it("admit for a NON-HELD nym with NO --contract REFUSES (no conscription — WAX-SEALS-ONLY)", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.map((r) => r.verifyingKey));
     const foreign = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(42)));   // not a held persona
@@ -307,7 +311,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("★ ONE ADDRESS — with a seal home passed, the admit write and the members list read the SAME board ★", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     expect(sealHome()).not.toBe(larSealHome());   // the passed home is NOT the default — the split's precondition
@@ -321,7 +325,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("CONTROL — the vessel's own-key board, where the list once read, holds none of the admit", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     await direct(runNexusContract)({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
@@ -336,7 +340,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("★ a ROOT-nym admit with self-sign REFUSES — no held leaf matches a PersonaGroup root ★", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     await expect(direct(runNexusContract)({ action: "admit", nym: roots[3]!.verifyingKey, sealHome: sealHome() }))
@@ -347,7 +351,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
 describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup root", () => {
   async function standKahu(): Promise<string[]> {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));   // each face derives its leaf from its root
     return [...(await seatChairs([0, 1, 2])).keys];
   }
@@ -391,7 +395,7 @@ describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup 
   });
 
   it("★ a self-sign admit of a held persona lands the LEAF as the member ★", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const leaf = await leafOf(3);
@@ -419,7 +423,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
   }
 
   it("an admitted leaf that PRESENTS its admit with a leaf proof reads MEMBER; a seated kahu and the admitted nym presenting nothing read STRANGER", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const kahuNym   = roots[0]!.verifyingKey.toLowerCase();
@@ -447,7 +451,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
   });
 
   it("no-global-now — an EMPTY local replica (unsynced board, unseated charter) reads NOBODY member (fail-closed-stale)", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1].map((i) => generateOrLoadPersonaGroupRoot(i)));
     // No seatCharter, no admit — the local replica is blank (as-of-a-sync-that-never-happened).
     const ownVesselKey = await loadVesselVerifyingKey();
@@ -474,7 +478,7 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
 
   /** Three seated kahu keys from this vessel's own vault — the founding shape every case here needs. */
   async function threeKeys(): Promise<string[]> {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));   // each face derives its leaf from its root
     return [...(await seatChairs([0, 1, 2])).keys];
   }
@@ -587,7 +591,7 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
 describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal roll", () => {
   /** A pre-rotated genesis over roots 0-2, armed with roots 4-6, and the roll that reveals them. */
   async function foundAndArm() {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3, 4, 5, 6].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const oldKeys = (await seatChairs([0, 1, 2])).keys;
     const newKeys = (await seatChairs([4, 5, 6], { generation: 1 })).keys;
@@ -803,7 +807,7 @@ describe("the door row — a held Repo, never a second opener", () => {
   async function standLiveAndPeer(): Promise<{
     live: Repo; peer: Repo; boardUrl: string; close: () => Promise<void>;
   }> {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const ownVesselKey = await loadVesselVerifyingKey();
@@ -861,7 +865,7 @@ describe("the door row — a held Repo, never a second opener", () => {
   });
 
   it("CONTROL: with no vessel standing, the direct holder (ownedStore) writes the identical act to disk", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = await leafOf(3);
@@ -891,7 +895,7 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
   }
 
   it("K8a RED: a read never mints — a held face holds no key at a Nexus until an act presents it; the act's key rests in the face's sealed cold row", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;
@@ -900,34 +904,33 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     const minted = await mintNexusLeaf(3, aid);
     expect((await mintNexusLeaf(3, aid)).verifyingKey).toBe(minted.verifyingKey);           // a second act finds the first's key
     expect((await nexusLeafFor(3, aid))!.verifyingKey).toBe(minted.verifyingKey);
-    expect(existsSync(join(larIdentityDir(), faceProofKeyFile(3, aid)))).toBe(true);
-    expect(readFileSync(join(larIdentityDir(), faceProofKeyFile(3, aid))).includes(Buffer.from(minted.seed))).toBe(false); // sealed, never the clear bytes
+    expect(existsSync(handleRecordPath(faceProofKeyFile(3, aid)))).toBe(true);
+    expect(readFileSync(handleRecordPath(faceProofKeyFile(3, aid))).includes(Buffer.from(minted.seed))).toBe(false); // sealed, never the clear bytes
   });
 
   it("K8b RED: two vessels whose face holds ONE root seed mint two unrelated keys at one Nexus — no seed derives a per-Nexus key", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     const first = await mintNexusLeaf(3, aid);
-    rmSync(join(larIdentityDir(), faceProofKeyFile(3, aid)));
+    rmSync(handleRecordPath(faceProofKeyFile(3, aid)));
     const second = await mintNexusLeaf(3, aid);                                              // the same root seed stands
     expect(second.verifyingKey).not.toBe(first.verifyingKey);
   });
 
-  it("K8c the worn face re-issues: the gate stands the successor under the admitted nym, and the key it handed on proves nothing", async () => {
-    await generateOrLoadVesselIdentity();
+  it("K8c the face named re-issues: the gate stands the successor under the admitted nym, and the key it handed on proves nothing", async () => {
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     const joinerNym = await leafOf(3);
     const admitAct = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const old = (await nexusLeafFor(3, aid))!;
-    await wearPersona(3);
     let head = "";
     const { holder, repo, nexusPubkey } = await standHolderAt();
     try {
-      const reissued = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo });
+      const reissued = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 });
       expect(reissued).toMatchObject({ nexusAid: aid, handleIndex: 3, from: joinerNym, admitted: joinerNym });
       const fresh = (await nexusLeafFor(3, aid))!;
       expect(fresh.verifyingKey).toBe(reissued.to);
@@ -940,7 +943,7 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
       expect(holder.leafNymOf("peer-successor")).toBe(joinerNym);                            // the relation keeps its name
       expect(holder.membership.holdsCarriagePeer("peer-handed-on")).toBe(false);
       // A second re-issue starts from the head.
-      const again = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo });
+      const again = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 });
       expect(again.from).toBe(reissued.to);
       expect(again.admitted).toBe(joinerNym);
       head = again.to;
@@ -956,16 +959,15 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
   });
 
   it("K8d a re-issue that stopped before its hand-over landed resumes with the SAME successor; a refused one leaves the row as it stood", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     const joinerNym = await leafOf(3);
-    await wearPersona(3);
     const half = await beginNexusKeyReissue(3, aid);                                         // the process stops here
     expect((await nexusLeafFor(3, aid))!.verifyingKey).toBe(joinerNym);                     // the standing key still signs
     const repo = restingRepo(larDataDir());
-    const resumed = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo });
+    const resumed = await runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 });
     expect(resumed.to).toBe(nexusKeyPublicOf(half.to));
     // A hand-over from the admitted key to a stranger already stands on the board: the line forks at the next try.
     const stranger = new Uint8Array(32).fill(99);
@@ -974,13 +976,13 @@ describe("a face's key at a Nexus mints at random and re-issues by a signed hand
     const board = await materializeSharedLarDoc(repo, carriageDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() })), "board:carriage-contracts");
     board.change((d) => writeNexusKeyHandOver(d, fork));
     const before = (await nexusLeafFor(3, aid))!.verifyingKey;
-    await expect(runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo })).rejects.toThrow(/already handed its standing on, or its line forks/);
+    await expect(runNexusKeyReissue({ sealHome: sealHome(), nexusAid: aid, repo, face: 3 })).rejects.toThrow(/already handed its standing on, or its line forks/);
     expect((await nexusLeafFor(3, aid))!.verifyingKey).toBe(before);
     await expect(listFaceProofKeys(3)).resolves.toHaveLength(1);                             // no half-done row left behind
   });
 
   it("K8e a re-issue that stopped after its hand-over landed, before the row closed, still presents: the dialer offers the successor, which heads the line", async () => {
-    await generateOrLoadVesselIdentity();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     await seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const aid = nexusAidOf(readNexusDoc(sealHome()))!;

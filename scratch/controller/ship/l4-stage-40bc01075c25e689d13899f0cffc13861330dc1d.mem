@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/l4-stage-40bc01075c25e689d13899f0cffc13861330dc1d.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-l4-stage-head-40bc01075c25e689d13899f0`>>
+
+! SHIP · lane l4-stage · head 40bc01075c25e689d13899f0cffc13861330dc1d
+read: controller read of the whole delta 75ade2b06..40bc01075c25e689d13899f0cffc13861330dc1d: docker-compose.surface.yml &#45;-root /workspace -> /state for lares and herm, LAR_WIKIS -> /state/wikis, LAR_BAGS unchanged (canon source); witness tools/compose-surface-root.test.mjs (red 5a60c1726, control plants /workspace); harbor-walk leg 1 reads under /state and asserts no write under /workspace; stage-walk e2e test-only. No package source, no capability or gate change. 2026-11-01.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pt-D2836r3RcHTrIbFFpKbmVbzSE-xI7Cq9ZK5QJn5g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

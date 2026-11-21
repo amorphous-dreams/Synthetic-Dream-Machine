@@ -19,6 +19,9 @@ export function asIslandStore<T extends LarTiddlerStore>(store: T, working = "la
   ): Promise<void> => {
     for (const record of puts) await store.put(record, origin, options);
     for (const title of tombstones) await s.tombstoneInBag!(options?.bag ?? "", title, origin);
+    // A plain delete retracts to absent; a suite that watches where it lands names `removeInBag`, as `tombstoneInBag` does.
+    const named = s as { removeInBag?: (bag: string, title: string, origin: ChangeOrigin) => Promise<void> };
+    for (const title of options?.retracts ?? []) await (named.removeInBag ? named.removeInBag(options?.bag ?? "", title, origin) : store.remove(title, origin));
   };
   // ONE STORE STANDS FOR THE WHOLE COMPOSITION. It is the working layer (`working`), and every bag a suite
   // names is that one layer, so layer order cannot be told apart here: a tombstone lands where its title
@@ -29,6 +32,10 @@ export function asIslandStore<T extends LarTiddlerStore>(store: T, working = "la
   s.resolveLayered ??= async (title: string) => {
     const record = await store.get(title);
     return record ? { bagId: working, record } : null;
+  };
+  s.resolveAll ??= async (title: string) => {
+    const record = await store.get(title);
+    return record && !record.meta?.deleted ? [{ bagId: working, record }] : [];
   };
   return s as T & IslandStore;
 }

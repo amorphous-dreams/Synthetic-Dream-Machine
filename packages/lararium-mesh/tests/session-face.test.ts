@@ -147,7 +147,7 @@ describe("the session face supplier", () => {
     const b = supplySessionFace({ chain: await verified(two), vesselFaceKey: two.vessel.key, admit: admitOf(two, { admitRef: "admit-two", revision: "heads-two" }), grant: grantOf(two, GROUP_TWO, { revision: "g-two" }) });
     if (!("face" in a) || !("face" in b)) throw new Error("supply refused");
     const [mine, theirs] = [stringLeaves(a.face), stringLeaves(b.face)];
-    expect(mine.size).toBe(8);
+    expect(mine.size).toBe(9);
     expect([...mine].filter((leaf) => theirs.has(leaf))).toEqual([]);
   });
 

@@ -1,0 +1,66 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-008/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-008/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-8-build-repair-queued-authority-audit-remai`>>
+
+! Step 8 — build repair queued; authority audit remains open
+
+`res-006` succeeded at `4860e2bb726090263fe9cdd0181f1ab44209d769`; this now supplies the recorded head. `req-007` asks the broker to commit the focused `device-delegation.ts` optional-property fix against that head. Read `res-007` next step and advance only on success. The fix omits `reason` when absent, preserving the return contract and avoiding TS2375. No git or tests ran here.
+
+The controller's `build-ctl.log` confirms the mesh typecheck failure and ends there. No controller results for the seven step-007 grant files or blind custody review appeared in the lane; do not infer a pass. The uncommitted grant work and its legacy-control migrations remain unvalidated. This step cannot repair specific regressions without those results, and no missing-proof reds were run. Request the controller to run, outside the faulty Vitest door, after the broker commit:
+
+* `pnpm build` (required dist guard and typecheck)
+* controller runs `packages/lararium-mesh/tests/device-delegation.test.ts`
+* controller runs `packages/lararium-mesh/tests/device-delegation-retirement.test.ts`
+* controller runs `packages/lararium-keyhive/tests/face-grant-record.test.ts`
+* controller runs `packages/lararium-keyhive/tests/face-join-supersedes.test.ts`
+* controller runs `packages/lararium-keyhive/tests/face-join-reenters.test.ts`
+* controller runs `packages/lararium-keyhive/tests/face-intent-join-live.test.ts`
+* controller runs `packages/lararium-keyhive/tests/face-seat-lands-on-grant.test.ts`
+* controller runs `packages/lararium-keyhive/tests/working-seat-lift.test.ts`
+* controller runs `packages/lararium-keyhive/tests/dyad-reader-required.test.ts`
+
+Request a blind Opus custody review before any mesh or grant slice lands; no review result appeared here. A lane commit does not authorize land.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/measured-authority-boundaries`>>
+
+!! Measured authority boundaries
+
+* `ceremony-core.ts:560` checks the founder's self-signed edge immediately before founding a fresh KEL; classify as inception proof, not evidence of standing on an existing face. Verify all pre-existing-binding paths before accepting that classification as complete.
+* `ceremony-core.ts:1036` checks the joinee's newly countersigned edge during admit; `:980-987` separately reads a carried KEL/log, but `:1007-1030` creates or mutates documents before the edge check. Audit payload authentication, founder authority, frontier pinning and no-mutation ordering; do not treat the signature as an admission gate.
+* `leaf-peer-proof.ts:188,397` call `verifyEdgeAgainstPersonaKel` for peer licensing and relicense; `openProof` consumes the result to establish a session (:211-216). This carries a KEL and optional epoch, but no pinned act frontier or dyad standing. The relicense verdict alone closes nothing. This authority boundary remains owed and overlaps b5b's sibling wiring; sequence after b5b.
+* `holder-session-proof.ts:55` verifies against the root supplied by the same edge. `shared-holder-core.ts:419-445` uses that proof to admit a port and choose a house; `expectedHouseName` optionally constrains the group/root. Trace subsequent custody and standing gates and add red controls before treating this as authority. A possession proof alone cannot establish removal standing.
+* `persona-group-secret.ts:288,341` verifies the signed edge while assembling device-held enrolments; `enrolmentUnderHead` (:358-361) further selects the verified KEL head. This proves possession of a sealed enrolment under a head, not remove-wins dyad standing or a non-rolled-back frontier. Audit sibling consumers before changing it.
+* `face-grant-record.ts:96-105,141-164` receives KEL and dyad but no sealed accepted frontier. `verifyEdgeAgainstPersonaKel` (`persona-kel.ts:840-851`) detects forks present in its input but cannot detect a withheld successor. `face-anchor.ts:101-114` stores an act sequence and CID; `face-reading.ts:57-60` passes only the sequence into projection. These observations do not prove a rollback check; trace all consumers and sealed writes, then establish missing, shorter and conflicting-frontier reds with clear controls and no mutation before a cure. Nor does the act frontier alone prove a complete dyad census.
+
+Fork: 🜁 separates cryptographic possession from current authority; 🜄 weighs the disconnected device's continued local work against accepting a known removed device. No global now permits operation only from a verified local frontier and cannot reveal a removal not yet received; once received, remove-wins must govern. Early-alpha re-genesis permits burning old shapes, but no unsupported fallback can grant authority. Keep the existing guard until every reader and complete-view census prove the replacement. No b5b composer hunk changed.
+
+Canon collision remains as measured in step 7: `device-delegation.ts:235-242` retains an interim epoch fence while `convergent-mesh.mem#/two-revocation-modes` describes non-renewal as default and the later specific `stable-founding-road.mem#/rulings` retires the face lease. Follow the specific face ruling; true up the older carrier at the final burn. No push requested; no seats started.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CNlXugTMGmOGbF0uelpdLUFBOrLhfRQ7sTdheZq5Si4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

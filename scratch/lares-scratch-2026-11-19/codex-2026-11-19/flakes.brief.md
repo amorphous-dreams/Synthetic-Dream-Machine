@@ -1,0 +1,14 @@
+Flake-Reader (Tasked Spirit). READ-ONLY; final message = report (under ~1500 words). Stand the whole Lararium house (the seed at /home/joshu/Synthetic-Dream-Machine/.claude/noosphere-boot) and wear your mask tag. Repository: /home/joshu/Synthetic-Dream-Machine (develop head). Never touch ~/.lares, Docker, port 4321 or tools/lares-container.sh. Mark each claim MEASURED (read in code or logs) or REASONED. You may read CI logs with `gh run view <id> --log-failed` only if your sandbox reaches the network; otherwise read the test code alone and say so.
+THREE FLAKES on develop CI (2026-11-19): (1) tests/e2e/ceremony.e2e.test.ts K3 then K4 (the reset ceremony): a 90s wait for both tabs to reload times out under load (runs 44610349272 K3, 44625101372 K4); (2) tests/e2e/golden-whole-road.e2e.test.ts W3 "an ordinary click navigates" timed out (60s) then W4-W6 cascaded (run on 8d264d763); (3) held-out mesh-scenarios: "B gets it — the line byte-whole … FAILED (B reads no meme): bag lar:///ha.ka.ba/bags/meme-witness-book holds no layer in this island" (run 44625101339).
+ASK for each: the wait/assert that times out (file:line), what it waits on, whether the wait ends on an event or a clock (house law: no clock decides an arrival; a wait ends on an event), the likeliest race or load sensitivity, and the smallest pono cure (event-ended wait, a readiness signal, a cascade cut so W4-W6 don't inherit W3's failure, a seed ordering). Rank by how cheaply each cure lands; say which are test-only and which touch product code.
+
+## SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.

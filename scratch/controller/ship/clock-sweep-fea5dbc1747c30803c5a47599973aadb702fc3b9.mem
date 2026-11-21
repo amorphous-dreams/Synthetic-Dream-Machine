@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/clock-sweep-fea5dbc1747c30803c5a47599973aadb702fc3b9.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP clock-sweep fea5dbc1747c30803c5a47599973aadb702fc3b9
+read: fea5dbc17 recuts two node session-island tests to the named refusals F3 brought (controller diff read; 36/36 + gate green), over 5d9d53022: Luna land read over 5d262a8b3..eec96375a (HOLD on the boot wait; cured in-lane, f76d8615e); blind Opus (Blind-Warden-Clock) over the 24 security-class paths at eec96375a (LAND-AFTER-CURES: F1 P1 signer drop, F2, F3); cures 190be6fce..5d9d53022 by an Opus seam lead, red-first; blind Opus re-read over eec96375a..5d9d53022: LAND, no fail-open (/home/joshu/.lares-scratch/clock-sweep/seats/blind-opus-2.md); controller ran stand-socket-wait 17/17, sealed-rest 32/32, census PRODUCT-WAIT 0, tree clean; CI at fea5dbc1747c30803c5a47599973aadb702fc3b9 read by land-train.
+owed: P3s (blind-opus-2.md): clear the door's silence latch on docstore:answering; a non-fatal browser island error stops vessel answers (fails closed); a session island's rest:ask stays unanswered. A real node run of flushThenDrop against a wedged island. LarOpenPhase order vs emitted order (open-phases.mem). stand.ts sleep(1500) LIVENESS.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gKfvcKBFXUGuEsLWLiw64NT6kCFOasKMQ4pVbbHI9Ww`>>
+
+<<^ code=`&#x0004;` to=`?`>>

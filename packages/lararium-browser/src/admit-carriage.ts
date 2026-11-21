@@ -1,5 +1,5 @@
 /**
- * admit-carriage — encode and decode the tab-local carriage of a `device-admit/v1` payload.
+ * admit-carriage — encode and decode the tab-local carriage of a `device-admit` payload.
  *
  * The fleet-join landing writes the admit it carries into a carriage string; the next boot reads that
  * string back into a payload. The admit verifies on its own (the founder's root signed it), so the
@@ -9,10 +9,10 @@
  * platform: no `location`, no `history`, no clock, no network. Same bytes in, same payload out, so the
  * crossing tests without standing a relay up.
  */
-import type { CarriedAdmitPayload } from "@lararium/keyhive";
+import { DEVICE_ADMIT_KIND, type CarriedAdmitPayload } from "@lararium/keyhive";
 
-/** The kind this carriage admits. A payload announcing anything else gets refused, never guessed at. */
-export const ADMIT_KIND = "device-admit/v1" as const;
+/** The kind this carriage admits (keyhive's one `DEVICE_ADMIT_KIND`, the node land's too). Anything else gets refused, never guessed at. */
+export const ADMIT_KIND = DEVICE_ADMIT_KIND;
 
 /** Base64url → the bytes it encodes. Throws on a malformed input; the caller decides what that means. */
 function fromBase64Url(b64url: string): string {
@@ -20,6 +20,14 @@ function fromBase64Url(b64url: string): string {
   const bin = atob(b64);
   const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
   return new TextDecoder().decode(bytes);
+}
+
+/** An admit whose binding stands but whose signed-record fields are missing: re-admit the face, named. */
+export class StaleAdmitCarriage extends Error {
+  constructor(readonly missing: string) {
+    super(`[admit] this carriage lacks ${missing}; re-admit the face (an older carriage cannot join a signed-log face)`);
+    this.name = "StaleAdmitCarriage";
+  }
 }
 
 /**
@@ -48,8 +56,17 @@ export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null
   // that authority now — the joinee's Binding Gate pins it and walks the KEL to the head.
   if (typeof p["signerDid"] !== "string" || !p["signerDid"]) return null;
   if (typeof p["personaKelPrefix"] !== "string" || !p["personaKelPrefix"]) return null;
-  if (typeof p["hearthTrueName"] !== "string" || !p["hearthTrueName"]) return null;
+  // THE TRUE NAME RIDES STATED: a hearth's name, or "" where the root holder stood no gate (a leaf's root binds no place).
+  // An absent field still refuses: a carriage that omits its binding never admits.
+  if (typeof p["hearthTrueName"] !== "string") return null;
   if (!p["deviceEdge"] || typeof p["deviceEdge"] !== "object") return null;
+  // A well-formed admit that lacks the signed-record fields is a STALE carriage, not a garbled one: it names the re-admit
+  // instead of vanishing into the founding flow.
+  const frontier = p["edgeFrontier"] as Record<string, unknown> | undefined;
+  if (!Array.isArray(p["personaActs"])) throw new StaleAdmitCarriage("personaActs");
+  if (!frontier || !Array.isArray(frontier["records"]) || !Array.isArray(frontier["snapshots"])) throw new StaleAdmitCarriage("edgeFrontier");
+  if (!frontier["snapshots"].every((row: unknown) => Array.isArray(row) && row.length === 2
+    && typeof row[0] === "string" && Array.isArray(row[1]) && row[1].every((cid: unknown) => typeof cid === "string"))) throw new StaleAdmitCarriage("edgeFrontier");
   return payload as CarriedAdmitPayload;
 }
 

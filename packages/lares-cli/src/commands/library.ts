@@ -6,7 +6,7 @@
  * author here and no parse∘render fixed point, so it sits on the seed surface by accident of arrival. Left
  * there it enters git history, and a shelf that grows with every book grows the history with it.
  *
- * The tier stands at `<lararium>/library` (or `LAR_LIBRARY`) — the acquired library home. Runtime vessel
+ * The tier stands at `<root>/library` (or `LAR_LIBRARY`) — the acquired library home. Runtime vessel
  * documents and acquired bodies have different owners; the separate homes keep acquired bytes independent
  * of runtime vessel records.
  *

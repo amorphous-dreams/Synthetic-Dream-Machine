@@ -51,7 +51,7 @@ mirrors kg_io's raw-sqlite-beside-chroma idiom) keeps the turn_key → structura
 since chroma cannot where-filter inside a JSON provenance list.
 
 Run with the mempalace CLI's interpreter (it has the package + chroma):
-  PYTHONPATH=<repo>/mempalace  ~/.venv/bin/python3 structurepalace_io.py serve --palace <lararium>/sensoriums/memory/structure
+  PYTHONPATH=<repo>/mempalace  ~/.venv/bin/python3 structurepalace_io.py serve --palace <root>/sensoriums/memory/structure
 """
 from __future__ import annotations
 
@@ -123,7 +123,7 @@ def _idle_ttl_seconds() -> float:
 # The `.structurepalace` is addressed by EXACT id (the structural hash) for put/get/kapae — we
 # never semantic-search it — so we supply our OWN vectors and NEVER invoke the palace's
 # embedding model (no model load, no download, no network). The vector is the STRUCTURE
-# PLANE's cohesion feed for the FFZ Measure servo (ffz-orchestrator, the 3rd quorum plane):
+# PLANE's cohesion feed for the FFZ Measure:
 # it must be COSINE-MEANINGFUL — two structurally-similar trees land NEAR, dissimilar trees
 # FAR. The retired hash-hex embedding could NOT do this (sibling trees hash to orthogonal
 # noise); this one captures the AST's SHAPE, so the geometry carries semantics.
@@ -578,10 +578,10 @@ def _serve(palace_path: str) -> None:
     )
 
 
-# ── The STRUCTURE-PLANE READER — the batch readback the FFZ Measure servo joins ──────
+# ── The STRUCTURE-PLANE READER — the batch readback the FFZ Measure joins ──────
 #
-# Mirrors `loci_io.py cmd_form_embeddings` (the FORM plane), one tier up: the FORM store
-# keys an entry BY the verbatim_sha (one vector per turn), so its readback is a 1:1 dump.
+# One tier up from the FORM plane: the FORM store keys an entry BY the verbatim_sha (one
+# vector per turn), so its readback is a 1:1 dump.
 # The structurepalace keys by STRUCTURAL HASH with a recurrence tally, and ONE structure may have
 # unfolded from MANY turns (its `lar_provenance` list of verbatim_shas). So this reader
 # EXPANDS each live entry across its provenance: one NDJSON row per (verbatim_sha) carrying
@@ -593,17 +593,14 @@ def _serve(palace_path: str) -> None:
 # the same graceful path the absent form collection takes.
 
 def _default_structurepalace_dir() -> str:
-    """The canonical structure plane — `<lararium>/sensoriums/memory/structure`, where `<lararium>` resolves the
-    SAME rule the TS `larariumDataHome()` (xdg-base.ts) holds: `LAR_ROOT/data/lararium` for isolated
-    instances, else `$XDG_DATA_HOME/lararium` (unset → `~/.local/share/lararium`). A sensorium belongs to
-    the HOUSE, so both tongues must name the house or capture writes one dir while recall reads another —
-    the write-only-store disease. The two views stay byte-identical, guarded by
-    test_structure_default_mirrors_xdg. A caller still passes `--palace` (designation carries the
-    authority); this default only keeps an unpassed holder landing true."""
-    from sensorium import _lararium_data_home   # local: keeps this module's import graph acyclic
+    """The canonical structure plane — `<root>/sensoriums/memory/structure`, the SAME path the TS
+    `memorySensoriumStructureDir()` (house-root.ts) names. Both tongues must name one plane or capture writes
+    one dir while recall reads another — the write-only-store disease. The two views stay byte-identical,
+    guarded by test_structure_default_mirrors_the_house_root. A caller still passes `--palace` (designation
+    carries the authority); this default only keeps an unpassed holder landing true."""
+    import house_root   # local: keeps this module's import graph acyclic
 
-    house_home = _lararium_data_home()
-    return os.path.join(house_home, "sensoriums", "memory", "structure")
+    return os.path.join(house_root.sensoriums_home(), "memory", "structure")
 
 
 def _structure_embeddings(palace_path: str, out) -> int:
@@ -655,7 +652,7 @@ def main() -> None:
         "structure-embeddings",
         help="batch readback of structure vectors keyed by verbatim_sha (the FFZ 3rd plane)",
     )
-    se.add_argument("--palace", default="", help="the structure plane dir (default: <lararium>/sensoriums/memory/structure)")
+    se.add_argument("--palace", default="", help="the structure plane dir (default: <root>/sensoriums/memory/structure)")
     se.set_defaults(fn=cmd_structure_embeddings)
     args = ap.parse_args()
     args.fn(args)

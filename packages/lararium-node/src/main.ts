@@ -1,7 +1,8 @@
+import { CompositionShutdownError, shutdownExitCode } from "./composition-shutdown.js";
 /**
  * Lararium Node Vessel — local-first relay + TW5 engine entrypoint.
  *
- * Boots one LarVessel per configured wiki, wires a WebSocket relay for
+ * Composes an island record for each configured wiki, wires a WebSocket relay for
  * browser vessels to sync through, and attaches a LarDiskProjector so
  * the bags/ tree stays in sync with the Automerge store.
  *
@@ -20,13 +21,16 @@
  *   LAR_ROOT     — alternate repo root for all mirror paths (default: monorepo root).
  *                  Set to an isolated test dir so promote/sync writes never touch
  *                  canonical packages/ or wikis/ paths.
- *   LAR_PUBLIC_URL   — explicit relay reach face only; never promoted to Web/oracle.
+ *   LAR_PUBLIC_URL   — explicit relay reach face only; never promoted to Web/flow.
  *   LAR_WEB_ORIGIN   — explicit Web-surface origin (or set origins.web in config.json); a lararium's alone.
- *   LAR_ORACLE_ORIGIN — explicit oracle/read-face origin (or set origins.oracle in config.json).
+ *   LAR_FLOW_ORIGIN — explicit flow/read-face origin (or set origins.flow in config.json).
  *   LAR_SAME_ORIGIN  — true/false explicit declaration that every surface the standing has shares the
  *                      relay face's origin: relay = read for a herm, relay = read = Web for a lararium.
  *   LAR_LAN_DISCOVERY — `announce` answers mDNS questions for `_lararium._tcp` with a bare service and port
  *                      (candidates only; lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery); unset or empty keeps it off.
+ *   LAR_PULAMA_SOCKET — the unix socket a pūlama answers at: set, this vessel keeps no key and asks the pūlama for its
+ *                      sealed rows (`pulama-seat`); unset or empty, it builds the in-process custody holder.
+ *   LAR_KUKULU_OFFER — the file holding the lei and the vouch this kūkulu offers the pūlama (`pulama-seat`).
  *
  * Bootstrap:
  *   The boot prints the catalog Automerge URL to stdout.
@@ -34,49 +38,59 @@
  *   localStorage for offline return visits.
  */
 
+import type { WardCredential } from "./ward-credential.js";
+import { isPromoteAct, promoteActEdge } from "./promote-act-gate.js";
 import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
-import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
+import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, floorCarriageBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
-import type { MountManifest } from "@lararium/mesh";
+import type { DocCensusReading, HeldSaves, MountManifest } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
-import { standAs, ORACLE_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText } from "@lararium/mesh";
+import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, floorCardCarriageText } from "@lararium/mesh";
+import { hearthFloorProof } from "./hearth-floor-claims.js";
 import { randomBytes } from "node:crypto";
 import {
-  standRaiseDoor, effectiveLeaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
+  standRaiseDoor, leaseEpochOnBoard, verifyNymSignature, placeCarriedNexuses, unionReadings,
 } from "./vessel-raise.js";
 import { readCarriedNexuses, type BoardOpener } from "./nexus-carriage.js";
 import { larSealHome } from "./vessel-paths.js";
+import { leaseLineageOfNexus } from "./lease-charter.js";
 import { materializeSharedLarDoc } from "@lararium/mesh";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { faceStands } from "./commands/init.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
-import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
-import type { Socket } from "node:net";
+import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
+import { floorVerbsFor } from "./floor-verbs.js";
+import { nodeSwitchActLog } from "./switch-act-log.js";
+import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_VERBS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
-import { seatCustody } from "./custody-seat.js";
-import { custodyFrameHandler } from "./custody-frames.js";
-import { runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
+import { testScratchNotice } from "./test-scratch-notice.js";
+import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
+import { custodyFrameHandler, type CustodyDoor } from "./custody-frames.js";
+import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
+import { rehiveShutFace } from "./face-rehive.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
-import { loadVesselIdentity, vesselFloorKeyDoor } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands } from "./node-vessel-identity.js";
+import { KUKULU_OFFER_ENV, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
-import { join } from "path";
-import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
+import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
 import { mountReachFaceWatch, reachFaceBootNotice } from "./reach-face-watch.js";
 import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares-config.js";
-import { composePronaosFromEnv } from "./pronaos-composition.js";
+import { composePronaosFromEnv, pronaosShoreBootNotice } from "./pronaos-composition.js";
 import { houseOriginsOf } from "./pronaos-adapter.js";
 import { mountHermWaymark } from "./bulb-read-face.js";
 import { readBulbArtifact } from "./bulb.js";
@@ -90,7 +104,7 @@ import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanData
 // CLI / env config
 // ---------------------------------------------------------------------------
 
-function parseArgs(): { port: number; storageDir: string; genesisDir: string; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding; origins: ExplicitOriginComposition } {
+function parseArgs(): { port: number; storageDir: string; genesisDir: string; genesis: GenesisResolution; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding; origins: ExplicitOriginComposition } {
   const args = process.argv.slice(2);
   const named = new Set<string>();
   const get  = (flag: string, env: string, fallback: string) => {
@@ -100,17 +114,21 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
     const spaced = i !== -1 && !(args[i + 1] ?? "--").startsWith("--") ? args[i + 1] : undefined;
     return (joined !== undefined ? joined.slice(flag.length + 1) : spaced) ?? process.env[env] ?? fallback;
   };
-  const cfg        = loadLaresConfig();   // per-daemon resource overrides (~/.lares/config.json)
+  const cfg        = loadLaresConfig();   // per-daemon resource overrides (<root>/config/config.json)
   const rootDir    = resolve(get("--root", "LAR_ROOT", REPO_ROOT));   // corpus root (genesis)
   // ONE SUBSTRATE DIR, DERIVED THE SAME WAY ON BOTH SIDES. An override here moved the daemon's dir and
   // not its client's — and since the rendezvous derives FROM this dir, a caller who used it stranded the
   // daemon at a socket the CLI could not compute. `LAR_ROOT` remains the way to move a whole vessel,
   // because it moves BOTH sides at once.
-  const storageDir = larDataDir();   // the vessel substrate → <lares>/vessel
-  // The composable genesis cap: --genesis flag → LAR_GENESIS env → ~/.lares/config.json → repo-relative
+  const storageDir = larDataDir();   // the vessel substrate → <root>/hearth/vessel
+  // The composable genesis cap: --genesis flag → LAR_GENESIS env → <root>/config/config.json → repo-relative
   // <rootDir>/genesis. Genesis stays checked-in by default, so a no-config boot lands on the repo's
   // tracked seed exactly as before; an operator sites it under ~ via config.resources.genesis.
-  const genesisDir = resolve(get("--genesis", "LAR_GENESIS", cfg.resources?.genesis ?? join(rootDir, "genesis")));
+  const genesis = resolveGenesis({
+    explicit: get("--genesis", "LAR_GENESIS", "") || undefined, configured: cfg.resources?.genesis,
+    corpusRoot: rootDir, shippedRoot: REPO_ROOT,
+  });
+  const genesisDir = resolve(genesis.dir);
   // `--recipe` names the operator-facing flag; what it carries is a STANDING this vessel asks to
   // stand as, never a kind it is. "Recipe" belongs to the pinned wiki's composition alone.
   const askedStanding = (get("--recipe", "LAR_RECIPE", "lararium") === "herm" ? "herm" : "lararium") as AskedStanding;
@@ -126,6 +144,7 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
     port,
     storageDir,
     genesisDir,
+    genesis,
     wikiId,
     rootDir,
     catalogUrl: process.env["LAR_CATALOG"] ?? null,
@@ -145,9 +164,6 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
  * reader can tell a live marker from one a killed process left behind. Best-effort throughout: a
  * vessel that cannot write this still serves, and a caller that finds nothing simply learns nothing.
  */
-/** The marker a test harness writes at a root it staged (`tools/test-scratch-marker.mjs`). */
-const TEST_SCRATCH_MARKER = ".lar-test-scratch";
-
 const standingDropArmed = new Set<string>();
 function publishStanding(storageDir: string, standing: string, faceLit: boolean): void {
   const uid = process.getuid?.() ?? 0;
@@ -177,12 +193,11 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
 }
 
 /**
- * M15: name every PENDING social plane — one the probe (or its clean-tail recovery) answered with NO
- * verdict at all, mounted read-only blank with no bytes moved. Before this, the fix that gave `pending`
- * its own status (H2) carried the data all the way into `MountManifest`, but nothing ever printed it: a
- * `degraded` plane logs its own line live (`quarantineDoc`, open-node-vessel.ts), while a `pending` one
- * sat silent — a boot log reader had no way to tell "this plane is fine, just unresolved" from "nothing
- * noticed it at all". Remounting stays out of path: a restart or `lares vessel doctor` re-probes.
+ * Name every PENDING social plane — one the probe (or its clean-tail recovery) answered with NO
+ * verdict at all, mounted read-only blank with no bytes moved. `MountManifest` carries the `pending`
+ * status; this prints it. A `degraded` plane logs its own line live (`quarantineDoc`, open-node-vessel.ts),
+ * and a `pending` one logs here, so a boot log reader tells "this plane is fine, just unresolved" from
+ * "nothing noticed it at all". Remounting stays out of path: a restart or `lares vessel doctor` re-probes.
  */
 function logPendingPlanes(prefix: string, manifest: MountManifest): void {
   for (const e of manifest.entries) {
@@ -195,15 +210,16 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
 }
 
 /** The `receipts.ring {ratePerMin, horizonDays, burst, bytesPerOutcome}` shape an operator may override in
- *  `~/.lares/config.json` (D1, P2.5 iter 4) — read loosely here rather than widening
- *  `LaresConfig`'s own interface, since this lane touches only `uds-channel.ts` and this one
- *  pass-through site in `main.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
+ *  `<root>/config/config.json` — read loosely here rather than widening `LaresConfig`'s own
+ *  interface, so this one pass-through site in `main.ts` carries it to `uds-channel.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
  *  weight a kept outcome may take, so one block sets both bounds. Absent entirely → `startUdsChannel`'s own
  *  defaults (`RECEIPT_RING_DEFAULT`, `RECEIPT_RING_BYTES_DEFAULT`). */
 interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number; readonly bytesPerOutcome?: number } } }
 
 async function main(): Promise<void> {
-  const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  // The seed witness names this boot's seed beside the founding seed: a differing seed reads as an offer, never a refusal (genesis-resolve).
+  console.log(checkGenesisPin(storageDir, genesis));
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
   // pass the variable through; any other word refuses by name before a face listens.
   const lanDiscoveryMode = process.env["LAR_LAN_DISCOVERY"] || undefined;
@@ -241,7 +257,7 @@ async function main(): Promise<void> {
 
   // The reach-faces this vessel answers on. The listen below binds 0.0.0.0, so the vessel answers on
   // every interface the host holds; the banner names them all. A phone on the house network reads a
-  // LAN line and types it; `localhost` on that phone names the phone. Web/oracle reach are explicit
+  // LAN line and types it; `localhost` on that phone names the phone. Web/flow reach are explicit
   // composition inputs; the relay declaration never promotes itself to either surface.
   const reachFaces = deriveReachFaces({
     port,
@@ -289,6 +305,9 @@ async function main(): Promise<void> {
   // standing — so the descriptor refuses a mirror that would share an origin with the house.
   const houseOrigins = houseOriginsOf(reachFaces, originCompositions);
   const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding, houseOrigins });
+  // NO SHORE EARNS A LOUD NOTICE AT BOOT, as no reach face does: a lararium whose Web origin answers no page says so.
+  const shoreNotice = pronaosShoreBootNotice(askedStanding, pronaos);
+  if (shoreNotice !== null) console.log(`[lararium] ${shoreNotice}`);
   // THE RUNG LADDER (pronaos#/the-rung-ladder). A herm stands SILENT by default: it hands over its bulb by CID and
   // describes nothing. `herm.waymark` in the node config lifts it to the WAYMARK rung — one unsigned descriptor at
   // `/.well-known/lar` naming its bulb CID. The temple's descriptor is the lararium's own Pronaos, so a lararium
@@ -336,16 +355,19 @@ async function main(): Promise<void> {
   // caller on, so an unlock frame never reaches a verb seat (its credential would ride a receipt digest there).
   const floor = await standNodeFloor(storageDir);
   const custodyHomes = vesselCustodyHomes();
-  const holder = makeCustodyHolder({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes });
+  // WHO HOLDS CUSTODY FOR THIS VESSEL: a pūlama, where the environment names one (the vessel then keeps no key and asks
+  // it for rows and derivations), else the holder this process builds. Every caller reaches either through the one seat.
+  // Each hello names this vessel's life by the id its store claim minted, so the pūlama ties a reconnect to its drop.
+  const pulama = vesselPulamaHolder(custodyHomes, process.env, { id: floor.storeClaim.life });
+  const holder = pulama ?? makeCustodyHolder({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes });
   // THE ONE SEAT. Every sealed row this process reads or writes reaches the holder through it, and the seat
   // carries no opener: the key arrives on the custody door alone, and a row asked for at the floor refuses.
   seatCustody(holder);
-  const testScratch = existsSync(join(rootDir, TEST_SCRATCH_MARKER));
-  if (testScratch) {
-    console.log(`[lararium] TEST SCRATCH ROOT — ${rootDir} carries ${TEST_SCRATCH_MARKER}: a harness staged this vessel and its custody opens under the PUBLISHED test route. Never a vessel anyone keeps.`);
-  }
+  const scratchNotice = testScratchNotice(rootDir);
+  const testScratch = scratchNotice !== null;
+  if (scratchNotice) console.log(scratchNotice);
   // Late-bound: the door's acts recompose, and the recomposition closes over what `main` builds below.
-  let custodyDoor: ((parsed: unknown, sock: Socket) => boolean) | null = null;
+  let custodyDoor: CustodyDoor | null = null;
   const front = serveUdsFront({ claim: floor.storeClaim, onFrame: (parsed, sock) => custodyDoor?.(parsed, sock) ?? false });
 
   // ── THE BASE COURSE — every vessel stands as a Herm, and the hearth is what it LIFTS to ──────────────
@@ -386,13 +408,17 @@ async function main(): Promise<void> {
     askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
     reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front,
     lanSocket: () => lanSocket,
+    // THE ACTS THAT ACT AS A FACE ride a session and run on the custody door's one chain (`session:act`).
+    sessionActs: { names: SESSION_ACTS, run: async (act, args) => custodyDoor
+      ? { ...(await custodyDoor.act(act, args)) }
+      : { op: "act", status: "error", errorMessage: "this vessel's custody door runs no acts", refusal: { reason: "acts-unavailable" } } },
   };
-  const composeStanding = (sovereign: SovereignReaders | null): Promise<StandingComposition> => {
+  const composeStanding = (sovereign: SovereignReaders | null, ward?: WardCredential): Promise<StandingComposition> => {
     const lit = faceStands();
     const as  = standAs(askedStanding !== "herm" && lit ? "hearth" : "herm", sovereign !== null);
     return as === "herm"
       ? composeHermStanding({ ...ctx, standing: as, faceLit: lit }, sovereign)
-      : composeHearthStanding({ ...ctx, standing: as, faceLit: lit }, sovereign);
+      : composeHearthStanding({ ...ctx, standing: as, faceLit: lit }, sovereign, ward);
   };
   // A REFUSED BOOT FREES ITS STORE: the front stops answering and the floor releases the name before the fault
   // prints, so the next boot never waits on a composition that never stood.
@@ -404,16 +430,17 @@ async function main(): Promise<void> {
   let composition: StandingComposition | null = null;
   /** A floor that itself refuses ends the process: nothing lower stands to fall back to. */
   const floorRefused = async (err: unknown): Promise<never> => {
-    front.close();
-    await floor.release();
+    await front.close();
+    if (!(err instanceof CompositionShutdownError) || err.storeClosed) await floor.release();
     throw err;
   };
   /** Compose with the sovereign rows; a refusal there names itself once and the floor stands instead. */
-  const composeOrFloor = async (readers: SovereignReaders | null): Promise<{ stood: StandingComposition; refused?: string }> => {
+  const composeOrFloor = async (readers: SovereignReaders | null, ward?: WardCredential): Promise<{ stood: StandingComposition; refused?: string }> => {
     if (readers === null) return { stood: await composeStanding(null).catch(floorRefused) };
     try {
-      return { stood: await composeStanding(readers) };
+      return { stood: await composeStanding(readers, ward) };
     } catch (err) {
+      if (err instanceof CompositionShutdownError && !err.storeClosed) throw err;
       const refused = err instanceof Error ? err.message : String(err);
       console.error(`[lararium] the sovereign composition refused: ${refused}`);
       console.error("[lararium]   standing at the WAKING FLOOR instead — carrying and serving the public shelf; every sovereign act waits.");
@@ -429,36 +456,80 @@ async function main(): Promise<void> {
   let firstStood: () => void = () => {};
   const first = new Promise<void>((resolve) => { firstStood = resolve; });
   let signalHeld: string | null = null;
-  const recompose = async (sovereign: boolean): Promise<{ standing: string; refused?: string }> => {
+  // ONE RECOMPOSITION AT A TIME: the custody door and a pūlama session's drop both ask for one, and each waits its turn.
+  let recomposing: Promise<unknown> = Promise.resolve();
+  const recompose = (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
+    const run = recomposing.then(() => composeAgain(sovereign, ward));
+    recomposing = run.catch(() => undefined);
+    return run;
+  };
+  /** THE MOUNT CLOSED AT ITS CUSTODY'S WORD (a pūlama's close, a forced lock): the vessel stands again, once, by the same road
+   *  a lock takes; the standing composition's own teardown closes every other face through its actor first. */
+  const standAgainOnMountClose = (stood: StandingComposition): void => {
+    stood.onMountClosed?.(() => {
+      if (composition !== stood) return;
+      void recompose(true).catch((err: unknown) => console.error(`[lararium] the vessel did not stand again after its mount closed: ${err instanceof Error ? err.message : String(err)}`));
+    });
+  };
+  const composeAgain = async (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
     await first;
     const prior = composition;
     composition = null;
     await prior?.teardown();
-    const out = await composeOrFloor(sovereign ? seatedSovereignReaders() : null);
+    const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
     composition = out.stood;
+    standAgainOnMountClose(out.stood);
     if (signalHeld !== null) composition.onSignal(signalHeld);
     return { standing: out.stood.standing, ...(out.refused !== undefined ? { refused: out.refused } : {}) };
   };
+  // A KŪKULU STANDS BY ITS PŪLAMA: one dial path, run once at boot and again whenever the custody door hears `unlock`.
+  const standBy = pulama === null ? null : pulamaStandBy({
+    holder: pulama, recompose: (sovereign) => recompose(sovereign), onLog: (line) => console.log(`[pulama] ${line}`),
+    consumeOffer: () => consumeKukuluOffer(process.env[KUKULU_OFFER_ENV]),
+  });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
+    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial(), lent: () => pulama.lends(), tellWorn: (o) => pulama.tellWorn(o) } } : {}),
+    lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
+    dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
+    releaseFace: (ordinal) => { composition?.releaseFace?.(ordinal); },
+    releaseFaces: () => { composition?.releaseFaces?.(); },
+    // At the floor no face lights, so nothing holds and the lock may land.
+    holdFace: (ordinal) => composition?.holdFace?.(ordinal) ?? true,
+    holdFaces: () => composition?.holdFaces?.() ?? true,
+    refusedLights: () => composition?.refusedLights?.() ?? [],
+    replayLend: async () => { await composition?.replayLend?.(); },
+    // A WHOLE LOCK CLOSES EVERY FACE THROUGH ITS ACTOR before its key drops: a face whose saves did not seal rejects, and the key stays open.
+    closeFaces: async () => { await composition?.closeFaces?.(); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
       kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null, walk: composition?.walk ?? null,
-      hosting: composition?.hosting ?? null, backup: composition?.backup ?? null,
+      hosting: composition?.hosting ?? null, backup: composition?.backup ?? null, island: composition?.island ?? null,
     }),
     // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
-    // standing composition lends it the worn face, its own edge's shadow, the island's memory section and the
+    // standing composition lends it the mounted face, its own edge's shadow, the island's memory section and the
     // board's key history (custody#/the-cut).
-    backup: (face, bundleKey) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null }),
+    backup: (face, bundleKey, ward) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null, ward }),
+    // A REHIVE RUNS HERE TOO, over the custody files themselves: the door read the face shut, and the face's own route opens
+    // its key for the act alone, outside the seated holder (`face-rehive`).
+    rehive: (face, credentials) => rehiveShutFace({ holder, io: new FsCustodyIo(custodyHomes), ordinal: face, credentials }),
     standing: () => composition?.standing ?? "recomposing",
+    wikiAwaits: () => composition?.wikiAwaits ?? null,
+    // THE CENSUS of saves held in memory: null while no composition sits, so a stop never reads "none held" from a gap.
+    heldSaves: () => composition?.heldSaves?.() ?? null,
+    // THE DOCUMENT CENSUS of the standing composition's stores: null while none sits, so a read never names an empty house.
+    docCensus: () => composition?.docCensus?.() ?? null,
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 
   composition = (await composeOrFloor(null)).stood;
+  standAgainOnMountClose(composition);
   firstStood();
+  // The boot's one dial: the sovereign composition over the session, mounted on its own daemon mount among the faces lent.
+  const byPulama = standBy !== null && (await standBy.dial()).session;
   // A vessel stands holding no vessel key, whatever it composed over: say so once, with the one verb that opens it.
-  if (await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
+  if (!byPulama && await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
     console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");
   }
   // ONE pair of handlers for the process: a signal reaches whichever composition stands when it lands.
@@ -491,6 +562,8 @@ interface BootContext {
   /** The verb socket's front: it holds callers while no composition sits. */
   readonly front: UdsFront;
   readonly lanSocket: () => LanDatagramSocket | null;
+  /** The sealed acts that ride a session, and the custody door's chain that runs one. */
+  readonly sessionActs: NonNullable<UdsChannelOptions["sessionActs"]>;
 }
 
 /** One composition's own reading of what it stands as, taken when it composes. */
@@ -499,6 +572,26 @@ interface ComposedAs { readonly standing: ReturnType<typeof standAs>; readonly f
 /** A composition standing on the floor: everything a boot builds past the store's claim and the listening faces. */
 interface StandingComposition {
   readonly standing: "herm" | "hearth";
+  readonly island: NonNullable<SealedActContext["island"]>;
+  readonly lightFace: (ordinal: number) => Promise<void>;
+  readonly dropFace: (ordinal: number) => Promise<void>;
+  /** Lift the hold a lock's close set on a face. Absent at the floor. */
+  readonly releaseFace?: (ordinal: number) => void;
+  /** Lift every hold (a whole lock that did not lock its key). Absent at the floor. */
+  readonly releaseFaces?: () => void;
+  /** Hold a face past CLOSED right before its key locks; false where it lit again. Absent at the floor. */
+  readonly holdFace?: (ordinal: number) => boolean;
+  /** Hold every face past CLOSED right before the vessel key locks; false where any stands lit. Absent at the floor. */
+  readonly holdFaces?: () => boolean;
+  /** Each face dark here because its last light refused, with its cause. Absent at the floor. */
+  readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Replay the lend now, awaited. Absent at the floor. */
+  readonly replayLend?: () => Promise<void>;
+  /** Close every face through its actor, holding each dark (a whole lock, ahead of the key); rejects where a face did not close
+   *  whole. Absent at the floor. */
+  readonly closeFaces?: () => Promise<void>;
+  /** Hear the mounted face close at its custody's word: the vessel stands again. Absent at the floor. */
+  readonly onMountClosed?: (listener: () => void) => () => void;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
   readonly onSignal: (sig: string) => void;
   /** Tear this composition down and leave the process and its floor standing. */
@@ -519,6 +612,12 @@ interface StandingComposition {
   readonly hosting?: SealedActContext["hosting"];
   /** What this composition lends a backup bundle's cut. */
   readonly backup?: BackupDoor;
+  /** The saves this composition's sealed rest holds in memory, by document and never by body (the custody door's census). */
+  readonly heldSaves?: () => readonly HeldSaves[];
+  /** The document census of this composition's stores, read-only (the custody door's `doc-census`). */
+  readonly docCensus?: () => Promise<DocCensusReading>;
+  /** The wiki this composition stands in for on its floor wiki, waiting on a face (its `wiki-awaits-face` line); absent or null where none waits. */
+  readonly wikiAwaits?: string | null;
 }
 
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
@@ -533,6 +632,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     // floor under its own name, and calling it a wayfarer would tell its operator they built the wrong thing.
     hostId:     askedStanding === "herm" ? "lares-viales" : "lararium-node",
     floor,
+    askedHerm:  askedStanding === "herm",
     sovereign,
     wikiId,
     storageDir,
@@ -550,7 +650,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
   console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
   console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
-  console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${ORACLE_SOCKET_ROUTE} socket`);
+  console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${FLOW_SOCKET_ROUTE} socket`);
   logPendingPlanes("[herm]", herm.mountManifest);
 
   // ── THE RAISE DOOR — the third path onto caps, beside the archive and the asked standing ────────
@@ -574,11 +674,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // own key names only the vessel a grant must answer for. A vessel that carries no Nexus emits no challenge:
   // no admit could count, so there is nothing to invite.
   //
-  // THE RAISE FENCE'S LEASE RESOURCE IS THE CHALLENGE NEXUS'S AID. `leaseEpoch` reads
-  // `effectiveLeaseEpochOnBoard(daemonHandle, raiseNexus)`, so the epoch a raise must match is the one leased under
-  // that AID on this vessel's own daemon board — never the vessel's key, never a wiki, never a second Nexus it also
-  // carries. A `nexus-rekey` that advances the lease for that AID drops every raise standing against the old epoch;
-  // a rekey under any other Nexus leaves this door's fence where it stood.
+  // THE RAISE FENCE reads the challenge Nexus's lease through that charter's verified seal lineage.
+  // Every ask re-reads the charter and daemon board; an unreadable lineage leaves no standing raise.
   const selfKey  = await loadVesselVerifyingKey();
   const sealHome = larSealHome();
   const openRaiseBoard: BoardOpener = async (url, label) =>
@@ -592,7 +689,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     vesselId:   selfKey,
     nexus:      raiseNexus ?? "",
     floor:      standing,
-    leaseEpoch: () => (raiseNexus ? effectiveLeaseEpochOnBoard(herm.daemon.daemonHandle, raiseNexus) : 0),
+    leaseEpoch: () => (raiseNexus ? leaseEpochOnBoard(herm.daemon.controlHandle, raiseNexus, leaseLineageOfNexus(sealHome, raiseNexus)) : null),
     readings:   raiseReadings,
     verify:     verifyNymSignature,
     nonce:      () => randomBytes(32).toString("hex"),
@@ -634,12 +731,16 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // The socket is the vessel's own claim on its store, bound before its Repo opened; the channel serves it.
   // THE DISPATCHER STANDS BEFORE THE CHANNEL SERVES. The herm branch mounts no wiki, so nothing else
   // awaits the daemon island's `ea`; a verb placed ahead of it commits and no dispatcher runs it.
-  await herm.daemon.workerEa;
-  await herm.daemon.mountHostWorkingLayer();
+  // The composition returned standing on its working layer (open-node-vessel's composer mounts it, slice 5b).
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands (the composer
+  // awaited it before it returned).
+  console.log(`[herm] phase → daemon-ea`);
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
-    daemonHandle: herm.daemon.daemonHandle,
-    composite:    herm.daemon.composite,
+    controlHandle: herm.daemon.controlHandle,
+    control:      herm.daemon.control,
+    // A veil floor (its rest key stands) also answers the wiki-minting and composing verbs, as the veil.
+    floorVerbs:   floorVerbsFor(herm.floorKey === "stands"),
     placeVerb:    (o) => herm.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         herm.repo,
@@ -647,6 +748,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     onLog: (line) => console.log(`[herm] ${line}`),
   }));
   console.log(`[herm] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
+  console.log(`[herm] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, herm.daemon.workerEa);
 
   let hermShuttingDown = false;
@@ -672,20 +774,24 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   };
   return {
     standing: "herm",
+    island: { state: herm.daemonIslandState, restart: async (reason) => ({ ...(await herm.restartDaemonIsland(reason)), leg: (await herm.daemonIslandState()).leg }) },
+    lightFace: herm.lightFace, dropFace: herm.dropFace,
     onSignal: (sig) => void hermShutdown(sig),
     teardown: async () => { await front.detach(); await herm.teardown(); },
     personaSelves: herm.personaSelves,
     walk: herm.walkDial,
     hosting: herm.hostingDoor,
     backup: herm.backupDoor,
+    heldSaves: herm.heldSaves,
+    docCensus: herm.docCensus,
   };
 }
 
 /** The hearth: the floor's caps with the wiki, the pool and the porch lit over them. */
-async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
+async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null, ward?: WardCredential): Promise<StandingComposition> {
   const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
           reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
-          standing, faceLit } = ctx;
+          standing, faceLit, sessionActs } = ctx;
 
   // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
   if (originCompositions === null) throw new Error("[lararium] a hearth stood without its composed origins");
@@ -696,6 +802,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     hostId:     "lararium-node",
     floor,
     sovereign,
+    ...(ward ? { bootWard: ward } : {}),
     wikiId,
     storageDir,
     genesisDir,
@@ -721,7 +828,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 
   // THE CROSSING, spoken aloud. Each line names a URL a fresh device opens and stands at the floor with: the relay, and
-  // the hearth's oracle floor card in the fragment (the oracle's floor pin beside the key its snapshot is signed under,
+  // the hearth's flow floor card in the fragment (the flow's floor pin beside the key its snapshot is signed under,
   // carried by the person's own hand: `hearthFloorCardText`). No line names a gate key. A face crosses the sovereign gate
   // only under the full pin its fleet join carries inside the root's signature (house ruling "The admit's gate pin"), so
   // the banner names the fleet-join door beside the URLs. The `gate key:` line names this vessel's verifying key, so a
@@ -729,10 +836,14 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // gate at a Nexus, so its URLs carry no card.
   const gateIdentity = await loadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
-  const floorCard = await (async (): Promise<string | null> => {
+  // THE CARD carries the place's signed floor pin claim at the head of its own KEL, and the KEL rows that fold to that head. The
+  // card never anchors itself: the place AID prints on its own line, to hand across apart from the URL (a deliberate transfer).
+  const floorCardPack = await (async (): Promise<{ text: string; aid: string } | null> => {
     try {
       const pin = stoodFloorPins(larSealHome(), await vesselFloorKeyDoor()).find((p) => p.route === HEARTH_FLOOR_CARD_ROUTE);
-      return pin ? hearthFloorCardText({ pin, publisher: gateIdentity.verifyingKey }) : null;
+      if (!pin) return null;
+      const proof = await hearthFloorProof([pin]);
+      return proof ? { text: hearthFloorCardText({ claim: proof.claims[0]!, kel: [...proof.kel] }), aid: proof.claims[0]!.aid } : null;
     } catch (err) {
       if (!(err instanceof NoStoodNexus)) console.log(`[lararium] floor card: none (${err instanceof Error ? err.message : String(err)})`);
       return null;
@@ -740,7 +851,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   })();
   console.log("[lararium] browser crossing — open one of these on the device that crosses; it stands at the floor:");
   const crossings = reachFaces.map((face, i) => ({ face, composition: originCompositions[i]! }));
-  for (const line of crossingBannerLines("lararium", crossings, floorCard)) console.log(`[lararium]   ${line}`);
+  for (const line of crossingBannerLines("lararium", crossings)) console.log(`[lararium]   ${line}`);
+  for (const line of floorCarriageBannerLines(floorCardPack ? { cardFile: floorCardCarriageText(floorCardPack.text), aid: floorCardPack.aid } : null)) console.log(`[lararium] ${line}`);
   console.log("[lararium]   (a leaf joins a face by the fleet-join door: `lares fleet join offer` here, the offer pasted on the leaf's page)");
 
   // The CLIENT dial-out (Socket A) is read inside the vessel, from the hearth pin its admit carries and the pair index
@@ -752,24 +864,57 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // Same rendezvous law as the herm branch above: derived from the resolved substrate dir, sited where a
   // logout cannot reach it (operator ruling — a lararium serves as civic infrastructure).
   // The socket is the vessel's own claim on its store (`claimStore`), bound before its Repo opened; the channel serves it.
-  // The daemon island's working layer stands before the channel serves: receipts land in it.
-  await result.daemon.workerEa;
-  await result.daemon.mountHostWorkingLayer();
+  // The daemon island's working layer stands before the channel serves: receipts land in it. The composer mounted it before
+  // `openNodeVessel` returned (slice 5b), so the channel serves on it.
+  // A BOOT MILESTONE the supervisor reads (`stand-socket-wait.ts` BOOT_MILESTONES): the daemon island's `ea` stands (the composer
+  // awaited it before it returned).
+  console.log(`[lararium] phase → daemon-ea`);
   // WHAT THIS VESSEL STANDS AS, published beside the socket that serves it. A standing is decided at
   // boot from the face found then, so a caller holding a face lit AFTERWARD has no way to see the
   // mismatch — and `stand` attaches to a floor and a hearth alike. Written here, once the channel
   // answers: a marker that outlives what it names repeats the fault this vessel already met.
   publishStanding(storageDir, standing, faceLit);
   front.attach(makeUdsSeat({
-    daemonHandle: result.daemon.daemonHandle,
-    composite:    result.daemon.composite,
+    controlHandle: result.daemon.controlHandle,
+    control:      result.daemon.control,
+    // One reading on every composition: where no control document stands and the floor's rest key does, the veil's four verbs pass.
+    floorVerbs:   floorVerbsFor(result.floorKey === "stands"),
     placeVerb:    (o) => result.daemon.placeVerb(o),
+    retireAsk:    (requestId) => result.daemon.retireAsk(requestId),
     claim:        floor.storeClaim,
     repo:         result.repo,
+    sessions:     result.sessionDoor,
+    // THE AI SEAT ACTS INSIDE THE LENT SET (`seat-hand`): a call marked `seat: "ai"` naming a face outside it refuses.
+    mountOrdinal:  () => result.mountOrdinal(),
+    lentOrdinals: () => unlockedFaceOrdinals(),
+    // EACH HAT REACHED BY NAME: a lit sibling's session carries its own lane's chores as itself and books its own face key.
+    litOrdinals:  () => result.litOrdinals(),
+    // EACH FACE LIVES ONE LIFE: each session verb and act admits on its face's actor, so a face closing takes no new work.
+    faceLife:     result.faceLife,
+    siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
+    signers:      result.sessionSigns,
+    beforeSignerDrops: (signer) => result.sealedRestLock(signer),
+    switchActs:   nodeSwitchActLog,
+    sessionVerbs: STORE_DOOR_FACE_VERBS,
+    handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS,
+    handOnlyCodes: STORE_DOOR_HAND_CODES,
+    socketVerbs:  new Set([...STORE_DOOR_FACE_VERBS, ...REALM_KEY_VERBS]),
+    // A FACE ROW ANSWERS ON THE SOCKET ALONE (K20): the store door's face rows, and the realm verbs a session runs that
+    // name a face's key (`REALM_SESSION_ACTS`), ride `session:act` beside the sealed acts, main's handler running as the
+    // face the session wears once the keyholder island clears it, so no outcome body pairs the face with the key it
+    // answers in the daemon document its fleet syncs.
+    sessionActs: {
+      names: new Set([...sessionActs.names, ...STORE_DOOR_FACE_VERBS, ...REALM_SESSION_ACTS]),
+      run: (act, args, worn) => (STORE_DOOR_FACE_VERBS as ReadonlySet<string>).has(act) || REALM_SESSION_ACTS.has(act)
+        ? (isPromoteAct(act) && result.promoteActs.begin(args, act, promoteActEdge(args)), faceRowAnswer(() => result.daemon.runAsFace({ verb: act, args, worn }), (line) => console.log(`[lararium] ${act}: ${line}`)))
+        : sessionActs.run(act, args, worn),
+      settled: (act, args) => { if (isPromoteAct(act)) result.promoteActs.end(args); },
+    },
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));
   console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
+  console.log(`[lararium] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, result.daemon.workerEa);
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
@@ -780,52 +925,13 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     (e) => console.log(`[lararium] mempalace pre-warm skipped: ${e instanceof Error ? e.message : String(e)}`),
   );
 
-  // ── Graceful, DURABLE shutdown (flush-then-force) ────────────────────────────
-  // A bare process.exit() (or a SIGKILL escalation when the handler runs too slow)
-  // while an island writes DESYNCS the actively-written doc — the recurring
-  // "working never arrived over syncPort" gap. The reliable path:
-  //   1. stop new inbound work (uds + http + read-face),
-  //   2. flush the MAIN replica — the durable floor for every record that has reached it,
-  //   3. tear down the wiki islands (disposeAll → each island flushes its OWN
-  //      partition, incl. working, before it acks), and BESIDE them
-  //   4. the daemon island gracefully (it flushes its docs + capture WAL),
-  //   5. flush MAIN again to land anything that synced during teardown.
-  //
-  // THE FORCE NEVER CUTS A MAIN FLUSH ON ITS OWN. The budget's REPORT arms before step 2, so a
-  // hung main-flush itself gets named too (H3/M4 — a prior shape armed the notice only AFTER
-  // main-flush, so a main flush that never returns pinned the process silently forever with no
-  // notice ever printed). What a force never does on its own timer is cut a step — only the
-  // OPERATOR'S OWN SECOND SIGNAL does that (below), as an event, never a clock.
-  //
-  // THE "EVERY RECEIPT LANDED" CLAIM MUST BE TRUE. The island pool and the daemon VM BOTH still
-  // terminate their own worker past their own handshake timeout ("teardown handshake failed —
-  // … terminating anyway") — that claim is THEIRS to make honestly, not main.ts's to overwrite:
-  // `disposeAll()`/`daemon.shutdown()` now report which acked and which got cut, and the final
-  // line names both rather than asserting every receipt landed when CI's own log showed a
-  // handshake timeout landing moments before that exact claim (H3).
-  //
-  // THE BUDGET'S BOUND, MEASURED. A stand that just LOADed a corpus keeps its wiki island busy with the load's
-  // after-waves for tens of seconds; that island cannot read its teardown before the waves drain, and answers
-  // nothing for the pool's 10 s handshake window. So a stop right after a LOAD is bounded by the budget, not by
-  // the islands (measured on the whole lares corpus: main flush ~4 s, islands silent to 10 s; the same stop after
-  // the waves drained: 271 ms whole). A whole stop therefore runs the main flush plus at most the budget plus the
-  // re-flush. `port-control.stopIncumbent` NEVER escalates to SIGKILL past its own grace window (M3): past
-  // `graceMs` it keeps waiting on this same SIGTERM's own effect and only NAMES the still-live holder
-  // (`onPastGrace`) — UNLESS the caller asked `--cut`, which delivers exactly one further signal, read below.
-  //
-  // THE WAY OUT OF A HUNG TEARDOWN (M4): the operator's OWN SECOND SIGINT/SIGTERM while a
-  // shutdown already runs. An EVENT, never a timer — nothing here measures how long to wait
-  // before treating it as a cut; the operator's second signal simply IS the cut. It logs the
-  // step still outstanding, reflushes main ONE more time if main itself is not the hung step
-  // (a hung main-flush gets no further flush attempt — it is already the thing that is stuck),
-  // and exits a DISTINCT nonzero code (75, "cut by operator") so a supervisor can tell a cut
-  // shutdown apart from a clean one or a flush error. `lares vessel stop --cut` reaches this by
-  // delivering that second signal itself, past the grace it already reported (port-control.ts).
-  // Only an EXTERNAL SIGKILL (outside this process entirely) cuts anything harder than this: the
-  // writes tear nothing (every save lands by rename, and a stranded temp never reads as a
-  // chunk), and records still in memory are lost as in any crash.
-  const SHUTDOWN_BUDGET_MS  = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
-  const DAEMON_SHUTDOWN_MS  = Math.max(1_000, Math.floor(SHUTDOWN_BUDGET_MS / 2));
+  // Signals and recomposition close the same composition: producers, sealed flush, signers, islands,
+  // Repo, then the process floor's claim. A second signal cuts the pending stop with a distinct exit.
+  // A signal flushes the main replica FIRST, before any producer drains: a stop right after a LOAD meets islands busy
+  // with the load's after-waves, and a supervisor's kill past its own grace must still find every record that reached
+  // the main replica on disk. Its own line prints the instant that flush resolves; the composition's flush and Repo
+  // phases flush it again for whatever lands during the drain.
+  const SHUTDOWN_BUDGET_MS = Number(process.env["LAR_SHUTDOWN_BUDGET_MS"] ?? 6_000);
   let shuttingDown  = false;
   let cutRequested  = false;
   let currentStep   = "start";
@@ -839,16 +945,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       }
       cutRequested = true;
       console.error(`[lararium] ${sig} — operator's SECOND signal: cutting the hung step "${currentStep}" now (done so far: ${spans.join(" · ") || "(none)"})`);
-      if (currentStep !== "main-flush") {
-        try {
-          await result.repo.flush();
-          console.error("[lararium] cut: main replica reflushed before exit");
-        } catch (e) {
-          console.error(`[lararium] cut: main reflush failed — ${e instanceof Error ? e.message : String(e)}`);
-        }
-      } else {
-        console.error("[lararium] cut: main-flush itself is the hung step — exiting with no further flush attempt");
-      }
+      console.error(`[lararium] cut: composition shutdown still awaits ${currentStep}`);
       console.error(`[lararium] cut by operator — exiting 75 (never a clean shutdown's 0, never a flush error's 1)`);
       process.exit(75);
     }
@@ -865,9 +962,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
         onDone?.(ms);
       }
     };
-    // THE REPORT ARMS BEFORE THE FIRST STEP (M4c) — a hung main-flush now gets named too, never
-    // left silent until islands/daemon even get a turn. It only ever REPORTS; the operator's own
-    // second signal above is the sole cut.
+    // Report overdue shutdown without interrupting its pending step; the operator's second signal cuts it.
     const pastBudget = setTimeout(() => {
       console.error(`[lararium] shutdown past its ${SHUTDOWN_BUDGET_MS}ms report budget — pending shutdown, still awaiting receipts from: ${[...running].join(", ") || "(none named)"}; done so far: ${spans.join(" · ") || "(none)"}; a second SIGINT/SIGTERM (or \`lares vessel stop --cut\`) cuts it now`);
     }, SHUTDOWN_BUDGET_MS);
@@ -875,55 +970,37 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       readinessFace.dispose();
       pronaos?.dispose();
       dispatcher.dispose();
-      front.close();
       lanSocket()?.close();
       httpServer.close();
-      // M17: print the INSTANT this step resolves, never waiting for the final line below. The
-      // final "shutdown complete" line only prints once islands AND daemon have also acked (or
-      // been named cut), which the harness's own SIGKILL grace can outrun on a busy island — a
-      // local witness-all run measured exactly that (main-flush landed in 4.6s; the islands'
-      // handshake went ack-silent past it, and the test's own 15s grace SIGKILLed before the final
-      // line ever printed). This line carries the durable-floor claim ALONE, the instant it is true.
       await step("main-flush", () => result.repo.flush(), (ms) =>
         console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`));
-      // The two teardowns run side by side: a wiki island busy past the budget never holds the daemon island's own
-      // flush (its outcomes and markers — a `wiki open` the next boot reads) behind it. Both are AWAITED to their
-      // own receipt — nothing here races them against a clock.
-      const [islandsResult, daemonResult] = await Promise.all([
-        step("islands", () => result.pool.disposeAll()),                            // wiki islands flush their partitions + ack
-        step("daemon", () => result.daemon.shutdown(DAEMON_SHUTDOWN_MS)),           // daemon island flushes docs + capture, then acks
-      ]);
+      await step("composition", () => result.teardown(() => front.close()));
+      await floor.release();
       clearTimeout(pastBudget);
-      await step("main-reflush", () => result.repo.flush());                        // land what synced during teardown
-      // THE HONEST LINE (H3): never "every teardown receipt landed" when a handshake timed out
-      // and this door terminated the worker anyway. Names exactly what acked and what got cut.
-      const daemonLine  = daemonResult.acked ? "daemon ok" : "daemon cut (ack silent)";
-      const islandsLine = islandsResult.cut.length === 0
-        ? "islands ok"
-        : `islands cut (${islandsResult.cut.join(", ")}${islandsResult.acked.length > 0 ? `; ok: ${islandsResult.acked.join(", ")}` : ""})`;
-      console.log(`[lararium] shutdown complete — main replica flushed durably; teardown receipts: ${daemonLine} · ${islandsLine} (${spans.join(" · ")})`);
-      // L6: a handshake that timed out and got terminated by THIS DOOR'S OWN PATIENCE (never the
-      // operator's cut, which already exits 75 above) is a true line that still cannot read as
-      // clean to a supervisor watching the exit code alone. Exit 0 only when every receipt
-      // genuinely acked; otherwise 76 ("teardown cut by this door's own patience"), distinct from
-      // both a clean stop (0) and a flush error (1).
-      const everyReceiptAcked = daemonResult.acked && islandsResult.cut.length === 0;
-      process.exit(everyReceiptAcked ? 0 : 76);
+      console.log(`[lararium] shutdown complete — composition closed durably (${spans.join(" · ")})`);
+      process.exit(0);
     } catch (e) {
       clearTimeout(pastBudget);
-      console.error("[lararium] shutdown flush error:", e instanceof Error ? e.message : String(e));
-      process.exit(1);
+      console.error("[lararium] shutdown error:", e instanceof Error ? e.message : String(e));
+      process.exit(shutdownExitCode(e));
     }
   };
   return {
     standing: "hearth",
+    island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
+    lightFace: result.lightFace, dropFace: result.dropFace,
+    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, replayLend: result.replayLend,
+    closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
-    teardown: async () => { await front.detach(); await result.teardown(); },
+    teardown: () => result.teardown(() => front.detach()),
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
     walk: result.walkDial,
     hosting: result.hostingDoor,
     backup: result.backupDoor,
+    heldSaves: result.heldSaves,
+    docCensus: result.docCensus,
+    wikiAwaits: result.wikiAwaitsFace?.message ?? null,
   };
 }
 

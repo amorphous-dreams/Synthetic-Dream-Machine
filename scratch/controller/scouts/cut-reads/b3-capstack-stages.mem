@@ -1,0 +1,136 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b3-capstack-stages.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b3-capstack-stages"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b3-capstack-stages.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b3-capstack-stages.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b3-capstack-stages-reader-three-cold-read-2026-1`>>
+
+! b3-capstack-stages ~ Reader-Three (Tasked Spirit), cold read, 2026-10-31
+Lares (Ink-Clerk) read every line of packages/lararium-node/src/open-node-vessel.ts 709-1745 (main checkout, 27bc0cb6b), selfSlotShareDecision whole (self-slot-share.ts, 148L), protected-doc-guard.ts whole, and ralias's diff against 27bc0cb6b (open-node-vessel hunks, vessel-private.ts, kahu-realm.ts). Line numbers are main-checkout lines; ralias shifts them by about +45 after line 850.
+
+Note: the source carries no "R1-R19" labels in this span (only "R3" at 1714). I name stages S0-S18 below and map them to the lift map's R-range by content.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! FINDINGS (none a live fault I could prove; three latent, one drift)
+
+F1 LATENT, ORDER-HELD: three share-verdict inputs read OPEN while their cell holds null.
+* antigenRing null: `presenterIsKapaed` answers false (federation-gate.ts:298). Stood at 1198.
+* edgeShadows null: `presenterStandsAside(null)` answers false (federation-gate.ts:126). Stood at 1416 (floor: floorShadowRing wraps it).
+* kahuProtected null: the guard's `ids` returns the empty map, `incomplete` reads false, `settled` resolves (849-861). So every Kahu-canon document reads UNCLASSED until the holder stands inside `systemCanon` (about 1988).
+Safe today only because no wire or sibling peer can arrive before the sync gates stand (3272, inside openDaemon), the dial (2339) or the sibling channel (2669), and `systemCanon` runs earlier in composeCoreVessel (comment at 1971: "Core assembly asks before the daemon mount loads"). I verified the line order, NOT the composeCoreVessel call order, and NOT whether a floor (sovereign=null) composition still runs systemCanon. A stage-cut that moves standSyncGates, the dial or the sibling stand ahead of systemCanon opens the Kahu canon silently. Contrast ralias's vesselPrivate book, which stands at the top of the function (about 728) and so does not carry this hole. Cure shape: the ShareInputs cell answers "not stood" = withhold for these three, red-first. (Whether that tightens behavior is a ruling; see T11.)
+F2 FAIL-CLOSED (checked, recorded so a cut keeps it): every other null cell reads closed. siblingGate null denies; selfSlotFedGate null becomes DenyAllGate (self-slot-share.ts:131, 146); nexusMembership null leaves a stranger; planeSeal registry empty denies; houseIslands starts as an empty Set so an unproven peer reads as WIRE (P26); an unmapped wire peer has class undefined and reaches the shelf only; guard deciders that throw or are missing withhold; ralias's `faceGrantRing` null makes the vessel-private decider answer false.
+F3 DRIFT RISK (T11 relevant): the closure formula `hasWsSocket: !!wsSocket || (!houseIslands.has(peerId) && !siblings?.provenKeyOf(peerId))` (1036) and the outer gate `wsSocket && !peerIdentifierMap.has(peerId) -> false` (1027) live ONLY in the boot closure. The tests that drive selfSlotShareDecision (13 files) hand-assemble the inputs (kahu-guard-lanes.test.ts:62-67 passes `hasWsSocket: !inProcess(house, peerId)` from its own copy). The production derivation is exercised only by whole boots. A copy that drifts stays green.
+F4 ORDER DEPENDENCE (fails CLOSED when broken, liveness not leak): the verdict yields one microtask (1023) so the `peer-candidate` listener registered at 907 (before `new Repo` at 997) fills peerIdentifierMap/peerClassMap/peerSessions first. Move the listener after the Repo and a same-operator peer reads class undefined and wire: shelf only, no sync. Also TDZ: `siblings`, `siblingGate`, ralias's `faceGrantRing` are `let`s declared after the guard closure that reads them; a call before their declaration throws, and the guard converts a throw to withhold.
+F5 DEAD LANES: `peerContractNymMap` (876) is never `.set` anywhere (grep: reads at 1366 and 2226 only), so `realmNymOfPeer` always answers null. `walkerBoard` is never passed by the vessel (only self-slot-share.test.ts:214), and the walker arms ship SHUT (comment 3270), so the walker branches of selfSlotShareDecision (117-124) run only in tests. Old shapes burn: both are burn candidates (ruling, T11/T13).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/span-map-stages-capability-served-substrate-hidd`>>
+
+!! Span map: stages, capability served, substrate hidden
+
+| Stage | Lines (main) | Capability served | Substrate binding hidden |h
+| S0 preamble | 709-746 | reads what this composition may open (sovereign vs floor; worn face) | sealed custody on fs, env paths (`larBootstrapPath`, `daemonCorpusRoot`), `sweepFoundingSeeds` writes at 715 |
+| S1 sync-route front | 755-770 | serves a gate (sync route) | `ws` HTTP upgrade (`faceGateServer`), `ListeningWSServerAdapter`, `DurableNodeFSStorageAdapter` (node:fs/promises) |
+| S2 peer seat book | 771-951 | seats a proven peer (id, class, nexus, session, binding, view); unseats on leave | `network.sockets`, `socket.once("close")`, `readyState !== 3` (ws), `gateSync.sessionOf(socket)` |
+| S3 protected-doc holders | 811-861 | withholds classed documents (Kahu canon) from wire/sibling peers | `kahuProtectedHolder` / `kahuStandingBook` use node:fs + sealHome path |
+| S4 forward share cells | 952-996 | none (holds the late-bound inputs) | closure `let`s |
+| S5 Repo + share verdict | 997-1077 | serves a verdict on both hooks (announce + access) | `Repo` over `network:[ListeningWS]`; `LAR_WIRE_LOG` env read at 990 |
+| S6 rest door | 1078-1089 | carries for others (islands): saves island-minted docs | PROCESS-GLOBAL `setRestDoor` (u1/C1 owns), node storage |
+| S7 catalog anchor | 1090-1119 | anchors rendezvous (catalog pointer) | fs file `catalog-url` read/write (1094, 1110, 1117) |
+| S8 identity + island | 1121-1190 | names the Nexus island this place stands in | `loadVesselIdentity`, `larSealHome()` fs, `nodeNexusStandsAt` |
+| S9 antigen + membership | 1192-1282 | refolds bans and the leaf map (Kapae consult, member gate) | `sealHome` path (23 reads in nexus-carriage.ts), `repo` |
+| S10 carried boards + posture | 1211-1269 | reads carried Nexuses, posture, contract holds, drops demoted sockets | `network.sockets` + `GateSyncSocket.close()` (ws) |
+| S11 after-roll chain | 1284-1332 | refolds every holder once per write | none (after-roll-chain.ts, 114L, substrate-free) |
+| S12 edge shadow ring + seat settler | 1333-1417 | sets stray devices aside; settles key rolls | `sealHome`, `loadPersonaGroupRootVerifyingKey` (custody), daemon island ask |
+| S13 face gates | 1420-1553 | serves a gate per Nexus; sweeps same-operator sessions; stands floor gates; stands the intent relay | `opts.dispatcher.registerUpgrade` (node HTTP), `timerGateDeadlines` (real timers), `custodyGateDoor` |
+| S14 bulb / tracker / fed gate / hosting docs | 1555-1573 | serves public shelf; names hosting docs it carries | genesis dir on fs (`readBulbArtifact`) |
+| S15 herm relay port | 1575-1593 | carries for others (sibling drops) | LISTENING TCP port (`startCarriageRelay`), `LAR_HERM_RELAY_PORT` env (1580), jsonl journal in storageDir |
+| S16 fetch door | 1595-1610 | resolves a cid, locally then via a herm shore | PROCESS-GLOBAL `setCasDoor`, fs `cid/`, `LAR_HERM_SHORE` env (hermCasTransitFromEnv) |
+| S17 dial prep + carriage pull | 1612-1695 | dials a hearth (url+pin choice) and pulls carriage | `nodeDialSocket` (ws client), `dialDeadlines` (real timers), `randomUUID` (1639); the dial itself fires after 1700 in openDaemon (2339) |
+| S18 boot cells | 1697-1745 | none (13 `let x!`/late cells, recall holders) | closure; u1 hunk 1697 |
+
+Closure `let`s in 709-1700: 28 (785 .. 1692). Share verdict reads about 15: wsSocket (network.sockets), peerIdentifierMap, houseIslands, siblings, siblingGate, peerClassMap, selfSlotFedGate, antigenRing, nexusMembership, sealRegistry, faceViews, ownCarriageBoard, ownHostingDocs, edgeShadows, protectedDocs (plus kahuProtected, kahuCanon, wornFaceProven, kahuStandings, peerSessions, custodyGroup inside the guard decider).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/share-verdict-walk-each-branch-open-or-closed`>>
+
+!! Share-verdict walk (security class): each branch, open or closed
+selfSlotShareDecision (self-slot-share.ts:95-143), as the closure feeds it:
+# Outer gate (1027): ws socket present and no identifier -> DENY (closed). In-process or dial-adapter peer -> continues.
+# presenterStandsAside(shadow) -> DENY. shadow null -> continue (OPEN while null; F1).
+# Guard: `(hasWsSocket || sibling) && protectedDocs.withholds` -> DENY. classOf undefined doc -> not classed, continues (a docless ask falls to later "deny-by-default" lanes); map throw/incomplete/no decider/no peer -> withhold (closed). Ids empty while kahuProtected null (OPEN; F1).
+# Sibling: also WS -> DENY; Kapae'd -> DENY; else siblingGate (null -> DENY).
+# Same-operator WS: Kapae'd -> DENY; sessionFace allows -> ALLOW; else fall through to the shelf (transport grants no readership).
+# WS walker/contracted special docs (never reached for walkers in production, F5); hosting docs for contracted via antigen-checked carry decision.
+# Shelf: carrierShareDecision with fedGate or DenyAll (closed), membership/planeSeal closed-set blind-transit.
+# In-process (not WS, proven house or, with no socket, not wire): carryContractShareDecision with empty relay ring -> allow unless Kapae'd. The only OPEN-by-design lane; it rests on `houseIslands` proof. A wrongly proven house peer reads everything. `houseIslands` fills through `markIslandArrival` in mesh (island-repo.ts:123): the proof lives in mesh, not here.
+Ralias additions (committed in its wt, 589ac5d3f, not yet on the span branch): third class "vessel-private" in the SAME guard, decided by relation (sibling+gate, same-operator view of the owning face, face-join grant), owner read first; `incomplete` also reads `vesselPrivate.torn()`; `onBound` re-asks verdicts via `reverdictLater`. All branches close on missing owner/relation. I found no fail-open in the diff. One point to re-check in ralias's own read: `protectedIds` memo keys on map identity plus `priv.size`; kahu `ids()` swaps a new Map per recount (kahu-realm.ts:573 `ids: () => map`, replaced at recount), so identity change invalidates; vesselPrivate mutates its Set in place and size catches growth. Sound, but it rests on both facts staying true.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-candidate-reports`>>
+
+!! Per-candidate reports
+
+!!! T11 ShareInputs (span: shareConfig closure 1016-1067 + cell declarations 952-996 + selfSlotShareDecision whole)
+# Span: open-node-vessel.ts:1016-1067 (closure) with its cells at 827, 863-872, 955-996, 1005-1087; self-slot-share.ts:1-148.
+# Does: turns a (peerId, documentId) ask into a boolean on both automerge-repo hooks (`shareConfigOf`, mesh federation-gate.ts:602). The closure derives hasWsSocket/sibling/peerClass from 15 cells; selfSlotShareDecision applies the lane law.
+# State: reads the cells above; writes none. Clock: none. Env: `LAR_WIRE_LOG` (990). The one yield at 1023 depends on listener order (F4).
+# Callers: only `new Repo` at 997 (prepareNodeBootOn has one caller, openNodeVessel via line 694). selfSlotShareDecision callers: the closure, nexus-client-dial.ts (comment only at line 8; no call), and 13 test files.
+# Tests: selfSlotShareDecision itself is decision-table tested (self-slot-share.test.ts, 33 cases; plus gate-widening, kahu-guard-lanes, floor-fleet-lanes, edge-shadow-ring, same-operator-refold and others, 13 files). The closure (cell derivation) is reached only through a whole boot or a hand copy (F3).
+# Lift target: shared cap-stack stage in lararium-mesh. selfSlotShareDecision already imports only &#64;lararium/mesh and automerge types, so it moves as a file (name by capability: `peer-share-verdict`, port `SharePeerStanding` = {isWire, isSibling, peerClass, shadow, antigen, membership, ...}). The ShareInputs cell = one record built by the composer, handed to a pure `shareVerdictOf(inputs)`; the closure shrinks to one line. Browser fork: open-browser-vessel.ts:1961 uses the thinner `federationShareDecision(relayPeers, fedGate, ..., siblings)` with no antigen/membership/protected/shadow. If a browser vessel takes a node-like role it needs the same verdict, so one owner of the share law is the isomorphic end state.
+# Laws: one owner per registry (two share laws exist today); capability not host (the move is clean: no node import); no global now (none in the decision; the yield at 1023 is ordering, not time); old shapes burn (F5 dead lanes). No key on a surface: untouched.
+# Risk: ralias edits 848-900 and 1002/1251 (its tree is committed, unpushed): do not open T11 until ralias lands or the cut rebases onto it (ralias also adds a class to ProtectedDocClass in mesh and `faceGrantRing`/`reverdictLater` cells, which ShareInputs must carry). F1 (null reads open) decides cell semantics; F4 ordering must stay pinned. u1 does not touch this span (its diff has no open-node-vessel hunks).
+# Red-first: (a) a table test that builds ShareInputs from stand-in cells and asserts hasWsSocket for each of: listening socket, dial-adapter peer, proven house island, proven sibling, unknown id (reads wire); control: the same table through the old closure inputs by hand copy must disagree on a planted drift. (b) "not stood" matrix: for each of antigen/shadow/protected null, a wire-peer ask withholds; control: the hand-built stood version allows the public shelf. (c) mutant: flip `houseIslands.has` polarity must go red.
+# VERDICT: NEEDS-RULING. Fork: do the three null-reads-open cells (F1) become withhold-by-name in the cell (behavior tightens; safe under the order that holds today) or does the cut pin today's semantics byte for byte? Lean: tighten in the cell, red-first (a boot window answer should never rest on call order). Second small fork: burn `walkerBoard` and the walker branches with the cut. Lean: burn (old shapes burn).
+
+!!! T13 first half ~ stage by stage (R1-R19: S1-S17)
+Common: each stage lands one PR into mesh (transport-free) or tw5 (keel), browser twin burns in the same PR; the substrate stays a port implemented per host. Named ports: `GateSeat` (stand/unstand a gate on a route), `PeerSeatBook`, `CarriedLedger` (replaces `sealHome` path reads), `DocAnchorStore` (catalog pointer), `RestDoor`/`CasDoor` (u1 owns), `HearthDial`.
+* S2 peer seat book (771-951). Capability: seats a proven peer. State: 7 maps keyed by peerId plus inboundUnseats; callees: peerArrivals (mesh), faceViews, membership holder. Tests: none unit; whole boot only. Target: mesh `peer-seat-book` (pure maps + clearPeer + seat(session)) behind `ArrivalSource` {onCandidate, onLeave, socketOf, closed(socket)} implemented by the ws listening adapter. Risk: F4 order; the 907 listener must precede Repo. Red: seat/unseat table incl. replacement arrival (generation identity) and a mutant dropping a map in clearInboundPeer. VERDICT CUT-READY after T6 (pins the registration order).
+* S3 protected-doc holders + guard (811-861, ralias edits 848-900). Capability: withholds classed docs. VERDICT DO-NOT-CUT until ralias lands (ralias rewrites the guard wiring and adds a class and 3 cells).
+* S9/S10/S12 holders (antigen 1192-1199, membership 1270-1282, carried/posture 1211-1269, edge shadow 1346-1417). Capability: refolds membership/bans/shadows. Already modules (antigen-ring 135L, nexus-carriage 591L, edge-shadow-ring 288L) taking `repo` + `sealHome`. Composer part = wiring + postureOf/contractHolds/gateNexuses (lift map's C4 pure readers, already T5). Lift: wiring into a mesh stage once `sealHome` becomes `CarriedLedger` (fs path today; 23 reads in nexus-carriage.ts). VERDICT NEEDS-RULING: shape of CarriedLedger (the browser has no seal home; reads Keyhive/IDB). Lean: port with {readNexusDoc, carriedSet, keptAdmits, keptFloorPins}, sealHome stays the node implementation. dropNoLongerHeld stays substrate (needs socket.close).
+* S11 after-roll (1284-1332). Chain already extracted (after-roll-chain.ts, tested after-roll-chain.test.ts, after-roll-awaited.test.ts). Composer part is 8 lambdas. VERDICT CUT-READY (ride with the holders; no state of its own).
+* S13 face gates (1420-1553). Capability: serves a gate. Cap logic = gateDeps, deviceBook, sweepSameOperator, gateNexuses, floorGates (vesselGate in vessel-gates.ts, 63L). Substrate: gateServer.stand + dispatcher.registerUpgrade + real timers. Tests: gated-node-rig (real wire), floor-fleet-lanes, same-operator-refold, flow-floor-resweep (booted). Target: `GateSeat` port; sweep logic into a mesh stage. Risk: 5 forward cells (sweepSameOperator, resweepGates, registerRelayPlanes, intentRelay, gateReadings) set from hunks far below (3272, 2440); order across 1500 lines. VERDICT NEEDS-RULING: whether the browser can ever stand a gate (needs a listening transport). Lean: keep stand/unstand as a host port, cut the sweep + deps; do it inside T12's single-owner window, not before.
+* S1/S15 gate front and herm relay port: listening sockets. DO-NOT-CUT into shared stages (substrate by nature: they bind a server); keep as host adapters named by capability (`GateSeat`, `CarriageRelayPort`).
+* S6/S16 rest door and cas door (1078-1089, 1595-1610). Process-global setters (setRestDoor/setCasDoor). VERDICT DO-NOT-CUT until T9/u1 lands VesselDoors (u1 touches worker-handle.ts, not this file's span, but the cut owns the same four globals).
+* S7 catalog anchor (1090-1119). Fs pointer with flush-before-pointer rule (comment 1096-1103). Target: `DocAnchorStore` adapter (node fs; browser IDB) plus mesh stage for the order rule. Test: none unit; red: pointer never written before `repo.flush()` resolves (control: write-first form reds). VERDICT CUT-READY (ralias adds two `vesselPrivate.add` lines at 1154/1160: rebase).
+* S14 selfSlotFedGate + hosting docs + bulb (1555-1573): pure construction; folds with T11 cells. CUT-READY with T11.
+* S17 dial prep + carriage pull (1612-1695). `chooseHearthDial` (hearth-gate-pins.ts, pure), `vesselCarriagePull` (herm-carriage.ts, 153L): both already modules. Composer = option wiring. `nodeDialSocket` (21L, ws) substrate. Dial fires at 2339, outside this span. VERDICT CUT-READY for the prep; the dial itself belongs to the openDaemon read.
+* S0/S5-S8 (preamble, identity, island): S0 not in the T rows; its readers (corpusRoot, bootstrapPath, hearthPin) are T16 (injected homes). Leave.
+Collisions: ralias (848-900 guard; additive hunks at 727, 1002, 1154, 1160, 1251), u1 (1697 boot cells, not 709-1700 code), T6 (pins first), T12 single-owner window.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/bottom-line`>>
+
+!! Bottom line
+Verdict tally: T11 NEEDS-RULING (cell semantics for null reads, F1); T13 first half: CUT-READY 5 stage groups (S2, S11, S7, S14, S17-prep), NEEDS-RULING 2 (CarriedLedger port shape; gate sweep placement), DO-NOT-CUT 3 (S3 until ralias; S6/S16 until T9; S1/S15 substrate by nature).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Dlrun-i5seinEuNR_TxrTBxS4pfJ3IWsqGZZeTpED2Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

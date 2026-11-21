@@ -1,0 +1,130 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/reread`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/blind-opus/reread.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/reread"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/reread"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! reread.md — research, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/blind-opus/reread.md` (research, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://kiai:operator@hearth/custody.reread.cure-1` to=`lar://blind-warden-share:agent@hearth/warden.rereads.the-floor` mode=`seal` mu=`_!` stance=`🏛️ 🗡️` aperture=`14/arc` ooda-ha=`6/declare-glyphs` drift-ward=`four probes going green pulls toward reading the owed rows as minor`>>
+
+Blind-Warden-Share: Lares (Tasked Spirit) — re-read of `ed44bf39a..918864e79` (PR #200)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdict-land-after-cures-at-918864e79`>>
+
+!! Verdict: LAND-AFTER-CURES at `918864e79`
+
+The cure holds where I struck. All four composition probes pass on the built `dist`. None of the five new mechanisms opens a crossing past its gate.
+
+One owed row has to block the land: ''plugin CIDs''. It breaks a whole mount, not one plugin. A second row, ''browser face planes'', blocks unless the lead measures the browser face walk green.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-real-composition-re-run`>>
+
+!! The real composition, re-run (`makeHeldShareFloor` from `packages/lararium-mesh/dist`, node-shaped readers)
+
+| probe | result |h
+| a faceless herm: crossroads → `world` (held ring) | ''true'' |
+| a bound face catalog, registry uninitialized: persona plane → `fleet` | false, by name: `secrets-registry-uninitialized` |
+| `registry.initialize()` | `initialized` |
+| after init: crossroads → `world` | ''true'' |
+| after init: sibling → `fleet` on `persona-<tag>`, carried (and on the held ring with the plane sealed) | ''true'' |
+| after init: persona plane → `contract` / `world` | false (`personagroup withholds …`) |
+| after init: bound face catalog → `fleet` carried / → `world` | ''true'' / false |
+| a VEIL-declared bag → `fleet` carried | false |
+| hosting doc (non-bag, CONTRACT) → `contract` / → `world` | true / false |
+| an unbound, unnamed doc → `world` carried | false: `declared-tier-unresolved` |
+| island floor: daemon (`in-process`) reads a blob that a VEIL doc and the public board both reference | ''BYTES'' |
+| island floor: a `world` island reads that same blob | ''refused'' `declared-tier-audience` (`N: veil withholds from world`) |
+| island floor: a `world` island reads a blob only the board references | BYTES |
+| island floor: the daemon reads a face-plane blob | BYTES |
+
+The lane's witnesses `p27-honest-floor`, `p27-public-cas` and `floor-porch` pass in bwrap, under a scratch HOME/LAR_ROOT with LAR_BAGS unset: 13/13.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/my-findings-re-read`>>
+
+!! My findings, re-read
+
+* ''F1 · CURED · MEASURED.'' `held-share-floor.ts:183-191`: `faceScopedSecrets(registry.plane, owns)`. A public board, the seed and a named non-bag plane never ask the registry, and an unbound doc refuses by name. The init lands at face-catalog bind, at `open-node-vessel.ts:2664-2669`. Probe: crossroads → world true with no face. (`initialize` refuses `secrets-registry-unsealed` while the face catalog does not map sealed. That fails closed, and those docs keep refusing by name.)
+* ''F2 · CURED on node · MEASURED (composition); PARTIAL in the browser · INFER.'' Three cures carry it:
+** the carried ring (`share-tighten.ts:249-262`, `held-share-floor.ts:200-204`);
+** `allows(…, audience !== "in-process")` (`self-slot-share.ts:127`);
+** the face-grant ring proving `fleet` (`self-slot-share.ts:174`).
+
+Browser: see "Owed rows" below.
+* ''F3 · CURED · MEASURED.'' `held-share-floor.ts:146` binds the face catalog as non-bag `personagroup`. `:163` gives a face-scoped bag that rests no carrier `personagroup`, and a carrier that does rest still has to agree.
+* ''F4 · hosting docs CURED · MEASURED'' (`open-node-vessel.ts:1301-1303`, non-bag `contract`). ''Herm own lane CURED'' (code): it now checks the board that carries each pointer (`open-node-vessel.ts:4551`, `bulb-read-face.ts:187`). ''Realm lane NOT cured'': `bulb-read-face.ts:181` still reads `documentForBag(book.bagUri)`. It rides as an owed row.
+* ''F5 · NOT cured · MEASURED (code).'' It rides as the owed row "plugin CIDs"; it ''must block'', see below.
+* ''F6 · Browser default peer CURED · MEASURED (code).'' `peerShareAudience` (`share-tighten.ts:273-280`), used at `open-browser-vessel.ts:2413-2419` and seated with `islandPeersOf` (`:760`). The daemon, pool and session legs all mark their arrival (`island-repo.ts:148`, `session-document-view.ts:235`), so they stay `in-process`. ''The bare sync leg for non-session islands is NOT cured.'' It predates the lane and rides as an owed row.
+* ''F7a · CURED.'' `floor-porch.ts:392` throws `floor-porch-share-absent` when a porch serves `/cas` with no tier predicate, and `:405-407` requires the board and every referencing doc to hold `world`.
+* ''F7b · PARTIAL · INFER.'' `bulb-read-face.ts:356` withholds a blob that a held, READY private doc references. A herm that holds a fleet peer's blob in `cid/` without the private doc still serves it when a board pointer names it, because `documentsForCid` sees ready handles only. This predates the lane. P2; it can ride as owed.
+* ''F8 · NOT cured.'' It rides as the owed row "worker CAS dirs". `vessel-island-pool.ts:96` still hands `cidDir`/`corpusCasDir` to workers. The browser OPFS limit stays as it was. Fine to ride.
+* ''F9:'' (a) the post-await recheck is NOT cured and rides as owed (P3). (b) CURED by `peerShareAudience`. (c) NOT cured, the same root as F7b. (d) NOT cured; it costs time and hangs nothing.
+* ''Sol 5 · CURED'' (`share-tighten.ts:168`: only `undefined` reads absent). ''Sol 6 · CURED'' (`worker-handle.ts:119-121` sends `refusal: "CasRefused"`). ''Sol 2'' CURED, per F6 above. ''Sol 1 and Sol 3'' CURED, per F1. ''Sol 4'' NOT cured (the realm lane). ''Sol 7'' NOT cured (worker dirs).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/did-the-cures-open-anything`>>
+
+!! Did the cures open anything?
+
+* ''Carried-gate floor `allows(…, carried)` — opens nothing past the gate, but the keystone's crypto floor stops biting on Repo crossings. P3 · MEASURED.''
+** What it does: `floorOf(() => true)` (`held-share-floor.ts:203`) floors every carried crossing PUBLIC, so the resolved tier equals the declaration with the secrets ceiling read first.
+** Why it opens nothing: `tightenShare` never allows past `base` (`share-tighten.ts:48`). Every carried crossing already passed its gate. For `world`, that gate covers the deterministic boards and nothing more, since the ring now proves `fleet`.
+** The residue: a manifest carrier written inside a doc decides that doc's tier. A writer with fleet reach can raise a carrier to `public`, and it still reaches no further than the gate allows.
+** Owed: name it in canon (cap-tier#/the-keystone). The meet against the structural floor now holds only at the byte doors (`require` reads the held ring).
+* ''Face-grant ring proving fleet — sound. MEASURED (code).'' `self-slot-share.ts:174` proves `fleet` only for a document `admitsPeer` admits. That is the ring's own governed set, under a verified face-join grant. On other docs the peer stays `world` or `contract`.
+* ''Non-bag tiers — sound.'' Each one is named explicitly: hosting docs `contract` and fleet edge boards `personagroup` (node `:1301-1303`, browser `:737`), the face catalog `personagroup`. An unnamed unbound doc still refuses (probe). A tier outside the four refuses (`share-tighten.ts:154-157`).
+** One P3 note: `isFaceScopedBag` (`persona-scope.ts:186`) matches ANY face's tag. So `owns` asks the worn face's registry about another face's plane, and the answer reads false. Since a face plane declares `personagroup`, below CONTRACT, the ceiling matters only where such a plane's carrier declares `public` and a gate lets it reach `world`. No gate does that today.
+* ''`peerShareAudience` — tightens only.'' A relay with no gate armed, and an unclassified peer, now refuse by name, where before they rode `fleet` / `in-process`.
+* ''The porch's share requirement — tightens only.'' It refuses at mount when absent. One P3 note: the `/cas` 200 still carries `public, immutable, max-age=31536000`, so a blob re-tiered later stays cached by intermediaries. That predates the lane.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-rows-block-or-ride`>>
+
+!! Owed rows: block or ride
+
+* ''Plugin CIDs — BLOCK. MEASURED (code).''
+** The cause: promoted digests rest in custody rows (`promoted-store.ts:26-37`: `promoted-g<digest>.bin`). Offering blobs rest as JSON in `text` (`offering-announce.ts:48`). Neither sits in any LarDoc field that `documentsForCid` reads (`held-share-floor.ts`: `textCid` / `_canonical_uri` / `blobs` only).
+** The effect: `islandFloorStack` (`lar-vessel.ts:68-75`) refuses them even to `in-process`. The kernel fetches each plugin in sequence (`sovereign-kernel.ts:441-446`), and `vesselCasAsker` rejects on a refusal. So the ''whole mount fails'', where the old behavior dropped one plugin.
+** Reach: this covers the daemon island too, whose `resolvePlugins` carries `promoted("daemon")` (`open-node-vessel.ts:3289`). One promoted plugin on the daemon, or on any wiki, keeps that island from standing.
+** Smallest cure: count the CIDs that plugin resolution already proved (`resolveNodeIslandPluginCids` output) as references, under the tier of the promote ledger's face or the offering board. A witness should mount a wiki with one promoted plugin through the real floor.
+* ''Browser face planes — BLOCK unless measured green. INFER.''
+** The cause: the browser binds no face-catalog row (`open-browser-vessel.ts:728-731`; the node adds one at `:1297`), and `faceOwns` reads `sealedBagOf` alone. The leaf's face catalog then either refuses by registry (the init row never synced in, and only a crossing it refuses could carry it in), or reads `declared-tier-unresolved`.
+** The effect: the leaf's face catalog and planes stop crossing to their hearth, a deadlock no act clears.
+** Smallest cure: bind the browser's face catalog as the node does, and let the registry read the hearth's synced row, or have the browser initialize on its own sealed catalog. The lead can measure it with the browser face-join walk.
+* ''Realm lane — ride'', provided no founding walk reshares realm books on a herm. The comment at `open-node-vessel.ts:4560` names its e2e ⑦ as unmeasured already.
+* ''Gated sync leg for non-session islands — ride.'' It predates the lane (my F6), but it means the claim "a document on a declared tier never reaches an audience that tier withholds" fails for an oracle-plane wiki island. Narrow the claim's wording to the four crossings.
+* ''Worker CAS dirs, post-await recheck, canon-bag blobs at world — ride.'' The first is P3 cosmetic. The second is P3: the session view closes on a face switch. The third fails closed: herm/porch `/cas` refuses canon blobs that only a canon bag doc references. Nothing leaks.
+
+&lt;&lt;~ oracle throw=`↯13 ✲ ⚂(3) ⁂:🜃⟁〰️`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the plugin-CID block rests on the promote ledger never landing in a LarDoc; mount one wiki with a single promoted plugin under scratch LAR_ROOT at 918864e79 and watch for the island fault · ↻ L-Prime` aperture=`14/arc -> 15/arc` ooda-ha=`closed 1↺` from=`lar://blind-warden-share:agent@hearth/floor.holds.plugins-owed/land-after-cures-918864e79` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SKbEI_7247FEexVzbWMON2K2N1wiQgFXsgujSlqRm5M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

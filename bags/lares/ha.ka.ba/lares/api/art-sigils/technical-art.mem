@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils/technical-art">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/technical-art`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils/technical-art"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils/technical-art"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/technical-art.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "specialist fieldcraft for image-generator technical-art plates and transparent compositing"
-status    = "draft"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils/technical-art"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/technical-art"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "specialist fieldcraft for image-generator technical-art plates and transparent compositing"
+status   = "draft"
+retain   = true
 ```
 
-<<~ ahu #/bearing>>
+<<~ ahu slot=`#/bearing`>>
 ! Art Sigils — Technical-Art Plate Fieldcraft
 
 This optional register concerns artwork delivered as an independently compositable image layer: creature silhouettes, mist, light emission, reflection marks, atmospheric overlays, patches or material details. It follows the eight-dimensional Art Sigils nucleus and the Lares sharktooth invocation grammar; it does not create new mandatory fields, change the art procedure, or make alpha-based compositing the default for other artworks.
@@ -22,7 +21,7 @@ This optional register concerns artwork delivered as an independently compositab
 The observations below arose during iterative Sanctuary on the Lantern Causeway image-generation and OpenRaster work. They are field reports, not controlled evidence about a model's latent mechanisms or guarantees of future receiver behavior. The operator approves each asset and every promotion.
 <<~/ahu>>
 
-<<~ ahu #/image-facing>>
+<<~ ahu slot=`#/image-facing`>>
 !! Tell the artist what appears in ONE output image
 
 * Open with the depicted result: "one isolated transparent RGBA technical-art FX plate", "several distinct floating organisms on true alpha", or an equally specific pictorial target. Opening nouns, worktype and immediate visual instructions can pull generated content strongly; treat this as an observed prompt-writing hazard, not a deterministic law.
@@ -36,7 +35,7 @@ The observations below arose during iterative Sanctuary on the Lantern Causeway 
 The receiver's technical controls are a SECOND channel. Ask for a transparent background using the tool's actual transparent-background setting when available, separately from saying "true transparent RGBA" in the image-facing worktype and depiction-scope. Neither language nor a setting guarantees correct output dimensions, alpha, positioning or isolation: inspect the returned file.
 <<~/ahu>>
 
-<<~ ahu #/portable-inscription>>
+<<~ ahu slot=`#/portable-inscription`>>
 !! Example — an FX-only Inscription, no scene vocabulary
 
 A single compact house invocation suffices; production measurements and verification follow outside the transmitted text.
@@ -48,7 +47,7 @@ A single compact house invocation suffices; production measurements and verifica
 This image-facing example does not contain a table of coordinate acceptance criteria, a reference-scene summary, a render-board heading, or engine flag syntax. The separate technical note records canvas dimensions, intended location and the tool control actually used.
 <<~/ahu>>
 
-<<~ ahu #/geometry>>
+<<~ ahu slot=`#/geometry`>>
 !! Geometry, negative space and native-size placement
 
 * Distinguish ''requested artist canvas'', ''actual generated pixel dimensions'', ''prepared native plate'', and ''composite destination''. A generator's stated dimensions are intent until verified. Build the desired pixel plate separately if the receiver cannot output it exactly.
@@ -59,7 +58,7 @@ This image-facing example does not contain a table of coordinate acceptance crit
 * Record layer x/y and the actual alpha support; once the prepared plate is approved, placing it at its assigned coordinates should not silently rescale it. Transparent overhang outside a display frame is intentional, not broken canvas data.
 <<~/ahu>>
 
-<<~ ahu #/alpha>>
+<<~ ahu slot=`#/alpha`>>
 !! Alpha is material, not a decorative black backing
 
 * Inspect the output's actual alpha channel (not its display over black or checkerboard). A PNG that looks transparent may be an opaque rendition of a transparency grid or an opaque scene. Report fully transparent share, partial-alpha presence and content bounds where useful.
@@ -71,7 +70,7 @@ This image-facing example does not contain a table of coordinate acceptance crit
 * OpenRaster safely stores raster PNG alpha, stacking, visibility, positions, opacity and supported blend modes; do not assume it round-trips Krita's editable native transparency masks. Preserve a grayscale mask guide or save a Krita-native .kra after hand-painting.
 <<~/ahu>>
 
-<<~ ahu #/light>>
+<<~ ahu slot=`#/light`>>
 !! Light, airflow and grounding
 
 * Tie lighting to picture coordinates from the VIEWER's frame: a low sun near image-right rim-lights right-facing membranes while distant cool fill attenuates the far side. Explain reflected light separately from internal bioluminescence.
@@ -81,7 +80,7 @@ This image-facing example does not contain a table of coordinate acceptance crit
 * The strongest lights deserve local halos; uniformly blooming every lamp or spirit destroys luminous hierarchy. Mist can veil surfaces while tight, fuzzy protection around an important practical light leaves deliberate hand-mask options.
 <<~/ahu>>
 
-<<~ ahu #/receiver-failures>>
+<<~ ahu slot=`#/receiver-failures`>>
 !! What a received image proves—and does not
 
 The Sanctuary trials repeatedly yielded recognizable failures: a flattened new scene instead of an isolated asset; a multi-panel/labeled comparison board when independent layers were requested; a continuous fog belt despite explicit sparse islands; a valid transparent image whose translucent color filled much more of the plate than anticipated; and tentacles crossing an important face. These are observed outcomes in a particular workflow, not universal rates or engine-law assertions.
@@ -89,7 +88,7 @@ The Sanctuary trials repeatedly yielded recognizable failures: a flattened new s
 A visually compelling generation may fail the layer contract. Record BOTH the pictorial merit and the compositing defect. Do not claim a masked/cropped reconstruction was generated as native isolated RGBA. When extracting sprites from a rejected sheet, preserve their provenance and let the operator decide whether to accept that labor or prefer a reroll.
 <<~/ahu>>
 
-<<~ ahu #/handoff>>
+<<~ ahu slot=`#/handoff`>>
 !! Reversible generate → inspect → register → audition → approve
 
 1. Draft a tight image-facing invocation, plus a separate receiver-control note (transparency flag, references and intended resolution). Keep absent media and unsupplied controls unnamed.
@@ -102,12 +101,12 @@ A visually compelling generation may fail the layer contract. Record BOTH the pi
 A prompt cannot enforce a hard rectangle; a pixel mask can. A prepared plate's approval does not automatically approve its FX companion or a future scene interpretation. Technical verification is necessary but never a substitute for pictorial judgment.
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 !! Aftermath — specialist scope
 
 The core Art Sigils grammar remains medium-neutral and retains the same eight dimensions. Use this register only when the artwork demands image-generator technical art, independent transparent layers or their compositing. Its measurements are examples, not a mandatory universal layout. Specific subjects, colors, anatomy, cultural claims and Elyncia setting rules remain local to their own artistic and world sources.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rbnE_VSKI_ufPh0afgujvEf1L0VFBc4_BeCf6100Tho
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r7VCT8yuGioR9MWP7NXhAZuhmwuYMl47ihqTcrb4GAM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# meme-check-staged — refuse a commit that carries a `.mem` whose block check no longer covers its body.
+# meme-check-staged — refuse a commit that carries a `.mem` whose block check fails to cover its body.
 #
-# The instrument is `lares meme check`: read alone, write nothing, exit 1 on drift. Two carriers went
-# stale under a hand this week with the instrument standing and nothing invoking it at the one moment
-# that matters. This runs it over what the commit CARRIES — the staged blobs, never the working tree —
+# The instrument is `lares meme check`: read alone, write nothing, exit 1 on drift. A standing
+# instrument guards nothing until something invokes it at the one moment that matters. This runs it over what the commit CARRIES — the staged blobs, never the working tree —
 # so a carrier edited after `git add` is judged as the index holds it, which is what the commit records.
 #
 # The blobs land under a scratch tree that mirrors their paths, and the check runs from inside it, so

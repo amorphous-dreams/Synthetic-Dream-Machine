@@ -28,19 +28,19 @@ import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 const URI = "lar:///t/floor-doors";
-const BAG = "lar:///ha.ka.ba/bags/floor-doors";
+const BAG = "lar:///ha.ka.ba/wikis/floor-doors/working";
 const CARRIER = "text/memetic-wikitext+tiddlywiki";
 
 /** A framed carrier over an authored body, root meta opening the body. */
 const carrier = (body: string, uri = URI): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n\`\`\`\n\n` +
-  `${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n\`\`\`\n\n` +
+  `${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
-const SOUND = "<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>";
-const ORPHAN = "<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>";
+const SOUND = "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>";
+const ORPHAN = "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>";
 /** A meta fence above STX: the frame verdict's tear. */
-const TORN = `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/floor-doors"\n\`\`\`\n\n` +
-  `<<^ code="&#x0002;">>\n\n${SOUND}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+const TORN = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n\`\`\`toml meta\nuri-path = "t/floor-doors"\n\`\`\`\n\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n${SOUND}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const sha = (s: string) => `sha256:${createHash("sha256").update(s, "utf8").digest("hex")}`;
 
@@ -125,7 +125,7 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
   test("LOAD lands the fenced root and its receipt carries the floor's warning", async () => {
     const composite = makeComposite();
     const result = await run(composite, "LOAD", {
-      "source-uri": "file:///staged/floor.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-load",
+      "source-uri": "file:///staged/floor.mem", "to-bag": BAG, "change-id": "c-load",
       carriers: [{ title: URI, text: carrier(ORPHAN) }],
     });
     expect(result["titles"]).toEqual([URI]);
@@ -144,7 +144,7 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
   async function standingFamily(): Promise<CompositeStore> {
     const composite = makeComposite();
     await run(composite, "LOAD", {
-      "source-uri": "file:///staged/sound.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-stand",
+      "source-uri": "file:///staged/sound.mem", "to-bag": BAG, "change-id": "c-stand",
       carriers: [{ title: URI, text: carrier(SOUND) }],
     });
     return composite;
@@ -155,7 +155,7 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
     const before = await familyBytes(composite);
     expect(before).toContain(`${URI}#/a`);                       // the family stands: root and child
     await expect(run(composite, "LOAD", {
-      "source-uri": "file:///staged/torn.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-torn",
+      "source-uri": "file:///staged/torn.mem", "to-bag": BAG, "change-id": "c-torn",
       carriers: [{ title: `${URI}-sibling`, text: carrier(SOUND, `${URI}-sibling`) }, { title: URI, text: TORN }],
     })).rejects.toThrow(/torn/);
     expect(await familyBytes(composite)).toBe(before);
@@ -168,10 +168,10 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
     const before = await familyBytes(composite);
     // No speaking head: the content route is native, and the registry hands the bytes to the memetic reader,
     // which holds the tear verbatim at the carrier's root.
-    const text = TORN.replace(/^<<\^ code="&#x0001;"[^\n]*\n/, "");
+    const text = TORN.replace(/^<<\^ code=`&#x0001;`[^\n]*\n/, "");
     expect(memeticWikitextDeserializer(text, { title: URI })[0]![TORN_FIELD]).toBeTruthy();
     const result = await run(composite, "INGEST", {
-      "source-uri": "file:///staged/torn.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-torn",
+      "source-uri": "file:///staged/torn.mem", "to-bag": BAG, "change-id": "c-torn",
       carriers: [{ uri: URI, text, diskHash: carrierHash(text), syncedHash: null, ext: ".mem" }],
     }, memeticRegistry());
     const receipt = (result["carriers"] as Array<Record<string, unknown>>)[0]!;
@@ -183,7 +183,7 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
   test("CONTROL: a sound carrier LOADs over the same family", async () => {
     const composite = await standingFamily();
     const result = await run(composite, "LOAD", {
-      "source-uri": "file:///staged/sound.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-again",
+      "source-uri": "file:///staged/sound.mem", "to-bag": BAG, "change-id": "c-again",
       carriers: [{ title: URI, text: carrier(SOUND) }],
     });
     expect(result["titles"]).toContain(URI);
@@ -194,7 +194,7 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
     const composite = makeComposite();
     const text = carrier(ORPHAN);
     const result = await run(composite, "INGEST", {
-      "source-uri": "file:///staged/floor.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-ingest",
+      "source-uri": "file:///staged/floor.mem", "to-bag": BAG, "change-id": "c-ingest",
       carriers: [{ uri: URI, text, diskHash: sha(text), syncedHash: null }],
     });
     const receipt = (result["carriers"] as Array<Record<string, unknown>>)[0]!;
@@ -205,9 +205,9 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
   test("a native single-carrier INGEST read through the registry fences, and its receipt says so", async () => {
     const composite = makeComposite();
     // No head: the content route is native, and the registry hands the bytes to the memetic reader.
-    const text = `<<^ code="&#x0002;">>\n\n${ORPHAN}\n\n<<^ code="&#x0003;">>\n`;
+    const text = `<<^ code=\`&#x0002;\`>>\n\n${ORPHAN}\n\n<<^ code=\`&#x0003;\`>>\n`;
     const result = await run(composite, "INGEST", {
-      "source-uri": "file:///staged/floor.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-native",
+      "source-uri": "file:///staged/floor.mem", "to-bag": BAG, "change-id": "c-native",
       carriers: [{ uri: URI, text, diskHash: carrierHash(text), syncedHash: null, ext: ".mem" }],
     }, memeticRegistry());
     const receipt = (result["carriers"] as Array<Record<string, unknown>>)[0]!;
@@ -223,7 +223,7 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
     const registry: Tw5Deserializer = { ...memeticRegistry(), deserialize: () => [fencedMember, plainMember] };
     const text = "pack bytes";
     const result = await run(composite, "INGEST", {
-      "source-uri": "file:///staged/pack.json", "to-bag": BAG, "seed-door": "founding", "change-id": "c-pack",
+      "source-uri": "file:///staged/pack.json", "to-bag": BAG, "change-id": "c-pack",
       carriers: [{ uri: URI, text, diskHash: carrierHash(text), syncedHash: null, ext: ".json" }],
     }, registry);
     const members = (result["carriers"] as Array<Record<string, unknown>>)[0]!["members"] as Array<Record<string, unknown>>;
@@ -237,12 +237,12 @@ describe("★ every bag door fences, and its receipt names the fence ★", () =>
     const composite = makeComposite();
     const text = carrier(SOUND);
     const load = await run(composite, "LOAD", {
-      "source-uri": "file:///staged/clean.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-load",
+      "source-uri": "file:///staged/clean.mem", "to-bag": BAG, "change-id": "c-load",
       carriers: [{ title: URI, text }],
     });
     expect(load).not.toHaveProperty("warnings");
     const ingest = await run(makeComposite(), "INGEST", {
-      "source-uri": "file:///staged/clean.mem", "to-bag": BAG, "seed-door": "founding", "change-id": "c-ingest",
+      "source-uri": "file:///staged/clean.mem", "to-bag": BAG, "change-id": "c-ingest",
       carriers: [{ uri: URI, text, diskHash: sha(text), syncedHash: null }],
     });
     expect((ingest["carriers"] as Array<Record<string, unknown>>)[0]).not.toHaveProperty("warnings");

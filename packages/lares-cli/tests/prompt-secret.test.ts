@@ -31,6 +31,15 @@ const quiet = (): void => { vi.spyOn(process.stdout, "write").mockImplementation
 afterEach(() => { vi.restoreAllMocks(); });
 
 describe("promptSecret keeps the rest of a pasted chunk", () => {
+  test("a bracketed paste reads as its text: the terminal's paste markers never join the line", async () => {
+    quiet();
+    const tty = new FakeTty();
+    const first = promptSecret("a: ", tty as never);
+    tty.feed("\u001b[200~alpha\rbeta\u001b[201~\r");
+    expect(await first).toBe("alpha");
+    expect(await promptSecret("b: ", tty as never)).toBe("beta");
+  });
+
   test("one chunk of two lines answers two prompts", async () => {
     quiet();
     const tty = new FakeTty();
@@ -106,9 +115,98 @@ describe("promptSecret keeps the rest of a pasted chunk", () => {
     expect(write.mock.calls.map((c) => String(c[0])).join("")).toContain("ok");
   });
 
+  test("★ backspace erases on screen in a visible prompt: p, backspace, p reads p and shows p ★", async () => {
+    const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    const tty = new FakeTty();
+    const visible = promptLine("choose: ", tty as never);
+    tty.feed("p\u007fp\r");
+    expect(await visible).toBe("p");
+    const screen = write.mock.calls.map((c) => String(c[0])).join("").slice("choose: ".length);
+    // What a terminal shows after it applies each backspace: the erase leaves one p standing.
+    let shown = "";
+    for (const ch of screen) shown = ch === "\b" ? shown.slice(0, -1) : shown + ch;
+    expect(shown.trimEnd()).toBe("p");
+    // A backspace over nothing erases nothing; a hidden prompt writes no erase either.
+    write.mockClear();
+    const empty = promptLine("c: ", tty as never);
+    tty.feed("\u007fq\r");
+    expect(await empty).toBe("q");
+    expect(write.mock.calls.map((c) => String(c[0])).join("")).not.toContain("\b");
+    write.mockClear();
+    const secret = promptSecret("s: ", tty as never);
+    tty.feed("ab\u007f\r");
+    expect(await secret).toBe("a");
+    expect(write.mock.calls.map((c) => String(c[0])).join("")).not.toContain("\b");
+  });
+
   test("control: a non-TTY stream rejects", async () => {
     const tty = new FakeTty();
     tty.isTTY = false;
     await expect(promptSecret("a: ", tty as never)).rejects.toThrow(/not a TTY/);
+  });
+});
+
+describe("the ward door reads a hand's route from a terminal alone (row 7, S2)", () => {
+  test("RED: a passphrase in the environment refuses `ward-needs-tty`, and so does a piped stdin; CONTROL: a TTY stream answers", async () => {
+    quiet();
+    const { readWardPassphrase } = await import("../src/prompt-secret.js");
+    const tty = new FakeTty();
+    await expect(readWardPassphrase("lares promote commit", { stream: tty as never, env: { LARES_WARD_PASSPHRASE: "typed-by-a-script" } })).rejects.toThrow(/ward-needs-tty/);
+    await expect(readWardPassphrase("lares promote commit", { stream: tty as never, env: { LARES_PASSPHRASE: "typed-by-a-script" } })).rejects.toThrow(/ward-needs-tty/);
+    const piped = Object.assign(new FakeTty(), { isTTY: false });
+    await expect(readWardPassphrase("lares promote commit", { stream: piped as never, env: {} })).rejects.toThrow(/ward-needs-tty/);
+    const answered = readWardPassphrase("lares promote commit", { stream: tty as never, env: {} });
+    tty.feed("the hand's route\r");
+    expect(await answered).toBe("the hand's route");
+  });
+});
+
+describe("the product ward door answers from no file (S2 cold read, P3)", () => {
+  test("RED: under a root that carries the harness's marker, the terminal reader refuses `ward-needs-tty` and never answers the test route; CONTROL: a gatherer the test seats explicitly answers", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { ttyWardRoute, gatherWardRoute } = await import("../src/ward-door.js");
+    const { seatWardGatherer } = await import("@lararium/node");
+    const root = mkdtempSync(join(tmpdir(), "ward-door-marker-"));
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    try {
+      await expect(ttyWardRoute("lares promote commit")).rejects.toThrow(/ward-needs-tty/);
+      seatWardGatherer(async () => [{ kind: "passphrase", passphrase: "an explicit test route" }]);
+      expect(await gatherWardRoute("lares promote commit")).toEqual([{ kind: "passphrase", passphrase: "an explicit test route" }]);
+    } finally {
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("the product founds no face from a marker (S2 re-read, P2)", () => {
+  test("RED: under a root carrying the harness's marker, the product's face-route prompt refuses with no terminal and never answers the published test route; CONTROL: the harness import seats the test route explicitly", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join, resolve } = await import("node:path");
+    const { pathToFileURL } = await import("node:url");
+    const { gatherNewFaceRoute } = await import("../src/face-route-prompt.js");
+    const root = mkdtempSync(join(tmpdir(), "face-route-marker-"));
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    try {
+      const answer = await gatherNewFaceRoute({ label: "h0" }).then((slots) => JSON.stringify(slots), (e: Error) => e.name);
+      expect(answer, "the product never binds a face to the published test route").not.toContain("test-founding-passphrase");
+      expect(answer).toBe("CredentialTtyRefusal");
+      const node = await import("@lararium/node");
+      node.seatFaceRoute(null);
+      const harness = await import(pathToFileURL(resolve(import.meta.dirname, "../../../tools/test-ward-route.mjs")).href) as { seatHarnessRoutes: (n: unknown) => void };
+      expect(node.faceRouteSeated(), "importing the harness module into a process that is no CLI seats nothing").toBe(false);
+      harness.seatHarnessRoutes(node);
+      expect(await node.gatherFaceRoute("h0")).toEqual([{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }]);
+    } finally {
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

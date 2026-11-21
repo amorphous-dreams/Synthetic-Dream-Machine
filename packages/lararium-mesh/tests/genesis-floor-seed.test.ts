@@ -1,29 +1,34 @@
 import { describe, expect, it } from "vitest";
-import { buildGenesisDoc, computeEngineCid, computeGrammarCid, computePluginsCid, verifyGenesisArtifact, type GenesisInputs } from "../src/genesis-doc.js";
+import { buildGenesisDoc, verifyGenesisArtifact, type GenesisInputs } from "../src/genesis-doc.js";
 import { floorManifestBytes, floorManifestCid, GENESIS_FLOOR_TIDDLER, cutFloorSnapshot } from "../src/floor-manifest.js";
+import { genesisFloorOffering } from "../src/floor-offering.js";
 import { bootSetPluginCids } from "../src/cas.js";
 import { GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER, genesisCasManifestFromSeed } from "../src/genesis-doc.js";
 
 describe("genesis floor seed", () => {
-  it("carries the floor in CAS without moving region folds or boot plugin membership", () => {
+  it("carries the floor in CAS without moving region folds or boot plugin membership", async () => {
     const coreBlob = new TextEncoder().encode("core");
     const inputs: GenesisInputs = { actorSeed: "11".repeat(32), coreBlob, coreVersion: "1", plugins: [] };
     const empty = cutFloorSnapshot({});
     const lares = cutFloorSnapshot({ "lar:///lares/a": { tiddler: { title: "lar:///lares/a" } } });
     const baseline = buildGenesisDoc(inputs);
-    const manifest = { format: "lararium-floor/v1" as const, engine: baseline.engineCid, grammar: computeGrammarCid([]), plugins: computePluginsCid([]), lares: lares.cid, lararium: empty.cid };
-    const floor = { manifest, lares, lararium: empty };
+    const sdm = cutFloorSnapshot({ "lar:///sdm/a": { tiddler: { title: "lar:///sdm/a" } } });
+    const offering = await genesisFloorOffering({ actorSeed: inputs.actorSeed, plugins: inputs.plugins, provenanceOf: () => ({ source: "s", commit: "c", path: "p", licence: "MIT" }) });
+    const manifest = { format: "lararium-floor" as const, engine: baseline.engineCid, plugins: offering.cid, snapshots: { lares: lares.cid, lararium: empty.cid, sdm: sdm.cid } };
+    const floor = { manifest, snapshots: { lares, lararium: empty, sdm }, offering: { bytes: offering.bytes, cid: offering.cid } };
     const without = baseline;
     const withFloor = buildGenesisDoc({ ...inputs, floor });
     expect([withFloor.engineCid, withFloor.grammarCid, withFloor.pluginsCid]).toEqual([without.engineCid, without.grammarCid, without.pluginsCid]);
     expect(() => verifyGenesisArtifact(withFloor)).not.toThrow();
-    expect(withFloor.seed.blobs).toMatchObject({ "floor-manifest": { kind: "floor", mimeType: "application/vnd.lararium.floor-manifest+json" }, "floor-lares": { kind: "floor", mimeType: "application/vnd.lararium.floor-snapshot" }, "floor-lararium": { kind: "floor", mimeType: "application/vnd.lararium.floor-snapshot" } });
+    expect(withFloor.seed.blobs).toMatchObject({ "floor-manifest": { kind: "floor", mimeType: "application/vnd.lararium.floor-manifest+json" }, "floor-lares": { kind: "floor", mimeType: "application/vnd.lararium.floor-snapshot" }, "floor-lararium": { kind: "floor", mimeType: "application/vnd.lararium.floor-snapshot" }, "floor-sdm": { kind: "floor", mimeType: "application/vnd.lararium.floor-snapshot" } });
     expect((withFloor.seed.tiddlers[GENESIS_FLOOR_TIDDLER] as any).tiddler).toMatchObject({ title: GENESIS_FLOOR_TIDDLER, text: "", cid: floorManifestCid(manifest) });
     // The seed carries metadata alone: a floor row's bytes ride the CAS plane, never seed.json.
-    for (const id of ["floor-manifest", "floor-lares", "floor-lararium"]) expect(withFloor.seed.blobs[id]).not.toHaveProperty("blob");
+    for (const id of ["floor-manifest", "floor-lares", "floor-lararium", "floor-sdm"]) expect(withFloor.seed.blobs[id]).not.toHaveProperty("blob");
     expect(bootSetPluginCids(withFloor.seed.blobs)).not.toContain(floorManifestCid(manifest));
-    expect(genesisCasManifestFromSeed(withFloor.seed).blobs.map(x => x.id)).toEqual(expect.arrayContaining(["floor-manifest", "floor-lares", "floor-lararium"]));
-    expect(withFloor.casEntries.map(x => x.cid)).toEqual(expect.arrayContaining([floorManifestCid(manifest), lares.cid, empty.cid]));
+    expect(genesisCasManifestFromSeed(withFloor.seed).blobs.map(x => x.id)).toEqual(expect.arrayContaining(["floor-manifest", "floor-lares", "floor-lararium", "floor-sdm"]));
+    expect(withFloor.casEntries.map(x => x.cid)).toEqual(expect.arrayContaining([floorManifestCid(manifest), lares.cid, empty.cid, sdm.cid]));
+    // A snapshot the manifest keys no slug for refuses the build, by name.
+    expect(() => buildGenesisDoc({ ...inputs, floor: { ...floor, snapshots: { lares, lararium: empty } } })).toThrow(/floor snapshots/);
     expect(floorManifestBytes(manifest)).toBeInstanceOf(Uint8Array);
     for (const title of [GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER]) expect(withFloor.seed.tiddlers[title]).toEqual(without.seed.tiddlers[title]);
     expect(() => buildGenesisDoc({ ...inputs, floor: { ...floor, manifest: { ...manifest, engine: "bad" } } })).toThrow(/floor engine CID mismatch/);

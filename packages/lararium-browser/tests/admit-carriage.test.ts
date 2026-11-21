@@ -7,7 +7,7 @@
  * tested this way — it would need a server, a reachable issuer, and a moment at which both were true.
  */
 import { describe, test, expect } from "vitest";
-import { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND } from "../src/admit-carriage.js";
+import { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND, StaleAdmitCarriage } from "../src/admit-carriage.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 
 /** A payload shaped like the founder's root signs — fixed bytes, so the test is a constant. */
@@ -22,6 +22,8 @@ const PAYLOAD = {
   syncUrl: null,
   personaUrl: "automerge:persona",
   islandDocUrl: "automerge:island",
+  personaActs: [],
+  edgeFrontier: { records: [], snapshots: [] },
 } as unknown as DeviceAdmitPayload;
 
 describe("the carried admission", () => {
@@ -52,8 +54,13 @@ describe("the carried admission", () => {
   });
 
   test("a payload of the wrong KIND gets refused, never guessed at", () => {
-    const wrong = toAdmitCarriage({ ...PAYLOAD, kind: "nexus-invite/v1" } as unknown as DeviceAdmitPayload);
+    const wrong = toAdmitCarriage({ ...PAYLOAD, kind: "nexus-invite" } as unknown as DeviceAdmitPayload);
     expect(parseAdmitCarriage(wrong)).toBeNull();
+    // A kind that carries a counter names no device admit: the shape reads by its name and fields alone.
+    for (const kind of ["device-admit/v1", "device-admit/v2"]) {
+      expect(parseAdmitCarriage(toAdmitCarriage({ ...PAYLOAD, kind } as unknown as DeviceAdmitPayload))).toBeNull();
+    }
+    expect(parseAdmitCarriage(toAdmitCarriage(PAYLOAD))).not.toBeNull();   // CONTROL
   });
 
   test("the BINDING is refused at the door when incomplete — never half-applied downstream", () => {
@@ -66,6 +73,25 @@ describe("the carried admission", () => {
       const carriage = toAdmitCarriage(partial as unknown as DeviceAdmitPayload);
       expect(parseAdmitCarriage(carriage), `a payload without ${missing} must not admit`).toBeNull();
     }
+  });
+
+  test("RED: an admit from a root holder that stood no gate binds no hearth, and says so: an EMPTY true name parses; an absent one still refuses", () => {
+    // A leaf's root (a browser, a phone) stands no hearth: its edge binds `hearthTrueName: ""`, stated, never omitted.
+    const gateless = parseAdmitCarriage(toAdmitCarriage({ ...PAYLOAD, hearthTrueName: "" }));
+    expect(gateless?.hearthTrueName).toBe("");
+    const absent = { ...PAYLOAD } as Record<string, unknown>;
+    delete absent["hearthTrueName"];
+    expect(parseAdmitCarriage(toAdmitCarriage(absent as unknown as DeviceAdmitPayload))).toBeNull();
+    expect(parseAdmitCarriage(toAdmitCarriage({ ...PAYLOAD, hearthTrueName: 7 } as unknown as DeviceAdmitPayload))).toBeNull();
+  });
+
+  test("RED: a well-formed admit missing the signed-record fields throws the named stale-carriage refusal, never vanishing into the founding flow; CONTROL: the whole payload parses", () => {
+    for (const missing of ["personaActs", "edgeFrontier"] as const) {
+      const partial = { ...PAYLOAD } as Record<string, unknown>;
+      delete partial[missing];
+      expect(() => parseAdmitCarriage(toAdmitCarriage(partial as unknown as DeviceAdmitPayload))).toThrow(StaleAdmitCarriage);
+    }
+    expect(parseAdmitCarriage(toAdmitCarriage(PAYLOAD))).toEqual(PAYLOAD);
   });
 
   test("an EMPTY binding field refuses as hard as a missing one", () => {

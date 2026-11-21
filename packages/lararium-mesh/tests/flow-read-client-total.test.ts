@@ -12,12 +12,12 @@
 import { describe, expect, test } from "vitest";
 import { hearthPinIndex } from "../src/admit-gate-pin.js";
 import { hex, utf8Bytes } from "../src/crypto.js";
-import { ORACLE_SOCKET_ROUTE, pullAndVerifyFlow } from "../src/flow-read-client.js";
+import { FLOW_SOCKET_ROUTE, pullAndVerifyFlow } from "../src/flow-read-client.js";
 import { AUDIENCE, handDeadlines, presenter, world } from "./face-gate-fixture.js";
 
 async function base() {
-  const w = await world({ tier: "floor", route: ORACLE_SOCKET_ROUTE });
-  const p = await presenter(w, "oracle reader");
+  const w = await world({ tier: "floor", route: FLOW_SOCKET_ROUTE });
+  const p = await presenter(w, "flow reader");
   const pins = hearthPinIndex();
   pins.put("hearth-1", w.pin);
   return {
@@ -53,7 +53,7 @@ describe("pullAndVerifyFlow never throws", () => {
     expect(absent).toMatchObject({ ok: false });
     expect(absent.reason).toMatch(/pin-absent/);
     // An index that answers the key with the pin it holds at another Nexus.
-    const held = opts.pins.get({ hearth: opts.hearth, nexus: opts.nexus, route: ORACLE_SOCKET_ROUTE, tier: "floor" })!;
+    const held = opts.pins.get({ hearth: opts.hearth, nexus: opts.nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" })!;
     const lying = { get: () => held };
     const other = await pullAndVerifyFlow("http://peer", { ...opts, pins: lying as never, nexus: elsewhere, dialSocket });
     expect(other).toMatchObject({ ok: false });

@@ -6,8 +6,6 @@
  * `mode=ro` — never a write, never through the python shore): the `lares-worldline`
  * adapter rows worldline-kg.ts projects — `prov:Delegation` (spawn → handback interval,
  * `source_drawer_id` = the spawn turn key) and `prov:Communication` (mid-flight inject).
- * Joins each node with the BEARING INDEX (`<state>/harvest/<wing>.ndjson`, the
- * per-turn HarvestRecord log) for turn counts + the aim/yield each agent carried.
  *
  * Sub-forms:
  *   lares sense worldline <run|handle>        the braid (tree, default) — spawn=fork ·
@@ -50,12 +48,11 @@
  */
 
 import { DatabaseSync } from "node:sqlite";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { PRED_DELEGATION, PRED_COMMUNICATION } from "@lararium/mesh";
 import { resolvePalacePath } from "@lararium/mempalace";
 import { runFfzEnrich, FfzEnrichUnavailable } from "@lararium/sensorium";
-import { larHarvestDir } from "../env.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -70,15 +67,6 @@ export interface WorldlineKgRow {
   readonly valid_to: string | null;
   /** source_drawer_id — the spawn turn key (kg_io.py's provenance slot). */
   readonly turn_key: string | null;
-}
-
-/** The bearing-index fields the join reads (a HarvestRecord subset; unknown-tolerant). */
-export interface BearingTurnRecord {
-  readonly session?: unknown;
-  readonly agentId?: unknown;
-  readonly wing?: unknown;
-  readonly aim?: unknown;
-  readonly yieldUri?: unknown;
 }
 
 /** One node of the braid — a worldline (the run-root or a spirit). */
@@ -96,11 +84,6 @@ export interface WorldlineNode {
   readonly concurrentWithPreviousSibling: boolean;
   /** prov:Communication edges landing on this worldline (mid-flight injects). */
   readonly injects: number;
-  /** Bearing-index join: harvested turn count for this worldline (0 when un-harvested). */
-  readonly turns: number;
-  /** First harvested aim / last harvested yield this worldline carried, or null. */
-  readonly aim: string | null;
-  readonly yield: string | null;
   readonly children: WorldlineNode[];
 }
 
@@ -109,8 +92,6 @@ export interface WorldlineTree {
   readonly root: WorldlineNode;
   readonly spirits: number;
   readonly openSpirits: number;
-  /** Bearing-index turns joined across the whole braid (0 = the index holds none for this run). */
-  readonly bearingTurns: number;
 }
 
 /** Normalize a stored predicate to the mesh constant (kg_io lowercases on write). */
@@ -122,35 +103,19 @@ function normPredicate(p: string): string {
 }
 
 /**
- * Build the braid from the KG rows + the bearing records — PURE (no I/O).
+ * Build the braid from the KG rows — PURE (no I/O).
  * `run` = the run-root handle (a session id, possibly `run~frontier`).
  */
 export function buildWorldlineTree(
   run: string,
   rows: readonly WorldlineKgRow[],
-  bearings: readonly BearingTurnRecord[] = [],
 ): WorldlineTree {
-  const bareRun = run.split("~")[0] ?? run;
 
   // The ∥ mark — a display reading of the rows' recorded intervals: the previous sibling
   // reads sequential ONLY when its recorded close stands strictly before the next one's
   // recorded open; an open interval or a same-instant close leaves the pair ∥.
   const sequentialAfter = (prev: WorldlineKgRow, cur: WorldlineKgRow): boolean =>
     prev.valid_to !== null && cur.valid_from !== null && prev.valid_to < cur.valid_from;
-
-  // Bearing join — per-worldline turn tallies + the first aim / last yield carried.
-  const tally = new Map<string, { turns: number; aim: string | null; yield: string | null }>();
-  const keyOf = (agentId: string | null): string => agentId ?? "\u0000root";
-  for (const b of bearings) {
-    if (typeof b.session !== "string" || b.session !== bareRun) continue;
-    const k = keyOf(typeof b.agentId === "string" && b.agentId !== "" ? b.agentId : null);
-    const t = tally.get(k) ?? { turns: 0, aim: null, yield: null };
-    t.turns += 1;
-    if (t.aim === null && typeof b.aim === "string" && b.aim !== "") t.aim = b.aim;
-    if (typeof b.yieldUri === "string" && b.yieldUri !== "") t.yield = b.yieldUri;
-    tally.set(k, t);
-  }
-  const bearingTurns = [...tally.values()].reduce((n, t) => n + t.turns, 0);
 
   // Delegation rows → child nodes, grouped under their spawning subject.
   const injectCounts = new Map<string, number>();
@@ -170,7 +135,6 @@ export function buildWorldlineTree(
   let openSpirits = 0;
   const build = (handle: string, parent: string | null, row: WorldlineKgRow | null): WorldlineNode => {
     const agentId = handle.includes(".") ? (handle.split(".")[1] ?? null) : null;
-    const t = tally.get(keyOf(agentId)) ?? { turns: 0, aim: null, yield: null };
     const kidRows = [...(byParent.get(handle) ?? [])].sort(
       (a, b) => ((a.valid_from ?? "") < (b.valid_from ?? "") ? -1 : (a.valid_from ?? "") > (b.valid_from ?? "") ? 1 : a.object < b.object ? -1 : 1),
     );
@@ -196,15 +160,12 @@ export function buildWorldlineTree(
       open: row !== null && row.valid_to === null,
       concurrentWithPreviousSibling: false,
       injects: injectCounts.get(handle) ?? 0,
-      turns: t.turns,
-      aim: t.aim,
-      yield: t.yield,
       children,
     };
   };
 
   const root = build(run, null, null);
-  return { run, root, spirits, openSpirits, bearingTurns };
+  return { run, root, spirits, openSpirits };
 }
 
 /**
@@ -251,22 +212,6 @@ export function readWorldlineRows(
   }
 }
 
-/** Read every bearing-index NDJSON under the harvest dir (graceful: absent dir → []). */
-export function readBearingIndex(harvestDir: string): BearingTurnRecord[] {
-  if (!existsSync(harvestDir)) return [];
-  const out: BearingTurnRecord[] = [];
-  for (const f of readdirSync(harvestDir)) {
-    if (!f.endsWith(".ndjson")) continue;
-    let body: string;
-    try { body = readFileSync(join(harvestDir, f), "utf8"); } catch { continue; }
-    for (const line of body.split("\n")) {
-      if (!line.trim()) continue;
-      try { out.push(JSON.parse(line) as BearingTurnRecord); } catch { /* a torn tail line — skip */ }
-    }
-  }
-  return out;
-}
-
 // ── render ────────────────────────────────────────────────────────────────────────────────────────
 
 function shortTs(ts: string | null): string {
@@ -279,23 +224,18 @@ function renderNode(n: WorldlineNode, indent: string, isLast: boolean, lines: st
   const tee = isLast ? "└─" : "├─";
   const par = n.concurrentWithPreviousSibling ? "∥ " : "";
   const span = `${shortTs(n.spawn)} → ${n.open ? "OPEN" : shortTs(n.handback)}`;
-  const turns = n.turns > 0 ? ` · turns ${n.turns}` : "";
   const inj = n.injects > 0 ? ` · injects ${n.injects}` : "";
   const key = n.turnKey ? ` · turnKey ${n.turnKey.slice(0, 8)}` : "";
-  lines.push(`${indent}${tee} ${par}${n.agentId ?? n.handle}  ${span}${turns}${inj}${key}`);
-  const yieldLine = n.yield ? `${indent}${isLast ? "   " : "│  "}     yield ${n.yield}` : null;
-  if (yieldLine) lines.push(yieldLine);
+  lines.push(`${indent}${tee} ${par}${n.agentId ?? n.handle}  ${span}${inj}${key}`);
   n.children.forEach((c, i) => renderNode(c, indent + (isLast ? "   " : "│  "), i === n.children.length - 1, lines));
 }
 
 export function renderWorldlineTree(t: WorldlineTree): string {
   const lines: string[] = [];
   const r = t.root;
-  lines.push(`worldline ${t.run} — ${t.spirits} spirit${t.spirits === 1 ? "" : "s"} (${t.openSpirits} open) · ${t.bearingTurns} bearing turn${t.bearingTurns === 1 ? "" : "s"} joined`);
-  const rootTurns = r.turns > 0 ? ` · turns ${r.turns}` : "";
-  lines.push(`● ${r.handle}${rootTurns}${r.aim ? ` · aim ${r.aim}` : ""}${r.yield ? ` · yield ${r.yield}` : ""}`);
+  lines.push(`worldline ${t.run} — ${t.spirits} spirit${t.spirits === 1 ? "" : "s"} (${t.openSpirits} open)`);
+  lines.push(`● ${r.handle}`);
   r.children.forEach((c, i) => renderNode(c, "", i === r.children.length - 1, lines));
-  if (t.bearingTurns === 0) lines.push("(no bearing-index turns for this run — `lares sense pour` fills the join)");
   return lines.join("\n");
 }
 
@@ -393,8 +333,8 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
     const msg = `no knowledge graph at ${kgPath}`;
     emit(args, {
       ok: false,
-      error: { code: "not-found", message: msg, hint: "Worldline edges project at harvest — run `lares sense pour` (or `lares sense subagents <transcript>`) first." },
-      human: () => { console.error(`lares sense worldline: ${msg}`); console.error("  Worldline edges project at harvest — run `lares sense pour` first."); },
+      error: { code: "not-found", message: msg, hint: "Worldline edges project when a session's spirits are observed — run `lares sense subagents <transcript>` first." },
+      human: () => { console.error(`lares sense worldline: ${msg}`); console.error("  Worldline edges project when a session's spirits are observed — run `lares sense subagents <transcript>` first."); },
     });
     return exitFor("not-found");
   }
@@ -417,7 +357,7 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
     const msg = `no worldline edges match "${runArg}" (adapter lares-worldline)`;
     emit(args, {
       ok: false,
-      error: { code: "not-found", message: msg, hint: "Edges land when a session's spirits are observed — `lares sense pour` / `lares sense subagents`." },
+      error: { code: "not-found", message: msg, hint: "Edges land when a session's spirits are observed — `lares sense subagents <transcript>`." },
       human: () => console.error(`lares sense worldline: ${msg}`),
     });
     return exitFor("not-found");
@@ -438,7 +378,7 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
   // --as-of: a pure read-only frontier reconstruction (default undefined = the whole braid, unchanged).
   const asOf = args.options["as-of"];
   const framedRows = filterRowsAsOf(rows, asOf);
-  const tree = buildWorldlineTree(run, framedRows, readBearingIndex(larHarvestDir()));
+  const tree = buildWorldlineTree(run, framedRows);
 
   emit(args, {
     ok: true,
@@ -446,7 +386,6 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
       run: tree.run,
       spirits: tree.spirits,
       openSpirits: tree.openSpirits,
-      bearingTurns: tree.bearingTurns,
       ...(asOf !== undefined ? { asOf } : {}),
       tree: tree.root as unknown as Record<string, unknown>,
       diff: { available: false, reason: DIFF_GAP },

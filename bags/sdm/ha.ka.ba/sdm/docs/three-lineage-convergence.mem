@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/docs/three-lineage-convergence">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/sdm/docs/three-lineage-convergence`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/sdm/ha.ka.ba/sdm/docs/three-lineage-convergence.mem"
 l-space   = "adjacent"
-mana      = 13
-manao     = 14
-manaoio   = 12
 rating    = "meme"
 role      = "design research — the three-lineage convergence: Ars Magica's verb×form grammar, Mage's rated spheres, and the SDM thirteen; what each lens teaches the conversion program"
 title     = "lar:///ha.ka.ba/sdm/docs/three-lineage-convergence"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/three-lineage-convergence"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Three-Lineage Convergence
 
@@ -27,7 +23,7 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~/ahu>>
 
-<<~ ahu #/the-three>>
+<<~ ahu slot=`#/the-three`>>
 
 !! The Three Factorings
 
@@ -45,7 +41,7 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~/ahu>>
 
-<<~ ahu #/mappings>>
+<<~ ahu slot=`#/mappings`>>
 
 !! The Mappings (evidence of convergence)
 
@@ -64,7 +60,7 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~/ahu>>
 
-<<~ ahu #/the-lessons>>
+<<~ ahu slot=`#/the-lessons`>>
 
 !! What Each Lens Teaches
 
@@ -84,13 +80,13 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/sdm/docs/arcana-model">>
-<<~ loulou "lar:///ha.ka.ba/sdm/docs/composition-model">>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/docs/arcana-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/sdm/docs/composition-model`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;63eGJZIwIAa1pTRPEoDWJ0kgAtGwyFNRkxgKWmPOQtA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nRBYIIoGyl1MRMziTHMrUIJ_c3dkiv7o729sfL8OOyc`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

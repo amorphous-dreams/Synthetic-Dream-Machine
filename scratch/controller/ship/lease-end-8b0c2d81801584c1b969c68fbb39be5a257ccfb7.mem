@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/lease-end-8b0c2d81801584c1b969c68fbb39be5a257ccfb7.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP lease-end 8b0c2d81801584c1b969c68fbb39be5a257ccfb7
+read: 8b0c2d818 recuts tests/e2e/face-join.test.ts's recordedGrant to verify under the hearth's root AND the founder's standing read off the hearth's own storage (the CI shard-3 red, three times, named by the shard's JSON report); controller: e2e-harness-law 9/9, evergreen 164/164; lead: face-join e2e 6/6 locally; over: blind Opus (Blind-Warden-Lease) over 5c3d032dc..3b9cac44d: LAND, no P1/P2 (/home/joshu/.lares-scratch/lease-end/seats/blind-opus-grant.md); Luna two-wave collide of the ruling (seats/luna-w1, luna-w2: HOLDS-WITH-SLICES, ruling reshaped); controller ran every red and control (face-grant-record :292/:313, device-delegation :173) and the build.
+owed: P3s per blind-opus-grant.md (ring three-way standing; daemon founder dyad read gap; test hygiene at face-grant-record.test.ts:240-271; boundEpoch type/consumers before any epoch-free minter; dyad-before-lineage order; boot-time personaKel snapshot under rotation); slices 2-4 per state.json LUNA SLICES. Ruling (controller, 2026-11-07): 'owing' counts as standing (house standingOfReading).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dFeyZAgTpH9tOBY13H52_Zig82UtVRlYlWlG5oPPhOY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

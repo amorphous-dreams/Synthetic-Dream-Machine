@@ -100,7 +100,11 @@ describe("★ probe 5: Escape closes the popover on the engine's own keyboard, a
     await userEvent.keyboard("{Escape}");
     expect(m.pane().querySelector<HTMLElement>(".pop")!.hidden).toBe(true);
     expect(m.root.activeElement, "focus returns to the opener").toBe(opener);
-    expect(m.sent.slice(before).map((ev) => [ev.action, ev.controlType])).toEqual([["lar:dismiss", "lar-popover"]]);
+    // The opener's click still waits for its answer (the stand-in island gives none), so the dismissal resends
+    // that same click first, then relays itself once.
+    const relayed = m.sent.slice(before);
+    expect(relayed.map((ev) => [ev.action, ev.controlType])).toEqual([["lar:click", undefined], ["lar:dismiss", "lar-popover"]]);
+    expect(new Set(relayed.map((ev) => ev.eventId)).size, "the resend carries the click's own id").toBe(2);
     expect(page.getByRole("button", { name: "item" }).elements().length, "the dismissed item leaves the accessibility tree").toBe(0);
     m.done();
   });

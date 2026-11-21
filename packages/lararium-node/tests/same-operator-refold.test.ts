@@ -37,7 +37,7 @@ import { gateGrantRing } from "../src/gate-rings.js";
 import { faceDeviceBook } from "../src/face-device-book.js";
 import { faceFleetViews } from "../src/face-fleet-view.js";
 import { noteIssuedFaceKeys, readFaceJoinRecord } from "../src/fleet-join-custody.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 import { sameOperatorStands, seatedDeviceKey } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
@@ -123,8 +123,9 @@ async function standHearth(founder: { w: World; p: Presenter }, joinee: Presente
     const session = sessions.get(peerId);
     if (!session) return false;
     return selfSlotShareDecision({
-      hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: null, membership: null, planeSeal: null,
+      hasWsSocket: true, peerClass: session.class, selfSlotFedGate: shelfGate, antigenRing: NO_BANS, membership: null, planeSeal: null,
       federationPosture: "private", peerId, documentId, sessionFace: views.gateFor(peerId), shadow,
+      protectedDocs: NOTHING_CLASSED,
     });
   }
 
@@ -248,7 +249,7 @@ describe("the persona ring's face-grant seat reads the shadow through the device
     // A face-join grant names the joinee's FACE key (persona-ring-cross-operator-admit), so the proof stays the face key.
     expect(CODE).toMatch(/provenKeyOf:\s*\(peerId\)\s*=>\s*peerIdentifierMap\.get\(peerId\)\s*\?\?\s*null,/);
     // The shadow resolves that face key to every device a gate-seated session under it was certified to (D4).
-    expect(CODE).toMatch(/deviceAside:\s*\(key\)\s*=>\s*edgeShadows\s*\?\s*edgeShadows\.deviceAside\(key\)\s*\|\|\s*seatedDevicesOfFace\(key\)\.some\(/); // RED
+    expect(CODE).toMatch(/deviceAside:\s*\(key\)\s*=>\s*edgeShadows\s*\?\s*edgeShadows\.widenBlocked\(deviceEdge\.personaRootDid\)\s*\|\|\s*edgeShadows\.deviceAside\(key\)\s*\|\|\s*seatedDevicesOfFace\(key\)\.some\(/); // RED
     expect(CODE).toMatch(/const seatedDevicesOfFace = \(key: string\): string\[\] =>/);
   });
 });

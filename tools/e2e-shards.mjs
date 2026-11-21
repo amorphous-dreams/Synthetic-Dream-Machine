@@ -33,6 +33,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { POLL_FLOOR_S } from "./ci-verdict.mjs";
 
 // ── the merge gate's pure law ───────────────────────────────────────────────────────────────────
 
@@ -62,10 +63,13 @@ export function relativeToE2eDir(path) {
  *   config       the vitest config that selects its files
  *   trackedGlob  `git ls-files` pathspec of the files the set owns — the gate's own file union
  *   shards       how many shards the set splits across
+ *   companion    `{ of, shard }`: the set has no runner of its own and rides shard `shard` of set `of` as a second run
+ *                in the same job (a runner is one of the ten jobs a full CI run may raise; its gate artifact keeps the
+ *                set's own name, so the merge gate reads it as it always did)
  */
 export const E2E_SETS = Object.freeze([
   Object.freeze({ name: "tests", dir: "tests", config: "vitest.config.ts", trackedGlob: "tests/e2e/*.test.ts", shards: 4 }),
-  Object.freeze({ name: "node", dir: "packages/lararium-node", config: "vitest.e2e.config.ts", trackedGlob: "packages/lararium-node/tests/e2e/*.test.ts", shards: 1 }),
+  Object.freeze({ name: "node", dir: "packages/lararium-node", config: "vitest.e2e.config.ts", trackedGlob: "packages/lararium-node/tests/e2e/*.test.ts", shards: 1, companion: Object.freeze({ of: "tests", shard: 3 }) }),
 ]);
 
 /**
@@ -215,6 +219,30 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
   return { ok: problems.length === 0, problems, totalTests, executedFileCount: executedFiles.size };
 }
 
+// ── the deal: files to shards by measured weight ─────────────────────────────────────────────────
+
+/**
+ * Which files shard `shard` of `shards` runs. Vitest's own `--shard=k/n` deals files out by a hash of their path, so a
+ * set's heaviest files can all land in one shard (measured: 21.6 min against 11.9 min). This deals them by weight:
+ * heaviest first, each to the lightest shard so far. `weights` maps a file's name under `e2e/` to seconds; a file
+ * with no row weighs the median of the rows, so a new file lands somewhere lawful before anyone measures it.
+ * Pure and order-free: every shard's runner computes the same deal from the same tracked list.
+ */
+export function shardFiles({ files, weights = {}, shards, shard }) {
+  const known = Object.values(weights).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+  const median = known.length > 0 ? known[Math.floor(known.length / 2)] : 60;
+  const weigh = (f) => weights[relativeToE2eDir(f)] ?? median;
+  const order = [...files].sort((a, b) => weigh(b) - weigh(a) || (a < b ? -1 : 1));
+  const loads = Array(shards).fill(0);
+  const dealt = Array.from({ length: shards }, () => []);
+  for (const f of order) {
+    const at = loads.indexOf(Math.min(...loads));
+    dealt[at].push(f);
+    loads[at] += weigh(f);
+  }
+  return dealt[shard - 1].sort();
+}
+
 // ── reading the merge job's disk state into the pure law ──────────────────────────────────────────
 
 /**
@@ -275,6 +303,21 @@ function cliMergeVerify(args) {
   process.exitCode = verdict.ok ? 0 : 1;
 }
 
+/** `shard-files --set <name> --shard <k>`: the set's files for shard k, one per line, relative to the set's directory. */
+function cliShardFiles(args) {
+  const repoRoot = resolve(readFlag(args, "--repo-root") ?? ".");
+  const set = E2E_SETS.find((s) => s.name === readFlag(args, "--set"));
+  const shard = Number(readFlag(args, "--shard"));
+  if (!set || !Number.isInteger(shard) || shard < 1 || shard > set.shards) {
+    console.error("usage: e2e-shards.mjs shard-files --set <name> --shard <k> [--repo-root <dir>]");
+    process.exitCode = 1;
+    return;
+  }
+  const weights = JSON.parse(readFileSync(new URL("./e2e-shard-weights.json", import.meta.url), "utf8"))[set.name] ?? {};
+  const files = trackedE2eFiles(repoRoot, set.trackedGlob);
+  for (const f of shardFiles({ files, weights, shards: set.shards, shard })) console.log(f.startsWith(`${set.dir}/`) ? f.slice(set.dir.length + 1) : f);
+}
+
 function readFlag(args, name) {
   const i = args.indexOf(name);
   return i === -1 ? undefined : args[i + 1];
@@ -303,9 +346,9 @@ function assertNotBare(repoRoot) {
  * `findBudgetMs`), watches it with `gh run watch --exit-status`, reads the merge job's own
  * `MERGE-VERIFY` log line as the verdict, deletes the remote branch, and returns
  * `{ ok, shardCounts, totalTests, run }`. Always deletes the branch, even on a red run — a proof
- * branch left standing after a red read is exactly the kind of debris this lane must not leave.
+ * branch left standing after a red read is exactly the kind of debris this tool must not leave.
  */
-export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000, pollMs = 3000 }) {
+export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 2 * POLL_FLOOR_S * 1000, pollMs = POLL_FLOOR_S * 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), now = Date.now }) {
   assertNotBare(repoRoot);
   const branch = `ci/${lane}`;
   const headSha = run("git", ["-C", repoRoot, "rev-parse", "HEAD"], { stdio: ["ignore", "pipe", "pipe"] }).trim();
@@ -313,10 +356,10 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   run("git", ["-C", repoRoot, "push", "origin", `HEAD:refs/heads/${branch}`], { stdio: ["ignore", "pipe", "pipe"] });
 
   let runId;
-  const deadline = Date.now() + findBudgetMs;
-  while (Date.now() < deadline) {
+  const deadline = now() + findBudgetMs;
+  while (now() < deadline) {
     // NEVER `--workflow e2e-shards.yml` here: GitHub's API only resolves a workflow BY FILENAME
-    // once that file exists on the repo's default branch, and this lane's whole point is to prove
+    // once that file exists on the repo's default branch, and this tool exists to prove
     // a workflow file that lives only on a throwaway `ci/<lane>` branch. `--branch` + `--event
     // push` finds the same run without that registration — the headSha match right below is what
     // keeps it the ONE run this push triggered, never a stale run of a reused lane name.
@@ -328,7 +371,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
     const runs = JSON.parse(listed);
     const match = runs.find((r) => r.headSha === headSha);
     if (match) { runId = match.databaseId; break; }
-    await new Promise((r) => setTimeout(r, pollMs));
+    await sleep(pollMs);
   }
   if (!runId) {
     deleteBranch(repoRoot, branch);
@@ -338,7 +381,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   // Watches to completion; a red run makes `gh run watch --exit-status` itself exit non-zero, so
   // the watch result alone already answers "red or not" — this helper still reads the log line
   // below for the shard counts and totals the report asks for.
-  // ONE LOOK EVERY HALF MINUTE. `gh run watch` polls every three seconds by default, and each poll spends
+  // ONE ROUND OF READS PER POLL FLOOR (180 s, the house pace; a round may issue several gh calls back to back). `gh run watch` polls every three seconds by default, and each poll spends
   // several calls of the 5000 an hour every lane, lead and tool on this account shares: a few lanes watching
   // at once spend the hour's whole budget, and then every `gh` read refuses, this one included.
   const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status", "--interval", WATCH_INTERVAL_S], { cwd: repoRoot, encoding: "utf8" });
@@ -372,7 +415,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
 }
 
 /** Seconds between the watch's looks at a run. */
-export const WATCH_INTERVAL_S = "30";
+export const WATCH_INTERVAL_S = String(POLL_FLOOR_S);
 
 /** What `push` says when it pushed a run and could not read its verdict: neither green nor red. */
 export const unreadVerdict = (runId) =>
@@ -413,9 +456,9 @@ async function cliPush(args, repoRoot) {
   for (const line of result.verdictLines?.length ? result.verdictLines : (result.verdictLine ? [result.verdictLine] : [])) {
     console.log(line);
   }
-  // ONE HALF OF GREEN. This lane runs the e2e sets alone; the package suites, the witness fleet and the tool
+  // ONE HALF OF GREEN. This tool runs the e2e sets alone; the package suites, the witness fleet and the tool
   // self-tests answer only in the full CI workflow, where a newer push cancels a run before it reports.
-  // The head this lane PUSHED, never the checkout's head at print time: other hands commit while the run goes.
+  // The head this tool PUSHED, never the checkout's head at print time: other hands commit while the run goes.
   console.log(`${HALF_VERDICT} ${fullCiBranchOf(repoRoot, result.headSha) ?? "<the branch this head rides>"} --head ${result.headSha.slice(0, 9)}`);
   assertNotBare(repoRoot);
   process.exitCode = result.ok ? 0 : 1;
@@ -427,10 +470,12 @@ async function main() {
   const [sub, ...rest] = process.argv.slice(2);
   const repoRoot = resolve(".");
   if (sub === "merge-verify") { cliMergeVerify(rest); return; }
+  if (sub === "shard-files") { cliShardFiles(rest); return; }
   if (sub === "sets") { for (const set of E2E_SETS) console.log(`${set.name} ${set.dir} ${set.config}`); return; }
   if (sub === "push") { await cliPush(rest, repoRoot); return; }
   console.error("usage: e2e-shards.mjs merge-verify --artifacts-dir <dir> [--repo-root <dir>]");
   console.error("       e2e-shards.mjs push <lane>");
+  console.error("       e2e-shards.mjs shard-files --set <name> --shard <k> [--repo-root <dir>]");
   console.error("       e2e-shards.mjs sets");
   process.exitCode = 1;
 }

@@ -3,17 +3,22 @@
  *
  * The named-bag layout (`bags/NAME`) makes per-scope path computation
  * derivable from the bag scope alone. No oracle tiddler `path-filter` field
- * needed. Factories are pure functions; no I/O, no module state.
+ * needed. The siting factories stay pure (no I/O, no module state); the read-back (`siteFileToTitle`) reads a file's own
+ * stated title, and `projectionRoots` reads the canon source once.
  */
 
-import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
-import { stripMemeExt, wikiSlotUri, isBagManifestUri } from "@lararium/mesh";
+import { resolve as resolvePath, join as joinPath, dirname, basename, extname, isAbsolute, sep } from "path";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "fs";
+import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI, type ProjectionClass } from "@lararium/mesh";
+import { ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
   readonly bagId: string;
   /** Absolute filesystem path; all writes are constrained under this root. */
   readonly mirrorRoot: string;
+  /** Marks a grant intended for bag-specific recovery projection. */
+  readonly mirrorClass?: "recovery";
   /**
    * Widened grant (capability, rides the manifest's diskMirrors): the mirror
    * MAY place files DIRECTLY in the root-bags-dir — the nearest ancestor of
@@ -24,16 +29,30 @@ export interface BagMirrorConfig {
    */
   readonly allowBagsRootFiles?: boolean;
   /**
-   * The charter-only mirror guard (crossroads WHO-board leak, 2026-09-20): when true, a per-Nexus
-   * WHO-face pointer (`isNexusHandlesUri`) never projects through THIS mirror. Baked in at grant
-   * construction time from the RESOLVED `nexusIdentity().kind` — never re-derived from the tiddler
-   * itself, which carries no kind. A private-nexus-of-one (`own`) or a dialed anchor (`anchor`)
-   * mints this pointer into the crossroads doc on first boot (who-face.ts `resolveOracleDoc`), and
-   * without this guard every such boot's throwaway pointer disk-mirrors alongside the REAL
-   * charter-backed crossroads library content. Curated library carriers are untouched — the guard
-   * matches ONLY the handles-pointer shape, never the whole bag.
+   * The title-path siting: a title that owns no uri-path sites at its own `/`-separated path inside the mirror (a project
+   * rides as the leading segment), where TW5's flattened default would fold every `/` into `_`. A `lar:` title keeps the
+   * loci law; a `$:/` system title and a `$FileSystemPaths` rule keep their own sitings.
    */
-  readonly guardNexusHandles?: boolean;
+  readonly titlePaths?: boolean;
+  /**
+   * The wiki's USER temp layer (`wikis/{slug}/temp`), granted under the operator's consent row: a recovery-class mirror
+   * whose bag also carries the house's own volatile state, so the projector bars that state by namespace
+   * ({@link isTempLayerInternalTitle}) and projects only what a hand or a verb set down in the layer on purpose.
+   */
+  readonly tempLayer?: boolean;
+}
+
+/** The leaf a wiki's user temp layer projects under, beside its working mirror: `wikis/<wiki-folder>/temp`. */
+export const TEMP_LAYER_DIR = "temp";
+
+/**
+ * Whether a title in the temp layer names the house's INTERNAL state rather than user temp content: what the projection
+ * filters withhold from a temp mirror (`@lararium/mesh` `projection-filter`: the base and
+ * `$:/config/lares/ProjectionFilter/temp`: TiddlyWiki's temp and state namespaces and the house's config plane). The
+ * read-back reads the same line the projector writes by.
+ */
+export function isTempLayerInternalTitle(title: string): boolean {
+  return projectionWithheld(title, ["temp"]);
 }
 
 // ── Write confinement — the sovereign-island disk ward ─────────────────────
@@ -106,9 +125,6 @@ function splitHash(s: string): [string, string | null] {
  */
 export function carrierBaseRelPath(uri: string): string | null {
   if (!uri.startsWith("lar:///")) return null;
-  // A bag's MANIFEST sites nowhere here: its file is `meta.mem` at the bag root, owned by the
-  // declare verb. Sited by uri-path it would land as `bags/<bag>/ha.ka.ba/bags/<bag>.mem`.
-  if (isBagManifestUri(uri)) return null;
   const bare = uri.slice("lar:///".length);
   if (!/^\w+\.\w+\.\w+\//.test(bare)) return null;
   const [pathPart, frag] = splitHash(bare);
@@ -122,20 +138,288 @@ export function carrierBaseRelPath(uri: string): string | null {
  * stable name whole; the mirrorRoot = the bag's residency dir.
  */
 export function namedBagMirror(
-  bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean,
+  bagId: string, scope: string, mirrorRoot: string, titlePaths?: boolean, mirrorClass?: "recovery",
+  tempLayer?: boolean,
 ): BagMirrorConfig {
   void scope;
-  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}) };
+  return { bagId, mirrorRoot, ...(titlePaths ? { titlePaths } : {}), ...(mirrorClass ? { mirrorClass } : {}), ...(tempLayer ? { tempLayer } : {}) };
 }
 
 /**
- * The daemon wiki's disk mirror: its working layer projects to `<rootDir>/wikis/daemon/`, the same
- * shape `resolveDiskMirrors` fills for every wiki's `wikiSlot: "working"` grant from the slug at
- * mount. The daemon island mounts outside the pool, so this mints the grant once, by name. The
- * daemon bag beneath (the control plane) holds no mirror.
+ * THE FACE ROOT (operator ruling 2026-11-18, "one pool per face keyed by pet name"): every private plane a face holds rests in ONE
+ * working tree under the house's projections root, named by the face's PET NAME, never by its relation. A relation id changes at
+ * every re-found, so a relation-keyed folder orphans; the pet name carries across, and `projections/` outlives the hearth:
+ *
+ *   <projections>/faces/<pet name>/
+ *     wikis/daemon/      the face's daemon working layer (`daemon` the house's reserved slug), its temp layer at `temp/` inside
+ *     bags/daemon/       the face's daemon canon (`bags/daemon-<F>`: the BAG keeps its relation, the folder never does)
+ *     bags/kahua/        the kahua memory stage (`bags/kahua`)
+ *     personal/<slug>/    the face's personal layer over a shared wiki (its overlay layer, never a copy of the workbench)
+ *     recovery/<slug>/   the face's unsaved drafts in a shared wiki
+ *     temp/<slug>/       a shared wiki's consented temp layer, beside recovery
+ *
+ * THE SAME SHELF NAMES ON EVERY ENTITY (operator, 2026-11-20, "Approve model B"): a face, a realm and a workspace each hold one
+ * plural shelf per kind of thing they hold, each holding slugs (`ENTITY_SHELVES`), so a face root reads as a realm root does.
+ * A face root standing in the older shape (`wiki/`, `canon/`, `stage/`) moves onto its shelves at the next heal
+ * (`FACE_SHELF_MOVES`, `shelveFaceRoot` in `pool-tree.ts`).
+ *
+ * A face root holds ONLY the face's private planes: a shared wiki's workbench and every domain bag rest in their realm pool
+ * (`realms/<realm pet name>/wikis/<slug>/` and `/bags/<slug>/`, or the workspace a share row names), one disk copy whichever
+ * face wears. No index file that maps one face to another
+ * (`face-labels/`, `kahua-index.toml`, `share.tid`, `kahua-pending.json`) ever rests under `faces/`, so a face pool that syncs
+ * or pushes carries its own planes alone.
  */
-export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
-  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "daemon") };
+export const FACES_PROJECTION_DIR = "faces";
+/**
+ * THE SHELVES EVERY ENTITY ROOT GROWS (operator, 2026-11-20: "the same shelf names on every entity"; "Approve model B"): one
+ * plural shelf per kind of thing an entity holds, each holding slugs. `bags/<slug>/` the canon it holds, `wikis/<slug>/` the
+ * workbenches it hosts, `personal/<slug>/` a face's private layers of the wikis it reaches (faces alone), `renders/` what the
+ * house renders for it (the name reserved; no renderer writes there yet). The checkout's `bags/` beside `wikis/` stands as the
+ * template these grew from, never a closed list: a new kind of holding grows a new plural shelf.
+ */
+export const ENTITY_SHELVES = { bags: "bags", wikis: "wikis", personal: "personal", renders: "renders" } as const;
+/** The slug the house reserves on a face's shelves: its daemon wiki's workbench (`wikis/daemon/`) and its daemon canon (`bags/daemon/`). */
+export const DAEMON_SHELF_SLUG = "daemon";
+/** The slug a face's kahua stage takes on its `bags/` shelf (`bags/kahua`, the bag the stage mirrors). */
+export const KAHUA_SHELF_SLUG = "kahua";
+
+/** The planes inside a face root, each a posix path under the root: the daemon wiki, its canon and the kahua stage rest on the
+ *  `wikis/` and `bags/` shelves under their slugs. */
+export const FACE_PLANES = {
+  wiki: `${ENTITY_SHELVES.wikis}/${DAEMON_SHELF_SLUG}`,
+  canon: `${ENTITY_SHELVES.bags}/${DAEMON_SHELF_SLUG}`,
+  stage: `${ENTITY_SHELVES.bags}/${KAHUA_SHELF_SLUG}`,
+  personal: ENTITY_SHELVES.personal,
+  recovery: "recovery",
+  temp: TEMP_LAYER_DIR,
+} as const;
+export type FacePlane = keyof typeof FACE_PLANES;
+
+/** The face plane a posix path inside a face root rests under (the plane's own folder, or deeper), or null. */
+export function facePlaneOf(rel: string): FacePlane | null {
+  const path = rel.split(/[\\/]/).filter((s) => s !== "" && s !== ".").join("/");
+  for (const [plane, at] of Object.entries(FACE_PLANES) as Array<[FacePlane, string]>) if (path === at || path.startsWith(`${at}/`)) return plane;
+  return null;
+}
+
+/**
+ * The siting plane a face plane's files read back against (`SiteMirror.planeDir`): the SHELF holding the plane's slug folder,
+ * so that slug never enters a title, as a realm's `wikis/` and `bags/` read (`<root>/wikis` for the daemon wiki, `<root>/bags` for
+ * the daemon canon and the kahua stage, `<root>/personal` for the personal layers).
+ */
+export function facePlaneSiteDir(root: string, plane: FacePlane): string {
+  const at = FACE_PLANES[plane];
+  return joinPath(root, at.includes("/") ? at.slice(0, at.indexOf("/")) : at);
+}
+
+/** THE OLDER FACE SHAPE'S FOLDERS AND THE SHELF EACH MOVES ONTO, in the order the heal moves them (`shelveFaceRoot`). */
+export const FACE_SHELF_MOVES: ReadonlyArray<{ readonly from: string; readonly to: string }> = [
+  { from: "wiki", to: FACE_PLANES.wiki },
+  { from: "canon", to: FACE_PLANES.canon },
+  { from: "stage", to: FACE_PLANES.stage },
+];
+
+/** Why a pet name makes no face segment, by name. */
+export type FaceSegmentCode =
+  | "face-segment-empty" | "face-segment-separator" | "face-segment-colon" | "face-segment-nul" | "face-segment-leading-dot" | "face-segment-collision";
+
+/** A pet name the face-segment rule refuses, by name. */
+export class FaceSegmentRefused extends Error {
+  override readonly name = "FaceSegmentRefused";
+  constructor(readonly code: FaceSegmentCode, message: string) { super(`${code}: ${message}`); }
+}
+
+/** The fold two segments collide under: NFC, then lower case. */
+const segmentFold = (segment: string): string => segment.normalize("NFC").toLowerCase();
+
+/**
+ * THE PET-NAME SEGMENT RULE: why a pet name makes no face folder, or null where it makes one. It refuses `/`, `\`, `:`, NUL, a
+ * leading dot (so `.` and `..` too), an empty name, and a name that collides case-insensitively with another face's segment
+ * (`others`: the segments of the OTHER faces; the same segment collides too, since no two faces share a root).
+ */
+export function faceSegmentRefusal(petname: string | null | undefined, others: readonly string[] = []): { readonly code: FaceSegmentCode; readonly why: string } | null {
+  if (typeof petname !== "string" || petname.length === 0) return { code: "face-segment-empty", why: "a face with no pet name makes no folder: name it (`lares persona new <N> --name <label>`)" };
+  const name = petname.normalize("NFC");
+  const shown = JSON.stringify(name);
+  if (/[/\\]/.test(name)) return { code: "face-segment-separator", why: `the pet name ${shown} holds a path separator, so it names no single folder` };
+  if (name.includes(":")) return { code: "face-segment-colon", why: `the pet name ${shown} holds a colon, which no portable folder name carries` };
+  if (name.includes("\0")) return { code: "face-segment-nul", why: `the pet name ${shown} holds a NUL byte` };
+  if (name.startsWith(".")) return { code: "face-segment-leading-dot", why: `the pet name ${shown} leads with a dot, so its folder would hide itself or name a parent` };
+  const twin = others.find((o) => segmentFold(o) === segmentFold(name));
+  if (twin !== undefined) return { code: "face-segment-collision", why: `the pet name ${shown} meets another face's folder ${JSON.stringify(twin)} (folders compare without case), and no two faces share a root: rename one` };
+  return null;
+}
+
+/** The face folder a pet name makes: the name as written (spaces and Unicode kept), NFC. Throws {@link FaceSegmentRefused}. */
+export function faceSegment(petname: string, others: readonly string[] = []): string {
+  const refused = faceSegmentRefusal(petname, others);
+  if (refused !== null) throw new FaceSegmentRefused(refused.code, refused.why);
+  return petname.normalize("NFC");
+}
+
+/** A face as its private mirrors name it: its relation (the BAG identities it holds) and its segment (the FOLDER it rests in). */
+export interface FaceSite { readonly relation: string; readonly segment: string }
+
+/** `<projections>/faces/<segment>`: the one root of a face's private planes. */
+export function faceRoot(projectionRoot: string, segment: string): string {
+  return joinPath(projectionRoot, FACES_PROJECTION_DIR, faceSegment(segment));
+}
+
+/**
+ * THE REALM ROOT (operator ruling 2026-11-19, "The filepath for realms should include their 'pet-name' to match faces"): a realm
+ * holds its shared wikis' workbenches and its domain bags in one folder under the projections root, named by the PET NAME the
+ * operator gives the realm (a local label, `realm-labels.ts`), never by a realm id:
+ *
+ *   <projections>/realms/<realm pet name>/
+ *     wikis/<slug>/      each wiki's one workbench (a capability of the realm root's ONE tree, never a tree of its own)
+ *     bags/<slug>/       each domain bag's canon mirror
+ *
+ * The realm pet name follows the face segment rule (`realmPetNameRefusal`), so it names exactly one folder. No index file that
+ * maps realms or faces to one another (`realm-labels/`, `face-labels/`) ever rests under `realms/`.
+ */
+export const REALMS_PROJECTION_DIR = "realms";
+/** The planes inside a realm root. */
+export const REALM_PLANES = { wikis: ENTITY_SHELVES.wikis, bags: ENTITY_SHELVES.bags } as const;
+
+/** `<projections>/realms/<pet name>`: the one root of a realm's wikis and bags. Throws {@link FaceSegmentRefused} on a pet name
+ *  that names no single folder. */
+export function realmRoot(projectionRoot: string, petName: string): string {
+  return joinPath(projectionRoot, REALMS_PROJECTION_DIR, faceSegment(petName));
+}
+
+/** `<projections>/faces/<segment>/personal`: the plane a face's personal layers rest under, one folder per wiki slug. */
+export function facePersonalRoot(projectionRoot: string, segment: string): string {
+  return joinPath(faceRoot(projectionRoot, segment), FACE_PLANES.personal);
+}
+
+/**
+ * The daemon wiki's disk mirror: its working layer, bound to the daemon mount, writes files to `<projections>/faces/<pet name>/wikis/daemon/`.
+ * The daemon document and the control document have no mirror: every control family rests in the control document
+ * (`control-home`), so placement keeps it off these mirrors.
+ */
+export function daemonWorkingMirror(projectionRoot: string, face: FaceSite): BagMirrorConfig {
+  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(faceRoot(projectionRoot, face.segment), FACE_PLANES.wiki) };
+}
+
+/**
+ * The kahua stage's disk mirror: the face's `bags/kahua` projects to `<projections>/faces/<pet name>/bags/kahua/`, its items sited by
+ * title with a project as the leading path segment. The stage never projects beside a canon source.
+ */
+export function kahuaStageMirror(projectionRoot: string, face: FaceSite): BagMirrorConfig {
+  return { bagId: KAHUA_BAG, mirrorRoot: joinPath(faceRoot(projectionRoot, face.segment), FACE_PLANES.stage), titlePaths: true };
+}
+
+/**
+ * The daemon wiki's USER temp layer mirror: `wikis/daemon/temp` projects beside its working top, under
+ * `<projections>/faces/<pet name>/wikis/daemon/temp`, as a recovery-class mirror the projector reads off the layer's own store.
+ */
+export function daemonTempMirror(projectionRoot: string, face: FaceSite): BagMirrorConfig {
+  return {
+    bagId: wikiSlotUri("daemon", "temp"),
+    mirrorRoot: joinPath(faceRoot(projectionRoot, face.segment), FACE_PLANES.wiki, TEMP_LAYER_DIR),
+    mirrorClass: "recovery",
+    tempLayer: true,
+  };
+}
+
+/**
+ * The face's daemon canon mirror: `bags/daemon-<F>` projects as a two-way canon mirror to `<projections>/faces/<pet name>/bags/daemon/`,
+ * under the projections root alone (never beside a canon source), with its Confluence agreement, take-disk door and kāpae
+ * like every other canon mirror. A meme promoted into the daemon wiki's canon lands there and survives a re-founding.
+ */
+export function daemonCanonMirror(projectionRoot: string, face: FaceSite): BagMirrorConfig {
+  return { bagId: daemonFaceCanonBag(face.relation), mirrorRoot: joinPath(faceRoot(projectionRoot, face.segment), FACE_PLANES.canon) };
+}
+
+/** A daemon VM disk mirror: the grant plus the scope its island names it by. */
+export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
+
+/**
+ * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the daemon mount's working top (`faces/<pet name>/wikis/daemon`), its
+ * daemon canon (`faces/<pet name>/bags/daemon`, where the face's catalog names one), its kahua stage (`faces/<pet name>/bags/kahua`, items
+ * sited by title), and the public crossroads bag, split by origin back to its canon source where one stands. The daemon
+ * document and the control document have no mirror.
+ *
+ * `face` names the face the composition wears: its relation from the verified founding record, its segment from its pet name.
+ * With no face worn (`null`) the list holds no private mirror at all; a later composition wearing a face mirrors under its root.
+ */
+export function daemonDiskMirrors(opts: {
+  readonly projectionRoot: string;
+  readonly canonBags: string;
+  readonly face: FaceSite | null;
+  /** True where the daemon recipe mounts the face's daemon canon (`canonBag`): the list then carries its mirror. */
+  readonly canon?: boolean;
+  /** True where the daemon recipe designates its temp layer AND the operator's consent row names the `daemon` slug:
+   *  the list then carries the temp layer's mirror (`daemonTempMirror`). */
+  readonly temp?: boolean;
+}): readonly DaemonDiskMirror[] {
+  const { projectionRoot, canonBags, face, canon = false, temp = false } = opts;
+  return [
+    ...(face === null ? [] : [
+      { ...daemonWorkingMirror(projectionRoot, face), scope: "daemon" },
+      ...(canon ? [{ ...daemonCanonMirror(projectionRoot, face), scope: "daemon-canon" }] : []),
+      { ...kahuaStageMirror(projectionRoot, face), scope: "kahua" },
+      ...(temp ? [{ ...daemonTempMirror(projectionRoot, face), scope: "daemon-temp" }] : []),
+    ]),
+    { bagId: CROSSROADS_DOC_URI, mirrorRoot: projectionRoots({ projectionRoot, canonBags }).bagRoot("crossroads"), scope: "crossroads" },
+  ];
+}
+
+/** The mirror-relative base a title sites at by its own path, or null for a title that owns none by this rule. */
+export function titleRelPath(title: string): string | null {
+  if (title.startsWith("lar:") || title.startsWith("$:/") || title.length === 0) return null;
+  const segments = title.split("/");
+  if (segments.some((seg) => seg.length === 0 || seg === "." || seg === ".." || /[\\\0]/.test(seg))) return null;
+  return segments.join("/");
+}
+
+/**
+ * THE PRIVATE PLANES: the layers a house mints for itself and never writes beside a canon source, whatever dirs that
+ * source holds: the daemon wiki (each device's own private working wiki) and the kahua plane, each face's resting under
+ * its face root (`faces/<pet name>/`). A wiki's workbench names no face: one folder answers it.
+ */
+export const PRIVATE_PROJECTION_SLUGS: ReadonlySet<string> = new Set(["daemon", "kahua"]);
+
+/** Whether a slug names a private plane. */
+export function isPrivateProjectionSlug(slug: string): boolean {
+  return PRIVATE_PROJECTION_SLUGS.has(slug);
+}
+
+/** Where a house's disk mirrors root, split by ORIGIN. */
+export interface ProjectionRoots {
+  /** The slugs whose bag source dir stands under the canon source (sorted), the private planes excepted. */
+  sourcedSlugs(): readonly string[];
+  /** The mirror dir of bag `slug`: `<canon>/<slug>` for a sourced bag, else `<projections>/bags/<slug>`. */
+  bagRoot(slug: string): string;
+  /** The canon-side bases a per-wiki grant carries by slug (`DiskMirrorGrant` `sourcedRoots`). */
+  sourcedRoots(kind: "bags" | "wikis"): Readonly<Record<string, string>>;
+}
+
+/**
+ * THE MIRROR ROOT SPLITS BY ORIGIN (operator ruling, 2026-11-01: "Are those things that start in bags? then they should
+ * 'end up back in bags/'. Only live edits end up in the wiki layers ... The dirs in the workspace right now (and the wikis
+ * they shall compose) DO need to get written back to the main repo checkout, for source control").
+ *
+ * A bag whose source dir stands under the canon source (`canonBags`, the vessel's `LAR_BAGS`) projects back there, and the
+ * wiki it composes projects to `wikis/` beside that source. Every other bag and wiki (house-minted, a person's own) and every
+ * private plane projects under the house's projections root (`<root>/projections`, outside the hearth a re-founding
+ * clears): a shared wiki and its canon bag in the realm that holds them (`realms/<pet name>/`, `realm-labels.ts`), a face's
+ * private planes in its face root. Membership reads the source tree once, here: no bag is listed.
+ */
+export function projectionRoots(opts: { readonly projectionRoot: string; readonly canonBags: string }): ProjectionRoots {
+  let held: string[] = [];
+  try {
+    held = readdirSync(opts.canonBags, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !isPrivateProjectionSlug(e.name))
+      .map((e) => e.name).sort();
+  } catch { /* an absent canon source sources nothing */ }
+  const sourced = new Set(held);
+  const canonWikis = joinPath(dirname(resolvePath(opts.canonBags)), "wikis");
+  return {
+    sourcedSlugs: () => held,
+    bagRoot: (slug) => sourced.has(slug) ? joinPath(opts.canonBags, slug) : joinPath(opts.projectionRoot, "bags", slug),
+    sourcedRoots: (kind) => Object.fromEntries(held.map((slug) => [slug, kind === "bags" ? resolvePath(opts.canonBags) : canonWikis])),
+  };
 }
 
 // ── Loci reverse-derivation (the ingest gesture's scan leg) ─────────────────
@@ -197,4 +481,272 @@ export function bagsFileToUri(instanceRoot: string, filePath: string): string | 
  */
 export function wikisFileToUri(instanceRoot: string, filePath: string): string | null {
   return mirrorDirFileToUri(joinPath(instanceRoot, "wikis"), filePath);
+}
+
+// ── What the house ignores inside a mirror ──────────────────────────────────
+
+/**
+ * THE ONE LIST THE HOUSE IGNORES inside every mirror folder: what no scan reads back, no watcher wakes on, no export carries,
+ * no import restores and no adoption copies. Paths read posix, relative to the mirror's holding folder (the wave's source):
+ *
+ *   - `topDirs`: a workspace's own tooling at the top (`.git`, `.vscode`), the shore's render of a stand-off (`.shore`, for
+ *     `lares shore diff`), and the `temp` layer, which mirrors its own bag beside a working folder;
+ *   - `dirSuffixes`: an orphan slot's folder (`<root-stem>.orphans/`): the projector writes it beside its root, and the
+ *     family's root carries those slots home;
+ *   - `tempFile`: the atomic writer's temp (`fs-atomic.ts`: `<path>.<pid>.<uuid>.tmp`, or `<path>.<pid>.tmp` for a sync write);
+ *   - `viewState`: a personal layer's view state at any depth, by TiddlyWiki's flattened file name (`$:/` reads `$__`, each
+ *     later `/` reads `_`): the navigator's story and history (`$:/StoryList`, `$:/HistoryList`), the palette, the fold and tab
+ *     states (`isPersonalTitle`, lar-kind). It stays with the face that set it: the personal layer's own document carries it
+ *     across devices, so no lay reads it back, no export carries it and no pool's history takes it.
+ */
+export const HOUSE_IGNORED = {
+  topDirs: [".git", ".vscode", ".shore", TEMP_LAYER_DIR] as readonly string[],
+  dirSuffixes: [ORPHAN_FOLDER_SUFFIX] as readonly string[],
+  tempFile: /\.\d+(?:\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\.tmp$/,
+  viewState: {
+    /** Whole file names, each with any extension (`$__StoryList.tid`, a `.json` with its `.meta`). */
+    names: ["$__StoryList", "$__HistoryList", "$__palette"] as readonly string[],
+    /** File-name prefixes: one file per folded tiddler or tab set. */
+    prefixes: ["$__state_folded_", "$__state_tab-"] as readonly string[],
+  },
+} as const;
+
+/** The file name at the end of `rel` names a personal layer's view state (`HOUSE_IGNORED.viewState`). */
+const isViewStateName = (name: string): boolean =>
+  HOUSE_IGNORED.viewState.names.some((n) => name === n || name.startsWith(`${n}.`)) || HOUSE_IGNORED.viewState.prefixes.some((p) => name.startsWith(p));
+
+/** Why the house ignores the file at `rel` (posix, relative to its mirror's holding folder), or null where it reads. */
+export function houseIgnored(rel: string): string | null {
+  const segments = rel.split(/[\\/]/).filter((s) => s !== "" && s !== ".");
+  if (segments.length === 0) return null;
+  if (segments.length > 1 && HOUSE_IGNORED.topDirs.includes(segments[0]!)) return `${segments[0]}/ holds no record of this house's (HOUSE_IGNORED)`;
+  if (segments.slice(0, -1).some((d) => HOUSE_IGNORED.dirSuffixes.some((x) => d.endsWith(x)))) return "an orphan slot's folder: its family's root carries it (HOUSE_IGNORED)";
+  if (HOUSE_IGNORED.tempFile.test(segments[segments.length - 1]!)) return "an atomic writer's temp (HOUSE_IGNORED)";
+  if (isViewStateName(segments[segments.length - 1]!)) return "a personal layer's view state, which stays with the face that set it (HOUSE_IGNORED)";
+  return null;
+}
+
+/** The lines that open and close the house's block in a pool's `.git/info/exclude`; the operator's own lines rest outside it. */
+export const POOL_EXCLUDE_OPEN = "# >>> lares surface: the house's one ignore list (HOUSE_IGNORED); `lares surface init` keeps this block";
+export const POOL_EXCLUDE_CLOSE = "# <<< lares surface";
+
+/**
+ * THE EXCLUDE RULES, from `HOUSE_IGNORED` alone: each top folder but `.git` (git keeps its own), each orphan folder suffix, the
+ * atomic writer's temp (`<path>.<pid>[.<uuid>].tmp`), and each view-state name and prefix. The patterns float (no leading `/`),
+ * since the mirrors rest below a shelf (`wikis/daemon/`, `bags/daemon/`, `personal/<slug>/`). The pointer carriers (`.meta`, `.kapae`,
+ * `.mem`, `.tid`) never appear here: the pool commits them.
+ */
+export function houseExcludeLines(): string[] {
+  return [
+    ...HOUSE_IGNORED.topDirs.filter((d) => d !== ".git").map((d) => `${d}/`),
+    ...HOUSE_IGNORED.dirSuffixes.map((s) => `*${s}/`),
+    "*.[0-9]*.tmp",
+    ...HOUSE_IGNORED.viewState.names.flatMap((n) => [n, `${n}.*`]),
+    ...HOUSE_IGNORED.viewState.prefixes.map((p) => `${p}*`),
+  ];
+}
+
+/**
+ * A WORKBENCH'S OWN RULES, beside the house's list: a shared wiki's `recovery/` and `temp/` at the top of its folder (each face's
+ * drafts rest in its own root, `faces/<pet name>/recovery/<slug>/`). A workspace the operator binds holds its tree at its own top,
+ * so the rules anchor there (`WORKSPACE_EXCLUDE_LINES`); a realm's one tree roots at `realms/<pet name>/`, so they anchor under each
+ * wiki folder it holds (`REALM_EXCLUDE_LINES`).
+ */
+export const WORKSPACE_EXCLUDE_LINES: readonly string[] = [`/${FACE_PLANES.recovery}/`, `/${FACE_PLANES.temp}/`];
+export const REALM_EXCLUDE_LINES: readonly string[] = WORKSPACE_EXCLUDE_LINES.map((line) => `/${REALM_PLANES.wikis}/*${line}`);
+
+/** The exclude file with the house's block written in place (or appended), with any extra lines the pool's scale adds; the
+ *  operator's own lines stay as they stand. */
+export function withExcludeBlock(text: string, extra: readonly string[] = []): string {
+  const block = [POOL_EXCLUDE_OPEN, ...houseExcludeLines(), ...extra, POOL_EXCLUDE_CLOSE].join("\n") + "\n";
+  const start = text.indexOf(POOL_EXCLUDE_OPEN);
+  const end = start === -1 ? -1 : text.indexOf(POOL_EXCLUDE_CLOSE, start);
+  if (start !== -1 && end !== -1) return text.slice(0, start) + block + text.slice(end + POOL_EXCLUDE_CLOSE.length).replace(/^\n/, "");
+  return (text === "" || text.endsWith("\n") ? text : `${text}\n`) + block;
+}
+
+// ── Siting run backward (the mirror lay's and the watcher's read) ──────────
+
+/** One mirror plane a file reads back against. */
+export interface SiteMirror {
+  /** The plane dir whose first segment names the holding slot (`<projections>/realms/<realm pet name>/wikis`, a face root's shelf
+   *  `<projections>/faces/<pet name>/wikis` or `/bags` (`facePlaneSiteDir`), or its `personal`): that segment never enters a title. */
+  readonly planeDir: string;
+  /** The holding mirror sites a foreign title at its own `/` path (`BagMirrorConfig.titlePaths`, the kahua stage). */
+  readonly titlePaths?: boolean;
+  /** Rule 0: the carrier a synced base names at this exact path (`SyncedTree.uriAt`), where the caller holds a tree. */
+  readonly uriAt?: (path: string) => string | null;
+  /** The projection classes the mirror reads under (a temp mirror: `["temp"]`); the base filter always reads. */
+  readonly classes?: readonly ProjectionClass[];
+}
+
+/** A file's title, with the rule that read it, or why no rule reads it. */
+export type FileSiting =
+  | { readonly title: string; readonly by: "base" | "loci" | "title-path" | "in-band" | "filename" }
+  | { readonly why: string };
+
+/** The `title` a TiddlyWiki field block (a `.tid` header, a `.meta` sidecar) states, read up to its first blank line. */
+function fieldBlockTitle(text: string): string | undefined {
+  for (const line of text.split("\n")) {
+    if (line.trim() === "") break;
+    const m = /^([^:\s]+)\s*:\s*(.*)$/.exec(line);
+    if (!m) break;
+    if (m[1] === "title") return m[2]!.trim();
+  }
+  return undefined;
+}
+
+/** The `title` a `.mem` carrier's toml meta fence states (a basic string, escapes read as JSON reads them). */
+function memTitle(text: string): string | undefined {
+  const fence = /^```toml meta[ \t]*\r?\n([\s\S]*?)^```/m.exec(text);
+  const line = fence ? /^title\s*=\s*("(?:[^"\\\r\n]|\\.)*")\s*$/m.exec(fence[1]!) : null;
+  if (!line) return undefined;
+  try { const t: unknown = JSON.parse(line[1]!); return typeof t === "string" ? t : undefined; } catch { return undefined; }
+}
+
+/** The title a file states of itself: a content file's `.meta` sidecar first, else its own `.tid` header, `.json` record or
+ *  `.mem` meta fence. Undefined where it states none or would not read. */
+function inBandTitle(file: string, ext: string): string | undefined {
+  try {
+    if (existsSync(`${file}.meta`)) return fieldBlockTitle(readFileSync(`${file}.meta`, "utf8"));
+    if (ext === ".tid") return fieldBlockTitle(readFileSync(file, "utf8"));
+    if (ext === ".mem") return memTitle(readFileSync(file, "utf8"));
+    if (ext === ".json") {
+      const parsed: unknown = JSON.parse(readFileSync(file, "utf8"));
+      const t = ((Array.isArray(parsed) ? parsed[0] : parsed) as { title?: unknown } | null | undefined)?.title;
+      return typeof t === "string" ? t : undefined;
+    }
+  } catch { /* a file that will not read states nothing */ }
+  return undefined;
+}
+
+/**
+ * TiddlyWiki's filename decode, the last resort: the flatten turned `$:/` into `$__` and every other `/ \ < > ~ : " | ? * ^`
+ * into `_`. A system title (`$__…`) reads its `_` back as `/`, the separator its namespace runs on; any other name keeps its
+ * `_` as it stands. A colliding title's `_1` stays in the name.
+ */
+function filenameTitle(namePath: string): string {
+  return namePath.startsWith("$__") ? `$:/${namePath.slice(3).replace(/_/g, "/")}` : namePath;
+}
+
+/**
+ * THE PROJECTOR'S SITING RUN BACKWARD: the title a mirror file reads back under, or why it reads none. The precedence inverts
+ * the projector's (`disk-projector.ts` flush: a FileSystemPaths rule, the loci law, the title-path siting, TW5's flatten):
+ *
+ *   (0) a synced base standing at this exact path names its carrier (`uriAt`): whatever rule or uniquifier sited it
+ *   (1) the loci rule (`mirrorDirFileToUri`)
+ *   (2) on a title-path mirror, the path inside the holding folder minus its extension
+ *   (3) the title the file states of itself (`.meta` sidecar, `.tid` header, `.json` record, `.mem` toml `title`)
+ *   (4) TiddlyWiki's filename decode, last: the flatten loses `/` and `:` alike (both become `_`)
+ *
+ * A `lar:` title the file states off its own loci path refuses by name (the loci law sites it elsewhere, and a stray copy never
+ * re-addresses itself), and so does a title the projection filter keeps off disk, the bag's own declaration (`meta.mem` at a
+ * holding folder's root: disk-owned, never a record), a file outside any holding folder, and a file with no filetype extension.
+ */
+export function siteFileToTitle(mirror: SiteMirror, file: string): FileSiting {
+  const plane = resolvePath(mirror.planeDir);
+  const abs = resolvePath(file);
+  if (!abs.startsWith(plane + sep)) return { why: `stands outside the mirror plane ${plane}` };
+  const rel = abs.slice(plane.length + 1).split(sep);
+  if (rel.length < 2) return { why: `stands outside any holding folder of ${plane}` };
+  const interior = rel.slice(1).join("/");
+  if (interior.endsWith(".meta")) return { why: "a .meta sidecar rides with its content file" };
+  if (interior === "meta.mem") return { why: "the bag's own declaration stays disk-owned and never reads back as a record" };
+  const ext = extname(interior);
+  if (ext === "") return { why: "carries no filetype extension, so no siting reads it" };
+  const withheld = (title: string): FileSiting | null => projectionWithheld(title, mirror.classes ?? [])
+    ? { why: `${title} stays off disk by the projection filter, so its file reads back as nothing` } : null;
+  const sited = (title: string, by: Extract<FileSiting, { title: string }>["by"]): FileSiting => withheld(title) ?? { title, by };
+
+  const based = mirror.uriAt?.(abs) ?? null;
+  if (based !== null) return sited(based, "base");
+  const loci = mirrorDirFileToUri(plane, abs);
+  if (loci !== null) return sited(loci, "loci");
+  const stated = inBandTitle(abs, ext);
+  if (stated !== undefined && stated.startsWith("lar:")) {
+    const home = carrierBaseRelPath(stated);
+    return { why: `states the title ${stated}, which the loci law sites ${home === null ? "at no file" : `at ${home}${ext}`}, not here` };
+  }
+  const namePath = interior.slice(0, interior.length - ext.length);
+  if (mirror.titlePaths) {
+    const path = titleRelPath(namePath);
+    if (path !== null) return sited(path, "title-path");
+  }
+  if (stated !== undefined && stated !== "") return sited(stated, "in-band");
+  return sited(filenameTitle(namePath), "filename");
+}
+
+// ── Workspaces (cabal-realm#/the-workbench) ─────────────────────────────────
+
+/** Whether `child` resolves at or beneath `parent` (both already absolute and real). */
+function within(child: string, parent: string): boolean {
+  const p = parent.endsWith(sep) ? parent : parent + sep;
+  return child === parent || child.startsWith(p);
+}
+
+/** One wiki row's workspace as the vessel reads it: the slug, and the workspace name the row names. */
+export interface WorkspaceEntry { readonly slug: string; readonly kind: "bag" | "wiki"; readonly workspace?: string }
+
+/**
+ * THE WORKSPACE ROOTS a shared wiki's workbench mirror may rest in: each `kind: "wiki"` share row naming a workspace maps its
+ * slug to `<root>/workspaces/<name>` (the host shim binds `/lar/workspaces/<name>`), where that directory stands. The operator
+ * names each workspace, and one resting inside the repository checkout binds: the checkout counts as the cabal's working
+ * surface (founding road rank 4j). A workspace that resolves inside the hearth refuses by name, and so does a slug whose source
+ * stands in the canon source: its one workbench folder already rests beside that source, in the working surface, so a second
+ * workspace would split one workbench across two folders. A
+ * workspace with no directory standing (no bind) waits by name, and its workbench lays in the realm that holds the slug.
+ */
+export function workspaceRootsOf(opts: {
+  readonly rows: readonly WorkspaceEntry[];
+  readonly workspacesHome: string;
+  readonly hearth: string;
+  readonly sourcedSlugs: readonly string[];
+}): { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
+  const roots: Record<string, string> = {}, names: Record<string, string> = {};
+  const refused: string[] = [], unbound: string[] = [];
+  const real = (p: string): string | null => { try { return realpathSync(p); } catch { return null; } };
+  const hearth = real(opts.hearth) ?? resolvePath(opts.hearth);
+  for (const row of opts.rows) {
+    const name = row.workspace?.trim();
+    if (row.kind !== "wiki" || !name) continue;
+    if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(name) || name === "." || name === "..") { refused.push(`${row.slug}: workspace "${name}" names no workspace`); continue; }
+    if (opts.sourcedSlugs.includes(row.slug)) { refused.push(`${row.slug}: workbench-checkout-sourced (its one workbench folder rests beside its canon source, in the working surface)`); continue; }
+    const dir = real(joinPath(opts.workspacesHome, name));
+    if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); continue; }
+    if (within(dir, hearth)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the hearth (${dir})`); continue; }
+    roots[row.slug] = dir;
+    names[row.slug] = name;
+  }
+  return { roots, names, refused, unbound };
+}
+
+/** One shared wiki's workbench folder the vessel watches as a pool: the slug, the folder, and the name the log gives it. */
+/** One workbench folder: the wiki's slug, its folder, the name the log gives it, and the entity root whose ONE tree holds its
+ *  history (a bound workspace's own top; a realm wiki folder's realm root). */
+export interface WorkbenchFolder { readonly slug: string; readonly dir: string; readonly name: string; readonly tree: string }
+
+/**
+ * THE WORKBENCH FOLDERS a vessel watches as pools: each workspace a share row binds (`workspaceRootsOf`), then each wiki a named
+ * realm holds, at `<projections>/realms/<realm pet name>/wikis/<slug>/` (`realms`: the realm labels' placement,
+ * `realmPlacement(...).realms()`), that no workspace takes. ONE FOLDER PER WORKBENCH, so a bound slug's realm folder takes no
+ * second seat. Every realm carries a pet name (its default, the slug, minted on first read), so no wiki waits for one, and no
+ * plain `wikis/` folder takes a seat. The daemon wiki's working layer rests in the face's own pool (`faces/<pet name>/wikis/daemon`), and a SOURCED
+ * slug's workbench rests beside its canon source in the checkout, which the checkout's own history keeps and the vessel never
+ * commits into, so none of those takes one either. A slug whose folder stands nowhere on disk yet takes none: the next sitting's
+ * arm reads it.
+ */
+export function workbenchFolders(opts: {
+  readonly projectionRoot: string;
+  readonly workspaces: { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>> };
+  readonly sourcedSlugs: readonly string[];
+  readonly realms: ReadonlyArray<{ readonly petName: string; readonly wikis: ReadonlyArray<{ readonly slug: string; readonly dir: string }> }>;
+}): WorkbenchFolder[] {
+  const out: WorkbenchFolder[] = Object.entries(opts.workspaces.roots).map(([slug, dir]) => ({ slug, dir, name: opts.workspaces.names[slug] ?? slug, tree: dir }));
+  const placed = opts.realms.flatMap((r) => r.wikis).sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
+  for (const { slug, dir } of placed) {
+    if (isPrivateProjectionSlug(slug) || Object.hasOwn(opts.workspaces.roots, slug) || opts.sourcedSlugs.includes(slug) || out.some((f) => f.slug === slug)) continue;
+    try { if (!statSync(dir).isDirectory()) continue; } catch { continue; }
+    out.push({ slug, dir, name: slug, tree: dirname(dirname(dir)) });
+  }
+  return out;
 }

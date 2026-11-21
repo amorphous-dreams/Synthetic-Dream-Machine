@@ -1,34 +1,33 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
 l-space       = "adjacent"
 render-target = "docs"
 role          = "VERBATIM evergreen-sweep wave-two handbacks (YIN and YANG, Luna-6, 2026-10-18) — Markdown transliterated only; source wording retained; the Sol reader refuted ten claims, recorded in research/evergreen-sweep-2026"
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep.mem"
 title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Evergreen sweep handbacks, wave two
 
-Verbatim wave-two handbacks of the Luna-6 YIN and YANG spirits (2026-10-18); only Markdown transliterated to memetic-wikitext. YIN read isomorphisms first, YANG clocks and version numbers first; each then confirmed or refuted its twin against the code. A Sol-6 reader verified both and refuted ten claims; its plan and the operator's rulings rest at <<~ loulou "lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026">>, and a refutation there outranks a claim here.
+Verbatim wave-two handbacks of the Luna-6 YIN and YANG spirits (2026-10-18); only Markdown transliterated to memetic-wikitext. YIN read isomorphisms first, YANG clocks and version numbers first; each then confirmed or refuted its twin against the code. A Sol-6 reader verified both and refuted ten claims; its plan and the operator's rulings rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026`>>, and a refutation there outranks a claim here.
 
 <<~/ahu>>
 
-<<~ ahu #/yin-evergreen-sweep-yin-wave-two>>
+<<~ ahu slot=`#/yin-evergreen-sweep-yin-wave-two`>>
 
 !! Evergreen sweep — YIN wave two
 
 <<~/ahu>>
 
-<<~ ahu #/yin-ranked-findings-by-inherited-shape>>
+<<~ ahu slot=`#/yin-ranked-findings-by-inherited-shape`>>
 
 !!! Ranked findings by inherited shape
 
@@ -85,7 +84,7 @@ Verbatim wave-two handbacks of the Luna-6 YIN and YANG spirits (2026-10-18); onl
 
 <<~/ahu>>
 
-<<~ ahu #/yin-evergreen-findings>>
+<<~ ahu slot=`#/yin-evergreen-findings`>>
 
 !!! Evergreen findings
 
@@ -98,7 +97,7 @@ Verbatim wave-two handbacks of the Luna-6 YIN and YANG spirits (2026-10-18); onl
 
 <<~/ahu>>
 
-<<~ ahu #/yin-ratchet-disposition>>
+<<~ ahu slot=`#/yin-ratchet-disposition`>>
 
 !!! Ratchet disposition
 
@@ -109,7 +108,7 @@ My wave-one shape findings remain yours-alone where YANG did not address them: b
 
 <<~/ahu>>
 
-<<~ ahu #/yin-tail-of-counts>>
+<<~ ahu slot=`#/yin-tail-of-counts`>>
 
 !!! Tail of counts
 
@@ -118,13 +117,13 @@ The cross-package-name inventory lists 68 shared-name rows (inventory itself, no
 
 <<~/ahu>>
 
-<<~ ahu #/yang-merged-aftermath-handback>>
+<<~ ahu slot=`#/yang-merged-aftermath-handback`>>
 
 !! Merged aftermath handback
 
 <<~/ahu>>
 
-<<~ ahu #/yang-ranked-findings>>
+<<~ ahu slot=`#/yang-ranked-findings`>>
 
 !!! Ranked findings
 
@@ -159,7 +158,7 @@ The cross-package-name inventory lists 68 shared-name rows (inventory itself, no
 
 # ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/session-contract.ts:181-225` requires numeric `schemaVersion` on session envelopes. Let the message shape and causal session/owner epoch identify current state; no global version counter.
 
-# ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/genesis-doc.ts:243-250,280-283,351-354,691` has `lararium-genesis-seed/v1`, rejects a `schemaVersion`, and injects a schema field into generated data. Canon says the seed carries no version (`stable-founding-road.mem:307,593`); use seed CID/manifest CID for bytes and remove contradictory counter/guards. Retain a semantic format discriminator only if a reader needs a distinct shape name, without a numbered generation.
+# ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/genesis-doc.ts:243-250,280-283,351-354,691` has `lararium-genesis-seed/v1`, rejects a `schemaVersion`, and injects a schema field into generated data. Canon says the seed carries no version (`lar:///ha.ka.ba/lares/docs/stable-founding-road`); use seed CID/manifest CID for bytes and remove contradictory counter/guards. Retain a semantic format discriminator only if a reader needs a distinct shape name, without a numbered generation.
 
 # ''MEASURED — AUTHORED — yours-alone, with signed-byte caveat.'' `packages/lararium-mesh/src/domains.ts:29-62` builds authored signing/HKDF domain strings ending `/v1`. They are not upstream protocol numbers, but changing live domains changes signatures/key derivation. Preserve existing signed commitments as frozen edge bytes; mint no new numbered domains, and use semantic names for new separations.
 
@@ -167,7 +166,7 @@ The cross-package-name inventory lists 68 shared-name rows (inventory itself, no
 
 # ''MEASURED — AUTHORED — yours-alone.'' `packages/lararium-mesh/src/tiddler-store.ts:93-96` carries a record `schemaVersion`; remove this house counter and let record content identity/causal heads identify the state.
 
-# ''MEASURED — UPSTREAM — yours-alone (keep).'' `packages/lararium-mesh/src/sealed-chunk.ts:165-189` uses `keyVersion` as a content-key identity, not a release counter. Canon explicitly keeps content-key versions and places rolls at causal removal acts (`stable-founding-road.mem:182,218`).
+# ''MEASURED — UPSTREAM — yours-alone (keep).'' `packages/lararium-mesh/src/sealed-chunk.ts:165-189` uses `keyVersion` as a content-key identity, not a release counter. Canon explicitly keeps content-key versions and places rolls at causal removal acts (`lar:///ha.ka.ba/lares/docs/stable-founding-road`).
 
 # ''MEASURED — UPSTREAM — yours-alone (keep).'' `packages/lararium-browser/src/admit-carriage.ts:15` and `packages/lararium-keyhive/src/index.ts:105` bind `device-admit/v1` into a signed wire discriminator. Keep existing signed bytes as an edge contract; do not generalize it into house releases.
 
@@ -189,7 +188,7 @@ The cross-package-name inventory lists 68 shared-name rows (inventory itself, no
 
 <<~/ahu>>
 
-<<~ ahu #/yang-tail-of-counts>>
+<<~ ahu slot=`#/yang-tail-of-counts`>>
 
 !!! Tail of counts
 
@@ -198,8 +197,8 @@ Measured here: 13 clock classifications (9 suspect, 3 lawful own-liveness groups
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/evergreen-sweep-2026`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3kxvNBozYhHbj6emPSGOQq-tKBAS9bFPhIssCBjafBU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pGdxMLRO2n5sAV7aGjbvm2juVWxfq5gD6yqu09PZF7c`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

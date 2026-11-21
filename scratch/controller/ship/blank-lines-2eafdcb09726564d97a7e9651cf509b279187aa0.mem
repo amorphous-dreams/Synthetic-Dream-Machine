@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-02 (file date) — source `.lares-scratch/controller/ship/blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0.md — plan, 2026-11-02
+
+Verbatim scratch record `.lares-scratch/controller/ship/blank-lines-2eafdcb09726564d97a7e9651cf509b279187aa0.md` (plan, file date 2026-11-02); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-blank-lines-head-2eafdcb09726564d97a7e`>>
+
+! SHIP · lane blank-lines (Lares-Awakens) · head 2eafdcb09726564d97a7e9651cf509b279187aa0
+read: controller read of ef1777324..2eafdcb09726564d97a7e9651cf509b279187aa0: meme-normalize step 8 collapses a run of 2+ blank lines between two sigil lines to one (fence-masked; prose-adjacent runs hold), with its test; the plugin bundle regenerated; 191 carriers re-normalized (381 blank lines, 191 seals, 0 other lines, per the lane's diff proof; bcc-witness 804 ok); the operator's mu.mem kupono rewrite; one genesis re-bake; seat projections regenerated. No gate, capability or custody change. 2026-11-02.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1y4xCtrsYoJXafnUhCdGIEEImrBmxRI-_UAPQ-0Vgq8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -66,7 +66,7 @@ function human(n: number): string {
  * The REFUSALS — the two ways a pave destroys something it must not.
  *
  * A holder still on the store means a live writer, and tearing under one leaves a half-written tree
- * plus a process writing into a path that no longer exists. The worldline KG living INSIDE the guest
+ * plus a process writing into a path the tear removed. The worldline KG living INSIDE the guest
  * means the pave takes 500-odd entities of spirit lineage with it — memory, not baseline.
  */
 function refusals(guest: string): string[] {

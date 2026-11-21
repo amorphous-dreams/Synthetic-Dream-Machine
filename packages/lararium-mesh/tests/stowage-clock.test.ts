@@ -6,7 +6,7 @@
  * The stowage now reads an injectable `clock` (the realm's roll count, as the CAS sweep does); a day of
  * wall-silence ages nothing while rolls age. Wall time stays only as the named floor when no clock rides in.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one#/grace-and-pin
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage#/rulings
  */
 import { describe, expect, test, vi } from "vitest";
 import { BagStowage } from "../src/bag-residency.js";

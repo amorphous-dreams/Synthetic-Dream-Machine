@@ -12,11 +12,11 @@ module-type: startup
  *
  *   PURE WIKI LOGIC, run here.
  *     tm-rename-tiddler · tm-relink-tiddler   stock's own handler, over `$tw.wiki`.
- *     tm-home                                 the story from `$:/DefaultTiddlers`, through the stock hook.
+ *     tm-home                                 the story from `$:/DefaultTiddlers`, through the one door (`default-story.ts`).
  *     tm-modal · tm-show-switcher             a record under `$:/temp/lares/modal/`, painted by the root layer
  *                                             as an `aria-modal` dialog; its own close message removes it.
  *     tm-notify                               a record under `$:/temp/lares/notify/`, painted by the root layer,
- *                                             removed after the notification duration.
+ *                                             removed on dismissal or supersession.
  *     tm-scroll · tm-focus-selector           HINTS the frame carries: `$:/temp/lares/hint/{scroll,focus}` with a
  *                                             selector and a rising number, painted as `data-lar-scroll-to` /
  *                                             `data-lar-focus` beside `data-lar-hint`. The page scrolls and
@@ -38,6 +38,8 @@ module-type: startup
  */
 
 import { clearCustodyQuestion, LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
+import { openDefaultStory } from "../default-story.js";
+import { retitleSlotsInWiki, type FamilyRenameWiki } from "../place-meme.js";
 
 export const name        = "lar-root-services";
 export const after       = ["startup"];
@@ -69,7 +71,6 @@ interface Tw {
   wiki: Wiki;
   rootWidget?: { addEventListener(type: string, handler: (event: WidgetEvent) => boolean | void): void };
   hooks: { invokeHook(name: string, value: string[]): string[] };
-  config?: { preferences?: { notificationDuration?: number } };
   lares?: Record<string, unknown>;
   utils: { confirm(message: string, options: { type: string; title: string; widget: unknown; event: WidgetEvent }): boolean };
 }
@@ -106,10 +107,12 @@ export function installRootServices(tw: Tw): void {
   const alert = (kind: string, text: string): void => {
     wiki.addTiddler({ title: ALERT_REFUSED_PREFIX + kind, text, tags: ["$:/tags/Alert"], component: name, modified: new Date() });
   };
+  let activeNotification: string | undefined;
   const notify = (title: string, variables = "{}"): void => {
+    if (activeNotification) wiki.deleteTiddler(activeNotification);
     const record = NOTIFY_PREFIX + next();
     wiki.addTiddler({ title: record, text: title, "lar-variables": variables });
-    setTimeout(() => wiki.deleteTiddler(record), tw.config?.preferences?.notificationDuration ?? 3000);
+    activeNotification = record;
   };
 
   /** Ask the surface for a door; the answer runs `then` with the status, and a refusal raises the kind's alert. */
@@ -136,15 +139,14 @@ export function installRootServices(tw: Tw): void {
       dontRenameInTags: p["renameInTags"] === "false" || p["renameInTags"] === "no",
       dontRenameInLists: p["renameInLists"] === "false" || p["renameInLists"] === "no",
     });
+    // THE SLOTS FOLLOW THEIR ROOT: stock re-titles the one record, and a meme root's slots would stand
+    // stranded under the address the root left. The root moved first, so its writes lead its slots'.
+    if (method === "renameTiddler") retitleSlotsInWiki(wiki as unknown as FamilyRenameWiki, from, p["to"]);
   };
   root.addEventListener("tm-rename-tiddler", rename("renameTiddler"));
   root.addEventListener("tm-relink-tiddler", rename("relinkTiddler"));
 
-  root.addEventListener("tm-home", () => {
-    const story = tw.hooks.invokeHook("th-opening-default-tiddlers-list", wiki.filterTiddlers(wiki.getTiddlerText("$:/DefaultTiddlers") ?? ""));
-    wiki.addTiddler({ title: "$:/StoryList", text: "", list: story, ...wiki.getModificationFields() });
-    if (story[0]) wiki.addToHistory(story[0]);
-  });
+  root.addEventListener("tm-home", () => { openDefaultStory(tw as never); });
 
   const modal = (title: string, event: WidgetEvent): void => {
     wiki.addTiddler({ title: MODAL_PREFIX + next(), text: title, "lar-variables": variablesOf(event) });

@@ -1,23 +1,22 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/handoff`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem"
-l-space = "working"
+l-space   = "working"
 namespace = "&#x0950; &#x0901;"
-role = "volatile operational handoff, operator how-tos, verified receipts, in-flight work and prioritized backlog for Projection Loom"
-tags = ["api/pono/meme", "working/handoff"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom/handoff"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom/handoff"
+role      = "volatile operational handoff, operator how-tos, verified receipts, in-flight work and prioritized backlog for Projection Loom"
+tags      = ["api/pono/meme", "working/handoff"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/handoff"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/handoff"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/yin-consolidation-20261031>>
+<<~ ahu slot=`#/yin-consolidation-20261031`>>
 
 !! YIN · Current operator hold and OODA-HA consolidation
 
@@ -31,7 +30,7 @@ uri-path = "ha.ka.ba/lares/api/projection-loom/handoff"
 
 <<~/ahu>>
 
-<<~ ahu #/markdown-otakiage-20261031>>
+<<~ ahu slot=`#/markdown-otakiage-20261031`>>
 
 !! Evergreen routing after the operator-approved Markdown fire
 
@@ -41,7 +40,7 @@ A dedicated archive ref `archive/pr84-before-lares-ashes-retirement-20261031` pr
 
 <<~/ahu>>
 
-<<~ ahu #/yin-living>>
+<<~ ahu slot=`#/yin-living`>>
 
 !! YIN · Native topology and fixed-camera operator review
 
@@ -57,7 +56,7 @@ Read `tools/projection-loom/README.md`, `tools/projection-loom/docs/HANDOFF.md` 
 
 <<~/ahu>>
 
-<<~ ahu #/native-inheritance-crew-handoff>>
+<<~ ahu slot=`#/native-inheritance-crew-handoff`>>
 
 !! Research re-entry and root-bag crew meme
 
@@ -67,7 +66,7 @@ The operator-supplied `deep-research-report.md` recommends complete admitted-rou
 
 <<~/ahu>>
 
-<<~ ahu #/relational-inheritance-design>>
+<<~ ahu slot=`#/relational-inheritance-design`>>
 
 !! Next native design proof
 
@@ -77,7 +76,7 @@ Read `lar:///ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design`.
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Projection Loom — Living Lares operational handoff
 
@@ -85,7 +84,7 @@ PR #84 runs on `feature/green-jello-dinosaur-5--projection-loom`. Fetch its curr
 
 <<~/ahu>>
 
-<<~ ahu #/active-constructive-campaign>>
+<<~ ahu slot=`#/active-constructive-campaign`>>
 !! Current constructive-place campaign · re-enter at actual PR head
 
 The working branch remains `feature/green-jello-dinosaur-5--projection-loom`.
@@ -102,7 +101,7 @@ winner, Elyncia promotion or merge was authorized.
 
 <<~/ahu>>
 
-<<~ ahu #/held-integrities>>
+<<~ ahu slot=`#/held-integrities`>>
 !! What the machina currently enacts
 
 * ''One OODA-HA helm.'' Location, epoch, candidate, capability and final-gallery
@@ -129,7 +128,7 @@ winner, Elyncia promotion or merge was authorized.
 
 <<~/ahu>>
 
-<<~ ahu #/tested>>
+<<~ ahu slot=`#/tested`>>
 !! Historical verification and the inconvenient evidence (these results do not certify the current head)
 
 * Hosted Projection Loom PR run 40050559194: SUCCESS, 200 passed, 7 warnings
@@ -148,7 +147,7 @@ winner, Elyncia promotion or merge was authorized.
 
 <<~/ahu>>
 
-<<~ ahu #/workflow-otakiage-20261031>>
+<<~ ahu slot=`#/workflow-otakiage-20261031`>>
 
 !! Four-workflow CI and native experiment boundary
 
@@ -159,7 +158,7 @@ Full original YAML and ancestral commits are retained on `archive/pr84-before-wo
 The core `scripts/check_living_docs.py` gate refuses new standalone Loom YAML, source-writing workflows and lost experiment uploads. Git holds historical YAML, inputs and committed receipts, but GitHub Actions artifacts expire after their configured retention period. New native evidence requires regenerated, independently audited outputs and exact-head CI. Human navigation remains `tools/projection-loom/docs/HANDOFF.md`.
 
 <<~/ahu>>
-<<~ ahu #/post-move-engineering-roadmap>>
+<<~ ahu slot=`#/post-move-engineering-roadmap`>>
 
 !! Projection Loom · after o-takiage, next OODA-HA program
 
@@ -177,7 +176,7 @@ The core `scripts/check_living_docs.py` gate refuses new standalone Loom YAML, s
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 ✶ Observe the live boot and branch, current CI, source/recipe fingerprints and
   the actual candidate's material and surface receipts.
 ⏿ Orient by entity capability dependencies and the Operator's declared goal;
@@ -191,7 +190,7 @@ The core `scripts/check_living_docs.py` gate refuses new standalone Loom YAML, s
 
 <<~/ahu>>
 
-<<~ ahu #/git-ashes>>
+<<~ ahu slot=`#/git-ashes`>>
 
 !! Git ledger — no recursively embedded history
 
@@ -199,7 +198,7 @@ The operator released this carrier's displaced historical ahu from the living te
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
@@ -208,6 +207,6 @@ The operator released this carrier's displaced historical ahu from the living te
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z9uEC9GjfAijvkMG_sRqtfokQge1jTrmnkZBOK8eQd8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fcI5PGYfwttvDBMp-b6_xFn2S9tF_-PpjV-dfcK-T4U`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

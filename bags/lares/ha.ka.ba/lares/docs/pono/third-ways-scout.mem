@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/third-ways-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/third-ways-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/third-ways-scout.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "third-ways-scout — VERBATIM handoff of a tasked Fable spirit (2026-10-16): the map of third and further ways for a portable TiddlyWiki VM engine, rewritten after the operator's rulings. Carries the four layers with two waists and two grains, the camera as a root template over a document sink, the Replica Port width dial, the Wiki Actor and the first surface, the families re-scored with the rejected ones named once, per-host landing, conformance as the portability measure, Mu, the map of all paths, the spikes, the separating experiment, two stories, the draft moolelo and open rulings. Held as a collision surface; dreamdom and dreamdom-roadmap carry the house's reading of it."
@@ -21,19 +17,19 @@ uri-path          = "ha.ka.ba/lares/docs/pono/third-ways-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! third-ways-scout ~ a spirit's handoff, held unedited
 
 ''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what tasked spirits reported on the map of every path for a portable TiddlyWiki VM engine, re-scored after the rulings, kept whole, as a ''collision surface'' rather than a briefing. It came home from the project's shared reports so a session that holds only the repository can still read the evidence the DreamDOM carriers cite.
 
-''Where the house's reading lives.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> carries the model and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> the build order; where they and this handoff differ, they carry the house's word.
+''Where the house's reading lives.'' <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> carries the model and <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> the build order; where they and this handoff differ, they carry the house's word.
 
 ''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, code, or unreached); inferred claims stand marked. Collide it; do not inherit it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -66,7 +62,7 @@ The operator asked for the paths beyond two. The map now holds **one architectur
 
 7. **Q1 closed**: one pinned JS TW5 reference evaluator for the full dialects; an evaluator-neutral conformance suite built now with that engine as oracle; the parse tree normative, per-camera serialisation second; a certified core-subset evaluator only when a host earns it; Mudlet receives results, never the language. *"The language carries portability; its suite carries the language."* (§6)
 
-**Recommendation.** Build the Replica Port with its dial and the Wiki Actor around it, in this order: (a) the record-grain port inside the engine with `width`, `causedBy` and the presence lane (v2 Phase 1); (b) the keyed-frame camera contract hardened by `page-controls.mem` so width-none sinks (the current DOM sink, a blocks sink, Mudlet's pane) emit and consume whole keys with declared cancellation and a frame resend; (c) the glass engine behind a flag at full and skinny widths; (d) the actor lifecycle (hibernate, wake, manifest) over all of it; (e) `filter-cts.json` and the camera goldens so every host answers a published row. One spike separates the live options: the same 2,000-tiddler corpus booted three times over one loopback port at full, skinny and none, measured in §10.
+**Recommendation.** Build the Replica Port with its dial and the Wiki Actor around it, in this order: (a) the record-grain port inside the engine with `width`, `causedBy` and the presence lane (v2 Phase 1); (b) the keyed-frame camera contract hardened by `page-controls.mem` so width-none sinks (the current DOM sink, a blocks sink, Mudlet's pane) emit and consume whole keys with declared cancellation and a frame resend; (c) the glass engine behind a flag at full and skinny widths; (d) the actor lifecycle (hibernate, wake, manifest) over all of it; (e) `filter-cts.json` and the camera goldens so every host answers a published result. One spike separates the live options: the same 2,000-tiddler corpus booted three times over one loopback port at full, skinny and none, measured in §10.
 
 **What this version changed against the previous one.** The earlier drafts carried a "what changed" ledger and treated C and E as rivals, F as a live candidate, the Node question as a separate chapter, and the lean-host notch as "blocks per tiddler". This version removes the ledger, merges C and E on the dial, demotes F to a measurement inside the spike, folds Node into the first-surface section, replaces "blocks per tiddler" with keyed rendered frames at camera grain, adds the actor states, the camera-as-root-plus-sink reading, the closed Q1, and the six-line moʻolelo draft (§12).
 
@@ -89,7 +85,7 @@ Field precedents for the first three layers, from the prior pass: CQRS and event
 
 ### 2.2 Two waists, two grains
 
-**Store↔engine, at record grain.** The engine reads the composite store and writes back through the `change` listener: `bridgeWikiToAdaptor` skips foam the LandedLedger just landed, HandGate paces at 400 ms trailing / 2 s cap, the in-wiki `bag-paths` cascade routes by kind (survey §3.2; `outbound-bridge.ts` **[reached: code]**). Every TW5 engine already emits one batched change set per tick, keyed by title with `modified`/`deleted` flags and a per-title `changeCount` (`wiki.js` **[reached: fetched, prior pass]**). Tombstones explicit; cursors monotone; a write carries a `txId` and gets an answer (v2 P2, P14). **No syncer stands between.** The adaptor on either side of any record stream binds the `change` event directly and lands inbound records under an origin stamp its own listener skips; TW5-Yjs's origin-tagged `transact` and TidGi's titles-in-flight check supply the echo discipline, their syncer facades do not travel (v2 §0.3–0.5 **[reached: fetched, prior pass]**).
+**Store↔engine, at record grain.** The engine reads the composite store and writes back through the `change` listener: `bridgeWikiToAdaptor` skips foam the LandedLedger just landed, the HandGate paced at 400 ms trailing / 2 s cap at scouting (since retired for the Drain, which paces by the durable ack), the in-wiki `bag-paths` cascade routes by kind (survey §3.2; `outbound-bridge.ts` **[reached: code]**). Every TW5 engine already emits one batched change set per tick, keyed by title with `modified`/`deleted` flags and a per-title `changeCount` (`wiki.js` **[reached: fetched, prior pass]**). Tombstones explicit; cursors monotone; a write carries a `txId` and gets an answer (v2 P2, P14). **No syncer stands between.** The adaptor on either side of any record stream binds the `change` event directly and lands inbound records under an origin stamp its own listener skips; TW5-Yjs's origin-tagged `transact` and TidGi's titles-in-flight check supply the echo discipline, their syncer facades do not travel (v2 §0.3–0.5 **[reached: fetched, prior pass]**).
 
 **Engine↔projection, at rendered-key grain.** The operator's correction stands: "whole blocks per tiddler" read as missing context. The grain follows `dreamdom.mem#/the-ruling` (2026-10-11): a camera's surface divides into keys; each key carries its **whole rendered state** and its own revision; the grain rides the camera and gets declared at mount; the frustum culls; membership stands as a key of its own; one writer per key; each frame names the sensed revision it took in; only true events queue and each gets an answer. A Story River keys by tiddler frame with the river order as a key; a canvas keys by shape; a Mudlet pane keys by the key it declared. Inside each key: transclusions resolved (kahea followed live, aka kept frozen, `render-pipeline.mem#/render-posture`), and the key's affordances (the acts its widgets would fire, as handles). TW5's own `refresh(changedTiddlers)` maps record changes to dirty widgets, and the widget tree answers "which keys changed" without any diff of the document **[reached: code, `widget.js:764`]**. So a sink beside the engine still emits **whole keys, never DOM edits**.
 
@@ -223,7 +219,7 @@ Three rules ride every row: a projection declares its renders, width and limits 
 
 The floor closed Q1 on 2026-10-16 (`evaluators-one-or-many.mem#/the-ruling`), four strokes: one reference evaluator for the full dialects, the TW5 engine in JS, wherever an engine can run; an evaluator-neutral conformance suite built now with the pinned JS engine as oracle (the sqllogictest move: run, record, review once, freeze, diff); the parse tree normative and each camera's serialisation second, with declared tolerance and mandatory degradation cases; a certified core-subset evaluator permitted only when a host proves an offline need, publishing its skip list by name ("Mustache-like" below the core). Mudlet receives results, never the language.
 
-What this does to the map: the portability contract reads as `filter-cts.json` plus the specimen manifests and the camera goldens, and a host's conformance reads as a published row. One evaluator removes language drift and leaves host drift (`Intl`, `localeCompare`, Unicode regexp, `Date` differ between V8 and Hermes), so the suite runs per host from day one. The memetic-wikitext spec already binds the force: a vanilla TW5 engine MUST read a carrier as valid wikitext with every sigil an unbound macro call; a conforming renderer MUST target exactly one camera per pass and MAY support a subset of cameras while it MUST degrade a missing camera visibly (`#/conformance` **[reached: code]**). The camera goldens therefore start at `html` and `text`; the `blocks` golden waits on Annex B's widget-tree pass, and `label-html` derives from `blocks` after a declared projection rather than from a hand-written golden. The WIT *world* and the conformance classes read as one instrument: the world says what a host lends the evaluator, the classes say what the evaluator owes the text.
+What this does to the map: the portability contract reads as `filter-cts.json` plus the specimen manifests and the camera goldens, and a host's conformance reads as a published result. One evaluator removes language drift and leaves host drift (`Intl`, `localeCompare`, Unicode regexp, `Date` differ between V8 and Hermes), so the suite runs per host from day one. The memetic-wikitext spec already binds the force: a vanilla TW5 engine MUST read a carrier as valid wikitext with every sigil an unbound macro call; a conforming renderer MUST target exactly one camera per pass and MAY support a subset of cameras while it MUST degrade a missing camera visibly (`#/conformance` **[reached: code]**). The camera goldens therefore start at `html` and `text`; the `blocks` golden waits on Annex B's widget-tree pass, and `label-html` derives from `blocks` after a declared projection rather than from a hand-written golden. The WIT *world* and the conformance classes read as one instrument: the world says what a host lends the evaluator, the classes say what the evaluator owes the text.
 
 ---
 
@@ -371,13 +367,13 @@ Held here as **draft**; the thread's telling wins over this copy where they diff
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GGd0gFx5fnYb1QTiYChxKmFCv2X_aVlBRWWfszeq9dg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JOrYs9EjCGREyU_r4vJn7A7jyGPbEweE_IJf31SMVNA`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

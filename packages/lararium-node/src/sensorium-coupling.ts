@@ -1,7 +1,7 @@
 /**
- * sensorium-coupling — the READER that makes `coupling.children` load-bearing (it was write-only). The
- * setup path STAMPS `coupling.children[]` on the mesh + memetic-wikitext trees, but nothing ever READ
- * them back — the coupling plane sat decorative. This module resolves those child edges → the child
+ * sensorium-coupling — the READER that makes `coupling.children` load-bearing. The
+ * setup path STAMPS `coupling.children[]` on the mesh + memetic-wikitext trees, and this module READS
+ * them back, so the coupling plane carries weight. It resolves those child edges → the child
  * sensorium dirs → each child's SECTION over a shared comparison stalk → the H¹-GATED fusion
  * (@lararium/mesh `fuse`):
  *

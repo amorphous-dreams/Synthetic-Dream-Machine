@@ -20,10 +20,10 @@ import { readCarrierShape } from "../src/carrier-shape.js";
 const carrier = (head: string, stx: string) =>
   `<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///g>>\n\n${head}\n` +
   "```toml meta\ncacheable = true\n```\n\n" +
-  `${stx}\n\nbody\n\n<<^ code="&#x0003;">>\n`;
+  `${stx}\n\nbody\n\n<<^ code=\`&#x0003;\`>>\n`;
 
-const SOH = '<<^ code="&#x0001;" from="?" -> to="lar:///a.b.c/x">>';
-const STX = '<<^ code="&#x0002;">>';
+const SOH = '<<^ code=`&#x0001;` from=`?` to=`lar:///a.b.c/x`>>';
+const STX = '<<^ code=`&#x0002;`>>';
 
 describe("a control sigil closes at >> and nowhere else", () => {
   test("the bearing arrow closes nothing", () => {
@@ -33,17 +33,17 @@ describe("a control sigil closes at >> and nowhere else", () => {
   });
 
   test("★ an ordinary angle bracket in a value closes nothing either ★", () => {
-    const s = readCarrierShape(carrier(SOH, '<<^ code="&#x0002;" note=a>b>>'));
+    const s = readCarrierShape(carrier(SOH, '<<^ code=`&#x0002;` note=a>b>>'));
     expect(s.marks.stx).toBe(true);
   });
 
   test("★ and one in the opener's own value leaves the head readable ★", () => {
-    const s = readCarrierShape(carrier('<<^ code="&#x0001;" span=1>2 from="?" -> to="lar:///a.b.c/x">>', STX));
+    const s = readCarrierShape(carrier('<<^ code=`&#x0001;` span=1>2 from=`?` to=`lar:///a.b.c/x`>>', STX));
     expect(s.marks.head).toBe(true);
   });
 
   test("a doubled bracket still terminates", () => {
-    const s = readCarrierShape(carrier(SOH, '<<^ code="&#x0002;" note=a>>'));
+    const s = readCarrierShape(carrier(SOH, '<<^ code=`&#x0002;` note=a>>'));
     expect(s.marks.stx).toBe(true);
   });
 });

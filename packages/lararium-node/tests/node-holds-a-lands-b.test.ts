@@ -1,3 +1,7 @@
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -20,6 +24,9 @@ import { larBootstrapPath, larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 const genesisSource = join(import.meta.dirname, "..", "..", "..", "genesis");
 const foundFace = direct(runFoundTheFace);
 const land = direct(runInit);
@@ -61,23 +68,24 @@ async function founderForB() {
   const atomSeed = new Uint8Array(32).fill(93);
   const founderKey = faceAtomKeyFromSeed(vesselSeed, "founder-vessel").key;
   const hearthTrueName = "hearth-for-face-b";
-  const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName });
-  const face = await foundTheFace({
-    repo: founderRepo, daemonHandle: place.daemonHandle,
-    vesselVerifyingKey: founderKey, vesselDisplayName: "founder B",
+  const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed }), founderRepo);
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
+    repo: founderRepo, daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true },
+    placeVerifyingKey: founderKey, vesselDisplayName: "founder B",
     binding: { mode: "self-stood", signerSeed }, hearthTrueName,
     nexusPubkey: founderKey, atomSeed,
   });
   const board = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(founderKey), "board:persona-kel");
   const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
   if (!chain) throw new Error("founder B seated no persona KEL chain");
-  const admit = (joineeKey: string) => runDeviceAdmitEdge({
-    signerSeed, joineeVerifyingKey: joineeKey,
+  const admit = async (joineeKey: string) => runDeviceAdmitEdge({
+    signerSeed, edgeFrontier: await frontierFromFoundingSeed(signerSeed), joineeVerifyingKey: joineeKey,
     personaKelPrefix: face.personaKelPrefix, personaKelChain: chain,
     hearthTrueName, personaGroupId: face.personaGroupId,
     meshCabalDocIdHex: face.meshCabalDocIdHex,
     syncUrl: null, islandDocUrl: null,
     hearthDaemonUrl: place.daemonUrl, personaUrl: face.personaUrl,
+    personaActs: await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey, chain }),
   });
   return { groupB: face.personaGroupId, admit };
 }
@@ -118,6 +126,7 @@ describe("a node holds A while B lands", () => {
 
       const founder = await founderForB();
       const groupB = founder.groupB;
+      await ensureFaceCustodyOfGroup(groupB);
       const seedB = await standFaceAtom(groupB);
       const atomB = faceAtomKeyFromSeed(seedB, groupB);
       const payload = await founder.admit(atomB.key);
@@ -157,6 +166,7 @@ describe("a node holds A while B lands", () => {
       await foundDirect({ storageDir: larDataDir(), genesisDir });
       const payload = sharedPayload;
       if (!payload || !sharedSeedB) throw new Error("the B admit did not stand in the first case");
+      await ensureFaceCustodyOfGroup(payload.personaGroupId);
       await keepFaceAtom(payload.personaGroupId, sharedSeedB);
       await land({ storageDir: larDataDir(), genesisDir, force: true, admitPayload: payload, custody: { slots: [] } });
       expect((await loadIdentityAnchors(0))?.personaGroupId).toBe(payload.personaGroupId);

@@ -27,6 +27,9 @@ import {
   mutableLarRecord,
   tiddlerText,
   canonicalJson,
+  slotBindingKey,
+  type CapMint,
+  pointMint,
 } from "@lararium/mesh";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -40,6 +43,8 @@ export interface DocMinter {
   create<T = LarDoc>(initialValue: T): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown> };
   /** Resolve once the named documents rest durably in this Repo's storage. */
   flush(documents?: string[]): Promise<void>;
+  /** Stand a document under an id minted ahead (a slot named to the vessel before its first byte). */
+  import?(binary: Uint8Array, args: { docId: never }): { readonly url: string; readonly documentId: string; whenReady?(): Promise<unknown> };
 }
 
 /**
@@ -48,22 +53,27 @@ export interface DocMinter {
  * store that does save it. `flush` resolves only after both, and rejects when either does.
  */
 export function restingMinter(repo: DocMinter, rest: (documentIds: readonly string[]) => Promise<void>): DocMinter {
+  const more = repo as unknown as { find?: (url: string) => unknown; delete?: (url: string) => unknown; import?: DocMinter["import"] };
   return {
     create: (initialValue) => repo.create(initialValue),
     flush: async (documents) => {
       await repo.flush(documents);
       await rest(documents ?? []);
     },
-  };
+    // The lift reads and deletes documents through the same repo that mints them.
+    ...(typeof more.find === "function" ? { find: (url: string) => more.find!.call(repo, url) } : {}),
+    ...(typeof more.import === "function" ? { import: (binary: Uint8Array, args: { docId: never }) => more.import!.call(repo, binary, args) } : {}),
+    ...(typeof more.delete === "function" ? { delete: (url: string) => more.delete!.call(repo, url) } : {}),
+  } as DocMinter;
 }
 
 /** The binding kinds — one tiddler `kind` field per slot. */
-export type BindingKind = "personal-binding" | "draft-binding" | "working-binding";
+export type BindingKind = "personal-binding" | "draft-binding";
 
 export interface ResolveBindingArgs {
   /** Tiddler `kind` field value — distinguishes personal / draft / working bindings. */
   readonly kind: BindingKind;
-  /** Daemon tiddler-title prefix (PERSONAL_ | DRAFT_ | WORKING_BINDINGS_PREFIX). */
+  /** Daemon tiddler-title prefix (PERSONAL_ | DRAFT_BINDINGS_PREFIX). */
   readonly prefix: string;
   /** SHA-256 hex from computeRecipeFingerprint — the per-recipe binding key. */
   readonly fingerprint: string;
@@ -74,12 +84,14 @@ export interface ResolveBindingArgs {
    * Host-side: `daemonVm.composite`; island-side: the worker's `ctx.composite`.
    */
   readonly daemonStore: CompositeStore;
-  /** Vessel provider for bindings held at the floor. */
-  readonly keyhive: CapabilityProvider;
+  /** The selected face's provider; absent at the faceless floor, where a binding document carries no Keyhive registration. */
+  readonly keyhive?: CapabilityProvider;
   readonly faceDoor?: FaceBagDoor;
   /** Whether the face the vessel pins holds a SEAT the delegating identity can name. Absent → seated. A
    *  joinee admitted by edge alone answers false until a face-join lands its membership events. */
   readonly faceSeated?: () => Promise<boolean>;
+  /** Wait for an in-flight seat act before deciding where a fresh mint lands. */
+  readonly seatSettled?: () => Promise<void>;
   /**
    * PersonaGroup AGENT Identifier hex (getAgent-resolvable) — the delegation
    * audience. NOT the group's DocumentId (that is the membership-check target).
@@ -100,6 +112,10 @@ export interface ResolveBindingArgs {
 export interface ResolveBindingResult {
   /** The bound `personal` / `draft` Automerge doc URL. */
   readonly url: string;
+  /** The title of the binding row that answered: the face's own, or the floor's while the Lift has not moved it. */
+  readonly key: string;
+  /** Whether the row names a document the face holds (`face`) or one the vessel alone holds (`vessel-only`). */
+  readonly reach: "face" | "vessel-only";
   /** true when this call minted a fresh doc; false on reuse-on-present. */
   readonly minted: boolean;
 }
@@ -115,18 +131,30 @@ export class BindingRegistrationRefusal extends Error {
  * Resolve the bound doc URL for a (PersonaGroup × recipe-fingerprint) slot, or
  * mint + delegate + record it when absent.
  *
+ * ONE ROW FOR EACH FACE (`slotBindingKey`): a seated face reads and writes the row under its own group, so a second face
+ * of the vessel that reads the same canon never mounts the first face's sealed document. A seated face that holds no row
+ * yet reads the floor's (a vessel-only document the Lift has not moved) before it mints; a vessel with no seat reads and
+ * writes the floor's row alone.
+ *
  * Reuse-on-present returns the stored URL without minting. A vessel-only record
- * takes a face document after the face seats. Its recorded Keyhive document ID restores
+ * moves under the face at the seat's landing, by the lift pass (`anon-lift`), and this resolver never re-registers it. A face record's recorded Keyhive document ID restores
  * the process-local mapping on the provider that holds it. Reuse MUST NOT block boot on
  * a doc not yet decryptable on this device (the two-phase Keyhive window): the
  * caller mounts the URL and the island surfaces it when sync delivers the BeeKEM
  * key. See personal-slot#lifecycle "authorized-but-undecryptable window".
  */
 export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<ResolveBindingResult> {
-  const key = `${args.prefix}/${args.fingerprint}`;
+  const floorKey = slotBindingKey(args.prefix, args.fingerprint);
+  const faceKey = args.personaGroupId ? slotBindingKey(args.prefix, args.fingerprint, args.personaGroupId) : null;
 
-  // Reuse-on-present — the binding tiddler already replicated to this device.
-  const record = await args.daemonStore.get(key);
+  // Reuse-on-present — the binding tiddler already replicated to this device. The read asks no seat: the face's own row
+  // answers first, then the floor's (a row at the floor's title names a vessel-only document, never a face's).
+  let key = faceKey ?? floorKey;
+  let record = await args.daemonStore.get(key);
+  if (!tiddlerText(record) && faceKey) {
+    const floorRow = await args.daemonStore.get(floorKey);
+    if (tiddlerText(floorRow) && floorRow?.tiddler["face-reach"] !== "face") { record = floorRow; key = floorKey; }
+  }
   const existing = tiddlerText(record);
   if (existing) {
     const fields = record?.tiddler as Record<string, unknown> | undefined;
@@ -137,18 +165,22 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
       if (typeof docId !== "string" || !docId) throw new BindingRegistrationRefusal(key, existing);
       args.faceDoor.adopt(existing, docId);
     }
-    await regrantOnSeat(args, key, existing, fields);
-    return { url: existing, minted: false };
+    return { url: existing, key, minted: false, reach: fields?.["face-reach"] === "face" ? "face" : "vessel-only" };
   }
 
-  // Mint-on-absent: a binding never names a document before it rests durably.
+  // Mint-on-absent waits for a running seat act before choosing its owner.
+  await args.seatSettled?.();
+  // A binding never names a document before it rests durably.
   const handle = args.repo.create<LarDoc>(emptyLarDoc());
 
   // The provider mapping is process-local, so the binding carries its document ID for reuse.
-  const seated = !!(args.personaGroupId && args.faceDoor && await (args.faceSeated?.() ?? Promise.resolve(true)));
-  const { docId: keyhiveDocId } = seated
-    ? await args.faceDoor!.mint(handle.url, "admin")
-    : await args.keyhive.registerBag(handle.url);
+  // A seated face writes its own row; a face pinned and not yet seated, and a vessel with no face, write the floor's.
+  const owner = args.personaGroupId && await (args.faceSeated?.() ?? Promise.resolve(true)) ? args.personaGroupId : null;
+  key = slotBindingKey(args.prefix, args.fingerprint, owner);
+  const seated = !!(owner && args.faceDoor);
+  const keyhiveDocId = seated
+    ? (await args.faceDoor!.mint(handle.url, "admin")).docId
+    : args.keyhive ? (await args.keyhive.registerBag(handle.url)).docId : undefined;
 
   // A seat makes the face the creator. At the floor the vessel creates the document alone.
   // Keyhive's admin grant carries the writable slot until an edit grade is available.
@@ -161,6 +193,8 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     fingerprint: args.fingerprint,
     "minted-by": args.mintedByHex,
   }, "binding-mints"), originFor(`binding-mint-${args.fingerprint}`), { bag: DAEMON_BAG_ID });
+  // The mint row above answers for this document, so the mint census reads no cap mint for it.
+  pointMint(handle.url);
   await handle.whenReady?.();
   await args.repo.flush([handle.documentId]);
 
@@ -173,71 +207,48 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     "recipe-trace": canonicalJson(args.recipeTrace),
     "minted-by":   args.mintedByHex,
     "face-reach":  seated ? "face" : "vessel-only",
-    "keyhive-doc-id": keyhiveDocId,
+    ...(keyhiveDocId !== undefined ? { "keyhive-doc-id": keyhiveDocId } : {}),
   }, "personal-bindings"), originFor(`binding-${args.fingerprint}`), { bag: DAEMON_BAG_ID });
 
-  return { url: handle.url, minted: true };
+  return { url: handle.url, key, minted: true, reach: seated ? "face" : "vessel-only" };
 }
 
 function originFor(fingerprint: string): ChangeOrigin {
   return { kind: "lares-verb", requestId: fingerprint.slice(0, 32) };
 }
 
-/** Mints without a matching binding remain visible for operator inspection. */
-export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{ kind: BindingKind; fingerprint: string; url: string }>> {
+/**
+ * Mints without a matching binding remain visible for operator inspection: the binding mints the daemon document
+ * records, then each document a cap created while it built and named under no pointer (`capMints`, the mint census of
+ * the Repo that composition stood, `capMintsUnpointed`). A cap mint reads `cap-mint`, its cap's id in `fingerprint`.
+ * Where no census reaches (the daemon island answers over its own Repo), `capMints` stands empty.
+ */
+export async function unboundMints(
+  daemonStore: CompositeStore,
+  capMints: readonly CapMint[] = [],
+): Promise<Array<{ kind: BindingKind | "cap-mint"; fingerprint: string; url: string }>> {
   const entries = await daemonStore.entries();
-  const bindings = new Map<string, string>();
+  // A document reads bound where ANY row of its kind and fingerprint names it: the floor's, or any face's own.
+  const bound = new Set<string>();
   for (const { title, bagId, record } of entries) {
     if (bagId === DAEMON_BAG_ID && !title.includes("-minted/")) {
       const fields = record.tiddler as Record<string, unknown>;
       if (typeof fields.fingerprint === "string" && typeof fields.kind === "string" && fields.kind !== "binding-mint" && typeof fields.text === "string") {
-        bindings.set(`${title.slice(0, title.lastIndexOf("/"))}/${fields.fingerprint}`, fields.text);
+        bound.add(`${fields.kind}\n${fields.fingerprint}\n${fields.text}`);
       }
     }
   }
-  const unbound: Array<{ kind: BindingKind; fingerprint: string; url: string }> = [];
+  const unbound: Array<{ kind: BindingKind | "cap-mint"; fingerprint: string; url: string }> = [];
   for (const { title, bagId, record } of entries) {
     if (bagId !== DAEMON_BAG_ID || !title.includes("-minted/")) continue;
     const fields = record.tiddler as Record<string, unknown>;
     const kind = fields["binding-kind"];
     const fingerprint = fields.fingerprint;
     const url = fields.text;
-    if ((kind === "personal-binding" || kind === "draft-binding" || kind === "working-binding") && typeof fingerprint === "string" && typeof url === "string") {
-      const bindingPrefix = title.slice(0, title.indexOf("-minted/"));
-      if (bindings.get(`${bindingPrefix}/${fingerprint}`) !== url) unbound.push({ kind, fingerprint, url });
+    if ((kind === "personal-binding" || kind === "draft-binding") && typeof fingerprint === "string" && typeof url === "string") {
+      if (!bound.has(`${kind}\n${fingerprint}\n${url}`)) unbound.push({ kind, fingerprint, url });
     }
   }
+  for (const { cap, url } of capMints) unbound.push({ kind: "cap-mint", fingerprint: cap, url });
   return unbound;
-}
-
-/**
- * A SEAT LANDING AFTER THE MINT RE-GRANTS THE BINDING. A record reading `face-reach = "vessel-only"` names
- * a binding minted while the face stood pinned and unseated; once the seat's events reach this vessel the
- * face can mint its own Keyhive document for the same Automerge URL. The record then
- * names that face document, and the next reuse adopts it without another grant.
- */
-async function regrantOnSeat(
-  args: ResolveBindingArgs,
-  key: string,
-  url: string,
-  fields: Record<string, unknown> | undefined,
-): Promise<void> {
-  if (fields?.["face-reach"] !== "vessel-only") return;
-  if (!args.personaGroupId) return;
-  const seated = await (args.faceSeated?.() ?? Promise.resolve(true));
-  if (!seated) return;
-  if (!args.faceDoor) return;
-  const keyhiveDocId = (await args.faceDoor.remint(url)).docId;
-  // Every field the record carried rides through; only the posture moves.
-  const carried: Record<string, string> = {};
-  for (const [k, v] of Object.entries(fields ?? {})) {
-    if (k !== "title" && typeof v === "string") carried[k] = v;
-  }
-  const origin: ChangeOrigin = { kind: "lares-verb", requestId: `binding-regrant-${args.fingerprint.slice(0, 8)}` };
-  await args.daemonStore.put(mutableLarRecord(key, {
-    ...carried,
-    text:         url,
-    "face-reach": "face",
-    "keyhive-doc-id": keyhiveDocId,
-  }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
 }

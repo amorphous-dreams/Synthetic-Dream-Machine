@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/down-census-03787da4d3e367adb6719ef11f8954ee98addc3a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-08 (file date) — source `.lares-scratch/controller/ship/down-census-03787da4d3e367adb6719ef11f8954ee98addc3a.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/down-census-03787da4d3e367adb6719ef11f8954ee98addc3a"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/down-census-03787da4d3e367adb6719ef11f8954ee98addc3a"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! down-census-03787da4d3e367adb6719ef11f8954ee98addc3a.md — plan, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/controller/ship/down-census-03787da4d3e367adb6719ef11f8954ee98addc3a.md` (plan, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-down-census-03787da4d3e367adb6719ef11f8954e`>>
+
+! SHIP down-census 03787da4d3e367adb6719ef11f8954ee98addc3a
+read: controller (Kiaʻi) read tools/lares-container.sh's down diff line by line (stop only on exit 0 AND 'census: clean'; 60 s bound; timeout/failed exec/failed ps route to typed accept-loss; no TTY refuses) and the census door's shape; merged the landed span (one-root) clean.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ALMCTmgt7Qk_zTokfICpsobK5LWq5K_Z2aw0NZALA5s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -14,12 +14,13 @@
  * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
  */
 
-import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
-import { plainEntries, storedDeleted, SYSTEM_CANON_BAGS } from "@lararium/mesh";
+import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind, ownEntry } from "@lararium/mesh";
+import { plainEntries, plainField, storedDeleted, houseCanonBagsSeated, houseCanonUrl, resolveHouseCanon } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
+import type { IngestAlert } from "./action-handler.js";
 
 /** True for a draft floor's registry key (`wikis/<slug>/drafts/<did>`) — a doc the slot walk names. */
 function isDraftFloorKey(key: string): boolean {
@@ -37,11 +38,13 @@ function wikiSlugOfBagUri(bagUri: string): string | null {
 export interface RegistryReach {
   repo:       Repo;
   catalogUrl: string | null;
+  /** The lit face's own catalog laid over `catalogUrl` (sealed-store#/owed, U1). */
+  faceCatalogUrl?: string | null;
   oracleUrl:  string | null;
   /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
    *  resolver — null when none stands. Absent = `where` reaches the registry planes alone. */
   slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
-  /** A system canon bag's live document, which rests in the Kahu realm (no registry plane names it). */
+  /** A house canon bag's live document, which rests in the Kahu realm (no registry plane names it). */
   systemCanonUrl?: (bag: string) => Promise<string | null>;
 }
 
@@ -51,7 +54,7 @@ function listRegisteredDocUris(doc: LarDoc | undefined): string[] {
   const out: string[] = [];
   for (const [title, rec] of Object.entries(doc?.tiddlers ?? {})) {
     const text = tiddlerText(rec);
-    if (text && text.startsWith("automerge:")) out.push(title);
+    if (text && text.startsWith("automerge:") && plainField(rec, "kind") !== "private-synced") out.push(title);
   }
   return out;
 }
@@ -98,14 +101,14 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
     const planes = [reach?.catalogUrl, reach?.oracleUrl].filter((u): u is string => !!u);
     for (const planeUrl of planes) {
       if (!reach?.repo) break;
-      const accessor = makeCatalogAccessor(reach.repo, planeUrl);
+      const accessor = makeCatalogAccessor(reach.repo, planeUrl, planeUrl === reach.catalogUrl ? reach.faceCatalogUrl : null);
       const regDoc   = (await accessor.handle().catch(() => null))?.doc();
       for (const bagUri of listRegisteredDocUris(regDoc)) {
         const mounted = holding.has(bagUri) || composite.hasBag(bagUri);
         // A draft FLOOR doc (`wikis/<slug>/drafts/<did>`) answers under its slot name below, never its key.
         if (!mounted && !isDraftFloorKey(bagUri)) {
           const h   = await accessor.find(bagUri).catch(() => null);
-          const rec = h?.doc()?.tiddlers?.[tiddler];
+          const rec = ownEntry(h?.doc()?.tiddlers, tiddler);
           if (rec && !storedDeleted(rec)) holding.add(bagUri);
         }
         // A registered WIKI's live instance slots — the docs THE ONE slot-doc resolver names (the
@@ -118,29 +121,29 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
           const url = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
           if (!url) continue;
           const sh  = await findOrThrow(reach.repo, url, `${wikiSlotUri(slug, kind)}`).catch(() => null);
-          const sr  = sh?.doc()?.tiddlers?.[tiddler];
+          const sr  = ownEntry(sh?.doc()?.tiddlers, tiddler);
           if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
         }
       }
     }
-    // The system canon bags rest in the Kahu realm: no registry plane lists them, so each is reached by its realm row.
+    // The house canon bags rest in the Kahu realm: no registry plane lists them, so each is reached by its realm row.
     // Its live wiki slots answer first (the layer a write lands in), then the canon document itself.
     if (reach?.repo && reach.systemCanonUrl) {
-      for (const bagUri of SYSTEM_CANON_BAGS) {
+      for (const bagUri of houseCanonBagsSeated()) {
         const slug = wikiSlugOfBagUri(bagUri);
         if (slug && reach.slotDocUrl) {
           for (const kind of ["draft", "working", "personal"] as const) {
             const slotUrl = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
             if (!slotUrl) continue;
             const sh  = await findOrThrow(reach.repo, slotUrl, `${wikiSlotUri(slug, kind)}`).catch(() => null);
-            const sr  = sh?.doc()?.tiddlers?.[tiddler];
+            const sr  = ownEntry(sh?.doc()?.tiddlers, tiddler);
             if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
           }
         }
         if (holding.has(bagUri) || composite.hasBag(bagUri)) continue;
         const url = await reach.systemCanonUrl(bagUri).catch(() => null);
         const h   = url ? await findOrThrow(reach.repo, url, bagUri).catch(() => null) : null;
-        const rec = h?.doc()?.tiddlers?.[tiddler];
+        const rec = ownEntry(h?.doc()?.tiddlers, tiddler);
         if (rec && !storedDeleted(rec)) holding.add(bagUri);
       }
     }
@@ -188,7 +191,7 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
         if (!slug || slug.includes("/")) continue;
         const bagUri = wikiBagUri(slug);
         const own = catTiddlers[recipeUri("catalog", slug)];
-        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: (await catalog.urlOf(bagUri)) ?? (await systemCanonUrl?.(bagUri)) ?? null, kind: "system", composition: "default" };
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: houseCanonUrl(await resolveHouseCanon<string>(bagUri, { realm: systemCanonUrl, row: () => catalog.urlOf(bagUri) })), kind: "system", composition: "default" };
         if (own && !own.meta?.deleted) {
           row.composition = "own";
           row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");
@@ -277,9 +280,10 @@ export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOp
 /** Register as "ward-alert". `post` = ctx.post (DaemonMsg_WikiAlert rides it). */
 export function makeWardAlertReactor(
   composite: CompositeStore,
+  control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
 ): VerbReactor {
-  return async (args) => fileWardRefusal(composite, post, args);
+  return async (args) => fileWardRefusal(composite, control, post, args);
 }
 
 /**
@@ -292,6 +296,8 @@ export function makeWardAlertReactor(
  */
 export async function fileWardRefusal(
   composite: CompositeStore,
+  /** The vessel's control document as a store (`controlStoreOf`): the audit row rests there, never in a wiki layer. */
+  control: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
   args: Readonly<Record<string, unknown>>,
 ): Promise<Record<string, unknown>> {
@@ -325,12 +331,12 @@ export async function fileWardRefusal(
       return { cleared: standoff, alerted: slug ?? "none", bagId, uri };
     }
 
-    // (a) Durable audit in the composite's default writable working layer: append-only, never coalesced.
+    // (a) Durable audit in the vessel's control document: append-only, never coalesced, never in a mirrored layer.
     // A standoff's row carries its key as its title and lands on ENTERING the standoff, once.
     const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
-    if (standoff === null || (await composite.get(auditTitle)) === null) {
-      await composite.put(
-        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), "disk-projection": "no" }, meta: { authority: "disk-ward" } },
+    if (standoff === null || (await control.get(auditTitle)) === null) {
+      await control.put(
+        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}) }, meta: { authority: "disk-ward" } },
         { kind: "lares-verb", requestId: `ward-${ts}` },
       );
     }
@@ -347,4 +353,19 @@ export async function fileWardRefusal(
     }
     return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };
   }
+}
+
+// ── ingest-alert — a wave's render warnings surface in the operator's pinned VM ────────────
+//
+// An INGEST wave the daemon island runs answers a render carrier on its rung (rendered-derives.ts); the rungs that warn
+// raise one alert per (rung, render title) over the same wiki-alert rail the ward rides, and a render that reads settled
+// clears it. The pinned VM stands it at `$:/temp/lares/alert/<kind>/<key>`, tagged `$:/tags/Alert`.
+
+/** The `alert` rail for the daemon island's action verbs: each alert rides to the active wiki, none where none stands. */
+export function makeIngestAlertRail(composite: CompositeStore, post: (msg: DaemonMsg_WikiAlert) => void): (alert: IngestAlert) => Promise<void> {
+  return async (alert) => {
+    const slug = tiddlerText(await composite.get(ACTIVE_WIKI_URI)) ?? null;
+    if (!slug) return;
+    post(mkDaemonWikiAlert({ wikiSlug: slug, message: alert.message, cause: "ingest", kind: alert.kind, key: alert.key, ...(alert.clear ? { clear: true } : {}) }));
+  };
 }

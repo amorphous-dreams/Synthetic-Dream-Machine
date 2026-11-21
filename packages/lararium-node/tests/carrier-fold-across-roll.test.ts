@@ -12,12 +12,15 @@
  *   CONTROL   fail closed: the same roll with its anchor taken off the board leaves all three uncounted
  *   CONTROL   a place carried after the roll counts at E'
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  carriageDocUrl, foundingRoster, hearthPinIndex, materializeSharedLarDoc, ORACLE_SOCKET_ROUTE, rollAnchorKey,
+  carriageDocUrl, DAEMON_BAG_ID, foundingRoster, hearthPinIndex, materializeSharedLarDoc, FLOW_SOCKET_ROUTE, rollAnchorKey,
   rollAnchorsFromBoard, type LarDoc,
 } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
@@ -58,7 +61,7 @@ async function carryFor(peer: string, again = false): Promise<Carry> {
   const charter = readNexusDoc(larSealHome())!;
   at(peer);
   if (again) await openTestCustody(); else await sealTestCustody();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   writeNexusDoc(larSealHome(), charter);
   const carry = await runNexusCarryFor({ sealHome: larSealHome() });
   at(roots.hearth);
@@ -70,7 +73,7 @@ async function land(carries: readonly Carry[]): Promise<void> {
   at(roots.hearth);
   await ownedStore(larDataDir(), async (repo) => {
     for (const c of carries) {
-      await runNexusContract({ action: "carry", nym: c.nym, carrierSig: c.carrierSig, floorPin: JSON.stringify(c.floorPin), sealHome: larSealHome(), repo });
+      await runNexusContract({ action: "carry", nym: c.nym, carrierSig: c.carrierSig, floorPin: JSON.stringify({ floorPin: c.floorPin, placeKel: c.placeKel }), sealHome: larSealHome(), repo });
     }
   });
 }
@@ -79,7 +82,7 @@ async function land(carries: readonly Carry[]): Promise<void> {
 async function stage(roll: "none" | "anchored" | "anchor-taken"): Promise<{ carries: Carry[]; later: () => Promise<Carry> }> {
   at(roots.hearth);
   await sealTestCustody();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   for (const face of [0, 1, 2]) await generateOrLoadPersonaGroupRoot(face);
   const seats = await seatChairs([0, 1, 2]);
   const next = await seatChairs([0, 1, 2], { generation: 1 });
@@ -128,7 +131,7 @@ async function filed(nyms: readonly string[]): Promise<{ pins: boolean[]; counte
       expect((await readings()).map((r) => r.aid), "the hearth reads its own Nexus").toContain(aid);
       const pull = vesselCarriagePull({
         placeClass: "lararium", ownPlaceKey: own, sign: async () => new Uint8Array(64), readings, ownNexus: () => aid,
-        openBoard: (url) => boards.open(url, "board:carriage-contracts"), pins, audience: "@daemon",
+        openBoard: (url) => boards.open(url, "board:carriage-contracts"), pins, audience: DAEMON_BAG_ID,
         deadlines: { draw: () => ({ cancel() {} }) },
       });
       await pull("http://127.0.0.1:9", nyms[0]!);
@@ -137,7 +140,7 @@ async function filed(nyms: readonly string[]): Promise<{ pins: boolean[]; counte
         const placed = await placeCarriedNexuses({ sealHome: larSealHome(), ownVesselKey: nym, open: boards.open });
         counted.push(placed.some((r) => r.aid === aid));
       }
-      return { pins: nyms.map((nym) => pins.get({ hearth: nym, nexus, route: ORACLE_SOCKET_ROUTE, tier: "floor" }) !== null), counted };
+      return { pins: nyms.map((nym) => pins.get({ hearth: nym, nexus, route: FLOW_SOCKET_ROUTE, tier: "floor" }) !== null), counted };
     } finally { boards.dispose(); }
   });
 }
@@ -170,7 +173,7 @@ describe("a carrier fold crosses a charter roll through its anchor alone (W18)",
 async function carryCycle(rollBetween: boolean): Promise<Carry> {
   at(roots.hearth);
   await sealTestCustody();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   for (const face of [0, 1, 2]) await generateOrLoadPersonaGroupRoot(face);
   const seats = await seatChairs([0, 1, 2]);
   const next = await seatChairs([0, 1, 2], { generation: 1 });

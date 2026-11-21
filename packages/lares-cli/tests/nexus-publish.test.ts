@@ -9,18 +9,21 @@
  * `publish` takes the region back. It reads tier-parameterized exactly as `kahuli` does — one case per
  * publishable thing — so a second cap arrives as a case rather than a door.
  *
- * STAGE 1 READS. The signed offering and its crossroads announce land next; `--apply` names that hold the
- * way `kahuli engine` names its own, because a deliberate not-yet must never read as an unknown verb.
+ * `--apply` reaches the production adapter: the signed offering and its announce land on the Nexus's publication board
+ * (`publicationDocUrl`), never on the crossroads document, and an unseated local face refuses by name.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { cpSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, mkdirSync, writeFileSync } from "node:fs";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { join } from "node:path";
 import { sha256HexBytesSync } from "@lararium/mesh";
 import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
+import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
 
 // The room each test and hook takes, stated where the file loads: a case founds a vessel, lights a face and seals rows under a derived key, so it runs for seconds. A timeout stated inside a hook reaches no
 // case the runner already collected.
@@ -48,23 +51,21 @@ function offeringSourceDir(root: string): string {
 }
 
 describe("lares nexus publish — the operator's own collection, apart from the ratchets", () => {
+  let house: Scratch;
   let root: string;
   let errs: string[];
   let logs: string[];
-  const saved: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-publish-"));
-    saved["LAR_ROOT"] = process.env["LAR_ROOT"];
-    process.env["LAR_ROOT"] = root;               // isolates the genesis read to an empty tree
+    house = openScratch();
+    root = house.root;
     errs = []; logs = [];
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { logs.push(a.join(" ")); });
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    if (saved["LAR_ROOT"] === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = saved["LAR_ROOT"];
-    rmSync(root, { recursive: true, force: true });
+    closeScratch(house);
   });
 
   test("★ `publish plugins` with no --source refuses through usage, never genesis ★", async () => {
@@ -101,7 +102,7 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     const code = await cmdNexus(args(["publish", "plugins"], { apply: true, json: false }, { source }));
     expect(code).not.toBe(0);
     const said = [...errs, ...logs].join("\n");
-    expect(said).toMatch(/active persona|genesis/i);
+    expect(said).toMatch(/a face to sign as|genesis/i);
     expect(said).not.toMatch(/unknown/i);
   });
 
@@ -119,9 +120,9 @@ describe("lares nexus publish — the operator's own collection, apart from the 
 
     // Stand the minimum real place + face context. The command under test remains the production CLI
     // door; no adapter is mocked and no offering is assembled by the test.
+    writeFileSync(join(process.env["LAR_ROOT"]!, ".lar-test-scratch"), "");   // a staged root: the place card's read-back stands in
     expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);
     await generateOrLoadPersonaGroupRoot(0);
-    await wearPersona(0);
     out.length = 0;
 
     expect(await cmdNexus(args(["publish", "plugins"], { apply: true, json: true }, { source }))).toBe(0);

@@ -187,14 +187,14 @@ describe("★ M1 — the node resolver, driven over a real fs CAS and a real Cro
     // worker pool / daemon VM to drive end to end).
     const src = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
     const importsFromModule = /from\s+["']\.\/node-plugin-resolution\.js["']/.test(src);
-    const daemonCallSite = /resolveNodeIslandPluginCids\(\{[\s\S]{0,400}?\}\)/.exec(src);
+    const daemonCallSite = /resolveNodeIslandPluginCids\(\{[\s\S]{0,900}?\}\)/.exec(src);
     // The pool hook must pass the caller's RECIPE PARAMETER ITSELF, as the shorthand `recipe,`
     // property — never a reconstructed literal (`recipe: { wikiSlug: recipe.wikiSlug }`), which is
     // exactly the R3 mutation the episkopos measured staying green at the mesh-test level: a
     // rebuild that drops every field but wikiSlug (and so every wiki's offerings) still calls the
     // SAME function, so only reading what's handed to it — not merely that it was called — proves
     // the regression stays caught here.
-    const poolHookBody = /resolvePluginCids:\s*\(recipe\)\s*=>\s*resolveNodeIslandPluginCids\(\{[\s\S]{0,400}?\}\)/.exec(src);
+    const poolHookBody = /resolvePluginCids:\s*\(recipe\)\s*=>\s*resolveNodeIslandPluginCids\(\{[\s\S]{0,900}?\}\)/.exec(src);
     expect(importsFromModule, "open-node-vessel.ts must import resolveNodeIslandPluginCids from node-plugin-resolution.js").toBe(true);
     expect(daemonCallSite, "the daemon VM boot must call resolveNodeIslandPluginCids").not.toBeNull();
     expect(poolHookBody, "the island pool's resolvePluginCids hook must call resolveNodeIslandPluginCids").not.toBeNull();

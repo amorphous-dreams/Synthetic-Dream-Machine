@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/heleuma`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma.mem"
-mana      = 18
-manao     = 18
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant: heleuma anchor pattern — compiled-side artifacts held in the meme graph by necessity"
 tags      = ["api/pono/meme"]
@@ -17,11 +13,11 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Heleuma — Anchor
 
-//Heleuma//: a stone or iron anchor used to secure a ship.
+//Heleuma//: a stone or iron anchor that secures a ship.
 
 A ''heleuma'' names any artifact that MUST exist outside the `lar:///` URI space — compiled TypeScript, runtime imperative registrations, build-generated assets — but that ALSO exists inside the meme graph as a self-documenting pair:
 
@@ -32,7 +28,7 @@ A heleuma does not mark failure. It marks a ''named threshold crossing'' — the
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect compiled artifact — TypeScript module, runtime registration, or build asset outside lar:/// space
 ⏿ orient heleuma tier: ha (permanent structure), ka (promotion-eligible soul/fire), ba (path marker)
@@ -42,7 +38,7 @@ A heleuma does not mark failure. It marks a ''named threshold crossing'' — the
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Heleuma Law (SHALL)
 
@@ -57,7 +53,7 @@ A heleuma does not mark failure. It marks a ''named threshold crossing'' — the
 
 <<~/ahu>>
 
-<<~ ahu #/freyja-alignment>>
+<<~ ahu slot=`#/freyja-alignment`>>
 
 !! Freyja Alignment
 
@@ -67,13 +63,13 @@ The heleuma does not try to absorb the anchor into the graph. It holds the rope.
 
 <<~/ahu>>
 
-<<~ ahu #/promotion-path>>
+<<~ ahu slot=`#/promotion-path`>>
 
 !! Promotion Path
 
 A heleuma API meme that acquires:
 
-* `confidence ≥ 16`, `mana ≥ 16`, `manao ≥ 16`, `manaoio ≥ 15`
+* `confidence ≥ 16`
 * A verified `source-sha256` hash (gate layer 2 — content integrity; written by `sync-heleuma --commit`)
 * A keyhive capability proof (gate layer 3 — operator authorization; planned)
 
@@ -81,10 +77,10 @@ A heleuma API meme that acquires:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uJNKGKWqfTvEarVuq1cUC2OQkEy89ouYksWZsa3cobY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GrX_dvvbGAL11pMxiYujJ4z9fGtH8a_acVsp7Qf5adA`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

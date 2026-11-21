@@ -20,6 +20,9 @@
  *
  * The page's reading of each click decides each step (`defaultPrevented` read at the document, after the sink's handler
  * ran; the story river read off the DOM); a timeout only bounds a wait.
+ *
+ * W4-W6 act on the page W3 leaves (`alpha` alone in the river). They stand on W3: a W3 that did not walk through skips them,
+ * so a beta that arrives after W3 gave up never reads as their failure.
  */
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -37,6 +40,9 @@ const WAIT = 120_000;
 
 const ALPHA = golden.world.tiddlers[0]!.title;
 const BETA = golden.world.tiddlers[1]!.title;
+let sentinelCount = 0;
+/** W3 walked through: the page stands with `alpha` alone again, the ground W4-W6 act on. */
+let navigated = false;
 
 let hearth: LarInstance | null = null;
 let browser: Browser | null = null;
@@ -73,15 +79,51 @@ async function makeTiddler(title: string, text: string): Promise<void> {
   await wiki().evaluate((host) => (host.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
   await wiki().locator("input.tc-titlebar").fill(title);
   await wiki().locator("textarea.tc-edit-texteditor-body").fill(text);
-  await wiki().locator('button[title="Confirm changes to this tiddler"]').click();
-  await page!.waitForFunction((t) => !!document.querySelector("#projection")?.shadowRoot
-    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]:not(.tc-tiddler-edit-frame)`), title, { timeout: WAIT });
+  // THE CONFIRM MAY MEET A RETIRED TARGET. The fills relay input acts, and the island may repaint the edit frame after
+  // its answers; a confirm relayed against a frame a newer one replaced answers `stale-target` and saves nothing (the
+  // page's words: "Review it and try again"), the same race W3 names. So while the edit frame's confirm still stands,
+  // the confirm is clicked again, each try bounded by a slice of WAIT; a confirm that landed takes the edit frame away,
+  // and no further click follows. The last slice's timeout carries what the page and the hearth said.
+  const confirm = wiki().locator('button[title="Confirm changes to this tiddler"]');
+  const confirmed = (t: string): boolean => !!document.querySelector("#projection")?.shadowRoot
+    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]:not(.tc-tiddler-edit-frame)`);
+  const TRIES = 4;
+  for (let n = 1; n < TRIES; n++) {
+    await confirm.click();
+    if (await page!.waitForFunction(confirmed, title, { timeout: WAIT / TRIES }).then(() => true, () => false)) return;
+    if (await confirm.count() === 0) break;
+  }
+  if (await confirm.count() > 0) await confirm.click();
+  await page!.waitForFunction(confirmed, title, { timeout: WAIT / TRIES })
+    .catch(told(`the confirmed ${title} never stood out of its edit frame`));
+}
+
+/**
+ * A wait that times out carries what the page and the hearth said, so a red run names its own trigger: CI uploads no
+ * scratch, and the afterAll's hearth.log and page.log stay on the runner.
+ */
+function told(what: string): (err: unknown) => never {
+  return (err) => {
+    throw new Error(`${what}: ${String((err as Error)?.message ?? err)}\n--- page ---\n${consoleLines.slice(-80).join("\n")}\n--- hearth ---\n${hearth?.bootLog().slice(-3000) ?? ""}`);
+  };
+}
+
+/**
+ * A barrier behind every act relayed so far. The island answers acts in the order they left the page, so a throwaway
+ * tiddler made through the page's editor paints only after each earlier act ran; an absence read after it has waited
+ * on the island's side of the wire, never on the page's alone.
+ */
+async function raiseSentinel(): Promise<void> {
+  const title = `lar:///t/link/sentinel-${++sentinelCount}`;
+  await makeTiddler(title, "a barrier behind the relayed clicks");
+  await closeTiddler(title);
 }
 
 async function closeTiddler(title: string): Promise<void> {
   await wiki().evaluate((host, t) => (host.shadowRoot!.querySelector(`.tc-tiddler-frame[data-tiddler-title="${t}"] button[title="Close this tiddler"]`) as HTMLElement).click(), title);
   await page!.waitForFunction((t) => !document.querySelector("#projection")?.shadowRoot
-    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), title, { timeout: WAIT });
+    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), title, { timeout: WAIT })
+    .catch(told(`the closed ${title} never left the river`));
 }
 
 /** Record `defaultPrevented` of each click as it reaches the document, after the sink's handler ran. */
@@ -94,6 +136,45 @@ async function armDefaultProbe(): Promise<void> {
     document.addEventListener("auxclick", note);
   });
 }
+/**
+ * ONE CLICK ON THE INTERNAL LINK, ENDED BY THE ISLAND'S ANSWER. The click names the render target the page shows; the island
+ * either opens beta or answers that very target with a refusal, which the page paints into its words layer
+ * (`output[data-lar-for][data-lar-reason]`, `projection-sink.ts`). An observer armed before the click records every word
+ * painted for the clicked target (a repaint may drop the words straight after), and the attempt ends on whichever comes
+ * first: `arrived`, or the refusal's reason. The timeout only bounds a silence, and a silence fails; it never retries.
+ */
+async function clickInternalLink(): Promise<"arrived" | string> {
+  const link = wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first();
+  const target = await link.evaluate((a) => {
+    for (let node: Element | null = a; node; node = node.parentElement) {
+      const id = node.getAttribute("data-control-id") ?? node.getAttribute("data-lar-rid");
+      if (id) return id;
+    }
+    return null;
+  });
+  expect(target, "CONTROL: the internal link names the render target its click relays").not.toBeNull();
+  await wiki().evaluate((host, t) => {
+    const w = globalThis as unknown as { __refused: string[]; __refusalWatch?: MutationObserver };
+    w.__refused = [];
+    w.__refusalWatch?.disconnect();
+    const note = (node: Node): void => {
+      if (node instanceof HTMLElement && node.matches("output[data-lar-reason]") && node.dataset["larFor"] === t) w.__refused.push(node.dataset["larReason"]!);
+    };
+    w.__refusalWatch = new MutationObserver((records) => {
+      for (const r of records) { if (r.type === "attributes") note(r.target); else r.addedNodes.forEach(note); }
+    });
+    w.__refusalWatch.observe(host.shadowRoot!, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-lar-reason"] });
+  }, target!);
+  await link.click();
+  const answer = await page!.waitForFunction((t) => {
+    if (document.querySelector("#projection")?.shadowRoot?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`)) return "arrived";
+    return (globalThis as unknown as { __refused: string[] }).__refused[0] ?? false;
+  }, BETA, { timeout: WAIT }).then((h) => h.jsonValue() as Promise<string>)
+    .catch(async (e) => { throw new Error(`${e}\nstory=${JSON.stringify(await story())}\n${consoleLines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-40).join("\n")}`); });
+  await wiki().evaluate(() => { (globalThis as unknown as { __refusalWatch?: MutationObserver }).__refusalWatch?.disconnect(); });
+  return answer;
+}
+
 async function lastClick(): Promise<{ prevented: boolean; button: number; ctrl: boolean }> {
   return page!.evaluate(() => (globalThis as unknown as { __clicks: Array<{ prevented: boolean; button: number; ctrl: boolean }> }).__clicks.at(-1)!);
 }
@@ -114,6 +195,14 @@ beforeAll(async () => {
   browser = await chromium.launch({ headless: true, ...(process.env["LAR_CHROMIUM"] ? { executablePath: process.env["LAR_CHROMIUM"] } : {}) });
   context = await browser.newContext();
   await armTestCustody(context, "golden-whole-road");
+  // These goldens walk the worker-rendered view, the named floor beneath the mirror: the page shows the mirror, so every page here shows the floor.
+  await context.addInitScript(() => {
+    document.addEventListener("DOMContentLoaded", () => {
+      const style = document.createElement("style");
+      style.textContent = "#mirror{display:none !important} #projection{display:block !important}";
+      document.head.append(style);
+    });
+  });
   // The external href reaches no network: the click's browser default opens a tab, and the tab loads nothing.
   await context.route(/^https?:\/\/example\.test\//, (route) => route.fulfill({ status: 200, contentType: "text/html", body: "<title>outside</title>" }));
   context.on("page", (p) => { opened.push(p); });
@@ -136,10 +225,12 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
   test("W1 — the world stands: alpha carries the three targets, beta waits closed, the story holds alpha alone", async () => {
     await page!.goto(bannerUrl);
     await awaitLive(page!);
-    await closeTiddler("GettingStarted");
+    // The island opens the wiki's own default story (its landing, not stock's GettingStarted since the floor replays): close whatever it opened.
+    for (const title of await story()) await closeTiddler(title);
     await makeTiddler(BETA, golden.world.tiddlers[1]!.text);
     await closeTiddler(BETA);
     await makeTiddler(ALPHA, golden.world.tiddlers[0]!.text.replace("[ext[outside|https://example.test/]]", "[[outside|https://example.test/]]"));
+    // barrier: makeTiddler and closeTiddler each wait for the frame to stand or leave in the river, so the island has answered every act before the story read
     expect(await story()).toEqual([ALPHA]);
     await armDefaultProbe();
   });
@@ -162,20 +253,29 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
 
   test("W3 — an ordinary click navigates: beta opens in the river and the page cancels the browser default", async () => {
     const before = opened.length;
-    await wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first().click();
+    // THE CLICK MAY MEET A RETIRED TARGET. A relayed act names the render target the page showed, and the island answers
+    // `stale-target` to an act whose target a newer frame replaced (W1 ends on the editor's confirm, and the island may still
+    // repaint the river after its answer). Each attempt ends on the island's own answer to that click: beta's arrival, or its
+    // refusal. A named `stale-target` clicks the fresh target the newer frame painted; any other refusal fails by name.
+    const TRIES = 3;
+    let answer = "";
+    for (let n = 0; n < TRIES; n++) {
+      answer = await clickInternalLink();
+      if (answer !== "stale-target") break;
+    }
+    expect(answer, "the island opened beta for the click (a refusal names its reason)").toBe("arrived");
     // The page's template opens a followed link below its source (`tiddlywiki.openLinkFromInsideRiver`), where the
     // golden's bare navigator world has no source frame; the claim is that beta joins the story.
-    await page!.waitForFunction((t) => !!document.querySelector("#projection")?.shadowRoot
-      ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), BETA, { timeout: 20_000 })
-      .catch(async (e) => { throw new Error(`${e}\nstory=${JSON.stringify(await story())}\n${consoleLines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-40).join("\n")}`); });
     expect(await story()).toEqual([ALPHA, BETA]);
     expect((await lastClick()).prevented).toBe(true);
     expect(opened.length, "no tab opened").toBe(before);
     await closeTiddler(BETA);
     expect(await story()).toEqual([ALPHA]);
+    navigated = true;
   });
 
-  test("W4 — a modified click and a middle click leave the browser default standing and the story holds", async () => {
+  test("W4 — a modified click and a middle click leave the browser default standing and the story holds", async (ctx) => {
+    if (!navigated) ctx.skip();
     const link = wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first();
     const before = opened.length;
     await link.click({ modifiers: ["Control"] });
@@ -184,21 +284,27 @@ describe("golden 01 on the whole road: a staged hearth, the page it serves, a re
     await link.click({ button: "middle" });
     await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 2);
     expect(await lastClick()).toMatchObject({ prevented: false, button: 1 });
+    await raiseSentinel();
     expect(await story()).toEqual([ALPHA]);
   });
 
-  test("W5 — an external href never relays: the default stands and the story holds", async () => {
+  test("W5 — an external href never relays: the default stands and the story holds", async (ctx) => {
+    if (!navigated) ctx.skip();
     const before = opened.length;
     await wiki().locator(".tc-story-river a.tc-tiddlylink-external").first().click();
     await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 1);
     expect((await lastClick()).prevented).toBe(false);
+    await raiseSentinel();
     expect(await story()).toEqual([ALPHA]);
   });
 
-  test("W6 — an unbound span raises no act: the default stands and the story holds", async () => {
+  test("W6 — an unbound span raises no act: the default stands and the story holds", async (ctx) => {
+    if (!navigated) ctx.skip();
     const before = opened.length;
     await wiki().locator(".tc-story-river span.plain").first().click();
-    expect((await lastClick()).prevented).toBe(false);
+    const clicked = await lastClick();   // the sentinel's own clicks come after: read this one's verdict first
+    await raiseSentinel();
+    expect(clicked.prevented).toBe(false);
     expect(opened.length).toBe(before);
     expect(await story()).toEqual([ALPHA]);
   });

@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/ci-ground-d85875aa031f75a1b210cb8716f57581b2b65ba6.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP ci-ground d85875aa031f75a1b210cb8716f57581b2b65ba6
+read: the controller's own diff read of G55 (tools/browser-node-boundary.mjs; reds 8a98f07bb, green 07e50957a) and G56 (gate-sync-server adapterConnected hold; red 85159c043, green 56f68280c), the heavy roster line (13252c2c7); a Luna cold read (gpt-6-luna, /home/joshu/.lares-scratch/ci-ground/luna-read/final.md) LAND-AFTER-CURES: P2 peer edges (cured 5526e278d, red first) and P2 a throwing connect left held channels open (cured d85875aa0, red first); CI green run 42311085743.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A4_SLOkXxCzZXdSGZwqEVtVuIv6_qvO0fe1Q2rG62qg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

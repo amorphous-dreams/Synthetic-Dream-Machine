@@ -72,7 +72,7 @@ export function frameHex(family: string): string {
 }
 
 /**
- * The entity alternation a scan stands where a hand-listed code once stood — `&#x(?:0001|0011);`.
+ * The entity alternation a scan stands, derived from the declared families and never hand-listed — `&#x(?:0001|0011);`.
  *
  * ── WHAT TRAVELS, AND WHAT STAYS ────────────────────────────────────────────────────────────────
  * The SET travels. The PATTERN does not. A reader interpolates this into its OWN `new RegExp` and

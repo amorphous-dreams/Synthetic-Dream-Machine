@@ -5,9 +5,20 @@
  * Layer B (mesh):      buildGenesisDoc(inputs) — platform-neutral Automerge construction.
  * Layer C (this file): write artifact bytes to disk.
  *
- * Corpus memes (bags/lares, bags/lararium) load at runtime via the bag store
- * recipe stack. Oracle tiddlers (runtime DocUrls) write after repo.import() in
- * reconcileWellKnownTiddlers(). Neither belongs here.
+ * TWO BAKES, BY INTENT. Genesis carries CODE (the engine, the memetic-wikitext grammar, the boot shadows, the stock themes and
+ * the floor's plugins offering) beside the FOUNDING FLOOR (one history-free snapshot per public house-canon bag, under one
+ * manifest the seed names: the static floor every wiki's recipe composes read-only through `@oracle`, the fallback an offline
+ * founding stands on and the vessel pin's starting point). The two move on different clocks:
+ *
+ *   · THE DEVELOP BAKE (`build:genesis`, the default, and every staged bake `lares vessel bake` runs) re-cuts the code and
+ *     CARRIES the floor: `carryGenesisFloor` reads the snapshots the checkout's tracked `genesis/` names, byte for byte, and
+ *     re-stamps only the manifest's code fields (`engine`, `plugins`). A canon edit on develop moves no genesis byte.
+ *   · THE RELEASE BAKE (`build:genesis-release`, a `main` release's cut) re-cuts the floor from canon as well: `cutGenesisFloor`
+ *     reads the checkout's tracked carriers (`bags/lares` and `bags/lararium` always; every other holding but the public board
+ *     `crossroads`, and only where the bag's own `meta.mem` declares `cap-tier = "public"`).
+ *
+ * The LIVE house-canon documents stay outside both: they rest in the Kahu realm, a founding mints them, and no seed row or
+ * catalog row names one. (lar:///ha.ka.ba/lararium/node/genesis-island#/the-floor-rides-releases)
  *
  * Determinism invariant:
  *   The KUPONO law (`genesis-actor-seed`): actorSeed folds ONLY what every Lararium shares and boots
@@ -16,8 +27,9 @@
  *   Nothing per-operator or per-place folds: no bags/ working copy, no draft, no file on one machine
  *   alone. Two builds of one commit, from any checkout location, produce identical seed/CAS bytes.
  *
- * Run via:  tsx scripts/build-genesis-island.ts
- * Or via:   pnpm --filter @lararium/node build:genesis
+ * Run via:  pnpm --filter @lararium/node build:genesis            (the develop bake: code re-cut, floor carried)
+ *           pnpm --filter @lararium/node build:genesis-release    (the release bake: code and floor re-cut)
+ * Or via:   tsx scripts/build-genesis-island.ts [--release] [--genesis <dir>]
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync }              from "fs";
@@ -27,10 +39,10 @@ import { repoRoot } from "@lararium/mesh/node";
 import {
   sha256HexBytesSync,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
+  isStockTw5PluginTitle,
   buildGenesisDoc,
   computeEngineCid,
-  computeGrammarCid,
-  computePluginsCid,
+  genesisFloorOffering,
   verifyGenesisArtifact,
   verifyPluginAttestation,
   type GenesisInputs,
@@ -44,7 +56,7 @@ import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
 import { deriveGenesisActorSeed, genesisPackedPluginFiles } from "../src/genesis-actor-seed.js";
-import { cutGenesisFloor } from "../src/genesis-floor.js";
+import { carryGenesisFloor, cutGenesisFloor } from "../src/genesis-floor.js";
 
 // ---------------------------------------------------------------------------
 // Path constants
@@ -67,12 +79,17 @@ function resolveGenesisDir(): string {
   return resolve(flagged ?? process.env["LAR_GENESIS"] ?? DEFAULT_GENESIS_DIR);
 }
 
+/** The release bake re-cuts the floor from canon; every other bake carries the floor the tracked genesis names. */
+function releaseBake(): boolean {
+  return process.argv.slice(2).includes("--release");
+}
+
 function readPluginAttestations(): Map<string, PluginBuildAttestation> {
   const out = new Map<string, PluginBuildAttestation>();
   if (!existsSync(LARES_TW5_PLUGIN_ATTESTATION)) return out;
   const att = JSON.parse(readFileSync(LARES_TW5_PLUGIN_ATTESTATION, "utf8")) as PluginBuildAttestation;
-  if (att.format !== "lararium-tw5-plugin-build/v1") {
-    throw new Error(`[genesis] unsupported plugin attestation format: ${att.format}`);
+  if (att.format !== "lararium-tw5-plugin-build") {
+    throw new Error(`[genesis] the plugin attestation names the format ${JSON.stringify(att.format)}: it lacks the plugin build shape ("lararium-tw5-plugin-build")`);
   }
   out.set(att.canonicalTitle, att);
   return out;
@@ -89,7 +106,8 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
  * seed overturned an operator's plugin epoch.
  *
  * So the class reads from the DECLARATION, never the path: a plugin declares a plugin envelope (an object
- * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI.
+ * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI, and a stock TW5
+ * plugin (`build-tw5-themes.ts`) by its title's TW5-reserved namespace (`isStockTw5PluginTitle`).
  */
 async function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Promise<GenesisPluginEntry[]> {
   const entries: GenesisPluginEntry[] = [];
@@ -114,6 +132,9 @@ async function collectPlugins(attestations: Map<string, PluginBuildAttestation>)
       if (typeof meta["source"]  === "string") source  = meta["source"];
     } catch { /* unparseable — it declares nothing, so it stands as base seed */ }
     if (id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI) kind = "grammar";
+    // A stock TW5 plugin (the vanilla and snowwhite themes, packed from the core's own revision) declares itself by its title's
+    // TW5-reserved namespace: it ships in the boot set and folds into no epoch region.
+    if (kind === "plugin" && isStockTw5PluginTitle(id)) kind = "stock";
 
     const att = attestations.get(id);
     if (att && att.pluginJsonSha256 !== sha) {
@@ -220,7 +241,33 @@ async function main(): Promise<void> {
 
   // Layer B: build genesis doc — pure mesh, no fs.
   // Region folds are pure over the exact inputs buildGenesisDoc consumes, so the floor can name them without a provisional second bake.
-  const floor = cutGenesisFloor({ repoRoot: REPO_ROOT, engine: computeEngineCid(coreSha256), grammar: computeGrammarCid(plugins), plugins: computePluginsCid(plugins) });
+  // THE FLOOR'S PLUGINS OFFERING: every blob the mount loads beside the core, signed by the hand the actor seed derives
+  // (`genesisOfferorSeed`), so one tree bakes one offering. Provenance names what is immutable without re-minting genesis at
+  // each checkout commit: a stock theme rides the core's own revision (the core blob's sha256); a house-built blob names the
+  // content address of the tree it packs from (its attestation's manifest digest, else its own bytes); its path is where its
+  // bytes rest in this tree's genesis CAS.
+  const offering = await genesisFloorOffering({
+    actorSeed, plugins,
+    provenanceOf: (p) => ({
+      source:  p.source ?? "lar:///ha.ka.ba/lararium/genesis",
+      commit:  p.kind === "stock" ? coreSha256 : (p.attestation?.sourceManifestSha256 ?? p.attestation?.moduleManifestSha256 ?? p.sha256),
+      path:    `genesis/cas/${p.sha256}`,
+      licence: p.license ?? "MIT",
+      ...(p.author ? { author: p.author } : {}),
+    }),
+  });
+  // THE FLOOR RIDES RELEASES: a release bake cuts it from canon; a develop bake carries the snapshots the checkout's tracked
+  // genesis names (read before any write, so a bake into that same dir reads the floor it replaces) and re-stamps the code fields.
+  const release = releaseBake();
+  const floorArgs = { engine: computeEngineCid(coreSha256), plugins: offering.cid };
+  const cut = release
+    ? cutGenesisFloor({ repoRoot: REPO_ROOT, ...floorArgs })
+    : carryGenesisFloor({ genesisDir: DEFAULT_GENESIS_DIR, ...floorArgs });
+  console.log(release
+    ? "[genesis] RELEASE BAKE: the floor re-cuts from the checkout's canon carriers"
+    : `[genesis] develop bake: the floor carries forward from ${DEFAULT_GENESIS_DIR} (snapshots byte for byte; a release bake re-cuts them)`);
+  const floor = { ...cut, offering: { bytes: offering.bytes, cid: offering.cid } };
+  console.log(`[genesis] floor plugins offering = ${offering.cid}  (${offering.offering.blobs.length} blob(s), offeror ${offering.offering.offeror.slice(0, 16)}…)`);
   const inputs: GenesisInputs = {
     floor,
     actorSeed,
@@ -253,7 +300,7 @@ async function main(): Promise<void> {
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
 
-  console.log(`[genesis] ✓ floor  ${floor.manifestCid}  lares=${floor.lares.cid} (${floor.laresRows} rows)  lararium=${floor.lararium.cid} (${floor.larariumRows} rows)`);
+  console.log(`[genesis] ✓ floor (${release ? "cut" : "carried"})  ${floor.manifestCid}  ${Object.keys(floor.snapshots).sort().map((slug) => `${slug}=${floor.snapshots[slug]!.cid} (${floor.rows[slug]} rows)`).join("  ")}`);
   console.log(`[genesis] ✓ genesis/cas  ${artifact.casEntries.length} blob file(s) by CID (${casWrote} newly written)`);
   console.log(`[genesis] ✓ seed.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
   console.log(`[genesis] ✓ blobs(meta)=${counts.blobCount}  tiddlers=${counts.tiddlerCount}`);

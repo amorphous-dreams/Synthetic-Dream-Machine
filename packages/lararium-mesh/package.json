@@ -12,17 +12,69 @@
       "import": "./dist/agile-digest.js",
       "types": "./dist/agile-digest.d.ts"
     },
+    "./ddate": {
+      "import": "./dist/ddate.js",
+      "types": "./dist/ddate.d.ts"
+    },
+    "./entropy-door": {
+      "import": "./dist/entropy-door.js",
+      "types": "./dist/entropy-door.d.ts"
+    },
+    "./oracle-cast": {
+      "import": "./dist/oracle-cast.js",
+      "types": "./dist/oracle-cast.d.ts"
+    },
     "./bures-metric": {
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"
+    },
+    "./wire-names": {
+      "import": "./dist/wire-names.js",
+      "types": "./dist/wire-names.d.ts"
+    },
+    "./record-port": {
+      "import": "./dist/record-port.js",
+      "types": "./dist/record-port.d.ts"
+    },
+    "./executable-class": {
+      "import": "./dist/executable-class.js",
+      "types": "./dist/executable-class.d.ts"
+    },
+    "./port-lease": {
+      "import": "./dist/port-lease.js",
+      "types": "./dist/port-lease.d.ts"
     },
     "./lar-camera": {
       "import": "./dist/lar-camera.js",
       "types": "./dist/lar-camera.d.ts"
     },
+    "./family": {
+      "import": "./dist/family.js",
+      "types": "./dist/family.d.ts"
+    },
     "./carrier-type": {
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
+    },
+    "./carrier-form": {
+      "import": "./dist/carrier-form.js",
+      "types": "./dist/carrier-form.d.ts"
+    },
+    "./meme-merge": {
+      "import": "./dist/meme-merge.js",
+      "types": "./dist/meme-merge.d.ts"
+    },
+    "./meme-merge-git": {
+      "import": "./dist/meme-merge-git.js",
+      "types": "./dist/meme-merge-git.d.ts"
+    },
+    "./cas": {
+      "import": "./dist/cas.js",
+      "types": "./dist/cas.d.ts"
+    },
+    "./cas-transit": {
+      "import": "./dist/cas-transit.js",
+      "types": "./dist/cas-transit.d.ts"
     },
     "./content-handle": {
       "import": "./dist/content-handle.js",
@@ -31,6 +83,10 @@
     "./cascade": {
       "import": "./dist/cascade.js",
       "types": "./dist/cascade.d.ts"
+    },
+    "./keyslot-door": {
+      "import": "./dist/keyslot-door.js",
+      "types": "./dist/keyslot-door.d.ts"
     },
     "./crypto": {
       "import": "./dist/crypto.js",
@@ -44,9 +100,17 @@
       "import": "./dist/capture/harvest.js",
       "types": "./dist/capture/harvest.d.ts"
     },
+    "./plane-labels": {
+      "import": "./dist/plane-labels.js",
+      "types": "./dist/plane-labels.d.ts"
+    },
     "./lar-uris": {
       "import": "./dist/lar-uris.js",
       "types": "./dist/lar-uris.d.ts"
+    },
+    "./hearth-floor-pins": {
+      "import": "./dist/hearth-floor-pins.js",
+      "types": "./dist/hearth-floor-pins.d.ts"
     },
     "./linearity-gate": {
       "import": "./dist/linearity-gate.js",
@@ -108,6 +172,18 @@
       "import": "./dist/sensorium-fusion.js",
       "types": "./dist/sensorium-fusion.d.ts"
     },
+    "./iris": {
+      "import": "./dist/iris.js",
+      "types": "./dist/iris.d.ts"
+    },
+    "./lent-faces": {
+      "import": "./dist/lent-faces.js",
+      "types": "./dist/lent-faces.d.ts"
+    },
+    "./chore-ask": {
+      "import": "./dist/chore-ask.js",
+      "types": "./dist/chore-ask.d.ts"
+    },
     "./host-task": {
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
@@ -123,6 +199,10 @@
     "./worldline": {
       "import": "./dist/worldline.js",
       "types": "./dist/worldline.d.ts"
+    },
+    "./projection-filter": {
+      "import": "./dist/projection-filter.js",
+      "types": "./dist/projection-filter.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -131,15 +211,16 @@
     "clean": "node ../../tools/clean-output.mjs dist",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run",
     "dev": "tsx src/index.ts"
   },
   "devDependencies": {
     "tsx": "4.23.15",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   },
   "dependencies": {
-    "@automerge/automerge": "3.4.1",
+    "@automerge/automerge": "3.5.0",
     "@automerge/automerge-repo": "2.6.0-alpha.5",
     "@automerge/automerge-repo-network-messagechannel": "2.6.0-alpha.5",
     "@automerge/automerge-repo-network-websocket": "2.6.0-alpha.5",

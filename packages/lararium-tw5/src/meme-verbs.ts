@@ -6,8 +6,9 @@
  *
  *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
+ *   meme-patch    { recipe?, bag?, uri, slot, append | replace, base } → PlaceMemeReceipt & { slot } | { decision: absent }
  *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
- *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, canonicalHash?, readFrom?, tombstonedIn?, unreached? }
+ *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, retracted?, canonicalHash?, readFrom?, tombstonedIn?, unreached? }
  *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
  *
  * `meme-list` answers every ROOT the seat holds with the canonical hash a writer hands back as its base,
@@ -16,9 +17,10 @@
  * named recipe lists the roots its whole stack resolves, each row naming the bag that answered
  * (`listRecipeStack`). `tree` nests each root's slot tree. `meme-delete` removes the whole group through `removeMeme` — a
  * stale `base` answers `conflict` and moves nothing; an absent root answers `absent`. A named recipe's delete
- * reads the meme where the stack answers it and tombstones it where the tombstone shadows that bag
- * (`deleteThroughRecipe`); its receipt names the bag that answered the root (`readFrom`) and each bag a
- * tombstone landed in (`tombstonedIn`).
+ * reads the meme where the stack answers it and removes it where a tombstone shadows that bag
+ * (`deleteThroughRecipe`): a member with a live record in a layer beneath leaves as a tombstone (`tombstoned`), any other
+ * retracts plainly from its own layer (`retracted`), so no kāpae rises over nothing. Its receipt names the bag that
+ * answered the root (`readFrom`) and each bag the delete landed in (`tombstonedIn`).
  *
  * `to` names a target — mem · md · html · tid · json (`meme-project.ts`); `meta` rides on `md` alone,
  * the `.md.meta` sidecar. The anchor projects through the in-VM face (`$tw.lares.meme.project`), so
@@ -58,19 +60,25 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-verbs
  */
 
+import { wearOf, refuseEffectLedgerWrite } from "@lararium/mesh";
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, isSystemCanonBag, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
+  carrierHashOf, isWorkingLayerBag, overrideBaseOf,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
+import { componentsBeneath } from "@lararium/mesh/family";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { IslandContext } from "./island-context.js";
-import { groupOfMeme, holdsUnreadPointer, isMemeRoot, listMemePage, listOneMeme, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeListing, type MemeSink } from "./place-meme.js";
+import { familyViewOf, holdsUnreadPointer, isMemeRoot, listMemePage, listOneMeme, patchSlotCarrier, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, SLOT_MISSING_CODE, STALE_BASE_CODE, wikiMemeSink, type MemeListing, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
+import { MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import { pinTargetsOf, profileOf } from "./weave/index.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import { wornOrigin } from "./verb-dispatcher.js";
+import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -93,30 +101,56 @@ export interface MemeVerbOptions {
    *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
    *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
   readonly slotStore?: (slug: string, kind: WikiSlotKind, bag: string, opts: { mint: boolean }) => Promise<LarTiddlerStore | null>;
-  /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a system canon bag asks it
+  /**
+   * THE LAYER THIS FACE'S SAVES OF A WIKI LAND IN (cabal-realm#/the-workbench): `working` where the face holds a writer's seat
+   * in the wiki's workbench, `personal` where it holds none (seated `read`, or seated nowhere while another face of the vessel
+   * stands the wiki), null where no layer takes a write. Absent, a put lands in the recipe's designated bag as written.
+   */
+  readonly writeSlot?: (slug: string) => Promise<"working" | "personal" | null>;
+  /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a house canon bag asks it
    *  BEFORE the cap gate, so a realm steward's grant stands in for no check. Absent → a stranger (fail closed). */
   readonly kahuReach?: KahuReachSource;
+  /** A house canon bag's FLOOR SNAPSHOT as a read-only store, off the floor this island mounted (`IslandContext.floorCanon`);
+   *  null where the floor carries none of it. A read door answers from it where the hand holds no read on the live document. */
+  readonly floorCanon?: (bag: string) => LarTiddlerStore | null;
+  /**
+   * EACH HAT REACHED BY NAME: a LIT sibling face's own lane. Set, the verbs reach this one bag of that face's own (its
+   * document, as the island resolved it for that face) and nothing else: a container naming any other bag, any recipe or
+   * any realm refuses `face-lane-holds-its-own` before a cap ask, a read or a write. The cap, the Kahu predicate and the
+   * gate stand as on every door; the write seals under the face's own chain because its session booked it.
+   */
+  readonly faceLane?: { readonly bag: string; readonly store: LarTiddlerStore };
+}
+
+/** The lane's one bag, or a refusal by name: a lit sibling's verb reaches only that face's own document. */
+function laneResolved(lane: NonNullable<MemeVerbOptions["faceLane"]>, target: Omit<MemeArgs, "uri">, origin: ChangeOrigin): Resolved {
+  const named = target.bag && !target.realm && !target.recipe ? bagUriOf(target.bag) : null;
+  if (named !== lane.bag) {
+    throw new VerbRefusal("face-lane-holds-its-own", `face-lane-holds-its-own: a lit sibling face reaches its own lane alone (--bag ${lane.bag}); this container names another, and nothing moved.`);
+  }
+  return { bag: lane.bag, sink: storeMemeSink(lane.store, lane.bag, origin), anchor: false };
 }
 
 /** The daemon's options off its island context — reach across both registry planes (access ≠ load). */
 export function memeVerbOptions(
-  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "oracleUrl">,
+  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "faceCatalogUrl" | "oracleUrl" | "floorCanon">,
   /** The instance-slot doc url by THE ONE resolver; null when nothing stands and `mint` is false. */
   slotDocUrl: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>,
-  /** A system canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
+  /** A house canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
   systemCanonUrl?: (bag: string) => Promise<string | null>,
 ): MemeVerbOptions {
-  const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
+  const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;
   const oracle  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
   const planes = [...(catalog ? [catalog] : []), ...(oracle ? [oracle] : [])];
   return {
     composite: ctx.composite,
     tw5: ctx.tw5,
+    ...(ctx.floorCanon ? { floorCanon: (bag: string) => { const rows = ctx.floorCanon!(bag); return rows ? floorReadFace({ rows: [rows], bagId: bag }) : null; } } : {}),
     slotStore: async (slug, kind, bag, opts) => {
       const url = await slotDocUrl(slug, kind, opts);
       if (!url) return null;
       const handle = await findOrThrow(ctx.repo, url, `${bag} (${kind} slot of ${slug})`);
-      return new AutomergeDocStore(handle, bag);
+      return new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
     },
     // The vessel's own composition shadows a system wiki's default: the one reader, own first.
     recipeOf: async (slug) => (await effectiveRecipeOf(slug, { catalog, oracle }))?.record ?? null,
@@ -128,16 +162,23 @@ export function memeVerbOptions(
       const realm = await realmReach(key, bag, namedRealm);
       if (realm) return realm;
       if (namedRealm) return null;
-      for (const accessor of planes) {
-        const handle = await accessor.find(key).catch(() => null);
-        if (handle) return new AutomergeDocStore(handle, bag);
-      }
-      if (systemCanonUrl && isSystemCanonBag(bag)) {
-        const url = await systemCanonUrl(bag).catch(() => null);
-        const handle = url ? await findOrThrow(ctx.repo, url, bag).catch(() => null) : null;
-        if (handle) return new AutomergeDocStore(handle, bag);
-      }
-      return null;
+      // HOUSE CANON'S ONE DOCUMENT: where the vessel names the Kahu realm's standing document for the bag, that document
+      // answers ahead of every registry plane; a registry row that names another document for the bag answers only where the
+      // realm names none (a rig, a vessel outside every realm).
+      const answer = await resolveHouseCanon<LarTiddlerStore>(bag, {
+        realm: systemCanonUrl ? (b) => systemCanonUrl(b).catch(() => null) : undefined,
+        row: async () => {
+          for (const accessor of planes) {
+            const handle = await accessor.find(key).catch(() => null);
+            if (handle) return new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
+          }
+          return null;
+        },
+      });
+      if (answer === null) return null;
+      if ("row" in answer) return answer.row;
+      const handle = await findOrThrow(ctx.repo, answer.realm, bag).catch(() => null);
+      return handle ? new AutomergeDocStore(handle, bag, wearOf(ctx.repo)) : null;
     },
     // The realm's WRITE answer: the standing registration's doc as a writable store, for a steward alone.
     realmWritable: async (bag, namedRealm) => {
@@ -147,7 +188,7 @@ export function memeVerbOptions(
       if (!mayWriteRealmBag(standing.bags, bag, nym)) return null;
       const rec = standing.bags.get(bag)!;
       const handle = await findOrThrow(ctx.repo, rec.docUrl, `${bag} (realm bag)`).catch(() => null);
-      return handle ? new AutomergeDocStore(handle, bag) : null;
+      return handle ? new AutomergeDocStore(handle, bag, wearOf(ctx.repo)) : null;
     },
   };
 
@@ -170,8 +211,20 @@ export function memeVerbOptions(
     const standing = (await realmStanding(namedRealm))?.bags.get(key);
     if (!standing) return null;
     const handle = await findOrThrow(ctx.repo, standing.docUrl, `${bag} (realm bag)`).catch(() => null);
-    return handle ? new AutomergeDocStore(handle, bag) : null;
+    return handle ? new AutomergeDocStore(handle, bag, wearOf(ctx.repo)) : null;
   }
+}
+
+/** THE ANCHOR'S HOP CARRIES THE FACE: each member the wiki sink lands or removes names the origin's face on the shore first,
+ *  so the shore's write of it lands under that face's actor. An origin that names no face hands the sink back unchanged. */
+function wornWikiSink(sink: MemeSink, tw5: object, origin: ChangeOrigin): MemeSink {
+  if (origin.face === undefined) return sink;
+  const face = origin.face;
+  return {
+    ...sink,
+    land: (fields) => { wikiWearsNext(tw5, String((fields as { title?: unknown }).title ?? ""), face); return sink.land(fields); },
+    tombstone: (title) => { wikiWearsNext(tw5, title, face); return sink.tombstone(title); },
+  };
 }
 
 /** A bare slug becomes its bag URI; a full `lar:` URI passes through. */
@@ -194,14 +247,24 @@ function readTarget(args: Readonly<Record<string, unknown>>, verb: string): Meme
 }
 
 /**
+ * A SLUG CARRIES NO MARKER (state/decisions, "Naming freedom and the `@` marker"): the kind-plane segment names the entity, so a
+ * leading `@` on a bag or recipe slug reads as the slug itself (`@notes` -> `notes`), as `bag declare` reads it. A `lar:` URI
+ * passes untouched; a bare `@` names nothing and reads as no slug.
+ */
+function unmarked(slug: string | null): string | null {
+  if (slug === null || slug.startsWith("lar:")) return slug;
+  return slug.replace(/^@/, "") || null;
+}
+
+/**
  * THE CONTAINER LAW, for every meme verb at this door: a content verb names its container. Exactly one of
  * `args.recipe` (a wiki, read or written AS that wiki) or `args.bag` (that one bag) stands; neither, or
  * both, refuses as `no-container` before any cap ask, read or write. No default wiki exists: the daemon's
  * own wiki answers to its explicit name, `recipe: "default"`.
  */
-function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
-  const recipe = optionalStringArg(args, "recipe");
-  const bag = optionalStringArg(args, "bag");
+export function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
+  const recipe = unmarked(optionalStringArg(args, "recipe"));
+  const bag = unmarked(optionalStringArg(args, "bag"));
   const realm = optionalStringArg(args, "realm")?.trim().toLowerCase() || null;
   if (realm && recipe) throw new VerbRefusal("no-container", `no-container: ${verb} --realm names a bag's realm; it cannot accompany args.recipe.`);
   if (recipe && bag) throw new VerbRefusal("no-container", `no-container: ${verb} names both args.recipe and args.bag; name one of them, never both.`);
@@ -223,8 +286,55 @@ async function storeOfBag(opts: MemeVerbOptions, slug: string, bag: string, mode
 }
 
 /**
+ * THE FORK REMEMBERS ITS BASE AT THE MEME DOOR, by the composite's own rule (`override-base.ts`,
+ * `CompositeStore._withOverrideBasesNow`). A put into a wiki's WORKING layer reaches the layer's own store and never
+ * `CompositeStore.put`, so the door names the base itself. A title the layer already holds live keeps the base it named (a
+ * store that replaces records whole would drop it). Any other title names the carrier identity of the first record the
+ * wiki's stack holds beneath the layer, live; a tombstone names none. Like the composite's fork, it asks no read cap: the
+ * base names a hash on the writer's own copy, and the fresher read that weighs it reads canon with none either. An
+ * instrument, never a gate: where a layer beneath stands unreached here (no mount, no reach, no floor), the walk stops and
+ * the copy lands unstamped, as the composite leaves a layer it cannot read now. The walk runs at landing, past the gates.
+ */
+function forkBaseOf(opts: MemeVerbOptions, slug: string, workingBag: string, working: LarTiddlerStore): (title: string) => Promise<string | null> {
+  let beneath: Promise<readonly string[]> | null = null;
+  const stackBeneath = (): Promise<readonly string[]> => (beneath ??= (async () => {
+    const rec = await opts.recipeOf?.(slug);
+    const stack: readonly string[] = rec ? expandRecipe(recipeFromRecord(rec, slug)) : [];
+    const at = stack.indexOf(workingBag);
+    return at < 0 ? [] : stack.slice(at + 1);
+  })());
+  const stores = new Map<string, Promise<LarTiddlerStore | null>>();
+  const storeOf = (bag: string): Promise<LarTiddlerStore | null> => {
+    let hit = stores.get(bag);
+    if (!hit) {
+      hit = storeOfBag(opts, slug, bag, "get").catch(() => null).then((s) => s ?? floorStoreOf(opts, bag));
+      stores.set(bag, hit);
+    }
+    return hit;
+  };
+  return async (title) => {
+    const held = await working.get(title);
+    if (held && held.meta?.deleted !== true) return overrideBaseOf(held);
+    for (const bag of await stackBeneath()) {
+      const store = await storeOf(bag);
+      if (!store) return null;
+      const lower = await store.get(title);
+      if (!lower) continue;
+      return lower.meta?.deleted === true ? null : carrierHashOf(lower.tiddler);
+    }
+    return null;
+  };
+}
+
+/** The sink for one bag's own store; a put into a wiki's working layer forks its override base (`forkBaseOf`). */
+function bagSink(opts: MemeVerbOptions, slug: string, bag: string, store: LarTiddlerStore, origin: ChangeOrigin, mode: "put" | "get"): MemeSink {
+  return storeMemeSink(store, bag, origin, mode === "put" && isWorkingLayerBag(bag) ? forkBaseOf(opts, slug, bag, store) : undefined);
+}
+
+/**
  * Resolve a named wiki's bag + store for a verb. PUT: the recipe record's designated bag, its own
- * store. GET: the whole cascade top-down, the first bag holding a record under the root, live or
+ * store; where that bag names the wiki's working layer and the face holds no writer's seat in its workbench (`writeSlot`),
+ * the put lands in the face's own `personal` layer of the wiki, so the save rests and the answer names the layer. GET: the whole cascade top-down, the first bag holding a record under the root, live or
  * tombstoned; when none does, the designated bag's store (the read answers null there, never a refusal
  * for an absent meme).
  */
@@ -234,18 +344,29 @@ async function reachRecipeBag(
   const rec = await opts.recipeOf?.(slug);
   if (!rec) throw new Error(`meme: recipe "${slug}" not found in any registry plane — run \`lares wiki init ${slug}\` first`);
   const designated = designatedBagOf(rec, slug);
+  // The first layer of the stack that reaches a store at all: where the designated bag stands unreached for this face (no seat
+  // in the wiki's workbench), an absent meme still reads absent there, never a refusal.
+  let reachable: { bag: string; store: LarTiddlerStore } | null = null;
   if (mode === "get" && uri) {
     for (const bag of expandRecipe(recipeFromRecord(rec, slug))) {
       const store = await storeOfBag(opts, slug, bag, "get");
       if (!store) continue;
+      reachable ??= { bag, store };
       // THE FIRST BAG THAT HOLDS A RECORD ANSWERS, A TOMBSTONE INCLUDED. A tombstone shadows every bag
       // beneath it, as the wiki's own composite reads it (`CompositeStore.get`): the read stops there and
       // that bag's store answers the meme absent. A bag that holds no record at all lets the walk go on.
       if (await store.get(uri)) return { bag, store };
     }
   }
+  if (mode === "put" && wikiSlotKindOf(slug, designated) === "working" && (await opts.writeSlot?.(slug)) === "personal") {
+    const personal = wikiSlotUri(slug, "personal");
+    const own = await storeOfBag(opts, slug, personal, "put");
+    if (own) return { bag: personal, store: own };
+    throw new Error(`meme: this face holds no writer's seat in the workbench of "${slug}", and its personal layer "${personal}" stands unreached`);
+  }
   const store = await storeOfBag(opts, slug, designated, mode);
   if (store) return { bag: designated, store };
+  if (mode === "get" && reachable) return reachable;
   throw new Error(`meme: recipe "${slug}" designates bag "${designated}", which this island neither mounts${mode === "put" ? " writable" : ""} nor reaches by access`);
 }
 
@@ -275,7 +396,7 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
  * The bag the anchor's cap gate checks: the one the in-wiki cascade routes a `lar:` title to — the same
  * bag the placement will land in through `wikiMemeSink`: the daemon's mounted working layer.
  */
-function anchorBagOf(opts: MemeVerbOptions): string {
+export function anchorBagOf(opts: Pick<MemeVerbOptions, "tw5">): string {
   const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (t: string, d?: string) => string };
   const configured = wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
   if (!configured) throw new NoWorkingLayerRefusal("The meme write into the daemon's own wiki", "Wait until the daemon working layer attaches, or name another container (--recipe <slug> or --bag <slug>).");
@@ -283,6 +404,7 @@ function anchorBagOf(opts: MemeVerbOptions): string {
 }
 
 async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
+  if (opts.faceLane) return laneResolved(opts.faceLane, target, origin);
   if (target.bag) {
     const bag = bagUriOf(target.bag);
     if (target.realm) {
@@ -304,7 +426,7 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
     if (slot) {
       const store = await storeOfBag(opts, slot[1]!, bag, mode);
       if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access`);
-      return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
+      return { bag, sink: bagSink(opts, slot[1]!, bag, store, origin, mode), anchor: false };
     }
     if (mode === "put") {
       // THE REALM FIRST, as the read walks it first. A bag the relation carries is ONE book: a steward's
@@ -321,40 +443,158 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
   }
   if (target.recipe && target.recipe !== "default") {
     const { bag, store } = await reachRecipeBag(opts, target.recipe, mode, target.uri);
-    return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
+    return { bag, sink: bagSink(opts, target.recipe, bag, store, origin, mode), anchor: false };
   }
   // The anchor: the daemon's own wiki, its cascade routing the records to the top bag.
-  return { bag: anchorBagOf(opts), sink: wikiMemeSink(opts.tw5.$tw.wiki), anchor: true };
+  return { bag: anchorBagOf(opts), sink: wornWikiSink(wikiMemeSink(opts.tw5.$tw.wiki), opts.tw5, origin), anchor: true };
+}
+
+/** A house canon bag's floor snapshot, where the floor this island mounted carries one. */
+function floorStoreOf(opts: MemeVerbOptions, bag: string): LarTiddlerStore | null {
+  return isHouseCanonBag(bag) ? (opts.floorCanon?.(bag) ?? null) : null;
+}
+
+/**
+ * THE READ GATE, for every door that reads one container. The read cap gates the bag that answers; and A HOUSE CANON READ WITH
+ * NO CAP ON THE LIVE DOCUMENT READS THE FLOOR: a face outside the Kahu cabal registers no house canon bag (the live documents
+ * rest in the Kahu realm), so where its cap names none, or the island reaches no live document at all, the bag's floor snapshot
+ * answers, read-only and with no cap asked, since the floor's blobs rest public by CID. The answer says so (`floor: true`). A
+ * house canon bag the floor carries no snapshot of (a tier under `public`) keeps its refusal, and a WRITE never comes here: it
+ * asks the Kahu predicate at its own door (`requireKahuReach`).
+ */
+async function resolveRead(
+  opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, cap: VerbContext["cap"],
+): Promise<Resolved & { readonly floor?: true }> {
+  const fromFloor = (bag: string): (Resolved & { readonly floor: true }) | null => {
+    const store = floorStoreOf(opts, bag);
+    return store ? { bag, sink: storeMemeSink(store, bag, origin), anchor: false, floor: true } : null;
+  };
+  let resolved: Resolved;
+  if (opts.faceLane) {
+    // A lane reads its own document alone: no floor snapshot stands in for it.
+    resolved = laneResolved(opts.faceLane, target, origin);
+    const proof = await cap("read", resolved.bag);
+    if (!proof.ok) throw new Error(`cap-denied: read on ${resolved.bag} required (${proof.reason ?? "no reason"})`);
+    return resolved;
+  }
+  try { resolved = await resolveSink(opts, target, origin, "get"); }
+  catch (err) {
+    // No live layer and nothing reaches the bag by access: a house canon bag named outright still reads its floor.
+    const floor = target.bag && !target.realm ? fromFloor(bagUriOf(target.bag)) : null;
+    if (!floor) throw err;
+    return floor;
+  }
+  const proof = await capOf(resolved.realmGrant, cap)("read", resolved.bag);
+  if (proof.ok) return resolved;
+  const floor = resolved.anchor ? null : fromFloor(resolved.bag);
+  if (!floor) throw new Error(`cap-denied: read on ${resolved.bag} required (${proof.reason ?? "no reason"})`);
+  return floor;
 }
 
 export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-put");
+    refuseEffectLedgerWrite(target.uri, "meme put");
     const text = stringArg(args, "text");
     if (!text) throw new Error("meme-put: args.text is required (the whole meme, framed)");
     const base = optionalStringArg(args, "base");
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
-    await requireKahuReach(bag, opts.kahuReach, "meme put");
+    await requireKahuReach(bag, opts.kahuReach, "meme put", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
-    const receipt = await placeMeme({ uri: target.uri, text, baseHash: base }, sink);
-    return { ...receipt };
+    // THE BASE A WIKI'S WRITER READ MAY REST BELOW THE LAYER IT WRITES. `--recipe <slug>` reads through the wiki's stack and
+    // writes its designated layer; where that layer holds no record of the title, the hash the writer named came from a
+    // layer beneath (a house canon page off the floor, a library's). The gate compares like with like: the base stands
+    // where the stack still answers that hash, and the put lands as a copy-up; where the stack answers another, the put
+    // stands off and the receipt names the hash the wiki answers now.
+    let baseHash = base;
+    let shown: string | null = null;
+    if (base && target.recipe && !opts.faceLane && (await sink.read(target.uri)) === undefined) {
+      const below = await resolveRead(opts, target, origin, ctx.cap).catch(() => null);
+      if (below && below.bag !== bag) {
+        const standing = (await readMeme(target.uri, below.sink))?.canonicalHash ?? null;
+        if (standing === base) baseHash = null;
+        else shown = standing;
+      }
+    }
+    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, whatever bag it names, or lands spending one return of a
+    // standing exec lei for the wiki the put names. And ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or a record
+    // that would land carrying `rendered-from`, refuses.
+    const standingRoot = await sink.read(target.uri);
+    refuseRenderedWrite(target.uri, standingRoot, null, "meme put");
+    const wiki = target.recipe ?? (typeof args["bag"] === "string" ? args["bag"] : bag);
+    const vet = async (records: readonly Record<string, unknown>[]): Promise<void> => {
+      for (const record of records) {
+        const title = String(record["title"] ?? target.uri);
+        refuseEffectLedgerWrite(title, "meme put");
+        refuseRenderedWrite(title, null, record, "meme put");
+        await admitSeatExecutable(title, record, "meme put", ctx.asker, { wiki, port: ctx.execLei });
+      }
+    };
+    const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet }, sink);
+    // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`
+    // where the face holds no writer's seat in the wiki's workbench).
+    const layer = target.recipe && target.recipe !== "default" ? wikiSlotKindOf(target.recipe, bag) : null;
+    const landedIn = { bag, ...(layer ? { layer } : {}) };
+    return shown !== null && receipt.decision === "conflict" ? { ...receipt, ...landedIn, canonicalHash: shown } : { ...receipt, ...landedIn };
   };
 }
 
 export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-get");
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "get");
-    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+    const { sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
     // The read hands a person the meme's TEXT: a pointer whose body rests in the content tier refuses by name.
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-get reads no pointer body.`);
     }
-    return { uri: target.uri, meme: await readMeme(target.uri, sink) };
+    return { uri: target.uri, meme: await readMeme(target.uri, sink), ...(floor ? { floor: true } : {}) };
+  };
+}
+
+/**
+ * `meme-patch` — ONE SLOT'S BODY, THROUGH THE PUT'S OWN GATE. The read walks what `meme-get` walks (the same container, the
+ * same read gate); `patchSlotCarrier` edits the slot's record in a copy of the family and recomposes the carrier, which mints
+ * the block check; the put reactor lands that text under the writer's base, so the patch passes every law a put passes: the
+ * Confluence gate, the Kahu predicate, the admin cap, a recipe's copy-up, the layer the answer names. A base is required (a
+ * blind patch would land over bytes the writer never read); a stale one refuses `stale-base` and names the live hash; a slot
+ * the meme does not hold refuses `slot-missing`. Its answer is the put's receipt with the slot named beside it.
+ */
+export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
+  const put = makeMemePutReactor(opts);
+  return async (args, ctx) => {
+    const target = readTarget(args, "meme-patch");
+    refuseEffectLedgerWrite(target.uri, "meme patch");
+    const slot = stringArg(args, "slot").trim();
+    if (!slot) throw new Error("meme-patch: args.slot is required (`#/name`, the slot whose body moves)");
+    if (!/^#\/[^$\s]/.test(slot)) throw new VerbRefusal("patch-malformed", `patch-malformed: args.slot reads \`#/name\`, a slot under the root; got "${slot}".`);
+    const append = typeof args["append"] === "string" ? args["append"] : null;
+    const replace = typeof args["replace"] === "string" ? args["replace"] : null;
+    if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
+    const base = optionalStringArg(args, "base");
+    if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`meme get\` answers for ${target.uri}.`);
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+    const { sink } = await resolveRead(opts, target, origin, ctx.cap);
+    if (await holdsUnreadPointer(target.uri, sink)) {
+      throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-patch reads no pointer body.`);
+    }
+    const read = await patchSlotCarrier({ uri: target.uri, slot, mode: append !== null ? "append" : "replace", text: append ?? replace!, baseHash: base }, sink);
+    const none = { uri: target.uri, slot, landed: [], tombstoned: [], diagnostics: [] };
+    if (read.kind === "absent") return { ...none, decision: "absent", warnings: [] };
+    if (read.kind === "stale") {
+      return { ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
+        warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`meme get\`) and patch against that base.`] };
+    }
+    if (read.kind === "slot-missing") {
+      const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`meme list --tree\` names the slots it holds.`;
+      return { ...none, decision: "refuse", grade: "error", canonicalHash: read.canonicalHash, warnings: [message],
+        diagnostics: [{ from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: SLOT_MISSING_CODE, message }] };
+    }
+    const container: Record<string, string> = {};
+    for (const key of ["recipe", "bag", "realm"]) if (typeof args[key] === "string") container[key] = args[key] as string;
+    return { ...(await put({ ...container, uri: target.uri, text: read.text, base }, ctx)), slot };
   };
 }
 
@@ -374,7 +614,7 @@ function pageLimitOf(raw: unknown): number {
 }
 
 /** One root of a recipe's listing: the listing's own row, and the bag whose record answered it. */
-type StackListing = MemeListing & { readonly bag: string };
+type StackListing = MemeListing & { readonly bag: string; readonly floor?: true };
 
 /**
  * A NAMED RECIPE'S LISTING READS THE STACK, as its `meme-get` does: every root the wiki resolves, each
@@ -406,12 +646,16 @@ async function listRecipeStack(
   // THE READ CAP GATES THE BAG THAT ANSWERS, as the read's own gate does (`meme-get` asks for the one bag
   // its walk stopped at). A slot the wiki composes and nobody registered holds no root and answers none, so
   // it asks for no cap; a bag that answers a root the caller may not read refuses the listing by name.
-  const allowed = new Set<string>();
-  const mayRead = async (bag: string): Promise<void> => {
-    if (allowed.has(bag)) return;
+  // A HOUSE CANON LAYER THE CALLER HOLDS NO READ ON ANSWERS FROM ITS FLOOR SNAPSHOT (`resolveRead`'s law, per layer): the
+  // root lists under the floor's render and its row says so; a root the floor does not carry yet lists nowhere.
+  const allowed = new Map<string, Pick<MemeSink, "titles" | "read"> | null>();
+  const mayRead = async (bag: string): Promise<Pick<MemeSink, "titles" | "read"> | null> => {
+    if (allowed.has(bag)) return allowed.get(bag)!;
     const proof = await cap("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
-    allowed.add(bag);
+    const floor = proof.ok ? null : floorStoreOf(opts, bag);
+    if (!proof.ok && !floor) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    allowed.set(bag, floor ? storeMemeSink(floor, bag, origin) : null);
+    return allowed.get(bag)!;
   };
   const roots: StackListing[] = [];
   let next: string | null = null;
@@ -426,9 +670,9 @@ async function listRecipeStack(
     }
     if (!answered) continue;
     if (roots.length >= page.limit) { next = roots[roots.length - 1]!.uri; break; }
-    await mayRead(answered.bag);
-    const listed = await listOneMeme(uri, answered.sink, page.tree);
-    if (listed) roots.push({ ...listed, bag: answered.bag });
+    const floorSink = await mayRead(answered.bag);
+    const listed = await listOneMeme(uri, floorSink ?? answered.sink, page.tree);
+    if (listed) roots.push({ ...listed, bag: answered.bag, ...(floorSink ? { floor: true as const } : {}) });
   }
   return { recipe: slug, bags: layers.map((l) => l.bag), ...(unreached.length > 0 ? { unreached } : {}), roots, next };
 }
@@ -438,12 +682,10 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
     const target = readContainer(args, "meme-list");
     const tree = args["tree"] === true || args["tree"] === "1" || args["tree"] === "true";
     const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    if (target.recipe && target.recipe !== "default") return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
-    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "get");
-    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
-    return { bag, ...(await listMemePage(sink, page)) };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
+    const { bag, sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
+    return { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
   };
 }
 
@@ -469,7 +711,7 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
  */
 async function deleteThroughRecipe(
   opts: MemeVerbOptions, slug: string, uri: string, base: string | null | undefined, origin: ChangeOrigin,
-  cap: Parameters<VerbReactor>[1]["cap"],
+  cap: Parameters<VerbReactor>[1]["cap"], asker?: Parameters<VerbReactor>[1]["asker"],
 ): Promise<Record<string, unknown>> {
   const rec = await opts.recipeOf?.(slug);
   if (!rec) throw new Error(`meme: recipe "${slug}" not found in any registry plane — run \`lares wiki init ${slug}\` first`);
@@ -478,7 +720,7 @@ async function deleteThroughRecipe(
   if (!stack.includes(designated)) {
     throw new VerbRefusal("recipe-unshadowed", `recipe-unshadowed: recipe "${slug}" designates bag "${designated}", which its own stack never reads; a tombstone there shadows nothing the wiki reads, so meme-delete removes nothing.`);
   }
-  await requireKahuReach(designated, opts.kahuReach, "meme delete");
+  await requireKahuReach(designated, opts.kahuReach, "meme delete", asker);
   const answered = await reachRecipeBag(opts, slug, "get", uri);
   const readProof = await cap("read", answered.bag);
   if (!readProof.ok) throw new Error(`cap-denied: read on ${answered.bag} required (${readProof.reason ?? "no reason"})`);
@@ -496,8 +738,20 @@ async function deleteThroughRecipe(
     // wiki island alone; any other bag with no store stands unreached, by name.
     if (store) layers.push({ bag, store }); else if (!wikiSlotKindOf(slug, bag)) unreached.push(bag);
   }
-  const titles = new Set<string>();
-  for (const layer of layers) for (const t of groupOfMeme(await layer.store.listVisible(), uri)) titles.add(t);
+  // THE FAMILY, BY THE ONE LAW, over the stack as the wiki composes it: the root and its component slots. A
+  // `uri/path` title stands as its own meme and stays.
+  const candidates = new Set<string>();
+  for (const layer of layers) for (const t of await layer.store.listVisible()) if (t === uri || t.startsWith(`${uri}#`)) candidates.add(t);
+  const composed = new Map<string, TiddlerFields>();
+  for (const title of candidates) {
+    for (const layer of layers) {
+      const record = await layer.store.get(title);
+      if (!record) continue;
+      if (!record.meta?.deleted) composed.set(title, record.tiddler as unknown as TiddlerFields);
+      break;
+    }
+  }
+  const titles = new Set<string>(componentsBeneath(familyViewOf(() => candidates, (t) => composed.get(t)), uri));
   const shadowAt = new Map<string, string>();
   const answeredIn = new Set<string>();
   for (const title of titles) {
@@ -531,18 +785,55 @@ async function deleteThroughRecipe(
   }
   // EACH TOMBSTONE LANDS OR NAMES WHY: a write that throws stops none of the others, and the receipt names both
   // halves (`partial`), so a caller never reads a delete that half-landed as one that did not move.
+  // ONE CHANGE PER BAG: the members a bag takes leave together where its document writes atomically. Cross-bag
+  // atomicity cannot exist, so a family split across layers lands as ordered writes, each named.
   const tombstoned: string[] = [];
+  const retracted: string[] = [];
   const failed: Array<{ title: string; bag: string; why: string }> = [];
+  // A KĀPAE ONLY WHERE A LOWER LAYER WOULD SURFACE (operator ruling 2026-11-20): a member with no live record in a layer
+  // beneath its landing bag, and no unreached layer there that might hold one, retracts plainly from that bag.
+  const lowerLive = async (title: string, bag: string): Promise<boolean> => {
+    const at = stack.indexOf(bag);
+    if (unreached.some((other) => stack.indexOf(other) > at)) return true;
+    for (const layer of layers) {
+      if (stack.indexOf(layer.bag) <= at) continue;
+      // A store that stands in for a document it has not read (a degraded or pending blank) counts as unreached.
+      if (layer.store.unknown?.() === true) return true;
+      const record = await layer.store.get(title);
+      if (record && !record.meta?.deleted) return true;
+    }
+    return false;
+  };
+  const perBag = new Map<string, { tombs: string[]; plain: string[] }>();
   for (const [title, bag] of shadowAt) {
-    try { await writers.get(bag)!.tombstone(title, origin); tombstoned.push(title); }
-    catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+    const group = perBag.get(bag) ?? { tombs: [], plain: [] };
+    ((await lowerLive(title, bag)) ? group.tombs : group.plain).push(title);
+    perBag.set(bag, group);
+  }
+  for (const [bag, { tombs, plain }] of perBag) {
+    const writer = writers.get(bag)!;
+    if (typeof writer.writeFamily === "function") {
+      try {
+        await writer.writeFamily([], tombs, origin, { bag, ...(plain.length > 0 ? { retracts: plain } : {}) });
+        tombstoned.push(...tombs); retracted.push(...plain);
+      } catch (err) { for (const title of [...tombs, ...plain]) failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+      continue;
+    }
+    for (const title of tombs) {
+      try { await writer.tombstone(title, origin); tombstoned.push(title); }
+      catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+    }
+    for (const title of plain) {
+      try { await writer.remove(title, origin); retracted.push(title); }
+      catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+    }
   }
   // A BAG THE ISLAND CANNOT REACH, ABOVE THE ONE THAT ANSWERED, may still hold the meme the wiki reads: the
   // delete names that `unconfirmed`, never `removed`.
   const unreachedAbove = unreached.filter((bag) => stack.indexOf(bag) < stack.indexOf(answered.bag));
   const decision = failed.length > 0 ? "partial" : unreachedAbove.length > 0 ? "unconfirmed" : "removed";
   return {
-    uri, decision, tombstoned, ...(failed.length > 0 ? { failed } : {}), canonicalHash: meme.canonicalHash, readFrom: answered.bag,
+    uri, decision, tombstoned, retracted, ...(failed.length > 0 ? { failed } : {}), canonicalHash: meme.canonicalHash, readFrom: answered.bag,
     tombstonedIn: writeBags, ...(unreached.length > 0 ? { unreached } : {}), ...(unreachedAbove.length > 0 ? { unreachedAbove } : {}),
   };
 }
@@ -550,11 +841,12 @@ async function deleteThroughRecipe(
 export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
+    refuseEffectLedgerWrite(target.uri, "meme delete");
     const base = optionalStringArg(args, "base");
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap);
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
-    await requireKahuReach(bag, opts.kahuReach, "meme delete");
+    await requireKahuReach(bag, opts.kahuReach, "meme delete", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await removeMeme({ uri: target.uri, baseHash: base }, sink);
@@ -573,10 +865,8 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     if (projectTarget !== "md" && (dialect || tongue)) {
       throw new Error(`meme-project: --dialect/--tongue weave the "md" target alone; got "${projectTarget}"`);
     }
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    const { bag, sink, anchor, realmGrant } = await resolveSink(opts, target, origin, "get");
-    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+    const { bag, sink, anchor } = await resolveRead(opts, target, origin, ctx.cap);
     // A projection renders the meme's TEXT: the same pointer refusal the read gives, at every seat.
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-project renders no pointer body.`);

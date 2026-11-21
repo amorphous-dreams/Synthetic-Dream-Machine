@@ -37,14 +37,17 @@ export function chairSeed(face: number, generation = 0, family = "chairs"): Uint
   return sha256BytesSync(utf8Bytes(`seat-fixture|${family}|${face}|${generation}`));
 }
 
-/** Store one seat key per face in `faces`, under that face, and answer the keys, their seeds and their hands. */
-export async function seatChairs(faces: readonly number[], opts: { readonly generation?: number; readonly family?: string } = {}): Promise<SeatedChairs> {
+/**
+ * Store one seat key per face in `faces`, under that face (or every one under `opts.under`, for a vault whose one face
+ * holds a chair numbered past it), and answer the keys, their seeds and their hands.
+ */
+export async function seatChairs(faces: readonly number[], opts: { readonly generation?: number; readonly family?: string; readonly under?: number } = {}): Promise<SeatedChairs> {
   const keys: string[] = [];
   const seeds: Uint8Array[] = [];
   const hands: SeatHand[] = [];
   for (const face of faces) {
     const seed = chairSeed(face, opts.generation ?? 0, opts.family ?? "chairs");
-    const key = (await storeSeatKey(face, seed)).toLowerCase();
+    const key = (await storeSeatKey(opts.under ?? face, seed)).toLowerCase();
     bookSeat(seed);
     keys.push(key);
     seeds.push(seed);

@@ -24,7 +24,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJson, defaultCryptoProvider, hex, hexToBytes, sha256HexSync, type RandomProvider } from "./crypto.js";
 import { COLD_KEY_CARD_DOMAIN, SEAT_NEXT_KEY_DOMAIN } from "./domains.js";
-import { confirmationPhrase } from "./guardian-card.js";
+import { confirmationPhrase } from "./custodian-card.js";
 
 import { acceptEd25519Key, type Ed25519KeyRefusal } from "./ed25519-door.js";
 export class ColdKeyCardError extends Error {}

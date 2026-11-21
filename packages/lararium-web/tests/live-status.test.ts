@@ -1,16 +1,38 @@
 import { describe, expect, test } from "vitest";
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import { connectionData, connectionPresentation, defaultReadFace, floorCardOf, mountLiveStatus, oracleElsewhereNote, resolveRelayUrl } from "../src/live-status.js";
+import { connectionData, connectionPresentation, defaultReadFace, keptFloorOf, mountLiveStatus, readFloorCarriage } from "../src/live-status.js";
 
 describe("served-origin crossing", () => {
   test("the read face carries the page origin including its actual port", () => {
     expect(defaultReadFace({ origin: "http://localhost:5417" })).toBe("http://localhost:5417");
   });
 
-  test("the page dials the relay its URL names, and a URL that names none is a pure local boot", () => {
-    expect(resolveRelayUrl(new URLSearchParams("relay=ws%3A%2F%2Fnode%3A5440%2Fws"))).toBe("ws://node:5440/ws");
-    expect(resolveRelayUrl(new URLSearchParams("relay="))).toBeUndefined();
-    expect(resolveRelayUrl(new URLSearchParams())).toBeUndefined();
+  test("no source carries a mesh-leaf seam: the hello and the browser vessel name no peer list while no page door hands one in", () => {
+    // The mesh-leaf door stands owed as a file kind at the page's carriage door; until it lands, no half-seam waits for a sender.
+    const web = import.meta.glob("../src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+    const browser = import.meta.glob("../../lararium-browser/src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+    const carriers = Object.entries({ ...web, ...browser }).filter(([, src]) => /meshLeaf|parseMeshPeer|deriveMeshLeaf/.test(src)).map(([name]) => name).sort();
+    expect(carriers, "sources that carry the mesh-leaf seam").toEqual([]);
+    // CONTROL: the census reads both trees, the hello's source among them.
+    expect(Object.keys(web)).toContain("../src/vessel-protocol.ts");
+    expect(Object.keys(browser)).toContain("../../lararium-browser/src/open-browser-vessel.ts");
+  });
+
+  test("the page's address belongs to TW5: no vessel source reads the query, and the fragment keeps its named readers alone", () => {
+    // Every source the page and its workers run. A read of the address names itself here or the census reads red.
+    const sources = import.meta.glob("../src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+    const query = /location\.search|URLSearchParams|searchParams\.get\(/;
+    const fragment = /location\.hash/;
+    // The mirror's permalink door reads and writes the wiki's own fragment; the ceremony is a separate document (no wiki
+    // stands in it) whose navigation names its ask; the daemon worker reads its own script URL, never the page's.
+    const fragmentReaders = ["../src/ceremony/ceremony.ts", "../src/projection-sink.ts"];
+    const ownScriptUrlReaders = ["../src/ceremony/ceremony-core.ts", "../src/workers/daemon.worker.ts"];
+    expect(Object.keys(sources)).toContain("../src/main.ts");
+    expect(Object.entries(sources).filter(([, src]) => query.test(src)).map(([name]) => name).sort(), "sources that read a query string").toEqual(ownScriptUrlReaders);
+    expect(Object.entries(sources).filter(([, src]) => fragment.test(src)).map(([name]) => name).sort(), "sources that read the fragment").toEqual(fragmentReaders);
+    // CONTROL: the daemon worker's read names its own script URL, and the ceremony parses the hash its own document hands it.
+    expect(sources["../src/workers/daemon.worker.ts"]).toContain("new URL(self.location.href).searchParams.get(");
+    expect(sources["../src/ceremony/ceremony-core.ts"]).toContain("new URLSearchParams(hash.replace(");
   });
 
   test("connection state names local, refusal and the authenticated peer", () => {
@@ -53,18 +75,37 @@ describe("served-origin crossing", () => {
   });
 });
 
-describe("the floor card the arrival URL carries", () => {
-  const card = { pin: { tier: "floor", nexus: "6e", route: "/oracle", transportKey: "aa", signingKey: "bb" }, publisher: "cc" } as const;
+describe("the floor card the carriage door takes", () => {
+  const card = { claim: { kind: "place-floor-pin", aid: "aa".repeat(32), seq: 0, head: "bb".repeat(32), pin: { tier: "floor", nexus: "6e", route: "/flow", transportKey: "aa", signingKey: "bb" }, sig: "cc".repeat(64) }, kel: [] } as never;
   const read = (text: string) => (text === "Y2FyZA" ? card : null);
+  const AID = "ab".repeat(32);
+  // The mesh's file reader, as the page hands it in (one kind, one key beside it; a second key refuses the file whole).
+  const file = (text: string): string | null => {
+    try { const v = JSON.parse(text) as Record<string, unknown>; return Object.keys(v).length === 2 && v["kind"] === "floor-card" && typeof v["card"] === "string" ? v["card"] : null; } catch { return null; }
+  };
+  const floorCardCarriageText = (card: string): string => JSON.stringify({ kind: "floor-card", card });
+  const door = { file, card: read };
 
-  test("CONTROL: a card in the fragment reaches the one reader, and reads back", () => {
-    expect(floorCardOf("#floor=Y2FyZA", read)).toEqual({ text: "Y2FyZA", card });
+  test("CONTROL: a carried floor card file reaches the one reader, and reads back", () => {
+    expect(readFloorCarriage(floorCardCarriageText("Y2FyZA"), door)).toEqual({ kind: "card", text: "Y2FyZA", card });
   });
 
-  test("no fragment carries no card, and a torn one reads none", () => {
-    expect(floorCardOf("", read)).toBeNull();
-    expect(floorCardOf("#relay=x", read)).toBeNull();
-    expect(floorCardOf("#floor=torn", read)).toEqual({ text: "torn", card: null });
+  test("a torn card reads as a card that does not read; text of another kind reads as nothing", () => {
+    expect(readFloorCarriage(floorCardCarriageText("torn"), door)).toEqual({ kind: "card", text: "torn", card: null });
+    expect(readFloorCarriage("", door)).toBeNull();
+    expect(readFloorCarriage("#floor=Y2FyZA", door), "a fragment's spelling carries nothing").toBeNull();
+    expect(readFloorCarriage(JSON.stringify({ kind: "fleet-join-offer" }), door)).toBeNull();
+  });
+
+  test("the place AID, carried alone, reads as an anchor handed apart from the card; a card file never carries one", () => {
+    expect(readFloorCarriage(` ${AID}\n`, door)).toEqual({ kind: "anchor", aid: AID });
+    expect(readFloorCarriage(JSON.stringify({ kind: "floor-card", card: "Y2FyZA", anchor: AID }), door), "an anchor riding the card's own file refuses the whole file").toBeNull();
+  });
+
+  test("what this origin kept: the card and the anchor each read alone, and the card never anchors itself", () => {
+    expect(keptFloorOf({ card: "Y2FyZA", anchor: null }, read)).toEqual({ floor: { text: "Y2FyZA", card }, anchor: null });
+    expect(keptFloorOf({ card: null, anchor: { aid: AID, via: "admit" } }, read)).toEqual({ floor: null, anchor: { aid: AID, via: "admit" } });
+    expect(keptFloorOf({ card: "torn", anchor: { aid: "short", via: "transfer" } }, read)).toEqual({ floor: { text: "torn", card: null }, anchor: null });
   });
 });
 
@@ -107,16 +148,5 @@ describe("the connection row publishes its mount as data", () => {
     expect(row.getAttribute("data-wiki-doc-url")).toBe("automerge:doc");
     expect(row.textContent).toBe("disconnected from gate-1");
     stop();
-  });
-});
-
-describe("an ?oracle= naming another hearth says what the browser reads", () => {
-  test("RED: a host other than the relay's draws the note; CONTROL: the relay's host, or no ?oracle=, draws none", () => {
-    const relay = "ws://node:5440/ws";
-    expect(oracleElsewhereNote("http://other:5441", relay)).toContain("only its own hearth's oracle");
-    expect(oracleElsewhereNote("http://other:5441", undefined)).toContain("only its own hearth's oracle");
-    expect(oracleElsewhereNote("http://node:5440", relay)).toBeNull();
-    expect(oracleElsewhereNote(null, relay)).toBeNull();
-    expect(oracleElsewhereNote("not a url", relay)).toContain("only its own hearth's oracle");
   });
 });

@@ -1,6 +1,6 @@
-title: lar:///ha.ka.ba/bags/sdm/procedures/tag-pill
 caption: tag-pill
 tags: $:/tags/Global
+title: lar:///ha.ka.ba/sdm/procedures/tag-pill
 type: text/vnd.tiddlywiki
 
 \procedure tag-pill(target)

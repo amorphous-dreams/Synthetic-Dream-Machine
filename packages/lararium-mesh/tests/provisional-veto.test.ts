@@ -21,7 +21,7 @@ import {
   type PersonaKelEvent,
 } from "../src/persona-kel.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import { writePersonaKelEvent, personaKelChainForPrefix } from "../src/persona-kel-board.js";
 
@@ -29,7 +29,7 @@ const SEEDS = {
   op:    new Uint8Array(32).fill(11),   // the standing holder's op-key
   fresh: new Uint8Array(32).fill(22),   // the recovery's fresh op-key
   next:  new Uint8Array(32).fill(33),   // a descendant the provisional chain mints
-  self:  new Uint8Array(32).fill(5),    // the 1-of-1 self-recovery guardian
+  self:  new Uint8Array(32).fill(5),    // the 1-of-1 self-recovery recovery contact
 };
 const pubOf    = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 const didOf    = async (s: Uint8Array) => `0x${await pubOf(s)}`;
@@ -43,7 +43,7 @@ async function armedInception() {
     foundingOpKeyDid, selfPub,
     prov: provisionThresholdRecoveryAtFounding({
       foundingOpKeyDid,
-      guardians: [guardianRecoveryRegistrationCard("mine", selfPub, null)],
+      recoveryContacts: [recoveryContactRegistrationCard("mine", selfPub, null)],
       recoveryThreshold: 1,
     }),
   };
@@ -52,8 +52,8 @@ async function armedInception() {
 async function provisionalRotation(head: PersonaKelEvent, selfPub: string) {
   return attestAndRotate({
     head, freshOpKeyDid: await didOf(SEEDS.fresh),
-    guardianRecoveryKeys: [selfPub], recoveryThreshold: 1,
-    guardianSigners: [await gsigner(SEEDS.self)],
+    recoveryContactKeys: [selfPub], recoveryThreshold: 1,
+    recoveryContactSigners: [await gsigner(SEEDS.self)],
     provisional: true,
   });
 }
@@ -81,8 +81,8 @@ describe("the settlement's four clauses", () => {
     // The provisional chain marches on (an observer hardened and the fresh key minted a descendant).
     const onward = await attestAndRotate({
       head: rot.event, freshOpKeyDid: await didOf(SEEDS.next),
-      guardianRecoveryKeys: [selfPub], recoveryThreshold: 1,
-      guardianSigners: [await gsigner(SEEDS.self)],
+      recoveryContactKeys: [selfPub], recoveryThreshold: 1,
+      recoveryContactSigners: [await gsigner(SEEDS.self)],
     });
     if (!onward.ok) throw new Error("setup2");
 

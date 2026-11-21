@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lele">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/lele`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/lele.mem"
 namespace = "&#x2299;"
-role      = "structured fire-and-continue sigil — lele as Verse branch; English alias: branch; async-first concurrency sprint pending"
+role      = "structured fire-and-continue sigil — lele as Verse branch; English alias: branch; the grammar registers it and no runtime executes it"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lele"]
 title     = "lar:///ha.ka.ba/lares/api/pono/lele"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/lele"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lele
 
@@ -28,11 +27,11 @@ Verse equivalent: `branch` — one or more async expressions start, and the encl
 flow continues — neither waits for the other. The side flow remains bounded by the enclosing async context and
 cancels when that context completes.
 
-Grammar only --- the fire-and-continue execution runtime awaits the async-first sprint.
+''Standing:'' the grammar table registers `lele` and its alias `\branch` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a lele edge. The execution runtime rests on the founding road in the kahu workbench; the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law (Kānāwai)
 
@@ -44,25 +43,25 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<~ ahu #/syntax>>
+<<~ ahu slot=`#/syntax`>>
 
 !! Syntax
 
 ```text
-<<~ lele "lar:///target/uri">>
-<<~ branch "lar:///target/uri">>
+<<~ lele to=`lar:///target/uri`>>
+<<~ branch to=`lar:///target/uri`>>
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-branch">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-branch`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gxB7Kl3eccR4mGFSM0_QgHcP9ds8JqkTgI8pRRUteWQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nqw8UI8G1FdAUaD3zX07uuNv_nSO0HaCL-IArJ19Q_w`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

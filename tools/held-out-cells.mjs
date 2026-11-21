@@ -41,7 +41,8 @@ export const VERDICT_FILE = "held-out-verdict.json";
  * save seconds, and would spend nine more of the account's concurrent jobs.
  */
 export const DRIVERS = [
-  { driver: "browser-weld", seconds: 150 },
+  // The browser weld stands dim (operator, 2026-11-20; BROWSER_LAMPS_DIM in tools/ci-cells.mjs). To relight, restore
+  // `{ driver: "browser-weld", seconds: 150 }` here and its three held-out.yml steps (pull the pinned Playwright image, the entry-contract test, the driver case).
   { driver: "civic", seconds: 200, image: true },
   { driver: "crossing", seconds: 150, image: true },
   { driver: "herm-mesh", seconds: 120, image: true, mesh: true },
@@ -99,7 +100,7 @@ export function cellMatrix({ drivers = DRIVERS, list = listScenarios } = {}) {
 /** The verdict one cell records: its driver's own exit status and wall time, for one head. */
 export function cellVerdict({ cell, status, seconds, head }) {
   if (!Number.isInteger(status) || status < 0) throw new Error(`held-out-cells: status ${JSON.stringify(status)} reads as no exit status`);
-  return { schema: "held-out-verdict/v1", cell, ok: status === 0, status, seconds, head };
+  return { schema: "held-out-verdict", cell, ok: status === 0, status, seconds, head };
 }
 
 /**

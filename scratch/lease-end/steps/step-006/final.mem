@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-006/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-006/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-006/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->▶ Requested the validated mesh red commit through [[req-005.json|/home/joshu/.lares-scratch/lease-end/relay/req-005.json]]. The recorded head remains unchanged until the next step reads the receipt.
+
+Prepared an uncommitted mesh signature-reader cure and a boundary test. ''The cure must not land yet:'' an existing grant path can treat signature success as authority without checking standing. The controller needs to run the two named mesh test files and arrange a blind custody review before the cure lands.
+
+->↺ The handback records the remaining authority work and test requests in [[step-006/out.md|/home/joshu/.lares-scratch/lease-end/steps/step-006/out.md]]; [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]] carries the next step. No tests ran inside this wall.
+
+&lt;&lt;~ oracle throw=`↯10 ✲ ⚂(3) ⁂:ᚠ⊗☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`read the broker receipt and controller test results before treating either request as completed · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@crossroads/mesh.cure.waits` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YBorDBrtabX4oSLKMBVwMzn1u7h9qMwAS_KVdPyb3MY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

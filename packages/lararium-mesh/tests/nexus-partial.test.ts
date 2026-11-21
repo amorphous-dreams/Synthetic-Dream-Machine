@@ -16,6 +16,8 @@ import {
   type NexusActPartial, type NexusPartialReader,
 } from "../src/nexus-partial.js";
 import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";
+import { signCarrierContract } from "../src/carriage-registry.js";
+import { claimAt, floorPinFor, foundPlace, headOf, rotatePlace, type TestPlace } from "./place-claim-fixture.js";
 
 const courier = <T>(v: T): unknown => JSON.parse(JSON.stringify(v));
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -280,5 +282,71 @@ describe("edge roll anchor", () => {
     const carriage = await signRollAnchor({ prevEpochCid: g0.head.epochCid, sealEpochCid: g1.head.epochCid, prevKeys: g0.keys, prevThreshold: g0.threshold, parents: [] }, [seats[0]!]);
     const c = courier(nexusActPartial(g1.aid, { family: "roll-anchor", anchor: carriage })) as Record<string, any>;
     expect(readNexusActPartial({ ...c, act: { ...c.act, family: "edge-roll-anchor" } })).toBeNull();
+  });
+});
+
+describe("carry", () => {
+  /** A carry partial: the place signs its carrier seal at its head, the seat signs the act, and the claim crosses beside it. */
+  async function carryPartial(charter: SeatedCharter, seat: Hand, place: TestPlace, over: { nym?: string; sealBy?: Uint8Array; claimOf?: TestPlace; parents?: string[] } = {}) {
+    const nym = over.nym ?? headOf(place).signerKey;
+    const sealSigner = over.sealBy ?? place.signer;
+    const seal = await signCarrierContract(nym, charter.head.epochCid, async (b) => hex(await ed.signAsync(b, sealSigner)));
+    const entry = await signCarriageQuorum({ nym, action: "carry", parents: over.parents ?? [], sealEpochCid: charter.head.epochCid }, [seat], seal);
+    const claimPlace = over.claimOf ?? place;
+    const claim = await claimAt(claimPlace, floorPinFor(charter.aid, "/flow", 21));
+    return { entry, claim, kel: claimPlace.chain };
+  }
+
+  test("CONTROL: a carry crosses with its claim; B judges ready and cosigns; the grown act counts and the claim reads for the place", async () => {
+    const { charter, reader, seats } = await nexus();
+    const place = rotatePlace(foundPlace(4));
+    const act = await carryPartial(charter, seats[0]!, place);
+    const partial = courier(nexusActPartial(charter.aid, { family: "carry", ...act }));
+    expect(await judgeNexusActPartial(partial, reader)).toMatchObject({ verdict: "ready", signed: [seats[0]!.signer] });
+    const grown = courier(await cosignNexusActPartial(partial, reader, [seats[1]!]));
+    expect((await judgeNexusActPartial(grown, reader)).verdict).toBe("complete");
+    const landed = readNexusActPartial(grown)!.act as { entry: CarriageEntry; claim: { seq: number } };
+    expect(await carriageEntryCounts(landed.entry, charter.roster)).toBe(true);
+    expect(landed.claim.seq).toBe(1);
+  });
+
+  test("RED: a carry with no claim, a foreign claim, a claim at another Nexus and rows that do not fold read no partial", async () => {
+    const { charter, seats } = await nexus();
+    const place = rotatePlace(foundPlace(4)), other = foundPlace(5);
+    const good = await carryPartial(charter, seats[0]!, place);
+    const wrap = (act: Record<string, unknown>) => courier({ kind: "nexus-act-partial", aid: charter.aid, subject: { kind: "nym", nym: good.entry.nym }, act: { family: "carry", ...act } });
+    expect(readNexusActPartial(wrap(good))).not.toBeNull();                                  // the control beside them
+    const { claim: _c, ...noClaim } = good;
+    expect(readNexusActPartial(wrap(noClaim))).toBeNull();
+    const foreign = await carryPartial(charter, seats[0]!, place, { claimOf: other });
+    expect(readNexusActPartial(wrap(foreign))).toBeNull();
+    const elsewhere = { ...good, claim: await claimAt(place, floorPinFor("nexus-elsewhere.synthetic", "/flow", 21)) };
+    expect(readNexusActPartial(wrap(elsewhere))).toBeNull();
+    expect(readNexusActPartial(wrap({ ...good, kel: place.chain.slice(0, 1) }))).toBeNull();
+    expect(readNexusActPartial(wrap({ ...good, kel: [] }))).toBeNull();
+  });
+
+  test("RED: a carrier seal an OLD signer made refuses at the head the claim names; the new signer's seal is the control", async () => {
+    const { charter, reader, seats } = await nexus();
+    const start = foundPlace(4), place = rotatePlace(start);
+    const oldSeal = await carryPartial(charter, seats[0]!, place, { sealBy: start.signer });
+    const verdict = await judgeNexusActPartial(courier(nexusActPartial(charter.aid, { family: "carry", ...oldSeal })), reader);
+    expect(verdict.verdict).toBe("invalid");
+    expect(verdict.why).toMatch(/carrier seal/);
+    const fresh = await carryPartial(charter, seats[0]!, place);
+    expect((await judgeNexusActPartial(courier(nexusActPartial(charter.aid, { family: "carry", ...fresh })), reader)).verdict).toBe("ready");
+  });
+
+  test("the carry's line is carry/uncarry: a carry citing a head an uncarry already followed reads stale; one citing the uncarry reads ready", async () => {
+    const { charter, reader, seats } = await nexus();
+    const place = foundPlace(4);
+    const first = await carryPartial(charter, seats[0]!, place);
+    const done = (readNexusActPartial(courier(await cosignNexusActPartial(courier(nexusActPartial(charter.aid, { family: "carry", ...first })), reader, [seats[1]!])))!.act as { entry: CarriageEntry }).entry;
+    const off = await signCarriageQuorum({ nym: done.nym, action: "uncarry", parents: [carriageEntryActCid(done)], sealEpochCid: charter.head.epochCid }, [seats[0]!, seats[1]!]);
+    const at = { ...reader, board: { ...empty, carriage: [done, off] } };
+    const stale = await carryPartial(charter, seats[0]!, place, { parents: [carriageEntryActCid(done)] });
+    expect((await judgeNexusActPartial(courier(nexusActPartial(charter.aid, { family: "carry", ...stale })), at)).verdict).toBe("stale");
+    const cited = await carryPartial(charter, seats[0]!, place, { parents: [carriageEntryActCid(off)] });
+    expect((await judgeNexusActPartial(courier(nexusActPartial(charter.aid, { family: "carry", ...cited })), at)).verdict).toBe("ready");
   });
 });

@@ -1,0 +1,81 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/tables`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-29 (file date) — source `.lares-scratch/research/model-tiers/data/tables.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/tables"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/tables"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! tables.md — plan, 2026-10-29
+
+Verbatim scratch record `.lares-scratch/research/model-tiers/data/tables.md` (plan, file date 2026-10-29); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/model-tiers/data/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+| era | model | role | n | API calls | tool calls | tools/call | out tok | visible-out est tok | hidden-think est % | narr chars/tool call | hand-back words (median) | Edit files | Write files | git commit cmds | tool errors % | idle>5m h | API-eq $ | $/agent | cache-read % of $ | cache-write % of $ | output % of $ |h
+| fable-day | fable-5-1 | lead | 3 | 744 | 1131 | 1.52 | 767720 | 274167 | 64 | 22.0 | 225 | 8 | 14 | 45 | 3.0 | 32.5 | 208 | 69.2 | 32 | 50 | 18 |
+| fable-day | fable-5-1 | reader | 2 | 59 | 69 | 1.17 | 85158 | 35675 | 58 | 20.4 | 642.5 | 1 | 2 | 0 | 2.9 | 0.0 | 17 | 8.5 | 12 | 63 | 25 |
+| fable-day | fable-5-1 | scout | 4 | 31 | 201 | 6.48 | 53893 | 22478 | 58 | 0.8 | 1253.0 | 0 | 0 | 0 | 0.0 | 0.0 | 8 | 2.0 | 5 | 61 | 34 |
+| fable-day | opus-5-5 | helper | 2 | 150 | 153 | 1.02 | 129052 | 45537 | 65 | 3.0 | 866.0 | 2 | 5 | 0 | 2.6 | 0.0 | 12 | 5.9 | 44 | 34 | 22 |
+| fable-day | opus-5-5 | lead | 1 | 506 | 478 | 0.94 | 267531 | 91273 | 66 | 10.3 | 131 | 0 | 4 | 29 | 2.1 | 19.2 | 61 | 61.3 | 61 | 30 | 9 |
+| fable-day | opus-5-5 | reader | 5 | 373 | 410 | 1.1 | 169516 | 57906 | 66 | 1.4 | 1993 | 0 | 0 | 0 | 2.2 | 0.0 | 20 | 4.0 | 47 | 36 | 17 |
+| fable-day | opus-5-5 | scout | 6 | 185 | 249 | 1.35 | 165465 | 60608 | 63 | 1.2 | 1076.5 | 0 | 2 | 0 | 0.8 | 0.0 | 13 | 2.1 | 26 | 48 | 26 |
+| fable-day | sonnet-5-5 | lead | 2 | 184 | 185 | 1.01 | 105821 | 34575 | 67 | 2.9 | 482.5 | 0 | 0 | 7 | 2.7 | 0.0 | 5 | 2.5 | 56 | 22 | 21 |
+| fable-day | sonnet-5-5 | reader | 4 | 54 | 57 | 1.06 | 31584 | 9786 | 69 | 0.0 | 306.0 | 0 | 0 | 0 | 1.8 | 0.0 | 2 | 0.4 | 18 | 63 | 19 |
+| prior | opus-5-5 | helper | 4 | 302 | 303 | 1.0 | 156355 | 54859 | 65 | 2.7 | 620.0 | 0 | 0 | 2 | 1.7 | 0.4 | 16 | 3.9 | 49 | 31 | 20 |
+| prior | opus-5-5 | lead | 12 | 3555 | 3532 | 0.99 | 919873 | 810994 | 12 | 15.4 | 786.0 | 7 | 42 | 147 | 1.4 | 45.7 | 683 | 56.9 | 34 | 63 | 3 |
+| prior | opus-5-5 | scout | 6 | 204 | 259 | 1.27 | 139356 | 66753 | 52 | 0.0 | 852.5 | 0 | 5 | 0 | 5.0 | 0.0 | 10 | 1.7 | 32 | 42 | 27 |
+| prior | sonnet-5-5 | helper | 4 | 39 | 43 | 1.1 | 36308 | 18540 | 49 | 7.1 | 196.0 | 0 | 0 | 4 | 4.7 | 0.1 | 1 | 0.3 | 15 | 58 | 27 |
+| prior | sonnet-5-5 | lead | 35 | 10986 | 10959 | 1.0 | 3943029 | 2408958 | 39 | 12.9 | 737 | 1 | 72 | 508 | 2.1 | 388.1 | 1142 | 32.6 | 32 | 64 | 3 |
+| prior | sonnet-5-5 | reader | 12 | 380 | 406 | 1.07 | 237076 | 79126 | 67 | 0.0 | 508.0 | 0 | 8 | 1 | 1.5 | 0.0 | 11 | 0.9 | 39 | 39 | 22 |
+| prior | sonnet-5-5 | scout | 13 | 241 | 307 | 1.27 | 163309 | 89494 | 45 | 0.8 | 693 | 1 | 5 | 3 | 3.6 | 0.0 | 6 | 0.5 | 29 | 44 | 27 |
+
+| era | model | role | Bash | Read | Edit | Write | Grep | Glob | Agent | SendMessage | WebSearch | WebFetch | SubagentHandback | other |h
+| fable-day | fable-5-1 | lead | 89% | 3% | 2% | 1% | 0% | 0% | 0% | 2% | 0% | 0% | 3% | 1% |
+| fable-day | fable-5-1 | reader | 55% | 22% | 4% | 3% | 0% | 0% | 13% | 0% | 0% | 0% | 3% | 0% |
+| fable-day | fable-5-1 | scout | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 20% | 76% | 2% | 2% |
+| fable-day | opus-5-5 | helper | 93% | 1% | 1% | 3% | 0% | 0% | 0% | 0% | 0% | 0% | 2% | 0% |
+| fable-day | opus-5-5 | lead | 85% | 0% | 0% | 1% | 0% | 0% | 0% | 0% | 0% | 0% | 4% | 10% |
+| fable-day | opus-5-5 | reader | 93% | 6% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 1% | 0% |
+| fable-day | opus-5-5 | scout | 64% | 3% | 0% | 1% | 0% | 0% | 2% | 0% | 14% | 13% | 2% | 1% |
+| fable-day | sonnet-5-5 | lead | 94% | 1% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 2% | 3% |
+| fable-day | sonnet-5-5 | reader | 86% | 7% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 7% | 0% |
+| prior | opus-5-5 | helper | 98% | 1% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 1% | 0% |
+| prior | opus-5-5 | lead | 95% | 1% | 0% | 1% | 0% | 0% | 0% | 1% | 0% | 0% | 1% | 1% |
+| prior | opus-5-5 | scout | 71% | 0% | 0% | 2% | 0% | 0% | 0% | 0% | 3% | 20% | 3% | 1% |
+| prior | sonnet-5-5 | helper | 81% | 9% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 9% | 0% |
+| prior | sonnet-5-5 | lead | 95% | 1% | 0% | 1% | 0% | 0% | 0% | 0% | 0% | 0% | 2% | 2% |
+| prior | sonnet-5-5 | reader | 88% | 7% | 0% | 2% | 0% | 0% | 0% | 0% | 0% | 0% | 3% | 0% |
+| prior | sonnet-5-5 | scout | 74% | 2% | 0% | 2% | 0% | 0% | 0% | 0% | 2% | 14% | 5% | 1% |
+
+| agent | id | model | role | start UTC | wall h | API calls | tool calls | out tok | hidden-think est % | Edit/Write files | git commit cmds | w5m write tok | w1h write tok | cache read tok | API-eq $ | hand-back words |h
+| Relay-Wright | aaa96950e | sonnet-5-5 | lead | 10-28 17:47 | 35.7 | 546 | 543 | 217293 | 63 | 0/0 | 27 | 0 | 1536229 | 162058602 | 24.5 | 264 |
+| Porch-Wright | a55ab3f14 | sonnet-5-5 | lead | 10-29 06:10 | 17.0 | 310 | 294 | 154892 | 66 | 0/0 | 18 | 0 | 1669773 | 80725311 | 16.3 | 115 |
+| Vector-Wright: 54 silent e2e v | a33d19027 | sonnet-5-5 | lead | 10-29 07:28 | 0.2 | 31 | 31 | 17119 | 67 | 0/0 | 2 | 0 | 69404 | 2065629 | 0.7 | 621 |
+| Hive-Wright | a6bccf59f | opus-5-5 | lead | 10-29 07:29 | 21.9 | 506 | 478 | 267531 | 66 | 0/4 | 29 | 0 | 2323416 | 186581496 | 61.3 | 131 |
+| Mirror-Wright | a601861f0 | fable-5-1 | lead | 10-29 09:47 | 17.5 | 282 | 341 | 249146 | 64 | 5/4 | 17 | 0 | 1823221 | 100253388 | 74.1 | 225 |
+| Walk-Wright | abdb5b830 | fable-5-1 | lead | 10-29 09:47 | 19.2 | 282 | 476 | 279157 | 65 | 0/0 | 12 | 0 | 2779868 | 99658462 | 94.5 | 74 |
+| Realm-Scout | a10b58a41 | opus-5-5 | scout | 10-29 12:39 | 0.1 | 47 | 50 | 38562 | 61 | 0/1 | 0 | 0 | 161833 | 4678414 | 3.0 | 1011 |
+| True-Hand | a39a6e698 | opus-5-5 | helper | 10-29 13:15 | 0.1 | 74 | 75 | 43396 | 63 | 1/0 | 0 | 0 | 216461 | 10837563 | 4.8 | 1135 |
+| Spec-Scout | a51ee03e8 | opus-5-5 | scout | 10-29 13:15 | 0.2 | 34 | 44 | 67857 | 68 | 0/1 | 0 | 0 | 231810 | 4625075 | 4.1 | 988 |
+| Spec-Crucible | a0a25924b | fable-5-1 | reader | 10-29 18:20 | 0.2 | 18 | 37 | 57698 | 59 | 1/1 | 0 | 0 | 302395 | 3038191 | 9.7 | 811 |
+| Test-Wright | accb35cd9 | sonnet-5-5 | lead | 10-29 23:46 | 2.5 | 153 | 154 | 88702 | 67 | 0/0 | 5 | 0 | 208245 | 26002746 | 4.3 | 344 |
+| Contract-Clerk | aea01390f | opus-5-5 | helper | 10-30 01:58 | 0.3 | 76 | 78 | 85656 | 65 | 1/5 | 0 | 0 | 285898 | 14910590 | 7.0 | 597 |
+| Founding-Wright | a8c6bef52 | fable-5-1 | lead | 10-30 03:51 | 1.6 | 180 | 314 | 239417 | 63 | 3/10 | 16 | 0 | 542089 | 64555724 | 39.0 | 459 |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dIy1d0Sas3BUKMwKb4SpsMs0VKlbKHgTmWTzuicZJRU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

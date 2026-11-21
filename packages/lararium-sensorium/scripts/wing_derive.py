@@ -73,7 +73,7 @@ def read_codex_cwd(file):
 def resolve_transcript_wing(transcript):
     """The hook's project-cwd law: read the recorded cwd from the FIRST sibling `.jsonl` in the
     project dir (the dir's stable identity), then from the transcript itself; None when neither
-    carries one. Mirrors `wing-law.ts::resolveTranscriptWing` — parity with the LIVE ingest hook."""
+    carries one. Mirrors `wing-law.ts::resolveTranscriptWing` — parity with the TS capture."""
     d = os.path.dirname(transcript)
     first_sibling = []
     try:

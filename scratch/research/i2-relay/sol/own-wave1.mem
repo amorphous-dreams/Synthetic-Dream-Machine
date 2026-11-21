@@ -1,0 +1,58 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/own-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i2-relay/sol/own-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/own-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/own-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! own-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i2-relay/sol/own-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i2-relay/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/i2-scout-sol-relaywright-lares`>>
+
+! I2 scout — Sol-Relaywright: Lares (Tasked Spirit)
+
+&lt;&lt;~ set mode="draft" stance="philosopher" mu="_!">>
+
+''✶ Observe — MEASURED.'' Paths below use repository root `/home/joshu/Synthetic-Dream-Machine`; line numbers name the span head. I1's carrier rules the far-agent red verbatim: “A far agent's intent, admitted by a relay, verifies on a device that never saw the relay; a revoked delegation refuses on read, the revocation arriving first or after; a relay that alters an argument breaks the signature” (`bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem:138`). Its model gives the agent its own key, a narrow delegation, a per-face relay door beyond the local socket, ring gating, and relay admission countersignature (`.../face-intent-plane.mem:88-93`). I1's kit explicitly defers that seat (`bags/lares/ha.ka.ba/lares/docs/pono/i1-intent-lane.mem:23,64`). The road holds I1 built at `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:487`; no I2 row appeared in this checkout. Research row supplied by operator: least relay trust and attestation preventing capability escalation and argument substitution while retaining causal provenance.
+
+''⏿ Orient — MEASURED, standing substrate.'' Five face bags derive from one PersonaGroup tag (`packages/lararium-mesh/src/persona-scope.ts:134-155`); the boot proves their signed plane acts against sealed anchor and KEL (`.../face-boot-proof.ts:2-6,45-61`), with node/browser registration at `packages/lararium-node/src/open-node-vessel.ts:2195-2233` and `packages/lararium-browser/src/open-browser-vessel.ts:1270-1319`. Intent entries sign canonical JSON in `INTENT_ENTRY_DOMAIN`; their CID covers body plus signer, while invocation id covers issuer, verb, args, nonce (`.../intent-entry.ts:34-45,64-85`; `.../domains.ts:228`). Existing kinds contain no delegation or revocation (`.../intent-entry.ts:9`), and validation currently authorizes device atoms or root-signed control entries (`.../intent-read.ts:58-77`). An agent signer consequently fails the current reader. The read folds causal cancels, roster voids, outcomes and duplicate winners; `mayAct` refuses unknown frontier, void, wrong audience and answered slot (`.../intent-read.ts:131-174,178-199`). The effect door reads verified face lineage and executes only after `mayAct` (`packages/lararium-keyhive/src/face-intent-door.ts:36-67`). Node `lares intent` selects a face and proves its registered plane, then signs through its face atom (`packages/lararium-node/src/commands/intent.ts:61-84`); its store-door rows run over the local socket (`.../store-door-verbs.ts:8,216-239`). Browser mounts the plane but lacks an I1 issue CLI (`.../open-browser-vessel.ts:1270-1319`). Existing face gate asks a private root-authorized grant ring and a shadow ring (`.../face-gate.ts:263-267,658-667`; `packages/lararium-node/src/gate-rings.ts:2-23`). That gate does not yet grant a far agent an intent-admission ring. `carriage-relay.ts:1-18` carries ciphertext and hints through its own port; its no-read posture prevents reuse as the intent relay.
+
+''◇ Decide — ruled model and open joints.''
+
+| Joint | Authority and lean |h
+| Delegation | ''Canon:'' “verb prefix, an argument policy and a causal bound” (`face-intent-plane.mem:90`). ''Operator choice:'' face root op-key versus a device atom grant. ''Lean:'' root op-key signs a domain-separated `{face group, agent public key, verb prefix, closed argument-policy AST, causal bound, nonce}` certificate, anchored as an immutable face control entry. KEL epoch pins signing authority. No arbitrary executable policy, wildcard prefix, or implicit transitive delegation. A device atom cannot mint fleet authority. Agent generates and keeps its own Ed25519 seed; face pins the public key in that certificate, never by relay address. |
+| Storage and sync | ''House law:'' one name, one relation; face-scoped capability; no migration before X0. Lean: delegation and revocation join <code>&#64;intents</code> as distinct signed control kinds, with content-addressed records; admission refers to their CIDs. Readers fetch them through the face's proven plane. Unknown proof means no act. No CRDT document migration; bake fresh shape. |
+| Revocation | ''Canon:'' revoked delegation refuses on read; old acted receipt remains as revoked-after-acting (`face-intent-plane.mem:93`). ''Lean:'' root-signed revocation names delegation CID; reader checks the full locally known causal closure before authorizing, regardless of arrival order. A later arriving revocation changes the view to void and labels existing outcome, without pretending to undo an effect. No global-now expiry. A disconnected reader cannot know an unseen revocation: fail closed where its required signed frontier/proof cannot be established; state this limit in the UI and tests. |
+| Relay door | ''Canon:'' off local socket, opened per face, ring-gated, off by default (`face-intent-plane.mem:91`). ''Operator choice:'' HTTPS request/reply or WebSocket. ''Lean:'' dedicated HTTPS POST admission endpoint on node; explicit per-face config plus root-authorized admission grant ring, no ambient host authority. Mutual proof of agent key on each submitted invocation; rate/size bounds and no plaintext face sync. Browser supplies independent reader parity, not a listening server. |
+| Attestation | ''Canon:'' relay verifies chain and countersigns //only admission// (`face-intent-plane.mem:91-92`). Lean: relay validates face anchor/KEL, delegation, verb/policy/bound, signature and revoked view; appends unchanged agent-signed entry plus separate `relay-admission` with relay key, entry CID, delegation CID, face, and local causal heads. Reader validates agent signature, delegation chain, revocation, intent id, audience, outcome atom→device edge→face; relay signature proves provenance, never authority. An altered arg fails the agent signature. |
+| Replay and failure | ''House law:'' effect safety lives at the effect; no global now (`face-intent-plane.mem:58-81`). Lean: duplicate admission of one entry CID returns prior receipt, nonce differentiates authorized new single effects, I1 slot/effect fence remains. A down relay delays admission; another explicitly enabled face relay may carry the same signed invocation. A hostile relay can omit/delay/replay and reveal metadata, but cannot escalate or substitute; no availability promise follows from its countersignature. |
+
+''▶ Act — one I2 lane, ordered reds.'' (1) Model first: `intent-entry.ts`, `domains.ts`, `intent-read.ts`, `intent-issue.ts`, new delegation verifier; red agent without chain, widened prefix, changed args and unknown policy refuse, control device intent still reads, known positive narrow invocation reads on node and browser. (2) Causal revoke: same reader plus `intent-pane-model` and node/browser reader wiring; red both arrival orders and after-act labeling, control unrelated delegation stays valid, positive root revoke voids before effect. (3) Admission: new node intent-relay service/config, face grant ring, admission kind and CLI command; red closed door, wrong face, revoked key, altered payload and replay; control local socket and carriage relay still work; positive enabled face admits once and an uninvolved device verifies offline. (4) End-to-end effect: `face-intent-door.ts`, node open, browser open/read, test fixtures; red hostile relay countersign alone grants nothing and other hearth cannot run pinned single effect; control ordinary I1 issue/effect; positive agent→relay→other device→atom outcome, with causal provenance after merge. Kit lands at `docs/pono/i2-relay-lane.mem`; keep a single lane because the wire image, read rule and door reds depend on one another.
+
+''Overlap fences — MEASURED.'' D2 owns `packages/lararium-tw5/src/hand-gate.ts`, TW5 port/island files and `packages/lararium-web/src/projection-sink.ts`; I2 touches none. G15 owns `open-node-vessel.ts:1159-1206` after-roll chain and genesis re-bake (`stable-founding-road.mem:543`); I2 adds only a separately composed relay start/stop there, and asks G15's owner to merge that hunk. K15 bonds brief (`/home/joshu/.lares-scratch/k15-bonds/brief.md:21-40`) rules selected face atom for face operations and a relay-only S row for //carriage//; I2 must use a separate service admission key and must never derive it from vessel seed or treat carriage S as face authority. Coordinate key custody and avoid its identity/runtime hunks. X0 bakes any changed genesis image once, after readiness.
+
+''Protocol-security lens — LEAD.'' Take UCAN's signed proof chain and attenuation plus explicit invocation binding ([[UCAN spec|https://github.com/ucan-wg/spec]], [[delegation|https://github.com/ucan-wg/delegation]]); refuse its time validity and general subdelegation here. Take Keyhive/Beelay's capability-scoped encrypted sync, never a host grant ([[Ink & Switch|https://www.inkandswitch.com/project/keyhive/]]). Take macaroon caveats' monotone restriction, but refuse bearer or online discharge as authority ([[paper|https://theory.stanford.edu/~ataly/Papers/macaroons.pdf]]). Take ZCAP-LD's chain verification, refuse URL/time policy vocabulary ([[spec|https://w3c-ccg.github.io/zcap-spec/v0.4.0/]]). KERI delegated identifiers suggest a causal identity lineage, but an agent needs a scoped invocation grant, not a new face identity ([[KERI spec|https://trustoverip.github.io/kswg-keri-specification/]]). Biscuit suggests offline attenuation checks, but its bearer token and Datalog policy enlarge this lane unnecessarily ([[spec|https://doc.biscuitsec.org/reference/specifications]]).
+
+''↺ Hoʻoko/aftermath.'' The sharp red checks a relay admitted a valid signature under a wider verb or changed argument and watches every reader refuse before effect. The unresolved operator choice centers on whether a root-signed delegation may permit a device atom to revoke it; lean root-only, with root rotation honored through KEL.
+
+WORDS=1237
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UulFQMooIoChKb0bQ4-7vMU1CORqFiygPf1xETsax3M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

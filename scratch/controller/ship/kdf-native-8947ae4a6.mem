@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-8947ae4a6`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-01 (file date) — source `.lares-scratch/controller/ship/kdf-native-8947ae4a6.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-8947ae4a6"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/kdf-native-8947ae4a6"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! kdf-native-8947ae4a6.md — plan, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/ship/kdf-native-8947ae4a6.md` (plan, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-kdf-native-head-8947ae4a6731582d369309`>>
+
+! SHIP · lane kdf-native · head 8947ae4a6731582d36930986ae871f8046bc9a32
+Reader: Keystone-Reader (blind Opus, read-only), 2026-11-01. Verdict SHIP, no HIGH.
+Measured: parity native/noble/pre-patch byte-identical (N=2^17; surrogates, NFKC, 100k, NUL; edge salts); chargeOffering fuzz 200k, zero violations; port unforgeable (WeakMap brand, frozen SCRYPT, keyslot not exported).
+Slice 6 ordered before land (D2 fck zero, charge-before-open refund, keyslot import grep witness); the head that lands needs a SHIP on ITS sha (a delta read of slice 6).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WTELj5CIdM3mNF2mdPaYP7gDE-2MJwjMJQ-g_eW-Cs8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

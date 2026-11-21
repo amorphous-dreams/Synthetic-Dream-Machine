@@ -1,23 +1,22 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem"
-l-space = "working"
+l-space   = "working"
 namespace = "&#x0950; &#x0901;"
-role = "Lares crew handoff for research-grounded native topology inheritance, feature/pono/aftermath and operator-gated o-takiage"
-retain = true
-status = "working-handoff; not code acceptance or canon promotion"
-tags = ["api/pono/meme", "projection-loom", "docs/handoff", "working/research", "ashes"]
-title = "lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff"
+role      = "Lares crew handoff for research-grounded native topology inheritance, feature/pono/aftermath and operator-gated o-takiage"
+retain    = true
+status    = "working-handoff; not code acceptance or canon promotion"
+tags      = ["api/pono/meme", "projection-loom", "docs/handoff", "working/research", "ashes"]
+title     = "lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff"
 ```
 
-<<~ ahu #/markdown-otakiage-20261031>>
+<<~ ahu slot=`#/markdown-otakiage-20261031`>>
 
 !! Evergreen routing after the operator-approved Markdown fire
 
@@ -27,7 +26,7 @@ Root-bag Lares carriers remain the semantic owners; no second authority or evolu
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Lares Crew Handoff · The Relation Survives the Fire
 
@@ -39,7 +38,7 @@ Root-bag Lares carriers remain the semantic owners; no second authority or evolu
 
 <<~/ahu>>
 
-<<~ ahu #/provenance-and-dissent>>
+<<~ ahu slot=`#/provenance-and-dissent`>>
 
 !! Two Research Testimonies · One Explicit Re-entry Key
 
@@ -51,7 +50,7 @@ The operator subsequently supplied `deep-research-report.md`, titled ''Projectio
 
 <<~/ahu>>
 
-<<~ ahu #/pattern-integrities>>
+<<~ ahu slot=`#/pattern-integrities`>>
 
 !! Pono Contracts
 
@@ -64,7 +63,7 @@ The operator subsequently supplied `deep-research-report.md`, titled ''Projectio
 
 <<~/ahu>>
 
-<<~ ahu #/crew>>
+<<~ ahu slot=`#/crew`>>
 
 !! Crew Movements · Roles Without a Second Controller
 
@@ -82,7 +81,7 @@ The operator subsequently supplied `deep-research-report.md`, titled ''Projectio
 
 <<~/ahu>>
 
-<<~ ahu #/waves>>
+<<~ ahu slot=`#/waves`>>
 
 !! Feature and Aftermath · Six Waves
 
@@ -97,7 +96,7 @@ The attached report sketches an eight-week schedule; treat that as an illustrati
 
 <<~/ahu>>
 
-<<~ ahu #/acceptance>>
+<<~ ahu slot=`#/acceptance`>>
 
 !! The Acceptance Sentence
 
@@ -107,7 +106,7 @@ The crew reports the exact commit, workflow IDs, native workspace identities, so
 
 <<~/ahu>>
 
-<<~ ahu #/o-takiage>>
+<<~ ahu slot=`#/o-takiage`>>
 
 !! Pono Before O-takiage · What the Fire Does and Does Not Do
 
@@ -119,7 +118,7 @@ A proposed code/document retirement remains a separate, operator-gated action. N
 
 <<~/ahu>>
 
-<<~ ahu #/reentry>>
+<<~ ahu slot=`#/reentry`>>
 
 !! Re-entry Keys
 
@@ -135,6 +134,6 @@ The operator retains authority for canon, irreversible o-takiage, and the meanin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pmPzSDzBpryraVqniV9m7AygEJuCvF5BO8m_NXBIY80
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZaqMSgVxgUhH7AIUWahlTYwNd0csHREbJ0W9jWccc4U`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,373 @@
+import type { PortIslandToVesselMsg, PortWireRecord, PortWidthName } from "@lararium/mesh/record-port";
+
+export interface GlassWiki {
+  addEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
+  removeEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
+  getTiddler(title: string): { fields: Record<string, unknown>; getFieldStrings?(): Record<string, string> } | undefined;
+  addTiddler(tiddler: unknown): void;
+  deleteTiddler(title: string): void;
+}
+export interface GlassTransport {
+  send(message: Record<string, unknown>): unknown;
+  onMessage(listener: (message: PortIslandToVesselMsg) => void): () => void;
+}
+export interface GlassPortOptions {
+  wiki: GlassWiki;
+  Tiddler: new (fields: Record<string, unknown>) => unknown;
+  transport: GlassTransport;
+  portId: string;
+  wikiUri: string;
+  actor: string;
+  width: Extract<PortWidthName, "full" | "skinny" | "story">;
+  fields?: string[];
+  localFilter?: string[];
+  mintTx: () => string;
+  /** Writes a closed predecessor left unsettled; they resend under their own txId, which the island's per-actor ledger applies once. */
+  adopt?: ReadonlyArray<PendingWrite>;
+  /** Landed images a closed predecessor tagged whose wiki change has not fired yet; the successor must not read them as local edits. */
+  inheritTags?: ReadonlyMap<string, readonly string[]>;
+  /** Titles whose later edits waited behind a write the predecessor sent; the successor sends them once that write answers. */
+  inheritDeferred?: readonly string[];
+  /**
+   * The port already stands open and its first whole snapshot already landed: the mirror's boot read it (`glass-handoff.ts`).
+   * `preloaded` names the records the engine booted with, which this adaptor holds as landed and never lands again; `held` names
+   * the records the boot census kept out of the engine's boot, which land now as ordinary records (after boot TW5 evaluates no
+   * module from a record, so a held plugin stands as data). The adaptor sends no `port:open` of its own.
+   */
+  opened?: { preloaded: readonly PortWireRecord[]; held: readonly PortWireRecord[] };
+}
+/** The one `port:open` a mirror sends, whoever sends it: the boot's handoff (with `boot`) or the adaptor's own open after a reset. */
+export function glassPortOpen(opts: Pick<GlassPortOptions, "portId" | "wikiUri" | "actor" | "width" | "fields" | "localFilter">, boot = false): Record<string, unknown> {
+  return { type: "port:open", portId: opts.portId, wikiUri: opts.wikiUri, actor: opts.actor,
+    width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
+    ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}), ...(boot ? { boot: true } : {}) };
+}
+/** True for a title the glass keeps to itself: its own story and history, and the tier-local prefixes. */
+export function glassLocalTitle(title: string, localFilter: readonly string[] = []): boolean {
+  return title === "$:/StoryList" || title === "$:/HistoryList" ||
+    LOCAL.some(prefix => title === prefix || title.startsWith(`${prefix}/`)) || localFilter.some(prefix => title.startsWith(prefix));
+}
+export interface PendingWrite { txId: string; title: string; record: PortWireRecord }
+
+type Change = { title: string; fields: Record<string, string>; deleted?: true };
+type Pending = { before: PortWireRecord | null; title: string; optimistic: string; generation: number;
+  peerGeneration: number; record: PortWireRecord; echoed?: true };
+// `$:/info/*` is what this page knows of itself (its URL, its browser, its mode): a session fact, never a record the port carries.
+const LOCAL = ["$:/state", "$:/temp", "$:/status", "$:/info"];
+/** TW5's own date string (`YYYYMMDDHHMMSSmmm`, UTC), as `$tw.utils.stringifyDate` writes it. */
+const tw5Date = (date: Date): string => {
+  const pad = (n: number, width = 2) => String(n).padStart(width, "0");
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}${pad(date.getUTCHours())}` +
+    `${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}${pad(date.getUTCMilliseconds(), 3)}`;
+};
+/** TW5's own list string, as `$tw.utils.stringifyList` writes it: a member holding a space rides in brackets. */
+const tw5List = (list: readonly unknown[]): string =>
+  list.map(item => { const s = String(item); return /\s/.test(s) ? `[[${s}]]` : s; }).join(" ");
+/**
+ * A record's fields as TW5's own strings, the form every engine and store reads back. `String(date)` once wrote the host's locale
+ * form ("Wed Nov 11 2026 …"), which no engine parses: the worker read a mirror-written `modified` as an invalid date, and its Recent
+ * timeline painted an empty day where the new tiddler stood. A real TW5 tiddler answers through its own `getFieldStrings`.
+ */
+const ownFields = (wiki: GlassWiki, title: string): Record<string, string> | null => {
+  const tiddler = wiki.getTiddler(title);
+  if (!tiddler) return null;
+  const own = typeof tiddler.getFieldStrings === "function" ? tiddler.getFieldStrings() : null;
+  const fields: Record<string, string> = {};
+  for (const [key, value] of Object.entries(own ?? tiddler.fields)) {
+    if (key === "title" || value === undefined) continue;
+    fields[key] = typeof value === "string" ? value : value instanceof Date ? tw5Date(value) : Array.isArray(value) ? tw5List(value) : String(value);
+  }
+  return fields;
+};
+const imageOf = (fields: Record<string, string> | null) => JSON.stringify(fields);
+
+/** A glass wiki mirrors port records while its local edits remain optimistic. */
+export function makeGlassPortAdaptor(opts: GlassPortOptions) {
+  const { wiki, Tiddler, transport, portId } = opts;
+  const landed = new Map<string, PortWireRecord | null>();
+  const omitted = new Map<string, string[]>();
+  const tagged = new Map<string, string[]>([...(opts.inheritTags ?? [])].map(([title, images]) => [title, [...images]]));
+  const pending = new Map<string, Pending>();
+  const settled = new Set<string>();
+  const loading = new Map<string, { title: string; generation: number; resolve: (text: string | undefined) => void }>();
+  const generations = new Map<string, number>();
+  const peerGenerations = new Map<string, number>();
+  const tombstones = new Map<string, number>();
+  const snapshots = new Map<string, { n: number; chunks: Map<number, PortWireRecord[]> }>();
+  const resetTitles = new Set<string>();
+  const repost = new Set<string>();
+  const deferred = new Set<string>(opts.inheritDeferred ?? []);
+  const landedListeners = new Set<(change: Change) => void>();
+  const peerListeners = new Set<(change: Change) => void>();
+  const presenceListeners = new Set<(presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void>();
+  const refusedListeners = new Set<(result: { title: string; txId: string; reason: string }) => void>();
+  const opened = new Set<string>();
+  // The last few txIds this port sent per title: an entry naming one is the port's own echo however many times the island repeats it.
+  const ownTxs = new Map<string, string[]>();
+  const OWN_TXS_PER_TITLE = 16;
+  const rememberOwn = (title: string, txId: string) => {
+    const held = [...(ownTxs.get(title) ?? []), txId];
+    ownTxs.set(title, held.slice(-OWN_TXS_PER_TITLE));
+  };
+  // A peer entry held while a write stood in flight, and the newest seq of the port's own echo per title: the settle lands the held entry when it postdates the echo.
+  const heldPeer = new Map<string, PortWireRecord>();
+  const echoSeq = new Map<string, number>();
+  let writesSent = 0;
+  let askNumber = 0;
+  let closed = false;
+  const local = (title: string) => glassLocalTitle(title, opts.localFilter);
+  const tag = (title: string, image: string) => tagged.set(title, [...(tagged.get(title) ?? []), image]);
+  const optimistic = (title: string) => [...pending.values()].some(tx => tx.title === title);
+  const land = (record: PortWireRecord, peer = false) => {
+    if (local(record.title)) return;
+    const { title } = record;
+    const prior = landed.get(title);
+    const fields = record.deleted ? null : { ...(prior && !prior.deleted ? prior.fields : {}), ...record.fields };
+    if (fields) delete fields["title"];
+    if (record.deleted) {
+      omitted.delete(title);
+      wiki.deleteTiddler(title);
+      tag(title, imageOf(null));
+      landed.set(title, null);
+      if (record.seq !== undefined) tombstones.set(title, record.seq);
+    } else {
+      const missing = record.omitted ?? [];
+      for (const key of missing) delete fields![key];
+      omitted.set(title, missing);
+      // Two images tag the landing: the wire fields (a wiki that notifies inside addTiddler matches this one) and the tiddler as TW5
+      // reads it back after rewriting tags, lists and dates (TW5 notifies later and matches that one).
+      const wire = imageOf(fields);
+      tag(title, wire);
+      wiki.addTiddler(new Tiddler({ title, ...fields }));
+      const readBack = imageOf(ownFields(wiki, title));
+      if (readBack !== wire) tag(title, readBack);
+      landed.set(title, { ...record, fields: { ...fields! }, omitted: [...missing] });
+      tombstones.delete(title);
+    }
+    if (peer) peerGenerations.set(title, (peerGenerations.get(title) ?? 0) + 1);
+    const change: Change = { title, fields: fields ?? {}, ...(record.deleted ? { deleted: true } : {}) };
+    for (const listener of landedListeners) listener(change);
+    if (peer) for (const listener of peerListeners) listener(change);
+  };
+  const onChange = (changes: Record<string, unknown>) => {
+    if (closed) return;
+    for (const title of Object.keys(changes)) {
+      if (local(title)) continue;
+      const fields = ownFields(wiki, title);
+      const image = imageOf(fields);
+      const tags = tagged.get(title) ?? [];
+      const taggedIndex = tags.indexOf(image);
+      if (taggedIndex >= 0) {
+        tags.splice(0, taggedIndex + 1);
+        if (!tags.length) tagged.delete(title);
+        continue;
+      }
+      if (tags.length) tagged.delete(title);
+      const generation = (generations.get(title) ?? 0) + 1;
+      generations.set(title, generation);
+      // One write per title stands in flight: later keystrokes wait behind it and the follow-up carries the latest text.
+      if (optimistic(title)) { deferred.add(title); continue; }
+      sendLocal(title, fields, image, generation);
+    }
+  };
+  function sendLocal(title: string, fields: Record<string, string> | null, image: string, generation: number): void {
+    const txId = opts.mintTx();
+    const record: PortWireRecord = { title, fields: fields ?? {}, ...(fields ? {} : { deleted: true as const }) };
+    pending.set(txId, { title, before: landed.get(title) ?? null, optimistic: image, generation,
+      peerGeneration: peerGenerations.get(title) ?? 0, record });
+    rememberOwn(title, txId); writesSent++;
+    transport.send({ type: "port:write", portId, txId, records: [{ title, fields: fields ?? {}, ...(fields ? {} : { tombstone: true }) }] });
+  }
+  /** The edits that waited behind a write now answered go out as one write of the title's current state. */
+  const flushDeferred = (title: string): void => {
+    if (!deferred.delete(title) || closed || optimistic(title)) return;
+    const fields = ownFields(wiki, title);
+    sendLocal(title, fields, imageOf(fields), generations.get(title) ?? 0);
+  };
+  wiki.addEventListener("change", onChange);
+  const onMessage = (msg: PortIslandToVesselMsg) => {
+    if (closed || msg.portId !== portId) return;
+    if (msg.type === "port:snapshot") {
+      const snapshot = snapshots.get(msg.snapshotId) ?? { n: msg.n, chunks: new Map<number, PortWireRecord[]>() };
+      if (snapshot.n !== msg.n || msg.i < 1 || msg.i > msg.n) return;
+      snapshots.set(msg.snapshotId, snapshot);
+      snapshot.chunks.set(msg.i, msg.records);
+      if (snapshot.chunks.size === snapshot.n) {
+        snapshots.delete(msg.snapshotId);
+        const records = Array.from({ length: snapshot.n }, (_, i) => snapshot.chunks.get(i + 1) ?? []).flat();
+        const titles = new Set(records.map(record => record.title));
+        for (const title of new Set([...landed.keys(), ...resetTitles])) if (!local(title) && !titles.has(title) && !optimistic(title))
+          land({ title, fields: {}, deleted: true });
+        resetTitles.clear();
+        for (const record of records) {
+          if (optimistic(record.title) || repost.has(record.title)) landed.set(record.title, record);
+          else land(record);
+        }
+        for (const title of repost) {
+          const fields = ownFields(wiki, title);
+          const txId = opts.mintTx();
+          const record: PortWireRecord = { title, fields: fields ?? {}, ...(fields ? {} : { deleted: true as const }) };
+          pending.set(txId, { title, before: landed.get(title) ?? null, optimistic: imageOf(fields),
+            generation: generations.get(title) ?? 0, peerGeneration: peerGenerations.get(title) ?? 0, record });
+          rememberOwn(title, txId);
+          transport.send({ type: "port:write", portId, txId,
+            records: [{ title, fields: fields ?? {}, ...(fields ? {} : { tombstone: true }) }] });
+        }
+        repost.clear();
+      }
+    } else if (msg.type === "port:changes") {
+      for (const entry of msg.entries) {
+        const own = entry.causedBy.filter(txId => pending.has(txId) || settled.has(txId));
+        const repeated = !own.length && entry.causedBy.some(txId => ownTxs.get(entry.title)?.includes(txId));
+        if (own.length) {
+          echoSeq.set(entry.title, Math.max(echoSeq.get(entry.title) ?? 0, entry.seq ?? 0));
+          if ((heldPeer.get(entry.title)?.seq ?? 0) < (entry.seq ?? 0)) heldPeer.delete(entry.title);
+          for (const txId of own) {
+            settled.delete(txId);
+            const tx = pending.get(txId);
+            if (tx) tx.echoed = true;
+          }
+          continue;
+        }
+        if (repeated) continue;                                                 // a second echo of a write already settled
+        if (deferred.has(entry.title) || optimistic(entry.title)) {
+          // The person's later typing waits behind a write in flight, or the write stands in flight itself: the entry updates what the port holds, never the tiddler on screen, and the write carries the person's text.
+          landed.set(entry.title, entry.deleted ? null : { ...entry, fields: { ...(landed.get(entry.title)?.fields ?? {}), ...entry.fields } });
+          heldPeer.set(entry.title, entry);
+          continue;
+        }
+        land(entry, true);
+        // A peer record arrives without the body fields a skinny port omits; an opened body loads again so the editor never loses its text.
+        if (entry.deleted) opened.delete(entry.title);
+        else if (opened.has(entry.title) && omitted.get(entry.title)?.includes("text")) void loadBody(entry.title);
+      }
+      transport.send({ type: "port:ack", portId, cursor: msg.cursor });
+    } else if (msg.type === "port:reset") {
+      for (const title of landed.keys()) resetTitles.add(title);
+      for (const [txId, tx] of pending) { repost.add(tx.title); settled.add(txId); }
+      pending.clear(); ownTxs.clear(); heldPeer.clear(); echoSeq.clear();
+      landed.clear(); omitted.clear(); tagged.clear(); snapshots.clear(); tombstones.clear();
+      transport.send(glassPortOpen(opts));
+    } else if (msg.type === "port:written") {
+      const tx = pending.get(msg.txId);
+      if (!tx) return;
+      pending.delete(msg.txId);
+      if (!tx.echoed) {
+        settled.add(msg.txId);
+        if (settled.size > 8192) settled.delete(settled.values().next().value!);
+      }
+      if (msg.status === "refused" || msg.status === "partial" && !msg.applied.length) {
+        if (generations.get(tx.title) === tx.generation &&
+          (peerGenerations.get(tx.title) ?? 0) === tx.peerGeneration &&
+          imageOf(ownFields(wiki, tx.title)) === tx.optimistic) {
+          const base = landed.get(tx.title) ?? tx.before;
+          if (base) land(base);
+          else land({ title: tx.title, fields: {}, deleted: true });
+        }
+        for (const listener of refusedListeners) listener({ title: tx.title, txId: msg.txId, reason: msg.reason ?? msg.status });
+      } else {
+        landed.set(tx.title, tx.record.deleted ? null : tx.record);
+      }
+      flushDeferred(tx.title);
+      // The write settled and nothing waits behind it: a peer entry that postdates the write's echo shows now; the write never overwrites it.
+      const held = heldPeer.get(tx.title);
+      if (held && !optimistic(tx.title) && !deferred.has(tx.title)) {
+        heldPeer.delete(tx.title);
+        if ((held.seq ?? 0) > (echoSeq.get(tx.title) ?? 0)) {
+          land(held, true);
+          if (held.deleted) opened.delete(tx.title);
+          else if (opened.has(tx.title) && omitted.get(tx.title)?.includes("text")) void loadBody(tx.title);
+        }
+      }
+    } else if (msg.type === "port:answer") {
+      const ask = loading.get(msg.askId);
+      if (!ask) return;
+      loading.delete(msg.askId);
+      if (msg.status === "answered" && Array.isArray(msg.result)) {
+        const record = (msg.result as PortWireRecord[]).find(record => record.title === ask.title);
+        if (record && (tombstones.get(ask.title) ?? -1) > (record.seq ?? -1)) {
+          ask.resolve(undefined);
+          return;
+        }
+        if (record) {
+          const held = landed.get(ask.title);
+          if (ask.generation === (generations.get(ask.title) ?? 0) &&
+            (!held || (held.seq ?? 0) <= (record.seq ?? 0)) && !tombstones.has(ask.title)) {
+            const fields = { ...(held && !held.deleted ? held.fields : {}), ...record.fields };
+            land({ title: ask.title, ...(record.seq === undefined ? {} : { seq: record.seq }), fields,
+              omitted: (omitted.get(ask.title) ?? []).filter(key => !Object.hasOwn(record.fields, key)) });
+          }
+          ask.resolve(record.fields.text);
+          return;
+        }
+      }
+      ask.resolve(tombstones.has(ask.title) ? undefined : ownFields(wiki, ask.title)?.text);
+    } else if (msg.type === "port:presence" && msg.actorKey !== opts.actor) {
+      for (const listener of presenceListeners) listener(msg);
+    }
+  };
+  // What the engine booted with stands as landed before the port's next message can arrive: a change that follows merges over it.
+  for (const record of opts.opened?.preloaded ?? []) {
+    if (local(record.title) || record.deleted) continue;
+    const fields = { ...record.fields };
+    delete fields["title"];
+    for (const key of record.omitted ?? []) delete fields[key];
+    omitted.set(record.title, [...(record.omitted ?? [])]);
+    landed.set(record.title, { ...record, fields, omitted: [...(record.omitted ?? [])] });
+  }
+  for (const record of opts.opened?.held ?? []) land(record);
+  const unsubscribe = transport.onMessage(onMessage);
+  if (!opts.opened) transport.send(glassPortOpen(opts));
+  transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat: 0 });
+  for (const write of opts.adopt ?? []) {
+    const fields = ownFields(wiki, write.title);
+    pending.set(write.txId, { title: write.title, before: null, optimistic: imageOf(fields), generation: generations.get(write.title) ?? 0,
+      peerGeneration: 0, record: write.record });
+    rememberOwn(write.title, write.txId);
+    transport.send({ type: "port:write", portId, txId: write.txId,
+      records: [{ title: write.title, fields: write.record.fields, ...(write.record.deleted ? { tombstone: true } : {}) }] });
+  }
+  const loadBody = (title: string): Promise<string | undefined> => {
+    if (!omitted.get(title)?.includes("text")) return Promise.resolve(ownFields(wiki, title)?.text);
+    const askId = `${portId}:load:${++askNumber}`;
+    return new Promise(resolve => { loading.set(askId, { title, generation: generations.get(title) ?? 0, resolve });
+      transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
+  };
+  return {
+    deferredTitles(): string[] { return [...deferred]; },
+    /** No write stands in flight and no edit waits behind one: the port holds nothing the island has yet to answer. */
+    /** How many local writes this port has sent: it only grows, so a test can wait for an edit's write to go out before it waits for quiet. */
+    writesSent(): number { return writesSent; },
+    quiescent(): boolean { return pending.size === 0 && deferred.size === 0; },
+    tagImages(): ReadonlyMap<string, readonly string[]> { return new Map(tagged); },
+    pendingWrites(): PendingWrite[] { return [...pending].map(([txId, tx]) => ({ txId, title: tx.title, record: tx.record })); },
+    resendPending() {
+      for (const [txId, tx] of pending) transport.send({ type: "port:write", portId, txId,
+        records: [{ title: tx.title, fields: tx.record.fields,
+          ...(tx.record.deleted ? { tombstone: true } : {}) }] });
+    },
+    onLanded(listener: (change: Change) => void) { landedListeners.add(listener); return () => landedListeners.delete(listener); },
+    onPeerEdit(listener: (change: Change) => void) { peerListeners.add(listener); return () => peerListeners.delete(listener); },
+    onPresence(listener: (presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void) {
+      presenceListeners.add(listener); return () => presenceListeners.delete(listener);
+    },
+    onRefused(listener: (result: { title: string; txId: string; reason: string }) => void) {
+      refusedListeners.add(listener); return () => refusedListeners.delete(listener);
+    },
+    omittedFields(title: string) { return [...(omitted.get(title) ?? [])]; },
+    openBody(title: string): Promise<string | undefined> { opened.add(title); return loadBody(title); },
+    closeBody(title: string) { opened.delete(title); },
+    openDraft(title: string) { return this.openBody(title); },
+    postPresence(beat: number, state?: unknown) { transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat, state }); },
+    close() { if (closed) return; closed = true; wiki.removeEventListener("change", onChange); unsubscribe();
+      transport.send({ type: "port:close", portId }); },
+  };
+}
+
+/** The host lends both the TW5 instance and its port transport when startup runs. */
+export function makeGlassPortStartup(opts: Omit<GlassPortOptions, "wiki" | "Tiddler"> & {
+  tw: { wiki: GlassWiki; Tiddler: GlassPortOptions["Tiddler"] };
+}) {
+  return { name: "glass-port-adaptor", platforms: ["browser"] as ["browser"], after: ["startup"] as ["startup"],
+    startup() { return makeGlassPortAdaptor({ ...opts, wiki: opts.tw.wiki, Tiddler: opts.tw.Tiddler }); } };
+}

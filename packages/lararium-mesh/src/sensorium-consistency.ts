@@ -27,7 +27,7 @@
  *      this li-radius (Hansen–Ghrist inner-product/adjoint duality: `∂ = δ*`), NOT a cosheaf faked through
  *      a contravariant restriction. It EXTENDS faces UP into a shared coface-stalk (the TE-flow Hodge
  *      circulation is the real extension map) and reads pairwise disagreement on codomain CO-OVERLAPS — the exact dual
- *      of the sheaf's restriction + overlap. The old refusal (faking it through a restriction) is dissolved.
+ *      of the sheaf's restriction + overlap, so it never fakes the read through a restriction.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/crucible-tested
  */
@@ -306,7 +306,7 @@ export function treeEditExact(a: LabeledTree, b: LabeledTree): number {
 
 /**
  * Tree-edit DISTANCE in [0,1] (structure's native stalk metric) — DEFAULTS to the near-linear DECKARD
- * embedding (was the naive cubic forestEditRaw that timed out past ~200 nodes). 0 ⟺ identical trees
+ * embedding (the naive cubic forestEditRaw times out past ~200 nodes). 0 ⟺ identical trees
  * (identical characteristic vectors). NON-Lipschitz by nature (a re-root spikes it), read as a DISAGREEMENT
  * SIGNAL only. `opts.method` selects `"pqgram"` (the refine) or `"exact"` (the shelved cubic TED).
  */

@@ -1,0 +1,58 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-b/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/c-b/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-b/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/c-b/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/c-b/final.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/c-b/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''The code collision is blocked:'' this seat contains the brief but no checkout, `CLAUDE.md`, or source files, and the supplied context explicitly says the repository cannot be read. The brief gives path pointers, but it does not contain the source lines needed to verify the current implementation. I cannot honestly assign the requested code-grounded verdicts or file:line citations, or determine what PR #205 already built.
+
+The following is a ''provisional hand-back based only on the controller’s supplied code-read facts''. “Bends” here describes how a proposal relates to those facts; it is not a verified verdict against the current source.
+
+| Focus | Provisional assessment |h
+| Daemon wiki, house bags, private planes and `kahua-<tag>` | ''BENDS.'' Their plaintext currently sits under the wipeable state root, according to the supplied inventory. An outside root only helps if the actual reset and container mounts leave it outside the deletion boundary. Which grants and path resolvers must change is unverified. |
+| Temp, draft and personal | ''BENDS.'' The supplied facts say temp and personal never project, and draft does not by default. A non-secret feature flag plus persistent per-bag consent is a proposed change; existing consent or policy mechanisms are unknown. |
+| Commit-to-projection gap | ''BENDS.'' A durable outbox must be committed with the source change; otherwise complete authorized-source reconciliation after restart can close the missed-enqueue gap. The current commit, scheduling and reconciliation behavior is unknown. |
+| Atomic writes and states | ''BENDS.'' Private same-directory staging, file sync, rename and directory sync support the proposed durability acknowledgment; rename alone establishes a different guarantee. The current projector’s write protocol and status model are unknown. |
+| External edits | ''BENDS.'' Hash-based detection and preserving both versions are a plausible policy, but must be reconciled with the existing kapae shadow and ingest-back lane. Calling that lane absent or replacing it would be unsupported. |
+| Cleanup | ''BENDS.'' Restricting cleanup to identified projector-owned artifacts avoids changing sealed records. A default 30+30-day expiry of live temp projections conflicts with the immediate survival objective when a projection may become the only remaining copy. Ownership, trash and cleanup facilities are unverified. |
+| Locked-custody saves | ''HOLDS on the supplied facts, not yet code-verified:'' these saves are volatile. A preservation claim must account for them; silently projecting them would require a separate deliberate plaintext choice. Whether reset can detect or block on them is unknown. |
+| Concurrent values on export | ''BENDS.'' A latest-text projection cannot by itself establish that every concurrent value is represented. A complete export needs conflict enumeration and representation, or a clearly reported omission. Whether this code exposes the necessary conflicts is unverified. |
+
+The smallest first lane is ''an explicitly consented daemon-memory projection to a separately configured root outside the actual reset target'', using the existing record format and projection machinery wherever they support it. It should cover restart reconciliation for accepted writes before claiming survival, and report a projection failure instead of treating a sealed write as a durable plaintext write. Temp, draft and personal can follow once the existing policy and grants are understood. This is an inference from the supplied priorities, not a finding that the change is small in the current code.
+
+The likely files to inspect for that lane are `packages/lararium-node/src/bag-paths.ts`, `open-node-vessel.ts`, `disk-projector.ts`, the applicable path resolver, `docker-compose.surface.yml`, and `tools/lares-container.sh`; the actual change set cannot be determined without reading them. The ''red test'' should accept an authorized memory-stage write, simulate termination after the sealed commit but before projection scheduling, restart against the same sealed store, and assert that reconciliation creates the correct plaintext under the separately mounted root. It should also assert that an unconsented bag is not projected. A separate reset-boundary test must establish that the actual reset preserves that root. Any test requiring a vessel or socket is ''lead runs'' under the seat law.
+
+The research made several claims or assumptions that should not be carried forward as code facts:
+
+* Neither `~/.lares/hearth/` nor `~/.lares/projections/` is an established current boundary in the supplied inventory; both are proposals. The new reset verb’s actual target is unverified.
+* A “memory bag” needing a new opt-in is an assumption: the supplied facts identify a daemon wiki and memory stage, but do not establish the bag’s exact identity or existing grants.
+* Neither report establishes that projection is currently non-atomic, that an outbox is absent, that external edits are silently overwritten, or that import and conflict enumeration are unavailable.
+* The proposed 30+30-day retention period has no demonstrated basis in this code or the stated survival requirement.
+* A plaintext content migration cannot be described as restoring keys, old CRDT history, heads, signatures or authority; the supplied facts expressly identify those as lost on re-found.
+
+To finish the requested verdicts, the lead must provide a readable current checkout or a line-numbered code extract covering the named files, including the house laws and kapae lane.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EadukKADUVbgDusfxa0ADqc2Ytu9sjSlRvQbT6YPN1I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

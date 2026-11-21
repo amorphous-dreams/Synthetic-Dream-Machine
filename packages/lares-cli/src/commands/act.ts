@@ -36,12 +36,16 @@
 
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { join, extname, resolve, relative, sep } from "node:path";
+import { join, extname, resolve, relative, sep, basename } from "node:path";
 import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+
+/** The projections root when one stands, as the optional `MirrorDirs` field. */
+const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
-import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
+import { metaTableFromBody } from "@lararium/node";
+import { bagManifestUri, BAG_MANIFEST_FILE, ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
@@ -77,15 +81,19 @@ function receiptToResult(r: ReceiptAnswer): SubmitResult | undefined {
  */
 function addressTitleForLoad(source: string, file: string, toBag: string): string {
   const parts = resolve(file).split(sep);
+  // The FIRST plane segment whose interior reads as an address wins: a holding's files sit at
+  // `bags/<holding>/ha.ka.ba/bags/<holding>/…`, and the inner `bags` names no interior of its own.
   for (const plane of ["bags", "wikis"]) {
-    const i = parts.lastIndexOf(plane);
-    if (i >= 0 && i + 2 < parts.length) {
+    for (let i = parts.indexOf(plane); i >= 0; i = parts.indexOf(plane, i + 1)) {
+      if (i + 2 >= parts.length) continue;
       const interior = parts.slice(i + 2).join("/").replace(/\.[^/.]+$/, "");
       if (/^\w+\.\w+\.\w+\//.test(interior)) return `lar:///${interior}`;
     }
   }
   const rel = relative(source, file).split(sep).join("/").replace(/\.[^/.]+$/, "");
-  const base = toBag.replace(/\/+$/, "");
+  // A record's address lives under its BAG; a wiki slot (`wikis/<slug>/working`) is where it rests, never its name.
+  const slug = wikiSlugOfBag(toBag);
+  const base = (slug && /\/wikis\//.test(toBag) ? `lar:///ha.ka.ba/bags/${slug}` : toBag).replace(/\/+$/, "");
   return rel ? `${base}/${rel}` : base;
 }
 
@@ -95,6 +103,7 @@ function printUsage(): void {
   console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
   console.error("");
   console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
+  console.error("  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)");
   console.error("  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]");
   console.error("                     carries the delete down into a bag that holds the title; with no --to the");
   console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
@@ -134,7 +143,8 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const root = larRoot();
   // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
   // aside provenance: the `lar:` URI's path + the file's extension.
-  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() })(root, source);
+  const sited = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
+  const uri = typeof sited === "string" ? sited : null;
   if (!uri || !uri.startsWith("lar:///")) {
     emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
     return exitFor("usage");
@@ -226,8 +236,14 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** The founding door comes from the rite's in-process seed call; CLI parsing never supplies it. */
-export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<number> {
+/**
+ * What a caller inside this CLI states beside the parsed arguments, with no typed surface of its own:
+ *   · `houseCanon` — the caller (the seed) read this CREATE's bag off the canon source as house canon. The verb carries it as
+ *     `house-canon: true`, and an island that never seated the bag refuses `house-canon-unseated` and mints no catalog row.
+ */
+export interface ActClaims { readonly houseCanon?: boolean }
+
+export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -262,15 +278,21 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
     const fromBag  = args.options["from"];
     const toBag    = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
-    if (!title || !fromBag || (verb !== "MOVE" && !toBag)) {
-      console.error(`lares act ${verb}: --title, --from, --to all required`);
+    // A MOVE naming --from and --to and no --title promotes the WHOLE source layer (every live title) in one act.
+    const layerMove = verb === "MOVE" && !title && !!fromBag && !!toBag;
+    if (!layerMove && (!title || !fromBag || (verb !== "MOVE" && !toBag))) {
+      console.error(verb === "MOVE" ? "lares act MOVE: --title, --from, --to (or --from and --to alone to move the whole layer) required" : `lares act ${verb}: --title, --from, --to all required`);
+      return 2;
+    }
+    if (layerMove && args.flags["shadow"]) {
+      console.error("lares act MOVE: --shadow names one tombstoned title; a layer move names none");
       return 2;
     }
     if (verb !== "MOVE" && args.flags["shadow"]) {
       console.error(`lares act ${verb}: --shadow rides a MOVE of a tombstone alone`);
       return 2;
     }
-    if (verb === "MOVE" && !toBag) {
+    if (verb === "MOVE" && !toBag && title) {
       try {
         const did = await vesselDid();
         const where = await runVerb("where", { tiddler: title }, did);
@@ -288,7 +310,7 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
       }
       return 2;
     }
-    actionArgs["title"]      = title;
+    if (title) actionArgs["title"] = title;
     actionArgs["from-bag"]   = fromBag;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
@@ -322,6 +344,9 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
     nonce = changeId;
     actionArgs["bag"]   = bag;
     actionArgs["plane"] = plane;
+    // THE SEED'S CLAIM (`ActClaims.houseCanon`): the seed read this bag's holding off the canon source as house canon. An island
+    // that never seated the bag refuses `house-canon-unseated` and mints no catalog row for canon.
+    if (claims.houseCanon === true) actionArgs["house-canon"] = true;
   } else {
     // verb === "LOAD"
     const sourceUri = args.options["source-uri"];
@@ -334,7 +359,6 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
     actionArgs["source-uri"] = sourceUri;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
-    if (seedDoor) actionArgs["seed-door"] = seedDoor;
 
     // The disk grant lives HERE — the operator gesture reads the carriers and
     // sends content WITH the verb (islands hold no fetch capability). A local
@@ -348,7 +372,13 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
             .filter((f) => { try { return statSync(f).isFile(); } catch { return false; } })
         : [sourceUri])
         // A `.meta` sidecar rides WITH its content file, never as a carrier of its own.
-        .filter((f) => !f.endsWith(".meta"));
+        .filter((f) => !f.endsWith(".meta"))
+        // The catalog owns only a declaration naming this source bag; authored meta.mem files still travel.
+        .filter((f) => {
+          if (!isDir || f !== join(sourceUri, BAG_MANIFEST_FILE)) return true;
+          try { return metaTableFromBody(readFileSync(f, "utf8"))["title"] !== bagManifestUri(basename(resolve(sourceUri))); }
+          catch { return true; }
+        });
       // The feed lands BOTH memetic-wikitext memes AND every other legal TW5
       // filetype: each carrier rides its text + a `lar:` title + its extension, and
       // the island routes by content (an SOH heading → the memetic shore; else
@@ -521,8 +551,8 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
         return exitFor("request-interrupted");
       } else if (receipt?.state === "evicted") {
         // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
-        // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer
-        // exists. Same shared helper as above.
+        // never a bare "unknown" that would invite a re-run to re-read a receipt the ring has
+        // dropped. Same shared helper as above.
         const hint = refusalHint("retention-gap", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
@@ -531,10 +561,10 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
         });
         return exitFor("retention-gap");
       } else {
-        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID NO LONGER DOES (H4, generalized E1 commit
-        // 4′), AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
+        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID DOES NOT DO (H4, E1),
+        // AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
         // mints a NEW change, which is exactly the double-run this hint exists to prevent. requestId
-        // is now a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
+        // is a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
         // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
         // retry rather than a new change: reuse `--change-id`.
         const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
@@ -587,10 +617,11 @@ export async function cmdAct(args: ParsedArgs, seedDoor?: "founding"): Promise<n
   // attempt's landed outcome, rather than running the verb again — the CLI's own telling of "that
   // already landed" distinct from "I just landed it".
   const effectOf = result.effectOf;
+  const data = { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) };
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) },
+    data,
     human: () => {
       if (summary["dryRun"]) {
         const wl = Array.isArray(summary["wouldLand"]) ? summary["wouldLand"].length : 0;

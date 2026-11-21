@@ -11,7 +11,12 @@
  * caller names exactly as it names a refusal on the direct path.
  */
 
-import { storeDoorDirect, StoreHeld, type StoreDoorVerb } from "@lararium/node";
+import { wardTicketFor } from "./ward-door.js";
+import { ControlHomeUnavailable, newRequestId, VESSEL_LOCKED, type Credential, type SessionReceipt } from "@lararium/mesh";
+import { storeDoorDirect, storeVerbFace, storeVerbGatesFirst, StoreHeld, STORE_DOOR_FACE_VERBS, type StoreDoorVerb } from "@lararium/node";
+import { openLocalSession, SessionRefused } from "./session-connector.js";
+import { sealedAct } from "./sealed-act-door.js";
+import { vesselStanding, type VesselStanding } from "./custody-door.js";
 import { vesselDid, larSealHome } from "./env.js";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
@@ -35,6 +40,103 @@ async function invokeAbortable(
     if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
     throw e;
   }
+}
+
+/**
+ * Run face row `verb` inside the standing vessel on a session of face `face` (`h<N>`): the session opens, the one act
+ * rides it (`session:act`), and the session closes. The row's answer returns on that socket alone, so no outcome body
+ * rests in the daemon document beside the face (K20). The door's own abort closes the session at once, as it ends the
+ * maintenance frame's socket. A session the vessel refuses (a locked face, a face it does not hold, a moved anchor)
+ * answers by the vessel's own name, and a row the vessel could not run throws `RoutedVerbRefused` with its words and
+ * the refusal's own name. The act carries no flat timer of its own: the door's budgeted wait bounds it, and the vessel
+ * bounds its clearance (`LocalWaitExpired` serves the maintenance frame alone).
+ * THE DOOR OWNS THE ACT'S REQUEST ID: it mints one per act and the act rides it, so a socket that goes once the act was
+ * sent throws {@link SessionActAnswerLost} naming that id and the face, and {@link sessionActReceipt} reads the outcome
+ * under it. A socket that went before the session opened sent nothing, and reads `DaemonUnreachable`.
+ */
+async function invokeInSession(
+  verb: string, args: Record<string, unknown>, face: number,
+  opts: { readonly signal: AbortSignal },
+): Promise<Record<string, unknown>> {
+  if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  const abort = () => { void session.close(); };
+  opts.signal.addEventListener("abort", abort, { once: true });
+  const requestId = newRequestId();
+  try {
+    const { answer } = await session.act(verb, args, { requestId });
+    if (answer["status"] === "error") {
+      const reason = typeof answer["reason"] === "string" ? answer["reason"] : undefined;
+      throw new RoutedVerbRefused(typeof answer["errorMessage"] === "string" ? answer["errorMessage"] : reason ?? `${verb} failed`, reason);
+    }
+    const output = answer["output"];
+    return output !== null && typeof output === "object" && !Array.isArray(output) ? output as Record<string, unknown> : {};
+  }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new SessionActAnswerLost(verb, face, requestId);
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  } finally {
+    opts.signal.removeEventListener("abort", abort);
+    await session.close().catch(() => { /* the socket already went */ });
+  }
+}
+
+/**
+ * A FACE ROW'S ANSWER WENT WITH ITS SOCKET: the act was sent under `requestId` on a session of face `face`, and no answer
+ * came back. It may have run, so this reads outcome-unknown, never a verdict; the face's receipt under the id tells.
+ */
+export class SessionActAnswerLost extends Error {
+  override readonly name = "SessionActAnswerLost";
+  constructor(readonly verb: string, readonly face: number, readonly requestId: string) {
+    super(`"${verb}" on face h${face} lost its answer with the socket; outcome unknown. Its receipt rides request ${requestId}.`);
+  }
+}
+
+/**
+ * RECOVER A FACE ROW'S OUTCOME BY ITS ID: open a session of face `face` and read the receipt the act under `requestId`
+ * left (the vessel scopes it to the face). The answer body rode the lost socket alone, so the receipt carries the outcome
+ * the vessel recorded, never the body. Throws `DaemonUnreachable` where no vessel answers.
+ */
+export async function sessionActReceipt(face: number, requestId: string): Promise<SessionReceipt> {
+  if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  try { return await session.receipt(requestId); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    throw e;
+  }
+  finally { await session.close().catch(() => { /* the socket already went */ }); }
+}
+
+/**
+ * PROVE A FACE'S SESSION OPENS on a running vessel, before an act of several steps writes its first: open a session of
+ * the face, then close it, riding nothing on it. A refusal throws `RoutedVerbRefused` under the vessel's own name
+ * (`storeFailure` reads it), so the act refuses with nothing written. With no vessel standing it proves nothing and
+ * answers: each row then runs here, and a later step's refusal names itself.
+ */
+export async function proveFaceSession(face: number): Promise<void> {
+  if (!(await udsAlive())) return;
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) return;
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  await session.close().catch(() => { /* the socket already went */ });
 }
 
 /** Where a routed door ran: inside the standing vessel, or in this process. */
@@ -72,6 +174,8 @@ export async function throughStoreDoor(opts: {
   readonly args:      Record<string, unknown>;
   readonly direct:    () => Record<string, unknown> | Promise<Record<string, unknown>>;
   readonly daemonUp?: boolean;
+  /** The face the verb acts as. Named, the verb rides a session of that face; unnamed, the maintenance frame. */
+  readonly face?:     number;
   /** Test seam — defaults to {@link STORE_DOOR_PHASES}. A real caller never overrides this. */
   readonly phases?:   readonly BootPhase[];
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
@@ -81,7 +185,13 @@ export async function throughStoreDoor(opts: {
     let settled = false;
     let lastMessage = "";
     const controller = new AbortController();
-    const verbPromise = invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal })
+    const verbPromise = (opts.face !== undefined
+      ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal })
+      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal }).then((r) => {
+        // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
+        if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
+        return summaryOutput(r) ?? {};
+      }))
       .finally(() => { settled = true; });
     // RACE the actual verb against a budgeted wait that NAMES the holder — never a flat clock that hangs mute.
     // The waiter never resolves on its own (its `probe` never reads true); it only ever throws `SlowBootTimeout`
@@ -96,9 +206,9 @@ export async function throughStoreDoor(opts: {
       },
       holderPids: () => pidsNamedIn(lastMessage),
     }).then((): { readonly quiet: true } => ({ quiet: true }));
-    let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: SubmitResult };
+    let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
     try {
-      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: SubmitResult } => ({ quiet: false, v })), named]);
+      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: Record<string, unknown> } => ({ quiet: false, v })), named]);
     } catch (err) {
       // THIS DOOR'S OWN DECISION CLOSES THE SOCKET AT ONCE (H1). A budgeted wait that names a holder and
       // gives up must not leave the verb's own flat timer holding a channel open for the rest of ITS budget
@@ -109,10 +219,7 @@ export async function throughStoreDoor(opts: {
       await verbPromise.catch(() => { /* the abort's own rejection is not a second fault; `err` already is one */ });
       throw err;
     }
-    const r = raced.quiet ? await verbPromise : raced.v;
-    // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
-    if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
-    return { output: summaryOutput(r) ?? {}, via: "daemon" };
+    return { output: raced.quiet ? await verbPromise : raced.v, via: "daemon" };
   }
   return { output: await opts.direct(), via: "direct" };
 }
@@ -121,6 +228,36 @@ export { SlowBootTimeout };
 
 /** A door's refusal, when the calling command names no refusal class of its own. */
 export class StoreDoorRefusal extends Error {}
+
+/**
+ * THE VESSEL STANDS LOCKED: its custody door answered, and no vessel key is held. A store row sent to it would park
+ * behind the recomposition an unlock starts and wait out the door's whole budget with no word. The door refuses by name
+ * before it parks.
+ */
+export class VesselLocked extends Error {
+  constructor() { super("the vessel stands locked: `lares vault unlock`"); }
+}
+
+/** An unlock (or a lock) still recomposes: the vessel holds its key and has no verb channel yet. Measured: a row sent in this window parks for the whole recomposition. */
+export class VesselComposing extends Error {
+  constructor() { super("the vessel is recomposing after an unlock: run it again when `lares vault status` reads ready"); }
+}
+
+/** The custody door accepted the connection and gave no answer: a holder nobody can name. A row sent to it parks, so it refuses instead. */
+export class VesselSilent extends Error {
+  constructor() { super("the vessel's custody door gave no answer: `lares vessel read` names what holds the store"); }
+}
+
+/** The refusal a custody reading earns for a row that needs the key, or null when the vessel stands ready (or none stands). */
+export function standingRefusal(standing: VesselStanding): Error | null {
+  if (standing.reading === "silent") return new VesselSilent();
+  if (standing.reading !== "vessel") return null;
+  if (standing.composing) return new VesselComposing();
+  return standing.unlocked ? null : new VesselLocked();
+}
+
+/** True for the rows that need the vessel key: a caller probes the custody door ONCE and hands the reading down. */
+export const needsKey = (verb: StoreDoorVerb): boolean => KEY_VERBS.has(verb);
 
 /** A verb routed through the standing vessel ended in an error. `reason` holds the vessel's own name for it, where it gave one. */
 export class RoutedVerbRefused extends Error {
@@ -137,6 +274,7 @@ const REFUSAL_NAMES = new WeakMap<Error, string>();
  *
  *   a row's refusal                 → the name its row answered (`nexus-kapae-refused`, `cabal-join-refused`, …)
  *   the vessel refused by name      → that name's code (`waking-floor`, `bag-retired`, `request-abandoned`, …)
+ *   the control document unread     → `vessel-locked` (the key did not open) or `control-home-unnamed` (no face)
  *   another holder holds the store  → `store-held`
  *   the door's wait named a holder  → `store-door-timeout`
  *   this process stopped listening  → `outcome-unknown`, with the request id and its cure
@@ -156,8 +294,18 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
     const hint = refusalHint(code, undefined);
     return { code: code === "verb-error" ? err.reason : code, message, ...(hint !== undefined ? { hint } : {}) };
   }
+  if (err instanceof VesselComposing) return { code: "vessel-composing", message, hint: "an unlock still recomposes the vessel; run again when `lares vault status` reads ready." };
+  if (err instanceof VesselSilent) return { code: "vessel-silent", message, hint: "something holds the store and answers nothing; `lares vessel read` names the holder." };
+  if (err instanceof VesselLocked) return { code: VESSEL_LOCKED, message, hint: "open the vessel key with `lares vault unlock`, then run again." };
+  // THE DIRECT HOLDER'S REFUSED UNLOCK, by name: a row that needs the control document and could not open the vessel's key.
+  if (err instanceof ControlHomeUnavailable) {
+    return { code: err.refusal, message, ...(err.refusal === VESSEL_LOCKED ? { hint: "open the vessel key with `lares vault unlock`, then run again." } : err.refusal === "control-home-unnamed" ? { hint: "this place holds no face; light one with `lares persona new 0 --name '<label>'`." } : {}) };
+  }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
+  if (err instanceof SessionActAnswerLost) {
+    return { code: "outcome-unknown", message, hint: `the act may have run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
+  }
   if (err instanceof LocalWaitExpired || err instanceof DaemonUnreachable) {
     const f = verbFailure(err);
     return { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) };
@@ -165,18 +313,72 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   return { code: fallback, message };
 }
 
+/** The rows a locked vessel cannot run: each face row, and `persona-new`, which founds a face. */
+const KEY_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([...STORE_DOOR_FACE_VERBS, "persona-new"]);
+
+/**
+ * THE ROWS WHOSE SESSION ONLY SEATS THE ACT: the kūkulu's begin and offer gather every lent face (one lei, one vouch apiece), so
+ * naming no face they ride the face the operator WEARS (`face.resolve` worn, the mounted face), never a refusal for several open.
+ */
+const WORN_SESSION_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["rite-begin", "rite-offer", "rite-land"]);
+
+/**
+ * Whether a row naming no face rides the worn face's session: the kūkulu's begin and offer, and its standing read
+ * (`rite-receipts` with `rite: kukulu`), each gathering every lent face, so several faces open (the house lights h0, h1 and h2)
+ * never refuse it; and a landing that names no face (the hand-landing line a read with no raw debt names). A plain receipts read
+ * still resolves its one face.
+ */
+export const storeVerbRidesWorn = (verb: StoreDoorVerb, args: Readonly<Record<string, unknown>>): boolean =>
+  WORN_SESSION_VERBS.has(verb) || (verb === "rite-receipts" && args["rite"] === "kukulu");
+
 /**
  * Run one row of the store's door table: through the standing vessel when one stands, or here, holding the
  * store for the moment of the act (`storeDoorDirect`). A row's `{ refused }` answer throws as `Refusal`, so the
  * command names it exactly as it names a refusal on either path; the answer comes back as the row's own result,
  * with the door's `verb` echo set aside.
+ *
+ * EVERY ROW THAT ACTS AS A FACE RIDES A SESSION of that face on a running vessel (`STORE_DOOR_FACE_VERBS`): the face
+ * the row names (`face`, else `handleIndex`), else the one face the vessel resolves (`face.resolve`). A row of the
+ * place rides the maintenance frame, and with no vessel standing every row runs here.
  */
 export async function storeVerb(
   verb: StoreDoorVerb,
   args: Record<string, unknown>,
   Refusal: new (message: string) => Error = StoreDoorRefusal,
+  /** The custody reading a caller already took this command: the door probes ONCE per command. */
+  standing?: VesselStanding,
+  /** The route this same act already gathered, handed to a ward act so nothing asks again (`./keep-at-unlock.ts`). */
+  wardRoute?: readonly Credential[],
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
-  const r = await throughStoreDoor({ verb, args, direct: () => storeDoorDirect(verb, args, { sealHome: larSealHome() }) });
+  const daemonUp = await udsAlive();
+  // A LOCKED, COMPOSING OR SILENT VESSEL REFUSES BY NAME BEFORE THE DOOR PARKS, for the rows that act as a face or found one: the key
+  // guards every such row. A row of the place (a herm taking a carry bundle) runs at the floor with no key, so it keeps its way.
+  if (daemonUp && KEY_VERBS.has(verb)) {
+    const refusal = standingRefusal(standing ?? await vesselStanding());
+    if (refusal !== null) throw refusal;
+  }
+  // THE FACE RESOLVES ONCE, here: the session opens on it and the row carries it, so the row never resolves again.
+  const named = STORE_DOOR_FACE_VERBS.has(verb) ? storeVerbFace(args) : undefined;
+  const face = daemonUp && STORE_DOOR_FACE_VERBS.has(verb)
+    ? named ?? (await sealedAct<{ face: number }>("face.resolve", storeVerbRidesWorn(verb, args) ? { worn: true } : {})).face
+    : undefined;
+  // A WARD ACT names a one-use ref for the route a person typed at this terminal, bound to the act as the row will read it (the
+  // face included); the route itself rides no verb argument. An act a co-sign gate holds runs first with no route: the route gets
+  // asked only where the row's signer names `ward-needs-fresh-unlock`, and the row runs once more under its ticket.
+  const sent = face !== undefined && named === undefined ? { ...args, face } : args;
+  const gatesFirst = storeVerbGatesFirst(verb);
+  const run = (ward: Record<string, unknown>) => throughStoreDoor({ verb, args: { ...sent, ...ward }, daemonUp, ...(face !== undefined ? { face } : {}),
+    direct: () => storeDoorDirect(verb, { ...args, ...ward }, { sealHome: larSealHome() }) });
+  // A gated row names its want of a route either way it refuses: as a row's `refused` answer, or as the routed verb's error (a
+  // panel-owned row, the kāpae lower, answers through the panel's handler, whose refusal rides the session's error).
+  const needsRoute = (text: unknown): boolean => typeof text === "string" && /^ward-needs-fresh-unlock\b/.test(text);
+  let r: Awaited<ReturnType<typeof run>> | null = null;
+  if (!gatesFirst) r = await run(await wardTicketFor(verb, sent, daemonUp, wardRoute));
+  else {
+    try { r = await run({}); }
+    catch (e) { if (!(e instanceof RoutedVerbRefused) || !needsRoute(e.message)) throw e; }
+    if (r === null || needsRoute(r.output["refused"])) r = await run(await wardTicketFor(verb, sent, daemonUp, wardRoute));
+  }
   if (typeof r.output["refused"] === "string") {
     const refusal = new Refusal(r.output["refused"]);
     if (typeof r.output["refusal"] === "string") REFUSAL_NAMES.set(refusal, r.output["refusal"]);

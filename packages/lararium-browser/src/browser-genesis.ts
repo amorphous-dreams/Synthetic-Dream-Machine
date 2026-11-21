@@ -12,13 +12,10 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-genesis
  */
 
-import {
-  cidV1Sha256,
-  casBlobEntries, type CasBlobLike,
-  type GenesisCasManifest,
-  sha256HexBytesSync,
-  verifyCidBytes,
-} from "@lararium/mesh";
+// The narrow subpaths, never the mesh barrel: the page's mirror reads the OPFS store through this module (`@lararium/browser/page`).
+import { cidV1Sha256, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { casBlobEntries, type CasBlobLike, type GenesisCasManifest } from "@lararium/mesh/cas";
+import { verifyCidBytes } from "@lararium/mesh/cas-transit";
 
 // ── OPFS content-addressed store (CAS) — engine + plugin bytes by CID ──────────
 //
@@ -27,7 +24,7 @@ import {
 // worker via resolveByCid — NEVER CRDT-synced over the port. OPFS is origin-shared, so a
 // worker reads what the main thread wrote. Canon: lararium-identity#the-oracle-plane.
 
-const OPFS_CAS_DIR = "cas";
+export const OPFS_CAS_DIR = "cas";
 
 /** Write each blob entry to the OPFS CAS, keyed by its sha256 (CID). No-ops if OPFS is
  *  unavailable. Returns the count written. */

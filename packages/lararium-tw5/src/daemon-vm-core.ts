@@ -20,7 +20,9 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-vm-core
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
+  canonicalJson,
   DAEMON_BAG_ID,
   NoWorkingLayerRefusal,
   WorkingDocumentUnavailableRefusal,
@@ -29,16 +31,27 @@ import {
   CompositeStore,
   AutomergeDocStore,
   computeRecipeFingerprint,
+  documentIdOfUrl,
+  mountedDocumentId,
+  rebindWorkingLayer,
   wikiSlotUri,
   attachMessageChannelSync,
+  controlStoreOf,
+  controlHomeRefusal,
+  floorRefusalOf,
   awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
+  mkDaemonFaceLit,
+  mkDaemonFaceBags,
+  mkDaemonFaceDrop,
+  type JoinedFaceAuth,
   mkTelemetryPlaceVerb,
   mkStructurepalaceKapae,
   mkDaemonVerbResult,
   mkDaemonResolveBindingRequest,
-  mkDaemonDeriveSkeletonRequest,
+  mkDaemonGateVerbRequest,
+  newRequestId,
   mkDaemonWorldlineCompareRequest,
   mkDaemonWorldlineTrajectoryRequest,
   mkDaemonEvictResult,
@@ -46,6 +59,7 @@ import {
   mkTeardown,
   isIslandToVesselMsg,
   CROSSROADS_DOC_URI,
+  kahuaRecipe,
   verbArgsFromPayload,
   mkLarResend,
   readLarControlResult,
@@ -64,7 +78,9 @@ import {
   type IslandGrants,
   type DaemonMsg_DelegateVerb,
   type DaemonMsg_ResolveBindingResult,
-  type DaemonMsg_DeriveSkeletonResult,
+  type DaemonMsg_GateVerbResult,
+  type DaemonMsg_FloorAnswer,
+  type LarTiddlerRecord,
   type DaemonMsg_WorldlineCompareResult,
   type DaemonMsg_WorldlineTrajectoryResult,
   type WorldlineStubWire,
@@ -72,23 +88,18 @@ import {
   type WorldlineEdgeClose,
   type DaemonMsg_EvictRequest,
   type DaemonMsg_ResidencyOp,
+  type DaemonMsg_WearActorRequest,
   type DaemonMsg_WikiAlert,
   type BatchMode,
+  type ChoreReceiptMark,
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
+  isTeardownFault,
+  landBindingDocuments,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { runLocalVerb } from "./verb-local-dispatch.js";
-import type { VerbTable } from "./verb-dispatcher.js";
-import type { MoveSkeleton, ConstructiconAxis } from "./form-layer/index.js";
-
-/** The in-VM query-derive result the recall verb round-trips for — the move-skeleton (FULL functor,
- *  structural plane present) + the serialized `{axes, dimension}` basis. `null` = no derivable form
- *  (→ recall fuses content-only). Structurally matches node's FormSearch deriveSkeleton return. */
-export interface DaemonDeriveSkeletonResult {
-  skeleton: MoveSkeleton;
-  basis: { axes: readonly ConstructiconAxis[]; dimension: number };
-}
-
+import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
 /** Well 1 input the host round-trips to the worker — two handles + the edge-DAG to project from. */
 export interface DaemonWorldlineCompareInput {
   a: string;
@@ -141,7 +152,7 @@ export interface DaemonVmHost {
   spawnWorker(scriptUrl: URL): VesselWorkerHandle;
   newSyncChannel(): { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
   /** Give a holder handle the daemon's factory for a fresh manifest and sync crossing. */
-  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: VesselMessagePort[] }) => void;
+  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: VesselMessagePort[]; afterPost?: () => void }) => void;
   /** Optional second crossing for the one explicitly worker-owned document. */
   newOwnedSyncChannel?: () => { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
   /** Browser workers register their inbound shore before signaling ready; Node omits the handshake. */
@@ -153,12 +164,14 @@ export interface DaemonVmCoreOptions {
   repo:            Repo;
   /** Daemon doc handle, already resolved by the platform wrapper. */
   daemonHandle:     DocHandle<LarDoc>;
-  /** The persona plane's doc handle (the PersonaGroup), resolved by the platform wrapper the same way.
-   *  The ONE daemon VM tends BOTH bags — the daemon bag (sovereign) + the persona plane (veiled identity). */
+  /** The persona plane's direct handle for proof readers; verbs never access it through the composite. */
   /** ABSENT on a PLACE that never grew a face — the VM tends the daemon bag alone. */
   personaHandle?:   DocHandle<LarDoc>;
   /** The mounted plane's bag id, derived from its PersonaGroup's own doc id — one name, everywhere. */
   personaBagId?:    string;
+  /** The vessel's CONTROL document (`standControlHome`), resolved by the platform wrapper: granted to the island as
+   *  `controlUrl` and stood here as the host's control store, where the outcome ledger and the receipt facts read. */
+  controlHandle:    DocHandle<LarDoc>;
   /** One-recipe model for the daemon island. */
   recipe:          WikiRecipe;
   /** Typed structural capabilities (engine doc, daemon bag, the lares bag, catalog registry access). */
@@ -174,25 +187,50 @@ export interface DaemonVmCoreOptions {
   storage?:        IslandStorageConfig;
   /** One bounded D-VR-C worker-owned document; absent, the worker owns no document and its doc syncs over the host's channel alone. */
   ownedDocument?:  { documentUrl: string; storage?: IslandStorageConfig };
-  /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/daemon/`); a node host mints
-   *  them, a browser passes none. Rides the manifest's `diskMirrors` so the worker's `onBoot` can
-   *  mount the same projector a wiki island mounts. */
-  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string }[];
+  /** The daemon wiki's disk mirrors (its working layer → `<projections>/faces/<pet name>/wikis/daemon/`); a node host mints them, a browser passes none. Rides the manifest's
+   *  `diskMirrors` so the worker's `onBoot` can mount the same projector a wiki island mounts. */
+  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
+  /**
+   * The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`), or a read of it: the daemon island's
+   * manifest carries it, so the island mounts the floor the vessel accepted. Absent or null: the island reads its genesis
+   * seed's own floor witness. A walked hearth read a promoted record `not-found` from every face outside the Kahu cabal after
+   * `floor accept`, since this manifest named no floor and the island's `--bag` read door answered the genesis snapshot.
+   */
+  floorCid?:       string | null | (() => string | null);
   /** Compiled daemon-island Worker script URL. */
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */
   eaSilenceMs?:    number;
-  /** Bound on the host's ask for the daemon working binding; defaults to the document hang bound. */
-  hostBindingBoundMs?: number;
+  /**
+   * The LIVENESS bound on the host's working-binding ask and a face row's clearance ask (`runAsFace`): it arms only once
+   * the island woke, and ends an ask an island that wedges while alive never answers. Defaults to
+   * {@link ISLAND_ASK_LIVENESS_MS}.
+   */
+  askLivenessMs?: number;
   /** Override the ea progress-stall budget in ms (default 3x silence). */
   eaStallMs?:      number;
+  /**
+   * The PersonaGroup the vessel's worn face maps a session's ordinal to (the mounted face, or a lit sibling), or null where
+   * it maps none. A session's placed act carries it to the island (`DaemonMsg_PlaceVerb.worn`), so a tool-door write names
+   * that face on its origin. Absent, or null for an ordinal: the act carries no group, and its writes ride the engine's actor.
+   */
+  wornGroupOf?:    (ordinal: number) => string | null;
 }
 
 /** Unified placeVerb request — union of node + browser fields. */
 export interface VesselPlaceVerbRequest {
+  origin: "channel" | "surface" | "content";
   verb:         string;
   args:         Record<string, unknown>;
   requestedBy?: string;
+  /** The verified face's proof subject; a session seat supplies `requestedBy` from its verified presenter. */
+  face?:        string;
+  /** The session's face on this vessel (its ordinal), beside `face`; a session seat alone supplies it. */
+  ordinal?:     number;
+  /** The asker's hand the vessel's door read (`seat`, `cli`, `tab`); the island books it with the act (`ctx.asker`). */
+  asker?:       Hand;
+  /** The chore's receipt mark the vessel's door built; the island stamps it into the durable outcome. */
+  chore?:       ChoreReceiptMark;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -213,11 +251,44 @@ export class HostWorkingBindingRefusal extends Error {
 export interface DaemonVmCore {
   daemonHandle:    DocHandle<LarDoc>;
   composite:      CompositeStore;
+  /** The vessel's control document as a store (`controlStoreOf`): the outcome ledger, the effect index and the receipt
+   *  facts read and write here, never in a layer a mirror reads. */
+  control:        CompositeStore;
+  /** The control document beneath `control` (its heads name a receipt's durability). */
+  controlHandle:  DocHandle<LarDoc>;
+  /** Direct access for proof readers; never a composite layer. */
+  personaPlane: { bagId: string; handle: DocHandle<LarDoc> } | null;
   /** Resolve the worker's daemon binding and mount that exact document as the host default. */
   mountHostWorkingLayer: () => Promise<void>;
+  /**
+   * The island named `url` as the daemon working slot's document (the seat's lift moves it from the floor's document to
+   * the face's derived one): the host's mounted working layer follows, so a main-side write to the daemon wiki lands on
+   * the document the island reads. Nothing moves before the host mounts its layer, or where it stands on that document
+   * already. The outcome ledger rests in the control store (`control`), never in this layer.
+   */
+  followHostWorkingLayer: (url: string) => Promise<void>;
   workerEa:       Promise<void>;
+  /** Resolves once the vessel's Repo has met the daemon island's sync peer on the leg the island now runs on. A
+   *  document the island mints reaches the vessel's Repo over that leg alone, so a question of the Repo about it
+   *  waits on this and never believes an absence before the leg stands. */
+  syncLegReady:   () => Promise<string>;
   mountMainVerbs: (registry: VerbTable) => void;
   placeVerb:      (opts: VesselPlaceVerbRequest) => void;
+  /** The ask under this id concluded (its outcome landed, or its caller left): a booking for it lends nothing more. */
+  retireAsk:      (requestId: string) => void;
+  /**
+   * RUN ONE FACE ROW AS A SESSION'S FACE, its answer returned here alone (K20): the keyholder island clears the row as it
+   * clears a routed verb from the presenter the session door verified (`daemon:gate-verb-request`), then main's handler
+   * runs wearing that face. Nothing is placed or dispatched, so no outcome body rests in the daemon document. A
+   * clearance's refusal throws, as does a row main holds no handler for.
+   */
+  runAsFace:      (o: { readonly verb: string; readonly args: Record<string, unknown>; readonly worn: SessionWorn }) => Promise<Record<string, unknown>>;
+  lightFace:      (entry: JoinedFaceAuth) => Promise<void>;
+  dropFace:       (atomKey: string) => Promise<void>;
+  /** THE LIFT'S RE-REGISTRATION (sealed-store#/owed, U1 · T2): register `bags` (the face's own catalog names them, and it
+   *  opens only once this island's holder stands) on the mounted face's hive. A re-opened island reads them off its
+   *  manifest, so nothing replays. */
+  registerFaceBags: (atomKey: string, bags: readonly string[]) => Promise<void>;
   /** FEED one captured turn to the daemon's telemetry capture cap (the nalu). Fire-and-forget.
    *  `frontier` (optional) carries the turn-DAG fork-frontier so a same-session fork derives a
    *  distinct handle; absent on a non-forked turn. */
@@ -225,13 +296,6 @@ export interface DaemonVmCore {
   /** REWIND (kapae) one turn's .structurepalace tally + salience down-weight, IN the daemon island (it owns
    *  the warm holder). Fire-and-forget — the convergence twin of the CLI-side KG valid-close. */
   placeStructurepalaceKapae: (turnKey: string, ended?: string) => void;
-  /**
-   * Derive a recall query's move-skeleton IN the daemon VM (the recall twin of placeTelemetry) —
-   * round-trips the query string through the island's `$tw.lares.deriveQuerySkeletonVm` so the
-   * markers→vector recall runs the SAME Move→Vec functor capture runs (full grammar + live basis,
-   * structural plane present). Resolves `null` when the query carries no derivable move-form.
-   */
-  deriveSkeleton: (query: string) => Promise<DaemonDeriveSkeletonResult | null>;
   /**
    * Well 1 (the ITC LIVE-READ) — answer the concurrent-capable causal verdict between two handles IN
    * the daemon VM. Round-trips the edge-DAG (host-derived from a transcript) + the two handles through
@@ -254,7 +318,7 @@ export interface DaemonVmCore {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; writeSlot?: "personal" }>;
   /**
    * GRACEFUL shutdown — post a teardown to the daemon island and AWAIT its
    * teardown:ack (the island flushes its in-flight Automerge docs + capture state
@@ -313,7 +377,7 @@ export interface DaemonVmCore {
   sendControlEvent: (ev: LarMsg_ControlEvent) => void;
   /**
    * Ask the daemon's camera to paint itself whole under a fresh mount epoch: a surface switched to it, or
-   * attached late. Acts made under the old epoch answer `stale-target`.
+   * attached late. Acts made under any earlier epoch answer `stale-target`.
    */
   resend: (cameraId: string) => void;
   /**
@@ -323,8 +387,16 @@ export interface DaemonVmCore {
    * vessel wires this to placeVerb, re-entering the dispatcher's verify-then-delegate gate so the verb runs
    * on the main registry (e.g. wiki-switch). Absent → daemon-origin verbs are silently dropped.
    */
-  onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => void;
+  onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) => void;
 }
+
+/**
+ * LIVENESS, the one clock the daemon VM's island asks keep. An island that exits says so (the handle's `onExit`), and one
+ * that faults or errors says so too: each ends every waiting ask at once, by name. An island that wedges while alive
+ * says nothing, and no event can say never, so an ask that carries this bound ends after it, named LIVENESS. It arms only
+ * once the island woke: before that, the ea watchdog's breath bound holds the mount.
+ */
+export const ISLAND_ASK_LIVENESS_MS = DOCUMENT_HANG_BOUND_MS;
 
 /** The marker a hard `dispose` hands a teardown handshake that stands waiting. */
 class DisposedMidHandshake extends Error {
@@ -332,11 +404,18 @@ class DisposedMidHandshake extends Error {
 }
 
 export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions): DaemonVmCore {
-  const { repo, daemonHandle, personaHandle, personaBagId, recipe, grants, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
+  const { repo, daemonHandle, controlHandle, personaHandle, personaBagId, recipe, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
 
   // Mutable delegation config — set via mountMainVerbs(). The worker gates routed
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
   let _registry: VerbTable | null = null;
+  // THE FACE EACH SESSION ASK WEARS, booked here as this thread places it: a delegate back from the island reads this
+  // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books,
+  // and a booking serves ONE delegate of the verb it booked: the first delegate consumes it, so no later ask reusing the
+  // id (a summons, a replay) wears the face.
+  const sessionAsks = new Map<string, SessionWorn & { readonly act: string }>();
+  // A booking names the exact act its session placed: its verb and its args, so no other invocation under the id wears it.
+  const actOf = (verb: string, args: unknown): string => canonicalJson([verb, JSON.parse(JSON.stringify(args ?? {}))]);
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
   let _evictHandler: ((bagId: string) => Promise<void>) | null = null;
   // Residency-op mechanism — set via onResidencyOp() after the manager exists.
@@ -351,22 +430,21 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   let _down: Promise<{ acked: boolean }> | null = null;
   /** Ends a handshake that stands waiting; set while one waits, null otherwise. */
   let _cutDown: (() => void) | null = null;
-  let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) | null = null;
+  let _verbEventHandler: ((e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) | null = null;
 
-  // ── Vessel composite (cap-event + receipt writes) ──────────────────────────
+  // The island reaches the control document by grant alone; the host reads it through its own control store.
+  // A STAND-IN (the vessel's key shut, or no face named one) grants its refusal, never a document to resolve.
+  const controlRefused = controlHomeRefusal(controlHandle);
+  const grants: IslandGrants = { ...opts.grants, controlUrl: controlHandle.url, ...(controlRefused ? { controlRefusal: controlRefused.refusal } : {}) };
+  const control = controlStoreOf(controlHandle);
+
+  // ── Vessel composite (cap-event writes) ─────────────────────────────────────
   const composite  = new CompositeStore();
-  const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
+  const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID, wearOf(repo));
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true, defaultWritable: false });
   daemonStore.markSyncComplete();
-  // The PersonaGroup plane this vessel stands in, tended by the SAME VM (one VM, two bags), and
-  // mounted under the name its own group derives — the id the registry, the cap ring and the admit
-  // payload all use for it.
-  // The persona plane layers only when a face stands; a faceless place carries the daemon bag and nothing of a person.
-  if (personaHandle && personaBagId) {
-    const personaStore = new AutomergeDocStore(personaHandle, personaBagId);
-    composite.addLayer({ bagId: personaBagId, store: personaStore, writable: true, defaultWritable: false });
-    personaStore.markSyncComplete();
-  }
+  // Hold the persona plane directly for proof readers; no verb reads or writes it through the composite.
+  const personaPlane = personaHandle && personaBagId ? { bagId: personaBagId, handle: personaHandle } : null;
 
   // ── MessageChannel — island ↔ vessel Repo sync (wiring owned by mesh) ───────
   const { mainPort, syncPort } = host.newSyncChannel();
@@ -385,7 +463,15 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ? documentId === ownedId : priorShareConfig.access(peerId, documentId),
     };
   }
-  const detachPrimary = attachMessageChannelSync(repo, mainPort);
+  // The leg the island runs on stands when the vessel's Repo meets its peer; a replacement leg (manifest replay) stands its own.
+  const legStanding = (): { ready: Promise<string>; onPeer: (peerId: string) => void } => {
+    let onPeer!: (peerId: string) => void;
+    const ready = new Promise<string>((resolve) => { onPeer = resolve; });
+    return { ready, onPeer };
+  };
+  const firstLeg = legStanding();
+  let currentLeg: Promise<string> = firstLeg.ready;
+  const detachPrimary = attachMessageChannelSync(repo, mainPort, (peerId) => firstLeg.onPeer(peerId));
   const detachOwned = ownedChannel
     ? attachMessageChannelSync(repo, ownedChannel.mainPort, (peerId) => ownedPeers.add(peerId))
     : undefined;
@@ -398,28 +484,61 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // this single piece instead of hand-rolling a pending-map each.
   let _askSeq = 0;
   const _pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
-  function askIsland<T>(prefix: string, makeMsg: (requestId: string) => unknown, boundMs?: number): Promise<T> {
+  function askIsland<T>(prefix: string, makeMsg: (requestId: string) => unknown, livenessMs?: number): Promise<T> {
     const requestId = `${prefix}-${++_askSeq}`;
     return new Promise<T>((resolve, reject) => {
-      // A bound names a HANG: it ends an ask no live worker will answer, and clears when the ask settles.
-      const timer = boundMs === undefined ? undefined : setTimeout(() => {
-        if (_pending.delete(requestId)) reject(new Error(`the island did not answer ${requestId} within ${boundMs}ms`));
-      }, boundMs);
+      // The ask ends on the island's answer, or on its fault, error or exit (failPendingAsks), each by name. A
+      // liveness bound (ISLAND_ASK_LIVENESS_MS) arms once the island woke, for the one island no event speaks for:
+      // one wedged while alive.
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      let settled = false;
       _pending.set(requestId, {
-        resolve: (v) => { clearTimeout(timer); resolve(v as T); },
-        reject:  (e) => { clearTimeout(timer); reject(e); },
+        resolve: (v) => { settled = true; clearTimeout(timer); resolve(v as T); },
+        reject:  (e) => { settled = true; clearTimeout(timer); reject(e); },
       });
+      if (livenessMs !== undefined) {
+        void workerEa.then(() => {
+          if (settled) return;
+          // LIVENESS (ISLAND_ASK_LIVENESS_MS): an island wedged while alive says nothing, and no event can say never.
+          timer = setTimeout(() => {
+            if (_pending.delete(requestId)) reject(new Error(`LIVENESS: the island stood alive and answered no ${requestId} within its ${livenessMs}ms liveness bound`));
+          }, livenessMs);
+        }, () => { /* an island that never woke ends its asks through failPendingAsks */ });
+      }
       worker.post(makeMsg(requestId));
+    });
+  }
+  const facePending = new Map<string, Array<{ resolve: () => void; reject: (error: Error) => void }>>();
+  const faceKey = (atomKey: string, op: string) => `${atomKey.toLowerCase().replace(/^0x/, "")}:${op}`;
+  let faceAsksEnded: string | null = null;
+  function askFace(atomKey: string, op: "lit" | "dropped" | "bags", msg: unknown): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (faceAsksEnded !== null) { reject(new Error(faceAsksEnded)); return; }
+      const key = faceKey(atomKey, op);
+      const queue = facePending.get(key) ?? [];
+      queue.push({ resolve, reject }); facePending.set(key, queue);
+      try { worker.post(msg); } catch (error) { queue.pop(); if (!queue.length) facePending.delete(key); reject(error); }
     });
   }
   // A worker that faults or errors answers nothing further: every ask still pending ends there.
   function failPendingAsks(why: string): void {
+    faceAsksEnded ??= why;
+    for (const queue of facePending.values()) for (const ask of queue) ask.reject(new Error(why));
+    facePending.clear();
     for (const [id, ask] of [..._pending]) { _pending.delete(id); ask.reject(new Error(why)); }
   }
   worker.listen((msg) => {
     if ((msg as { type?: string }).type === "fault") failPendingAsks(`the island faulted: ${(msg as { error?: string }).error ?? "no detail"}`);
   });
   worker.onError((err) => failPendingAsks(`the island errored: ${err instanceof Error ? err.message : String(err)}`));
+  // An island that exits says so: every ask still waiting ends at once, by name.
+  worker.onExit?.((why) => failPendingAsks(why));
+  /** The worker's error and exit, heard as one error door (an exit answers like an error: nothing follows it). */
+  const onErrorOrExit = (h: (err: Error) => void): (() => void) => {
+    const offError = worker.onError(h);
+    const offExit = worker.onExit?.((why) => h(new Error(why)));
+    return () => { offError(); offExit?.(); };
+  };
   function settleAsk(requestId: string, value: unknown, error?: string): void {
     const p = _pending.get(requestId);
     if (!p) return;
@@ -442,8 +561,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     resetOnTypes:    ["breath"],
     rejectOnTypes:   ["fault"],
     subscribe:       (h) => worker.listen(h),
-    subscribeError:  (h) => worker.onError(h),
+    subscribeError:  onErrorOrExit,
   }).then(() => undefined);
+  // An island that never woke answers no ask.
+  workerEa.catch((err: unknown) => failPendingAsks(`the island never woke: ${err instanceof Error ? err.message : String(err)}`));
   // Settle-safety: a dispose() mid-boot leaves the silence timer to fire after
   // the worker dies; this no-op handler keeps that late rejection from going
   // unhandled while real awaiters still receive it.
@@ -463,6 +584,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (result) { _controlResultHandler?.(result); return; }
     if (!isIslandToVesselMsg(raw)) return;
 
+    if (raw.type === "daemon:face-settled") {
+      const key = faceKey(raw.atomKey, raw.op);
+      const queue = facePending.get(key);
+      const ask = queue?.shift();
+      if (queue && !queue.length) facePending.delete(key);
+      if (ask) { if (raw.ok) ask.resolve(); else ask.reject(new Error(raw.reason ?? "face change refused")); }
+      return;
+    }
     if (raw.type === "event") {
       const ev = raw as IslandMsg_Event;
       // Verb OUT-path: a verb-carrying verse-event from the daemon's own surface
@@ -474,6 +603,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         const fromUri = typeof ev.payload["fromUri"] === "string" ? (ev.payload["fromUri"] as string) : undefined;
         _verbEventHandler({
           verb,
+          origin: ev.payload["origin"] === "channel" || ev.payload["origin"] === "surface" ? ev.payload["origin"] : "content",
           args:      verbArgsFromPayload(ev.payload),
           ...(fromUri ? { fromUri } : {}),
           listenable: ev.listenable,
@@ -489,22 +619,34 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       console.error(`[daemon-island:fault] ${JSON.stringify(raw).slice(0, 240)}`);
     }
 
-    if (raw.type === "daemon:resolve-binding-result") {
-      const msg = raw as DaemonMsg_ResolveBindingResult;
-      if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      else if (msg.personalUrl && msg.draftUrl && msg.workingUrl) settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl });
-      else settleAsk(msg.requestId, undefined, "resolve-binding-result missing urls");
+    // A FLOOR'S VERB ANSWER: the island's floor store took it; the vessel's floor store holds it for the verb door that waits.
+    if (raw.type === "daemon:floor-answer") {
+      const msg = raw as DaemonMsg_FloorAnswer;
+      if (controlRefused) {
+        void control.put(msg.record as unknown as LarTiddlerRecord, { kind: "lares-verb", requestId: String(msg.record.tiddler["request-id"] ?? "") })
+          .catch((e: unknown) => console.warn(`[daemon] a floor answer for ${String(msg.record.tiddler.title)} found no floor: ${e instanceof Error ? e.message : String(e)}`));
+      }
       return;
     }
 
-    if (raw.type === "daemon:derive-skeleton-result") {
-      const msg = raw as DaemonMsg_DeriveSkeletonResult;
+    if (raw.type === "daemon:gate-verb-result") {
+      const msg = raw as DaemonMsg_GateVerbResult;
+      settleAsk(msg.requestId, true, msg.error);
+      return;
+    }
+
+    if (raw.type === "daemon:resolve-binding-result") {
+      const msg = raw as DaemonMsg_ResolveBindingResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      // skeleton+basis both present → the derivation; both absent → a graceful null (content-only).
-      else settleAsk(
-        msg.requestId,
-        msg.skeleton !== undefined && msg.basis !== undefined ? { skeleton: msg.skeleton, basis: msg.basis } : null,
-      );
+      // An absent working url reads as the faceless floor's answer: it stands no wiki working layer (`no-face`).
+      else if (msg.personalUrl && msg.draftUrl) {
+        // THE STOOD DOCUMENT LANDS BEFORE ITS NAME SETTLES: a working document the island stood at a derived address rides this
+        // answer, and lands in the vessel's repo here, so the mount that reads `workingUrl` meets the document, never the
+        // `unavailable` the vessel gave the island's earlier ask (`stood-document`).
+        landBindingDocuments(repo, msg);
+        settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl ?? null, ...(msg.writeSlot ? { writeSlot: msg.writeSlot } : {}) });
+      }
+      else settleAsk(msg.requestId, undefined, "resolve-binding-result missing urls");
       return;
     }
 
@@ -537,6 +679,18 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         .catch((err: unknown) => worker.post(mkDaemonEvictResult({
           requestId: msg.requestId, ok: false, error: err instanceof Error ? err.message : String(err),
         })));
+      return;
+    }
+
+    if (raw.type === "daemon:wear-actor-request") {
+      // THE ISLAND'S ACTOR, derived here: the main Repo's seated door (`seatRepoWear`, the vessel's wire identity) derives it
+      // under the island's own replica, and the actor alone crosses back. A main Repo with no seat refuses by name.
+      const msg = raw as DaemonMsg_WearActorRequest;
+      const door = wearOf(repo).wear!;
+      door.actor(msg.face, msg.documentId, msg.replica).then(
+        (actor) => worker.post({ type: "daemon:wear-actor-result", requestId: msg.requestId, actor }),
+        (err: unknown) => worker.post({ type: "daemon:wear-actor-result", requestId: msg.requestId, refusal: (err as { reason?: unknown })?.reason === undefined ? "worn-face-unwritable" : String((err as { reason: unknown }).reason) }),
+      );
       return;
     }
 
@@ -573,12 +727,18 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         }));
         return;
       }
+      // A SESSION'S DELEGATE PRESENTS AS ITS BOOKING: the presenter the session door verified, and local (it rode the
+      // vessel's own channel). Any other delegate keeps the claim it names and reads non-local. Only the delegate of
+      // the act booked spends the booking: one naming another verb or other args under that id leaves it standing.
+      const booked = sessionAsks.get(msg.requestId);
+      const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } : undefined;
+      if (worn) sessionAsks.delete(msg.requestId);
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
         requestId:   msg.requestId,
         action:      msg.verb,
         args:        msg.args,
-        requestedBy: msg.requestedBy,
+        requestedBy: worn?.presenter ?? msg.requestedBy,
         requestedAt: new Date().toISOString(),
         targets:     msg.targets ?? [],
         batchMode:   (msg.batchMode ?? "best-effort") as BatchMode,
@@ -587,6 +747,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       runLocalVerb(invocationLike, {
         daemon:   composite,
         registry: _registry,
+        ...(worn ? { wornOf: () => worn, localOf: () => true } : {}),
       }).then((result) => {
         worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
       }).catch((err: unknown) => {
@@ -611,10 +772,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // pointer, or skips gracefully when a vessel hasn't registered it) + registerBags (so keyhive can access it).
   // Writing the catalog pointer rides the vessel boot (registerCrossroadsPointer), keyed by the nexus the
   // vessel belongs to — that value differs (a node's own key vs a browser's relay key), the daemon code does not.
-  const daemonRecipe: WikiRecipe = {
+  // The daemon wiki IS the kahua stack: the face's kahua bag rides above the other library bags, read-only.
+  const daemonRecipe: WikiRecipe = kahuaRecipe({
     ...recipe,
     libraryBags: [...(recipe.libraryBags ?? []), CROSSROADS_DOC_URI],
-  };
+  });
   const daemonAuthWithCrossroads = daemonAuth
     ? { ...daemonAuth, registerBags: [...new Set([...daemonAuth.registerBags, CROSSROADS_DOC_URI])] }
     : daemonAuth;
@@ -627,16 +789,24 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (closePorts) { mainPort.close(); ownedChannel?.mainPort.close(); }
   };
   let retireReplayCrossing: (() => void) | undefined;
-  const makeManifestPost = (first = false): { msg: IslandMsg_Manifest; transfer: VesselMessagePort[] } => {
+  const makeManifestPost = (first = false): { msg: IslandMsg_Manifest; transfer: VesselMessagePort[]; afterPost?: () => void } => {
     const primary = first ? { mainPort, syncPort } : host.newSyncChannel();
     const owned = first ? ownedChannel : ownedDocument ? host.newOwnedSyncChannel!() : undefined;
+    let afterPost: (() => void) | undefined;
     if (!first) {
-      const detach = attachMessageChannelSync(repo, primary.mainPort);
+      const leg = legStanding();
+      const detach = attachMessageChannelSync(repo, primary.mainPort, (peerId) => leg.onPeer(peerId));
       const detachOwn = owned ? attachMessageChannelSync(repo, owned.mainPort, (peerId) => ownedPeers.add(peerId)) : undefined;
-      // A fresh manifest takes the floor with one live crossing, retiring the ports it replaces.
-      retireFirstCrossing(true);
-      retireReplayCrossing?.();
-      retireReplayCrossing = () => { detachOwn?.(); detach(); primary.mainPort.close(); owned?.mainPort.close(); };
+      const retirePrevious = retireReplayCrossing ?? (() => retireFirstCrossing(true));
+      let posted = false;
+      const retireThis = () => { detachOwn?.(); detach(); primary.mainPort.close(); owned?.mainPort.close(); };
+      afterPost = () => {
+        if (posted) return;
+        posted = true;
+        currentLeg = leg.ready;
+        retirePrevious();
+        retireReplayCrossing = retireThis;
+      };
     }
     const msg = mkManifest(DAEMON_BAG_ID, primary.syncPort, daemonRecipe, grants, coreHash, {
       ...(storage ? { storage } : {}),
@@ -644,8 +814,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       ...(pluginCids?.length ? { pluginCids } : {}),
       ...(diskMirrors?.length ? { diskMirrors } : {}),
       ...(ownedDocument && owned ? { ownedDocument: { ...ownedDocument, syncPort: owned.syncPort } } : {}),
+      // THE FLOOR THE VESSEL PINNED, read at each post (a replayed manifest reads the pin as it stands then): the daemon island
+      // mounts the accepted floor as each wiki island does, so its read doors answer the release the vessel accepted.
+      ...((): { floorCid?: string } => { const cid = typeof opts.floorCid === "function" ? opts.floorCid() : opts.floorCid; return cid ? { floorCid: cid } : {}; })(),
     });
-    return { msg, transfer: owned ? [primary.syncPort, owned.syncPort] : [primary.syncPort] };
+    return { msg, transfer: owned ? [primary.syncPort, owned.syncPort] : [primary.syncPort], ...(afterPost ? { afterPost } : {}) };
   };
   const initialPost = makeManifestPost(true);
   host.onManifestReplay?.(() => makeManifestPost());
@@ -666,37 +839,91 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The daemon working layer stands without being the default writable; restart the vessel so it mounts as the default.");
       return;
     }
+    // A LOCKED (OR FACELESS) FLOOR FAILS CLOSED: the daemon working slot is a device document the control document names,
+    // and a stand-in names none, so the host mounts no working layer and every host write refuses by name until the
+    // unlocked composition stands the control document itself.
+    if (controlRefused) { console.log(`[daemon] host working layer waits: ${controlRefused.message}`); return; }
     await workerEa;
     const recipeTrace = { wikiDocId: daemonHandle.url, libraryBagDocIds: [] as readonly string[] };
     const fingerprint = await computeRecipeFingerprint(recipeTrace);
-    let binding: { workingUrl: string };
+    let binding: { workingUrl: string | null };
     try {
-      binding = await askIsland<{ workingUrl: string }>("binding", (requestId) => mkDaemonResolveBindingRequest({
+      binding = await askIsland<{ workingUrl: string | null }>("binding", (requestId) => mkDaemonResolveBindingRequest({
         requestId, fingerprint, recipeTrace, wikiSlug: "daemon",
-      }), opts.hostBindingBoundMs ?? DOCUMENT_HANG_BOUND_MS);
+      }), opts.askLivenessMs ?? ISLAND_ASK_LIVENESS_MS);
     } catch (cause) {
+      // A FLOOR THAT CANNOT SEAL STANDS (operator ruling 2026-11-09): where the island's floor key does not stand (a locked
+      // hearth, a herm that derives none), the island holds the daemon's working layer in its memory alone, and the host
+      // mounts none, as for a control stand-in: every host write refuses by name until an unlock composes again.
+      const floorRefused = cause instanceof Error ? floorRefusalOf(cause.message) : null;
+      if (floorRefused) { console.log(`[daemon] host working layer waits: the floor's rest key does not stand (${floorRefused})`); return; }
       throw new HostWorkingBindingRefusal(slot, cause);
     }
+    if (!binding.workingUrl) throw new HostWorkingBindingRefusal(slot, new Error("the island named no working document for the daemon wiki"));
     const handle = await findOrThrow(repo, binding.workingUrl, `${slot} (the host's daemon working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-    const store = new AutomergeDocStore(handle, slot);
+    const store = new AutomergeDocStore(handle, slot, wearOf(repo));
     composite.addLayer({ bagId: slot, store, writable: true, defaultWritable: true });
     store.markSyncComplete();
     if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The mounted daemon working layer did not become the default writable; restart the vessel.");
   };
 
+  const followHostWorkingLayer = async (url: string): Promise<void> => {
+    const slot = wikiSlotUri("daemon", "working");
+    if (!composite.hasBag(slot) || mountedDocumentId(composite.storeForBag(slot)) === documentIdOfUrl(url)) return;
+    const handle = await findOrThrow(repo, url, `${slot} (the island's working document)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
+    const store = new AutomergeDocStore(handle, slot, wearOf(repo));
+    if (rebindWorkingLayer(composite, slot, store)) {
+      store.markSyncComplete();
+      console.log(`[daemon] the host working layer follows the island onto ${url.slice(0, 22)}…`);
+    }
+  };
+
   return {
     daemonHandle,
+    personaPlane,
     composite,
+    control,
+    controlHandle,
     mountHostWorkingLayer,
+    followHostWorkingLayer,
     workerEa,
     worker,
+    syncLegReady: () => currentLeg,
     mountMainVerbs: (registry: VerbTable) => {
       _registry = registry;
     },
     resolveBinding: (fingerprint, recipeTrace, wikiSlug) =>
       askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
+    lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
+    dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
+    registerFaceBags: (atomKey, bags) => askFace(atomKey, "bags", mkDaemonFaceBags(atomKey, bags)),
+    retireAsk: (requestId: string) => { sessionAsks.delete(requestId); },
+    runAsFace: async ({ verb, args, worn }) => {
+      const registry = _registry;
+      if (!registry) throw new Error(`[openDaemonVm] a face row ran before mountMainVerbs — verb="${verb}"`);
+      // A gate ends on the island's answer or its exit, fault or error, by name; one wedged while alive ends at its
+      // LIVENESS bound, never a hang the session's act waits out.
+      await askIsland<true>("gate", (requestId) => mkDaemonGateVerbRequest({ requestId, verb, args, requestedBy: worn.presenter }),
+        opts.askLivenessMs ?? ISLAND_ASK_LIVENESS_MS);
+      const requestId = newRequestId();
+      // The invocation never rests (no outcome follows it), so it carries no clock.
+      return runLocalVerb({
+        title: `${DAEMON_BAG_ID}/face-row/${requestId}`, requestId, action: verb, args, requestedBy: worn.presenter,
+        requestedAt: "", targets: [], batchMode: "best-effort" as BatchMode, status: "pending" as const,
+      }, { daemon: composite, registry, wornOf: () => worn, localOf: () => true });
+    },
     placeVerb: (o: VesselPlaceVerbRequest) => {
+      if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
+        const group = opts.wornGroupOf?.(o.ordinal) ?? null;
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, ...(group !== null ? { group } : {}), act: actOf(o.verb, o.args) });
+        if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
+      }
+      // THE SESSION'S FACE RIDES THE ACT INTO THE ISLAND: the ordinal, the presenter its door verified, and the group the
+      // vessel's worn face maps the ordinal to. Booked the same way as the delegate's worn face above.
+      const booked = o.requestId ? sessionAsks.get(o.requestId) : undefined;
       worker.post(mkDaemonPlaceVerb({
+        ...(booked ? { worn: { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } } : {}),
+        origin:      o.origin,
         verb:        o.verb,
         args:        o.args,
         requestedBy: o.requestedBy ?? "vessel",
@@ -706,6 +933,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ...(o.fromUri         ? { fromUri: o.fromUri } : {}),
         ...(o.listenable      ? { listenable: o.listenable } : {}),
         ...(o.effectKey       ? { effectKey: o.effectKey } : {}),
+        ...(o.face            ? { face: o.face } : {}),
+        ...(o.asker           ? { asker: o.asker } : {}),
+        ...(o.chore           ? { chore: o.chore } : {}),
       }));
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {
@@ -714,8 +944,6 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     placeStructurepalaceKapae: (turnKey: string, ended?: string) => {
       worker.post(mkStructurepalaceKapae({ turnKey, ...(ended ? { ended } : {}) }));
     },
-    deriveSkeleton: (query: string) =>
-      askIsland<DaemonDeriveSkeletonResult | null>("derive", (requestId) => mkDaemonDeriveSkeletonRequest({ requestId, query })),
     worldlineCompare: (input: DaemonWorldlineCompareInput) =>
       askIsland<{ order: string }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
         requestId, a: input.a, b: input.b, opens: input.opens,
@@ -745,7 +973,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     onControlResult: (fn: (result: LarMsg_ControlResult) => void) => {
       _controlResultHandler = fn;
     },
-    onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; fromUri?: string; listenable?: string }) => void) => {
+    onVerbEvent: (fn: (e: { verb: string; args: Record<string, unknown>; origin: "channel" | "surface" | "content"; fromUri?: string; listenable?: string }) => void) => {
       _verbEventHandler = fn;
     },
     sendControlEvent: (ev: LarMsg_ControlEvent) => worker.post(ev),
@@ -762,11 +990,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         await awaitIslandMsg<IslandMsg_TeardownAck>({
           expectedType:   "teardown:ack",
           timeoutMs:      budgetMs,
+          // The island answers its teardown either way: an ack, or a fault by name (`teardown-fault: …`) that ends the wait at
+          // once, unacked. Another fault crossing meanwhile (a late slot fault) ends nothing: the flush still runs.
+          rejectOn:       isTeardownFault,
           subscribe:      (h) => worker.listen(h),
           // A hard `dispose` while this wait stands ends it at once, through the same door a worker
           // error takes: the wait drops its bound with it, and the handshake answers unacked.
           subscribeError: (h) => {
-            const off = worker.onError(h);
+            const off = onErrorOrExit(h);
             _cutDown = () => h(new DisposedMidHandshake());
             return () => { off(); _cutDown = null; };
           },
@@ -779,10 +1010,12 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       retireFirstCrossing(false);
       retireReplayCrossing?.();
       retireReplayCrossing = undefined;
+      failPendingAsks("the island shut down");
       worker.terminate();
       return { acked };
     })()),
     dispose: () => {
+      failPendingAsks("the island was disposed");
       // A hard stop runs no handshake: a shutdown asked afterward reads that no island acked, and one
       // that stands waiting ends now, unacked.
       _down ??= Promise.resolve({ acked: false });

@@ -1,0 +1,88 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/i1-intent/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i1-intent/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ lares aim from="lar:&#47;/operator:operator@lararium/intent.ratchet.requests" -> to="lar:&#47;/sol-intentwright:agent@lararium/carrier.code.rules">>
+&lt;&lt;~ set hud="aim" mode="seal" stance="🏛️" mu="_!" aperture="16/arc" ooda-ha="7/declare-glyphs" drift-ward="a familiar signer or frontier may look broader than its actual authority">>
+
+Sol-Intentwright: Lares (Tasked Spirit) / Ink-Clerk:
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-measured-seams`>>
+
+!! ✶ Observe — measured seams
+
+The carrier orders one I1 lane after the sealed face anchor, with the relay after separate research ([[carrier:147–149|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L147]]). Wave C's signed <code>&#64;persona</code> plane already projects admission, device edges and plane URLs; its verifier rejects unproven URLs ([[persona-act.ts:52–101|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-act.ts#L52]]). <code>&#64;intents</code> still lacks production code.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-decide-f1f6`>>
+
+!! ⏿ Orient / ◇ Decide — F1–F6
+
+''F1 DERIVED — image and hash.'' Canon says “Entries append, never edit, each signed by the atom” and fixes the intent ID as “the content hash of issuer, verb, arguments and nonce” ([[carrier:49–50|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L49]]). ''One name, one relation'' and the standing signed-act law supply `{body, signer, sig}`, canonical JSON bytes, SHA-256, signature re-derivation and a distinct `kind` domain ([[signed-act.ts:2–9,35–87|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/signed-act.ts#L2]]; [[crypto.ts:100–112|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/crypto.ts#L100]]). Mint one intent-entry domain in the domain registry; its rule forbids new version suffixes and calls a protocol change a new name ([[domains.ts:21–42,56–62|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/domains.ts#L21]]). Hash the canonical four-field ID preimage separately from the signed whole-entry CID; include audience, bound, kind and references in the signature. The linked `seq/prior` fold stops at concurrent forks, so I1 needs append-safe entry slots/read fold, without copying that ordering rule ([[signed-act.ts:101–130|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/signed-act.ts#L101]]). No hash-version vote survives.
+
+''F2 CANON — answer binds an ask.'' “Any session wearing the face answers by an entry citing the ask's id”; a harmful single effect “MUST NOT address ‘any device’” and needs a pinned executor “or a human `answer` names the executing atom” ([[carrier:52,63–67|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L52]]). Issue an unpinned request only into an explicit ask gate; verify an answer's ask ID and named atom before executable dispatch. A stray answer grants no executor.
+
+''F3 DERIVED — pin the Keyhive door.'' Existing `runFaceJoin` checks founder-side membership and skips `addGroupMember` when already seated, except `force` or a returned/owing dyad; those paths revoke/add or add, then re-seal chunks ([[face-join.ts:220–265|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/face-join.ts#L220]]). One process serializes by group; its encrypted operation record keys on summons bytes and its grant title keys on group/joinee ([[face-join-operation.ts:2–7,41–55,77–112|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/face-join-operation.ts#L2]]). Separate hearths can both read absent membership and each add/re-key; a shared title cannot undo either effect. The current daemon only bars the joinee's own atom ([[operator-daemon-behavior.ts:620–630|/home/joshu/Synthetic-Dream-Machine/packages/lararium-keyhive/src/operator-daemon-behavior.ts#L620]]). Apply the carrier's ''single-effect fleet-wide pin'' at issue: bind this summons to one eligible hearth atom, and check that pin immediately before `runFaceJoinOperation`/`addGroupMember`; bind the operation ID to the intent ID for local replay. A later human answer can name another atom through a new causal authorization. No claim or outcome supplies partition-wide exclusion.
+
+''F4 DERIVED — roster bound.'' Canon names “superseded by a later entry, its issuer's delegation revoked, the face's roster passing a named edge, or the operator's `cancel`”; unbounded `every` reaches later joiners ([[carrier:74–80|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L74]]). The roster's membership edge follows verified <code>&#64;persona</code> admission acts, whose projection exposes ordered `seq/cid` heads and devices ([[persona-act.ts:28–45,74–92|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-act.ts#L28]]). Bind a finite `every` campaign to such a named admission head; evaluate slots through that head, and refuse later members. Consume K17's verified frontier when evaluating a device edge's standing; its raise snapshots concern revocation/widening, rather than membership ([[edge-frontier.ts:104–142|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/edge-frontier.ts#L104]]). Unknown frontier stalls execution, without making a rival board.
+
+''F5 OPERATOR — who speaks the operator's word?'' Canon says “an issuer's or the operator's later word” and gives operator release priority ([[carrier:54,78|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L54]]). Wave C distinguishes the persona root's op-key from each admitted atom: root signs the device edge; atoms sign their own acts ([[persona-circle.mem:53|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/persona-circle.mem#L53]]; [[persona-act.ts:4–9|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/persona-act.ts#L4]]). Neither source says whether every atom can wield operator priority. Options: current root KEL op-key; any admitted atom plus human-session proof; a designated seat. ''Lean:'' current root KEL op-key for operator-priority release/cancel/supersede; issuer atom may supersede its own intent. Name a separate delegation if another seat must speak for the operator.
+
+''F6 DERIVED — view.'' Canon gives the daemon wiki a “read-only view” ([[carrier:39|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L39]]). ''No global now'' and ''show conflicts, never hide'' require visible duplicate receipts and void-after-act records; the read winner counts one without deleting rivals ([[carrier:67,77|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L67]]). ''Silent-zero'' requires an explicit unknown-frontier state and a seeded duplicate positive before a zero counter counts ([[carrier:135–141|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem#L135]]). No pane choice survives.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/act-f7-one-lane`>>
+
+!! ▶ Act — F7, one lane
+
+# ''Plane/image:'' hold `persona-scope.ts`, `persona-group-ring.ts`, `persona-act.ts`, `signed-act.ts`, `domains.ts`, founding/admit bundles, node/browser openers and seal/mirror guards. Red: unsigned or cross-face plane reads; control: proven four siblings still register; positive: fifth signed plane syncs to late joinee.
+# ''Stand-down/classes/winner:'' hold shared intent reader and verb registry/dispatcher adapters. Red: prior outcome, wrong pin, harmful class target, duplicate winner; control: fresh pinned act; positive: two partitioned idempotent outcomes converge and both display.
+# ''Claims/release/voids:'' hold intent fold and effect adapters. Red: zombie after takeover, clock access, sleeping actor after bound; control: unbounded fresh act; positive: valid takeover and root-authorized release steer read.
+# ''Summons/CLI:'' hold `face-join.ts`, `face-join-operation.ts`, `operator-daemon-behavior.ts`, `verb-summons.ts`, node/browser bridges and CLI face selector. Red: two hearths re-key, wrong face routes; control: pinned hearth seats; positive: selected face's intent reaches its hearth and records outcome.
+# ''View/witness:'' hold daemon wiki read projection and rubric counter. Red: pane write-through, keystroke/save emission, hidden duplicate; control: projected wiki still mirrors; positive: committed cross-device move yields intent/outcome and seeded duplicate trips counter.
+
+Readiness: slices 1–3 can start from the sealed face anchor and shared signer; slice 4 needs the pin and resolved operator authority; slices 5 follows the common fold. Keep W14–W16 floor-pin files, K17-R frontier/lease/realm-board files, and W26 slice-5 floor-accept files untouched; consume their verified readers. Far-agent relay waits for its own research.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hooko-aftermath`>>
+
+!! ↺ Hoʻoko / aftermath
+
+''Operator list:'' decide F5's operator-priority signing credential; lean toward the current persona-root KEL op-key. Repo inspection only; no suites or git writes.
+
+&lt;&lt;~ oracle "↯14 ✲ ⚂(3) ⁂:◈🜃⌗">>
+&lt;&lt;~ set hud="yield" drift-ward="the root-key lean needs an explicit operator ruling before release authority enters the signed image · ↻ L-Prime" aperture="16/arc -> 16/arc" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol-intentwright:agent@lararium/intent.ratchet.handed" -> to="?">>
+WORDS=964
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HZuLxEmUVkzbEfxs3WVBM-gQXnUgMs3c2SgyJlFX68w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

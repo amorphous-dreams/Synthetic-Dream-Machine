@@ -37,6 +37,7 @@
  * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling). This door is the metal.
  */
 
+import { faceOption } from "../face-option.js";
 import { readFileSync } from "node:fs";
 import {
   runNexusCarryFor, NexusContractError, SealedActRefused,
@@ -105,12 +106,12 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
 /**
  * `lares nexus realm-bag <bag-uri>` — register a bag this vessel's steward keeps on the realm's shared CRDT
  * (realm-bag-brief). The bag's doc is the one this vessel names for the URI; the record
- * rides the seal of the key this vessel's WORN face presents to the realm's Nexus (`lares persona wear N`
- * first), never a persona root; @crossroads carries only that the bag exists and who keeps it.
+ * rides the seal of the key the acting face (`--face N`, else the one face standing open) presents to the realm's
+ * Nexus, never a persona root; crossroads-plane carries only that the bag exists and who keeps it.
  * A contracted member reads it through `meme get --bag <slug>`; the stewards alone write.
  *
  * A name enters a record by its own hand first. `--join` ASKS to keep a bag another hand keeps: this vessel's
- * worn face seals a record that names the standing stewards and itself. `--cosign` CONSENTS to a record that
+ * acting face seals a record that names the standing stewards and itself. `--cosign` CONSENTS to a record that
  * names this vessel's steward. `--steward <key>` names a hand that already sealed a record of this realm.
  *
  * A verb names its realm. `--realm <id>` names a cabal realm (64 hex) or the charter-derived realm; with none
@@ -119,7 +120,7 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
 async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   const bag = args.positional[1];
   if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--realm <id>] [--join | --cosign [--with <key>]] [--steward <key>…] [--tier <t>] [--expiry <rolls>] [--charter <key>=<realm-id>]"); return 2; }
-  // `--steward` names a keeping hand by the key her worn face presents to this Nexus, and the vessel refuses a
+  // `--steward` names a keeping hand by the key her acting face presents to this Nexus, and the vessel refuses a
   // key that sealed nothing in this realm: a hand that would keep the bag asks from her own vessel (`--join`).
   // The record is n-of-n: it counts nothing until every hand it names has sealed it.
   const stewards = (args.options["steward"] ?? "").split(",")
@@ -142,7 +143,7 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   try {
     const r = await runVerb("realm-bag", {
       bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, stewards, cosign, join,
-      ...(withName ? { with: withName } : {}),
+      ...(withName ? { with: withName } : {}), ...faceOption(args),
       ...(realm ? { realm } : {}),
       ...(tier ? { tier } : {}),
       ...(expiry === undefined || !Number.isFinite(expiry) ? {} : { expiry }),
@@ -315,7 +316,7 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
 /** The contract door's refusal, handed to the shared partial-file checks. */
 const refuseContract = (msg: string): Error => new NexusContractError(msg);
 
-const PARTIAL_USAGE = "usage: lares nexus <contract | revoke> <operator-pubkey> [--sig <hex>] [--nexus <aid>] --out <partial> | lares nexus contract --from <partial> [--out <file>]";
+const PARTIAL_USAGE = "usage: lares nexus <contract | revoke> <operator-pubkey> [--sig <hex>] [--nexus <aid>] --out <partial> | lares nexus carry <place-vessel-key> --carrier <hex> --floor-pin <file> [--nexus <aid>] --out <partial> | lares nexus <contract | carry> --from <partial> [--out <file>]";
 
 /** Report one partial step: the verdict here, the seats signed, where the file landed, and the act once it lands. */
 function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResult, written: PartialWritten | null): number {
@@ -357,16 +358,19 @@ function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResu
 async function cmdContractOpen(args: ParsedArgs, action: "admit" | "revoke" | "carry" | "uncarry"): Promise<number> {
   const nym = args.positional[1];
   const out = args.options["out"]!;
-  if (!nym || (action !== "admit" && action !== "revoke")) { console.error(PARTIAL_USAGE); return 2; }
+  if (!nym || (action !== "admit" && action !== "revoke" && action !== "carry")) { console.error(PARTIAL_USAGE); return 2; }
   try {
     partialOutOrRefuse(refuseContract, out);
     const contractSig = action === "admit" ? (args.options["sig"] ?? args.options["contract"]) : undefined;
+    const carrierSig = action === "carry" ? (args.options["carrier"] ?? args.options["sig"]) : undefined;
+    const floorPinArg = action === "carry" ? args.options["floor-pin"] : undefined;
+    const floorPin = floorPinArg === undefined ? undefined : readFloorPinArg(floorPinArg);
     const aid = args.options["nexus"];
     const { output } = await storeVerb("nexus-contract-open", {
-      action, nym, ...(contractSig ? { contractSig } : {}), ...(aid ? { aid } : {}),
+      action, nym, ...(contractSig ? { contractSig } : {}), ...(carrierSig ? { carrierSig } : {}), ...(floorPin ? { floorPin } : {}), ...(aid ? { aid } : {}),
     }, NexusContractError);
     const r = output as unknown as NexusContractPartialResult;
-    return emitPartial(args, `${action === "admit" ? "contract" : "revoke"} --out`, r, writePartialFile(out, r.partial));
+    return emitPartial(args, `${action === "admit" ? "contract" : action} --out`, r, writePartialFile(out, r.partial));
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const failure = storeFailure(err, err instanceof NexusContractError ? "refused" : "error");
@@ -384,7 +388,7 @@ async function cmdContractOpen(args: ParsedArgs, action: "admit" | "revoke" | "c
 async function cmdContractPartial(args: ParsedArgs, action: "admit" | "revoke" | "carry" | "uncarry"): Promise<number> {
   const from = args.options["from"]!;
   const out = args.options["out"];
-  if (action !== "admit" && action !== "revoke") { console.error(PARTIAL_USAGE); return 2; }
+  if (action !== "admit" && action !== "revoke" && action !== "carry") { console.error(PARTIAL_USAGE); return 2; }
   try {
     if (out !== undefined) partialOutOrRefuse(refuseContract, out, from);
     let partial: unknown;
@@ -516,6 +520,13 @@ export function admitTakeSyncUrlWarning(bundleText: string): string | null {
   return "this bundle names no sync url, so this vessel cannot dial the hearth's gate from it — ask the founding kahu to re-issue it with `lares nexus contract <leaf> --sync-url <ws-url>`, then admit-take the new bundle";
 }
 
+/** The take's presentation line: re-presented, refused by the ward's own name (the bundle still kept), or no vessel answered. */
+export function admitTakePresentLine(represented: boolean, reason?: string): string {
+  if (represented) return "  the running vessel re-folded and re-presents its dial";
+  if (reason) return `  the bundle stays kept; the running vessel refused the route by name: ${reason}`;
+  return "  no running vessel answered — the next boot's dial presents it";
+}
+
 async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
   if (!file) { console.error("usage: lares nexus admit-take <bundle-file>"); return 2; }
@@ -533,10 +544,12 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
     } catch { /* the take names the parse failure */ }
     const { output: r } = await storeVerb("nexus-admit-take", { raw: text }, AdmitBundleError);
     const represented = r["represented"] === true;
+    // A route the ward refused rides back by name (`ward-dial-in-flight`): the bundle stays kept, and the take says why it did not present.
+    const reason = typeof r["reason"] === "string" ? r["reason"] : undefined;
     const noUrl = admitTakeSyncUrlWarning(text);
     emit(args, {
       ok: true,
-      data: { aid: r["aid"], nym: r["nym"], admitCid: r["admitCid"], gatePubKey: r["gatePubKey"], lineage: r["lineage"], path: r["path"], represented, ...(noUrl ? { warning: noUrl } : {}) },
+      data: { aid: r["aid"], nym: r["nym"], admitCid: r["admitCid"], gatePubKey: r["gatePubKey"], lineage: r["lineage"], path: r["path"], represented, ...(reason ? { reason } : {}), ...(noUrl ? { warning: noUrl } : {}) },
       human: () => {
         console.log("nexus admit-take — the admit verified against the charter held for its Nexus, and kept:");
         console.log(`  nexus:   ${String(r["aid"])}`);
@@ -544,9 +557,7 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
         console.log(`  admit:   ${String(r["admitCid"])} (lineage ${String(r["lineage"])})`);
         console.log(`  hearth:  ${String(r["gatePubKey"])}  (the dial to this gate presents it)`);
         console.log(`  kept at: ${String(r["path"])}`);
-        console.log(represented
-          ? "  the running vessel re-folded and re-presents its dial"
-          : "  no running vessel answered — the next boot's dial presents it");
+        console.log(admitTakePresentLine(represented, reason));
         if (noUrl) console.error(`  warning: ${noUrl}`);
       },
     });
@@ -559,7 +570,11 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
   }
 }
 
-/** A `--floor-pin` value: the statement inline (`{…}`), or a file holding it or `carry-for --json`'s whole envelope. */
+/**
+ * A `--floor-pin` value: the file `carry-for --out` wrote (`{ "floorPin": <claim>, "placeKel": [<event>…] }`), inline (`{…}`) or as a
+ * file, or `carry-for --json`'s whole envelope (`data.floorPin` and `data.placeKel`). The claim and the KEL rows that fold to its
+ * head travel together.
+ */
 function readFloorPinArg(value: string): string {
   let raw = value.trim();
   if (!raw.startsWith("{")) {
@@ -569,8 +584,8 @@ function readFloorPinArg(value: string): string {
   }
   try {
     const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const inner = ((parsed["data"] as Record<string, unknown> | undefined)?.["floorPin"]) ?? parsed["floorPin"];
-    if (inner !== undefined) return JSON.stringify(inner);
+    const body = (parsed["data"] as Record<string, unknown> | undefined) ?? parsed;
+    if (body["floorPin"] !== undefined) return JSON.stringify({ floorPin: body["floorPin"], placeKel: body["placeKel"] });
   } catch { /* the row names the parse failure */ }
   return raw;
 }
@@ -625,7 +640,7 @@ async function cmdCarryTake(args: ParsedArgs): Promise<number> {
  * kahu supply to `nexus carry <key> --carrier <hex>`. It reads the VESSEL key and nothing else, which is the
  * whole reason the verb exists: a Herm holds no persona root by law, so `accept-carriage` can never run here.
  * `--nexus <aid>` signs at a carried charter this vessel holds (as `carry` and `carry-take` read it); without it, the
- * primary. `--out <file>` writes the floor pin statement for `carry --floor-pin`.
+ * primary. `--out <file>` writes the floor pin claim and its KEL rows for `carry --floor-pin`.
  */
 async function cmdCarryFor(args: ParsedArgs): Promise<number> {
   try {
@@ -637,11 +652,11 @@ async function cmdCarryFor(args: ParsedArgs): Promise<number> {
     if (out !== undefined && typeof out !== "string") throw new NexusContractError("--out needs a file name");
     if (out !== undefined) partialOutOrRefuse(refuseContract, out);
     const r = await runNexusCarryFor({ sealHome: larSealHome(), ...(aid ? { aid } : {}) });
-    // `--out` writes the floor pin statement alone: the file `nexus carry --floor-pin` reads.
-    const written = out !== undefined && r.floorPin ? writePartialFile(out, r.floorPin) : null;
+    // `--out` writes the floor pin claim and the KEL rows that fold to its head: the file `nexus carry --floor-pin` reads.
+    const written = out !== undefined && r.floorPin ? writePartialFile(out, { floorPin: r.floorPin, placeKel: r.placeKel }) : null;
     emit(args, {
       ok: true,
-      data: { nym: r.nym, sealEpochCid: r.sealEpochCid, carrierSig: r.carrierSig, floorPin: r.floorPin },
+      data: { nym: r.nym, sealEpochCid: r.sealEpochCid, carrierSig: r.carrierSig, floorPin: r.floorPin, placeKel: r.placeKel },
       human: () => {
         console.log("nexus carry-for — signed 'I carry for this Nexus' with this vessel's OWN key (no persona read):");
         console.log(`  this place:   ${r.nym}`);
@@ -649,10 +664,10 @@ async function cmdCarryFor(args: ParsedArgs): Promise<number> {
         console.log(`  carrier-sig:  ${r.carrierSig}`);
         console.log(`  hand this to a founding kahu:  lares nexus carry ${r.nym} --carrier ${r.carrierSig}${r.floorPin ? " --floor-pin <file>" : ""}`);
         if (r.floorPin) {
-          console.log("  floor pin:    signed for this Nexus's floor gate — `--json` emits it as `data.floorPin`; it rides as --floor-pin");
+          console.log("  floor pin:    signed for this Nexus's floor gate — `--json` emits it as `data.floorPin`; it rides as --floor-pin (the claim, with `data.placeKel`)");
           if (written?.path) console.log(`  floor-pin file: ${written.path}  (hand it to the kahu beside the seal: --floor-pin ${written.path})`);
           else if (written?.error) console.error(`  ${written.error}  — run again with --json and save \`data.floorPin\` as the --floor-pin file`);
-          else console.log("  to make the --floor-pin file: `lares nexus carry-for --out <file>`, or save `data.floorPin` from `--json`");
+          else console.log("  to make the --floor-pin file: `lares nexus carry-for --out <file>`, or save `data` from `--json`");
         } else if (out !== undefined) console.error("  --out wrote nothing: this charter names no Nexus to sign a floor pin at");
       },
     });

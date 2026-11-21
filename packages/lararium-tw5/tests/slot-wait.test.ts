@@ -4,9 +4,9 @@
  *   S1  the Repo settles "unavailable" while NO peer stands connected (the vessel's main thread has not yet
  *       answered the port); the peer then connects and the document arrives: the wait answers the HANDLE.
  *                                                 control: with a peer connected, the same rejection reads `verdict`
- *   S2  no peer ever connects and the port stays silent: the wait ends `never-arrived` once the silence budget
- *       passes, having asked more than once.      control: a find that resolves at once answers `ready` in one ask
- *   S3  inbound traffic keeps the silence clock young, and the hard cap still ends the wait `never-arrived`.
+ *   S2  no peer ever connects and the port stays silent: no silence ends the wait; the hard cap does, as `hard-cap` in
+ *       phase `no-peer`, having asked more than once. control: a find that resolves at once answers `ready` in one ask
+ *   S3  inbound traffic keeps the vessel's verdict young, and the hard cap still ends the wait, in phase `verdict`.
  *   S4  a rejection that states no absence (an address the Repo cannot read) ends the wait `refused` at the first
  *       ask, with no peer connected.              control: S2's absence, same world, waits out its budget
  * The premise (a Repo with no peer rejects a find at once) stands pinned on the real library in the node package:
@@ -27,7 +27,7 @@ function world(over: Partial<SlotWaitDeps<string>> & { find: () => Promise<strin
     lastHeard: () => heard,
     sleep: async (ms) => { t += ms; await Promise.resolve(); },
     defer: async () => { await Promise.resolve(); },
-    budgets: { silenceMs: 8_000, hardCapMs: 60_000, pollMs: 250 },
+    budgets: { verdictGraceMs: 8_000, hardCapMs: 60_000, pollMs: 250 },
     ...over,
     find: () => { asks += 1; return over.find(); },
   };
@@ -78,12 +78,12 @@ describe("an island's wait for a slot document", () => {
     expect(c.asks()).toBeGreaterThan(1);
   });
 
-  test("S2 — no peer and a silent port ends never-arrived at the silence budget", async () => {
+  test("S2 — no peer and a silent port: no silence ends the wait; the hard cap does, naming its phase", async () => {
     const w = world({ find: async () => { throw new Error("unavailable"); } });
     const out = await waitForSlotDocument(w.deps);
-    expect(out.outcome).toBe("never-arrived");
-    expect(w.at()).toBeGreaterThanOrEqual(8_000);
-    expect(w.at()).toBeLessThan(9_000);
+    expect(out).toMatchObject({ outcome: "hard-cap", phase: "no-peer" });
+    expect(w.at()).toBeGreaterThanOrEqual(60_000);
+    expect(w.at()).toBeLessThan(61_000);
     expect(w.asks()).toBeGreaterThan(1);
 
     const c = world({ find: async () => "at-once" });
@@ -91,10 +91,10 @@ describe("an island's wait for a slot document", () => {
     expect(c.asks()).toBe(1);
   });
 
-  test("S3 — traffic keeps the silence clock young; the hard cap still ends the wait", async () => {
-    const w = world({ find: async () => { w.hear(); throw new Error("unavailable"); } });
+  test("S3 — traffic keeps the verdict young; the hard cap still ends the wait", async () => {
+    const w = world({ peerCount: () => 1, find: async () => { w.hear(); throw new Error("unavailable"); } });
     const out = await waitForSlotDocument(w.deps);
-    expect(out.outcome).toBe("never-arrived");
+    expect(out).toMatchObject({ outcome: "hard-cap", phase: "verdict" });
     expect(w.at()).toBeGreaterThanOrEqual(60_000);
     expect(w.at()).toBeLessThan(61_000);
   });

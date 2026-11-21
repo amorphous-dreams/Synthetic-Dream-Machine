@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "../src/browser-connection-state.js";
+import { composeBrowserFacePresentation } from "../src/browser-face-presentation.js";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh";
 
 class FakeRelayAdapter {
   session: { nonce: string; gatePubKey: string } | null = null;
@@ -31,6 +33,16 @@ describe("browser connection state", () => {
 
   test("a device with no face joined stands at the floor, and names it", () => {
     expect(at({ faceJoined: false, pinnedGateKey: null })).toMatchObject({ status: "floor", reason: expect.stringMatching(/no face is joined to this device/) });
+  });
+
+  test("a place-only browser presents no face card and its dial refuses by name", async () => {
+    const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(4) })), new TextEncoder().encode("nexus-floor.synthetic"), sovereignRoute("/ws"));
+    try {
+      const presentation = await composeBrowserFacePresentation({ idbName: `place-only-${crypto.randomUUID()}`, pin: bundle.pin, personaGroup: null });
+      expect(presentation).toMatchObject({ refusal: "face-group-absent", detail: expect.stringMatching(/no face is joined/) });
+      expect(at({ faceJoined: false, hasContactCard: false, presentationRefusal: "face-group-absent" })).toMatchObject({ status: "floor" });
+      expect(at({ faceJoined: true, hasContactCard: false, presentationRefusal: "face-group-absent" })).toMatchObject({ status: "blocked", reason: expect.stringMatching(/no social contact card/) });
+    } finally { bundle.drop(); }
   });
 
   test("a joined face whose join carried no pin for this hearth names the pin", () => {

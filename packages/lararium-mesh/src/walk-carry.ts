@@ -89,6 +89,7 @@ type CarryTransport = Pick<WalkTransport, "sendSession" | "onSession">;
 function answerFor(transport: CarryTransport, kind: string, cid: string, withinMs: number, accept: (msg: LarSessionMsg) => Promise<boolean>): Promise<LarSessionMsg | null> {
   return new Promise((resolve, reject) => {
     let off: () => void = () => {};
+    // LIVENESS: a remote peer may never send the matching session frame.
     const timer = setTimeout(() => { off(); resolve(null); }, withinMs);
     off = transport.onSession((msg) => {
       if (msg.kind !== kind || (msg.body as { cid?: unknown } | null)?.cid !== cid) return;
@@ -138,7 +139,7 @@ async function carryInTurn(opts: {
   if (!("body" in sealed)) return null;
   const { cid, ciphertext } = sealed.body;
   // The receipt lands over the record as it stands at the write: the fetch above may have waited, and another
-  // hand may have moved it. The receipt for a value the hearth no longer serves leaves with the write that names
+  // hand may have moved it. The receipt for a value the hearth has stopped serving leaves with the write that names
   // its replacement. A record that left, or lost its grant, meanwhile carries nothing: no earlier reading returns.
   const kept = await opts.store.update(gate, (now) => {
     if (!now?.grant || now.nexusAid !== held.nexusAid) return null;

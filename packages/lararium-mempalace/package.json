@@ -9,9 +9,9 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./xdg-base": {
-      "import": "./dist/xdg-base.js",
-      "types": "./dist/xdg-base.d.ts"
+    "./house-root": {
+      "import": "./dist/house-root.js",
+      "types": "./dist/house-root.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -20,11 +20,12 @@
     "clean": "node ../../tools/clean-output.mjs dist",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run"
   },
   "devDependencies": {
     "tsx": "4.23.15",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   },
   "dependencies": {
     "@lararium/mesh": "workspace:*"

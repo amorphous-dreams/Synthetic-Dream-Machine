@@ -3,7 +3,7 @@
  * the surface, signed under the chartered class that surface needs.
  *
  * The ruling (`lar:///ha.ka.ba/lares/docs/stable-founding-road`, "Planes ~ cabal, realm, Nexus"): Kahu
- * drafts in the realm, and publishing to `@crossroads` stands as a separate, recorded promotion act.
+ * drafts in the realm, and publishing to `crossroads` stands as a separate, recorded promotion act.
  * //Promotion approves the EXACT BYTES (hash, purpose, surface) under a threshold the charter sets, with a
  * higher bar for charter, admission and trust-root changes. A CID, a clerk's edit or an active persona never
  * stands in for collective approval.// The seats and their classes read at

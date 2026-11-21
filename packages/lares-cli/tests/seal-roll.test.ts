@@ -7,6 +7,9 @@
  *   L2  RED: the verbs refuse before anything moves: no --nexus, no --threshold, no --out, --out naming the input,
  *       a file of the wrong kind, a card typed off a staged root; CONTROL: L1.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -23,7 +26,7 @@ vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 const cidOf = (text: string): string => cidV1Sha256(new TextEncoder().encode(text));
 const seedHex = "5e".repeat(32);
 const RELEASE = {
-  format: "lararium-release-manifest/v1",
+  format: "lararium-release-manifest",
   image: { digest: `sha256:${"ab".repeat(32)}`, platforms: ["linux/amd64"] },
   genesis: { seedCid: seedHex }, engine: { cid: cidOf("engine") }, grammar: { cid: cidOf("grammar") },
 };

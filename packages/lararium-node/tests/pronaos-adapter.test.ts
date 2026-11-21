@@ -42,13 +42,13 @@ async function start(): Promise<string> {
   server = createServer();
   const mount = mountPronaosReadFace(server, projection);
   dispose = mount.dispose;
-  // A real Node vessel has other listeners for /oracle and /bulb. This test
+  // A real Node vessel has other listeners for /flow and /bulb. This test
   // fallback stands in for their absent faces and proves unowned paths are
   // not accidentally answered by the library adapter.
   server.on("request", (req, res) => {
-    if (req.url === "/oracle/pointer") {
+    if (req.url === "/flow/pointer") {
       res.writeHead(200, { "content-type": "application/json" });
-      res.end('{"face":"oracle"}');
+      res.end('{"face":"flow"}');
       return;
     }
     if (!res.writableEnded) { res.writeHead(404); res.end(); }
@@ -87,16 +87,16 @@ describe("Pronaos adapter — prepared Herm/Lararium projection", () => {
     const origin = await start();
     for (const path of [
       "/assets/missing-worker.js", `/genesis/cas/${"b".repeat(64)}`,
-      "/genesis/missing.json", "/private/document.json", "/oracle/pointer.html",
+      "/genesis/missing.json", "/private/document.json", "/flow/pointer.html",
     ]) {
       const response = await fetch(`${origin}${path}`);
       // Unowned routes are left for other faces; this bare server has no other face and closes them.
       expect(response.status, path).toBe(404);
       expect(await response.text(), path).not.toContain("<!doctype html>");
     }
-    const oracle = await fetch(`${origin}/oracle/pointer`);
-    expect(oracle.status).toBe(200);
-    expect(await oracle.text()).toBe('{"face":"oracle"}');
+    const flow = await fetch(`${origin}/flow/pointer`);
+    expect(flow.status).toBe(200);
+    expect(await flow.text()).toBe('{"face":"flow"}');
   });
 
   test("refuses traversal and mutation while leaving the /ws upgrade namespace alone", async () => {

@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-no-receipt/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-no-receipt/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-No-Receipt: Lares (Tasked Spirit). Read-only diagnosis. Repo: /home/joshu/Synthetic-Dream-Machine (span b8c325a19); also read the lane worktrees /home/joshu/.lares-scratch/b1-seal/wt (93c808f7e) and /home/joshu/.lares-scratch/b1-lift/wt (4200215e7). Write nothing. Mark claims MEASURED (file:line, log line) or INFER.
+Symptom: during e2e runs (rest-before-reload on b1-seal: /home/joshu/.lares-scratch/b1-seal/rbr-run1.log, rbr-run2.log; and CI web-tw5 logs /home/joshu/.lares-scratch/b1-lift/ci-42197282289.log, /home/joshu/.lares-scratch/b1-seal/ci-42205053266.log) the hearth's daemon island refuses writes to `wikis/daemon/working` with "the vessel issued no receipt for the written documents" ([outbound-bridge] save … faulted). Find: where that refusal is raised (grep the message), what receipt it expects and who issues it, whether the span's CI logs carry the same line (compare against a span CI run's web-tw5 log: `gh` is not available to you, so read only the local logs given and the code), and whether it reads as a product fault (a write that should land and does not), a teardown race (writes after the vessel stops), or expected noise from a test's planted refusal. Name the minimal next red if it reads as a fault.
+Final message under 600 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oiYy_s9P8Ro5crLWd84OkCiXLVy-zuseHy9wkmETiFY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

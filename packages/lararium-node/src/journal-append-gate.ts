@@ -29,6 +29,8 @@ export function bagProjectedEvent(wikiUri: string, info: BagProjected): {
     payload: {
       verb: JOURNAL_APPEND_VERB,
       requestedBy: JOURNAL_APPEND_REQUESTER,
+      // The projector is the island's own host code: its event names `channel`, never content's origin.
+      origin: "channel",
       [LARES_VERB_ARGS_WIRE_FIELD]: JSON.stringify({ kind: "bag-projected", data: info }),
     },
   };

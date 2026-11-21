@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-10`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "10. The Turkey Curse"
+hexagram      = "10"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "110111"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-10"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-10"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷉ 10. The Turkey Curse
+
+<<<
+Take a foot stance as if you were John L. Sullivan preparing for fisticuffs. Face the particular greyface you wish to short-circuit, or towards the direction of the negative aneristic vibration that you wish to neutralize. Begin by waving your arms in any elaborate manner and make motions with your hands as though you were Mandrake feeling up a sexy giantess. Chant, loudly and clearly: GOBBLE, GOBBLE, GOBBLE, GOBBLE, GOBBLE!
+<<<
+
+This hexagram represents ones social conduct and physical bearing. The original I Ching was drawn along Confucian lines, and was therefore very conservative about this hexagram. As should be seen from the title, the E-Jing-A-Ling Thing takes a different view of the meaning of this hexagram. The point of the original was to move from inferior to superior position by tempering ones conduct and bearing, but the E-jing recommends methods that resemble the turkey curse in order to gain the upper hand.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5FrSK6RErtO7NPK1NXyZbF_Q-xXMj-qqdHDrzQAWva8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

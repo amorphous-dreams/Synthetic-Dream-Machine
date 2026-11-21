@@ -45,27 +45,27 @@ function bodyOf(source: string, sigil: string, from: number, closers = CLOSERS):
 
 describe("findCloseEnd — the closer belongs to the opener", () => {
   test("CONTROL — a well-formed block still captures exactly its body", () => {
-    const src = `<<~ meme "lar:///x">>the body<<~/meme>>`;
-    const from = afterOpen(src, `<<~ meme "lar:///x">>`);
+    const src = `<<~ meme uri=\`lar:///x\`>>the body<<~/meme>>`;
+    const from = afterOpen(src, `<<~ meme uri=\`lar:///x\`>>`);
     expect(findCloseEnd(src, "meme", from, CLOSERS)).toBe(src.length);
     expect(bodyOf(src, "meme", from)).toBe("the body");
   });
 
   test("CONTROL — the three boot-critical closers still close under the default map", () => {
-    const src = `<<~ ahu #slot>>inner<<~/ahu>>`;
-    const from = afterOpen(src, "<<~ ahu #slot>>");
+    const src = `<<~ ahu slot=\`#slot\`>>inner<<~/ahu>>`;
+    const from = afterOpen(src, "<<~ ahu slot=`#slot`>>");
     expect(findCloseEnd(src, "ahu", from)).toBe(src.length);
     expect(bodyOf(src, "ahu", from, BLOCK_CLOSERS)).toBe("inner");
   });
 
   test("★ a leaf call does not take a later block's closer ★", () => {
     const src = [
-      `<<~ meme "lar:///leaf">>`,
+      `<<~ meme uri=\`lar:///leaf\`>>`,
       `prose that belongs to nobody`,
-      `<<~ meme "lar:///block">>the other body<<~/meme>>`,
+      `<<~ meme uri=\`lar:///block\`>>the other body<<~/meme>>`,
     ].join("\n");
-    const leafFrom  = afterOpen(src, `<<~ meme "lar:///leaf">>`);
-    const blockFrom = afterOpen(src, `<<~ meme "lar:///block">>`);
+    const leafFrom  = afterOpen(src, `<<~ meme uri=\`lar:///leaf\`>>`);
+    const blockFrom = afterOpen(src, `<<~ meme uri=\`lar:///block\`>>`);
     expect(findCloseEnd(src, "meme", leafFrom, CLOSERS)).toBeNull();
     expect(bodyOf(src, "meme", blockFrom)).toBe("the other body");
   });
@@ -74,14 +74,14 @@ describe("findCloseEnd — the closer belongs to the opener", () => {
     // MEASURED: teaching carriers show their own forms inside fences. Counting a shown opener as
     // structure gave the closer to the example and carried the real body into the following section.
     const src = [
-      `<<~ ahu #/head>>`,
+      `<<~ ahu slot=\`#/head\`>>`,
       "```",
-      `<<~ ahu #/example>>`,
+      `<<~ ahu slot=\`#/example\`>>`,
       "```",
       `the real body`,
       `<<~/ahu>>`,
     ].join("\n");
-    const from = afterOpen(src, `<<~ ahu #/head>>`);
+    const from = afterOpen(src, `<<~ ahu slot=\`#/head\`>>`);
     expect(findCloseEnd(src, "ahu", from, CLOSERS)).toBe(src.length);
     expect(bodyOf(src, "ahu", from)).toContain("the real body");
   });
@@ -96,8 +96,8 @@ describe("findCloseEnd — the closer belongs to the opener", () => {
   test("an UNPAIRED closer of another name rides in the body as prose", () => {
     // MEASURED: 38 corpus sections carry a stray closer of another name in plain prose. A walk that
     // read one as a barrier dropped bodies that render correctly.
-    const src = [`<<~ ahu #/source-shelf>>`, ``, `<<~/pranala>>`, ``, `<<~/ahu>>`].join("\n");
-    const from = afterOpen(src, `<<~ ahu #/source-shelf>>`);
+    const src = [`<<~ ahu slot=\`#/source-shelf\`>>`, ``, `<<~/pranala>>`, ``, `<<~/ahu>>`].join("\n");
+    const from = afterOpen(src, `<<~ ahu slot=\`#/source-shelf\`>>`);
     expect(findCloseEnd(src, "ahu", from, CLOSERS)).toBe(src.length);
     expect(bodyOf(src, "ahu", from)).toBe("\n\n<<~/pranala>>\n\n");
   });

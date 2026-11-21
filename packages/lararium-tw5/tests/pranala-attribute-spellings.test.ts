@@ -21,10 +21,10 @@
  * So: the spec writes one spelling, the engine reads every spelling TiddlyWiki reads.
  *
  * ── AND THE BEARING ENDS TAKE THE SAME LAW ───────────────────────────────────────────────────────
- * The corpus writes `from="?" -> to="lar:///d"`, because an unquoted `lar:///x` standing positionally
- * binds a phantom parameter and the slot stays empty (tw5-calls-colon-caveat). The RENDER-path rule
- * kept its own spelling of that capture and handed back `"\"lar:///d\""` — quote marks rendered into
- * the address a reader clicks. Both spellings must reach one value on every path.
+ * The corpus writes ``from=`?` to=`lar:///d` ``, because an unticked `lar:///x` binds a phantom
+ * parameter and the slot stays empty (tw5-calls-colon-caveat). The RENDER-path rule once kept its own
+ * spelling of that capture and handed back `"\"lar:///d\""` — quote marks rendered into the address a
+ * reader clicks. Every spelling must reach one value on every path.
  */
 
 import { describe, test, expect } from "vitest";
@@ -40,8 +40,8 @@ function pranalaOf(sigil: string) {
 import { matchPranalaOpenAt } from "../src/wikirules/lar-sigil-shared.js";
 
 describe("★ the RENDER path reads both spellings of the bearing ★", () => {
-  const bare   = '<<~ pranala #x from=? -> to=lar:///d family=code role=has>>';
-  const quoted = '<<~ pranala #x from="?" -> to="lar:///d" family="code" role="has">>';
+  const bare   = '<<~ pranala slot=`#x` from=`?` to=`lar:///d` family=`code` role=`has`>>';
+  const quoted = '<<~ pranala slot=`#x` from=`?` to=`lar:///d` family="code" role="has">>';
 
   test("a quoted bearing hands back its interior, never the pair", () => {
     const m = matchPranalaOpenAt(quoted, 0)!;
@@ -63,32 +63,32 @@ describe("★ the RENDER path reads both spellings of the bearing ★", () => {
 
 describe("a pranala reads its family in every spelling the CALL form admits", () => {
   test("quoted with an equals sign", () => {
-    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family="reference">>').family).toBe("reference");
+    expect(pranalaOf('<<~ pranala slot=`#x` from=`?` to=`lar:///d` family=`reference`>>').family).toBe("reference");
   });
 
   test("★ unquoted with an equals sign — the graph's commonest form ★", () => {
-    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family=reference>>').family).toBe("reference");
+    expect(pranalaOf('<<~ pranala slot=`#x` from=`?` to=`lar:///d` family=`reference`>>').family).toBe("reference");
   });
 
   test("★ the ENGINE still reads the colon — the parser is canonical ★", () => {
     // The SPEC writes `=`. A carrier already written with `:` still binds, because TiddlyWiki binds
     // it and a reader narrower than the parser would refuse a sigil the wiki renders.
-    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>').family).toBe("reference");
+    expect(pranalaOf('<<~ pranala slot=`#x` from=`?` to=`lar:///d` family:reference>>').family).toBe("reference");
   });
 
   test("role reads the same way", () => {
-    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family=relation role=precedes>>').role).toBe("precedes");
+    expect(pranalaOf('<<~ pranala slot=`#x` from=`?` to=`lar:///d` family=`relation` role=`precedes`>>').role).toBe("precedes");
   });
 
   test("an absent family falls back to relation", () => {
-    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d>>').family).toBe("relation");
+    expect(pranalaOf('<<~ pranala slot=`#x` from=`?` to=`lar:///d`>>').family).toBe("relation");
   });
 
   test("★ a scan that fails grades the sigil `missing` and loses its target — none of these may ★", () => {
     for (const src of [
-      '<<~ pranala #x from=? -> to=lar:///d family=reference>>',
-      '<<~ pranala #x from=? -> to=lar:///d family="reference" role="source">>',
-      '<<~ pranala #x from=? -> to=lar:///d family:reference>>',
+      '<<~ pranala slot=`#x` from=`?` to=`lar:///d` family=`reference`>>',
+      '<<~ pranala slot=`#x` from=`?` to=`lar:///d` family=`reference` role=`source`>>',
+      '<<~ pranala slot=`#x` from=`?` to=`lar:///d` family:reference>>',
     ]) {
       const p = pranalaOf(src);
       expect(p.recoveredAs ?? null).toBe(null);
@@ -96,10 +96,16 @@ describe("a pranala reads its family in every spelling the CALL form admits", ()
     }
   });
 
+  test("★ the retired unticked, arrowed spelling grades `missing` and names no target ★", () => {
+    const p = pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>');
+    expect(p.recoveredAs).toBe("missing");
+    expect(p.toRaw).toBe("");
+  });
+
   test("★ a named end resolves to the address, not to the parameter that carried it ★", () => {
     // `tok` recognizes a target by its `lar:///` prefix. A `to=` in front of it reaches neither branch,
     // so the edge points at a token no bag answers for.
-    const src = '<<~ pranala #x from=? -> to=lar:///d.e.f/target family=reference>>\n';
+    const src = '<<~ pranala slot=`#x` from=`?` to=`lar:///d.e.f/target` family=`reference`>>\n';
     const ast = buildMemeAst(collectEvents(src), src, URI);
     const edges = edgesFromMemeAst(ast, URI);
     expect(edges.length).toBeGreaterThan(0);

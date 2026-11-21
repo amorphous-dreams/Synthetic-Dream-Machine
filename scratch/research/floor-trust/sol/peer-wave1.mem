@@ -1,0 +1,100 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/peer-wave1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/floor-trust/sol/peer-wave1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/peer-wave1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/peer-wave1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! peer-wave1.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/floor-trust/sol/peer-wave1.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/luna-floorreader-lares`>>
+
+! Luna-Floorreader — Lares (Tasked Spirit)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-proposed-model`>>
+
+!! ◇ Orient: proposed model
+
+''One relation, one name: the Floor Position.'' A signed floor statement binds `(place KEL head, Nexus AID, route, tier, gate-pin digest, floor-release head)`; each named head resolves by content and causal ancestry, not wall time. The place KEL authorizes the signer; its current key signs the statement, while the Nexus AID remains the trust context and never signs as the place. A receiver folds valid statements by KEL ancestry and release ancestry, files the maximal causally comparable position, and reports concurrent maxima as unsettled. This extends the ''place KEL'' for signer rotation and the ''release record'' for floor-content position; the edge frontier may provide a pattern for signed snapshots, but it governs edge widening, not floor truth.
+
+Freshness means “descends from the highest accepted position, and includes all evidenced predecessors,” never “recent.” With no global now, no client can prove that an offline carrier has seen an unseen rotation. A client that has accepted a newer head rejects an older one; a first-contact client needs an already pinned genesis/root and evidence closing the lineage. A herm carries the statement and ancestry unchanged; it never interprets them.
+
+Canon already rules: “The place signs by a scoped signer under a pre-rotated KEL” (stable-founding-road, line 207), though it explicitly says today’s place KEL lacks a next key. W26 says “a vessel moves its floor pin only when it accepts a newer signed release” (line 195); that governs release acceptance, not gate-pin ordering. Face-proof says a gate that has not read a hand-over still stands the key handed on, and “no shared moment closes that gap” (face-proof.mem:52), a useful limit on universal convergence. No canon located rules a signed floor card, a KEL sequence attached to gate-pin statements, live replacement rules for `hearthPinIndex`, or a two-vault carry partial that lands the floor pin. Those remain operator decisions. A release head alone cannot order a rotated gate key unless the place KEL binds it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/observe-measured-rows-and-lanes`>>
+
+!! ✶ Observe: measured rows and lanes
+
+MEASURED: W14–W16 appear at stable-founding-road.mem:506, 512–514. `#floor=` carries an unsigned card; browser validates the Nexus release/floor against the supplied AID, but the AID itself still comes from origin/card trust. The signed release lineage rides the answer, not the card. `main.ts:342–356` parses the fragment; `live-status.ts:20–30` exposes `floorCardOf`; `browser-floor-read.ts:4–15,45–51` reads using `nexusPin`; `floor-answer.ts:4–17,62–96` checks the answer’s AID, release lineage, signatures and floor CIDs. Porch serves `/floor/<AID>`; the answer is assembled from release rows. Neither answer reader nor porch records acceptance.
+
+MEASURED: `admit-gate-pin.ts:39–67` reads sovereign pins; `:88–133` creates in-memory `hearthPinIndex`, whose first valid key wins. Node `hearth-gate-pins.ts:69–124` files boot and admit pins; browser `browser-gate-pins.ts:18–20,35–46,78–85` creates the same mesh index and files join pins or the card’s floor pin. Both inherit first-wins behavior. The place statement schema in `place-floor-pin.ts:50–68` carries key, pin and signature but no position; `:71–120` signs, verifies and writes it; `:145+` files it after checking carried status. The statement is a sidecar on the Nexus carriage board, readable/writable by replicas, with signature authority constrained to the place key.
+
+MEASURED: `nexus-contract.ts:23–29` and `:508–509` state that two-vault partials carry the act only and no pin; `:97–100` accepts an optional `floorPin`; `:340–365` validates/writes it on whole act; `:395–397` assembles the carry bundle. `:145–147` returns the carry bundle by hand to the herm. A partial therefore cannot yet carry a floor pin to landing. `packages/lararium-node/src/floor-porch.ts` and web `main.ts` expose serving paths; `floor-answer.ts` is the shared read verifier. `face-proof.mem:84` separately requires full sovereign pins on authenticated relations and bars self-authenticating first pins.
+
+Overlap: K17-R owns lease law and realm boards; W28 owns `gate-exchange`, `face-gate*`, and `face-dial`. Keep this scout’s likely ownership at floor statement/position and its node/browser filing and carry wiring; coordinate the shared gate-pin contract with W28 and avoid realm-board semantics from K17-R. W26 owns floor release records and the porch answer, so a release-head binding needs its owner.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/orient-prior-art`>>
+
+!! ⏿ Orient: prior art
+
+KERI’s KEL gives integer sequence numbers, prior-event digests, and pre-rotated key commitments; it supplies a strong local causal model, but witnesses add externally held receipts and do not make a stale offline carrier current. [[KERI specification|https://trustoverip.github.io/kswg-keri-specification/]]
+
+TUF separates root/snapshot/targets from an online timestamp role and uses expiry to detect freeze attacks. Expiry depends on trusted time; this house should replace timestamp freshness with accepted causal heads and “unknown/unsettled” on missing ancestry, not imitate expiry. [[TUF metadata roles|https://theupdateframework.com/docs/metadata/]], [[TUF specification|https://github.com/theupdateframework/specification/blob/master/tuf-spec.md]]
+
+Certificate Transparency and Sigstore provide append-only transparency, signed tree heads, inclusion/consistency proofs and monitoring. They detect split views when carriers compare heads; they cannot decide an offline floor. [[RFC 9162|https://www.rfc-editor.org/rfc/rfc9162.html]], [[Sigstore security|https://docs.sigstore.dev/about/security/]]
+
+DNSSEC RFC 5011 rollover asks resolvers to hold a new trust anchor for a time interval before promotion, so its waiting rule conflicts with no-clock/no-quiet-period law. [[RFC 5011|https://www.rfc-editor.org/rfc/rfc5011.html]]
+
+WireGuard supports replacing peer public keys and allowed IPs as configuration, but leaves distribution/trust policy outside the protocol; SSH known-hosts rotation commonly relies on prepublishing old/new host keys or host certificates and operator verification. They need causal ancestry here. [[WireGuard protocol|https://www.wireguard.com/protocol/]], [[OpenSSH ssh-keygen manual|https://man.openbsd.org/ssh-keygen]]
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-two-stories-and-the-storm`>>
+
+!! ◇ Decide: two stories and the storm
+
+''Gaia household:'' hearth rotates floor key while a phone stays offline. Rotation KEL event names old head, commits successor, and signs the new floor statement at sequence `n+1`; the new pin binds the same Nexus/route and the accepted release head. Online carriers fold to the successor and replace the old index entry immediately. The offline phone may keep serving its last accepted position while isolated; after sync it verifies the complete successor chain and replaces its entry. If it sees only an older valid statement after accepting the new head, it refuses it. First contact without the old/genesis trust anchor remains unproved, never “fresh by age.”
+
+''Elyncia cofounding:'' two shrines cosign a carry in separate vaults. The partial carries the canonical floor statement alongside the act. The second vault validates it against its own Nexus head and place KEL, then lands act and statement atomically once quorum completes. A waystone herm receives the resulting carry bundle and signed position as opaque cargo; it carries and presents, never reads. Node and browser fold the same bytes and rules.
+
+Storm witness: permute rotation, carry, replay, merge order, and restart. Carriers with the same evidence select the same maximal position; one that lacks required ancestry says unknown/unsettled; none accepts a known ancestor as current. Silent-zero controls need a known-positive seeded pin/rotation/carry to prove the instrument sees events, and an empty fixture to prove zero.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decide-kit-and-operator-leans`>>
+
+!! ▶ Decide: kit and operator leans
+
+Red-first slices: (1) ruled schema and verifier for Floor Position, including KEL/release references; control: malformed, wrong-place, wrong-Nexus and stale-known-head refusal. (2) position-folding index with explicit concurrent/unseen outcomes; control: identical node/browser vectors and restart/no-restart equivalence. (3) live rotation propagation through all writers/readers; control: accepted successor replaces immediately, old statement refuses. (4) two-vault partial plus atomic pin landing and opaque herm carry; control: partial cannot expose a pin before quorum, complete carry reaches herm. (5) adversarial convergence storm and silent-zero/known-positive controls.
+
+Operator questions before build (lean): ''Who authorizes place KEL genesis and recovery?'' Lean: offline root with pre-rotated successor as road line 207 already directs. ''Does the position include release head as well as KEL sequence?'' Lean: yes; the two axes answer key rotation and content update. ''How treat concurrent valid successors?'' Lean: unsettled until an explicit KEL successor resolves the fork; never pick by arrival order. ''Does a cofounded partial carry a signed position before completion?'' Lean: transport it, but publish/file only atomically with the quorum-counted carry. ''What anchors first contact?'' Lean: pre-pinned genesis CID or trusted same-origin handoff is explicit trust input; a card signature alone cannot authenticate its own signer.
+
+MEASURED citations above name source file and line. LEAD sections name the proposed design. OODA-HA: ✶ Observe → ⏿ Orient → ◇ Decide → ▶ Act (scout only; no build) → ↺ Aftermath.
+
+WORDS=1300
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Qw-DfB7dGxWyX9_enkqA3I7fi7p-QkWQdN_pQoYa-A`>>
+
+<<^ code=`&#x0004;` to=`?`>>

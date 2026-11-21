@@ -46,9 +46,9 @@ function errMessage(e: unknown): string {
  * Default retry budget. At 8 attempts the exponential backoff (200·2^(n-1) capped at 5s) actually
  * REACHES the 5s cap — sleeps run ~200/400/800/1600/3200/5000/5000ms ≈ 16s worst-case, so a
  * concurrent writer WAITS OUT ordinary cross-process contention (a peer mine, a writeback: seconds)
- * instead of throwing at ~3s (the old 5-attempt budget never bound the cap). A minutes-long store
- * hold (an index rebuild) is NOT rideable by retry — that case is cured upstream by not rebuilding
- * during active capture (the repair-tail daemon-drain, SCRUM S2), never by blocking a flush for minutes.
+ * instead of throwing at ~3s (a 5-attempt budget never reaches the cap). A minutes-long store
+ * hold (an index rebuild) is NOT rideable by retry — that case clears upstream by not rebuilding
+ * during active capture (the repair-tail daemon-drain), never by blocking a flush for minutes.
  */
 export const DEFAULT_MINE_RETRY_ATTEMPTS = 8;
 
@@ -64,6 +64,7 @@ export function sleepSync(ms: number): void {
 
 /** Async sleep (for execFileAsync/spawn callers). */
 function sleepAsync(ms: number): Promise<void> {
+  // PACING: backoff spaces retries; the attempt budget ends the retry loop.
   return new Promise((res) => setTimeout(res, Math.max(0, Math.round(ms))));
 }
 

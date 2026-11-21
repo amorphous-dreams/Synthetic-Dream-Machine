@@ -30,7 +30,8 @@ function rig(naming?: (docs: Docs) => { lares?: string; lararium?: string }, sta
     waitHandle: async <T>(url: string) => repo.find(url as never) as unknown as Promise<T>,
     loadGenesis: async () => ({ islandHandle: repo.create<LarDoc>(emptyLarDoc()), coreHash: "core", bootstrap: { daemonUrl: daemon.url, personaPlanes: [] } }),
     tempStore: () => ({}) as never,
-    ...(naming ? { systemCanon: async () => naming({ lares: lares.url, lararium: lararium.url }) } : {}),
+    // A keel that holds no canon names none, by name (the field stands required).
+    systemCanon: async () => (naming ? naming({ lares: lares.url, lararium: lararium.url }) : {}),
   } as unknown as VesselKeel;
   return { keel, lares, lararium };
 }

@@ -45,15 +45,23 @@ interface TwGlobal {
   utils: TwUtils;
 }
 
+// No `platforms` row: TW5 matches a task against `$tw.browser` / `$tw.node`, and the island's VM sandbox
+// sets neither, so a platform list would leave the registration idle on every door that matters.
 export const name        = "lararium-carrier-filetype";
-export const platforms   = ["browser", "node"];
 export const after       = ["startup"];
 export const synchronous = true;
 
+// TW5's evalGlobal hands `$tw` to module code as an injected parameter; inside the Node VM sandbox
+// `globalThis` holds no `$tw`, so the injected name answers first and the global answers where a host sets one.
+declare const $tw: TwGlobal | undefined;
+
 export function startup(): void {
-  const tw = (globalThis as { $tw?: TwGlobal }).$tw;
+  const tw = typeof $tw !== "undefined" ? $tw : (globalThis as { $tw?: TwGlobal }).$tw;
   if (!tw?.utils?.registerFileType) return;
   // `.mem` binds to the CANONICAL type; every other spelling registers with no extension, so a stored
   // record still resolves to a deserializer while the extension resolves to one name only.
   tw.utils.registerFileType(CARRIER_TYPE, "utf8", [".mem"]);
+  // A csv table carrier rests as `<name>.csv` beside its `.meta`. TW5 core registers no csv row, so the
+  // registry would hand the type no extension and the projector would write the table nameless.
+  tw.utils.registerFileType("text/csv", "utf8", [".csv"]);
 }

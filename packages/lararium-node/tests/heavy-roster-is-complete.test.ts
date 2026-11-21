@@ -34,6 +34,10 @@ const testsDir = path.dirname(fileURLToPath(import.meta.url));
 const ALLOWED_LIGHT: Record<string, string> = {
   // This reader itself only READS the source of other suites; it binds and spawns nothing.
   "tests/heavy-roster-is-complete.test.ts": "reads source text; stands no live resource",
+  "tests/worker-entry-census.test.ts": "reads worker source text and scans fixture strings that name listeners; binds and spawns nothing",
+  // `.listen(` here names the island handle's own in-memory hearing door (`handle.listen`, `port.listen`) over a fake
+  // worker object; no socket binds and no worker thread stands.
+  "tests/dyad.test.ts": "calls the island handle's in-memory `listen` door over a fake worker; binds no socket and stands no worker",
   // EXCLUDED_BY_DESIGN already keeps this suite out of BOTH `main` and `heavy` (it lives under
   // `tests/e2e/`, which `mainExclude` drops entirely) — it never runs under THIS package's split at
   // all, so the "live resource → serial project" cure this roster exists to apply has nothing to
@@ -43,6 +47,12 @@ const ALLOWED_LIGHT: Record<string, string> = {
     "already-serial-by-being-alone `vitest.e2e.config.ts` — see EXCLUDED_BY_DESIGN below.",
   "tests/e2e/fleet-join-dial.test.ts":
     "binds a real HTTP listener for the hearth's sealed sync gate, but runs ONLY under the separate " +
+    "`vitest.e2e.config.ts` (CI's `node` e2e shard) — see EXCLUDED_BY_DESIGN below.",
+  "tests/e2e/carried-nexus-posture.test.ts":
+    "binds a real HTTP listener for a carried Nexus's sealed sync gate, but runs ONLY under the separate " +
+    "`vitest.e2e.config.ts` (CI's `node` e2e shard) — see EXCLUDED_BY_DESIGN below.",
+  "tests/e2e/session-sign-two-vessels.e2e.test.ts":
+    "binds two real HTTP listeners for a herm and a lifted vessel in one process, but runs ONLY under the separate " +
     "`vitest.e2e.config.ts` (CI's `node` e2e shard) — see EXCLUDED_BY_DESIGN below.",
 };
 
@@ -87,6 +97,34 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
     "excluded from `main`, absent from `heavy` — two vessel roots through offer, request, answer, land and the " +
     "joinee's boot dial over a live sealed gate. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
     "`tests/e2e/**/*.test.ts`; tools/e2e-shards.mjs tracks `tests/e2e/*.test.ts`).",
+  "tests/e2e/nexus-rekey-full-boot.test.ts":
+    "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot that calls the registered `nexus-rekey` verb through the " +
+    "island. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/carried-nexus-posture.test.ts":
+    "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot carrying a second Nexus, a stranger seated at " +
+    "its sealed gate (test-recut-road T19/T27). Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/session-sign-two-vessels.e2e.test.ts":
+    "excluded from `main`, absent from `heavy` — a real `openNodeHerm` and a real `openNodeVessel` in one process: the herm's record " +
+    "carries no `sessionSign`, the lift's reaches its own book, and a lift refused after its keel seats no door. Runs in CI's `node` e2e " +
+    "shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/seat-settle-before-mount.test.ts":
+    "excluded from `main`, absent from `heavy` — two full `openNodeVessel` boots: the fold's own `seat-duties` ask goes out before the " +
+    "host working layer mounts and settles once it mounts; a vessel owing no raise asks nothing. Runs in CI's `node` e2e shard " +
+    "(`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/composer-mounts-working-first.test.ts":
+    "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots: the composer mounts the host working layer itself " +
+    "before any internal ask, the boot's settle reports by name with no caller mount, and no boot caller mounts it. Runs in CI's " +
+    "`node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/place-session-seals.test.ts":
+    "excluded from `main`, absent from `heavy` — two full `openNodeVessel` boots over one founded root with no dial: the face's save " +
+    "seals under its place session, reaches rest, and the restart reads it back; a third boot locks and its place signer drops. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, " +
+    "`tests/e2e/**/*.test.ts`).",
+  "tests/e2e/floor-user-wiki-refuses.test.ts":
+    "excluded from `main`, absent from `heavy` — full `openNodeVessel` boots at the floor: a user wiki waits by name while the floor " +
+    "stands on its floor wiki, and mounts after the unlock; a floor row's wiki boots. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
+  "tests/e2e/session-sign-reach.test.ts":
+    "excluded from `main`, absent from `heavy` — three full `openNodeVessel` boots (two at the floor, one sovereign): the floor's record " +
+    "carries no session sign door and answers `signer-unavailable`; the sovereign one signs. Runs in CI's `node` e2e shard (`vitest.e2e.config.ts`, `tests/e2e/**/*.test.ts`).",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {
@@ -116,7 +154,8 @@ describe("the serial heavy roster detects its own staleness", () => {
       `These suites stand a live resource and run in the PARALLEL project, which is the condition ` +
         `that produced the intermittent reds the heavy roster exists to cure. Add each to \`const heavy\` ` +
         `in vitest.config.ts, or list it in ALLOWED_LIGHT with the reason it stays parallel:\n` +
-        missing.map((m) => `  ${m.suite} — ${m.why.join(", ")}`).join("\n"),
+        missing.map((m) => `  ${m.suite} — ${m.why.join(", ")}`).join("\n") +
+        "\npono: add the file to its package vitest project, the serial roster when it stands a live resource",
     ).toEqual([]);
   });
 

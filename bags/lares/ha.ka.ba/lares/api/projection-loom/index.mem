@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem"
 l-space   = "stable"
 mana      = 15
 manao     = 15
@@ -18,9 +17,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/projection-loom/index"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/yin-living>>
+<<~ ahu slot=`#/yin-living`>>
 
 !! Current relational seam · one operational helm
 
@@ -28,7 +27,7 @@ uri-path  = "ha.ka.ba/lares/api/projection-loom/index"
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Projection Loom
 
@@ -36,7 +35,7 @@ Projection Loom grows architecture from authored CAD-solid construction rules, v
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 
 !! Solid Construction and Lineage
 
@@ -49,7 +48,7 @@ Projection Loom grows architecture from authored CAD-solid construction rules, v
 
 <<~/ahu>>
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Executable Carrier
 
@@ -59,7 +58,7 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~/ahu>>
 
-<<~ ahu #/negative-spaces-and-witnesses>>
+<<~ ahu slot=`#/negative-spaces-and-witnesses`>>
 
 !! Carved Material and Fixed Evidence
 
@@ -71,7 +70,7 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~/ahu>>
 
-<<~ ahu #/relational-emergence>>
+<<~ ahu slot=`#/relational-emergence`>>
 
 !! Relational Emergence and Pet-Names
 
@@ -85,7 +84,7 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~/ahu>>
 
-<<~ ahu #/multimodal-location>>
+<<~ ahu slot=`#/multimodal-location`>>
 
 !! One Location, Many Witnesses
 
@@ -98,13 +97,13 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~/ahu>>
 
-<<~ ahu #/procedural-helm>>
+<<~ ahu slot=`#/procedural-helm`>>
 
 This historical reading moved to [[ashes|#ashes]] within the same carrier. The original section bytes remain below verbatim. For live work use #/yin-living and the branch-current `HANDOFF.md`.
 
 <<~/ahu>>
 
-<<~ ahu #/phase-anchored-recursion>>
+<<~ ahu slot=`#/phase-anchored-recursion`>>
 
 !! Any Active Phase May Spawn a Child Inquiry
 
@@ -131,7 +130,7 @@ This historical reading moved to [[ashes|#ashes]] within the same carrier. The o
 
 <<~/ahu>>
 
-<<~ ahu #/hybrid-capability-stack>>
+<<~ ahu slot=`#/hybrid-capability-stack`>>
 
 !! Hybrid kernels and independent witnesses
 
@@ -158,7 +157,7 @@ This historical reading moved to [[ashes|#ashes]] within the same carrier. The o
 
 <<~/ahu>>
 
-<<~ ahu #/evergreen-capability-composition>>
+<<~ ahu slot=`#/evergreen-capability-composition`>>
 
 !! One Helm, Composable Capabilities
 
@@ -171,7 +170,7 @@ This historical reading moved to [[ashes|#ashes]] within the same carrier. The o
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe the subject grammar, root mass, joint tolerances, view registration, and external reference evidence
 ⏿ orient every growing child toward its named supporting parent and the one shared orthographic coordinate frame
@@ -181,7 +180,7 @@ This historical reading moved to [[ashes|#ashes]] within the same carrier. The o
 
 <<~/ahu>>
 
-<<~ ahu #/git-ashes>>
+<<~ ahu slot=`#/git-ashes`>>
 
 !! Git ledger — no recursively embedded history
 
@@ -189,7 +188,7 @@ The operator released this carrier's displaced historical ahu from the living te
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
 
@@ -204,6 +203,6 @@ The operator released this carrier's displaced historical ahu from the living te
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5eJhXf5iU3CVpO1JCAVpyl46Gh7SHBS0X7aO_M2iKLU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SrZlyDLwk1IWU--VTYOFjzWDmOsc7NLbf5J4FNsmgWo`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

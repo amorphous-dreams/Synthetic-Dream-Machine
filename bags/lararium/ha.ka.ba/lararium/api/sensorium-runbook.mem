@@ -1,31 +1,24 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/api/sensorium-runbook.mem"
 hydrate    = true
 l-space    = "lararium"
-mana       = 15
-manao      = 15
-manaoio    = 14
 namespace  = "&#x2695;"
-role       = "the TENDING rite — the sensorium's operational lifecycle, sibling to the founding rite and deliberately NOT it. Stand up · feed · read · survive catastrophe · tear down and re-sweep · know the ceiling · hand it to a stranger. The founding's cardinal sin loses a KEY; this rite's loses a BASELINE. Carries the measure-first law (one clean before/after boundary per re-pour), six catastrophe drills each with a detector, and the honest-limits section that names what a reading CANNOT claim. The two surfaces SLICE DIFFERENTLY and neither is a subset of the other: `lares sense` holds one wide door over one sensorium, while the MCP roster spans several CLI doors at once (vault_* · wiki · kapae answer at `lares vault`/`wiki`/`edge`). Alignment means naming the slicing rather than widening one to match — and a name shared is not a motion shared, so a door and its tool agree on what they WRITE. The movement runs as `lares sense pour --all`; the destroying step stays the operator's own hand. Carries the SITING LAW (#/the-planes): three words, no synonyms — lares names the SPIRITS, lararium names the HOUSE, lar names the NAMESPACE — and a sensorium holds operator history and DreamNet history, so it belongs to the HOUSE and stands at `<lararium>/sensoriums/<name>` (`larariumDataHome()` / `_lararium_data_home()`, one string in both tongues). Under LAR_ROOT every directory names an XDG KIND and the two houses nest inside the data kind, so an isolated root reads as the real disk with a different prefix. The teardown preflight names the one reach that stays INTENDED: the operator's own hand."
+role       = "the TENDING rite — the sensorium's operational lifecycle, sibling to the founding rite and deliberately NOT it. Stand up · feed · read · survive catastrophe · tear down and re-sweep · know the ceiling · hand it to a stranger. The founding's cardinal sin loses a KEY; this rite's loses a BASELINE. Carries the measure-first law (one clean before/after boundary per re-pour), six catastrophe drills each with a detector, and the honest-limits section that names what a reading CANNOT claim. The two surfaces SLICE DIFFERENTLY and neither is a subset of the other: `lares sense` holds one wide door over one sensorium, while the MCP roster spans several CLI doors at once (vault_* · wiki · kapae answer at `lares vault`/`wiki`/`edge`). Alignment means naming the slicing rather than widening one to match — and a name shared is not a motion shared, so a door and its tool agree on what they WRITE. The movement runs as `lares sense pour --all`; the destroying step stays the operator's own hand. Carries the SITING LAW (#/the-planes): one named house root (`LAR_ROOT`), and a sensorium stands at `<root>/sensoriums/<name>` (`larSensoriumsHome()` / `house_root.sensoriums_home()`, one string in both tongues); an unnamed root refuses, so a scratch root isolates a rehearsal whole. The teardown preflight names the one reach that stays INTENDED: the operator's own hand."
 status-why = "the tending rite; its verb surface stands verified against the live roster"
 tags       = ["api/pono/li-ki-integrities", "api/pono/sensorium-machina", "lararium/mesh/founding-runbook", "api/pono/causal-islands", "api/lararium/living-grammar-palace", "kind/rite"]
 title      = "lar:///ha.ka.ba/lararium/api/sensorium-runbook"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/sensorium-runbook"
-written    = "2026-08-04"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Sensorium Runbook ~ the tending rite
 
@@ -34,7 +27,7 @@ written    = "2026-08-04"
 > against this document. ''Where a run contradicts a movement here, the run wins'' and the movement gets
 > rewritten — the same self-amending law the founding rite carries.
 
-''The intake seam now carries a bounded trial.'' Frozen-source custody, scoped receipts, typed-content and semantic-view frontiers, and owned model-backed Content and li witnesses have landed; live host collection and reconciled coverage still await witnesses at <<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration#/provisional-roadmap">>. A green `pour` or an empty source scan cannot certify complete capture, and the movement below remains a proposed rite rather than a deployed drain guarantee.
+''The intake seam now carries a bounded trial.'' Frozen-source custody, scoped receipts, typed-content and semantic-view frontiers, and owned model-backed Content and li witnesses have landed; live host collection and reconciled coverage still await witnesses at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mempalace-integration#/provisional-roadmap`>>. A green `pour` or an empty source scan cannot certify complete capture, and the movement below remains a proposed rite rather than a deployed drain guarantee.
 
 The one-operator alpha trial at #/alpha-trial precedes any `pour --all`. Its bounded frozen evidence now travels as an explicit repository test fixture. The frozen Claude parent/child pair has landed `/state` intake, typed-content, owned MiniLM Content and full-constituency li receipts over 1,717 matched occurrences. The complete Liliʻuokalani digital witness has its own book ledger, 40 exact typed spans and 38 selected literary occurrences matched across owned Content and li. Both remain disposable trials; neither claims complete native history, live reconciliation or a founded memory Sensorium. The operator has now authorized backfill of all discoverable existing AI–operator conversations plus capture of new live conversations into both the owned Memory Sensorium and the independently mined guest MemPalace comparator. Each backfill batch still needs its own inventory horizon, receipts and explicit gaps; this authorization does not turn a bounded trial into a full-history witness.
 
@@ -54,7 +47,7 @@ the consecration. ''This one runs the daily offering.''
 
 <<~/ahu>>
 
-<<~ ahu #/alpha-trial>>
+<<~ ahu slot=`#/alpha-trial`>>
 
 !! The bounded alpha trial ~ inventory, freeze, probe
 
@@ -78,21 +71,21 @@ These scripts live under `packages/lararium-sensorium/scripts/`. Trial manifests
 
 <<~/ahu>>
 
-<<~ ahu #/next-enactment>>
+<<~ ahu slot=`#/next-enactment`>>
 
 !! OODA-HA ~ the two-wave enactment, with first receipts
 
 ''✶ Observe.'' The frozen Claude pair crosses custody, typed projection, owned MiniLM Content and an immutable full-constituency li basis on the same 1,717 occurrence IDs. The complete Liliʻuokalani witness crosses its separate book ledger into 40 typed spans, with 38 literary occurrences selected for owned Content and li. Duplicate text keeps distinct occurrence IDs and a separate text digest; A→B→A keeps its immutable revisions. The Form opener and FFZ root now honor the pinned MemPalace contract. Equal vector dimensions still cannot prove equal Idiom bases.
 
-''⏿ Orient.'' Keep the source BLOB as producer custody, the typed ledger as parser output, and the owned Content view as model-backed projection. Give a block an occurrence ID, source byte revision and span, parser identity, text digest and order coordinate; keep observation and current-revision selection beside it. Name a third, semantic-view frontier and its idempotent receipt rather than advancing the typed-content frontier for a Chroma write. Read the later ground-and-lattice ruling at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry">>: the proven shape→idiom chain occupies one spine, the meaning braid carries separate warrants, and ki reads through admissible apertures. `locus` may name Sensorium placement; a `lar:` address supplies no placement by itself.
+''⏿ Orient.'' Keep the source BLOB as producer custody, the typed ledger as parser output, and the owned Content view as model-backed projection. Give a block an occurrence ID, source byte revision and span, parser identity, text digest and order coordinate; keep observation and current-revision selection beside it. Name a third, semantic-view frontier and its idempotent receipt rather than advancing the typed-content frontier for a Chroma write. Read the later ground-and-lattice ruling at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry`>>: the proven shape→idiom chain occupies one spine, the meaning braid carries separate warrants, and ki reads through admissible apertures. `locus` may name Sensorium placement; a `lar:` address supplies no placement by itself.
 
 ''◇ Decide.'' Wave I keeps one immutable declared corpus per li basis. The new `trial_owned_li.py` checkpoints each parsed Shape under its parser identity, then writes the final recurrence-mined ordered Idiom forms and occurrence memberships in one SQLite commit. Its manifest binds input occurrences, parser/miner code, runtime package versions, model asset digests, parser tiers and ordered forms; a degraded parser earns only a degraded warrant. The frozen parent+child li basis and same-root Content projections now have receipts; the book source adapter now has custody, typed, owned Content and li receipts for Liliʻuokalani’s complete digital witness. Wave I still needs the meaning braid with declared/enacted/used warrants. Wave II carries ki apertures, occurrence-based recall, source-declared edges, reversible kapae, live adapters and operational repeats.
 
 ''▶ Act.'' Keep native history read-only. Run the Content projector under the product Python seat with a verified seven-asset model lock; let retries verify prior rows before returning the same receipt. Mine the declared corpus under its own li basis; never extend that basis silently when new evidence arrives. On each operational repeat, prepare model assets and grammar artifacts inside the image, then replay frozen chat evidence and the complete book through their own source adapters, retaining each bounded receipt. Carry only warranted readings forward to ki.
 
-''↺ Hoʻoko / aftermath.'' The first Content passage passed duplicate-text, A→B→A, post-Chroma crash retry and product-image cold restart witnesses. In one disposable state, the frozen parent/child pair (source revisions `c840…62a` and `c6ca…a8`) produced 1,697 + 20 MiniLM Content rows, with semantic frontier 1 per source. Both receipts name `minilm`, 384 dimensions, `CPUExecutionProvider` (`device_request=cpu`), model basis `d749c3883a9d536fa4d20b89d959bb116fcff45212cc8b51c82e420b64ff5ecc`, and view key `c3cf365290bd57f49d5964da8b5394e1b2fc5cbb0bc4a0c2e7e361faeb0cb7c1`; their semantic hashes are `8aa7f308303bd99159ba2569f0aca5f2f44450b0a1baba45abd137eb97206b2e` (parent) and `1acf51477d7438c1888ef3d36fb52cf4cdaff72da0a3da25988099f433d97118` (child). Fresh-process replay reproduced both receipts. The li passage passed immutable basis replay, duplicate occurrence joins, basis drift and both precommit and per-Shape crash witnesses on a small corpus. A three-process witness kills the parser after one Shape, completes one basis after restart and returns the same receipt on another replay. A fresh disposable replay of the frozen fixture's 20-block child landed a full-constituency li basis with 64 forms and replayed `corpus_sha256` (`c683c1870b361d2de5c8bed7dc2fa46df8da59c7dfd007a1bc6cf28e21cc0853`) and `basis_sha256` (`e1fa4fec9212e6f17e7e73480ad129bfb14e9a70d8e75f62b47b2c388bec8615`) in a new process. The subsequent ordered parent+child corpus `[1,2]` has 1,717 occurrences and corpus hash `7a51ff5037d529539e94f3d7361ffa7796b66db89a78aba0ae3c6409ceedd7ca`; its immutable basis is `a7479e74ed7d8aeccad47fbcf0dd3c8306df5faccc0286cd1966203a9acdd0d5`, with 64 forms and `full-constituency`. A fresh CUDA host process reproduced the exact receipt, including corpus and basis hashes, 1,717 occurrences, 64 forms and parser tiers. The basis manifest records CUDA, Stanza 1.14.0, Tree-sitter 0.26.0 and the English constituency assets. Its tiers were 1,638 `carrier+stanza-constituency` and 79 `carrier+no-prose`: the full warrant covers prose routed through carrier text-line hooks to Stanza; markup and sigil-only rows do not receive prose constituency. The exact set of 1,717 occurrence IDs agrees across typed projection blocks, Content vector IDs, li Shapes and li Idiom memberships; source revisions agree, and SQLite quick-check is `ok`. These are aligned Content and shape→idiom readings of the same occurrences, with separate model/basis receipts. They do not enact declared/enacted/used meaning-braid warrants, cross-plane semantic inference, KI or a founded persistent root. The book excerpt below remains a legacy static-corpus witness; the complete book custody-to-typed and owned Content/li receipts follow it. Intake, typed-content and semantic-view frontiers remain distinct; live reconciliation and the larger corpus also await their own witnesses.
+''↺ Hoʻoko / aftermath.'' The first Content passage passed duplicate-text, A→B→A, post-Chroma crash retry and product-image cold restart witnesses. In one disposable state, the frozen parent/child pair (source revisions `c840…62a` and `c6ca…a8`) produced 1,697 + 20 MiniLM Content rows, with semantic frontier 1 per source. Both receipts name `minilm`, 384 dimensions, `CPUExecutionProvider` (`device_request=cpu`), model basis `d749c3883a9d536fa4d20b89d959bb116fcff45212cc8b51c82e420b64ff5ecc`, and view key `c3cf365290bd57f49d5964da8b5394e1b2fc5cbb0bc4a0c2e7e361faeb0cb7c1`; their semantic hashes are `8aa7f308303bd99159ba2569f0aca5f2f44450b0a1baba45abd137eb97206b2e` (parent) and `1acf51477d7438c1888ef3d36fb52cf4cdaff72da0a3da25988099f433d97118` (child). Fresh-process replay reproduced both receipts. The li passage passed immutable basis replay, duplicate occurrence joins, basis drift and both precommit and per-Shape crash witnesses on a small corpus. A three-process witness kills the parser after one Shape, completes one basis after restart and returns the same receipt on another replay. A fresh disposable replay of the frozen fixture's 20-block child landed a full-constituency li basis with 64 forms and replayed `corpus_sha256` (`c683c1870b361d2de5c8bed7dc2fa46df8da59c7dfd007a1bc6cf28e21cc0853`) and `basis_sha256` (`e1fa4fec9212e6f17e7e73480ad129bfb14e9a70d8e75f62b47b2c388bec8615`) in a new process. The subsequent ordered parent+child corpus `[1,2]` has 1,717 occurrences and corpus hash `7a51ff5037d529539e94f3d7361ffa7796b66db89a78aba0ae3c6409ceedd7ca`; its immutable basis is `a7479e74ed7d8aeccad47fbcf0dd3c8306df5faccc0286cd1966203a9acdd0d5`, with 64 forms and `full-constituency`. A fresh CUDA host process reproduced the exact receipt, including corpus and basis hashes, 1,717 occurrences, 64 forms and parser tiers. The basis manifest records CUDA, Stanza 1.14.0, Tree-sitter 0.26.0 and the English constituency assets. Its tiers were 1,638 `carrier+stanza-constituency` and 79 `carrier+no-prose`: the full warrant covers prose routed through carrier text-line hooks to Stanza; markup and sigil-only rows do not receive prose constituency. The exact set of 1,717 occurrence IDs agrees across typed projection blocks, Content vector IDs, li Shapes and li Idiom memberships; source revisions agree, and SQLite quick-check is `ok`. These are aligned Content and shape→idiom readings of the same occurrences, with separate model/basis receipts. They do not enact declared/enacted/used meaning-braid warrants, cross-plane semantic inference, KI or a founded persistent root. The book excerpt below stands as a static-corpus witness; the complete book custody-to-typed and owned Content/li receipts follow it. Intake, typed-content and semantic-view frontiers remain distinct; live reconciliation and the larger corpus also await their own witnesses.
 
-An exact 5,731-byte introduction excerpt from the vessel's Liliʻuokalani source (108,812 bytes; source SHA-256 `164550ee69ac49bb9de6d50c2b0917c0854f2bb8a4f4c0a686fd2f1cfe4ca6ad`, checked against the `library:kumulipo` anchor) crossed the legacy static corpus path under stub embedder `stub-book-excerpt/1`. Its bytes occupy source range `[3206,8937)` and hash to `6552ccd45992dd8de5f66917d3dce58a1a3ecb6182a99b38955cbc642f7e0bb3`; `/tmp/sensorium-kumulipo-book/origin-manifest.json` carries the host-local bridge from the captured excerpt to the full source. Twelve rows landed with twelve declared in-file worldline edges; a fresh replay landed zero and skipped all twelve. The legacy path skipped Structure and Form for all twelve rows. This bounded reading proves neither machine-bound raw custody nor typed-content, li or owned semantic projection.
+An exact 5,731-byte introduction excerpt from the vessel's Liliʻuokalani source (108,812 bytes; source SHA-256 `164550ee69ac49bb9de6d50c2b0917c0854f2bb8a4f4c0a686fd2f1cfe4ca6ad`, checked against the `library:kumulipo` anchor) crossed the static corpus path under stub embedder `stub-book-excerpt/1`. Its bytes occupy source range `[3206,8937)` and hash to `6552ccd45992dd8de5f66917d3dce58a1a3ecb6182a99b38955cbc642f7e0bb3`; `/tmp/sensorium-kumulipo-book/origin-manifest.json` carries the host-local bridge from the captured excerpt to the full source. Twelve rows landed with twelve declared in-file worldline edges; a fresh replay landed zero and skipped all twelve. The static corpus path skips Structure and Form, so all twelve rows lack them. This bounded reading proves neither machine-bound raw custody nor typed-content, li or owned semantic projection.
 
 ''A complete book witness now crosses its own custody-to-typed seam.'' `scripts/trial_book.py` reads the portable descriptor at `book-sources/kumulipo-liliuokalani.json`, checks its length and NI against the tracked `library:kumulipo` index, verifies the native 108,812-byte witness, and freezes exact bytes in a new private root outside the repository and source tree. A separate `book-trial-v1.sqlite3` ledger takes the frozen BLOB under a stable book source key, edition and digital-witness identity; revision SHA-256 and source manifest stay explicit. An intent replay verifies retained bytes; A→B→A retains observations while reusing revision content. The `book-lines-v1` parser labels the literary `#source-text` body and carrier envelope separately, assigns stable occurrence IDs and exact UTF-8 byte spans, and advances a typed frontier only when a contiguous projection lands. Parse faults quarantine with no partial typed rows. A fresh Liliʻuokalani run landed observation 1, 40 blocks (38 `book-text`, 2 `carrier-envelope`) covering all 108,812 bytes, content SHA-256 `ce082c663197db4d099677aefe6e9a10de9ccee3ccaacbeb3f335f7aff484e99` and typed frontier 1. Fresh-process replay returned the same receipt; reconstruction matched the source SHA-256 and SQLite `quick_check` was `ok`. `read_book_occurrences` verifies stored spans and exposes the typed rows in the shared occurrence shape. The literary rows crossed owned Content and li in the next passage; this disposable trial root is not the founded Sensorium.
 
@@ -100,7 +93,7 @@ An exact 5,731-byte introduction excerpt from the vessel's Liliʻuokalani source
 
 <<~/ahu>>
 
-<<~ ahu #/gpu-capability>>
+<<~ ahu slot=`#/gpu-capability`>>
 
 !! The WSL compute cap ~ measured 2026-10-15
 
@@ -112,7 +105,7 @@ An exact 5,731-byte introduction excerpt from the vessel's Liliʻuokalani source
 
 <<~/ahu>>
 
-<<~ ahu #/the-planes>>
+<<~ ahu slot=`#/the-planes`>>
 
 !! Ⓐ Stand it up ~ sources become planes
 
@@ -122,35 +115,33 @@ broken instrument unless the operator knows which planes carry weight.
 
 !!! Where a sensorium stands ~ the house's own home
 
-''THREE WORDS, AND NONE OF THEM ARE SYNONYMS'': ''lares'' names the SPIRITS (agents, personas — their
-identity, and the vessel substrate they run on), ''lararium'' names the HOUSE (the acquired shelf, the
-sensoriums, the history), and ''lar'' names the NAMESPACE, the `lar:///…` URIs and every resolver in the
-stack. ''Every siting answers one question — whose is this?'' A sensorium holds operator history and
-DreamNet history, so it belongs to the HOUSE, and it stands in the house's home:
+''ONE NAMED HOUSE ROOT'': `LAR_ROOT` names it (the container sets `/lar`), and every house-state resolver
+lays its classes one level beneath it; an unnamed root refuses by name, with no home-directory default. The
+sensoriums stand in their own class, beside the library and outside the hearth:
 
 |! form |! the sensorium root |! resolver |
-| the operator's disk | `~/.local/share/lararium/sensoriums/<name>` | `larariumDataHome()` · `_lararium_data_home()` |
-| an isolated root (`LAR_ROOT`) | `<root>/data/lararium/sensoriums/<name>` | the same two, re-prefixed |
+| any house (`LAR_ROOT`) | `<root>/sensoriums/<name>` | `larSensoriumsHome()` · `house_root.sensoriums_home()` |
 
-Under an isolated root each directory names an XDG ''KIND'' — data, state, cache, config, run — and the two
-HOUSES nest inside the data kind exactly as they do under XDG: `<root>/data/lares` beside
-`<root>/data/lararium`. ''A house never stands where a kind belongs'', so an isolated root reads as the real
-disk with a different prefix and a rehearsal never reaches the operator's own planes. Both tongues resolve
-the same string — the TypeScript `larariumDataHome()` and the Python `_lararium_data_home()` — so a holder
-started from either side opens the same store.
+A scratch `LAR_ROOT` therefore isolates a rehearsal whole, and it never reaches the operator's own planes.
+Both tongues resolve the same string — the TypeScript `larSensoriumsHome()` and the Python
+`house_root.sensoriums_home()`, held equal by `house-root-weld.test.ts` — so a holder started from either
+side opens the same store.
 
-''What a rite re-makes decides nothing here; whose home holds a thing decides everything.''
-A sensorium stands in the house's own home, apart from the spirits' home, so no founding and no vessel rite
-reaches it. That it survives every founding reads as the ''CONSEQUENCE'' of belonging to the house, never the
-reason — and belonging makes the protection STRUCTURAL: a tier kept safe by its absence from a removal list
-stays safe until somebody widens the list by one path segment, while a tier standing in its own house leaves
-no edge to widen.
+''What a rite re-makes decides nothing here; whose home holds a thing decides everything.'' A sensorium holds
+operator history and DreamNet history, capture the machine took once and cannot take again, so it belongs to
+the HOUSE and stands in the house's own class, `<root>/sensoriums`, beside the library. A re-founding clears
+`<root>/hearth` alone, and no founding and no vessel rite reaches the sensoriums. That they survive every
+founding reads as the ''CONSEQUENCE'' of belonging to the house, never the reason, and belonging makes the
+protection STRUCTURAL: a tier kept safe by its absence from a removal list stays safe until somebody widens the
+list by one path segment, while a tier standing in its own class leaves no edge to widen.
+
+''Two types of memory, two homes.'' The sensoriums hold CAPTURED conversation memory outside projection. Authored memes rest in wiki layers; each reaches plaintext only through its layer's registered mirror. The lift-only stage and eligible working layers carry separate mirrors. The daemon working layer stays unmirrored while its control records rest there; control and secret homes carry no mirror. Neither stands in for the other.
 
 !!! What feeds what ~ four planes over four bases
 
-''Read this table off `plane_base.PLANE_BASE`, never off memory.'' The roster below records the legacy
-implementation map; it does not replace the later ground, lattice and aperture design at
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry">>. A plane absent from the
+''Read this table off `plane_base.PLANE_BASE`, never off memory.'' The roster below records the code's
+implementation map; the ground, lattice and aperture design governs beside it at
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-geometry`>>. A plane absent from the
 code map ''has no declared base, and no instrument may read it cross-plane'' — which that code enforces
 rather than requests. The next projection must prove its own bases and joins before extending this map.
 
@@ -172,8 +163,8 @@ pattern pushes forward onto strictly fewer records than exhibit it).
 ''`require_base()` refuses a restriction set that mixes bases or omits one'', so the wrong comparison
 stops type-checking rather than returning a plausible figure.
 
-<<~ set hud="yield" drift-ward="! · ⚠ · this table stood hand-written in an earlier draft, with a plane the code does not
-declare and a base it does · ↻ L-Prime">>
+<<~ set lares=`yield` drift-ward=`⚠ · this table stood hand-written in an earlier draft, with a plane the code does not
+declare and a base it does · ↻ L-Prime`>>
 
 !!! The order that matters
 
@@ -189,7 +180,7 @@ declare and a base it does · ↻ L-Prime">>
 
 <<~/ahu>>
 
-<<~ ahu #/feed>>
+<<~ ahu slot=`#/feed`>>
 
 !! Ⓑ Feed it ~ the cadence, and what starvation looks like first
 
@@ -210,7 +201,7 @@ information than a number would; a gauge that returned 0.0 against an unfed plan
 
 <<~/ahu>>
 
-<<~ ahu #/read>>
+<<~ ahu slot=`#/read`>>
 
 !! Ⓒ Read it ~ what a figure claims, and over what
 
@@ -241,7 +232,7 @@ fact about the world when it names a fact about a choice (#/capacity).
 
 <<~/ahu>>
 
-<<~ ahu #/catastrophe>>
+<<~ ahu slot=`#/catastrophe`>>
 
 !! Ⓓ Catastrophe & recovery ~ six drills, each with its detector
 
@@ -307,7 +298,7 @@ slightly off// long before it presents as a failure.
 
 <<~/ahu>>
 
-<<~ ahu #/teardown>>
+<<~ ahu slot=`#/teardown`>>
 
 !! Ⓔ Tear down & re-sweep ~ the deliberate reset
 
@@ -335,7 +326,7 @@ Run every check before the first deletion:
 # ''The old provenance kept.'' Copy the write log out before the teardown — not for recovery, but as the
   baseline the new pour gets compared against. It costs kilobytes.
 # ''The operator's hand named the store.'' `lares sense teardown`, `purge` and `rederive.py` reach into
-  `<lararium>/sensoriums` ''on purpose'' — a dev-time re-pour wants exactly that, and no guard belongs on
+  `<root>/sensoriums` ''on purpose'' — a dev-time re-pour wants exactly that, and no guard belongs on
   them. The structural protection covers the machine's rites, never the operator's own hand, so the reading
   the operator must not lose stands at #catastrophe ⑥: capture the machine took once and cannot take again.
 
@@ -364,7 +355,7 @@ skipped silently is what the single door exists to prevent.
 
 <<~/ahu>>
 
-<<~ ahu #/capacity>>
+<<~ ahu slot=`#/capacity`>>
 
 !! Ⓕ Capacity & honest limits ~ what a reading CANNOT claim
 
@@ -406,7 +397,7 @@ one common space. ''Reading it as a single scalar over one substrate mistypes th
   content-addresses its drawers, so a pour's identity can fall out of its own ground (the source set and
   their hashes, a fold over the drawer cids) with nothing declared by fiat and no network consulted.
 
-<<~ set hud="aim" drift-ward="_ · L-Prime · crossing: generation-talk, where federation vocabulary drifts local">>
+<<~ set lares=`aim` drift-ward=`crossing: generation-talk, where federation vocabulary drifts local`>>
 
 ''AND THE WORDS FOR THIS STAY LOCAL.'' A sensorium's stores ''never federate'' — content, form, structure
 and persistence each say so outright; only the meshpalace takes a feed from the network, and an operator
@@ -420,7 +411,7 @@ stores do not have, and //burn// imports the opposite of what a teardown perform
 
 <<~/ahu>>
 
-<<~ ahu #/reconstitution>>
+<<~ ahu slot=`#/reconstitution`>>
 
 !! Ⓖ Reconstitution ~ what a stranger needs to stand this cold
 
@@ -437,7 +428,7 @@ a movement of this rite rather than a later courtesy:
 
 <<~/ahu>>
 
-<<~ ahu #/surface-drift>>
+<<~ ahu slot=`#/surface-drift`>>
 
 !! The two surfaces ~ how they slice
 
@@ -481,22 +472,22 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/li-ki-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O6PBkUmAAXjromZu2i7GObhZ6Vmm6ehDLn5QKjPGEUA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JEB1aZ4z25SgU8LpMGsg2DMRCviHcWC_gg9nbbZTuec`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

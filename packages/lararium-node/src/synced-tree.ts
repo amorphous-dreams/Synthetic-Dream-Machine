@@ -21,7 +21,7 @@
  * scan + re-diff against this tree; no journal replay.
  *
  * ONE FILE PER ROW, MANY WRITERS. Every projector in the vessel shares this tree: the
- * daemon island mirrors wikis/daemon + bags/crossroads, each wiki island mirrors
+ * daemon island mirrors faces/<pet name>/{wikis/daemon,bags/daemon,bags/kahua} + bags/crossroads, each wiki island mirrors
  * its recipe's bags, and the CLI's ingest gesture records what it landed. They live in
  * separate workers and separate processes. The tree rests as a DIRECTORY, one file per
  * row, each named by its carrier and its path and written whole (a temp file in the same
@@ -46,10 +46,16 @@
  *
  * A row that reads torn, or in any shape but the one this tree writes, names no base: its
  * carrier reads as never agreed there, which converges and never corrupts.
+ *
+ * A BASE NAMES THE DOCUMENT ITS RECORDS SIDE READ (`doc`), where its writer names one. Several documents may
+ * serve one bag id over one mirror root: each face of a vessel mounts its own workbench document for an unshared
+ * wiki. The agreement a base records holds between a file and ONE document's records, so a projector that reads
+ * another document treats the file as that other document's (`disk-projector.ts`, `otherDocument`). A writer that
+ * names no document (the ingest gesture, a mirror over a store with none) leaves `doc` off the row.
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
-import { join, resolve } from "path";
+import { join, resolve, sep } from "path";
 import { randomBytes } from "crypto";
 import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
 
@@ -85,6 +91,8 @@ export interface SyncedBase {
   readonly disk: string;
   /** Whole-carrier hash of the render the records carried. */
   readonly records: string;
+  /** The document whose records the agreement read, where the writer named one. */
+  readonly doc?: string;
 }
 
 /** One row as it rests: the carrier's key beside its base. */
@@ -95,11 +103,14 @@ const filled = (v: unknown): v is string => typeof v === "string" && v !== "";
 /** A row file reads as a row only in the one shape this tree writes; any other value names no base. */
 function rowOf(value: unknown): Row | null {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
-  const { key, path, disk, records } = value as Record<string, unknown>;
-  return filled(key) && filled(path) && filled(disk) && filled(records) ? { key, base: { path, disk, records } } : null;
+  const { key, path, disk, records, doc } = value as Record<string, unknown>;
+  if (!(filled(key) && filled(path) && filled(disk) && filled(records)) || (doc !== undefined && !filled(doc))) return null;
+  return { key, base: { path, disk, records, ...(doc !== undefined ? { doc } : {}) } };
 }
 
 const stem = (s: string): string => sha256HexSync(s).slice(0, 32);
+/** The directory the kāpae shadows' rows rest in, inside the tree's own (`shadows`). No row file takes its name. */
+const SHADOW_DIR = "kapae";
 /** A row's file name: its carrier, then its path. The name never moves, so a write replaces the row whole,
  *  and every row of one carrier shares the leading stem. */
 const rowFile = (key: string, path: string): string => `${stem(key)}.${stem(path)}.json`;
@@ -157,23 +168,21 @@ export class SyncedTree {
    * ONE index key; a bare value parses as nothing and stays out of the index.
    */
   private byHash: Map<string, Set<string>> | null = null;
+  /** The keys whose base stands at each path: DERIVED like `byHash`, rebuilt on the first `uriAt` after a change. */
+  private byPath: Map<string, Set<string>> | null = null;
 
   constructor(
     /** The directory the tree rests in. Null holds the bases in memory for this instance's life and persists nothing. */
     private dirPath: string | null,
   ) {
     if (dirPath === null) return;
-    // A TREE IN AN EARLIER SHAPE NAMES NO BASE, AND SAYS SO BY NAME. A vessel founded under the single-file
-    // tree keeps that file beside this directory. Nothing reads it and nothing rewrites it: every carrier
-    // reads as never agreed, and each gate falls back to its fresh-adoption answer (an unchanged corpus pins
-    // anew and writes nothing; a real difference stands off for a person).
     // A file standing at the directory's own path leaves this tree nowhere to rest: it holds its bases in memory.
-    for (const earlier of [`${dirPath}.json`, dirPath]) {
-      let isFile = false;
-      try { isFile = statSync(earlier).isFile(); } catch { /* absent */ }
-      if (!isFile) continue;
-      console.warn(`[synced-tree] ${earlier} holds a tree in an earlier shape; it names no base here, and each carrier reads as never agreed`);
-      if (earlier === dirPath) { this.dirPath = null; return; }
+    let isFile = false;
+    try { isFile = statSync(dirPath).isFile(); } catch { /* absent */ }
+    if (isFile) {
+      console.warn(`[synced-tree] ${dirPath} stands as a file; the tree holds its bases in memory`);
+      this.dirPath = null;
+      return;
     }
     const { rows, unread } = readRows(dirPath);
     for (const row of rows) this.put(row);
@@ -189,6 +198,7 @@ export class SyncedTree {
     if (!ids) { ids = new Set(); this.byKey.set(row.key, ids); }
     ids.add(id);
     this.byHash = null;
+    this.byPath = null;
   }
 
   private drop(key: string, path: string): boolean {
@@ -198,6 +208,7 @@ export class SyncedTree {
     ids?.delete(id);
     if (ids?.size === 0) this.byKey.delete(key);
     this.byHash = null;
+    this.byPath = null;
     return true;
   }
 
@@ -224,13 +235,28 @@ export class SyncedTree {
   }
 
   /**
+   * THE REVERSE LOOKUP A BASE ROW GIVES: the one carrier whose base stands AT `file` (scoped to `bagId` where named), or null
+   * where none stands there or several carriers' bases do. A mirror file reads back under the carrier the projector last
+   * agreed at its path (`siteFileToTitle`, rule 0), so a title the projector sited by a uniquifier or a flatten reads home.
+   */
+  uriAt(file: string, bagId?: string): string | null {
+    const uris = new Set<string>();
+    for (const key of this.pathIndex().get(syncedPath(file)) ?? []) {
+      const at = this.splitKey(key);
+      if (bagId === undefined || at.bagId === bagId) uris.add(at.uri);
+    }
+    return uris.size === 1 ? uris.values().next().value ?? null : null;
+  }
+
+  /**
    * Record an agreement, and land its row before returning. `file` names the content file the
    * agreement stands at; `diskHash` names the bytes the disk holds there; `recordsHash` names the render
    * the records carry, and equals `diskHash` where the disk holds that render (a projector write, a
-   * byte-identical skip). The carrier's bases at other paths stand as they stood.
+   * byte-identical skip). `doc` names the document whose records the agreement read, where the writer holds one.
+   * The carrier's bases at other paths stand as they stood.
    */
-  set(key: string, file: string, diskHash: string, recordsHash: string = diskHash): void {
-    const row: Row = { key, base: { path: syncedPath(file), disk: diskHash, records: recordsHash } };
+  set(key: string, file: string, diskHash: string, recordsHash: string = diskHash, doc?: string): void {
+    const row: Row = { key, base: { path: syncedPath(file), disk: diskHash, records: recordsHash, ...(doc !== undefined && doc !== "" ? { doc } : {}) } };
     const before = this.map.get(rowId(key, row.base.path)) ?? null;
     this.put(row);
     if (!this.land(row)) this.takeBack(key, row.base.path, before);
@@ -311,6 +337,55 @@ export class SyncedTree {
       bucket.add(uri);
     }
     return (this.byHash = byHash);
+  }
+
+  /** The path index over the rows as they stand (it never persists). */
+  private pathIndex(): Map<string, Set<string>> {
+    if (this.byPath !== null) return this.byPath;
+    const byPath = new Map<string, Set<string>>();
+    for (const { key, base } of this.map.values()) {
+      let keys = byPath.get(base.path);
+      if (!keys) { keys = new Set(); byPath.set(base.path, keys); }
+      keys.add(key);
+    }
+    return (this.byPath = byPath);
+  }
+
+  /**
+   * THE KĀPAE SHADOWS' OWN TREE (`kapae-shadow.ts`): a shadow file names no carrier home, so its rows rest apart from the
+   * carriers' bases, in a `kapae/` directory inside this tree's own. Each row keys by the bag and the title the shadow
+   * sets aside, stands at the shadow file's path, and names the hash of the bytes the projector last wrote there (or
+   * found already standing as its own write would leave them); the projector removes the row as it lowers the shadow.
+   * So the house remembers its last write of every shadow, and `lares surface commit` stages the lowering where the
+   * disk still holds those bytes, as it stages a carrier the house agrees with. A tree held in memory keeps its shadow
+   * rows in memory too.
+   */
+  shadows(): SyncedTree {
+    return (this.shadowTree ??= new SyncedTree(this.dirPath === null ? null : join(this.dirPath, SHADOW_DIR)));
+  }
+
+  private shadowTree: SyncedTree | null = null;
+
+  /**
+   * A FOLDER MOVED WHOLE, ITS AGREEMENTS WITH IT: every base standing at or below `from` (this tree's rows and its shadows')
+   * re-stands at the same place below `to`, its two hashes and its document kept, and leaves its old path. A heal that moves a
+   * face's folders onto their shelves (`shelveFaceRoot`) calls it, so no file reads as vanished from where it stood and none as
+   * never agreed where it now stands. Answers how many rows moved.
+   */
+  movePaths(from: string, to: string): number {
+    return this.moveOwnPaths(from, to) + this.shadows().moveOwnPaths(from, to);
+  }
+
+  private moveOwnPaths(from: string, to: string): number {
+    const src = syncedPath(from), dst = syncedPath(to);
+    let moved = 0;
+    for (const { key, base } of [...this.map.values()]) {
+      if (base.path !== src && !base.path.startsWith(src + sep)) continue;
+      this.set(key, dst + base.path.slice(src.length), base.disk, base.records, base.doc);
+      this.deleteAt(key, base.path);
+      moved++;
+    }
+    return moved;
   }
 
   /** Every row the tree holds: the carrier's bag and address beside its base. */

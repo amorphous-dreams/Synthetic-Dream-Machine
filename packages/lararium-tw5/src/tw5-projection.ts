@@ -38,6 +38,7 @@ import { mountCamera, TW5_ROOT_TEMPLATE, TW5_PAGE_STYLESHEET } from "./tw5-camer
 import { optionKey, selectOptions, tw5ElementToHtml } from "./fake-dom.js";
 import { makeProjectedViewContract } from "./tw5-host-bridge.js";
 import { installLarFieldEngine, larFieldEngineOf } from "./lar-field-engine.js";
+import type { ReceiptCapability } from "./receipt.js";
 import {
   CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SERVICE_KINDS,
   LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_BYTES_MAX, mkLarControlResult, mkLarFrame, mkLarService,
@@ -99,6 +100,8 @@ const ridMap = new Map<string, RidNode>();
 
 /** One mounted story camera: the roots it paints, the ids it painted, and its epoch, senses and answers. */
 interface CameraScope {
+  readonly wiki: any;
+  readonly receipt?: ReceiptCapability;
   readonly wikiUri: string;
   readonly cameraId: string;
   readonly popupRoot: RidNode;
@@ -108,6 +111,8 @@ interface CameraScope {
   liveIds: Set<string>;
   /** Declared control ids (`data-control-id`) the last frame painted, by render id. */
   controlIds: Map<string, string>;
+  /** The tiddler each control id named in the last frame. */
+  controlTiddlers: Map<string, string | undefined>;
   mountEpoch: number;
   /** Per control id, the newest page revision the island took in. */
   readonly sensed: Map<string, number>;
@@ -131,13 +136,16 @@ export function renderIdCensus(): { nodes: number; scopes: number } {
   return { nodes: ridMap.size, scopes: eventScopes.size };
 }
 
-/** Epochs rise across every mount this worker stands, and start past the wall clock, so a page holding an
- *  epoch from a worker that restarted never matches the new one. */
-let lastEpoch = 0;
-function mintEpoch(): number {
-  lastEpoch = Math.max(lastEpoch + 1, Date.now());
-  return lastEpoch;
+/** One boot owns a random 32-bit prefix and at most 2^20 epochs. */
+export function createEpochMint(): () => number {
+  const nonce = crypto.getRandomValues(new Uint32Array(1))[0]!;
+  let counter = 0;
+  return () => {
+    if (counter >= 0xfffff) throw new RangeError("mount-epoch-exhausted");
+    return nonce * 0x100000 + ++counter;
+  };
 }
+const mintEpoch = createEpochMint();
 
 /** The island protocol's union names the two `lar:` messages once the wire integration lands; until then this
  *  one cast stands as the seam, and nowhere else. */
@@ -483,10 +491,17 @@ function scopeFor(ev: LarMsg_ControlEvent): CameraScope | undefined {
 /** The live node an act names, or undefined: a render id the camera bound, the last frame painted, and the tree still holds. */
 function resolveTarget(ev: LarMsg_ControlEvent, scope: CameraScope): RidNode | undefined {
   const renderId = ev.renderId ?? (ev.controlId !== undefined ? scope.controlIds.get(ev.controlId) : undefined);
-  if (renderId === undefined) return undefined;
-  const el = ridMap.get(renderId);
-  if (!el || eventScopes.get(renderId) !== scope || !scope.liveIds.has(renderId) || !standsAttached(el, scope.roots)) return undefined;
-  return el;
+  const el = renderId === undefined ? undefined : ridMap.get(renderId);
+  if (el && eventScopes.get(renderId!) === scope && scope.liveIds.has(renderId!) && standsAttached(el, scope.roots)) return el;
+  const control = ev.controlId;
+  if (control === undefined || !scope.controlTiddlers.has(control)) return undefined;
+  let found: RidNode | undefined;
+  const walk = (node: RidNode): void => {
+    if (node.attributes?.["data-control-id"] === control) found = node;
+    for (const child of node.children ?? []) walk(child);
+  };
+  for (const root of scope.roots) walk(root);
+  return found && found.attributes["data-tiddler"] === scope.controlTiddlers.get(control) ? found : undefined;
 }
 
 /** The event TW5's handler reads: the target, the modifiers and the key chord as of the act, and a view that refuses. */
@@ -579,7 +594,22 @@ function writeChoice(el: RidNode, keys: readonly string[]): void {
  * reaching for a blocking `confirm`, say) stops there, reads by name on the wiki's alert rail, and the act
  * still answers.
  */
-export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_ControlResult | null {
+export function dispatchLarControlEvent(ev: LarMsg_ControlEvent, door?: (result: LarMsg_ControlResult) => void): LarMsg_ControlResult | null {
+  const wiki = scopeFor(ev)?.wiki;
+  if (!wiki) return dispatchLarControlEventInner(ev, door);
+  const original = wiki.addTiddler;
+  const stamps: Map<string, unknown> = wiki.__larSurfaceWrites ??= new Map();
+  wiki.addTiddler = function(tiddler: any) {
+    const result = original.call(this, tiddler);
+    const title = tiddler?.fields?.title ?? tiddler?.title;
+    // Only a title the reaction router reads (`lar:`) takes a stamp, so every stamp meets the router that consumes it.
+    if (typeof title === "string" && title.startsWith("lar:")) stamps.set(title, wiki.getTiddler(title));
+    return result;
+  };
+  try { return dispatchLarControlEventInner(ev, door); } finally { wiki.addTiddler = original; }
+}
+
+function dispatchLarControlEventInner(ev: LarMsg_ControlEvent, door?: (result: LarMsg_ControlResult) => void): LarMsg_ControlResult | null {
   const scope = scopeFor(ev);
   const target = ev.renderId ?? ev.controlId ?? ev.affordanceId ?? "";
   const answer: Answer = (status, reason, want) => {
@@ -591,7 +621,25 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
       status, ...(reason !== undefined ? { reason } : {}), ...(want !== undefined ? { want } : {}),
     });
     if (scope && ev.mountEpoch === scope.mountEpoch) remember(scope, result);
-    if (scope) scope.post(result);
+    // A confirmed act answers once its writes rest: the result waits on the receipt capability, so a page that reads
+    // `applied` holds an edit the vessel's store keeps. A refused or closed receipt answers by name, never `applied`.
+    const resting = scope && !sense && status === "applied" ? scope.receipt?.held() ?? null : null;
+    if (scope && resting) {
+      void resting.then((rested) => {
+        if (rested) { scope.post(result); return; }
+        const unkept = mkLarControlResult({
+          eventId: ev.eventId, cameraId: ev.cameraId, mountEpoch: ev.mountEpoch,
+          ...(ev.controlId !== undefined ? { controlId: ev.controlId } : {}),
+          ...(ev.renderId !== undefined ? { renderId: ev.renderId } : {}),
+          status: "refused", reason: "receipt-refused",
+        });
+        if (ev.mountEpoch === scope.mountEpoch) remember(scope, unkept);
+        scope.post(unkept);
+      });
+    }
+    else if (scope) scope.post(result);
+    // No camera stands to carry it: the island's own door answers, so the page never waits on silence.
+    else if (door) door(result);
     else console.warn(`[wiki-worker] no camera stands to answer ${ev.eventId} (${ev.cameraId})`);
     return result;
   };
@@ -613,9 +661,9 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   }
 
   if (ev.kind === "lar:write") return answer("refused", "binding-unavailable");
-  const offered = dispatchOffer(ev, scope, answer);   // S6: files, drops, order, keys and navigate
-  if (offered !== undefined) return offered;
   const el = resolveTarget(ev, scope);
+  const offered = dispatchOffer(ev, scope, answer, el);   // S6: files, drops, order, keys and navigate
+  if (offered !== undefined) return offered;
   if (!el) return stale();
   activeEventScope = scope;
   const key = ev.controlId ?? ev.renderId!;
@@ -639,6 +687,10 @@ export function dispatchLarControlEvent(ev: LarMsg_ControlEvent): LarMsg_Control
   switch (ev.action) {
     case "lar:click": {
       if (!claims(el, "click")) return answer("refused", "unclaimed");
+      // A binding that declares `click:ordinary` cancels only the ordinary click: a modified or middle click leaves
+      // the browser's default standing (a new tab), so the island dispatches nothing for it and still answers.
+      const held = ev.modifiers;
+      if ((el as { getAttribute?(n: string): string | null }).getAttribute?.("data-lar-cancel") === "click:ordinary" && ((held?.button ?? 0) !== 0 || held?.ctrl || held?.meta)) return applied();
       const g = ev.geometry;
       if (g) {
         // TW5 Popup reads the fake node's bounding box and offset dimensions while opening a popup; these whole
@@ -896,12 +948,13 @@ export function mountProjection(ctx: IslandContext): () => void {
   let lastCss: string | undefined;
   let whole = true;
   const scope: CameraScope = {
-    wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, layerContainer, popupRoot],
-    renderIds: new Set(), liveIds: new Set(), controlIds: new Map(),
+    wiki: tw.wiki, wikiUri: ctx.wikiUri, cameraId: LAR_CAMERA_STORY, popupRoot, roots: [storyContainer, layerContainer, popupRoot],
+    renderIds: new Set(), liveIds: new Set(), controlIds: new Map(), controlTiddlers: new Map(),
     mountEpoch: mintEpoch(), sensed: new Map(), answers: new Map(), services: new Set(LAR_SURFACE_DEFAULT_SERVICES),
+    ...(ctx.receipt ? { receipt: ctx.receipt } : {}),
     post: (msg) => postLar(ctx, msg),
     mark: () => gate.mark(),
-    // A new epoch: every act the page made under the old one now answers stale-target, the old answers leave
+    // A new epoch: every act the page made under the prior one answers stale-target, its answers leave
     // with it, and the next frame carries every key whole. The sensed revisions stay: the page still holds them.
     resend: (manifest) => {
       scope.mountEpoch = mintEpoch(); scope.answers.clear(); whole = true;
@@ -976,13 +1029,17 @@ export function mountProjection(ctx: IslandContext): () => void {
       const html = tw5ElementToHtml(storyContainer) + (layer === "" ? "" : `<div class="lar-root-layer">${layer}</div>`);
       scope.liveIds = new Set();
       scope.controlIds = new Map();
+      scope.controlTiddlers = new Map();
       for (const [tag] of html.matchAll(/<[a-zA-Z][^>]*\bdata-lar-rid="[^"]+"[^>]*>/g)) {
         const rid = /\bdata-lar-rid="([^"]+)"/.exec(tag)![1]!;
         scope.liveIds.add(rid);
         const control = /\bdata-control-id="([^"]+)"/.exec(tag)?.[1];
-        if (control !== undefined) scope.controlIds.set(control, rid);
+        if (control !== undefined) {
+          scope.controlIds.set(control, rid);
+          scope.controlTiddlers.set(control, ridMap.get(rid)?.attributes["data-tiddler"]);
+        }
       }
-      // A node the frame no longer paints never receives an event again: the page relays by the ids the
+      // A node the frame stops painting never receives an event again: the page relays by the ids the
       // frame carries, and a detached node answers `stale-target` whatever it holds. Its map entries leave
       // with the frame, so the maps hold the painted nodes and the roots, never every node ever bound.
       for (const renderId of scope.renderIds) {
@@ -1205,7 +1262,7 @@ function chordDeclared(tw: Record<string, any>, stamp: string, event: Record<str
  * The S6 crossings, ahead of the target resolution `dispatchLarControlEvent` makes: an answer for an act this
  * section owns, or undefined to let the event take its ordinary road.
  */
-function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (status: LarResultStatus, reason?: LarRefusal) => LarMsg_ControlResult): LarMsg_ControlResult | undefined {
+function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (status: LarResultStatus, reason?: LarRefusal) => LarMsg_ControlResult, el: RidNode | undefined): LarMsg_ControlResult | undefined {
   const state = offerStates.get(scope);
   if (!state || ev.kind !== "lar:act") return undefined;
   const { tw } = state;
@@ -1260,7 +1317,6 @@ function dispatchOffer(ev: LarMsg_ControlEvent, scope: CameraScope, answer: (sta
     return answer("applied");
   }
 
-  const el = resolveTarget(ev, scope);
   if (!el) return undefined;
   const type = ev.action === "lar:event" ? ev.eventType : DOM_TYPE[ev.action] ?? (/^lar:(pointer|mouse|touch|wheel|scroll)/.test(ev.action) ? ev.action.slice(4) : undefined);
   if (ev.action === "lar:event" && !type) return answer("refused", "unsupported-control");

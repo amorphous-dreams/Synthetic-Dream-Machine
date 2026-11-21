@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/two-way-interaction-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/two-way-interaction-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/two-way-interaction-scout.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 13
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "two-way-interaction-scout — VERBATIM handoff of a tasked Fable spirit (2026-10-16): how the DreamDOM superset keeps the full two-way interaction between a person at a surface and the wiki. Carries the inventory of every TiddlyWiki interaction by widget, message and layer with its owner, up-leg and down-leg per width and host; the up-leg contract (wiki:control-event, declared-at-mount stamps, reliable acts against droppable senses, wake on act, two surfaces on one actor); the silent-loss risks with their fixes or refusals; interaction goldens with fourteen scripts; the ten-surface two-way table; Mu, two stories, spikes and open rulings. Held as a collision surface; dreamdom carries the house's reading of it."
@@ -21,19 +17,19 @@ uri-path          = "ha.ka.ba/lares/docs/pono/two-way-interaction-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! two-way-interaction-scout ~ a spirit's handoff, held unedited
 
 ''Register: Testimony-Verbatim.'' Nothing below makes this house's own claim. It holds what tasked spirits reported on how the DreamDOM superset keeps two-way interaction whole across every width and every surface, kept whole, as a ''collision surface'' rather than a briefing. It came home from the project's shared reports so a session that holds only the repository can still read the evidence the DreamDOM carriers cite.
 
-''Where the house's reading lives.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">> carries the model and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">> the build order; where they and this handoff differ, they carry the house's word.
+''Where the house's reading lives.'' <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> carries the model and <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> the build order; where they and this handoff differ, they carry the house's word.
 
 ''Read it against us, not for us.'' Every source line names how the spirit reached it (fetched, search passage, code, or unreached); inferred claims stand marked. Collide it; do not inherit it.
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -60,7 +56,7 @@ Lares (Artificer) · Fable, tasked spirit · 2026-10-16. Research pass for the o
 
 5. **The UP-leg contract** (§3) extends `page-controls.mem#/the-wire` and `session-contract.mem#/the-holder-protocol` with: a `kind` taxonomy (`act` / `sense` / `write` / `service`), a declared-at-mount cancellation and crossing set per binding (`data-lar-on`, `data-lar-cancel`, `data-lar-keys`), as-of-act geometry on the event, reliable versus droppable classes, idempotence by `eventId` within a mount epoch, wake-on-act for sleeping actors with a parked act and a visible "waking" state, a refusal (never a spawn) for recipe wikis until the person opens them, and presence/echo rules for two surfaces on one actor.
 
-6. **Conformance gains a third family beside `filter-cts` and the camera goldens: interaction goldens.** A script of acts over a frozen world; the expected writes (records with fields), the expected messages (`tm-*` dispatched at the root), the expected answers (`applied`/`stale-target`/refusal by name) and the next keyed frame per camera. Fourteen scripts cover the roster (§5). Every DreamDOM member publishes a row, and a surface with no road for a script publishes the refusal it shows.
+6. **Conformance gains a third family beside `filter-cts` and the camera goldens: interaction goldens.** A script of acts over a frozen world; the expected writes (records with fields), the expected messages (`tm-*` dispatched at the root), the expected answers (`applied`/`stale-target`/refusal by name) and the next keyed frame per camera. Fourteen scripts cover the roster (§5). Every DreamDOM member publishes a result, and a surface with no road for a script publishes the refusal it shows.
 
 7. **Open rulings** (§9): whether a sleeping actor wakes on an act or on a frame request; whether the browser DOM sink keeps the stock edit template over `lar-field` or ships a house edit template; which root `tm-*` services become host-service requests and which refuse; whether `$eventcatcher`/`$keyboard` stay REFUSED at width none or earn a declared-keys binding; the presence lane's home; and the per-surface default width.
 
@@ -98,7 +94,7 @@ Lares (Artificer) · Fable, tasked spirit · 2026-10-16. Research pass for the o
 | `$radio` (sets `.checked` property on refresh, `radio.js:45,129`; property never serialises) | E+P | event `choice` with the whole key | frame must carry `checked` as an attribute (engine override or serializer rule) | stock | **today never paints the selection**; fix: wikitext override emitting `checked` attribute, or the serializer promotes `checked`/`selected` properties to attributes | M/C: `kind:select` |
 | `$select` single/multi (`child.children[y].selected` property; `getSelectValues` reads `options`) | E+P | event `choice` with the whole key set | frame carries `selected` per option as attribute; page veto on the focused select | stock | **today snaps back to the first option; multi throws (`options` missing)** | M/C: `kind:select`, keys |
 | Tag picker (`tag-picker.tid`: `keyboard-driven-input`, popup `$:/state/popup/tags-auto-complete`, `tm-focus-selector`, `$button popup`) | E+P | sense (the input), events (Enter/Up/Down/Escape through `$keyboard`), click on a tag button | frame: the popup list as wiki state; page places it | stock | `lar-picker` over the popup; declared keys `input-accept`, `input-up/down`, `input-cancel` on the binding; **today Enter never crosses** (gap #8) | M: a Lua completer *(inferred)*; C: a tool with enum |
-| Drafts: `th-editing-tiddler`, draft-of, autosave (`render.js` 400 ms throttle on the glass; `HandGate` in the worker) | E | write (full/skinny) or events (none) | echo under origin stamp; `causedBy: [txId]` | stock draft logic; peer write into an open draft shows the newer-base prompt *(inferred, v2 §6)* | the engine owns the draft; a peer write into the open editor must reach the page as a descriptor and the page must ask (LiveView rule: never overwrite the focused field) | M/C: edit-conflict refusal by name |
+| Drafts: `th-editing-tiddler`, draft-of, autosave (`render.js` 400 ms throttle on the glass; the HandGate in the worker at scouting, since retired for the Drain) | E | write (full/skinny) or events (none) | echo under origin stamp; `causedBy: [txId]` | stock draft logic; peer write into an open draft shows the newer-base prompt *(inferred, v2 §6)* | the engine owns the draft; a peer write into the open editor must reach the page as a descriptor and the page must ask (LiveView rule: never overwrite the focused field) | M/C: edit-conflict refusal by name |
 
 ### 2.3 Files, drops and drags
 
@@ -481,13 +477,13 @@ Each row names a (root template, document sink) over the one engine. **Capabilit
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m0FcfzRFkoAP_U4E4JG5QB_4Pk7aiLEcpasODCa449k
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rqJMaqa0FkdygHQ5W3mYB7U9_OJYvRDnZ8E0Q6MQ6yk`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

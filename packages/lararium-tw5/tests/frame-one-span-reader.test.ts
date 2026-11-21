@@ -40,9 +40,9 @@ const TEACHING = [
   "A frame reads like this:",
   "",
   "```",
-  '<<^ code="&#x0002;">>',
+  '<<^ code=`&#x0002;`>>',
   "example body",
-  '<<^ code="&#x0003;">>',
+  '<<^ code=`&#x0003;`>>',
   "```",
   "",
   FIXTURE,
@@ -54,7 +54,7 @@ describe("★ one span reader — the teaching document ★", () => {
     expect(st.kind).toBe("framed");
     if (st.kind !== "framed") return;
     const span = TEACHING.slice(st.start, st.end);
-    expect(span.startsWith('<<^ code="&#x0002;">>\n\n```toml meta')).toBe(true);
+    expect(span.startsWith('<<^ code=`&#x0002;`>>\n\n```toml meta')).toBe(true);
     expect(span).not.toContain("example body");
   });
 
@@ -74,7 +74,7 @@ describe("★ one span reader — the teaching document ★", () => {
 });
 
 describe("★ one span reader — a second live ETX is a fault, never a silent choice ★", () => {
-  const stray = mintedWith('<<^ code="&#x0003;">>\n\nAFTER-STRAY prose');
+  const stray = mintedWith('<<^ code=`&#x0003;`>>\n\nAFTER-STRAY prose');
 
   test("the reader names the second ETX", () => {
     const st = frameStanding(stray);
@@ -82,7 +82,7 @@ describe("★ one span reader — a second live ETX is a fault, never a silent c
     if (st.kind !== "framed") return;
     expect(st.faults.map((f) => f.kind)).toEqual(["second-etx"]);
     // THE CANON'S SPAN: first STX through the FIRST ETX after it.
-    expect(stray.slice(st.start, st.end).endsWith('<<^ code="&#x0003;">>')).toBe(true);
+    expect(stray.slice(st.start, st.end).endsWith('<<^ code=`&#x0003;`>>')).toBe(true);
     expect(stray.slice(st.end)).toMatch(/^\n\nAFTER-STRAY prose/);
   });
 

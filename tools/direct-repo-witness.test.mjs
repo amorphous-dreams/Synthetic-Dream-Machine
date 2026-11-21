@@ -113,8 +113,8 @@ await test("a commented-out `new Repo(` (a docblock explaining the law) never co
   await withFixture({
     "commands/docs-only.ts": `
 /**
- * This door used to write \`const repo = new Repo({ storage })\` directly — retired; it now takes the
- * held Repo as a dependency instead, per the one-holder law.
+ * This door takes the held Repo as a dependency and never writes
+ * \`const repo = new Repo({ storage })\` itself, per the one-holder law.
  */
 export function runDocsOnly() { return null; }
 `,

@@ -119,16 +119,11 @@ describe("opening a dwelling opens a DOOR and deposits no standing", () => {
     expect(opened).toBeUndefined();      // nothing hands back — no receipt, no rank, no standing
   });
 
-  test("★ NO closing pair exists — the module exports no eviction, and a later hand may not add one quietly ★", async () => {
-    // A realm holds no container a party could be put out of, so no eviction reaches one. A hostile hand
-    // shadows the RELATION (`edge-kapae`); wholesale escape runs by fork (exclude-by-omission).
+  test("the ceremony exports its live doors", async () => {
     const surface = Object.keys(ceremony).sort();
     expect(surface).toEqual([
       "cabalRealmLiveness", "dwellersHolding", "foundCabalRealm", "foundCabalRealmWithGlamour", "openDwelling",
     ]);
-    for (const gone of ["evictMember", "evictDweller", "closeDwelling", "removeMember", "cabalRealmRoster"]) {
-      expect(surface).not.toContain(gone);
-    }
   });
 });
 

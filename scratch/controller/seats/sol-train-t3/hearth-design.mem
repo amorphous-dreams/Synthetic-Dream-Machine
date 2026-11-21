@@ -1,0 +1,104 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/hearth-design`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-t3/hearth-design.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/hearth-design"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/hearth-design"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! hearth-design.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-t3/hearth-design.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-t3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-hearth-design-hearth-wright-2026-10-31`>>
+
+! Lane hearth, design (stride L: L1, L2, L5) &#45;- Hearth-Wright, 2026-10-31
+Head a39b1f5df, worktree built (pnpm build exit 0; `.pronaos-build/pronaos-artifact.json` and `packages/lararium-web/dist` stand). Nothing founded, nothing booted. No red written.
+Loops: LANE = design (this sheet) -> red -> cure -> walk -> push [at: design, hand-back]. SLICE = one red/cure pair per row. STEP = each probe/edit.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/measured-first`>>
+
+!! Measured first (Road-Wright's open item)
+The container entry does NOT go through `stand`. `docker-compose.yml:109-114,139-141` hands `node main.js` the three envs explicitly (LAR_PRONAOS_WEB_ROOT=/app/packages/lararium-web/dist, LAR_PRONAOS_ARTIFACT_RECORD=/app/pronaos-build/pronaos-artifact.json, LAR_SAME_ORIGIN=true); `tools/pronaos-runtime-wiring.mjs` witnesses them. `stand.ts:254` spawns `node dist/src/main.js --port --root` with `env: {...process.env, LAR_CAS}` and names none. So the ONE composition is `composePronaosFromEnv` (node main.ts:291); the two NAMERS of its inputs are the compose file (image paths) and `stand` (desk paths). One composition, two namers; no code shares between them and none needs to. Nothing in the container path changes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/container-path-measured-by-reading-no-image-buil`>>
+
+!! Container path (coordinator's addendum: the container is the PREFERRED path; bare stand = dev path) &#45;- measured by reading, no image built, no container run
+* `docker-compose.surface.yml` DOES declare the page: lines 165-169 of the `lares` service carry LAR_SAME_ORIGIN "true", LAR_PRONAOS_WEB_ROOT=/app/packages/lararium-web/dist, LAR_PRONAOS_ARTIFACT_RECORD=/app/pronaos-build/pronaos-artifact.json (the herm service, line 206, declares only same-origin: by law it composes no page). A grep for the names without their indentation misses them. The `serve` stage copies the dist and the record (Dockerfile ~120-130). So the container serves `/` today by read; a run would add only the live 200. I run none unless the controller wants the live proof.
+* `serve` bakes `LAR_GENESIS=/app/genesis` (Dockerfile:156, compose:145) and the CMD passes `--genesis /app/genesis`: L5 is ALREADY cured inside the container. L5's red is the bare path only; the container needs no change and the resolver's explicit-wins rule keeps it so (control).
+* Gap found: `tools/pronaos-runtime-wiring.mjs` witnesses `docker-compose.yml` (qa/prod) and not `docker-compose.surface.yml`, the preferred path. A surface-compose witness row is cheap (same assertion over the `lares` block) and belongs in this lane if the controller rules yes (S3).
+* One composition: `composePronaosFromEnv` is the single seat. The container names its inputs in compose (image paths), the bare stand names them via `--page` (desk paths), and both reach the same verifier. The derivation function carries no image path knowledge; the compose file carries no desk path knowledge.
+* L3 option (named, NOT built here): the image's `mcp-runtime` stage is the Node stdio `lararium-mcp`, not the Python `lares_mcp.py` seat; it pins nothing for the `mcp` 2.3.0 mismatch. The `serve` stage already carries python3 with a build-time import probe of `mcp.server.mcpserver` (Dockerfile ~93-102) and shares the daemon's /tmp UDS, so the pinned runtime for the seat is `docker compose exec lares python3 <lares_mcp.py>` inside `serve`, binding LAR_ROOT=/state by the image's own env. L3 should weigh that against a venv probe.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/l1-the-stand-serves-the-page`>>
+
+!! L1 &#45;- the stand serves the page (bare/dev path; the container already serves)
+Authority inputs
+| input | source | what proves it | where the law lives | fails closed |
+| web root dir | `<repoRoot>/packages/lararium-web/dist` named by stand under `--page` | `buildPronaosProjection` hashes each routed file against the record | pronaos-projection (verifier), not stand | digest mismatch or missing file throws at boot (existing) |
+| artifact record | `<repoRoot>/.pronaos-build/pronaos-artifact.json` | `validatePronaosArtifactRecord` in composePronaosFromEnv | pronaos-composition + mesh/pronaos.ts | torn record throws at boot (existing) |
+| same-origin declaration | `LAR_SAME_ORIGIN` env, else `origins.sameOrigin` config | `originCompositionForFace` (refuses it beside separate Web/flow origins) | lan-address.ts | undeclared -> boot refuses (existing); declared beside web/flow origin -> refuses (existing) |
+| pre-set LAR_PRONAOS_* | operator env | parsePronaosCompositionConfig (both-or-neither) | composition | stand NEVER overwrites a set value |
+Cure shape: a pure `derivePronaosDeskInputs(repoRoot, existsFn)` exported from lararium-node returns `{webRoot, record}` only when BOTH stand (dir + record file), else null. `stand --page` (a) derives it, (b) sets child env LAR_PRONAOS_* only where unset, (c) sets LAR_SAME_ORIGIN=true only where the env leaves it undeclared. With no built web the stand proceeds, prints one named note, the node's NO PRONAOS SHORE notice stays (the control). Without `--page`, stand is byte-identical to today (session hooks that auto-stand are untouched). Stand holds no digest/trust law; it only names paths, the verifier checks bytes.
+Red: scratch LAR_ROOT, stand &#45;-page, GET / -> 200 text/html (today 404). Control A: no built web -> notice. Control B: no `--page` -> 404 as today. Control C: pre-set LAR_PRONAOS_WEB_ROOT wins. Unit red: derive() null on half a pair.
+Isomorphic law: the derivation names inputs by capability (a prepared web root + its receipt), never by host; the container keeps naming its own.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/l2-the-page-dials-its-own-origin`>>
+
+!! L2 &#45;- the page dials its own origin
+Authority input: the relay URL the page dials. Source today: `?relay=` only. New source: "this origin answers as a lararium's Pronaos". Proof: a same-origin GET `/.well-known/lar` returning JSON with `format === "lar-arrival"` (the descriptor, ARRIVAL_FORMAT in pronaos-adapter.ts), NOT the host, port or protocol. Law lives in one pure function in live-status.ts, `arrivalRelayUrl(location, fetch)` -> `sameOriginRelayUrl(location)` or undefined; main.ts calls it only when `?relay=` is absent. Fails closed to today's local boot: file:/ non-http(s) (no fetch made), network error, non-200, non-JSON, any other format. A Vite dev server SPA-falls-back `/.well-known/lar` to index.html at 200: the format check, not the status, refuses it (control). The dial carries no floor/anchor weight: it is transport; the fleet-join acts and passphrase slot stay the operator's hand. `?relay=` explicit always wins. No timer decides (clockless law): the fetch answers or fails on the origin's own account.
+Red: fake-fetch unit: descriptor 200 -> ws(s):&#47;/host/ws; today undefined. Controls: Vite HTML 200, file:, throw, wrong format -> undefined; explicit ?relay= unchanged. Browser walk rides L4 (not mine).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/l5-cold-start-reaches-the-genesis-seed`>>
+
+!! L5 &#45;- cold start reaches the genesis seed
+Authority input: the genesis dir (seed.json + cas/), whose CID is a founding input and whose manifest is the CAS sweep's PROTECT SET (genesis-artifact.ts genesisProtectSet: an empty set means delete). Three resolvers today read it, each its own way: CLI `larGenesisDir()` (env.ts:96), node `daemonGenesisDir()` (lares-config.ts:189), node main `parseArgs` (main.ts:117, uses &#45;-root). They must not diverge: a divergence is a sweep that deletes a seed one reader never saw.
+Cure shape: ONE resolver in lararium-node, `resolveGenesisDir({explicit, configured, corpusRoot, shippedRoot})`, and all three call it. Order: explicit (`--genesis` / `LAR_GENESIS`) wins and NEVER falls back (a bad explicit stays a bad explicit); then config `resources.genesis` likewise; else `<corpusRoot>/genesis` when it holds `seed.json`; else (seed.json ABSENT, not torn) the shipped `<repoRoot>/genesis` when it holds one; else the root path as today (failing as today). A torn root seed does not fall back: it stays "unreadable" and refuses. Read-only: nothing writes the shipped dir (grep: no writer of genesisDir in src). The founding output names which dir it used.
+Red: fresh scratch root, no genesis/, founding path resolves to the shipped dir (today: `<root>/genesis`, absent). Controls: explicit LAR_GENESIS wins; a root holding seed.json wins; a torn root seed does not fall back; node and CLI resolvers agree on one table of cases (the divergence control).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-each-talked-out-two-rounds`>>
+
+!! Forks, each talked out two rounds (Lares/Council vs Ink-Clerk/Stranger, YIN/YANG)
+* F-a L2 probe vs host sniff vs a node-injected marker. Rung 1 canon: capability not host -> sniff dies. Injected marker changes served bytes, breaking the receipt digest -> dies. Probe holds; round 2 (Vite SPA fallback, hung fetch) answered by the format check and the clockless law. SETTLED (no survivor).
+* F-b L5 stager copying genesis vs resolver fallback. Stager writes bytes into a root nobody asked and leaves two copies to drift; resolver reads in place, one table. Round 2 (sweep protect set) forces ALL THREE readers through one resolver. SETTLED as above.
+* F-c L1 stand derives only under a flag, or whenever same-origin is declared and the pair stands. SURVIVES both rounds (below, S1).
+* F-d L5 trust-root shift. SURVIVES (below, S2).
+* F-e surface-compose witness row (S3), see Container path.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/survivors-for-the-controller`>>
+
+!! Survivors for the controller
+S1 (L1 shape). Options: (a) `stand --page` flag declares same-origin where undeclared AND derives the pair where both stand; (b) no new flag: derive the pair whenever same-origin is already declared (env or config) and the pair stands; (c) always derive when the pair stands. Lean (a): explicit act, hook auto-stands stay byte-identical, one flag. (b) keeps the declaration law purest but leaves the walk's env export; (c) widens route ownership on every stand, against the declared-shore law.
+S2 (L5). The fallback makes a rooted vessel's genesis source (and so its seed CID and sweep protect set) follow the build when the root holds no seed. All three readers go through one resolver; torn never falls back. Question: must the founding also pin the source's seed CID so a later boot on a shifted build refuses, or does the existing kindle/seed-CID check already carry it? Lean: measure the kindle check first in the red phase; add no new pin unless it reads silent. This touches identity bytes, so it routes to you.
+S3 (scope). Add the surface-compose wiring witness in this lane? Lean yes, one small row beside L1, because the container is the preferred path and nothing witnesses it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2bhmtYws1TogLLkm4QAYlDGixNgxtBQTponL2t4LfgU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

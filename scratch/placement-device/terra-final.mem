@@ -1,0 +1,59 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-device/terra-final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-09 (file date) — source `.lares-scratch/placement-device/terra-final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-device/terra-final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-device/terra-final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! terra-final.md — hand-back, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-device/terra-final.md` (hand-back, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-device/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:human@hearth/device.scope.requests` to=`lar://device-wright:agent@hearth/device.scope.reports` ooda-ha=`2/declare-aftermath` drift-ward=`the full node and browser suites report failures outside the focused placement checks`>>
+
+Device-Wright: Lares (Tasked Spirit): Implemented the vessel-scoped daemon canon pointer and slots. The focused tests pass, but the full node and browser suites do not pass.
+
+The control document now names canon documents under `bags/control/daemon-canon/<encoded-face-relation>` and daemon slots under `bags/control/daemon-slot/<kind>/<encoded-persona-group>`. The slot resolver returns vessel-only reach for the daemon and retains the existing path for user wikis. Surface resolution accepts a recipe carrying `canonBag`. The promote candidate reader still uses `wikiBagUri`: it receives a slug and catalog, with no recipe in hand.
+
+Changed files:
+
+* Node and browser: `face-daemon-canon.ts`, `open-*-vessel.ts`, and their canon tests.
+* Keyhive: `slot-doc-resolver.ts`, `operator-daemon-behavior.ts`, and the resolver and working-attachment tests.
+* Mesh: `surface-recipe.ts`, `wiki-recipe.ts`, and `surface-mount.test.ts`.
+* Node: `faced-boot-requires-proof.test.ts`, whose fixed source window needed expansion after the browser call grew.
+
+Validation:
+
+* Builds and stamps completed for mesh, keyhive, TW5, node, and browser; all five typechecks passed.
+* Focused tests passed: mesh surface ''30/30'', keyhive resolver ''9/9'', keyhive working attachment ''7/7'', node canon ''7/7'', browser canon ''4/4'', and node face-proof source check ''10/10''.
+* Full keyhive suite: ''561 passed'' across 97 files.
+* Full node suite: ''3,261 passed, 204 failed, 51 skipped, 3 expected failures''. Of the failures, 178 reported `secret-home-unavailable`, 13 hit the read-only filesystem, 2 timed out, and 11 reported other causes. One of those 11 was the source-window test corrected and passed afterward; the remaining full-suite failures have not been resolved.
+* Full browser suite: ''517 passed, 19 failed, 10 skipped, 1 expected failure''. All 19 failures reported `secret-home-unavailable`.
+* `evergreen-boundary.mjs`, `placement-residency-witness.sh`, and `git diff --check` passed.
+
+The requested red-first sequence did not happen: implementation edits preceded the new tests.
+
+->↺ The focused placement checks landed; the full-suite failures remain visible for their respective seats.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`inspect the full node failure log and rerun the affected cases after their fixtures and environment are available · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://device-wright:agent@hearth/device.scope.reports` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2HPvhhAGVn2LfGYMMwFt8IUwqNlpkbTTnEKEVFHLZYo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

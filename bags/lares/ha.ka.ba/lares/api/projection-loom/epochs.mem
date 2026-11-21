@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/epochs">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/epochs`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/epochs.mem"
 namespace = "&#x0950; &#x0901;"
-title = "lar:///ha.ka.ba/lares/api/projection-loom/epochs"
-uri-path = "ha.ka.ba/lares/api/projection-loom/epochs"
-type = "text/memetic-wikitext+tiddlywiki"
-role = "bounded evolutionary method orchestration and aftermath"
-tags = ["api/pono/meme", "projection-loom", "ooda-ha"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/epochs"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/epochs"
+type      = "text/memetic-wikitext+tiddlywiki"
+role      = "bounded evolutionary method orchestration and aftermath"
+tags      = ["api/pono/meme", "projection-loom", "ooda-ha"]
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! A Wide Epoch Weaves Several Inner Methods
 
@@ -26,7 +25,7 @@ evaluator may fail without making its candidate physically invalid.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe preserved source hashes, location evidence and unresolved geometry
 ⏿ orient candidate generators to their proper variables, frames and validity guards
@@ -36,7 +35,7 @@ evaluator may fail without making its candidate physically invalid.
 
 <<~/ahu>>
 
-<<~ ahu #/aftermaths>>
+<<~ ahu slot=`#/aftermaths`>>
 
 !! Three Widening Evergreen Apertures
 
@@ -48,7 +47,7 @@ The three loops record consequences, not a ceremonial claim of certainty.
 
 <<~/ahu>>
 
-<<~ ahu #/encoding-identity>>
+<<~ ahu slot=`#/encoding-identity`>>
 
 !! Canonical bytes do not imply common authority
 
@@ -70,12 +69,12 @@ silent normalization during a refactor.
 
 <<~/ahu>>
 
-<<~ ahu #/links>>
+<<~ ahu slot=`#/links`>>
 
 The active epoch/phase behavior is witnessed by `projection_loom/fractal_ooda_ha.py`, `phase_rules.py` and current tests; the former research notes survive in the pre-burn Git archive. The machine enacts the five phases as a guarded nested runtime controller; developer aftermaths still review our work, not a simulated CAD feature.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;olpsxKZf0WS4nw7OnDUrN12HhtvUFwhqnJee56-OILU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;etvcYgvt-HnchxBBZPbMBx6BMerVXVOpji5wuRaIt74`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

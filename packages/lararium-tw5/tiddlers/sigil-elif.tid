@@ -4,10 +4,10 @@ lar-kind: control
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kahawai
 lar-mirror-of: kahawai
 lar-see-also: kahawai
-lar-pattern: <<~\s*elif\s+([^\n>]+?)\s*>>
-lar-example: <<~ elif "[<x>match[2]]">>
+lar-pattern: <<~\s*elif\s+filter=`([^`]*)`(?:\s+sigil=`[^`]*`)?\s*>>
+lar-example: <<~ elif filter=`[<x>match[2]]`>>
 type: text/vnd.tiddlywiki
 
-\procedure ~elif(p1:"" p2:"")
-<%if [<p1>]%><$transclude $variable="~" name=<<p2>>/><%endif%>
+\procedure ~elif(filter:"" sigil:"")
+<%if [<filter>]%><$transclude $variable="~" name=<<sigil>>/><%endif%>
 \end

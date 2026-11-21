@@ -1,0 +1,106 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-a/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-a/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — hand-back, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-a/out2.md` (hand-back, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-a-wave-2-handback`>>
+
+! Seat A, wave 2 handback
+
+Read-only review. Paths start at `/home/joshu/Synthetic-Dream-Machine`. `[wave-d]` means `origin/feature/green-jello-dinosaur-5--k15-wave-d`. No suite or repo edit ran.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/twin-findings-verdicts`>>
+
+!! (a) Twin findings: verdicts
+
+| IDs | Verdict | Evidence and correction |h
+| L1–L3, F1, S5, Y3 | CONFIRMED, with a narrow burn | The browser deletes retired stores and `fleet-join` secret rows in `packages/lararium-browser/src/browser-vessel-identity.ts:94-129`. BC28/BC31 plant those schemas at `packages/lararium-browser/tests/browser-custody.test.ts:908-955`. Keep the numeric open version and creation of present stores at `browser-vessel-identity.ts:53,93,97-121`; the API and standing databases need them. |
+| L4 [wave-d] | CONFIRMED | Both old topology and old hostful type sit only in docblocks at `packages/lararium-mesh/src/resolver.ts:8-16,60-64`; the current interface extends `LarResolution` at `:68-69`. |
+| L5–L7, S6 | CONFIRMED for historical prose; LIVE-LAW for their checks | `tools/doctype.mjs:22-25,76-83` still checks the current declaration and adjacency. `tools/direct-repo-witness.sh:13-22` and `tools/rendezvous-parity-witness.sh:8-11` recount incidents. `bags/lararium/ha.ka.ba/lararium/mesh/island-protocol.mem:33-34,42` names retired messages and dictionary. |
+| L8, L10 | LIVE-LAW pending consumer proof | `bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem:219` promises `x-` read aliases; provenance needs inspection. `bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:43` proposes a shim but no runtime shim follows from that line alone. Burn the obsolete proposal with the ledger, not a DOM adapter by inference. |
+| L9 | CONFIRMED | `bags/lares/ha.ka.ba/lares/api/pono/uefn-scene.mem:45` and `bags/lararium/ha.ka.ba/lararium/mesh/identity-classes.mem:357` narrate retired choices. |
+| F2, S1, Y2 [wave-d] | WRONG as proposed B2/B3 deletion of the check; CONFIRMED for historical name/advice | `packages/lararium-mesh/src/sealed-writer.ts:175-188` and [wave-d] `:190-204` refuse ''any'' standing listed carrier or unlisted sealed file when no tree stands. `sealed-writer.ts:331-346` calls that guard before writing; `packages/lares-cli/src/commands/found.ts:99-106` calls it before asking for a route. This protects foreign, forged, malformed, and occupied stores. Rename `OldShapeRefusal` and rewrite the historical diagnostic at `sealed-writer.ts:150-159`, CLI advice at `found.ts:71-72`, and fixture output at `tools/seed-test-custody.mjs:32-39`; preserve preflight and mutation-free tests at `packages/lararium-mesh/tests/keyslot.test.ts:299-310` and `packages/lararium-node/tests/custody-io.test.ts:319-335`. |
+| F3, S2 | LIVE-LAW | `packages/lararium-tw5/scripts/build-plugin-tiddler.ts:251-263` still emits both plugin artifacts; `packages/lararium-mesh/src/genesis-doc.ts:643-647` carries the attestation and `packages/lararium-tw5/tests/standalone-plugin-parity.test.ts:58-66` checks it. No basis to delete the TW5 title. |
+| F4 | LIVE-LAW | `packages/lararium-mesh/src/nexus-board-climb.ts:241-265` derives a climb at boot from current island state. Its migration wording can change, but the move remains active. |
+| M1, M3, M4, S3 | CONFIRMED | Historical instruction and old hook gate fill `bags/lares/ha.ka.ba/lares/api/pono/vm-projection-bus.mem:118-147`; the retired fusion section begins at `bags/lararium/ha.ka.ba/lararium/api/living-grammar-palace.mem:306-348`; dated roadmap lives at `bags/lares/ha.ka.ba/lares/api/pono/quine-principles.mem:219-227`; migration-reader exception conflicts with evergreen at `bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem:909-916` and `bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem:173-174`. |
+| M2, S4, Y4 | CONFIRMED for ledger; retain present package boundary | `bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:19-29,35-84,104-113` holds a stale move inventory; `bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem:21-22,103-113` requires entries in it. Keep the present ownership table at `pono-charter.mem:93-97`. |
+| M5 | WRONG as a B2 implementation burn | `lar_hv` still gates current telemetry work in `packages/lararium-sensorium/scripts/loci_io.py:116`, `packages/lararium-sensorium/src/telemetry-writeback.ts:4,53`, and `packages/lararium-sensorium/mempalace_source_lares/adapter.py:45`. Burn only the backfill/history claim at `bags/lararium/ha.ka.ba/lararium/api/lar-telemetry.mem:48-55`; do not remove the gate. |
+| M6, Y5 | LIVE-LAW | `bags/lararium/ha.ka.ba/lararium/mesh/content-resolution.mem:114-118,277-279` addresses immutable CIDs; `tools/domain-registry-witness.sh:11-25` protects signing domain bytes. Historical prose may tighten, but a hash reader or domain tag cannot be cut on these citations. |
+| Y1 | WRONG as B3 for the witness; CONFIRMED for limited coverage and debt | `tools/evergreen-boundary.mjs:29-49,114-125` carries ratcheting ceilings and stale-exception detection. It scans only source/tools at `:127-141`; extend it to live canon. Each exception needs a present reason; a blanket deletion would remove useful live checks. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/my-wave-1-findings`>>
+
+!! (b) My wave-1 findings
+
+''Keep as burn candidates:'' L2/L8, L3, L4 (`.json` arm only), L5–L7, F6/F7, M1/M2/M5/M6/M7, E3/E4, and E5. The digest parser takes dash at `packages/lararium-mesh/src/agile-digest.ts:111-133`, while its writer emits colon at `:136-143`; tests pin dash at `packages/lararium-mesh/tests/agile-digest.test.ts:36,87`. The lifecycle reader derives missing/unknown fields at `packages/lararium-node/src/sensorium.ts:241-245`, while its builder writes the field at `:376-377`. The synced-tree `.json` probe names a retired file at `packages/lararium-node/src/synced-tree.ts:166-176`. Claude and Copilot remove old direct seats at `packages/lares-cli/src/claude-wire.ts:59-74,284` and `packages/lares-cli/src/copilot-wire.ts:57-68`.
+
+''Keep only a wording burn:'' L1's <code>&#64;slug</code> comment at `packages/lararium-mesh/src/lar-uris.ts:370-375`; live callers pass bare roots at `packages/lararium-tw5/src/wiki-compose-handlers.ts:41` and `packages/lararium-mesh/src/genesis-doc.ts:618`. L9's earlier-shape phrase at `packages/lararium-node/src/seal-ceremony.ts:203`; the unreadable-charter refusal remains. M5's migration prose at `packages/lararium-tw5/src/types/tiddlywiki.d.ts:18-32`; current declarations need separate proof before removal.
+
+''Drop or mark LIVE-LAW:'' F1/E1/S1 as a deletion of the no-tree census: `packages/lararium-mesh/src/sealed-writer.ts:175-188,331-346` guards occupied bytes. [wave-d] F5/E6 old-name list can burn, but retain a current unknown-file guard: `packages/lararium-node/src/vault-carriers.ts:575-587` and [wave-d] `:575-587` list old names, while [wave-d] `packages/lararium-node/src/custody-shape.ts:87-100` also refuses unknown envelopes and cleartext beside a tree. F8 stays because `packages/lararium-mesh/src/cabal-realm-clock.ts:235-236` writes both forms. M3 remains a third-party TW5 question at `packages/lararium-tw5/tests/goldens/README.md:3`. E7's bare fragment comes from the current mirror table at `packages/lararium-tw5/src/meme-normalize.ts:111-119`; keep until grammar changes. S4 is a live Nexus move at `packages/lararium-mesh/src/nexus-board-climb.ts:241-265`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-finds-from-the-ratchet`>>
+
+!! (c) New finds from the ratchet
+
+| Aperture | Finding | Verdict |h
+| line | `packages/lararium-mesh/src/capture/build-patch.ts:165-178` still documents and accepts two-part spirit names with no run token. Current producer and fixture require run names at `packages/lararium-mempalace/tests/subagent-capture-route.test.ts:21-31`. | B2: require the present run-bearing basename for a handle; retain null for unrelated/malformed foreign files. |
+| seam | `packages/lares-cli/tests/unknown-command-refuses.test.ts:52-65` separately pins retired `carrier` subverbs and `vessel bake`, beyond the `RETIRED` array at `:23-27`. | B3: burn all retired-name cases; keep generic unknown and live-help controls at `:72-77`. |
+| file | `packages/lararium-browser/tests/browser-custody.test.ts:900-905` also asserts absence of the two retired root stores, preceding BC28/BC31 at `:908-955`. | B3: remove these absence assertions with the upgrade branch; keep the `keystore` creation control at `:901-902`. |
+| seam | `bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem:99` still tells new code to pass the migration allowlist, even after the main ledger references at `:21-22,103-113`. | B3: rewrite this sentence in the ledger burn unit. |
+| function | `packages/lararium-mesh/src/capture/build-patch.ts:145-149` passes every unknown prefix through; `deriveAgent` then accepts it at `:158-162`. The cited old-name fixture expects `unknown` at `packages/lararium-mempalace/tests/subagent-capture-route.test.ts:35-40`. | B2 only for house staged names; keep an explicit unknown-source result for genuinely foreign input. |
+| system | `tools/doctype.mjs:76-83` checks the positive `code=`/adjacency shape and needs no former `code:` lookup. | B1 prose only; the check already avoids an old-name census. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/burn-units-ordered-for-standalone-commits`>>
+
+!! (d) Burn units, ordered for standalone commits
+
+# ''Span, digest.'' Collapse `packages/lararium-mesh/src/agile-digest.ts:85-94,111-133`; update `packages/lararium-mesh/tests/agile-digest.test.ts:36,87`, `packages/lares-cli/src/ingest-core.ts:217`, and any source-CID description at `packages/lararium-tw5/src/memetic-wikitext-sensorium.ts:169`. Keep RFC Repr-Digest input at `agile-digest.ts:101-109`.
+# ''Span, lifecycle.'' Require a declared valid field in `packages/lararium-node/src/sensorium.ts:241-245`; retain builder default at `:376-377`; rewrite history doc in `packages/lararium-mesh/src/sensorium-lifecycle.ts:46-59` and reader tests that omit/forge lifecycle. Reject unknown values as malformed.
+# ''Span, browser persistence.'' Remove retired-store deletions and fleet secret-row cursor at `packages/lararium-browser/src/browser-vessel-identity.ts:99-100,115-129`, historical comments at `:52,64,104-110`, and BC27 historical assertions plus BC28/BC31 at `packages/lararium-browser/tests/browser-custody.test.ts:900-955`. Preserve `IDB_VERSION = 11`, store creation, and continuity check at `browser-vessel-identity.ts:53,97-121,270-279`.
+# ''Span, custody vocabulary.'' Rename `OldShapeRefusal` and its message across `packages/lararium-mesh/src/sealed-writer.ts:145-189`, `packages/lararium-mesh/src/index.ts:546-547`, `packages/lares-cli/src/commands/found.ts:71-72,99-105`, `packages/lares-cli/src/commands/vault.ts:37`, `packages/lararium-node/src/custody-session.ts:98-110`, `tools/seed-test-custody.mjs:32-39`; update `packages/lares-cli/tests/found-refusals.test.ts:42-51`, `packages/lararium-mesh/tests/keyslot.test.ts:299-310`, `packages/lararium-node/tests/custody-io.test.ts:319-335`, and `tools/seed-test-custody.test.mjs:92-99`. Preserve `refuseOldShape`'s occupied-file scan under a present-tense name at `sealed-writer.ts:175-188` and its before-write call at `:331-346`.
+# ''Span, remaining readers and commands.'' Remove only the old `.json` probe at `packages/lararium-node/src/synced-tree.ts:166-176`; keep file-at-directory safety. Simplify staged-name parsing/docs at `packages/lararium-mesh/src/capture/build-patch.ts:141-178` with `packages/lararium-mempalace/tests/subagent-capture-route.test.ts:21-40`. Remove direct-MCP cleanup at `packages/lares-cli/src/claude-wire.ts:59-74,284` and `packages/lares-cli/src/copilot-wire.ts:57-68` with their matching tests. Burn retired command cases at `packages/lares-cli/tests/unknown-command-refuses.test.ts:19-65`, old-reader absence at `packages/lares-cli/tests/turn-key-one-leg.test.ts:26-40`, and parity-to-legacy file `packages/lararium-mesh/tests/ffz-measure-parity.test.ts:1-13,140-146`.
+# ''Span, canon and witness prose.'' Remove obsolete sections from `bags/lares/ha.ka.ba/lares/api/pono/vm-projection-bus.mem:118-147`, `bags/lararium/ha.ka.ba/lararium/api/living-grammar-palace.mem:306-348`, `bags/lares/ha.ka.ba/lares/api/pono/quine-principles.mem:219-227`, `bags/lararium/ha.ka.ba/lararium/mesh/island-protocol.mem:33-34,42`, and `bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem:909-916`. Burn browser ledger with its charter links at `bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem:19-113` and `bags/lararium/ha.ka.ba/lararium/browser/pono-charter.mem:21-22,99,103-113`. Edit history prose in `tools/doctype.mjs:22-24,76-78`, `tools/direct-repo-witness.sh:13-22`, and `tools/rendezvous-parity-witness.sh:8-11`; retain their live checks.
+# ''[wave-d] flat face rows.'' Burn earlier-name regex list at `packages/lararium-node/src/vault-carriers.ts:575-587` and its calls at `:563` and `packages/lararium-node/src/custody-shape.ts:95-99`, plus historical assertions at `packages/lararium-node/tests/custody-shape.test.ts:61`. Preserve checks for unknown envelopes and cleartext beside a tree at `custody-shape.ts:87-94`. State the resulting present custody law in the module header at `custody-shape.ts:1-13`.
+# ''[wave-d] resolver prose.'' Remove old mapping and hostful-type narratives from `packages/lararium-mesh/src/resolver.ts:8-16,60-64`; retain the current contract at `:2-6,68-69`.
+
+The oracle-name census waits for its own slice: `packages/lararium-mesh/tests/o-takiage-names.test.ts:7-16,30-44` explicitly lists still-live SLICE5 names. Burn the file with that rename commit, not ahead of it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/witness-rule`>>
+
+!! (e) Witness rule
+
+Extend `tools/evergreen-boundary.mjs`'s corpus selector at `:127-141` to live `bags/lares/**/api/*.mem` and `bags/lararium/**/{api,mesh,browser}/*.mem`, while excluding record carriers. Match historical narration in authored comments and prose: `earlier shape`, `old shape`, `legacy`, `formerly`, `no longer`, `migration path`, `retired` when it describes the house's own previous shape. The existing `classify` logic at `:114-125` should require an exact, present-law reason for each exception. Add a structural rule for `onupgradeneeded` bodies that call `deleteObjectStore` or delete rows based on retired keys (`packages/lararium-browser/src/browser-vessel-identity.ts:94-129`). Add a producer/reader fixture for each house-owned stored grammar: the current writer output must parse, and a second house spelling must not parse (`packages/lararium-mesh/src/agile-digest.ts:111-143`). Trust-boundary malformed-input refusals stay live (`packages/lararium-mesh/src/sealed-writer.ts:175-188`).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;embjsZMortMotH03hd3Ipe5Q83TYP6r5BAZOcUTdHFc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

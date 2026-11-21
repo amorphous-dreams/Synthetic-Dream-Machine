@@ -1,7 +1,7 @@
 /**
  * persona-kel-enrolments.test — a rotation's enrolments ride the PUBLIC persona-KEL board SEALED and ATTESTED:
  * each device's edge and next secret sealed to that device alone, naming no device, and the whole list committed
- * inside the event's content address, which the guardians' quorum signs.
+ * inside the event's content address, which the recovery contacts' quorum signs.
  *
  * Proven, each red beside its control:
  *   · RED: a board writer who STRIPS one device's enrolment breaks the chain's walk — the cid no longer matches,
@@ -83,7 +83,7 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
     const recommitted = [chain[0]!, { ...chain[1]!, enrolments: stripped, enrolmentDigest: enrolmentDigestOf(stripped) }];
     expect(recommitted[1]!.eventCid).toBe(chain[1]!.eventCid);
     expect(verifyPersonaKel(recommitted), "the cid no longer recomputes").toBe(false);
-    // Re-deriving the cid too leaves the guardians' quorum signing other bytes.
+    // Re-deriving the cid too leaves the recovery contacts' quorum signing other bytes.
     const core = { ...recommitted[1]! };
     const recid = [chain[0]!, { ...core, eventCid: personaEventCidOf(core) }];
     expect(verifyPersonaKel(recid)).toBe(true);
@@ -91,12 +91,12 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
   });
 
   test("RED: a box the event's op-key did not sign breaks the full walk, even under a digest the quorum signed", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
     const freshOpKeyDid = await didOf(SEEDS.opB);
     const devices = [{ deviceVerifyingKey: await keyOf(SEEDS.deviceX), hearthTrueName: "", boundEpoch: 0 }];
     const [box] = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
     const unsigned = { ...box!, sig: box!.sig.replace(/^./, (c) => (c === "0" ? "1" : "0")) };
-    // Guardians who sign whatever bytes they are handed: the quorum attests a list whose box the op-key never sealed.
+    // Recovery contacts who sign whatever bytes they are handed: the quorum attests a list whose box the op-key never sealed.
     const mint = async (list: readonly SealedEnrolment[]): Promise<PersonaKelEvent[]> => {
       const bytes = personaRotationSigningBytes(inception, freshOpKeyDid, inception.nextRecoverySetHash, false, list);
       const rotationSigs = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (g) => ({ signer: await keyOf(g), sig: await signerOf(g)(bytes) })));
@@ -105,7 +105,7 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
         nextRecoverySetHash: inception.nextRecoverySetHash, prevEventCid: inception.eventCid, provisional: false, vetoOfCid: null,
         enrolmentDigest: enrolmentDigestOf(list),
       };
-      return [inception, { ...core, eventCid: personaEventCidOf(core), recoveryRoster: guardianRecoveryKeys, recoveryThreshold, rotationSigs, enrolments: list }];
+      return [inception, { ...core, eventCid: personaEventCidOf(core), recoveryRoster: recoveryContactKeys, recoveryThreshold, rotationSigs, enrolments: list }];
     };
     const forged = await mint([unsigned]);
     expect(verifyPersonaKel(forged)).toBe(true);
@@ -141,7 +141,7 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
   });
 
   test("RED: an edge whose own signature fails delivers nothing, inside a box the op-key did sign", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
     const deviceKey = await keyOf(SEEDS.deviceX);
     const opKeyDid = await didOf(SEEDS.opB);
     const real = await buildDeviceDelegation({ personaRootSeed: SEEDS.opB, atomSeed: SEEDS.deviceX, hearthTrueName: "", boundEpoch: 0 });
@@ -154,8 +154,8 @@ describe("persona-KEL enrolments — sealed per device, attested inside the cid"
     });
     const unsigned = { e: hex(boxed.senderEphemeralPub), n: hex(boxed.aeadNonce), c: hex(boxed.ciphertext) };
     const sealed: SealedEnrolment = { kind: "sealed-enrolment", ...unsigned, sig: hex(await ed.signAsync(sealedEnrolmentBytes(inception.prefix, opKeyDid, unsigned), SEEDS.opB)) };
-    const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (g) => ({ signer: await keyOf(g), sign: signerOf(g) })));
-    const rot = await attestAndRotate({ head: inception, freshOpKeyDid: opKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments: [sealed] });
+    const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (g) => ({ signer: await keyOf(g), sign: signerOf(g) })));
+    const rot = await attestAndRotate({ head: inception, freshOpKeyDid: opKeyDid, recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments: [sealed] });
     if (!rot.ok) throw new Error(rot.reason);
     const chain = [inception, rot.event];
     expect((await verifyPersonaKelFull(chain)).ok).toBe(true);

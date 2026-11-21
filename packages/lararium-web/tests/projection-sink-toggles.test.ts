@@ -18,7 +18,7 @@ function mount() {
   document.body.appendChild(host);
   const sink = createProjectionSink(host);
   const sent: LarMsg_ControlEvent[] = [];
-  sink.arm({ sendControlEvent: (_surface, ev) => { sent.push(ev); } });
+  sink.arm({ sendControlEvent: (_surface, ev) => { if (!sent.some((prior) => prior.eventId === ev.eventId)) sent.push(ev); } });
   const pane = (): HTMLElement => host.shadowRoot!.querySelector<HTMLElement>(".lar-projection")!;
   const q = <T extends Element>(sel: string): T => pane().querySelector<T>(sel)!;
   return { sink, sent, pane, q, done: () => host.remove() };

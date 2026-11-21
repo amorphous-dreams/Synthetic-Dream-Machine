@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-13`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "13. Abnormail"
+hexagram    = "13"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "101111"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-13"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-13"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷌ 13. Abnormail
+
+<<<
+"Unfortunately, the majority of eristic abnormail is nothing but inane gossip, masturbatory in-jokes, trivial variations of stale dogma, snide put-downs of those not weird in exactly the same was as 'us', and similar such garbage ad naseum; and that's good too!"
+<<<
+
+This hexagram represents fellowship in all of its forms. This is best represented in Discordian terms by the Cabal or a network of Cabals - thus Abnormail, which fosters fellowship within the ranks of Discordia. This is not always a positive thing, for sometimes fellowship drowns the individual and should be tempered to avoid becoming "just another cog". All in all, though, fellowship is a good thing and looser associations that enable the sharing of concepts and ideas should now be encouraged.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vv93qwV0BmpRj3yX15iDiQ3xcgRonFDLOC-woXPTxQs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

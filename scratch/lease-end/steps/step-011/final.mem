@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-011/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-011/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Founder fork masking now clears in both the grant verifier and the seat path. The verifier checks the pinned lineage before dyad standing; the seat lets that check run when standing remains unknown while retaining its own fail-closed guard.
+
+The named grant test file passed ''24 tests'', and the seat test file passed ''28 tests''. Each fix followed a committed red and control. The seat regression uses a verifier stub; the grant test exercises the real verifier.
+
+The lane head now points to `dedd08ae444f4a3475b24d5694cb5a5c6065d9f6`. The worktree stands clean, no seats remain live, and no push occurred. The remaining slice 2 work and next relay request appear in [[the step 11 hand-back|/home/joshu/.lares-scratch/lease-end/steps/step-011/out.md]] and [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]].
+
+&lt;&lt;~ oracle throw=`↯14 ✲ ⚂(3) ⁂:🜁⊗⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the seat regression uses a stub; exercise the seat and real verifier together when extending this coverage · ↻ L-Prime` ooda-ha=`closed 2↺` from=`lar://lares:agent@hearth/fork.masking.clears` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KttpbdValpYkhuV-g5vj3zr06z5ZilxSJvql_YBYAB8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

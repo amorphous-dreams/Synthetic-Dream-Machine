@@ -93,6 +93,7 @@ export class CoalesceGate implements ProjectionGate {
   constructor(opts: CoalesceGateOptions) {
     this.windowMs = opts.windowMs;
     this.onFlush = opts.onFlush;
+    // PACING: the coalescing window groups marks into a projection flush.
     this.setTimer = opts.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
     this.clearTimer = opts.clearTimer ?? ((h) => clearTimeout(h));
   }
@@ -181,6 +182,7 @@ export class KeyedCoalesceGate<K> implements ProjectionGate {
     this.debounceMs = opts.debounceMs;
     this.maxWaitMs = opts.maxWaitMs;
     this.onFlush = opts.onFlush;
+    // PACING: debounce and max-wait timers schedule projection flushes, not refusal.
     this.setTimer = opts.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
     this.clearTimer = opts.clearTimer ?? ((h) => clearTimeout(h));
     this.servo = opts.servo;
@@ -328,6 +330,11 @@ export class KeyedReconcileGate<K> {
   idle(): Promise<void> {
     if (!this.draining) return Promise.resolve();
     return new Promise((resolve) => this.idleWaiters.push(resolve));
+  }
+
+  /** The keys queued or running now, in no promised order: what a drain still owes. */
+  pending(): K[] {
+    return [...this.records.keys()];
   }
 
   /** Stop admission, drop queued observations, and wait for the running reconcile to complete. */

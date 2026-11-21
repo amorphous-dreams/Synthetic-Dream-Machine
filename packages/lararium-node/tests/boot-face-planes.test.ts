@@ -48,10 +48,11 @@ describe("bootFacePlanes: the bootstrap alone answers", () => {
       [sib.identities]: { text: "automerge:ids" },
       [sib.circles]: { text: "automerge:circ" },
       [sib.sessions]: { text: "automerge:sess" },
+      [sib.intents]: { text: "automerge:intents" },
     };
     const r = BOOT(b, {}, null);
     expect(r.personaGroupId).toBe(G1);
-    expect([r.identitiesUrl, r.circlesUrl, r.sessionsUrl]).toEqual(["automerge:ids", "automerge:circ", "automerge:sess"]);
+    expect([r.identitiesUrl, r.circlesUrl, r.sessionsUrl, r.intentsUrl]).toEqual(["automerge:ids", "automerge:circ", "automerge:sess", "automerge:intents"]);
   });
 
   test("(i) an oracle holding a second group's membership and plane leaves the family at the bootstrap's one", () => {
@@ -82,12 +83,13 @@ describe("bootFacePlanes: the bootstrap alone answers", () => {
       [face.identities]: { text: "automerge:ids" },
       [face.circles]:    { text: "automerge:circ" },
       [face.sessions]:   { text: "automerge:sess" },
+      [face.intents]:    { text: "automerge:intents" },
       [PERSONA_GROUP_ID_TIDDLER]: { text: G1 },
     };
     const r = bootFacePlanes(b, null);
     expect(r).toMatchObject({
       personaGroupId: G1, personaBagId: personaBagIdFor(G1), personaUrl: U1,
-      identitiesUrl: "automerge:ids", circlesUrl: "automerge:circ", sessionsUrl: "automerge:sess",
+      identitiesUrl: "automerge:ids", circlesUrl: "automerge:circ", sessionsUrl: "automerge:sess", intentsUrl: "automerge:intents",
     });
   });
 

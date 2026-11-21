@@ -59,7 +59,7 @@ export interface RealmShoreBook {
 }
 
 /**
- * THE CARRIER'S OWN LANE — the books a Herm folds off its @crossroads replica.
+ * THE CARRIER'S OWN LANE — the books a Herm folds off its realm-announce board replica.
  *
  * A Herm holds no charter, so it stands in no realm and folds no registration: the realm lane above named
  * nothing on the one vessel it was built for (measured — `nexus realm-bags` on the Herm read `bags: []` while
@@ -69,14 +69,15 @@ export interface RealmShoreBook {
  * book this carrier never replicated answers nothing — a rejected find withholds, never serves.
  */
 export async function announcedRealmBooks(opts: {
-  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  /** The Nexus's realm-announce board (`realmAnnounceDocUrl`), never the crossroads bag. */
+  readonly announceDoc:   () => LarDoc | null | undefined;
   readonly findBook:      (docUrl: string) => Promise<LarDoc | null>;
   /** Fired once per ask with what the board named and what this carrier could actually read — the one place
    *  an operator sees WHY a public body draws a 404 (no announce · an unreplicated book · an empty book). */
   readonly onLog?:        (line: string) => void;
 }): Promise<RealmShoreBook[]> {
   const books: RealmShoreBook[] = [];
-  const announcements = publicRealmBooksFromDoc(opts.crossroadsDoc());
+  const announcements = publicRealmBooksFromDoc(opts.announceDoc());
   opts.onLog?.(`announce lane: ${announcements.length} PUBLIC book(s) on the board`);
   for (const announced of announcements) {
     const doc = await opts.findBook(announced.docUrl).catch(() => null);
@@ -98,7 +99,7 @@ export async function announcedRealmBooks(opts: {
  *
  *   · THE REGISTRATION ROAD — every registration this vessel's realm plane carries, at the tier the
  *     registration DECLARED. A vessel that stands in no realm folds nothing here.
- *   · THE ANNOUNCE ROAD — the PUBLIC books the @crossroads board names (`announcedRealmBooks`).
+ *   · THE ANNOUNCE ROAD — the PUBLIC books the realm-announce board names (`announcedRealmBooks`).
  *
  * THE REGISTRATION WINS THE COLLISION. A bag the registration road already named never takes a second entry
  * off the board, so a stale PUBLIC announce can never re-tier a book whose registration reads CONTRACT here.
@@ -107,7 +108,7 @@ export async function announcedRealmBooks(opts: {
 export async function hermRealmShoreBooks(opts: {
   readonly realmStanding: () => Promise<ReadonlyMap<string, { bagUri: string; docUrl: string; readTier: CapTier }>>;
   readonly findDoc:       (docUrl: string) => Promise<LarDoc | null>;
-  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  readonly announceDoc:   () => LarDoc | null | undefined;
   readonly onLog?:        (line: string) => void;
 }): Promise<RealmShoreBook[]> {
   const books: RealmShoreBook[] = [];
@@ -123,7 +124,7 @@ export async function hermRealmShoreBooks(opts: {
     });
   }
   const announced = await announcedRealmBooks({
-    crossroadsDoc: opts.crossroadsDoc,
+    announceDoc:   opts.announceDoc,
     findBook:      opts.findDoc,
     ...(opts.onLog ? { onLog: opts.onLog } : {}),
   });
@@ -179,6 +180,22 @@ export function publicCasShore(opts: {
   };
 }
 
+/**
+ * The line the face prints for what it mounts. Where the house's founding record serves the blobs the seed names, it
+ * reads `bulb=<cid>`. Where the two differ, it names the founding record first (its blobs, and how many the seed lacks
+ * or adds) and prints the shipped seed as `offered`: a traveler reads that the house serves another genesis than the one
+ * this face hands out.
+ */
+export function bulbFaceLine(seedCid: string, blobCount: number, seedBlobs: readonly string[], founding?: readonly string[]): string {
+  if (!founding) return `bulb read-face: bulb=${seedCid} blobs=${blobCount}`;
+  const held = new Set(founding), named = new Set(seedBlobs);
+  const moved = founding.filter((c) => !named.has(c)), absent = seedBlobs.filter((c) => !held.has(c));
+  if (moved.length === 0 && absent.length === 0) return `bulb read-face: bulb=${seedCid} blobs=${blobCount}`;
+  const short = (cids: readonly string[]): string => cids.map((c) => `${c.slice(0, 16)}…`).join(",") || "none";
+  return `bulb read-face: the founding record serves ${founding.length} blobs (founding-only ${short(moved)}; seed-only ${short(absent)}) — ` +
+    `offered seed bulb=${seedCid} blobs=${blobCount} stands apart from the house's founding genesis`;
+}
+
 /** Mount the bulb read-face: the seed under the bulb CID and every seed-named CAS blob under its own. */
 export async function mountBulbReadFace(args: {
   readonly httpServer: Server;
@@ -189,12 +206,15 @@ export async function mountBulbReadFace(args: {
   readonly dispatcher?: HttpFaceDispatcher;
   /** The Herm re-share shore; absent, `/cas/<cid>` answers the closed door for every cid. */
   readonly publicCas?: PublicCasShore;
+  /** The CAS cids the house's founding record (its stored oracle island) serves. Present and unlike the seed's
+   *  inventory, the face names the founding record and prints the shipped seed as OFFERED; the bytes served stay the seed's. */
+  readonly founding?: readonly string[];
 }): Promise<FlowReadFace> {
-  const { httpServer, bulb, onLog, publicCas, dispatcher } = args;
+  const { httpServer, bulb, onLog, publicCas, dispatcher, founding } = args;
   const { cid, blobs } = buildBulb(bulb);
   const blobByCid = new Map<string, Uint8Array>(blobs.map((b) => [b.cid, b.bytes]));
 
-  onLog?.(`bulb read-face: bulb=${cid} blobs=${blobs.length}`);
+  onLog?.(bulbFaceLine(cid, blobs.length, bulb.casEntries.map((e) => e.cid), founding));
   const SERVED: Record<string, string> = {
     "access-control-allow-origin": "*",
     "content-type":                "application/octet-stream",

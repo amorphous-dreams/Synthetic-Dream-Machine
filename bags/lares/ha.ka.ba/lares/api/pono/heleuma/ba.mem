@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ba">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/heleuma/ba`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ba.mem"
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant capability: heleuma-ba — psyche/path anchor; quine-only trace record with no runtime corpus path"
 tags      = ["api/pono/heleuma"]
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma/ba"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Heleuma-Ba (Psyche / Path)
 
@@ -27,7 +23,7 @@ A heleuma-ba anchor marks a path through the graph for something that exists out
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ locate the artifact; confirm it has no standalone extractable symbol and no corpus promotion path.
 ⏿ orient: is this purely documentation of what exists outside, with no runtime injection route? If yes, this is ba.
@@ -37,7 +33,7 @@ A heleuma-ba anchor marks a path through the graph for something that exists out
 
 <<~/ahu>>
 
-<<~ ahu #/required-fields>>
+<<~ ahu slot=`#/required-fields`>>
 
 !! Required Fields (SHALL)
 
@@ -55,10 +51,10 @@ It SHALL NOT declare `source-sha256` without `source-symbol`.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xYrBu49cmJ5zVU4MKwbvHEBYH2ygbFvFI0KBqoSqZCk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gp6xtSU_ccto5RkurMygRCRWew7Klm_CpLWTDZRJP3Q`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

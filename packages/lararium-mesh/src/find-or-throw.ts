@@ -11,7 +11,7 @@
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 
-/** How long a named document may take to arrive before a standing caller's resolve refuses. */
+/** How long a silent PEER may take to deliver a named document before a standing caller's resolve refuses. */
 export const DOCUMENT_READY_TIMEOUT_MS = 8_000;
 
 /**
@@ -21,44 +21,86 @@ export const DOCUMENT_READY_TIMEOUT_MS = 8_000;
  */
 export const DOCUMENT_HANG_BOUND_MS = 60_000;
 
+/**
+ * Which part of the resolve failed. `store`: this vessel's own store was still loading the document when the backstop
+ * ended. `peers`: the store answered "not here" and no peer delivered within the bound. `answered`: the library itself
+ * reported the document unavailable (every reachable peer said so, or the query failed outright).
+ */
+export type DocumentUnavailablePhase = "store" | "peers" | "answered";
+
 /** A named document did not arrive within the bounded wait. */
 export class DocumentUnavailableRefusal extends Error {
-  /** `waitedMs` is the bound that elapsed, or null when every reachable peer reported the document unavailable. */
-  constructor(readonly url: string, readonly what: string, readonly waitedMs: number | null, cause?: unknown) {
-    const how = waitedMs === null ? "was reported unavailable by every reachable peer" : `never arrived (${waitedMs}ms)`;
-    super(`[document-unavailable] ${what} unavailable: doc ${url} ${how}; make the document reachable from a peer, then restart.`, { cause });
+  /** `waitedMs` is the bound that elapsed, or null when the library itself answered unavailable. */
+  constructor(
+    readonly url: string,
+    readonly what: string,
+    readonly waitedMs: number | null,
+    cause?: unknown,
+    readonly phase: DocumentUnavailablePhase = waitedMs === null ? "answered" : "peers",
+  ) {
+    const how = phase === "answered" ? "was reported unavailable by every reachable peer"
+      : phase === "store" ? `is not read yet: this vessel's store was still loading it after ${waitedMs}ms`
+      : `is not in this vessel's store and no peer answered within ${waitedMs}ms`;
+    const cure = phase === "store" ? "stand the vessel again once its store settles" : "make the document reachable from a peer, then restart";
+    super(`[document-unavailable] ${what} unavailable: doc ${url} ${how}; ${cure}.`, { cause });
     this.name = "DocumentUnavailableRefusal";
   }
 }
 
 /** A wiki's working slot must resolve to its named CRDT document before it can accept writes. */
 export class WorkingDocumentUnavailableRefusal extends DocumentUnavailableRefusal {
-  constructor(url: string, what: string, waitedMs: number | null, cause?: unknown) {
-    super(url, what, waitedMs, cause);
+  constructor(url: string, what: string, waitedMs: number | null, cause?: unknown, phase?: DocumentUnavailablePhase) {
+    super(url, what, waitedMs, cause, phase);
     this.name = "WorkingDocumentUnavailableRefusal";
   }
 }
 
 export interface FindOrThrowOptions {
+  /** The bound on a silent PEER: it starts once this vessel's store has answered "not here". */
   readonly timeoutMs?: number;
+  /** The backstop on a STORE that never answers (a stalled adapter); the store's own answer ends the wait sooner. */
+  readonly storeBoundMs?: number;
   /** The refusal class to raise; defaults to {@link DocumentUnavailableRefusal}. */
   readonly refusal?: typeof DocumentUnavailableRefusal;
 }
 
+/**
+ * A document that rests in this vessel's own store loads from the store, and the library says so: the query's
+ * `storage` source stays `pending` until the store answers. The peer bound therefore starts only when the store has
+ * answered "not here"; while the store loads, the wait rides the library's own event behind a hang backstop.
+ */
 export async function findOrThrow(repo: Repo, url: string, what: string, opts: FindOrThrowOptions = {}): Promise<DocHandle<LarDoc>> {
-  const timeoutMs = opts.timeoutMs ?? DOCUMENT_READY_TIMEOUT_MS;
+  const peerMs = opts.timeoutMs ?? DOCUMENT_READY_TIMEOUT_MS;
+  const storeMs = Math.max(opts.storeBoundMs ?? DOCUMENT_HANG_BOUND_MS, peerMs);
   const Refusal = opts.refusal ?? DocumentUnavailableRefusal;
+  // The READY wait rides `find` (the library's one door, which every Repo stand-in answers); the store's own progress
+  // rides the same query through `findWithProgress`, observed where the Repo offers it. A Repo that reports none has
+  // no store phase to wait on, so its wait starts on the peer bound.
+  const query = typeof repo.findWithProgress === "function" ? repo.findWithProgress<LarDoc>(url as AutomergeUrl) : null;
+  const storeLoading = (): boolean => query?.peek().sources["storage"] === "pending";
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let unsubscribe: (() => void) | undefined;
   let failure: unknown;
   try {
-    // automerge-repo 2.6: find() resolves only when READY and rejects on unavailable.
-    const handle = await Promise.race([
-      repo.find<LarDoc>(url as AutomergeUrl).catch((cause: unknown) => { failure = cause; return null; }),
-      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), timeoutMs); }),
-    ]);
-    if (handle) return handle;
-    throw new Refusal(url, what, failure === undefined ? timeoutMs : null, failure);
+    // automerge-repo 2.6: find() resolves only when READY and rejects on unavailable or failed.
+    const outcome = await new Promise<DocHandle<LarDoc> | { elapsed: "store" | "peers" } | null>((resolve) => {
+      let phase: "store" | "peers" = storeLoading() ? "store" : "peers";
+      const arm = (): void => {
+        if (timer !== undefined) clearTimeout(timer);
+        // LIVENESS: a peer holding the document may never answer, and a store may stall. Each phase carries its own bound.
+        timer = setTimeout(() => resolve({ elapsed: phase }), phase === "store" ? storeMs : peerMs);
+      };
+      arm();
+      unsubscribe = query?.subscribe(() => {
+        if (phase === "store" && !storeLoading()) { phase = "peers"; arm(); }
+      });
+      repo.find<LarDoc>(url as AutomergeUrl).then(resolve, (cause: unknown) => { failure = cause; resolve(null); });
+    });
+    if (outcome === null) throw new Refusal(url, what, null, failure, "answered");
+    if ("elapsed" in outcome) throw new Refusal(url, what, outcome.elapsed === "store" ? storeMs : peerMs, undefined, outcome.elapsed);
+    return outcome;
   } finally {
     if (timer !== undefined) clearTimeout(timer);
+    unsubscribe?.();
   }
 }

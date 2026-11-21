@@ -25,6 +25,7 @@
 import { NetworkAdapter } from "@automerge/automerge-repo";
 import type { Message, NetworkAdapterInterface, PeerId, PeerMetadata } from "@automerge/automerge-repo";
 import { decodeSyncMessage } from "@automerge/automerge";
+import { PROTOTYPE_KEY_CODE, syncMessagePrototypeKey } from "./prototype-key-shore.js";
 
 /** A message as a gate reads it. */
 export interface LegMessage {
@@ -69,6 +70,17 @@ export function carriesChanges(message: LegMessage): boolean {
   if (message.type !== "sync" && message.type !== "request") return false;
   if (!(message.data instanceof Uint8Array)) return true;
   try { return decodeSyncMessage(message.data).changes.length > 0; } catch { return true; }
+}
+
+/**
+ * THE LEG'S OWN INVARIANT, ahead of any gate: a sync or request message whose changes carry a `__proto__`
+ * key refuses as `prototype-key` (`prototype-key-shore.ts`), whatever the gate would say. KEEP: a live
+ * hostile form. Answers the reason, or null where the message carries no such key.
+ */
+export function carriesPrototypeKeyReason(message: LegMessage): typeof PROTOTYPE_KEY_CODE | null {
+  if (message.type !== "sync" && message.type !== "request") return null;
+  if (!(message.data instanceof Uint8Array)) return null;
+  return syncMessagePrototypeKey(message.data) ? PROTOTYPE_KEY_CODE : null;
 }
 
 function readLegMessage(raw: unknown): LegMessage | null {
@@ -168,6 +180,14 @@ export class GatedSyncLeg extends NetworkAdapter {
       });
       return;
     }
+    const poisoned = carriesPrototypeKeyReason(read);
+    if (poisoned) {
+      this.#refuse({
+        direction: "inbound", reason: poisoned, type: read.type, peerId: read.senderId,
+        ...(read.documentId !== undefined ? { documentId: read.documentId } : {}),
+      });
+      return;
+    }
     const refusal = this.#judge(read, read.senderId, "inbound");
     if (!refusal) { this.emit("message", raw); return; }
     this.#refuse(refusal);
@@ -216,6 +236,14 @@ export class PortSyncAdapter extends NetworkAdapter {
     if (this.#stopped) return;
     try { this.#read((event as MessageEvent).data); } catch { /* a listener never throws */ }
   };
+  // A PORT THAT CLOSES TAKES ITS PEER (road `P26`): a worker that ended, or a side that closed its port, posts no `leave`, so
+  // the port's own close is the fact the house's arrival table reads.
+  readonly #onClose = (): void => {
+    if (this.#stopped || this.#remote === null) return;
+    const peerId = this.#remote as PeerId;
+    this.#remote = null;
+    this.emit("peer-disconnected", { peerId });
+  };
 
   constructor(port: MessagePort) {
     super();
@@ -230,6 +258,7 @@ export class PortSyncAdapter extends NetworkAdapter {
     this.peerId = peerId;
     if (peerMetadata !== undefined) this.peerMetadata = peerMetadata;
     this.#port.addEventListener("message", this.#onMessage);
+    this.#port.addEventListener("close", this.#onClose);
     this.#port.start();
     this.#port.postMessage({ senderId: peerId, type: "arrive", peerMetadata });
     this.#ready = true;                                    // a port needs no dial: it stands ready at once
@@ -250,6 +279,7 @@ export class PortSyncAdapter extends NetworkAdapter {
     if (this.#stopped) return;
     this.#stopped = true;
     this.#port.removeEventListener("message", this.#onMessage);
+    this.#port.removeEventListener("close", this.#onClose);
     if (this.peerId !== undefined) {
       try { this.#port.postMessage({ type: "leave", senderId: this.peerId }); } catch { /* the port already closed */ }
     }

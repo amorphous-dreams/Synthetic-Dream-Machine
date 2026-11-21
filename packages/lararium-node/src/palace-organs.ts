@@ -31,7 +31,7 @@
  *   - structurepalace   <memory>/structure  — the structural-AST store (li/sheaf).
  *   - formpalace        <memory>/form       — the living-grammar FORM-vector store (li/sheaf).
  *   - persistencepalace <memory>/persistence — the Testimony/witness store (cosheaf cap).
- *   - meshpalace        <lararium>/sensoriums/mesh — the `mesh` SENSORIUM (stood LAST: it couples to a
+ *   - meshpalace        <root>/sensoriums/mesh — the `mesh` SENSORIUM (stood LAST: it couples to a
  *                 live node). It `#has` three nested child sensoriums — WHO · AUTHORITY · FLOW —
  *                 each its own dir + thin manifest. Here we wire only the directory STRUCTURE +
  *                 stamp the manifests; the feed/carriage + cap-content live elsewhere.
@@ -108,6 +108,7 @@ export function initGuestMempalace(): PalaceSetupStep[] {
 
   if (!existsSync(cfgPath)) {
     try {
+      // LIVENESS: the external palace initializer may hang without an exit event.
       const r = spawnSync(mp, ["init", repoRoot, "--yes", "--no-llm"], { timeout: 180_000, encoding: "utf8" });
       const ok = r.status === 0 && existsSync(cfgPath);
       steps.push({

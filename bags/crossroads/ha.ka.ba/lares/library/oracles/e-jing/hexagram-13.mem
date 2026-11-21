@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-13`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "13. Abnormail"
+hexagram      = "13"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "101111"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-13"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-13"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷌ 13. Abnormail
+
+<<<
+“Unfortunately, the majority of eristic abnormail is nothing but inane gossip, masturbatory in-jokes, trivial variations of stale dogma, snide put-downs of those not weird in exactly the same was as ‘us’, and similar such garbage ad naseum; and that’s good too!”
+<<<
+
+This hexagram represents fellowship in all of its forms. This is best represented in Discordian terms by the Cabal or a network of Cabals - thus Abnormail, which fosters fellowship within the ranks of Discordia. This is not always a positive thing, for sometimes fellowship drowns the individual and should be tempered to avoid becoming "just another cog". All in all, though, fellowship is a good thing and looser associations that enable the sharing of concepts and ideas should now be encouraged.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DfnGB89cuOz-xIJv8AVKHSk3noIPf5SYMjuacqqHlTs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

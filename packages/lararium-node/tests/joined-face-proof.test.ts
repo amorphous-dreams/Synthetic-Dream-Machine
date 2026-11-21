@@ -22,6 +22,7 @@ import { SessionTable, sessionBinding } from "../../lararium-mesh/src/session-co
 import { certificateImage, sessionCertificateImage, type FaceScope } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { faceKeyGrantImage } from "../../lararium-mesh/src/fleet-join.js";
 import { storeVesselFaceKey } from "../src/face-key-custody.js";
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { keepFaceJoinRecord } from "../src/fleet-join-custody.js";
 import { readJoinedFaceProof } from "../src/joined-face-proof.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
@@ -67,7 +68,8 @@ const openAt = async (table: SessionTable, at: FaceScope = scope) => {
 
 describe("a joined vessel's session", () => {
   test("J1 — the join record and the custody row open a session signed under this vessel's own key", async () => {
-    await storeVesselFaceKey(scope, VESSEL);
+    const face = await ensureFaceCustodyOfGroup(GROUP);
+    await storeVesselFaceKey(face.ordinal, scope, VESSEL);
     await keepFaceJoinRecord({ personaGroup: GROUP, rootKey: publicOf(ROOT), certificates: [certificateOver(VESSEL)], grants: [grantBy(ROOT)] });
     const table = new SessionTable("owner-epoch-joined");
     const opened = await openAt(table);
@@ -82,7 +84,8 @@ describe("a joined vessel's session", () => {
   });
 
   test("J2 — a sibling vessel's certificate opens nothing here", async () => {
-    await storeVesselFaceKey(scope, VESSEL);
+    const face = await ensureFaceCustodyOfGroup(GROUP);
+    await storeVesselFaceKey(face.ordinal, scope, VESSEL);
     await keepFaceJoinRecord({ personaGroup: GROUP, rootKey: publicOf(ROOT), certificates: [certificateOver(SIBLING)], grants: [grantBy(ROOT)] });
     const table = new SessionTable("owner-epoch-joined");
     expect(await openAt(table)).toEqual({ refusal: "chain-other-vessel" });

@@ -12,7 +12,7 @@ import { describe, expect, test } from "vitest";
 import { hex } from "../src/crypto.js";
 import { acceptEd25519Key } from "../src/ed25519-door.js";
 import {
-  FACE_CHAIN_VERDICTS, FACE_PROOF_CUSTODY_ROWS, WITHDRAWAL_HISTORY_BOUND,
+  FACE_CHAIN_VERDICTS, FACE_PROOF_CUSTODY_RECORDS, WITHDRAWAL_HISTORY_BOUND,
   checkFaceChain, checkVesselChain, isVerifiedVesselChain, foldWithdrawals, heldWithdrawals, isVerifiedFaceChain, isWithdrawalMemory, issueCertificate,
   learnWithdrawals, mintFaceProofKey, mintVesselFaceKey, readOwnStanding, requestCertificate, withdrawKey,
   type FaceChainVerdict, type FaceKeyCustody, type VesselFaceKeyCustody, type WithdrawalMemory,
@@ -68,7 +68,7 @@ describe("minting", () => {
   });
 
   test("the custody rows name a cold face key with the root holder and a hot key on each vessel", () => {
-    expect(FACE_PROOF_CUSTODY_ROWS.map((row) => [row.row, row.custody])).toEqual([["face-proof-key", "cold"], ["vessel-face-key", "hot"]]);
+    expect(FACE_PROOF_CUSTODY_RECORDS.map((row) => [row.row, row.custody])).toEqual([["face-proof-key", "cold"], ["vessel-face-key", "hot"]]);
   });
 });
 

@@ -16,6 +16,9 @@
  *       partial leaves. CONTROL: opened again, it cites the ban and reads ready.
  *   K5  The store door's rows carry the same act, and a refusal answers under the row's own name.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 /** A handshake inside every seat signature: a vector may run one step before the next signature completes. */
@@ -70,7 +73,7 @@ interface Vault { readonly c: SeatedScratchCustody; readonly repo: RestingRepo }
 async function vault(label: string): Promise<Vault> {
   const c = await seatScratchCustody(label);
   drops.push(c);
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   return { c, repo: restingRepo(larDataDir()) };
 }

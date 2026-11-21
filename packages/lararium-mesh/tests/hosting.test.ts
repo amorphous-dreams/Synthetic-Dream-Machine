@@ -185,8 +185,8 @@ describe("the domain registry names the hosting relations", () => {
     for (const live of ["hosting-act", "hosting-key", "hosting-token", "hosting-grant", "gate-knock"]) {
       expect(names, live).toContain(live);
     }
-    // CONTROL: a standing frozen name is untouched.
-    expect(names).toContain("carriage-entry/v1");
+    // CONTROL: a standing name carries no version.
+    expect(names).toContain("carriage-entry");
   });
 });
 

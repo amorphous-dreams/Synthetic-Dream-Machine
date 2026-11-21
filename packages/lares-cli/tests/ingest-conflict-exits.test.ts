@@ -16,12 +16,14 @@ import { join } from "node:path";
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
   decide: (uri: string): Record<string, unknown> => ({ uri, decision: "ingest", grade: "clean", landed: 1 }),
+  refused: undefined as string | undefined,
 }));
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
   verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
+    if (h.refused !== undefined) return { status: "error", requestId: "req-refused-1", errorMessage: h.refused };
     const carriers = (args["carriers"] as Array<{ uri: string }>).map((c) => h.decide(c.uri));
     return { status: "done", requestId: "req-conflict-1", results: { summary: { ok: true, output: { carriers } } } };
   },
@@ -42,6 +44,7 @@ afterEach(() => {
   if (tmp) { rmSync(tmp, { recursive: true, force: true }); tmp = ""; }
   for (const [k, v] of [["LAR_ROOT", saved.r], ["LAR_BAGS", saved.b], ["LAR_WIKIS", saved.w]] as const) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   h.calls.length = 0;
+  h.refused = undefined;
   h.decide = (uri) => ({ uri, decision: "ingest", grade: "clean", landed: 1 });
 });
 
@@ -74,6 +77,17 @@ describe("lares ingest — a conflict lands nothing and the exit says so", () =>
     expect(error.message).toContain("lares shore take-disk");
     expect(error.message).toContain("lares shore take-records");
     expect((json["data"] as { conflicts: Array<{ uri: string; why: string }> }).conflicts.map((c) => c.uri)).toEqual([URI]);
+  });
+
+  test("★ a refused wave whose message names a conflict answers the conflict code, never verb-error ★", async () => {
+    h.refused = "slot-conflict: the records and the file both moved past their last agreement";
+    const { rc, json } = await ingestOne();
+    expect((json["error"] as { code: string }).code).toBe("conflict");
+    expect(rc).toBe(exitFor("conflict"));
+    // CONTROL: a refusal that names no conflict keeps the verb-error class.
+    h.refused = "the island refused the wave";
+    rmSync(tmp, { recursive: true, force: true }); tmp = "";
+    expect(((await ingestOne()).json["error"] as { code: string }).code).toBe("verb-error");
   });
 
   test("CONTROL: a wave whose every carrier landed exits zero", async () => {

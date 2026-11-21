@@ -13,6 +13,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { runEngineGolden, type EngineRunHooks, type GoldenScript } from "./goldens/interaction/engine-runner.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";
+import { mountSurface } from "./projection-surface.js";
 
 const settle = async (): Promise<void> => { for (let i = 0; i < 8; i++) await new Promise<void>((resolve) => process.nextTick(resolve)); };
 const hooks = (): EngineRunHooks => {
@@ -118,6 +119,29 @@ describe.skipIf(wikiSkip)(`declared cancellation and bubbling, engine half${skip
       { expect: { writes: [{ title: "$:/StoryList", list: ["lar:///t/d/other"] }, { title: "$:/HistoryList" }, { title: "lar:///t/d/target", text: "climbed" }] } },
     ], [{ title: "lar:///t/d/other", text: "other" }]));
     expect(failures).toEqual([`step 3: lar:///t/d/target holds text="0", the script expects "climbed"`]);
+  }, 120_000);
+
+  test("RED: a modified click and a middle click on a link dispatch nothing and still answer applied — CONTROL: the ordinary click on the same link moves the story", async () => {
+    const root = `<$navigator story="$:/StoryList" history="$:/HistoryList"><$link to="lar:///t/d/other" class="ln">other</$link></$navigator>`;
+    const s = await mountSurface(root, [{ title: "lar:///t/d/other", text: "other" }]);
+    try {
+      const { dispatchLarControlEvent } = await import("../src/tw5-projection.js");
+      const click = (ctrl: boolean, button: number) => dispatchLarControlEvent(s.event("ln", {
+        kind: "lar:act", action: "lar:click", modifiers: { ctrl, meta: false, alt: false, shift: false, button }, geometry: RECT,
+      }));
+      const story = (): string => JSON.stringify(s.wiki.getTiddler("$:/StoryList")?.fields["list"] ?? null);
+      const before = story();
+      click(true, 0);
+      await s.flush();
+      click(false, 1);
+      await s.flush();
+      expect(s.results.map((r) => r.status), "each modified click answers applied").toEqual(["applied", "applied"]);
+      expect(story(), "a modified or middle click opens nothing in the story").toBe(before);
+      click(false, 0);
+      await s.flush();
+      expect(s.results.map((r) => r.status)).toEqual(["applied", "applied", "applied"]);
+      expect(story(), "CONTROL: the ordinary click opens the tiddler").toContain("lar:///t/d/other");
+    } finally { s.stop(); }
   }, 120_000);
 
   test("a click no binding reaches climbs to the camera's top element and answers unclaimed, touching nothing", async () => {

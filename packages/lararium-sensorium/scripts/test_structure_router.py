@@ -45,7 +45,7 @@ def test_detect_kind_by_extension(name, expected):
 
 
 def test_detect_kind_promotes_memetic_by_doctype():
-    meme = b'<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n# x\n'
+    meme = b'<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n# x\n'
     assert sr.detect_kind("corpus.md", meme) == "memetic-wikitext"
 
 
@@ -91,9 +91,9 @@ def test_unknown_kind_returns_none():
 
 def test_sigil_row_parses_each_sharktooth():
     src = (
-        "<<~ lares aim a -> b >>\n"
-        "<<~ hud Aperture(11) OODA-HA(9) >>\n"
-        "<<~ ward * L-Prime >>\n"
+        "<<~ set lares=`aim` from=`a` to=`b`>>\n"
+        "<<~ set lares=`steer` aperture=`11/measure` ooda-ha=`9/declare-attention`>>\n"
+        "<<~ ward pull=`* L-Prime`>>\n"
     )
     tree = sr.parse_to_tree("memetic-wikitext", src.encode())
     assert tree["type"] == "document"
@@ -106,10 +106,10 @@ def test_sigil_row_parses_each_sharktooth():
 
 def test_ahu_block_nests_inner_sigils():
     src = (
-        "<<~ ahu #entry >>\n"
+        "<<~ ahu slot=`#/entry`>>\n"
         "prose under the section\n"
-        "<<~ confidence Canon 18/20 >>\n"
-        "<<~ pranala a -> b >>\n"
+        "<<~ confidence value=`Canon 18/20`>>\n"
+        "<<~ pranala from=`a` to=`b`>>\n"
         "<<~/ahu >>\n"
     )
     tree = sr.parse_to_tree("memetic-wikitext", src.encode())
@@ -122,8 +122,8 @@ def test_ahu_block_nests_inner_sigils():
 
 def test_doctype_and_pranala_header():
     src = (
-        '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n'
-        "<<~ ? -> lar:///ha.ka.ba/lares/api/corpus >>\n"
+        '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>\n'
+        "<<~ ? to=`lar:///ha.ka.ba/lares/api/corpus`>>\n"
     )
     tree = sr.parse_to_tree("memetic-wikitext", src.encode())
     types = [c["type"] for c in tree["children"]]
@@ -132,7 +132,7 @@ def test_doctype_and_pranala_header():
 
 
 def test_memetic_routes_through_the_carrier():
-    meme = b"<<~ ahu #x >>\n<<~ confidence Canon 18/20 >>\n<<~/ahu >>"
+    meme = b"<<~ ahu slot=`#/x`>>\n<<~ confidence value=`Canon 18/20`>>\n<<~/ahu >>"
     tree = sr.parse_to_tree("memetic-wikitext", meme)
     assert tree["type"] == "document"
     assert tree["children"][0]["type"] == "ahu_block"

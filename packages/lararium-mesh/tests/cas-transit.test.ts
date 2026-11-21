@@ -12,7 +12,7 @@ import { describe, test, expect } from "vitest";
 import { randomBytes } from "node:crypto";
 import {
   sealPrivateBody, readContentKey,
-  fetchCidOverTransit, makeCidResolver,
+  fetchCidOverTransit, makeCidResolver, verifyCidBytes,
   type CasTransitTransport, type CasHolder,
 } from "../src/index.js";
 
@@ -121,7 +121,7 @@ describe("makeCidResolver — LOCAL-FIRST, remote leg verifies + caches write-th
   });
 });
 
-// ── THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11) ─────────────────────────
+// ── THE FETCH DOOR (tiddler-carriage #/rulings, ruled 2026-09-11) ────────────────────────────────────────
 // The resolver reads a cid's CLASS off its own tag: a `blake3:` cid names a SEALED body (verify = BLAKE3), a
 // bare / `sha256:` cid names a CLEARTEXT `cid/` blob (verify = sha256). A fleet peer fetches the second kind
 // over the same five messages; the verify never widens — a bare hex that matches neither digest is rejected.
@@ -148,11 +148,24 @@ describe("the fetch door — a CLEARTEXT cid crosses transit under its own verif
     expect(await fetchCidOverTransit(clearCid, makeStoreTransport(store))).toBeNull();
   });
 
-  test("prefetch is a per-peer CAP — absent → off; declared → only its holder, only before its fence (M7: never a wall-clock expiry)", () => {
-    expect(prefetchAllows(undefined, "fleet-B", 1_000)).toBe(false);          // DEFAULT OFF
-    const cap: PrefetchCap = { tier: "VEIL", holder: "fleet-B", fence: 2_000 };
-    expect(prefetchAllows(cap, "fleet-B", 1_000)).toBe(true);
-    expect(prefetchAllows(cap, "fleet-C", 1_000)).toBe(false);                // another peer
-    expect(prefetchAllows(cap, "fleet-B", 2_001)).toBe(false);                // the peer's own fence moved past it
+  test("prefetch is a per-peer CAP — absent → off; declared → only its holder, only within its life (M7: never a wall-clock expiry)", () => {
+    expect(prefetchAllows(undefined, "fleet-B", "life-b")).toBe(false);       // DEFAULT OFF
+    const cap: PrefetchCap = { tier: "VEIL", holder: "fleet-B", life: "life-b" };
+    expect(prefetchAllows(cap, "fleet-B", "life-b")).toBe(true);
+    expect(prefetchAllows(cap, "fleet-C", "life-b")).toBe(false);             // another peer
+    expect(prefetchAllows(cap, "fleet-B", "life-b2")).toBe(false);            // another life of the peer
+  });
+});
+
+describe("verifyCidBytes refuses an algorithm tag it does not implement", () => {
+  const bytes = new TextEncoder().encode("named under a tag nobody verified");
+  const hex = sha256HexBytesSync(bytes);
+  test("a blob named under an unknown tag with its SHA-256 digest refuses; sha256, bare and blake3 still verify", () => {
+    expect(verifyCidBytes(bytes, `md5:${hex}`)).toBe(false);
+    expect(verifyCidBytes(bytes, `sha512:${hex}`)).toBe(false);
+    // CONTROLS
+    expect(verifyCidBytes(bytes, `sha256:${hex}`)).toBe(true);
+    expect(verifyCidBytes(bytes, hex)).toBe(true);
+    expect(verifyCidBytes(sealed.ciphertext, sealed.cid)).toBe(true);
   });
 });

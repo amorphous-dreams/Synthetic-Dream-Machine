@@ -1,6 +1,8 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, type TestProjectConfiguration } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import { webkit } from "playwright";
+import wasm from "vite-plugin-wasm";
+import { refusalIsHostDependency } from "./engine-refusal.js";
 
 // Web-surface tests run in real Chromium, Firefox and WebKit because this shore owns the DOM adapter and the engines
 // differ on exactly the seams it owns (editing stacks, focus, the accessibility tree). Pure phone-seat tests remain
@@ -20,8 +22,8 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
     return all;
   } catch (err) {
     const text = String((err as Error).message);
-    // Only the host-dependency refusal drops the instance; a missing executable or a broken install fails the run loud.
-    if (!/missing dependencies/i.test(text)) throw err;
+    // Only the host-dependency refusal drops the instance (`engine-refusal.ts`); a missing executable or a broken install fails the run loud.
+    if (!refusalIsHostDependency(text)) throw err;
     const libs = text.match(/lib[\w.-]+\.so[\d.]*/g) ?? [];
     const words = libs.length > 0
       ? `the host lacks ${libs.length} system libraries (${libs.slice(0, 3).join(", ")}, ...); a root run of "playwright install-deps webkit" cures it`
@@ -31,27 +33,96 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
   }
 }
 
-export default defineConfig(async () => ({
+/**
+ * THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle the
+ * road"; the browser side gets a deep Mu from scratch later, lar:///ha.ka.ba/kahua/memory/project/browser-mu-from-scratch).
+ * The default run is `web-node` alone: the files below stand pure of the DOM and run in Node. Every other test file here stays
+ * in the tree, untouched, and goes unrun until the browser Mu relights it. The account of what went dark and how to relight
+ * stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM).
+ *
+ * TO RELIGHT: `projects: [webNode, ...(await browserProjects())]` below.
+ */
+const webNode = {
+  plugins: [wasm()],
   test: {
-    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
-    projects: [
+    name: "web-node",
+    environment: "node" as const,
+    include: [
+      "tests/arrival-relay.test.ts",
+      "tests/carriage-frames.test.ts",
+      "tests/ceremony.test.ts",
+      "tests/console-door.test.ts",
+      "tests/engine-refusal.test.ts",
+      "tests/floor-broker.test.ts",
+      "tests/floor-tab.test.ts",
+      "tests/genesis-anchor.test.ts",
+      "tests/keyhive-wasm-boot.test.ts",
+      "tests/loaf-buffer.test.ts",
+      "tests/page-life.test.ts",
+      "tests/port-transport.test.ts",
+      "tests/vessel-port.test.ts",
+    ],
+  },
+};
+
+/** The browser-run projects (real Chromium, Firefox, WebKit; the Playwright e2e walks), dark by default. */
+export const browserProjects = async (): Promise<TestProjectConfiguration[]> => [
       {
         test: {
           name: "web-browser",
           include: ["tests/**/*.test.ts"],
-          exclude: ["tests/e2e/**"],
+          exclude: ["tests/e2e/**", "tests/vessel-host-*.test.ts"],
           // Three engines beside the node e2e project starve its 20 s page waits; the engines take their files one at a time.
           fileParallelism: false,
-          browser: { enabled: true, provider: playwright(), instances: await engines() },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: await engines() },
+        },
+      },
+      {
+        // The vessel worker's host over the real `@lararium/browser` (its Keyhive and Automerge WASM ride the wasm plugin): a
+        // scratch store per case, the vessel it lights standing in, the host's own wiring read.
+        plugins: [wasm()],
+        test: {
+          name: "vessel-host",
+          include: ["tests/vessel-host-*.test.ts"],
+          fileParallelism: false,
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium" as const }, { browser: "firefox" as const }] },
         },
       },
       {
         test: {
           name: "shore-writes-e2e",
-          include: ["tests/e2e/shore-writes.e2e.test.ts", "tests/e2e/second-boot.e2e.test.ts"],
+          include: ["tests/e2e/shore-writes.e2e.test.ts", "tests/e2e/second-boot.e2e.test.ts", "tests/e2e/vessel-worker.e2e.test.ts"],
           environment: "node",
           browser: { enabled: false },
           testTimeout: 90_000,
+        },
+      },
+      {
+        // The browser vessel re-opens its daemon island in process (red 6): this walk BUILDS a walk bundle of the Pronaos
+        // (`LAR_WALK_DOOR=1 vite build` into a scratch dir, the only build that carries the restart door), serves it and the
+        // default dist on two loopback ports, and drives a real Chromium. The build and two previews make it slow, and it
+        // owns the host for its run.
+        test: {
+          name: "daemon-island-reopen-e2e",
+          include: ["tests/e2e/daemon-island-reopen.e2e.test.ts"],
+          fileParallelism: false,
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 300_000,
+          hookTimeout: 600_000,
+        },
+      },
+      {
+        // The unlock ceremony (slice 1b): a WALK BUILD of the Pronaos (the walk's ward act rides only that build) served on the
+        // loopback, a real Chromium founding, unlocking and signing one ward act through the ceremony document.
+        test: {
+          name: "ceremony-e2e",
+          include: ["tests/e2e/ceremony.e2e.test.ts"],
+          fileParallelism: false,
+          environment: "node",
+          browser: { enabled: false },
+          testTimeout: 300_000,
+          hookTimeout: 600_000,
         },
       },
       {
@@ -59,7 +130,10 @@ export default defineConfig(async () => ({
         // Chromium acts on it. It stands a daemon, so its waits are long and it owns the process for its run.
         test: {
           name: "golden-whole-road-e2e",
-          include: ["tests/e2e/golden-whole-road.e2e.test.ts"],
+          // The seventh silent loss rides the same project: both files stand a daemon and a real Chromium, so they take
+          // the host one file at a time.
+          include: ["tests/e2e/golden-whole-road.e2e.test.ts", "tests/e2e/rest-before-reload.e2e.test.ts", "tests/e2e/glass-mirror.e2e.test.ts", "tests/e2e/glass-tabs.e2e.test.ts", "tests/e2e/mirror-boot-makes-no-request.e2e.test.ts"],
+          fileParallelism: false,
           environment: "node",
           browser: { enabled: false },
           testTimeout: 300_000,
@@ -68,6 +142,11 @@ export default defineConfig(async () => ({
           env: { LAR_SAME_ORIGIN: "true" },
         },
       },
-    ],
+];
+
+export default defineConfig({
+  test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
+    projects: [webNode],
   },
-}));
+});

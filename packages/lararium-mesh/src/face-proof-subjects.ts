@@ -33,6 +33,7 @@ import {
   FACE_CERTIFICATE_DOMAIN, FACE_CERTIFICATE_REQUEST_DOMAIN, FACE_PROOF_SUBJECT_DOMAIN, FACE_WITHDRAWAL_DOMAIN,
   FACE_WITHDRAWAL_GENESIS_DOMAIN, FACE_WITHDRAWN_KEY_DOMAIN, SESSION_ACT_DOMAIN, SESSION_AUTHORITY_DOMAIN,
   SESSION_CERTIFICATE_DOMAIN, SESSION_FINISH_DOMAIN,
+  PLACE_PROOF_SUBJECT_DOMAIN, PLACE_SESSION_ACT_DOMAIN, PLACE_SESSION_AUTHORITY_DOMAIN, PLACE_SESSION_CERTIFICATE_DOMAIN,
 } from "./domains.js";
 import { acceptEd25519Key, readEd25519, type Ed25519KeyRefusal, type Ed25519Refusal } from "./ed25519-door.js";
 import { CAPABILITY_PROFILES, isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
@@ -241,6 +242,89 @@ export function withdrawalHead(event: FaceWithdrawal): Digest {
 /** The reference a local session carries for its face's proof subject. One per (face key, Nexus). */
 export function faceProofSubjectRef(scope: FaceScope): string {
   return digestOf(image(FACE_PROOF_SUBJECT_DOMAIN, ...scopeFields(scope)));
+}
+
+// ── A place-anchored session: the face's atom at its own vessel's place ────────────────────────────
+
+/**
+ * ONE face at ONE place: the face's atom presented to its own vessel, which dials no Nexus. `place` names the vessel's
+ * W29 place KEL prefix. A place scope shares no image with a Nexus scope: every place image leads with a place name.
+ */
+export interface PlaceScope {
+  readonly atomKey: FaceKey;
+  readonly place:   string;
+}
+/** A place session's certificate: the face's atom signs one session key and its hand's profile at one place. */
+export interface PlaceSessionCertificate {
+  readonly scope:      PlaceScope;
+  readonly sessionKey: SessionKey;
+  readonly profile:    CapabilityProfile;
+  readonly signature:  Signature;       // by the face's atom
+}
+/** What a place session signs: an ordinary act, and an act that changes who holds authority. A place dials no gate,
+ *  so no place session signs a dial's finish. */
+export const PLACE_SIGNING_PURPOSES = ["act", "authority"] as const;
+export type PlaceSigningPurpose = (typeof PLACE_SIGNING_PURPOSES)[number];
+const PLACE_PURPOSE_DOMAINS: Readonly<Record<PlaceSigningPurpose, string>> = Object.freeze({
+  act: PLACE_SESSION_ACT_DOMAIN, authority: PLACE_SESSION_AUTHORITY_DOMAIN,
+});
+export function isPlaceSigningPurpose(value: unknown): value is PlaceSigningPurpose {
+  return typeof value === "string" && (PLACE_SIGNING_PURPOSES as readonly string[]).includes(value);
+}
+/** A place, in the KEL-prefix alphabet (base64url, with `.`): no `@` or `:`, so the admit reference `place:<place>@<head>` reads one way. */
+const PLACE = /^[A-Za-z0-9_.-]{1,256}$/;
+const placeFields = (scope: PlaceScope): Uint8Array[] => [hexToBytes(scope.atomKey), utf8Bytes(scope.place)];
+
+/** Read a place scope: exact keys, an atom key the door accepts, a place in its one spelling. */
+export function readPlaceScope(value: unknown): Read<PlaceScope> {
+  return guarded(() => {
+    if (!isRecord(value) || !exactKeys(value, ["atomKey", "place"])) return refuse("subject-malformed");
+    const atomKey = readFaceKey(value["atomKey"]);
+    if (refused(atomKey)) return atomKey;
+    const place = value["place"];
+    if (typeof place !== "string" || !PLACE.test(place)) return refuse("subject-malformed");
+    return { read: Object.freeze({ atomKey: atomKey.read, place }) };
+  });
+}
+/** The reference a place session carries for its face's proof subject. One per (atom, place). */
+export function placeProofSubjectRef(scope: PlaceScope): string {
+  return digestOf(image(PLACE_PROOF_SUBJECT_DOMAIN, ...placeFields(scope)));
+}
+/** The bytes the face's atom signs over one place session's key and its profile. */
+export function placeSessionCertificateImage(scope: PlaceScope, sessionKey: SessionKey, profile: CapabilityProfile): Uint8Array {
+  return image(PLACE_SESSION_CERTIFICATE_DOMAIN, ...placeFields(scope), hexToBytes(sessionKey), utf8Bytes(profile));
+}
+/** The bytes a place session's key signs under one purpose over one payload. */
+export function placeSessionSignatureImage(purpose: PlaceSigningPurpose, scope: PlaceScope, sessionKey: SessionKey, payload: Uint8Array): Uint8Array {
+  return image(PLACE_PURPOSE_DOMAINS[purpose], ...placeFields(scope), hexToBytes(sessionKey), payload);
+}
+/** Read a place session's certificate: its shape, two distinct keys, a known profile, and the atom's signature over it. */
+export function readPlaceSessionCertificate(value: unknown): Read<PlaceSessionCertificate> {
+  return guarded(() => {
+    if (!isRecord(value) || !exactKeys(value, ["scope", "sessionKey", "profile", "signature"])) return refuse("subject-malformed");
+    const scope = readPlaceScope(value["scope"]);
+    if (refused(scope)) return scope;
+    const sessionKey = readSessionKey(value["sessionKey"]);
+    if (refused(sessionKey)) return sessionKey;
+    const profile = value["profile"];
+    if (!isCapabilityProfile(profile)) return refuse("subject-malformed");
+    const signature = readSignature(value["signature"]);
+    if (refused(signature)) return signature;
+    if ((scope.read.atomKey as string) === sessionKey.read) return refuse("keys-not-distinct");
+    return checked(signature.read, placeSessionCertificateImage(scope.read, sessionKey.read, profile), scope.read.atomKey)
+      ?? { read: Object.freeze({ scope: scope.read, sessionKey: sessionKey.read, profile, signature: signature.read }) };
+  });
+}
+/** Read one signature of a place session's key: a purpose within the certificate's profile, over exactly `payload`. */
+export function readPlaceSessionSignature(certificate: PlaceSessionCertificate, purpose: unknown, payload: unknown, signature: unknown): Read<PlaceSigningPurpose> {
+  return guarded(() => {
+    if (!isPlaceSigningPurpose(purpose) || !(payload instanceof Uint8Array)) return refuse("subject-malformed");
+    const sig = readSignature(signature);
+    if (refused(sig)) return sig;
+    if (!profileSigns(certificate.profile, purpose)) return refuse("purpose-beyond-profile");
+    return checked(sig.read, placeSessionSignatureImage(purpose, certificate.scope, certificate.sessionKey, payload), certificate.sessionKey)
+      ?? { read: purpose };
+  });
 }
 
 // ── What a session signer signs ─────────────────────────────────────────────────────────────────

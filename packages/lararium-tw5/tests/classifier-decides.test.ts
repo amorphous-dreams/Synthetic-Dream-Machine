@@ -91,13 +91,13 @@ describe("the property the matchers must hold", () => {
   const CARRIER_SOH = /<<\^[^&\n]*&#x(?:0001|0011);/;
 
   test("only the control head opens a carrier when the classifier follows", () => {
-    expect(CARRIER_SOH.test("<<^ code=\"&#x0001;\" namespace=\"⚕\" from=\"?\" -> to=\"lar:///x\">>")).toBe(true);
-    expect(CARRIER_SOH.test("<<^ code=\"&#x0011;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>")).toBe(true);
-    expect(CARRIER_SOH.test("<<~ code=\"&#x0001;\" namespace=\"⚕\" from=\"?\" -> to=\"lar:///x\">>")).toBe(false);
+    expect(CARRIER_SOH.test("<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///x`>>")).toBe(true);
+    expect(CARRIER_SOH.test("<<^ code=`&#x0011;` namespace=`⊙` from=`?` to=`lar:///x`>>")).toBe(true);
+    expect(CARRIER_SOH.test("<<~ code=`&#x0001;` namespace=\"⚕\" from=`?` to=`lar:///x`>>")).toBe(false);
   });
 
   test("no classifier means no carrier, under either head", () => {
-    expect(CARRIER_SOH.test("<<~ ahu #/entry>>")).toBe(false);
-    expect(CARRIER_SOH.test("<<^ code=\"&#x0002;\">>")).toBe(false);   // a frame sigil, never a carrier opener
+    expect(CARRIER_SOH.test("<<~ ahu slot=`#/entry`>>")).toBe(false);
+    expect(CARRIER_SOH.test("<<^ code=`&#x0002;`>>")).toBe(false);   // a frame sigil, never a carrier opener
   });
 });

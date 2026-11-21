@@ -1,0 +1,189 @@
+========================================
+a sigil with text after its >> reads as a text line, never a block sigil (RED)
+========================================
+<<~ x a=`ni:///x`>>;abc after the bare ni:.
+---
+
+(document
+  (text_line))
+
+========================================
+a macrocall with text after its >> reads as a text line (RED)
+========================================
+<<m>>;abc
+---
+
+(document
+  (text_line))
+
+========================================
+a macrocall leading a list or heading marker reads as a text line (RED)
+========================================
+<<m>>* item
+<<m>>! head
+---
+
+(document
+  (text_line)
+  (text_line))
+
+========================================
+a macrocall with a trailing space reads as a text line, as stock TW5 reads it (RED)
+========================================
+<<m>> 
+---
+
+(document
+  (text_line))
+
+========================================
+two calls on one line read as a text line, never one macrocall block (RED)
+========================================
+<<a>> <<b>>
+---
+
+(document
+  (text_line))
+
+========================================
+two sigils on one line read as a text line (RED)
+========================================
+<<~ a x=`1`>><<~ b y=`2`>>
+---
+
+(document
+  (text_line))
+
+========================================
+a trailing space after the >> is text, as stock TW5 reads it (RED)
+========================================
+<<~ x a=`b`>> 
+---
+
+(document
+  (text_line))
+
+========================================
+the old foot — text after the ETX control sigil — reads as a text line (RED)
+========================================
+<<^ code=`&#x0003;`>>ni:///sha-256;abc
+---
+
+(document
+  (text_line))
+
+========================================
+an opener with text after its >> pairs with nothing and reads as text (RED)
+========================================
+<<~ ahu #/a>>text
+body
+<<~/ahu>>
+---
+
+(document
+  (text_line)
+  (text_line)
+  (sigil
+    body: (sigil_body)))
+
+========================================
+a close with text after its >> closes nothing — the opener stands lone, the close line reads as text (RED)
+========================================
+<<~ ahu #/a>>
+body
+<<~/ahu>>tail
+---
+
+(document
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (text_line)
+  (text_line))
+
+========================================
+a sigil alone on its line stays a block sigil (CONTROL)
+========================================
+<<~ x a=`b`>>
+prose
+---
+
+(document
+  (sigil
+    body: (sigil_body))
+  (blank_line)
+  (text_line))
+
+========================================
+a macrocall alone on its line stays a macrocall block (CONTROL)
+========================================
+<<m>>
+prose
+---
+
+(document
+  (macrocall_block)
+  (text_line))
+
+========================================
+a macrocall with arguments ending its line stays a macrocall block (CONTROL)
+========================================
+<<m a="b" c=<<d>>>>
+---
+
+(document
+  (macrocall_block))
+
+========================================
+the reshaped foot alone on its line stays a control sigil (CONTROL)
+========================================
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7uFf47o8VMhpXmwKCHt2Ev8Kyin9lwMX-N3DlYeX73k`>>
+---
+
+(document
+  (control_sigil
+    body: (sigil_body)))
+
+========================================
+the control frame stays control sigils, one per line (CONTROL)
+========================================
+<<^ code=`&#x0001;` from=`?` to=`lar:///a.b.c`>>
+<<^ code=`&#x0004;` to=`?`>>
+---
+
+(document
+  (control_sigil
+    body: (sigil_body))
+  (blank_line)
+  (control_sigil
+    body: (sigil_body)))
+
+========================================
+a pair opened and closed on one line stays a block pair (CONTROL)
+========================================
+<<~ ahu #/a>><<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    close: (sigil_close
+      body: (sigil_body))))
+
+========================================
+an opener ending its line pairs with a close ending its line (CONTROL)
+========================================
+<<~ ahu #/a>>
+body
+<<~/ahu>>
+---
+
+(document
+  (ahu_block
+    open: (sigil
+      body: (sigil_body))
+    (blank_line)
+    (text_line)
+    close: (sigil_close
+      body: (sigil_body))))

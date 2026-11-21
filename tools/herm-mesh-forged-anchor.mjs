@@ -23,7 +23,7 @@ if (!/^[0-9a-f]{64}$/.test(publisher ?? "")) throw new Error("relay-2 names no p
 
 const own = (await ident.loadVesselVerifyingKey()).toLowerCase();
 if (bundle.contract?.nym?.toLowerCase() !== own) throw new Error("the opening contract names another reader");
-const signOwn = mesh.ed25519SignerFromSeed(await ident.loadVesselSigningSeed());
+const signOwn = await ident.vesselPlaceSignerDoor();
 const seed = randomBytes(32);
 const stranger = await mesh.ed25519VerifyingKeyFromSeed(seed);
 const signStranger = mesh.ed25519SignerFromSeed(seed);
@@ -53,11 +53,11 @@ try {
     const carriers = await mesh.foldCarrierSet(reading.denyBoard, reading.roster, ancestry);
     const index = mesh.hearthPinIndex();
     mesh.filePlaceFloorPins(index, mesh.placeFloorPinsFromBoard(board), {
-      nexusHex: Buffer.from(bundle.aid, "utf8").toString("hex"), route: mesh.ORACLE_SOCKET_ROUTE, carriers,
+      nexusHex: Buffer.from(bundle.aid, "utf8").toString("hex"), route: mesh.FLOW_SOCKET_ROUTE, kelEntries: mesh.placeKelEntriesFromBoard(board), standing: { via: "carrier", carriers },
     });
     const present = (arm) => mesh.pullAndVerifyFlow(`http://localhost:${process.env.MESH_PORT_RELAY_2 ?? "18093"}`, {
       pins: index, hearth: publisher, nexus: Buffer.from(bundle.aid, "utf8").toString("hex"),
-      presentation: { kind: "place", placeKey: own, sign: async (bytes) => mesh.hexToBytes(await signOwn(bytes)), arm },
+      presentation: { kind: "place", placeKey: own, sign: async (bytes) => mesh.hexToBytes(await signOwn.signFloor(mesh.carriageFloorDutyOf(bytes), bytes)), arm },
       audience: mesh.DAEMON_BAG_ID, deadlines: pins.dialDeadlines(), verifyingKey: publisher,
     });
     const twin = await present(armWith(real));

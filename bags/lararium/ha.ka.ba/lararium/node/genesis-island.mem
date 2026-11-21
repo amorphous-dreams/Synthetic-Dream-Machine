@@ -1,13 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/genesis-island">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/genesis-island`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/genesis-island.mem"
 l-space     = "lararium"
-mana        = 8
 role        = "invariant law: the genesis island BUILD — the three-layer I/O split that keeps the artifact platform-neutral, the DECLARED blob class each vendored file carries into its region, and the determinism the actor seed buys."
 source-file = "packages/lararium-node/scripts/build-genesis-island.ts"
 title       = "lar:///ha.ka.ba/lararium/node/genesis-island"
@@ -15,7 +13,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/genesis-island"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The genesis island ~ how one artifact gets built, and why the builder holds no doctrine
 
@@ -25,7 +23,7 @@ what it declares about each blob, and what it refuses to decide.
 
 <<~/ahu>>
 
-<<~ ahu #/three-layers>>
+<<~ ahu slot=`#/three-layers`>>
 
 !! Three layers, and the middle one touches no disk
 
@@ -41,14 +39,49 @@ verification witness.
 ''The split carries the portability.'' A build step that reached for `fs` inside layer B would bind the
 artifact's shape to one host, and every host must agree on the artifact exactly.
 
-''What does NOT belong here.'' Corpus memes load at runtime through the bag store's recipe stack, and
-the runtime document urls each vessel keeps (its crossroads pointer in its own catalog; the live system documents in
-the Kahu realm's registrations) never enter the island. Neither counts as genesis material: the vessel carries the first as
-content and discovers the second as state.
+''The founding floor rides beside the code.'' Beside the engine and the plugins, the seed names the genesis floor: one
+history-free snapshot per public house-canon bag (`bags/lares` and `bags/lararium` always; every other holding but the public board
+`crossroads`, and only where the bag's own `meta.mem` declares `cap-tier = "public"`, so the referee's `contract` bag
+`elyncia-referee` keys no snapshot), each addressed by CID under one manifest the seed names (`genesis-cid-floor`). Every wiki's
+recipe composes that floor read-only through `@oracle`, so the canon carriers reach every vessel as static content before any
+document syncs. The floor moves on its own clock (#/the-floor-rides-releases).
+
+''What does NOT belong here.'' The LIVE house-canon documents and the runtime document urls each vessel keeps (its crossroads
+pointer in its own catalog; the live house-canon documents in the Kahu realm's registrations) never enter the island. The bake
+reads carriers and never a document: a vessel carries the floor as content and discovers the live documents as state.
 
 <<~/ahu>>
 
-<<~ ahu #/the-declaration>>
+<<~ ahu slot=`#/the-floor-rides-releases`>>
+
+!! The floor rides releases ~ two bakes, by intent
+
+Genesis carries two kinds of bytes on two clocks. CODE (the engine, the memetic-wikitext grammar, the boot shadows, the stock
+themes, and the floor's plugins offering, whose bytes derive from those blobs alone) moves with the tree. The FOUNDING FLOOR
+stays in genesis as the fallback an offline founding stands on and the vessel pin's starting point (no pin record reads as the
+genesis floor), and it moves only at a `main` release (local-first: a founding with no network still stands on house canon).
+
+* ''The develop bake'' (`pnpm --filter @lararium/node build:genesis`, the default, and every staged bake `lares vessel bake` runs)
+re-cuts the code and CARRIES the floor (`carryGenesisFloor`, `packages/lararium-node/src/genesis-floor.ts`): it reads the
+snapshots the checkout's tracked `genesis/` names, each checked against its CID, carries their bytes forward unchanged, and reads
+no carrier. A canon edit on develop therefore moves no genesis byte.
+* ''The release bake'' (`pnpm --filter @lararium/node build:genesis-release`, the cut a `main` release makes before its image and
+release manifest, <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor#/the-release-manifest`>>) re-cuts the floor from the
+checkout's tracked carriers as well (`cutGenesisFloor`), and lands in one labelled `GENESIS RE-BAKE` commit on the release.
+
+''The manifest keeps its code fields.'' The floor manifest names `engine` and `plugins` beside its snapshots (the format road rank
+4h ruled), so a develop bake re-stamps those two fields with the engine and offering it packs. A plugin change moves the
+offering, the manifest and the seed's floor witness, and leaves every snapshot as the last release cut it; the manifest stays
+honest about the code its floor rides beside. Dropping the code fields would change the format rank 4h ruled, so the fields stay.
+
+''What reads which.'' The genesis-parity witness reads each code blob against its source, so a plugin or engine edit reads
+DRIFT until a bake or a declaration, and reads the floor against its own coherence (manifest, offering, snapshot rows, the
+seed's floor witness), never against the live tree, so a canon edit reads green. A Nexus moves a standing vessel's floor
+by its own release road (`lares nexus release --cut` from live canon, the accept, a reboot), apart from genesis.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-declaration`>>
 
 !! A blob's class gets DECLARED at the mint, never read off its path
 
@@ -71,7 +104,7 @@ that re-derived the class from a path would stand as a second reader, free to di
 
 <<~/ahu>>
 
-<<~ ahu #/regions>>
+<<~ ahu slot=`#/regions`>>
 
 !! Three regions, two ratchets
 
@@ -79,7 +112,7 @@ The build prints three CIDs and seals each into the seed as a witness tiddler, a
 three tiers of one thing:
 
 |!Region |!What it folds |!What advancing it means |
-|`engineCid` |the TW5 core — the hearth true-name |the SLOW ratchet; it re-binds membership mesh-wide and rides inside every signed device-delegation preimage |
+|`engineCid` |the TW5 core — the engine a place boots |the SLOW ratchet; it moves the engine under every vessel of a mesh, and no device-delegation edge signs it (an edge's `hearthTrueName` names the seed-charter Nexus AID) |
 |`grammarCid` |the required grammar ALONE |marked to RETIRE — the grammar holds no versions (kahu#/contract); retirement owed in code, pending a scout's measurement of its consumers |
 |`pluginsCid` |the plugin-class blobs the bake packs — neither the grammar nor the base seed |a REGION, never a kāhuli tier — an operator's own offerings travel by `nexus publish`, and plugin drift never counts as grammar drift |
 
@@ -89,7 +122,7 @@ domain literal. Three hand-written folds read like an inconsistency and enact th
 
 <<~/ahu>>
 
-<<~ ahu #/determinism>>
+<<~ ahu slot=`#/determinism`>>
 
 !! The actor seed makes two builds the same build
 
@@ -113,16 +146,16 @@ than none, because every vessel downstream would carry the lie by hash.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/scripts/build-genesis-island.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/scripts/build-genesis-island.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Y0q10VcxsOOYpGVXDGoo0yPZIVx4KcrYWMI1lIdZ3RQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xc5pEFwWWHjdnRhoCuRSerck1akhb7PnDFPjKvuI5fQ`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

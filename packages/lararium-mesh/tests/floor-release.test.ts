@@ -26,12 +26,12 @@ import { FLOOR_RELEASE_DOMAIN, KAHU_CABAL_ADMIT_DOMAIN, FLOW_POINTER_DOMAIN } fr
 import { openPromotionApproval, signPromotionApproval } from "../src/promotion-approval.js";
 import type { SealEpoch } from "../src/wax-stamp.js";
 import {
-  FLOOR_RELEASE_PREFIX, assembleFloorRelease, floorReleaseBodyBytes, floorReleaseCid, floorReleaseRowsFromBoard,
+  FLOOR_RELEASE_PREFIX, assembleFloorRelease, floorReleaseBodyBytes, floorReleaseCid, floorReleaseEntriesFromBoard,
   foldFloorReleases, openFloorReleaseBody, rosterOfLineage, verifyFloorRelease, writeFloorRelease, type FloorRelease,
 } from "../src/floor-release.js";
 import { seatedCharter, uncommittedSuccessor, type SeatedCharter } from "./charter-fixture.js";
 
-const MANIFEST_BYTES = new TextEncoder().encode('{"format":"lararium-floor/v1","engine":"e"}');
+const MANIFEST_BYTES = new TextEncoder().encode('{"format":"lararium-floor","engine":"e"}');
 const MANIFEST = sha256HexBytesSync(MANIFEST_BYTES);
 const OTHER_BYTES = new TextEncoder().encode("a manifest the cabal never approved");
 
@@ -199,7 +199,7 @@ describe("the chain on the crossroads board", () => {
     try {
       const handle = repo.create(emptyLarDoc());
       handle.change((d) => { for (const r of releases) writeFloorRelease(d, r); });
-      return floorReleaseRowsFromBoard(handle.doc());
+      return floorReleaseEntriesFromBoard(handle.doc());
     } finally { await repo.shutdown(); }
   }
 
@@ -251,7 +251,7 @@ describe("the chain on the crossroads board", () => {
         d.tiddlers[`${FLOOR_RELEASE_PREFIX}bad`] = { tiddler: { title: `${FLOOR_RELEASE_PREFIX}bad`, text: "{not json" } } as never;
         d.tiddlers["$:/lar/other/x"] = { tiddler: { title: "$:/lar/other/x", text: "{}" } } as never;
       });
-      expect(floorReleaseRowsFromBoard(handle.doc())).toEqual([]);
+      expect(floorReleaseEntriesFromBoard(handle.doc())).toEqual([]);
     } finally { await repo.shutdown(); }
   });
 });

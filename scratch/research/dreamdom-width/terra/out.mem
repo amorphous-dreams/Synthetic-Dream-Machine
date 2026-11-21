@@ -1,0 +1,167 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/dreamdom-width/terra/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/dreamdom-width/terra/out.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/dreamdom-width-evidence-and-decision`>>
+
+! DreamDOM width: evidence and decision
+
+Ink-Clerk · Research cut: 2026-10-28. ''SOURCED'' labels external evidence with a URL and publication date where known; otherwise the date records access. ''REASONED'' labels recommendations, calculations, inferences, and the operator-supplied project record. The latter has not been independently reproduced. A precedent's default describes that product or framework, not proof of a DreamDOM default. “Broke” includes documented limitations as well as actual failures, distinguished below.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decision`>>
+
+!! Decision
+
+''REASONED — Default to full capability, with skinny first paint and promotion to full, wherever the vessel actually grants the mirror and the real boot succeeds.'' Apply that same policy to phones, tablets, and desktop browsers, rather than permanently classifying phones as skinny. This respects the operator's instinct and uses the already-built skinny-first path. An installed iOS or Android app may obtain additional vessel capabilities, but installation alone neither grants a mirror nor proves memory headroom. A leaf may still open the mirror if its port grants it; full //vessel status// and full //camera width// name different things.
+
+''REASONED — Treat this as a provisional rollout recommendation, not a claim that phones have passed the gate.'' The one WSL2 Chromium result supports a full-default experiment, not a cross-platform performance certification. Require real iOS/WebKit, Android/Chrome, and desktop-engine measurements before calling the default validated; use a narrower release cohort if the operator's release process requires evidence first. Keep story held until promotion lands. Keep none as a capability fallback, not the preferred default: its supplied 63 kB/key misses the 52 kB budget by 11 kB, about 21.2%.
+
+''REASONED — Preserve the boot contract.'' The port grant authorizes a mirror; do not infer authority from URL flags, host names, install status, heap heuristics, or a Boolean. Boot the actual shadow root, CAS read, engine, first snapshot, and paint as the probe. On a named step failure, caught `RangeError`/`QuotaExceededError`, or grant revocation, record the reason and take at most one step-down per boot; never use elapsed time to decide width. Skinny-first promotion does not grant a second fallback or authorize a clock-based fallback. A revoked grant must immediately end mirror access; route to none only if the sink capability remains granted and operational, otherwise surface unavailable. An uncatchable process kill cannot execute this fallback; recovery needs a fresh boot and durable state, without assuming the kill's cause.
+
+''REASONED — Make the one-step rule operational.'' For a full target, the one permitted transition after failure selects skinny if its required mirror grant and actual boot remain viable; otherwise select none if its sink grant and prerequisites remain viable. For a skinny target, select none when viable. This selects one alternative, not a chain of attempts. If the chosen fallback fails, stop with its named failure and a recoverable face; do not automatically try a third tier in the same boot. If the implementation cannot distinguish which fallback is viable without trying it, make the fallback selection explicit in the grant/boot contract rather than adding speculative probes. Story enters this table only after its promotion and grants actually exist.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-the-supplied-measurement-says`>>
+
+!! What the supplied measurement says
+
+''REASONED — Operator-supplied test:'' WSL2, Chromium, 2,000 tiddlers, median of three: stock/full/skinny post-paint heap 32.2/35.6/21.7 MiB; first paint 836/942/677 ms; keystroke-to-paint p95 15.1/26.5/23.7 ms. Full previously reached 33 s and 106 MiB before an echo-storm fix. The source here is the operator's prompt, not a published benchmark; phone, Android, and WebKit remain unmeasured.
+
+''REASONED — Gate arithmetic:'' full adds 3.4 MiB, or 10.6%, against stock, below the stated +25% limit (40.25 MiB) and 150 MiB tripwire. Skinny uses about 38.9% less measured heap than full. Full paints 106 ms later than stock and 265 ms later than skinny, and its input p95 rises 11.4 ms over stock. These are single-host comparisons, not confidence intervals. The stated gate concerns heap after paint; it does not establish peak heap, native/graphics memory, total worker-plus-page process footprint, battery use, or long-session survival.
+
+''SOURCED — Responsiveness context:'' Google's INP guidance calls at most 200 ms at the 75th percentile of page views good, segmented by mobile and desktop; INP aggregates interactions differently from this per-keystroke p95. Its underlying research discusses approximately 100 ms for perceived immediacy. Neither threshold proves an editor's typing quality. [[INP guidance|https://web.dev/articles/inp]], accessed 2026-10-28; [[threshold rationale|https://web.dev/articles/defining-core-web-vitals-thresholds]], 2020, accessed 2026-10-28.
+
+''REASONED — Release evidence to collect:'' compare stock, skinny, full and none on identical representative small and large wikis, plugins and images; record peak and steady process footprint including worker, paint, p50/p95 typing, scroll, search completeness, cold/warm boot, battery and background activity, repeated open/close, loss of grant, and process death/recovery. Run on actual iOS 26 WebKit, Android 16 Chrome, tablet, and desktop Chromium/WebKit/Firefox; report device, OS, engine, install state, sample count, distributions and failures. Apply the +25% and 150 MiB project gate to like-for-like full and stock heap, and separately report process peaks. A gate failure informs release policy; it does not silently become a new runtime clock, host classifier, or extra fallback trigger.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/prior-art-rules-defaults-and-failures`>>
+
+!! Prior art: rules, defaults, and failures
+
+''SOURCED — Astro islands.'' Rule: component author chooses interactivity and hydration scheduling. Default: framework components render HTML/CSS without client JavaScript; `client:*` explicitly hydrates a component, including on load, idle, or visibility. Documented limitation: a component without a directive stays noninteractive; page authors must identify interaction boundaries. This fits content pages; it does not establish that an interactive local editor should default to no engine. [[Astro islands|https://docs.astro.build/en/concepts/islands/]], accessed 2026-10-28.
+
+''SOURCED — Fresh islands.'' Rule: server renders the page and components in the islands directory become client-interactive. Default: ordinary pages ship no client-side JavaScript; explicit islands carry it. Documented limitation: a static page alone cannot supply the intended interactive behavior; serialization and island boundaries demand design work. [[Fresh adding interactivity|https://usefresh.dev/docs/1.x/getting-started/adding-interactivity]], accessed 2026-10-28; [[current islands documentation|https://usefresh.dev/docs/concepts/islands]], accessed 2026-10-28.
+
+''SOURCED — Qwik resumability.'' Rule: serialize state and listener/component information and resume work lazily rather than replaying the whole application to hydrate. Default: lazy execution, with event handlers and their dependencies prefetched by default. Documented limitations: ordinary class prototypes and streams cannot generally serialize; client-only execution may be necessary. Prefetch also consumes resources before a person interacts. [[Resumability|https://qwik.dev/docs/concepts/resumable/]]; [[prefetching|https://qwik.dev/docs/advanced/modules-prefetching/]], both accessed 2026-10-28.
+
+''SOURCED — React Server Components and selective hydration.'' Rule: a framework separates server and client component boundaries; Suspense boundaries permit streaming and selective hydration. Default depends on the integrating framework, not React alone; client components still require client code. Documented limitation: React 19's RSC component feature has stable status, but the underlying framework/bundler APIs can break between minor versions; Suspense also depends on compatible data and code boundaries. [[React Server Components|https://react.dev/reference/rsc/server-components]]; [[Suspense|https://react.dev/reference/react/Suspense]], accessed 2026-10-28.
+
+''SOURCED — Offline-first progressive enhancement.'' Rule: keep application resources and structured state locally available, then use the network when available. There is no universal renderer-tier default: Cache Storage and IndexedDB hold different kinds of resources and share origin storage quotas. Documented limitation: caching a shell alone does not make all dependent data available, and storage limits and eviction require care. [[Offline data|https://web.dev/learn/pwa/offline-data]], accessed 2026-10-28; [[Notion's offline engineering|https://www.notion.com/blog/how-we-made-notion-available-offline]], 2025-12-11.
+
+''SOURCED — Partytown.'' Rule: explicitly opt selected third-party scripts into a worker; ordinary scripts do not automatically move. Documented limitations: cross-thread DOM access slows UI-heavy scripts; asynchronous handlers cannot cancel a main-thread event with `preventDefault`; scripts can fail silently; some cross-origin iframe storage does not persist. [[Trade-offs|https://partytown.qwik.dev/trade-offs/]]; [[FAQ|https://partytown.qwik.dev/faq/]], accessed 2026-10-28.
+
+''SOURCED — Comlink.'' Rule: developer explicitly wraps an endpoint and exposes an API; this RPC library does not choose a renderer. Default: arguments and return values use structured cloning, while remote calls are asynchronous; transfer and proxy require explicit use. Documented limitations: DOM events do not clone directly and need a handler; cloning costs and asynchronous calls remain even when syntax hides messages. [[Comlink README|https://github.com/GoogleChromeLabs/comlink]], accessed 2026-10-28.
+
+''SOURCED — WorkerDOM and AMP.'' Rule: `amp-script` opts custom code into a worker-backed DOM subset; ordinary AMP components remain the normal default. WorkerDOM mirrors worker-side mutations to the real DOM in one direction. Documented limitations: main-thread changes do not synchronize back; layout reads need asynchronous alternatives; some APIs and libraries such as unmodified jQuery do not work, and mutation restrictions prevent layout shift. [[AMP custom JavaScript|https://amp.dev/documentation/guides-and-tutorials/develop/custom-javascript]]; [[amp-script|https://amp.dev/documentation/components/amp-script]], accessed 2026-10-28.
+
+''SOURCED — Figma.'' Rule in its 2019 multiplayer account: load a document copy on the client, accept offline edits to an open document, and reapply them to current server state on reconnect; the server coordinates a document's connected clients. The account does not specify a device-adaptive renderer default. Documented edge case: offline object creation cannot wait for server-assigned IDs; concurrent changes require explicit conflict handling. This client/server model does not match the house's worker-only authority. [[Figma multiplayer|https://www.figma.com/blog/how-figmas-multiplayer-technology-works/]], 2019.
+
+''SOURCED — tldraw.'' Rule: retain shapes in the editor store but automatically cull offscreen rendering; selected or edited shapes remain visible. Default culling applies to shapes, not a phone-versus-desktop width tier. Persistence needs an explicit `persistenceKey` or another host-provided backend. Documented performance pitfalls include custom shapes disabling culling and expensive or continuously animated renders. [[Performance|https://tldraw.dev/sdk-features/performance]]; [[persistence|https://tldraw.dev/sdk-features/persistence]], accessed 2026-10-28.
+
+''SOURCED — Excalidraw.'' Rule: the embeddable editor exposes scene state and leaves collaboration to its host application; no automatic device renderer tier follows from the cited API. Default: collaboration does not ship in the component package. Documented constraint: persisted file caches can contain files no longer referenced by scene elements and require reconciliation. [[FAQ|https://docs.excalidraw.com/docs/%40excalidraw/excalidraw/faq]]; [[API|https://docs.excalidraw.com/docs/%40excalidraw/excalidraw/api/props/excalidraw-api]], accessed 2026-10-28.
+
+''SOURCED — Obsidian.'' Rule: a local vault holds files, with an optional remote sync service; its cited documentation does not describe a renderer tier chosen by device. Default: Sync's remote vault uses end-to-end encryption unless another option is chosen; the local vault itself is not encrypted by Obsidian. Documented failure: loss of the encryption password prevents adding devices to that remote vault; local copies ordinarily remain. [[Security and privacy|https://help.obsidian.md/Obsidian%20Sync/Security%20and%20privacy]], accessed 2026-10-28.
+
+''SOURCED — Logseq.'' Its documentation describes graphs from existing Markdown files and synchronization across devices. The cited material does not establish a default renderer tier, its current sync conflict policy, or a device-specific failure; do not infer them. [[Logseq documentation|https://docs.logseq.com/]], accessed 2026-10-28.
+
+''SOURCED — Notion offline.'' Rule: explicitly downloaded pages, plus eligible automatic recent/favorite downloads, carry sufficient records for offline use. Default: automatic downloads of recents and favorites apply to paid plans; offline editing requires desktop or mobile apps rather than a web browser. Documented failures/limits: its earlier best-effort cache could not guarantee complete offline pages, a simple availability set lost overlapping reasons for keeping pages, some blocks need a network, and concurrent offline non-text property edits can discard one update. [[Engineering account|https://www.notion.com/blog/how-we-made-notion-available-offline]], 2025-12-11; [[offline help|https://www.notion.com/help/use-pages-offline]], accessed 2026-10-28.
+
+''SOURCED — TiddlyWiki lazy loading.'' Rule: in the documented TiddlyWeb-compatible configuration the browser initially receives fields without text; requesting text triggers asynchronous retrieval and refresh. Other configurations can package normal tiddlers in the initial HTML and lazily load images. Documented failure: browser search only sees text already loaded, so complete text search belongs on the side that sees all bodies. [[TW5 LazyLoadingMechanism|https://tiddlywiki.com/dev/alltiddlers.html]], section dated 2014-02-06, accessed 2026-10-28.
+
+''REASONED — Application to skinny:'' fetching a body on open does not by itself guarantee complete filters, transclusion, plugin behavior, export, or full-text search. Route operations requiring the complete corpus to the worker, fetch the required bodies, or explicitly disclose unavailability. A partial answer must never masquerade as a complete answer.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/platform-constraints-and-lifecycle`>>
+
+!! Platform constraints and lifecycle
+
+''SOURCED — iOS memory:'' a WebKit engineer described roughly 1.5 GB as a //soft// iPhone WebContent-process limit in 2024, lower on some devices and dependent on system pressure; exceeding it can cause jetsam, not an assured catchable JavaScript exception. This does not establish an iOS 26 universal ceiling or a JS-heap budget. [[WebKit bug 277848|https://bugs.webkit.org/show_bug.cgi?id=277848]], 2024-08-09. Home Screen web apps have a separate app presentation and Web Push eligibility, not a guarantee of process survival. [[WebKit Home Screen apps|https://webkit.org/blog/13878/]], 2023-02-16.
+
+''SOURCED — Android memory and worker lifecycle:'' Android's low-memory killer selects processes under system pressure, with background processes generally more vulnerable. Chrome 148 re-enabled SharedWorker on Android while investigating its potentially unpredictable termination. Neither an Android version nor the presence of SharedWorker guarantees persistence. [[Android LMK|https://developer.android.com/topic/performance/issues/lmk]], accessed 2026-10-28; [[Chrome 148 release notes|https://developer.chrome.com/release-notes/148]], 2026.
+
+''SOURCED — Freeze, discard and bfcache:'' Chrome can freeze page tasks and discard pages without a discard callback; `freeze`/`resume` support does not generalize to every browser. A bfcache restoration can revive an old in-memory page; `pageshow.persisted` identifies a restore where supported. `unload` and termination events cannot serve as a reliable last save, especially on mobile. [[Chrome lifecycle|https://developer.chrome.com/docs/web-platform/page-lifecycle-api]]; [[bfcache|https://web.dev/articles/bfcache]], accessed 2026-10-28.
+
+''REASONED — Consequence:'' commit intent to the worker's durable authority during normal operation, not only on unload. On restoration revalidate the grant, reconnect to the island, and reconcile the snapshot before accepting new privileged actions; restore per-person selection and scroll where possible. Neither a wider camera nor an installed app guarantees an always-on household floor. Design a waking floor for interruption, restart, and another eligible node taking over; do not simulate availability with a heartbeat clock that changes camera width.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pattern-integrity-rhymes`>>
+
+!! Pattern-integrity rhymes
+
+''REASONED — Capability rather than host:'' Astro's explicit component directive and Partytown's opt-in show selection by an actual requested operation, not user-agent category. They do not implement port authority. DreamDOM's stronger rule remains the vessel's grant and real boot; device classes organize testing, not authority. Sources: [[Astro|https://docs.astro.build/en/concepts/islands/]], [[Partytown|https://partytown.qwik.dev/trade-offs/]], accessed 2026-10-28.
+
+''REASONED — Truth stays on its island:'' TW5's skinny-search limitation and Notion's incomplete-cache problem both show why a partial display cannot decide completeness. DreamDOM's authoritative worker must answer corpus-wide questions; neither precedent proves that all their truth resides off the main thread. Sources: [[TW5|https://tiddlywiki.com/dev/alltiddlers.html]], [[Notion|https://www.notion.com/blog/how-we-made-notion-available-offline]], 2014 and 2025 respectively.
+
+''REASONED — A state transition carries evidence:'' React Suspense models a boundary waiting for an actual dependency; Qwik resumes from serialized state. This rhymes with a real step result instead of a boot timeout, but neither source claims never to use clocks. Source: [[React Suspense|https://react.dev/reference/react/Suspense]], [[Qwik|https://qwik.dev/docs/concepts/resumable/]], accessed 2026-10-28.
+
+''REASONED — Name the diminished face:'' Notion marks unavailable offline blocks; Partytown warns of silent failures. The house can carry a named width and reason on the person's face, with any lost operation visible. These precedents do not prescribe DreamDOM's one-step fallback. Sources: [[Notion offline|https://www.notion.com/help/use-pages-offline]], [[Partytown FAQ|https://partytown.qwik.dev/faq/]], accessed 2026-10-28.
+
+''REASONED — One writer at a boundary:'' WorkerDOM's one-way DOM synchronization requires one owner for its managed region; tldraw separates shared document from per-tab session. Neither establishes a universal single-writer distributed database. DreamDOM can keep worker authority singular while the page renders a derived view and submits intents. Sources: [[AMP|https://amp.dev/documentation/guides-and-tutorials/develop/custom-javascript]], [[tldraw persistence|https://tldraw.dev/sdk-features/persistence]], accessed 2026-10-28.
+
+''REASONED — The person's intent rides their face:'' tldraw preserves the edited and selected shapes during culling and keeps camera and selection per session. A DreamDOM transition should preserve focus, caret, composition, scroll, and unsent intent; grant revocation still ends access. Source: [[tldraw performance|https://tldraw.dev/sdk-features/performance]], [[persistence|https://tldraw.dev/sdk-features/persistence]], accessed 2026-10-28.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/principles-and-counter-cases`>>
+
+!! Principles and counter-cases
+
+''REASONED — Default to the richest authorized interaction that the real boot supports, while making the first useful paint cheap.'' Full capability helps an editor retain synchronous TW behaviors; skinny-first reduces initial work. Counter-case: partial TW bodies can make search incomplete, and promotion can add peak memory or disturb input; therefore test semantics and handoff, not paint alone. [[TW5 lazy loading|https://tiddlywiki.com/dev/alltiddlers.html]], 2014; operator measurement above.
+
+''REASONED — Reduce work at the smallest useful boundary.'' tldraw culls shapes without discarding them; Astro hydrates explicit islands. Counter-case: over-culling edited content or omitting interactive JavaScript breaks the task. [[tldraw|https://tldraw.dev/sdk-features/performance]], [[Astro|https://docs.astro.build/en/concepts/islands/]], accessed 2026-10-28.
+
+''REASONED — Offload computation only when the interaction survives the boundary.'' Worker isolation can protect main-thread time; Partytown and AMP show that synchronous event cancellation, layout reads, supported DOM APIs and messaging costs remain constraints. The measured none bytes/key warns against assuming worker rendering automatically costs less. [[Partytown|https://partytown.qwik.dev/trade-offs/]], [[AMP|https://amp.dev/documentation/guides-and-tutorials/develop/custom-javascript]], accessed 2026-10-28.
+
+''REASONED — Preserve complete intent and durable data before optimizing latency.'' Offline capability requires all needed records, explicit conflict behavior, and recovery after termination. Counter-case: Notion's best-effort cache and non-text conflicts demonstrate that merely caching or merging cannot guarantee completeness. [[Notion engineering|https://www.notion.com/blog/how-we-made-notion-available-offline]], 2025-12-11; [[Notion help|https://www.notion.com/help/use-pages-offline]], accessed 2026-10-28.
+
+''REASONED — Measure real devices and whole-process peaks, not only the nominal tier.'' The fixed echo storm shows an implementation bug can overwhelm the architecture's expected cost; mobile OS memory pressure may kill without a catchable error. Counter-case: a passing synthetic desktop heap ratio cannot establish iOS survivability or mobile battery life. [[WebKit memory|https://bugs.webkit.org/show_bug.cgi?id=277848]], 2024; [[Android LMK|https://developer.android.com/topic/performance/issues/lmk]], accessed 2026-10-28.
+
+''REASONED — No universal field consensus mandates full or light.'' Content frameworks default to less client execution, whereas interactive editors keep active local state and remove work selectively. The relevant agreement concerns matching work to user need, measuring cost, preserving correctness, and naming constraints—not one device-tier formula.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/vessel-by-vessel-operating-table`>>
+
+!! Vessel-by-vessel operating table
+
+| Class | REASONED default and step-down | Evidence and operational constraint |h
+| iOS 26 phone, browser leaf or installed full vessel | Skinny first, promote to full if the port grants it and the actual boot completes. On a named failure choose one viable skinny or none fallback; on revocation close the mirror and use granted none or report unavailable. A process kill requires fresh recovery, not a catch. | SOURCED: WebKit's reported 1.5 GB soft iPhone limit depends on pressure and device; Home Screen install affects app capabilities, not a proven renderer-memory allowance. [[WebKit memory|https://bugs.webkit.org/show_bug.cgi?id=277848]], 2024; [[Home Screen|https://webkit.org/blog/13878/]], 2023. REASONED: measure memory peak and typing/battery on real phones before broad validation. |
+| Android 16 / Chrome phone, leaf or WebAPK full vessel | Same authorized full target and skinny-first promotion; one named fallback under the common contract. Installation and SharedWorker presence do not choose width. | SOURCED: Android kills under pressure; Chrome 148 re-enabled SharedWorker with lifecycle uncertainty. [[Android|https://developer.android.com/topic/performance/issues/lmk]], accessed 2026-10-28; [[Chrome 148|https://developer.chrome.com/release-notes/148]], 2026. REASONED: test actual Android process restarts, interaction latency, battery and background churn. |
+| Tablet leaf, including household waking floor | Same camera policy when a person opens a granted mirror; one-step fallback as above. Keep the household floor's authority and lifecycle independent from camera width. | SOURCED: mobile browsers can freeze or discard work, and WebKit describes different memory limits across devices. [[Chrome lifecycle|https://developer.chrome.com/docs/web-platform/page-lifecycle-api]], accessed 2026-10-28; [[WebKit device limits|https://bugs.webkit.org/show_bug.cgi?id=268816]], 2024. REASONED: power, thermal and restart tests matter for an always-on role; tablet size does not prove it can remain awake. |
+| Desktop browser, every engine, leaf / full vessel minus inbound gate | Skinny first then full on an actual grant and successful boot; one named fallback. Run stock-relative gate on Chromium, Firefox and WebKit before generalizing the supplied Chromium result. | REASONED: current 10.6% heap overhead supports this default on the measured host only. SOURCED: bfcache can restore old state; revalidate on return. [[bfcache|https://web.dev/articles/bfcache]], accessed 2026-10-28. |
+| Node full vessel and herm relay | No page camera when no browser attaches; maintain worker/island authority and relay. An attached browser independently receives a grant and uses the common full-target camera policy. Failure of a relay or authority has its own named recovery; do not call it a DreamDOM tier step. | REASONED: Node has no page DOM in the stated architecture, so choosing full/skinny/none without a camera would confuse vessel capabilities with rendering. |
+| Mudlet guest | No vessel-width default; use the telnet probe and a guest-specific face. | REASONED: a guest carries no DreamDOM mirror grant merely by connecting. |
+| Unreal guest or Pixel Streaming camera | Guest island over its host bridge, or camera rendered at the server-side vessel; apply the default and one-step policy at the vessel actually hosting the browser camera, if applicable. | REASONED: a stream client does not itself acquire vessel authority; host bridge and stream failure need their own explicit recovery. |
+
+''REASONED — Open decision boundary:'' If phone measurements fail the project gate or input/correctness targets, revise the release default with operator review and evidence. Do not turn a failing measurement into an implicit per-host permission rule; retain the port-grant and named-step invariants. The immediate next experiment should compare full, skinny and none on real iOS and Android with large, body-heavy and plugin-heavy wikis, including actual process termination and restoration.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vza4hqAFYDqDG3XZ5MRWDZBsUnzeHR7vhsTYdPypuMI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

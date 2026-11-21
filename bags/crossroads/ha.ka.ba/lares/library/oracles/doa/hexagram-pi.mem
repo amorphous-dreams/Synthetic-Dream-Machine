@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-pi`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "Pi"
+hexagram    = "pi"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+page-lines  = "000001"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-pi"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-pi"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! Pi
+
+<<<
+Sometimes 3.141592653589793238462643383279502884197169399 etc...
+<<<
+
+This is the only hexagram displayed here that was not in the I-Ching. We felt it was important to add a hexagram in case a stick or coin ends up on its edge. This Hexagram stands for uncertainty in the quantum reality. The authors of this sacred tome recommend that if you get this hexagram you either poison a cat or don't in a box where no one can see it to divine the correct path to take. Under no circumstances should you record the results of this experiment, or even try to discover for yourself the results of this experiment, since that will drastically change its outcome, and there will be a 50% chance that you will therefore be reading the results of the experiment incorrectly.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kbBVBjCMPKjKIY4XzWvl--4XSqBXSXDnEfQbO6-MMdg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

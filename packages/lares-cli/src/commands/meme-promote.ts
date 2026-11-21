@@ -22,7 +22,7 @@
  * Residency rides the ENVELOPE, never a path and never a persisted field: `store.put(record, origin, { bag })`
  * takes the bag beside the record, and `UNPERSISTED_FIELDS = ["bag", "$origin-bag"]` keeps it off every
  * persisted byte. A residency move therefore touches no byte of the carrier — so the carrier's bytes, its
- * declared `uri-path`, its `file-path`, its own address mark and its block check all stand identical across
+ * declared `uri-path`, its own address mark and its block check all stand identical across
  * a promotion, and every carrier that points at it keeps pointing at the same live name.
  *
  * ── THE CROSSING, IN ORDER ──────────────────────────────────────────────────────────────────────
@@ -60,7 +60,8 @@ import { closeSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, w
 import { randomUUID } from "node:crypto";
 import { dirname, isAbsolute, join } from "node:path";
 import { CROSSROADS_BAG, mintPromotionReceipt, promotionReceiptPath } from "../promotion-receipt.js";
-import { bccOf } from "@lararium/memetic-frame";
+import { bccOf, frameShape, matchCarrierHead } from "@lararium/memetic-frame";
+import { memeticVerdict, rootMetaFields } from "@lararium/tw5";
 import { exactBytesHash, promotionApprovalBytes, readPromotionApproval, type PromotionApprovalVerdict } from "@lararium/mesh";
 
 /** The residency MOVE this door asks for — `executeMove`'s own shape. The title never changes. */
@@ -83,7 +84,7 @@ export interface PromotionSeat {
   /** THE RESIDENCY MOVE, injected — the whole-carrier-group transfer, land-then-retract, title preserved. */
   move(move: PromotionMove): Promise<{ ok: true; moved: number } | { ok: false; reason: string }>;
   sign(bytes: Uint8Array): Promise<string>;
-  /** The current charter's seated verdict over the exact carrier bytes; asked only of a crossing into `@crossroads`. */
+  /** The current charter's seated verdict over the exact carrier bytes; asked only of a crossing into `crossroads`. */
   verifyApproval(approval: unknown, bytes: Uint8Array): PromotionApprovalVerdict | Promise<PromotionApprovalVerdict>;
 }
 
@@ -97,7 +98,7 @@ export interface PromotionPlan {
   readonly fromBag?: string;
   /** The canon bag crossed into — the cap is read against this name. */
   readonly destBag?: string;
-  /** The seated approval a crossing into `@crossroads` carries. */
+  /** The seated approval a crossing into `crossroads` carries. */
   readonly approval?: unknown;
 }
 
@@ -120,15 +121,11 @@ export type PromotionOutcome =
 
 const DEFAULT_DEST_BAG = "lar:///ha.ka.ba/bags/lares";
 
-/** The declared `uri-path` of a carrier, or null where it declares none. */
-function declaredUriPath(src: string): string | null {
-  return /^uri-path\s*=\s*"([^"]+)"/m.exec(src)?.[1] ?? null;
-}
-
-/** The declared tags, as the meta fence spells them. */
+/** The tags the carrier's ROOT meta declares (the fence that opens the body, read by the house's TOML
+ *  reader), never a `tags =` line in prose, a slot or a table. */
 function declaredTags(src: string): string[] {
-  const raw = /^tags\s*=\s*\[([^\]]*)\]/m.exec(src)?.[1] ?? "";
-  return [...raw.matchAll(/"([^"]*)"/g)].map((m) => m[1]!);
+  const tags = rootMetaFields(src)["tags"];
+  return Array.isArray(tags) ? tags.map(String) : typeof tags === "string" && tags ? [tags] : [];
 }
 
 /** Persist a directory entry as part of landing or removing a receipt. */
@@ -172,10 +169,26 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
   let bytes: Uint8Array;
   try { bytes = readFileSync(abs); src = Buffer.from(bytes).toString("utf8"); } catch { return { ok: false, reason: `cannot read ${plan.file}` }; }
 
-  const uriPath = declaredUriPath(src);
-  if (!uriPath) return { ok: false, reason: `${plan.file} declares no uri-path — a carrier with no address crosses nothing` };
+  // THE ADDRESS IS THE HEAD'S, AND THE SEAL MUST REACH IT. The receipt names the head's `to=` and nothing
+  // else (no `uri-path` regexed off the file), and a canon crossing takes only a head its sealed root meta
+  // names: a torn frame (a head split from its meta, or the frame's meta read and TOML's parting) refuses by
+  // name, and so does a head the sealed meta never names (`head-unbound`), whatever the check reads. So the
+  // receipt, the residency move and the head name one record (blind security read A2, 2026-11-01).
+  const frame = memeticVerdict(src);
+  if (frame.kind === "torn") {
+    return { ok: false, reason: `${plan.file} reads torn — ${frame.faults.map((f) => `${f.kind}: ${f.message}`).join("; ")}` };
+  }
+  const shape = frameShape(src);
+  if (shape.kind !== "framed") {
+    return { ok: false, reason: `${plan.file} frames no sealed text (STX..ETX) — a canon crossing takes only a head its seal names` };
+  }
+  if (shape.unbound.length > 0) {
+    return { ok: false, reason: `${plan.file} reads head-unbound — the head names ${shape.unbound.map((e) => "`" + e + "=`").join(" and ")} where the sealed root meta names none; a canon crossing takes only a head its seal names` };
+  }
+  const head = matchCarrierHead(src);
+  if (!head || !head.uri.startsWith("lar:///")) return { ok: false, reason: `${plan.file} names no address in its head — a carrier with no address crosses nothing` };
   // The record's title IS its hostless address. The crossing never changes it; it changes who holds it.
-  const title   = `lar:///${uriPath}`;
+  const title   = head.uri;
   const destBag = plan.destBag ?? DEFAULT_DEST_BAG;
 
   // THE RESIDENCY QUESTION, asked of residency. A path segment cannot answer it: residency rides the
@@ -204,7 +217,7 @@ export async function promoteCarrier(plan: PromotionPlan, seat: PromotionSeat): 
     return { ok: false, reason: `the subject stands at ${tags.filter((t) => t.startsWith("lifecycle/")).join(", ")} — only a carrier that has SETTLED crosses into canon` };
   }
 
-  // A crossing into `@crossroads` publishes for the Nexus, so the charter's seats approve its exact bytes
+  // A crossing into `crossroads` publishes for the Nexus, so the charter's seats approve its exact bytes
   // before anything moves; a crossing into the vessel's own canon asks no charter.
   let approvalStatementDigest: string | undefined;
   if (destBag === CROSSROADS_BAG) {

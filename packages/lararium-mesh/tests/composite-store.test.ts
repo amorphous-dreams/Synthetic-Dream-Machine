@@ -19,7 +19,36 @@ import { CompositeStore, corpusBagId } from "../src/composite-store.js";
 import { BAG_IDS, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lar-uris.js";
 import { wikiBagUri } from "../src/wiki-recipe.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
+import { AtomicMemoryStore } from "../../lararium-tw5/tests/atomic-memory-store.js";
 import type { LarTiddlerChange, ChangeOrigin } from "../src/tiddler-store.js";
+import { Repo } from "@automerge/automerge-repo";
+import { AutomergeDocStore, markStandIn, releaseStandIn } from "../src/automerge-doc-store.js";
+import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
+
+describe("CompositeStore.unknownBeneath — a layer beneath that stands unread", () => {
+  test("★ an unreached recipe slot beneath reads unread until it mounts; one above never does ★", () => {
+    const c = new CompositeStore();
+    c.addLayer({ bagId: "low", store: new MemoryTiddlerStore(), writable: false });
+    c.addLayer({ bagId: "top", store: new MemoryTiddlerStore(), writable: true });
+    c.markUnreached(["above", "top", "realm", "low"], ["above", "realm"]);
+    expect(c.unknownBeneath("top")).toBe(true);
+    expect(c.unknownBeneath("low")).toBe(false);
+    c.addLayer({ bagId: "realm", store: new MemoryTiddlerStore(), writable: false }, 1);
+    expect(c.unknownBeneath("top"), "the slot mounted: its own layer answers now").toBe(false);
+  });
+
+  test("★ an AutomergeDocStore over a stand-in handle reads unread beneath until the handle is released ★", () => {
+    const repo = new Repo({ network: [] });
+    const blank = repo.create<LarDoc>(emptyLarDoc());
+    markStandIn(blank);
+    const c = new CompositeStore();
+    c.addLayer({ bagId: "low", store: new AutomergeDocStore(blank, "low"), writable: false });
+    c.addLayer({ bagId: "top", store: new MemoryTiddlerStore(), writable: true });
+    expect(c.unknownBeneath("top")).toBe(true);
+    releaseStandIn(blank);
+    expect(c.unknownBeneath("top")).toBe(false);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -41,6 +70,38 @@ function record(title: string, text: string, bag?: string) {
 // ---------------------------------------------------------------------------
 
 describe("CompositeStore — layer management", () => {
+  test("precheck refuses a non-atomic destination before any family member lands; CONTROL: atomic layer writes", async () => {
+    const plainBacking = new MemoryTiddlerStore();
+    const plain = new Proxy(plainBacking, { get(target, key) {
+      if (key === "writeFamily") return undefined;
+      const value = Reflect.get(target, key, target) as unknown;
+      return typeof value === "function" ? (value as (...args: unknown[]) => unknown).bind(target) : value;
+    } });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: "plain", store: plain, writable: true });
+    await expect(composite.precheckFamily([record("One", "a"), record("Two", "b")], [], { bag: "plain" }))
+      .rejects.toMatchObject({ reason: "non-atomic-layer" });
+    expect(await plainBacking.get("One")).toBeNull();
+    expect(await plainBacking.get("Two")).toBeNull();
+    const atomic = new AtomicMemoryStore();
+    composite.addLayer({ bagId: "atomic", store: atomic, writable: true });
+    await composite.precheckFamily([record("One", "a"), record("Two", "b")], [], { bag: "atomic" });
+    await composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin(), { bag: "atomic" });
+    expect(await atomic.get("One")).not.toBeNull();
+    expect(await atomic.get("Two")).not.toBeNull();
+  });
+  test("composite-family-fire-synchronous: subscribers run before writeFamily resolves; CONTROL: written records persist", async () => {
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: TEST_WIKI_URI, store: new AtomicMemoryStore(), writable: true });
+    const seen: string[] = [];
+    const unsubscribe = composite.subscribe(change => { seen.push(change.title); });
+    const writing = composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin());
+    await writing;
+    expect(seen).toEqual(["One", "Two"]);
+    expect(await composite.get("One")).not.toBeNull();
+    expect(await composite.get("Two")).not.toBeNull();
+    unsubscribe();
+  });
   test("starts with zero layers", () => {
     const store = new CompositeStore();
     expect(store.layerCount).toBe(0);
@@ -559,5 +620,50 @@ describe("CompositeStore — the default writable under the recipe layer model",
     const working = composite.storeForBag(wikiSlotUri("w", "working"))!;
     expect((await working.get("lar:///floor-title"))?.tiddler.text).toBe("a person's edit");
     expect((await composite.get("lar:///floor-title"))?.tiddler.text).toBe("a person's edit");
+  });
+});
+
+describe("CompositeStore — a listener's fault stays its own", () => {
+  test("a throwing listener never starves a later one across a forwarded change, a populated add and a live remove; CONTROL: the later one hears all three", async () => {
+    const composite = new CompositeStore();
+    composite.subscribe(() => { throw new Error("earlier listener fault"); });
+    const heard: string[] = [];
+    composite.subscribe(change => heard.push(change.title));
+    const working = new MemoryTiddlerStore("w");
+    composite.addLayer({ bagId: "w", store: working, writable: true });
+    await working.put({ tiddler: { title: "Forwarded", text: "x" } }, wikiOrigin());
+    const library = new MemoryTiddlerStore("lib");
+    await library.put({ tiddler: { title: "Populated", text: "y" } }, wikiOrigin());
+    composite.addLayer({ bagId: "lib", store: library, writable: false });
+    await composite.removeLayerLive("lib");
+    expect(heard).toContain("Forwarded");
+    expect(heard.filter(title => title === "Populated").length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+import { buildEffectRecordTiddler, effectRecordUri } from "../src/effect-record.js";
+
+describe("RED (#428 F1) — the engine cascade never writes a residency ledger", () => {
+  const BAG = wikiBagUri("ledger-test");
+  const real = () => buildEffectRecordTiddler({ eventId: "e1", archivalVerb: "accession", actionVerb: "ADD", requestId: "r", bag: BAG, actor: "lares", timestamp: "2026-11-21T00:00:00.000Z" });
+  const rig = () => { const c = new CompositeStore(); c.addLayer({ bagId: BAG, store: new AtomicMemoryStore(BAG), writable: true }); return c; };
+
+  test("a tw-local, mcp-draft or canvas-draft put, family, tombstone or remove of a ledger title refuses `effect-ledger-house-only`", async () => {
+    const c = rig();
+    const title = effectRecordUri(BAG, "e1");
+    for (const origin of [{ kind: "tw-local", instanceId: "i" }, { kind: "mcp-draft", toolCallId: "t" }, { kind: "canvas-draft", shapeId: "s" }] as ChangeOrigin[]) {
+      await expect(c.put(real(), origin, { bag: BAG })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.writeFamily([real()], [], origin, { bag: BAG })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.writeFamily([], [title], origin, { bag: BAG })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.tombstoneInBag(BAG, title, origin)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.removeInBag(BAG, title, origin)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    }
+    expect(await c.storeForBag(BAG)!.get(title)).toBeNull();
+  });
+
+  test("CONTROL: the house's own writer lands its ledger record", async () => {
+    const c = rig();
+    await c.put(real(), { kind: "lares-verb", requestId: "r" }, { bag: BAG });
+    expect(await c.storeForBag(BAG)!.get(effectRecordUri(BAG, "e1"))).not.toBeNull();
   });
 });

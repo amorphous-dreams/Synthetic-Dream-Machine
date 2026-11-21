@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/measure`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/b1-lift/measure.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/measure"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/measure"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! measure.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/b1-lift/measure.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Measured at commit `3293533a4`. Paths below are relative to the repository; ''INFER'' identifies a possible host, not an existing wiring.
+
+| Value | Runs in · called from · could live in |h
+| ''MEASURED:'' custody passphrase and ward route | Page form closures, `packages/lararium-web/src/main.ts:120,155`; passed to `standBrowserCustody` and `openBrowserVessel` at `main.ts:518,527`. Form input necessarily exists briefly on the page. ''INFER:'' custody processing could live in a worker; ward signing already uses `ward.worker.ts:5,19`. |
+| ''MEASURED:'' custody tree key and unlocked state | Page module map `browser-custody.ts:112`; `sealBrowserKeystore` and unlock populate it (`browser-custody.ts:569,578`), reached from page boot. ''INFER:'' a vessel worker could hold it. |
+| ''MEASURED:'' IDB keystore access and handles | `openVesselIdb` calls `indexedDB.open` and creates `keystore` (`browser-vessel-identity.ts:94`); page custody and vessel opening call its row doors (`browser-custody.ts:151,391`; `main.ts:518,527`). The database persists independently of any realm; its opened handles and processing occur on the page. ''INFER:'' holder or daemon worker could open it. |
+| ''MEASURED:'' device signing seed, face atom, address secret, archive, founding root seed | `generateOrLoadBrowserVesselIdentity`, then admission/founding in `open-browser-vessel.ts:601,718,726,788–805`; called by `main.ts:527`. The founder’s root seed enters the page ceremony; ordinary `browserWardSign` instead opens the root in its one-act worker (`browser-ward.ts:31,38`). ''INFER:'' vessel worker for composition; existing ward worker for its supported sign act. |
+| ''MEASURED:'' signing, fleet fold, admission, founding, handle acts, ward orchestration | `openBrowserVessel` composes these on the page (`open-browser-vessel.ts:691,726,792,1398,1493,1634,1784,1799,1816`); page also directly runs fleet request and landing (`main.ts:333,337,349`). ''INFER:'' daemon/holder could host vessel orchestration; ward worker already performs one signature. |
+| ''MEASURED:'' Automerge repo and hearth dial | `openBrowserVessel` creates the IDB-backed `Repo` (`open-browser-vessel.ts:585`) and `LarWSClientAdapter` (`:910,929`), called at `main.ts:527`. ''INFER:'' holder is a candidate: it already starts the daemon island and opens a separate IDB-backed repo (`shared-holder-start.ts:39,72`); the wiki worker already runs wiki authority and projection (`browser-wiki-worker.ts:18,27`). |
+
+The page legitimately paints the DOM, custody and ward forms, navigation and the unprivileged TW5 mirror. The existing port carries mirror opens, widening, writes and replies; frames, control results, coherence events, and surface selection also pass between vessel and page (`main.ts:537–540,563–567,586,609`; `port-transport.ts:23,38`). Custody and ward questions must travel toward the form and answers back; currently they are callbacks in the same realm.
+
+''Idempotence, measured:''
+
+* Reload repeats custody unlock and vessel composition. Identity is loaded if present; a continuity marker refuses a missing IDB identity (`browser-vessel-identity.ts:248–280`). Genesis finds the persisted document first (`open-browser-vessel.ts:1133–1142`). Board climb writes only missing destination entries (`:687–695`).
+* Founding interrupted before bootstrap can run again and replace its archive (`open-browser-vessel.ts:804–810`); this does ''not'' establish that every earlier side effect lands only once. Admission is consumed from session storage before boot (`main.ts:240–246`), with the pending in-memory copy cleared after success (`:549–550`).
+* A repeated fleet offer returns its kept request; a different pending offer refuses (`browser-fleet-join.ts:122–155`). The same answer can land again until successful boot settles the pending row (`:184–186,225–243`).
+* Default second tabs elect one leader and follow its mirror; succession reopens follower ports (`glass/topology.ts:7–8`; `glass/tab-bus.ts:29,46–56`). The opt-in holder shares a daemon island, while tabs still compose their own page-side vessels (`main.ts:58–64`; `open-browser-vessel.ts:1519–1537`).
+* A shared-holder daemon restart is refused; during a daemon restart some events are dropped (`open-browser-vessel.ts:1558–1560,1930–1932`). Followers resend unanswered writes with their original transaction IDs (`main.ts:484–486`); ''whether every retried ask is deduplicated or lands twice was not established''.
+
+''Node/browser composition:'' `prepareNodeBoot` stands a floor, then `prepareNodeBootOn` creates one late-filled `islandCaps` record and gates sovereign readers (`open-node-vessel.ts:738–753,768–786`). The node lift seats `sessionSign` before `composeLararium`, alongside carriage and WHO caps (`:3902–3925`). Browser `composeBrowser` uses the same `composeCoreVessel` (`browser-caps.ts:4–21`), but builds its repo, identity, ceremonies and dial directly in `openBrowserVessel`; WHO is conditional on a relay gate (`open-browser-vessel.ts:585,601,919,1119–1124`). Its daemon wrapper explicitly lacks node’s `authShore` and `resolveBinding` proxies (`open-browser-daemon-vm.ts:10–11`).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gXRqSzikK5sS_FZmirA1n9bzwZW9zPus6iIVCwOuwqY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

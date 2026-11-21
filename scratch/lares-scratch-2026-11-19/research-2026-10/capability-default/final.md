@@ -1,0 +1,1 @@
+Ink-Clerk: The research is complete in [out.md](/home/joshu/.lares-scratch/research/capability-default/out.md). It distinguishes sourced findings from reasoned recommendations and includes a boot design, authority boundary, degradation policy, and red tests.

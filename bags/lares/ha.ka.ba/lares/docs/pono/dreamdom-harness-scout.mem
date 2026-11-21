@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-harness-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-harness-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-harness-scout.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "dreamdom-harness-scout — VERBATIM handoff of a tasked spirit: the cold read of the as-built worker-thread TiddlyWiki engine that train D's phase D0 (measure and mend) collided against, 2026-10-16. Traces the nine named gaps to file and line: the boot-shadows preload, the Node path's forging, the swallowing VM shim, the render-id maps, the module gate, the daemon's surface state, startup actions against the seed, the global-assignment lends, the orphaned worker script. Code read only; nothing booted. Held as a collision surface."
@@ -21,7 +17,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-harness-scout"
 written           = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The D0 ground ~ a spirit's cold read, held unedited
 
@@ -31,12 +27,12 @@ written           = "2026-10-16"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
 ````markdown
-<<~ status "cold read done: all nine gaps traced to file:line; code read only, no tests run; three findings contradict the docblocks that describe them (#3, #11, #15)">>
+<<~ status text=`cold read done: all nine gaps traced to file:line; code read only, no tests run; three findings contradict the docblocks that describe them (#3, #11, #15)`>>
 
 Ink-Clerk (Tasked Spirit). I read the boot seed whole. Below, the code's own behaviour, cited. Paths sit relative to /home/user/Synthetic-Dream-Machine.
 
@@ -132,9 +128,9 @@ Note: the brief's `TiddlyWiki5/core/modules/startup.js` sits at `core/modules/st
 
 ## #24 — global assignments and globalCheck
 
-**What globalCheck does.** It defines an `Object.prototype.__temp__` getter returning `this`, then logs "Warning: Global assignment detected" with `Object.keys(__temp__)`, meaning every own enumerable key of the realm's global object [boot.js:583-593]. TW5 adds it only when `!$tw.browser && sandbox && !allowGlobals` [610], which holds on both worker paths.
+**What globalCheck does.** It defines an `Object.prototype.__temp__` getter returning `this`, then logs "Warning: Global assignment detected" with `Object.keys(__temp__)`, meaning every own enumerable key of the thread's global object [boot.js:583-593]. TW5 adds it only when `!$tw.browser && sandbox && !allowGlobals` [610], which holds on both worker paths.
 
-**Which global it sees.** On the browser path the shim evaluates code with `new Function` in the worker's own realm, so `__temp__` resolves to the worker `globalThis` (inferred). On Node, real `vm` runs each module in `vm.createContext({})`, so the check enumerates that sandbox, not the worker global (inferred).
+**Which global it sees.** On the browser path the shim evaluates code with `new Function` in the worker's own thread, so `__temp__` resolves to the worker `globalThis` (inferred). On Node, real `vm` runs each module in `vm.createContext({})`, so the check enumerates that sandbox, not the worker global (inferred).
 
 **Each assignment in the host bridge** (all in tw5-host-bridge.ts):
 
@@ -155,6 +151,8 @@ Note: the brief's `TiddlyWiki5/core/modules/startup.js` sits at `core/modules/st
 **The lend done right.** `host-globals-lend.ts:35-38` defines `TextEncoder`, `TextDecoder` and `crypto` with `enumerable:false`. The startup module calls it [packages/lararium-tw5/src/modules/host-globals.ts:27-29]. That covers only those three names.
 
 ## #9 — the orphaned meme-worker-script.ts
+
+//Frame, 2026-10-22: the file, its package export and the roadmap line this finding names have since retired; no tracked source, export or live carrier points at `meme-worker-script` now. The testimony below keeps its words.//
 
 `git grep` across tracked files (excluding dist) finds:
 - the file itself [packages/lararium-tw5/src/meme-worker-script.ts], which at import time boots a TW5Engine and attaches `self.addEventListener("message")` [77, 132];
@@ -189,16 +187,16 @@ Nothing in any src, test, script, vite config or tsconfig imports it. Its schema
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom-field-scout">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-field-scout`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gEYkrSJVimsqeXemoywpSY_iHq8QoWlr89yeZQMDpNM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g7H3PumIfDW7srooHwe6on14txzXizi4YCkXuSptrCY`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

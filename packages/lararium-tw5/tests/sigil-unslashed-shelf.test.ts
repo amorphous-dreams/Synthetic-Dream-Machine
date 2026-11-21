@@ -120,9 +120,9 @@ describe.skipIf(wikiSkip)(`the unslashed shelf${skipNote}`, () => {
     expect(declared, "sigil-ahu.tid carries no lar-open-pattern").toBeTruthy();
     const tidRe = new RegExp(declared!);
     const cases: ReadonlyArray<readonly [string, boolean]> = [
-      ["<<~ ahu #/a>>", true], ["<<~ ahu #a>>", false], ["<<~ ahu #/a/b>>", true], ["<<~ ahu #a/b>>", false],
-      ["<<~ ahu #/a -> lar:///t/elsewhere>>", true],
-      ["<<~ ahu #>>", false], ["<<~ ahu # a>>", false], ["<<~ ahu>>", false],
+      ["<<~ ahu slot=`#/a`>>", true], ["<<~ ahu slot=`#a`>>", false], ["<<~ ahu slot=`#/a/b`>>", true], ["<<~ ahu slot=`#a/b`>>", false],
+      ["<<~ ahu slot=`#/a` to=`lar:///t/elsewhere`>>", true],
+      ["<<~ ahu slot=`#`>>", false], ["<<~ ahu slot=`# a`>>", false], ["<<~ ahu>>", false],
     ];
     for (const [opener, admits] of cases) {
       expect(tidRe.test(opener), `tiddler on ${opener}`).toBe(admits);

@@ -2,10 +2,10 @@
  * floor-porch — the Nexus's floor at the porch: the release chain it answers a stranger with, and the floor blobs it
  * names, each by a name the stranger brings.
  *
- *   GET /floor/<Nexus AID>   → the porch answer (`floor-answer`): the release rows this vessel's crossroads board carries,
+ *   GET /floor/<Nexus AID>   → the porch answer (`floor-answer`): the release rows this vessel's publication board carries,
  *                              each with the charter's epoch lineage riding its record. Public by construction: the
  *                              answer holds signatures and public keys, and a reader verifies every step itself.
- *   GET /cas/<cid>           → a floor blob the chain's HEAD release names (its manifest and the two snapshots) and
+ *   GET /cas/<cid>           → a floor blob the chain's HEAD release names (its manifest and each snapshot it names) and
  *                              nothing else, re-hashed on the way out (a hearth mounts this route; a herm already
  *                              carries `/cas` in its bulb face and lends it the same lane through `publicCasShore`).
  *
@@ -21,7 +21,7 @@
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  NEXUS_AID_PATTERN, crossroadsDocUrl, floorAnswerOf, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest,
+  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest, readFloorOffering, floorBlobCids,
   type LarDoc,
 } from "@lararium/mesh";
 import { CAS_BLOB_RE, answerClosedDoor } from "./bulb-routes.js";
@@ -31,27 +31,34 @@ import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 /** The porch route a Nexus's answer rides, as the SERVER matches it: one AID, captured. */
 export const FLOOR_ROUTE_RE = /^\/floor\/(nexus-[0-9a-f]{64})$/;
 
-/** The cids the chain's head release names: its manifest and the two snapshots the manifest names. Empty while no release counts. */
+/** The cids the chain's head release names: its manifest, each snapshot the manifest names (one per house-canon bag), its plugins offering and each blob the offering carries. Empty while no release counts. */
 export async function releasedFloorCids(opts: {
   readonly board:  LarDoc | undefined | null;
   readonly nexus:  string;
   readonly casDir: string;
 }): Promise<ReadonlySet<string>> {
   const standing = await foldFloorReleases({
-    rows: floorReleaseRowsFromBoard(opts.board), nexus: opts.nexus,
+    rows: floorReleaseEntriesFromBoard(opts.board), nexus: opts.nexus,
     manifestBytesOf: (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
   });
   if (standing.standing !== "released") return new Set();
   const cids = new Set<string>([standing.head.body.manifest]);
   const bytes = readVerifiedCasBlobFromFs(standing.head.body.manifest, opts.casDir);
   const manifest = bytes ? readFloorManifest(bytes) : null;
-  if (manifest && "manifest" in manifest) { cids.add(manifest.manifest.lares); cids.add(manifest.manifest.lararium); }
+  if (manifest && "manifest" in manifest) {
+    // The plugins offering the release names, where this CAS holds it, widens the set to each blob it carries.
+    const offeringBytes = readVerifiedCasBlobFromFs(manifest.manifest.plugins, opts.casDir);
+    const offering = offeringBytes ? readFloorOffering(offeringBytes, manifest.manifest.plugins) : null;
+    const offered = offering && "offering" in offering ? offering.offering : undefined;
+    for (const cid of floorBlobCids(standing.head.body.manifest, manifest.manifest, offered)) cids.add(cid);
+  }
   return cids;
 }
 
 /** Mount the porch's floor routes on a vessel's one request listener. */
 export function mountFloorPorch(args: {
-  readonly httpServer:  Server;
+  /** The server a bare listener rides when no dispatcher claims routes; a hearth main hands a dispatcher alone. */
+  readonly httpServer?: Server;
   readonly dispatcher?: HttpFaceDispatcher;
   readonly repo:        Repo;
   /** The Nexus this vessel's boards key on; the porch answers for this AID alone, and only when it reads as an AID. */
@@ -64,7 +71,7 @@ export function mountFloorPorch(args: {
   const { httpServer, dispatcher, repo, nexusPubkey, casDir, serveCas } = args;
   const answers = NEXUS_AID_PATTERN.test(nexusPubkey);
   let board: Promise<{ doc(): LarDoc | undefined }> | null = null;
-  const boardOf = () => (board ??= materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"));
+  const boardOf = () => (board ??= materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication"));
 
   const pathOf = (req: IncomingMessage): string => { try { return new URL(req.url ?? "/", "http://localhost").pathname; } catch { return ""; } };
   const owns = (req: IncomingMessage): boolean => {
@@ -78,7 +85,7 @@ export function mountFloorPorch(args: {
     if (floor) {
       if (!answers || floor[1] !== nexusPubkey) { answerClosedDoor(res); return; }
       void boardOf().then((b) => {
-        const body = Buffer.from(JSON.stringify(floorAnswerOf(nexusPubkey, floorReleaseRowsFromBoard(b.doc()))));
+        const body = Buffer.from(JSON.stringify(floorAnswerOf(nexusPubkey, floorReleaseEntriesFromBoard(b.doc()))));
         if (res.headersSent || res.writableEnded) return;
         res.writeHead(200, { "access-control-allow-origin": "*", "content-type": "application/json", "cache-control": "no-store" });
         if (req.method === "HEAD") res.end(); else res.end(body);
@@ -100,7 +107,7 @@ export function mountFloorPorch(args: {
   const unregister = dispatcher?.register({
     name: "floor-porch", routeKeys: [`floor:/floor/`, ...(serveCas ? [`cas:/cas/`] : [])], owns, handle,
   });
-  if (!unregister) httpServer.on("request", onRequest);
+  if (!unregister) httpServer?.on("request", onRequest);
   args.onLog?.(`floor porch: ${answers ? `answers /floor/${nexusPubkey.slice(0, 18)}…` : "answers no Nexus (no charter stands: the island is no AID)"}${serveCas ? " · /cas for the head's floor" : ""}`);
-  return { dispose: () => { if (unregister) unregister(); else httpServer.off("request", onRequest); } };
+  return { dispose: () => { if (unregister) unregister(); else httpServer?.off("request", onRequest); } };
 }

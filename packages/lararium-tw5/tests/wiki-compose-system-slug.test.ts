@@ -6,7 +6,7 @@
  * mint-and-append path with the system floor carried through @oracle.
  */
 import { describe, test, expect } from "vitest";
-import { recipeUri, wikiBagUri, type LarDoc, type LarTiddlerRecord, type Repo, type DocHandle } from "@lararium/mesh";
+import { recipeUri, wikiBagUri, wikiUri, type LarDoc, type LarTiddlerRecord, type Repo, type DocHandle } from "@lararium/mesh";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
 import { makeAddBagReactor, makeRemoveBagReactor } from "../src/wiki-compose-handlers.js";
 import { makeListWikisReactor, makeWikiPinReactor, makeWikiUnpinReactor } from "../src/worker-data-verbs.js";
@@ -60,6 +60,8 @@ describe("a system slug composes through the vessel's own record", () => {
     expect(r.created).toEqual([]);
     expect(JSON.stringify(r.catalog.tiddlers)).toBe(before);
     expect(out).toMatchObject({ status: "already-exists", system: true, wikiDocUrl: "automerge:lares-canon", recipePlane: "oracle", recipeUri: recipeUri("oracle", "lares") });
+    // ONE NAME, ONE URI: the answer names the stack (`wikis/<slug>`), the canon bag beside it as its own field.
+    expect(out).toMatchObject({ wikiUri: wikiUri("lares"), canonBag: wikiBagUri("lares") });
   });
 
   test("CONTROL: a vessel outside the Kahu cabal (no live canon named) finds no wiki on a system slug, and lists its row without a document", async () => {
@@ -70,6 +72,15 @@ describe("a system slug composes through the vessel's own record", () => {
     expect(rows).toEqual([expect.objectContaining({ slug: "lares", kind: "system", automergeUrl: null })]);
     const held = (await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor, r.systemCanonUrl)({}, ctx))["wikis"];
     expect(held).toEqual([expect.objectContaining({ slug: "lares", kind: "system", automergeUrl: "automerge:lares-canon" })]);
+  });
+
+  test("init-wiki and list-wikis on a system slug answer the realm's document while a catalog row names another (CONTROL: with no realm document named, the row answers)", async () => {
+    const r = rig();
+    r.catalog.tiddlers[LARES] = rec(LARES, { text: "automerge:stray" });
+    expect(await makeInitWikiReactor(r.mint)({ slug: "lares" }, ctx)).toMatchObject({ system: true, wikiDocUrl: "automerge:lares-canon" });
+    expect((await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor, r.systemCanonUrl)({}, ctx))["wikis"]).toEqual([expect.objectContaining({ slug: "lares", automergeUrl: "automerge:lares-canon" })]);
+    expect(await makeInitWikiReactor({ ...r.mint, systemCanonUrl: async () => null })({ slug: "lares" }, ctx)).toMatchObject({ wikiDocUrl: "automerge:stray" });
+    expect((await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor, async () => null)({}, ctx))["wikis"]).toEqual([expect.objectContaining({ slug: "lares", automergeUrl: "automerge:stray" })]);
   });
 
   test("init-wiki on a system slug with no oracle recipe refuses by name", async () => {
@@ -148,8 +159,10 @@ describe("a system slug composes through the vessel's own record", () => {
       const r = rig();
       const out = await makeInitWikiReactor(r.mint)({ slug: "elyncia" }, ctx);
       expect(r.created).toEqual(["create"]);
-      expect(out).toMatchObject({ status: "minted" });
+      expect(out).toMatchObject({ status: "minted", wikiUri: wikiUri("elyncia"), canonBag: wikiBagUri("elyncia") });
       expect(r.catalog.tiddlers[wikiBagUri("elyncia")]).toBeDefined();
+      // The canon row stamps no `mirror-root`: nothing reads it, and the workbench projects under its realm root.
+      expect(JSON.stringify(r.catalog.tiddlers[wikiBagUri("elyncia")])).not.toContain("mirror-root");
       expect(r.catalog.tiddlers[recipeUri("catalog", "elyncia")]).toBeDefined();
       expect(plainField(r.catalog.tiddlers[recipeUri("catalog", "elyncia")], "bag-stack"))
         .toBe(`lar:///ha.ka.ba/bags/oracle ${wikiBagUri("elyncia")}`);

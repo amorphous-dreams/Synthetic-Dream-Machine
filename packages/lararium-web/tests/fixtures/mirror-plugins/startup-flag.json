@@ -1,0 +1,6 @@
+{
+  "title": "$:/plugins/test/startup-flag",
+  "type": "application/json",
+  "plugin-type": "plugin",
+  "text": "{\"tiddlers\": {\"$:/plugins/test/startup-flag/module.js\": {\"title\": \"$:/plugins/test/startup-flag/module.js\", \"type\": \"application/javascript\", \"module-type\": \"startup\", \"text\": \"exports.name='fixture-flag'; exports.startup=function(){window.__larFixtureRan=true};\"}}}"
+}

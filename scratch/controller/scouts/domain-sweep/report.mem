@@ -1,0 +1,145 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/domain-sweep/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/domain-sweep/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/domain-sweep/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/domain-sweep/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/domain-sweep/report.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/domain-sweep/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/domain-sweep-2026-11-01-read-only`>>
+
+! Domain sweep (Domain-Sweeper: Lares (Tasked Spirit)) 2026-11-01. READ-ONLY.
+
+Counts = `.mem` carriers on this branch (feature/green-jello-dinosaur-5). Intent lines quote canon; leans are marked LEAN.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-domain-table`>>
+
+!! 1. Domain table
+
+| domain | intent (source) | owner | fences | carriers |h
+| bags/lares: `api/` | live house canon, the permanent API (`ha.ka.ba/lares/api/pono/...`; wiki-layer-ontology "stable... permanent API") | house (operator + crew) | boot seed `.claude/noosphere-boot` projections; submission-guarded carriers | 183 |
+| bags/lares: `docs/` (pono 101, history 18, swarm-harvest 55, research 17, art-sigils, voices, graph...) | design-and-feedback loop + records: designs, roads, harvest rooms. `docs/pono` = promotion antechamber to `api/pono` (otakiage #/promotion boundary); `history` = "old designs to harvest... then retire/burn" (otakiage THE RULING) | house | `lares-history` is record, never canon ("stays untouched", recipe-layer-model) | 250 |
+| bags/lares: `ref/` `library/` `cli/` | RFC mirrors and library texts (discordia, kumulipo, mark-twain); reference, third-party voice | house, third-party text | quoted text keeps its own wording | 13 / 3 / 3 |
+| bags/lares: `wsl2/` | host runbooks and incident record | house | none | 4 |
+| bags/lararium | the node's own canon: `api` 32, `mesh` 68, `tw5` 54, `docs` 51, `node` 13, `browser` 3, `keyhive` 3, `lists` 1. Live canon = api/mesh/browser (evergreen-boundary `isCanonFile`) | house | none beyond the above | 226 |
+| bags/crossroads | the public oracle plane / recipe library bag (wiki-recipe.ts `CROSSROADS_BAG`); `cap-tier=public` | house, public infra | public-facing register (feedback_outward_facing_register) | 6 |
+| bags/elyncia | the Elyncia fiction setting for the operator's RPG crowds: books 4, campaign 5, characters 10, concepts 8, factions 4, nexuses 11. In-world narration "keeps its own voice" (project_rpg_materials_to_main) | operator-only fiction canon (LEAN: no canon line says "operator-only" in so many words; the rpg-materials ruling and the elyncia/ bag meta imply it) | NEVER L-Prime/Evergreen the in-world prose (rpg ruling); CLAUDE.md in this checkout carries no never-edit list (searched CLAUDE.md, AGENTS.md, .claude) &#45;- the fence stands in memory only | 43 |
+| bags/elyncia-referee | the referee tier: NPC private truths, sealed hooks; `cap-tier=contract`; every meme `kapu` or `data` (its meta.mem) | operator (referee's hands) | never federates player-facing | 12 |
+| bags/sdm | Synthetic Dream Machine game system: components, modules, mount-points, epic, procedures, projections, templates, witness, docs (Powers composition model, Arcana). Tags are system-own (`components/domain/...`, `mount-points/trait`) | operator + SDM design | Luka Rejec's permitted text (Golden Age); third-party rights | 46 |
+| bags/ftls, bags/wtf | DO NOT EXIST. FTLS and WTF stand only as root dirs `ftls/` (11 files), `wtf/` (10), plus `elyncia/` (87), `sdm/` (68), `_osr/` (63): markdown chapters preserved AS IS | operator | rpg ruling 2026-10-10: no .mem conversion, no bags, third-party rights checked, Caverns chapter held back | 0 .mem |
+| wiki `daemon` | "HOLDS THE WORKING-MEMORY STAGE": the surface an operator and an agent share, "belonging to no other composed knowledge domain" (wiki-layer-ontology #/the-daemon-wiki, ruling 2026-09-02; "carries working memory alone", 2026-10-20) | operator + agent jointly | must land on disk (`wikis/daemon/`); `bags/daemon` mirrorless | 0 in bags |
+| wikis `lares`, `lararium` | system wikis (genesis-doc.ts `systemRecipe`): lares = oracle floor + live lararium + own canon; lararium = its own canon. Mirror `bags/lares`, `bags/lararium` | the Nexus's Kahu cabal writes them live | oracle floor is read-only, CID-frozen | the bags above |
+| `wikis/` tree | ABSENT on this branch (`ls wikis` fails); `.gitignore` says named wikis are checked in, `wikis/scratch/` ignored. Any wiki beyond lares/lararium/daemon is user-minted (wiki-mint-handlers), so no elyncia/sdm/art wiki is registered in genesis | - | - | 0 |
+
+Registry fact: recipes bind `wikis/{slug}/{temp,draft,personal,working}` over `bags/{slug}` canon over library bags over the oracle floor (wiki-recipe.ts). So a domain = a bag (what rests) plus the wiki that composes it. A "domain" with no bag and no genesis recipe (art, RPG chapters) has no registry row today.
+
+Nowhere is there a concept-art wiki or a concept-art bag. "Concept art" appears in 5 carriers: bags/elyncia `lady-aki-concept-art.mem`, `lady-aki-poster-prompt.mem`, `session-0-1-render-research.mem`, `high-delos-cabaret.mem`, and bags/lares `docs/art-sigils/*` + `api/art-sigils/spec.mem` (MidJourney sigils). Art lives inside the Elyncia bag as character-package carriers (rating `ano`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-law-x-domain-matrix`>>
+
+!! 2. Law x domain matrix
+
+Legend: ON = serves it; opt = serves where a carrier opts in by tag; NEVER = must not touch (fiction voice or record); fmt = carrier-format floor, not intent.
+
+Laws: (a) status-why + closed 5-stage vocabulary; (b) canon-history / dated-history; (c) retired words (s-vocabulary); (d) quoted `lar:` positional; (e) carrier shape (DOCTYPE, type, one body, fence spelling, `$` name); (f) dangling edges / empty room; (g) existing check: frame/bcc re-stamp, duplicate key, torn frame; (h) existing: stage-owes (open lean / fold target).
+
+| law | lares api | lares docs | lararium api/mesh/browser | lararium docs | crossroads/ref/library | elyncia (+referee) | sdm | daemon / working memory |h
+| (a) status-why + vocab | opt | opt (home turf: designs/handoffs) | opt | opt | skip | opt (see 3) | opt | NEVER (stage not yet a doc; scratch) |
+| (b) canon-history | ON | NEVER (records narrate history by design) | ON | NEVER | ref/library NEVER (quoted) | NEVER | NEVER (LEAN) | NEVER |
+| (c) retired words | ON | ON (LEAN: the word retires house-wide in prose) | ON | ON | ref/library NEVER | NEVER (a fiction name may collide) | NEVER (LEAN) | NEVER |
+| (d) quoted positional | ON | ON | ON | ON | ON where sigils appear | ON where sigils appear (grammar fault, not voice) | ON | ON |
+| (e) shape | fmt | fmt | fmt | fmt | fmt | fmt | fmt | fmt |
+| (f) dangling edges | ON (staged only) | ON (staged) | ON (staged) | ON (staged) | n/a | LEAN opt (loulou edges are rare; books index) | opt | n/a |
+| (g) frame/bcc, dup key, torn | fmt | fmt | fmt | fmt | fmt | fmt | fmt | fmt |
+| (h) stage-owes | opt, rides (a) | opt | opt | opt | skip | opt | opt | NEVER |
+
+Rulings behind the cells:
+* (a) opt: otakiage THE RULING, 2026-09-12: "A carrier carrying no lifecycle/* tag stands UNGOVERNED... `meme check` enforces nothing new on it"; "A missing tag MUST NOT read as a stage". RULED. Today 63 of ~800 carriers carry a lifecycle tag (40 lares, 23 lararium, none elsewhere). The scout's proposal to make "stage without status-why" a check error needs no scoping: it already reads only tagged carriers. Moving it into `meme check` is consistent with the ruling; the operator's note is already honoured by the tag.
+* (b) path scope: evergreen-boundary `isCanonFile` = `bags/*/*/*/(api|mesh|browser)/**.mem`, never `docs/` (RULED in evergreen-sweep-2026 G37; code comment line 249). Path-scoped already; elyncia's `concepts/` etc. never match because the path lacks api|mesh|browser. So (b) never touches fiction today. NEVER cells hold by construction.
+* (c) the scout's "canon half" runs over canon prose; scope = same path class as (b) unless the operator wants docs too. LEAN.
+* (d)(e)(g) are grammar and format: a broken sigil or missing frame fails to load or parse in ANY wiki, so they follow the carrier, not the intent. LEAN: stay universal (they exist or are cheap), but each `meme check` rule must still be a distinct function the domain gate can mute.
+* Fiction fence: rpg-materials ruling, "in-world narration keeps its own voice". RULED for chapters; LEAN that it extends to the elyncia bag carriers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-o-takiage-per-domain`>>
+
+!! 3. o-takiage per domain (lean only)
+
+Read whole: otakiage.mem (478 lines). Five stages designed, standing, folded, harvest, retiring (plus fleeting/gone as no-carrier states), tag family, `kind/rite` beside, `status-why` witness sentence, fire is CALLED never scheduled, kapu/tombstone siblings outside the fire. Its table already lists "a fiction-canon concept" among carriers that enter no lifecycle; #/questions asks whether any class MUST carry one (still open).
+
+''RPG chapters'' (`elyncia/ ftls/ sdm/ wtf/` md roots now; `bags/elyncia`, `bags/sdm` carriers later). Intent: players and GMs read the chapters; the work is an evolving book. The software ladder does not map; the book's own ladder is draft -> playtested -> print-ready -> errata'd -> superseded.
+* LEAN: do NOT reuse the five stage words. A chapter is neither "standing = ruling enacted" nor "folded = pointers alone". Use a second tag family `edition/*` only if the operator wants it: `edition/draft`, `edition/playtest`, `edition/table-ready`, `edition/superseded`. `superseded` plays "retiring": the chapter keeps its address (the old name must keep meaning what it meant, meme#/retirement) and points forward to the new edition; nothing burns while a table plays from it.
+* `status-why` fit: LEAN weak. For a chapter the witness sentence would read "run at table X on date" (a playtest note), a real witness, but optional. Keep it free, not gated.
+* "folded" for an RPG chapter: content moved into another chapter (e.g. the Style Base Layer folded into the Referee Guide). Pointers-alone is legal, and the rpg ruling already holds back "Style Base Layer and Referee Guide drafts" &#45;- a natural first use.
+* The fire: never fires on published chapters; third-party rights (Thracia maps, OSR PDFs, Caverns) make `_osr/source-pdfs` a kapu-like "never burns" class.
+* Until the lararium stands the md roots carry no tags at all; the migration (MD &lt;-> memetic-wikitext reprojection) is ruled to wait. So today this is a design, not a gate.
+
+''Concept art'' (inside bags/elyncia as character packages; rating `ano`). Intent: a sheet is a render brief plus its outcome: palette, directions, negative directions, prompt. Its life: prompt drafted -> rendered -> chosen -> locked as canon visual -> superseded by a re-render.
+* LEAN: a tag family `art/*`: `art/brief`, `art/rendered`, `art/locked`, `art/superseded`. `locked` is the only stage with teeth: other carriers cite its palette and the art-sigil spec (`api/art-sigils/spec.mem`) governs the prompt grammar.
+* "retiring" for a sheet: a superseded render stays as a record of why the palette moved; the old prompt is harvest material for the next sheet (harvest to the living sheet, not to nothing). Never burns while any locked sheet cites it by `loulou`.
+* `status-why` fit: GOOD where it names the render evidence (image CID, MidJourney job, date) &#45;- the witness sentence maps directly onto "which render proves this locked".
+* Where it lives: no art wiki or bag exists. LEAN: do not mint one; art stays under the character it serves (the existing arrangement). A separate art domain would add a registry row nobody asked for.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-declaring-a-domain-options-least-new-shape`>>
+
+!! 4. Declaring a domain: options, least new shape
+
+| option | what exists today | new shape | verdict |h
+| carrier's own tag | `lifecycle/*` tag already switches laws (a)(h) per carrier; `kind/rite` beside it; ruled | none | BEST for intent-driven laws |
+| path class | `isCanonFile` already scopes (b) to `api|mesh|browser`, never `docs/` or other bags; RULED G37 | none | BEST for canon-register laws (b)(c) |
+| bag `meta.mem` key | every bag meta already carries `bag`, `cap-tier`, `home`, `repository` (6 bags) | one key, e.g. `laws = [...]` or `intent = "fiction"` | the one new key, only if a law must differ per bag and path/tag cannot say it |
+| recipe field | wiki-recipe.ts carries slots and library bags, no intent field | a schema change plus fingerprint churn | REJECT (recipes compose layers; intent is not composition; also bags are canon, wikis are composition) |
+| namespace | `uri-path` roots by bag already (`ha.ka.ba/elyncia/...`) | none | falls out of path class |
+
+Recommendation: no new declaration. Each law names its reach by the mark it already reads: (a)(h) by tag, (b)(c) by path class, (d)(e)(g) universal by format. Add the bag `meta.mem` key only when a law needs "this whole bag" and `isCanonFile`-style path matching proves too blunt (probably the day an elyncia law arrives, such as an `edition/*` family). Test shape: each moved law gains a CONTROL (an ungoverned/fiction carrier stays exit 0), as the otakiage control already does.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-forks-talked-out`>>
+
+!! 5. Forks talked out (two rounds)
+
+# Should the format floor (DOCTYPE, type) be switchable per domain? Round 1: operator says not every meme enforces all laws. Round 2: DOCTYPE and `type` decide whether the engine loads a carrier at all, and every elyncia carrier already carries both; switching them off helps no domain. SURVIVES NOT. Stays universal. (Operator may overrule.)
+# Does (b) canon-history need a domain declaration? Round 1: yes, fiction. Round 2: the path class already excludes everything but api/mesh/browser. DIES.
+# Mint an art wiki/bag and an RPG wiki now? Round 2: the ruling holds migration until the lararium stands. DIES, until founding.
+# Should dangling-edge refusal reach fiction? Round 2: staged-only refusal would block an author adding a `[[...]]`-style link to a not-yet-written chapter, which is the normal drafting motion in fiction. SURVIVES as ask.
+# Does retired-word (c) reach `docs/`? Round 1 yes, Round 2 the scout's rows name only canon prose ("no retired key abbreviation in canon prose"). Lean canon-only; SURVIVES as a small ask.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-operator-asks`>>
+
+!! 6. Operator asks (each with lean)
+
+# Edge refusal on staged carriers: apply to fiction (elyncia, sdm) or only lares/lararium? LEAN: lares and lararium only; fiction drafts freely.
+# Retired words (s-vocabulary): canon path only (api/mesh/browser), or docs too? LEAN: canon only, matching the scout.
+# May RPG chapters and art sheets get their own tag families (`edition/*`, `art/*`) when the lararium stands, rather than the five software stages? LEAN: yes, and not before; record in the otakiage #/questions slot "does any class MUST carry one" as answered "no, by domain".
+# Which bags are operator-only fiction (elyncia, elyncia-referee, sdm) so a fence can read it? No canon states it; the fence rests in memory (rpg ruling) and not in CLAUDE.md. LEAN: say it once in the bag's own `meta.mem` prose, no new key.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_kOjizK2t36FtnVkvWDZMSYMg-k_ovIBWwH4hZ94Sf8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

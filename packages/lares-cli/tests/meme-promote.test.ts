@@ -23,7 +23,7 @@
  *
  * Proven:
  *   · RED (the address holds): the promoted carrier's bytes stand IDENTICAL before and after — same
- *     `uri-path`, same `file-path`, same address mark, same block check digest, and the receipt records
+ *     `uri-path`, same address mark, same block check digest, and the receipt records
  *     that ONE address rather than a fabricated hostful/hostless pair,
  *   · RED (the graph holds): a REFERENCING carrier changes not one byte — the property the string
  *     substitution existed to fake,
@@ -45,40 +45,38 @@ import { promoteCarrier, type PromotionSeat } from "../src/commands/meme-promote
 const SEED = new Uint8Array(32).fill(9);
 
 /** A carrier assembled at read time — no DOCTYPE, no `type =`, nothing a corpus reader would claim. */
-function carrier(uriPath: string, filePath: string, tags: string): string {
+function carrier(uriPath: string, tags: string): string {
   return [
-    `<<^ code="&#x0001;" from="?" -> to="lar:///${uriPath}">>`,
-    '<<^ code="&#x0002;">>',
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${uriPath}\`>>`,
+    '<<^ code=`&#x0002;`>>',
     "",
     "```toml meta",
-    `file-path  = "${filePath}"`,
     `tags       = [${tags}]`,
     `uri-path   = "${uriPath}"`,
     "```",
     "",
     "! A fixture that crosses nothing real",
     "",
-    '<<^ code="&#x0003;">>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    '<<^ code="&#x0004;" -> to="?">>',
+    '<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`>>',
+    '<<^ code=`&#x0004;` to=`?`>>',
     "",
   ].join("\n");
 }
 
 /** A second carrier that POINTS AT the first — the inbound edge a promotion must leave alone. */
-function pointer(uriPath: string, filePath: string, at: string): string {
+function pointer(uriPath: string, at: string): string {
   return [
-    `<<^ code="&#x0001;" from="?" -> to="lar:///${uriPath}">>`,
-    '<<^ code="&#x0002;">>',
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${uriPath}\`>>`,
+    '<<^ code=`&#x0002;`>>',
     "",
     "```toml meta",
-    `file-path  = "${filePath}"`,
     `uri-path   = "${uriPath}"`,
     "```",
     "",
-    `<<~ loulou "lar:///${at}">>`,
+    `<<~ loulou uri=\`lar:///${at}\`>>`,
     "",
-    '<<^ code="&#x0003;">>ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    '<<^ code="&#x0004;" -> to="?">>',
+    '<<^ code=`&#x0003;` bcc=`ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`>>',
+    '<<^ code=`&#x0004;` to=`?`>>',
     "",
   ].join("\n");
 }
@@ -101,8 +99,8 @@ const PATH_COMPLAINT = /segment|\/api\//;
 function tree(tags = '"docs/pono/design", "lifecycle/standing"'): string {
   const root = mkdtempSync(join(tmpdir(), "lr-promote-"));
   mkdirSync(join(root, "bags/lares/ha.ka.ba/lares/docs/pono"), { recursive: true });
-  writeFileSync(join(root, SUBJECT_REL), carrier(SUBJECT_URI, SUBJECT_REL, tags));
-  writeFileSync(join(root, POINTER_REL), pointer("ha.ka.ba/lares/docs/pono/fixture-pointer", POINTER_REL, SUBJECT_URI));
+  writeFileSync(join(root, SUBJECT_REL), carrier(SUBJECT_URI, tags));
+  writeFileSync(join(root, POINTER_REL), pointer("ha.ka.ba/lares/docs/pono/fixture-pointer", SUBJECT_URI));
   return root;
 }
 
@@ -143,7 +141,7 @@ async function seated(opts?: { admin?: boolean; residency?: Ledger }): Promise<S
 const plan = (root: string) => ({ root, file: SUBJECT_REL, fromBag: LIVE_BAG, destBag: CANON_BAG });
 
 describe("lares meme promote — the crossing moves residency, and the address holds", () => {
-  test("RED: the promoted carrier's bytes stand IDENTICAL — uri-path, file-path, address mark, block check", async () => {
+  test("RED: the promoted carrier's bytes stand IDENTICAL — uri-path, address mark, block check", async () => {
     const root = tree();
     try {
       const before = readFileSync(join(root, SUBJECT_REL), "utf8");
@@ -156,8 +154,7 @@ describe("lares meme promote — the crossing moves residency, and the address h
       const after = readFileSync(join(root, SUBJECT_REL), "utf8");
       expect(after, "the carrier's bytes moved under a residency move").toBe(before);
       expect(after).toContain(`uri-path   = "${SUBJECT_URI}"`);
-      expect(after).toContain(`file-path  = "${SUBJECT_REL}"`);
-      expect(after).toContain(`to="lar:///${SUBJECT_URI}"`);
+      expect(after).toContain(`to=\`lar:///${SUBJECT_URI}\``);
       // THE BLOCK CHECK SURVIVES UNTOUCHED — same digest line, character for character.
       const digest = (t: string): string => /ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/.exec(t)?.[0] ?? "";
       expect(digest(after)).toBe(digest(before));
@@ -294,6 +291,49 @@ describe("lares meme promote — the crossing moves residency, and the address h
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
+  test("RED: a head moved outside its sealed uri-path crosses nothing — the receipt would name one address, the head another", async () => {
+    const root = tree();
+    try {
+      const path = join(root, SUBJECT_REL);
+      writeFileSync(path, readFileSync(path, "utf8").replace(`to=\`lar:///${SUBJECT_URI}\``, "to=`lar:///ha.ka.ba/elsewhere`"));
+      const { seat, moves } = await seated();
+      const r = await promoteCarrier(plan(root), seat);
+      expect(r.ok).toBe(false);
+      expect(!r.ok && r.reason).toMatch(/torn — head-meta-split/);
+      expect(moves).toEqual([]);
+      expect(existsSync(promotionReceiptPath(path))).toBe(false);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("RED (A2, the reader's probe): a uri-path keyed under a table never names the crossing — the head does", async () => {
+    const root = tree();
+    try {
+      const path = join(root, SUBJECT_REL);
+      // a root title naming the head, and a table below it naming another place
+      writeFileSync(path, readFileSync(path, "utf8").replace("```\n\n!", `title      = "${SUBJECT_TITLE}"\n[t]\nuri-path   = "ha.ka.ba/evil"\n\`\`\`\n\n!`).replace(`uri-path   = "${SUBJECT_URI}"\n`, ""));
+      const { seat, moves } = await seated();
+      const r = await promoteCarrier(plan(root), seat);
+      expect(moves.map((m) => m.title)).toEqual([SUBJECT_TITLE]);
+      expect(r.ok && r.subjectUri).toBe(SUBJECT_TITLE);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("RED (A2, the reader's probe): a head the sealed meta never names crosses nothing, though prose names a uri-path", async () => {
+    const root = tree();
+    try {
+      const path = join(root, SUBJECT_REL);
+      writeFileSync(path, readFileSync(path, "utf8")
+        .replace(`uri-path   = "${SUBJECT_URI}"\n`, "")
+        .replace("! A fixture that crosses nothing real", 'uri-path = "ha.ka.ba/evil"'));
+      const { seat, moves } = await seated();
+      const r = await promoteCarrier(plan(root), seat);
+      expect(r.ok).toBe(false);
+      expect(!r.ok && r.reason).toMatch(/head-unbound/);
+      expect(moves).toEqual([]);
+      expect(existsSync(promotionReceiptPath(path))).toBe(false);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
   test("CONTROL: an ungoverned carrier, and one off `lifecycle/standing`, are each refused", async () => {
     for (const tags of ['"docs/pono/design"', '"docs/pono/design", "lifecycle/lean"']) {
       const root = tree(tags);
@@ -363,7 +403,7 @@ describe("lares meme promote — the crossing moves residency, and the address h
     const root = mkdtempSync(join(tmpdir(), "lr-promote-api-"));
     try {
       mkdirSync(join(root, "bags/lares/ha.ka.ba/lares/api/pono"), { recursive: true });
-      writeFileSync(join(root, RENAMED_REL), carrier(RENAMED_URI, RENAMED_REL, '"lifecycle/standing"'));
+      writeFileSync(join(root, RENAMED_REL), carrier(RENAMED_URI, '"lifecycle/standing"'));
       const title = `lar:///${RENAMED_URI}`;
       const { seat, moves } = await seated({ residency: ledger([[LIVE_BAG, [title]]]) });
       const r = await promoteCarrier({ root, file: RENAMED_REL, fromBag: LIVE_BAG, destBag: CANON_BAG }, seat);

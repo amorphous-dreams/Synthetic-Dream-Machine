@@ -1,0 +1,53 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/w10-knock/luna/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/w10-knock/luna/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/w10-knock/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Knockreader: Lares (Tasked Spirit) · Persona: Ink-Clerk / Map-Wisp / Lares (Council)
+&lt;&lt;~ lares aim from="lar:&#47;&#47;/operator.questions.the-knock" -> to="lar:&#47;&#47;/gate.evidence.guides" >>
+&lt;&lt;~ set hud="aim" aperture="16/arc" ooda-ha="7/declare-glyphs" drift-ward="judge the candidate against admission, routing, privacy and first-dial evidence · L-Prime" >>
+
+->✶ ''Observe — evidence.'' The current knock HMACs the public bundle digest and route (`gate-bundle.ts:188-212`); the URL is `<route>/<knock>` (`face-gate-server.ts:329-332`). `face-dial.ts:153-160` makes a fresh anonymous Noise static per dial but sends the stable pin-derived knock. Server dispatch finds one exact path, then preflights Noise message one before HTTP 101 (`face-gate-server.ts:388-405`); `face-gate.ts:698-700` performs that decrypt. W28 freezes `GATE_FRAME` tags and bounds (`w28-gate-lane.mem:34-44`); W10 records that changing knock bytes belongs before X0 (`stable-founding-road.mem:508,524,544`). The road's “accepted” entry at `:583` records no operator ruling.
+
+->⏿ ''Orient — S1 candidate.'' Judge it as a different architecture, not a free derivation. A gate that computes `DH(gate private, face-scoped public)` for every admitted certificate must hold a positive roster of those keys at dial time. Current doctrine instead admits one face key per Nexus, validates a vessel certificate beneath it, keeps no current-vessel inventory, and checks causal deny-only withdrawals in the presented chain (`face-proof.mem:64,194,210-211`). Thus this proposal changes admission state and gate memory. Pin observer lacks the face private key, so cannot calculate the shared secret or test the tag. Fresh nonce plus HMAC makes two tags unlinkable absent nonce collision; route remains visible. A replayed valid nonce/tag can pass preflight and buy one trial match, not Noise decryption or application effects; no clock makes it expire, so it remains reusable bounded work until key removal. After a learned kapae, deleting that key from the match set gives silence; a partitioned gate that has not learned the withdrawal cannot know it (`face-proof.mem:210-213`).
+
+The gate now learns the vessel's admitted certificate set before presentation and can identify which vessel's shared key matched at preflight. That exposes a gate-side roster and early vessel identity, violating the desired “one face without naming its vessel” property. Cost: client one DH + nonce/HMAC; gate up to N DH-at-admission/cache and N HMACs per dial, then Noise. Node/browser can share this path algorithm, but each needs the admitted-key cache and coherent withdrawal updates. Luna’s per-face shared secret still fails first-dial coverage and links that face's dials if stable; Sol’s public knock costs one public test and lets pin holders map targets. Neither side-steps the candidate's new roster and identity leak.
+
+->◇ ''Decide — S2/S3.'' The actual joinee holds a signed admit edge and sovereign gate pin, not a face-scoped certified key/grant; it dials the hearth's WebSocket relay using that pin before the later face grant (`face-grant-unseated-joinee.test.ts:10-18`; see test's PIN-alone boot at `:49-82`). Fleet answer carries relay and gate key; the bootstrap pins them, and boot dials (`:15-18`). A floor route cannot carry this as a fleet seat: floor gate seats no fleet lane and grants only public shelf access (`face-proof.mem:118-122`). Nor does the invite/walker bearing solve it: that bearing is invite-scoped (`hosting.ts:378-403`), and this joinee follows its admit pin, not an invite. Therefore retain a public-knock door for this pre-seat sovereign dial unless admission changes to provision a secret beforehand. Door leak: route, stable knock, timing, sizes, destination; candidate pin holders can map route. Network address already exposes much of the destination.
+
+If prefilter becomes secret, public per-route selector plus secret trial match fits “one name, one relation”: selector routes; proof prefilters. Current raw node Noise IK carries stable knock in URL, message one in WebSocket protocol (`face-dial.ts:159-160`; server path above). Herm relaying sees destination, timing, sizes and the stable face-scoped channel tag, not certificates/content (`face-proof.mem:183-186`). With a secret HMAC in URL, herm sees nonce/tag and route but cannot map tag to candidate keys; still learns traffic shape and destination.
+
+->▶ ''Act — S4 joint lean.'' Keep public per-route knock for the actual joinee first dial and floor, but challenge W10's blanket accepted-leak language: floor leak harms no floor promise; sovereign route-target disclosure remains a named residual leak, not operator-ratified acceptance. Do not adopt the controller’s candidate: it requires a vessel roster, reveals which vessel early, cannot serve this first dial without another credential path, and makes N trial HMACs per request. Before X0, jointly settle any URL change on node and browser; leave GATE_FRAME frozen. Red witnesses: pin-holding observer maps floor and cannot map a secret sovereign route; withdrawn key draws silence after gate learns denial; two dials do not link. Known-positive controls: floor route maps and admitted sovereign dial succeeds; withdrawn key succeeds before denial knowledge but refuses after. Flip to a secret route selector/filter only if a face-neutral pre-grant secret reaches every legitimate first dial, withdrawal removes it causally, gate learns no vessel identity, and those red/positive controls pass isomorphically. My split with Sol: I do not retain the public sovereign knock as settled; its necessity follows the joinee’s actual pin-only first dial, while the residual leak still needs operator ruling.
+
+->↺ ''Aftermath.'' Luna’s lean treats public first-dial dispatch as the present constraint, not permanent law. W10 stays open for a secret-bearing admission design and operator ruling.
+
+&lt;&lt;~ set hud="yield" aperture="16/arc -> 18/theme" ooda-ha="closed 1↺" drift-ward="operator ruling and a secret-bearing first-dial design can change the sovereign selector · ↻ L-Prime" >>
+&lt;&lt;~ lares yield from="lar:&#47;&#47;/ink-clerk:agent@w10-knock/handback" -> to="?" >>
+
+WORDS=866
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H9H1E8lSgN4S2RFfWAalldlY0fDEbT-vdFauXEKLGoc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

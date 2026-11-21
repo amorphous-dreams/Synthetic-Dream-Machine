@@ -1,20 +1,20 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/pair-a">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/pair-a`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-l-space = "stable"
+l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
-role = "Pair A hard-reference, seed provenance and first-pass evidence gates"
-tags = ["api/pono/meme"]
-title = "lar:///ha.ka.ba/lares/api/projection-loom/pair-a"
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/projection-loom/pair-a"
+role      = "Pair A hard-reference, seed provenance and first-pass evidence gates"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/pair-a"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/pair-a"
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 ! Pair A: Ur and brutalist construction
 
 The Operator steers the Ur trial away from excavation photogrammetry toward a
@@ -23,7 +23,7 @@ the complementary procedural witness. That steering names the experiment;
 it does not grant a remote file a source digest.
 <<~/ahu>>
 
-<<~ ahu #/pattern-integrities>>
+<<~ ahu slot=`#/pattern-integrities`>>
 !! Source and hypothesis travel separately
 
 * ''The source carries its own bytes.'' A third-party URL, visible download button,
@@ -43,7 +43,7 @@ it does not grant a remote file a source digest.
   and the Operator can pet-name an interesting emergence or o-takiage a branch.
 <<~/ahu>>
 
-<<~ ahu #/afterward>>
+<<~ ahu slot=`#/afterward`>>
 !! Re-entry gates
 
 Once actual History Builds and nosycat source bytes enter the evidence stack,
@@ -55,6 +55,6 @@ validate the machina's mechanics but not the external reconstruction's fidelity.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 
-<<^ code="&#x0003;">>ni:///sha-256;G8zU3ROdKvCJ7rPB_MG40jDg4gFoaFDw1d6UqDzmKec
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4ayQHHdk-MV4bb7_AM3RTVv37KS8bGYOsBBf8nHfN7I`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

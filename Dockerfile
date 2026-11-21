@@ -7,6 +7,7 @@
 #   build        — compile the Node runtime dependency graph + Vite web surface
 #   serve        — the product image: daemon + CLI + genesis + web; state and corpus arrive as mounts
 #   mcp-runtime  — minimal stdio MCP server
+#   browser-harness — pinned Chromium walk scripts and built custody probe
 #
 # Auth env vars (all optional — graceful fallback to local-dev):
 #   GITHUB_CLIENT_ID      GitHub OAuth App client id (web flow for browser users)
@@ -78,21 +79,24 @@ WORKDIR /app
 
 # The Node slim base omits Python's runtime libraries even though both images
 # use Bookworm. Install the shared libraries explicitly before probing imports.
+# git reads the mounted checkout's tracking: the census names a mirror file git never
+# tracked as an owed commit, and the projector keeps such a file rather than delete it.
+# iproute2 carries `ss`, which reads a verb socket's peer (`uds-peer`): without it every hand act's peer reads unknown.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 \
+      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 git iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 # One explicit Python interpreter and installed dependency closure live beside
 # Node. Python's Debian release matches Node's; scripts and vendored source
-# stay in /app while every writable cache/store belongs beneath /state.
+# stay in /app while every writable cache belongs beneath the house's cache class.
 COPY --from=sensorium-python-seat /usr/local /usr/local
 COPY --from=sensorium-python-seat /app/mempalace/mempalace ./mempalace/mempalace
 COPY --from=build /app/packages/lararium-sensorium/scripts ./packages/lararium-sensorium/scripts
 COPY --from=build /app/packages/lararium-sensorium/model-assets.json ./packages/lararium-sensorium/model-assets.json
 ENV LARES_PYTHON=/usr/local/bin/python3 \
     PYTHONPATH=/app/mempalace \
-    XDG_CACHE_HOME=/state/cache \
-    HF_HOME=/state/cache/huggingface
+    XDG_CACHE_HOME=/lar/cache \
+    HF_HOME=/lar/cache/huggingface
 RUN PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/content_io.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_project.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_owned_content.py --help >/dev/null && \
@@ -135,31 +139,53 @@ COPY --from=build /app/packages/lares-cli/node_modules      ./packages/lares-cli
 COPY --from=build /app/packages/lares-cli/dist              ./packages/lares-cli/dist
 COPY --from=build /app/packages/lares-cli/bin               ./packages/lares-cli/bin
 COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli/package.json
+# `lares` STANDS ON PATH. Every caller inside (the pool pre-commit hook, an operator's exec shell, a sitting) types `lares`;
+# the link lays here, while root, to the one CLI the image carries. Node resolves the link to its real file, so the CLI
+# reads its own tree under this image's node; LAR_ROOT=/lar below keeps it acting directly, never through the host bridge.
+RUN ln -s /app/packages/lares-cli/bin/lares.mjs /usr/local/bin/lares
 
-# THE TWO MOUNTS (the deployment contract; docker-compose.surface.yml wires them):
-#   /state      one durable per-vessel directory — vessel homes AND custody (keys). Never in a layer.
-#   /workspace  the editable corpus — bags/ and wikis/ the projection reads and writes.
-# The image declares them so an unmounted run lands in an anonymous volume, never in the image layers.
-# Created and chowned BEFORE the VOLUME lines: an anonymous volume copies its mount point's ownership from the
-# image, so an unmounted run reads node:node here, never root-owned.
-RUN mkdir -p /state /workspace && chown node:node /state /workspace
-VOLUME /state
+# THE HOUSE ROOT AND THE CORPUS (the deployment contract; docker-compose.surface.yml wires them):
+#   /lar        the house root (LAR_ROOT). Its hearth (vessel homes AND custody keys), sensoriums, projections,
+#               library and config bind from the host's one house root; its cache and run stay inside the container. Never in a
+#               layer.
+#   /workspace  the editable corpus — the canon source a seeding reads, and the canon projections written back.
+# The image declares the bound classes and the corpus so an unmounted run lands in an anonymous volume, never in the
+# image layers. Created and chowned BEFORE the VOLUME lines: an anonymous volume copies its mount point's ownership
+# from the image, so an unmounted run reads node:node here, never root-owned. The cache and run classes stand sticky
+# and world-writable for whatever uid the compose `user:` names. The harness composes root their scratch vessels at
+# /state (`LAR_ROOT=/state`), so that mount point stands node-owned for their named volumes too.
+# THE PŪLAMA'S SOCKET DIRECTORY (/pulama/socket) rides a named volume the vessel and the pūlama share, bound to no host
+# path (docker-compose.surface.yml). A fresh named volume copies its mount point's owner and mode from the image at its
+# first mount, so the image stands it node-owned and sticky, world-writable: the runtime uid compose names (LARES_UID)
+# makes its socket there whichever uid that is, and the socket file's own 0600 under that uid gates every dial.
+RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace /pulama/socket \
+ && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace /pulama/socket \
+ && chmod 1777 /lar/cache /lar/run /pulama/socket
+VOLUME /lar/hearth
+VOLUME /lar/sensoriums
+VOLUME /lar/projections
+VOLUME /lar/library
+VOLUME /lar/config
 VOLUME /workspace
 
 ENV NODE_ENV=production
-# EXPLICIT ROOTS. LAR_BAGS alone does not isolate the projection mirrors; the daemon also takes
-# `--root /workspace` (see CMD). LAR_ROOT moves the vessel's XDG homes under /state.
-ENV LAR_ROOT=/state \
+# EXPLICIT ROOTS. LAR_ROOT names the house root every house-state resolver reads (an unnamed root refuses);
+# LAR_BAGS names the canon source a seeding reads and canon writes back to.
+ENV LAR_ROOT=/lar \
     LAR_BAGS=/workspace/bags \
     LAR_WIKIS=/workspace/wikis \
     LAR_GENESIS=/app/genesis
 # A HOME for an arbitrary runtime uid (`user:` in compose) with no passwd entry.
-# Chroma's MiniLM cache derives from HOME rather than XDG_CACHE_HOME; keeping
-# HOME under the mounted state makes model bytes survive holder restarts.
-ENV HOME=/state
+# Chroma's MiniLM cache derives from HOME rather than XDG_CACHE_HOME; keeping HOME in the house's cache class keeps
+# model bytes across a container restart, and a recreate fetches them again.
+ENV HOME=/lar/cache
 # THE HOST HOLDS THE ENGINE. The daemon runs as this container's main process, so the CLI inside reports a
 # standing verdict and never stops or spawns a daemon; the host shim restarts the container.
 ENV LAR_ENGINE=host
+# THE VESSEL NAMES ITSELF. A host `lares` with no LAR_ROOT forwards vessel verbs to tools/lares-container.sh; this
+# marker (beside LAR_ROOT) keeps the CLI inside from ever forwarding to itself; /.dockerenv cannot, since a CI job or
+# a devcontainer driving docker stands in a container and is a host.
+ENV LARES_IN_CONTAINER=1
 # Peer port — single surface: WS /ws + GET /api/health
 ENV LAR_PORT=4321
 # Auth env vars — set via docker compose or -e flags
@@ -169,14 +195,23 @@ ENV LAR_PORT=4321
 
 EXPOSE 4321
 
-# THE ONE-HOLDER LAW rides the store itself. The store takes a claim at /state/.holder (a socket on the state
-# mount) before it opens, so a second holder on the same /state refuses with StoreHeld whichever container,
+# THE ONE-HOLDER LAW rides the store itself. The store takes a claim at /lar/hearth/vessel/.holder (a socket on the
+# hearth mount) before it opens, so a second holder on the same hearth refuses with StoreHeld whichever container,
 # namespace or entrypoint it came through. The image wraps nothing: `docker run --entrypoint node` meets the
 # same refusal as the default entrypoint. Exec'd CLI calls share the holder's container.
 
 # NON-ROOT. The uid/gid come from the environment at RUN time (compose `user: "${LARES_UID}:${LARES_GID}"`),
-# so a bind-mounted /state and /workspace stay editable by the host operator. Nothing here pins one.
+# so the bind-mounted house classes and /workspace stay editable by the host operator. Nothing here pins one.
 USER node
+
+# THE IMAGE NAMES THE REVISION IT WAS BUILT AT, so `tools/lares-container.sh up` can warn when the image lags the checkout.
+# Last in the stage: a new revision rebuilds this layer alone.
+ARG GIT_REV=unknown
+LABEL org.opencontainers.image.revision=$GIT_REV
+# THE PŪLAMA'S CODE CLOSURE (tools/pulama-closure.mjs, computed by the host shim's build over the archived tree): the
+# pūlama runs this same image, so the shim compares this digest, not the image id, before it re-stands a lit pūlama.
+ARG PULAMA_CLOSURE=
+LABEL lares.pulama.closure="$PULAMA_CLOSURE"
 
 # The daemon's flags (`--root /x` and `--root=/x` read alike; main.js and the CLI refuse a flag nobody reads).
 ENTRYPOINT ["node", "packages/lararium-node/dist/src/main.js"]
@@ -213,3 +248,13 @@ COPY packages/lararium-sensorium/scripts/trial_intake.py ./
 RUN mkdir -p /handoff /state
 USER 65532:65532
 ENTRYPOINT ["python", "trial_intake.py"]
+
+# The disposable QA runner owns the exact walk bytes it executes. The official
+# image supplies Chromium; npm installs only the pinned client these walks import.
+FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f AS browser-harness
+WORKDIR /app
+RUN printf '{"private":true,"type":"module"}\n' > package.json
+RUN npm install --no-save --no-package-lock --ignore-scripts playwright@1.64.1
+COPY tools/browser-ci-smoke.mjs tools/browser-ci-join.mjs ./tools/
+COPY packages/lararium-web/tests/live-wiki.mjs ./packages/lararium-web/tests/
+COPY --from=build /app/packages/lararium-node/dist/probes/browser-test-custody.js ./packages/lararium-node/dist/probes/browser-test-custody.js

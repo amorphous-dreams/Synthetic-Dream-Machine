@@ -1,0 +1,268 @@
+/**
+ * workbench — EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH (cabal-realm#/the-workbench). The daemon wiki alone keeps
+ * its face-private working document (the AI-memory ruling).
+ *
+ * THE RULINGS (operator, 2026-11-11): "the multitude of faces reads as a private cabal for 1 human. Pattern integrities!";
+ * "Personal can absorb the new caps."; "Unpono, rip out old code, enact the full new design, early-alpha law holds." One path
+ * stands: a wiki's first stand under a face founds a private cabal of one (a glamour-less, announce-less cabal realm under the
+ * seed charter whose Keyhive Document, minted per vessel, seats the owning face's hive (its Keyhive individual on that vessel) alone), and the wiki's working slot
+ * (`wikis/<slug>/working`) resolves to that realm's workbench. A share row seats more faces in the same Document; it never
+ * moves the address or the layer. A face's own overlay over the shared layer rests in `personal`.
+ *
+ * WHAT THIS MODULE HOLDS (platform-blind, no key, no Keyhive):
+ *   · the workbench's ADDRESS (`realmWorkbenchDocUrl`, deterministic-doc): a sibling of the realm's vouch board, derived
+ *     from the realm id and the slug, so no member change moves it;
+ *   · the vessel LEDGER rows that bind a slug to its realm, and the seats this vessel's own hand made there;
+ *   · the REFUSALS: the daemon wiki stays face-private, a sourced slug's workbench names no workspace, a face that holds no
+ *     seat founds no second realm for a slug the vessel's ledger already binds, and no face mounts one wiki under two realms;
+ *   · the wire DECIDER the protected-document guard asks for a workbench document (`realm-workbench`).
+ *
+ * WHY THE LEDGER, AND WHY NOT `noteRealm`. The vessel's own ledger (`edgeLedgerDocUrl`) keeps the relations this vessel
+ * entered, where no other operator reads them. `noteRealm` stands a realm PLANE and reads its boards; a private cabal keeps
+ * no vouch board, no announce row and no registration, so its slug notes under a `workbench` row of its own and the realm
+ * planes never stand for it.
+ *
+ * NO GLOBAL NOW. Membership rides the realm Document's convergent add and revoke (Keyhive): no lease, no epoch, no counter.
+ * A removal converges as its tombstone syncs; a hard cut forks the realm (a new realm id, so a new address).
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
+ */
+import type { LarDoc } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
+import { storedLarRecord } from "./stored-record.js";
+import { ownEntry } from "./stored-value.js";
+import { EDGE_LEDGER_PREFIX } from "./edge-ledger.js";
+import { CABAL_REALM_RE } from "./realm-bag.js";
+import { realmWorkbenchDocUrl } from "./deterministic-doc.js";
+import { documentIdOfUrl } from "./sealed-rest.js";
+import { DAEMON_WIKI_SLUG } from "./wiki-recipe.js";
+import { PRIVATE_CABAL_REALM_DOMAIN } from "./domains.js";
+import { sha256HexBytesSync, utf8Bytes } from "./crypto.js";
+
+export { realmWorkbenchDocUrl };
+
+/**
+ * THE PRIVATE CABAL OF ONE'S NAME: a realm id derived from the owning face (its PersonaGroup, which every device of the face
+ * seats under) and the wiki's NFC slug, under `PRIVATE_CABAL_REALM_DOMAIN`. Two devices of one face that stand one wiki
+ * offline derive one realm, so their ledgers merge on one row and their workbenches on one document: an island converges and
+ * never stalls on a tie. A share seats more faces in that realm and never renames it; a hard cut forks to a fresh name.
+ */
+export function privateCabalRealmId(face: string, slug: string): string {
+  const f = face.trim().toLowerCase().replace(/^0x/, "");
+  if (f.length === 0) throw new WorkbenchRefusal("workbench-realm-malformed", "a private cabal names its owning face, and none was given");
+  return sha256HexBytesSync(utf8Bytes(`${PRIVATE_CABAL_REALM_DOMAIN}\n${f}\n${slug.normalize("NFC")}`));
+}
+
+/** Why a share of a wiki through a workbench refuses, by name. */
+export type WorkbenchRefusalReason =
+  /** The daemon wiki (and each face's `daemon-<F>` folder) holds one face's memory: it never shares. */
+  | "workbench-face-private"
+  /** A face that holds a seat in two realms for one wiki: no realm mounts for it until a person settles which. */
+  | "workbench-two-realms"
+  /** A slug whose canon stands in the canon source rests its ONE workbench folder beside that source: it takes no workspace. */
+  | "workbench-checkout-sourced"
+  /** The vessel's ledger already binds the slug to another face's realm: ONE workbench stands for a wiki on a vessel. */
+  | "workbench-slug-bound"
+  /** A realm id that reads as no cabal realm's (64 lower-case hex). */
+  | "workbench-realm-malformed"
+  /** A face the realm's Document does not hold writes nothing to its workbench. */
+  | "workbench-not-a-member"
+  /** A workspace name outside the name grammar. */
+  | "workbench-workspace-malformed";
+
+export class WorkbenchRefusal extends Error {
+  override readonly name = "WorkbenchRefusal";
+  constructor(readonly reason: WorkbenchRefusalReason, detail: string) { super(`${reason}: ${detail}`); }
+}
+
+/** Whether a slug names a face-private wiki: the daemon wiki, or one face's daemon folder. These never share. */
+export function isFacePrivateSlug(slug: string): boolean {
+  return slug === DAEMON_WIKI_SLUG || slug.startsWith(`${DAEMON_WIKI_SLUG}-`);
+}
+
+/** A workspace name: what the host shim binds under `/lar/workspaces/<name>` and a share row names. */
+export const WORKSPACE_NAME_RE = /^[a-z0-9][a-z0-9._-]{0,63}$/;
+
+/**
+ * THE SHARE'S GATE, before any realm founds: the daemon slug refuses `workbench-face-private`, a slug whose canon stands in
+ * the canon source refuses a WORKSPACE `workbench-checkout-sourced` (its one folder rests beside that source, where source
+ * control tracks it; the share itself lands), and a workspace name outside the grammar refuses by name.
+ */
+export function requireWorkbenchShareable(input: { readonly slug: string; readonly checkoutSourced?: boolean; readonly workspace?: string | undefined }): void {
+  if (isFacePrivateSlug(input.slug)) {
+    throw new WorkbenchRefusal("workbench-face-private", `"${input.slug}" holds one face's memory (the daemon wiki): a named exception, it never shares`);
+  }
+  if (input.checkoutSourced === true && input.workspace !== undefined && input.workspace !== "") {
+    throw new WorkbenchRefusal("workbench-checkout-sourced", `"${input.slug}" takes its canon from the canon source, and its one workbench folder rests beside that source: it takes no workspace`);
+  }
+  if (input.workspace !== undefined && input.workspace !== "" && !WORKSPACE_NAME_RE.test(input.workspace)) {
+    throw new WorkbenchRefusal("workbench-workspace-malformed", `"${input.workspace}" names no workspace (lower-case letters, digits, '.', '_' and '-')`);
+  }
+}
+
+// ── THE LEDGER ROWS ─────────────────────────────────────────────────────────────────────────────
+
+const realmScope = (realmId: string): string => {
+  const id = realmId.trim().toLowerCase();
+  if (!CABAL_REALM_RE.test(id)) throw new WorkbenchRefusal("workbench-realm-malformed", `"${realmId}" names no cabal realm (64 lower-case hex)`);
+  return id;
+};
+const slugKey = (slug: string): string => encodeURIComponent(slug.normalize("NFC"));
+const workbenchKey = (realm: string, slug: string): string => `${EDGE_LEDGER_PREFIX}${realm}/workbench/${slugKey(slug)}`;
+const WORKBENCH_ROW = /^([0-9a-f]{64})\/workbench\/([^/]+)$/;
+
+/** One slug the ledger binds to one realm's workbench. */
+export interface WorkbenchBinding { readonly slug: string; readonly realmId: string; readonly docUrl: string }
+
+/** Every workbench row the ledger holds, sorted by slug then realm: one per slug on a vessel (two only where two ledgers merged). */
+export function ledgerWorkbenches(ledger: LarDoc | undefined | null): WorkbenchBinding[] {
+  const out: WorkbenchBinding[] = [];
+  for (const [key, record] of Object.entries(ledger?.tiddlers ?? {})) {
+    if (!key.startsWith(EDGE_LEDGER_PREFIX)) continue;
+    const m = WORKBENCH_ROW.exec(key.slice(EDGE_LEDGER_PREFIX.length));
+    if (!m) continue;
+    const slug = decodeURIComponent(m[2]!);
+    // A row reads only where its key and its text name the same slug: a stray write under the prefix binds nothing.
+    if (tiddlerText(record) !== slug) continue;
+    out.push({ slug, realmId: m[1]!, docUrl: realmWorkbenchDocUrl(m[1]!, slug) });
+  }
+  return out.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : a.realmId < b.realmId ? -1 : a.realmId > b.realmId ? 1 : 0));
+}
+
+/**
+ * Every realm the ledger binds a slug under, sorted: none or ONE on a vessel (the first face that stood the wiki founded it,
+ * and a share seats the others there). Two read only where two ledgers merged; a face MOUNTS by its seat in a realm's key
+ * Document (keyhive `seatedWorkbenches`), never by the row count.
+ */
+export function ledgerWorkbenchRealms(ledger: LarDoc | undefined | null, slug: string): string[] {
+  const want = slug.normalize("NFC");
+  return ledgerWorkbenches(ledger).filter((b) => b.slug === want).map((b) => b.realmId);
+}
+
+/**
+ * Note that `slug`'s workbench stands in `realmId`. Call INSIDE a `handle.change()` callback. The same binding again writes
+ * nothing. The stand decides whether a realm may found (`standWorkbench` refuses `workbench-slug-bound` for a second face).
+ */
+export function noteWorkbench(draft: LarDoc, realmId: string, slug: string): void {
+  const key = workbenchKey(realmScope(realmId), slug);
+  if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: slug.normalize("NFC") }, "workbench");
+}
+
+// ── THE KEY DOCUMENT ON THIS VESSEL ─────────────────────────────────────────────────────────────
+
+const keyDocKey = (realm: string, slug: string, docIdHex: string): string =>
+  `${EDGE_LEDGER_PREFIX}${realm}/workbench-key/${slugKey(slug)}/${docIdHex.trim().toLowerCase().replace(/^0x/, "")}`;
+
+/**
+ * Note the Keyhive Document that keys a realm's workbench on THIS vessel. Keyhive mints a Document's identity from a fresh key
+ * (no derivation reaches it), so each device of a face mints its own sentinel for the one derived realm; the realm's name and
+ * the workbench's address converge, and each vessel's ledger names the Document its own hive keys the layer with. Call INSIDE
+ * `handle.change()`. Writes once.
+ */
+export function noteWorkbenchKey(draft: LarDoc, realmId: string, slug: string, docIdHex: string): void {
+  const key = keyDocKey(realmScope(realmId), slug, docIdHex);
+  if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: docIdHex.trim().toLowerCase().replace(/^0x/, "") }, "workbench");
+}
+
+/** The Keyhive Documents this vessel's ledger names for a realm's workbench, sorted (one, on a vessel that founded once). */
+export function workbenchKeyDocs(ledger: LarDoc | undefined | null, realmId: string, slug: string): string[] {
+  const prefix = `${EDGE_LEDGER_PREFIX}${realmScope(realmId)}/workbench-key/${slugKey(slug)}/`;
+  const out: string[] = [];
+  for (const [key, record] of Object.entries(ledger?.tiddlers ?? {})) {
+    if (!key.startsWith(prefix)) continue;
+    const id = key.slice(prefix.length);
+    if (/^[0-9a-f]{64}$/.test(id) && tiddlerText(record as never) === id) out.push(id);
+  }
+  return out.sort();
+}
+
+// ── THE SEATS THIS VESSEL'S HAND MADE ───────────────────────────────────────────────────────────
+
+const seatKey = (realm: string, slug: string, face: string): string =>
+  `${EDGE_LEDGER_PREFIX}${realm}/workbench-seat/${slugKey(slug)}/${encodeURIComponent(face)}`;
+
+/**
+ * THE ROSTER'S PROJECTION, ONE OWNER. A seat row names a face (its PersonaGroup) and the Keyhive agent seated for it, and only
+ * the roster projection (`projectWorkbenchRoster`, keyhive) writes or drops one, from what the realm's Keyhive Document answers
+ * on this vessel's replica: Keyhive owns membership, and the row mirrors it for a thread that holds no hive (the wire guard).
+ * Each act that reads the roster re-projects, so a revoke a replica has ingested drops the row; a row that reads absent
+ * withholds (fail closed). It never crosses: the ledger reaches no other operator. Call INSIDE `handle.change()`.
+ */
+export function noteWorkbenchSeat(draft: LarDoc, realmId: string, slug: string, face: string, agentHex: string): void {
+  const key = seatKey(realmScope(realmId), slug, face);
+  if (tiddlerText(ownEntry(draft.tiddlers, key) as never) !== agentHex) draft.tiddlers[key] = storedLarRecord(key, { text: agentHex }, "workbench");
+}
+
+/** Drop a seat note (the face left the row; its revoke ran). Call INSIDE `handle.change()`. */
+export function dropWorkbenchSeat(draft: LarDoc, realmId: string, slug: string, face: string): void {
+  delete draft.tiddlers[seatKey(realmScope(realmId), slug, face)];
+}
+
+/** Every seat this vessel noted for a slug's workbench: face → the agent its owner's hive seated. */
+export function workbenchSeats(ledger: LarDoc | undefined | null, realmId: string, slug: string): ReadonlyMap<string, string> {
+  const prefix = `${EDGE_LEDGER_PREFIX}${realmScope(realmId)}/workbench-seat/${slugKey(slug)}/`;
+  const out = new Map<string, string>();
+  for (const [key, record] of Object.entries(ledger?.tiddlers ?? {})) {
+    if (!key.startsWith(prefix)) continue;
+    const agent = tiddlerText(record as never);
+    if (agent) out.set(decodeURIComponent(key.slice(prefix.length)), agent);
+  }
+  return out;
+}
+
+/**
+ * UNBIND a slug's workbench from one realm (`lares wiki retire`, the owner face's hand): the binding row, every key-Document row
+ * and every seat row this vessel noted for the realm and the slug leave the ledger, so the ledger binds the slug under no realm
+ * of that face and another face's first stand founds its own. Rows of any other realm or slug stay. Call INSIDE
+ * `handle.change()`. Returns the titles it dropped (none where nothing stood).
+ */
+export function dropWorkbench(draft: LarDoc, realmId: string, slug: string): string[] {
+  const realm = realmScope(realmId);
+  const key = slugKey(slug);
+  const binding = workbenchKey(realm, slug);
+  const under = [`${EDGE_LEDGER_PREFIX}${realm}/workbench-key/${key}/`, `${EDGE_LEDGER_PREFIX}${realm}/workbench-seat/${key}/`];
+  const dropped: string[] = [];
+  for (const title of Object.keys(draft.tiddlers)) {
+    if (title !== binding && !under.some((prefix) => title.startsWith(prefix))) continue;
+    delete draft.tiddlers[title];
+    dropped.push(title);
+  }
+  return dropped.sort();
+}
+
+/** Whether a face holds a noted seat in any workbench of a realm: the wire guard's reading on a thread with no hive. */
+export function workbenchSeatHolds(ledger: LarDoc | undefined | null, realmId: string, face: string): boolean {
+  const realm = realmScope(realmId);
+  const tail = `/${encodeURIComponent(face)}`;
+  return Object.keys(ledger?.tiddlers ?? {}).some((k) => k.startsWith(`${EDGE_LEDGER_PREFIX}${realm}/workbench-seat/`) && k.endsWith(tail));
+}
+
+/** The workbench documents the ledger names, by document id → realm id: the id map the protected-document guard classes. */
+export function workbenchDocIds(ledger: LarDoc | undefined | null): ReadonlyMap<string, string> {
+  const out = new Map<string, string>();
+  for (const b of ledgerWorkbenches(ledger)) {
+    const id = documentIdOfUrl(b.docUrl);
+    if (id) out.set(id, b.realmId);
+  }
+  return out;
+}
+
+// ── THE WIRE DECIDER ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * THE `realm-workbench` DECIDER the protected-document guard asks: a workbench document crosses to a peer only where the face
+ * that peer proved stands a member of that workbench's realm NOW (the realm Document's roster, read live). A peer that proved
+ * no face, a document no ledger row names, and a roster read that throws all withhold (fail closed).
+ */
+export function workbenchDecider(opts: {
+  readonly realmOfDoc: (documentId: string) => string | null | undefined;
+  readonly faceOfPeer: (peerId: string) => string | null | undefined;
+  readonly holds: (realmId: string, face: string) => boolean | Promise<boolean>;
+}): (peerId: string, documentId: string) => Promise<boolean> {
+  return async (peerId, documentId) => {
+    const realm = opts.realmOfDoc(documentId);
+    const face = opts.faceOfPeer(peerId);
+    if (!realm || !face) return false;
+    try { return (await opts.holds(realm, face)) === true; } catch { return false; }
+  };
+}

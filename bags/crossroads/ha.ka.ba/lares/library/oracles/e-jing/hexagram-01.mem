@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-01`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "1. Omar & Mal"
+hexagram      = "1"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "111111"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-01"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-01"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷀ 1. Omar & Mal
+
+<<<
+Greg Hill & Kerry Thornley
+<<<
+
+Sublime creative power can provide happiness to yourself and others. You must consciously cast out all that is inferior, degrading, and just plain lame. There are many who are great and yet still unrecognized, so do not judge yourself by external success or failure, but instead develop the calm strength of patience. Do not expend your energies prematurely; wait until the time is ripe. The paths before you lead to those of the hero or the holy sage.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zJwTkXEZVbYXbCMZqw0W-S-ZipSyhkLd7w6V3ySV-YI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-02 (file date) — source `.lares-scratch/controller/ship/harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba.md — plan, 2026-11-02
+
+Verbatim scratch record `.lares-scratch/controller/ship/harden-5f5dc936f78fdbbf2a2159d7c71576d241940eba.md` (plan, file date 2026-11-02); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ship-lane-harden-head-5f5dc936f78fdbbf2a2159d7c7`>>
+
+! SHIP · lane harden · head 5f5dc936f78fdbbf2a2159d7c71576d241940eba
+read: blind Opus Harden-Reader HOLD at 155253679 (harden/security-read.md: A1-A3, B1-B3); cures re-read by blind Opus Harden-Reader-2 at 5f5dc936f78fdbbf2a2159d7c71576d241940eba: SHIP, all six CURED (MEASURED, 36 A1 variants + 200k fuzz with 0 frame/smol-toml disagreements), genesis re-bake clean (harden/security-read-2.md). Residuals: N1 (pre-lane docs holding constructor/prototype fields read unavailable; re-genesis rule), N2 (genesis-floor and meme-face skip the smol cross-check). 2026-11-02.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G-x-RyiL2M0MKcyyJrMJC8Y4OwsO_0wwkrYGNyT06UQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,7 +1,7 @@
 /**
  * nexus-client-dial — the vessel's CLIENT dial-out leg (Socket A, cleartext CRDT). A node answers sync on its
  * sovereign face gates (`ListeningWSServerAdapter` over `gate-sync-server`); when a peer sync URL rides the config,
- * the live vessel mounts a `LarWSClientAdapter` — presenting the worn face at the peer's PINNED gate — onto its
+ * the live vessel mounts a `LarWSClientAdapter` — presenting the mounted face at the peer's PINNED gate — onto its
  * running Automerge `Repo`, so it DIALS a peer node's `/ws` and syncs. The dial socket is the `ws` client
  * (`nodeDialSocket`), which holds the payload cap on the wire. This is the SAME-OPERATOR device path: a second device whose key sits in
  * the founder's PersonaGroup dials in, the peer's gate vouches it `same-operator`, and full private sync
@@ -36,6 +36,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { LarWSClientAdapter, DAEMON_BAG_ID } from "@lararium/mesh";
 import { nodeDialSocket } from "./node-dial-socket.js";
 import type { LarWSClientOptions } from "@lararium/mesh";
+import { shoreInbound } from "@lararium/mesh";
 
 /** What a dial presents: the face's certificate, the session's signer, at most one arm and the withdrawal history. */
 export type DialFacePresentation = LarWSClientOptions["presentation"];
@@ -73,6 +74,12 @@ export interface NexusClientDialConfig {
   /** THE RETURN. Fires on every re-connect PAST THE FIRST. A caller re-folds the boards a partition staled and
    *  re-reads the Repo's cached share verdicts here; a re-ask of `docUrl` follows it regardless. */
   readonly onReconnect?: () => Promise<void> | void;
+  /** THE ARRIVAL'S SEAT (road `P26`): hears the adapter BEFORE it joins the Repo's network, so a `peer-candidate` listener the
+   *  caller attaches here marks the dialed peer's arrival ahead of the subsystem's `peer` event (`peerArrivals`). */
+  readonly beforeJoin?: (adapter: LarWSClientAdapter) => void;
+  /** THE LEG'S SEAT (`wire-identity`, `leg`): seats the adapter for the face this dial presents at the Nexus it dials,
+   *  before it joins the Repo, so the dialed hearth reads that pair's alias and never the composition's own ids. */
+  readonly leg?: (adapter: LarWSClientAdapter) => LarWSClientAdapter;
 }
 
 /** The adapter shape the re-arm reads — its own `peer-candidate` event and nothing else. Named as a
@@ -149,7 +156,8 @@ export function startNexusClientDial(cfg: NexusClientDialConfig): NexusClientDia
     presentation: cfg.presentation, audience: cfg.aud ?? DAEMON_BAG_ID, deadlines: cfg.deadlines,
     dialSocket: () => nodeDialSocket(cfg.syncUrl), onLog: (line) => console.warn(line),
   });
-  cfg.repo.networkSubsystem.addNetworkAdapter(adapter);
+  cfg.beforeJoin?.(adapter);
+  cfg.repo.networkSubsystem.addNetworkAdapter(shoreInbound(cfg.leg ? cfg.leg(adapter) : adapter));
   log(`nexus dial-out up → ${cfg.syncUrl} (aud=${cfg.aud ?? DAEMON_BAG_ID})`);
 
   // Pull the peer's named doc, when one rides the config. A denial reads as "never resolved" (the adapter
@@ -200,6 +208,8 @@ export interface NexusClientDialInput {
   readonly docUrl?:     string | null;
   readonly onLog?:      (line: string) => void;
   readonly onReconnect?: () => Promise<void> | void;
+  readonly beforeJoin?: (adapter: LarWSClientAdapter) => void;
+  readonly leg?: (adapter: LarWSClientAdapter) => LarWSClientAdapter;
 }
 
 /**
@@ -223,5 +233,7 @@ export function maybeStartNexusClientDial(input: NexusClientDialInput): NexusCli
     ...(input.docUrl ? { docUrl: input.docUrl } : {}),
     ...(input.onLog ? { onLog: input.onLog } : {}),
     ...(input.onReconnect ? { onReconnect: input.onReconnect } : {}),
+    ...(input.beforeJoin ? { beforeJoin: input.beforeJoin } : {}),
+    ...(input.leg ? { leg: input.leg } : {}),
   });
 }

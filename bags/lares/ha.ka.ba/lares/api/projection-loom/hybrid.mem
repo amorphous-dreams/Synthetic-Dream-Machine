@@ -1,11 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/hybrid`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/hybrid.mem"
 l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
 role      = "mixed CAD, polygon, implicit and witness geometry held by named relations"
@@ -15,9 +14,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/projection-loom/hybrid"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 ! Geometry speaks in several tongues
 
 A pet-named location holds an ecology of anonymous entities and independently
@@ -28,7 +27,7 @@ No representation's capabilities automatically transfer to another kernel.
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 !! Identity, relation, and kernel authority
 
 * ''Identity enacts Relation.'' Bind each sculptural or physical entity to
@@ -57,7 +56,7 @@ No representation's capabilities automatically transfer to another kernel.
 
 <<~/ahu>>
 
-<<~ ahu #/implementation>>
+<<~ ahu slot=`#/implementation`>>
 !! Executable and prospective capability stacks
 
 `tools/projection-loom/projection_loom/hybrid.py` composes a validated CAD
@@ -69,7 +68,7 @@ and native OpenUSD stage export remain prospective, not implemented claims.
 
 <<~/ahu>>
 
-<<~ ahu #/evergreen-capability-composition>>
+<<~ ahu slot=`#/evergreen-capability-composition`>>
 
 !! CAD-derived mesh recipes enter the active OODA-HA helm
 
@@ -77,12 +76,12 @@ The crystal mesh now grows from its validated CAD seed. A versioned recipe holds
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GmTKtNi4MCXDXd_NDHSQ3ShDTUV6R5jpxCza5vhVGJ0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HSNcyjcrhXqxi-xwptOLiqOe0akKfim5_DnfiKw3dLM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

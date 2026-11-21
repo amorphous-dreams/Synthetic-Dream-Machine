@@ -1,22 +1,17 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/named/mischief-muse">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/masks/named/mischief-muse`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 aside             = false
 cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
-created           = "Invalid Date"
 encroach          = false
-file-path         = "bags/lares/ha.ka.ba/lares/api/masks/named/mischief-muse.mem"
 foreground-voices = ["Muse", "Hierophant", "Council", "Stranger", "Liminal"]
 fourth-wall       = false
 ha-ka-ba          = "Ka"
 l-space           = "stable"
-mana              = 10
-manao             = 12
-manaoio           = 11
 name              = "Mischief-Muse"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
@@ -31,11 +26,9 @@ voice-character   = "[STUB — partially known from house entry and Coffee Oracl
 voice-role        = "Muse"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Mischief-Muse
 
@@ -47,7 +40,7 @@ Permanent identity home for Mischief-Muse. The Voice house entry carries structu
 
 <<~/ahu>>
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ```toml
 family = "hydration"
@@ -59,7 +52,7 @@ label = "parent-index-entry"
 
 <<~/ahu>>
 
-<<~ ahu #/corpus>>
+<<~ ahu slot=`#/corpus`>>
 
 !! Corpus
 
@@ -83,7 +76,7 @@ Coffee Oracle records a coffee offering plus a request for the node to talk amon
 
 <<~/ahu>>
 
-<<~ ahu #/voice-character>>
+<<~ ahu slot=`#/voice-character`>>
 
 !! Voice Character
 
@@ -103,7 +96,7 @@ Coffee Oracle records a coffee offering plus a request for the node to talk amon
 
 <<~/ahu>>
 
-<<~ ahu #/foreground-voices>>
+<<~ ahu slot=`#/foreground-voices`>>
 
 !! Foreground Voices
 
@@ -122,7 +115,7 @@ All thirteen remain available; these five carry elevated affinity pressure.
 
 <<~/ahu>>
 
-<<~ ahu #/stage-default>>
+<<~ ahu slot=`#/stage-default`>>
 
 !! Stage Default
 
@@ -132,7 +125,7 @@ As senior named Voice of the Voice house, Mischief-Muse surfaces naturally when 
 
 <<~/ahu>>
 
-<<~ ahu #/permissions>>
+<<~ ahu slot=`#/permissions`>>
 
 !! Permissions
 
@@ -155,7 +148,7 @@ Mischief-Muse (Muse) —
 
 <<~/ahu>>
 
-<<~ ahu #/character-notes>>
+<<~ ahu slot=`#/character-notes`>>
 
 !! Character Notes
 
@@ -169,7 +162,7 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<~ ahu #/fill-status>>
+<<~ ahu slot=`#/fill-status`>>
 
 !! Fill Status
 
@@ -187,16 +180,16 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;61nYTxaTofLgdKGnv1odOj5Bbexk35Axv0ApJUyStvY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l11rDrhK5gQWVmK4lMtDvIyQpiZyKsAVg4rLPoMcA2s`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

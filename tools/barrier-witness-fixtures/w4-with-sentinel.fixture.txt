@@ -1,0 +1,15 @@
+// The control: W4 with a sentinel act behind the relayed clicks. The sentinel's frame stands only after every act
+// relayed before it ran, so the story read that follows sees what the clicks did.
+describe("golden 01 on the whole road", () => {
+  test("W4 — a modified click and a middle click leave the browser default standing and the story holds", async () => {
+    const link = wiki().locator(".tc-story-river a.tc-tiddlylink-resolves").first();
+    const before = opened.length;
+    await link.click({ modifiers: ["Control"] });
+    await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 1);
+    await link.click({ button: "middle" });
+    await expect.poll(() => opened.length, { timeout: 20_000 }).toBe(before + 2);
+    await makeTiddler(SENTINEL, "a barrier behind the relayed clicks");
+    await closeTiddler(SENTINEL);
+    expect(await story()).toEqual([ALPHA]);
+  });
+});

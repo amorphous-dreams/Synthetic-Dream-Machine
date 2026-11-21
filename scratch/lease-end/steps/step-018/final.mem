@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-018/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-018/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-018/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): The daemon now watches its own fleet-board replica and wakes the face seat on attachment and changes. The focused tests passed: ''3 passed'', including a change that overtakes a standing read and an unchanged-aside control. `git diff --check` passed.
+
+Live browser and node verification and the guarded ingest boundary remain open. The changes remain uncommitted; no push occurred. I recorded the next step in [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]] and the detailed hand-back in [[step-018/out.md|/home/joshu/.lares-scratch/lease-end/steps/step-018/out.md]].
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:ᚠ⊗㐂`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`exercise the watcher in both live vessel compositions and test authority mutation during ingest · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@crossroads/fleet.watch.advances` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;38j9_D2LTTFQnQvN-v5rQFhjvh-WyDBNMkzhWaPWmrw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

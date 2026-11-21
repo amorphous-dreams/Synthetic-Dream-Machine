@@ -38,62 +38,29 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/working-procedures
  */
 
-import { watch as fsWatch, writeFileSync, rmSync, type FSWatcher } from "node:fs";
+import { watch as fsWatch, type FSWatcher } from "node:fs";
 import { join, isAbsolute } from "node:path";
+import { drainSeat, isWatchNoise, cookieSelfTest, pairedDeletions } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
-import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+
+/** The projections root when one stands, as the optional `MirrorDirs` field. */
+const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
+import { openSyncedTree, scanFiles, skipLines, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
-const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well under this
 
-/**
- * Editor litter, our own observation state, and the `.meta` field-sidecar never
- * count as carrier events. The watcher fires on EVERY filetype the mirror holds
- * (the ruling: bags/wikis hold all TW5 filetypes); the scan's address derivation
- * (`fileToUri`) skips anything that carries no stable name — no extension gate
- * here decides the filetype. A `.meta` rides with its content file, so its own
- * write never opens a fresh wave.
- */
-function isNoise(rel: string): boolean {
-  if (rel.endsWith(".meta")) return true;
-  if (rel.includes(".lararium-projection")) return true;
-  if (rel.includes("/.git/") || rel.startsWith(".git/")) return true;
-  const base = rel.split("/").pop() ?? rel;
-  if (base.startsWith(".") || base.endsWith("~") || base.endsWith(".swp") || base === "4913") return true;
-  return false;
-}
+// THE NOISE, THE SETTLE AND THE COOKIE stand once, in the drain seat (`@lararium/node` watch-core): editor litter, the
+// `.meta` sidecar and every path HOUSE_IGNORED names open no wave; a burst of hints settles into one wave; one wave runs at a
+// time; a backend that echoes no cookie names itself dead.
 
-/**
- * Which vanished addresses ride THIS wave as a rename's source: PAIRED BY CONTENT, and by nothing else.
- * A vanished address pairs where exactly one vanished address holds its base hash, exactly one of the
- * wave's candidates holds that same hash, and that candidate ARRIVED (a file at an address that held no
- * base: `new`). A standing carrier a hand edited into the vanished one's bytes names no move, so it pairs
- * with nothing. Every other vanished address rides nowhere: no span of waiting turns a vanish into a
- * deletion. Pulled out of `cmdWatch`'s closure so it stands as one weldable fact.
- */
-export function pairedDeletions(
-  vanished:   ReadonlyMap<string, { readonly syncedHash: string; readonly file: string }>,
-  candidates: ReadonlyArray<{ readonly diskHash: string; readonly status: string }>,
-): ArmedDeletion[] {
-  const gone = new Map<string, number>();
-  for (const v of vanished.values()) gone.set(v.syncedHash, (gone.get(v.syncedHash) ?? 0) + 1);
-  // Every candidate counts toward ambiguity (the island's delete gate reads them all); only an arrival pairs.
-  const holding = new Map<string, { count: number; arrived: boolean }>();
-  for (const c of candidates) {
-    const h = holding.get(c.diskHash) ?? { count: 0, arrived: false };
-    holding.set(c.diskHash, { count: h.count + 1, arrived: h.arrived || c.status === "new" });
-  }
-  const ride: ArmedDeletion[] = [];
-  for (const [uri, v] of vanished) {
-    const pair = holding.get(v.syncedHash);
-    if (gone.get(v.syncedHash) === 1 && pair !== undefined && pair.count === 1 && pair.arrived) ride.push({ uri, syncedHash: v.syncedHash, file: v.file });
-  }
-  return ride;
-}
+/** Which vanished addresses ride THIS wave as a rename's source: PAIRED BY CONTENT, and by nothing else (`pairedDeletions`,
+ *  `@lararium/node` ingest-scan). The vessel's watch over a face's pool pairs its own vanished set by the same rule. */
+export { pairedDeletions } from "@lararium/node";
 
 /** The vanished sources a settled wave's deletion summary names as re-linked. */
 export function confirmedRenames(deletions: Record<string, unknown> | undefined): Set<string> {
@@ -135,15 +102,11 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     }
   }
 
-  // ── the drain seat — one wave at a time (recipe-watch kick, disk-side) ──
-  const buffer = new Set<string>();        // absolute carrier paths pending a wave
+  // ── the drain seat — one wave at a time (`drainSeat`, watch-core), this watcher filling the wave ──
   // Vanished carriers this watcher saw leave: each scanned gone from a path where a base stands. The set
   // holds what a later arrival may pair with (a rename) and what to re-stat at every drain, so a path that
   // returns leaves it. It decides nothing and no clock reads it.
   const vanished = new Map<string, { syncedHash: string; file: string }>();
-  let busy  = false;
-  let rerun = false;
-  let timer: NodeJS.Timeout | null = null;
   let waveNo = 0;
   /** What still asks for a hand across the waves: read at the stop for the exit. */
   let standing: StandingAsks = NO_STANDING_ASKS;
@@ -168,15 +131,14 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     }
   };
 
-  const drain = async (): Promise<void> => {
+  const drain = async (touched: readonly string[]): Promise<void> => {
     // Every drain re-stats BOTH the freshly-touched paths AND every vanished address's own path: a lost fs
     // event (WSL's `fs.watch` drops them) never leaves a returned file reading as gone.
-    const files = new Set(buffer);
+    const files = new Set(touched);
     for (const v of vanished.values()) files.add(v.file);
-    buffer.clear();
 
     const tree = openSyncedTree();     // fresh read — the projection moves under us
-    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() }));
+    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() }, tree));
     const candidates = candidatesOf(rows);
 
     // A vanished address whose path scans present again has RETURNED (a checkout that re-creates the
@@ -193,9 +155,11 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     // declines the pair leaves it vanished, and the files it carried scan again at the next drain.
     const ride = pairedDeletions(vanished, candidates);
     const rode = new Set(ride.map((d) => d.uri));
-    const unpaired = (): void => { if (ride.length > 0) for (const c of candidates) buffer.add(c.file); };
+    const unpaired = (): void => { if (ride.length > 0) for (const c of candidates) seat.carry(c.file); };
     for (const uri of moved) if (!rode.has(uri)) unsensed.add(uri);
     const nowGone = moved.filter((uri) => vanished.has(uri) && !rode.has(uri));
+    // NO SILENT SKIPS: a file this drain read no carrier from says so by name, whether or not anything rides the wave.
+    for (const line of skipLines(skipped)) console.error(`    ${line}`);
 
     if (candidates.length === 0 && ride.length === 0) {
       if (nowGone.length > 0) console.log(`  ${nowGone.length} carrier(s) vanished from disk · nothing tombstones (${vanished.size} stand vanished in all)`);
@@ -210,7 +174,6 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       for (const r of candidates) console.log(`    ${r.status.toUpperCase().padEnd(8)} ${r.uri}`);
       for (const d of ride)       console.log(`    RENAME-FROM ${d.uri}`);
       for (const uri of nowGone)  console.log(`    VANISHED ${uri}`);
-      if (skipped.length) console.log(`    (${skipped.length} skipped — outside bags/ or unreadable)`);
       await tellShore();
       return;
     }
@@ -237,7 +200,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
         if (relinked.has(d.uri)) vanished.delete(d.uri);
         // The records hold nothing under it: nothing pends, and the shore hears so its base leaves.
         else if (absent.has(d.uri)) { vanished.delete(d.uri); unsensed.add(d.uri); }
-        else { unsensed.add(d.uri); buffer.add(d.file); }
+        else { unsensed.add(d.uri); seat.carry(d.file); }
       }
       // A CARRIER THAT STOOD OFF GOES TO THE SHORE. The gate landed nothing for it; the projector weighs
       // the same disk and records, raises the standoff's one keyed alert, and `lares shore` lists it.
@@ -247,9 +210,9 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       // R2: a confirmed rename moves its observation to the new location, so a moved
       // carrier reads `unchanged` next settle instead of re-landing (echo-survival).
       applyConfirmedRenames(tree, toBag, candidates, del);
-      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
+      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit ${OUTCOME_URI_PREFIX}${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
-      for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
+      for (const r of [...settled.refused, ...settled.conflicts, ...settled.derived]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
       if (settled.conflicts.length > 0) console.error(`    ${settled.conflicts.length} carrier(s) stand off: nothing landed for them; \`lares shore\` names each with its key`);
       if (settled.pageError !== undefined) console.error(`    ⚠ a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
       // A file at an address whose records never project refuses by name; the hand removes the file.
@@ -264,20 +227,8 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     await tellShore();
   };
 
-  // Serialize: a settle arriving mid-drain queues exactly one rerun.
-  const kick = (): void => {
-    if (busy) { rerun = true; return; }
-    busy = true;
-    void (async () => {
-      try { do { rerun = false; await drain(); } while (rerun); }
-      finally { busy = false; }
-    })();
-  };
-
-  const scheduleDrain = (): void => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(kick, debounceMs);
-  };
+  // Serialize: a settle arriving mid-drain queues exactly one rerun; the seat holds that law, and a wave's fault names itself.
+  const seat = drainSeat({ settleMs: debounceMs, wave: drain, onFault: (e) => console.error(`  a wave faulted: ${e instanceof Error ? e.message : String(e)}`) });
 
   // ── the watch ──────────────────────────────────────────────────────────
   let watcher: FSWatcher;
@@ -285,13 +236,12 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     watcher = fsWatch(source, { recursive: true }, (_event, filename) => {
       if (!filename) return;                       // some backends omit the name — ignore
       const rel = filename.toString();
-      if (isNoise(rel)) return;
+      if (isWatchNoise(rel)) return;
       const abs = isAbsolute(rel) ? rel : join(source, rel);
       // Every event is a hint; the drain's scan is truth (it classifies the
       // path as add / unchanged / vanished). A vanished carrier enters the
       // grace window there, not here.
-      buffer.add(abs);
-      scheduleDrain();
+      seat.hint(abs);
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -314,12 +264,14 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   await new Promise<void>((resolve) => {
     const shutdown = (): void => {
       watcher.close();
-      if (timer) clearTimeout(timer);
+      seat.close();
       resolve();
     };
     process.once("SIGINT",  shutdown);
     process.once("SIGTERM", shutdown);
   });
+  // THE FINAL WAVE: what the settle window still held drains before the watcher stops.
+  await seat.flush();
 
   console.log(`\nlares watch: stopped after ${waveNo} wave(s).`);
   // WHAT STAYS OWED ENDS THE WATCHER NON-ZERO. A carrier a later wave landed left the set, and so did a
@@ -331,32 +283,4 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     return exitFor("verb-error");
   }
   return 0;
-}
-
-/**
- * Write a cookie carrier under the source and await our OWN event for it within
- * a window (the Watchman cookie discipline). A live backend echoes the write;
- * a dead one (WSL2 /mnt, an unsupported FS) never does. The cookie sits outside
- * bags/ derivation so it never becomes an ingest candidate, and we remove it.
- */
-function cookieSelfTest(source: string, watcher: FSWatcher): Promise<boolean> {
-  const cookieName = `.lares-watch-cookie-${process.pid}-${Date.now()}`;
-  const cookiePath = join(source, cookieName);
-  return new Promise<boolean>((resolve) => {
-    let settled = false;
-    const finish = (live: boolean): void => {
-      if (settled) return;
-      settled = true;
-      watcher.off("change", onChange);
-      clearTimeout(timeout);
-      try { rmSync(cookiePath, { force: true }); } catch { /* best effort */ }
-      resolve(live);
-    };
-    const onChange = (_e: string, fn: string | Buffer | null): void => {
-      if (fn && fn.toString().includes(cookieName)) finish(true);
-    };
-    watcher.on("change", onChange);
-    const timeout = setTimeout(() => finish(false), COOKIE_TIMEOUT_MS);
-    try { writeFileSync(cookiePath, "cookie"); } catch { finish(false); }
-  });
 }

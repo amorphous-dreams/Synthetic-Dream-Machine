@@ -29,13 +29,13 @@ const OK_URI = "lar://crossroads/t.title.allowed/one";
 const CODE = "session-form-title";
 
 const framed = (uri: string, body: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t.title.context/capture"\n\`\`\`\n\n${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t.title.context/capture"\n\`\`\`\n\n${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** A captured exchange: an aim, a quoted link and a fenced yield, each carrying a speaker's URI in the BODY. */
 const CAPTURE_BODY =
   `<<~ lares aim from="lar://mara:operator@crossroads/operator.asks.the-cost" -> to="lar://compita:agent@crossroads/clerk.reads.the-record">>\n\n` +
   `A quoted link: lar://alias:grant@host/some.path.here\n\n` +
-  "```\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" -> to=\"?\">>\n```";
+  "```\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" to=`?`>>\n```";
 
 const verbCtx = (requestId = "r1"): VerbContext => ({
   daemon: {} as CompositeStore,
@@ -111,7 +111,7 @@ describe("meme put: the title law through the verb path", () => {
 describe("every store that holds a title holds the law", () => {
   for (const [storeName, storeOf] of STORES) {
     test(`${storeName}: a put and a tombstone of a session-form title refuse, and the store stays empty`, async () => {
-      const store = storeOf("lar:///ha.ka.ba/bags/title-door");
+      const store = storeOf("lar:///ha.ka.ba/wikis/title/working-door");
       const origin = { kind: "lares-verb", requestId: "r" } as const;
       await expect(store.put({ tiddler: { title: BAD_URI, text: "x" } }, origin)).rejects.toMatchObject({ reason: CODE });
       await expect(store.tombstone(BAD_URI, origin)).rejects.toMatchObject({ reason: CODE });
@@ -136,7 +136,7 @@ function actionCtx(composite: CompositeStore, action: "INGEST" | "LOAD", args: R
 }
 
 describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency verbs${skipNote}`, () => {
-  const BAG = "lar:///ha.ka.ba/bags/title";
+  const BAG = "lar:///ha.ka.ba/wikis/title/working";
   const GOOD = "lar:///ha.ka.ba/t/title/good";
   const FILE_URI = "lar:///ha.ka.ba/t/title/carried";
   /** A `.tid` whose own header names a session-form title: the registry titles the record by it. */
@@ -161,7 +161,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
       const r = rig(storeOf);
       const good = "a lawful note\n";
       const args = {
-        "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title",
+        "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title",
         carriers: [
           { uri: FILE_URI, file: "/scratch/carried.tid", text: TID, diskHash: carrierHash(TID), syncedHash: null, ext: ".tid" },
           { uri: GOOD, file: "/scratch/good.md", text: good, diskHash: carrierHash(good), syncedHash: null, ext: ".md" },
@@ -180,7 +180,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
       const r = rig(storeOf);
       for (const bad of [{ text: TID, ext: ".tid" }, { text: HEADED, ext: ".mem" }]) {
         const args = {
-          "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title",
+          "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title",
           carriers: [{ title: GOOD, text: "a lawful note\n", ext: ".md" }, bad],
         };
         const refusal = await (r.table.get("LOAD")!(args, actionCtx(r.composite, "LOAD", args)) as Promise<unknown>).catch((e: unknown) => e);
@@ -195,7 +195,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
     const r = rig(STORES[0]![1]);
     const lawful = "a lawful note\n";
     const args = {
-      "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title",
+      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title",
       carriers: [
         // A skinny handle lands before any parse: the row must refuse it first.
         { uri: BAD_URI, textCid: "ab".repeat(32), skinny: true, size: 9, diskHash: "sha256:" + "ab".repeat(32), syncedHash: null, ext: ".png" },
@@ -236,7 +236,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
   test("LOAD past its slice quantum still lands nothing: the refusal rides ahead of the first slice", async () => {
     const r = rig(STORES[0]![1]);
     const lawful = Array.from({ length: LOAD_YIELD_QUANTUM + 3 }, (_, i) => ({ title: `lar:///ha.ka.ba/t/title/lawful-${i}`, text: `note ${i}\n`, ext: ".md" }));
-    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title", carriers: [...lawful, { text: TID, ext: ".tid" }] };
+    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title", carriers: [...lawful, { text: TID, ext: ".tid" }] };
     const refusal = await (r.table.get("LOAD")!(args, actionCtx(r.composite, "LOAD", args)) as Promise<unknown>).catch((e: unknown) => e);
     expect((refusal as { reason: string }).reason).toBe(CODE);
     expect(await r.carriersIn()).toEqual([]);
@@ -249,7 +249,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
   test("CONTROL: INGEST and LOAD land a carrier whose TEXT carries a userinfo, byte for byte", async () => {
     const r = rig(STORES[0]![1]);
     const text = `${CAPTURE_BODY}\n`;
-    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "seed-door": "founding", "change-id": "chg-title", carriers: [{ uri: GOOD, text, diskHash: carrierHash(text), syncedHash: null, ext: ".md" }] };
+    const args = { "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title", carriers: [{ uri: GOOD, text, diskHash: carrierHash(text), syncedHash: null, ext: ".md" }] };
     const rows = (await r.table.get("INGEST")!(args, actionCtx(r.composite, "INGEST", args)) as Record<string, unknown>)["carriers"] as Array<Record<string, unknown>>;
     expect(rows[0]!["decision"]).toBe("ingest");
     expect((await r.store.get(GOOD))?.tiddler["text"]).toBe(text);

@@ -3,7 +3,7 @@
 // turn every local proof of the held-out workflow into a silent zero.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -125,6 +125,30 @@ test("the job timeout cancels a step and its process group; only always() steps 
   assert.ok(r.lines.includes("[held-out] ✓ Teardown"));
 });
 
+// A step's own `timeout-minutes` fails that step, as the runner fails it, and the job goes on to its always() steps
+// as after any failure; the job's cap still cancels. The workflow law gives every engine install such a cap.
+test("a step's own timeout fails that step and the job reads RED, while a step under its cap passes", async () => {
+  const steps = `      - name: Outlives its own cap
+        timeout-minutes: 0.01
+        run: sleep 30 & wait
+      - name: Never reached
+        run: "true"
+      - name: Teardown
+        if: always()
+        run: "true"`;
+  const started = Date.now();
+  const r = await run(fixture(steps), "green");
+  assert.ok(Date.now() - started < 8_000, "the step cap signalled the group at once");
+  assert.equal(r.verdict, "RED", r.lines.join("\n"));
+  assert.equal(r.failed, "Outlives its own cap");
+  assert.ok(r.lines.includes("[held-out] ✗ Outlives its own cap — the step timeout (0.01m)"), r.lines.join("\n"));
+  assert.ok(r.lines.includes("[held-out] skip  Never reached"));
+  assert.ok(r.lines.includes("[held-out] ✓ Teardown"));
+  // CONTROL: a step that ends under its cap reads green.
+  const ok = await run(fixture(`      - name: Ends in time\n        timeout-minutes: 5\n        run: "true"`), "green");
+  assert.equal(ok.verdict, "GREEN", ok.lines.join("\n"));
+});
+
 test("CONTROL: an unknown step key, condition, expression or action throws instead of skipping", async () => {
   assert.throws(() => parseWorkflow(fixture(`      - name: x\n        working-directory: tests\n        run: "true"`)), /working-directory/);
   assert.throws(() => parseWorkflow(fixture(`      - name: x\n        continue-on-error: \${{ matrix.soft }}\n        run: "true"`)), /continue-on-error/);
@@ -233,7 +257,7 @@ test("$GITHUB_ENV reads plain and heredoc lines, and refuses a line it cannot re
 test("every held-out job installs, renders, builds, stamps, then drives, and uploads its evidence", () => {
   const wf = parseWorkflow(HELD_OUT);
   const drivers = wf.matrix.map(cellOf);
-  assert.deepEqual([...new Set(wf.matrix.map((m) => m.driver))], ["browser-weld", "civic", "crossing", "herm-mesh", "herm-mesh-roll", "mesh-scenarios"]);
+  assert.deepEqual([...new Set(wf.matrix.map((m) => m.driver))], ["civic", "crossing", "herm-mesh", "herm-mesh-roll", "mesh-scenarios"]);
   // The scenario driver unfolds: one cell per scenario its own script lists, and none written in the workflow.
   const listed = spawnSync("bash", [join(ROOT, "tools/mesh-scenarios.sh"), "--list"], { encoding: "utf8" }).stdout.trim().split("\n").map((l) => l.split(" ")[0]);
   assert.ok(listed.length > 1, "CONTROL: the scenario script lists its scenarios");
@@ -242,7 +266,9 @@ test("every held-out job installs, renders, builds, stamps, then drives, and upl
   assert.doesNotMatch(HELD_OUT, /mesh-scenarios\.sh (all|[a-z])/, "no step names a scenario, or the whole walk, by hand");
   // The plan reads this process's env, as the runner hands it: on a pull request's detached checkout the runner
   // names the ref there. A local detached checkout names none, so the plan names the dispatched branch it stands for.
-  const env = { ...process.env, GITHUB_REF: process.env.GITHUB_REF || "refs/heads/main" };
+  // The runner also names the login that started the run; a local checkout under a scratch HOME holds no
+  // `git config user.name`, so the plan names an actor the way the runner does.
+  const env = { ...process.env, GITHUB_REF: process.env.GITHUB_REF || "refs/heads/main", GITHUB_ACTOR: process.env.GITHUB_ACTOR || "porch" };
   for (const driver of drivers) {
     const plan = planFor(wf, driver, { env });
     const at = (pred, what) => {
@@ -394,15 +420,26 @@ test("RED: an exact pnpm pin stands only on that exact release; a major pin stan
   assert.equal(versionStands("24", "26.1.0"), false);
 });
 
-test("every workflow pins ONE exact pnpm, the same release package.json `packageManager` names", () => {
+test("every workflow pins ONE exact pnpm: package.json `packageManager` names it, and no workflow restates a version", () => {
   const pm = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).packageManager;
   assert.match(pm ?? "", /^pnpm@\d+\.\d+\.\d+$/, "package.json names no exact pnpm");
   const exact = pm.slice("pnpm@".length);
-  for (const name of ["ci.yml", "held-out.yml"]) {
-    const pins = [...readFileSync(join(ROOT, ".github/workflows", name), "utf8").matchAll(/PNPM_VERSION:\s*"([^"]*)"/g)].map((m) => m[1]);
-    assert.ok(pins.length > 0, `${name} declares no PNPM_VERSION`);
-    for (const pin of pins) assert.equal(pin, exact, `${name} pins pnpm ${pin}, package.json names ${exact}`);
+  const dir = join(ROOT, ".github/workflows");
+  for (const name of readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))) {
+    const text = readFileSync(join(dir, name), "utf8").split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
+    // THE RECORDS SPEAK, THE WORKFLOWS DO NOT RESTATE: a workflow-level env key naming a version or an image is a second copy.
+    assert.doesNotMatch(text, /^\s*(NODE_VERSION|PNPM_VERSION|TW5_PRISTINE|PLAYWRIGHT_IMAGE):/m, `${name} restates a pin an existing record holds`);
+    assert.doesNotMatch(text, /env\.(NODE_VERSION|PNPM_VERSION|PLAYWRIGHT_IMAGE)/, `${name} reads a pin env`);
+    // THE PRISTINE ENGINE IS A LOCKFILE DEPENDENCY: no workflow packs, caches, tags or resolves one by hand.
+    assert.doesNotMatch(text, /TW5_PRISTINE|npm pack|lares-pristine|npm view/, `${name} names a pristine engine by hand`);
+    // pnpm/action-setup reads package.json `packageManager` when `version` is omitted.
+    for (const m of text.matchAll(/pnpm\/action-setup@[^\n]*\n(?:\s+(?:if|name|id):[^\n]*\n)*(\s+with:\n(?:\s+[a-z-]+:[^\n]*\n)+)?/g)) {
+      assert.doesNotMatch(m[1] ?? "", /version:/, `${name} gives pnpm/action-setup a version beside package.json`);
+    }
   }
+  const tw5 = JSON.parse(readFileSync(join(ROOT, "packages/lararium-tw5/package.json"), "utf8"));
+  assert.match(tw5.devDependencies?.["tiddlywiki-pristine"] ?? "", /^npm:tiddlywiki@\d+\.\d+\.\d+$/, "the pristine engine rides the lockfile as an exact npm alias");
+  assert.match(readFileSync(join(ROOT, "pnpm-lock.yaml"), "utf8"), /tiddlywiki-pristine:\n\s+specifier: npm:tiddlywiki@/, "the lockfile records the alias");
   assert.match(readFileSync(join(ROOT, "Dockerfile"), "utf8"), new RegExp(`npm install -g pnpm@${exact.replaceAll(".", "\\.")}\\b`), "the Dockerfile installs another pnpm");
 });
 

@@ -20,6 +20,8 @@ import {
   type FaceScope, type VesselFaceCertificate, type VesselFaceCertificateRequest, type VesselFaceKey,
 } from "../src/face-proof-subjects.js";
 import { chain, pair, signHex, type Chain, type Pair } from "./face-proof-fixture.js";
+import { testVesselTag, testVesselTagDoor } from "./vessel-tag-fixture.js";
+import { vesselFaceTagHolds } from "../src/vessel-face-tag.js";
 
 const GROUP = "c0ffee00d15ea5e5";
 const NONCE = "ab".repeat(32);
@@ -31,11 +33,11 @@ const SECRET = new Uint8Array(32).fill(7);
 const SALT = "5a".repeat(32);
 const CHARTER_TEXT = "the hearth's charter, as its seal file's text";
 /** The face's admit as the answer carries it: a synthetic entry committing to `carriage` under SALT (the quorum is read at landing). */
-const faceAdmitOver = (carriage: FleetJoinAnswer["carriage"], nym: string, salt = SALT) => ({
+const faceAdmitOver = (carriage: NonNullable<FleetJoinAnswer["carriage"]>, nym: string, salt = SALT) => ({
   admit: { nym, action: "admit", parents: [], sealEpochCid: "epoch-synthetic", carriageCommit: admitCarriageCommit({ carriage, salt }), signatures: [] } as unknown as CarriageEntry,
   lineage: [], salt,
 });
-const floorPinAt = (nexus: string, route = "/oracle", tag = 8): GateBundlePin => {
+const floorPinAt = (nexus: string, route = "/flow", tag = 8): GateBundlePin => {
   const bundle = deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(tag) })), utf8Bytes(nexus), floorRoute(route));
   try { return bundle.pin; } finally { bundle.drop(); }
 };
@@ -53,11 +55,11 @@ async function world(): Promise<World> {
   const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce: NONCE, scopes: [b.scope, a.scope, a.scope] });
   const sealSecret = new Uint8Array(32).fill(9);
   const seal = { secret: sealSecret, key: hex(x25519.getPublicKey(sealSecret)) };
-  const body = { nonce: NONCE, atomKey: joinee.key, sealKey: seal.key, requests: [a.request, b.request] };
+  const body = { nonce: NONCE, atomKey: joinee.key, sealKey: seal.key, ...(await testVesselTag(5, GROUP, joinee.key)), requests: [a.request, b.request] };
   const request: FleetJoinRequest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), joinee) };
-  const carriage = { gatePin: PIN, canon: { "@lares": "automerge:canon-lares" } };
+  const carriage = { gatePin: PIN, canon: { lares: "automerge:canon-lares" } };
   const answerBody = {
-    nonce: NONCE, atomKey: joinee.key, personaGroup: GROUP, edge: { kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
+    nonce: NONCE, atomKey: joinee.key, personaGroup: GROUP, edge: { kind: "device-admit", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS },
     carriage,
     reach: { syncUrl: "ws://hearth.synthetic:7777", islandKind: "charter", islandScope: HEARTH_NEXUS },
     charter: CHARTER_TEXT,
@@ -100,7 +102,7 @@ describe("the fleet-join door's files", () => {
 
   test("the atom signs the request; another key cannot speak for it", async () => {
     const w = await world();
-    const body = { nonce: w.request.nonce, atomKey: w.joinee.key, sealKey: w.request.sealKey, requests: w.request.requests };
+    const body = { nonce: w.request.nonce, atomKey: w.joinee.key, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, wardPop: w.request.wardPop, requests: w.request.requests };
     const honest = { kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), w.joinee) };
     expect(readFleetJoinRequest(honest, w.offer)).toEqual(honest);
     const forged = { ...honest, signature: await signHex(fleetJoinRequestImage(body), w.root) };
@@ -112,9 +114,42 @@ describe("the fleet-join door's files", () => {
     const verified = read(w, JSON.parse(JSON.stringify(w.answer)));
     if ("refusal" in verified) throw new Error(verified.refusal);
     expect(Array.from(verified.addressSecret)).toEqual(Array.from(SECRET));
-    expect(verified.answer.carriage.gatePin).toEqual(PIN);
+    expect(verified.answer.carriage!.gatePin).toEqual(PIN);
     expect(verified.answer.certificates.map((c) => c.scope.nexus).sort()).toEqual(["nexus-a.synthetic", "nexus-b.synthetic"]);
     expect(readFaceKeyGrant(verified.answer.grants[0], w.root.key)?.scope).toEqual(w.a.scope);
+  });
+
+  test("RED: a request carries the joining vessel's blinded tag for this face and its device's ward key: absent refuses request-vessel-tag-absent or request-ward-key-absent, a tag over another atom, face or ward key request-vessel-tag-invalid", async () => {
+    const w = await world();
+    const signedBy = async (b: Record<string, unknown>) => ({ kind: "fleet-join-request", ...b, signature: await signHex(fleetJoinRequestImage(b as never), w.joinee) });
+    const { vesselTag: _t, vesselSig: _s, wardKey: _w, kind: _k, signature: _g, ...bare } = w.request;
+    expect(readFleetJoinRequest(await signedBy(bare), w.offer)).toEqual({ refusal: "request-vessel-tag-absent" });
+    const other = await pair("another atom");
+    expect(readFleetJoinRequest(await signedBy({ ...bare, ...(await testVesselTag(5, GROUP, other.key)) }), w.offer)).toEqual({ refusal: "request-vessel-tag-invalid" });
+    expect(readFleetJoinRequest(await signedBy({ ...bare, ...(await testVesselTag(5, "0123456789abcdef", w.joinee.key)) }), w.offer)).toEqual({ refusal: "request-vessel-tag-invalid" });
+    expect(readFleetJoinRequest(await signedBy({ ...bare, vesselTag: w.request.vesselTag }), w.offer)).toEqual({ refusal: "request-vessel-tag-absent" });
+    // The request names the device's per-face ward key under the tag's signature: none refuses request-ward-key-absent, a swapped one request-vessel-tag-invalid.
+    const { wardKey: _wk, ...unwarded } = await testVesselTag(5, GROUP, w.joinee.key);
+    expect(readFleetJoinRequest(await signedBy({ ...bare, ...unwarded }), w.offer)).toEqual({ refusal: "request-ward-key-absent" });
+    expect(readFleetJoinRequest(await signedBy({ ...bare, ...(await testVesselTag(5, GROUP, w.joinee.key)), wardKey: "cd".repeat(32) }), w.offer)).toEqual({ refusal: "request-vessel-tag-invalid" });
+    // The vessel key signs the tag: a tag swapped after signing refuses the request's signature.
+    expect(readFleetJoinRequest({ ...w.request, ...(await testVesselTag(6, GROUP, w.joinee.key)) }, w.offer)).toEqual({ refusal: "request-unsigned" });
+    // CONTROL: the tagged request reads whole, its tag holding for this face and atom.
+    expect(vesselFaceTagHolds(GROUP, w.joinee.key, readFleetJoinRequest(w.request, w.offer) as FleetJoinRequest)).toBe(true);
+  });
+
+  test("RED: bytes no vessel signed refuse at the signature, before any tag or ward key reads against the face", async () => {
+    const w = await world();
+    const unsigned = { signature: "00".repeat(64) };
+    const { vesselTag: _t, vesselSig: _s, wardKey: _w, wardPop: _p, kind: _k, signature: _g, ...bare } = w.request;
+    // A tagless request, a tag over another atom, and a ward key without its tag: none signed, each refuses request-unsigned.
+    expect(readFleetJoinRequest({ kind: "fleet-join-request", ...bare, ...unsigned }, w.offer)).toEqual({ refusal: "request-unsigned" });
+    const other = await pair("a forger's atom");
+    expect(readFleetJoinRequest({ kind: "fleet-join-request", ...bare, ...(await testVesselTag(5, GROUP, other.key)), ...unsigned }, w.offer)).toEqual({ refusal: "request-unsigned" });
+    expect(readFleetJoinRequest({ kind: "fleet-join-request", ...bare, wardKey: w.request.wardKey, ...unsigned }, w.offer)).toEqual({ refusal: "request-unsigned" });
+    // CONTROL: the same tagless bytes, signed by their atom, still refuse by the tag they lack.
+    const signedBare = { kind: "fleet-join-request", ...bare, signature: await signHex(fleetJoinRequestImage(bare as never), w.joinee) };
+    expect(readFleetJoinRequest(signedBare, w.offer)).toEqual({ refusal: "request-vessel-tag-absent" });
   });
 
   test("THE PIN AND THE CANON RIDE SIGNED: moving either, or the edge, refuses the answer", async () => {
@@ -122,13 +157,13 @@ describe("the fleet-join door's files", () => {
     // A moved pin no longer answers the face admit's commitment; moved with an admit committed to it, the root never signed it.
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: sovereignPinAt(HEARTH_NEXUS, 6) } })).toEqual({ refusal: "answer-admit-other-commit" });
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: { ...PIN, signingKey: sovereignPinAt(HEARTH_NEXUS, 6).signingKey } } })).toEqual({ refusal: "answer-admit-other-commit" });
-    const moved = { ...w.answer.carriage, gatePin: sovereignPinAt(HEARTH_NEXUS, 6) };
+    const moved = { ...w.answer.carriage!, gatePin: sovereignPinAt(HEARTH_NEXUS, 6) };
     expect(read(w, { ...w.answer, carriage: moved, admit: faceAdmitOver(moved, w.a.scope.faceKey) })).toEqual({ refusal: "answer-unsigned" });
     // The pin is the full sovereign sync pin AT the island the answer names: a bare key, or a pin at another Nexus, refuses.
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: "cd".repeat(32) } })).toEqual({ refusal: "answer-malformed" });
     expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, gatePin: sovereignPinAt("nexus-elsewhere.synthetic", 5) } })).toEqual({ refusal: "answer-pin-other-nexus" });
-    expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, canon: { "@lares": "automerge:other" } } })).toEqual({ refusal: "answer-admit-other-commit" });
-    expect(read(w, { ...w.answer, edge: { kind: "device-admit/v1", deviceEdge: "swapped" } })).toEqual({ refusal: "answer-unsigned" });
+    expect(read(w, { ...w.answer, carriage: { ...w.answer.carriage, canon: { lares: "automerge:other" } } })).toEqual({ refusal: "answer-admit-other-commit" });
+    expect(read(w, { ...w.answer, edge: { kind: "device-admit", deviceEdge: "swapped" } })).toEqual({ refusal: "answer-unsigned" });
     expect(read(w, { ...w.answer, reach: { ...w.answer.reach, syncUrl: "ws://elsewhere.synthetic" } })).toEqual({ refusal: "answer-unsigned" });
     // CONTROL: the right answer under another root refuses; under its own root it reads.
     expect(read(w, w.answer, (await pair("another root")).key)).toEqual({ refusal: "answer-unsigned" });
@@ -164,7 +199,7 @@ describe("the fleet-join door's files", () => {
     ({ kind: "fleet-join-request", ...body, signature: await signHex(fleetJoinRequestImage(body), by) });
   const asking = async (scope: FaceScope, by: Pair): Promise<VesselFaceCertificateRequest> =>
     ({ scope, vesselFaceKey: by.key as VesselFaceKey, signature: await signHex(certificateRequestImage(scope, by.key as VesselFaceKey), by) });
-  const body = (w: World) => ({ nonce: w.request.nonce, atomKey: w.request.atomKey, sealKey: w.request.sealKey, requests: w.request.requests });
+  const body = (w: World) => ({ nonce: w.request.nonce, atomKey: w.request.atomKey, sealKey: w.request.sealKey, vesselTag: w.request.vesselTag, vesselSig: w.request.vesselSig, wardKey: w.request.wardKey, wardPop: w.request.wardPop, requests: w.request.requests });
   /** The answer re-signed by the root after `change`, so only the check under test can refuse it. */
   const resigned = async (w: World, change: Partial<FleetJoinAnswer>, by: Pair = w.root): Promise<FleetJoinAnswer> => {
     const a = { ...w.answer, ...change };
@@ -252,10 +287,10 @@ describe("the fleet-join door's files", () => {
   test("THE EDGE HANDED ON MATCHES THE EDGE DIGESTED: a frozen canonical copy, and an oversized edge refuses", async () => {
     const w = await world();
     let reads = 0;
-    const shifting = { kind: "device-admit/v1", get deviceEdge() { reads += 1; return reads === 1 ? "synthetic" : "swapped"; }, hearthTrueName: HEARTH_NEXUS };
+    const shifting = { kind: "device-admit", get deviceEdge() { reads += 1; return reads === 1 ? "synthetic" : "swapped"; }, hearthTrueName: HEARTH_NEXUS };
     const verified = read(w, { ...w.answer, edge: shifting });
     if ("refusal" in verified) throw new Error(verified.refusal);
-    expect(verified.answer.edge).toEqual({ kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS });
+    expect(verified.answer.edge).toEqual({ kind: "device-admit", deviceEdge: "synthetic", hearthTrueName: HEARTH_NEXUS });
     expect(Object.isFrozen(verified.answer.edge)).toBe(true);
     expect(read(w, await resigned(w, { edge: { blob: "x".repeat(70000) } }))).toEqual({ refusal: "answer-malformed" });
   });
@@ -287,11 +322,14 @@ describe("the fleet-join door's files", () => {
       mintFaceKey: async (scope: FaceScope) => { const p = await pair(`composed ${n++}`); minted.set(p.key, p); void scope; return p.key; },
       custody: { signAsVesselFace: (_s: FaceScope, key: string, image: Uint8Array) => ed25519.signAsync(image, minted.get(key)!.secret) },
       sign: async (image: Uint8Array) => signHex(image, w.joinee),
+      vesselTag: testVesselTagDoor(5),
     };
     const seal = fleetJoinSealPair();
     expect(seal.key).toBe(hex(x25519.getPublicKey(seal.secret)));
     const request = await composeFleetJoinRequest({ offer: w.offer, atomKey: w.joinee.key, sealKey: seal.key, ...doors });
     if ("refusal" in request) throw new Error(request.refusal);
+    expect(vesselFaceTagHolds(GROUP, w.joinee.key, request)).toBe(true);
+    expect(request.vesselTag).toBe((await testVesselTag(5, GROUP, w.joinee.key)).vesselTag);
     expect(request.requests.map((q) => q.scope)).toEqual(w.offer.scopes);
     expect(new Set(request.requests.map((q) => q.vesselFaceKey)).size).toBe(w.offer.scopes.length);
     expect(readFleetJoinRequest(JSON.parse(JSON.stringify(request)), w.offer)).toEqual(request);
@@ -316,7 +354,7 @@ describe("the answer's pin stands at the Nexus the answer names", () => {
     const a = { ...w.answer, ...change };
     return { ...a, signature: await signHex(fleetJoinAnswerImage(a), w.root) };
   };
-  const edgeAt = (nexus: string) => ({ kind: "device-admit/v1", deviceEdge: "synthetic", hearthTrueName: nexus });
+  const edgeAt = (nexus: string) => ({ kind: "device-admit", deviceEdge: "synthetic", hearthTrueName: nexus });
 
   test("RED: an anchor standing names a gate key; the pin at the edge's true name reads", async () => {
     const w = await world();
@@ -332,7 +370,7 @@ describe("the answer's pin stands at the Nexus the answer names", () => {
 
   test("RED: an answer that names no Nexus at all (no true name, no charter island) refuses answer-nexus-absent", async () => {
     const w = await world();
-    const bare = { kind: "device-admit/v1", deviceEdge: "synthetic" };
+    const bare = { kind: "device-admit", deviceEdge: "synthetic" };
     // Every Nexus-bound check (the pin's Nexus, the floor pins' Nexus, the admit's face) would otherwise read nothing.
     for (const reach of [
       { ...w.answer.reach, islandKind: "anchor" as const, islandScope: "ab".repeat(32) },
@@ -347,7 +385,7 @@ describe("the answer's pin stands at the Nexus the answer names", () => {
 
   test("RED: a charter island's genesis holds the pin when the edge names no true name", async () => {
     const w = await world();
-    const bare = { kind: "device-admit/v1", deviceEdge: "synthetic" };
+    const bare = { kind: "device-admit", deviceEdge: "synthetic" };
     const elsewhere = await resign(w, { edge: bare, reach: { ...w.answer.reach, islandKind: "charter", islandScope: "nexus-elsewhere.synthetic" } });
     expect(read(w, elsewhere)).toEqual({ refusal: "answer-pin-other-nexus" });
     // CONTROL: the genesis the pin stands at reads.
@@ -371,32 +409,32 @@ describe("the answer carries the dial: the charter, the face's admit and the flo
     const verified = read(w, JSON.parse(JSON.stringify(w.answer)));
     if ("refusal" in verified) throw new Error(verified.refusal);
     expect(verified.answer.charter).toBe(CHARTER_TEXT);
-    expect(verified.answer.admit.admit.nym).toBe(w.a.scope.faceKey);
+    expect(verified.answer.admit!.admit.nym).toBe(w.a.scope.faceKey);
     expect(verified.answer.floorPins).toEqual([floorPinAt(HEARTH_NEXUS)]);
   });
 
   test("RED: a moved charter, admit, lineage or floor pin refuses unsigned", async () => {
     const w = await world();
     expect(read(w, { ...w.answer, charter: "another charter" })).toEqual({ refusal: "answer-unsigned" });
-    expect(read(w, { ...w.answer, admit: { ...w.answer.admit, admit: { ...w.answer.admit.admit, parents: ["moved"] } } })).toEqual({ refusal: "answer-unsigned" });
-    expect(read(w, { ...w.answer, admit: { ...w.answer.admit, lineage: [w.answer.admit.admit] } })).toEqual({ refusal: "answer-unsigned" });
-    expect(read(w, { ...w.answer, floorPins: [floorPinAt(HEARTH_NEXUS, "/oracle", 9)] })).toEqual({ refusal: "answer-unsigned" });
+    expect(read(w, { ...w.answer, admit: { ...w.answer.admit!, admit: { ...w.answer.admit!.admit, parents: ["moved"] } } })).toEqual({ refusal: "answer-unsigned" });
+    expect(read(w, { ...w.answer, admit: { ...w.answer.admit!, lineage: [w.answer.admit!.admit] } })).toEqual({ refusal: "answer-unsigned" });
+    expect(read(w, { ...w.answer, floorPins: [floorPinAt(HEARTH_NEXUS, "/flow", 9)] })).toEqual({ refusal: "answer-unsigned" });
     expect(read(w, { ...w.answer, floorPins: [] })).toEqual({ refusal: "answer-unsigned" });
   });
 
   test("RED: an admit the root signed over another carriage, or for another face, refuses by name", async () => {
     const w = await world();
-    const other = { ...w.answer.carriage, canon: { "@lares": "automerge:elsewhere" } };
+    const other = { ...w.answer.carriage!, canon: { lares: "automerge:elsewhere" } };
     expect(read(w, await resign(w, { admit: faceAdmitOver(other, w.a.scope.faceKey) }))).toEqual({ refusal: "answer-admit-other-commit" });
-    expect(read(w, await resign(w, { admit: faceAdmitOver(w.answer.carriage, w.b.scope.faceKey) }))).toEqual({ refusal: "answer-admit-other-face" });
-    expect(read(w, await resign(w, { admit: { ...w.answer.admit, salt: "zz" } }))).toEqual({ refusal: "answer-malformed" });
+    expect(read(w, await resign(w, { admit: faceAdmitOver(w.answer.carriage!, w.b.scope.faceKey) }))).toEqual({ refusal: "answer-admit-other-face" });
+    expect(read(w, await resign(w, { admit: { ...w.answer.admit!, salt: "zz" } }))).toEqual({ refusal: "answer-malformed" });
   });
 
   test("RED: a floor pin of the sovereign tier, at another Nexus, or twice on one route refuses by name", async () => {
     const w = await world();
     expect(read(w, await resign(w, { floorPins: [PIN] }))).toEqual({ refusal: "answer-floor-pin-refused" });
     expect(read(w, await resign(w, { floorPins: [floorPinAt("nexus-elsewhere.synthetic")] }))).toEqual({ refusal: "answer-floor-pin-refused" });
-    expect(read(w, await resign(w, { floorPins: [floorPinAt(HEARTH_NEXUS), floorPinAt(HEARTH_NEXUS, "/oracle", 9)] }))).toEqual({ refusal: "answer-floor-pin-refused" });
+    expect(read(w, await resign(w, { floorPins: [floorPinAt(HEARTH_NEXUS), floorPinAt(HEARTH_NEXUS, "/flow", 9)] }))).toEqual({ refusal: "answer-floor-pin-refused" });
     // CONTROL: two routes read.
     expect("answer" in read(w, await resign(w, { floorPins: [floorPinAt(HEARTH_NEXUS), floorPinAt(HEARTH_NEXUS, "/shelf")] }))).toBe(true);
   });

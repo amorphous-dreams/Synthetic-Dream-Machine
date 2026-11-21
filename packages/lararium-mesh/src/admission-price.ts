@@ -3,7 +3,7 @@
  *
  * NOTHING NEW GETS INVENTED HERE. `lineage-rank` supplies the seed-rooted vouch mass; `conviction-dial`
  * supplies the 1Hive convex bar and the half-life decay; `capture-reading` supplies the discipline this
- * file obeys. The one thing missing was the shore between them, and a shore is all this is.
+ * file obeys. This file holds the shore between them, and nothing more.
  *
  * WHY A PRICE AND NOT A PREDICATE. A boolean gate has a CLIFF, and no parameter smooths a cliff — so
  * "invite-only now, open protocol later" could never be a dial while admission stayed a yes/no. Make it a

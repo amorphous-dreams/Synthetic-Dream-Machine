@@ -142,8 +142,8 @@ function lineageExtends(incoming: NexusDoc, incomingHead: string, heldHead: stri
  *
  * REFUSES, writing nothing, when the bytes parse to no verified roster head, name no AID, name the
  * primary charter's own Nexus, or — for an AID already held — carry a lineage that does not extend the
- * held head. The write goes through a sibling temp file and a rename, so a reader sees the old charter
- * or the new one and never a torn file.
+ * held head. The write goes through a sibling temp file and a rename, so a reader sees the held charter
+ * or the incoming one and never a torn file.
  */
 export function importCarriedCharter(sealHome: string, raw: string): CarriedImportResult {
   const doc  = parseNexusDoc(raw);
@@ -167,7 +167,7 @@ export function importCarriedCharter(sealHome: string, raw: string): CarriedImpo
   let outcome: CarriedImportResult["outcome"] = "landed";
   if (existsSync(path)) {
     // A held charter that reads torn is a charter to recover, never an absent one: landing over it would
-    // replace a lineage this vessel can no longer check the incoming against.
+    // erase the lineage this vessel checks the incoming against.
     const heldDoc = readNexusDoc(home);
     if (heldDoc === null) {
       throw new CarriedCharterError(

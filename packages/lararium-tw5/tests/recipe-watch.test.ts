@@ -5,6 +5,7 @@ import {
   LARES_BAG,
   ORACLE_BAG,
   wikiBagUri,
+  wikiSlotUri,
   recipeUri,
   type DocHandle,
   type LarDoc,
@@ -22,6 +23,7 @@ const SLUG     = "test-wiki";
 const WIKI_BAG = wikiBagUri(SLUG);
 const LIB_BAG  = "lar:///ha.ka.ba/bags/corpus/elyncia";
 const RECIPE   = recipeUri("catalog", SLUG);
+const WORKING  = wikiSlotUri(SLUG, "working");
 
 type Tiddlers = Record<string, LarTiddlerRecord>;
 
@@ -88,6 +90,7 @@ function harness(opts: { stack: string[]; libMounted?: boolean; libTiddlers?: Ti
   const recipe: WikiRecipe = { wikiSlug: SLUG };
   const ctx = {
     composite, handles, repo,
+    post: () => {},
     catalogUrl: "automerge:catalog",
     recipe,
     engine: { sha256: "x", version: "0" },
@@ -153,6 +156,39 @@ describe("recipe-watch", () => {
       expect(alert === null || alert.meta?.deleted === true).toBe(true);
     });
     stop?.();
+  });
+
+  test("a library the reconcile cannot resolve stands unread: a delete above it counts it as holding the title (`unknownBeneath`); CONTROL: a library that mounts leaves nothing unread", async () => {
+    const LOST = "lar:///ha.ka.ba/bags/corpus/lost";
+    const h = harness({ stack: [WIKI_BAG] });
+    const stop = await startRecipeWatch(h.ctx);
+    expect(h.composite.unknownBeneath(WIKI_BAG)).toBe(false);
+    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": `${LARES_BAG} ${LOST} ${WIKI_BAG}` }));
+    await vi.waitFor(() => expect(h.composite.unknownBeneath(WIKI_BAG)).toBe(true));
+    expect(h.composite.hasBag(LOST)).toBe(false);
+    expect(h.composite.unknownBeneath(LARES_BAG)).toBe(false);
+    // CONTROL: the recipe trades the lost library for one that resolves; it mounts and nothing beneath stays unread.
+    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": `${LARES_BAG} ${LIB_BAG} ${WIKI_BAG}` }));
+    await vi.waitFor(() => expect(h.composite.hasBag(LIB_BAG)).toBe(true));
+    await vi.waitFor(() => expect(h.composite.unknownBeneath(WIKI_BAG)).toBe(false));
+    stop?.();
+  });
+
+  test("an oracle move whose new document cannot resolve drops the slot, and it stands unread beneath the working layer above it; CONTROL: a move that resolves leaves nothing unread", async () => {
+    const h = harness({ stack: [WIKI_BAG] });
+    const stop = await startRecipeWatch(h.ctx);
+    h.catalog.set(WIKI_BAG, rec(WIKI_BAG, { text: "automerge:wiki-gone" }));
+    await vi.waitFor(() => expect(h.composite.hasBag(WIKI_BAG)).toBe(false));
+    await vi.waitFor(() => expect(h.composite.unknownBeneath(WORKING)).toBe(true));
+    // CONTROL: a fresh island whose move resolves.
+    const c = harness({ stack: [WIKI_BAG] });
+    c.registerDoc("automerge:wiki-2", fakeHandle("automerge:wiki-2"));
+    const cstop = await startRecipeWatch(c.ctx);
+    c.catalog.set(WIKI_BAG, rec(WIKI_BAG, { text: "automerge:wiki-2" }));
+    await vi.waitFor(() => expect(c.ctx.handles.get(WIKI_BAG)?.url).toBe("automerge:wiki-2"));
+    expect(c.composite.unknownBeneath(WORKING)).toBe(false);
+    stop?.();
+    cstop?.();
   });
 
   describe("two planes: the vessel's own composition shadows a system wiki's default", () => {

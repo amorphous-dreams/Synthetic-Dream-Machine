@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/dreamdom-width/` — 1 record(s) here, 9 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/dreamdom-width/`
+
+The scratch planning records of `.lares-scratch/research/dreamdom-width/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 1 record(s) stand here and 9 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[research/|lar:///ha.ka.ba/lares/docs/history/workshop/research/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[opus/|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/index]] | 3 |
+| [[terra/|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/index]] | 5 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/brief]] | brief | 2026-10-28 | `brief.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;355_x1bcNJXcD-KRugGpigsX4H8QGaPSd4jP3jEhE9g`>>
+
+<<^ code=`&#x0004;` to=`?`>>

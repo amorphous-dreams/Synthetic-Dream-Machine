@@ -28,9 +28,21 @@
  */
 
 import { VerbRefusal } from "./verb-refusal.js";
+import { isPrototypeKey } from "./stored-value.js";
 
 /** The code a session-form title refuses under. */
 export const SESSION_FORM_TITLE_CODE = "session-form-title";
+
+/**
+ * The code a prototype-key title refuses under. A title stands as a KEY of a by-key map, and `__proto__`
+ * rewires the object prototype chain rather than naming an entry: automerge seats a `__proto__` key as the
+ * materialized map's prototype (every phantom record a hostile writer forges rides it), and from 3.5.0 a
+ * local write of one throws a bare `RangeError` inside `change()`. The door names it first, so the write
+ * refuses by name and the engine's throw never surfaces as a stall. `constructor` and `prototype` stand as
+ * ordinary titles (operator ruling 2026-11-02): the read door answers own entries only. KEEP: a live hostile
+ * form, guarding a live invariant.
+ */
+export const PROTOTYPE_KEY_TITLE_CODE = "prototype-key-title";
 
 /** The authority of a `lar:` URI: the span from `lar://` to the first `/`, `?` or `#`. Null for any other string. */
 function larAuthorityOf(uri: string): string | null {
@@ -54,6 +66,9 @@ export function larUserinfoOf(uri: string): string | null {
  * userinfo slot and nothing else.
  */
 export function storableTitleFault(title: string): string | null {
+  if (isPrototypeKey(title)) {
+    return `${PROTOTYPE_KEY_TITLE_CODE}: "${title}" rewires the object prototype chain, never names an entry; a by-key map cannot hold it as a title. Title the record by an address.`;
+  }
   const authority = larAuthorityOf(title);
   if (authority === null) return null;
   if (authority.includes("@")) {
@@ -72,8 +87,17 @@ export class SessionFormTitleRefusal extends VerbRefusal {
   }
 }
 
-/** THE DOOR'S CHECK: throws {@link SessionFormTitleRefusal} for a title that cannot stand as a key. */
+/** A store's refusal of a `__proto__` title: the one title that rewires the prototype chain. */
+export class PrototypeKeyTitleRefusal extends VerbRefusal {
+  constructor(readonly title: string, message: string) {
+    super(PROTOTYPE_KEY_TITLE_CODE, message);
+  }
+}
+
+/** THE DOOR'S CHECK: throws a named refusal for a title that cannot stand as a key. */
 export function assertStorableTitle(title: string): void {
   const fault = storableTitleFault(title);
-  if (fault !== null) throw new SessionFormTitleRefusal(title, fault);
+  if (fault === null) return;
+  if (isPrototypeKey(title)) throw new PrototypeKeyTitleRefusal(title, fault);
+  throw new SessionFormTitleRefusal(title, fault);
 }

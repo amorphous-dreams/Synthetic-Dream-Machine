@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement/moolelo-persona-acts`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-09 (file date) — source `.lares-scratch/placement/moolelo-persona-acts.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement/moolelo-persona-acts"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement/moolelo-persona-acts"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! moolelo-persona-acts.md — plan, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement/moolelo-persona-acts.md` (plan, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/moolelo-operator-ruling`>>
+
+!! MOʻOLELO — operator ruling (2026-11-09, verbatim: "Approve the moʻolelo, hand it to Terra")
+Persona acts rest in the PersonaGroup plane as their one home, in the PRIVATE-SYNCED class. Group-secret seals, dyads and Keyhive cap bytes rest in the vessel SECRET document, which enrolls in the sealed store before its first write, with no plaintext fallback. Control families rest in the vessel CONTROL document. Acts leave the browsing recipe, and the proof readers keep direct access. The daemon wiki's mirror stays lit: the leap lands only once every control writer has left `wikis/daemon-<F>`.
+
+Consequences for the build:
+* Three non-mirrored homes, three classes: minted (control document), secret (sealed secret document), private-synced (persona plane). The residency witness and the canon name all three.
+* The page/tiddler recipe stops mounting the persona plane; browser boot's proof readers and Keyhive replay keep direct document access (a face must still seat).
+* Founding order: card read-back, custody, secret-document enrollment in the SealedDocumentStore with its save session, THEN the first seal/dyad/cap write. Red tests on that order.
+* `wikis/daemon-<F>` keeps its mirror in the landed tree. The control-home migration (swarm controls, ward audits, outcomes, receipts, mailbox, delegate, face-row, lease-epoch, ledger/*) completes inside this leap; a tree with a control writer still in the working layer does not land.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0MitV0Wet_cJLjNbAbZrrdG-AGfrsxoAFJsPjFaKrHI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

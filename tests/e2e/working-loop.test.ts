@@ -6,8 +6,8 @@
  * (→ the `wiki-act` forwarder → placeWikiVerb); the admin never reaches the
  * per-fingerprint working binding.
  *
- *   W1 — LOAD --to wikis/lares/working --in-wiki → the carrier projects to
- *        wikis/ (the per-wiki working write-layer disk surface).
+ *   W1 — LOAD --to wikis/lares/working --in-wiki → the carrier projects to the
+ *        lares workbench, realms/lares/wikis/lares/ (the working write-layer disk surface).
  *   W2 — MOVE wikis/lares/working → bags/lares --in-wiki (PROMOTION) → the
  *        carrier publishes to bags/lares (canon) AND retracts from wikis/.
  *
@@ -18,7 +18,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, wikiWorkbenchDir, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -52,21 +52,19 @@ async function awaitCarrier(dir: string, want: boolean, timeoutMs = 45_000): Pro
 beforeAll(async () => { lar = await targetInstance(); }, 120_000);
 afterAll(async () => { await lar.stop(); });
 
-describe("working→canon live loop (island-local, --in-wiki)", () => {
+describe.skipIf(!stagedTarget)("working→canon live loop (island-local, --in-wiki)", () => {
   test("W1 — LOAD --to working --in-wiki projects to wikis/ (the live write layer)", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
     expect(r.json?.["ok"], `LOAD --to working --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
-    expect(await awaitCarrier(join(lar.root, "wikis"), true), "carrier did not project under wikis/").toBe(true);
+    expect(await awaitCarrier(wikiWorkbenchDir(lar.root, "lares"), true), "carrier did not project into the lares workbench").toBe(true);
     // and NOT into canon yet — promotion is a separate, deliberate act.
-    expect(existsSync(join(lar.root, "bags/lares", REL)), "carrier reached canon without promotion").toBe(false);
+    expect(existsSync(join(lar.root, "projections/bags/lares", REL)), "carrier reached canon without promotion").toBe(false);
   }, 90_000);
 
   test("W2 — MOVE working→lares canon --in-wiki (promotion) publishes to bags/lares + retracts wikis/", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "MOVE", "--title", BOOT_URI, "--from", WORKING, "--to", LARES, "--in-wiki", "--yes", "--json"]);
     expect(r.json?.["ok"], `MOVE working→lares canon --in-wiki failed: ${JSON.stringify(r.json)}`).toBe(true);
-    expect(await awaitCarrier(join(lar.root, "bags/lares"), true), "carrier did not publish to bags/lares (canon)").toBe(true);
-    expect(await awaitCarrier(join(lar.root, "wikis"), false), "carrier still sits in wikis/ after promotion").toBe(true);
+    expect(await awaitCarrier(join(lar.root, "projections/bags/lares"), true), "carrier did not publish to bags/lares (canon)").toBe(true);
+    expect(await awaitCarrier(wikiWorkbenchDir(lar.root, "lares"), false), "carrier still sits in the lares workbench after promotion").toBe(true);
   }, 90_000);
 });

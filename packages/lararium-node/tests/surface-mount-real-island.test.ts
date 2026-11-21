@@ -62,8 +62,8 @@ describe.skipIf(skipReason)(`a session surface on the real island kernel${skipRe
     if (!verdict.ok) throw new Error(`${verdict.refusal}: ${verdict.detail}`);
     expect(verdict.recipe.pluginCids.length).toBeGreaterThan(0);                         // the floor resolved
 
-    const pool = new VesselIslandPool({
-      workerScriptUrl: ISLAND_JS, mainRepo: repo, storageRoot: cas.storageDir,
+    const pool = new VesselIslandPool({ caps: {},
+      workerScriptUrl: ISLAND_JS, mainRepo: repo, storageRoot: cas.storageDir, cidDir: cas.cidDir,
       resolvePluginCids: async () => ({ ok: true as const, pluginCids: cas.pluginCids }),
     });
     try {
@@ -107,10 +107,9 @@ describe.skipIf(skipReason)(`a session surface on the real island kernel${skipRe
       // A session island holds an ephemeral replica: the mount laid nothing on disk.
       expect(readdirSync(cas.storageDir).sort()).toEqual(before);
 
-      // CONTROL: the same island through the wiki door takes a store under the same root.
-      expect(readdirSync(cas.storageDir).sort()).toEqual(before);
+      // The same island through the wiki door lays nothing under the same root either: no island keeps a store.
       await pool.mountWiki(wikiUri("outside"), { coreHash, recipe: { wikiSlug: "outside" }, grants: { islandUrl: oracle.url, wikiUrl: canon.url } });
-      expect(readdirSync(cas.storageDir).length).toBeGreaterThan(before.length);
+      expect(readdirSync(cas.storageDir).sort()).toEqual(before);
     } finally {
       await pool.disposeAll();
       await repo.shutdown();

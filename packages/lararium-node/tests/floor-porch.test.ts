@@ -1,7 +1,7 @@
 /**
  * floor-porch.test — W26 slice 4: the Nexus answers a stranger with its floor at the porch, and the stranger verifies it.
  *
- * Over a REAL http server with the vessel's one dispatcher: `GET /floor/<AID>` hands the release rows the crossroads board
+ * Over a REAL http server with the vessel's one dispatcher: `GET /floor/<AID>` hands the release rows the publication board
  * carries (each with its charter lineage), and `GET /cas/<cid>` the blobs the HEAD release names. A reader holding the AID
  * alone reads the whole floor across the wire (`readFloorAnswer`), every step verified.
  *
@@ -15,8 +15,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import {
-  assembleFloorRelease, crossroadsDocUrl, cutFloorSnapshot, floorManifestBytes, materializeSharedLarDoc, openFloorReleaseBody, readFloorAnswer,
-  sha256HexBytesSync, writeFloorRelease, type FloorRelease,
+  assembleFloorRelease, crossroadsDocUrl, publicationDocUrl, cutFloorSnapshot, floorManifestBytes, materializeSharedLarDoc, openFloorReleaseBody, readFloorAnswer,
+  sha256HexBytesSync, signFloorOffering, writeFloorRelease, type FloorRelease,
 } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountFloorPorch, releasedFloorCids } from "../src/floor-porch.js";
@@ -36,25 +36,36 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const casDir = mkdtempSync(join(tmpdir(), "floor-porch-")); dirs.push(casDir);
   const lares = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares", text: "lares" } } });
   const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "lararium" } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor/v1", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), lares: lares.cid, lararium: lararium.cid });
+  // v2: one snapshot per house-canon bag; sdm rides beside the system canon and the porch serves it under the release.
+  const sdm = cutFloorSnapshot({ "lar:///t/sdm": { tiddler: { title: "lar:///t/sdm", text: "sdm" } } });
+  // The plugins offering the floor names, its one blob in the same CAS: the porch serves both under the release.
+  const pluginBytes = new TextEncoder().encode("plugin bytes");
+  const offering = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+    id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(pluginBytes),
+    provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+  }] });
+  const pluginCid = offering.offering.blobs[0]!.sha256;
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), plugins: offering.cid, snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   const secret = new TextEncoder().encode("a private blob this vessel holds");
   const secretCid = sha256HexBytesSync(secret);
   writeCasEntriesFs([
-    { cid: lares.cid, bytes: lares.bytes }, { cid: lararium.cid, bytes: lararium.bytes }, { cid: manifestCid, bytes: manifestBytes }, { cid: secretCid, bytes: secret },
+    { cid: lares.cid, bytes: lares.bytes }, { cid: lararium.cid, bytes: lararium.bytes }, { cid: sdm.cid, bytes: sdm.bytes }, { cid: manifestCid, bytes: manifestBytes }, { cid: secretCid, bytes: secret },
+    { cid: offering.cid, bytes: offering.bytes }, { cid: pluginCid, bytes: pluginBytes },
   ], casDir);
   const [steward] = await c.signers([0]);
   const release = await assembleFloorRelease({
     body: openFloorReleaseBody({ nexus: c.aid, epoch: c.head.epochCid, prior: null, manifest: manifestCid }),
     lineage: c.chain, manifestBytes, steward: steward!, approvers: [...await c.signers()],
   });
-  const board = await materializeSharedLarDoc(repo, crossroadsDocUrl(c.aid), "board:crossroads");
+  const board = await materializeSharedLarDoc(repo, publicationDocUrl(c.aid), "board:publication");
+  const crossroads = await materializeSharedLarDoc(repo, crossroadsDocUrl(c.aid), "board:crossroads");
   const server = createServer(); servers.push(server);
   const dispatcher = mountHttpFaceDispatcher(server);
   const porch = mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: c.aid, casDir, serveCas: opts.serveCas ?? true });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  return { c, board, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, manifest: manifestCid, secret: secretCid } };
+  return { c, board, crossroads, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid, manifest: manifestCid, secret: secretCid, offering: offering.cid, plugin: pluginCid } };
 }
 const land = (r: Awaited<ReturnType<typeof rig>>, release: FloorRelease) => r.board.change((d) => writeFloorRelease(d, release));
 const bodyOf = async (res: Response) => ({ status: res.status, text: await res.text(), cache: res.headers.get("cache-control") });
@@ -69,7 +80,11 @@ describe("the porch answers for the Nexus's floor", () => {
       fetchCas: async (cid) => { const res = await fetch(`${r.origin}/cas/${cid}`); return res.status === 200 ? new Uint8Array(await res.arrayBuffer()) : null; },
     });
     expect(read.ok).toBe(true);
-    if (read.ok) { expect(read.head.cid).toBe(r.release.cid); expect(Object.keys(read.lares)).toEqual(["lar:///t/lares"]); }
+    if (read.ok) {
+      expect(read.head.cid).toBe(r.release.cid); expect(Object.keys(read.snapshots["lares"]!)).toEqual(["lar:///t/lares"]);
+      expect(Object.keys(read.snapshots["sdm"]!)).toEqual(["lar:///t/sdm"]);
+    }
+    expect((await fetch(`${r.origin}/cas/${r.ids.sdm}`)).status).toBe(200);
     // the head's blobs serve with the immutable cache header
     expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.manifest}`))).cache).toContain("immutable");
   });
@@ -92,9 +107,21 @@ describe("the porch answers for the Nexus's floor", () => {
     r.board.change((d) => { d.tiddlers[`$:/lar/floor-release/${r.release.cid}`] = { tiddler: { title: `$:/lar/floor-release/${r.release.cid}`, text: JSON.stringify(forged) } } as never; });
     expect((await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })).size).toBe(0);
     expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.secret}`))).status).toBe(404);
-    // CONTROL: the lawful release names exactly the manifest and its two snapshots
+    // CONTROL: the lawful release names exactly the manifest, each snapshot it keys, its plugins offering and the offering's blob
     land(r, r.release);
-    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.manifest].sort());
+    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.sdm, r.ids.manifest, r.ids.offering, r.ids.plugin].sort());
+    expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.plugin}`))).status).toBe(200);
+  });
+
+  test("a release hand-placed in the mirrored crossroads document answers as no release and opens no blob", async () => {
+    const r = await rig();
+    r.crossroads.change((d) => writeFloorRelease(d, r.release));
+    const answer = await (await fetch(`${r.origin}/floor/${r.c.aid}`)).json() as { releases?: unknown[] };
+    expect(answer.releases, "the porch read a release off the crossroads mirror").toEqual([]);
+    expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.manifest}`))).status).toBe(404);
+    // CONTROL: the same release on the publication board answers.
+    land(r, r.release);
+    expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.manifest}`))).status).toBe(200);
   });
 
   test("a herm's porch (no /cas of its own) answers the floor route and leaves /cas to its bulb face", async () => {

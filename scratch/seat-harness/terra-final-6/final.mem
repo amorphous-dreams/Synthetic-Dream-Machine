@@ -1,0 +1,54 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-6/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-6/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-6/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-6/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-6/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-6/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The round-5 examples have targeted cures, but the new broker-seat directory is not isolated from every lane, and process-group cleanup does not cover a descendant that creates another process group. The hand-back also has completion and resource-lifetime regressions.
+
+All findings below are ''LEAD'': conclusions from source and test inspection, not reproductions. I did not run tests, construct payloads, or write files. The green CI run and local 21/21 result are ''MEASURED reports supplied in the hand-off'', not independent measurements; the reported CI run skipped four bubblewrap proofs.
+
+# ''P1 — Broker-seat placement does not establish ownership across lanes.'' [[launch-codex.mjs:500|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:500]] accepts an existing `--broker-dir`, and [[the placement checks|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:505]] compare it only with this launch’s seat, worktree, and optional lane root. A directory inside a //different// scratch lane can pass. Another lead with that lane writable can then alter the supposedly broker-owned parent or its seat directories while this launcher and Codex use their pathnames. `mkdir` with mode `0700` does not establish ownership or change permissions on an existing parent. The [[placement test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:927]] covers the current lane and an assumed-safe other directory; it does not establish isolation from another writable lane. This repeats the pathname-write class across the whole broker-directory placement surface.
+
+# ''P1 — An exited process group does not prove the seat has stopped.'' [[superviseSeat|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:415]] starts a process group and [[kills and polls that group|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:417]] after the child exits. A descendant permitted to create another process group or session is outside that accounting. It can remain alive after the original group reports `ESRCH`, including while [[copyBack|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:443]] reads the seat’s writable directory. The [[grandchild test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:903]] keeps the descendant in the original group; it does not prove containment of descendants that leave it. A process-containment boundary that covers descendants, or a demonstrated sandbox prohibition on leaving the group, is needed for the claimed stop and hand-back guarantees.
+
+# ''P2 — Hand-back can omit the completion file and report stale results.'' [[copyBack|/home/joshu/.lares-scratch/seat-harness/wt/tools/held-dir.mjs:114]] applies the 64-name limit //before// checking whether names are regular, copyable files. Enough earlier-sorting directories, symlinks, or hard links can crowd out `final.md`; [[the cap test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:944]] covers dotfiles only. Separately, a reused lane seat directory retains an old `final.md` until a new one is copied back, while [[the launch message|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:553]] tells the caller to wait for that file’s existence. That wait can immediately accept the previous run’s result, or remain satisfied if the new hand-back omits the file.
+
+# ''P2 — Broker-seat directories have no cleanup or overall size bound.'' Each launch creates a new directory at [[launch-codex.mjs:519|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:519]], but neither the supervisor nor launcher removes it after hand-back or refusal. The copy limit bounds only bytes copied to the lane, not the original `run.log`, temporary files, or other seat output. Repeated runs therefore retain full prompts and outputs and can exhaust storage. The hand-back tests verify the copy, not directory lifetime or cleanup.
+
+# ''P2 — Dry run writes to disk.'' The launcher creates `brokerDir` at [[launch-codex.mjs:509|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:509]] before the [[dry-run return|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:515]], contrary to its documented no-writes contract. The existing dry-run test does not assert that a previously absent broker directory remains absent.
+
+The round-5 cures are narrower but real. The [[held hand-back swap test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:835]] exercises a swapped lane directory, and the [[held lane-root test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:869]] covers `steps` and state writes. The [[prompt-exit grandchild test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:903]] exercises the previously missing same-group case, and its injected nonempty-group control pins `unstopped`. The [[lead-law test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:919]] derives the commit fields from the relay schema. The missing-relay test now hashes contents. Those tests would catch the specific prior regressions; findings 1–2 identify the remaining structural surfaces.
+
+On the other requested checks:
+
+* The broker’s [[poison, hook, filter, submodule, and read-race tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:180]] support the paths they exercise. Finding 1 prevents confirming the broader broker-authority boundary. The relay rejects lead launches and requires the controller’s branch-and-head go, but I cannot certify the complete lead boundary while that placement gap remains.
+* Marker matching and the [[overlapping-rollout test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:407]] support ordinary session association; blindness and read errors stop the watched child. I cannot confirm that every descendant stops, for finding 2. The acknowledged PID-reuse edge also remains: group signaling occurs after the child exit event and is repeated during polling, so a reused process-group ID remains a residual wrong-process risk. I would not treat that edge as proven absent.
+* The receipt binds the tree, check names, and definitions; the key and receipts stay in memory. The forgery and read-only-tree tests cover those properties, subject to the documented host ptrace and seat seccomp assumptions, which I did not measure.
+* Missing bubblewrap returns named refusals before check or install execution, as pinned by the [[refusal test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:435]].
+* The [[mode and floor tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:45]] and [[threshold tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:363]] support the stated arguments and pool limits. Findings 3 and 5 are regressions in existing launch and completion behavior.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8qIFNQ9-aN7v1e9AfwwinvAk5cxWuqc1NYzBYkejHhE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

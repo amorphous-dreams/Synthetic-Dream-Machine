@@ -10,9 +10,9 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 const URI = "lar:///t/container-default";
 const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const WORKING = wikiSlotUri("daemon", "working");
-const BODY = `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/container-default"\n\`\`\`\n\n` +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>`;
+const BODY = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/container-default"\n\`\`\`\n\n` +
+  `<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>`;
 const ctx = (bags: string[]): VerbContext => ({
   daemon: {} as CompositeStore,
   invocation: { requestId: "container-default" } as VerbContext["invocation"],

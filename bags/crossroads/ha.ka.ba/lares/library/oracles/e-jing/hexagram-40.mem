@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-40`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "40. The Illuminatus! Trilogy"
+hexagram      = "40"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "010100"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-40"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-40"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷧ 40. The Illuminatus! Trilogy
+
+<<<
+"Like virtually everyone else, I read this book in high school after I had finished Umberto Eco's _The Name of the Rose_ and _Foucault's Pendulum_, which I greatly enjoyed. I forced myself to finish it simply to prove that I could. Here's the way it is folks: Robert Anton Wilson (RAW - as he refers to himself) is an infant, and he wants to be treated like a screaming brat infant. Give him a slap! His admirers, all suffering from attention-deficit hyper-activity disorder (AD/HD) after reading this book are infantile too. The "philosophy" (certainly not meriting that dignified epithet) behind this book is nothing more than a series of self-competitive hedonistic nonsense progressively aiming to outdo each previous iteration of its own ridiculousness in hopes of achieving something revolutionary - a series of baubles used to amuse three year old babies. However, there is no synthesis, nothing is produced from it. Rather, it would have us all robots driven outside of our minds by every blind and base impulse imaginable in a hedonic frenzy, all the while engaging in remorseless rape of the language to achieve some sort of verbal ecstasy. To overcome the ennuie which immediately ensues we are provided with grandiose puzzles (paradoxes) to contemplate with ever increasing absurdity. This sort of mental hedonism can lead to only one thing, total and complete destruction. It is not the highest in man; rather, it is in fact his lowest. Instead of seeing this as a product of euphoriant intoxication or mental disorder (let's not give it that much credit folks, even drugs or mental disease would produce more profound effects), I prefer to look at it as the product of a reasonably intelligent mind that has chosen to systematically disengage its will. This philosophy comes complete with a means of self-identification among its anarchist followers, through the presence of the word "fnord" appearing at various places in their reviews. As you can tell by reading some of the reviews here many of Wilson's disciples seem to have mastered the art of sesquipedalian obfuscation - an iterative procedure to generate pseudo-profundities by the successive manufacture of nonstandard grammatical combinations through the use of excessively big words." -zosimos, Amazon Book Review
+<<<
+
+This hexagram represents the beginning of deliverence - but just the beginning. In order to benefit from the deliverence, you must work toward it yourself and not wait for it to be handed to you.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;McBjk69N3Kt-kOjbhxdZigk8I-B8aPhfqHI8OnQvOAk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

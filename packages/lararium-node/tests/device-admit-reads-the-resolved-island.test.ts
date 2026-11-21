@@ -26,7 +26,7 @@
  * fault is a KEY, so the key is what is measured — and the weld at the tail pins that the door
  * actually composes this resolution rather than restating it.
  *
- * Isolation: a fresh `mkdtemp` under `LAR_ROOT` + XDG_*; the operator's live vessel is unreachable.
+ * Isolation: a fresh `mkdtemp` named as `LAR_ROOT`; the operator's live vessel is unreachable.
  */
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -62,9 +62,6 @@ describe("device-admit resolves the island the boot resolved", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-admit-island-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));
-    setEnv("XDG_CONFIG_HOME", join(root, "config"));
   });
 
   afterEach(() => {
@@ -200,9 +197,6 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-admit-carry-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));
-    setEnv("XDG_CONFIG_HOME", join(root, "config"));
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

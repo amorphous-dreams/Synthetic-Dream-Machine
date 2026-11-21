@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { scanText, classify, RULES, EXCEPTIONS, CEILINGS } from "./evergreen-boundary.mjs";
+import { scanText, scanAll, scanTestText, scanUpgradeText, scanCanonText, scanCanonDatedText, scanCanonMetaText, scanConfigText, isConfigFile, blindClasses, classify, RULES, EXCEPTIONS, CEILINGS } from "./evergreen-boundary.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "tools/evergreen-boundary.mjs");
@@ -16,7 +16,7 @@ function fixture(files, extra = []) {
       mkdirSync(join(root, rel, ".."), { recursive: true });
       writeFileSync(join(root, rel), body);
     }
-    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0", "--no-exceptions", ...extra], { encoding: "utf8" });
+    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0,old-shape=0,retired-test=0,upgrade-delete=0,canon-history=0,canon-dated-history=0,canon-dated-meta=0", "--no-exceptions", ...extra], { encoding: "utf8" });
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 const one = (body) => fixture({ "packages/example/src/a.ts": body });
@@ -27,6 +27,81 @@ test("E1 CONTROL: lawful source reads files and no findings", () => {
   assert.match(r.stdout, /\[evergreen-boundary\] [1-9]\d* file\(s\) read/);
   assert.deepEqual(scanText("a.ts", "// This holder waits.\nconst started = Date.now();"), []);
   assert.deepEqual(scanText("a.ts", 'const word = "schemaVersion"; const sample = "Date.now() > deadline";'), []);
+});
+test("E1b old-shape names and readings fail while current refusals read clean", () => {
+  for (const body of ['class LegacyXRefused extends Error {}', 'const reading = "old-shape";', 'const reading = "old-shape-inception";', '// retired spelling refuses here']) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = 'class FacelessKeyhiveRefused extends Error {}\nconst reading = "face-locked";';
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
+test("E1c old-shape: a parse, refusal or comment that names an older peer's build reads; present readings of age do not", () => {
+  for (const body of [
+    'throw new PulamaRefused("pulama-lend-unnamed", `the pūlama answered a session that names no lent set: it runs an older build, so rebuild it`);',
+    '// A session frame that names no lent set comes from a pūlama on an older build: it refuses by name.',
+    '/** Absent on payloads from older vessels; treated as null. */',
+    '// Additive: an older daemon build that never sends it reads exactly as before.',
+    'const why = "a frame from an older pūlama names one face";',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    'throw new PulamaRefused(lent.refusal, `the session frame names no lent set this vessel reads (${lent.message})`);',
+    '/** Every status that counts as a run in flight; the newest five runs say nothing of an older one still running. */',
+    'console.warn("another tab holds an older version of this store open; the open waits until it closes.");',
+    '// a browser, a worker, an older Node',
+    '/** The pluggable search leg (defaults to the read-only holder client). */',
+    'throw new Error("stale build: dist was not built from the current source");',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
+test("E1d old-shape: a reading or comment that names an earlier shape reads; a prior revision of data does not", () => {
+  for (const body of [
+    'export type CharterShape = "absent" | "whole" | "torn" | "earlier-shape";',
+    '// THE EARLIER SHAPES, each by its own mark: one commitment per epoch.',
+    '// The previous charter shape had one commitment for the whole successor set.',
+    '// The earlier link shape named one `prevEpochCid`.',
+    '// A row that stands and does not open (torn, bare, an earlier shape) refuses.',
+    'const why = "a pre-cut shape reads by name";',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    '// tombstone: the aside path map alone holds a pack\'s prior membership.',
+    '// the previous frame\'s posterior is this frame\'s prior.',
+    '// A source already gone (a re-entered founding recovered its seed from an earlier group row) keeps the destination.',
+    'const shape = "torn";',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
+
+test("E1e old-shape: a comment or reading that carries a shape forward reads, one planted line per word; a present order of acts does not", () => {
+  for (const body of [
+    '// A roster of bare indices predates the ward: it refuses by name.',
+    'const why = "this doc predates the veil-born founding";',
+    '// The reader keeps the prior shape of the row beside the new one.',
+    '// A pre-face-root store names its face at the top of the record.',
+    'const cure = "this face was founded before the secret minted, and re-founds";',
+    '/** The ward-key row from before the key moved under its own ward: the next ask sweeps it. */',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1, body); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    '// The last fold may precede the very act that set this one off.',
+    '// A founding checkpoint rests before the Repo reads a byte of it.',
+    '// The seat returns and receives no key minted while it stood away.',
+    'const predator = "the wordlist keeps its own words";',
+    '// The face founds, and before the ward binds its route reads twice.',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
 });
 test("E2 schema field is a version finding", () => {
   const body = "const record = { schemaVersion: 1 };";
@@ -59,6 +134,17 @@ test("E6 numbered formats and numeric version fields read; string version does n
   }
   assert.equal(scanText("a.ts", 'const record = { version: "1.2.3" };').length, 0);
   assert.equal(scanText("a.ts", 'const url = "https://example.org/version";').length, 0);
+});
+test("E6b a minted tag that ends in a bare number reads; paths, urls, dates and ratios do not", () => {
+  for (const body of ['export const FACE_LABEL_SCHEMA = "lar-face-label/1";', "const KAHUA_PENDING_SCHEMA = 'lar-kahua-pending/1';",
+    'emit({ schema: "lar-carry-census/12" });', "const tag = `lararium-seed/3`;"]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 1, body);
+  }
+  for (const body of ['const schema = "lar-face-label";', 'const url = "https://example.org/lar-face/1";', 'const file = "a/b/1";',
+    'const rel = "fixtures/case/2";', 'const day = "2026/11/18";', 'const ratio = "1/2";', 'const aspect = "16/9";', 'const http = "HTTP/1";',
+    'const route = "/api/items/1";', 'const glob = "**/1";', 'const label = "page 3/4";']) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 0, body);
+  }
 });
 test("E7 stale and empty-reason exceptions fail classification", () => {
   const findings = scanText("a.ts", "schemaVersion: 1");
@@ -96,10 +182,119 @@ test("E9 real corpus holds under its ceilings, each rule reads a known positive,
     total += Number(open);
   }
   assert.ok(total > 0 || RULES.every(rule => CEILINGS[rule] === 0), "the tree read no debt under standing ceilings");
+  // Each new class reads a known positive in the real tree too, while its ceiling stands above zero.
+  for (const rule of ["retired-test", "upgrade-delete", "canon-history", "canon-dated-history", "canon-dated-meta"]) {
+    const [, open] = r.stdout.match(new RegExp(`${rule} (\\d+)/`)) ?? [];
+    assert.ok(Number(open) > 0 || CEILINGS[rule] === 0, `${rule} read nothing under a standing ceiling`);
+  }
   assert.equal(new Set(EXCEPTIONS.map(e => `${e.rule}|${e.file}|${e.match}`)).size, EXCEPTIONS.length);
-  const findings = EXCEPTIONS.flatMap(e => scanText(e.file, readFileSync(join(repo, e.file), "utf8")));
+  const findings = EXCEPTIONS.flatMap(e => scanAll(e.file, readFileSync(join(repo, e.file), "utf8")));
   assert.deepEqual(classify(findings, EXCEPTIONS).stale, []);
 });
 test("E10 empty corpus fails visibly", () => {
   const r = fixture({}); assert.equal(r.status, 1); assert.match(r.stdout + r.stderr, /the corpus read nothing/);
+});
+
+const canon = (body) => fixture({ "bags/lares/ha.ka.ba/lares/api/pono/a.mem": body });
+const tests = (body) => fixture({ "packages/example/tests/a.test.ts": body });
+const upgrade = (body) => fixture({ "packages/example/src/a.ts": body });
+test("E11 retired-test: a retired-name title, a mutation comment and a retired-name list read; present tests do not", () => {
+  const positives = [
+    'test("the old shape refuses before any write", () => {',
+    'it("RED: the retired command refuses", () => {',
+    'expect(await dispatch(["carrier"])).toBe(2); // the old spelling answers nothing',
+    "const RETIRED = [\"init\", \"wake\"];",
+  ];
+  for (const body of positives) assert.equal(scanTestText("a.test.ts", body).length, 1, body);
+  const r = tests(positives[0]); assert.equal(r.status, 1); assert.match(r.stdout, /retired-test +packages\/example\/tests\/a\.test\.ts:1/);
+  // CONTROL: present-tense tests, a domain term and a hyphenated refusal code read nothing, and the fixture still reads its file.
+  const lawful = 'test("a root rotation signs under the new key", () => {\n  expect(verify(old, c1).ok).toBe(true); // the previous key still verifies\n  expect(code).toBe("bag-retired names its cure");\n});\nconst RETIRED = "aa".repeat(32);';
+  assert.deepEqual(scanTestText("a.test.ts", lawful), []);
+  const c = tests(lawful); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /retired-test 0\/0/); assert.match(c.stdout, /[1-9]\d* file\(s\) read/);
+});
+test("E12 upgrade-delete: an upgrade handler that deletes a store or a row reads; one that creates stores does not", () => {
+  const red = 'req.onupgradeneeded = (e) => {\n  const db = e.target.result;\n  if (db.objectStoreNames.contains("old")) db.deleteObjectStore("old");\n};';
+  assert.equal(scanUpgradeText("a.ts", red).length, 1);
+  const rows = 'req.onupgradeneeded = (e) => {\n  cursor.onsuccess = () => {\n    if (at.key === "x") at.delete();\n  };\n};';
+  assert.equal(scanUpgradeText("a.ts", rows).length, 1);
+  const r = upgrade(red); assert.equal(r.status, 1); assert.match(r.stdout, /upgrade-delete +packages\/example\/src\/a\.ts:3/);
+  // CONTROL: creation alone, and a delete outside the upgrade body, read nothing.
+  const lawful = 'req.onupgradeneeded = (e) => {\n  const db = e.target.result;\n  if (!db.objectStoreNames.contains("keystore")) db.createObjectStore("keystore");\n};\nfunction forget(db) { db.deleteObjectStore("keystore"); }';
+  assert.deepEqual(scanUpgradeText("a.ts", lawful), []);
+  const c = upgrade(lawful); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /upgrade-delete 0\/0/);
+});
+test("E13 canon-history: a history word in live canon reads; present canon and a record carrier do not", () => {
+  assert.equal(scanCanonText("a.mem", "The island formerly held its own timer.").length, 1);
+  assert.equal(scanCanonText("a.mem", "That route is no longer reachable.").length, 1);
+  const r = canon("A line.\nThe gate used to read the old column.\n"); assert.equal(r.status, 1); assert.match(r.stdout, /canon-history +bags\/lares\/ha\.ka\.ba\/lares\/api\/pono\/a\.mem:2/);
+  // CONTROL: present-tense canon and a hyphenated refusal code read nothing; a record carrier under docs/ stays out of the corpus.
+  assert.deepEqual(scanCanonText("a.mem", "The island holds its own timer. The refusal code bag-retired names its cure."), []);
+  const c = canon("The gate reads the current column.\n"); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /canon-history 0\/0/);
+  const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": "The gate used to read the old column.\n", "tools/a.mjs": "const x = 1;" });
+  assert.equal(record.status, 0, record.stdout + record.stderr);
+});
+test("E14 a class whose corpus holds no file reads blind", () => {
+  assert.deepEqual(blindClasses(["tools/a.mjs", "packages/x/src/a.ts"]), ["retired-test", "canon-history", "canon-dated-history", "canon-dated-meta"]);
+  assert.deepEqual(blindClasses([]), ["old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history", "canon-dated-meta"]);
+  assert.deepEqual(blindClasses(["packages/x/tests/a.test.ts", "packages/x/src/a.ts", "bags/lares/ha.ka.ba/lares/api/a.mem"]), []);
+});
+test("E15 a comment that names its lane, wave or slice is narration; the lowercase domain words are not", () => {
+  for (const body of ["// Wave C swaps the face in here.", "/* the seed (slice 2: genesis is data) */", "// since this lane touches only one file", "// Slice 5 lands the act.", "// This lane runs the e2e sets alone."]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "narration").length, 1, body);
+  }
+  const r = one("// Wave B carries the holder.\nconst x = 1;"); assert.equal(r.status, 1); assert.match(r.stdout, /narration +packages\/example\/src\/a\.ts:1/);
+  // CONTROL: a wave of edits, a byte slice and a string that names a lane read nothing.
+  assert.deepEqual(scanText("a.ts", '// a wave a watcher settled; take a slice of the buffer.\nconst s = buf.slice(2);\nconst name = "this lane";'), []);
+});
+test("E16 workflow, Dockerfile and compose comments join the narration corpus; their code does not", () => {
+  assert.equal(isConfigFile(".github/workflows/ci.yml"), true);
+  assert.equal(isConfigFile("docker-compose.surface.yml"), true);
+  assert.equal(isConfigFile("Dockerfile"), true);
+  assert.equal(isConfigFile("Dockerfile.dockerignore"), false);
+  assert.equal(isConfigFile("packages/x/docker-compose.yml"), false);
+  assert.equal(scanConfigText("ci.yml", "      # A CDN stall used to hold a runner.").length, 1);
+  assert.equal(scanConfigText("ci.yml", "    # the red this lane exists to surface").length, 1);
+  const r = fixture({ ".github/workflows/ci.yml": "jobs:\n  # the old job ran here\n  test:\n" }); assert.equal(r.status, 1); assert.match(r.stdout, /narration +\.github\/workflows\/ci\.yml:2/);
+  // CONTROL: a present comment, and a `#` inside a value (an anchor, a color), read nothing.
+  assert.deepEqual(scanConfigText("ci.yml", "      # The engine directory restores by the pinned version.\n        key: a#used to\n"), []);
+  const c = fixture({ ".github/workflows/ci.yml": "jobs:\n  # The test job runs every suite.\n  test:\n" }); assert.equal(c.status, 0, c.stdout + c.stderr);
+});
+test("E17 canon-dated-history: a history verb beside an ISO date reads in live canon; a ruling or correction marker beside the date and a record carrier do not", () => {
+  for (const body of ["The engine landed 2026-07-02.", "(collisions removed 2026-06-04)", "the attribute form retired 2026-06-12.", "2026-09-18: the fork was cured."]) {
+    assert.equal(scanCanonDatedText("a.mem", body).length, 1, body);
+  }
+  const r = canon("A line.\nThe engine landed 2026-07-02.\n"); assert.equal(r.status, 1); assert.match(r.stdout, /canon-dated-history +bags\/lares\/ha\.ka\.ba\/lares\/api\/pono\/a\.mem:2/);
+  // THE MARKER EXEMPTION. A date beside a ruling or correction marker (`RULED`, `ruling`, `CORRECTION`, `CORRECTED`)
+  // carries provenance, so it reads nothing even where a history verb sits beside it; the same line without the
+  // marker reads red. A date far from any history verb, and a record carrier under docs/, read nothing.
+  for (const marked of ["RULED (2026-11-02): the old door was retired.", "''Recursive o-takiage'' (operator ruling, 2026-10-16). A witness that catches burned names lives one commit.",
+    "CORRECTION (neg-entropy swarm 2026-06-23): the earlier claim was wrong.", "CORRECTED 2026-08-09 against the code, replacing an over-claim that was wrong."]) {
+    assert.deepEqual(scanCanonDatedText("a.mem", marked), [], marked);
+  }
+  for (const bare of ["On 2026-11-02 the old door was retired.", "(swarm 2026-06-23): the earlier claim was wrong."]) {
+    assert.equal(scanCanonDatedText("a.mem", bare).length, 1, bare);
+  }
+  // A marker near ONE date never covers a second, unmarked date on the same line.
+  assert.equal(scanCanonDatedText("a.mem", "RULED (2026-09-18). Elsewhere the engine landed 2026-07-02.").length, 1);
+  assert.deepEqual(scanCanonDatedText("a.mem", "The lease holds its own causal clock (2026-09-18) and never reads a wall."), []);
+  const c = canon("The identity model stands RULED (operator, 2026-06-24).\n"); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /canon-dated-history 0\/0/);
+  const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": "The engine landed 2026-07-02.\n", "tools/a.mjs": "const x = 1;" });
+  assert.equal(record.status, 0, record.stdout + record.stderr);
+});
+test("E18 canon-dated-meta: an authored date key in a live canon meta reads; a ruling dated in the body and a record carrier's dated meta do not", () => {
+  const meta = (line) => "<<^ code=`&#x0002;`>>\n\n```toml meta\ntitle = \"lar:///ha.ka.ba/lares/api/pono/a\"\n" + line + "\n```\n\nBody.\n";
+  for (const line of ['written = "2026-06-12"', 'status-date = "2026-09-08"', 'revised-on = "2026-10-01"', 'date = "x"', 'proposed-on = "2026-11-01"', 'created = "2026-05-01"']) {
+    assert.equal(scanCanonMetaText("a.mem", meta(line)).length, 1, line);
+  }
+  const r = canon(meta('written = "2026-06-12"')); assert.equal(r.status, 1); assert.match(r.stdout, /canon-dated-meta +bags\/lares\/ha\.ka\.ba\/lares\/api\/pono\/a\.mem:5/);
+  // CONTROL: a present meta, a ruling line dated in the body, and a docs record's dated meta read nothing.
+  assert.deepEqual(scanCanonMetaText("a.mem", meta('role = "the law holds"') + "Operator ruling 2026-06-12: the law holds.\n"), []);
+  const c = canon(meta('role = "the law holds"')); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /canon-dated-meta 0\/0/);
+  const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": meta('written = "2026-06-12"'), "tools/a.mjs": "const x = 1;" });
+  assert.equal(record.status, 0, record.stdout + record.stderr);
+});
+test("E19 canon corpus reads the cli surface: a history word in a cli meme reads; a docs record beside it does not", () => {
+  const r = fixture({ "bags/lares/ha.ka.ba/lares/cli/door.mem": "A door.\nThe old name was renamed to the new one.\n" });
+  assert.equal(r.status, 1); assert.match(r.stdout, /canon-history +bags\/lares\/ha\.ka\.ba\/lares\/cli\/door\.mem:2/);
+  const c = fixture({ "bags/lares/ha.ka.ba/lares/cli/door.mem": "A door answers its own name.\n" }); assert.equal(c.status, 0, c.stdout + c.stderr);
 });

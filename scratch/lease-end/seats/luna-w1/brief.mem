@@ -1,0 +1,77 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w1/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/lease-end/seats/luna-w1/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w1/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w1/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/seats/luna-w1/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w1/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/luna-read-wave-1-lane-lease-end`>>
+
+! Luna read, wave 1 (YIN: try to BREAK the ruling) — lane lease-end
+
+Mask: Lease-Breaker (Tasked Spirit), read-only. The repo sits at /home/joshu/Synthetic-Dream-Machine (span 5c3d032dc); read it by absolute path. Write your handback to final.md in your seat dir.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-ruling-under-test`>>
+
+!! The ruling under test (controller, 2026-11-07, decided in-house)
+The face delegation lease RETIRES. Every authority reader replaces its epoch freshness check (signed edge `boundEpoch` vs `expectedEpoch`; the face reader's counted lease advances floored at the sealed anchor) with anchor-pinned persona lineage plus remove-wins standing (set-aside / kāpae per edge). The fleet-wide one-shot invalidation by epoch roll is accepted as lost: it assumes every island hears the roll (a global now); whole-fleet removal stands instead as remove-wins set-asides over each edge, a kāpae over the face, or the K18 re-anchor. No back-compat: epoch fields and the roll command burn.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/attachments`>>
+
+!! Attachments (absolute paths)
+* /home/joshu/.lares-scratch/recovery-research/lease-end-state/final.md (the Terra research the ruling rests on)
+* /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem (#/rulings 2026-11-06 "The face lease's end state"; row M6; K18 row)
+* /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/kapae.mem (remove-wins, four edges, the frontier-of-lowers law)
+* /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/pono/persona-policy.mem
+* Code: packages/lararium-mesh/src/{device-delegation.ts,face-reading.ts,face-anchor.ts,lease-advance.ts}, packages/lararium-keyhive/src/{ceremony-core.ts,face-grant-record.ts,face-join.ts,face-seat.ts,operator-daemon-behavior.ts,boot-daemon-keyhive.ts,recovery-core.ts}, packages/lararium-node/src/commands/{persona-lease.ts,device-admit.ts}, packages/lararium-browser/src/open-browser-vessel.ts (lines drift: rg for boundEpoch, expectedEpoch, leaseEpoch, advance).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/your-job`>>
+
+!! Your job (pentabarf V: test and collide, believe nothing)
+# Find every way the ruling breaks. Concretely: (a) any authority reader or flow where the epoch does work that remove-wins standing CANNOT do (e.g. a key compromise where the attacker holds a device key and can withhold/partition the set-aside acts; a revocation that must bind devices the remover cannot enumerate; replay of an old edge; recovery after a lost face key). (b) Where canon and code DRIFT on the lease (canon claims a reader enforces set-aside but the code does not; code reads an epoch canon says retired; stale docs). (c) Whether kāpae over a face really exists in code today or only in canon.
+# For each finding: MEASURED (file:line, quoted) vs INFER, and severity: BREAKS-RULING / NEEDS-SLICE (ruling holds but a cure slice is owed) / DRIFT-ONLY.
+# Close with ONE line verdict: HOLDS / HOLDS-WITH-SLICES / BREAKS, and the strongest single case against it.
+House laws to weigh by name: No global now, no back-compat in early alpha, causal islands, identity-as-relation, Infrastructure-as-Myth.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xo6nqDKyGTGghz-TFKwp363t2ndcFuioSbqFYT6-pr4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

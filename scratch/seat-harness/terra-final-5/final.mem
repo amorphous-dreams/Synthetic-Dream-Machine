@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-5/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-5/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-5/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-5/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-5/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-5/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The held-directory changes close several of the round-4 write paths, but pathname writes remain in the launch flow, and the watchdog can leave descendants running after the supervised child exits. The lead brief also describes a commit request the relay now rejects.
+
+All findings are ''LEAD'' conclusions from source and test inspection. I did not run tests or construct payloads. Green CI and local 21/21 are ''MEASURED reports supplied in the hand-off'', not independent measurements; the stated CI runner skipped four bubblewrap proofs.
+
+# ''P1 — Lead-controlled pathname writes remain across the launch surface.'' This repeats round 4’s pathname-write class. The launcher holds its own output directory, but passes the original seat pathname to Codex as `-o …/final.md` and in `TMPDIR` and `TMPPREFIX` ([[launch-codex.mjs:200|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:200]], [[line 513|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:513]]). The seat-directory swap test uses a mock spawn and verifies only launcher writes; it does not exercise Codex’s later pathname writes ([[launch-codex.test.mjs:773|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:773]]). A replacement after the hold can therefore redirect those later writes.
+
+The new lead-step path has a separate residual surface: it creates `steps` by pathname before opening the held directory, and writes `state.json` through a pathname after that ([[launch-codex.mjs:493|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:493]], [[line 501|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:501]], [[lane-state.mjs:39|/home/joshu/.lares-scratch/seat-harness/wt/tools/lane-state.mjs:39]]). Random `wx` temp names prevent a planted temp-file collision; they do not anchor a replaceable parent. The [[step test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:547]] covers a normal launch, not a parent swap. I cannot confirm the lane-root or broker-authority guarantees while these paths remain.
+
+# ''P1 — A child’s exit can leave its process group running.'' This is the remaining stop surface from round 4. After SIGTERM, the grace loop ends as soon as the direct child’s exit event lands. The group SIGKILL is conditional on that child still being alive, as is the supervisor’s fallback ([[launch-codex.mjs:174|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:174]], [[line 431|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:431]]). A descendant that survives SIGTERM can therefore outlive a child that exits promptly, while the watch returns a stopped verdict. The new [[grandchild test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:798]] keeps the direct child alive too, so it exercises the fallback but not this case.
+
+# ''P2 — The lead law gives an obsolete commit interface.'' The generated lead law tells the lead to provide “a message file in the lane root” ([[launch-codex.mjs:285|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:285]]), while the relay schema accepts inline `message` and rejects unknown fields ([[commit-relay.mjs:89|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:89]]). A lead following its brief cannot submit the described commit request. The schema and message tests pin the new interface, but do not compare it with the generated law.
+
+The round-4 cures have useful, narrower evidence:
+
+* ''Held output:'' symlink, hard-link and post-hold directory-swap tests cover launcher-owned writes ([[launch-codex.test.mjs:749|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:749]]). The supervisor’s `run.log` and `ceiling.md` paths have a separate [[symlink test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:784]]. These tests would catch the former direct writes at those names; finding 1 identifies the remaining pathname surfaces.
+* ''Stop ladder:'' the [[throwing-signal test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:798]] confirms `unstopped` while its child lives and exercises the real fallback; the [[ordering test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:813]] pins the note before signals. Finding 2 limits the process-group guarantee. The note remains best effort: the symlink test deliberately verifies that stopping proceeds when it cannot be written.
+* ''Placement before creation:'' the `broker-iso` realpath check now precedes creation of both broker state and `relay/` ([[commit-relay.mjs:36|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:36]]); the [[missing-relay test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:521]] would catch the previous ordering. Its snapshot compares file lengths rather than file contents, so “byte-identical” is stronger than that assertion proves.
+* ''Blind ticks:'' the option is validated and forwarded; the [[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:822]] pins an override and the default of 200.
+
+The relay rejects lead launches and binds push to the controller’s branch-and-head go. The broker’s planted-hook, filter, submodule, environment and read-race tests cover their stated paths; finding 1 prevents confirming the broader no-leak claim. Marker matching and the supervisor tests support ordinary rollout association, but finding 2 prevents confirming that every stopped seat and its descendants have exited.
+
+Receipts bind the tree, check names and definitions, and the key and receipts remain in memory. The [[forgery|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:393]] and [[read-only export|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:405]] tests cover those properties, subject to the documented host ptrace and seat seccomp boundary, which I did not measure. Missing bubblewrap returns named refusals before running check or install code; the [[refusal test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:435]] pins both paths.
+
+I found no additional floor regression in the reviewed mode logic; the mode and threshold tests cover the intended arguments and floors. The four bubblewrap-dependent proofs remain dependent on the supplied local result.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P-TvlOQmlQlnGVu9xoP6OyJ4jySDWt54_4UrOgzrLFk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

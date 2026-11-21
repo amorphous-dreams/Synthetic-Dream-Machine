@@ -1,19 +1,18 @@
 /**
  * carrier-edges — the reading that looks OUTWARD from a carrier.
  *
- * `carrier-shape` asks whether a file is whole; `meme-coordinates` asks whether its own two
- * coordinates agree; `bcc` asks whether its bytes match their check. A `lar:` URI names and does not
+ * `carrier-shape` asks whether a file is whole; `meme-coordinates` asks whether its own
+ * coordinate agrees; `bcc` asks whether its bytes match their check. A `lar:` URI names and does not
  * fetch, so a carrier whose target moved satisfies all three and points at nothing.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
 import { describe, expect, test } from "vitest";
-import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { readCarrierEdges } from "../src/carrier-edges.js";
+import { homedInTheKahuWorkbench, readCarrierEdges } from "../src/carrier-edges.js";
 import { carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
@@ -24,17 +23,17 @@ describe("carrier-edges — every address a carrier points at", () => {
    */
   test("every form a carrier can name an address in is read", () => {
     const src = [
-      "<<~ loulou lar:///ha.ka.ba/a/one>>",
+      "<<~ loulou uri=`lar:///ha.ka.ba/a/one`>>",
       // Both ends stated, so this also holds the reader to the end that TRAVELS: the source is
       // `a/source` and the edge is `a/two`. A reader taking the first address passes every other
       // assertion here and still names the wrong carrier.
-      '<<~ pranala #x from=lar:///ha.ka.ba/a/source -> to=lar:///ha.ka.ba/a/two family=control>>',
-      "<<~ kahea ahu lar:///ha.ka.ba/a/three>>",
+      '<<~ pranala slot=`#x` from=`lar:///ha.ka.ba/a/source` to=`lar:///ha.ka.ba/a/two` family=`control`>>',
+      "<<~ kahea uri=`lar:///ha.ka.ba/a/three`>>",
       "[[a name|lar:///ha.ka.ba/a/four]]",
       "[[lar:///ha.ka.ba/a/five]]",
     ].join("\n\n");
     const got = readCarrierEdges(src);
-    expect(got.map((e) => e.address!).sort())
+    expect(got.map((e) => e.address).sort())
       .toEqual(["ha.ka.ba/a/five", "ha.ka.ba/a/four", "ha.ka.ba/a/one", "ha.ka.ba/a/three", "ha.ka.ba/a/two"]);
     expect(new Set(got.map((e) => e.form))).toEqual(new Set(["loulou", "pranala", "kahea", "wikilink"]));
   });
@@ -45,13 +44,23 @@ describe("carrier-edges — every address a carrier points at", () => {
    * are lessons rather than links.
    */
   test("an edge quoted inside a fence is a lesson, never a link", () => {
-    const taught = "````\nShow one:\n\n<<~ loulou lar:///ha.ka.ba/not/real>>\n````\n\n<<~ loulou lar:///ha.ka.ba/is/real>>";
+    const taught = "````\nShow one:\n\n<<~ loulou uri=`lar:///ha.ka.ba/not/real`>>\n````\n\n<<~ loulou uri=`lar:///ha.ka.ba/is/real`>>";
     expect(readCarrierEdges(taught).map((e) => e.address)).toEqual(["ha.ka.ba/is/real"]);
+  });
+
+  /**
+   * AN EDGE NAMES AN ADDRESS, NEVER A FILE. A link whose target names a file (`…|x.md`) points at no
+   * carrier, so the graph reads no edge from it: every edge this reader returns carries a `lar:` address.
+   */
+  test("a link to a file is no edge", () => {
+    const src = "[[a name|neighbour.md]] · [[up|../arc/index.md]] · [[a name|lar:///ha.ka.ba/a/one]]";
+    const got = readCarrierEdges(src);
+    expect(got.map((e) => [e.form, e.address])).toEqual([["wikilink", "ha.ka.ba/a/one"]]);
   });
 
   /** A fragment rides the written form and never the address a resolver looks up. */
   test("the fragment stays on the writing and off the lookup", () => {
-    const [e] = readCarrierEdges("<<~ loulou lar:///ha.ka.ba/a/one#part>>");
+    const [e] = readCarrierEdges("<<~ loulou uri=`lar:///ha.ka.ba/a/one#part`>>");
     expect(e!.address).toBe("ha.ka.ba/a/one");
     expect(e!.written).toBe("ha.ka.ba/a/one#part");
   });
@@ -90,11 +99,13 @@ describe("carrier-edges — every address a carrier points at", () => {
       const u = /^uri-path\s*=\s*"([^"]+)"/m.exec(t)?.[1];
       if (u) held.add(u);
     }
-    // An `md-target` edge names a FILE and carries no address, so it can neither resolve nor dangle.
-    // Counting it here would fold a known, separately-gated class into this one and hide a real break.
-    const dangling = texts.flatMap(readCarrierEdges)
-      .filter((e) => e.address !== null && !held.has(e.address));
+    const unheld = texts.flatMap(readCarrierEdges).filter((e) => !held.has(e.address));
+    const workbench = unheld.filter((e) => homedInTheKahuWorkbench(e.address));
+    const dangling = unheld.filter((e) => !homedInTheKahuWorkbench(e.address));
     expect(files.length).toBeGreaterThan(500);
+    // The workbench class holds its own ceiling, so a canon link into the road still reads as a count
+    // that moves by a deliberate act: 143 edges across 72 carriers when the road left canon.
+    expect(workbench.length, "a canon link into the founding road grew — name it, or write the road's name as prose").toBeLessThanOrEqual(143);
     // A CEILING ONLY EVER LOWERS, and it lowers by the same measurement either side of a change:
     // `lares meme check --edges` before and after. A broken edge gets repaired, never absorbed.
     //
@@ -103,6 +114,22 @@ describe("carrier-edges — every address a carrier points at", () => {
     // `live-equivocation.mem` names `elyncia/characters/primary-characters/telarus`,
     // `lararium/mesh/ahi-ka` and `lares/api/pono/recovery-registration`, carriers nobody has written
     // yet. A FORWARD REFERENCE IS INTENT RECORDED AHEAD OF ITS CARRIER.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(169);
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(121);
+  });
+
+  test("the workbench class reads the founding road alone, never a neighbour that shares its letters", () => {
+    for (const a of [
+      "ha.ka.ba/lares/docs/stable-founding-road",
+      "ha.ka.ba/lares/docs/road-ashes",
+      "ha.ka.ba/lares/docs/road/rank-4j",
+      "ha.ka.ba/lares/docs/road/ruling-2026-11-19-road-to-a-stable-house",
+    ]) expect(homedInTheKahuWorkbench(a), a).toBe(true);
+    for (const a of [
+      "ha.ka.ba/lares/docs/roadmap",
+      "ha.ka.ba/lares/docs/road-ashes-two",
+      "ha.ka.ba/lares/docs/pono/dreamdom-roadmap",
+      "ha.ka.ba/lares/docs/pono/test-recut-road",
+      "ha.ka.ba/lararium/docs/road/rank-2",
+    ]) expect(homedInTheKahuWorkbench(a), a).toBe(false);
   });
 });

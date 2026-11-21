@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-27`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "27. The Hot Dog (on Friday)"
+hexagram    = "27"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "100001"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-27"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-27"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷚ 27. The Hot Dog (on Friday)
+
+<<<
+III - A Discordian is Required during his early Illumination to Go Off Alone & Partake Joyously of a Hot Bog on a Friday; this Devotive Ceremony to Remonstrate against the popular Paganisms of the Day: of Catholic Christendom (no meat on Friday), of Judaism (no meat of Pork), of Hindic Peoples (no meat of Beef), of Buddhists (no meat of animal), and of Discordians (no Hot Dog Buns).
+<<<
+
+This hexagram signifies nourishment and tranquility. Eating a Hot Dog on Friday is, of course, an impossible act for a Discordian since there is no day on the Discordian calendar named "Friday"; therefore this hexagram also implies an impossibility, but one that won't bother you in the slightest.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;22UoW1VXk6lwb1xSLoo9AmA27M1YwB7oApXjZZoUCSY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

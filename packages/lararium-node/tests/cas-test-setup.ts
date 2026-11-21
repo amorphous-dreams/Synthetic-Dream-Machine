@@ -43,6 +43,8 @@ const REPO_GENESIS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..
 export interface CasSetup {
   /** Pool storageRoot — the CAS lives at `<storageDir>/cas`. */
   readonly storageDir:  string;
+  /** The vessel's one runtime `cid/` dir the pool is handed (`VesselIslandPoolOptions.cidDir`). */
+  readonly cidDir:      string;
   /** Plugin-tiddler CIDs the island resolves from the CAS. */
   readonly pluginCids:  readonly string[];
   /** Remove the temp storageDir (call in finally). */
@@ -63,6 +65,7 @@ export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir: string = REP
   mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), casDirForStorage(storageDir));
   return {
     storageDir,
+    cidDir: casDirForStorage(storageDir),
     pluginCids: bootSetPluginCids(genesisDoc.blobs),
     cleanup: () => rmSync(storageDir, { recursive: true, force: true }),
   };

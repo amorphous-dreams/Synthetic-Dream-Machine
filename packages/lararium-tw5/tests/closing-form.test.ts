@@ -15,7 +15,7 @@
  * A grammar that documents a form it cannot parse teaches a reader to write a carrier it will refuse.
  */
 import { describe, test, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { BLOCK_CLOSERS } from "../src/wikirules/lar-sigil-shared.js";
@@ -43,7 +43,7 @@ const ANY_CLOSER = /<<~\/[\w-]*/g;
  */
 function taught(): Array<{ rel: string; text: string }> {
   const defs = execSync('git ls-files "packages/lararium-tw5/tiddlers/*.tid"', { cwd: REPO, encoding: "utf8" })
-    .split("\n").filter(Boolean);
+    .split("\n").filter((rel) => rel && existsSync(join(REPO, rel)));
   const files = [...new Set([...carrierFiles(REPO), ...defs])];
   return files.map((rel) => ({ rel, text: readFileSync(join(REPO, rel), "utf8") }));
 }

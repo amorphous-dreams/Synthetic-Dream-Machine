@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-52`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "52. Mt. Olympus"
+hexagram    = "52"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "001001"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-52"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-52"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷳ 52. Mt. Olympus
+
+<<<
+"Mount Olympus. We all know it's a major feature of Arborea, and the home of a pantheon of powers called the Olympians or Greek "Gods." 'Course, as an Athar, I have to tell you these so-called Gods are not all they claim to be. They bicker and argue among themselves more than a Xaositect and a Guvner playing knucklebones, and over such petty things. If they are "supreme beings," I'll stay inferior, thanks." - Leir the Explorer
+<<<
+
+This hexagram stands for keeping still (as a mountain does throughout the millenia). It implies the need for meditation, yoga, or some other immobile exercise.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yZng7yVixeyfmERlk2dEam0bssJBRIzy0soeMAjb63A`>>
+
+<<^ code=`&#x0004;` to=`?`>>

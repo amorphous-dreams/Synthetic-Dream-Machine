@@ -25,6 +25,7 @@ import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
+import { memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const teardown: Array<() => void> = [];
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
@@ -44,7 +45,7 @@ async function boardFor(group: string | null): Promise<KahuCabalBoardReader> {
 async function veilOf(st: Awaited<ReturnType<typeof standFoundedIsland>>): Promise<KeyhiveProvider> {
   const v = new KeyhiveProvider();
   await v.init({
-    seed: hexToBytes(st.veil.atom.seed), eventStore: new DaemonEventStore({ daemon: st.ctx.composite }),
+    seed: hexToBytes(st.veil.atom.seed), eventStore: new DaemonEventStore({ ...memorySecretStore(st.secretHandle), face: st.daemonAuth.personaGroupId }),
     archiveBytes: st.veil.veilArchiveBytes,
   } as never);
   await v.hydrateFromEventStore();
@@ -91,7 +92,7 @@ describe("the shore's reader of a REAL one-seat founding", () => {
     const bare = mkdtempSync(join(tmpdir(), "lar-kahu-bare-"));
     cpSync(genesis, join(root, "genesis"), { recursive: true, filter: (src) => !src.endsWith("social-bootstrap.json") });
     try {
-      const founded = await withLarRoot(root, () => foundHearthDirect({ storageDir: join(root, "data", "lares", "vessel"), genesisDir: join(root, "genesis") }));
+      const founded = await withLarRoot(root, () => foundHearthDirect({ storageDir: join(root, "hearth", "vessel"), genesisDir: join(root, "genesis") }));
       await withLarRoot(root, async () => {
         const vesselKey = await loadVesselVerifyingKey();
         const board = await ownedStore(larDataDir(), (repo) => readKahuCabalBoard(repo, larSealHome(), vesselKey));

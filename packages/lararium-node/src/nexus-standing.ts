@@ -3,20 +3,17 @@
  *
  * ══ WHY THIS FILE EXISTS ═════════════════════════════════════════════════════════════════════════
  *
- * `91ce09afb` ruled that EVERY per-Nexus board keys on the NEXUS, and wired it at the boot and at
- * the two founding/admit doors in `init.ts`. The boot's own comment beside that wiring names the
- * hazard the ruling leaves behind:
+ * EVERY per-Nexus board keys on the NEXUS, at the boot and at the two founding/admit doors in
+ * `init.ts` alike. The boot's own comment beside that wiring names the hazard:
  *
  *   "ONE statement of the inputs … A second copy of this object would drift from the first the day
  *    a term is added, and the carry would then read a gradient the boot does not stand on."
  *
- * The CLI verbs were the second copy. They did not restate the object — they skipped it, reading
- * their per-Nexus boards at `loadVesselVerifyingKey` instead. That spelling is the vessel's OWN key,
- * which coincides with the resolved island at exactly ONE point on the gradient (`own`) and nowhere
- * above it. A vessel that CLIMBED reads the private board beneath its charter island, and it works
- * today only because `carryPersonaKelUpTheGradient` COPIES — it writes the destination and never
- * unlinks the source, so the lower board keeps its chain. A latent read at the wrong key, held alive
- * by copy semantics one refactor away.
+ * So the CLI verbs compose this file and never read their per-Nexus boards at
+ * `loadVesselVerifyingKey`. That key coincides with the resolved island at exactly ONE point on the
+ * gradient (`own`) and nowhere above it: a vessel that CLIMBED would read the private board beneath
+ * its charter island, alive only while `carryPersonaKelUpTheGradient` COPIES (writes the destination
+ * and never unlinks the source) — a read at the wrong key held alive by copy semantics.
  *
  * ══ WHAT A CALLER GETS, AND WHAT IT DOES NOT ═════════════════════════════════════════════════════
  *
@@ -42,7 +39,7 @@ import { nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, type N
 export { admittedJoineeIsland } from "@lararium/mesh";
 
 import { readNexusDoc, nexusCharterStands } from "./nexus-doc.js";
-import { readHearthDialPin } from "./hearth-dial-pin.js";
+import { readHearthIslandPin } from "./hearth-dial-pin.js";
 import { larSealHome, larBootstrapPath } from "./vessel-paths.js";
 
 /**
@@ -62,7 +59,9 @@ export function nodeNexusStandsAt(opts: {
   readonly bootstrapPath?: string;
 }): NexusIdentityAt {
   const sealHome  = opts.sealHome ?? larSealHome();
-  const hearthPin = readHearthDialPin(opts.bootstrapPath ?? larBootstrapPath());
+  // THE ISLAND HALF OF THE ADMISSION, never the dial: an answer that named no sync url pins no dial and still names the island
+  // its landing seeded (`hearthDialTiddlers`), so a restart reads the board the landing wrote.
+  const hearthPin = readHearthIslandPin(opts.bootstrapPath ?? larBootstrapPath());
   const ownGenesis       = nexusAidOf(readNexusDoc(sealHome));
   const ownCharterStands = nexusCharterStands(sealHome);
   // A vessel admitted onto a climbed founder holds no charter RECORD of its own (`ownGenesis`/

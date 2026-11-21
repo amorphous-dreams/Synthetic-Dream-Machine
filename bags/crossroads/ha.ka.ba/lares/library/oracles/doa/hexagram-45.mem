@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-45`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "45. Walpurgisnacht"
+hexagram    = "45"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "000110"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-45"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-45"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷬ 45. Walpurgisnacht
+
+<<<
+The Second Law of Thermodynamics, The Ultra-Violet Hippopotamus, The Thing on the Doorstep, The Glue Sniffers, King Kong and his Skull Island Dinosaurs, The Noisy Minority...
+<<<
+
+This hexagram represents a gathering together or a massing of people or things. If this does come about, either by natural or manipulated means, it will have a positive outcome.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LhdtJlRd13M-mm5HEIBis4CLf7a8FvdIrHkA6fMA1UY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

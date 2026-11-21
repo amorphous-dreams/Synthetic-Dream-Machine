@@ -1,7 +1,10 @@
 /**
  * browser leaf continuity — C4's held-out live walk.
  *
- * A real Chromium profile runs the web surface as a leaf: it founds offline, then reloads. A leaf names no anchor (a
+ * A real Chromium profile runs the web surface as a leaf: it founds offline, then reloads. A fresh browser boots as an unbound
+ * veil that holds no place KEL and runs no Binding Gate (the-veil-ladder ruling U3); a person founds a face of its own through
+ * the identity panel's door (`#found-face`, a one-boot ask), the founding arms the face's KEL, and the gate walks it from that
+ * boot on. So each walk founds through that door first, as a person does. A leaf names no anchor (a
  * device crosses by the floor card or the root-signed pin its fleet join carries), so it stands on its own island at
  * every boot, and the carry up the gradient finds nothing below to move. The browser's IndexedDB survives document
  * replacement, which makes this the ordinary field walk rather than a synthetic Repo exercise.
@@ -27,9 +30,12 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const say = (kind, text) => console.log(`  ${kind.padEnd(8)} ${text}`);
 
 function webUrl() {
-  const url = new URL(WEB);
-  if (BOOT_TRACE) url.searchParams.set("c4trace", "1");
-  return url.href;
+  return new URL(WEB).href;
+}
+
+// The page reads its trace switch off this tab's sessionStorage (its address stays TW5's own): raise it before the page loads.
+async function raiseBootTrace(context) {
+  if (BOOT_TRACE) await context.addInitScript(() => { try { sessionStorage.setItem("lares:c4trace", "1"); } catch { /* the page then boots untraced */ } });
 }
 
 async function waitFor(page, predicate, what) {
@@ -66,12 +72,27 @@ async function liveReading(page) {
       (BOOT_TRACE ? `; C4 boot trace: ${JSON.stringify(traceSummary)}` : ""));
   }
   if (state.kind === "failed") throw new Error(`browser vessel boot refused: ${state.status}`);
-  return await page.evaluate(() => {
+  const surface = await page.evaluate(() => {
     const rows = [...document.querySelectorAll("#vessel .row")];
     const did = rows.find((row) => row.querySelector(".k")?.textContent === "did")?.querySelector(".v")?.textContent ?? "";
-    const kel = globalThis.__laresC4PersonaKel;
-    return { did, vessel: document.getElementById("vessel")?.textContent ?? "", kel };
+    return { did, vessel: document.getElementById("vessel")?.textContent ?? "" };
   });
+  return { ...surface, kel: await readKelObservation(page) };
+}
+
+/**
+ * The Binding Gate's KEL observation, read where the gate ran: the leading tab's vessel worker since b1-lift (the observation route
+ * writes it beside the gate's read, on that realm's globalThis), the page's own realm first.
+ */
+async function readKelObservation(page) {
+  const read = () => globalThis.__laresC4PersonaKel;
+  const own = await page.evaluate(read);
+  if (own) return own;
+  for (const worker of page.workers()) {
+    const seen = await worker.evaluate(read).catch(() => undefined);
+    if (seen) return seen;
+  }
+  return undefined;
 }
 
 /** Keep a small terminal tail: a boot timeout must expose a concrete browser cause. */
@@ -156,7 +177,7 @@ function instrumentBootSource(source) {
     (match) => `console.log("[C4 boot] host:kel-board:start");\n    ${match}\n    console.log("[C4 boot] host:kel-board:done");`,
   );
   body = body.replace(
-    /daemon = await openBrowserDaemonVm\(\{/,
+    /daemonHolder = holdDaemonVm\(\{ vm: await openOnce\(/,
     (match) => `console.log("[C4 boot] host:daemon-vm:start");\n      ${match}`,
   );
 
@@ -171,7 +192,7 @@ function instrumentBootSource(source) {
     `if (isIslandToVesselMsg(raw) && raw.type === "ready") { console.log("[C4 boot] worker:ready"); resolve(); }`,
   );
   body = body.replace(
-    /worker\.post\(manifestMsg, transfer\);/,
+    /worker\.post\(initialPost\.msg, initialPost\.transfer\);/,
     (match) => `console.log("[C4 boot] host:manifest-post"); ${match}`,
   );
 
@@ -348,6 +369,7 @@ async function withProfile(run) {
   try {
     context = await chromium.launchPersistentContext(profile, { headless: true, args: ["--no-sandbox"] });
     await armTestCustody(context, "leaf-continuity");
+    await raiseBootTrace(context);
     return await run(context);
   } finally {
     await context?.close();
@@ -398,6 +420,19 @@ async function observeKelRead(context, page) {
   };
 }
 
+/**
+ * THE FOUNDING DOOR, driven as a person drives it: the veil stands live, the identity panel's button stashes the founding ask for
+ * one boot and the page boots again, and the vessel's custody asks answer through the published test route (`armTestCustody`).
+ * No URL selects a founding, so the address bar stays the wiki's own.
+ */
+async function foundThroughTheDoor(page) {
+  const veil = await liveReading(page);
+  if (veil.kel) throw new Error("a fresh veil boot ran the Binding Gate before any face was founded");
+  await Promise.all([page.waitForEvent("load", { timeout: BOOT_MS }), page.locator("#found-face").click()]);
+  if (new URL(page.url()).search !== new URL(webUrl()).search) throw new Error("the founding act moved the address bar");
+  return await liveReading(page);
+}
+
 function assertKel(label, reading, expected) {
   const kel = reading.kel;
   if (!kel || typeof kel.prefix !== "string" || !Array.isArray(kel.eventCids) || kel.eventCids.length === 0) {
@@ -422,7 +457,7 @@ async function ordinaryWalk() {
     const finishObservation = await observeKelRead(context, page);
 
     await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
-    const offline = await liveReading(page);
+    const offline = await foundThroughTheDoor(page);
     if (!/^0x[0-9a-f]{64}$/i.test(offline.did)) throw new Error(`offline boot reported no vessel key: ${offline.did || "empty"}`);
     const offlineKel = assertKel("offline founding", offline);
     say("ok", "C4.1 offline leaf founded with a persistent browser identity");
@@ -439,26 +474,36 @@ async function ordinaryWalk() {
   });
 }
 
+// THE FAULT EMPTIES THE BINDING GATE'S BOOT READ ALONE: the anchor the observation route reads. The co-sign port's per-act
+// `liveKelChain` closure reads the same chain later in the same module and stays untouched, so the fault reaches the gate.
+const BOOT_CHAIN_READ = /const personaKelChain = personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/g;
+
+function emptyBootChainRead(source) {
+  const count = source.match(BOOT_CHAIN_READ)?.length ?? 0;
+  return { count, body: count === 1 ? source.replace(BOOT_CHAIN_READ, "const personaKelChain = null;") : source };
+}
+
 async function faultWalk() {
   return withProfile(async (context) => {
     const page = await context.newPage();
     watchPage(context, page);
     let replacements = 0;
     await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
-    await liveReading(page);
+    // The gate runs only over a founded face: a veil's reload would never reach the emptied read.
+    await foundThroughTheDoor(page);
 
-    await page.route("**/*.js*", async (route) => {
+    // The gate's read runs in the vessel worker: context routing reaches its modules, as the observation route's does.
+    await context.route("**/*.js*", async (route) => {
       const response = await route.fetch();
       const type = response.headers()["content-type"] ?? "";
       if (!/javascript/.test(type)) return route.fulfill({ response });
       const source = instrumentBootSource(await response.text());
-      const read = /personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\)/;
-      const matches = source.match(new RegExp(read.source, "g")) ?? [];
-      if (matches.length === 0) return route.fulfill({ response, body: source });
-      if (matches.length !== 1) throw new Error(`C4 fault route found ${matches.length} chain reads in one fetched module`);
+      const { count, body } = emptyBootChainRead(source);
+      if (count === 0) return route.fulfill({ response, body: source });
+      if (count !== 1) throw new Error(`C4 fault route found ${count} chain reads in one fetched module`);
       replacements += 1;
       if (replacements > 1) throw new Error("C4 fault route found more than one chain read");
-      return route.fulfill({ response, body: source.replace(read, "null") });
+      return route.fulfill({ response, body });
     });
 
     await page.reload({ waitUntil: "domcontentloaded" });
@@ -476,4 +521,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   await faultWalk();
 }
 
-export { instrumentBootSource, observeKelRead };
+export { emptyBootChainRead, instrumentBootSource, observeKelRead, readKelObservation };

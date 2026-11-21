@@ -17,7 +17,8 @@
  *   · The table names every act. A name outside it refuses `unknown-act`, by name.
  *   · Each row names its arguments and their types. An argument the row does not name refuses `bad-args`, so a
  *     frame carries nothing a row did not ask for; no row asks for a credential of this vessel, and nothing a row
- *     takes opens the vessel key. The restore's two rows take a BUNDLE's own key, which a person's route already
+ *     takes opens the vessel key. A row that reads a face's root takes that face's WARD route for its one act (`ward`),
+ *     which opens the face's ward key alone and refuses by name where it does not. The restore's two rows take a BUNDLE's own key, which a person's route already
  *     opened in the command's process: it opens that one bundle's body and nothing this vessel holds.
  *   · An act answers a plain record for its caller to print. The door logs the act's name and how it ended, and
  *     never an argument, an answer or a refusal's own words.
@@ -35,6 +36,10 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
+import { wardCredentialOfArgs, type WardCredential } from "./ward-credential.js";
+import { FaceNotNamed, resolveFace } from "./face-selector.js";
+import { unlockedFaceOrdinals } from "./custody-seat.js";
 import {
   HandleBook,
   type HandleBookSnapshot, type PersonaDeclaration,
@@ -45,7 +50,7 @@ import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, ope
 import { NexusContractError, runNexusAcceptCarriage, runNexusRollPriorAnchorCheck } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import {
-  listPersonaRosterLines, loadActivePersonaIndex, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
+  listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots,
 } from "./node-vessel-identity.js";
 import type { Repo } from "@automerge/automerge-repo";
 import type { BackupDoor } from "./face-bundle-cut.js";
@@ -53,13 +58,14 @@ import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundl
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
-import { GuardianEnrolmentRefused, guardianStanding, runGuardianEnrolment } from "./guardian-enrolment.js";
+import { RecoveryContactEnrolmentRefused, recoveryContactStanding, runRecoveryContactEnrolment } from "./recovery-contact-enrolment.js";
 import { ConfirmRefused, FaceProvisional, boardHeadOf, chairLogView, confirmProvisional, couldConfirm, readProvisionalMark } from "./face-provisional.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
   sealCrossing, signCrossing, signLicensedInception, signLicensedSealRoll, witnessCrossing,
 } from "./seal-ceremony.js";
 import { larSealHome } from "./vessel-paths.js";
+import { loadIdentityAnchors } from "./identity-anchors.js";
 
 /** What an act reads from the composition it runs beside. */
 export interface SealedActContext {
@@ -70,8 +76,8 @@ export interface SealedActContext {
    */
   readonly kelHead: ((prefix: string) => Promise<{ readonly head: string | null; readonly seq: number | null }>) | null;
   /**
-   * The persona planes of the faces this vessel carries, as this thread's Repo holds them: the fleet-riding half
-   * of each face's two own names. `null` where no plane stands to write: a vessel with no face lit, a herm floor,
+   * The selves records of the faces this vessel carries, as this thread's Repo holds them: the fleet-riding half
+   * of each face's two own names. `null` where no record stands to write: a vessel with no face lit, a herm floor,
    * or a command running an act in its own process.
    */
   readonly personaSelves: PersonaSelvesPlane | null;
@@ -97,38 +103,44 @@ export interface SealedActContext {
    * there refuses by name.
    */
   readonly backup: BackupDoor | null;
+  /** The standing composition lends its island; a command in its own process holds null and refuses by name. */
+  readonly island: { readonly state: () => Promise<{ restarts: number; leg: string }>; readonly restart: (reason: string) => Promise<{ restarts: number; leg: string }> } | null;
 }
 
-/** One own persona as the persona plane holds it: the two names that ride a face's fleet. */
+/** One own persona as its selves record holds it: the two names that ride a face's fleet. */
 export interface PersonaSelfLine {
   readonly handleIndex: number;
   readonly petname?: string;
   readonly handle?: string;
 }
 
-/** The two names of a face that ride its persona plane. The seat claim and the chair label never ride. */
+/** The two names of a face that ride its selves record. The seat claim and the chair label never ride. */
 export type PersonaSelfNameKind = "petname" | "handle";
 
 /**
- * Where a plane's document rests on a vessel's disk: `clear` where the storage writes the document's bytes as
- * given, `sealed` where every stored value seals under the sealed store's format.
+ * Where a face's selves record rests on a vessel: `sealed` where every stored value seals under the face's key group
+ * (its face stands lit), `shut` where the record maps sealed and its face stands unlifted (it neither opens nor takes a
+ * name), `clear` where no sealed bag names it and the storage writes the document's bytes as given.
  */
-export type PlaneRest = "clear" | "sealed";
+export type PlaneRest = "clear" | "sealed" | "shut";
 
 /**
- * Each carried face's own persona plane, read and written by the vessel's MAIN THREAD through its own Repo. A
- * plane private-federates across its one face's vessels and reaches no published or federating surface. A write
- * here leaves the record on that face's plane and nothing else anywhere: it never becomes an invocation.
+ * Each carried face's own selves record (persona-selves-sealed), read and written by the vessel's MAIN THREAD through its
+ * own Repo. A record private-federates across its one face's vessels and reaches no published or federating surface. A
+ * write here leaves the name in that face's record and nothing else anywhere: it never becomes an invocation.
  */
 export interface PersonaSelvesPlane {
-  /** Where every plane this vessel carries rests. A name rides only onto a rest that seals. */
+  /** Where the records this vessel carries rest, together: `sealed` where any opens sealed. A read vouches by it. */
   readonly rest: PlaneRest;
-  /** Each carried face as its own plane names it, ascending. */
+  /** Where the record of the face at `handleIndex` rests now; null where this vessel carries no record for it. */
+  restOf(handleIndex: number): Promise<PlaneRest | null>;
+  /** Each carried face as its own sealed record names it, ascending. A shut or clear record answers nobody. */
   read(): Promise<readonly PersonaSelfLine[]>;
   /**
-   * Write one name of the face at `handleIndex` onto that face's own plane; an empty value clears it. `plane`
-   * false where this vessel carries no plane for that face; `written` false where the plane keeps what it holds
-   * (a newer write, or, under `fill`, any write at all). A name throws while the rest stands clear; a clear runs.
+   * Write one name of the face at `handleIndex` into that face's own record; an empty value clears it. `plane`
+   * false where this vessel carries no record for that face; `written` false where the record keeps what it holds
+   * (a newer write, or, under `fill`, any write at all). A name throws on any rest but sealed; a clear runs on a
+   * clear rest and throws on a shut one.
    */
   write(handleIndex: number, name: PersonaSelfNameKind, value: string, opts?: { readonly fill?: boolean }):
     Promise<{ readonly written: boolean; readonly plane: boolean }>;
@@ -241,6 +253,9 @@ const heardSeats: Kind<string[]> = {
   read: (v) => (Array.isArray(v) && v.length <= SEAT_KEYS_ARG_LIMIT && v.every((h) => typeof h === "string" && h.length > 0 && h.length <= LABEL_ARG_LIMIT) ? [...(v as string[])] : undefined),
 };
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
+/** A face's WARD route for this one act (seat-harness#/the-ward): a passphrase or paper credentials. It opens the face's ward key for
+ *  the act and nothing else; no vessel key, no face key. A row that reads the root seed takes it, and refuses by name without it. */
+const ward: Kind<WardCredential> = { label: "the face's ward route for this act (passphrase or paper credentials)", read: (v) => wardCredentialOfArgs(v) };
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
 type ArgsOf<S extends Shape> = {
@@ -329,19 +344,39 @@ async function reissueOrRefuse<T>(run: Promise<T>): Promise<T> {
 }
 
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
-/** A guardian enrolment's refusal reaches the caller by its own name. */
+/** A recovery contact enrolment's refusal reaches the caller by its own name. */
 async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
   try { return await run; } catch (err) {
-    if (err instanceof GuardianEnrolmentRefused) throw refuse(`${err.refusal}: ${err.message}`);
+    if (err instanceof RecoveryContactEnrolmentRefused) throw refuse(`${err.refusal}: ${err.message}`);
     throw err;
   }
 }
 
 /**
+ * THE ACTS THAT ACT AS A FACE: each signs, reads or writes as one face (its key or root, its handle book, its own
+ * plane), so on a running vessel each rides a session of that face (`session:act`) and its receipt binds to the face;
+ * the custody door's own `act` frame refuses them `face-act-rides-a-session`. Every other act stays at the custody
+ * door, acting as the place under a human unlock (hands-spine-lane#/watch names each and why):
+ * `face.resolve` chooses the face and cannot ride the session it chooses; the seat, seal, cofound and roll-circle
+ * acts are the charter's seats; petname.* and declaration.* write the place's sealed rows naming its faces (the face's
+ * plane takes a name only by `selves.carry`); the persona reads (`roots`, `recovery-contact.show`, `provisional`, `head`) and
+ * `selves.read`, `walk.state`, `host.state`, `carriage.readings` and `crossing.state` sign no face's key, and
+ * `persona.view` signs as a held chair (a seat key), never as a face; crossing.open/bind/seal are the charter's rite; `walk.invite` and `host.invite` hand the place's wallet;
+ * and `bundle.restore`/`bundle.import` land a face anew as recovery.
+ */
+export const SESSION_ACTS: ReadonlySet<string> = new Set([
+  // Sign under the face's key or root: its Nexus credential, its walk record, its hosting epoch, its hand and witness in
+  // a crossing, its consent to a Nexus's carriage, its first recovery contacts, and its confirm of its own restored standing.
+  "persona.reissue", "walk.take", "host.roll", "crossing.sign", "crossing.witness", "carriage.accept", "persona.recovery-contact.enrol", "persona.confirm",
+  // Read or write what the face alone keeps: its handle book, and its names in its own selves record.
+  "handle-book.load", "handle-book.save", "selves.carry", "selves.clear",
+]);
+
+/**
  * THE TABLE. Each row: the arguments it takes, and the act. A row answers what its command prints.
  *
- *   persona.roots         the roster: each held handle-index with its root's public key, the worn index, the orphans
- *   persona.wear          wear the face at an index this vessel holds a root for
+ *   persona.roots         the roster: each held handle-index with its root's public key, and the orphans
+ *   face.resolve          the face a command acts as: the one named, else the one face standing open (`worn`: else the mounted face)
  *   seat.held             which of the public keys asked this vessel holds a seat key for: a reading of row names
  *   seat.arm-genesis      give each chair that stands a seat key minted behind this door, and answer the roster;
  *                         the command mints each chair's next key as a card in its own process; it writes no charter
@@ -375,12 +410,14 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  *   carriage.readings     one reading per charter this vessel holds: whether a kept consent or a seated chair carries it
  *   petname.*             this vessel's own private labels for its faces
  *   declaration.*         each face's declared Handle, seat claim and chair label
- *   selves.read           each carried face as its own persona plane names it, and where those planes rest
- *   selves.carry          carry ONE name of one held face from its sealed row up to that face's own plane; the frame
- *                         names the face and which name, and never the name itself, so a plane takes only what a
- *                         sealed row holds. `fill` lands it only where the plane never held that name. A plane whose
- *                         rest stands clear takes no name, and the carry refuses by that rest
- *   selves.clear          clear ONE name of one held face on its plane, once its sealed row holds that name no more
+ *   selves.read           each carried face as its own selves record names it, and where those records rest
+ *   selves.carry          carry ONE name of one held face from its sealed row up to that face's own selves record; the
+ *                         frame names the face and which name, and never the name itself, so a record takes only what a
+ *                         sealed row holds. `fill` lands it only where the record never held that name. A record that
+ *                         rests clear, or stays shut until its face lifts, takes no name, and the carry refuses by that rest
+ *   selves.clear          clear ONE name of one held face in its record, once its sealed row holds that name no more
+ *   island.state          read the standing daemon island
+ *   island.restart        reopen the standing daemon island
  *   walk.state            where this vessel walks: per hearth, the Nexus, the grant it holds and its wallet's count
  *   walk.take             keep a carried invite on the walk record of the hearth it names
  *   walk.invite           hand the newest invite out of the wallet of the hearth this vessel walks at
@@ -396,18 +433,27 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
  *                         face, hands the section to its daemon island's import door. A command running the act in
  *                         its own process holds no island, and refuses by name
  */
+
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {
     const lines = await listPersonaRosterLines();
+    // EACH ROOT NAMES ITS PERSONAGROUP where its face stands open (its anchors row reads); a shut face names none, so a rite
+    // reads a group off `persona list --json` and never off a projection.
+    const groupOf = async (handleIndex: number): Promise<string | null> =>
+      (await loadIdentityAnchors(handleIndex).catch(() => null))?.personaGroupId ?? null;
     return {
-      roots: lines.map((l) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey })),
-      active: (await loadActivePersonaIndex()) ?? null,
+      roots: await Promise.all(lines.map(async (l) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey, group: await groupOf(l.handleIndex) }))),
       orphans: await orphanPersonaRoots(),
     };
   }),
-  "persona.wear": act({ handleIndex: index }, async ({ handleIndex }) => {
-    await wearPersona(handleIndex);
-    return { active: handleIndex };
+  // WHICH FACE A COMMAND ACTS AS: the one it names, else the one face standing open (`face-selector`); several and none
+  // named refuse by name. A command's own process asks this; nothing the composition mounts answers it.
+  // `orNone`: a vessel with no face open answers `face: null` (an act that may act as no face, as a seal roll), never a refusal.
+  // `worn`: the seat's reading (an AI seat acts as the face the operator wears): several open and none named resolve to the
+  // MOUNTED face, and a named face answers only while it stands open (`face-selector`).
+  "face.resolve": act({ face: optional(index), orNone: optional(flag), worn: optional(flag) }, async (a) => {
+    if (a.orNone === true && a.face === undefined && (await unlockedFaceOrdinals()).length === 0) return { face: null };
+    return { face: await resolveFace(a.face, a.worn === true ? { worn: true } : {}) };
   }),
   // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
   // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
@@ -482,7 +528,7 @@ export const SEALED_ACTS = Object.freeze({
   "crossing.open": act({}, async () => ({ ...(await ceremonyOrRefuse(openCrossing())) })),
   "crossing.bind": act({}, async () => ({ ...(await ceremonyOrRefuse(bindCrossing())) })),
   "crossing.sign": act({ handleIndex: index }, async (a) => ({ ...(await ceremonyOrRefuse(signCrossing(a.handleIndex))) })),
-  "crossing.witness": act({ handleIndex: index, note: label }, async (a) => ({ ...(await ceremonyOrRefuse(witnessCrossing(a.handleIndex, a.note))) })),
+  "crossing.witness": act({ handleIndex: index, note: label, ward: optional(ward) }, async (a) => ({ ...(await ceremonyOrRefuse(witnessCrossing(a.handleIndex, a.note, a.ward))) })),
   "crossing.seal": act({}, async () => ({ ...(await ceremonyOrRefuse(sealCrossing())) })),
   "carriage.accept": act({ handleIndex: index, aid: optional(text) }, async (a) => {
     try {
@@ -516,14 +562,15 @@ export const SEALED_ACTS = Object.freeze({
     return {};
   }),
 
-  // THE FLEET MIRROR. A face's two own names rest sealed on this vessel and ride that face's own persona plane to
-  // its other vessels. The plane's document lives in this thread's own Repo, so the write needs no vessel key and
-  // no worker; it rides THIS door because a pet-name on a store verb would rest in the daemon's document as an
-  // outcome and a receipt digest, and because a locked vessel shuts every fleet lane. A carry reads the name off
-  // its sealed row itself: a frame names a face and which name, and no name. Each row acts for a face this vessel
-  // holds a root for and on that face's own plane alone; a carry needs the row to hold the name and a clear needs
-  // it gone, so neither act moves a plane past what the sealed row says. A carry lands only on a plane whose rest
-  // seals: a name on a clear rest would leave its sealed row for a document any holder of the disk reads.
+  // THE FLEET MIRROR. A face's two own names rest on their sealed rows on this vessel and ride that face's own selves
+  // record to its other vessels (persona-selves-sealed): a document of its own beside the clear plane, sealed under the
+  // face's key group. The record lives in this thread's own Repo, so the write needs no vessel key and no worker; it
+  // rides THIS door because a pet-name on a store verb would rest in the daemon's document as an outcome and a receipt
+  // digest, and because a locked vessel shuts every fleet lane. A carry reads the name off its sealed row itself: a frame
+  // names a face and which name, and no name. Each row acts for a face this vessel holds a root for and on that face's
+  // own record alone; a carry needs the row to hold the name and a clear needs it gone, so neither act moves a record
+  // past what the sealed row says. A carry lands only in a record whose rest seals: a name on a clear rest would leave
+  // its sealed row for a document any holder of the disk reads, and a shut record opens for no one until its face lifts.
   "selves.read": act({}, async (_a, ctx) => {
     const plane = planeOf(ctx);
     return { selves: (await plane.read()).map((s) => ({ ...s })), rest: plane.rest };
@@ -531,11 +578,13 @@ export const SEALED_ACTS = Object.freeze({
   "selves.carry": act({ handleIndex: index, name: selfName, fill: optional(flag) }, async (a, ctx) => {
     const plane = planeOf(ctx);
     await heldFace(a.handleIndex);
-    if (plane.rest !== "sealed") throw refuse(`h${a.handleIndex}'s persona plane rests in the clear on this vessel's disk, so its names stay on their sealed rows; they ride once that rest seals`);
+    const rest = await plane.restOf(a.handleIndex);
+    if (rest === "shut") throw refuse(`h${a.handleIndex}'s selves record stays sealed until its face lifts on this vessel, so its names stay on their sealed rows; they ride once it lifts`);
+    if (rest === "clear") throw refuse(`h${a.handleIndex}'s selves record rests in the clear on this vessel's disk, so its names stay on their sealed rows; they ride once that rest seals`);
     const held = await sealedSelfName(a.handleIndex, a.name);
     if (held === undefined) throw refuse(`the sealed row holds no ${a.name} for h${a.handleIndex}, so nothing carries; a name cleared here clears on the plane by \`selves.clear\``);
     const { written, plane: stands } = await plane.write(a.handleIndex, a.name, held, a.fill === true ? { fill: true } : {});
-    if (!stands) throw refuse(`this vessel carries no persona plane for h${a.handleIndex}, so its names rest here alone`);
+    if (!stands) throw refuse(`this vessel carries no selves record for h${a.handleIndex}, so its names rest here alone`);
     return { carried: written };
   }),
   "selves.clear": act({ handleIndex: index, name: selfName }, async (a, ctx) => {
@@ -543,17 +592,25 @@ export const SEALED_ACTS = Object.freeze({
     await heldFace(a.handleIndex);
     if ((await sealedSelfName(a.handleIndex, a.name)) !== undefined) throw refuse(`the sealed row still holds a ${a.name} for h${a.handleIndex}; clear it there first`);
     const { written, plane: stands } = await plane.write(a.handleIndex, a.name, "");
-    if (!stands) throw refuse(`this vessel carries no persona plane for h${a.handleIndex}, so nothing clears beyond it`);
+    if (!stands) throw refuse(`this vessel carries no selves record for h${a.handleIndex}, so nothing clears beyond it`);
     return { cleared: written };
   }),
 
   // THE WALK RECORDS. A record holds bearer invites, the hearth's grant and one key per carried document, so it
   // rests sealed (`node-walk-store`) and its three acts ride this door: a carried invite as a verb's argument, or
   // an invite as a verb's outcome, would rest in the daemon's document in the clear.
+  "island.state": act({}, async (_a, ctx) => {
+    if (!ctx.island) throw refuse("no daemon island stands here");
+    return { ...await ctx.island.state() };
+  }),
+  "island.restart": act({ reason: text }, async (a, ctx) => {
+    if (!ctx.island) throw refuse("no daemon island stands here");
+    return { ...await ctx.island.restart(a.reason) };
+  }),
   "walk.state": act({}, async () => ({ walks: (await runWalkState()).map((w) => ({ ...w })) })),
-  "walk.take": act({ carried: text }, async (a, ctx) => {
+  "walk.take": act({ carried: text, face: optional(index) }, async (a, ctx) => {
     const dialGate = ctx.walk?.dialGate()?.toLowerCase() ?? null;
-    const taken = await walkOrRefuse(runWalkTake({ carried: a.carried, dialGate }));
+    const taken = await walkOrRefuse(runWalkTake({ carried: a.carried, dialGate, ...(a.face !== undefined ? { face: a.face } : {}) }));
     // A fresh invite for the hearth this vessel's walk dial stands to re-presents at once.
     const represent = taken.gatePubKey === dialGate ? (ctx.walk?.represent ?? null) : null;
     if (represent) await represent();
@@ -565,11 +622,12 @@ export const SEALED_ACTS = Object.freeze({
   // `hosting-carry`), so its three doors ride this door: a bearer invite as a verb's outcome would rest in the
   // daemon's document in the clear. A roll lands its act on the store the composition lends, and tells it so.
   "host.state": act({}, async () => ({ nexuses: (await runHostState({ sealHome: larSealHome() })).map((n) => ({ ...n })) })),
-  "host.roll": act({ nexusAid: optional(text), cap: optional(count) }, async (a, ctx) => {
+  "host.roll": act({ nexusAid: optional(text), cap: optional(count), face: optional(index) }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to land a hosting act on");
     const rolled = await hostOrRefuse(store.withRepo((repo) => runHostRoll({
       sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.cap !== undefined ? { cap: a.cap } : {}),
+      ...(a.face !== undefined ? { face: a.face } : {}),
     })));
     await store.rolled(rolled.nexusAid);
     return { ...rolled };
@@ -582,29 +640,29 @@ export const SEALED_ACTS = Object.freeze({
 
   // THE FACE'S KEY AT ONE NEXUS. The key rests sealed and cold, and the re-issue lands its signed hand-over on the
   // Nexus's carriage board through the store the composition lends; the answer names public keys alone.
-  "persona.reissue": act({ nexusAid: optional(text) }, async (a, ctx) => {
+  "persona.reissue": act({ nexusAid: optional(text), face: optional(index) }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to land a hand-over on");
     return { ...(await reissueOrRefuse(store.withRepo((repo) => runNexusKeyReissue({
-      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}),
+      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.face !== undefined ? { face: a.face } : {}),
     })))) };
   }),
 
-  // THE FACE'S FIRST GUARDIANS. The face's own root signs the typed first enrolment; its record rests sealed and
+  // THE FACE'S FIRST RECOVERY CONTACTS. The face's own root signs the typed first enrolment; its record rests sealed and
   // the event lands on the face's KEL board through the store the composition lends. The answer names the set's
   // digest and counts alone.
-  "persona.guardian.enrol": act({ handleIndex: index, offers: text, threshold: count }, async (a, ctx) => {
+  "persona.recovery-contact.enrol": act({ handleIndex: index, offers: text, threshold: count, ward: optional(ward) }, async (a, ctx) => {
     const store = ctx.hosting;
-    if (!store) throw refuse("no store stands here to land a guardian enrolment on");
-    return { ...(await enrolOrRefuse(store.withRepo((repo) => runGuardianEnrolment({
-      repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold,
+    if (!store) throw refuse("no store stands here to land a recovery contact enrolment on");
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => runRecoveryContactEnrolment({
+      repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold, ...(a.ward ? { ward: a.ward } : {}),
     })))) };
   }),
 
-  "persona.guardian.show": act({ handleIndex: index }, async (a, ctx) => {
+  "persona.recovery-contact.show": act({ handleIndex: index }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to read the face's key history from");
-    return { ...(await enrolOrRefuse(store.withRepo((repo) => guardianStanding(repo, a.handleIndex)))) };
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => recoveryContactStanding(repo, a.handleIndex)))) };
   }),
 
   // THE PROVISIONAL STANDING of a restored face (custody#/the-restore): the mark and who could confirm; a party's own
@@ -617,7 +675,7 @@ export const SEALED_ACTS = Object.freeze({
     try { return { ...(await confirmProvisional({ handleIndex: a.handleIndex, view: a.view })) }; }
     catch (err) { if (err instanceof ConfirmRefused) throw refuse(`${err.reason}: ${err.message}`); throw err; }
   }),
-  // The head a guardian's own view names, off this vessel's own board; the guardian signs it in its own process.
+  // The head a recovery contact's own view names, off this vessel's own board; the recovery contact signs it in its own process.
   "persona.head": act({ prefix: text }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to read the face's key history from");
@@ -630,23 +688,25 @@ export const SEALED_ACTS = Object.freeze({
     return { view: { ...view } };
   }),
 
-  "handle-book.load": act({}, async () => ({ snapshot: (await loadNodeHandleBook()).snapshot() })),
-  "handle-book.save": act({ snapshot }, async (a) => {
+  "handle-book.load": act({ face: index }, async (a) => ({ snapshot: (await loadNodeHandleBook(a.face)).snapshot() })),
+  "handle-book.save": act({ face: index, snapshot }, async (a) => {
     // The snapshot crosses the recogniser's own verification before it seals: a record whose causal closure does
     // not verify drops there, exactly as it would on a load.
-    await saveNodeHandleBook(await HandleBook.restore(a.snapshot));
+    await saveNodeHandleBook(a.face, await HandleBook.restore(a.snapshot));
     return {};
   }),
 
   // A NAMED REFUSAL ANSWERS, IT DOES NOT THROW: the command prints the refusal's own name (custody#/the-restore),
   // and the door's log carries the act's name and how it ended, never the name of a face or a word of a bundle.
-  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index) }, async (a, ctx) => {
+  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index), ward: optional(ward), faceRouteRef: optional(text) }, async (a, ctx) => {
     try {
       if (!ctx.hosting) throw refuse("no store stands to land a face on: stand the vessel, or run the restore with no vessel standing");
-      const restored = await restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: ctx.hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}) });
+      const hosting = ctx.hosting;
+      const restored = await withFaceRoute(a.faceRouteRef, "bundle.restore", faceRouteBindDigest("bundle.restore", { body: a.body, as: a.as }), () => restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}), ...(a.ward ? { ward: a.ward } : {}) }));
       return { ...restored };
     } catch (err) {
       if (err instanceof RestoreRefused) return { refused: err.reason, message: err.message };
+      if (err instanceof FaceRouteRefused) return { refused: "face-route-refused", message: err.message };
       throw err;
     } finally { a.key.fill(0); }
   }),
@@ -694,7 +754,7 @@ function readArgs(name: string, shape: Shape, raw: unknown): Record<string, unkn
 
 /**
  * Run one act of the table. An unknown name refuses `unknown-act`; arguments that miss the row's shape refuse
- * `bad-args`; both refuse before any row opens. A custody refusal (`CustodyLocked`, `CustodyRowUnavailable`) passes
+ * `bad-args`; both refuse before any row opens. A custody refusal (`CustodyLocked`, `CustodyRecordUnavailable`) passes
  * through under its own name.
  */
 export async function runSealedAct(name: unknown, rawArgs: unknown, ctx: SealedActContext): Promise<Answer> {
@@ -704,6 +764,11 @@ export async function runSealedAct(name: unknown, rawArgs: unknown, ctx: SealedA
   const row: ActRow = SEALED_ACTS[name];
   const args = readArgs(name, row.shape, rawArgs);
   // A RESTORED FACE that still stands provisional refuses every authority-changing act by one name, from any row.
+  // An act that resolves no face among several refuses by that name too: the command names one (`--face N`).
   try { return await row.run(args as never, ctx); }
-  catch (err) { if (err instanceof FaceProvisional) throw new SealedActRefused("face-provisional", err.message); throw err; }
+  catch (err) {
+    if (err instanceof FaceProvisional) throw new SealedActRefused("face-provisional", err.message);
+    if (err instanceof FaceNotNamed) throw refuse(err.message);
+    throw err;
+  }
 }

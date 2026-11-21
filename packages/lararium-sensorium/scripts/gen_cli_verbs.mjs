@@ -75,6 +75,39 @@ const CLI_FORMS = {
   meme_list:    "meme list",
   meme_delete:  "meme delete",
   meme_project: "meme project",
+  // THE TIDDLER DOOR (wiki-surface-scout #/a-lean) — every TiddlyWiki act over one record or one wiki's engine. The record
+  // verbs ride their own host (`lares tiddler get|put|delete`); the engine verbs join the `wiki` host beside the switcher
+  // (`lares wiki filter|render|status`). One table welds both skins' wire and answer: fixtures/tiddler-door-answers.json.
+  tiddler_get:    "tiddler get",
+  tiddler_put:    "tiddler put",
+  tiddler_delete: "tiddler delete",
+  wiki_filter:    "wiki filter",
+  wiki_render:    "wiki render",
+  wiki_status:    "wiki status",
+  // The DISCORDIAN CALENDAR — the MCP `ddate` tool mirrors the host verb `lares ddate`, a real top-level CLI command that runs
+  // with no vessel; the tool rides the daemon verb every vessel answers, so a seat reads the day through the same core.
+  ddate:          "ddate",
+  // THE ORACLE CAST — the MCP `oracle_cast` tool mirrors `lares oracle cast`, a vessel verb: the vessel casts and writes
+  // the cast as one tiddler, so the draw lives in the tool and never in the prompt.
+  oracle_cast:    "oracle cast",
+  // THE LAW INDEX — the pinned law first, then the law canon derives, read in the worn face's daemon wiki; a pin orders it.
+  // Each tool mirrors `lares law <sub>` (the host `law` is a real top-level CLI command), riding the tiddler door's verbs.
+  law_index:      "law list",
+  law_pin:        "law pin",
+  law_unpin:      "law unpin",
+  // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
+  // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
+  // holds no MCP tool, the way `kahua lift` holds none.
+  meme_offer:      "meme offer",
+  meme_offer_list: "meme offer list",
+  meme_offer_show: "meme offer show",
+  // The KAHUA seat verbs — an AI seat proposes, stages and reads its face's kahua stage; each mirrors `lares kahua <sub>`
+  // (the host `kahua` is a real top-level CLI command). `lares kahua lift|withdraw|carry|mint` stay the operator's hand
+  // and hold no MCP tool, the way the LOCAL seats hold none: no tool spells them.
+  kahua_propose: "kahua propose",
+  kahua_stage:   "kahua stage",
+  kahua_list:    "kahua list",
+  kahua_get:     "kahua get",
   // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
   // routed over the @daemon wire to the pure manifest.json reducer. Reads + reversible re-settle seat HOTL;
   // promote·retire·purge carry HITL (the operator-approval capability, the twin of the CLI's `--approve`).

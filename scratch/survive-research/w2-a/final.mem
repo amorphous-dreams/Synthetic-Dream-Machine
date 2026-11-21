@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-11-08 (file date) — source `.lares-scratch/survive-research/w2-a/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — research, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-research/w2-a/final.md` (research, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-research/w2-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/root-cartographer-lares-wave-2`>>
+
+! Root-Cartographer: Lares — wave 2
+
+''Recommendation:'' Put deliberately projected content in a ''sibling of the wipeable state root'', for example `~/.lares/projections/` beside `~/.lares/state/`. Keep canon-sourced projections in the checkout, but do not put house, private, or AI-memory projections there by default. Make temp, draft, personal, and memory projection explicit per bag; make cleanup automatic, observable, and limited to projector-owned files. An independent export remains necessary: a sibling directory survives a //state-root// wipe, not deletion of the whole house or device. The source checkout and state layout described here come from the controller’s code reads, not a repository inspection. [[XDG directory concepts|https://specifications.freedesktop.org/basedir/latest/]]; [[Git bundle scope|https://git-scm.com/docs/git-bundle]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/critique-of-w1-b`>>
+
+!! Critique of w1-b
+
+* ''Its placement does not yet answer the real wipe.'' `durable/` inside `~/.lares/` survives only if the actual re-found removes a narrower subtree. The brief says the operator currently wipes the state root, including a container mount at `/state`; a rename to “durable” does not change that boundary. The reset command, mount configuration, and operator’s manual wipe instructions must all agree on the exclusion. Even then, the sibling is not an independent backup. [[XDG|https://specifications.freedesktop.org/basedir/latest/]]; [[Zotero transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]].
+
+* ''Its cleanup proposal confuses two different deletions.'' Expiring an old //projection// need not delete the sealed temp record; deleting the record can alter the recipe’s visible result and CRDT state. Conversely, purging a projection that is the only surviving copy after re-found destroys content. W1-b does not specify which operation its 30-day rule performs, or how cleanup avoids deleting the only recovery copy. [[TiddlyWiki shadow and override behavior|https://tiddlywiki.com/dev/alltiddlers.html]]; [[Automerge conflicts|https://automerge.org/docs/reference/documents/conflicts/]].
+
+* ''Its crash recovery has a gap.'' “Commit, then enqueue” can lose the enqueue if the process dies between those steps. A pending marker alone helps only if it is committed atomically with the write, or if startup can enumerate and compare the complete authorized source against the projection. The cited [[MCP implementation|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/index.ts]] does use same-directory temporary files and rename, but its shown save path does ''not'' establish the file-and-directory `fsync` protocol w1-b recommends. Atomic visibility and crash durability are distinct. [[Linux `fsync`|https://man7.org/linux/man-pages/man2/fsync.2.html]]; [[Linux `rename`|https://man7.org/linux/man-pages/man2/rename.2.html]].
+
+* ''Its conflict treatment is under-specified for a latest-text projector.'' Automerge’s ordinary property read presents one deterministic winner while concurrent values may remain accessible through `getConflicts`; writing the property can resolve those conflicts. A single `.mem` cannot silently stand for all of them. The export must enumerate preserved alternatives or explicitly fail/report their omission. [[Automerge conflicts|https://automerge.org/docs/reference/documents/conflicts/]].
+
+* ''Some prior art is weaker than its conclusion.'' Gmail’s discarded drafts really are unrecoverable, but that is a cautionary counterexample, not evidence for reversible expiry. S3 documents delayed lifecycle execution and rechecking tags, but does not justify a particular local 30+30-day default. The linked [[Zep facts page|https://help.getzep.com/facts]] did not substantiate w1-b’s specific invalidation claim when checked; retain provenance and supersession as design choices, not as conclusions from that page. [[Gmail|https://support.google.com/mail/answer/7015314?co=GENIE.Platform%3DDesktop&hl=en]]; [[S3 lifecycle|https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html]].
+
+* ''The memory proposal risks a redesign.'' “One file per atomic memory,” automatic normalized deduplication, and temporal fact management impose semantics not established by the brief. First preserve the daemon wiki’s existing memory-stage records and their required fields; defer changing memory granularity and consolidation behavior. The [[MCP reference|https://github.com/modelcontextprotocol/servers/blob/main/src/memory/README.md]] is useful prior art for observations and relations, not proof that Lares should adopt its model.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/converged-proposal`>>
+
+!! Converged proposal
+
+!!! Boundary and consent
+
+Use this as a proposed layout, subject to checking the actual mount and reset implementation:
+
+```text
+~/.lares/
+  state/                  # wipeable hearth, keys, sealed store, operational state
+  projections/
+    bags/<bag-id>/        # opted-in house and private content, including memory
+    trash/                # private, recoverable projector cleanup
+    audit/                # content-free operational events
+  config/                 # portable policy where appropriate
+  cache/                  # rebuildable only after inputs are confirmed
+```
+
+The container must mount the projection sibling separately from `/state`, or otherwise expose an operator-chosen path outside the wipe target. Preserve existing checkout projections for canon; do not automatically commit or include private projections in Git, whose committed history can retain old cleartext. Verify the real reset target, symlinks, and mount boundaries before deletion. [[Git bundle|https://git-scm.com/docs/git-bundle]]; [[XDG|https://specifications.freedesktop.org/basedir/latest/]].
+
+A non-secret feature flag enables temporary-layer projection, ''plus a persistent, explicit per-bag choice'' covering the relevant layers and the memory bag. Show the destination, retention, and the fact that plaintext remains readable after custody locks. Projection, its temporary files, trash, exports, and any plaintext index must respect that choice. No credential goes in a flag, environment variable, or pipe. The [[MCP permissions issue|https://github.com/modelcontextprotocol/servers/issues/4827]] illustrates why replacement-file permissions require care.
+
+!!! Write and reconcile
+
+Project each existing record with stable bag, layer, and record identifiers, preserving all fields required to reconstruct it and recipe order through a documented format or sidecar. Include a content hash and last projected source version; do not treat old heads as restored ancestry. Explicitly list attachments or unsupported fields. For concurrent values, either preserve separately identified alternatives or block a claim of complete coverage. [[Automerge conflicts|https://automerge.org/docs/reference/documents/conflicts/]]; [[TiddlyWiki file formats|https://tiddlywiki.com/static/Customising%2520Tiddler%2520File%2520Naming.html]].
+
+After an accepted sealed write, schedule projection with bounded debounce. Eliminate the commit/enqueue gap through an atomic durable outbox ''or'' a complete authorized-bag reconciliation on startup and before export/reset. Report `sealed`, `projection pending`, `projected and synced`, and `error`; callers needing disk projection wait for the last state. A locked-custody in-memory save is explicitly ''volatile'': do not secretly project it, and block a preservation-claiming reset until it is committed or the operator accepts its loss. [[SQLite WAL durability discussion|https://www.sqlite.org/wal.html]].
+
+Write a private same-directory temporary file, sync it, rename it, and sync the directory where supported; serialize writers and surface failures. Compare the last written hash before replacement. If an operator edited a file externally, preserve both versions for review rather than overwriting either. Atomic rename prevents readers seeing a partial replacement; directory sync addresses a separate persistence boundary. [[Linux `rename`|https://man7.org/linux/man-pages/man2/rename.2.html]]; [[Linux `fsync`|https://man7.org/linux/man-pages/man2/fsync.2.html]].
+
+!!! Cleanup and audit
+
+Run cleanup at startup and periodically. ''Default automatic cleanup should remove only obsolete projector artifacts'', such as abandoned temporary files and unchanged projections of records that have been explicitly deleted or whose projection policy has been disabled. Move eligible files to private trash first; record their original identity, deletion time, policy, and outcome. Keep edited, unrecognized, pending, conflicted, pinned, and sole surviving copies for review. Never use age alone to delete a live CRDT record or its causal history. [[Freedesktop Trash specification|https://specifications.freedesktop.org/trash/latest/]]; [[CRDT study|https://perso.lip6.fr/Marc.Shapiro/papers/Comprehensive-CRDTs-RR7506-2011-01.pdf]].
+
+For optional temp expiry, require an explicit per-bag retention policy; show eligibility and permit pinning or promotion. Recheck ownership, hash, current policy, and recovery status immediately before moving or purging. Audit policy changes, projections, conflicts, moves, restores, and purges with IDs, time, and outcomes—not record bodies. Bound the audit by a disclosed retention policy and export it with the selected content. Trash is recovery convenience, not secure erasure; copies and filesystem snapshots may persist. [[S3 lifecycle re-evaluation|https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html]]; [[NIST media sanitization|https://csrc.nist.gov/pubs/sp/800/88/r2/final]].
+
+!!! Re-found and migration
+
+# A proposed `lares export <destination>` flushes and reconciles authorized projections into a consistent snapshot, outside the wipe boundary. Its manifest lists bag/layer/record identities, recipe order, required metadata, file hashes, attachments, conflicts, pending work, and omissions. It must not implicitly project a bag. Verify the copy and exercise import into a disposable fresh state before relying on the procedure. [[Zotero’s migration limitations|https://www.zotero.org/support/kb/transferring_a_library]].
+
+# A proposed `lares import <destination>` validates schema, hashes, paths, duplicate IDs, and references before mutation; previews mappings into newly founded bags; and is restartable and idempotent. Identical content is skipped; divergence is preserved for explicit resolution. Check hashes for corruption, not authenticity. Import creates new CRDT changes: it does ''not'' restore prior heads, signatures, authority, keys, or history. [[Automerge storage|https://automerge.org/docs/reference/under-the-hood/storage/]]; [[Zotero transfer guidance|https://www.zotero.org/support/kb/transferring_a_library]].
+
+Rebuild the memory sensorium only after checking its actual surviving inputs; project the memory-stage records themselves independently under the memory bag’s consent. Identity continuity, face bundles, emergency recovery, and full backup restore remain deferred until the two-operator Nexus stands. [[XDG data and cache distinctions|https://specifications.freedesktop.org/basedir/latest/]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-forks`>>
+
+!! Operator forks
+
+* ''Actual wipe boundary:'' Lean toward a sibling of `/state`, separately mounted in containers. This directly matches the recurring state-root wipe; it still needs an external export for whole-house loss. [[XDG|https://specifications.freedesktop.org/basedir/latest/]].
+* ''Temp expiry:'' Lean toward no age-based content deletion by default, with opt-in per-bag expiry and recoverable trash. Automatic housekeeping still cleans obsolete projector artifacts. This favors survival during alpha while making bounded retention available. [[Freedesktop Trash|https://specifications.freedesktop.org/trash/latest/]].
+* ''Externally edited projections:'' Lean toward explicit review and import rather than automatic bidirectional sync; preserve both versions until resolved. Automerge’s conflict behavior makes silent replacement especially costly. [[Automerge conflicts|https://automerge.org/docs/reference/documents/conflicts/]].
+* ''Acknowledgment:'' Lean toward asynchronous projection for ordinary writes, with an explicit wait-for-projection option and mandatory flush for export/reset. A crash before that acknowledgment remains a stated loss window. [[Linux `fsync`|https://man7.org/linux/man-pages/man2/fsync.2.html]].
+* ''Concurrent values:'' Lean toward blocking a “complete” export until alternatives are represented or the operator accepts a manifest-listed omission. A latest-value file alone is insufficient. [[Automerge conflicts|https://automerge.org/docs/reference/documents/conflicts/]].
+* ''Projection disablement:'' Lean toward stopping future writes immediately, then offering reviewable trash of existing owned files; disabling consent must not silently promise that prior copies have been erased. [[NIST media sanitization|https://csrc.nist.gov/pubs/sp/800/88/r2/final]].
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kAtGr7yFkmDn4Jyeg5bMOhELbt0Q9cbh9m5GWDU3qJ4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

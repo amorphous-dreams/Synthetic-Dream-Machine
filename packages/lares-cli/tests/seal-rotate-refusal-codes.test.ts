@@ -1,3 +1,6 @@
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -63,7 +66,7 @@ describe("seal rotate refusal codes", () => {
     const unarmed = await incepted(seated, 2);
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed] });
     const unarmedBefore = readFileSync(path);
-    const refusedUnarmed = await rite.rotate() as { code: number; out: Record<string, any> };
+    const refusedUnarmed = await rite.rotate({ face: "0" }) as { code: number; out: Record<string, any> };
     expect(refusedUnarmed.code).not.toBe(0); expect(refusedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
     // The card's rehearsal reads the same head and refuses under the same name, before any card reads.
     const rehearsedUnarmed = await run(args(["seal", "cold", "rehearse"]));
@@ -73,11 +76,11 @@ describe("seal rotate refusal codes", () => {
     const stranger = await incepted(seated, 2, { digests: ["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], threshold: 2 });
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
     const strangerBefore = readFileSync(path);
-    const refusedStranger = await rite.rotate() as { code: number; out: Record<string, any> };
+    const refusedStranger = await rite.rotate({ face: "0" }) as { code: number; out: Record<string, any> };
     expect(refusedStranger.code).not.toBe(0); expect(refusedStranger.out.error.message).toMatch(/a card answers no digest the standing head committed/); expect(readFileSync(path).equals(strangerBefore)).toBe(true);
 
     // CONTROL: the head the rite armed rolls.
     writeNexusDoc(larSealHome(), doc);
-    expect((await rite.rotate() as { code: number; out: Record<string, any> }).code).toBe(0);
+    expect((await rite.rotate({ face: "0" }) as { code: number; out: Record<string, any> }).code).toBe(0);
   });
 });

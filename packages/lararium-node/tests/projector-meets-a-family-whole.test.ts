@@ -26,7 +26,7 @@ let dir = "";
 afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } });
 
 const family = (root: string, children: number): LarTiddlerRecord[] => [
-  { tiddler: { title: root, text: Array.from({ length: children }, (_, i) => `<<~ kahea ahu #/c${i}>>`).join("\n") } },
+  { tiddler: { title: root, text: Array.from({ length: children }, (_, i) => `<<~ kahea ahu slot=\`#/c${i}\`>>`).join("\n") } },
   ...Array.from({ length: children }, (_, i) => ({ tiddler: { title: `${root}#/c${i}`, text: `child ${i}`, "$fragment-parent": root } })),
 ];
 

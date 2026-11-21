@@ -1,4 +1,7 @@
 /** A veil archive follows its PersonaGroup when a compartment index lands another face. */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,6 +13,7 @@ import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { loadIdentityAnchors, loadVeilArchive, veilArchivePath, type IdentityAnchors } from "../src/identity-anchors.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
+import { handleRecordPath } from "./face-paths.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
 
 const foundFace = direct(runFoundTheFace);
@@ -63,7 +67,10 @@ afterAll(async () => {
 });
 
 describe("the veil archive follows its group", () => {
-  test("reusing h1 keeps A's bytes and gives C its own archive", async () => {
+  // A RE-FOUND TAKES A NEW HANDLE (operator ruling): h1's face still stands in the floor index under A's group (only its anchors
+  // file and plane entry were pulled off disk, no act retired it), so a new group refuses there and lands at the next handle, and
+  // A's archive keeps its bytes either way.
+  test("a new group never reuses A's standing h1: it refuses there, lands at h2 with its own archive, and A's bytes stay", async () => {
     const { root, genesisDir } = await rig();
     await withLarRoot(root, async () => {
       const inventory = new Map<string, { index: number; anchors: IdentityAnchors }>();
@@ -71,11 +78,13 @@ describe("the veil archive follows its group", () => {
       const a = await remember(1, inventory);
       const aBytes = Buffer.from((await archiveOfGroup(a, inventory))!);
       expect(aBytes.length).toBeGreaterThan(0);
-      // The old compartment leaves the roster's anchor row and bootstrap plane before a new ask lands there.
-      unlinkSync(join(larIdentityDir(), "anchors-h1.json"));
+      // The old compartment's anchor row and bootstrap plane leave the disk; its face still stands in the floor index.
+      unlinkSync(handleRecordPath("anchors-h1.json"));
       removePlaneEntry(a);
-      const cFace = await foundFace({ genesisDir, handleIndex: 1 });
-      const c = await remember(1, inventory);
+      await expect(foundFace({ genesisDir, handleIndex: 1 })).rejects.toThrow(/anchors-face-mismatch: .*a re-found takes a new handle/);
+      expect(Buffer.from((await archiveOfGroup(a, inventory))!).equals(aBytes), "the refusal left A's archive whole").toBe(true);
+      const cFace = await foundFace({ genesisDir, handleIndex: 2 });
+      const c = await remember(2, inventory);
       expect(c).not.toBe(a);
       expect(cFace.personaGroupId).toBe(c);
       const cBytes = await archiveOfGroup(c, inventory);

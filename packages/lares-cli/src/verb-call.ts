@@ -19,6 +19,7 @@
 
 import { invokeLocal, udsSocketPresent, udsSocketPath, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
+import { openLocalSession, SessionRefused } from "./session-connector.js";
 
 export interface RunVerbOptions extends SubmitOptions {
   readonly dataDir?: string;
@@ -84,7 +85,7 @@ export interface VerbFailure {
  *   crossing-outward                       → crossing-outward (5) — the crossing relaxes confinement
  *                                             and wants the kahu quorum.
  *
- * An unrecognized reason (a future server-side addition this build predates) falls to `verb-error`
+ * An unrecognized reason (one this table names no code for) falls to `verb-error`
  * rather than crashing or silently inventing a code — the additive contract means an older CLI
  * still reads `errorMessage` either way.
  */
@@ -119,7 +120,7 @@ export function refusalCode(reason: string): string {
  *                          in part. Re-running with `--change-id` lets the effect index answer
  *                          what landed without running it twice.
  *   retention-gap       — the receipt ring evicted this id's outcome past its retention bound; a
- *                          fresh `--change-id` runs it as a new change (the old one is unrecoverable).
+ *                          fresh `--change-id` runs it as a new change (the evicted one is unrecoverable).
  *   receipt-fact-torn   — the ledger's own fact for this id is unreadable; a fresh REQUEST (a
  *                          flagless re-run already mints one) is the only cure — reusing
  *                          `--change-id` names no cure here, since the torn fact is per-request,
@@ -161,6 +162,39 @@ export function verbFailure(err: unknown): VerbFailure {
     return { code: "daemon-unreachable", message: err.message, hint: "Start the daemon with `lares vessel stand --foreground` and try again." };
   }
   return { code: "verb-error", message: err instanceof Error ? err.message : String(err) };
+}
+
+/**
+ * EACH HAT REACHED BY NAME: run `verb` as face `face` (`h<N>`) on a session of that face, the face the store door's
+ * `--face N` names. The session books the face's own signer, so whatever the verb seals, it seals under that face's own
+ * chain; the island answers on that face's lane alone. A face the vessel opens no session of (locked, shut, never lit, or
+ * outside the vessel) answers `face-not-open`, naming the vessel's own reason, and nothing runs. The answer reads as the
+ * one-shot's does.
+ */
+export async function runVerbAsFace(
+  verb: string, args: Record<string, unknown>, face: number, opts: RunVerbOptions = {},
+): Promise<SubmitResult> {
+  if (!udsSocketPresent(opts.dataDir)) throw new DaemonUnreachable(udsSocketPath(opts.dataDir));
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli", ...(opts.dataDir !== undefined ? { dataDir: opts.dataDir } : {}) }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath(opts.dataDir));
+    if (e instanceof SessionRefused) {
+      return { status: "error", requestId: "", errorMessage: `face-not-open: face h${face} stands shut on this vessel (${e.refusal}); nothing ran`, refusal: { reason: "face-not-open" } };
+    }
+    throw e;
+  }
+  try {
+    const answer = await session.call(verb, args, { ...(opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {}) });
+    const { kind: _kind, ...rest } = answer;
+    return rest as unknown as SubmitResult;
+  } catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath(opts.dataDir));
+    if (e instanceof SessionRefused) return { status: "error", requestId: "", errorMessage: `face-not-open: face h${face} refused this act (${e.refusal}); nothing ran`, refusal: { reason: "face-not-open" } };
+    throw e;
+  } finally {
+    await session.close().catch(() => { /* the socket already went */ });
+  }
 }
 
 export async function runVerb(

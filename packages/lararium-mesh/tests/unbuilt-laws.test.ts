@@ -25,6 +25,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import * as mesh from "../src/index.js";
 import { realmFeedPrefix } from "../src/cabal-realm.js";
@@ -63,7 +64,7 @@ describe("② the feed crosses its members", () => {
     expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
   });
 
-  test("A FORGED SLOT CANNOT LIFT A REALM'S EPOCH — verifiedMaintenanceFromBoard makes the refusal load-bearing: it folds only sealed+verified slots, so a forged large number reads ignored and the max-register holds at the sealed max. The forged-slot CONTROL (the plain fold takes the forgery) stands in realm-verified-fold.test.ts", () => {
+  test("A FORGED FEED SLOT CANNOT LIFT THE MAINTENANCE READING — verifiedMaintenanceFromBoard folds only sealed+verified feed slots, so a forged large number reads ignored and the feed maximum holds at the sealed max. The forged-slot CONTROL (the plain feed fold takes the forgery) stands in realm-verified-fold.test.ts", () => {
     expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
   });
 });
@@ -81,6 +82,10 @@ describe("④ promotion into canon", () => {
     expect(Object.keys(mesh)).toContain("sessionFormTitlesArrivedIn");
   });
 
+  test.skip("A LEASE ROLL LEAVES EVERY SEATED DEVICE ABLE TO BOOT — DEFERRED (road L24): `lares persona lease` rolls the face's lease, and every seated device's edge (the rolling vessel's own among them) binds the epoch below, so each one's next boot halts `stale` at the Binding Gate. The join answer renews a seated edge on a retry (`device-admit.ts`), which serves a joinee that never landed. A booted device needs more than a renewed `device-edge` act: the root half must reach it, it countersigns with its atom, and its sealed anchor's edge pin moves, while the anchor takes that pin today from founding, admission and recovery alone. Wakes on the operator's ruling over who may move a sealed anchor's edge pin at a roll", () => {
+    expect(Object.keys(mesh)).toContain("seatedEdgeRenewalsAtRoll");
+  });
+
   test.skip("A PROMOTION EMITS A PROPOSAL AND A RECEIPT — DEFERRED: tiddler-store states 'canon promotion is disabled until a Keyhive-backed proposal/receipt graph exists'. The cap gate PERMITS the act (every verb demands admin on the destination bag) and nothing RECORDS it, so a promotion into canon leaves no artifact a later reader can audit or revoke against. Keyhive alpha.8 supplies the delegation surface this was waiting on", () => {
     expect(Object.keys(mesh)).toContain("promotionReceipt");
   });
@@ -90,7 +95,7 @@ describe("④ promotion into canon", () => {
   });
 
   test("A NON-KAHU MOVE INTO A CANON BAG REFUSES — BUILT (W26 slice 6): every door into `bags/lares` and `bags/lararium` calls the ONE predicate, `requireKahuReach` over `kahuCabalCanonAccess`, before it writes. This floor pins the predicate against each stranger the cabal names; `packages/lararium-tw5/tests/kahu-reach-doors.test.ts` walks every door by name", async () => {
-    for (const bag of mesh.SYSTEM_CANON_BAGS) {
+    for (const bag of mesh.houseCanonBags()) {
       for (const kind of ["joined-without-admission", "admitted-not-joined", "removed", "no-cabal"] as const) {
         await expect(mesh.requireKahuReach(bag, await strangerHand(kind), "MOVE")).rejects.toMatchObject({ reason: "kahu-reach" });
       }
@@ -173,7 +178,7 @@ describe("⑨ the dyad, specified and unwired", () => {
   // contest keying with the veto-beats-provisional fold). All four walked clauses stand witnessed in
   // tests/provisional-veto.test.ts — including the late veto killing a hardened provisional's
   // descendants, and the idle observer whose patience is the resting state. THE GRAMMAR IS FROZEN
-  // for the alpha but for one ruled kind, the typed first guardian enrolment, whose absence leaves every
+  // for the alpha but for one ruled kind, the typed first recovery contact enrolment, whose absence leaves every
   // other event's bytes as they stood; the handle-KEL builds as a sibling on these primitives (G3).
 
   test.skip("A PRE-COMMITMENT NEVER EXPIRES UNNOTICED — the quorum's OUTPUT freshness fails before its keys do (a root-metadata expiry took clients down while every key stood healthy); no epoch, pre-commit, or rolling recovery commitment in this stack carries a freshness horizon a reader surfaces BEFORE a gate fails on it", () => {
@@ -184,17 +189,17 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("riteContingency");
   });
 
-  // KEPT — ONE GUARDIAN SET NEVER SPANS COMPARTMENTS: `lares persona guardian enrol` gathers every other face's set off
-  // this vessel's own rows and refuses a key one of them holds (`guardian-key-serves-another-face`,
-  // persona-policy#/distinct-recovery). Witnessed in mesh tests/guardian-enrolment.test.ts and node
-  // tests/guardian-enrolment.test.ts (G2).
-  test("the guardian compartment check is exported", () => {
-    expect(Object.keys(mesh)).toContain("guardianCompartmentCheck");
+  // KEPT — ONE RECOVERY CONTACT SET NEVER SPANS COMPARTMENTS: `lares persona recovery-contact enrol` gathers every other face's set off
+  // this vessel's own rows and refuses a key one of them holds (`recovery-contact-key-serves-another-face`,
+  // persona-policy#/distinct-recovery). Witnessed in mesh tests/recovery-contact-enrolment.test.ts and node
+  // tests/recovery-contact-enrolment.test.ts (G2).
+  test("the recovery contact compartment check is exported", () => {
+    expect(Object.keys(mesh)).toContain("recoveryContactCompartmentCheck");
   });
 
-  // KEPT 2026-09-06 — A GUARDIAN CAN ROTATE greened by the ROLLING RECOVERY COMMITMENT (operator-
+  // KEPT 2026-09-06 — A RECOVERY CONTACT CAN ROTATE greened by the ROLLING RECOVERY COMMITMENT (operator-
   // approved, the KERI shape): the prefix binds the GENESIS set (anti-swap), while each rotation
-  // reveals against its predecessor's `nextRecoverySetHash` and grafts the next — guardian sets
+  // reveals against its predecessor's `nextRecoverySetHash` and grafts the next — recovery contact sets
   // turn over log-wise, no delegation needed. Witnessed in tests/rolling-recovery.test.ts (the
   // graft · the grafted set authorizes · the retired set refuses · the tampered graft breaks).
 
@@ -311,10 +316,11 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
     const pin = readFileSync(
       join(import.meta.dirname, "..", "..", "lararium-node", "src", "hearth-dial-pin.ts"), "utf8");
     // BOTH HALVES OR NEITHER: a url with no gate key dials a door it cannot prove, and a key with no url
-    // names no door — the packer returns `{}` unless it holds both.
+    // names no door — the packer packs the dial rows (the sync url among them) only where it holds both. The
+    // gate key alone still packs as the island half, which names a board and dials nothing.
     expect(pin).toMatch(/HEARTH_SYNC_URL_TIDDLER/);
     expect(pin).toMatch(/HEARTH_GATE_KEY_TIDDLER/);
-    expect(pin, "the packer lets a half pin through").toMatch(/if \(!syncUrl \|\| !gatePubKey\) return \{\};/);
+    expect(pin, "the packer lets a half pin through").toMatch(/\.\.\.\(syncUrl && gatePubKey \? \{[\s\S]{0,400}?row\(HEARTH_SYNC_URL_TIDDLER, syncUrl\),\s*\} : \{\}\),/);
     // And the boot READS it — a pin nothing consults leaves the hearth re-learning by hand, which is the
     // deferral's own words.
     const boot = readFileSync(
@@ -495,7 +501,9 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     // A census, never a mention: one subscription in the seat, one seat in the island, one shore handed in.
     expect(seat.match(/subscribeSeatRolls\)\(sink\)/g)?.length).toBe(1);
     expect(seat.match(/contentKeyRollSink\(holder\.rollerPorts\(/g)?.length).toBe(1);
-    expect(island.match(/contentKeys = seatContentKeys\(\{/g)?.length).toBe(1);
+    // ONE SEAT BUILDER in the island (each hat its own holder): the mounted face and every lit sibling stand their seat through it.
+    expect(island.match(/seatContentKeys\(\{/g)?.length).toBe(1);
+    expect(island.match(/return seatContentKeys\(\{/g)?.length).toBe(1);
     expect(shore.match(/sealedStore: nodeSealedStoreShore\(/g)?.length).toBe(1);
     expect(Object.keys(mesh)).toContain("contentKeyRollSink");
     // CONTROL: the same census reads zero in a module that subscribes nothing.
@@ -544,7 +552,7 @@ describe("⑫ session, sealed rest and hosting launch gates", () => {
     expect(join).not.toMatch(/`secret:\$\{/);
   });
 
-  test.skip("FRESH_BASE_PRECEDES_FROM_NOW_CHANGE — DEFERRED: `content-key-holder.ts` already refuses an admission without `freshBase`, but the node document store supplies no production callback that writes a fresh checkpoint before the new version's first change; sealed-store step 3 connects and witnesses that callback.", () => {
+  test("FRESH_BASE_PRECEDES_FROM_NOW_CHANGE — `content-key-holder.ts` refuses an admission without `freshBase`, and the node daemon island hands its seat the document store's cut: the island asks the vessel's Repo for the bag's live document across the document store's door (`islandLiveDocDoor`), and `freshBasePort` cuts the base from it. Behaviour in sealed-doc-store.test.ts and content-key-holder.test.ts.", () => {
     const node = stripped(["lararium-node", "src", "node-daemon-island.ts"]);
     expect(node).toMatch(/freshBase\s*:/);
   });
@@ -577,4 +585,16 @@ describe("⑫ session, sealed rest and hosting launch gates", () => {
     expect(verifyWalkerGrant(publicOnly, grant)).toBe(true);
   });
 
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// ⑬ THE PAGE HOLDS NO VESSEL — the browser vessel lift (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift)
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe("⑬ the page's main thread holds no vessel", () => {
+  test("THE PAGE REACHES NO VESSEL MODULE — the page's main thread holds the DOM, the projection sink, the mirror, the ask forms and Worker construction alone, so `packages/lararium-web/src/main.ts` reaches none of `@automerge/automerge-repo`, `@lararium/keyhive`, `browser-custody`, `browser-vessel-identity`, `ward-core`, `seed-wrap-prf` (a `?worker&url` import counts as not reached). `tools/page-entry-witness.mjs` walks the graph and names each reach with its chain; the vessel runs on its own worker's thread (`workers/vessel.worker.ts`) and `main.ts` talks to it through `vessel-port.ts`. The real-browser founding through the worker reads in `@lararium/web` `tests/e2e/vessel-worker.e2e.test.ts`.", () => {
+    const repo = join(import.meta.dirname, "..", "..", "..");
+    const r = spawnSync(process.execPath, [join(repo, "tools", "page-entry-witness.mjs"), "--root", repo], { encoding: "utf8" });
+    expect(r.stdout).toMatch(/^page-entry: holds/);
+    expect(r.status).toBe(0);
+  });
 });

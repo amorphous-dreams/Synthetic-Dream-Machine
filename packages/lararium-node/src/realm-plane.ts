@@ -4,8 +4,8 @@
  * names each realm doc, the id pointer names the default realm, the steward pointer names a realm's worn key,
  * and the standing pointer carries that realm's folded registrations. The holder materializes each shared CRDT,
  * charter names, pins the pointer on the vessel's own catalog plane (so the daemon island's reach walks it),
- * folds the standing registrations into the wire gate, and lands a steward's registration + its @crossroads
- * announce.
+ * folds the standing registrations into the wire gate, and lands a steward's registration + its announce on the
+ * Nexus's realm-announce board.
  *
  * A vessel that holds no primary or carried charter stands no realm: the holder rests INERT (no doc, no pointer,
  * the base gate unchanged). A charter import (`nexus seal import`, carried or primary) on a standing vessel stands it: the
@@ -37,8 +37,7 @@ import {
   realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
   realmBagBytes, realmBagSealedBy, stewardSealedHere, hex,
   writeRealmBagAnnounce, type RealmBagRegistration, type RealmCharterConsult, type StewardSigner,
-  type RealmBagFoldOptions,
-} from "@lararium/mesh";
+  type RealmBagFoldOptions, ownEntry} from "@lararium/mesh";
 
 /** Why a seal on this vessel refused. */
 /** One realm the vessel's ledger notes, and the Nexus it stands under there (null where no act named one);
@@ -47,7 +46,8 @@ export interface NotedRealm { readonly realm: string; readonly nexus: string | n
 
 export type StewardRefusal =
   | "no-realm"                 // the plane never stood, or stands in no realm
-  | "no-face-worn"             // this vessel wears no face, or holds no root for the worn index
+  | "face-not-named"           // this vessel stands several faces open and the act named none (--face N)
+  | "face-root-absent"         // this vessel holds no root for the face the act resolves to
   | "steward-key-unreadable"   // this vessel's own keys would not read (a locked vault, a torn roster)
   | "steward-key-class"        // the key reads as anything but this vessel's own per-Nexus face key at this Nexus
   | "steward-name-unreadable"  // a name that reads neither a face key nor a Handle prefix
@@ -88,11 +88,11 @@ export interface RealmPlaneHolder {
   /** Has this steward name SEALED HERE: does some record of this realm on the doc this vessel holds carry that
    *  name's own verifying seal? The steward door asks before it writes a name another hand holds. */
   sealedHere(name: string): Promise<boolean>;
-  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on @crossroads.
+  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on the realm-announce board.
    *  `propose` names stewards whose hands have NOT sealed this record — it accretes their names and counts
    *  nothing until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription). A
    *  proposed name must already have sealed a record of this realm, else `steward-name-unproven`.
-   *  Each signer names its steward: the worn face's key at this realm's Nexus, or a quorum Handle's prefix. */
+   *  Each signer names its steward: the acting face's key at this realm's Nexus, or a quorum Handle's prefix. */
   register(input: {
     readonly bagUri: string;
     readonly docUrl: string;
@@ -143,8 +143,8 @@ export function makeRealmPlane(opts: {
   readonly repo: Repo;
   /** The vessel's own catalog plane — the pointer to the realm doc lands here. */
   readonly registry: DocHandle<LarDoc>;
-  /** The public crossroads doc the announce lands on. */
-  readonly crossroadsHandle: DocHandle<LarDoc>;
+  /** The Nexus's realm-announce board the announce lands on (`realmAnnounceDocUrl`): no recipe mounts it, no mirror names it. */
+  readonly announceHandle: DocHandle<LarDoc>;
   readonly membership: NexusMembership;
   readonly base: FederationGate;
   /** The realm's OWN consult — the proven contract nym behind a wire key, and who holds which charter. Absent,
@@ -199,7 +199,7 @@ export function makeRealmPlane(opts: {
    */
   readonly dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null };
 }): RealmPlanesHolder {
-  const { repo, registry, crossroadsHandle, membership, base } = opts;
+  const { repo, registry, announceHandle, membership, base } = opts;
   const log = opts.onLog ?? (() => {});
 
   /** One realm's plane as the holder keeps it: the plane a verb acts through, its gate, and its teardown. */
@@ -309,7 +309,7 @@ export function makeRealmPlane(opts: {
      *  here. Written the moment this hand seals, never from a name another hand wrote. */
     const pinSteward = (nym: string): void => {
       const key = realmStewardPointer(realmId);
-      if (tiddlerText(registry.doc()?.tiddlers?.[key]) === nym) return;
+      if (tiddlerText(ownEntry(registry.doc()?.tiddlers, key)) === nym) return;
       registry.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text: nym }, "realm-bag"); });
     };
 
@@ -320,8 +320,8 @@ export function makeRealmPlane(opts: {
     // A STAND THAT FAILS LEAVES NOTHING: no listener, no pin, no verdict.
     try {
       const catalog = registry.doc();
-      const wantsDefault = kind === "charter" && tiddlerText(catalog?.tiddlers?.[REALM_ID_TIDDLER]) !== realmId;
-      if (tiddlerText(catalog?.tiddlers?.[docPointer]) !== realmUrl || wantsDefault) {
+      const wantsDefault = kind === "charter" && tiddlerText(ownEntry(catalog?.tiddlers, REALM_ID_TIDDLER)) !== realmId;
+      if (tiddlerText(ownEntry(catalog?.tiddlers, docPointer)) !== realmUrl || wantsDefault) {
         registry.change((d) => {
           d.tiddlers[docPointer] = storedLarRecord(docPointer, { text: realmUrl }, "vessel-boot");
           if (kind === "charter") d.tiddlers[REALM_ID_TIDDLER] = storedLarRecord(REALM_ID_TIDDLER, { text: realmId }, "vessel-boot");
@@ -380,8 +380,8 @@ export function makeRealmPlane(opts: {
         const by = signers[0]!.signer.toLowerCase();
         realmHandle.change((d) => writeRealmBagRegistration(d, rec, by, counts));
         // The announce carries the ford's existence — and only once the record actually counts, so a proposal
-        // never tells the crossroads a ford stands that no fold has seated.
-        if (counts) crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+        // never tells the board a ford stands that no fold has seated.
+        if (counts) announceHandle.change((d) => writeRealmBagAnnounce(d, rec));
         pinSteward(by);
         await refold();
         return rec;
@@ -431,7 +431,7 @@ export function makeRealmPlane(opts: {
           const image = hex(realmBagBytes(rec));
           (groups.get(image) ?? (groups.set(image, []), groups.get(image)!)).push({ rec, sealed: sealedBy.length });
         }
-        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> --join\`), and a keeping hand names a steward by the key that steward's worn face presents here (\`--steward <key>\`)`);
+        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> --join\`), and a keeping hand names a steward by the key that steward's acting face presents here (\`--steward <key>\`)`);
         // WHERE NO REGISTRATION STANDS, nothing holds a proposal to a book: the signer names the hand it consents
         // with, so one planted proposal never draws a seal from a bare co-sign.
         if (!stands && withName === undefined) {
@@ -447,8 +447,8 @@ export function makeRealmPlane(opts: {
         const rec = await coSignRealmBagRegistration(proposal, { ...cosigner, signer: nym });
         const counts = await realmBagRegistrationCounts(rec, realmId, opts.sealReading);
         realmHandle.change((d) => writeRealmBagRegistration(d, rec, nym, counts));
-        // The announce follows a counted record alone: a record still short of a hand tells the crossroads nothing.
-        if (counts) crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+        // The announce follows a counted record alone: a record still short of a hand tells the board nothing.
+        if (counts) announceHandle.change((d) => writeRealmBagAnnounce(d, rec));
         pinSteward(nym);
         await refold();
         return rec;
@@ -456,7 +456,7 @@ export function makeRealmPlane(opts: {
       dispose: () => dispose(),
     };
     const keepsOwn = (documentId: DocumentId): boolean => {
-      const own = tiddlerText(registry.doc()?.tiddlers?.[realmStewardPointer(realmId)]);
+      const own = tiddlerText(ownEntry(registry.doc()?.tiddlers, realmStewardPointer(realmId)));
       if (!own) return false;
       for (const rec of realmGate.registrations().values()) {
         if (rec.keptBy.includes(own) && interpretAsDocumentId(rec.docUrl as AutomergeUrl) === documentId) return true;
@@ -470,7 +470,7 @@ export function makeRealmPlane(opts: {
   /** A realm this vessel left takes its pointers with it: the island reads no verdict of a plane that stands no more. */
   const unpin = (realmId: string): void => {
     const keys = [realmDocPointer(realmId), realmStewardPointer(realmId), realmStandingPointer(realmId)];
-    if (!keys.some((k) => registry.doc()?.tiddlers?.[k] !== undefined)) return;
+    if (!keys.some((k) => ownEntry(registry.doc()?.tiddlers, k) !== undefined)) return;
     registry.change((d) => { for (const k of keys) delete d.tiddlers[k]; });
   };
 
@@ -541,7 +541,7 @@ export function makeRealmPlane(opts: {
         stood.set(realm, await standPlane(realm, "cabal"));
       }
     }
-    // EACH CARRIED CHARTER stands its realm under its own Nexus; one this vessel no longer carries leaves with its
+    // EACH CARRIED CHARTER stands its realm under its own Nexus; one this vessel stops carrying leaves with its
     // pins. A carried plane that fails to stand stands again at the next refresh.
     const carriedAids = new Set((opts.carried?.() ?? []).map((doc) => nexusAidOf(doc)).filter((aid): aid is string => aid !== null && aid !== charterRealm));
     for (const [realm, s] of [...stood.entries()]) {

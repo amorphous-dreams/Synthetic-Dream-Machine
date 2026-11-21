@@ -11,7 +11,6 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
-import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { isPersonalTitle }  from "../src/filters/lar-kind.js";
@@ -186,7 +185,7 @@ describe("IslandAdaptor — lifecycle", () => {
       return () => {};
     };
 
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
     expect(projections).toHaveLength(1);
     await adaptor.stop();
@@ -197,7 +196,7 @@ describe("IslandAdaptor — lifecycle", () => {
     const store = new MemoryTiddlerStore();
     delete (store as unknown as Record<string, unknown>)["addProjection"];
 
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
     await store.put({ tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "hello" } }, crdtRemote());
@@ -211,7 +210,7 @@ describe("IslandAdaptor — lifecycle", () => {
     const store = new MemoryTiddlerStore();
     delete (store as unknown as Record<string, unknown>)["addProjection"];
 
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
     await adaptor.stop();
 
@@ -232,7 +231,7 @@ describe("IslandAdaptor — inbound forwarding", () => {
   beforeEach(() => {
     tw5     = new FakeTW5Engine();
     store   = new MemoryTiddlerStore();
-    adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
   });
 
@@ -308,7 +307,7 @@ describe("IslandAdaptor — a bagged tombstone lands what the composition resolv
     // resolveLayered carries {bagId, record} — the topmost layer's ACTUAL bag.
     (store as unknown as Record<string, unknown>)["resolveLayered"] = async () => ({ bagId: "other", record: liveRecord });
 
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
     adaptor.onUriChanged({ ...tombstone(LAR_URI), bag: "emitter" });
@@ -326,7 +325,7 @@ describe("IslandAdaptor — a bagged tombstone lands what the composition resolv
     const store = new MemoryTiddlerStore();
     (store as unknown as Record<string, unknown>)["resolveLayered"] = async () => null;
 
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
     adaptor.onUriChanged(tombstone(LAR_URI));
@@ -350,16 +349,15 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     vi.useFakeTimers();
     tw5     = new FakeTW5Engine();
     store   = new MemoryTiddlerStore();
-    adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
   });
 
-  afterEach(() => {
-    adaptor.stop();
+  afterEach(async () => {
+    await adaptor.stop();
     vi.useRealTimers();
   });
 
-  const flush = () => vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
 
   test("★ a slot the saved body no longer declares tombstones — the scan reads `$fragment-parent`, the field the split mints ★", async () => {
     tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
@@ -367,8 +365,8 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     const orig = store.tombstone.bind(store);
     store.tombstone = async (title, origin) => { tombstoned.push(title); return orig(title, origin); };
 
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
-    await flush();
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
+    await adaptor.boundary();
     await done;
 
     expect(tombstoned).toEqual([`${LAR_URI}#/old`]);
@@ -380,7 +378,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, origin) => { puts.push(rec.tiddler.title); return orig(rec, origin); };
 
     const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "saved", bag: TARGET_BAG } });
-    await flush();
+    await adaptor.boundary();
     await done;
 
     expect(puts).toContain(LAR_URI);
@@ -394,7 +392,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     const saves = ["v1", "v2", "v3"].map((text) =>
       adaptor.saveTiddler({ fields: { title: LAR_URI, text, bag: TARGET_BAG } }),
     );
-    await flush();
+    await adaptor.boundary();
     await Promise.all(saves);
 
     expect(texts).toEqual(["v3"]);
@@ -406,7 +404,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, origin, options) => { puts.push({ bag: options?.bag, field: rec.tiddler["bag"] }); return orig(rec, origin, options); };
 
     const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "saved", bag: "lar:///ha.ka.ba/bags/lares" } });
-    await flush();
+    await adaptor.boundary();
     await done;
 
     expect(puts[0]?.bag).toBe(wikiSlotUri("test-wiki", "working"));
@@ -425,7 +423,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, origin, options) => { bags.push(options?.bag ?? ""); return orig(rec, origin, options); };
 
     const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "a live working edit" } });
-    await flush();
+    await adaptor.boundary();
     await done;
 
     expect(bags).toContain(workingSlot);                  // saved to the live write layer
@@ -438,7 +436,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, origin, options) => { bags.push(options?.bag ?? ""); return orig(rec, origin, options); };
 
     const done = adaptor.saveTiddler({ fields: { title: "$:/temp/x" } });
-    await flush();
+    await adaptor.boundary();
     await done;
 
     expect(bags).toContain(wikiSlotUri("test-wiki", "temp"));
@@ -450,7 +448,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, origin, options) => { bags.push(options?.bag ?? ""); return orig(rec, origin, options); };
 
     const done = adaptor.saveTiddler({ fields: { title: "$:/StoryList" } });
-    await flush();
+    await adaptor.boundary();
     await done;
 
     expect(bags).toContain(wikiSlotUri("test-wiki", "personal"));
@@ -468,7 +466,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
 
     const done = adaptor.saveTiddler({ fields: { title: "Some Plain Tiddler", text: "kalo" } });
-    await flush();
+    await adaptor.boundary();
     await done;
     expect(puts).toContain("Some Plain Tiddler");
   });
@@ -492,7 +490,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     // after the debounce flush — so awaiting first turns "it wrote" into a test TIMEOUT, a red for
     // the wrong reason that reads identical to the cure landing. Flush, then read what was put.
     void adaptor.saveTiddler({ fields: { title: `${VERB_URI_PREFIX}sha256:deadbeef`, text: "the whole corpus payload" } });
-    await flush();
+    await adaptor.boundary();
     expect(puts).toHaveLength(0);
   });
 
@@ -503,7 +501,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
 
     const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "a carrier" } });
-    await flush();
+    await adaptor.boundary();
     await done;
     expect(puts).toContain(LAR_URI);
   });
@@ -515,7 +513,7 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
 
     const done = adaptor.saveTiddler({ fields: { title: "$:/core", text: "megabytes of engine" } });
-    await flush();
+    await adaptor.boundary();
     await done;
     expect(puts).toHaveLength(0);
   });
@@ -546,10 +544,10 @@ describe("IslandAdaptor — cascade config drift guard", () => {
 });
 
 describe("IslandAdaptor — outbound deleteTiddler", () => {
-  test("lar: URI → store.tombstone() called", async () => {
+  test("★ an engine delete over nothing beneath leaves no tombstone: the record retracts to absent ★", async () => {
     const tw5     = new FakeTW5Engine();
     const store   = new MemoryTiddlerStore();
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
     await store.put({ tiddler: { title: LAR_URI, bag: TARGET_BAG, text: "exist" } }, crdtRemote());
@@ -558,8 +556,99 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
     const orig = store.tombstone.bind(store);
     store.tombstone = async (t, o) => { tombstones.push(t); return orig(t, o); };
 
-    await adaptor.deleteTiddler(LAR_URI);
-    expect(tombstones).toContain(LAR_URI);
+    await Promise.all([adaptor.deleteTiddler(LAR_URI), adaptor.boundary()]);
+    expect(tombstones).toEqual([]);
+    expect(await store.get(LAR_URI), "the record leaves its layer; no kāpae stands in its place").toBeNull();
+  });
+
+  /** The stacks the two controls share: a writable canon layer beneath the working layer, the default writable. */
+  const WORKING = wikiSlotUri("test-wiki", "working");
+  const CANON = "lar:///ha.ka.ba/bags/writable-canon";
+  function stackOf(): { composite: CompositeStore; working: MemoryTiddlerStore; canon: MemoryTiddlerStore } {
+    const working = new MemoryTiddlerStore();
+    const canon = new MemoryTiddlerStore();
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: CANON, store: canon, writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    return { composite, working, canon };
+  }
+
+  test("★ a record only the working layer holds leaves plainly, with no kāpae over it ★", async () => {
+    vi.useFakeTimers();
+    const { composite, working, canon } = stackOf();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    expect(await working.get(LAR_URI)).toBeNull();
+    expect(await canon.get(LAR_URI)).toBeNull();
+  });
+
+  test("★ CONTROL: a delete over a lower canon title still raises the kāpae, so the browser's delete keeps the canon record hidden ★", async () => {
+    vi.useFakeTimers();
+    const { composite, working, canon } = stackOf();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await canon.put({ tiddler: { title: LAR_URI, text: "canon" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    expect((await working.get(LAR_URI))?.meta?.deleted, "the working layer shadows the canon record").toBe(true);
+    expect((await canon.get(LAR_URI))?.meta?.deleted, "canon keeps its own record").not.toBe(true);
+  });
+
+  /** Delete a record only the working layer holds, over `composite`; answers the working layer's record after. */
+  async function deleteWorkingOnly(composite: CompositeStore, working: MemoryTiddlerStore): Promise<LarTiddlerRecord | null> {
+    vi.useFakeTimers();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    return working.get(LAR_URI);
+  }
+
+  test("★ a recipe slot beneath the working layer the composer could not reach counts as holding the title: the engine delete raises the kāpae, so a face that reaches that bag never sees its record surface ★", async () => {
+    // A shared workbench [working, realm canon R, canon]: this face reaches no R, and R may hold the title.
+    const realm = "lar:///ha.ka.ba/bags/realm-r";
+    const { composite, working } = stackOf();
+    composite.markUnreached([WORKING, realm, CANON], [realm]);
+    expect((await deleteWorkingOnly(composite, working))?.meta?.deleted, "a kāpae over the unread layer").toBe(true);
+  });
+
+  test("★ a mounted layer beneath that stands in for an unread document (a degraded, pending or late blank) counts as holding the title: the delete raises the kāpae ★", async () => {
+    const working = new MemoryTiddlerStore();
+    const blank = Object.assign(new MemoryTiddlerStore(), { unknown: () => true });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: CANON, store: blank, writable: false });
+    composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    expect((await deleteWorkingOnly(composite, working))?.meta?.deleted, "a kāpae over the stand-in").toBe(true);
+  });
+
+  test("CONTROL: an unreached slot or a stand-in ABOVE the working layer, or a stand-in released, leaves the plain retract", async () => {
+    const { composite, working } = stackOf();
+    composite.markUnreached([wikiSlotUri("test-wiki", "draft"), WORKING, CANON], [wikiSlotUri("test-wiki", "draft")]);
+    expect(await deleteWorkingOnly(composite, working), "nothing unread beneath: plain").toBeNull();
+    let unread = true;
+    const released = new MemoryTiddlerStore();
+    const blank = Object.assign(new MemoryTiddlerStore(), { unknown: () => unread });
+    const stacked = new CompositeStore();
+    stacked.addLayer({ bagId: CANON, store: blank, writable: false });
+    stacked.addLayer({ bagId: WORKING, store: released, writable: true, defaultWritable: true });
+    unread = false;
+    expect(await deleteWorkingOnly(stacked, released), "the real document merged in, and it holds nothing: plain").toBeNull();
   });
 });
 
@@ -572,7 +661,7 @@ describe("IslandAdaptor — the apply flag does not classify a hand", () => {
     vi.useFakeTimers();
     const tw5     = new FakeTW5Engine();
     const store   = new MemoryTiddlerStore();
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
     let putCount = 0;
@@ -581,7 +670,7 @@ describe("IslandAdaptor — the apply flag does not classify a hand", () => {
 
     tw5.applying = true;
     const saved = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "hand", bag: TARGET_BAG } });
-    await vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
+    await adaptor.boundary();
     await saved;
 
     expect(putCount).toBe(1);
@@ -593,19 +682,20 @@ describe("IslandAdaptor — the apply flag does not classify a hand", () => {
     vi.useFakeTimers();
     const tw5     = new FakeTW5Engine();
     const store   = new MemoryTiddlerStore();
-    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID, TARGET_BAG);
+    const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
-    let tombstoneCount = 0;
-    const orig = store.tombstone.bind(store);
-    store.tombstone = async (t, o) => { tombstoneCount++; return orig(t, o); };
+    await store.put({ tiddler: { title: LAR_URI, text: "exist" } }, crdtRemote());
+    let leaveCount = 0;
+    const orig = store.remove.bind(store);
+    store.remove = async (t, o, opts) => { leaveCount++; return orig(t, o, opts); };
 
     tw5.applying = true;
     const deleted = adaptor.deleteTiddler(LAR_URI);
-    await vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
+    await adaptor.boundary();
     await deleted;
 
-    expect(tombstoneCount).toBe(1);
+    expect(leaveCount, "nothing lies beneath, so the delete retracts the record").toBe(1);
     await adaptor.stop();
     vi.useRealTimers();
   });
@@ -623,7 +713,6 @@ describe("IslandAdaptor — the family write", () => {
   beforeEach(() => { vi.useFakeTimers(); tw5 = new FakeTW5Engine(); });
   afterEach(() => { vi.useRealTimers(); });
 
-  const flush = () => vi.advanceTimersByTimeAsync(HandGate.TRAILING_MS + 1);
 
   /** A composite with a writable canon layer (`fallback`) beneath the working layer, the default
    *  writable — a tombstone misrouted beneath the working layer reads plainly. */
@@ -652,8 +741,8 @@ describe("IslandAdaptor — the family write", () => {
 
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
-    await flush();
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
+    await adaptor.boundary();
     await done;
     adaptor.stop();
 
@@ -668,8 +757,8 @@ describe("IslandAdaptor — the family write", () => {
 
     const adaptor = new IslandAdaptor(tw5 as never, composite, INSTANCE_ID);
     adaptor.start();
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
-    await flush();
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
+    await adaptor.boundary();
     await done;
     adaptor.stop();
 
@@ -691,8 +780,8 @@ describe("IslandAdaptor — the family write", () => {
     await other.put({ tiddler: { title: `${LAR_URI}#/old`, text: "old" } }, crdtRemote());
     await vi.advanceTimersByTimeAsync(1);
     expect(adaptor.ledger.landedOf(`${LAR_URI}#/old`)?.bag).toBe(OTHER);
-    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
-    await flush();
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu slot=`#/new`>>\n\nfresh\n\n<<~/ahu>>" } });
+    await adaptor.boundary();
     await done;
     adaptor.stop();
 
@@ -703,7 +792,7 @@ describe("IslandAdaptor — the family write", () => {
 
   test("★ a draft keeps its ahu bodies whole — a draft never splits ★", async () => {
     const DRAFT = `Draft of '${LAR_URI}' by Alice`;
-    const body = "lead\n\n<<~ ahu #/a>>\n\nalpha body\n\n<<~/ahu>>\n";
+    const body = "lead\n\n<<~ ahu slot=`#/a`>>\n\nalpha body\n\n<<~/ahu>>\n";
     const store = new MemoryTiddlerStore();
     const titles: string[] = [];
     const put = store.put.bind(store);
@@ -712,7 +801,7 @@ describe("IslandAdaptor — the family write", () => {
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
     const done = adaptor.saveTiddler({ fields: { title: DRAFT, "draft.of": LAR_URI, "draft.title": LAR_URI, text: body } });
-    await flush();
+    await adaptor.boundary();
     await done;
     adaptor.stop();
 

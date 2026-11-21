@@ -1,3 +1,4 @@
+import { placeSignerFromSeed } from "../src/place-signer.js";
 /** Red-first proofs for the clock-free, causally addressed flow substrate. */
 import { describe, test, expect } from "vitest";
 import * as A from "@automerge/automerge";
@@ -10,12 +11,12 @@ const SEED  = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 const OTHER = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);
 
 function mkDoc(text = "the constitution") {
-  return A.from({ tiddlers: { oracle: { text } } });
+  return A.from({ tiddlers: { flow: { text } } });
 }
 
 async function mkPointer(parents: readonly string[] = [], seed = SEED, text = "the constitution") {
   const snapshot = await exportFlowSnapshot(mkDoc(text));
-  return buildFlowPointer({ snapshot, parents, signerSeed: seed });
+  return buildFlowPointer({ snapshot, parents, signer: placeSignerFromSeed(seed) });
 }
 
 describe("flow snapshot", () => {
@@ -24,7 +25,7 @@ describe("flow snapshot", () => {
     expect(snap.cid).toMatch(/^[0-9a-f]{64}$/);
     expect(snap.heads.length).toBeGreaterThan(0);
     expect(await verifyFlowSnapshotBytes(snap.bytes, snap.cid)).toBe(true);
-    expect(A.load<{ tiddlers: Record<string, { text: string }> }>(snap.bytes).tiddlers.oracle.text)
+    expect(A.load<{ tiddlers: Record<string, { text: string }> }>(snap.bytes).tiddlers.flow.text)
       .toBe("the constitution");
   });
 
@@ -36,7 +37,7 @@ describe("flow snapshot", () => {
   });
 });
 
-describe("oracle causal pointer", () => {
+describe("flow causal pointer", () => {
   test("signed pointer verifies and has no scalar currentness field", async () => {
     const p = await mkPointer();
     expect(await verifyFlowPointer(p)).toEqual({ ok: true });
@@ -49,8 +50,8 @@ describe("oracle causal pointer", () => {
   test("parent sets are canonical and duplicate/order variants have one semantic act", async () => {
     const a = "a".repeat(64), b = "b".repeat(64);
     const snapshot = await exportFlowSnapshot(mkDoc("same snapshot"));
-    const one = await buildFlowPointer({ snapshot, parents: [b, a, b], signerSeed: SEED });
-    const two = await buildFlowPointer({ snapshot, parents: [a, b], signerSeed: SEED });
+    const one = await buildFlowPointer({ snapshot, parents: [b, a, b], signer: placeSignerFromSeed(SEED) });
+    const two = await buildFlowPointer({ snapshot, parents: [a, b], signer: placeSignerFromSeed(SEED) });
     expect(one.parents).toEqual([a, b]);
     expect(one.actCid).toBe(two.actCid);
     expect(one.sig).toBe(two.sig);

@@ -8,6 +8,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, chmodSync } from "node:f
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
+import { POLL_FLOOR_S } from "./ci-verdict.mjs";
 import { evaluateMergeGate, relativeToE2eDir, readShardReports, pushLaneAndWatch } from "./e2e-shards.mjs";
 
 const TRACKED = ["tests/e2e/alpha.test.ts", "tests/e2e/beta.test.ts"];
@@ -421,6 +422,61 @@ esac
   rmSync(bin, { recursive: true, force: true });
 });
 
+function fakeFindBin(dir, { found }) {
+  const counter = join(dir, "reads.count");
+  writeFileSync(join(dir, "git"), `#!/usr/bin/env bash
+case "$*" in
+  *"rev-parse HEAD"*) echo "deadbeefcafef00d" ;;
+  *"config --get core.bare"*) echo false ;;
+esac
+exit 0
+`);
+  writeFileSync(join(dir, "gh"), `#!/usr/bin/env bash
+case "$*" in
+  *"run list --branch"*) echo x >> "${counter}"; echo '${found ? '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]' : "[]"}' ;;
+  *"run view 42 --log"*) echo "MERGE-VERIFY: ok=true" ;;
+esac
+exit 0
+`);
+  chmodSync(join(dir, "git"), 0o755);
+  chmodSync(join(dir, "gh"), 0o755);
+  return counter;
+}
+
+// The find loop spaces its rounds at the house pace: no sleep under POLL_FLOOR_S, at most three rounds when the
+// run never shows; a run found on the first read sleeps zero times.
+test("the pushLaneAndWatch find loop sleeps at the house pace and runs at most three rounds", async () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find-"));
+  const counter = fakeFindBin(bin, { found: false });
+  const prevPath = process.env.PATH;
+  process.env.PATH = `${bin}:${prevPath}`;
+  const sleeps = []; let t = 0;
+  try {
+    await assert.rejects(
+      () => pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", now: () => t, sleep: async (ms) => { sleeps.push(ms); t += ms; } }),
+      /no e2e-shards.yml run appeared/,
+    );
+  } finally { process.env.PATH = prevPath; }
+  const { readFileSync: rf, existsSync: ex } = await import("node:fs");
+  const reads = ex(counter) ? rf(counter, "utf8").trim().split("\n").length : 0;
+  rmSync(bin, { recursive: true, force: true });
+  assert.ok(sleeps.every((ms) => ms >= POLL_FLOOR_S * 1000), `sleeps ${sleeps}`);
+  assert.ok(reads <= 3, `reads ${reads}`);
+});
+
+test("a run found on the first read sleeps zero times in pushLaneAndWatch", async () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find1-"));
+  fakeFindBin(bin, { found: true });
+  const prevPath = process.env.PATH;
+  process.env.PATH = `${bin}:${prevPath}`;
+  const sleeps = [];
+  try {
+    await pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", sleep: async (ms) => { sleeps.push(ms); } }).catch(() => {});
+  } finally { process.env.PATH = prevPath; }
+  rmSync(bin, { recursive: true, force: true });
+  assert.equal(sleeps.length, 0);
+});
+
 test("the printed CI hint names the branch full CI runs on, from attached and detached checkouts", () => {
   const bin = mkdtempSync(join(tmpdir(), "e2e-shards-hint-"));
   const root = fileURLToPath(new URL("../", import.meta.url));
@@ -534,13 +590,24 @@ test("readShardReports reads a named set's artifacts under e2e-shard-<set>-<k>",
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS", () => {
+test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS, a companion set riding the row its table names", () => {
   const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
-  const rows = [...yml.matchAll(/- \{ set: (\w+), dir: ([^,]+), config: ([^,]+), shard: (\d+), count: (\d+) \}/g)]
-    .map((m) => `${m[1]} ${m[2]} ${m[3]} ${m[4]}/${m[5]}`).sort();
-  const want = E2E_SETS.flatMap((s) =>
-    Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}`)).sort();
+  const rows = [...yml.matchAll(/- \{ set: (\w+), dir: ([^,]+), config: ([^,]+), shard: (\d+), count: (\d+)(?:, companion: (\w+))? \}/g)]
+    .map((m) => `${m[1]} ${m[2]} ${m[3]} ${m[4]}/${m[5]}${m[6] ? ` +${m[6]}` : ""}`).sort();
+  const rider = (s) => E2E_SETS.find((o) => o.companion?.of === s.name);
+  const want = E2E_SETS.filter((s) => !s.companion).flatMap((s) =>
+    Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}${rider(s)?.companion.shard === i + 1 ? ` +${rider(s).name}` : ""}`)).sort();
   assert.deepEqual(rows, want);
+});
+
+test("E2E_SETS: the node set rides a tests shard as a companion (a shard of its own would spend one of the ten jobs), and its gate artifact keeps its own name", () => {
+  const node = E2E_SETS.find((s) => s.name === "node");
+  assert.deepEqual(node.companion, { of: "tests", shard: 3 });
+  assert.equal(node.shards, 1);
+  const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
+  assert.match(yml, /name: e2e-shard-\$\{\{ matrix\.companion \}\}-1$/m, "the companion run uploads no e2e-shard-<set>-1 artifact for the merge gate");
+  assert.match(yml, /report-shard-\$\{\{ matrix\.companion \}\}-1\.json/, "the companion report loses the name the merge gate reads");
+  assert.doesNotMatch(yml, /- \{ set: node,/, "the node set still has a shard row of its own");
 });
 
 // ── ONE E2E VERDICT PER PUSH: the full CI workflow CALLS the shard workflow ──────────────────────────────────
@@ -559,11 +626,12 @@ test("ci.yml takes its e2e verdict from the shard workflow, and runs no unsharde
   assert.doesNotMatch(code, /test:e2e/, "ci.yml runs the unsharded e2e set beside the shards: two verdicts for one push");
   // The callee declares the door, keeps its lane trigger, and keeps a concurrency group apart from the caller's.
   const shards = read("e2e-shards.yml");
-  assert.match(shards, /^  workflow_call: \{\}$/m, "e2e-shards.yml declares no workflow_call: ci.yml's call would refuse at startup");
+  assert.match(shards, /^  workflow_call:\n    inputs:\n      doorstep:\n        type: boolean\n        default: false$/m, "e2e-shards.yml declares no workflow_call with its doorstep input: ci.yml's call would refuse at startup");
+  assert.match(block, /^    with:\n      doorstep: \$\{\{ .+ \}\}$/m, "the e2e job hands the shard workflow no doorstep verdict");
   assert.match(shards, /^  push:\n    branches: \["ci\/\*\*"\]$/m, "the lane push trigger left");
   const group = (yml) => /^concurrency:\n(?:\s*#.*\n)*  group: (\S+)-\$\{\{ github\.ref \}\}$/m.exec(yml)?.[1];
   assert.equal(group(ci), "ci");
   assert.equal(group(shards), "e2e-shards", "caller and callee sharing one concurrency group wait on each other");
   // CONTROL: the comment filter left the workflow's real commands in place.
-  assert.match(code, /pnpm test\b/);
+  assert.match(code, /ci-cells\.mjs run-test/);
 });

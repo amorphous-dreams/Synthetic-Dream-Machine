@@ -1,10 +1,10 @@
 /**
- * carriage-pull — the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullOracle`): one dial per (peer, Nexus) on the
+ * carriage-pull — the GATE-NATIVE pull a carriage is handed (`carriageCap` `pullFlow`): one dial per (peer, Nexus) on the
  * floor tier, at the floor pin the reader's own pair index holds for that peer at that Nexus, presenting what this vessel
  * stands as there, and verified against the publisher key the carried dial names.
  *
  * WHERE THE PIN COMES FROM. Never the wire and never the dial entry: the pair index, keyed (peer's key, Nexus hex,
- * "/oracle", "floor"), filled only through an authenticated relation or a carried signed pin set (`place-floor-pin`). A peer
+ * "/flow", "floor"), filled only through an authenticated relation or a carried signed pin set (`place-floor-pin`). A peer
  * this vessel holds no pin for at any Nexus it stands in is not dialed at all (`pin-absent`): a stranger's crossroads, and
  * a crossroads of another Nexus, are never knocked on.
  *
@@ -21,8 +21,8 @@ import type { DialSocket } from "./face-dial.js";
 import type { GateBundlePin } from "./gate-bundle.js";
 import type { FacePresentation } from "./lar-ws-client-adapter.js";
 import {
-  ORACLE_SOCKET_ROUTE, pullAndVerifyFlow,
-  type FlowPullResult, type PlaceOraclePresentation,
+  FLOW_SOCKET_ROUTE, pullAndVerifyFlow,
+  type FlowPullResult, type PlaceFlowPresentation,
 } from "./flow-read-client.js";
 
 export interface GateNativeCarriagePullDeps {
@@ -31,7 +31,7 @@ export interface GateNativeCarriagePullDeps {
   /** The Nexuses (AID text) this vessel stands in, read fresh at each pull. */
   readonly nexuses:         () => readonly string[] | Promise<readonly string[]>;
   /** What this vessel presents at `nexus`'s floor gate under `pin`, or null where it can present nothing there. */
-  readonly presentationFor: (nexus: string, pin: GateBundlePin) => Promise<FacePresentation | PlaceOraclePresentation | null>;
+  readonly presentationFor: (nexus: string, pin: GateBundlePin) => Promise<FacePresentation | PlaceFlowPresentation | null>;
   readonly audience:        string;
   readonly deadlines:       { draw(lapse: () => void): { cancel(): void } };
   /** Runs once before each pull: where the vessel files the pins its boards carried since the last one. */
@@ -54,9 +54,9 @@ export function gateNativeCarriagePull<T = unknown>(deps: GateNativeCarriagePull
     for (const nexus of new Set(nexuses)) {
       const nexusHex = hex(utf8Bytes(nexus));
       let pin: GateBundlePin | null;
-      try { pin = deps.pins.get({ hearth, nexus: nexusHex, route: ORACLE_SOCKET_ROUTE, tier: "floor" }); } catch { pin = null; }
+      try { pin = deps.pins.get({ hearth, nexus: nexusHex, route: FLOW_SOCKET_ROUTE, tier: "floor" }); } catch { pin = null; }
       if (pin === null) continue;
-      let presentation: FacePresentation | PlaceOraclePresentation | null;
+      let presentation: FacePresentation | PlaceFlowPresentation | null;
       try { presentation = await deps.presentationFor(nexus, pin); } catch { presentation = null; }
       if (presentation === null) {
         deps.onLog?.(`carriage: no presentation at ${nexus.slice(0, 18)}… for ${hearth.slice(0, 12)}… — this vessel dials nothing there`);

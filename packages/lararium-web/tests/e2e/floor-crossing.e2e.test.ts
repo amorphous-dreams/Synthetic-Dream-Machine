@@ -5,7 +5,7 @@
  * Browser devices stand at the floor (operator ruling, 2026-10-16): each begins as an anonymous capability stack, and
  * the person decides which faces to join to it. So:
  *
- *   F1 — the banner hands a URL with no gate key: the relay, and the hearth's floor card in the fragment
+ *   F1 — the banner hands a page URL with no gate key, no query string and no fragment: the page dials its own origin's relay, and the hearth's floor card rides a line of its own
  *   F2 — a fresh device boots faceless and names it: at the floor, no face joined, no sovereign session
  *   F3 — CONTROL: before the cabal releases a floor, the porch answers the faceless device with no release, and the page
  *        names it (the floor is a name the reader brings, so a private Nexus is no different from an open one)
@@ -36,6 +36,24 @@ let hearth: LarInstance | null = null;
 let browser: Browser | null = null;
 let scratch = "";
 let bannerUrl = "";
+/** The place AID the banner prints on its own line, to hand across apart from the URL (the card never anchors itself). */
+let bannerAnchor = "";
+/** The floor card's carriage file, which the banner prints on a line of its own (`{"kind":"floor-card",…}`). */
+let bannerCard = "";
+/** The relay the hearth's own origin answers with: the page dials it, and no URL names it. */
+const relayOfBanner = (): string => { const u = new URL(bannerUrl); return `${u.protocol === "https:" ? "wss:" : "ws:"}//${u.host}/ws`; };
+/** Carry one text in at the page's floor carriage door by its paste road: the page keeps it per origin and boots again. */
+async function carryIn(page: Page, text: string): Promise<void> {
+  const door = page.locator("#floor-carriage-door");
+  await door.locator("[data-lar-carriage-paste]").fill(text);
+  await Promise.all([page.waitForEvent("load"), door.locator("[data-lar-carriage-take]").click()]);
+}
+/** A device arrives at the banner's page and takes the floor card, and (where handed) the place AID apart from it. */
+async function arrive(page: Page, opts: { readonly anchored: boolean }): Promise<void> {
+  await page.goto(bannerUrl);
+  await carryIn(page, bannerCard);
+  if (opts.anchored) await carryIn(page, bannerAnchor);
+}
 const contexts: BrowserContext[] = [];
 const consoles = new Map<Page, string[]>();
 
@@ -76,15 +94,30 @@ async function floorOutcome(page: Page): Promise<string> {
   }, undefined, { timeout: WAIT }).then((h) => h.jsonValue() as Promise<string>).catch(() => "no outcome");
 }
 
-/** The hearth's cabal releases the genesis floor: the seat signs the manifest's exact bytes, then seals the release. */
-async function releaseGenesisFloor(): Promise<void> {
+/** The genesis floor manifest's bytes, copied beside the run, and the approval file the seat signs over them. */
+function floorFiles(): { manifestFile: string; approvalFile: string } {
   const seed = JSON.parse(readFileSync(join(REPO, "genesis/seed.json"), "utf8")) as { tiddlers: Record<string, { tiddler: { cid?: string } }> };
   const manifestCid = seed.tiddlers["lar:///ha.ka.ba/bags/oracle/genesis-cid-floor"]?.tiddler.cid;
   expect(manifestCid, "the genesis seed names no floor manifest").toMatch(/^[0-9a-f]{64}$/);
-  const manifestFile = join(scratch, "floor-manifest.json"), approvalFile = join(scratch, "floor-approval.json");
+  const manifestFile = join(scratch, "floor-manifest.json");
   copyFileSync(join(REPO, "genesis/cas", manifestCid!), manifestFile);
-  const opened = await hearth!.cli(["nexus", "promote", "open", manifestFile, "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", approvalFile]);
-  expect(opened.code, opened.stderr).toBe(0);
+  return { manifestFile, approvalFile: join(scratch, "floor-approval.json") };
+}
+
+/**
+ * The seat signs the manifest's exact bytes BEFORE the vessel stands: `nexus promote open` reads the sealed seat rows, which a
+ * standing vessel's key session owns, so the approval rides the founding rite and only the release (a store verb) waits for the
+ * live hearth.
+ */
+async function approveGenesisFloor(cli: (args: readonly string[]) => Promise<{ code: number; stdout: string; stderr: string }>): Promise<void> {
+  const { manifestFile, approvalFile } = floorFiles();
+  const opened = await cli(["nexus", "promote", "open", manifestFile, "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", approvalFile]);
+  expect(opened.code, `${opened.stderr}\n${opened.stdout}`).toBe(0);
+}
+
+/** The hearth's cabal seals the release over the approval it signed at founding. */
+async function releaseGenesisFloor(): Promise<void> {
+  const { manifestFile, approvalFile } = floorFiles();
   const released = await hearth!.cli(["nexus", "release", manifestFile, "--approval", approvalFile]);
   expect(released.code, `${released.stderr}\n${released.stdout}`).toBe(0);
 }
@@ -108,14 +141,16 @@ beforeAll(async () => {
   hearth = await openStaged({
     tag: "floor-crossing",
     // The face stands at its own hearth's Nexus, so a fleet join certifies the device's face-scoped key there.
-    found: async (cli, root) => { await foundStagedHearth(cli, root, "hearth"); await mintStagedNexusKey(root); },
+    found: async (cli, root) => { await foundStagedHearth(cli, root, "hearth"); await mintStagedNexusKey(root); await approveGenesisFloor(cli); },
     daemonEnv: { LAR_PRONAOS_WEB_ROOT: WEB_ROOT, LAR_PRONAOS_ARTIFACT_RECORD: RECORD },
   });
   // The banner's crossing line names the URL a device opens: `[lararium]   <url>   (<face kind>)`.
   const deadline = performance.now() + WAIT;
   for (;;) {
     bannerUrl = /^\[lararium\] {3}(https?:\/\/\S+) {3}\(/m.exec(hearth.bootLog())?.[1] ?? "";
-    if (bannerUrl || performance.now() > deadline) break;
+    bannerAnchor = /^\[lararium\] floor anchor: ([0-9a-f]{64}) /m.exec(hearth.bootLog())?.[1] ?? "";
+    bannerCard = /^\[lararium\] {3}(\{"kind":"floor-card".*\})$/m.exec(hearth.bootLog())?.[1] ?? "";
+    if ((bannerUrl && bannerAnchor && bannerCard) || performance.now() > deadline) break;
     await new Promise((r) => setTimeout(r, 250));
   }
   browser = await chromium.launch({ headless: true, ...(process.env["LAR_CHROMIUM"] ? { executablePath: process.env["LAR_CHROMIUM"] } : {}) });
@@ -133,12 +168,29 @@ afterAll(async () => {
 });
 
 describe("a browser device at the floor, then under a joined face", () => {
-  test("F1 — the banner hands a URL with no gate key: the relay, and the floor card in the fragment", () => {
+  test("F1 — the banner hands a page URL with no gate key, no query string and no fragment; the floor card and the anchor ride lines of their own", () => {
     expect(bannerUrl, hearth?.bootLog().slice(-2000)).not.toBe("");
     const url = new URL(bannerUrl);
-    expect(url.searchParams.get("relay")).toMatch(/^wss?:\/\/.+\/ws$/);
-    expect(url.searchParams.has("gate")).toBe(false);
-    expect(new URLSearchParams(url.hash.slice(1)).get("floor")).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(url.search, "no query string names a relay or a gate").toBe("");
+    expect(url.hash, "the fragment stays the wiki's own permalink").toBe("");
+    expect((JSON.parse(bannerCard) as { card: string }).card, hearth?.bootLog().slice(-2000)).toMatch(/^[A-Za-z0-9_-]+$/);
+    // The card never anchors itself: the place AID rides its own banner line, and the card's file carries none.
+    expect(Object.keys(JSON.parse(bannerCard) as object).sort()).toEqual(["card", "kind"]);
+    expect(bannerAnchor, hearth?.bootLog().slice(-2000)).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  test("F1a — RED: a page arriving with a floor card and an anchor in its FRAGMENT reads neither from it — CONTROL: F4 reads the floor by the carriage door", async () => {
+    const device = await freshDevice();
+    await device.goto(`${bannerUrl}#floor=${(JSON.parse(bannerCard) as { card: string }).card}&anchor=${bannerAnchor}`);
+    await awaitLive(device);
+    expect(await floorOutcome(device), tail(device)).toMatch(/no-nexus/);
+  });
+
+  test("F1b — RED: a device handed the card with NO anchor reads no Nexus off it; CONTROL: F4 reads the floor once the anchor is handed", async () => {
+    const device = await freshDevice();
+    await arrive(device, { anchored: false });
+    await awaitLive(device);
+    expect(await floorOutcome(device), tail(device)).toMatch(/no-nexus/);
   });
 
   let faceless: Page | null = null;
@@ -146,7 +198,7 @@ describe("a browser device at the floor, then under a joined face", () => {
   test("F2 — a fresh device boots faceless at the floor and names it", async () => {
     await hearth!.cli(["nexus", "posture", "private"]);
     faceless = await freshDevice();
-    await faceless.goto(bannerUrl);
+    await arrive(faceless, { anchored: true });
     await awaitLive(faceless);
     const at = await awaitStanding(faceless, "floor");
     expect(at.standing, `${at.text}\n${tail(faceless)}`).toBe("floor");
@@ -163,7 +215,7 @@ describe("a browser device at the floor, then under a joined face", () => {
   test("F4 — after the cabal releases the floor, a fresh faceless device reads it off the porch and verifies it whole, at a private Nexus", async () => {
     await releaseGenesisFloor();
     const device = await freshDevice();
-    await device.goto(bannerUrl);
+    await arrive(device, { anchored: true });
     await awaitLive(device);
     expect(await floorOutcome(device), tail(device)).toBe("verified");
     // The floor reaches no face's documents: no sovereign session stands for a faceless device.
@@ -186,7 +238,7 @@ describe("a browser device at the floor, then under a joined face", () => {
     }, undefined, { timeout: WAIT }).then((h) => h.jsonValue() as Promise<{ refused?: string; request?: string }>);
     expect(minted.refused, tail(page)).toBeUndefined();
     writeFileSync(requestFile, minted.request!);
-    const relay = new URL(bannerUrl).searchParams.get("relay")!;
+    const relay = relayOfBanner();
     const answered = await hearth!.cli(["fleet", "join", "answer", requestFile, "--sync-url", relay, "--out", answerFile]);
     expect(answered.code, answered.stderr).toBe(0);
     const answer = JSON.parse(readFileSync(answerFile, "utf8")) as { carriage: { gatePin: { signingKey: string; tier: string } } };

@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams/prior-art">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/research-streams/prior-art`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = false
-file-path   = "bags/lares/ha.ka.ba/lares/docs/pono/research-streams/prior-art.mem"
 l-space     = "stable"
-mana        = 16
-manao       = 16
-manaoio     = 16
 role        = "prior-art witness stream with literal quotes for local-first, worker architecture, and security baselines"
 status-date = "2026-05-25"
 title       = "lar:///ha.ka.ba/lares/docs/pono/research-streams/prior-art"
@@ -17,7 +13,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/pono/research-streams/prior-art"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Research Stream - Prior-Art and Best Practices
 
@@ -25,7 +21,7 @@ Literal quote witnesses for architectural grounding.
 
 <<~/ahu>>
 
-<<~ ahu #/local-first-crdt>>
+<<~ ahu slot=`#/local-first-crdt`>>
 
 !! Local-first CRDT Doctrine
 
@@ -39,7 +35,7 @@ Source: https://docs.yjs.dev/
 
 <<~/ahu>>
 
-<<~ ahu #/worker-and-channel>>
+<<~ ahu slot=`#/worker-and-channel`>>
 
 !! Island Sovereignty and Channel Law
 
@@ -53,7 +49,7 @@ Source: https://developer.mozilla.org/en-US/docs/Web/API/MessageChannel
 
 <<~/ahu>>
 
-<<~ ahu #/security-baseline>>
+<<~ ahu slot=`#/security-baseline`>>
 
 !! Security Baseline
 
@@ -63,13 +59,13 @@ Source: https://owasp.org/www-project-application-security-verification-standard
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IWyqRSRSHOXc4Amu9CopCiuOnjYE7O7HyUlY5LqMghY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R89Xc7pNbOarcQ5OBlcVYBmN9jcR2rTod2UmWhkBHqE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

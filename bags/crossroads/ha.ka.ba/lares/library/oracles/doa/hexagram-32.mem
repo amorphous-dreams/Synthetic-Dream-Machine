@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-32`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "32. The Flat Earth Society"
+hexagram    = "32"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "011100"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-32"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-32"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷟ 32. The Flat Earth Society
+
+<<<
+"Aim: To carefully observe, think freely rediscove forgotten fact and oppose theoretical dogmatic assumptions. To help establish the United States... of the the world on this flat earth. Replace the science religion... with SANITY!"
+<<<
+
+This hexagram represents endurance in the face of insurmountable obstacles, much as the Flat Earth Society still survives in the face of overwhelming "scientific evidence" that "proves" their theories to be entirely incorrect. It also encourages duration - whatever you are up against will not be easy, but you can overcome it if you just stick it out (unlike the Flat Earth Society, which is just shit-house crazy).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YhaP3XctYTRqmr8-a-Il2tAuIg0-v4cJbOdIm2EfDEk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -21,7 +21,7 @@
 import { openMemorySensorium, makeLaresQuery, runTrialServing, trialContentDir, verifyTrialModel, sensoriumLenses, sensoriumNames, sensoriumDir, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
-import { cmdHarvest, cmdCapture, cmdSweep } from "./capture/harvest.js";
+import { cmdPour, cmdCapture, cmdSweep } from "./capture/harvest.js";
 import { cmdWorldline } from "./worldline.js";
 import { cmdTelemetry } from "./telemetry.js";
 import { cmdPalaceTeardown } from "./palace-teardown.js";
@@ -77,9 +77,9 @@ type Verb = (typeof VERBS)[number];
  * The SOVEREIGN sensorium's LIFECYCLE + verbatim verbs — the tend/write/read-verbatim half of the one
  * door, beside the four plane-READ verbs above. Each OWNS its handler outright — no top-level twin.
  * `sense` tends the sovereign lar_* planes; `mempalace` tends the guest comparator: one island per
- * namespace. `pour` harvests ONE pointer's bearing gradient; `pour --all` walks the whole tending movement
- * (quiesce · baseline · drawers · bearing · projection · verify · resume). Never the guest miner.
- * `recall` reads the verbatim drawers (the rich stamp-filter reader) over the SOVEREIGN content plane —
+ * namespace. `pour --all` walks the whole tending movement (quiesce · baseline · drawers · bearing ·
+ * projection · verify · resume). Never the guest miner.
+ * `recall` reads the verbatim drawers over the SOVEREIGN content plane —
  * the SAME dir `sense search --lens content` opens (both derive memorySensoriumContentDir() through
  * mempalace-pool; the daemon recall verb NAMES it, never the guest). Guest-shaped recall output means a
  * stale daemon dist or a dirty sovereign store, never a wrong-store read.
@@ -88,13 +88,13 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   "trial-run": cmdTrialRun,
   // `setup` STANDS the sovereign organs, and founding never reaches it (operator ruling).
   // A vessel founds and serves without a single sensorium, so standing one rides its own act — on the
-  // door that already owns every other thing done to a sensorium. Folding it into `vessel stand --install`
+  // door that already owns every other thing done to a sensorium. Folding it into `vessel stand --init`
   // would make the memory tooling read as part of the base install.
   setup:     cmdSenseSetup,
   recall:    cmdRecall,
   refresh:   cmdRefresh,
   capture:   cmdCapture,
-  pour:      cmdHarvest,
+  pour:      cmdPour,
   sweep:     cmdSweep,       // the BULK backfill on the ONE spine — CLI twin of the MCP `sweep` tool
   teardown:  cmdPalaceTeardown,
   worldline: cmdWorldline,

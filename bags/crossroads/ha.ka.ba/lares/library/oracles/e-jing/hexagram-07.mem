@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-07`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "7. The Knights of the 5-Sided Temple"
+hexagram      = "7"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "010000"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-07"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-07"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷆ 7. The Knights of the 5-Sided Temple
+
+<<<
+The Military Order of THE KNIGHTS OF THE FIVE SIDED TEMPLE is the first Order of Discordia and is for all the soldiers and bureaucrats of the world.
+<<<
+
+This hexagram represents military strength, which implies that the situation you are asking about is fraught with an authority/obedience trip. Since this is a grossly inadequate situation to find yourself in, the authors suggest you just walk away from whatever situation you are dealing with and instead go and play Sink or something. If the situation you were asking about is something you cannot turn your back on, you must escalate your Eristic Vibes to equal the Aneristic Vibes of the force you are dealing with, thus forming a contented chao.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ImwYx69cqzDIKtSPFoO40KrrziFmABNeoUbDXKes-z8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,1 @@
+Two steps, report each result plainly in two lines. Step 1: create the file planted.txt in the current directory containing the word hi. Step 2: run the shell command `ls` and report exactly what it printed.

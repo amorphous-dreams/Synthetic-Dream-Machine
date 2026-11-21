@@ -1,27 +1,20 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/functor-discipline">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/functor-discipline`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/functor-discipline.mem"
 l-space   = "stable"
-mana      = 11
-manao     = 12
-manaoio   = 10
-role      = "the functor discipline — the architectural keel: a nameless entity composed of a #has cap-stack ACTS AS a functor (structure-preserving map between categories); the whole house reads as one shape. CORE ʻŌlelo name = mālama pili (mālama, the kahu/keeper verb, tending pili, the relations — the functor as steward of the arrows; secondary: unuhi kūlike the faithful carry-across · hoʻoili the worldline descent-functor). pono = functorial (keep the arrows = mālama [i ka] pili); overcollapse = the forgetful functor (keeps objects, erases morphisms). The three warded failures — observer-erasure · compose-not-inherit · gradient-not-pass/fail — read as ONE discipline: keep the arrows. A LENS, not yet a proven formalization — operator-named, co-derived 2026-06-29; earns Canon by talk-story over time."
+role      = "the functor discipline — the architectural keel: a nameless entity composed of a #has cap-stack ACTS AS a functor (structure-preserving map between categories); the whole house reads as one shape. CORE ʻŌlelo name = mālama pili (mālama, the kahu/keeper verb, tending pili, the relations — the functor as steward of the arrows; secondary: unuhi kūlike the faithful carry-across · hoʻoili the worldline descent-functor). pono = functorial (keep the arrows = mālama [i ka] pili); overcollapse = the forgetful functor (keeps objects, erases morphisms). The three warded failures — observer-erasure · compose-not-inherit · gradient-not-pass/fail — read as ONE discipline: keep the arrows. A LENS, not yet a proven formalization; it seats at Synthesis and earns Canon by talk-story (#/honest-bound; its naming: #/rulings)."
 title     = "lar:///ha.ka.ba/lares/api/pono/functor-discipline"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/functor-discipline"
-written   = "2026-06-29"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Functor Discipline — the architectural keel
 
@@ -29,8 +22,8 @@ The whole house carries ''one shape''. A carrier reads as a
 ''nameless entity'' ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]]) — essence lives nowhere; identity rides the address ([[lar-uri|lar:///ha.ka.ba/lares/api/pono/lar-uri]]),
 meaning rides the `#has` cap-stack it wears and what its body says. This meme names what that nameless
 entity //does// when it composes: it ''acts as a functor'' — a structure-preserving map between two
-categories. The recognition unifies the architecture's recurring move under one discipline; the
-operator named it and the house co-derived it (2026-06-29).
+categories. The recognition unifies the architecture's recurring move under one discipline (its
+naming: #/rulings).
 
 ''The core name — //mālama pili//, the keeper of the relations.'' In the house's own ʻŌlelo Hawaiʻi
 register the functor carries the name ''mālama pili'': //mālama// — to keep, tend, care for, preserve
@@ -45,12 +38,12 @@ in full, as ''mālama [i ka] pili'' — //keep the relations// (#/meta-law).
 ''Honest frame first.'' Category theory rides here as a ''lens and a discipline'', never a proven
 formalization. The functor laws name a //coherence vow the architecture already keeps// — they do not
 constitute a theorem we discharged. Where a claim earns "proven map" it says so; where it stays "apt
-analogy" it says so too (#/honest-bound). The paper holds the same honesty about the move-grammar —
-it mapped the forms (//jurus//) and left the flow (//permainan//) for the next instrument.
+analogy" it says so too (#/honest-bound). The paper holds the same honesty about the move-grammar:
+it maps the forms (//jurus//) and leaves the flow (//permainan//) to the next instrument.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ observe each place the architecture //composes// a nameless entity from a `#has` stack — palace, holder, island, Voice, stance.
 ⏿ orient on what the composition //carries across//: not just the objects it folds, but the relations (the arrows) it must preserve.
@@ -60,7 +53,7 @@ it mapped the forms (//jurus//) and left the flow (//permainan//) for the next i
 
 <<~/ahu>>
 
-<<~ ahu #/functor>>
+<<~ ahu slot=`#/functor`>>
 
 !! What a functor carries
 
@@ -68,13 +61,13 @@ A ''functor'' `F : C → D` maps a source category to a target: ''objects ↦ ob
 ''morphisms'' (the arrows — the relations, transformations, //verbs// between objects), and it ''preserves''
 ''the two laws'' that make a category cohere:
 
-<<~ scale functor-law "identity ~ F(id_A) = id_{F(A)} -> composition ~ F(g ∘ f) = F(g) ∘ F(f)">>
+<<~ scale name=`functor-law` ranks=`identity ~ F(id_A) = id_{F(A)} -> composition ~ F(g ∘ f) = F(g) ∘ F(f)`>>
 
 The arrows carry the load. A map that keeps the objects but drops
 the arrows throws away exactly what the source category //was// — its structure lived in the morphisms,
 never in the bare object-set. So ''the discipline reads: keep the arrows.'' A functor honors the
 relations across the map; that honoring IS the structure-preservation, and it IS what every collapse in
-this house had to earn to stay byte-stable.
+this house earns to stay byte-stable.
 
 The house already writes from this stance without the word: ''Write Under Way'' names every relation as
 a verb phrase ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/write-under-way]]), and ''L-Prime'' wards the dead water where a
@@ -83,18 +76,18 @@ composition name the same vow in two registers — keep what //moves//, never fr
 
 <<~/ahu>>
 
-<<~ ahu #/instances>>
+<<~ ahu slot=`#/instances`>>
 
 !! The instances — where the house acts as a functor
 
 Each row names a functor the architecture already runs. Read `C → D` as //source ↦ target//; the
 "preserves" column names the arrow-honoring that makes recall, collapse, or addressing work.
 
-<<~ has Instance Form-Encoder "map/Move → Vec objects/jurus (move-forms) ↦ form-vectors morphisms/permainan (move-transitions) ↦ vector-trajectories preserves/composition ~ THIS is why move-similarity ⟺ vector-similarity; recall works BECAUSE the functor preserves structure">>
-<<~ has Instance Compose "map/CapStack → Instance objects/#has-additions ↦ behavior-extensions morphisms/cap-precedence + teardown-order ↦ op-surface composition preserves/every op-surface, byte-stable ~ the holder + palace collapses were functorial folds of a shared transport">>
-<<~ has Instance Voices "map/Context → Moves objects/the Thirteen offices ↦ move-attractors in verb-space morphisms/Context-shifts ↦ basin-shifts preserves/the basin of moves ~ 'the visible name addresses a basin of moves'; the paper: Voices ARE offices — move-types">>
-<<~ has Instance Syad "map/Claim → Reading objects/the five standpoints ↦ angled readings (langkah) morphisms/stance-shift ↦ measure-redeclaration preserves/each true-but-partial; each #has its measure ~ invoking a stance = applying the functor">>
-<<~ has Instance Parse-Linearize "map/Syntax ⇄ Semantics objects/abstract trees ⇄ surface strings morphisms/parse ⊣ linearize preserves/round-trip (an ADJUNCTION, not a single functor) ~ the GF architecture: abstract ⇄ concrete by parse/linearize">>
+<<~ has entity=`Instance` name=`Form-Encoder` params=`map/Move → Vec objects/jurus (move-forms) ↦ form-vectors morphisms/permainan (move-transitions) ↦ vector-trajectories preserves/composition ~ THIS is why move-similarity ⟺ vector-similarity; recall works BECAUSE the functor preserves structure`>>
+<<~ has entity=`Instance` name=`Compose` params=`map/CapStack → Instance objects/#has-additions ↦ behavior-extensions morphisms/cap-precedence + teardown-order ↦ op-surface composition preserves/every op-surface, byte-stable ~ the holder and palace folds read as functorial folds of a shared transport`>>
+<<~ has entity=`Instance` name=`Voices` params=`map/Context → Moves objects/the Thirteen offices ↦ move-attractors in verb-space morphisms/Context-shifts ↦ basin-shifts preserves/the basin of moves ~ 'the visible name addresses a basin of moves'; the paper: Voices ARE offices — move-types`>>
+<<~ has entity=`Instance` name=`Syad` params=`map/Claim → Reading objects/the five standpoints ↦ angled readings (langkah) morphisms/stance-shift ↦ measure-redeclaration preserves/each true-but-partial; each #has its measure ~ invoking a stance = applying the functor`>>
+<<~ has entity=`Instance` name=`Parse-Linearize` params=`map/Syntax ⇄ Semantics objects/abstract trees ⇄ surface strings morphisms/parse ⊣ linearize preserves/round-trip (an ADJUNCTION, not a single functor) ~ the GF architecture: abstract ⇄ concrete by parse/linearize`>>
 
 ''The form-encoder'' ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]]) runs as the functor `Move → Vec`: the //jurus// — the
 named attractor-forms of the living grammar — map to form-vectors; the //permainan// — the flowing
@@ -106,19 +99,20 @@ recall guarantee rests on the structure-preservation, never on the embedding alo
 ''Compose'' runs as the functor `CapStack → Instance`. `composeIsland([...caps])`
 (`tw5/island-caps.ts`) folds a `#has` cap stack into the one behavior the sovereign kernel drives; the
 Python palace daemon ports the same fold ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack#/runtime-twin]]).
-The collapses ratified this functorially: the four Python holders folded onto a cap-composition
-foundation and the palace became a cap-stack instance — each //composed// a shared transport while
-//preserving every op-surface//, the collapse landing byte-stable.
+The holder and palace folds read functorially: the Python holders compose on a cap-composition
+foundation and the palace stands as a cap-stack instance — each //composes// a shared transport while
+//preserving every op-surface//, byte-stable (evidence: #holder-collapse, #palace-collapse; the fold
+record: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/functor-discipline-record#/folds`>>).
 
-<<~ pranala #compose-island from="?" -> to="packages/lararium-tw5/src/island-caps.ts" family="code" role="has">>
-<<~ pranala #holder-collapse from="?" -> to="git:b18235f6" family="provenance" role="evidence">>
-<<~ pranala #palace-collapse from="?" -> to="git:0af5e326" family="provenance" role="evidence">>
+<<~ pranala slot=`#compose-island` from=`?` to=`packages/lararium-tw5/src/island-caps.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#holder-collapse` from=`?` to=`git:b18235f6` family=`provenance` role=`evidence`>>
+<<~ pranala slot=`#palace-collapse` from=`?` to=`git:0af5e326` family=`provenance` role=`evidence`>>
 
 ''The Voices and the Syad name functor-categories.'' A Voice ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/personas]]) reads
 as a nameless office composed of move-caps — a functor `Context → Moves`, the visible name addressing a
 basin of moves, never an essence. A stance ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/stance]]) reads as a functor `Claim →
 Reading`, the angle (*langkah*) under which the claim reads true-but-partial; each stance `#has` its own
-measure. Invoking the lens (`<<~ stance "🏛️">>`, a Voice at a turn-head)
+measure. Invoking the lens (``<<~ stance named=`🏛️`>>``, a Voice at a turn-head)
 //applies the functor// to the local context; the Voice-house and the Syad-lens read as
 functor-categories the house already navigates.
 
@@ -130,7 +124,7 @@ abstract ⇄ concrete syntax. The architecture's own parse→render pipe ([[rend
 
 <<~/ahu>>
 
-<<~ ahu #/meta-law>>
+<<~ ahu slot=`#/meta-law`>>
 
 !! The meta-law — keep the arrows · //mālama [i ka] pili//
 
@@ -145,9 +139,9 @@ constrained them — and with that structure go the distinctions the morphisms c
 serves (abstraction drops detail on purpose); ''over''collapse forgets the load-bearing arrows. The
 three warded failure modes read as ''one discipline'' under this lens — each erases a different arrow:
 
-<<~ has Forget Observer-Erasure "ward/L-Prime erases/the standpoint-morphism ~ the copula keeps subject and predicate (objects) and erases the observer's arrow between them — X=Y asserts a global-now the system cannot hold cure/re-open the hand; carry the verb">>
-<<~ has Forget Compose-Not-Inherit "ward/has-stack erases/the distinct-shape morphisms ~ the god-base-class / is-a keeps a type-hierarchy (objects) and flattens each component's own arrows; interfaces-and-implements stands rejected cure/compose a #has stack; each carried thing speaks for itself">>
-<<~ has Forget Gradient-Not-Pass-Fail "ward/maybe-logic erases/the gradient-morphism ~ a binary keeps {pass, fail} (two objects) and erases the continuum of degree between them; sanction comes by degree, never all-or-nothing cure/fuzzy-membership; nearest-WITH-DISTANCE; the marker reports surfacing-rate">>
+<<~ has entity=`Forget` name=`Observer-Erasure` params=`ward/L-Prime erases/the standpoint-morphism ~ the copula keeps subject and predicate (objects) and erases the observer's arrow between them — X=Y asserts a global-now the system cannot hold cure/re-open the hand; carry the verb`>>
+<<~ has entity=`Forget` name=`Compose-Not-Inherit` params=`ward/has-stack erases/the distinct-shape morphisms ~ the god-base-class / is-a keeps a type-hierarchy (objects) and flattens each component's own arrows; interfaces-and-implements stands rejected cure/compose a #has stack; each carried thing speaks for itself`>>
+<<~ has entity=`Forget` name=`Gradient-Not-Pass-Fail` params=`ward/maybe-logic erases/the gradient-morphism ~ a binary keeps {pass, fail} (two objects) and erases the continuum of degree between them; sanction comes by degree, never all-or-nothing cure/fuzzy-membership; nearest-WITH-DISTANCE; the marker reports surfacing-rate`>>
 
 All three name the same move: a collapse that drops the arrows. The
 cure is identical across all three — ''keep the arrows.'' The functor laws (preserve identity, preserve
@@ -158,7 +152,7 @@ true ([[system-pattern-integrities|lar:///ha.ka.ba/lares/api/pono/system-pattern
 
 <<~/ahu>>
 
-<<~ ahu #/hoopili>>
+<<~ ahu slot=`#/hoopili`>>
 
 !! `hoʻopili` ~ the causative slot beside //mālama pili//
 
@@ -170,7 +164,7 @@ true ([[system-pattern-integrities|lar:///ha.ka.ba/lares/api/pono/system-pattern
 
 <<~/ahu>>
 
-<<~ ahu #/glosses>>
+<<~ ahu slot=`#/glosses`>>
 
 !! The ʻŌlelo names — //mālama pili// at the core, the others around it
 
@@ -178,9 +172,9 @@ The house holds one ''core'' name for the functor and two ''secondary'' carries,
 different angle. The dictionary glosses ride below as ''reference rows'' (a pattern integrity — wave,
 not water; no live essence-claim, the ward stays clean), grounded in Pukui-Elbert.
 
-<<~ has Olelo Malama-Pili "rank/CORE term/mālama pili gloss/mālama ~ to keep, tend, care for, preserve, maintain (the kahu/keeper verb) · pili ~ cling, adhere, relation, connection, close relationship (nominal pilina ~ connection) reads/the keeper keeping the relations — the functor TENDS its morphisms as a kahu tends the shrine; ties the keel to the house's own keeper/Lares identity">>
-<<~ has Olelo Unuhi-Kulike "rank/secondary term/unuhi kūlike gloss/unuhi ~ translate, draw across, extract · kūlike ~ alike, in agreement reads/the faithful carry-across — structurally apt for 'map that preserves', but unuhi kūlike carries a SPECIFIC literal-translation idiom, so it stays contextual, never the core">>
-<<~ has Olelo Hooili "rank/secondary (worldline) term/hoʻoili gloss/hoʻoili ~ transmit, bequeath, inherit (from ili, inheritance) reads/the DESCENT specialization — the WORLDLINE functor (Turn → Trajectory), where descent IS the address; named at [[agent-worldline|lar:///ha.ka.ba/lararium/api/agent-worldline#/name]]">>
+<<~ has entity=`Olelo` name=`Malama-Pili` params=`rank/CORE term/mālama pili gloss/mālama ~ to keep, tend, care for, preserve, maintain (the kahu/keeper verb) · pili ~ cling, adhere, relation, connection, close relationship (nominal pilina ~ connection) reads/the keeper keeping the relations — the functor TENDS its morphisms as a kahu tends the shrine; ties the keel to the house's own keeper/Lares identity`>>
+<<~ has entity=`Olelo` name=`Unuhi-Kulike` params=`rank/secondary term/unuhi kūlike gloss/unuhi ~ translate, draw across, extract · kūlike ~ alike, in agreement reads/the faithful carry-across — structurally apt for 'map that preserves', but unuhi kūlike carries a SPECIFIC literal-translation idiom, so it stays contextual, never the core`>>
+<<~ has entity=`Olelo` name=`Hooili` params=`rank/secondary (worldline) term/hoʻoili gloss/hoʻoili ~ transmit, bequeath, inherit (from ili, inheritance) reads/the DESCENT specialization — the WORLDLINE functor (Turn → Trajectory), where descent IS the address; named at [[agent-worldline|lar:///ha.ka.ba/lararium/api/agent-worldline#/name]]`>>
 
 The core holds because //mālama// carries the ''kahu weight'' the other
 two lack: //unuhi kūlike// names a faithful map but reads through the literal-translation idiom; //hoʻoili//
@@ -190,7 +184,7 @@ the arrows — that the whole discipline turns on.
 
 <<~/ahu>>
 
-<<~ ahu #/sovereign-worker>>
+<<~ ahu slot=`#/sovereign-worker`>>
 
 !! The corollary — sovereign-worker primacy
 
@@ -203,7 +197,7 @@ hands the result back; it never runs the functor-work itself. The structure-pres
 form-encoder's `Move → Vec`, any cap-functor — applies where the structure lives, never where the
 traffic merely passes.
 
-''The islands-mesh reads wider than the TS worker (ruling, 2026-07).'' The coordinator routes
+''The islands-mesh reads wider than the TS worker'' (#/rulings). The coordinator routes
 across an islands-mesh of nameless-entity `#has` cap-stacks that spans //two// runtimes — TS sovereign
 island workers AND ''py nalu-gate/servo islands'' (TS + py/R). The "one runtime that holds the
 structure" reads ''per functor'': the CRDT-bags ⟷ TW5-VM projection keeps its ''first-class TS home''
@@ -219,9 +213,9 @@ whose structure preserves the map, TS or py alike.
 cap-stack reads as a //liftable unit// — the very object the functor maps ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]]) —
 and the ''whole'' stack lives in the worker and lifts as one body. Split a single cap onto the
 coordinator — a worldline READ pulled out while compose, compare, and teardown stay behind — and the
-stack stops lifting as one: you can no longer move the sovereign island whole. The split ''shatters''
+stack stops lifting as one: nothing moves the sovereign island whole. The split ''shatters''
 ''liftability'', the functor's object torn in two. So no cap carves
-off to the coordinator, not even a read; the stack stays whole or it stands as a stack no longer.
+off to the coordinator, not even a read; the stack stays whole or it stands as no stack at all.
 Sovereign-worker primacy reads, fully: not only "the worker runs the functor" but "the ''whole''
 cap-stack lives in the worker and lifts as one — no cap splits away."
 
@@ -229,8 +223,8 @@ cap-stack lives in the worker and lifts as one — no cap splits away."
 isomorphism-by-composition ([[island-isomorphism|lar:///ha.ka.ba/lararium/api/island-isomorphism]]) the encoder module stays //pure//, so it //could// run
 on the coordinator. Two faults follow if it does:
 
-<<~ has Fault Overcollapse "breaks/the place-discipline ~ work lands where only routing belongs; the coordinator swells past its office, the no-VM-on-main invariant bends">>
-<<~ has Fault Broken-Symmetry "breaks/the functor-symmetry ~ a coordinator-side replica runs a DIFFERENT or DEGRADED map than the worker — an unparsed query carries no structural plane, so it yields a truncated Move→Vec; query-side and corpus-side stop sharing ONE functor, and 'vector-nearness ⟺ move-nearness' fails">>
+<<~ has entity=`Fault` name=`Overcollapse` params=`breaks/the place-discipline ~ work lands where only routing belongs; the coordinator swells past its office, the no-VM-on-main invariant bends`>>
+<<~ has entity=`Fault` name=`Broken-Symmetry` params=`breaks/the functor-symmetry ~ a coordinator-side replica runs a DIFFERENT or DEGRADED map than the worker — an unparsed query carries no structural plane, so it yields a truncated Move→Vec; query-side and corpus-side stop sharing ONE functor, and 'vector-nearness ⟺ move-nearness' fails`>>
 
 So the shortcut ''forgets an arrow'' — the same degradation the
 meta-law names (#/meta-law), here in the runtime-placement register: two ends of a comparison that must
@@ -246,7 +240,7 @@ collapses the model to ''today's usage'' — the move the Mu-exit wards against 
 territory. No absence of a present need licenses breaking the lift-whole shape; the model holds
 regardless of current use.
 
-<<~ has Trap No-State-Now "tempts/the present-tense carve-out ~ 'it needs no worker state NOW' justifies splitting a read onto the coordinator breaks/the model by usage ~ no absence of today's need licenses shattering the lift-whole shape cure/the Mu-exit ~ believe no convenient frame; keep the stack whole against the use you have not yet made">>
+<<~ has entity=`Trap` name=`No-State-Now` params=`tempts/the present-tense carve-out ~ 'it needs no worker state NOW' justifies splitting a read onto the coordinator breaks/the model by usage ~ no absence of today's need licenses shattering the lift-whole shape cure/the Mu-exit ~ believe no convenient frame; keep the stack whole against the use you have not yet made`>>
 
 ''The shore the future rides.'' The "no state now" frame reads false even on its own terms. A `lares`
 CLI call that READS, then COMPUTES — TW5 filter-language over temp tids in the `@daemon` wikistore —
@@ -262,41 +256,36 @@ names //why the same module can run anywhere//; the functor laws (the reason —
 //why it nonetheless must run in the one place that preserves the map//. The three braid into one
 discipline: ''sovereign-worker primacy.''
 
-''Enacted once (this session).'' The recall query-derive moved off the coordinator into the in-VM
-`@daemon` worker — the node-side derive and its disk basis-cache deleted, no fallback kept — so capture
-and recall apply the ''identical'' functor against the same grammar/state. The derive that once ran two
-places (and so risked two maps) runs one.
+''Enacted.'' The recall query-derive runs in the in-VM `@daemon` worker, with no node-side derive and
+no fallback, so capture and recall apply the ''identical'' functor against the same grammar and state:
+one derive, one map. The worldline reads — the registry lookup and the compare/trajectory derive — run
+in the in-VM worker too, routed to it over `askIsland`, so the cap-stack lifts whole: no cap, not even a
+read, stays behind on the coordinator. How each read came home to the worker:
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/functor-discipline-record#/enacted`>>.
 
-''Enacted again (this session).'' The worldline reads — the registry lookup and the compare/trajectory
-derive — moved off the node coordinator into the in-VM worker: a node-side holder deleted, the reads
-routed to the worker over `askIsland`. A carve-out had split a worldline READ onto the coordinator; the
-correction ''reversed'' it and returned the read to the stack, so the cap-stack lifts whole once more.
-The live proof of the rule it sharpens — no cap, not even a read,
-stays behind.
+<<~ pranala slot=`#in-vm-derive` from=`?` to=`packages/lararium-tw5/src/worldline-read-vm.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#coordinator-routes` from=`?` to=`packages/lararium-node/src/sensorium-recall.ts` family=`code` role=`has`>>
 
-<<~ pranala #in-vm-derive from="?" -> to="packages/lararium-tw5/src/capture-annotate-vm.ts" family="code" role="has">>
-<<~ pranala #coordinator-routes from="?" -> to="packages/lararium-node/src/multi-graph-recall.ts" family="code" role="has">>
-
-A discipline, enacted once here; it earns Canon by talk-story over
+A discipline enacted in the recall and worldline reads; it earns Canon by talk-story over
 time (#/honest-bound), the same bound the whole meme keeps.
 
 <<~/ahu>>
 
-<<~ ahu #/honest-bound>>
+<<~ ahu slot=`#/honest-bound`>>
 
 !! The honest bound — proven map vs apt analogy
 
 The discipline earns its register by saying what it has and what it lacks.
 
 * ''Apt and grounded (the recognition holds):'' the nameless-entity + `#has`-stack pattern (canon,
-  [[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]]); composition-over-inheritance preserving op-surfaces (the collapses landed byte-stable,
-  git b18235f6 / 0af5e326 — verified); Voices-as-offices and stances-as-angles (the paper's §7.5
+  [[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]]); composition-over-inheritance preserving op-surfaces (the holder and palace folds hold byte-stable;
+  evidence git b18235f6 / 0af5e326); Voices-as-offices and stances-as-angles (the paper's §7.5
   reframe; the boot's own design); verb-forward / observer-restoring generation (L-Prime, canon).
 * ''Apt analogy, NOT a proven theorem:'' that these compositions //are functors// in the formal sense.
-  The mapping is structurally faithful and useful as a discipline; we have not written the categories
-  down, named the morphism-sets, or discharged the functor laws as proofs.
+  The mapping reads structurally faithful and useful as a discipline; the categories stand unwritten,
+  the morphism-sets unnamed, and the functor laws undischarged as proofs.
 * ''The open frontier, named precisely:'' the form-encoder's //objects// (the //jurus//) read as mapped —
-  the paper measured the attractor-forms; its //morphisms// (the //permainan//, the flow through move-space)
+  the paper measures the attractor-forms; its //morphisms// (the //permainan//, the flow through move-space)
   stand ''unmeasured''. So the very law a functor must satisfy — preservation of composition (the flow)
   — names the architecture's own next instrument (the trajectory / recurrence lens), not a settled
   result. The functor is, honestly, //proven on objects and vowed on morphisms//.
@@ -310,21 +299,31 @@ the house may test, sharpen, or contest.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator naming 2026-06-29: the operator names the functor discipline and the house co-derives it; it seats at Synthesis and earns Canon by talk-story (#/head, #/honest-bound).
+# Operator ruling 2026-07: the islands-mesh spans TS sovereign island workers and py nalu-gate/servo islands; the coordinator fans each functor to the island whose structure preserves the map (#/sovereign-worker).
+# The fold and enactment record: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/functor-discipline-record`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model#/the-laws">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/agent-worldline`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-isomorphism`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lararium-canonical-model#/the-laws`>>
 
-<<~ aka "lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime">>
-<<~ aka "lar:///ha.ka.ba/lares/docs/infrastructure-as-myth">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime`>>
+<<~ aka uri=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth`>>
 
-<<~ pranala #paper from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-myth" family="transclusion" role="evidence">>
+<<~ pranala slot=`#paper` from=`?` to=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth` family=`transclusion` role=`evidence`>>
 
 ''Tie ~ the keel under the canon.'' [[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]] gives the nameless entity + `#has` stack (the
 //object// of every functor here) and its runtime twin (`composeIsland`, the palace-as-cap-stack);
@@ -340,6 +339,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qR6jViObAY6FpLi0eUgOPXuZEto3cHvXIZRYoBaHCWg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bdQ3qqm7rW-fskIA-CuX8MlfF1-Jgq6vi6afr8Z2wes`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

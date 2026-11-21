@@ -12,6 +12,8 @@ const seam = vi.hoisted(() => ({
 }));
 
 const HOUSEHOLD = vi.hoisted(() => ({ aid: "nexus-a", admit: { nym: "d" }, lineage: [], opening: { carriage: { gatePin: "pin", canon: {} }, salt: "s" } }));
+// Which face an unnamed run resolves has its reds in face-selector.test.ts; this suite reads the provisional guard.
+vi.mock("../src/face-selector.js", () => ({ resolveFace: async (named?: number) => named ?? 0, FaceNotNamed: class extends Error {} }));
 vi.mock("../src/face-household-admit.js", () => {
   class FaceHouseholdAdmitRefused extends Error {
     constructor(readonly refusal: string, detail: string) { super(`[face household admit] ${refusal}: ${detail}`); }
@@ -54,12 +56,16 @@ vi.mock("../src/commands/device-admit.js", () => ({
 }));
 vi.mock("../src/commands/init.js", () => ({ runInit: vi.fn() }));
 vi.mock("../src/fleet-join-custody.js", () => ({
-  mintFaceAddressSecret: async () => { seam.secret(); return new Uint8Array(32); },
+  readFaceAddressSecret: async () => { seam.secret(); return new Uint8Array(32); },
   noteIssuedFaceKeys: async () => { seam.issued(); },
 }));
 vi.mock("@noble/ed25519", () => ({ signAsync: async () => new Uint8Array(64) }));
 vi.mock("@lararium/keyhive", () => ({}));
-vi.mock("@lararium/mesh", () => ({
+vi.mock("@lararium/mesh", async () => {
+  const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
+  const stubs = {
+  // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
+  ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
   nexusAidOf: () => "nexus-a",
   heldNexusRoot: () => ({ nexus: "nexus-a" }),
@@ -75,7 +81,9 @@ vi.mock("@lararium/mesh", () => ({
   fleetJoinAnswerImage: () => { seam.answer(); return new Uint8Array(); },
   sealAddressSecret: () => ({ sealed: true }),
   hex: (bytes: Uint8Array) => Buffer.from(bytes).toString("hex"),
-}));
+};
+  return { ...stubs, ...composerOverStubs(stubs) };
+});
 
 import { FleetJoinRefused, runFleetJoinAnswer, runFleetJoinOffer } from "../src/commands/fleet-join.js";
 

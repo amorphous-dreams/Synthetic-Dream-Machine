@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-013/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-013/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-013/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Step 13 added a test for tampering with an epoch-free founder edge and verified it with an intact-record control. The named test file passed: ''24 tests, 0 failures''. Commit `746f36483e50f6f069d33c843800ded2c6980e93` carries the required trailers.
+
+The live lift wake remains open. The trace found separate authority paths: the browser reads its island’s board, while the node asks the vessel’s board fold. Neither path yet has a verified board-to-seat wake.
+
+The hand-back and next step stand in [[step-013/out.md|/home/joshu/.lares-scratch/lease-end/steps/step-013/out.md]] and [[state.json|/home/joshu/.lares-scratch/lease-end/state.json]]. No push occurred.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:⊗☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`exercise a real board lift through each shore before claiming live recovery · ↻ L-Prime` ooda-ha=`closed 1↺ -> open 1φ▶:live-board-wake-remains-unwired` from=`lar://lares:agent@lane/test.residue.cleared` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pg65BsXDaO1WFOIh0Rehn8m70mIwU7PWD_LEWtSeAJ8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,1 @@
+Sol-Handwright: Lares (Tasked Spirit): ->↺ I wrote the read-only research handback to [out.md](/home/joshu/.lares-scratch/research/hands-room/sol/out.md). It orders four whole-model lanes, marks measured code against builder leads, and names one operator decision. The file ends `WORDS=1160`; I ran no suites and changed no repo files.

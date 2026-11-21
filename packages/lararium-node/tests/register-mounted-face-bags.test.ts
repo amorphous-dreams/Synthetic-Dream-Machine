@@ -1,3 +1,8 @@
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { setMountedFace } from "../src/node-vessel-identity.js";
+import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { EventEmitter } from "node:events";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -14,6 +19,9 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { openNodeVessel } from "../src/open-node-vessel.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 const capture = vi.hoisted(() => ({
   registerBags: [] as string[][],
 }));
@@ -48,6 +56,7 @@ async function withScratchRoot<T>(root: string, act: () => Promise<T>): Promise<
     try {
       return await act();
     } finally {
+      setMountedFace(undefined);
       const holder = seatedCustody();
       if (holder) {
         await holder.lock();
@@ -64,11 +73,11 @@ async function founderForSecondFace() {
   const atomSeed = new Uint8Array(32).fill(93);
   const founderKey = faceAtomKeyFromSeed(vesselSeed, "founder-vessel").key;
   const hearthTrueName = "hearth-for-second-face";
-  const place = await foundThePlace({ repo: founderRepo, vesselSeed, hearthTrueName });
-  const face = await foundTheFace({
+  const place = withMemorySecretHome(await foundThePlace({ repo: founderRepo, vesselSeed }), founderRepo);
+  const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
     repo: founderRepo,
-    daemonHandle: place.daemonHandle,
-    vesselVerifyingKey: founderKey,
+    daemonHandle: place.daemonHandle, secretHandle: place.secretHandle, secretRest: { assertSealed: async () => true },
+    placeVerifyingKey: founderKey,
     vesselDisplayName: "founder B",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,
@@ -80,8 +89,8 @@ async function founderForSecondFace() {
   if (!chain) throw new Error("second face founder seated no persona KEL chain");
   return {
     groupB: face.personaGroupId,
-    admit: (joineeKey: string) => runDeviceAdmitEdge({
-      signerSeed,
+    admit: async (joineeKey: string) => runDeviceAdmitEdge({
+      signerSeed, edgeFrontier: await frontierFromFoundingSeed(signerSeed),
       joineeVerifyingKey: joineeKey,
       personaKelPrefix: face.personaKelPrefix,
       personaKelChain: chain,
@@ -92,6 +101,7 @@ async function founderForSecondFace() {
       islandDocUrl: null,
       hearthDaemonUrl: place.daemonUrl,
       personaUrl: face.personaUrl,
+      personaActs: await founderAndJoineeActs({ face, signerSeed, founderAtomSeed: atomSeed, joineeKey, chain }),
     }),
   };
 }
@@ -102,7 +112,7 @@ async function captureRegisterBags(root: string): Promise<string[]> {
     hostId: "register-bags",
     wikiId: "register-bags",
     storageDir,
-    rootDir: root,
+    projectionRoot: root,
     wss: new EventEmitter() as never,
     genesisDir: join(root, "genesis"),
   } as never)).rejects.toThrow(/capture-register-bags/);
@@ -149,6 +159,7 @@ describe("registerBags at node open names only the mounted face", () => {
       const faceA = await foundFace({ storageDir: larDataDir(), genesisDir });
 
       const founderB = await founderForSecondFace();
+      await ensureFaceCustodyOfGroup(founderB.groupB);
       const atomSeedB = await standFaceAtom(founderB.groupB);
       const atomB = faceAtomKeyFromSeed(atomSeedB, founderB.groupB);
       const payload = await founderB.admit(atomB.key);
@@ -160,6 +171,7 @@ describe("registerBags at node open names only the mounted face", () => {
         custody: { slots: [] },
       });
 
+      setMountedFace(0);                         // the unlock names the face the composition mounts: A
       const bags = await captureRegisterBags(root);
       assertOneFaceShape(bags, faceA.personaGroupId);
       const set = new Set(bags);

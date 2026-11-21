@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 import { mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -48,6 +49,8 @@ export default defineConfig({
     // staged face serves all three, as the operator's own config declares), relay = read for a herm, which
     // composes no origin at boot and reads this as nothing. Never LAR_WEB_ORIGIN here: a herm refuses it.
     // Spawns inherit process.env, so this one line reaches every vessel a suite stands.
-    env: { LAR_SAME_ORIGIN: "true", LAR_E2E_RUN_DIR: RUN_DIR },
+    // A `lares` CLI a suite spawns takes the harness's explicit ward and face routes (`tools/test-ward-route.mjs`); the product
+    // binary answers neither from a file (seat-harness#/the-ward).
+    env: { LAR_SAME_ORIGIN: "true", LAR_E2E_RUN_DIR: RUN_DIR, NODE_OPTIONS: [process.env["NODE_OPTIONS"], `--import=${pathToFileURL(join(import.meta.dirname, "..", "tools", "test-ward-route.mjs")).href}`].filter(Boolean).join(" ") },
   },
 });

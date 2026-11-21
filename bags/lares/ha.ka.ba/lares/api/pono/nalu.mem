@@ -1,23 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/nalu">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/nalu.mem"
-l-space     = "stable"
-mana        = 18
-manao       = 17
-namespace   = "&#x2299;"
-role        = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
-status-date = "2026-05-30"
-title       = "lar:///ha.ka.ba/lares/api/pono/nalu"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/nalu"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
+title     = "lar:///ha.ka.ba/lares/api/pono/nalu"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/nalu"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Nalu — The Changeset Wave
 
@@ -30,12 +26,12 @@ one consistent observed state delivered to all observers atomically. It is the
 architectural invariant below the grammar layer. Operators do not emit nalu; the
 engine delivers it.
 
-''Source authority:'' Talk Story session 2026-05-15; Book of Verse ch. 14;
-TW5 SyncAdaptor contract; Elm Architecture (Czaplicki 2012); UEFN SceneGraph Beta.
+''Source authority:'' the talk-story ruling that names the wave (#/rulings); Book of Verse ch. 14;
+TW5 SyncAdaptor contract; Elm Architecture (Czaplicki 2012); UEFN SceneGraph.
 
 <<~/ahu>>
 
-<<~ ahu #/the-wave-shape>>
+<<~ ahu slot=`#/the-wave-shape`>>
 
 !! The Wave Shape — Three Implementations, One Pattern
 
@@ -90,8 +86,8 @@ shore); the ''local capture'' nalu crests on the server tick (CAPTURE waves → 
 not conflate their boundaries: the `nextTick` dispatch and the host-task pacing ride the wiki shore, the 20 Hz server
 tick rides the local/daemon engine.
 
-''The capture nalu rides @daemon as an idempotent cap'': the `#has capture` cap rides the
-''@daemon'' (the bound-operator's vessel-only worker, severed from federation). Every @daemon
+''The capture nalu rides daemon-plane as an idempotent cap'': the `#has capture` cap rides the
+''@daemon'' (the bound-operator's vessel-only worker, severed from federation). Every daemon-plane
 CARRIES the cap (tending the operator's session-capture is a daemon duty); its sink (the
 `mine --source ndjson` flush) and feed (the producers) may be unwired, and that inert state is a
 valid resting point — `role = capability ≠ platform`, the cap distinct so the FLOW capture never
@@ -103,7 +99,7 @@ physics ≠ uniformity).
 
 ''The home split:'' the ''federated in-wiki nalu'' (paced by host task, CRDT waves → the widget
 shore) and the ''CRDT⟷TW5 projection-nalu'' stay ''sovereign TS'' — a first-class TS home, where much of
-the projection tech lives. The ''capture / stream nalu-gate'' re-homes ''py-side'': the stream sensorium's
+the projection tech lives. The ''capture / stream nalu-gate'' homes ''py-side'': the stream sensorium's
 gate runs in py/R per-stream, and the TS coordinator drives it — feeding the py gate, consuming its crests.
 The wave shape holds identically across the TS/py shore — collect-then-flush on either bank, the
 substrate the water, the nalu the pattern.
@@ -116,7 +112,7 @@ dispatches: the shore lands it slice by slice, and each dispatch hands every obs
 
 <<~/ahu>>
 
-<<~ ahu #/below-the-grammar>>
+<<~ ahu slot=`#/below-the-grammar`>>
 
 !! Below the Grammar Layer
 
@@ -124,9 +120,9 @@ The nalu is ''not'' a sigil the operator emits. It is what the engine delivers.
 
 ```
 Grammar layer (above nalu):
-  <<~ lele "lar:///target">>    ← sigil declares intent
+  <<~ lele to=`lar:///target`>>    ← sigil declares intent
   <<~ hui>>                   ← sigil declares sync shape
-  <<~ kukali trigger>>        ← sigil declares suspension
+  <<~ kukali trigger=`trigger`>>        ← sigil declares suspension
 
 Nalu layer (below grammar):
   refresh(changedTiddlers)     ← engine delivers consistent state
@@ -138,13 +134,14 @@ The sigils in the grammar layer express //what should happen// — relationships
 concurrency shapes, reactions. The nalu is //when consistent state arrives// — the
 moment all of those relationships become observable.
 
-''The `\tick` sigil (when it lands)'' will live at the grammar layer — it will be
-a device lifecycle declaration that says "run this procedure every nalu." The nalu
-itself has no sigil; the `\tick` sigil hooks into the nalu.
+''The `\tick` sigil'' stands at the grammar layer as registered grammar — a device
+lifecycle declaration that says "run this procedure every nalu" — and no runtime executes
+it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tick`>>). The nalu itself carries no
+sigil; the `\tick` sigil hooks into the nalu.
 
 <<~/ahu>>
 
-<<~ ahu #/yin-collapse-law>>
+<<~ ahu slot=`#/yin-collapse-law`>>
 
 !! Yin-Collapse Law
 
@@ -181,7 +178,7 @@ The TS layer forms the minimal shore around it — only what TW5 cannot do from 
 ''TS-side shore (irreducible — TW5 cannot do these):''
 * `AutomergeDocStore` — CRDT, patch subscription, MemeProvider fan-out
 * `IslandAdaptor` — the wiki shore: the landing queue and its door, the landed ledger (what each
-  wave left under each title), the per-title hand gate, the draft book, and the outbound routing of a
+  wave left under each title), the shore's one drain, the draft book, and the outbound routing of a
   hand's save and delete by the composition's own layer order
 * Network / WebRTC / WebSocket — browser/Node APIs
 * Keyhive capabilities — cryptographic operations
@@ -197,7 +194,7 @@ The TS layer forms the minimal shore around it — only what TW5 cannot do from 
 
 <<~/ahu>>
 
-<<~ ahu #/one-graph>>
+<<~ ahu slot=`#/one-graph`>>
 
 !! One Graph, Not Two
 
@@ -235,7 +232,7 @@ The widget tree receives the wave. One wiki shore stands per engine: every bag's
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-scale-note>>
+<<~ ahu slot=`#/tw5-scale-note`>>
 
 !! TW5 Unfiltered Delivery — Scale Note
 
@@ -250,19 +247,20 @@ expressions, wikitext) dominates, not the delivery lookup.
 that gate on `tiddler.bag === "bagX"` are hash lookups on a tiddler field.
 Fast by default. No per-bag scoping needed in TW5's core refresh cycle.
 
-''When a TW5 core extension becomes necessary:'' If VmPool scale reaches
-100+ VMs with 1000+ widgets each, or if CRDT patch frequency exceeds 600/second
-per VM, re-evaluate. The Stranger's concern (unfiltered delivery at scale) is
-real but not yet triggered at current projected scale.
+''When a TW5 core extension becomes necessary:'' if a vessel's island pool
+reaches 100+ wiki VMs with 1000+ widgets each, or CRDT patch frequency exceeds
+600/second per VM, re-evaluate. Below those figures the Stranger's concern
+(unfiltered delivery at scale) stands as a watched threshold, never a live cost;
+the record keeps the projection the figures rest on (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/nalu-record`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/uefn-alignment>>
+<<~ ahu slot=`#/uefn-alignment`>>
 
-!! UEFN SceneGraph Alignment (Beta, June 2025)
+!! UEFN SceneGraph Alignment
 
-The SceneGraph Beta unifies editor and runtime — all scene elements are now
-Verse-addressable. `OnSimulate(StagedUpdates)<suspends>` is the canonical entry
+The SceneGraph unifies editor and runtime — every scene element answers to
+Verse. `OnSimulate(StagedUpdates)<suspends>` is the canonical entry
 point for per-tick logic across the full unified scene.
 
 ''Nalu ↔ OnSimulate mapping (confirmed):''
@@ -275,13 +273,15 @@ point for per-tick logic across the full unified scene.
 | `changedTiddlers` map | `StagedUpdates` array | changeset batch |
 | Widget `refresh()` method | Device `OnSimulate()` method | per-observer delivery |
 
-''Coordinate system note (v36.00):'' UEFN transitioned to LUF (Left, Up, Forward)
-coordinates. Any `spatial:contains`, `spatial:adjacent`, or `spatial:portal` pranala
-edges encoded with FRU orientation assumptions need migration. See `uefn-scene.md`.
+''Coordinate system note:'' UEFN reads LUF (Left, Up, Forward) coordinates. A
+`spatial:contains`, `spatial:adjacent` or `spatial:portal` pranala edge MUST encode LUF
+orientation; an edge that assumes FRU reads wrong. See
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/uefn-scene`>>; the record keeps the
+SceneGraph release this alignment read against (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/nalu-record`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-surface>>
+<<~ ahu slot=`#/the-surface`>>
 
 !! The surface ~ one carrier per concept
 
@@ -295,46 +295,54 @@ home; every other carrier on the surface points back here.
 | the gate families | `lar:///ha.ka.ba/lararium/api/projection-nalu` | accumulate and coalesce, their guards, the level-triggered reconcile queue |
 | the engine | `lar:///ha.ka.ba/lararium/api/nalu-engine` | the in-wiki applier: one change, landed synchronously |
 | the Automerge shore | `lar:///ha.ka.ba/lararium/docs/meme-provider` | the fan-out between a document and its projections |
-| the wiki shore, its law | `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge` | a tiddler replaces a tiddler; the landed ledger, the base, the pacing gate, the discrete acts |
+| the wiki shore, its law | `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge` | a tiddler replaces a tiddler; the landed ledger, the base, the drain, the discrete acts |
 | the wiki shore, its adaptor | `lar:///ha.ka.ba/lararium/api/island-adaptor` · `lar:///ha.ka.ba/lararium/api/save-path` · `lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor` | the adaptor's invariants, the outbound save path, the file's own account |
-| the layers a hand lands in | `lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model` | the composition's order, the working layer, the routing table |
+| the layers a hand lands in | `lar:///ha.ka.ba/lares/api/pono/recipe-layer-model` | the composition's order, the working layer, the routing table |
 | the disk shore | `lar:///ha.ka.ba/lararium/api/disk-projection` · `lar:///ha.ka.ba/lararium/node/disk-projector` | the projection law and the node hand that enacts it |
 | the roundtable | `lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable` | the syncer seams as talked through, kept as testimony |
 
 ''No clock decides on this surface.'' A timer may pace a hand at the island's edge; what leaves, what
 lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono/no-global-now`).
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/disk-projector">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tick">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/servo`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/nalu-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/meme-provider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/disk-projector`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tick`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Talk-story ruling, 2026-05-15: the nalu names the changeset delivery pulse below the grammar layer; operators never emit it, the engine delivers it. The record keeps the dated readings beside it: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/nalu-record`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-task-tree`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/uefn-scene`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1DCFBYwhqo2rb6xNCI64xVPP3Ohv-bbyEXD_4NJCSoc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zsoECzVklmTLbQcMy-tIReWK9RRoVqnMxNfA0Pa-kEw`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

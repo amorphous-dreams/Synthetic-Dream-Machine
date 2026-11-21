@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/lease-end/steps/step-019/` — 3 record(s) here, 3 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/lease-end/steps/step-019/`
+
+The scratch planning records of `.lares-scratch/lease-end/steps/step-019/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 3 record(s) stand here and 3 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[lease-end/steps/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/brief]] | brief | 2026-11-07 | `brief.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/final]] | hand-back | 2026-11-07 | `final.md` |
+| [[out|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-019/out]] | hand-back | 2026-11-07 | `out.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EyAjNhbvRBu2lILLGr0axounJjGZkpR1Jl4fyT2bP14`>>
+
+<<^ code=`&#x0004;` to=`?`>>

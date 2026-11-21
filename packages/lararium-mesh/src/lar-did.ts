@@ -15,7 +15,7 @@ export type LarDid = string;
 export const LAR_DID_RE = /^0x[0-9a-f]{64}$/;
 
 /** The one DID spelling: 0x + bare 32-byte hex. Exported so a mint never hand-builds the prefix. */
-export const didFromVerifyingKey = (vkHex: string): LarDid => `0x${vkHex}`;
+export const didFromVerifyingKey = (treeKeyHex: string): LarDid => `0x${treeKeyHex}`;
 
 /** The bare verifying-key hex a DID carries; a value with no prefix passes through for the verifier
  *  to refuse on shape. */

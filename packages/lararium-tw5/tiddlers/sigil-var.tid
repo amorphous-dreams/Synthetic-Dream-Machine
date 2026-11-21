@@ -4,11 +4,11 @@ lar-kind: pragma-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/waiho
 lar-mirror-of: waiho
 lar-see-also: waiho
-lar-open-pattern: <<~\s*var\s+([\w-]+)(?:\s*=\s*|\s+)([^\n>]+?)\s*>>
+lar-open-pattern: <<~\s*var\s+name=`([\w-]+)`\s+value=`([^`]*)`(?:\s+sigil=`[^`]*`)?\s*>>
 lar-close-pattern: <<~\/var\s*>>
-lar-example: <<~ var name "value">>
+lar-example: <<~ var name=`name` value=`value`>>
 type: text/vnd.tiddlywiki
 
-\procedure ~var(p1:"" p2:"" p3:"")
-<$transclude $variable="~waiho" p1=<<p1>> p2=<<p2>> p3=<<p3>>/>
+\procedure ~var(name:"" value:"" sigil:"")
+<$transclude $variable="~waiho" name=<<name>> value=<<value>> sigil=<<sigil>>/>
 \end

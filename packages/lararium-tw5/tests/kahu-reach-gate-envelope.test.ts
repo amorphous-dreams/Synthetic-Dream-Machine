@@ -9,7 +9,7 @@
  */
 import { describe, test, expect } from "vitest";
 import type { Verb } from "@lararium/mesh";
-import { BAG_IDS, bagUri } from "@lararium/mesh";
+import { BAG_IDS, bagUri, storedLarRecord, REALM_ID_TIDDLER, REALM_BAG_DOMAIN, realmDocPointer, realmDocUrl, realmStandingPointer } from "@lararium/mesh";
 import { gateRoutedVerb, routedInnerBags } from "../src/verb-local-dispatch.js";
 import { requireKahuReach, type CapabilityVerifier } from "@lararium/mesh";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
@@ -23,8 +23,9 @@ describe("a routed envelope's system bags reach the Kahu gate", () => {
   test("a MOVE names its destination and its source", () => {
     expect(routedInnerBags(verb({ verb: "MOVE", args: { "from-bag": BAG_IDS.lares, "to-bag": BAG_IDS.lararium } }))).toEqual([BAG_IDS.lararium, BAG_IDS.lares]);
   });
-  test("CONTROLS: a user bag, a wiki slot and a flat verb name none", () => {
-    expect(routedInnerBags(verb({ verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/lares/working", "to-bag": bagUri("garden") } }))).toEqual([]);
+  test("ordinary destination and source bags also reach the gate", () => {
+    // RED today: the gate filters out all ordinary bags before checking them.
+    expect(routedInnerBags(verb({ verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/lares/working", "to-bag": bagUri("garden") } }))).toEqual([bagUri("garden"), "lar:///ha.ka.ba/wikis/lares/working"]);
     expect(routedInnerBags(verb({ "to-bag": BAG_IDS.lares }))).toEqual([]);
   });
   test("CONTROL: without the gate flag the action reactor asks itself and refuses a stranger", async () => {
@@ -34,9 +35,10 @@ describe("a routed envelope's system bags reach the Kahu gate", () => {
   });
 });
 
-describe("a recipe's library bag mounts from the registry row, else from the Kahu realm for a system bag", () => {
+describe("a recipe's library bag mounts from the Kahu realm's standing document for a house canon bag, else from its registry row", () => {
   const accessor = (rows: Record<string, string>, doc: unknown): CatalogAccessor => ({
     urlOf: async (bag) => rows[bag] ?? null,
+    recordOf: async () => null,
     handle: async () => ({ doc: () => doc }) as never,
   }) as unknown as CatalogAccessor;
 
@@ -45,6 +47,19 @@ describe("a recipe's library bag mounts from the registry row, else from the Kah
     expect(await libraryDocUrl(empty, bagUri("garden"))).toBe("automerge:garden");
     expect(await libraryDocUrl(empty, bagUri("orchard"))).toBeNull();
     expect(await libraryDocUrl(empty, BAG_IDS.lararium)).toBeNull();
+  });
+
+  test("a house canon library mounts from the realm's standing document while a registry row names another (CONTROL: with no realm standing, the row answers; a user bag reads its row beside a realm)", async () => {
+    const REALM = "ab".repeat(32);
+    const tiddlers: Record<string, unknown> = {};
+    const put = (k: string, text: string) => { tiddlers[k] = storedLarRecord(k, { text }, "test"); };
+    put(REALM_ID_TIDDLER, REALM);
+    put(realmDocPointer(REALM), realmDocUrl(REALM));
+    put(realmStandingPointer(REALM), JSON.stringify([{ kind: REALM_BAG_DOMAIN, realmId: REALM, bagUri: BAG_IDS.lares, docUrl: "automerge:lares-live", keptBy: ["cd".repeat(32)], readTier: "contract", signatures: [{ signer: "cd".repeat(32), sig: "00".repeat(64) }] }]));
+    const rows = { [BAG_IDS.lares]: "automerge:stray", [bagUri("garden")]: "automerge:garden" };
+    expect(await libraryDocUrl(accessor(rows, { tiddlers }), BAG_IDS.lares)).toBe("automerge:lares-live");
+    expect(await libraryDocUrl(accessor(rows, { tiddlers }), bagUri("garden"))).toBe("automerge:garden");
+    expect(await libraryDocUrl(accessor(rows, { tiddlers: {} }), BAG_IDS.lares)).toBe("automerge:stray");
   });
 });
 
@@ -69,5 +84,65 @@ describe("the gate refuses a routed envelope that names system canon, from a han
     const reactor = makeActionReactorFor("ADD", { composite: new CompositeStore() });
     await expect(reactor({ title: "x", "from-bag": bagUri("garden"), "to-bag": BAG_IDS.lares, "change-id": "c", ...claim }, { daemon: new CompositeStore(), invocation: verb({}), cap: async () => ({ ok: true }) } as never))
       .rejects.toMatchObject({ reason: "kahu-reach" });
+  });
+});
+
+test("the gate hands the presenter to the verifier's Kahu predicate", async () => {
+  const seen: unknown[][] = [];
+  const verifier: CapabilityVerifier = { verify: async () => ({ ok: true }), kahuReach: async (...args: unknown[]) => { seen.push(args); } };
+  await gateRoutedVerb(verb({ verb: "MOVE", args: { "from-bag": "lar:///ha.ka.ba/wikis/lares/working", "to-bag": BAG_IDS.lares } }), verifier, "sibling-atom", true);
+  expect(seen).toEqual([[BAG_IDS.lares, "wiki-act", "sibling-atom"]]);
+});
+
+
+test.each(["from-bag", "to-bag"])("the routed gate verifies an ordinary inner %s", async (field) => {
+  const source = "lar:///ha.ka.ba/wikis/home/working";
+  const destination = bagUri("garden");
+  const seen: string[] = [];
+  const verifier: CapabilityVerifier = { verify: async ({ bagUrl }) => {
+    seen.push(bagUrl);
+    return { ok: bagUrl !== source && bagUrl !== destination, reason: "no grant" };
+  } };
+  // CONTROL: an envelope with no denied inner bag routes through the outer cap.
+  await expect(gateRoutedVerb(verb({ verb: "CLEAR", args: {} }), verifier, "mounted", true)).resolves.toBeUndefined();
+  expect(seen.length).toBeGreaterThan(0);
+  // RED today: only the outer cap and system-canon inner bags reach this gate.
+  const inner = { [field]: field === "from-bag" ? source : destination };
+  await expect(gateRoutedVerb(verb({ verb: "MOVE", args: inner }), verifier, "mounted", true)).rejects.toThrow(/capability denied/);
+});
+
+
+describe("Sol's read (slice 4): the gate derives each inner bag's grade from the act it parses", () => {
+  const recording = () => {
+    const seen: Array<[string, string]> = [];
+    const kahu: string[] = [];
+    const verifier: CapabilityVerifier = {
+      verify: async ({ bagUrl, access }) => { seen.push([bagUrl, access]); return { ok: true }; },
+      kahuReach: async (bag) => { kahu.push(bag); },
+    };
+    return { seen, kahu, verifier };
+  };
+  const wikiAct = (inner: Record<string, unknown>, innerVerb: string) =>
+    ({ requestId: "r", title: "t", action: "wiki-act", requestedBy: "mounted", args: { wiki: "home", verb: innerVerb, args: inner } }) as never;
+
+  test("RED: a bag named as both source and destination takes the stronger grade; a MOVE's source is admin", async () => {
+    const B = bagUri("garden");
+    const a = recording();
+    await gateRoutedVerb(wikiAct({ bag: B, "from-bag": B }, "CLEAR"), a.verifier, "mounted", true);
+    expect(a.seen.filter(([bag]) => bag === B).map(([, access]) => access)).toContain("admin");
+    expect(a.seen.some(([bag, access]) => bag === B && access === "read")).toBe(false);
+    const m = recording();
+    await gateRoutedVerb(wikiAct({ "from-bag": B, "to-bag": bagUri("orchard") }, "MOVE"), m.verifier, "mounted", true);
+    expect(m.seen.find(([bag]) => bag === B)?.[1], "a MOVE deletes at its source").toBe("admin");
+  });
+
+  test("RED: a COPY out of canon asks no Kahu hand for its source; a MOVE out of canon does", async () => {
+    const c = recording();
+    await gateRoutedVerb(wikiAct({ "from-bag": BAG_IDS.lares, "to-bag": bagUri("garden") }, "COPY"), c.verifier, "mounted", true);
+    expect(c.kahu).toEqual([]);
+    expect(c.seen.find(([bag]) => bag === BAG_IDS.lares)?.[1], "a copy reads its source").toBe("read");
+    const m = recording();
+    await gateRoutedVerb(wikiAct({ "from-bag": BAG_IDS.lares, "to-bag": bagUri("garden") }, "MOVE"), m.verifier, "mounted", true);
+    expect(m.kahu).toEqual([BAG_IDS.lares]);
   });
 });

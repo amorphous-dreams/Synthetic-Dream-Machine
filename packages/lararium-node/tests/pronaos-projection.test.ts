@@ -19,7 +19,7 @@ function fixture(): { web: string; genesis: string; cid: string } {
   writeFileSync(join(web, "assets/wiki.worker-def.js"), "worker");
   const blob = { id: "fixture", version: "1", sha256: cid, mimeType: "application/octet-stream" };
   writeFileSync(join(genesis, "seed.json"), JSON.stringify({
-    format: "lararium-genesis-seed/v1", actorSeed: "fixture-actor", blobs: { fixture: blob },
+    format: "lararium-genesis-seed", actorSeed: "fixture-actor", blobs: { fixture: blob },
     tiddlers: {
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: regionCids.engine } },
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar": { tiddler: { cid: regionCids.grammar } },
@@ -32,7 +32,7 @@ function fixture(): { web: string; genesis: string; cid: string } {
 
 function artifact(f: ReturnType<typeof fixture>, routes = ["/assets/index-abc.js", "/assets/wiki.worker-def.js"]): object {
   const names = [["/", "index.html", "text/html; charset=utf-8", "no-store"], ["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json", "no-store"], ...routes.map((path) => [path, path.slice(1), "application/javascript", "immutable"])] as const;
-  return { schema: "lararium-pronaos-artifact/v1", routes: names.map(([path, file, contentType, cache]) => ({ path, file, contentType, cache, sha256: createHash("sha256").update(requireRead(f.web, file)).digest("hex") })) };
+  return { schema: "lararium-pronaos-artifact", routes: names.map(([path, file, contentType, cache]) => ({ path, file, contentType, cache, sha256: createHash("sha256").update(requireRead(f.web, file)).digest("hex") })) };
 }
 
 function requireRead(root: string, file: string): Buffer {

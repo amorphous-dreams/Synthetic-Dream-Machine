@@ -80,7 +80,7 @@ assert_status /private/../assets/missing.js 404
 # A knocked path on each socket route reaches the peer; bare `/ws` is no gate's path and refuses at the carrier.
 knock=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
 node "$SCRIPT_DIR/ws-client.mjs" "$PORT" "/ws/$knock"
-node "$SCRIPT_DIR/ws-client.mjs" "$PORT" "/oracle/$knock"
+node "$SCRIPT_DIR/ws-client.mjs" "$PORT" "/flow/$knock"
 assert_status /ws 404
 
 nginx_id=$(docker compose -p "$PROJECT" -f "$SCRIPT_DIR/compose.yml" ps -q nginx)

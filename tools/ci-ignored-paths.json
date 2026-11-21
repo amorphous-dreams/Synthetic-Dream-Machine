@@ -1,0 +1,4 @@
+{
+  "about": "The canon paths: a push whose change touches these alone raises no held-out run and runs CI's doorstep set alone. .github/workflows/held-out.yml carries these globs as push paths-ignore (Actions cannot read a file, so tools/ci-ignored-paths.test.mjs pins them equal); ci.yml's scope job reads a push against this file through tools/ci-ignored-paths.mjs; tools/land-train.mjs reads it to carry a road commit whose push the list skipped, and tools/span-push.mjs to push a canon change to develop or main past runs it cannot cancel.",
+  "paths": ["bags/**/*.mem", "**/*.md", "wikis/**", "CHANGELOG.md"]
+}

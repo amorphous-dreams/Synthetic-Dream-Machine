@@ -1,7 +1,7 @@
 /**
  * re-anchoring — the record that a guest's dwelling moved from a HOST to a REALM, and nothing else.
  *
- * A guest dwells WITH a host: a dyad, one edge, and the historically fatal shape — across six surveyed
+ * A guest dwells WITH a host: a dyad, one edge, and the shape the record shows failing — across six surveyed
  * hospitality institutions, one-sided admission always booked the shortfall as RANK. A realm's own ceremony
  * re-anchors that dwelling INTO the realm, and this records THAT it happened.
  *

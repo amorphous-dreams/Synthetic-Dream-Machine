@@ -24,7 +24,7 @@ const pubOf  = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 
 /** A build the pipeline would emit — every digest present, nobody standing behind it yet. */
 const BUILD: Omit<PluginBuildAttestation, "builder"> = {
-  format:               "lararium-tw5-plugin-build/v1",
+  format:               "lararium-tw5-plugin-build",
   canonicalTitle:       "$:/plugins/lares/memetic-wikitext",
   moduleManifestPath:   "dist-plugin/module-manifest.json",
   moduleManifestSha256: "a".repeat(64),

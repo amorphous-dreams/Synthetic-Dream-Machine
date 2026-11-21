@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/b5b-bdab8bc9b73aafd7868f2a207f066ca7e38e79fe.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP b5b bdab8bc9b73aafd7868f2a207f066ca7e38e79fe
+read: blind Opus custody read VII over b81ba9b37..21da1aa7a (LAND-AFTER-CURES: the place session's signer never dropped, cured red-first in step 11), blind Opus read VIII over step 11 and the span merge a769c9244 (LAND, both parents compared hunk for hunk), Luna's cold read (HOLD on one unpinned reach change: pinned by tests/e2e/session-sign-reach.test.ts); the controller's reruns of the lane's reds at each step.
+owed (before the rite): /home/joshu/.lares-scratch/b5b/resume.md, 'Controller, after step 11' and Blind-Warden-VIII's P3s.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qhm-LNaBXfzIql7xIzi9srPW5EdBnkfi2EyH2Y5Vfjs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

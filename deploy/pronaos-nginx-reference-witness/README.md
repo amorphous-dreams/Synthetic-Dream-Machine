@@ -16,7 +16,7 @@ The harness proves the carrier boundary:
   seed-named CAS bytes receive long-lived immutable caching;
 - undeclared, missing, traversal-shaped, and private paths refuse without SPA
   fallback;
-- a knocked socket path (`/ws/<knock>`, `/oracle/<knock>`) forwards an HTTP upgrade
+- a knocked socket path (`/ws/<knock>`, `/flow/<knock>`) forwards an HTTP upgrade
   to an internal-only upstream, and bare `/ws` refuses;
 - NGINX receives no private data mount and the upstream has no host-published
   port.

@@ -1,0 +1,117 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/glass-mirror/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/glass-mirror/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/glass-mirror/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/glass-mirror/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/glass-mirror/report.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/glass-mirror/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/glass-mirror-a-posiwid-reading-at-725c31b72`>>
+
+! Glass mirror: a POSIWID reading at 725c31b72 (Fable scout, Glass-Reader, 2026-11-11)
+
+Saved by the controller from the scout's hand-back. The harness refused the subagent's own write.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/short-reading`>>
+
+!! Short reading
+The page stacks two surfaces:
+* `#mirror`: an in-page TW5 engine, the "glass mirror", at width full or skinny.
+* `#projection`: the worker-rendered floor, width none, carrying `lar:frame` + `data-lar-rid`.
+
+When the mirror shows, CSS hides `#projection`. The weld and the smoke's DOM probe both read the hidden floor.
+
+| Observation | Verdict | Cause |h
+| Pane "labelled &#64;daemon" | By design, misread | It is a summon BUTTON in the heading. Nothing names the shown wiki. |
+| Unstyled TW5 | Unbuilt | No TW5 theme plugin (vanilla/snowwhite) ships in the genesis boot set. The core blob carries no `$:/themes/tiddlywiki/vanilla/base`. |
+| Stock GettingStarted | Unbuilt, plus a boot-order gap | Core's shadow `$:/DefaultTiddlers` reads GettingStarted. No house override exists, and lar-story opens the story inside engine boot, before any record lands (tw5-vm-gaps-scout row 17). |
+
+''Built:'' the mirror machinery. One door (`standMirror`), skinny then widen, one step down, crash records, the write road (`port:write`), no syncer/saver.
+
+''Gaps:'' what the engine gets fed (theme, default story, palette pointer) and what the weld reads.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-intent`>>
+
+!! Canon intent
+* `dreamdom.mem#/the-width-dial`: full → skinny → story → none.
+* `d3-glass-lane.mem#/the-visible-mirror`: the mirror IS the surface. Default full, measured, never requested.
+* Owed in canon: G3 doors (modal, notify, clipboard, download, route); G6 goldens 1–13 at full against stock TW5 (arc M2–M4).
+* Canon is silent on theme/styling.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gap-table`>>
+
+!! Gap table (abridged)
+* ''Wired:'' mirror door; skinny/widen; step-down; crash records; mirror visible; edit road; no syncer.
+* ''Partial:'' plugin gate on `sealedRest` (the feed never reaches inputs); G3 doors (only scroller, popup, focus).
+* ''Absent:''
+** stock theme blob;
+** palette (boot shadows point `$:/palette` at `lar:///ha.ka.ba/lares/api/lararium/palette/gruvbox-dark`, but the carrier titles itself `lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-dark`, and its type reads memetic-wikitext);
+** house default story;
+** pane names the shown wiki;
+** goldens;
+** weld reads the person's surface;
+** node SSR projection (D6/D14).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-the-weld-would-need`>>
+
+!! What the weld would need (tools/browser-weld/weld.mjs:75-92 drives the hidden #projection)
+* Assert `data-lar-shown`, then drive `#mirror`'s shadow root with real input.
+* Wait for the settle (`full`, or `skinny` with a named reason).
+* ''Styled:'' a rule for `.tc-sidebar-scrollable`; computed `position: fixed` on the sidebar; toolbar SVG width bounded; a palette colour reaches the background.
+* ''Content:'' the first story title equals the wiki's own `$:/DefaultTiddlers`, not GettingStarted.
+* ''Editable:'' real edit, type, save, then read back from the WORKER.
+* ''Label:'' the pane names the shown wiki, matching the vessel card.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/suggested-build-order`>>
+
+!! Suggested build order (red first)
+# The weld reads the mirror.
+# The theme ships by CID (one blob class in build-genesis-island + bootSetPluginCids, read by worker and mirror alike).
+# The palette pointer trues to the carrier title, and the carrier becomes a palette dictionary.
+# The default story belongs to the wiki. The mirror opens its story after the port's first snapshot, never inside engine boot.
+# The pane names its surface and carries the held-skinny reason.
+# G3 doors.
+# M4 goldens at full against stock.
+# Isomorphic witness on a node fake-document camera, ahead of D6 SSR.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/uncertainties`>>
+
+!! Uncertainties (scout's own)
+* ''Inferred:'' the person saw the mirror while the probe read the floor; why it read skinny; the visual symptoms (not rendered).
+* ''Not traced:'' who writes `$:/StoryList` in the worker.
+* ''Tension:'' "no VM on the main thread" was re-read by the 2026-10-29 ruling as "no SOVEREIGN VM and no KEY on a surface". The mirror runs a whole engine on the page under that ruling.
+
+Full hand-back text lives in the controller transcript (session eb8cf0a6), 2026-11-11.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gv7AgA19cfMxSq3eoEHL0C7Or2ZJnHDAdBaED8euYos`>>
+
+<<^ code=`&#x0004;` to=`?`>>

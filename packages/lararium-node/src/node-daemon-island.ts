@@ -6,32 +6,43 @@
  */
 
 import { parentPort } from "worker_threads";
-import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter, vesselDyadAsker } from "./sovereign-island-model.js";
+import { runSovereignWorker, vesselReceiptAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js";
 import { answerShore } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
-import { HULLS_FULL, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
+import { HULLS_FULL, freshBasePort, islandLiveDocDoor, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 import { islandStorageDirOf, nodeSealedStoreShore } from "./sealed-store-island.js";
 import { fileJournal } from "./vessel-journal-file.js";
 import { admitJournalAppend } from "./journal-append-gate.js";
 import { larDataDir, larSealHome } from "./vessel-paths.js";
 import { readKahuCabalBoard } from "./commands/nexus-cabal.js";
+import { heldCharterSeat } from "./commands/offer-retire.js";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 
 // The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
-// to the vessel through the custody write door, and the vessel's main thread seals them under the key it holds.
+// to the vessel through its custodyWrite capability, and the vessel's main thread seals them under the key it holds.
 // The island names the carrier, never a path.
-// THE REST DOOR: this island's Repo keeps no store for the slot documents it mints, so each mint asks the vessel
-// to rest the new document and records its binding only on the vessel's acknowledgment.
-const restOnVessel = parentPort ? vesselRestAsker(parentPort) : null;
+// THE RECEIPT CAPABILITY: this island's Repo keeps no store for the slot documents it mints, so each mint asks the
+// vessel for a durability receipt over the new document and records its binding only on the vessel's acknowledgment.
+const receiptFromVessel = parentPort ? vesselReceiptAsker(parentPort) : null;
 const sealOnVessel = parentPort ? vesselCustodyWriter(parentPort) : null;
-// The vessel keeps the live fleet reading on its main thread and answers the daemon through this door.
+// The vessel keeps the live fleet reading on its main thread and answers the daemon through its dyad capability.
 const dyadOnVessel = parentPort ? vesselDyadAsker(parentPort) : null;
+// THE SESSION SIGN DOOR: this island holds no session key. It names the invocation a session placed, and the vessel's
+// main thread answers from that session: its certificate, its proof subject, the vessel's own chain, each signature.
+const sessionsOnVessel = parentPort ? vesselSessionDoor(parentPort) : null;
+// THE DOCUMENT STORE'S DOOR (sealed-store#/owed): the vessel's Repo seals each save through the holder here, under the
+// session that booked the change, and opens each value it hydrates. The island asks the vessel for a bag's live
+// document across the same port to cut a from-now admission's fresh base.
+const vesselPort = parentPort
+  ? { post: (msg: unknown) => parentPort!.postMessage(msg), listen: (cb: (msg: unknown) => void) => { parentPort!.on("message", cb); return () => { parentPort!.off("message", cb); }; } }
+  : null;
+const liveOnVessel = vesselPort ? islandLiveDocDoor(vesselPort, { idPrefix: `docstore-live-${process.pid}` }) : null;
 
 const JOURNAL_KINDS: ReadonlySet<JournalKind> = new Set(["bag-projected"]);
 
@@ -63,24 +74,29 @@ runSovereignWorker((manifest) => {
   const islandStorageDir = islandStorageDirOf(manifest);
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
-  // plus the Ui/Persona/Circle seeds, from the single site. This entry seeds nothing of its own. The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
+  // plus the Ui/Persona/Circle seeds, from the single site, into the daemon wiki's shadow layer. This entry seeds nothing of its own.
   const base = makeOperatorDaemonBehavior(manifest, {
-    // The daemon wiki projects to `<root>/wikis/daemon/` through the same projector a wiki island mounts
-    // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the
+    // The daemon wiki projects to `<projections>/faces/<pet name>/wikis/daemon/` through the same projector a wiki island mounts: its working
+    // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
-    ...(restOnVessel ? { restDocuments: restOnVessel } : {}),
+    ...(receiptFromVessel ? { askReceipt: receiptFromVessel } : {}),
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     // THE KAHU PREDICATE'S BOARD: this vessel's charter and the admission acts its carriage board carries, read at
-    // ACCESS through the island's own repo. Every write door into system canon asks it (kahu-canon-reach).
-    kahuCabal:      (ctx: IslandContext) => () => readKahuCabalBoard(ctx.repo, larSealHome(), manifest.daemonAuth?.vesselVerifyingKey),
+    // ACCESS through the island's own repo. Every write door into house canon asks it (kahu-canon-reach).
+    kahuCabal:      (ctx: IslandContext) => () => readKahuCabalBoard(ctx.repo, larSealHome(), manifest.daemonAuth?.placeVerifyingKey),
+    // THE CHARTER SEAT THIS VESSEL HOLDS, read by name off the seal home at each promotion: `offer-promote` refuses
+    // `offer-retire-unseated` where it reads none, before canon moves (offering#/the-canon-offer).
+    charterSeat:    async () => heldCharterSeat(larSealHome())?.proof ?? null,
     // THE SEALED STORE'S SHORE: the content-key holder stands in this island, beside its Keyhive identities, over
     // the vessel's own `sealed/`, `cad/` and cleartext-local tiers. An island with no directory of its own gets
     // none, and its `sealed-*` verbs refuse by name.
     ...(islandStorageDir !== null ? { sealedStore: nodeSealedStoreShore(islandStorageDir) } : {}),
+    ...(sessionsOnVessel ? { sessionProof: sessionsOnVessel } : {}),
+    ...(vesselPort ? { docStoreDoor: vesselPort } : {}),
+    ...(liveOnVessel ? { freshBase: freshBasePort(liveOnVessel) } : {}),
     ...(sealOnVessel ? {
-      persistArchive:     (bytes: Uint8Array) => sealOnVessel("archive", bytes),
-      persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
+      persistVeilArchive: (bytes: Uint8Array, face: string) => sealOnVessel("veil", bytes, face),
     } : {}),
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
     // answered from the projector this island mounts. `lares shore` reaches it by this verb, beside the

@@ -1,0 +1,60 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+rating    = "kapu"
+role      = "the hoard workshop — one of the Lindwyrm's hoards, hidden beneath the centre of Old Delos, where Telarus builds the Lar's substrate and Reya sits as a guest; the frame of the binding-arc history memes (referee view)"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/the-hoard-workshop"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The Hoard Workshop (referee)
+
+''Stratum:'' beneath Old Delos (underground, Provisional) · ''Scale:'' Site (one workshop in one hoard).
+
+''Provisional throughout.'' The operator gave this frame on 2026-11-12.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/place`>>
+
+!! The Place
+
+A workshop in one of the Lindwyrm's hoards, hidden at the centre of Old Delos. The hoard keeps what the Patroness gathered over three empires: anomalous off-planet objects, Gaian artifacts, magitech substrate nobody could price. The workshop sits inside that store. Telarus builds the Lar's substrate here, and the crossroads hearth burns on his bench. Reya sits as a guest ([[Reya|lar:///ha.ka.ba/elyncia/characters/primary-characters/reya]]). The story-spine of Telarus's fall holds ([[Telarus|lar:///ha.ka.ba/elyncia/characters/npcs/telarus]], [[the ship|lar:///ha.ka.ba/elyncia/concepts/the-black-widow]]).
+
+''The gods of the founding years.'' Before the conclave of 5002, two gods stood in the DreamNet's founding work: Grandmother Spider and Hermes, whose pet-name-title runs St Gulick.
+
+''The frame.'' The binding-arc history memes speak from this room. The narrator, the Lar, writes at the bench and holds the shop's ledger.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open`>>
+
+!! Open
+
+* ''Old Delos and High Delos.'' The Theatre Quarter rose into the sky as High Delos in YOLD 5002. Whether the workshop beneath Old Delos sank with the city's ground, stayed under what remained, or moved with the levitation stays open.
+* ''The conclave hoard-room.'' The DreamNet conclave of 5002 convened in a hidden astral-dream-realm hoard-room connected to the House of Masks ([[House of Masks|lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/house-of-masks]]). Whether this workshop and that room share a door stays open.
+* ''Underground.'' The operator offered "underground" as a question; this meme reads it Provisional.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/telarus`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/reya`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/the-black-widow`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-binds-place-and-person/the-parallel-at-the-crossroads`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eCKevL3gn_MXD_Zbf0Xi05Tbqb74cHemqeiOelsG41I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -5,18 +5,9 @@
  * whether anything on disk could back it. It answers nothing about WHERE — and that separation follows
  * the scheme's own law, since `lar:` names and never fetches.
  *
- * ── WHY NO DISK MAPPING LIVES HERE ANY LONGER ───────────────────────────────────────────────────
- * An earlier shape carried one: `ha.ka.ba/lares/{path}` → `packages/lares-core/memes/{path}.mem`, and a
- * matching rule for the engine packages. The corpus then moved into `bags/`, those trees stopped
- * existing, and the mapping kept computing paths that named nothing. Nothing joined them — no production
- * caller ever read the fields — so the rot surfaced nowhere and the header went on instructing every
- * reader, human or agent, to look in a directory the repo had deleted.
- *
- * A mapping nobody joins cannot go stale LOUDLY; it can only mislead quietly. So it went, rather than
- * getting re-pointed at `bags/` and inviting the same silence next time the corpus moves.
- *
- * DISK RESOLUTION RIDES THE CARRIER WALK instead (`listCarriers` over a bag directory), where a wrong
- * path fails immediately and visibly against a real filesystem.
+ * ── NO DISK MAPPING LIVES HERE ──────────────────────────────────────────────────────────────────
+ * A mapping nobody joins cannot go stale loudly; it can only mislead quietly. Disk resolution rides the carrier walk
+ * (`listCarriers` over a bag directory), where a wrong path fails immediately and visibly against a real filesystem.
  *
  * NOTE: `lararium-mesh` stays isomorphic — no `fs`, `path`, or `process` imports. The host reads files.
  *
@@ -57,11 +48,8 @@ export interface LarAuthority {
  * trust tier, and a reader derives none of those from it: a captured exchange turn split into memes by
  * speaker-aim URI reads as a canon carrier holding a hostful address permanently.
  *
- * So this interface adds the authority and NARROWS NOTHING. An earlier shape pinned
- * `kind: "caps-virtual"` and `virtual: true` here, which encoded //hostful implies no disk backing// in
- * the type system — a residency verdict read off the address form, and unfalsifiable at the call site
- * because the type forbade the other answer. `kind` and `virtual` now carry whatever the topology
- * classifier reads, exactly as they do for a hostless address.
+ * So this interface adds the authority and narrows nothing: `kind` and `virtual` carry whatever the topology classifier reads,
+ * exactly as they do for a hostless address. Hostful implies no disk backing and no residency verdict.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary
  */

@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art.mem"
 l-space       = "adjacent"
-mana          = 18
-manao         = 17
-manaoio       = 17
 render-target = "docs"
 role          = "side-car to the genesis arc — the 8-system prior-art comparison battery and 7 open design tests that shaped kahea/ahu/loulou design pressure and the W3C lineage verdict. Reference, not narrative."
 title         = "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art"
@@ -17,17 +13,17 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Prior Art Comparison Battery — Genesis Side-Car
 
-The design-research that sits beside [[the genesis arc|the-grammar-wakes.md]]: a formal prior-art review that produced the W3C lineage verdicts now in `lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext#/w3c-lineage-verdicts`.
+The design-research that sits beside [[the genesis arc|lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes]]: a formal prior-art review that produced the W3C lineage verdicts now in `lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext#/w3c-lineage-verdicts`.
 
 Where //The Grammar Wakes// tells how the teeth found the page, this side-car holds the cold-eyed survey that ran alongside it — eight living systems weighed for what each could teach the new grammar. The verdicts landed in the live spec; this record keeps the per-system reasoning that produced them.
 
 <<~/ahu>>
 
-<<~ ahu #/comparison-axes>>
+<<~ ahu slot=`#/comparison-axes`>>
 
 !! Comparison Axes
 
@@ -43,7 +39,7 @@ Seven axes guided each system comparison:
 
 <<~/ahu>>
 
-<<~ ahu #/per-system>>
+<<~ ahu slot=`#/per-system`>>
 
 !! Per-System Findings
 
@@ -73,7 +69,7 @@ Seven axes guided each system comparison:
 
 <<~/ahu>>
 
-<<~ ahu #/highest-value-table>>
+<<~ ahu slot=`#/highest-value-table`>>
 
 !! Highest-Value Prior Art by Spec Shore
 
@@ -90,7 +86,7 @@ Seven axes guided each system comparison:
 
 <<~/ahu>>
 
-<<~ ahu #/design-tests>>
+<<~ ahu slot=`#/design-tests`>>
 
 !! Open Design Tests for v5 Spec
 
@@ -108,18 +104,18 @@ The W3C research additionally surfaced: the grammar still lacks its own canonica
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext#/w3c-lineage-verdicts">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext#/w3c-lineage-verdicts`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<~ pranala #side-car-of from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes" family="relation" role="accompanies">>
+<<~ pranala slot=`#side-car-of` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes` family=`relation` role=`accompanies`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1gYLGD98t20ycf0FTTmCWD-H04DEpldJAYtf79giGiA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WXAterwvsGJspYy0ll5eoCyZkTBY3R_Bx6WBZHu5Fis`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

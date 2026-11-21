@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/system-pattern-integrities.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 19
-manao             = 19
-manaoio           = 19
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "FFZ pono constitutional law — MIND, ISLAND, AUTHORITY, CODEC, SYSTEM, PENTADIC, GENESIS, PEER, and THRESHOLD (Janus: every threshold keeps two faces, never merged) pattern-integrities for the Lararium causal-island system; attention-scale register names Pulse/Beat/Measure/Arc/Theme grounded in PENTA_2_CLOCK_ALIGNMENT"
@@ -20,11 +16,9 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/system-pattern-integrities"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! System Pattern-Integrities
 
@@ -40,11 +34,11 @@ Named exceptions: CODEC_EXCEPTIONS.
 
 <<~/ahu>>
 
-<<~ ahu #/mind-laws>>
+<<~ ahu slot=`#/mind-laws`>>
 
 !! MIND Laws — the Automerge store functions as the mind
 
-FFZ disk projection law (2026-05-01):
+FFZ disk projection law (#/rulings, 1):
 Disk files project from the Automerge store. The store holds the mind.
 No server-rendered CRDT projections served as HTML.
 
@@ -68,11 +62,11 @@ desc  = "App shell serves from the Service Worker cache. Automerge islands hydra
 
 <<~/ahu>>
 
-<<~ ahu #/island-laws>>
+<<~ ahu slot=`#/island-laws`>>
 
 !! ISLAND Laws — causal island identity, boundary, and boot origin
 
-FFZ island law (2026-05-01): "Each causal island starts from its own history."
+FFZ island law (#/rulings, 2): "Each causal island starts from its own history."
 Islands: auth · catalog · engine · corpus · wiki · presence · draft · projection
 
 ```toml #ISLAND_1_OWN_HISTORY
@@ -84,7 +78,7 @@ desc  = "The wiki doc starts empty; the corpus doc carries its own seeded conten
 ```toml #ISLAND_2_GENESIS_ROOT
 id    = "ISLAND_2_GENESIS_ROOT"
 label = "Genesis artifact is the causal root of the engine island"
-desc  = "@phase: S5  First boot materializes the deterministic oracle island from immutable genesis/seed.json. The engine and plugin bytes ride only as exact genesis/cas/<cid> members named by that seed; Node, Web, and bulb shores obtain them through their own declared storage or transport caps. A missing or malformed seed, absent required byte, or CID mismatch MUST halt. No seeding shore gains authority from supplying public bytes."
+desc  = "First boot materializes the deterministic oracle island from immutable genesis/seed.json. The engine and plugin bytes ride only as exact genesis/cas/<cid> members named by that seed; Node, Web, and bulb shores obtain them through their own declared storage or transport caps. A missing or malformed seed, absent required byte, or CID mismatch MUST halt. No seeding shore gains authority from supplying public bytes."
 ```
 
 ```toml #ISLAND_3_AUTHORITY_FIRST
@@ -107,12 +101,11 @@ desc  = "Presence behaves like weather. Memory MUST survive presence loss. Durab
 
 <<~/ahu>>
 
-<<~ ahu #/authority-laws>>
+<<~ ahu slot=`#/authority-laws`>>
 
 !! AUTHORITY Laws — carrier canon, residency actions, trust ladder
 
-Sources: lares/lararium-research/PRINCIPLES.md
-         pono/l-space-trust · pono/canon-boundary
+Sources: pono/l-space-trust · pono/canon-boundary
 
 ```toml #AUTH_1_CARRIER_CANON_FIRST
 id    = "AUTH_1_CARRIER_CANON_FIRST"
@@ -146,14 +139,14 @@ desc  = "Trust order (strongest first): pattern-integrity memes → capability m
 
 <<~/ahu>>
 
-<<~ ahu #/codec-laws>>
+<<~ ahu slot=`#/codec-laws`>>
 
 !! CODEC Laws — format, grammar, and round-trip laws
 
 ```toml #CODEC_1_GRAMMAR_AS_MEMES
 id    = "CODEC_1_GRAMMAR_AS_MEMES"
 label = "All grammar rules live as carrier memes"
-desc  = "Grammar rules, parse patterns, and template definitions SHALL live as carrier memes in lares/memes/api/pono/. The TypeScript parser MUST stay a thin interpreter, reading sigil semantics from the grammar memes."
+desc  = "Grammar rules, parse patterns, and template definitions SHALL live as carrier memes in the lares bag's `api/pono/`. The TypeScript parser MUST stay a thin interpreter, reading sigil semantics from the grammar memes."
 ```
 
 ```toml #CODEC_2_ROUND_TRIP
@@ -182,7 +175,7 @@ desc  = "Tiddler conflict resolution uses highest-priority bag wins. The TW5 vm 
 
 <<~/ahu>>
 
-<<~ ahu #/codec-exceptions>>
+<<~ ahu slot=`#/codec-exceptions`>>
 
 !! CODEC Exceptions — named deliberate deviations
 
@@ -201,12 +194,6 @@ label = "BOOTSTRAP_SCANS reads raw carrier text"
 desc  = "Grammar bootstrap reads raw carrier text from the grammar tiddler (.text) rather than pre-deserialized fragment tiddlers, breaking the bootstrap circle. See grammar-pattern-integrities.md Pattern-Integrity 2."
 ```
 
-```toml #CODEC_EX_PRE_S2_COLD_BOOT
-id    = "CODEC_EX_PRE_S2_COLD_BOOT"
-label = "Pre-S2 cold-boot filesystem read"
-desc  = "@retired: S5  Before the plain-data seed, cold boot read lararium source text directly. `build-genesis-island.ts` replaced that transition; current first boot reads only immutable seed/CAS material through its declared shore."
-```
-
 ```toml #CODEC_EX_BINARY_BLOBS
 id    = "CODEC_EX_BINARY_BLOBS"
 label = "Binary blobs for large immutable assets"
@@ -215,12 +202,12 @@ desc  = "TW5 core JS and vendored plugin bundles live in LarariumDoc.blobs (bina
 
 <<~/ahu>>
 
-<<~ ahu #/system-laws>>
+<<~ ahu slot=`#/system-laws`>>
 
 !! SYSTEM Laws — five architecture laws
 
 Named so any agent, test, or operator can import and reference by ID.
-These encode the design-time heuristics that governed the web3 refactor.
+These encode the design-time heuristics the web3 local-first design rests on.
 
 ```toml #SYS_1_WEB3_SMELL_TEST
 id    = "SYS_1_WEB3_SMELL_TEST"
@@ -254,11 +241,11 @@ desc  = "*.md carrier files are projections of parent + fragment tiddler package
 
 <<~/ahu>>
 
-<<~ ahu #/pentadic-laws>>
+<<~ ahu slot=`#/pentadic-laws`>>
 
 !! PENTADIC Laws — the Law of Fives as a structural pattern-integrity
 
-FFZ pentadic law (2026-05-06):
+FFZ pentadic law (#/rulings, 3):
 The number five recurs as the natural bounded scale in this system — not by decree but
 by convergent design. LADDER_5, OODA_HA_5, FPI-1–5, FfzClock L0–L4, five SYSTEM laws,
 five ISLAND laws, five CODEC laws. When a design produces a sixth element, treat that
@@ -283,11 +270,11 @@ label = "The five FPIs and the five SYSTEM laws are the same pattern-integrity i
 desc  = "Fuller's five pattern integrities (tensegrity, wave/water, synergy, ephemeralization, trim tab) and the five architecture SYSTEM laws (web3 smell test, TW5 vm primacy, TS-as-projection, tiddler format, meme-as-projection) are not separate lists. They are the same structural pattern expressed in different registers: Fuller's in geometry/physics, FFZ's in code architecture. Neither list supersedes the other; violations in one register typically produce violations in the other."
 ```
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/attention-scale`>>
 
 <<~/ahu>>
 
-<<~ ahu #/genesis-pattern-integrities>>
+<<~ ahu slot=`#/genesis-pattern-integrities`>>
 
 !! GENESIS Pattern-Integrities — causal origin, content-addressed identity, quine semantics
 
@@ -315,12 +302,12 @@ desc  = "The genesis artifact stays immutable. An engine bump, a parser rebuild,
 ```toml #GEN_4_QUINE_PROPERTY
 id    = "GEN_4_QUINE_PROPERTY"
 label = "Quine property: engine inside boots the system it boots"
-desc  = "@phase: S5 — proved Sprint 5. The genesis artifact carries the TW5 engine tiddlers that deserialize it. Boot a vm from the artifact, render the engine tiddlers, and the output matches the source. This is the quine closure. A genesis that cannot regenerate itself is incomplete."
+desc  = "The genesis artifact carries the TW5 engine tiddlers that deserialize it. Boot a vm from the artifact, render the engine tiddlers, and the output matches the source. This is the quine closure. A genesis that cannot regenerate itself is incomplete."
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/peer-pattern-integrities>>
+<<~ ahu slot=`#/peer-pattern-integrities`>>
 
 !! PEER Pattern-Integrities — peer symmetry at boot and post-boot authority boundaries
 
@@ -339,12 +326,12 @@ desc  = "The node peer writes catalog-url to disk; the browser peer does not. Th
 ```toml #PEER_3_AUTHORITY_FROM_CAPABILITY
 id    = "PEER_3_AUTHORITY_FROM_CAPABILITY"
 label = "Authority flows from capability receipts, not boot order"
-desc  = "Authority flows from a capability receipt, signature, or policy (Keyhive, future work) alone. Boot order, history depth, and writing genesis grant no authority. Until Keyhive lands, all peers operate at parity below the canon residency boundary."
+desc  = "Authority flows from a capability receipt, signature, or policy alone (the Keyhive capability layer). Boot order, history depth, and writing genesis grant no authority; peers that hold no capability receipt operate at parity below the canon residency boundary."
 ```
 
 <<~/ahu>>
 
-<<~ ahu #/threshold-pattern-integrities>>
+<<~ ahu slot=`#/threshold-pattern-integrities`>>
 
 !! THRESHOLD Pattern-Integrities — Janus: every threshold keeps two faces, never merged
 
@@ -358,7 +345,7 @@ breach. Every threshold the house stands carries the shape:
 | the herm | the ''floor voice'' — reports what it observed, peer-cosigned; answers the knock | the ''acting voice'' — sealed, a share; speaks only toward a quorum |
 | the vessel's keys | the ''floor key'' — the public name, signs floor acts | the ''custody root'' — sealed under the vessel KEK, derives the veil |
 | custody | ''hot'' — held while raised | ''cold'' — unwrapped per act, then wiped |
-| the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the checked body between STX and ETX (sealed once carrier signing lands) |
+| the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the checked body between STX and ETX |
 | the gate | ''silence'' and one closed door to a stranger | the walker's grant, the knock, the proven peer |
 | the identity slot | the slot doc's verdict — the DID and derived actor any reader answers | the provider's own derivation — the layer the interface ships EMPTY and gates elsewhere |
 | the network edge | the weak crossing — cheap, optimistic, admitted on a probe | the per-edge anergy — the tested lease, severed when the test fails |
@@ -374,7 +361,7 @@ desc  = "A threshold MUST present an outward face and keep an inward face, and M
 ```toml #THR_2_NO_LEAK
 id    = "THR_2_NO_LEAK"
 label = "Nothing of the inward face rides the outward one"
-desc  = "The test, run against every threshold: name its outward face, name its inward face, and ask what lets one leak into the other. Leaks this law catches: a host-minted stub that lets a guest's lineage follow her out and names her; a cleartext vessel seed or persona root standing beside the floor; a walker syncing the whole carriage board, which puts the Nexus's infra graph on a guest's face; a herm asked to speak as a house, which puts a household's face on a waystone. One leak recurs at every threshold that carries a party across it: a NAME on the outside. The outside carries only what its reader already holds or resolves — a bearing to an address, or the reader's own out-of-band pin — and a party's identity rides only inside the span a check or a proof covers. Hence a carrier's heading reads `from=\"?\"` and its authorship begins after STX (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-arrow`), and the wire never names the gate key a dialer proves to — the dialer's pin, which Noise IK carries as its `<- s` pre-message (`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`). The release's `-> to=\"?\"` hands the initiative back (`lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands`) and answers a different question; THR_5 governs the gate's silence and not the carrier."
+desc  = "The test, run against every threshold: name its outward face, name its inward face, and ask what lets one leak into the other. Leaks this law catches: a host-minted stub that lets a guest's lineage follow her out and names her; a cleartext vessel seed or persona root standing beside the floor; a walker syncing the whole carriage board, which puts the Nexus's infra graph on a guest's face; a herm asked to speak as a house, which puts a household's face on a waystone. One leak recurs at every threshold that carries a party across it: a NAME on the outside. The outside carries only what its reader already holds or resolves — a bearing to an address, or the reader's own out-of-band pin — and a party's identity rides only inside the span a check or a proof covers. Hence a carrier's heading reads `from=\"?\"` and its authorship begins after STX (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/bearing-pair`), and the wire never names the gate key a dialer proves to — the dialer's pin, which Noise IK carries as its `<- s` pre-message (`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`). The release's `-> to=\"?\"` hands the initiative back (`lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands`) and answers a different question; THR_5 governs the gate's silence and not the carrier."
 ```
 
 ```toml #THR_3_THE_DOORKEEPER_OWNS_NOTHING
@@ -395,24 +382,36 @@ label = "To a stranger who cannot knock, the outward face reads as silence — a
 desc  = "A rejection confesses that something understood the question (siege-resilience#/the-active-prober). To a stranger who brings no name, the outward face MUST read as one indistinguishable closed door or no answer at all, drawn from one deadline fixed at accept. Silence presents a deliberate outward face, never the absence of one: the threshold still stands, and a knock from one who holds its name still opens it."
 ```
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/mythic-binding">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/mythic-binding`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# FFZ disk projection law, ruled 2026-05-01: the Automerge store holds the mind; disk files project from it (#/mind-laws).
+# FFZ island law, ruled 2026-05-01: each causal island starts from its own history (#/island-laws).
+# FFZ pentadic law, ruled 2026-05-06: five recurs as the natural bounded scale (#/pentadic-laws).
+
+The record of what this meme carried before its ever-speaking-present cure (sprint phases, owed work, a dead source path) reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/system-pattern-integrities-record`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/pattern-integrity">>
-<<~ loulou "lar:///elyncia/Elyncia_02_The_Lares_DreamNet">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/grammar-pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity`>>
+<<~ loulou uri=`lar:///elyncia/Elyncia_02_The_Lares_DreamNet`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m8eHOmYiIFyeGzOaCadNYanUnOeb6sEduBcwY0pdTow
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QAHi0sl-7TtFU4vajgObD39XF80JojRhzhPZeTIGhTg`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

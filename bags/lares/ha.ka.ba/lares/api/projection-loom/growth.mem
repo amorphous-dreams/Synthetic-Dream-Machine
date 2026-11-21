@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/growth">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/growth`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/growth.mem"
 namespace = "&#x0950; &#x0901;"
-title = "lar:///ha.ka.ba/lares/api/projection-loom/growth"
-uri-path = "ha.ka.ba/lares/api/projection-loom/growth"
-type = "text/memetic-wikitext+tiddlywiki"
-role = "nameless constructive grammar and reversible hypothesis graph"
-tags = ["api/pono/meme", "projection-loom", "generative"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/growth"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/growth"
+type      = "text/memetic-wikitext+tiddlywiki"
+role      = "nameless constructive grammar and reversible hypothesis graph"
+tags      = ["api/pono/meme", "projection-loom", "generative"]
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Relation Opens a Site for Surprise
 
@@ -26,7 +25,7 @@ index wins eternal personhood.
 
 <<~/ahu>>
 
-<<~ ahu #/invariants>>
+<<~ ahu slot=`#/invariants`>>
 
 !! Construct, Rewrite, Validate
 
@@ -38,7 +37,7 @@ index wins eternal personhood.
 
 <<~/ahu>>
 
-<<~ ahu #/research-bearing>>
+<<~ ahu slot=`#/research-bearing`>>
 
 !! A Place Publishes Growth Sites
 
@@ -51,7 +50,7 @@ The Operator designates this as kept research, not witnessed Loom capability.
 
 <<~/ahu>>
 
-<<~ ahu #/links>>
+<<~ ahu slot=`#/links`>>
 
 The current native code and tests own executable growth grammar and witness limits; the retired `growth-contract.md` remains retrievable from Git at the pre-burn archive head.
 
@@ -59,6 +58,6 @@ The current native code and tests own executable growth grammar and witness limi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wz5I_09SHXRmC1OsgVLKmupqrYarKgINuOxxQEUtn2Q
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ldn6mmltFPcFsngkB3fTof6u8-xMNr0ikp5N0rTiQx4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

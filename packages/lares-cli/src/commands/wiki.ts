@@ -9,16 +9,30 @@
  * Verbs (full E-arc surface ships; the `lares act` residency verbs land next):
  *   list / which / resolve   — read & inspect: enumerate, presence-query, coordinate-resolve
  *   init / open / sync       — lifecycle: mint, set-active, ingest memes
+ *   retire                   — the owner face's unmint of a shell it minted by mistake (canon untouched)
  *   pin / unpin              — whole-recipe residency
  *   add-bag / remove-bag     — recipe composition (hot-reload via composite.addLayer)
  *   epoch / rotate-recipe    — bound history (snapshot-restart, Nix-generations)
  *   prune-stale              — surface stale drafts for residency-action-or-prune
+ *   filter / render / status — THE TIDDLER DOOR's engine verbs (wiki-surface-scout, lane 1): run a TiddlyWiki
+ *                              filter, wikify a title or a span, and read each layer's writeability for the
+ *                              session's face, each in the wiki's own engine (`--recipe default` or any wiki the face reaches);
+ *                              `lares tiddler get|put|delete` holds the record verbs
  */
 
 import { vesselDid } from "../env.js";
-import { emit } from "../render.js";
+import { emit, exitFor } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
-import { runVerb, verbFailure } from "../verb-call.js";
+import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
+import { faceOption, FaceOptionMalformed } from "../face-option.js";
+import { cmdShare } from "./share-cmd.js";
+import { ensureWikiRealm, labelRealmOf, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
+import { sealedAct } from "../sealed-act-door.js";
+import { RealmRefused, loadLaresConfig, tempConsentedSlugs } from "@lararium/node";
+import { wikiSlotKindOf } from "@lararium/mesh";
+import { containerArgs } from "../container-target.js";
+import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
+import { stdout } from "node:process";
 import type { ParsedArgs } from "../parse-args.js";
 
 type WikiSubcommand = (args: ParsedArgs) => Promise<number>;
@@ -45,14 +59,27 @@ async function call(
 }
 
 export async function cmdWikiList(args: ParsedArgs): Promise<number> {
-  const did    = await vesselDid();
-  const r = await call("list-wikis", {}, did);
+  // EACH HAT REACHED BY NAME: `--face N` lists through a session of face N (the island answers the mount's catalog alone for
+  // now, so a lit sibling refuses there by name); with none, the one-shot lists the worn face's. A shut face: `face-not-open`.
+  let named: { face?: number };
+  try { named = args.options["face"] === undefined && args.flags["face"] === undefined ? {} : faceOption(args); }
+  catch (error) {
+    if (!(error instanceof FaceOptionMalformed)) throw error;
+    emit(args, { ok: false, error: { code: "face-malformed", message: error.message }, human: () => console.error(error.message) });
+    return 2;
+  }
+  const r = named.face === undefined ? await call("list-wikis", {}, await vesselDid())
+    : await runVerbAsFace("list-wikis", {}, named.face).catch((err: unknown) => { const f = verbFailure(err); return { status: "error" as const, requestId: f.requestId ?? "", errorMessage: f.message }; });
   if (r.status === "error") {
     const msg = r.errorMessage ?? "unknown";
+    if (/^face-not-open:/.test(msg)) {
+      emit(args, { ok: false, requestId: r.requestId, error: { code: "face-not-open", message: msg }, human: () => console.error(msg) });
+      return exitFor("face-not-open");
+    }
     emit(args, { ok: false, requestId: r.requestId, error: msg, human: () => console.error(`list failed: ${msg}`) });
     return 4;
   }
-  const result = summaryOutput(r) ?? {};
+  const result = named.face === undefined ? summaryOutput(r) ?? {} : { ...(summaryOutput(r) ?? {}), face: named.face };
   const wikis = (result["wikis"] ?? []) as Array<{
     slug: string;
     uri: string;
@@ -88,11 +115,63 @@ export async function cmdWikiList(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
+/** The hold a mint takes: held within the budget, or a named refusal that evicts nothing. */
+async function holdTheMint(slug: string, did: string): Promise<{ held: boolean; note: string }> {
+  const active = await call("wiki-active", {}, did);
+  const live = (active.status === "error" ? null : summaryOutput(active)) as { held?: unknown; pinBudget?: unknown } | null;
+  const holds = Array.isArray(live?.held) ? live.held.map(String) : [];
+  const budget = typeof live?.pinBudget === "number" ? live.pinBudget : null;
+  if (budget !== null && holds.length >= budget && !holds.includes(slug)) {
+    return { held: false, note: `not held: the hold budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki release <slug>\` frees one, then \`lares wiki hold ${slug}\` holds this wiki` };
+  }
+  const r = await call("wiki-hold", { slug }, did, { timeoutMs: 30_000 });
+  const held = r.status !== "error" && (summaryOutput(r) as { held?: unknown } | null)?.held === true;
+  return { held, note: held ? `held (rotatable pin)` : `not held: ${r.errorMessage ?? "the wiki would not activate"}; \`lares wiki hold ${slug}\` retries` };
+}
+
+/**
+ * WHAT AN INIT OVER A PARTIAL STOOD, in plain words (`status: completed`): the canon row it reused (the floor's, or the face's
+ * own), the recipe row it wrote, the bags it registered, the workbench it founded. Null where it stood nothing of these.
+ */
+export function initCompletedLine(result: Record<string, unknown>): string | null {
+  if (result["status"] !== "completed") return null;
+  const parts: string[] = [];
+  if (result["canonReused"] === "floor") parts.push("canon reused from the floor");
+  else if (result["canonReused"] === "own") parts.push("canon reused from this face's catalog");
+  if (result["recipeWritten"] === true) parts.push("recipe row written");
+  const bags = Array.isArray(result["bagsRegistered"]) ? result["bagsRegistered"].map(String) : [];
+  if (bags.length > 0) parts.push(`bags registered: ${bags.join(", ")}`);
+  const bench = result["workbench"] as { realmId?: unknown; founded?: unknown } | undefined;
+  if (bench?.founded === true && typeof bench.realmId === "string") parts.push(`workbench founded (realm ${bench.realmId.slice(0, 12)}…)`);
+  return parts.length > 0 ? parts.join("; ") : null;
+}
+
+/** The workbench line an init prints when it stood none for this face: a refusal by name, or a realm this face holds no seat in. */
+export function initWorkbenchLine(result: Record<string, unknown>): string | null {
+  const bench = result["workbench"] as { realmId?: unknown; refused?: unknown } | undefined;
+  if (!bench) return null;
+  if (typeof bench.refused === "string") return `none stood: ${bench.refused}`;
+  if (bench.realmId === null) return "none stands for this face (another face's realm holds this wiki's workbench and seats this face nowhere, or its document rests sealed under its owner face here); this face writes its personal layer until a share seats it";
+  return null;
+}
+
+export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIVE_REALM_DOORS): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki init <slug>");
+    console.error("usage: lares wiki init <slug> [--realm <pet>]");
     return 2;
+  }
+  // `--realm <pet>` PLACES THE WIKI IN AN EXISTING NAMED REALM BEFORE IT MINTS, so its first mount lays its workbench there; an
+  // unnamed realm refuses before anything mints.
+  const realm = args.options["realm"];
+  if (realm !== undefined) {
+    if (typeof realm !== "string" || realm === "") { console.error("usage: lares wiki init <slug> [--realm <pet>]"); return 2; }
+    try { await placeWikiInRealm(realmDoors, slug, realm); }
+    catch (err) {
+      if (!(err instanceof RealmRefused)) throw err;
+      emit(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`init refused: ${err.message}`) });
+      return 1;
+    }
   }
   const did    = await vesselDid();
   const r = await call("init-wiki", { slug }, did);
@@ -102,17 +181,146 @@ export async function cmdWikiInit(args: ParsedArgs): Promise<number> {
     return 4;
   }
   const result = summaryOutput(r) ?? {};
+  // The mint holds the wiki it mints (a cold grain reads `document-unavailable` until held); a wiki that already stood is left as it was.
+  const hold = result["status"] === "minted" || result["status"] === "completed" ? await holdTheMint(slug, did) : null;
+  // The mint bound (or found) the wiki's workbench realm: the label records its canon realm id beside the pet name. EVERY REALM
+  // CARRIES A PET NAME: with no `--realm`, the wiki takes its own realm label under its slug (`realms/<slug>/wikis/<slug>/`).
+  let placed: { readonly petName: string } | null = null;
+  try { placed = typeof realm === "string" ? await placeWikiInRealm(realmDoors, slug, realm) : (await ensureWikiRealm(realmDoors, slug)).label; }
+  catch (err) { if (!(err instanceof RealmRefused)) throw err; }
   emit(args, {
-    ok: true, requestId: r.requestId, data: { slug, ...result },
+    ok: true, requestId: r.requestId, data: { slug, ...result, ...(hold ? { held: hold.held, holdNote: hold.note } : {}), ...(placed ? { realm: placed.petName } : {}) },
     human: () => {
       console.log("");
       console.log(`wiki: ${slug}`);
       console.log(`  status:    ${result["status"]}`);
+      const done = initCompletedLine(result);
+      if (done) console.log(`  completed: ${done}`);
+      const bench = initWorkbenchLine(result);
+      if (bench) console.log(`  workbench: ${bench}`);
       console.log(`  wiki URI:  ${result["wikiUri"]}`);
-      console.log(`  wiki doc:  ${result["wikiDocUrl"]}`);
+      console.log(`  canon bag: ${result["canonBag"]}`);
+      console.log(`  canon doc: ${result["wikiDocUrl"]}`);
       console.log(`  draft URI: ${result["draftBagId"]}`);
       console.log(`  draft doc: ${result["draftDocUrl"]}`);
       console.log(`  recipe:    ${result["recipeUri"]}`);
+      if (hold) console.log(`  hold:      ${hold.note}`);
+      if (placed) console.log(`  realm:     ${placed.petName} (its workbench lays under projections/realms/${placed.petName}/wikis/${slug}/)`);
+      console.log("");
+    },
+  });
+  return 0;
+}
+
+const RETIRE_USAGE = "usage: lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]";
+/** The refusals `retire-wiki` (and the session door before it) names by code (`<code>: <detail>`); any other failure reads as the transport's. */
+const RETIRE_REFUSAL = /^(retire-needs-hand|no-face|system-bag|wiki-face-private|no-such-wiki|not-the-owner|wiki-shared|wiki-not-empty|retire-count-missing|retire-count-moved|waking-floor|content-mounted-only|face-not-open|workbench-slug-bound)\b/;
+
+/** The doors `lares wiki retire` reads, injectable for a test: the worn face's ordinal and the one session call. */
+export interface RetireDoors {
+  wornFace(): Promise<number>;
+  call(verb: string, args: Record<string, unknown>, face: number): Promise<SubmitResult>;
+}
+const LIVE_RETIRE_DOORS: RetireDoors = {
+  wornFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
+  call: (verb, args, face) => runVerbAsFace(verb, args, face),
+};
+
+/**
+ * `lares wiki retire <slug>` — THE OWNER FACE'S UNMINT: the shell the worn face's `wiki init` laid over a slug (its catalog
+ * rows, its workbench's ledger rows, its slot and Keyhive bindings) leaves, so the slug mints again cleanly under the face that
+ * should hold it. The canon bag's document and its files stay.
+ *
+ * A HAND ACT: it rides a session of the worn face (or `--face N`) opened by the `cli` hand, so a seat session refuses at the
+ * socket and the island refuses any ask no hand placed. `--dry-run` reads what would leave and the record counts, writing
+ * nothing; a shell holding records refuses `wiki-not-empty` unless `--force --count <records>` names that very count.
+ *
+ * ONCE IT LANDS, the local half: the wiki's hold drops, the workbench mirror folder under its realm steps aside by rename, and
+ * the slug's realm label releases the realm id the retired workbench held. Each step reads the state it changes, so a run
+ * that died midway finishes on a second run (the vessel then answers `no-such-wiki`, and the local half still runs where the
+ * vessel's ledger binds the slug nowhere).
+ */
+export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = LIVE_REALM_DOORS, doors: RetireDoors = LIVE_RETIRE_DOORS): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) { console.error(RETIRE_USAGE); return 2; }
+  let named: { face?: number };
+  try { named = args.options["face"] === undefined && args.flags["face"] === undefined ? {} : faceOption(args); }
+  catch (error) {
+    if (!(error instanceof FaceOptionMalformed)) throw error;
+    emit(args, { ok: false, error: { code: "face-malformed", message: error.message }, human: () => console.error(error.message) });
+    return 2;
+  }
+  const force = args.flags["force"] === true;
+  const dryRun = args.flags["dry-run"] === true;
+  const countText = args.options["count"];
+  if (countText !== undefined && (!force || !/^\d+$/.test(countText))) { console.error(`${RETIRE_USAGE}\n  --count names the record count a --force retire destroys`); return 2; }
+  if (dryRun && force) { console.error(`${RETIRE_USAGE}\n  --dry-run reads and writes nothing; it takes no --force`); return 2; }
+  const verbArgs: Record<string, unknown> = { slug, ...(dryRun ? { "dry-run": true } : {}), ...(force ? { force: true } : {}), ...(countText !== undefined ? { count: Number(countText) } : {}) };
+  let r: SubmitResult;
+  try { r = await doors.call("retire-wiki", verbArgs, named.face ?? await doors.wornFace()); }
+  catch (err) { const f = verbFailure(err); r = { status: "error", requestId: f.requestId ?? "", errorMessage: f.message }; }
+
+  // THE LOCAL HALF, idempotent: each step changes only what still stands.
+  const localHalf = async (realmRetired: boolean) => {
+    const released = await call("wiki-release", { slug }, await vesselDid());
+    const folder = setAsideWikiFolder(realmDoors, slug);
+    const label = realmRetired ? releaseWikiRealm(realmDoors, slug) : null;
+    return { holdReleased: released.status !== "error", folder, label };
+  };
+
+  if (r.status === "error") {
+    const msg = (r.errorMessage ?? "unknown").replace(/^\[daemon\] /, "");
+    const code = RETIRE_REFUSAL.exec(msg)?.[1] ?? (typeof r.refusal?.reason === "string" && RETIRE_REFUSAL.test(r.refusal.reason) ? r.refusal.reason : undefined);
+    // A RUN THAT DIED AFTER THE VESSEL'S HALF: the vessel names no shell now. The local half finishes ONLY where this retire chain
+    // left it standing: the ledger binds the slug nowhere, and the slug's local label still names THIS face's own realm (the id
+    // the refusal carries). A slug this face never held names another realm or none, and its refusal stands: no hold drops.
+    const ownRealm = /\(own realm ([0-9a-f]{64})\)/.exec(msg)?.[1];
+    if (code === "no-such-wiki" && !dryRun && ownRealm !== undefined && labelRealmOf(realmDoors, slug) === ownRealm) {
+      const seat = await realmDoors.seat(slug);
+      if (seat.answered && seat.realms.length === 0) {
+        const done = await localHalf(true);
+        emit(args, { ok: true, requestId: r.requestId, data: { slug, status: "already-retired", ...done.folder ? { folderSetAside: done.folder.to } : {} },
+          human: () => console.log(`wiki: ${slug}  status: already-retired (the vessel holds no shell of it; this face's local half finished${done.folder ? `, its folder set aside at ${done.folder.to}` : ""})`) });
+        return 0;
+      }
+    }
+    emit(args, { ok: false, requestId: r.requestId, error: code ? { code, message: msg } : msg, human: () => console.error(`retire refused: ${msg}`) });
+    return code ? 1 : 4;
+  }
+  const result = summaryOutput(r) ?? {};
+  const list = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+  const records = (result["records"] ?? {}) as { working?: number; draft?: number; personal?: number; effects?: number };
+  const counted = `working ${records.working ?? 0}, draft ${records.draft ?? 0}, personal ${records.personal ?? 0}`;
+  const effects = records.effects ?? 0;
+  if (dryRun) {
+    emit(args, { ok: true, requestId: r.requestId, data: result, human: () => {
+      console.log(`wiki: ${slug}  would retire (nothing written)`);
+      console.log(`  catalog rows:  ${list(result["catalogRows"]).join(", ") || "(none)"}`);
+      console.log(`  workbench:     ${typeof result["realmId"] === "string" ? `realm ${result["realmId"].slice(0, 12)}…` : "(none stood)"}`);
+      console.log(`  authored records: ${String(result["total"] ?? 0)} (${counted})`);
+      console.log(`  effect records:   ${effects} (the house's own residency rows; they leave with the shell, unforced)`);
+    } });
+    return 0;
+  }
+  const done = await localHalf(typeof result["realmId"] === "string");
+  emit(args, {
+    ok: true, requestId: r.requestId,
+    data: { ...result, ...(done.label ? { realm: done.label.petName } : {}), holdReleased: done.holdReleased, ...(done.folder ? { folderSetAside: done.folder.to } : {}) },
+    human: () => {
+      const kept = (result["kept"] ?? {}) as { canonBag?: string; canonDoc?: string | null };
+      console.log("");
+      console.log(`wiki: ${slug}  status: ${result["status"]}${result["forced"] === true ? " (forced)" : ""}`);
+      console.log(`  catalog rows removed:  ${list(result["catalogRows"]).length}${list(result["catalogRows"]).map((t) => `\n    ${t}`).join("")}`);
+      console.log(`  ledger rows removed:   ${list(result["ledgerRows"]).length}${typeof result["realmId"] === "string" ? ` (realm ${result["realmId"].slice(0, 12)}…)` : ""}`);
+      console.log(`  slot bindings removed: ${list(result["slotBindings"]).length}`);
+      console.log(`  keyhive bindings:      ${list(result["keyhiveBindings"]).length}${list(result["keyhiveBindings"]).map((t) => `\n    ${t}`).join("")}`);
+      const dropped = effects > 0 ? `; ${effects} effect record(s) dropped with the shell` : "";
+      console.log(`  records destroyed:     ${result["forced"] === true ? counted : "none authored"}${dropped}`);
+      console.log(`  kept:                  ${kept.canonBag ?? `bags/${slug}`} (its document and files untouched)`);
+      if (kept.canonDoc) console.log(`  canon doc kept:        ${kept.canonDoc} (a re-mint that finds a floor canon row reuses it; one that finds none mints a fresh one and leaves this one orphaned)`);
+      if (done.folder) console.log(`  folder set aside:      ${done.folder.to} (renamed, never deleted)`);
+      if (done.label) console.log(`  realm label:           ${done.label.petName} keeps its pet name; its realm id reads unset until the next mint`);
+      console.log(`  next: wear the face that should hold it, then \`lares wiki init ${slug}\``);
       console.log("");
     },
   });
@@ -220,7 +428,7 @@ export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
     return 2;
   }
   const did = await vesselDid();
-  const r = await call("wiki-switch", { slug }, did, { timeoutMs: 30_000 });
+  const r = await call("wiki-switch", { slug, remount: true }, did, { timeoutMs: 30_000 });
   if (r.status === "error") {
     console.error(`switch failed: ${r.errorMessage ?? "unknown"}`);
     return 4;
@@ -304,6 +512,8 @@ export async function cmdWikiActive(_args: ParsedArgs): Promise<number> {
     const marks = [held.has(w) ? "📌" : "  ", surface === w ? "◀ surface" : ""].filter(Boolean).join(" ");
     console.log(`  ${marks} ${w}`);
   }
+  // THE DAEMON'S STANDING SLOT: the daemon stands no wiki island, so this list never shows it, yet it holds one slot of the cap.
+  console.log(`     daemon  (always live; it holds one of the ${result["activationCap"] ?? "?"} slots and stands outside this list)`);
   console.log(`  rotatable pin budget: ${result["pinBudget"] ?? "?"}`);
   console.log("");
   return 0;
@@ -410,7 +620,7 @@ export async function cmdWikiRotateRecipe(args: ParsedArgs): Promise<number> {
   }
   const result = summaryOutput(r) ?? {};
   console.log("");
-  console.log(`wiki ${slug}: rotated to generation ${result["generation"]}`);
+  console.log(`wiki ${slug}: rotated to a fresh canon`);
   console.log(`  new canon doc:   ${result["newCanonDocUrl"]}`);
   console.log(`  previous canon:  ${result["previousCanonUri"]}`);
   console.log(`    ↳ doc:         ${result["previousCanonDocUrl"]}`);
@@ -558,13 +768,164 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
   return primary ? 0 : 5;
 }
 
+// ── THE TIDDLER DOOR's engine verbs: filter · render · status ─────────────────────────────────────────
+
+/** `lares wiki filter '<filter>'`: the daemon verb `wiki-filter` and the args it receives. */
+export function wikiFilterPlan(args: ParsedArgs): DoorPlan {
+  const filter = args.positional[0];
+  if (!filter) throw new DoorUsage("a filter is required (e.g. `lares wiki filter '[tag[memory]sort[title]]' --recipe default`)");
+  const out: Record<string, unknown> = { ...containerArgs(args, "wiki filter"), filter };
+  const fields = namesOf(args.options["fields"]);
+  if (fields) out["fields"] = fields;
+  const limit = countOf(args.options["limit"], "limit");
+  if (limit !== null) out["limit"] = limit;
+  const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
+  if (maxBytes !== null) out["maxBytes"] = maxBytes;
+  const after = wordOf(args.options["after"]);
+  if (after) out["after"] = after;
+  return { verb: "wiki-filter", args: out };
+}
+
+/** `lares wiki render <title>` or `lares wiki render --text '<span>'`: the daemon verb `wiki-render` and its args. */
+export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
+  const title = args.positional[0];
+  const span = typeof args.options["text"] === "string" ? args.options["text"] : "";
+  if (Boolean(title) === Boolean(span)) throw new DoorUsage("name one source: a title (`lares wiki render \"My Note\" --recipe default`) or a span (`--text \"''bold'' {{My Note}}\"`)");
+  const out: Record<string, unknown> = { ...containerArgs(args, "wiki render"), ...(title ? { title } : { text: span }) };
+  const form = wordOf(args.options["form"]);
+  if (form) {
+    if (form !== "text" && form !== "html") throw new DoorUsage(`--form reads text or html (got "${form}")`);
+    out["form"] = form;
+  }
+  const type = wordOf(args.options["type"]);
+  if (type) out["type"] = type;
+  const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
+  if (maxBytes !== null) out["maxBytes"] = maxBytes;
+  const after = wordOf(args.options["after"]);
+  if (after) out["after"] = after;
+  return { verb: "wiki-render", args: out };
+}
+
+/** `lares wiki status`: the daemon verb `wiki-status` and its args. */
+function wikiStatusPlan(args: ParsedArgs): DoorPlan {
+  return { verb: "wiki-status", args: { ...containerArgs(args, "wiki status") } };
+}
+
+interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[] }
+
+/**
+ * A FILTER'S ANSWER ARRIVES IN PAGES. One call prints one page and names the cursor of the next on stderr (`--after`
+ * continues it); `--all` follows the cursor to the end and prints every title. A cursor that fails to advance refuses
+ * by name, and a wiki that moved mid-walk answers the verb's own `filter-cursor-stale`.
+ */
+async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
+  return guardDoor(args, "wiki filter", async () => {
+    const plan = wikiFilterPlan(args);
+    const titles: string[] = [];
+    const rows: FilterRowOut[] = [];
+    let last: Record<string, unknown> = {};
+    let requestId = "";
+    let pages = 0;
+    for (let after: string | null = null; ;) {
+      const ran = await runDoor(args, "wiki filter", after === null ? plan : { verb: plan.verb, args: { ...plan.args, after } });
+      if (!ran.ok) return ran.exit;
+      requestId = ran.requestId;
+      last = ran.output;
+      pages++;
+      if (Array.isArray(last["rows"])) rows.push(...(last["rows"] as FilterRowOut[]));
+      else if (Array.isArray(last["titles"])) titles.push(...(last["titles"] as string[]));
+      const next = last["next"];
+      if (args.flags["all"] !== true || typeof next !== "string" || next === "") break;
+      if (next === after) {
+        const message = `the filter's cursor stood still at ${next}`;
+        emit(args, { ok: false, requestId, error: { code: "verb-error", message }, human: () => console.error(`lares wiki filter: ${message}`) });
+        return 4;
+      }
+      after = next;
+    }
+    // One page rides as the verb answered it; `--all` rides the pages joined, `next` null and the page count beside them.
+    const data = pages === 1 ? last : { ...last, ...(rows.length > 0 || Array.isArray(last["rows"]) ? { rows } : { titles }), next: last["next"] ?? null, pages };
+    emit(args, {
+      ok: true, requestId, data,
+      human: () => {
+        // One title per line; named fields follow their title, tab-joined, so a shell cuts them.
+        for (const title of titles) console.log(title);
+        for (const row of rows) console.log([row.title, ...Object.entries(row.fields).map(([name, value]) => `${name}=${value}`)].join("\t"));
+        const shown = titles.length + rows.length;
+        if (typeof last["next"] === "string" && last["next"] !== "") console.error(`${shown} of ${last["total"]} · next: --after ${last["next"]}`);
+        else console.error(`${shown} of ${last["total"]}`);
+        if (typeof last["withheld"] === "number") console.error(`${last["withheld"]} withheld (titles that stay home, or records this face holds no read on)`);
+      },
+    });
+    return 0;
+  });
+}
+
+async function cmdWikiRender(args: ParsedArgs): Promise<number> {
+  return guardDoor(args, "wiki render", async () => {
+    const ran = await runDoor(args, "wiki render", wikiRenderPlan(args));
+    if (!ran.ok) return ran.exit;
+    const out = ran.output;
+    emit(args, {
+      ok: true, requestId: ran.requestId, data: out,
+      // The render alone reaches stdout, so a pipe carries it; the reading rides stderr.
+      human: () => {
+        stdout.write(String(out["text"] ?? ""));
+        if (out["truncated"] === true) console.error(`\ntruncated at the byte cap (${out["bytes"]} bytes whole) · next: --after ${out["next"]}`);
+      },
+    });
+    return 0;
+  });
+}
+
+async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
+  return guardDoor(args, "wiki status", async () => {
+    const ran = await runDoor(args, "wiki status", wikiStatusPlan(args));
+    if (!ran.ok) return ran.exit;
+    const out = ran.output;
+    let consented: readonly string[] = [];
+    try { consented = tempConsentedSlugs(loadLaresConfig()); } catch { consented = []; }
+    emit(args, {
+      ok: true, requestId: ran.requestId, data: out,
+      human: () => { for (const line of wikiStatusLines(out, consented)) console.log(line); },
+    });
+    return 0;
+  });
+}
+
+/** The temp slot a layer names (`lar:///ha.ka.ba/wikis/<slug>/temp`): its wiki's slug, or null for any other layer. */
+function tempSlugOf(bag: string): string | null {
+  const slug = /^lar:\/\/\/ha\.ka\.ba\/wikis\/([^/]+)\/temp$/.exec(bag)?.[1];
+  return slug !== undefined && wikiSlotKindOf(slug, bag) === "temp" ? slug : null;
+}
+
+/**
+ * THE LINES `lares wiki status` PRINTS: each layer's reach for this face. A wiki's temp layer stands opt-in (device-local
+ * scratch, projected only where `projection.temp.<slug>` consents): unconsented it reads `temp (opt-in, off)` and names no
+ * fault, consented it reads `temp (opt-in, on)` beside its reach.
+ */
+export function wikiStatusLines(out: Record<string, unknown>, consented: readonly string[]): string[] {
+  const layers = Array.isArray(out["layers"]) ? (out["layers"] as Array<{ bag: string; mounted: string; read: boolean; write: boolean; working?: boolean; why?: string }>) : [];
+  const lines = [`wiki: ${String(out["recipe"])}  working layer: ${typeof out["working"] === "string" ? out["working"] : "(none attached; no layer takes a write)"}`];
+  for (const layer of layers) {
+    const reach = layer.write ? "read + write" : layer.read ? "read-only" : "no reach";
+    const tempSlug = tempSlugOf(layer.bag);
+    if (tempSlug !== null && !consented.includes(tempSlug) && !layer.working) { lines.push(`  ${"temp (opt-in, off)".padEnd(12)} ${layer.bag}`); continue; }
+    const label = tempSlug !== null ? `temp (opt-in, on) ${reach}` : reach;
+    lines.push(`  ${label.padEnd(12)} ${layer.bag}${layer.working ? "  <- a write lands here" : ""}${layer.why ? `  (${layer.why})` : ""}`);
+  }
+  return lines;
+}
+
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
-  "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent." },
+  "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent: over a shell a partial init left it stands what is missing (the recipe row, this face's bag registrations, its workbench) and answers `completed` naming each; run again, it answers `already-exists` and changes nothing. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
+  "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]`), a person's hand alone (a seat session refuses): its catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave, its workbench folder steps aside by rename, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shared shell refuses `wiki-shared` (remove the shares first); `--dry-run` reads the record counts, the authored records apart from the house's effect records (a gated ingest's residency rows, which leave with the shell unforced); a shell holding authored records refuses `wiki-not-empty` unless `--force --count` names that count." },
+  "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },
   "hold":    { handler: cmdWikiHold,    summary: "Pin a wiki as a rotatable active pin (the daemon bag always + N rotatable; a hold past budget releases the least-recently-held)." },
   "release": { handler: cmdWikiRelease, summary: "Drop a wiki's rotatable pin (it stays live, becomes a cooling candidate)." },
-  "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface." },
+  "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface (the daemon always holds one slot and stands outside the list)." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
   "pin":        { handler: cmdWikiPin,       summary: "Pin every bag in the wiki's recipe (whole-recipe STOWAGE — the heat axis, never the canon one `resolve` reads)." },
   "unpin":      { handler: cmdWikiUnpin,     summary: "Unpin every bag in the wiki's recipe." },
@@ -576,15 +937,19 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "list":       { handler: cmdWikiList,      summary: "Enumerate wikis registered in the catalog. Needs `lares vessel stand --foreground`." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
+  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`." },
+  "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The render reaches stdout." },
+  "status":     { handler: cmdWikiStatus,    summary: "Name each layer the wiki composes and whether this face reads and writes it: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it." },
 };
 
+/** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */
+export function wikiHelpLines(): string[] {
+  const width = Math.max(...Object.keys(SUBCOMMANDS).map((v) => v.length));
+  return ["lares wiki <verb> [args...]", "", "Verbs:", ...Object.entries(SUBCOMMANDS).map(([verb, entry]) => `  ${verb.padEnd(width)} ${entry.summary}`)];
+}
+
 function printWikiHelp(): void {
-  console.log("lares wiki <verb> [args...]\n");
-  console.log("Verbs:");
-  for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
-    console.log(`  ${verb.padEnd(10)} ${entry.summary}`);
-  }
-  console.log("\nFull E-arc surface complete.");
+  for (const line of wikiHelpLines()) console.log(line);
 }
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {

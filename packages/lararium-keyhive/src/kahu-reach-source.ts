@@ -11,7 +11,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission
  */
 import {
-  isSystemCanonBag, kahuReachAccess, kahuRealmGroup, requireKahuReach, KAHU_REACH_REASON,
+  isHouseCanonBag, kahuReachAccess, kahuRealmGroup, requireKahuReach, KAHU_REACH_REASON,
   type CapabilityVerifier, type KahuCabalBoardReader, type KahuReachSource,
 } from "@lararium/mesh";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
@@ -41,16 +41,16 @@ export function kahuReachSourceOf(input: {
 /**
  * THE VERIFY-THEN-DELEGATE GATE. A verb routed into a wiki island (`lares act --in-wiki`) clears the cap at THIS
  * island before main delegates it, and the wiki island answers every later ask by worker trust. So the Kahu
- * predicate stands in the verifier too: an `admin` ask on a system canon bag holds only for a hand the cabal's
+ * predicate stands in the verifier too: an `admin` ask on a house canon bag holds only for a hand the cabal's
  * reach admits, and a read asks nothing. Every other bag falls through to the inner verifier untouched.
  */
 export function withKahuReach(inner: CapabilityVerifier, source: KahuReachSource | undefined): CapabilityVerifier {
   return {
     kahuReach: (bagUrl, act) => requireKahuReach(bagUrl, source, act),
     async verify(args) {
-      if (args.access === "admin" && isSystemCanonBag(args.bagUrl)) {
+      if (args.access === "admin" && isHouseCanonBag(args.bagUrl)) {
         const access = await kahuReachAccess(source);
-        if (!access.held) return { ok: false, reason: `${KAHU_REACH_REASON}: system canon takes a hand in the Kahu cabal (${access.reason})` };
+        if (!access.held) return { ok: false, reason: `${KAHU_REACH_REASON}: house canon takes a hand in the Kahu cabal (${access.reason})` };
       }
       return inner.verify(args);
     },

@@ -1,0 +1,268 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/wsl2/new-hearth`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable  = true
+l-space    = "stable"
+role       = "one walk for a new operator: a bare Windows 11 PC with WSL Ubuntu to a founded, lit house with the MCP seat and a first Claude session; it names every step only the operator can take and every path in its own placeholder"
+status-why = "it strings the host runbook (wsl2/setup) and the founding runbook (sections 2, 5, 6 and the lit house) into one order, with the keep and the MCP seat placed where the doors need them"
+tags       = ["api/wsl2", "lifecycle/standing", "environment/onboarding", "kind/rite"]
+title      = "lar:///ha.ka.ba/wsl2/new-hearth"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/wsl2/new-hearth"
+```
+
+<<~ ahu slot=`#/entry`>>
+
+! Install a new hearth on WSL
+
+This walk carries a new operator from a Windows 11 PC to a house of their own: a founded hearth, lit by its pūlama, kept in the operator's own private repo, with the `lares` MCP seat in Claude Code. Each operator founds their own house on their own machine; nothing here joins another operator's house or Nexus (the founding runbook's step 9 carries that, later).
+
+The walk leans on two runbooks and repeats only the order: the host runbook <<~ loulou uri=`lar:///ha.ka.ba/wsl2/setup`>> (WSL, the distro, Docker, Node) and the founding runbook <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>> (the rite itself). Read each step's command once before typing it.
+
+Placeholders: `<linux-user>` names your Linux user (`whoami`), `<your-pet-name>` the private label of your first face (lowercase words joined by hyphens), `<your-chair>` its chair's private label, `<your-github>` your GitHub account. Every path in the env file stands absolute and spelled out.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/paper-law`>>
+
+!! The paper law
+
+''Write every cold-key card and every paper sheet on PAPER, by hand. Never paste, type, photograph or screenshot a card line or a sheet word into anything else: not a chat, not Claude, not a notes app, not a password manager, not an email.'' A card line that reached any other surface counts as burned: stop, and found again at a fresh house root (step 8 says how). After each read-back, clear the terminal's scrollback (`clear && printf '\033[3J'`), so no later copy-and-paste from the terminal can carry a card line with it.
+
+The custody passphrase follows the same law: you type it on your own terminal, and no file, env var, script or AI session ever holds it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-only`>>
+
+!! 0 · What only you can do
+
+* ''A Windows account'' that owns the distro, firmware virtualization on, and the Administrator prompt for `wsl --install` (host runbook section 1).
+* ''GitHub'': an account, and either an SSH key added to it from inside WSL or the HTTPS rewrite in step 2. Reading the repository needs no grant: it and the submodules the house builds from stand public. Pushing work back to the shared repository takes a collaborator grant from its owner.
+* ''Your own PRIVATE keep repo'' on your own account (step 4). It holds your house's memory in cleartext (only the roster of your faces rides sealed, opening under your passphrase or paper sheet), so it stays private and yours.
+* ''Docker'': the in-distro engine (`docker.io`) the host runbook installs needs no licence and no Windows program. Docker Desktop also works; its licence terms stay yours to read, and running both engines at once makes two daemons answer one `docker`, so choose one (<<~ loulou uri=`lar:///ha.ka.ba/wsl2/containers`>>).
+* ''The names and the custody'': your pet-name, your chair label, where the paper rests, and the passphrase.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/host`>>
+
+!! 1 · The host
+
+Walk the host runbook sections 1 to 5 in order: WSL from the Store, a distro (`Ubuntu-24.04` fits), `tools/wsl2/stand-linux.sh` (it runs from the clone: when the runbook clones, use step 2's lines below; its `~/src/Synthetic-Dream-Machine` and this walk's `~/Synthetic-Dream-Machine` both serve, so keep one and read it for the other), Docker Engine in the distro, Node 24 through nvm, `corepack enable` for pnpm. Then add the two tools the house reaches for on the host, and your git identity:
+
+```sh
+sudo apt update && sudo apt install -y zstd gh   # zstd: the keep compresses each session it mirrors; gh: GitHub sign-in
+git config --global user.name '<your name>'
+git config --global user.email '<your email>'
+gh auth login                                   # or add an SSH key from ~/.ssh to your GitHub account
+```
+
+''Preflight:'' `tools/wsl2/witness.sh` reads the host (WSL2, systemd, memory profile, ext4, cgroup v2, the docker compose plugin) and writes nothing; every row reads `ok` before step 3. `node --version` reads 24 or later, `pnpm --version` answers, `docker run --rm hello-world` runs without `sudo` (open a new terminal after joining the `docker` group).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/clone`>>
+
+!! 2 · The clone and its submodules
+
+Keep the clone on the distro's own disk, never under `/mnt/c`.
+
+```sh
+git config --global url."https://github.com/".insteadOf "git@github.com:"   # only without an SSH key: the submodules name SSH URLs
+git clone https://github.com/amorphous-dreams/Synthetic-Dream-Machine.git ~/Synthetic-Dream-Machine
+cd ~/Synthetic-Dream-Machine
+git switch develop                                     # or the release branch you were told to install
+git submodule update --init TiddlyWiki5 mempalace
+```
+
+The image and the host build need exactly those two submodules: `TiddlyWiki5` builds the engine and `mempalace` carries the sensorium's Python root. The others (`keyhive`, `subduction`, `automerge-repo`, `kowloon*`, `onomancy`, `folkjs`, `VSCode-TW5-Syntax`) serve development of their own trees; `git submodule update --init --recursive` fetches them all when you want them. Never run `git submodule update --remote` on `TiddlyWiki5`: its pointer names the engine whose hash every hearth binds.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/host-cli`>>
+
+!! 3 · The host CLI and your homes
+
+```sh
+pnpm install --frozen-lockfile
+pnpm build                                        # every package, then `lares repo tend` aligns the checkout's own seats
+git status                                        # reads clean; the image build refuses a dirty checkout
+node packages/lares-cli/bin/lares.mjs home read   # what `home tend` would write, and where
+node packages/lares-cli/bin/lares.mjs home tend   # asks first, then puts `lares` on your path and seats the MCP seat and hooks
+```
+
+`lares home tend` writes your homes alone: `lares` on the path (`~/.local/bin/lares`), the `lares mcp aho` seat in each harness config it finds (Claude Code, Codex, Copilot, VS Code), the session hooks, and the memory guards at their maximum. Re-run `lares home tend` after installing a harness later. The seat answers `hearth-sleeps` until the house stands, by design.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/keep-repo`>>
+
+!! 4 · Your keep repo
+
+The keep backs your house up into your own private repo; the restore (founding runbook 11a) reads it back. Make it now, so the first unlock can grant it.
+
+```sh
+gh repo create <your-github>/house-backup --private
+git clone https://github.com/<your-github>/house-backup.git ~/house-backup
+cd ~/house-backup
+printf 'house/** -text\n' > .gitattributes
+git add .gitattributes && git commit -m 'keep: house bytes travel unconverted'
+git push -u origin HEAD
+cd ~/Synthetic-Dream-Machine
+```
+
+Any name serves for the repo and the clone; the workspace name `house-backup` below names it to the house. The clone stays outside the checkout and outside the house root.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/env-file`>>
+
+!! 5 · The env file
+
+The house root `~/.lares` holds the hearth and the rest; the env file rests at its top, outside every bind, where the shim, the host `lares` and the MCP seat all read it.
+
+```sh
+mkdir -p ~/.lares
+cat > ~/.lares/lares-surface.env <<'EOF'
+LARES_HOUSE=/home/<linux-user>/.lares
+LARES_WORKSPACE=/home/<linux-user>/Synthetic-Dream-Machine
+LARES_WORKSPACES=house-backup=/home/<linux-user>/house-backup
+LARES_KEEP_WORKSPACE=house-backup
+EOF
+id -u; id -g                                       # 1000 and 1000 match the default; otherwise add LARES_UID=<n> and LARES_GID=<n>
+```
+
+Write `<linux-user>` out: the file takes no `~` and no `$HOME`, and a relative `LARES_HOUSE` refuses. `LARES_PULAMA=1` joins it in step 10, once the face stands.
+
+''The workspace takes the projection.'' `LARES_WORKSPACE` names your checkout, the working surface: the house lays canon from it and projects back into it, so a live edit to house canon writes into its tracked `bags/` and `wikis/`; commit those changes (or move them onto a branch) before each image build. Read-back follows descent: a fast-forward of the checkout flows in, and a fork (a branch switch, a rebase, a reset) holds the house's canon and asks which side stands. What notices the checkout's commit moving stands owed; until it lands, `vessel lay` reads moved canon by an explicit act (founding runbook #/prepare).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/image`>>
+
+!! 6 · The image
+
+```sh
+tools/lares-container.sh build
+```
+
+The build bakes the checkout's HEAD into the image's revision label and refuses a checkout holding uncommitted tracked changes. It takes a while the first time and some tens of GB of disk. Every later `up` warns when the label and HEAD differ, and names the rebuild.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/names`>>
+
+!! 7 · Decide on paper, before typing
+
+Write down: `<your-pet-name>` (your first face's private label), an optional public Handle, `<your-chair>` (the seat's private label), the custody route (a passphrase, a paper sheet, or both), and the place each card and the sheet will rest. The founding runbook step 3 says what each name means.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/found`>>
+
+!! 8 · Found the hearth
+
+On your own terminal, with no one else's eyes on it and no AI session reading it:
+
+```sh
+tools/lares-container.sh found --hearth --name '<your-pet-name>' --chair '<your-chair>'
+clear && printf '\033[3J'                         # after the last read-back: the cards leave the scrollback
+```
+
+The act asks the custody route: `[p]assphrase`, `[s]heet (paper pin)` or `[b]oth`. A passphrase gets typed twice; a sheet prints its words, and you copy them onto paper and read them back. Then two cold-key cards print, first the PLACE (this hearth's own card), then the chair you named: copy each card's three code lines onto paper, then type them back. The confirm words let two people check they hold one card; never type them at the prompt. The act ends `the hearth stands: nexus-<sha>`.
+
+''A card or sheet that reached any other surface'' (a paste, a photo, a chat): stop here. Move the house root aside by rename (`mv ~/.lares ~/.lares.burned`, then `mkdir -p ~/.lares` and copy the env file back in) and found again; nothing landed yet, so nothing gets lost. Remove the burned folder once the new hearth stands.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/stand`>>
+
+!! 9 · Stand, lay, check custody
+
+```sh
+tools/lares-container.sh persona new 0 --name '<your-pet-name>' --handle '<Your Handle>'   # skip for a face with no public Handle
+tools/lares-container.sh up                        # unlocks on this terminal, seating the keep pair under that passphrase; answer yes to the keep lei it offers for house-backup
+tools/lares-container.sh vessel lay --apply --yes
+tools/lares-container.sh vessel read
+tools/lares-container.sh persona list
+tools/lares-container.sh nexus seal show           # SEED, one seat
+tools/lares-container.sh nexus seal cold rehearse  # type each card back from paper: it reads them and moves nothing
+tools/lares-container.sh vault backup --face 0 --out /lar/config/face-0.bundle
+```
+
+The backup lands at `~/.lares/config/face-0.bundle` on the host, sealed under a NEW route the act asks for; move it off the machine. A face added later (`persona new 1 --name '<another-pet-name>'`) takes a passphrase while the vessel stands; for a paper sheet, `tools/lares-container.sh down` first.
+
+The first keep, on the host:
+
+```sh
+lares lei show --rite keep --branch house-backup --face 0   # the lei the unlock strung; none: lares lei kui --rite keep --branch house-backup --returns 12 --face 0
+lares rite keep --workspace house-backup --face 0
+lares rite receipts --face 0                                 # conferre reads the keep par
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lit`>>
+
+!! 10 · Light the house
+
+The pūlama keeps your face lit across rebuilds and restarts, so a restart asks no passphrase. String the keep lei first (step 9): under a pūlama, a ward act refuses `needs-the-human`.
+
+```sh
+tools/lares-container.sh down
+echo 'LARES_PULAMA=1' >> ~/.lares/lares-surface.env
+tools/lares-container.sh pulama up                 # stands unlit
+tools/lares-container.sh pulama light              # your own route lights the face
+tools/lares-container.sh up
+tools/lares-container.sh pulama admit              # the standing image serves every lit face
+tools/lares-container.sh vault unlock              # gathers no route: the vessel draws its lend from the pūlama
+tools/lares-container.sh pulama status
+```
+
+The founding runbook's "lit house" paragraph (step 5) carries what each line does. After a rebuild, `pulama restand` moves the pūlama onto the new image and `pulama admit` admits it (step 12).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/claude`>>
+
+!! 11 · The MCP seat and the first Claude session
+
+Install Claude Code inside WSL (Anthropic's install page names the current installer), then:
+
+```sh
+lares home tend                                    # seats `lares mcp aho` in the harness just installed
+lares home read --brief                            # every item holds
+cd ~/Synthetic-Dream-Machine && claude
+```
+
+In the session, `/mcp` lists `lares` connected, and the session opens on the boot seed `CLAUDE.md` carries. The AI session wears your first face. `lares home verify` (outside the session) reads that the last session loaded the seed once. The first session needs no secret from you; never hand it a card, a sheet or the passphrase.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/later`>>
+
+!! 12 · Later: updates, restores, faults
+
+''A code update:'' `lares rite kukulu`, the one verb. It fetches and fast-forwards the checkout's own branch where the tree stands clean and behind its upstream (a dirty tree behind, a diverged branch or a detached head stops with one line, and it never switches a branch or stashes), makes the image of the head (the tag holds it, a kept `rev-<short>` image takes the tag, or a build from the commit; an uncommitted or untracked file never rides it), spends each face's kukulu lei where one stands, then `down` (the keep, the census), `up` and the face you last wore, closing on one line that names the revision, the worn face and the keep. Where the pūlama's own code moved, or it stands unlit, it re-stands and lights the pūlama on that same terminal (the pūlama reads your route) and walks on; an image no admission and no lei carries asks `pulama admit` there too. From a seat with no terminal it flows any day that owes no route, and otherwise stops before anything moves with one line: `your hand: lares rite kukulu` on a terminal. It reads where the house stands each run, so a run that stopped picks up there. `--rollback` stands the image that ran before; `--rollback <rev>` an older revision's, with no checkout move. `git submodule update` (no `--remote`) stays a hand act where a pin moved.
+
+''A restore'' from the keep onto a new machine or a fresh root walks the founding runbook 11a.
+
+''What a walk meets:''
+
+* ''`build` names what it left out, or `up` warns of uncommitted changes:'' a live canon edit wrote into the checkout's `bags/` or `wikis/`, or a stray file changed. The image builds from the commit and carries none of it; `git status` names it, so commit it or move it onto a branch before the next `rebuild`.
+* ''Never rename or remove a house folder while the vessel stands:'' `down` first. `up` over a container whose mounts point at a moved folder can answer healthy and then read `no face stands`; `down`, then `up`, mends it.
+* ''A paper sheet for a new face'' binds only with the vessel stopped; a standing vessel offers the passphrase alone.
+* ''A mistyped pūlama route'' can read `no route was given`; type it again.
+* ''`down` asks for `accept-loss`:'' never type it on a house you keep. `vault unlock`, let the vessel settle, then `down` again.
+
+''Preflight owed:'' `tools/wsl2/witness.sh` reads the host and `lares home read` reads the homes; no one door yet reads the house's own prerequisites (the env file's keys and paths, the two submodules, `zstd`, the image label against HEAD, the keep clone's guard) before the founding.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tNenzvG44Z_zKwENjPI2U4GmOX9U8C7n1NeCfDxwWL8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

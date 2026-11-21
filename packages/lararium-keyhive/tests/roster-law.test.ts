@@ -1,6 +1,9 @@
+import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { describe, expect, it } from "vitest";
 import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix } from "@lararium/mesh";
 import { foundTheFace, foundThePlace, InMemoryEventStore, KeyhiveProvider, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const rootSeed = new Uint8Array(32).fill(71);
 const founderVesselSeed = new Uint8Array(32).fill(72);
@@ -31,11 +34,11 @@ async function readMembership(provider: KeyhiveProvider, groupId: string, identi
 describe("THE_ROSTER_LAW", () => {
   it("witnesses the place absent and the atoms present on the face roster after a founding, an admit and a fleet join seat", async () => {
     const founderRepo = repo();
-    const founderPlace = await foundThePlace({ repo: founderRepo, vesselSeed: founderVesselSeed, hearthTrueName: "hearth" });
-    const face = await foundTheFace({
+    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo }), founderRepo);
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
-      daemonHandle: founderPlace.daemonHandle,
-      vesselVerifyingKey: key(founderVesselSeed),
+      daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },
+      placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth",
@@ -45,10 +48,9 @@ describe("THE_ROSTER_LAW", () => {
 
     const founderFace = await withArchive(founderAtomSeed, face.veilArchive);
     try {
-      await founderFace.receiveContactCard(new TextEncoder().encode(founderPlace.contactCardJson));
       const founderAtomId = await founderFace.vesselIdentifierHex();
       expect(await isGroupMember(founderFace, face.personaGroupId, founderAtomId)).toBe(true);
-      expect(await isGroupMember(founderFace, face.personaGroupId, founderPlace.vesselIdentifierHex)).toBe(false);
+      expect(await isGroupMember(founderFace, face.personaGroupId, `0x${key(founderVesselSeed)}`)).toBe(false);
     } finally {
       await founderFace.dispose();
     }
@@ -57,7 +59,7 @@ describe("THE_ROSTER_LAW", () => {
     const chain = personaKelChainForPrefix(board.doc(), face.personaKelPrefix);
     if (!chain) throw new Error("founder KEL chain absent");
     const payload = await runDeviceAdmitEdge({
-      signerSeed: rootSeed,
+      signerSeed: rootSeed, edgeFrontier: await frontierFromFoundingSeed(rootSeed),
       joineeVerifyingKey: key(joineeAtomSeed),
       personaKelPrefix: face.personaKelPrefix,
       personaKelChain: chain,
@@ -67,13 +69,14 @@ describe("THE_ROSTER_LAW", () => {
       syncUrl: null,
       hearthDaemonUrl: founderPlace.daemonUrl,
       personaUrl: face.personaUrl,
+      personaActs: await founderAndJoineeActs({ face, signerSeed: rootSeed, founderAtomSeed: founderAtomSeed, joineeKey: key(joineeAtomSeed), chain }),
     });
 
     const joineeRepo = repo();
-    const joineePlace = await foundThePlace({ repo: joineeRepo, vesselSeed: joineeVesselSeed, hearthTrueName: "hearth" });
+    const joineePlace = withMemorySecretHome(await foundThePlace({ repo: joineeRepo }), joineeRepo);
     const joinee = await runApplyAdmitPayload({
       repo: joineeRepo,
-      daemonHandle: joineePlace.daemonHandle,
+      daemonHandle: joineePlace.daemonHandle, secretHandle: joineePlace.secretHandle, secretRest: { assertSealed: async () => true },
       atomSeed: joineeAtomSeed,
       vesselDisplayName: "joinee",
       payload,
@@ -93,20 +96,20 @@ describe("THE_ROSTER_LAW", () => {
       const roster = await seated.groupMembers(face.personaGroupId);
       expect(roster).toContain(founderAtomId);
       expect(roster).toContain(joineeAtomId);
-      expect(roster).not.toContain(founderPlace.vesselIdentifierHex);
-      expect(roster).not.toContain(joineePlace.vesselIdentifierHex);
+      expect(roster).not.toContain(`0x${key(founderVesselSeed)}`);
+      expect(roster).not.toContain(`0x${key(joineeVesselSeed)}`);
     } finally {
       await seated.dispose();
     }
   });
 
-  it("control — planted place member reads present on the face roster", async () => {
+  it("control — the founded atom reads present on its own face roster", async () => {
     const founderRepo = repo();
-    const founderPlace = await foundThePlace({ repo: founderRepo, vesselSeed: founderVesselSeed, hearthTrueName: "hearth" });
-    const face = await foundTheFace({
+    const founderPlace = withMemorySecretHome(await foundThePlace({ repo: founderRepo }), founderRepo);
+    const face = await foundTheFace({ vesselTag: testVesselTagDoor(1),
       repo: founderRepo,
-      daemonHandle: founderPlace.daemonHandle,
-      vesselVerifyingKey: key(founderVesselSeed),
+      daemonHandle: founderPlace.daemonHandle, secretHandle: founderPlace.secretHandle, secretRest: { assertSealed: async () => true },
+      placeVerifyingKey: key(founderVesselSeed),
       vesselDisplayName: "founder",
       binding: { mode: "self-stood", signerSeed: rootSeed },
       hearthTrueName: "hearth",
@@ -116,9 +119,9 @@ describe("THE_ROSTER_LAW", () => {
 
     const founderFace = await withArchive(founderAtomSeed, face.veilArchive);
     try {
-      await founderFace.receiveContactCard(new TextEncoder().encode(founderPlace.contactCardJson));
-      await founderFace.addGroupMember(founderPlace.vesselIdentifierHex, face.personaGroupId);
-      expect(await isGroupMember(founderFace, face.personaGroupId, founderPlace.vesselIdentifierHex)).toBe(true);
+      const atomId = await founderFace.vesselIdentifierHex();
+      expect(await isGroupMember(founderFace, face.personaGroupId, atomId)).toBe(true);
+      expect(await isGroupMember(founderFace, face.personaGroupId, `0x${key(founderVesselSeed)}`)).toBe(false);
     } finally {
       await founderFace.dispose();
     }

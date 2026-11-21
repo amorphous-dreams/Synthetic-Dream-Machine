@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-49`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "49. Revolution"
+hexagram    = "49"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "101110"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-49"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-49"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷰ 49. Revolution
+
+<<<
+"The Principia Discordia has served as the basis for a worldwide revolution in madness, managing to leave a trail of icons and such in its path." - Discordian Society of Saint Mary's University
+<<<
+
+This hexagram represents revolution. It is not telling you to shoot government workers - it is warning you that a revolution (of the mind, hopefully) seems immenant at this time. Remember, this can usually be read on a personal level. It also warns that revolution should only be looked to when there is no other way out.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LHgbu_sofNVlIUFYEhixVW7oBYtdgREk9QCFN_GUeHE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

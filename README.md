@@ -22,7 +22,7 @@ permalink: /vault/synthetic-dream-machine/overview/
 
 **Lares** is the AI agent architecture that powers the repository's AI assistant tooling. It is also in-world infrastructure: orichalcum-inscribed DreamNet nodes that serve as crossroads guides, archivists, and thresholds. Both things are true at once.
 
-Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](infrastructure-as-myth.md) for the design thesis behind the agent stack.
+Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem) for the design thesis behind the agent stack.
 
 ---
 
@@ -75,12 +75,12 @@ Two independent parser hosts read the same bytes, and a gate requires them to ag
 
 | File | Contents |
 |---|---|
-| [Quickstart](Synthetic_Dream_Machine_01_Quickstart.md) | SDM core rules — the Quickstart entry point |
-| [Paths Index](Synthetic_Dream_Machine_02_Paths_Index.md) | Paths index |
-| [Traits Index](Synthetic_Dream_Machine_03_Traits_Index.md) | Traits index |
-| [Powers Index](Synthetic_Dream_Machine_04_Powers_Index.md) | Powers index |
-| [Gear Index](Synthetic_Dream_Machine_05_Gear_Index.md) | Gear index |
-| [Campaign Regions](Synthetic_Dream_Machine_06_Campaign_Regions.md) | Campaign regions |
+| [Quickstart](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Quickstart.md) | SDM core rules — the Quickstart entry point |
+| [Paths Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Paths_Index.md) | Paths index |
+| [Traits Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Traits_Index.md) | Traits index |
+| [Powers Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_04_Powers_Index.md) | Powers index |
+| [Gear Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_05_Gear_Index.md) | Gear index |
+| [Campaign Regions](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_06_Campaign_Regions.md) | Campaign regions |
 
 ### FTLS Game Rules
 
@@ -111,12 +111,12 @@ Two independent parser hosts read the same bytes, and a gate requires them to ag
 
 | Region | Contents |
 |---|---|
-| [Neo-Thracia — Region Worksheet](elyncia/Neo-Thracia/Neo-Thracia_Region_Worksheet.md) | Region overview and worksheet |
-| [Neo-Thracia — Session Zero](elyncia/Neo-Thracia/Session_Zero.md) | Session zero materials |
+| [Neo-Thracia — Region Worksheet](bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet.mem) | Region overview and worksheet |
+| [Neo-Thracia — Session Zero](bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero.mem) | Session zero materials |
 | [The Caverns of Thracia](elyncia/Neo-Thracia/The%20Caverns%20of%20Thracia/The_Caverns_of_Thracia.md) | Dungeon supplement — Caverns of Thracia |
-| [New Delos — Market District Live Feed](elyncia/New%20Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md) | New Delos market district encounter material |
-| [Shattered Isles — Faerie Ring Strandbeest Shrine](elyncia/Shattered%20Isles/Faerie_Ring_Strandbeest_Shrine_Sheet.md) | Shrine sheet — Faerie Ring Strandbeest |
-| [Shattered Isles — Powered Symbiote & Ichi Construct](elyncia/Shattered%20Isles/Powered_Symbiote_Trait_and_Ichi_Construct_Golem.md) | Trait and construct golem supplement |
+| [New Delos — Market District Live Feed](elyncia/Elyncia_04_The_Referee_Noosphere_Guide.md#new-delos-market-district) | New Delos market district live feed, folded into the Referee Noosphere Guide |
+| [Shattered Isles — Faerie Ring Strandbeest Shrine](bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem) | Shrine sheet — Faerie Ring Strandbeest |
+| [Shattered Isles — Powered Symbiote & Ichi Construct](bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/ichi.mem) | Trait and construct golem supplement |
 
 ### Reference Material (SDM Third Party)
 
@@ -135,14 +135,10 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 | Directory / File | Contents |
 |---|---|
-| [infrastructure-as-myth.md](infrastructure-as-myth.md) | Root design thesis for Lares as portable agent infrastructure |
-| [Deterministic_IaM_Build.md](Deterministic_IaM_Build.md) | Deterministic build spec for rendering Lares across platforms |
-| [`builds/`](builds/README.md) | Manifest-driven IaM build layer: manifests, module metadata, rendered browser package, verification artifacts |
-| [`builds/agents/`](builds/agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
+| [infrastructure-as-myth.mem](bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem) | Root design thesis for Lares as portable agent infrastructure, with its paper |
 | [AGENTS.md](AGENTS.md) | Root agent configuration — identity, voice architecture, VS Code operational map |
-| `_todo/` | Pipeline operations, conversion tracking, design docs |
-| `_todo/BECMI/scripts/` | Automation scripts for BECMI conversion pipeline |
-| `_becmi/` | BECMI source extractions (conversion pipeline input) |
+| [`_osr/`](_osr/) | Conversion tracking for the FTLS chapters and the BECMI pipeline |
+| [`_osr/BECMI/scripts/`](_osr/BECMI/scripts/README.md) | Automation scripts for the BECMI conversion pipeline |
 
 ### Lares Infrastructure
 
@@ -155,6 +151,25 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 | `packages/lares-cli/` | the vessel door |
 | `TiddlyWiki5/`, `VSCode-TW5-Syntax/`, `mempalace/`, `kowloon*/` | submodules the reference deployment runs on |
 
+#### Workspaces take the house's projection
+
+A Lararium house lays its canon (`bags/`, `wikis/`) from the workspace `LARES_WORKSPACE` names and projects bags, wikis and rendered artifacts back into it. The operator names each workspace; for the Kahu cabal the repo checkout stands as the working surface, so canon edits land in the tracked tree as source-control write-back. Read-back follows descent: a fast-forward of the workspace's commit flows in, a fork (a branch switch, a rebase, a reset) holds the house's canon and asks which side stands. What notices the commit moving stands owed; until then the operator reads moved canon in by hand:
+
+```sh
+lares vessel lay                            # the standing house reads the workspace's canon
+```
+
+`tools/house-canon.mjs` stays as a tool where a separate pinned clone serves a house (`stand`, `move`, `read`). The [founding runbook](bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem) (`#/prepare`) carries the whole walk.
+
+#### The seal merge driver
+
+Two branches that each re-seal one carrier conflict on its `bcc=` seal line even when their bodies merge clean. `.gitattributes` routes `*.mem` through `tools/mem-merge-driver.mjs`, which re-seals a seal-only conflict and leaves every other conflict standing. `pnpm build` ends with `lares repo tend`, which seats the driver in the clone's shared git config (every worktree of the clone reads it) and says `set` or `already set` for each key; run `lares repo tend` again any time to check. The keys it writes:
+
+```sh
+git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
+git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L"
+```
+
 
 ---
 
@@ -162,13 +177,11 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 **New to FTLS?** Start with [Flying Triremes and Laser Swords — Introduction](ftls/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md).
 
-**New to SDM?** Start with [SDM Quickstart](Synthetic_Dream_Machine_01_Quickstart.md).
+**New to SDM?** Start with [SDM Quickstart](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Quickstart.md).
 
 **Exploring the setting?** Start with [Elyncia: A Broken World](elyncia/Elyncia_01_A_Broken_World.md).
 
-**Working with the AI tooling?** Read [Infrastructure as Myth](infrastructure-as-myth.md), then [Deterministic IaM Build](Deterministic_IaM_Build.md), then [`builds/agents/README.md`](builds/agents/README.md), then [AGENTS.md](AGENTS.md).
-
-The manifest/verification layer now exists. The active next step for Lares tooling is prompt/package slimming so repo-native roots can return to stable reload-safe budgets before the next governance-hardening pass.
+**Working with the AI tooling?** Read [Infrastructure as Myth](bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem), then the [boot seed](bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem), then [AGENTS.md](AGENTS.md).
 
 ---
 
@@ -184,7 +197,7 @@ The short version: you can make Fan Works (house rules, supplements, fiction, AI
 
 ### SDM Third Party License
 
-The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands Guidebook, Our Golden Age) by Luka Rejec is used under the **[Synthetic Dream Machine Third Party License](Synthetic-Dream-Machine-3rd-Party-License.md)**.
+The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands Guidebook, Our Golden Age) by Luka Rejec is used under the **[Synthetic Dream Machine Third Party License](sdm/Synthetic_Dream_Machine/Synthetic-Dream-Machine-3rd-Party-License.md)**.
 
 > *Flying Triremes and Laser Swords* is an independent production by Amorphous Dreams Cabal and is not affiliated with Luka Rejec or WTF Studio. It is published under the Synthetic Dream Machine Third Party License.
 >
@@ -196,45 +209,40 @@ The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands G
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and sprint status.
 
-The Lares agent architecture (`AGENTS.md`, `builds/agents/`) is versioned at **v3.6**.
+The Lares agent architecture lives in the [`bags/lares/`](bags/lares/) meme graph.
+
+---
+
+## Install a New Hearth on WSL
+
+A new operator on Windows 11 walks **[Install a new hearth on WSL](bags/lares/ha.ka.ba/wsl2/new-hearth.mem)** (`lar:///ha.ka.ba/wsl2/new-hearth`): from a bare PC with WSL Ubuntu to a founded, lit house of your own, kept in your own private repo, with the `lares` MCP seat in Claude Code. It strings two runbooks into one order:
+
+- [Windows 11 + WSL2 developer host](bags/lares/ha.ka.ba/wsl2/setup.mem): WSL, the distro, Docker Engine, Node 24 and pnpm; `tools/wsl2/witness.sh` reads the host and writes nothing.
+- [Founding runbook](bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem): the founding, custody, the lit house, and (step 11a) the restore from your keep.
+
+The short order: host → clone + `git submodule update --init TiddlyWiki5 mempalace` → `pnpm install --frozen-lockfile && pnpm build` → `lares home tend` → your private keep repo → `~/.lares/lares-surface.env` → `tools/lares-container.sh build` → `found --hearth` → persona, `up`, seed, backup, first keep → the pūlama → `claude`.
+
+**Write every cold-key card and every paper sheet the founding prints on PAPER, by hand. Never paste, type, photograph or screenshot a card line or a sheet word into a chat, an AI session, a notes app or a password manager. A card line that reached any other surface counts as burned: found again at a fresh house root.**
 
 ---
 
 ## Development Setup
 
-These scripts are idempotent and intended to be run from the repository root.
-They assume Python 3 is available. For project setup, activate `.venv` first.
+Every command runs from the repository root. The house itself runs in Docker (above); the host keeps Node, pnpm and the `lares` CLI for its host verbs, tests and witnesses.
 
-### 0. Prepare scripts
+### 1. Node and Python toolchains
 
-If the executable bit was not preserved by your checkout or zip tool, run:
+The [host runbook](bags/lares/ha.ka.ba/wsl2/setup.mem) installs Node 24, pnpm (the version `package.json` pins in `packageManager`) and Docker, and its Linux stand keeps `~/.venv` from `requirements.txt` for the Python suites.
 
-```bash
-chmod +x scripts/*.sh scripts/*.py
-```
-
-### 1. Create and activate a virtual environment
+### 2. Build the workspace
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+git submodule update --init TiddlyWiki5 mempalace   # --recursive fetches the development submodules too
+pnpm install --frozen-lockfile
+pnpm build                                          # every package, then `lares repo tend`
 ```
 
-### 2. Install the repo in editable dev mode
-
-```bash
-./scripts/dev-setup.sh
-```
-
-This script:
-
-- verifies that `.venv` is active,
-- syncs git submodules when `.gitmodules` is present,
-- upgrades packaging tools,
-- installs the package with dev extras via `pip install -e '.[dev]'`,
-- verifies that the `lares` package imports.
-
-### 3. Install Ollama
+### 3. Install Ollama (optional local models)
 
 Install Ollama with the official installer:
 
@@ -267,8 +275,6 @@ Then, inside WSL:
 
 ```bash
 cd ~/Synthetic-Dream-Machine
-code-insiders Synthetic-Dream-Machine.code-workspace
-source .venv/bin/activate
 ./scripts/ollama-wsl-setup.sh
 ```
 
@@ -512,90 +518,38 @@ ollama ps
 ### 7. Run tests
 
 ```bash
-pytest
+pnpm test                          # the TypeScript suites, one package at a time
+source ~/.venv/bin/activate && pytest   # the Python suites (the sensorium scripts, the parser's Python host)
 ```
 
-### 8. Smoke-test the repo MCP server
+### 8. The MCP seat
 
-Default smoke test:
+`lares home tend` writes one MCP seat, `lares mcp aho`, into each harness config it finds (Claude Code, Codex, Copilot, VS Code), with the session hooks and `lares` on your path; `lares home read` shows each item and writes nothing. The seat speaks for the house standing in the container and answers `hearth-sleeps` while none stands. No harness config names a Python server.
+
+### 9. Check the host
 
 ```bash
-python scripts/mcp-smoke.py
+tools/wsl2/witness.sh      # the WSL host profile and Docker, read only
+lares home read --brief    # your homes: seats, hooks, seed rule, `lares` on the path
+lares repo read            # this checkout's own seats
 ```
 
-If the MCP server entrypoint differs, pass the exact launch command after `--`:
+### 10. Open the repo in VS Code
 
 ```bash
-python scripts/mcp-smoke.py -- python -m lares.lararium_mcp
-python scripts/mcp-smoke.py -- ./lares/lararium_mcp/run.sh
+code .
 ```
 
-The smoke test sends MCP `initialize` and `tools/list` requests over stdio.
-
-### 9. Check local environment status
-
-```bash
-make status
-# or
-./scripts/status.sh
-```
-
-This prints repo, Python, package import, installed Ollama models, running Ollama models, Ollama service, and VS Code Insiders status.
-
-### 10. Open the repo in VS Code Insiders
-
-```bash
-code-insiders .
-```
-
-Then configure Ollama in Copilot Chat:
-
-1. Open Copilot Chat.
-2. Open the model picker.
-3. Select **Local**.
-4. If models do not appear, use **Chat: Manage Language Models**.
-5. Choose **Add Models → Ollama**.
-6. Add the repo MCP server through `.vscode/mcp.json`.
-
-Recommended workspace MCP config:
-
-```json
-{
-  "servers": {
-    "lararium": {
-      "type": "stdio",
-      "command": ".venv/bin/python3",
-      "args": ["-m", "lares.lararium_mcp"],
-      "cwd": ".",
-      "env": {}
-    }
-  }
-}
-```
-
-For clients that read root `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "lararium": {
-      "command": ".venv/bin/python3",
-      "args": ["-m", "lares.lararium_mcp"],
-      "cwd": "."
-    }
-  }
-}
-```
+To use local Ollama models in Copilot Chat: open the model picker, choose **Local** (or **Chat: Manage Language Models → Add Models → Ollama**). `lares home tend` already seated the `lares` MCP seat in VS Code's user config.
 
 ## Project Structure
 
-- `lares/` — main package, MCP server modules, and agentic logic.
-- `scripts/` — idempotent setup, status, and smoke-test scripts.
-- `tests/` — test suite.
-- `requirements.txt` — development dependencies, if present.
-- `pyproject.toml` — build and project metadata.
-
-
+- `bags/` — the meme graph: canon the house seeds from, and the specifications above.
+- `packages/` — the runtime (`lararium-*`), the `lares` CLI (`lares-cli`) and the reference parser.
+- `tools/` — the host shim (`lares-container.sh`), the WSL stands, witnesses and rite walkers.
+- `genesis/` — the baked seed the image carries.
+- `tests/` — the end-to-end harness.
+- `requirements.txt`, `pyproject.toml` — the Python suites' dependencies and pytest config.
 
 ## License
 LICENSE

@@ -19,9 +19,9 @@ import type { LaresMemeFace } from "../src/types/lares-globals.js";
 
 const URI = "lar:///t/widget";
 const meme = (slots: readonly string[], uri = URI, uriPath = "t/widget"): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 // ---------------------------------------------------------------------------
 // The fake $tw: a stubbed base widget, a stubbed wiki, a stubbed face.
@@ -159,7 +159,7 @@ describe.skipIf(wikiSkip)(`★ the live door — <$action-meme-place> in a boote
     expect(receipt["decision"]).toBe("ingest");
     expect(engine.wiki.getTiddler(`${LIVE}#/b`)).toBeTruthy();
     const back = await face.read(LIVE);
-    expect(back?.text).toContain("<<~ ahu #/b>>");
+    expect(back?.text).toContain("<<~ ahu slot=`#/b`>>");
     expect(receipt["canonical-hash"]).toBe(back?.canonicalHash);
   });
 

@@ -1,13 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/fake-dom">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/fake-dom`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/fake-dom.mem"
 l-space     = "lararium"
-mana        = 3
 role        = "the converter off TiddlyWiki's own fake DOM — a rendered fake-element tree read out as immutable VDomNodes or as its HTML string; it types the fake nodes it reads and builds no DOM of its own"
 source-file = "packages/lararium-tw5/src/fake-dom.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/fake-dom"
@@ -15,7 +13,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/fake-dom"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 ! fake-dom — reading TiddlyWiki's fake DOM out
 
@@ -29,6 +27,6 @@ uri-path    = "ha.ka.ba/lararium/tw5/fake-dom"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;b4Evo1yWYt8iAj2nGXhQdXXts3NPKCe5eEUF8K0Va8c
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NgbEik2wgBLIbt_aP9d_bJXXhtLCmnuwfX0fZ5Ankt8`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

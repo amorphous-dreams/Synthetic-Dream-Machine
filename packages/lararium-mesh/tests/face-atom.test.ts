@@ -3,7 +3,8 @@
  * seed derives no atom and opens no group secret sealed to one.
  */
 import * as ed25519 from "@noble/ed25519";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { faceAtomPublicKey, signAsFaceAtom } from "../src/face-atom.js";
 import {
   faceAtomKeyFromSeed, groupSecretOpenerFromSeed, hexToBytes, mintFaceAtomSeed, sealGroupSecret,
   utf8Bytes,
@@ -66,5 +67,23 @@ describe("the face atom", () => {
     const thief = groupSecretOpenerFromSeed(placeSeed);
     const seal = await sealGroupSecret({ opSeed, prefix: "prefix-a", deviceVerifyingKey: thief.deviceKey });
     expect(thief.seal(seal)).not.toBeNull();
+  });
+});
+
+describe("the atom's seed leaves no copy behind a key read or a signature", () => {
+  it("faceAtomPublicKey and signAsFaceAtom each zero the copy they took; the caller's seed stands as given", async () => {
+    const seed = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
+    const copies: Uint8Array[] = [];
+    const from = Uint8Array.from.bind(Uint8Array);
+    const spy = vi.spyOn(Uint8Array, "from").mockImplementation(((src: ArrayLike<number>) => { const c = from(src); if (src === seed) copies.push(c); return c; }) as typeof Uint8Array.from);
+    try {
+      const key = faceAtomPublicKey(seed);
+      const sig = await signAsFaceAtom(seed, new Uint8Array([1, 2, 3]));
+      expect(key).toMatch(/^[0-9a-f]{64}$/);
+      expect(sig).toMatch(/^[0-9a-f]{128}$/);
+    } finally { spy.mockRestore(); }
+    expect(copies).toHaveLength(2);                                          // CONTROL: the instrument saw each copy taken
+    for (const copy of copies) expect(copy.every((b) => b === 0)).toBe(true); // and each reads zero once the call returns
+    expect(seed.every((b, i) => b === i + 1)).toBe(true);                    // the caller's seed is the caller's to zero
   });
 });

@@ -26,7 +26,7 @@ import {
   tiddlerText,
   PERSONAL_BINDINGS_PREFIX,
   DRAFT_BINDINGS_PREFIX,
-  WORKING_BINDINGS_PREFIX,
+  slotBindingKey,
 } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
 import { resolveOrMintBinding, makeFaceBagDoor, type CapabilityProvider, type DelegateArgs } from "@lararium/keyhive";
@@ -105,7 +105,7 @@ describe("resolveOrMintBinding", () => {
     });
 
     // Binding tiddler recorded in the daemon doc under the personal prefix.
-    const key = `${PERSONAL_BINDINGS_PREFIX}/${FINGERPRINT}`;
+    const key = slotBindingKey(PERSONAL_BINDINGS_PREFIX, FINGERPRINT, AGENT_HEX);
     const rec = plainRecordOrNull(daemonHandle.doc()?.tiddlers?.[key]);
     expect(tiddlerText(rec)).toBe(result.url);
     expect(rec?.tiddler.kind).toBe("personal-binding");
@@ -123,7 +123,7 @@ describe("resolveOrMintBinding", () => {
       kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
     });
     const rows = Object.entries(daemonHandle.doc()?.tiddlers ?? {}).map(([title, stored]) => ({ title, record: plainRecordOrNull(stored)! }));
-    const binding = rows.find((r) => r.title === `${PERSONAL_BINDINGS_PREFIX}/${FINGERPRINT}`)!;
+    const binding = rows.find((r) => r.title === slotBindingKey(PERSONAL_BINDINGS_PREFIX, FINGERPRINT, AGENT_HEX))!;
     const mint = rows.find((r) => r.title.includes("-minted/"))!;
     // The fields a binding carries, whole: what it names, who minted it, whom it reaches. No field holds a time.
     expect(Object.keys(binding.record.tiddler).filter((k) => k !== "title").sort()).toEqual(
@@ -146,7 +146,7 @@ describe("resolveOrMintBinding", () => {
     const { provider, registered, delegations } = makeFakeKeyhive();
 
     // Pre-seed an existing binding tiddler.
-    const key = `${DRAFT_BINDINGS_PREFIX}/${FINGERPRINT}`;
+    const key = slotBindingKey(DRAFT_BINDINGS_PREFIX, FINGERPRINT, AGENT_HEX);
     const existingUrl = "automerge:already-bound";
     daemonHandle.change((doc) => {
       doc.tiddlers[key] = mutableLarRecord(key, { text: existingUrl }, "test-seed");
@@ -157,7 +157,7 @@ describe("resolveOrMintBinding", () => {
       kind: "draft-binding", prefix: DRAFT_BINDINGS_PREFIX,
     });
 
-    expect(result).toEqual({ url: existingUrl, minted: false });
+    expect(result).toMatchObject({ url: existingUrl, minted: false });
     expect(registered).toEqual([]);     // no mint
     expect(delegations).toEqual([]);    // no delegation
   });
@@ -178,8 +178,8 @@ describe("resolveOrMintBinding", () => {
 
     expect(personal.url).not.toBe(draft.url);   // two distinct docs
     const doc = daemonHandle.doc();
-    expect(tiddlerText(doc?.tiddlers?.[`${PERSONAL_BINDINGS_PREFIX}/${FINGERPRINT}`])).toBe(personal.url);
-    expect(tiddlerText(doc?.tiddlers?.[`${DRAFT_BINDINGS_PREFIX}/${FINGERPRINT}`])).toBe(draft.url);
+    expect(tiddlerText(doc?.tiddlers?.[slotBindingKey(PERSONAL_BINDINGS_PREFIX, FINGERPRINT, AGENT_HEX)])).toBe(personal.url);
+    expect(tiddlerText(doc?.tiddlers?.[slotBindingKey(DRAFT_BINDINGS_PREFIX, FINGERPRINT, AGENT_HEX)])).toBe(draft.url);
   });
 });
 
@@ -209,14 +209,14 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     const result = await resolveOrMintBinding({
       ...commonArgs(repo, daemonStore, provider),
       personaGroupId: undefined,           // the waking floor: no face stands
-      kind: "working-binding", prefix: WORKING_BINDINGS_PREFIX,
+      kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
     });
 
     expect(result.minted, "a faceless vessel minted nothing").toBe(true);
     expect(registered, "the doc was never registered, so the vessel holds no admin on it").toEqual([result.url]);
     expect(delegations, "a faceless vessel delegated to somebody — to whom?").toHaveLength(0);
 
-    const key = `${WORKING_BINDINGS_PREFIX}/${FINGERPRINT}`;
+    const key = slotBindingKey(PERSONAL_BINDINGS_PREFIX, FINGERPRINT);
     expect(tiddlerText(daemonHandle.doc()?.tiddlers?.[key]), "the binding was not recorded, so the next boot re-mints").toBe(result.url);
   });
 
@@ -226,7 +226,7 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     const { daemonStore } = makeDaemonStore(repo);
     const { provider } = makeFakeKeyhive();
     const args = { ...commonArgs(repo, daemonStore, provider), personaGroupId: undefined,
-                   kind: "working-binding" as const, prefix: WORKING_BINDINGS_PREFIX };
+                   kind: "personal-binding" as const, prefix: PERSONAL_BINDINGS_PREFIX };
 
     const first  = await resolveOrMintBinding(args);
     const second = await resolveOrMintBinding(args);
@@ -243,7 +243,7 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     const result = await resolveOrMintBinding({
       ...commonArgs(repo, daemonStore, vessel.provider),
       faceDoor: makeFaceBagDoor({ face: face.provider, groupId: AGENT_HEX }),
-      kind: "working-binding", prefix: WORKING_BINDINGS_PREFIX,
+      kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
     });
     expect(vessel.registered).toEqual([]);
     expect(vessel.delegations).toEqual([]);

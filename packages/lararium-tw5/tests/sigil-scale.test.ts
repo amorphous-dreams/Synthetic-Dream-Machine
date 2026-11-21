@@ -19,7 +19,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js";
 
-const CALL = '<<~ scale organ "mempalace ~ FIRST — the worldline-KG lives inside it -> structurepalace ~ structure plane">>';
+const CALL = "<<~ scale name=`organ` ranks=`mempalace ~ FIRST — the worldline-KG lives inside it -> structurepalace ~ structure plane`>>";
 
 describe.skipIf(wikiSkip)(`scale — a registered sigil${skipNote}`, () => {
   let e: TW5Engine;
@@ -47,7 +47,7 @@ describe.skipIf(wikiSkip)(`scale — a registered sigil${skipNote}`, () => {
   });
 
   test("★ a gloss carrying a colon survives — it is prose, not a parameter ★", () => {
-    const html = r('<<~ scale rhyme "physics ~ Lightcone: each worldline carries its own proper time">>');
+    const html = r("<<~ scale name=`rhyme` ranks=`physics ~ Lightcone: each worldline carries its own proper time`>>");
     expect(html).toContain("Lightcone");
     expect(html).toContain("proper time");
   });
@@ -58,6 +58,6 @@ describe.skipIf(wikiSkip)(`scale — a registered sigil${skipNote}`, () => {
    * already proves the sigil is registered and live. `frame-parity` reads the scanner independently.
    */
   test("★ a scale carrying no chain still renders, and loses nothing ★", () => {
-    expect(rendered("<<~ scale levels>>")).toBe(true);
+    expect(rendered("<<~ scale name=`levels`>>")).toBe(true);
   });
 });

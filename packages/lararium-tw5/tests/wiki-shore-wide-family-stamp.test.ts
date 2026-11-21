@@ -13,7 +13,7 @@ import { createRequire } from "node:module";
 import { describe, expect, test } from "vitest";
 import { AutomergeDocStore, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { arrived, ManualTimers, Repo, shoreRig, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { arrived, ManualBoundary, Repo, shoreRig, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 const automerge = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge") as {
   save(doc: unknown): Uint8Array;
@@ -37,7 +37,7 @@ async function peerFamily(r: Rig, bag: string, prefix: string, count: number): P
 
 describe.skipIf(wikiSkip)(`a wide remote family lands stamped${skipNote}`, () => {
   test("one peer change of fourteen titles lands every title with its bag stamp — CONTROL: a family of two", async () => {
-    const r = await shoreRig({ timers: new ManualTimers() });
+    const r = await shoreRig({ boundary: new ManualBoundary() });
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
 

@@ -1,0 +1,151 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/merge-queue/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-01 (file date) — source `.lares-scratch/controller/scouts/merge-queue/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/merge-queue/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/merge-queue/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-11-01
+
+Verbatim scratch record `.lares-scratch/controller/scouts/merge-queue/report.md` (hand-back, file date 2026-11-01); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/merge-queue/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/queue-scout-lares-github-native-merge-queue-2026`>>
+
+! Queue-Scout: Lares (Tasked Spirit) - GitHub native merge queue (D1), 2026-11-01
+Marks: [READ] = page text fetched and read today; [SEARCH] = search snippet only; [INFER] = my reasoning, untested.
+All gh calls were reads. Nothing created.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-availability`>>
+
+!! 1. Availability
+* [READ] docs.github.com "Managing a merge queue" / "Merging a pull request with a merge queue": "Pull request merge queues are available in any public repository owned by an organization, or in private repositories owned by organizations using GitHub Enterprise Cloud."
+* Ours: public + Organization (gh api: visibility public, owner.type Organization, org plan "free"). Qualifies. The admin bit is true for the operator token.
+* Non-default branch: [READ] same page: "People with admin permissions can manage merge queues for pull requests targeting selected branches of a repository." Docs never say "default only". Caveat [READ]: "A merge queue cannot be enabled with branch protection rules that use wildcard characters (*) in the branch name pattern" (that line sits under branch protection rules; whether rulesets share it stays unread). Plan: include the EXACT ref `refs/heads/feature/green-jello-dinosaur-5`, never a glob (a glob would also catch every `--lane` branch). Trial confirms.
+* Rule is repo-level only ([SEARCH], GHES 3.15 rules page: not allowed in org rulesets). Fine for us.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-mechanics`>>
+
+!! 2. Mechanics
+* [READ] Actions needs `merge_group` as an added trigger: "Otherwise, status checks will not be triggered when you add a pull request to a merge queue. The merge will fail as the required status check will not be reported." Only activity type: `checks_requested`. GITHUB_SHA = "SHA of the merge group"; GITHUB_REF = "Ref of the merge group". `branches`/`branches-ignore` filters work; the section names NO `paths` filter, so a meme-only PR runs the full CI in the queue (we cannot skip it) [INFER from silence].
+* Third-party CI: push to branches prefixed `gh-readonly-queue/{base_branch}` [READ]. [INFER] ci.yml's `push` has only `branches-ignore: ["ci/**"]`, so the queue's temp branch push would raise a SECOND full run: add `gh-readonly-queue/**` to that ignore.
+* Settings [READ docs + REST rules page]: merge_method MERGE|SQUASH|REBASE; max_entries_to_build 0-100 (concurrency); min/max_entries_to_merge 0-100; min_entries_to_merge_wait_minutes 0-360; check_response_timeout_minutes 1-360; grouping_strategy ALLGREEN|HEADGREEN ("only merge non-failing" = ALLGREEN).
+* Failure [READ]: NO bisection. A group with a failed required check or a conflict: that PR is "removed from the queue", the temp branch is rebuilt without it, later PRs continue. Other removal causes: check timeout, manual removal, unresolved protection failure. FIFO; jump-the-queue rebuilds all in-flight.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-security-read-gate`>>
+
+!! 3. security-read gate
+* [READ] "Required status checks can be checks or statuses ... use the commit status API". REST: `required_status_checks[]` takes `context` and optional `integration_id`. So a status posted via `gh api repos/.../statuses/<sha> -f context=security-read -f state=success` can be required (leave integration_id unset for a token-posted status).
+* [READ] a check and a status of the SAME name are both required when that name is required [SEARCH snippet of troubleshooting page].
+* NOT FOUND: how a commit status reaches the merge-group sha. The group commit is a new sha; a status on the PR head does not sit on it [INFER]. Queue entry also needs required checks green on the PR head [docs: "Once a pull request has passed all required branch protection checks ... can add the pull request to the queue"].
+* Safest shape [INFER, trial must prove]: controller posts `security-read` status on the PR head after SHIP (gates enqueue). A `merge_group` job named `security-read-gate` (different name, avoiding the same-name double-requirement) finds the PR head sha from the ref `gh-readonly-queue/<base>/pr-<N>-<sha>`, reads the combined status via API, fails if absent, and reports on the group sha. Require both contexts. Trial item: does the PR-head requirement enforce at enqueue, and does the group need only the gate.
+* Required review: optional. Ruleset omits `pull_request` rule, so 0 reviews. The old `kahua-branch-protect` demands 2 plus codeowners; do not reuse.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-held-out`>>
+
+!! 4. Held-out
+held-out.yml fires on push to `feature/**` (lane branches excluded) and main, plus weekly cron. The span push after the queue merge still raises it, so per-train held-out stays AFTER merge, a non-required reading. Putting it on merge_group would make every queue group pay the heavy cells (up to max-parallel 8 jobs) and block the queue; lean: do not. Cost of the merge_group CI trigger: one full ci.yml per group (11 jobs now, ci-ten target &lt;=10), plus the e2e-shards reusable workflow shards (up to 12 jobs on the same push per held-out.yml comment). Larger groups (max 3-5) amortize it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-admin`>>
+
+!! 5. Admin
+`gh auth status`: account joshuafontany, scopes admin:public_key, gist, read:org, repo, workflow. Ruleset create/update needs repo admin ("Administration" write); classic `repo` on an admin account covers it [INFER; the token already reads rulesets with bypass details, and permissions.admin=true]. No new scope needed. Not suggesting any.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-fit-with-land-train`>>
+
+!! 6. Fit with land-train
+* Today land-train writes chained land commits (subject ` — merge PR #`, house message files) and pushes the span. Under the queue, GitHub writes the merge commit: with MERGE method its subject is GitHub's default ("Merge pull request #N from ..."), house lar: message not controllable [INFER; no doc line read]. Land guards key on LAND_SUBJECT, so land-train's reader needs a form for queue merges, or the PR title (SQUASH uses the title) carries the lar: subject. This is the real cost.
+* The train's role shrinks to: preflight (green lane, base), enqueue (`gh pr merge --auto` or GraphQL enqueuePullRequest [READ]), watch, record commits.
+* Direct pushes: a branch under a merge_queue rule refuses direct pushes by non-bypass actors [INFER, standard ruleset behaviour; not read]. Bypass: rulesets take bypass_actors (role RepositoryRole id 5 = admin, OrganizationAdmin, Team, App) with mode always|pull_request|exempt [READ bypass list; SEARCH modes]. [SEARCH, community #203926/#208718, user reports] a bypass actor's reach covers the merge API and pushes, NOT queue entry. So: add the operator admin as bypass `always` for the controller's record/canon pushes (meme-only included). Lanes go through the queue. Pono shape: canon/record commits push direct under bypass; code lands only by queue. Ruleset cannot exempt paths except via separate file-path rules (Restrict file paths are blocklists, not exemptions) [INFER].
+* Meme-only PRs: queue runs full CI (no paths on merge_group). Lean: canon stays direct-push.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/7-minimal-ruleset`>>
+
+!! 7. Minimal ruleset (plan only; fill `<ADMIN_ROLE>`)
+```json
+{
+  "name": "span-merge-queue",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["refs/heads/feature/green-jello-dinosaur-5"], "exclude": [] } },
+  "bypass_actors": [ { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" } ],
+  "rules": [
+    { "type": "merge_queue", "parameters": {
+        "merge_method": "MERGE", "grouping_strategy": "ALLGREEN",
+        "max_entries_to_build": 3, "min_entries_to_merge": 1, "max_entries_to_merge": 3,
+        "min_entries_to_merge_wait_minutes": 5, "check_response_timeout_minutes": 120 } },
+    { "type": "required_status_checks", "parameters": {
+        "strict_required_status_checks_policy": false,
+        "required_status_checks": [ { "context": "<ci aggregate job, e.g. test>" }, { "context": "security-read-gate" } ] } }
+  ]
+}
+```
+(actor_id 5 = repository admin role [INFER from API convention]; verify against `gh api repos/.../rulesets` output of the trial. Required contexts: the aggregate jobs only, not cells; a ci-ten lane fixes names.)
+
+ci.yml trigger diff:
+```diff
+ on:
+   push:
+-    branches-ignore: ["ci/**"]
++    branches-ignore: ["ci/**", "gh-readonly-queue/**"]
+     paths-ignore: ...
+   pull_request:
+     branches: [main]
++  merge_group:
++    types: [checks_requested]
++    branches: [feature/green-jello-dinosaur-5]
+   workflow_dispatch:
+```
+Concurrency group `ci-${{ github.ref }}` stays valid (queue ref unique per group). Note: pull_request is `[main]` today, so lane PRs get CI from push; PR-head required checks attach to the head sha via push runs, satisfied.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/safe-trial-plan`>>
+
+!! Safe trial plan (do not run now)
+# Push scratch branch `scratch/queue-trial` (CI/held-out ignore patterns: use name outside `feature/**`); add the merge_group trigger on it (workflows run from the base branch's file for merge_group).
+# Create ruleset `trial` targeting exactly that ref, same JSON, enforcement active, required: one trivial job only.
+# Open one throwaway PR into it from `scratch/queue-trial--t1`; add to queue; watch: group sha, `gh-readonly-queue/...` ref name, whether the gate sees the PR head status, whether a second push-run fires, merge commit subject.
+# Also test: admin direct push to the base (bypass) and a bypass PR enqueue.
+# Disable ruleset (`enforcement: disabled`), delete ruleset, delete scratch branches, close PR.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-asks`>>
+
+!! Operator asks (survivors of two rounds; each with a lean)
+A. Merge-commit subject: let GitHub's default stand and teach land-train/guards to read queue merges, or use SQUASH so PR title carries the lar: subject? Lean: MERGE method and teach the reader (preserves lane history the guards walk); trial shows the real subject.
+B. Direct canon/record pushes via admin bypass (always) rather than PRs through the queue. Lean: bypass; meme-only PRs would pay full CI otherwise.
+C. Held-out stays post-merge, non-required. Lean: yes.
+Rejected in talk-out: requiring held-out on merge_group (blocks queue, 12+ heavy jobs); a glob in the ruleset (catches lane branches).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z0uiQSpvlr94rMAxH1ohWMeMnnGXwPyW-GYY11D58LM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

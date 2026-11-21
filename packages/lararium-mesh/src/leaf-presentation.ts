@@ -140,7 +140,7 @@ export function mkLarSessionMsg(kind: string, body: unknown): LarSessionMsg {
  */
 export interface LeafIdentity {
   /** The gate arm this identity presents. */
-  arm: "face" | "place";
+  arm: "face";
   /** The cached self-certifying ContactCard JSON. */
   contactCard: string;
   /** The operator verifying-key hex — the leaf's claimed identity. */

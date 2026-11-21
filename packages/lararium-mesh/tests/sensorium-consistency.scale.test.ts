@@ -52,6 +52,15 @@ function chainRelabelTop(n: number, k: number): LabeledTree {
   return t;
 }
 
+/** `tree` rebuilt so every read of a node's `label` or `children` counts into `counter.n`. */
+function counted(tree: LabeledTree, counter: { n: number }): LabeledTree {
+  let kids: LabeledTree[] | undefined;   // wrapped on first read, so a deep spine builds no deeper than the metric walks it
+  return {
+    get label() { counter.n++; return tree.label; },
+    get children() { counter.n++; return (kids ??= tree.children.map((c) => counted(c, counter))); },
+  };
+}
+
 function timeIt<T>(f: () => T): { ms: number; v: T } {
   const t0 = performance.now();
   const v = f();
@@ -93,25 +102,33 @@ describe("QA: structure distance is near-linear (no O(n^3.2) wall)", () => {
   });
 
   test("growth is roughly LINEAR, not super-quadratic — a 4× node step stays well under the 16× quadratic mark", () => {
-    // Min-of-N to denoise (sub-10ms measurements are GC/JIT-noisy under full-suite load).
-    const best = (n: number): number => {
-      let m = Infinity;
-      for (let i = 0; i < 5; i++) {
-        const a = chain(n), b = chain(n);
-        const r = timeIt(() => treeEditDistance(a, b));
-        expect(r.v).toBe(0);
-        m = Math.min(m, r.ms);
-      }
-      return m;
+    // The growth reads in OPERATIONS, never in milliseconds: every `label` and `children` read of every node counts, so
+    // the ratio belongs to the algorithm and stays the same on an idle box and a loaded one. (A wall-clock ratio
+    // measured the box's load: 12.48 against the ceiling of 12 under three concurrent batteries.)
+    const reads = (n: number): number => {
+      const counter = { n: 0 };
+      const a = counted(chain(n), counter), b = counted(chain(n), counter);
+      expect(treeEditDistance(a, b)).toBe(0);
+      return counter.n;
     };
-    best(1000); // warm the JIT
-    const small = best(1000);   // n
-    const big = best(4000);     // 4n
-    if (small >= 1) {
-      const ratio = big / small;
-      // a 4× node step: LINEAR ⇒ ~4×, O(n²) ⇒ 16×, O(n^3.2) ⇒ ~100×. Assert < 12 ⇒ provably sub-quadratic.
-      expect(ratio).toBeLessThan(12);
-    }
+    const small = reads(1000);   // n
+    const big = reads(4000);     // 4n
+    expect(small).toBeGreaterThan(0);
+    const ratio = big / small;
+    // a 4× node step: LINEAR ⇒ ~4×, O(n²) ⇒ 16×, O(n^3.2) ⇒ ~100×. Assert < 12 ⇒ provably sub-quadratic.
+    expect(ratio).toBeLessThan(12);
+  });
+
+  test("CONTROL: the read counter sees a quadratic walk as quadratic (the instrument can fail)", () => {
+    const quadratic = (n: number): number => {
+      const counter = { n: 0 };
+      const t = counted(chain(n), counter);
+      // every node walks the whole spine beneath it: n(n+1)/2 reads of a chain of n nodes
+      const spine = (node: LabeledTree): number => { let k = 0; for (let at: LabeledTree | undefined = node; at; at = at.children[0]) { k++; void at.label; } return k; };
+      for (let at: LabeledTree | undefined = t; at; at = at.children[0]) spine(at);
+      return counter.n;
+    };
+    expect(quadratic(4000) / quadratic(1000)).toBeGreaterThan(12);
   });
 
   test("a distinct-structure pair at scale reads POSITIVE and quickly (not a false 0)", () => {

@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/projection-loom/witness">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/witness`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/projection-loom/witness.mem"
 namespace = "&#x0950; &#x0901;"
-title = "lar:///ha.ka.ba/lares/api/projection-loom/witness"
-uri-path = "ha.ka.ba/lares/api/projection-loom/witness"
-type = "text/memetic-wikitext+tiddlywiki"
-role = "source and registration witness law"
-tags = ["api/pono/meme", "projection-loom", "evidence"]
+title     = "lar:///ha.ka.ba/lares/api/projection-loom/witness"
+uri-path  = "ha.ka.ba/lares/api/projection-loom/witness"
+type      = "text/memetic-wikitext+tiddlywiki"
+role      = "source and registration witness law"
+tags      = ["api/pono/meme", "projection-loom", "evidence"]
 ```
 
-<<~ ahu #/entry>>
+<<~ ahu slot=`#/entry`>>
 
 ! Each Evidence Source Testifies Within Its Frame
 
@@ -26,7 +25,7 @@ alone measure the hidden side of a fortress.
 
 <<~/ahu>>
 
-<<~ ahu #/rules>>
+<<~ ahu slot=`#/rules`>>
 
 !! Registration and Measurement
 
@@ -38,12 +37,12 @@ alone measure the hidden side of a fortress.
 
 <<~/ahu>>
 
-<<~ ahu #/links>>
+<<~ ahu slot=`#/links`>>
 
 Current executable boundaries and tests live in `projection_loom/evidence_receipts.py` and the test suite. Historical measurement-contract and research-register testimony is recoverable through the pinned Git archive.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LwT_iTl6UpwCh6OXXWepb-it_utjt6DHTvwBOnzrEGE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dUUo9gQ6MinDb-l8rszCtNIcsZGwHMQd5_0hPf6g6pE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

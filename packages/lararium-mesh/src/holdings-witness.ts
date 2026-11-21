@@ -10,7 +10,7 @@
  * So the two sides drift apart in both directions, silently, and neither drift throws:
  *   · a text sits in the mirror that nobody ever admitted → the operator believes it published; no stranger
  *     mounting the floor can see it.
- *   · an index entry names a body whose bytes no longer rest in the CAS → a stranger reads a name that
+ *   · an index entry names a body whose bytes do not rest in the CAS → a stranger reads a name that
  *     resolves to nothing, and learns only that something was once there.
  *
  * ── WHY IT WARNS AND NEVER REPAIRS ──────────────────────────────────────────────────────────────

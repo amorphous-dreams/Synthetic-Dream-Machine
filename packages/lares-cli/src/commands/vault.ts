@@ -11,20 +11,32 @@
  */
 
 import {
-  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus,
+  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
-import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
+import { openTreeKey, decodeSlotTree, slotsOpenedBy, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
-import { gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
+import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
+import { confirmLockByCensus } from "../lock-receipt.js";
+import { RehiveUsage, vaultRehive } from "../vault-rehive.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
+import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
-import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
-import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
+import { houseFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
+import { wearOpenFace } from "./wear.js";
+import { pulamaStands } from "../house-config.js";
+import { emit, exitFor, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { offerKeepLei, type KeepOfferPorts } from "../keep-at-unlock.js";
+import { keepSlotAtBind, provedRoutes, reseatKeepPair, seatKeepAtUnlock, type CustodyOpenAnswer } from "../keep-seat.js";
+import { configuredKeepWorkspace } from "../keep-config.js";
+import { canPromptSecret } from "../prompt-secret.js";
+import { storeFailure, storeVerb } from "../store-door.js";
 
 function usage(args: ParsedArgs, typed?: string): number {
   return refuseUsage(args, "vault", helpLines("vault"), typed ? `unknown sub-verb "${typed}"` : undefined);
@@ -34,7 +46,7 @@ class UsageError extends Error {}
 
 /** The refusals the custody door names: each leads its error line, so a caller reads the class, not a guess. */
 const NAMED_REFUSALS: ReadonlySet<string> = new Set([
-  "OldShapeRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal",
+  "OccupiedStoreRefusal", "CustodyRefusal", "TreeKeyRefusal", "CensusRefusal",
   "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationSlotsRefused",
 ]);
 
@@ -47,8 +59,13 @@ const RELATION_LINE =
   "rotation never repairs the loss of a relation carrier: a relation secret derives from no house key, so only the " +
   "other party can re-issue it. Back the carrier itself up.";
 
-export async function cmdVault(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+/** The vault reads that answer a pipe in prose (render.ts `proseFirst`): the custody reading and the unlock the shim chains. */
+const PROSE_FIRST_SUBS: ReadonlySet<string> = new Set(["status", "unlock"]);
+
+export async function cmdVault(given: ParsedArgs): Promise<number> {
+  const sub = given.positional[0];
+  // The refusals below render through the same args, so a piped unlock refuses in prose too.
+  const args = PROSE_FIRST_SUBS.has(sub ?? "") ? proseFirst(given) : given;
   if (!sub) { usage(args); return 2; }
   const daemonUp = await udsAlive();
 
@@ -61,6 +78,8 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "unbind":     return await vaultUnbind(args);
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
+      case "reseat":     return await vaultReseat(args, daemonUp);
+      case "rehive":     return await vaultRehive(args);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -74,7 +93,7 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       emit(args, { ok: false, error: { code: err.name, message: named }, human: () => console.error(`lares vault ${sub}: ${named}`) });
       return 1;
     }
-    const code = err instanceof UsageError ? "usage" : "error";
+    const code = err instanceof UsageError || err instanceof RehiveUsage ? "usage" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares vault ${sub}: ${msg}`) });
     return exitFor(code);
   }
@@ -97,7 +116,8 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
       } else {
         console.log("vessel key     no vessel stands on this store, so no process holds it.");
       }
-      printCustody(custody);
+      if (typeof door?.["wikiAwaits"] === "string") console.log(`wiki           ${door["wikiAwaits"]}`);
+      printCustody(custody, args.flags["verbose"] === true);
     },
   });
   return 0;
@@ -119,18 +139,32 @@ function rowLine(r: CustodyStatusRow): string {
 }
 
 /**
- * The "custody (VK)" section: the slot tree, then ONE reading of every standing file the carrier table names, then
- * every private file it does not name. A row outside the vessel key prints the law it rests bare under; a hot or
- * cold row that reads anything but `sealed` prints as a fault.
+ * The "custody (S key)" section: the slot tree, each face as one counted line, the carrier counts, every fault by name, then
+ * every private file the carrier table does not name. `--verbose` adds ONE reading of every standing file the table names
+ * (a row outside the vessel key prints the law it rests bare under); the summary never lists a sound row by name, so a
+ * store of many sealed rows still reads in a dozen lines. A hot or cold row that reads anything but `sealed` prints as a
+ * fault, in the summary too.
  */
-function printCustody(c: CustodyStatus): void {
-  console.log("custody (VK):");
-  if (c.tree.reading === "absent") console.log("  slot tree      absent — no vk-slots.bin stands (a founding seals custody from birth)");
+function printCustody(c: CustodyStatus, verbose: boolean): void {
+  console.log("custody (S key):");
+  if (c.tree.reading === "absent") console.log("  slot tree      absent — no s-slots.bin stands (a founding seals custody from birth)");
   else if (c.tree.reading === "unreadable") console.log(`  slot tree      UNREADABLE — ${c.tree.why}`);
   else {
     console.log(`  slot tree      ${c.tree.slots.length} slot(s)`);
     for (const sl of c.tree.slots) console.log(`    ${sl.id}  t=${sl.t}  ${sl.pins.join(" + ")}`);
   }
+  // A face's rows fold into ONE line per face: its handle index, its custody id, the count of rows that rest under its key and
+  // the two digests the floor index names for it. A face row never prints by name here; only a fault does.
+  const faceRows = c.rows.filter((r) => r.custody === "face-hot" || r.custody === "face-cold" || r.custody === "ward-cold");
+  const floorIndex = readFaceIndexSync(larIdentityDir()).faces;
+  floorIndex.forEach((f, ordinal) => {
+    if (!("fcid" in f)) return;
+    const mine = faceRows.filter((r) => r.file.startsWith(`faces/${f.fcid}/`));
+    const sealedHere = mine.filter((r) => r.reading === "sealed" && !r.fault).length;
+    const faultsHere = mine.filter((r) => r.fault).length;
+    const dg = (d: string | null): string => (d === null ? "-" : `${d.slice(0, 12)}…`);
+    console.log(`  face h${ordinal}        ${f.fcid.slice(0, 12)}…  ${mine.length} row(s): ${sealedHere} sealed under its key, ${faultsHere} at fault   group ${dg(f.group)}  ask ${dg(f.ask)}`);
+  });
   const sealed = c.rows.filter((r) => r.reading === "sealed" && !r.fault).length;
   const byLaw = c.rows.filter((r) => r.bare !== null && !r.fault).length;
   const faults = c.rows.filter((r) => r.fault);
@@ -139,12 +173,14 @@ function printCustody(c: CustodyStatus): void {
     : `  carriers       ${c.rows.length} standing: ${sealed} sealed under the vessel key, ${byLaw} outside it by law, ${faults.length} at fault`);
   // A row that names many files (a spend per burn, a rest file per record) folds into one counted line per reading.
   const groups = new Map<string, CustodyStatusRow[]>();
-  for (const r of c.rows) {
+  for (const r of c.rows.filter((x) => !(x.custody === "face-hot" || x.custody === "face-cold" || x.custody === "ward-cold") || x.fault)) {
     const key = `${r.row}\u0000${r.reading}`;
     groups.set(key, [...(groups.get(key) ?? []), r]);
   }
   for (const rows of groups.values()) {
-    if (rows.length <= ROW_FOLD || rows[0]!.fault) { for (const r of rows) console.log(rowLine(r)); continue; }
+    if (rows[0]!.fault) { for (const r of rows) console.log(rowLine(r)); continue; }
+    if (!verbose) continue;
+    if (rows.length <= ROW_FOLD) { for (const r of rows) console.log(rowLine(r)); continue; }
     const r = rows[0]!;
     console.log(`    ${`${r.row} ×${rows.length}`.padEnd(30)} ${r.home.padEnd(9)} ${r.custody.padEnd(11)} ${String(r.keyClass ?? "-").padEnd(14)} ${r.reading.padEnd(10)}${r.bare !== null ? `   by law: ${r.bare}` : ""}`);
   }
@@ -162,28 +198,50 @@ async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes,
   const why =
     u.reading === "no-slot-opens" ? `no slot opens under what was presented${u.notes.length ? ` (${u.notes.join("; ")})` : ""} — nothing was changed`
     : u.reading === "tree-absent"  ? "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth)"
-    : u.reading === "serving-unopenable" ? `the vessel key opened and the serving key did not (${u.why}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds`
     : `the slot tree reads unreadable: ${u.why} — a torn tree is not a credential error; nothing was changed`;
   emit(args, { ok: false, error: { code: u.reading, message: why }, data: { reading: u.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
   return null;
 }
 
+/**
+ * THE UNLOCK ANSWERS HONESTLY, PER FACE. `--all` names which faces the route opened and which stayed shut under it, each shut
+ * face with the act that opens it; a switch whose composition refused names the face it named and the face worn again.
+ */
+export function unlockFaceLines(a: CustodyDoorAnswer): string {
+  const parts: string[] = [];
+  const readings = Array.isArray(a["faceReadings"]) ? (a["faceReadings"] as Array<{ face?: unknown; reading?: unknown }>) : [];
+  if (readings.length > 0) {
+    const opened = readings.filter((r) => r.reading === "opened").map((r) => `h${String(r.face)}`);
+    const shut = readings.filter((r) => r.reading !== "opened").map((r) => `h${String(r.face)}`);
+    parts.push(opened.length > 0 ? `opened ${opened.join(", ")}` : "opened no face");
+    if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock --face N\` for each`);
+    if (typeof a["wears"] === "number") parts.push(`the vessel wears h${String(a["wears"])}${opened.length > 1 ? " (`lares wear N` wears another face standing open)" : ""}`);
+  }
+  if (typeof a["switchRefused"] === "string") {
+    parts.push(`the daemon mount for h${String(a["face"])} did not stand (${a["switchRefused"]}); h${String(a["wornAgain"])} runs the daemon mount again, and the vessel key stays held`);
+  }
+  return parts.length > 0 ? ` ${parts.join("; ")}.` : "";
+}
+
 /** What the custody door's answer means to a person, one line per reading. */
-function unlockLine(a: CustodyDoorAnswer): string {
+export function unlockLine(a: CustodyDoorAnswer): string {
   const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
   const refused = typeof a["refused"] === "string" ? ` The sovereign composition did not stand: ${a["refused"]}.` : "";
+  const faces = unlockFaceLines(a);
   switch (a["reading"]) {
     case "opens":            return a["held"] === false
-      ? `slot ${String(a["slot"])} opened the vessel key, and the vessel dropped it again: it stands as ${standing}.${refused}`
-      : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}`;
-    case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.`;
+      ? `slot ${String(a["slot"])} opened the vessel key, and the vessel dropped it again: it stands as ${standing}.${refused}${faces}`
+      : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}${faces}`;
+    case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.${faces}`;
+    case "face-refused":     if (a["faceReading"] === "not-standing") return `no face h${String(a["face"])} stands on this vessel — nothing stays open; name a face it holds (\`lares persona list\`).`;
+                             return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.${faces}`;
+    case "face-not-named":   return `this vessel holds several faces (${(Array.isArray(a["faces"]) ? a["faces"] : []).map((i) => `h${String(i)}`).join(", ")}) and none was named — nothing stays open: name one (\`lares vault unlock --face N\`) or try the credential on every face (\`--all\`).`;
     case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed; ${String(a["attemptsLeft"])} attempt(s) left before this vessel refuses every unlock until it restarts.`;
     case "attempts-spent":   return "this vessel refuses every unlock until it restarts: its unlock attempts for this boot stand spent. Restart it (`lares vessel stand --restart`), then unlock.";
     case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
     case "tree-unreadable":  return `the slot tree reads unreadable: ${String(a["why"])} — a torn tree is not a credential error; nothing was changed.`;
     case "root-unopenable":  return `the vessel key opened and the custody root did not (${String(a["why"])}) — nothing stays held; recover the custody root from a backup.`;
-    case "serving-unopenable": return `the vessel key opened and the serving key did not (${String(a["why"])}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds.`;
-    default:                 return typeof a["errorMessage"] === "string" ? a["errorMessage"] : `the vessel answered ${JSON.stringify(a)}`;
+    default:                 return typeof a["errorMessage"] === "string" ? `${a["errorMessage"]} — check \`lares vault status\`, then try again` : "unlock did not complete — check `lares vault status`, then try again";
   }
 }
 
@@ -193,24 +251,166 @@ function unlockLine(a: CustodyDoorAnswer): string {
  * opens. With no daemon up the credential gets proven against the slot tree and nothing stays open, since no
  * process stands to hold it.
  */
+/** What each reading a pūlama waits on asks of the operator. */
+function pulamaWaitsLine(waits: string): string {
+  const next = waits === "pulama-locked" ? "the pūlama rests unlit; light it by hand (`lares-container.sh pulama light`), then run this again"
+    : waits === "pulama-image-unadmitted" ? "this vessel's image stands unadmitted and it carries no offer; admit the image by hand at the pūlama (`lares-container.sh pulama admit`), or raise the vessel by the rite (`lares rite kukulu`)"
+    : waits === "pulama-unreachable" ? "no pūlama answers its socket; raise it (`lares-container.sh pulama up`) and light it"
+    : waits === "composition-refused" ? "the pūlama served a session and the vessel refused to compose over it, so the session left; the vessel's log names the fault (`[lararium] the sovereign composition refused: …`), and a restart alone changes nothing"
+    : waits.startsWith("kukulu-") || waits.startsWith("swarm-lei-") || waits.startsWith("rite-") ? "a rebuilt vessel enters by the rite: string a kukulu lei and run `lares rite kukulu`, which carries the lei and its vouch to the pūlama"
+    : "read the pūlama's own log for that reading";
+  return `this vessel's custody rests with a pūlama, and the pūlama serves it no session (${waits}). No route typed here opens it: ${next}.`;
+}
+
+/**
+ * `vault unlock` at a vessel whose custody a pūlama holds: ASK NOTHING. The route belongs at the pūlama's own hand door, so this
+ * command gathers no credential and sends none; the vessel asks its pūlama again and the answer names a session or what the
+ * pūlama waits on.
+ */
+/** How long the probe after an unanswered unlock waits out a recomposition: `tries` asks, `waitMs` apart. */
+export const PULAMA_PROBE = { tries: 120, waitMs: 500 };
+
+/**
+ * The custody reading once the vessel's dial settles. An unlock frame dies with the composition it tears down, so the probe
+ * after it may land inside the recomposition: no socket answers yet, or the door answers `composing` while the session still
+ * stands and names nothing it waits on. It asks again across that gap, bounded by `PULAMA_PROBE`; null where none settled.
+ */
+async function settledCustody(): Promise<Record<string, unknown> | null> {
+  for (let i = 0; i < PULAMA_PROBE.tries; i++) {
+    if (i > 0) await new Promise((settle) => setTimeout(settle, PULAMA_PROBE.waitMs));
+    const probe = await sendCustodyFrame({ op: "custody" });
+    if (probe?.["op"] !== "custody") continue;
+    const waits = (probe["pulama"] as { waits?: unknown } | undefined)?.waits;
+    if (typeof waits === "string" || probe["composing"] !== true) return probe;
+  }
+  return null;
+}
+
+async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
+  const a = await sendCustodyFrame({ op: "unlock" });
+  if (a === null) {
+    // THE DOOR MAY STILL NAME WHY: the vessel stands and its custody reading carries what the pūlama waits on (a composition it
+    // refused over the session reads `composition-refused`), so the probe names that before the vessel reads unreachable.
+    const probe = await settledCustody();
+    const named = (probe?.["pulama"] as { waits?: unknown } | undefined)?.waits;
+    if (probe?.["op"] === "custody" && typeof named === "string") {
+      emit(args, { ok: false, error: { code: "pulama-waits", message: pulamaWaitsLine(named) }, data: probe, human: () => console.error(`lares vault unlock: ${pulamaWaitsLine(named)}`) });
+      return 1;
+    }
+    // A DIAL THAT SETTLED WITH A SESSION STANDING: the unlock landed, and its answer rode the composition the dial tore down.
+    if (probe?.["op"] === "custody" && (probe["pulama"] as { session?: unknown } | undefined)?.session === true) {
+      const stood = typeof probe["standing"] === "string" ? probe["standing"] : "?";
+      emit(args, { ok: true, data: probe, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${stood}. No route was asked.`) });
+      return 0;
+    }
+    emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before it asked its pūlama" }, human: () => console.error("lares vault unlock: the vessel stopped answering before it asked its pūlama") });
+    return 1;
+  }
+  const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
+  if (a["reading"] === "opens" || a["reading"] === "already-unlocked") {
+    emit(args, { ok: true, data: a, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${standing}. No route was asked.`) });
+    return 0;
+  }
+  const waits = typeof (a["pulama"] as { waits?: unknown } | undefined)?.waits === "string" ? (a["pulama"] as { waits: string }).waits : "unknown";
+  // The vessel names the composition's own fault where it refused over the session: the line carries it.
+  const line = `${pulamaWaitsLine(waits)}${typeof a["refused"] === "string" ? ` The vessel's composition refused: ${a["refused"]}.` : ""}`;
+  emit(args, { ok: false, error: { code: "pulama-waits", message: line }, data: a, human: () => console.error(`lares vault unlock: ${line}`) });
+  return 1;
+}
+
+/** Where a keep seat line goes: the terminal, never a `--json` answer's stdout. */
+const keepSay = (args: ParsedArgs) => (line: string): void => { if (wantsJson(args)) console.error(line); else console.log(line); };
+
+/** The keep offer's live ports: this terminal (never under `--json`), and the store door, the ward taking the unlock's route. */
+function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
+  return {
+    canAsk: () => !wantsJson(args) && canPromptSecret(),
+    ask: (question) => askYesNo(question),
+    row: async (verb, rowArgs, route) => {
+      try { return { ok: true, output: (await storeVerb(verb, rowArgs, undefined, undefined, route)).output }; }
+      catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
+    },
+    say: (line) => console.log(line),
+    // THE KEEP'S FACE reads over the faces the house holds: the custody door's census, open and shut.
+    houseFaces: async () => houseFaces(),
+  };
+}
+
+const CUSTODY_PROBE_UNREAD = "the vessel stands and its custody door read no answer; a pūlama keeps this house, so no route is asked here: run `lares vault status`, then unlock again";
+
+const OFFLINE_BESIDE_PULAMA = "no vessel stands, and a pūlama keeps this house's custody: no route is asked or proved here around it. Raise the vessel (`lares-container.sh up`, or `lares vessel stand`), then run `lares vault unlock`, which asks the pūlama";
+
 async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  // THE DOOR READS FIRST, before any prompt: a vessel standing by a pūlama takes no route here, so none gets gathered.
+  if (daemonUp) {
+    const door = await sendCustodyFrame({ op: "custody" });
+    // AN UNREAD PROBE NEVER READS AS "NO PŪLAMA": where the house's own signal names one, refuse before any prompt.
+    if ((door === null || door["op"] !== "custody") && pulamaStands()) {
+      emit(args, { ok: false, error: { code: "custody-probe-unread", message: CUSTODY_PROBE_UNREAD }, human: () => console.error(`lares vault unlock: ${CUSTODY_PROBE_UNREAD}`) });
+      return 1;
+    }
+    if (typeof door?.["pulama"] === "object" && door["pulama"] !== null) return await vaultUnlockByPulama(args);
+    // A ROUTE ONLY WHILE CUSTODY STAYS CLOSED: a held key takes no second route to choose a face (that act is `lares wear N`).
+    // `--all` and `--face N` still open faces under their own routes, so they still ask.
+    if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] === undefined) {
+      const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
+      emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. No route was asked; to wear another face standing open, run \`lares wear N\`.`) });
+      return 0;
+    }
+    // `--face N` ON A HELD KEY READS THE CENSUS BEFORE ANY PROMPT: N standing open takes the wear (no route), a face standing
+    // nowhere refuses by name, and only a face shut under its own route still asks for that route.
+    if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] !== undefined) {
+      const face = faceOption(args)!;
+      const faces = await houseFaces();
+      if (faces.open.includes(face)) return await wearOpenFace(args, face, "vault unlock");
+      if (!faces.shut.includes(face) && faces.open.length + faces.shut.length > 0) {
+        const named = [...faces.open, ...faces.shut].sort((x, y) => x - y).map((f) => `h${f}`).join(", ");
+        const line = `no face h${face} stands on this vessel (it holds ${named}) — nothing was asked; name a face it holds (\`lares persona list\`).`;
+        emit(args, { ok: false, error: { code: "face-not-standing", message: line }, human: () => console.error(`lares vault unlock: ${line}`) });
+        return 1;
+      }
+    }
+  } else if (pulamaStands()) {
+    // NO VESSEL STANDS AND A PŪLAMA KEEPS THIS HOUSE: a route proved here would open the slot tree around the pūlama, so
+    // nothing gets asked and nothing opens; the vessel stands first, then asks its pūlama.
+    emit(args, { ok: false, error: { code: "offline-beside-pulama", message: OFFLINE_BESIDE_PULAMA }, human: () => console.error(`lares vault unlock: ${OFFLINE_BESIDE_PULAMA}`) });
+    return 1;
+  }
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
-  const creds = await gatherCredentials("lares vault unlock", routeFlag(args));
+  const creds = await gatherCredentials("lares vault unlock", { kind: "vessel" }, routeFlag(args));
   if (daemonUp) {
-    const a = await sendCustodyFrame({ op: "unlock", credentials: creds });
+    const face = typeof args.options["face"] === "string" ? Number(args.options["face"]) : undefined;
+    if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("--face names a handle index (a whole number from 0)");
+    const a = await sendCustodyFrame({ op: "unlock", credentials: creds, ...(face !== undefined ? { face } : {}), ...(args.flags["all"] === true ? { all: true } : {}) });
     if (a === null) {
       emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before the unlock landed" }, human: () => console.error("lares vault unlock: the vessel stopped answering before the unlock landed — check `lares vessel read`, then unlock again") });
       return 1;
     }
     const ok = (a["reading"] === "opens" && a["held"] !== false) || a["reading"] === "already-unlocked";
+    const knownReading = ["opens", "already-unlocked", "face-refused", "face-not-named", "no-slot-opens", "attempts-spent", "tree-absent", "tree-unreadable", "root-unopenable"].includes(String(a["reading"]));
     emit(args, ok
       ? { ok: true, data: a, human: () => console.log(unlockLine(a)) }
-      : { ok: false, error: { code: String(a["reading"] ?? (a["refusal"] as { reason?: string } | undefined)?.reason ?? "refused"), message: unlockLine(a) }, data: a, human: () => console.error(`lares vault unlock: ${unlockLine(a)}`) });
+      : { ok: false, error: { code: knownReading ? String(a["reading"]) : "unlock-incomplete", message: unlockLine(a) }, ...(knownReading ? { data: a } : {}), human: () => console.error(`lares vault unlock: ${unlockLine(a)}`) });
+    // A FACE LIT, THE SHARES LAND (sealed-store#/the-share-config): each row naming a face now open lifts its bag's row into
+    // that face's catalog half and takes its delegation from the owner's hive; one that still waits stays behind its flag.
+    if (ok) {
+      try {
+        const landed = await landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces());
+        if (landed !== null && Number(landed["granted"] ?? 0) > 0) console.log(`shares: ${Number(landed["granted"])} grant(s) landed for the faces now open`);
+        if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
+      } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
+      // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route,
+      // and the keep pair seats under this passphrase where none rests (`../keep-seat.ts`).
+      await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds });
+      await seatKeepAtUnlock({ reading: String(a["reading"]), ...(Array.isArray(a["opener"]) ? { opener: a["opener"] as number[] } : {}), ...(Array.isArray(a["proved"]) ? { proved: a["proved"] as CustodyOpenAnswer["proved"] & object } : {}) }, creds, keepSay(args));
+    }
     return ok ? 0 : 1;
   }
   const u = await openOrRefuse(args, "unlock", homes, io, creds);
   if (!u) return 1;
+  // THE PASSPHRASE STANDS PROVED: the keep pair seats under it where none rests, with no vessel standing as with one.
+  await seatKeepAtUnlock(u, creds, keepSay(args));
   emit(args, {
     ok: true, data: { reading: "opens", slot: u.slot, held: false },
     human: () => console.log(`slot ${u.slot} opens the vessel key. No vessel stands on this store, so nothing holds it open — stand the vessel (\`lares vessel stand\`), then run \`lares vault unlock\` again.`),
@@ -220,11 +420,18 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
 
 /** `vault lock`: the standing vessel drops its key, tears its sovereign composition down and stands at the floor. */
 async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const face = faceOption(args);
+  if (face !== undefined) return await vaultLockFace(args, daemonUp, face);
   if (!daemonUp) {
     emit(args, { ok: true, data: { locked: true, was: "no-vessel" }, human: () => console.log("no vessel stands on this store: nothing holds a key, so nothing to lock.") });
     return 0;
   }
   const a = await sendCustodyFrame({ op: "lock" });
+  // A LOCK WHOSE LINE CLOSED WITH THE COMPOSITION IT LEFT confirms itself by a fresh census (`lock-receipt`).
+  if (a === null && (await confirmLockByCensus(undefined, () => sendCustodyFrame({ op: "census" }))).confirmed) {
+    emit(args, { ok: true, data: { locked: true, confirmedBy: "census" }, human: () => console.log("locked; confirmed by census: the vessel holds no key, and every sovereign act waits on `lares vault unlock`.") });
+    return 0;
+  }
   if (a === null || a["locked"] !== true) {
     const why = a && typeof a["errorMessage"] === "string" ? a["errorMessage"] : "the vessel stopped answering before the lock landed";
     emit(args, { ok: false, error: { code: "lock-unconfirmed", message: why }, human: () => console.error(`lares vault lock: ${why}`) });
@@ -234,6 +441,57 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
     ? `locked: the vessel dropped its key and stands as ${String(a["standing"])}; every sovereign act waits on \`lares vault unlock\`.`
     : `already locked: the vessel holds no key and stands as ${String(a["standing"])}.`) });
   return 0;
+}
+
+/** `--face N` as a handle index, or undefined when the flag stands absent. */
+function faceOption(args: ParsedArgs): number | undefined {
+  const raw = args.options["face"];
+  if (typeof raw !== "string") return undefined;
+  const n = Number(raw);
+  if (!Number.isSafeInteger(n) || n < 0) throw new UsageError("--face names a handle index (a whole number from 0)");
+  return n;
+}
+
+/** `vault lock --face N`: that face drops its key; the vessel stands at the floor only when N was the face it wore. */
+async function vaultLockFace(args: ParsedArgs, daemonUp: boolean, face: number): Promise<number> {
+  if (!daemonUp) {
+    emit(args, { ok: true, data: { locked: true, was: "no-vessel", face }, human: () => console.log(`no vessel stands on this store: nothing holds face h${face}'s key, so nothing to lock.`) });
+    return 0;
+  }
+  const a = await sendCustodyFrame({ op: "lock", face });
+  // A LOCK WHOSE LINE CLOSED WITH THE COMPOSITION IT LEFT confirms itself by a fresh census (`lock-receipt`).
+  if (a === null) {
+    const census = await confirmLockByCensus(face, () => sendCustodyFrame({ op: "census" }));
+    if (census.confirmed) {
+      emit(args, { ok: true, data: { locked: true, face, confirmedBy: "census", standing: census.census["standing"] }, human: () => console.log(`locked; confirmed by census: the census names face h${face} locked, and the vessel stands as ${String(census.census["standing"])}.`) });
+      return 0;
+    }
+  }
+  if (a === null || a["locked"] !== true) {
+    const why = a && typeof a["errorMessage"] === "string" ? a["errorMessage"] : "the vessel stopped answering before the lock landed";
+    emit(args, { ok: false, error: { code: "lock-unconfirmed", message: why }, human: () => console.error(`lares vault lock: ${why}`) });
+    return 1;
+  }
+  emit(args, { ok: true, data: a, human: () => console.log(a["was"] === "unlocked"
+    ? `locked: face h${face} dropped its key; the vessel stands as ${String(a["standing"])}.`
+    : `already locked: face h${face} held no key.`) });
+  return 0;
+}
+
+/** The face's custody id and its opened tree, or null after saying why. */
+async function openFaceOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes, io: FsCustodyIo, face: number, creds: readonly Credential[]) {
+  const entry = readFaceIndexSync(homes.identity).faces[face];
+  if (entry === undefined || !("fcid" in entry)) {
+    emit(args, { ok: false, error: { code: "face-not-named", message: `no face h${face} stands in the floor index` }, human: () => console.error(`lares vault ${verb}: no face h${face} stands in the floor index — nothing was changed`) });
+    return null;
+  }
+  const o = await openFaceTree({ io, homes, fcid: entry.fcid, credentials: creds });
+  if (o.reading !== "opens") {
+    const why = o.reading === "no-slot-opens" ? `no route of face h${face} opens under what was presented — nothing was changed` : `the slot tree of face h${face} reads ${o.reading} — nothing was changed`;
+    emit(args, { ok: false, error: { code: o.reading, message: why }, data: { reading: o.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
+    return null;
+  }
+  return { fcid: entry.fcid, fck: o.fck };
 }
 
 /**
@@ -249,12 +507,12 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
   }
   if (typeof out !== "string" || out.length === 0) throw new UsageError("backup needs a file to write: `lares vault backup --face <N> --out <file>`");
   if (!daemonUp) {
-    const why = "a cut needs the standing vessel, unlocked, wearing that face: its island holds the content keys. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then cut.";
+    const why = "a cut needs the standing vessel, unlocked, its daemon mount running under that face: its island holds the content keys. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then cut.";
     emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault backup: ${why}`) });
     return 1;
   }
   if (!wantsJson(args)) console.log("First this vessel's own route: it proves a person stands at this cut.");
-  const vesselCredentials = await gatherCredentials("lares vault backup", routeFlag(args));
+  const vesselCredentials = await gatherCredentials("lares vault backup", { kind: "vessel" }, routeFlag(args));
   const bundleRoutes = await gatherBundleRoute("lares vault backup");
   const result = await cutBundleToFile({ face: Number(faceRaw), out, vesselCredentials, bundleRoutes, send: (frame) => sendCustodyFrame(frame) });
   if (!result.ok) {
@@ -278,17 +536,23 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
   const asRaw = args.options["as"];
   if (asRaw !== undefined && (!/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw)))) throw new UsageError("--as takes a handle-index: `lares vault restore <file> --as <N>`");
   const memory = args.flags["memory"] === true;
-  if (memory && asRaw !== undefined) throw new UsageError("--memory lands keys on the seat of the face the vessel wears, and takes no --as");
+  if (memory && asRaw !== undefined) throw new UsageError("--memory lands keys on the seat of the face the daemon mount runs under, and takes no --as");
   if (memory && !daemonUp) {
-    const why = "an import needs the vessel standing unlocked and wearing the restored face: its island wraps each key for this vessel's own seat. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then import.";
+    const why = "an import needs the vessel standing unlocked, its daemon mount running under the restored face: its island wraps each key for this vessel's own seat. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then import.";
     emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault restore: ${why}`) });
     return 1;
   }
   if (!wantsJson(args)) console.log("The bundle's own route: the passphrase or the paper sheet it got sealed under.");
-  const credentials = await gatherCredentials("lares vault restore", routeFlag(args));
+  const credentials = await gatherCredentials("lares vault restore", { kind: "vessel" }, routeFlag(args));
+  // The restored face takes a route of its own; inside a standing vessel it rides the custody door first.
+  seatNewFaceRoute();
   const result = await restoreFromBundle({
     file, credentials, memory, ...(asRaw !== undefined ? { as: Number(asRaw) } : {}),
-    run: (act, actArgs) => sealedActVia(act, actArgs),
+    run: async (act, actArgs) => {
+      const faceRouteRef = daemonUp && act === "bundle.restore"
+        ? await handFaceRouteToVessel(`h${asRaw ?? "restore"}`, "bundle.restore", actArgs) : undefined;
+      return sealedActVia(act, { ...actArgs, ...(faceRouteRef ? { faceRouteRef } : {}) });
+    },
   });
   if (!result.ok) {
     emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore: ${result.reason}: ${result.message}`) });
@@ -312,7 +576,12 @@ async function vaultRestoreCards(args: ParsedArgs): Promise<number> {
   const face = named.startsWith("persona-") ? { prefix: named } : { verifyingKey: named };
   if (!wantsJson(args)) console.log("The split's cards: for each, the custodian it came from, then its code (hidden).");
   const cards = await gatherCards("lares vault restore --cards");
-  const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: (act, actArgs) => sealedActVia(act, actArgs) });
+  seatNewFaceRoute();
+  const daemonUp = (await sendCustodyFrame({ op: "custody" })) !== null;
+  const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: async (act, actArgs) => {
+    const faceRouteRef = daemonUp ? await handFaceRouteToVessel(`h${asRaw}`, "bundle.restore", actArgs) : undefined;
+    return sealedActVia(act, { ...actArgs, ...(faceRouteRef ? { faceRouteRef } : {}) });
+  } });
   if (!result.ok) {
     emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore --cards: ${result.reason}: ${result.message}`) });
     return 1;
@@ -331,15 +600,57 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   if (args.flags["paper"] && args.flags["passphrase"]) throw new UsageError("bind takes --passphrase or --paper, not both");
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
-  const creds = await gatherCredentials("lares vault bind");
+  const face = faceOption(args);
+  if (face !== undefined) {
+    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`, { kind: "face", ordinal: face });
+    const f = await openFaceOrRefuse(args, "bind", homes, io, face, faceCreds);
+    if (!f) return 1;
+    const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
+    const out = await bindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, spec });
+    emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`) });
+    // A PAPER SHEET JUST READ BACK joins the keep pair too, opened by the route this bind took (`../keep-seat.ts`).
+    await keepSlotAtBind(faceCreds, spec, keepSay(args));
+    return 0;
+  }
+  const creds = await gatherCredentials("lares vault bind", { kind: "vessel" });
   const u = await openOrRefuse(args, "bind", homes, io, creds);
   if (!u) return 1;
   const spec = await gatherNewSlot("lares vault bind", args.flags["paper"] ? "paper" : "passphrase");
-  const out = await bindCustodySlot({ io, homes, vk: u.vk, spec });
+  const out = await bindCustodySlot({ io, homes, treeKey: u.treeKey, spec });
   emit(args, {
     ok: true, data: { slotId: out.slotId, slots: out.tree.slots.length },
     human: () => console.log(`bound: slot ${out.slotId} now opens the vessel key (${out.tree.slots.length} slot(s) stand).`),
   });
+  await keepSlotAtBind(creds, spec, keepSay(args));
+  return 0;
+}
+
+/** `vault unbind <slot-id> --face N [--rotate]`: one route leaves the face's own tree; the node tree is untouched. */
+async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCustodyIo, face: number, slotId: string, rotate: boolean): Promise<number> {
+  const creds = await gatherCredentials(`lares vault unbind --face ${face}`, { kind: "face", ordinal: face });
+  const f = await openFaceOrRefuse(args, "unbind", homes, io, face, creds);
+  if (!f) return 1;
+  const entry = readFaceIndexSync(homes.identity).faces[face];
+  const treeBytes = await io.read(`${homes.identity}/faces/${f.fcid}/fk-slots.bin`);
+  const tree = decodeSlotTree(treeBytes);
+  if (tree.reading !== "readable") throw new UsageError(`the slot tree of face h${face} is not readable; nothing was changed`);
+  if (!tree.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in face h${face}'s tree`);
+  let staying: SlotSpec[] | undefined;
+  if (rotate) {
+    staying = [];
+    for (const sl of tree.tree.slots.filter((x) => x.id !== slotId)) {
+      const got = await gatherStayingSlot({ id: sl.id, t: sl.t, pins: sl.pins.map((p) => p.kind) });
+      const proof = await openTreeKey(tree.tree, got.credentials, nativeKdf);
+      if (proof.reading !== "opens" || proof.slot !== sl.id) throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
+      staying.push(got.spec);
+    }
+  }
+  const out = await unbindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, slotId, ...(staying ? { rotate: staying } : {}) });
+  void entry;
+  const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
+  say(`unbound: slot ${slotId} no longer opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`);
+  say(out.rotated ? "rotated: a new face key seals this face's rows; the removed route opens nothing." : "not rotated: a copy of the face tree taken before this unbind still opens the face key through the removed slot. `--rotate` ends that route.");
+  emit(args, { ok: true, data: { face, slotId, rotated: out.rotated, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
 }
 
@@ -349,22 +660,24 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const rotate = args.flags["rotate"] === true;
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
-  const creds = await gatherCredentials("lares vault unbind");
+  const face = faceOption(args);
+  if (face !== undefined) return await vaultUnbindFace(args, homes, io, face, slotId, rotate);
+  const creds = await gatherCredentials("lares vault unbind", { kind: "vessel" });
   const u = await openOrRefuse(args, "unbind", homes, io, creds);
   if (!u) return 1;
 
-  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new VK and binds each slot that stays
-  // over it, so a typo found after a write would leave the tree on a VK nobody holds.
+  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new S key and binds each slot that stays
+  // over it, so a typo found after a write would leave the tree on an S key nobody holds.
   let staying: SlotSpec[] | undefined;
   if (rotate) {
     const status = await custodyStatus({ io, homes });
     if (status.tree.reading !== "readable") throw new UsageError("the slot tree is not readable; nothing was changed");
     if (!status.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in the tree`);
-    const tree = decodeSlotTree(await io.read(`${homes.identity}/vk-slots.bin`));
+    const tree = decodeSlotTree(await io.read(`${homes.identity}/s-slots.bin`));
     staying = [];
     for (const sl of status.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot(sl);
-      const proof = tree.reading === "readable" ? openVk(tree.tree, got.credentials) : null;
+      const proof = tree.reading === "readable" ? await openTreeKey(tree.tree, got.credentials, nativeKdf) : null;
       if (!proof || proof.reading !== "opens" || proof.slot !== sl.id) {
         throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
       }
@@ -374,7 +687,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
 
   // ONE ACT. With --rotate the removal and the rotation land together: the rotation's census and its opening of
   // every carrier run before any byte moves, so a carrier that refuses the rotation leaves the slot bound.
-  const out = await unbindCustodySlot({ io, homes, vk: u.vk, slotId, ...(staying ? { rotate: staying } : {}) });
+  const out = await unbindCustodySlot({ io, homes, treeKey: u.treeKey, slotId, ...(staying ? { rotate: staying } : {}) });
   const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
   say(`unbound: slot ${slotId} no longer opens the vessel key (${out.tree.slots.length} slot(s) stand).`);
   if (out.rotated) {
@@ -387,6 +700,60 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     say("  not rotated. A copy of the tree taken before this unbind still opens the key through the removed slot.");
     say("  to end that route now:  lares vault unbind <slot-id> --rotate   (re-reads each staying slot's route)");
   }
+  // THE ROUTE MOVED: the keep re-seats under a route that opens the tree the unbind LEFT, proved again against `out.tree`, never
+  // under the opener of the open before it: a steward who typed the removed passphrase to authorise the unbind proves nothing now.
+  await reseatAfterUnbind(out.tree, creds, keepSay(args));
   emit(args, { ok: true, data: { slotId, rotated: out.rotated, rotationOffer: out.rotationOffer, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
+}
+
+/** Re-seat the keep under what opens the tree an unbind left; where nothing typed opens it, seat nothing and name the road. */
+async function reseatAfterUnbind(tree: SlotTree, creds: readonly Credential[], say: (line: string) => void): Promise<void> {
+  try {
+    const proved = provedRoutes({ reading: "opens", proved: await slotsOpenedBy(tree, creds, nativeKdf) }, creds);
+    if (proved === null) {
+      say("keep: the route that authorised this unbind opens none of the slots that stay, so the keep seats no fresh pair under it; run `lares vault reseat` with a staying route");
+      return;
+    }
+    await reseatKeepPair(proved.map((r) => r.creds), say, proved);
+  } catch (e) { say(`keep: the keep did not re-seat (${e instanceof Error ? e.message : String(e)}); run \`lares vault reseat\``); }
+}
+
+/**
+ * `vault reseat`: a fresh keep pair under the route custody proves. Beside a standing vessel the route proves against its held key
+ * (a `prove` frame, opening nothing new); with none standing it opens the slot tree here and lets the key go. A house a pūlama keeps
+ * seats at the pūlama's own hand door (`pulama-main.js keep-seat`), where its route rides.
+ */
+async function vaultReseat(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const door = daemonUp ? await sendCustodyFrame({ op: "custody" }) : null;
+  if (pulamaStands() || (typeof door?.["pulama"] === "object" && door["pulama"] !== null)) {
+    const why = "a pūlama keeps this house's custody, so its route rides the pūlama's own hand door: run `pulama-main.js keep-seat` there";
+    emit(args, { ok: false, error: { code: "keep-seat-at-pulama", message: why }, human: () => console.error(`lares vault reseat: ${why}`) });
+    return 1;
+  }
+  const creds = await gatherCredentials("lares vault reseat", { kind: "vessel" }, routeFlag(args));
+  let answer: CustodyOpenAnswer;
+  if (daemonUp) {
+    const a = await sendCustodyFrame({ op: "prove", credentials: creds });
+    if (a === null || a["reading"] !== "proves" || !Array.isArray(a["opener"])) {
+      const why = a === null ? "the vessel stopped answering before the proof landed" : `the route proves nothing against the vessel's held key (${String(a["reading"] ?? a["errorMessage"] ?? "no reading")}); nothing changed`;
+      emit(args, { ok: false, error: { code: String(a?.["reading"] ?? "daemon-unreachable"), message: why }, human: () => console.error(`lares vault reseat: ${why}`) });
+      return 1;
+    }
+    answer = { reading: "opens", opener: a["opener"] as number[], ...(Array.isArray(a["proved"]) ? { proved: a["proved"] as CustodyOpenAnswer["proved"] & object } : {}) };
+  } else {
+    const homes = custodyHomes();
+    const u = await openOrRefuse(args, "reseat", homes, new FsCustodyIo(homes), creds);
+    if (!u) return 1;
+    u.treeKey.fill(0); u.sk?.fill(0);
+    answer = u;
+  }
+  const lines: string[] = [];
+  const proved = provedRoutes(answer, creds);
+  const seated = proved !== null && await reseatKeepPair(proved.map((r) => r.creds), (l) => lines.push(l), proved);
+  emit(args, seated
+    ? { ok: true, data: { reseated: true }, human: () => { for (const l of lines) console.log(l); } }
+    : { ok: false, error: { code: "keep-seat-unseatable", message: "the proved route holds no human route the keep binds (a passkey alone); nothing changed" }, human: () => console.error("lares vault reseat: the proved route holds no human route the keep binds; nothing changed") });
+  if (wantsJson(args)) for (const l of lines) console.error(l);
+  return seated ? 0 : 1;
 }

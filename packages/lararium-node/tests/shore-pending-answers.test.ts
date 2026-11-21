@@ -271,3 +271,49 @@ describe("a sidecar standing alone", () => {
     expect(readFileSync(`${md}.meta`, "utf-8")).toContain("A HAND WROTE THIS");
   });
 });
+
+/**
+ * THE SHORE ENTRY STAYS DURABLE AND IDEMPOTENT ACROSS SEEDS (the lit set's re-seed walk). A seed reconciles every mirrored
+ * carrier (`sense`), and a seed a person runs twice, or after a restart, reads the same shore: a file deleted on disk pends
+ * once, stays gone, and the projector never rewrites a file that waits at the shore. Only a person's answer moves it.
+ */
+describe("a deleted mirror file stays gone across seeds", () => {
+  test("delete a mirror file, seed twice and once more after a restart: the file stays gone and the record stays pending", async () => {
+    const URI = uriOf("deleted-by-hand");
+    const s = stand([URI]);
+    await s.projector.idle();
+    const path = s.file(URI);
+    expect(existsSync(path)).toBe(true);
+    rmSync(path);
+    // The first seed's reconcile: the carrier pends, nothing writes it back.
+    await s.projector.sense();
+    expect(existsSync(path)).toBe(false);
+    expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
+    // The second seed: the same answer, no second alert of a different set, and still no write.
+    const alerts = s.pendings.length;
+    await s.projector.sense();
+    expect(existsSync(path)).toBe(false);
+    expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
+    expect(s.pendings.length).toBe(alerts);
+    expect(s.removed).toEqual([]);
+    expect(s.live.has(URI)).toBe(true);
+    // A restart: a fresh projector over the same synced tree reads the same shore.
+    await s.projector.stop();
+    const again = new LarDiskProjector({
+      mirrors: [{ bagId: BAG, mirrorRoot: join(root, BAG) }, { bagId: OTHER, mirrorRoot: join(root, OTHER) }],
+      carrierFileFn: async (uri) => ({ ext: MEME_EXT, body: RENDER(uri), encoding: "utf8" }),
+      syncedTree: new SyncedTree(join(root, ".projection", "synced-tree")),
+      removeCarrier: () => { throw new Error("no seed removes a carrier"); },
+    });
+    again.start({ $tw: { wiki: {
+      getTiddler: (title: string) => (s.live.has(title) ? { fields: { title, "$origin-bag": s.live.get(title) } } : undefined),
+      allTitles: () => [...s.live.keys()],
+      addEventListener: () => {}, removeEventListener: () => {},
+    } } } as unknown as TW5Engine);
+    await again.idle();
+    await again.sense();
+    expect(existsSync(path)).toBe(false);
+    expect(again.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
+    await again.stop();
+  });
+});

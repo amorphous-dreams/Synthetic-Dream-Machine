@@ -53,26 +53,26 @@ describe("task/receipt URI ontology (seed)", () => {
   });
 
   test("aud round-trips through invocation build → parse", () => {
-    const fields = buildVerb({ verb: "mint-invite", args: {}, requestedBy: "did:key:zOp", aud: "did:key:zVesselA" });
+    const fields = buildVerb({ verb: "mint-invite", args: {}, face: "did:key:zOp", aud: "did:key:zVesselA" });
     expect(parseVerb(fields)?.aud).toBe("did:key:zVesselA");
   });
 
   test("aud round-trips through signal; absent stays undefined", () => {
-    const sig = summon({ verb: "where", args: {}, requestedBy: "did:key:zOp", aud: "did:key:zVesselB" });
+    const sig = summon({ verb: "where", args: {}, face: "did:key:zOp", aud: "did:key:zVesselB" });
     expect(parseVerb(sig.tiddler as Record<string, unknown>)?.aud).toBe("did:key:zVesselB");
-    const noAud = buildVerb({ verb: "where", args: {}, requestedBy: "did:key:zOp" });
+    const noAud = buildVerb({ verb: "where", args: {}, face: "did:key:zOp" });
     expect(parseVerb(noAud)?.aud).toBeUndefined();
   });
 
   test("effectKey round-trips through invocation build → parse", () => {
-    const fields = buildVerb({ verb: "load", args: { a: 1 }, requestedBy: "did:key:zOp", effectKey: "sha256:abc" });
+    const fields = buildVerb({ verb: "load", args: { a: 1 }, face: "did:key:zOp", effectKey: "sha256:abc" });
     expect(parseVerb(fields)?.effectKey).toBe("sha256:abc");
-    const noEffect = buildVerb({ verb: "load", args: {}, requestedBy: "did:key:zOp" });
+    const noEffect = buildVerb({ verb: "load", args: {}, face: "did:key:zOp" });
     expect(parseVerb(noEffect)?.effectKey).toBeUndefined();
   });
 
   test("effectKey round-trips through signal build → parse", () => {
-    const sig = summon({ verb: "load", args: {}, requestedBy: "did:key:zOp", effectKey: "sha256:def" });
+    const sig = summon({ verb: "load", args: {}, face: "did:key:zOp", effectKey: "sha256:def" });
     expect(parseVerb(sig.tiddler as Record<string, unknown>)?.effectKey).toBe("sha256:def");
   });
 });
@@ -88,7 +88,7 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
   });
 
   test("a minimal fact (no effectKey/terminal) round-trips with those absent", () => {
-    const fact = { requestId: "r2", inputDigest: "sha256:cc", state: "committed" as const, seq: 1, bootEpoch: 4 };
+    const fact = { requestId: "r2", inputDigest: "sha256:cc", state: "committed" as const, seq: 1, life: "life-four" };
     const parsed = parseReceiptFact(buildReceiptFact(fact).tiddler as Record<string, unknown>);
     expect(parsed).toEqual(fact);
   });
@@ -110,16 +110,18 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     }
   });
 
-  test("an in-flight fact (`committed` or `interrupted`) with no boot-epoch reads as torn; with one it round-trips", () => {
+  test("an in-flight fact (`committed` or `interrupted`) with no life reads as torn; with one it round-trips", () => {
     for (const state of ["committed", "interrupted"] as const) {
       const bag = { title: `${RECEIPT_FACT_URI_PREFIX}r5`, "request-id": "r5", "input-digest": "sha256:dd", state, seq: "2" };
       expect(parseReceiptFact(bag)).toBeNull();
-      const fact = { requestId: "r5", inputDigest: "sha256:dd", state, seq: 2, bootEpoch: 3 };
+      const fact = { requestId: "r5", inputDigest: "sha256:dd", state, seq: 2, life: "life-three" };
       const record = buildReceiptFact(fact);
-      expect(record.tiddler["boot-epoch"]).toBe("3");
+      expect(record.tiddler["life"]).toBe("life-three");
+      expect(parseReceiptFact({ ...bag, life: "" }), "an empty life reads torn").toBeNull();
+      expect(parseReceiptFact({ ...bag, life: 3 }), "a counter in the life field reads torn").toBeNull();
       expect(parseReceiptFact(record.tiddler as Record<string, unknown>)).toEqual(fact);
     }
-    // CONTROL: a settled fact needs no boot-epoch.
+    // CONTROL: a settled fact needs no life.
     expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r6`, "request-id": "r6", "input-digest": "sha256:ee", state: "done", seq: "2", "outcome-bytes": "0" }))
       .toEqual({ requestId: "r6", inputDigest: "sha256:ee", state: "done", seq: 2, outcomeBytes: 0 });
   });
@@ -140,7 +142,7 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     const evicted = { requestId: "r8", inputDigest: "sha256:ab", state: "evicted" as const, terminal: "done" as const, seq: 5 };
     expect(buildReceiptFact(evicted).tiddler["outcome-bytes"]).toBeUndefined();
     expect(parseReceiptFact(buildReceiptFact(evicted).tiddler as Record<string, unknown>)).toEqual(evicted);
-    const committed = { requestId: "r9", inputDigest: "sha256:cd", state: "committed" as const, seq: 6, bootEpoch: 1 };
+    const committed = { requestId: "r9", inputDigest: "sha256:cd", state: "committed" as const, seq: 6, life: "life-one" };
     expect(buildReceiptFact(committed).tiddler["outcome-bytes"]).toBeUndefined();
   });
 
@@ -163,14 +165,14 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r4`, state: "committed", seq: 1 })).toBeNull();
   });
 
-  test("verbInputDigest is deterministic over {verb,args,requestedBy,effectKey} and sensitive to each", async () => {
-    const a = await verbInputDigest({ verb: "load", args: { x: 1 }, requestedBy: "did:key:zOp" });
-    const b = await verbInputDigest({ verb: "load", args: { x: 1 }, requestedBy: "did:key:zOp" });
+  test("verbInputDigest is deterministic over {verb,args,face,effectKey} and sensitive to each", async () => {
+    const a = await verbInputDigest({ verb: "load", args: { x: 1 }, face: "did:key:zOp" });
+    const b = await verbInputDigest({ verb: "load", args: { x: 1 }, face: "did:key:zOp" });
     expect(a).toBe(b);
     expect(a).toMatch(/^sha256:[0-9a-f]{64}$/);
-    const changedArgs = await verbInputDigest({ verb: "load", args: { x: 2 }, requestedBy: "did:key:zOp" });
+    const changedArgs = await verbInputDigest({ verb: "load", args: { x: 2 }, face: "did:key:zOp" });
     expect(changedArgs).not.toBe(a);
-    const withEffect = await verbInputDigest({ verb: "load", args: { x: 1 }, requestedBy: "did:key:zOp", effectKey: "sha256:ee" });
+    const withEffect = await verbInputDigest({ verb: "load", args: { x: 1 }, face: "did:key:zOp", effectKey: "sha256:ee" });
     expect(withEffect).not.toBe(a);
   });
 
@@ -192,13 +194,13 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
 
 describe("concludeVerb — digest-on-outcome + effect index fields (D1)", () => {
   test("inputDigest / effectKey / effectOf are additive and absent by default", () => {
-    const plain = concludeVerb({ requestId: "r1", verb: "load", status: "done", requestedBy: "did:key:zOp", cause: "c", batchMode: "best-effort" });
+    const plain = concludeVerb({ requestId: "r1", verb: "load", status: "done", face: "did:key:zOp", cause: "c", batchMode: "best-effort" });
     expect(plain.tiddler["input-digest"]).toBeUndefined();
     expect(plain.tiddler["effect-key"]).toBeUndefined();
     expect(plain.tiddler["effect-of"]).toBeUndefined();
 
     const stamped = concludeVerb({
-      requestId: "r2", verb: "load", status: "done", requestedBy: "did:key:zOp", cause: "c", batchMode: "best-effort",
+      requestId: "r2", verb: "load", status: "done", face: "did:key:zOp", cause: "c", batchMode: "best-effort",
       inputDigest: "sha256:aa", effectKey: "sha256:bb", effectOf: "r1",
     });
     expect(stamped.tiddler["input-digest"]).toBe("sha256:aa");
@@ -207,11 +209,11 @@ describe("concludeVerb — digest-on-outcome + effect index fields (D1)", () => 
   });
 
   test("refusal is additive and absent by default", () => {
-    const plain = concludeVerb({ requestId: "r1", verb: "load", status: "error", requestedBy: "did:key:zOp", cause: "c", batchMode: "best-effort" });
+    const plain = concludeVerb({ requestId: "r1", verb: "load", status: "error", face: "did:key:zOp", cause: "c", batchMode: "best-effort" });
     expect(plain.tiddler["refusal"]).toBeUndefined();
 
     const refused = concludeVerb({
-      requestId: "r3", verb: "load", status: "error", requestedBy: "did:key:zOp", cause: "c", batchMode: "best-effort",
+      requestId: "r3", verb: "load", status: "error", face: "did:key:zOp", cause: "c", batchMode: "best-effort",
       refusal: "retention-gap",
     });
     expect(refused.tiddler["refusal"]).toBe("retention-gap");
@@ -220,11 +222,11 @@ describe("concludeVerb — digest-on-outcome + effect index fields (D1)", () => 
 
 describe("DaemonMsg_PlaceVerb — effectKey rides the wire, whitelist unchanged (D1)", () => {
   test("mkDaemonPlaceVerb carries effectKey when given, omits it otherwise", () => {
-    const withEffect = mkDaemonPlaceVerb({ verb: "load", args: {}, requestedBy: "did:key:zOp", effectKey: "sha256:ee" });
+    const withEffect = mkDaemonPlaceVerb({ verb: "load", args: {}, face: "did:key:zOp", effectKey: "sha256:ee" });
     expect(withEffect.effectKey).toBe("sha256:ee");
     expect(isVesselToIslandMsg(withEffect)).toBe(true);
 
-    const noEffect = mkDaemonPlaceVerb({ verb: "load", args: {}, requestedBy: "did:key:zOp" });
+    const noEffect = mkDaemonPlaceVerb({ verb: "load", args: {}, face: "did:key:zOp" });
     expect(noEffect.effectKey).toBeUndefined();
     expect(isVesselToIslandMsg(noEffect)).toBe(true);
   });
@@ -249,6 +251,6 @@ describe("an evicted fact may name no digest, and then names no verdict", () => 
 
   test("CONTROL: an evicted fact with its digest keeps its verdict; a digest-less committed fact reads torn", () => {
     expect(parseReceiptFact({ ...base, "input-digest": "sha256:d", terminal: "done" })).toMatchObject({ state: "evicted", inputDigest: "sha256:d", terminal: "done" });
-    expect(parseReceiptFact({ ...base, state: "committed", "boot-epoch": "1" })).toBeNull();
+    expect(parseReceiptFact({ ...base, state: "committed", life: "life-one" })).toBeNull();
   });
 });

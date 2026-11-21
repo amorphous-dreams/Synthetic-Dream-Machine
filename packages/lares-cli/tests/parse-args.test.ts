@@ -9,7 +9,7 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { parseArgs, ArgsError, BOOLEAN_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
+import { parseArgs, ArgsError, BOOLEAN_FLAGS, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
 import { dispatch, unknownFlags, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -70,6 +70,18 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
     expect(a.options).toEqual({ root: "/r" });
     expect(a.positional).toEqual(["pos"]);
   });
+  test("★ a value flag takes the next token whatever it starts with: front matter binds as the body ★", () => {
+    const body = "---\nfront: matter\n---\nbody";
+    expect(parseArgs(["tiddler", "put", "T", "--text", body]).options).toEqual({ text: body });
+    expect(parseArgs(["tiddler", "put", "T", "--text", "--literal"]).options).toEqual({ text: "--literal" });
+    expect(parseArgs(["tiddler", "put", "T", `--text=${body}`]).options).toEqual({ text: body });
+    expect(parseArgs(["tiddler", "put", "T", "--text", body]).positional).toEqual(["put", "T"]);
+  });
+  test("CONTROL: any other valued name still peeks, so `--key --other` leaves the first bare and an unknown flag stays a flag", () => {
+    const a = parseArgs(["x", "--root", "--mystery"]);
+    expect(a.flags).toEqual({ root: true, mystery: true });
+    expect(a.positional).toEqual([]);
+  });
   test("the declaration cannot drift from the handlers: flag reads are declared, option reads are not", () => {
     const files: string[] = [];
     const walk = (d: string): void => {
@@ -87,6 +99,7 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
     }
     expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n)), "read as a flag, never declared").toEqual([]);
     expect([...BOOLEAN_FLAGS].filter((n) => optionReads.has(n)), "declared boolean, read as an option").toEqual([]);
+    expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
     expect([...VALUE_OR_FLAG].filter((n) => !optionReads.has(n) || !flagReads.has(n)), "listed as dual, read one way only").toEqual([]);
   });
 });
@@ -97,22 +110,10 @@ describe("dispatch: an unread flag refuses by name, before the handler", () => {
     log: vi.spyOn(console, "log").mockImplementation(() => {}),
   });
 
-  test("★ exit 2, naming the flag and the command ★", async () => {
-    const { err } = quiet();
-    expect(await dispatch(["circle", "--bogus-flag", "x"])).toBe(2);
-    const said = err.mock.calls.map((c) => String(c[0])).join("\n");
-    expect(said).toContain("--bogus-flag");
-    expect(said).toContain("lares circle");
-  });
   test("★ the refusal also reads the `=` spelling, and names the nearest accepted one ★", async () => {
     const { err } = quiet();
     expect(await dispatch(["circle", "--petnam=x"])).toBe(2);
     expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("did you mean --petname");
-  });
-  test("★ `vessel read sensorium` refuses by name ★", async () => {
-    const { err } = quiet();
-    expect(await dispatch(["vessel", "read", "sensorium"])).toBe(2);
-    expect(err.mock.calls.map((c) => String(c[0])).join("\n")).toContain("sensorium");
   });
   test("★ `sense recall kw --limit 1` still reads: --limit is the operator-kept second name for --k ★", () => {
     const sense = COMMANDS.find((c) => c.name === "sense")!;

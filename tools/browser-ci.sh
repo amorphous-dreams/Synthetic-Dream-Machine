@@ -3,8 +3,9 @@
 #
 #   browser-ci.sh up                        build, found a hearth through the test door (`vessel found --hearth`: the place,
 #                                           its seed charter, one synthetic face), stand the node, open its key through the
-#                                           test door, name the face (`persona new 0`) and WEAR it (`persona wear 0`),
-#                                           restart so the vessel stands as a Lararium, wait healthy, open its key again.
+#                                           test door, name the face (`persona new 0`), restart so the vessel stands as a
+#                                           Lararium, wait healthy, open its key again (the test door's unlock names h0,
+#                                           so the boot mounts the named face).
 #                                           Refuses by name when the port already answers or the project already stands.
 #   browser-ci.sh restart                   restart the node container WITHOUT removing its volumes; wait healthy; open its key
 #   browser-ci.sh join offer                `lares fleet join offer` inside the node (it rides the store door, so it runs
@@ -22,11 +23,11 @@
 #                                           `lares meme get`, JSON on stdout (the text rides in data.text). Default reads
 #                                           AS the mounted wiki (`--recipe <slug>`)
 #   browser-ci.sh info                      one JSON object for the host QA driver: origin (qa and host views), relay URL,
-#                                           gate public key (the node's `[lararium] gate key:` boot line), the worn face
-#                                           (`worn`), the wiki slug, the wiki document the mount resolves (`wikiDoc`) and
+#                                           gate public key (the node's `[lararium] gate key:` boot line), the founding
+#                                           face h0 the unlock mounts (`face`), the wiki slug, the wiki document the mount resolves (`wikiDoc`) and
 #                                           every document registered under the slug, the recipe URI and its bag stack in
 #                                           order, and the registered bag URIs
-#   browser-ci.sh qa <cmd…>                 run <cmd> in the disposable Chromium runner (repo at /repo; the runner shares the node's network, node at http://localhost:4321);
+#   browser-ci.sh qa <cmd…>                 run <cmd> from the disposable Chromium runner's image (it shares the node's network, node at http://localhost:4321);
 #                                           LARES_URL, BROWSER_CI_* and LIVE_WIKI_* from the caller's env ride through
 #   browser-ci.sh qa-join <cmd…>            `qa`, plus the JOIN EXCHANGE below: the host carries the node's half of each
 #                                           browser profile's fleet join
@@ -53,6 +54,7 @@
 #   BROWSER_CI_PROJECT  compose project name (default lares-browser-ci); containers, network and volumes derive from it
 #   BROWSER_CI_PORT     loopback port the node publishes (default 5401; the browser swarm's range is 5400-5499)
 #   BROWSER_CI_IMAGE    the node image tag (default lares-browser-ci:local); builders in separate worktrees each name their own
+#   BROWSER_CI_HARNESS_IMAGE the QA image tag (default lares-browser-harness:local, built from the tree each qa run); a named tag reads as given, built only when absent
 # Two surfaces with distinct values share no container, network, volume or image tag. Give each builder its own.
 # BROWSER_CI_WIKI overrides the wiki slug that `recipe` and `get` address (default: the node's one live wiki).
 #
@@ -79,7 +81,7 @@ compose() { docker compose -p "$PROJECT" -f "$FILE" "$@"; }
 lares() { compose exec -T lares node "$CLI" "$@"; }
 # Open the standing node's key through the test door; a door that answers anything but an open key stops the driver.
 unlock() {
-  if ! out=$("$HERE/unlock-staged-container.sh" "$(compose ps -q lares)" 2>&1); then
+  if ! out=$("$HERE/unlock-staged-container.sh" "$(compose ps -q lares)" /state 2>&1); then
     printf '%s\n' "$out" >&2; die "the staged node did not open its vessel key through the test door"
   fi
 }
@@ -153,8 +155,7 @@ case "$verb" in
     compose up -d --wait lares
     unlock
     lares persona new 0 --name "$FACE"
-    # The face stands WORN: `persona wear` records the worn index and the restart below puts the vessel on it.
-    lares persona wear 0
+    # The face stands named; the restart below re-stands the vessel, and its unlock mounts h0 (the test door names it).
     compose restart lares
     compose up -d --wait lares
     unlock ;;
@@ -242,7 +243,7 @@ case "$verb" in
       --bag|--recipe) [ "$#" -eq 2 ] || die "get takes one --bag or --recipe slug" ;;
       *) die "get takes --bag <slug> or --recipe <slug>" ;;
     esac
-    json_verb meme get "$uri" "$@" ;;
+    json_verb meme get "$uri" "$@" --json ;;
   info)
     slug=$(wiki_slug)
     # The runner shares the node's network namespace, so its origin names the node by localhost.
@@ -267,7 +268,7 @@ case "$verb" in
     node -e '
       const e = process.env;
       const faces = JSON.parse(e.INFO_FACES).data.personas;
-      const face = faces.find((p) => p.active) || faces[0] || null;
+      const face = faces.find((p) => p.handleIndex === 0) || faces[0] || null;
       const host = "http://127.0.0.1:" + e.INFO_PORT;
       const ws = (o) => o.replace(/^http/, "ws") + "/ws";
       const reply = JSON.parse(e.INFO_WIKIS);
@@ -288,8 +289,7 @@ case "$verb" in
         origin: { qa: e.INFO_ORIGIN_QA, host },
         relay: { qa: ws(e.INFO_ORIGIN_QA), host: ws(host) },
         gateKey: e.INFO_GATE,
-        face: face && { name: face.petname, handleIndex: face.handleIndex, worn: face.active === true, verifyingKey: e.INFO_KEY },
-        worn: face ? face.active === true : false,
+        face: face && { name: face.petname, handleIndex: face.handleIndex, verifyingKey: e.INFO_KEY },
         wiki: e.INFO_SLUG,
         wikiDoc: { url: mounted.doc, kind: mounted.kind, bag: mounted.bag },
         wikiDocsRegistered: mine.map((d) => ({ url: d.doc, kind: d.kind })),
@@ -309,6 +309,11 @@ case "$verb" in
         */live-wiki.mjs|live-wiki.mjs) walk_document_preflight; break ;;
       esac
     done
+    # The default tag builds from the tree every run (the image bakes the walks, so a stale tag would run old walk
+    # bytes; the layer cache keeps an unchanged tree cheap). A named tag reads as given and builds only when absent.
+    if [ -z "${BROWSER_CI_HARNESS_IMAGE:-}" ] || ! docker image inspect "$BROWSER_CI_HARNESS_IMAGE" >/dev/null 2>&1; then
+      compose build qa
+    fi
     # Pass-through: the caller's LARES_URL, BROWSER_CI_* and LIVE_WIKI_* variables reach the runner by name.
     envargs=""
     for name in $(env | sed -n 's/^\(LARES_URL\|BROWSER_CI_[A-Za-z0-9_]*\|LIVE_WIKI_[A-Za-z0-9_]*\)=.*/\1/p'); do

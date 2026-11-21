@@ -1,7 +1,7 @@
 ---
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
-source-check: "ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA"
+source-check: "ni:///sha-256;XoTa_-qqylI77fSF-sMYpFN37NLUM0wRhjmI333YXEc"
 title: "lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext"
 tongue: "x-lares>en"
 variant: "GFM"
@@ -174,7 +174,7 @@ and the configuration tiddlers filter by these strings.
 | `list` | `*` `#` `;` `:` `>` runs — unordered, ordered, definition, quote lists; nesting by repetition. |
 | `table` | ` | `-delimited rows with alignment, header/footer/caption markers. |
 | `quoteblock` | `<<<` fenced block quotation. |
-| `codeblock` | ``` fenced verbatim block with optional language. |
+| `codeblock` | a three-backtick fenced verbatim block with optional language. |
 | `typedblock` | `$$$type … $$$` — a block parsed under another content type. |
 | `styleblock` | `@@` fenced block carrying CSS classes/styles. |
 | `horizrule` | `---` horizontal rule. |
@@ -298,7 +298,8 @@ document might use.
 ## Media Type
 
 TiddlyWiki names its wikitext `text/vnd.tiddlywiki` (`boot.js`, `registerFileType`, extension `.tid`).
-That name stands in NO IANA registry (checked against the registry 2026-08-24): it reads as an
+That name stands in NO IANA registry (the media-types registry at
+`https://www.iana.org/assignments/media-types/` lists no `vnd.tiddlywiki` entry): it reads as an
 unregistered vendor-tree spelling, so any registration citing it starts from zero rather than from a
 standing entry. The coordination — upstream files the `vnd.` registration with this description as its
 specification reference, or chooses another vehicle — belongs to the TiddlyWiki core maintainers, with
@@ -335,5 +336,5 @@ rather than minting sibling types.
 
 <a id="edges"></a>
 
-- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`

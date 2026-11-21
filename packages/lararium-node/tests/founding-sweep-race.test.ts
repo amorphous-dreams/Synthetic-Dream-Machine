@@ -1,4 +1,7 @@
 /** A sweep requested during a two-row founding handoff settles without losing the face seed. */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,10 +9,11 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { runFoundTheFace } from "../src/commands/init.js";
-import { seatedCustody, unseatCustody, readCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, unseatCustody, readCustodyRecord } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
 import { faceAtomGroupFile, pendingFoundingFile, sweepFoundingSeeds, type FoundingAtomAsk } from "../src/face-atom-store.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
+import { askRecordPath, faceRecordNames, groupRecordPath } from "./face-paths.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
@@ -47,15 +51,15 @@ describe("the founding sweep and a live handoff", () => {
         const founding = foundFace({ storageDir: larDataDir(), genesisDir });
         await reachedRemoval.promise;
         // The group row has landed, but founding still owns the claim and its ask row.
-        const before = readdirSync(larIdentityDir());
+        const before = faceRecordNames();
         expect(before.filter((file) => file === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(file)), "the pause exposes both rows").toHaveLength(2);
         const sweep = sweepFoundingSeeds();
         releaseRemoval.resolve();
         const [face] = await Promise.all([founding, sweep]);
         // This control observes the settled state after both operations; it does not instrument claim-queue entry.
-        const rows = readdirSync(larIdentityDir()).filter((file) => file === pendingFoundingFile(ask) || file === faceAtomGroupFile(face.personaGroupId));
+        const rows = faceRecordNames().filter((file) => file === pendingFoundingFile(ask) || file === faceAtomGroupFile(face.personaGroupId));
         expect(rows, "exactly one row holds the live founding seed").toEqual([faceAtomGroupFile(face.personaGroupId)]);
-        expect(await readCustodyRow("identity", rows[0]!), "the surviving group row holds the seed").toHaveLength(32);
+        expect(await readCustodyRecord("identity", rows[0]!), "the surviving group row holds the seed").toHaveLength(32);
         expect(await loadIdentityAnchors(0), "the face stands after the race").toMatchObject({ personaGroupId: face.personaGroupId });
       } finally { releaseRemoval.resolve(); spy.mockRestore(); }
     });

@@ -113,6 +113,36 @@ describe("a key persists: nothing private rests, and a restart finds what the ve
     expect((await seal(a!, "after the restart")).body.keyVersion).toBe(sealed.body.keyVersion);
   });
 
+  it("A READING GIVES WAY WHEN THE REGISTER SET GROWS: a bag the face registers after the holder read founds at the next ask, and a bag that stood read keeps opening", async () => {
+    let registered = [BAG, OTHER];
+    const a = await vessel(world(), "a", { standing: { holdsWrite: ({ bagId }) => registered.includes(bagId), chainOf: () => "one-chain", registeredOf: () => JSON.stringify(registered) } });
+    const garden = await seal(a, "the garden's note");
+    const kitchen = await seal(a, "the kitchen's note", OTHER);
+    a.restart();
+    registered = [BAG];
+    // The holder reads rest under the set that stands: the kitchen's founding record names a writer over an unregistered bag.
+    expect(await opens(a, garden.body.ref)).toBe("the garden's note");
+    expect(await opens(a, kitchen.body.ref, OTHER)).toBe("REFUSED:bag-unfounded");
+    registered = [BAG, OTHER];
+    expect(await opens(a, kitchen.body.ref, OTHER)).toBe("the kitchen's note");
+    expect(await opens(a, garden.body.ref)).toBe("the garden's note");
+    // The reload minted nothing: each bag writes on under the version it stood on.
+    expect((await seal(a, "after the growth")).body.keyVersion).toBe(garden.body.keyVersion);
+    expect((await seal(a, "after the growth", OTHER)).body.keyVersion).toBe(kitchen.body.keyVersion);
+  });
+
+  it("CONTROL: a standing that names no register set keeps the one reading it took", async () => {
+    let registered = [BAG, OTHER];
+    const a = await vessel(world(), "a", { standing: { holdsWrite: ({ bagId }) => registered.includes(bagId) } });
+    const garden = await seal(a, "the garden's note");
+    const kitchen = await seal(a, "the kitchen's note", OTHER);
+    a.restart();
+    registered = [BAG];
+    expect(await opens(a, garden.body.ref)).toBe("the garden's note");
+    registered = [BAG, OTHER];
+    expect(await opens(a, kitchen.body.ref, OTHER)).toBe("REFUSED:bag-unfounded");
+  });
+
   it("NO BARE KEY REACHES REST: no stored value and no sealed value holds a content key's bytes, and no rest value names the bag", async () => {
     const { w, v: [a] } = await fleet("a");
     const sealed = await seal(a!, "find my key");
@@ -219,7 +249,7 @@ describe("a value opens only through a verified manifest", () => {
     const two = await seal(a!, "value two");
     const rows = await a!.store.rowsOf(one.founding);
     const forged = { ...rows.find((r) => r.address === one.body.cid)!, address: two.body.cid };
-    await a!.store.putIndexRows([forged]);
+    await a!.store.putIndexEntries([forged]);
     expect((await a!.store.rowsOf(one.founding)).length).toBe(3);   // the forged row rests
     a!.restart();
     // The honest row still opens value one; the forged row names an address its manifest never listed there.
@@ -232,7 +262,7 @@ describe("a value opens only through a verified manifest", () => {
     const key = [...w.docs.values()][0]!.payload.slice(-32);
     const ghost = "ee".repeat(32);
     const locator = entryLocatorOf(key as never, { bagId: BAG, keyVersion: one.body.keyVersion, role: "blob", logicalRef: hexToBytes(ghost) });
-    await a!.store.putIndexRows([{ ...rows.find((r) => r.address === one.body.cid)!, locator }]);
+    await a!.store.putIndexEntries([{ ...rows.find((r) => r.address === one.body.cid)!, locator }]);
     expect((await a!.store.rowsAt(one.founding, one.body.keyVersion, locator)).length).toBe(1);   // the forged row rests where the holder looks
     expect(await opens(a!, ghost)).toBe("REFUSED:reference-unknown");
   });
@@ -710,6 +740,20 @@ describe("a reader counts what it can check: the base rule", () => {
     expect(a!.bases.length).toBe(cuts);
   });
 
+  it("V7: A FRESH BASE READS FRESH OR NO SPAN OPENS ON IT: a cut that carries history refuses the admission by name and rests nothing; a cut that reads fresh mints (control)", async () => {
+    const { w, v: [a] } = await fleet("a");
+    await seal(a!, "before");
+    verifies(w, a!, "admit-1", "admit-2");
+    const lockboxes = () => [...a!.rest.values.keys()].filter((k) => k.startsWith("lockbox/")).length;
+    const before = lockboxes();
+    a!.basesFresh = () => false; a!.restart();
+    expect(said(await a!.holder.admitFromNow({ bagId: BAG, act: "admit-1", history: "closed", signer: a!.signer }))).toBe("fresh-base-unavailable");
+    expect(lockboxes()).toBe(before);
+    a!.basesFresh = () => true; a!.restart();
+    const admitted = await a!.holder.admitFromNow({ bagId: BAG, act: "admit-2", history: "closed", signer: a!.signer });
+    expect("refusal" in admitted ? said(admitted) : "minted").toBe("minted");
+  });
+
   it("A BASE LASTS ONLY WHILE ITS PARENT STAYS UNHELD: once the parent's key arrives the reader counts afresh, and the version stands only where that parent counts", async () => {
     const w = world();
     const f = await vessel(w, "f"), a = await vessel(w, "a");
@@ -1048,11 +1092,11 @@ describe("a lock that lands between two writes of one act stops every later writ
   }
   const never = (): boolean => false;
 
-  it("a seal: a lock at the manifest's write, at the row's, or at the manifest note's rests nothing after it", async () => {
+  it("a seal: a lock at the manifest's write, at the row's, or at the head note's rests nothing after it", async () => {
     const points: Record<string, (kind: string, name: string) => boolean> = {
       "the manifest": (kind) => kind === "manifest",
       "the index row": (kind) => kind === "index",
-      "the manifest note": (kind, name) => kind === "own" && name.startsWith("manifest-head."),
+      "the head note": (kind, name) => kind === "own" && name.startsWith("write-head."),
     };
     for (const [where, at] of Object.entries(points)) {
       const { v: [a] } = await fleet(`a-${where}`);
@@ -1061,12 +1105,12 @@ describe("a lock that lands between two writes of one act stops every later writ
       expect(said(await a!.holder.sealBlob({ bagId: BAG, plaintext: body("second"), signer: a!.signer })), where).toBe("holder-locked");
       expect(spy.after(), where).toBe(0);
     }
-    // CONTROL: unlocked, the same seal rests its manifest, its row and both notes.
+    // CONTROL: unlocked, the same seal rests its manifest, its row and its head note.
     const { v: [b] } = await fleet("b");
     await seal(b!, "first");
     const free = lockAt(b!, never);
     expect(said(await b!.holder.sealBlob({ bagId: BAG, plaintext: body("second"), signer: b!.signer }))).toBe("OK");
-    expect(free.puts()).toBe(4);
+    expect(free.puts()).toBe(3);
   });
 
   it("a mint: a lock while the key wraps rests no lockbox, and a lock at the lockbox's write rests no key version record", async () => {
@@ -1081,11 +1125,11 @@ describe("a lock that lands between two writes of one act stops every later writ
     (b!.shore as { wrap: typeof wrap }).wrap = async (args) => { const out = await wrap(args); b!.holder.lock(); return out; };
     expect(said(await b!.holder.sealBlob({ bagId: BAG, plaintext: body("first"), signer: b!.signer }))).toBe("holder-locked");
     expect(free.puts()).toBe(0);
-    // CONTROL: unlocked, a founding seal rests its lockbox, its record, the manifest, the row and both notes.
+    // CONTROL: unlocked, a founding seal rests its lockbox, its record, the manifest, the row and its head note.
     const { v: [c] } = await fleet("c");
     const whole = lockAt(c!, never);
     expect(said(await c!.holder.sealBlob({ bagId: BAG, plaintext: body("first"), signer: c!.signer }))).toBe("OK");
-    expect(whole.puts()).toBe(6);
+    expect(whole.puts()).toBe(5);
   });
 
   it("a hand-over: a lock at the first lockbox's write rests no second lockbox, and one at the last lockbox's rests no hand-over record", async () => {

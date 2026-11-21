@@ -1,0 +1,352 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/leaf-fleet/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-12 (file date) — source `.lares-scratch/leaf-fleet/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/leaf-fleet/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/leaf-fleet/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-12
+
+Verbatim scratch record `.lares-scratch/leaf-fleet/out.md` (hand-back, file date 2026-11-12); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/leaf-fleet/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/successor-map-threshold-wright-read-this-first`>>
+
+! SUCCESSOR MAP — Threshold-Wright (2026-11-12, launch 1) — read this first
+
+Branch feature/green-jello-dinosaur-5&#45;-leaf-fleet. Controller's order, with its addendum folded in: 1 floor's home → A, B, C (identity edges) → 2 URL overrides go → 3 first fleet offer founds the face → 4 canon.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/landed`>>
+
+!! Landed (see `git log --oneline 4c38d53d5..HEAD`; also 7d212699e edge A and the CI cure `boot.falls.whole/floor-key-after-repo-record`)
+* 54c3dc827 `floor.keys.itself/no-home-before-face` (item 1 core): mesh `floorRestKey` + `FLOOR_REST_KEY_INFO`, `seedFloorDoor`; `vesselHeldHomes` two keys (`floorKey()`, `standFloorKey`); floor registry in the DAEMON document (`floor/slot/<slug>/<kind>`, `floor/daemon-slot/<kind>`, `readFloor`, `floorOnlyDocIds`, mesh `floor-registry.ts` `floorRegistryOf`, `FloorUnavailable` with `vessel-locked` | `floor-unkeyed`); `IslandGrants.floorKey` → `ctx.floorKey`; node `custodyFloorKeyDoor`, `askedHerm`, `floorVerbsFor`; browser `browser-floor-key.ts` (`floor-rest` row), no secret home or control document at the veil floor, `bindPlaceBesideFace` in vessel-sessions (in-house ruling 9).
+* 4cfea4590 `veil.mints.node/w4-served-front`: e2e W4 un-held (asks through `serveUdsFront` + `makeUdsSeat`); `NodeVesselResult.floorKey`. W4's body ran green as a scratch probe copy; the e2e file itself never ran.
+* aca107a97 `door.founds.face/no-query-string` (item 2, first half): `?found` leaves; the identity panel's button stashes a one-boot ask (`FOUND_STASH_KEY`) and reloads, as the admit landing does. e2e ceremony K2 moved by intent, unrun.
+* 535e44b1b `canon.trues.floor/key-registry-door`: the-veil-ladder (rulings 5, 6, 7, the floor's home, new 9, built/owed) and lararium-identity #/vessel-key (edge D).
+
+Smokes (real Chromium, vite :5174, scratch root root-tw1): smoke/tw1 veil write+reload (keystore `catalog-url, floor-rest, vessel-key`, 2 docs held, leak 0); tw2 veil then founding (lift 4); tw4 two-leaf walk (lift 7, same workbench address); tw5 the founding DOOR (stdout.txt: no query string after the act, asks `card`, `bind-first`, lift 4). Scripts: smoke/veil-floor.mjs, veil-found.mjs (old `?found`, stale), veil-door.mjs, leaf-fleet.mjs (line 42 still goes to `/?found`: change it to goto `/` then click `#found-face`).
+Build helper: after EVERY src edit of a package another package's tests import, `pnpm --filter <name> build && node tools/stamp-build.mjs . --pkg <dir>` from the repo root (the vitest dist guard refuses otherwise).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-1-order-state-at-this-hand-back`>>
+
+!! RELAUNCH 1 ORDER (controller, 2026-11-12) — state at this hand-back
+# DONE: merged origin canon-carry d08dfeb0d as de9640e22 (pushed). Only dreamnet-architecture's stamp line conflicted; restamped; all 8 staged carriers canonical. Edit those carriers on top of the merged text from here on.
+# SMOKE RERUN ON THE MERGED HEAD — A REAL FAULT, UNCURED. Read this before anything else.
+#* Script truth: step `6b'` holds the forged-grant check (it refuses, as it should). Step `6c` pastes the GENUINE grant, and it ALSO refuses: `✗ seat-grant-unverified: … the grant answers another request than this leaf's own`. B stays pinned and unseated; no lift line prints. Runs tw6, tw7, tw8 (smoke/tw*/stdout.txt), all with A founding through the DOOR.
+#* It seated in tw4 (A founded by `?found`, same floor-key code, before the door commit aca107a97). So the regression rides the founding door's walk on A (a veil boot, then a founding boot), not edge A and not the CI cures (tw6 ran before both).
+#* Diagnostic (temporary, removed; tw8/console-B.txt keeps the `[DIAG seat]` lines): in `seatGrantAnswering` the hearth's outcome IS found, signed by the pinned hearth, with the matching cause. So the refusal comes from the last line: `seatGrantOnPlane(...)` reads null, or `faceGrantRecordCid(standing.record) !== outcome.result.recordCid`. Reading, unverified: the root holder hands back a grant record other than the one its outcome names (the face-join effect ran twice on A, or the grant file's title/device misses). Next probe: log both cids and the `standing` null-check there, and count face-join effects on A (browser-fleet-seat.ts `browserSeatGrant`, keyhive `faceJoinEffect`).
+#* "10 same address: true" and "7 B note under F" still print in the failing runs; neither proves a seat (the note reads off the floor slot a pinned face keeps).
+#* CI stayed green because no e2e walks the two-leaf seat. A red at composition level belongs with the cure.
+#* Vite stopped by its process group. Scratch roots root-tw1, root-tw2.
+2-7. NOT STARTED: item 1 remainder (draft + personal floor documents; two faces' floor rows), edge B, item C's replacement (three reds, sweep, `hearthTrueName()` rename, init.ts check), item 2 remainder (arrival URL, banner), item 3 (offer founds the face), item 4 remainder.
+Controller's rule to carry: a stored value never selects a width or capability; the founding ask carries a person's act, consumed once on read (it does: `takeStashedFounding` removes it).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci`>>
+
+!! CI
+* Run 43288613412 (54c3dc827): red on browser open-vessel-lock-release (cured 057b74a60), e2e session-sign-reach S2 and evergreen narration 163/162 (both cured 1ac55792f).
+* Run 43293740731 (1ac55792f): every test cell, both witness jobs and E2E shards 1/4-4/4 green (W4, K2's door walk and S2 among them); the shard-report merge job stood queued when the canon commit 3ded63a95 went up after it. The run on 3ded63a95 (canon only) stands unread.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-in-order`>>
+
+!! Owed, in order
+# Item 1 remainder: the draft floor document (slot-doc-resolver `floor()`, plain `repo.create`, named in the catalog's floor row) and the personal floor binding do not ride the floor registry. Shape: mint the id ahead, `announceFloor(slug, "draft", id)`, row `floor/slot/<slug>/draft`, then the first byte; drop the row in anon-lift step 3. The floor's registry reads off `bootstrap.floor.daemonUrl` and the worn daemon document on the browser; a later face's own daemon document holds no floor rows (unproven with two faces).
+# Edge A — LANDED in 7d212699e (`atom.signs.lift/place-key-signs-no-face`). Was: move the veil-lift signature from the place/vessel key to the face ATOM. Sites: mesh `src/veil-lift.ts` (`signVeilLift` takes a seed), browser `src/browser-veil-lift.ts` (`signBrowserVeilLift`), node `src/node-veil-lift.ts` + `vesselVeilLiftDoor` in node-vessel-identity.ts, the keeps in init.ts (founding settle) and fleet-join landing; tools/seed-census.mjs counts the node key door's consumers and will move. Reds: the place key signs nothing naming a face; the record verifies under the atom.
+# Edge B (NOT STARTED): persona roots and atoms key by PersonaGroup, never handle index. Sites: `generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX, …)`, `wearBrowserPersona`, `BrowserRootFace.handleIndex`, `browserRootFaces`, ward rows `ward/h0/persona-root`, `persona-root-roster` codec ({handleIndex, verifyingKey}); node `listPersonaRoots`, face ordinals. The founding door founds only where `facedBootstrap(bootstrap) === null`.
+# Edge C — WITHDRAWN BY THE CONTROLLER (2026-11-12; `hearthTrueName` names the seed-charter Nexus AID since 327ee2be3, and a gateless leaf binds `""` by design). NOTHING of C was touched: `hearthTrueName: ""` and 67f4386aa's stated-empty acceptance stand as they were. The controller's replacement work, ALL NOT STARTED:
+#* Reds: a gateless joinee's edge reads byte-identical before and after the genesis engine CID moves; a leaf's cabal sentinel seeds from the bare URI; face-join of a leaf joinee clears against the root's `""` edge.
+#* Stale-text sweep (comments and canon only): mesh device-delegation.ts ~62-63, ~133; keyhive ceremony-core.ts ~157; mesh lar-uris.ts ~562; tw5-host-bridge.ts ~438; keyhive tests/leaf-fleet-admit.test.ts ~11. Canon: lararium-identity #/head ~42-50 and #/delegation-edge; epoch-binding-surfaces ~11, 38, 59, 114-123, 181, 198, 230; identity-classes #/the-two-relations ~418-428; kahu.mem ~93 (against its own ~181); engine-watch ~103; persona-circle ~56; federation ~40.
+#* One rename: `genesis-artifact.ts` ~149-168 `hearthTrueName()` returns the engine CID; rename it (e.g. `engineCid()`) with its callers. Check node init.ts ~423: if one true-name tiddler carries the engine CID and then the AID, split it.
+#* Canon open questions, named and not built: a place-KEL wall for gateless leaves; `boundEpoch` against the clockless law.
+#* LANDED of this (canon only, 3ded63a95, pushed): the three leans the operator approved (no place wall for a leaf; `boundEpoch` retires, owed; found a hearth as an existing face, owed) in lararium-identity #/delegation-edge, founding-runbook #/the-growth-rite, device-capabilities-2026 #/device-seats; dreamnet-architecture #/infra-axis trued. The rest of the sweep above stays owed.
+# Item 2 remainder: the arrival URL `?relay=…#floor=…&anchor=…`. Users: web main.ts 385-394 + 432, live-status.ts, node lan-address.ts (banner), pronaos-adapter.ts, e2e floor-crossing, tests/live-wiki.mjs, tools/browser-ci-smoke.mjs, tools/mesh-scenarios.sh, node tests lan-address / origin-standing / pronaos-adapter, tests/harness/own-gate-key.test.ts. Other query keys still read by the page: `?mesh=`, `?c4trace`, and the params at main.ts 181.
+# Item 3 (NOT STARTED): the first fleet offer founds the face. The founding lives inside the vessel's boot, so the offer act needs the same one-boot ask (or a founding composer callable from the fleet-root door).
+# Item 4 remainder: device-capabilities-2026 #/device-seats, dreamdom / d3-glass-lane, founding-runbook, pronaos, the control-home meme, CHANGELOG, browser-vessel-lift.mem 137 and w29-place-kel-lane.mem 49 (both still say `?found`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-i-ruled-in-house`>>
+
+!! Forks I ruled in-house (each overrulable; the-veil-ladder carries 9)
+* Ruling 9: a joined face's first bind also binds the place tree with the same route. Without it the landing's `secret-home` row refused `no-custody-slot` (smoke tw3), since a joiner bound a face tree only.
+* A herm reads by the operator's ask (`--recipe herm` → `askedHerm`), since every faceless node place composes as "herm"; an asked herm derives no floor key even with its custody open.
+* The node's floor key stands wherever the custody stands open, whatever rows the composition was handed (one reading with the control document). A first cut read `sovereign: null` as `vessel-locked`; CI e2e session-sign-reach S2 refused on it (the host working binding met `floor-unavailable: vessel-locked` on a founded node composed at its floor over an open custody), so that rule left. S2 was NOT rerun locally (an e2e file).
+* The founding door carries its ask in sessionStorage across one reload (the admit landing's precedent), never a vessel verb.
+* A control row `daemon-slot/<kind>/floor` files nothing now (no back-compat).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/leaf-wright-hand-back`>>
+
+! Leaf-Wright hand-back (feature/green-jello-dinosaur-5&#45;-leaf-fleet)
+
+Worktree /home/joshu/.lares-scratch/leaf-fleet/wt. All pushed. Veil branch merged at febe897bb (no later commits at hand-back). Vite stopped by its process group.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits (over veil 62cb8d14b, then the merge of febe897bb)
+* 3b26bdf52 composer.shares.root-holder : `composeFleetJoinOffer` / `composeFleetJoinAnswer` in mesh; node door on them; optional-whole hearth dial.
+* 546970950 seat.shares.core : mesh `device-seat.ts` `seatDeviceInFace`; node `runDeviceAdmit` seats through it.
+* 499add816 leaf.answers.join : browser `browser-fleet-root.ts`.
+* daef29991 door.carries.files : web `src/fleet/*` (door, carriage panel, frames, QR).
+* 59c34df3a canon.names.leaf-fleet.
+* 04fe2eeb8 door.mounts.over-veil : `browserRootFaces` / `browserFleetRootDoor`; fenced wiring in vessel-protocol, vessel-host, vessel-port, main.ts, index.html; `kelIsland` on the vessel result.
+* 67f4386aa leaf.lands.gateless : stated empty true name admits; the root holder's own island rides a dial-less answer.
+* (canon) canon.trues.leaf-fleet.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-external-dependency`>>
+
+!! New external dependency
+`qrcode@1.5.4` (exact) in <code>&#64;lararium/web</code> dependencies, <code>&#64;types/qrcode&#64;1.5.6</code> dev. Reason: draw QR frames on the page as SVG. The node package already carried it; linked by `pnpm install --offline` in this worktree, lockfile gained the web importer rows only. No scanner dependency: the camera read uses the browser's own `BarcodeDetector`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edits-inside-files-others-own`>>
+
+!! Edits inside files others own (all fenced `leaf-fleet (Leaf-Wright)`)
+* open-browser-vessel.ts: `kelIsland` on `BrowserVesselResult` and its return (3 lines).
+* vessel-protocol.ts, workers/vessel-host.ts, vessel-port.ts, main.ts, index.html: the `fleet-root:*` verbs, handler, mount.
+* NOT fenced, outside the owned list but shared: `browser-fleet-join.ts` (dial row only where carried), `admit-carriage.ts` and keyhive `ceremony-core.ts` line 993 (a stated "" true name admits), mesh `nexus-identity.ts` `admittedJoineeIsland` (own-island fallback where no gate key rides).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds`>>
+
+!! Reds
+Watched fail, then green: mesh fleet-join-root (8, absent composer); browser admit-carriage (stated empty true name); browser-fleet-root R7 by mutation (tag law's one-seat rule off) and R5 by mutation (ceremony route dropped before the ward).
+Green, never watched fail: node fleet-join-land-face gateless landing; web carriage-frames (5) and fleet-root-door.page (5) (Chromium + Firefox; the absent-module run's output was truncated); mesh own-island reach assertions; browser-fleet-root R1-R4, R6.
+A mutation run cost one uncommitted block (a `git checkout --` on browser-fleet-root.ts); rewritten from the session and re-proven before commit 04fe2eeb8.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smoke`>>
+
+!! Smoke (real Chromium, two contexts with separate storage, vite :5174, scratch LAR_ROOT /home/joshu/.lares-scratch/leaf-fleet/root1)
+Script /home/joshu/.lares-scratch/leaf-fleet/smoke/leaf-fleet.mjs; runs in smoke/run1..run3 (console-A.txt, console-B.txt, screenshots a1-offer, b1-request, a2-answer, b2-landed).
+run3:
+* `1 A live | seed: sealed under this browser's passphrase slot` (asks: card, bind-first)
+* `2 B live | seed: open: an unbound veil at the throwaway rung` ; B wrote a note at its floor with 0 custody asks
+* `3 A offered: face 0x9930d7bbfbd4 scopes 0 | QR frames: 1`
+* `4 B ✓ request minted | request QR frames: 2` (asks: bind-first, ward, ward)
+* `5 A ✓ answered | bytes 11825 | hearth dial: none | edge hearth: "" | QR frames: 27` (one ward ask on A)
+* `6 B live` after landing (ask: unlock); `[vessel] ADMIT taken from the fleet-join landing`; `[daemon] face 0x9930d7bbfbd416… pinned, not yet seated`
+* `7 B note under F: null` ; `face-join grant read faulted: … persona plane … unavailable by every reachable peer`
+NOT PROVEN: browser 2's veil wikis lifting into F, and the two workbenches converging in a live pair. The join pins the face; the seat and the Lift need the two leaves to exchange documents, and no road stands between two storage-separate browsers with no relay. run1 and run2 stopped at walls this lane then cured (face-not-worn from a dropped admit; the island refusal).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates
+* `pnpm -r typecheck`: no errors.
+* `tools/typecheck-tests-witness.sh`: no package above its ceiling (keyhive back at 107 after the merge).
+* `lares meme check` on the four canon files: canonical (restamped under a scratch LAR_ROOT).
+* genesis/unbaked.json stays absent; no bake. No e2e, tree-clean or weld witness run.
+* Suites rerun after the last source change: mesh fleet-join + fleet-join-root (35), node fleet-join-face, fleet-join-land-face, device-admit-replay-edge, browser browser-fleet-join, veil-floor-boot, admit-carriage, browser-fleet-root. Not rerun after the merge: node fleet-join-provisional, fleet-join-land-undo, device-admit-edge-renewal, device-admit-face-edge; web page tests.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks`>>
+
+!! Forks (overrulable; canon device-capabilities-2026 #/device-seats)
+# Hearth dial rides an answer only where the root holder stands a gate.
+# A gateless answer states `hearthTrueName: ""` and names one island, the holder's own; the joinee stands there.
+# A browser's face stands at no Nexus scope.
+# Camera read by the platform's `BarcodeDetector`; no bundled scanner; named refusals.
+# `lar-carry` frames, stepped by hand; the tag guards assembly only.
+# A node lands a dial-less answer (unit seam only).
+# Where two leaves meet stays open; the next cut carries the seat inside the files.
+# One ward ask per answer; a request with no nonce never opens the ceremony.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed
+* The seat and Lift on a joined leaf with no meeting road: carry the joinee's key-agreement card in the request and the group's admitting events in the answer (`DeviceAdmitPayload.capEvents` exists as the slot), or name a herm in `reach.syncUrl`. Until then steps 7-8 of the walk stay unproven.
+* Door 2, second face: the `?found` door founds only where no face stands (`facedBootstrap(bootstrap) === null`), and roots rest at persona index 0. "A second face founded later lifts nothing and links to no other face" has no red and no path. First-face coverage rides Veil-Wright's VF2 (floor record byte-equal) and its f5 smoke (the Lift at a founding); replay rides keyhive veil-floor-lift. I added none.
+* `browserRootFaces` reads a root through `generateOrLoadBrowserPersonaRoot`, which refuses a face the thread does not wear; a browser wearing a joined face while holding another face's root lists nothing.
+* The joinee page still names the node CLI in its status words; its answer intake has no camera or file road (the paste box only).
+* QR decode never measured on a device with a reader; WebKit stood out of this host's page runs.
+* `browserSeatDevice`'s set-aside check duplicates the node's `assertDyadBinds` over mesh primitives.
+* the-veil-ladder.mem carries edits from both lanes (mine in #/the-recovery); its block-check line will conflict at the next merge and needs a restamp.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-2`>>
+
+! Relaunch 2 (carried seat ruled; NOT built)
+
+Head after this relaunch: see `git log -1`. Veil branch fetched again: no commits past febe897bb, so no merge and no restamp of the-veil-ladder.mem was needed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/done-this-relaunch`>>
+
+!! Done this relaunch
+* Canon: device-capabilities-2026 #/device-seats ruling 7 (the seat rides the files; convergence stays apart and owed), built/owed trued.
+* Joinee page words name a browser's fleet door beside the node command (`✓ request minted` prefix kept for the e2e walks).
+* Reran after the merge, all green: node fleet-join-provisional (4), fleet-join-land-undo (2), device-admit-edge-renewal (4), device-admit-face-edge (12); web carriage-frames, fleet-root-door.page, vessel-port (42 across Chromium + Firefox). The rest of the web page suite was not run.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/not-done-the-carried-seat`>>
+
+!! NOT done: the carried seat
+I read the seat's mechanics and stopped before cutting; nothing of it stands in code. No red exists for it.
+
+!!! What the read found (the build map)
+* The joinee's key-agreement card does not exist at request time. `runApplyAdmitPayload` mints it at the landing and the boot record keeps it (`faces[group].contactCard`, beside the countersigned `deviceEdge`). So the seat needs a SECOND round after the land, two files: seat-request (joinee to root holder) and seat-grant (back).
+* Seat-request = a `FaceJoinSummons` (keyhive `face-join.ts`): `{ kind: "face-join", contactCard, deviceEdge }`. The joinee's vessel host can compose it from the overlay record with no daemon call.
+* Root holder: the grant comes from `faceJoinEffect` in keyhive `operator-daemon-behavior.ts` (line ~1116), which runs `gateFaceJoin` + `runFaceJoin` over the lit provider, then signs a `FaceGrantRecord` (`face-grant-record.ts`, `signFaceGrantRecord`) onto the persona plane. It takes `(args: { summons }, at: { intentId, pinnedAtom })` and today only the intents-plane door calls it. A carried summons needs a door into that effect from the vessel host (a daemon verb, or writing the summons onto the root holder's own intents plane and reading the grant record back off its persona plane at `FACE_GRANT_PREFIX + group/ … joineeKey`).
+* Joinee intake: `makeFaceSeat`'s `grants()` port (operator-daemon-behavior.ts ~1639) reads grant records ONLY from the persona plane's home store, and on a road-less joinee that document reads unavailable (the smoke's `face-join grant read faulted`). The port needs a second source: a carried grant record kept in a document the joinee holds (the secret home already carries the admit's persona acts), read BEFORE the plane so the unavailable plane cannot fault the pass. The seat's own `verify` (founder lineage off the KEL the admit seeded, the founder dyad standing) then judges it as it judges a synced one, `ingest` absorbs `capEvents`, and `lift()` runs.
+* Both edits land in `operator-daemon-behavior.ts`, a file Veil-Wright edits; fence them.
+* Unknown, unread: whether the Lift's workbench founding on the joinee completes with the persona plane still unavailable; whether `reSealed` chunks matter for a brand-new face (likely empty); whether the joinee's `founderStanding` reads `stands` from the carried edge frontier alone.
+* The red the controller asked for: a joinee that landed the answer and holds no grant reads `pinned, not yet seated`; given the grant file it reads SEATED and the Lift ran. keyhive tests `leaf-fleet-admit.test.ts` and `face-seat-summons.test.ts` hold two-hive fixtures to build it on.
+* The smoke script takes the two extra steps after step 6; its convergence step becomes address equality (both leaves derive one workbench address from the shared address secret), per the ruling.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/still-owed-named`>>
+
+!! Still owed, named
+* Second-face door: `?found` founds only the first face (`facedBootstrap(bootstrap) === null`), and roots rest at persona index 0.
+* Convergence after the seat: a herm in `reach.syncUrl` or a peer road.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-3`>>
+
+! Relaunch 3 (carried seat BUILT and measured; the Lift's last leg NOT proven)
+
+Head: merge commit 5f50cd325 over 106e74803 (veil merged at 2f2ce0bed; three canon stamp conflicts resolved and restamped).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/built`>>
+
+!! Built
+* keyhive `src/carried-seat.ts`: `composeSeatRequest`, `readSeatRequest`, `placeSeatRequest`, `seatGrantOnPlane`, `readSeatGrant`, `keepCarriedSeatGrant`, `carriedSeatGrants`.
+* keyhive `operator-daemon-behavior.ts`: ONE fenced edit, site (b): `grants()` reads `carriedSeatGrants(ctx.secretStore, …)` before the persona plane. Site (a) needed NO edit: the root holder's vessel host lays the carried intent on its own intents plane and the standing door answers it through `faceJoinEffect`.
+* browser `src/browser-fleet-seat.ts`: `browserSeatRequest`, `browserSeatGrant` (waits on the persona plane's changes; one liveness bound, `DOCUMENT_HANG_BOUND_MS`, refuses `seat-grant-unanswered`), `browserSeatGrantLand`, `browserJoinedFaces`.
+* web: `fleet-root:seat`, `fleet-seat:faces|request|land` verbs (fenced), `vessel.fleetSeat`, the root door's seat step, `mountFleetSeatDoor`, `#fleet-seat-door`.
+* After `fleet-seat:land` the host calls `restartDaemonIsland` so the seat's first pass reads the grant; the page does not reload.
+* mesh `admittedJoineeIsland`: a gateless joinee resolves its OWN island (reverted the founder-island reading; a plain reboot holds no hearth pin and found no KEL chain there).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-three-reads`>>
+
+!! The three reads
+* (i) The Lift RUNS with the persona plane unavailable. It moved 2 floor records and skipped 3 whose documents `never arrived (8000ms)` (`[anon-lift]`). Not read: which documents those three name. My reading, unverified: the face's workbench documents at their derived addresses, which a road-less leaf holds no bytes of.
+* (ii) `reSealed: 0` on a new face; nothing to open.
+* (iii) Founder standing derives from the carried frontier: the seat's verifier passed the grant with no road.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smoke-run7`>>
+
+!! Smoke run7 (two contexts, :5174; evidence smoke/run7/)
+* `6 B seat before any grant: face … pinned, not yet seated`
+* `6b B ✓ seat request shown` · `6b A ✓ seated` · `6b A grant: bytes 19573 | cap events: 48 | re-sealed: 0 | QR frames: 44`
+* `6c B ✓ seat grant kept … | live`
+* `[daemon] face-join grant record taken from the PersonaGroup plane (48 cap events, 0 chunks re-sealed) — face SEATED` (the log line's "from the PersonaGroup plane" wording predates the carried source)
+* `[daemon] the seat landed: 2 floor record(s) moved under the face, 0 burn(s) finished` · `face lift skipped 3 floor record(s) its document held back`
+* `7 B note under F: null`
+NOT PROVEN: B's veil note under F; workbench address equality (no instrument reads a workbench address on either page; both hold one address secret, proven in browser-fleet-root R3). The smoke was NOT rerun after the last veil merge (burn fallback, lit-tab changes).
+Walls met and cured on the way: run4 (host cases missing), run5 (KEL chain absent on reboot: the island reading), run6 (a page reload of a joined leaf fails `WorkingLayerAttachRefusal … session-absent`; replaced the reload with the island restart). That reload failure of a joined, road-less leaf stands UNCURED and unexamined: a person who reloads browser 2 after joining may meet it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds-2`>>
+
+!! Reds
+* keyhive carried-seat (3): the device check watched fail by a whole-clause mutation, restored. The positive second-source read watched fail once on a test shim fault, not on product code.
+* The four reds the controller named: (1) without the grant stays pinned and (2) with it reads seated: measured in the smoke only, no test; the Lift moving the floor wiki: NOT shown. (3) replayed grant: unit level only (a second keep leaves one record). (4) another device's grant refuses: unit, watched fail.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates-after-the-merge`>>
+
+!! Gates after the merge
+`pnpm -r typecheck` clean; test-type witness: no package above its ceiling; `lares meme check` canonical on the three restamped files. Green after the merge: browser-fleet-root, veil-floor-boot, keyhive carried-seat, node fleet-join-face, web fleet-root-door.page + carriage-frames + vessel-port. Green before the merge only: keyhive face-seat-lands-on-grant (32), face-seat-summons (8), mesh fleet-join-root. No e2e run.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/successor-map`>>
+
+!! Successor map
+# Name the three skipped Lift documents (log their titles in `slot-doc-resolver.ts` `liftFloor`, Veil-Wright's file) and confirm or refute the workbench reading.
+# If confirmed: stand a face's workbench from a shared blank genesis at its derived address (the way `materializeSharedLarDoc` stands a board), so a road-less leaf lifts into a document it later merges. That sits in the Lift, outside this lane's fences.
+# A real red for the seat at composition level on keyhive's two-hive fixtures (`face-seat-lands-on-grant.test.ts` holds the shape): no carried grant stays unseated; a carried grant seats and calls `lift`; a replay leaves `knowsAgent` true and lifts nothing new.
+# The joined leaf's plain reload (`session-absent` on the daemon working layer).
+# `browserSeatGrant` returns a standing grant for a device without checking it answers THIS request (a re-minted card would get the stale grant).
+# `carriedFoundingAtom` reads the founding hearth from raw carried admissions, not the verified projection; a wrong reading earns silence at the door.
+# Node CLI: `lares fleet seat request|grant|land` not built.
+# Second-face door, QR decode on a device with a reader, WebKit: as before.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-4-leaf-finisher`>>
+
+! Relaunch 4 — Leaf-Finisher (checkpoint; final map below when done)
+* 69f04d64c sync.waits.never: the three skipped docs were B's OWN floor docs (catalog floor draft `lares`, `lares` floor working slot, daemon floor working slot), NOT workbenches. Cause: sealed store asked a session before reading a sync-state key's role; no session for F on a roadless leaf → sync-state loads waited forever → automerge-repo's 20-slot sync-state pool jammed → vessel never answered the island. Cure in mesh sealed-doc-store `#load`. Red mesh sealed-sync-state.
+* 2d503f21f seat.lifts.place: kept carried seat grant → place session (browserLiftsAtPlace seatKept); page reboots after grant land; pinned-unseated face keeps floor slots (slot-doc-resolver). Reds browser-place-lift P1b, keyhive veil-floor-lift V8. Smoke run31: note under F, reload clean.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-4-final-map`>>
+
+!! Relaunch 4 — final map (Leaf-Finisher)
+Head 3fcdfd85e, all pushed. Veil merged at 8ca0d2bca (origin had 16 commits; 4 conflicts resolved: node fleet-join.ts keeps both the gateless hearth pin and the veil-lift link; two node test mocks take both; the-veil-ladder.mem restamped). No newer veil commits at hand-back.
+Commits: 69f04d64c sync.waits.never · 2d503f21f seat.lifts.place · 83169d3cf grant.answers.request · 622bf3019 seat.reads.carried · 44e48e58b bench.reads.address · 8ca0d2bca merge · 3fcdfd85e canon.trues.seat.
+Smoke script now reboots B after the grant, reloads B (step 9) and reads both leaves' `larWorkbenchReading` (step 10). Runs run27..run34; run34 = post-merge proof. Diagnostic copy: smoke/leaf-fleet.diag.mjs (needs the scratch diag patch, not in tree).
+Owed: live leaf-to-leaf convergence (road); node CLI seat verbs; second-face door; QR on a reader device; full verify of the kept grant before the place session (fork 8 reads shape + device only).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-5-fork-8-made-whole-ci-read`>>
+
+!! Relaunch 5 (Leaf-Finisher, relaunch 1 of 3): fork 8 made whole, CI read
+* d9d23edbc grant.verifies.whole: keyhive `verifyCarriedSeatGrant` (outcome binding to the leaf's own request + `verifyFaceGrantRecord`); grant file carries the hearth's outcome; browser `browserVerifySeat` (founder standing via `boardDyadReader` on the vessel repo); land verifies before keeping (`seat-grant-unverified`); boot's `browserSeatKept` reads only a verified grant and drops a failing one before the daemon boots. Red keyhive carried-seat-verify (watched fail under shape-only). Smoke run35: forged grant refused, 0 lift lines; genuine seats/lifts/reloads; same address. Canon ruling 8 reworded.
+* Veil merge: origin veil had no commits past 428b10875 (already merged at 8ca0d2bca) at fetch time.
+* 645d23a5e census.reads.door: CI reds on d9d23edbc cured (node persona-root-writers via read-only `readBrowserPersonaRootKey`; node edge-seats weld spelling; mesh face-reading-census via `faceRecordsOf`; mesh lease-law-census allow-list entry for browser-fleet-root; mesh prototype-key-maps via `ownEntry`).
+* CI run 43237891467 on 645d23a5e: all jobs success (cells, witnesses, E2E 4/4). Veil had no newer commits at hand-back.
+* 4c38d53d5 merged veil 7b6edd045 (the-veil-ladder stamp restamped); CI run 43243262588 on 4c38d53d5: completed success, every job.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wkpf-Hy7Kuc9d9Gb1crOmH6I_WERdtzMNqrRSczl7to`>>
+
+<<^ code=`&#x0004;` to=`?`>>

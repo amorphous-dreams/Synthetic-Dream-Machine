@@ -1,10 +1,10 @@
-/** Keep each face's atom under its PersonaGroup label in a host's custody rows. */
+/** Keep each face's atom under its PersonaGroup label in a host's custody records. */
 import { faceAtomKeyFromSeed, mintFaceAtomSeed, type FaceAtomKey } from "./face-atom.js";
 
-export interface FaceAtomRows {
+export interface FaceAtomRecords {
   read(personaGroup: string): Promise<Uint8Array | undefined>;
   /** Hold one group's read, decision and optional write as one act. */
-  withRow<T>(personaGroup: string, step: (standing: Uint8Array | undefined, write: (seed: Uint8Array) => Promise<void>) => Promise<T>): Promise<T>;
+  withRecord<T>(personaGroup: string, step: (standing: Uint8Array | undefined, write: (seed: Uint8Array) => Promise<void>) => Promise<T>): Promise<T>;
 }
 
 /** A row already holds a different seed for this face. */
@@ -33,26 +33,26 @@ function requireGroup(personaGroup: string): void {
 }
 
 /** Read the key of the seed at rest without handing its bytes to the caller. */
-export async function readFaceAtom(rows: FaceAtomRows, personaGroup: string): Promise<FaceAtomKey | undefined> {
+export async function readFaceAtom(records: FaceAtomRecords, personaGroup: string): Promise<FaceAtomKey | undefined> {
   requireGroup(personaGroup);
-  const held = await rows.read(personaGroup);
+  const held = await records.read(personaGroup);
   if (held === undefined) return undefined;
   const seed = seedOf(held, personaGroup);
   try { return faceAtomKeyFromSeed(seed, personaGroup); } finally { seed.fill(0); }
 }
 
 /** Read a copy of the atom seed; the caller zeroes it. */
-export async function requireFaceAtomSeed(rows: FaceAtomRows, personaGroup: string): Promise<Uint8Array> {
+export async function requireFaceAtomSeed(records: FaceAtomRecords, personaGroup: string): Promise<Uint8Array> {
   requireGroup(personaGroup);
-  const held = await rows.read(personaGroup);
+  const held = await records.read(personaGroup);
   if (held === undefined) throw new FaceAtomMissing(personaGroup);
   return seedOf(held, personaGroup);
 }
 
 /** Return the held seed, or mint and keep one within the row's custody act. The caller zeroes the copy. */
-export async function standFaceAtomSeed(rows: FaceAtomRows, personaGroup: string): Promise<Uint8Array> {
+export async function standFaceAtomSeed(records: FaceAtomRecords, personaGroup: string): Promise<Uint8Array> {
   requireGroup(personaGroup);
-  return rows.withRow(personaGroup, async (standing, write) => {
+  return records.withRecord(personaGroup, async (standing, write) => {
     if (standing !== undefined) return seedOf(standing, personaGroup);
     const seed = mintFaceAtomSeed();
     try {
@@ -64,9 +64,9 @@ export async function standFaceAtomSeed(rows: FaceAtomRows, personaGroup: string
 }
 
 /** Keep a founding seed once, and refuse a different seed without changing the row. */
-export async function keepFaceAtomSeed(rows: FaceAtomRows, personaGroup: string, seed: Uint8Array): Promise<"minted" | "kept"> {
+export async function keepFaceAtomSeed(records: FaceAtomRecords, personaGroup: string, seed: Uint8Array): Promise<"minted" | "kept"> {
   faceAtomKeyFromSeed(seed, personaGroup);
-  return rows.withRow(personaGroup, async (standing, write) => {
+  return records.withRecord(personaGroup, async (standing, write) => {
     if (standing === undefined) { await write(Uint8Array.from(seed)); return "minted"; }
     const held = seedOf(standing, personaGroup);
     try {

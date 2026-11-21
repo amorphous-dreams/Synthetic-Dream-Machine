@@ -36,6 +36,8 @@
  * The founding cites no cadence inception: that record stands SPECIFIED (kahu#/contract, the cadence lineage). It
  * names the Nexus AID and the AID never names it, so its later inception moves no byte this act writes.
  */
+import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
+import { ensureFaceCustodyAtHandle } from "../face-route.js";
 import {
   charterInceptionBytes, charterInceptionImage, emptyFoundingCharterDoc, federationPostureFromDoc, genesisOfInception, mintColdKey, nexusAidOf, sealKeySetHash, seatedKahuKeys, standForKahuSeat,
   renameOwnPersona, type NexusDoc,
@@ -48,9 +50,10 @@ import {
   generateOrLoadPersonaGroupRoot, listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
 } from "../node-vessel-identity.js";
 import { armGenesis, retireSeats, signLicensedInception } from "../seal-ceremony.js";
-import { larSealHome } from "../vessel-paths.js";
+import { larSealHome, larProjectionsHome } from "../vessel-paths.js";
+import { writeFaceLabel } from "../face-labels.js";
 import { landFoundingAdmission } from "./nexus-cabal.js";
-import { landKahuRealm } from "../kahu-realm.js";
+import { landKahuRealm, seatHouseCanonFromCheckout } from "../kahu-realm.js";
 import { runFoundTheFace, runInit, type InitOptions, type FoundFaceResult } from "./init.js";
 
 /** One chair's cold next key, held in this process until its card reads back. */
@@ -61,6 +64,8 @@ export interface HearthCard {
 }
 
 export interface FoundHearthOptions extends Omit<InitOptions, "admitPayload"> {
+  /** The founding's ward route (seat-harness#/the-ward); absent, the route persona zero's custody is born under. */
+  readonly ward?: WardCredential;
   /** Persona zero's private pet-name. Under `restore` it may stand empty: the bundle's own pet-name lands. */
   readonly name:     string;
   /**
@@ -115,6 +120,8 @@ export async function foundSeedCharter(opts: {
   readonly name:     string;
   readonly chair?:   string;
   readonly readBack: FoundHearthOptions["readBack"];
+  /** The founding's own ward route: the act that holds it hands it in, or the route persona zero's custody is born under fills it. */
+  readonly ward?:    { value?: WardCredential | undefined };
 }): Promise<{ readonly nexusAid: string; readonly seatKey: string; readonly nextDigest: string; readonly seated: boolean }> {
   const sealHome = larSealHome();
   const standing = readNexusDoc(sealHome);
@@ -142,7 +149,9 @@ export async function foundSeedCharter(opts: {
   }
 
   // Persona zero's root, its private label, and its claim on the one chair: the roster line lands with the root.
-  await generateOrLoadPersonaGroupRoot(0);
+  const ward = opts.ward ?? {};
+  await ensureFaceCustodyAtHandle(0, "h0", (slots) => { ward.value ??= wardCredentialOfRoute(slots) ?? undefined; });
+  await generateOrLoadPersonaGroupRoot(0, ward.value!);
   if (opts.name.length > 0) await renameOwnPersona(await makeNodePersonaPetnameStore(), 0, opts.name);
   const chair = opts.chair?.trim();
   await standForKahuSeat(await makeNodePersonaDeclarationStore(), 0, true, chair && chair.length > 0 ? chair : undefined);
@@ -195,13 +204,25 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
     throw new HearthFoundingRefused("persona zero needs a private label (--name '<label>'); nothing was written");
   }
   const { name: _name, chair, readBack, restore, ...init } = opts;
-  await runInit(init);
-  const seed = () => foundSeedCharter({ name: label, ...(chair ? { chair } : {}), readBack });
+  await runInit({ ...init, placeFoundingCard: opts.placeFoundingCard ?? {
+    readBack: async (card, fingerprint) => readBack([{ chair: "place", seed: card.seed, digest: card.digest }], fingerprint),
+  } });
+  // ONE ROUTE FOR THE FOUNDING'S WARD ACTS: the operator's own (carried in), else the route persona zero's custody is born under.
+  const ward: { value?: WardCredential | undefined } = opts.ward ? { value: opts.ward } : {};
+  const seed = () => foundSeedCharter({ name: label, ...(chair ? { chair } : {}), readBack, ward });
   // The face lights, then the founding admits its group to the hearth's Kahu cabal (a counted 1-of-1 act at the
   // one seat; a group already admitted lands nothing), so persona zero's group holds the Kahu realm from birth.
   const light = async () => {
-    const face = await runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0 });
+    const face = await runFoundTheFace({ repo: opts.repo, ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), handleIndex: 0, ...(ward.value ? { ward: ward.value } : {}) });
+    // THE FACE NAMES ITSELF AT ITS CREATION: persona zero's label (relation -> pet-name) lands the moment the face stands, so a
+    // seed after a re-founding adopts its folders by that name with no door having read the face first. A restore carries no
+    // label here (its pet-name lands later, by the operator's naming), and a label never fails the founding.
+    if (label.length > 0 && face.faceRelation !== null) {
+      try { writeFaceLabel({ relation: face.faceRelation, petname: label, handleIndex: 0 }, larProjectionsHome()); } catch { /* an aid, never a gate */ }
+    }
     await landFoundingAdmission({ repo: opts.repo, sealHome: larSealHome(), personaGroupId: face.personaGroupId });
+    // THE HOUSE CANON the founding lands: every disk-sourced holding of this checkout but the public board, at contract.
+    seatHouseCanonFromCheckout();
     await landKahuRealm({ repo: opts.repo, sealHome: larSealHome() });
     return face;
   };
@@ -228,7 +249,7 @@ export async function runFoundHearth(opts: FoundHearthOptions): Promise<FoundHea
   }
   let charter: Awaited<ReturnType<typeof seed>> | null = null;
   const restored = await asFounding(() => restoreFaceBody({
-    body, as: 0, withRepo: (act) => act(opts.repo), ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}),
+    body, as: 0, withRepo: (act) => act(opts.repo), ...(opts.genesisDir ? { genesisDir: opts.genesisDir } : {}), ...(ward.value ? { ward: ward.value } : {}),
     founding: async () => { charter = await seed(); },
   }));
   const face = await light();

@@ -336,16 +336,19 @@ describe("no message passes the 65535-byte bound", () => {
 });
 
 // "A pure library names its caller. A module built ahead of its consumer stays out of the package barrel until the
-// commit that consumes it" (stable-founding-road, the rulings). The node's gate server consumes ONE name, the frame
-// bound; the barrel names that and nothing else of this module, and the handshake doors stay out.
+// commit that consumes it" (stable-founding-road, the rulings). The node's gate server consumes the frame
+// bound and the intent relay's door the two flight lengths; the barrel names those three and nothing else of this
+// module, and the handshake doors stay out.
 describe("the barrel names only what a caller consumes, and the module reads no clock", () => {
-  test("the barrel names the frame bound alone; its caller imports it; the source names no clock, timer or platform module", () => {
+  test("the barrel names the frame bound and the two flight lengths; their callers import them; the source names no clock, timer or platform module", () => {
     const barrel = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
     const named = [...barrel.matchAll(/^export (?:type )?\{([^}]*)\} from "\.\/noise-ik\.js";$/gm)].flatMap((m) => m[1]!.split(",").map((n) => n.trim()).filter(Boolean));
-    expect(named).toEqual(["NOISE_MAX_MESSAGE_BYTES"]);
+    expect(named).toEqual(["NOISE_MAX_MESSAGE_BYTES", "MIN_MESSAGE1_BYTES", "MIN_MESSAGE2_BYTES"]);
     expect(barrel.match(/\.\/noise-ik\.js/g)?.length).toBe(1);
     const caller = readFileSync(new URL("../../lararium-node/src/face-gate-server.ts", import.meta.url), "utf8");
     expect(caller).toMatch(/NOISE_MAX_MESSAGE_BYTES[^;]*from "@lararium\/mesh"/s);
+    const relayDoor = readFileSync(new URL("../../lararium-node/src/intent-relay-door.ts", import.meta.url), "utf8");
+    expect(relayDoor).toMatch(/MIN_MESSAGE1_BYTES[^;]*MIN_MESSAGE2_BYTES[^;]*from "@lararium\/mesh"/s);
     expect(barrel).toContain("./crypto.js");                                 // KNOWN POSITIVE
     const source = readFileSync(new URL("../src/noise-ik.ts", import.meta.url), "utf8");
     for (const banned of [/\bDate\b/, /performance\./, /setTimeout|setInterval/, /node:/]) expect(banned.test(source)).toBe(false);

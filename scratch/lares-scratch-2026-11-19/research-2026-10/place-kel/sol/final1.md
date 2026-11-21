@@ -1,0 +1,1 @@
+Sol-Kelwright: ↺ The place-KEL scout now rests in [out.md](/home/joshu/.lares-scratch/research/place-kel/sol/out.md). The handback covers the measured code and custody paths, event shape, signer framing, recovery stories, and red-first build kit in 1,129 words. The repo remained read-only; no suites ran.

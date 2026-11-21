@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-moves
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: relation
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+lar-pattern: <<~\s*moves\s+name=`([\w.-]+)`(?:\s+params=`([^`]*)`)?\s*>>
+lar-example: <<~ moves name=`rendering` params=`rides/the-marker on/the-renderer if/many-to-many do/stay-out-of-the-child`>>
+type: text/vnd.tiddlywiki
+
+<!-- moves — a MOVESET and what it holds: a NAME, and its has-values (`rides/…  on/…  if/…  do/…`), each named and ticked.
+     The boot seed declares the relation as `has`; the head answers under its own name. The old call wrote an
+     arrow between the name and the slots (`moves rendering -> rides/…`); the arrow does not become a key. -->
+
+\procedure ~moves(name:"" params:"")
+<$transclude $variable="~has" entity="moves" name=<<name>> params=<<params>>/>
+\end

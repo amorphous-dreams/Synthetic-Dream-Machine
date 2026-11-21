@@ -1,0 +1,1083 @@
+OpenAI Codex v0.165.0
+--------
+workdir: /home/joshu/.lares-scratch/research/dreamdom-width/terra
+model: gpt-6.1-terra
+provider: openai
+approval: on-request
+sandbox: workspace-write [workdir] (network access enabled)
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a1847c-8e07-7092-b4e5-fb93e42e768a
+--------
+user
+Turn three of this research exchange. The Opus second wave has answered your out.md: read /home/joshu/.lares-scratch/research/dreamdom-width/opus/out2.md whole. Respond as the first-wave researcher, in the same register (every claim SOURCED with URL and date, or REASONED). (1) Where Opus ruled one of your claims OVERSTATED or WRONG, accept or contest it with a source. (2) Test Opus's own new claims, above all: the spike measures only the page's main-thread JS heap while WebKit counts worker, DOM and images against one process limit; the linear 20,000-tiddler projection (215-230 MiB); that nothing evicts a body so skinny drifts to full over a session; accessibility favouring the mirror over none; the waking-floor tablet leaning skinny with body drop on tiddler close. Fetch sources where they decide it. (3) Name what Opus still missed. (4) Give your revised per-class ruling and your answers to Opus's six operator questions, marking where you now agree and where you still differ. Write ONLY /home/joshu/.lares-scratch/research/dreamdom-width/terra/out3.md (under 350 lines), nothing else anywhere.
+codex
+Ink-Clerk: I’ll read Opus’s response in full, check its disputed claims against primary sources and the available research record, then write the revised ruling to `out3.md`.
+exec
+/usr/bin/zsh -lc 'cat /home/joshu/.lares-scratch/research/dreamdom-width/opus/out2.md' in /home/joshu/.lares-scratch/research/dreamdom-width/terra
+ succeeded in 0ms:
+# DreamDOM's default width across every vessel class · wave two (Opus): verify, argue, ratchet
+
+Opus, 2026-10-28. Reads the shared brief, wave one (`terra/out.md`, Terra-6.1), the ratcheted capability design (`research/capability-default/out2.md`), the mirror rulings (memory `project_dreamdom_mirror_ruling`), the device seats (`device-capabilities-2026.mem` #/device-seats), the D3 kit and spike (`d3-glass/wt/.../d3-glass-lane.mem`, `d3-glass/spike/table-final.md`, `spike/run.mjs`), the D3 code (`d3-glass/wt/packages/lararium-web/src/glass/stand.ts`), the dreamdom roadmap (`d3-glass/wt/.../dreamdom-roadmap.mem`), the TW5 submodule (`TiddlyWiki5/`, HEAD `ea94ca840`, 2026-10-12), and the three laws.
+Marks: **SOURCED (URL, date)** for a field claim, quoted where it carries weight; **SOURCED (repo: path)** for a house read; **REASONED** for inference or design. Nothing was run except reading files and one corpus-size count over the spike's own generator output.
+
+---
+
+## 0. The ratchet in eight lines
+
+1. Wave one's platform claims **hold** at their pages (§1). One citation is weaker than stated: the Fresh islands page does not say "ordinary pages ship no client JavaScript."
+2. Wave one's verdict ("full target, skinny first, promote, one named fallback, same policy on every browser class") **survives**, and it matches what D3 already built (`stand.ts`). This wave keeps it.
+3. Wave one missed the fact that changes the confidence: **the spike's heap number cannot see the risk that kills phones.** It reads the page isolate's `JSHeapUsedSize` after a forced GC (`spike/run.mjs:147`). It does not read the worker island's heap, the DOM, layout, or images. On WebKit those all count against one WebContent process limit (§2c).
+4. **Corpus growth breaks the relative gate.** The +25 % gate compares full against a stock tab, and stock grows with the corpus too. At 20,000 tiddlers of the spike's mix, full passes +25 % and still crosses the 150 MiB tripwire by linear extrapolation, roughly 225 MiB against stock's roughly 220 MiB (§2b, REASONED, unmeasured).
+5. **Skinny is not a memory floor over time.** Nothing in the adaptor evicts a body once loaded, so a long-lived skinny mirror converges to full as the person opens tiddlers (§2a). On the waking-floor tablet, skinny buys first paint, not a ceiling.
+6. **Accessibility argues for the mirror, against none.** Every width mounts in a shadow root, but none paints serialized frames, and the house's own law 8 says serialized HTML cannot carry element references or pre-existing live regions. Gmail's lighter view is a counter-case: it was the accessible one and it was retired (§2e).
+7. The ruling ratchets to: **full by promotion on every class that renders a page, the same for phones, with three owed measurements before the operator can call it validated.** Those are a reference phone at process grain, a 20,000-tiddler corpus, and a long-session growth run. Skinny should gain body eviction on close before the waking floor ships.
+8. One seam in the built code needs a ruling. `stand.ts` steps full → skinny on a capacity error, then floors to none on a second one. Whether that floor counts as "the one step per boot" goes to the operator (§6 Q1).
+
+---
+
+## 1. VERIFY · wave one's load-bearing sourced claims at their pages
+
+| # | Wave-one claim | Verdict | Quote at the page |
+|---|---|---|---|
+| V1 | iPhone WebContent soft limit around 1.5 GB, lower on some devices, pressure-dependent, jetsam not a catchable error | **HOLDS** | Simon Fraser: "WebContent processes on iPhone are subject to a "soft" limit of around 1.5GB … subject to getting killed by "jetsam""; "This is a "soft" limit because these processes are allowed to go above this limit"; "related to overall memory pressure on the device"; "somewhat lower on iPhone models with less RAM." **SOURCED** https://bugs.webkit.org/show_bug.cgi?id=277848, 2024-08-09 |
+| V2 | The reload loop: the page reloads into the same death | **HOLDS (wave one did not cite it; the house's earlier wave did)** | Reporter: "Safari will try to load it twice then display "A problem repeatedly occurred on"" (iPhone 15 Pro Max, iOS 18.1 beta). Ryan Reno: "a highwater jetsam which can occur when the WebContent process crosses a soft limit"; "the system needs memory due to memory pressure." **SOURCED** https://bugs.webkit.org/show_bug.cgi?id=279637, 2024-09-12 / 2024-09-20 |
+| V3 | "WebKit describes different memory limits across devices" (bug 268816) | **HOLDS, and it says more than wave one used** | Ben Nham: "On iPhones, for most devices, the limit is 1.5GB"; on iPad "the WebContent process has a higher memory limit, which differs by device … For an 8GB device, the limit will be in the 4GB+ range"; Gigacage "supports 2GB of allocations on iOS" (typed arrays). Proskuryakov: "I do not think that this is documented by Apple." **SOURCED** https://bugs.webkit.org/show_bug.cgi?id=268816, 2024-03-13 / 2024-05-15. The reporter re-filed on 2026-09-17 (bug 324370), claiming the problem persists on all iOS devices. |
+| V4 | Home Screen install changes presentation and Web Push, not process survival | **HOLDS** | The post covers Web Push and permission "in response to direct user interaction"; it says nothing on memory or process lifetime. **SOURCED** https://webkit.org/blog/13878/, 2023-02-16. **REASONED:** the device-seats row "a full vessel only after Home Screen install" rests on storage (the seven-day exemption, `persist()`), not on memory. Install does not move the jetsam line, so it should not move the width. |
+| V5 | Android LMK kills under pressure; background first | **HOLDS; foreground is not exempt** | "Processes with a high score are killed first. Background apps are killed first; system processes, last." The ranking places the foreground app above persistent/system/native, and the page advises checking RAM "to prevent games from being killed when in the foreground." **SOURCED** https://developer.android.com/topic/performance/issues/lmk, accessed 2026-10-28 |
+| V6 | Chrome 148 re-enabled SharedWorker on Android while investigating termination | **HOLDS** | "SharedWorker instances might terminate unexpectedly, without notifying users or web developers"; "SharedWorker is being re-enabled on Android while this behavior is investigated." Stable 2026-05-05. **SOURCED** https://developer.chrome.com/release-notes/148 |
+| V7 | Freeze/discard without a callback; `freeze`/`resume` not general | **HOLDS; one refinement** | Discarded: "No tasks, event callbacks, or JavaScript of any kind can run in this state"; "not observable by developers at the time a page is being discarded." `freeze`/`resume`: Chrome 68, Edge 79; Firefox and Safari not supported. `wasDiscarded` is "on desktop Chrome", with "Android support … being tracked." **SOURCED** https://developer.chrome.com/docs/web-platform/page-lifecycle-api, updated 2026-10-16. **Refinement:** the earlier wave's "Chromium-only" `wasDiscarded` is narrower still: desktop only. On an Android phone it cannot serve as evidence. |
+| V8 | bfcache revives an old in-memory page; `pageshow.persisted`; unload unreliable | **HOLDS** | bfcache is "a snapshot of the entire page in memory, including the JavaScript heap"; browsers "pause any pending timers or unresolved promises"; `persisted` is "true if the page was restored from bfcache." **SOURCED** https://web.dev/articles/bfcache, updated 2026-10-16. Lifecycle page: "The unload event does not fire in many typical unload situations, including closing a tab from the tab switcher on mobile." |
+| V9 | TW5 lazy loading: skinny = all fields but text; `getTiddlerText()` triggers async load and refresh; search sees only loaded text | **HOLDS; wave one under-read the Node mode** | "the browser first requests a "skinny" version of each tiddler (consisting of all the fields apart from the text field) … `wiki.getTiddlerText()` will trigger an asynchronous load of the full tiddler text, which in turn triggers a refresh cycle"; "The browser-based search built into TiddlyWiki5 will only search the text of tiddlers that have been fully loaded … it is only the server that can "see" the text of all tiddlers." **SOURCED** https://tiddlywiki.com/dev/#LazyLoadingMechanism, modified 2014-02-06; repo `TiddlyWiki5/editions/dev/tiddlers/from tw5.com/mechanisms/LazyLoadingMechanism.tid`. Missed: under Node, "just image tiddlers or all non-system tiddlers can be subject to lazy loading" (`--listen root-tiddler=$:/core/save/lazy-all`). **SOURCED** `TiddlyWiki5/editions/tw5.com/tiddlers/features/LazyLoading.tid`, modified 2024-12-14. `lazy-all` is the stock analogue of house skinny. The roadmap's skinny-loses condition already names "a `lazy-all` hole" (repo: `dreamdom-roadmap.mem:109`). |
+| V10 | Notion: best-effort cache could not guarantee completeness; offline needs apps, not a browser | **HOLDS** | "was best-effort: It didn't have guarantees about which records would be available or for how long." **SOURCED** https://www.notion.com/blog/how-we-made-notion-available-offline, 2025-12-11. "This feature isn't available on web browsers." **SOURCED** https://www.notion.com/help/use-pages-offline, accessed 2026-10-28 |
+| V11 | tldraw culls offscreen shapes, never selected/edited ones | **HOLDS** | "Selected shapes and the shape being edited are never culled"; `canCull` returning false is the opt-out; DOM-measuring, glowing and animating shapes must stay rendered. **SOURCED** https://tldraw.dev/sdk-features/performance, accessed 2026-10-28 |
+| V12 | Fresh: "ordinary pages ship no client-side JavaScript" | **OVERSTATED at the cited current page** | The islands page says "Islands enable client side interactivity in Fresh and they are rendered both on the server and in the client" and "We'll keep sending only the JavaScript that is needed for the islands." It gives no explicit default statement. **SOURCED** https://usefresh.dev/docs/concepts/islands, accessed 2026-10-28. This is not load-bearing for the ruling. |
+| — | INP, Astro, Qwik, RSC, Partytown, Comlink, AMP, Figma, Excalidraw, Obsidian, Logseq | **not re-checked** | None carries the width ruling: they are frameworks for content pages or for renderers that are not device-tiered. The house's earlier waves already checked Partytown, AMP and Figma (memory `project_off_main_thread_engine_laws`; `capability-default/out2.md` V1). |
+
+**Wave one's house-shaped claims, checked against the code (SOURCED repo, REASONED reading):**
+- *"For a full target, select one viable fallback; if the chosen fallback fails, stop; do not try a third tier."* The built code does something different. `stand.ts` header: "After it stands, a caught capacity error steps it down to skinny once on the same engine, a second one unmounts it, and `port:gone` closes it." The full → skinny → none path is therefore reachable in one boot. Wave one would stop at a failed skinny with a named failure. The code also stops, but by unmounting to the none floor. The difference is whether none counts as a step or as a floor. §6 Q1.
+- *"Installation alone neither grants a mirror nor proves memory headroom."* **HOLDS** (V4) and lines up with the seats table's reading that install buys storage, not memory.
+- Wave one's arithmetic (+10.6 %) matches the kit's +10.5 % (repo: `table-final.md`): 35.56 against 32.18 MiB. **HOLDS.**
+
+---
+
+## 2. GAPS · what this house needs that wave one missed
+
+### 2a. The household's always-on tablet at the waking floor (hours, not first paint)
+
+- **TW5's own caches are bounded or tied to change.** Per-tiddler caches (parse trees, links, transcludes) "are automatically cleared when a tiddler is modified or deleted". They are **not** cleared when a tiddler is closed, so every tiddler rendered once keeps its parse tree for the session. **SOURCED (repo: `TiddlyWiki5/core/modules/wiki.js:15,1000-1023`).** The global cache clears "whenever any tiddler change occurs" (`wiki.js:16`). The filter cache flushes at 2,000 entries (`core/modules/filters.js:403-408`). `changeCount` holds one entry per title ever changed (`wiki.js:14`). **REASONED:** the engine's own growth over a session is bounded by the corpus touched, not by elapsed time. That makes a growth run meaningful: the curve should flatten. If it doesn't, the cause is a leak.
+- **The house adds two growth sources stock TW5 lacks.** (i) The adaptor's per-record image of what it landed. (ii) Skinny's opened bodies: the adaptor reloads a body after a peer write "so the editor never loses its text" (`glass-port-adaptor.ts:169`), and no code path evicts a body (repo grep: no `evict`/`unload` in the adaptor). **REASONED:** a skinny mirror on a shelf tablet, browsed for a week, holds every body anyone opened, so it trends to full. Skinny is a first-paint width, not a resident-size bound.
+- **The waking floor's lifetime is not the camera's.**
+  - Screen Wake Lock is "Baseline 2025", needs a secure context, and "previously acquired locks are automatically released when document becomes inactive". A request "may be rejected … power save mode or low battery level." **SOURCED** https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API, accessed 2026-10-28.
+  - Chrome's Energy Saver freezes a group "hidden and silent for more than five minutes" and CPU-intensive, unless it "Hold[s] a Web Lock or an IndexedDB connection that blocks operations outside the group." **SOURCED** https://developer.chrome.com/blog/freezing-on-energy-saver, 2025-01-20.
+  - Memory Saver deactivates inactive tabs, with exemptions for audio/video, downloads, partly filled forms and pinned tabs. **SOURCED** https://support.google.com/chrome/answer/12929150, accessed 2026-10-28.
+  - **REASONED:** the platform already owns the step-down for a hidden tab: it freezes or discards the whole page. The house's ruling "(5) a hidden tab keeps its mirror" is therefore correct and costs nothing extra: the platform discards a hidden full mirror and a hidden skinny one alike. The visible shelf tablet is the case that matters, and only a growth run can speak to it.
+- **REASONED · what the floor needs from width:** the floor stands in the island and the vessel (seats: node is "the waking floor"; a tablet "may stand" one). A camera death must not take the floor down. On a tablet the island worker and the mirror share one WebContent process (§2c), so a mirror that grows can jetsam the floor with it. That is the strongest argument for bounded skinny on the floor device specifically. §5.
+
+### 2b. Corpus growth: 2,000 measured, 20,000 extrapolated
+
+- **The spike corpus:** 2,002 tiddlers, 14,014,876 text characters, about 7.0 kB per body (sizes 205 to 12,288, with every 143rd at 100 kB). **SOURCED (repo: `spike/run.mjs:42-49`; count over `spike/stock-corpus.json`).**
+- **Full − skinny = 13.9 MiB, against 13.4 MiB of body text.** One-byte strings, so heap per body is close to its byte length. Skinny's 21.7 MiB holds the engine, core, plugins, fields and the page template. **REASONED.**
+- **Linear extrapolation to 20,000 of the same mix (REASONED, unmeasured):**
+  - The engine base is assumed at 12–15 MiB, which puts fields at about 3.4–4.9 KiB per tiddler.
+  - That gives skinny ≈ 80–95 MiB, full ≈ 215–230 MiB, and stock ≈ full − 3.4 × 10 ≈ 200–215 MiB.
+  - Full against stock: about +7–10 %. **The relative gate passes. The 150 MiB tripwire fails.**
+  - The relative gate is blind to absolute size by construction, because stock grows too. Only the tripwire sees growth. And the tripwire reads the page isolate alone (§2c).
+- **Field reports:** forum members report single-file wikis of 10,000–20,000 tiddlers running well, one of 40,000+, with lag from "the construction of filters and the size of the wiki, in that order". A core developer says lookups stay fast and DOM for long lists is the cost. **SOURCED** https://talk.tiddlywiki.org/t/the-5-000-tiddler-club-people-with-the-need-for-speed/4040/27 and https://talk.tiddlywiki.org/t/performance-of-wiki-and-the-number-of-tiddlers-assume-same-amount-of-information/553, accessed 2026-10-28 (search summary; not quoted line by line). TW5's own record: "users regularly work with files that are tens or even over a hundred megabytes". **SOURCED (repo: `TiddlyWiki5/editions/tw5.com/tiddlers/features/Scalability.tid`).** **REASONED:** a 20,000-tiddler full mirror is ordinary TW5 territory on a desktop. The question is the phone process, not the engine.
+
+### 2c. What the spike's heap number can and cannot see (the gap that most changes confidence)
+
+- **SOURCED (repo: `spike/run.mjs:147`):** heap = CDP `HeapProfiler.collectGarbage` then `JSHeapUsedSize` of the page target. This is the page's main isolate after GC.
+- **REASONED (WebKit architecture; not quoted from a page):** dedicated workers run as threads inside the page's WebContent process. Jetsam counts the process footprint: page heap, every worker heap, DOM, layout, decoded images and JIT. On the iPhone, therefore, the island (Automerge documents plus its own TW5 engine) and the mirror share the ~1.5 GB line (V1).
+- **Full width holds the corpus twice in one process:** once as truth in the island, once as a copy in the mirror. Skinny holds the bodies once, plus whatever was opened.
+- **REASONED:** at 2,000 tiddlers this is far from the line (tens of MiB against 1.5 GB). At 20,000 with Automerge's per-document overhead it is still probably far, but **unmeasured**. The +25 % gate cannot speak to it, because it compares page isolates.
+- **Owed instrument:** a process-grain number on the reference devices: Safari Web Inspector's Memory timeline on iOS, `chrome://memory-internals` or `dumpsys meminfo` on Android. Release-time only, never a boot input (`measureUserAgentSpecificMemory` needs cross-origin isolation the house does not serve; `capability-default/out2.md` V4).
+
+### 2d. A node that a browser attaches to
+
+- **SOURCED (repo: `dreamdom-roadmap.mem:64`):** "the first surface (the browser on the Node vessel's box) shows the daemon wiki, the pinned wiki and the other wikis … and spawns each as the ordinary page template at the width the spike ruled." The D4 actor manifest carries `width[]`, and per-port attachments carry `width` (`dreamdom-roadmap.mem:115`).
+- **REASONED:** two different attachments hide under "a browser attaches to a node".
+  1. **The browser boots its own browser vessel and peers with the node.** It is a desktop-browser leaf, its island sits in its own process, and the default is that class's default.
+  2. **The browser's port reaches the node's island over the relay or gate.** The truth then lives in another process (the node). The page process holds only the mirror, so full is cheaper here than anywhere: no second copy in-process. Skinny's on-open body loads also cross a network instead of a MessageChannel, which makes skinny *worse* here (cold-filter and load latency rise; the spike's planted 50 ms relay delay moved skinny's cold filter p95 from 5.1 to 54.3 ms, repo `table-final.md`).
+  - **Lean:** in case 2, the same full-by-promotion rule applies, and the measured latency favours full. Which case the first surface builds is not settled in what I read. §6 Q4.
+- **The node itself renders no page, so it holds no width.** Its "camera" is the Node CLI text camera or the SSR face (`dreamdom-roadmap.mem:129`), outside this ruling. Wave one **HOLDS** here.
+
+### 2e. The person's lighter surface, and accessibility, as width inputs
+
+- **Ruled already:** "(3) a person may choose a lighter surface later as an intent on their face, after D3" (memory `project_dreamdom_mirror_ruling`).
+- **REASONED · how it fits the laws:** a face intent is a decision, and decisions cross devices (memory index: FACE INTENT PLANE "decisions cross devices, never motion"). A "lighter" intent should name the *experience* the person wants (fewer bodies resident, less motion), not a width. Each vessel then maps that intent onto its own lit widths. A width name crossing devices would be the URL flag again, one layer up.
+- **Field prior art for user-declared lightness:** `prefers-reduced-data` is "experimental … not supported by any user agent". **SOURCED** https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-data, accessed 2026-10-28. `Save-Data` remains a Chromium request header (MDN links it; not re-verified for engines). **REASONED:** the field has no cross-engine "I want the light version" signal, so the house's face intent stands alone. That is fine, because it is the person's own word.
+- **Reduced motion is orthogonal to width.** TW5 core does not read `prefers-reduced-motion`; animation runs through `$tw.utils.getAnimationDuration()` and `$:/config/AnimationDuration`. **SOURCED (repo: `TiddlyWiki5/core/modules/storyviews/*.js`, `core/ui/ControlPanel/Basics.tid:13`; grep finds no `prefers-reduced-motion` in core or themes).** **REASONED:** every width that runs the engine (full, skinny) should map the media query onto that config tiddler at mirror boot, as a camera concern, not a width input. None's sink should honour it in its own CSS.
+- **Screen readers favour the mirror over none.**
+  - The house's law 8: "ARIA IDREFs do not cross shadow boundaries … Live regions must **pre-exist** their content"; serialized HTML cannot express element references; `document.activeElement` returns the host (memory `project_off_main_thread_engine_laws`).
+  - The mirror renders real TW5 DOM inside one shadow root, so IDREFs within that root resolve, and live regions persist as real nodes. None morphs serialized frames into a sink.
+  - **REASONED:** a person using a screen reader gets a sounder surface at full or skinny than at none. That is one more reason none stays the floor and never becomes a default "light" choice.
+  - The roadmap already makes none lose "if any ruled control fails its browser and accessibility probes" (`dreamdom-roadmap.mem:109`).
+- **Field counter-case: the light tier was the accessible one, and it rotted.** Gmail's Basic HTML view ended in January 2024. Google called it an old version "replaced more than a decade ago" lacking features, and blind and low-vision users who relied on it for screen readers objected. **SOURCED** https://www.theregister.com/2023/09/25/gmail_basic_html_discontinued/, 2023-09-25 (via search summary).
+  - **REASONED rhyme:** a lighter tier maintained as a *separate product* decays and dies. The house's widths are settings of **one** adaptor over **one** engine (`glass-port-adaptor.ts:21`: `width: "full" | "skinny" | "story"`), which is the structural cure.
+  - Keep it that way: story must stay a setting of the same adaptor, never a second renderer.
+
+### 2f. Smaller gaps
+
+- **bfcache plus the mirror (REASONED):** a bfcache-restored page carries a mirror whose port may be gone. `pageshow.persisted` is the causal signal to re-greet. Treat it as L4 again (the greeting decides), not as a fresh width choice. The width held at freeze stays.
+- **An iPad is not an iPhone (V3):** "4GB+" for an 8 GB iPad against 1.5 GB for most iPhones. **REASONED:** the house must not let "tablet" read as "phone" in its test plan. Device classes organise *testing*, never authority (wave one, HOLDS).
+
+---
+
+## 3. RHYMES and GOLDEN PRINCIPLES · what survives the check
+
+**Rhymes that survive (each with the source it rests on):**
+1. **The real attempt is the probe:** Figma starts WebGPU and falls back later on observed failure (`capability-default/out2.md` V1); the house boots L1–L5 and reads the result (`stand.ts`). **HOLDS.**
+2. **Only the side that holds everything answers completeness:** TW5's lazy search note (V9) and Notion's best-effort cache (V10). The worker island answers corpus-wide filters, and skinny never pretends. **HOLDS**, and it is the strongest rhyme in the set.
+3. **Keep the edited thing resident:** tldraw never culls the selected or edited shape (V11). Skinny's body reload "so the editor never loses its text" is the same law. Any future eviction (§5) must exempt open and draft tiddlers. **HOLDS, newly binding.**
+4. **The platform's step-down is not the app's evidence:** Chrome freezes and discards hidden tabs on its own terms (V7, §2a). The house's "a hidden tab keeps its mirror" and "a discard is not mirror failure" read the same. **HOLDS.**
+5. **Name the diminished face:** Notion marks blocks unavailable offline (V10); `stand.ts` emits `stepped`/`floor` with `why`. **HOLDS.**
+
+**Rhymes cut:** wave one's "Astro/Partytown show capability over host" — those are author opt-ins, not capability reads, so the rhyme is decorative. Wave one's "React Suspense rhymes with a real step result" is too loose to carry weight.
+
+**Golden principles (with counter-cases):**
+- **G1 · One engine, many settings.** A light tier built as a separate product decays (Gmail Basic HTML, §2e). *Counter-case:* none is a different renderer (worker frames), and it is held to its own goldens for exactly that reason.
+- **G2 · Default to the richest surface the real boot carries; make first paint cheap.** Wave one, HOLDS, built. *Counter-case:* richness held twice in one process (§2c) is a cost first paint never shows.
+- **G3 · Gate on absolute process size on the weakest reference device, not only relative to a baseline.** **NEW.** The relative gate passes at 20,000 while the absolute tripwire fails (§2b). *Counter-case:* an absolute gate tuned to one phone freezes today's device into the rule. Name it as a release gate per reference device, never a runtime classifier.
+- **G4 · Bound what grows by causal events, not by time.** **NEW.** TW5 clears caches on change (§2a); tldraw culls by viewport, not by timer (V11). An evicted body leaves on close (the tiddler leaves the story), never on idle time.
+- **G5 · Accessibility is a correctness property of a width, not a preference.** **NEW.** None must pass the screen-reader probes before it counts as a floor anyone can live on (§2e).
+- **G6 · Evidence that survives the kill, scoped to the tab.** `mirror:began` in sessionStorage (built). This is the only defence against V2's reload loop; the field has no other in-page answer (V1, V7).
+
+---
+
+## 4. YIN, then YANG
+
+### YIN · the strongest case against "full by default where the boot's steps pass"
+
+1. **The steps cannot see the failure that matters.** On iOS the kill is jetsam at process grain under system-wide pressure (V1, V2). Every L1–L5 step can pass and the process can still die later, at promotion or an hour in. The boot "passing" proves only that it passed *then*. The evidence record breaks the reload loop, but only *after* one death per tab, and a phone user experiences that death as "the app crashed".
+2. **The one number behind the default measured the wrong thing for phones.** It covers the page isolate on WSL2 Chromium. It excludes the worker island, DOM and images (§2c), the WebKit engine, and a phone. The Firefox run is N=1 and shows full's first paint at 1,259 ms against stock's 1,046 (repo `table-final.md`). WebKit refuses to run on this host (`d3-glass-lane.mem` #/owed).
+3. **Growth defeats the gate.** Full's +25 % passes at any size, because stock grows with it, while the absolute footprint goes past the tripwire near 20,000 (§2b). A household's corpus only grows.
+4. **Long sessions defeat skinny too (§2a).** If skinny converges to full, "step down to skinny" is a step down only in first paint. The step-down path gives a phone far less protection than its name suggests.
+5. **Typing is already slower at full than stock:** p95 keystroke-to-paint 26.5 ms against 15.1 (repo `table-final.md`). That is fine on WSL2. On a phone at 3–5× slower JS, the same ratio could cross a frame budget. **REASONED; unmeasured.**
+6. **Battery is unmeasured on every class.** A second engine refreshing on every peer change costs CPU twice (island and mirror) on a phone.
+
+### YANG · what survives
+
+- **The alternatives are worse, or not built.**
+  - None misses its byte budget (63,344 against 52,429 bytes per key), its page controls are unbuilt, and it is weaker for screen readers (§2e).
+  - Story waits on promotion.
+  - Skinny-forever saves first paint and nothing durable (§2a).
+  - A phone-specific default would be a host classifier, which `isomorphic-by-intent` forbids. Its only honest form is a capacity *fact*, and the boot already reads that fact.
+- **The margins are wide where it was measured.** 35.6 MiB against an iPhone's ~1.5 GB soft line is a 40× margin before counting the island. Even the doubled corpus in one process at 2,000 tiddlers sits well under 100 MiB. **REASONED.**
+- **The order already absorbs the worst case.** Skinny paints first, so a jetsam during promotion lands after a usable surface, and the per-tab evidence keeps the reload at skinny (built, `stand.ts`). This is Figma's shape (rhyme 1).
+- **Every YIN point is a measurement, not a principle.** None of them argues for a different *rule*. Each argues for a release gate the house has not yet run: process grain, 20,000 tiddlers, a long session, a reference phone. So the ruling holds, and its confidence is "provisional until §5's measurements land", exactly as wave one said.
+- **What YIN wins:** (a) the absolute gate (G3) joins the relative one as a release gate; (b) skinny gains causal body eviction before the waking floor ships; (c) the house measures at process grain on a real iPhone before calling phones validated.
+
+---
+
+## 5. THE RULING, ratcheted
+
+**One rule on every class that renders a page:** the mirror opens through the port grant, paints skinny first, and promotes to full by one `port:widen`. It steps down only on a named step failure, a caught `RangeError`/`QuotaExceededError`, or `port:gone`, never by a clock. A tab whose full boot died before paint holds skinny for its life (`mirror:began`). This is what `stand.ts` builds. The class table below sets **test obligations and known risks, not authority**.
+
+| Class | Default | Step-down path | What the boot reads (no clocks) | Reds that prove it |
+|---|---|---|---|---|
+| **iPhone, iOS 26** (tab or Home Screen) | full by promotion; install changes nothing about width (V4) | full → skinny on caught capacity error; → none floor on a second (Q1); a jetsam → reload → `mirror:began` holds skinny for the tab | L1–L5 outcomes; caught capacity errors; `mirror:began`; `port:gone`; `pageshow.persisted` → re-greet | `jetsam-reload-holds-skinny` (plant a kill between snapshot and paint; the reload paints skinny and names why); `reload-after-paint-promotes` (control: an evidence record cleared at paint lets the next boot promote) |
+| **Android 16 Chrome** (tab or WebAPK) | full by promotion | same; an LMK kill of the renderer reads as a reload, same evidence path; `wasDiscarded` unavailable on Android (V7), so it is never read | same | same two reds on a real device; `hidden-discard-keeps-full` (a hidden-tab discard leaves no `mirror:began`, so the next boot promotes) |
+| **Tablet, person's surface** | full by promotion | same | same | as iPhone; tested on an iPad separately (V3) |
+| **Tablet, waking-floor device** | **skinny with body eviction on close**, promotion held, **as a lean pending §6 Q2**; the floor's island must outlive the camera | camera step-downs never touch the island; a camera floor leaves the floor standing | same, plus the floor's own liveness (not the camera's) | `floor-survives-camera-floor` (unmount the mirror; the island keeps serving peers); `closed-body-evicts` / `open-draft-never-evicts`; long-session growth curve flattens (§5 owed) |
+| **Desktop browser, any engine** | full by promotion | same | same | the five-site walk and goldens 1–13 at full on Chromium, Firefox **and WebKit** (WebKit owed on this host) |
+| **Browser attached to a node** | case 1 (own vessel): as desktop; case 2 (port to the node's island): full by promotion, which the latency favours (§2d) | same, plus `port:gone` on a relay drop → named, re-greet on reconnect (the greeting decides) | same | `relay-drop-names-gone-and-regreets`; skinny cold filter under the planted relay delay stays named, never silent |
+| **Node** | no width: renders no page | n/a (CLI/SSR cameras are other surfaces) | n/a | n/a |
+| **Mudlet** | no width: a probe over HTTP/telnet | n/a | n/a | n/a |
+| **Unreal guest / Pixel Streaming** | the width belongs to whichever vessel hosts the browser camera; the stream client holds none | that vessel's path | that vessel's | n/a here |
+
+**The step-down to none is the floor, not a preference.** No class defaults to none until none passes its byte budget and its accessibility probes (roadmap thresholds).
+
+**Release gates (run by the house, never read by the boot):**
+1. Relative: full ≤ +25 % over stock, page isolate (exists).
+2. **Absolute, new (G3):** full's page isolate ≤ 150 MiB on the reference corpus, plus a **process-grain** figure on each reference device, recorded beside it.
+3. **Growth, new (G4):** heap and process figures at fixed *event* counts (after opening N tiddlers, after M peer writes), never at wall-clock marks. The curve must flatten by N = corpus size.
+
+**Measurements the house still owes before the operator can rule with confidence:**
+1. **A reference iPhone** (and an iPad, V3) at process grain: full, skinny and none, 2,000 tiddlers; a planted jetsam to prove the evidence path on real WebKit.
+2. **A reference Android phone** (Chrome 149) under the same harness, with background/foreground LMK.
+3. **A 20,000-tiddler corpus** of the spike's mix (one more `count`), on desktop and the reference phone. This tests the §2b extrapolation; full crossing 150 MiB here is the expected red.
+4. **A long-session growth run:** open every tiddler once, then apply 10,000 peer writes, measured at event counts on the tablet. This tests §2a.
+5. **WebKit desktop** (the two missing system libraries on this host), Firefox at N=3.
+6. **Keystroke p95 on the phone** at full against stock (YIN 5).
+7. **The island's own heap** beside the mirror's (a worker CDP target on Chromium), so "the corpus twice in one process" becomes a number.
+
+---
+
+## 6. Open questions only the operator can rule (each with a lean)
+
+1. **Does the none floor count as the one step?** `stand.ts` goes full → skinny → none within a boot on two capacity errors. The ruling says "at most once per boot".
+   - *Lean:* rule that **a step is a width change the mirror survives**. Unmounting to none ends the mirror and is the floor, not a second step. This keeps the built code and the ruling's intent (no flapping, never back up). Wave one's stricter reading would leave a person on a failed skinny with nothing painted, which is worse.
+2. **The waking-floor tablet: full like any tablet, or skinny with eviction?**
+   - *Lean:* **skinny with causal body eviction on close** for the device that stands the floor, because a camera that grows can take the floor's island down with it in one process (§2a, §2c).
+   - This needs a ruling because it makes width depend on a *role* (stands a floor). Roles are structural predicates over the cap-stack, so the rule reads by capability, not host (`isomorphic-by-intent`).
+   - The alternative: keep full and let the growth run (owed #4) decide.
+3. **Does a corpus-size fact ever hold promotion?** The body bytes are known from the snapshot, a fact about the content, not the host. The ruling says "(4) no width ceiling on the grant".
+   - *Lean:* **not yet.** Run owed #3. If full crosses the tripwire at 20,000 on the reference phone, rule then between (a) a content-derived promotion ceiling, (b) eviction applied at full too (full keeps all fields resident and only bounds bodies), or (c) accepting the cost.
+   - Lean then toward (b): it keeps one engine and one rule (G1, G4).
+4. **The node's first surface: own vessel, or a port into the node's island?** (§2d)
+   - *Lean:* a port into the node's island for the browser on the node's own box: one copy of truth, full cheaper, latency favours full. A browser elsewhere on the LAN stands its own vessel as a leaf.
+5. **Does the "lighter surface" face intent name a width or an experience?**
+   - *Lean:* **an experience** ("keep fewer bodies", "less motion"), mapped by each vessel to its own lit widths. A width name crossing devices is the URL flag one layer up.
+6. **Do phones ship full-by-promotion before owed #1 and #2 land?**
+   - *Lean:* **yes, as built**, because the order (skinny paints first, evidence holds the reload) already bounds the worst case to one skinny tab after a death. The changelog should mark phones "UNMEASURED" by name until the reference devices report.
+
+exec
+/usr/bin/zsh -lc "rg --files /home/joshu/.lares-scratch/research/d3-glass -g 'run.mjs' -g 'stand.ts' -g 'glass-port-adaptor.ts' -g 'table-final.md' -g 'wiki.js' -g '*roadmap.mem' -g 'stock-corpus.json'" in /home/joshu/.lares-scratch/research/dreamdom-width/terra
+ exited 2 in 0ms:
+rg: /home/joshu/.lares-scratch/research/d3-glass: IO error for operation on /home/joshu/.lares-scratch/research/d3-glass: No such file or directory (os error 2)
+
+exec
+/usr/bin/zsh -lc 'ls /home/joshu/.lares-scratch/research' in /home/joshu/.lares-scratch/research/dreamdom-width/terra
+ succeeded in 0ms:
+after-the-seat-a.md
+after-the-seat-b.md
+after-the-seat-settle.md
+capability-default
+codex-controller
+dreamdom-width
+floor-trust
+fusion-canon.md
+ground-lane.md
+hands-room
+hydrafusion
+i1-intent
+i2-relay
+k15-bonds
+lc-smoke
+model-roster
+one-face-brief.md
+place-kel
+pre-founding
+seat-scout
+smoke-6.1
+w10-knock
+w10-mu
+
+exec
+/usr/bin/zsh -lc "rg --files /home/joshu/.lares-scratch/research/dreamdom-width /home/joshu/Synthetic-Dream-Machine -g 'stand.ts' -g 'glass-port-adaptor.ts' -g 'run.mjs' -g 'table-final.md' -g 'wiki.js' -g 'dreamdom-roadmap.mem' 2>/dev/null" in /home/joshu/.lares-scratch/research/dreamdom-width/terra
+ succeeded in 0ms:
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-roadmap.mem
+/home/joshu/Synthetic-Dream-Machine/TiddlyWiki5/core/modules/wiki.js
+/home/joshu/Synthetic-Dream-Machine/packages/lares-cli/src/commands/stand.ts
+
+exec
+/usr/bin/zsh -lc "rg --files /home/joshu/.lares-scratch -g 'glass-port-adaptor.ts' -g 'table-final.md' -g 'run.mjs' -g 'stand.ts' -g 'stock-corpus.json' 2>/dev/null" in /home/joshu/.lares-scratch/research/dreamdom-width/terra
+ succeeded in 0ms:
+/home/joshu/.lares-scratch/d3-glass/table-final.md
+/home/joshu/.lares-scratch/d3-glass/spike/table-final.md
+/home/joshu/.lares-scratch/d3-glass/spike/stock-corpus.json
+/home/joshu/.lares-scratch/d3-glass/spike/run.mjs
+/home/joshu/.lares-scratch/k19/wt/packages/lares-cli/src/commands/stand.ts
+/home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-web/src/glass/stand.ts
+/home/joshu/.lares-scratch/hands-spine/wt/packages/lares-cli/src/commands/stand.ts
+/home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-tw5/src/glass-port-adaptor.ts
+/home/joshu/.lares-scratch/d3-glass/wt/packages/lares-cli/src/commands/stand.ts
+/home/joshu/.lares-scratch/i2-relay/wt/packages/lares-cli/src/commands/stand.ts
+
+exec
+/usr/bin/zsh -lc 'cat wt/packages/lararium-web/src/glass/stand.ts' in /home/joshu/.lares-scratch/d3-glass
+ succeeded in 0ms:
+import type { GlassTransport } from "@lararium/tw5/glass";
+import type { ReturnTypeOfPagePort } from "./transport-type.js";
+import { bootGlass } from "./boot.js";
+import type { readGlassBootInputs } from "./cas.js";
+
+type Inputs = { coreCid: string; pluginCids: readonly string[] };
+type Seams = { readInputs?: typeof readGlassBootInputs; attachShadow?: (host: HTMLElement) => ShadowRoot;
+  bootEngine?: () => void | Promise<void>; paint?: () => void;
+  /** Runs on each record the mirror lands, with the width that landing serves, so a test can plant a capacity error in it. */
+  landed?: (change: { title: string }, width: "skinny" | "full") => void };
+type Evidence = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+/** What a standing mirror tells its caller after the first paint. */
+export type MirrorEvent =
+  | { type: "promoted"; width: "full" }
+  | { type: "stepped"; width: "skinny"; why: string }
+  | { type: "gone"; why: string }
+  | { type: "floor"; why: string };
+/** A state a caller can show while the mirror lights; no timer ends or raises one. */
+export type MirrorState = { kind: "waiting"; for: "greeting" };
+/** How the boot's promotion ended: full landed, skinny held or stepped to, or the none floor. */
+export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
+/** The one per-tab record: a full boot began and has not finished. It records an event and never a width. */
+export const MIRROR_EVIDENCE_KEY = "mirror:began";
+const floor = (why: string) => ({ kind: "floor" as const, width: "none" as const, why });
+const capacity = (error: unknown): boolean => error instanceof Error && (error.name === "RangeError" || error.name === "QuotaExceededError");
+const reasonOf = (error: unknown): string => error instanceof Error ? error.message : String(error);
+const tabStorage = (): Evidence | null => { try { return window.sessionStorage; } catch { return null; } };
+
+/**
+ * Light the mirror cap, one real step at a time. Each step completes or names its floor, and no step reads a clock:
+ * L1 shadow root, L2 CAS read, L3 engine boot, L4 the port's first snapshot (the greeting decides), L5 paint.
+ * The mirror opens skinny and paints; it then promotes to full by one widen row on the same port. A tab whose
+ * earlier full boot left its evidence record stays at skinny. After it stands, a caught capacity error steps it
+ * down to skinny once on the same engine, a second one unmounts it, and `port:gone` closes it; nothing steps
+ * back up within the boot but the one promotion.
+ */
+export async function standMirror(options: {
+  host: HTMLElement; port: ReturnTypeOfPagePort; inputs: Inputs; wikiUri: string; actor: string;
+  onState?: (state: MirrorState) => void; evidence?: Evidence;
+}, seams: Seams = {}) {
+  let shadowRoot: ShadowRoot;
+  try { shadowRoot = options.host.shadowRoot ?? (seams.attachShadow?.(options.host) ?? options.host.attachShadow({ mode: "open" })); }
+  catch { return floor("mirror-no-shadow-root"); }
+  let inputs: Awaited<ReturnType<typeof readGlassBootInputs>>;
+  try { inputs = await (seams.readInputs ?? (await import("./cas.js")).readGlassBootInputs)(options.inputs); }
+  catch (error) { return floor(reasonOf(error)); }
+
+  const evidence = options.evidence ?? tabStorage();
+  const remember = (act: (store: Evidence) => void): void => { try { if (evidence) act(evidence); } catch { /* storage may be blocked */ } };
+  let held = false;
+  remember(store => { held = store.getItem(MIRROR_EVIDENCE_KEY) !== null; });
+
+  let generation = 0;
+  let width: "full" | "skinny" = "skinny";
+  let promoting = false;
+  let ended = false;
+  let stepped = false;
+  let stepReason = "";
+  let greeted = false;
+  let gone = false;                    // a port:gone ends its generation: later messages do not step it
+  let settledAlready = false;
+  let settle!: (outcome: MirrorSettled) => void;
+  const settled = new Promise<MirrorSettled>(resolve => { settle = outcome => { if (settledAlready) return; settledAlready = true; resolve(outcome); }; });
+  const chunks = new Map<string, number>();
+  let greeting!: (reason: string | null) => void;
+  const waiting = new Promise<string | null>(resolve => { greeting = resolve; });
+  const listeners = new Set<(event: MirrorEvent) => void>();
+  const emit = (event: MirrorEvent) => { for (const listener of listeners) listener(event); };
+  let endedWhy = "";
+  let early: string | null = null;     // a capacity error that landed before the door returned
+  let mirror: Awaited<ReturnType<typeof bootGlass>> | null = null;
+
+  const end = (event: MirrorEvent & { why: string }) => { if (ended) return; ended = true; endedWhy = event.why; mirror?.unmount(); settle({ width: "none", why: event.why }); emit(event); };
+  const stepDown = (why: string) => {
+    if (ended || gone) return;
+    if (!mirror) { early = why; return; }
+    // Skinny is the lowest width the mirror holds: a failure there, or after the one step, reads the none floor.
+    if (stepped || (!promoting && width === "skinny")) { greeting(why); end({ type: "floor", why }); return; }
+    stepped = true; stepReason = why; width = "skinny"; promoting = false; generation += 1;
+    chunks.clear();
+    mirror.reopen({ transport: transportFor(generation), portId: crypto.randomUUID(), width: "skinny" });
+    emit({ type: "stepped", width: "skinny", why });
+  };
+  const transportFor = (mine: number): GlassTransport => {
+    let own: string | null = null;     // the port this generation opened: another port's messages are not its own
+    return {
+    send(message) {
+      if (message.type === "port:open") own = String(message.portId);
+      // A closed generation still closes its own port; every other message from it dies.
+      if (mine !== generation && message.type !== "port:close") return { ok: false, reason: "transport-closed" };
+      const result = options.port.send(message) as { ok: boolean; reason?: string };
+      if (message.type === "port:open") {
+        if (result.ok) options.onState?.({ kind: "waiting", for: "greeting" });
+        else greeting(result.reason ?? "port-refused");
+      }
+      return result;
+    },
+    onMessage(listener) {
+      return options.port.onMessage(message => {
+        if (mine !== generation || ended || !message.type.startsWith("port:")) return;
+        if (gone || (own !== null && (message as { portId?: unknown }).portId !== own)) return;
+        if (message.type === "port:gone") {
+          gone = true;
+          const why = String((message as { reason?: unknown }).reason ?? "port-gone");
+          if (greeted) { end({ type: "gone", why }); return; }
+          greeting(why); return;
+        }
+        try { listener(message as unknown as Parameters<typeof listener>[0]); }
+        catch (error) { if (capacity(error)) { stepDown(`mirror-snapshot-refused:${(error as Error).name}`); return; } throw error; }
+        // A snapshot completes when its last chunk lands, not its first.
+        if (message.type === "port:snapshot") {
+          const { snapshotId, n } = message as unknown as { snapshotId: string; n: number };
+          const seen = (chunks.get(snapshotId) ?? 0) + 1;
+          chunks.set(snapshotId, seen);
+          if (seen < n) return;
+          chunks.delete(snapshotId);
+          if (!greeted) { greeted = true; greeting(null); }
+          else if (promoting) {
+            promoting = false; width = "full";
+            remember(store => store.removeItem(MIRROR_EVIDENCE_KEY));
+            settle({ width: "full" }); emit({ type: "promoted", width: "full" });
+          } else if (stepped) settle({ width: "skinny", why: stepReason });
+        }
+      });
+    },
+    };
+  };
+  const landed = seams.landed ? (change: { title: string }) => seams.landed!(change, promoting || width === "full" ? "full" : "skinny") : undefined;
+
+  try {
+    mirror = await bootGlass({ ...options, shadowRoot, inputs, width: "skinny", transport: transportFor(0),
+      seams: { ...seams, ...(landed ? { landed } : {}) }, deferPaint: true });
+    if (ended) { mirror.unmount(); return floor(endedWhy); }   // a port:gone landed before the door returned
+    if (early !== null) stepDown(early);
+    const reason = await waiting;
+    if (reason !== null) { mirror.unmount(); return floor(reason); }
+    mirror.paint();
+  } catch (error) { mirror?.unmount(); return floor(reasonOf(error)); }
+
+  if (held) settle({ width: "skinny", why: "full-boot-did-not-paint" });
+  else {
+    // The record stands from the moment full begins until full has landed: a boot that dies between leaves it behind.
+    remember(store => store.setItem(MIRROR_EVIDENCE_KEY, crypto.randomUUID()));
+    promoting = true;
+    const sent = mirror.adaptor.widen("full") as { ok?: boolean; reason?: string } | undefined;
+    if (sent && sent.ok === false) {
+      // The widen never reached the island: the tab stays at skinny and says why; nothing began, so no record stands.
+      promoting = false; remember(store => store.removeItem(MIRROR_EVIDENCE_KEY));
+      settle({ width: "skinny", why: sent.reason ?? "widen-refused" });
+    }
+  }
+  return {
+    kind: "mirror" as const,
+    get width() { return width; },
+    settled,
+    unmount() { if (!ended) { ended = true; mirror!.unmount(); settle({ width: "none", why: "unmounted" }); } },
+    onEvent(listener: (event: MirrorEvent) => void) { listeners.add(listener); return () => listeners.delete(listener); },
+  };
+}
+
+exec
+/usr/bin/zsh -lc 'cat wt/packages/lararium-tw5/src/glass-port-adaptor.ts' in /home/joshu/.lares-scratch/d3-glass
+exec
+/usr/bin/zsh -lc 'cat spike/table-final.md' in /home/joshu/.lares-scratch/d3-glass
+exec
+/usr/bin/zsh -lc "rg -n -C 4 'JSHeapUsedSize|collectGarbage|Performance.getMetrics|newCDPSession|count|100.1024' spike/run.mjs" in /home/joshu/.lares-scratch/d3-glass
+ succeeded in 0ms:
+29-const profile = flags.includes('--profile');
+30-const tag = flags.indexOf('--tag') >= 0 ? flags[flags.indexOf('--tag') + 1] : '';
+31-const RUNS = flags.indexOf('--runs') >= 0 ? Number(flags[flags.indexOf('--runs') + 1]) : 1;
+32-const selected = flags.indexOf('--widths') >= 0 ? flags[flags.indexOf('--widths') + 1]?.split(',') : ['stock','full','skinny','none'];
+33:const count = smoke ? 200 : 2000;
+34-if (!selected?.every(x => ['stock','full','skinny','none'].includes(x))) throw new Error('Use --widths stock,full,skinny,none');
+35-fs.mkdirSync(OUT, { recursive: true });
+36-fs.mkdirSync(`${OUT}/dist`, { recursive: true });
+37-process.env.LAR_ROOT = process.env.LAR_ROOT || `${OUT}/lar-root`;
+38-fs.mkdirSync(process.env.LAR_ROOT, { recursive: true });
+39-
+40-let seed = 0x2d3a2026;
+41-const random = () => ((seed ^= seed << 13, seed ^= seed >>> 17, seed ^= seed << 5) >>> 0) / 0x100000000;
+42:const corpus = Array.from({length: count}, (_, i) => {
+43-  const title = `Lesson ${String(i).padStart(4,'0')}`;
+44-  const size = i % 143 === 0 ? 102400 : 205 + Math.floor(random() * 12083);
+45-  const tags = i % 3 === 0 ? ['Lesson','Unit 3'] : i % 3 === 1 ? ['Lesson'] : ['Notes'];
+46:  const link = `[[Lesson ${String((i + 19) % count).padStart(4,'0')}]]`;
+47-  const prefix = `! ${title}\n\n${link}\n\n* item ${i}\n* item ${i+1}\n\n`;
+48-  const body = prefix + 'abcdefghijklmnopqrstuvwxyz '.repeat(Math.ceil(size / 27)).slice(0, Math.max(0,size-prefix.length));
+49:  return {title, text:body, tags, list:[`Lesson ${String((i + 1) % count).padStart(4,'0')}`], type:'text/vnd.tiddlywiki', modified:new Date(2025,0,1+i%300).toISOString()};
+50-});
+51-const story = corpus.slice(1,6).map(x => x.title);
+52:fs.writeFileSync(`${OUT}/corpus.json`, JSON.stringify({ count, story, seed: '0x2d3a2026' }));
+53-fs.writeFileSync(`${OUT}/stock-corpus.json`, JSON.stringify([...corpus, {title:'$:/StoryList',list:story}, {title:'$:/DefaultTiddlers',text:story.map(t=>`[[${t}]]`).join(' ')}]));
+54-
+55-await esbuild.build({ entryPoints:[`${OUT}/page.ts`], outfile:`${OUT}/dist/page.js`, bundle:true, platform:'browser', format:'esm', external:['module'], logLevel:'warning' });
+56-fs.writeFileSync(`${OUT}/dist/index.html`, '<!doctype html><html><head><meta charset="utf-8"></head><body><div id="host"></div><script type="module" src="/page.js"></script></body></html>');
+--
+67-});
+68-const sessions = new Set();
+69-let delayMs = plant ? 50 : 0;
+70-const frameSamples = [];
+71:const counters = { asks:{filter:0,render:0}, writes:0, frames:0 };
+72-const ctx = {wikiUri:'wiki',composite,tw5:authority,handles:new Map(),recipe:{wikiSlug:'wiki'},post(message) {
+73:  if (message.type === 'lar:frame') counters.frames++;
+74-  if (message.type === 'lar:frame') frameSamples.push(message);
+75-  const bytes = JSON.stringify(message);
+76-  for (const session of sessions) if (session.ports.has(message.portId)) session.send(bytes);
+77-}};
+--
+112-      for(let i=0;i<bytes.length;i++) bytes[i]^=mask[i&3];
+113-      let message; try {message=JSON.parse(bytes.toString());} catch {continue;}
+114-      if(message.type==='port:open') {session.ports.add(message.portId);portRealm.set(message.portId,message.wikiUri);}
+115-      if(message.type==='port:close') session.ports.delete(message.portId);
+116:      if(message.type==='port:ask' && (message.kind==='filter'||message.kind==='render')) counters.asks[message.kind]++;
+117:      if(message.type==='port:write') counters.writes++;
+118-      if(plant && message.type==='port:ask' && message.kind==='filter') await new Promise(resolve=>setTimeout(resolve,delayMs));
+119-      const second = portRealm.get(message.portId)==='wiki2';
+120-      (second?secondHandler:handler).onSignal?.(message.type,message,second?secondCtx:ctx);
+121-      if(message.type==='port:close') portRealm.delete(message.portId);
+--
+139-  socket.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\n\r\n`);socketSession(socket);
+140-});
+141-await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+142-const url=`http://127.0.0.1:${server.address().port}`;
+143:const results={meta:{count,seed:'0x2d3a2026',plant,host:process.platform,coreBytes:core.length,phone:'UNMEASURED: no reference phone',browserPath:'/home/joshu/.cache/ms-playwright'},rows:{}};
+144-const put=(key,width,value,unit,N,note='')=>{results.rows[key]??={unit,values:{}};results.rows[key].values[width]={value,N,note};};
+145-const missing=(key,width,reason,unit='ms')=>put(key,width,'UNMEASURED',unit,0,reason);
+146-const p95=xs=>xs.slice().sort((a,b)=>a-b)[Math.ceil(xs.length*.95)-1];
+147:const heap=async page=>{const client=await page.context().newCDPSession(page);await client.send('Performance.enable');await client.send('HeapProfiler.enable');await client.send('HeapProfiler.collectGarbage');const value=(await client.send('Performance.getMetrics')).metrics.find(x=>x.name==='JSHeapUsedSize')?.value;return value===undefined?null:value/1048576;};
+148-let browser;
+149-try {
+150-  process.env.PLAYWRIGHT_BROWSERS_PATH='/home/joshu/.cache/ms-playwright';
+151-  browser=await chromium.launch({headless:true});
+--
+159-    page.on('console',m=>{if(m.text().startsWith('bench '))console.error(`console ${width}: ${m.text()}`);});
+160-    page.on('pageerror',e=>console.error(`page ${width}: ${e.stack||e}`));
+161-    const destination=width==='stock'?`${url}/stock.html`:`${url}/?width=${width}`;
+162-    const started=Date.now();
+163:    let cdp; if(profile&&width!=='none'){cdp=await page.context().newCDPSession(page);await cdp.send('Profiler.enable');await cdp.send('Profiler.setSamplingInterval',{interval:1000});await cdp.send('Profiler.start');}
+164-    try {
+165-      await page.goto(destination,{waitUntil:'load',timeout:120000});
+166-      if(width==='stock') await page.waitForFunction(()=>globalThis.$tw?.wiki && document.querySelector('.tc-story-river')?.children.length,{timeout:120000});
+167-      else await page.waitForFunction(()=>globalThis.benchReady===true,{timeout:120000});
+--
+169-      if(cdp){const {profile:p}=await cdp.send('Profiler.stop');const self=new Map();const byId=new Map(p.nodes.map(n=>[n.id,n]));const dt=p.timeDeltas;p.samples.forEach((id,i)=>{const n=byId.get(id);const k=`${n.callFrame.functionName||'(anon)'} ${n.callFrame.url.split('/').slice(-2).join('/')}:${n.callFrame.lineNumber+1}`;self.set(k,(self.get(k)||0)+(dt[i]||0));});
+170-        fs.writeFileSync(`${OUT}/profile-${width}.txt`,[...self].sort((a,b)=>b[1]-a[1]).slice(0,40).map(([k,v])=>`${(v/1000).toFixed(0).padStart(7)} ms  ${k}`).join('\n'));}
+171-      if(width==='none') missing('first paint',width,'no staged none frame mounted into the page');
+172-      else put('first paint',width,Date.now()-started,'ms',1,'navigation to first story river paint');
+173:      const heapValue=await heap(page);if(width==='none')missing('heap after first paint',width,'no staged none frame mounted into the page','MiB');else if(heapValue===null)missing('heap after first paint',width,'CDP JSHeapUsedSize absent after forced GC','MiB');else put('heap after first paint',width,heapValue,'MiB',1,'Chromium CDP forced GC');
+174-      const warmStart=Date.now(); await page.reload({waitUntil:'load',timeout:120000});
+175-      await page.waitForFunction(width==='stock'?()=>globalThis.$tw?.wiki && document.querySelector('.tc-story-river')?.children.length:()=>globalThis.benchReady===true,{timeout:120000});
+176-      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>resolve())));
+177-      if(width==='none')missing('warm first paint',width,'no staged none frame mounted into the page');else put('warm first paint',width,Date.now()-warmStart,'ms',1,'second navigation with browser cache');
+--
+205-          catch { missing('peer write order',width,'final peer text did not land within 5 seconds','in order (1/0)'); }
+206-        }
+207-        const alertAt=await alertWait; if(alertAt!==null) put('newer-base alert',width,alertAt-peerStarted,'ms',1,'authority write to alert while draft stands'); else missing('newer-base alert',width,'alert not observed within 5 seconds; draft or peer notification absent');
+208-        const echo=await page.evaluate(()=>bench.edit(bench.corpus.story[0], 'local edit '+crypto.randomUUID()));
+209:        put('echo writes',width,echo.writes,'count',1,'expected 1');put('echo re-landings',width,echo.relands,'count',1,'expected 0');
+210-      }
+211-      if(width==='stock') {
+212-        try {
+213:          const frames=await page.locator('.tc-tiddler-frame').count();const btns=await page.locator('.tc-tiddler-frame').first().locator('button').evaluateAll(b=>b.map(x=>(x.getAttribute('class')||'').slice(-30)+'|'+x.getAttribute('title')).slice(0,12));console.error('stock frames',frames,JSON.stringify(btns));
+214-          await page.locator('.tc-tiddler-frame').first().locator('button[class*="edit"], button[title*="dit" i], button[aria-label*="dit" i]').first().click({timeout:5000});
+215-          await page.waitForFunction(()=>!!document.querySelector('iframe')?.contentDocument?.querySelector('textarea'),null,{timeout:5000});
+216-          await page.evaluate(()=>{window.__keys=[]; const doc=document.querySelector('iframe').contentDocument; doc.querySelector('textarea').focus(); const w=doc.defaultView;doc.addEventListener('input',event=>{const start=event.timeStamp;w.requestAnimationFrame(()=>window.__keys.push(w.performance.now()-start));},true);});
+217-          for(let i=0;i<100;i++) { await page.keyboard.type('x'); await page.waitForFunction(n=>window.__keys.length>=n,i+1,{timeout:5000}); }
+--
+250-      } catch(e) {results.meta.firefox[width]=`UNMEASURED: ${String(e.message||e)}`;} finally {await page.close();}
+251-    }
+252-  } catch(e) {results.meta.firefox=`UNMEASURED: ${String(e.message||e)}`;} finally {await fox?.close();}
+253-} finally {await browser?.close();server.close();if(typeof cleanup==='function')await cleanup();if(typeof secondCleanup==='function')await secondCleanup();unmountProjection?.();authority.dispose();secondEngine.dispose();}
+254:results.meta.counters=counters;
+255-results.meta.syncAsk='UNMEASURED: D2 has no Atomics.wait + receiveMessageOnPort synchronous ask';
+256:results.meta.verbCensus='UNMEASURED: record-port handler does not expose filter/render verb counters';
+257-if(results.meta.plantProof)results.meta.plantProof.passes=Math.abs(results.meta.plantProof.deltaMs-50)<=15;
+258-const full=results.rows['heap after first paint']?.values.full?.value, stock=results.rows['heap after first paint']?.values.stock?.value;
+259-results.gates={full:typeof full==='number'&&typeof stock==='number'?{marginalPercent:100*(full/stock-1),passes:full<=150&&full<=1.25*stock}:'UNMEASURED: stock and full heaps required',skinny:'UNMEASURED: 100 ms p95 gate requires reference phone',none:'UNMEASURED: reference phone and staged keyed frames required'};
+260-const measures=['heap after first paint','first paint','warm first paint','keystroke to paint p95','cold filter p95','peer write','peer write order','newer-base alert','echo writes','echo re-landings','hot swap','sync ask Node','verb census','bytes per key','whole surface key','whole surface after edit','none sink paint','none page controls'];
+261-let md='| measure | stock | full | skinny | none | unit | N | note |\n|---|---:|---:|---:|---:|---|---:|---|\n';
+262:for(const key of measures) {const row=results.rows[key]||{unit:key.includes('heap')?'MiB':key.includes('bytes')?'bytes':key.includes('echo')||key.includes('census')?'count':'ms',values:{}};const cells=['stock','full','skinny','none'].map(w=>{const x=row.values[w];if(x)return `${typeof x.value==='number'?Number(x.value.toFixed(2)):x.value} (N=${x.N}${x.value==='UNMEASURED'?`: ${x.note}`:''})`;const reason=results.meta[`error:${w}`]?.split('\n')[0]||(!selected.includes(w)?'width not selected':key==='sync ask Node'?'D2 synchronous ask absent':key==='verb census'?'handler exposes no verb counters':w==='none'?'staged none vessel absent':key==='bytes per key'||key==='none sink paint'||key==='none page controls'?'none only':'not instrumented');return `UNMEASURED (N=0: ${reason})`;});const note=Object.values(row.values).map(x=>x.note).filter(Boolean).join('; ')||'see cell reasons';md+=`| ${key} | ${cells.join(' | ')} | ${row.unit} | ${Object.values(row.values).map(x=>x.N).join(',')||0} | ${note.replaceAll('|','/')} |\n`;}
+263-md+=`\nGates: ${JSON.stringify(results.gates)}\n`;
+264-const suffix=tag?`-${tag}`:'';fs.writeFileSync(`${OUT}/results${suffix}.json`,JSON.stringify(results,null,2));fs.writeFileSync(`${OUT}/table${suffix}.md`,md);
+265-console.log(`${OUT}/results${suffix}.json`);
+
+ succeeded in 0ms:
+import type { PortIslandToVesselMsg, PortWireRecord, PortWidthName } from "@lararium/mesh/record-port";
+
+export interface GlassWiki {
+  addEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
+  removeEventListener(type: "change", listener: (changes: Record<string, unknown>) => void): void;
+  getTiddler(title: string): { fields: Record<string, unknown> } | undefined;
+  addTiddler(tiddler: unknown): void;
+  deleteTiddler(title: string): void;
+}
+export interface GlassTransport {
+  send(message: Record<string, unknown>): unknown;
+  onMessage(listener: (message: PortIslandToVesselMsg) => void): () => void;
+}
+export interface GlassPortOptions {
+  wiki: GlassWiki;
+  Tiddler: new (fields: Record<string, unknown>) => unknown;
+  transport: GlassTransport;
+  portId: string;
+  wikiUri: string;
+  actor: string;
+  width: Extract<PortWidthName, "full" | "skinny" | "story">;
+  fields?: string[];
+  localFilter?: string[];
+  mintTx: () => string;
+  /** Writes a closed predecessor left unsettled; they resend under their own txId, which the island's per-actor ledger applies once. */
+  adopt?: ReadonlyArray<PendingWrite>;
+  /** Landed images a closed predecessor tagged whose wiki change has not fired yet; the successor must not read them as local edits. */
+  inheritTags?: ReadonlyMap<string, readonly string[]>;
+}
+export interface PendingWrite { txId: string; title: string; record: PortWireRecord }
+
+type Change = { title: string; fields: Record<string, string>; deleted?: true };
+type Pending = { before: PortWireRecord | null; title: string; optimistic: string; generation: number;
+  peerGeneration: number; record: PortWireRecord; echoed?: true };
+const LOCAL = ["$:/state", "$:/temp", "$:/status", "$:/info/browser"];
+const ownFields = (wiki: GlassWiki, title: string): Record<string, string> | null => {
+  const tiddler = wiki.getTiddler(title);
+  if (!tiddler) return null;
+  const fields: Record<string, string> = {};
+  for (const [key, value] of Object.entries(tiddler.fields))
+    if (key !== "title" && value !== undefined) fields[key] = Array.isArray(value) ? value.join(" ") : String(value);
+  return fields;
+};
+const imageOf = (fields: Record<string, string> | null) => JSON.stringify(fields);
+
+/** A glass wiki mirrors port records while its local edits remain optimistic. */
+export function makeGlassPortAdaptor(opts: GlassPortOptions) {
+  const { wiki, Tiddler, transport, portId } = opts;
+  const landed = new Map<string, PortWireRecord | null>();
+  const omitted = new Map<string, string[]>();
+  const tagged = new Map<string, string[]>([...(opts.inheritTags ?? [])].map(([title, images]) => [title, [...images]]));
+  const pending = new Map<string, Pending>();
+  const settled = new Set<string>();
+  const loading = new Map<string, { title: string; generation: number; resolve: (text: string | undefined) => void }>();
+  const generations = new Map<string, number>();
+  const peerGenerations = new Map<string, number>();
+  const tombstones = new Map<string, number>();
+  const snapshots = new Map<string, { n: number; chunks: Map<number, PortWireRecord[]> }>();
+  const resetTitles = new Set<string>();
+  const repost = new Set<string>();
+  const landedListeners = new Set<(change: Change) => void>();
+  const peerListeners = new Set<(change: Change) => void>();
+  const presenceListeners = new Set<(presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void>();
+  const refusedListeners = new Set<(result: { title: string; txId: string; reason: string }) => void>();
+  const opened = new Set<string>();
+  let askNumber = 0;
+  let closed = false;
+  const local = (title: string) => title === "$:/StoryList" || title === "$:/HistoryList" ||
+    LOCAL.some(prefix => title === prefix || title.startsWith(`${prefix}/`)) ||
+    (opts.localFilter ?? []).some(prefix => title.startsWith(prefix));
+  const tag = (title: string, image: string) => tagged.set(title, [...(tagged.get(title) ?? []), image]);
+  const optimistic = (title: string) => [...pending.values()].some(tx => tx.title === title);
+  const land = (record: PortWireRecord, peer = false) => {
+    if (local(record.title)) return;
+    const { title } = record;
+    const prior = landed.get(title);
+    const fields = record.deleted ? null : { ...(prior && !prior.deleted ? prior.fields : {}), ...record.fields };
+    if (fields) delete fields["title"];
+    if (record.deleted) {
+      omitted.delete(title);
+      wiki.deleteTiddler(title);
+      tag(title, imageOf(null));
+      landed.set(title, null);
+      if (record.seq !== undefined) tombstones.set(title, record.seq);
+    } else {
+      const missing = record.omitted ?? [];
+      for (const key of missing) delete fields![key];
+      omitted.set(title, missing);
+      // Two images tag the landing: the wire fields (a wiki that notifies inside addTiddler matches this one) and the tiddler as TW5
+      // reads it back after rewriting tags, lists and dates (TW5 notifies later and matches that one).
+      const wire = imageOf(fields);
+      tag(title, wire);
+      wiki.addTiddler(new Tiddler({ title, ...fields }));
+      const readBack = imageOf(ownFields(wiki, title));
+      if (readBack !== wire) tag(title, readBack);
+      landed.set(title, { ...record, fields: { ...fields! }, omitted: [...missing] });
+      tombstones.delete(title);
+    }
+    if (peer) peerGenerations.set(title, (peerGenerations.get(title) ?? 0) + 1);
+    const change: Change = { title, fields: fields ?? {}, ...(record.deleted ? { deleted: true } : {}) };
+    for (const listener of landedListeners) listener(change);
+    if (peer) for (const listener of peerListeners) listener(change);
+  };
+  const onChange = (changes: Record<string, unknown>) => {
+    if (closed) return;
+    for (const title of Object.keys(changes)) {
+      if (local(title)) continue;
+      const fields = ownFields(wiki, title);
+      const image = imageOf(fields);
+      const tags = tagged.get(title) ?? [];
+      const taggedIndex = tags.indexOf(image);
+      if (taggedIndex >= 0) {
+        tags.splice(0, taggedIndex + 1);
+        if (!tags.length) tagged.delete(title);
+        continue;
+      }
+      if (tags.length) tagged.delete(title);
+      const generation = (generations.get(title) ?? 0) + 1;
+      generations.set(title, generation);
+      const txId = opts.mintTx();
+      const record: PortWireRecord = { title, fields: fields ?? {}, ...(fields ? {} : { deleted: true as const }) };
+      pending.set(txId, { title, before: landed.get(title) ?? null, optimistic: image, generation,
+        peerGeneration: peerGenerations.get(title) ?? 0, record });
+      transport.send({ type: "port:write", portId, txId, records: [{ title, fields: fields ?? {}, ...(fields ? {} : { tombstone: true }) }] });
+    }
+  };
+  wiki.addEventListener("change", onChange);
+  const onMessage = (msg: PortIslandToVesselMsg) => {
+    if (closed || msg.portId !== portId) return;
+    if (msg.type === "port:snapshot") {
+      const snapshot = snapshots.get(msg.snapshotId) ?? { n: msg.n, chunks: new Map<number, PortWireRecord[]>() };
+      if (snapshot.n !== msg.n || msg.i < 1 || msg.i > msg.n) return;
+      snapshots.set(msg.snapshotId, snapshot);
+      snapshot.chunks.set(msg.i, msg.records);
+      if (snapshot.chunks.size === snapshot.n) {
+        snapshots.delete(msg.snapshotId);
+        const records = Array.from({ length: snapshot.n }, (_, i) => snapshot.chunks.get(i + 1) ?? []).flat();
+        const titles = new Set(records.map(record => record.title));
+        for (const title of new Set([...landed.keys(), ...resetTitles])) if (!local(title) && !titles.has(title) && !optimistic(title))
+          land({ title, fields: {}, deleted: true });
+        resetTitles.clear();
+        for (const record of records) {
+          if (optimistic(record.title) || repost.has(record.title)) landed.set(record.title, record);
+          else land(record);
+        }
+        for (const title of repost) {
+          const fields = ownFields(wiki, title);
+          const txId = opts.mintTx();
+          const record: PortWireRecord = { title, fields: fields ?? {}, ...(fields ? {} : { deleted: true as const }) };
+          pending.set(txId, { title, before: landed.get(title) ?? null, optimistic: imageOf(fields),
+            generation: generations.get(title) ?? 0, peerGeneration: peerGenerations.get(title) ?? 0, record });
+          transport.send({ type: "port:write", portId, txId,
+            records: [{ title, fields: fields ?? {}, ...(fields ? {} : { tombstone: true }) }] });
+        }
+        repost.clear();
+      }
+    } else if (msg.type === "port:changes") {
+      for (const entry of msg.entries) {
+        const own = entry.causedBy.filter(txId => pending.has(txId) || settled.has(txId));
+        if (own.length) {
+          for (const txId of own) {
+            settled.delete(txId);
+            const tx = pending.get(txId);
+            if (tx) tx.echoed = true;
+          }
+          continue;
+        }
+        land(entry, true);
+        // A peer record arrives without the body fields a skinny port omits; an opened body loads again so the editor never loses its text.
+        if (entry.deleted) opened.delete(entry.title);
+        else if (opened.has(entry.title) && omitted.get(entry.title)?.includes("text")) void loadBody(entry.title);
+      }
+      transport.send({ type: "port:ack", portId, cursor: msg.cursor });
+    } else if (msg.type === "port:reset") {
+      for (const title of landed.keys()) resetTitles.add(title);
+      for (const [txId, tx] of pending) { repost.add(tx.title); settled.add(txId); }
+      pending.clear();
+      landed.clear(); omitted.clear(); tagged.clear(); snapshots.clear(); tombstones.clear();
+      transport.send({ type: "port:open", portId, wikiUri: opts.wikiUri, actor: opts.actor,
+        width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
+        ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}) });
+    } else if (msg.type === "port:written") {
+      const tx = pending.get(msg.txId);
+      if (!tx) return;
+      pending.delete(msg.txId);
+      if (!tx.echoed) {
+        settled.add(msg.txId);
+        if (settled.size > 8192) settled.delete(settled.values().next().value!);
+      }
+      if (msg.status === "refused" || msg.status === "partial" && !msg.applied.length) {
+        if (generations.get(tx.title) === tx.generation &&
+          (peerGenerations.get(tx.title) ?? 0) === tx.peerGeneration &&
+          imageOf(ownFields(wiki, tx.title)) === tx.optimistic) {
+          const base = landed.get(tx.title) ?? tx.before;
+          if (base) land(base);
+          else land({ title: tx.title, fields: {}, deleted: true });
+        }
+        for (const listener of refusedListeners) listener({ title: tx.title, txId: msg.txId, reason: msg.reason ?? msg.status });
+      } else {
+        landed.set(tx.title, tx.record.deleted ? null : tx.record);
+      }
+    } else if (msg.type === "port:answer") {
+      const ask = loading.get(msg.askId);
+      if (!ask) return;
+      loading.delete(msg.askId);
+      if (msg.status === "answered" && Array.isArray(msg.result)) {
+        const record = (msg.result as PortWireRecord[]).find(record => record.title === ask.title);
+        if (record && (tombstones.get(ask.title) ?? -1) > (record.seq ?? -1)) {
+          ask.resolve(undefined);
+          return;
+        }
+        if (record) {
+          const held = landed.get(ask.title);
+          if (ask.generation === (generations.get(ask.title) ?? 0) &&
+            (!held || (held.seq ?? 0) <= (record.seq ?? 0)) && !tombstones.has(ask.title)) {
+            const fields = { ...(held && !held.deleted ? held.fields : {}), ...record.fields };
+            land({ title: ask.title, ...(record.seq === undefined ? {} : { seq: record.seq }), fields,
+              omitted: (omitted.get(ask.title) ?? []).filter(key => !(key in record.fields)) });
+          }
+          ask.resolve(record.fields.text);
+          return;
+        }
+      }
+      ask.resolve(tombstones.has(ask.title) ? undefined : ownFields(wiki, ask.title)?.text);
+    } else if (msg.type === "port:presence" && msg.actorKey !== opts.actor) {
+      for (const listener of presenceListeners) listener(msg);
+    }
+  };
+  const unsubscribe = transport.onMessage(onMessage);
+  transport.send({ type: "port:open", portId, wikiUri: opts.wikiUri, actor: opts.actor,
+    width: opts.width, edits: true, presence: true, maxRecordBytes: 65536, maxBatchBytes: 262144,
+    ...(opts.fields ? { fields: opts.fields } : {}), ...(opts.localFilter ? { localFilter: opts.localFilter } : {}) });
+  transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat: 0 });
+  for (const write of opts.adopt ?? []) {
+    const fields = ownFields(wiki, write.title);
+    pending.set(write.txId, { title: write.title, before: null, optimistic: imageOf(fields), generation: generations.get(write.title) ?? 0,
+      peerGeneration: 0, record: write.record });
+    transport.send({ type: "port:write", portId, txId: write.txId,
+      records: [{ title: write.title, fields: write.record.fields, ...(write.record.deleted ? { tombstone: true } : {}) }] });
+  }
+  const loadBody = (title: string): Promise<string | undefined> => {
+    if (!omitted.get(title)?.includes("text")) return Promise.resolve(ownFields(wiki, title)?.text);
+    const askId = `${portId}:load:${++askNumber}`;
+    return new Promise(resolve => { loading.set(askId, { title, generation: generations.get(title) ?? 0, resolve });
+      transport.send({ type: "port:ask", portId, askId, kind: "load", subject: title, fields: ["text"] }); });
+  };
+  return {
+    /** Ask the island to widen this open port in place; its fresh snapshot lands through the same listener. */
+    widen(next: GlassPortOptions["width"]): unknown { if (closed) return undefined; opts.width = next; return transport.send({ type: "port:widen", portId, width: next }); },
+    tagImages(): ReadonlyMap<string, readonly string[]> { return new Map(tagged); },
+    pendingWrites(): PendingWrite[] { return [...pending].map(([txId, tx]) => ({ txId, title: tx.title, record: tx.record })); },
+    resendPending() {
+      for (const [txId, tx] of pending) transport.send({ type: "port:write", portId, txId,
+        records: [{ title: tx.title, fields: tx.record.fields,
+          ...(tx.record.deleted ? { tombstone: true } : {}) }] });
+    },
+    onLanded(listener: (change: Change) => void) { landedListeners.add(listener); return () => landedListeners.delete(listener); },
+    onPeerEdit(listener: (change: Change) => void) { peerListeners.add(listener); return () => peerListeners.delete(listener); },
+    onPresence(listener: (presence: Extract<PortIslandToVesselMsg, { type: "port:presence" }>) => void) {
+      presenceListeners.add(listener); return () => presenceListeners.delete(listener);
+    },
+    onRefused(listener: (result: { title: string; txId: string; reason: string }) => void) {
+      refusedListeners.add(listener); return () => refusedListeners.delete(listener);
+    },
+    omittedFields(title: string) { return [...(omitted.get(title) ?? [])]; },
+    openBody(title: string): Promise<string | undefined> { opened.add(title); return loadBody(title); },
+    closeBody(title: string) { opened.delete(title); },
+    openDraft(title: string) { return this.openBody(title); },
+    postPresence(beat: number, state?: unknown) { transport.send({ type: "port:presence", portId, actorKey: opts.actor, beat, state }); },
+    close() { if (closed) return; closed = true; wiki.removeEventListener("change", onChange); unsubscribe();
+      transport.send({ type: "port:close", portId }); },
+  };
+}
+
+/** The host lends both the TW5 instance and its port transport when startup runs. */
+export function makeGlassPortStartup(opts: Omit<GlassPortOptions, "wiki" | "Tiddler"> & {
+  tw: { wiki: GlassWiki; Tiddler: GlassPortOptions["Tiddler"] };
+}) {
+  return { name: "glass-port-adaptor", platforms: ["browser"] as ["browser"], after: ["startup"] as ["startup"],
+    startup() { return makeGlassPortAdaptor({ ...opts, wiki: opts.tw.wiki, Tiddler: opts.tw.Tiddler }); } };
+}
+
+ succeeded in 0ms:
+| measure | stock | full | skinny | none | unit |
+|---|---:|---:|---:|---:|---|
+| heap after first paint | 32.18 (runs 3; 32.2 to 32.2) | 35.56 (runs 3; 35.6 to 35.6) | 21.66 (runs 3; 21.7 to 21.7) | UNMEASURED (no staged none frame mounted into the page) | MiB |
+| first paint | 836 (runs 3; 822 to 841) | 942 (runs 3; 940 to 981) | 677 (runs 3; 660 to 694) | UNMEASURED (no staged none frame mounted into the page) | ms |
+| warm first paint | 907 (runs 3; 893 to 922) | 908 (runs 3; 908 to 916) | 659 (runs 3; 655 to 674) | UNMEASURED (no staged none frame mounted into the page) | ms |
+| keystroke to paint p95 | 15.1 (runs 3; 15.1 to 15.2) | 26.5 (runs 3; 25.5 to 27.2) | 23.7 (runs 3; 23.7 to 25.2) | UNMEASURED (not instrumented for this width) | ms |
+| cold filter p95 | UNMEASURED (not instrumented for this width) | 1.2 (runs 3; 0.7 to 1.9) | 3.3 (runs 3; 2.8 to 3.5) | UNMEASURED (not instrumented for this width) | ms |
+| peer write | UNMEASURED (not instrumented for this width) | 32.28 (runs 3; 31.9 to 33.1) | 43.42 (runs 3; 42.7 to 43.9) | UNMEASURED (not instrumented for this width) | ms |
+| peer write order | UNMEASURED (not instrumented for this width) | 1 (runs 3; 1 to 1) | 1 (runs 3; 1 to 1) | UNMEASURED (not instrumented for this width) | in order (1/0) |
+| newer-base alert | UNMEASURED (not instrumented for this width) | 31.98 (runs 3; 31.5 to 32.8) | 43.38 (runs 3; 42.7 to 43.5) | UNMEASURED (not instrumented for this width) | ms |
+| echo writes | UNMEASURED (not instrumented for this width) | 1 (runs 3; 1 to 1) | 1 (runs 3; 1 to 1) | UNMEASURED (not instrumented for this width) | count |
+| echo re-landings | UNMEASURED (not instrumented for this width) | 0 (runs 3; 0 to 0) | 0 (runs 3; 0 to 0) | UNMEASURED (not instrumented for this width) | count |
+| hot swap | UNMEASURED (not instrumented for this width) | 610.9 (runs 3; 600.9 to 625.5) | 179.3 (runs 3; 167.1 to 188.5) | UNMEASURED (not instrumented for this width) | ms |
+| sync ask Node | UNMEASURED (D2 synchronous ask absent) | UNMEASURED (D2 synchronous ask absent) | UNMEASURED (D2 synchronous ask absent) | UNMEASURED (D2 synchronous ask absent) |  |
+| verb census | UNMEASURED (handler exposes no verb counters) | UNMEASURED (handler exposes no verb counters) | UNMEASURED (handler exposes no verb counters) | UNMEASURED (handler exposes no verb counters) |  |
+| bytes per key | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | 63344 (runs 3; 63344 to 63344) | bytes |
+| whole surface key | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | 63344 (runs 3; 63344 to 63344) | bytes |
+| whole surface after edit | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | 59197 (runs 3; 59197 to 59197) | bytes |
+| none sink paint | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | 4 (runs 3; 3.8 to 4.5) | ms |
+| none page controls | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | UNMEASURED (not instrumented for this width) | UNMEASURED (staged hearth in tests/harness/instance.ts required for full frame and) | ms |
+
+Each cell: median of three runs (N=runs that measured), with the min to max; 2,000 tiddlers, Chromium on this host (WSL2), one loopback relay. Every phone figure is UNMEASURED: no reference phone on this host.
+
+Memory gate (full): 35.56 MiB against stock 32.18 MiB = 10.5 % marginal, tripwire 150 MiB: PASS
+Skinny cold-filter 100 ms p95 gate and none bytes-per-key 50 ms gate: UNMEASURED (reference phone required).
+Plant check (skinny cold filter with a 50 ms relay delay): baseline p95 5.10 ms, planted p95 54.30 ms, delta 49.20 ms, passes true.
+Firefox first/warm paint (run 1): {"stock":{"firstPaintMs":1045.5173950000026,"warmFirstPaintMs":782.1433870000001,"N":1},"full":{"firstPaintMs":1258.9362480000018,"warmFirstPaintMs":1316.8915769999985,"N":1},"skinny":{"firstPaintMs":862.1956630000022,"warmFirstPaintMs":900.4524770000025,"N":1},"none":"UNMEASURED: no staged none frame mounted into the page"}
+
+codex
+Ink-Clerk: The adaptor does retain a loaded body after `closeBody`, but that alone does not prove a long session reaches the full mirror’s footprint. I also found that the spike runs its authority over a loopback relay, so its page-heap result does not measure a colocated worker island.
+web search: 
+web search: WebKit WebContent process dedicated web worker separate process worker thread site:webkit.org ...
+exec
+/usr/bin/zsh -lc "rg -n -C 5 'remember\\(|MIRROR_EVIDENCE|promoting|paint\\(|widen\\(|pagehide|pageshow' wt/packages/lararium-web/src/glass/stand.ts" in /home/joshu/.lares-scratch/d3-glass
+ succeeded in 0ms:
+18-/** A state a caller can show while the mirror lights; no timer ends or raises one. */
+19-export type MirrorState = { kind: "waiting"; for: "greeting" };
+20-/** How the boot's promotion ended: full landed, skinny held or stepped to, or the none floor. */
+21-export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
+22-/** The one per-tab record: a full boot began and has not finished. It records an event and never a width. */
+23:export const MIRROR_EVIDENCE_KEY = "mirror:began";
+24-const floor = (why: string) => ({ kind: "floor" as const, width: "none" as const, why });
+25-const capacity = (error: unknown): boolean => error instanceof Error && (error.name === "RangeError" || error.name === "QuotaExceededError");
+26-const reasonOf = (error: unknown): string => error instanceof Error ? error.message : String(error);
+27-const tabStorage = (): Evidence | null => { try { return window.sessionStorage; } catch { return null; } };
+28-
+--
+46-  catch (error) { return floor(reasonOf(error)); }
+47-
+48-  const evidence = options.evidence ?? tabStorage();
+49-  const remember = (act: (store: Evidence) => void): void => { try { if (evidence) act(evidence); } catch { /* storage may be blocked */ } };
+50-  let held = false;
+51:  remember(store => { held = store.getItem(MIRROR_EVIDENCE_KEY) !== null; });
+52-
+53-  let generation = 0;
+54-  let width: "full" | "skinny" = "skinny";
+55:  let promoting = false;
+56-  let ended = false;
+57-  let stepped = false;
+58-  let stepReason = "";
+59-  let greeted = false;
+60-  let gone = false;                    // a port:gone ends its generation: later messages do not step it
+--
+73-  const end = (event: MirrorEvent & { why: string }) => { if (ended) return; ended = true; endedWhy = event.why; mirror?.unmount(); settle({ width: "none", why: event.why }); emit(event); };
+74-  const stepDown = (why: string) => {
+75-    if (ended || gone) return;
+76-    if (!mirror) { early = why; return; }
+77-    // Skinny is the lowest width the mirror holds: a failure there, or after the one step, reads the none floor.
+78:    if (stepped || (!promoting && width === "skinny")) { greeting(why); end({ type: "floor", why }); return; }
+79:    stepped = true; stepReason = why; width = "skinny"; promoting = false; generation += 1;
+80-    chunks.clear();
+81-    mirror.reopen({ transport: transportFor(generation), portId: crypto.randomUUID(), width: "skinny" });
+82-    emit({ type: "stepped", width: "skinny", why });
+83-  };
+84-  const transportFor = (mine: number): GlassTransport => {
+--
+113-          const seen = (chunks.get(snapshotId) ?? 0) + 1;
+114-          chunks.set(snapshotId, seen);
+115-          if (seen < n) return;
+116-          chunks.delete(snapshotId);
+117-          if (!greeted) { greeted = true; greeting(null); }
+118:          else if (promoting) {
+119:            promoting = false; width = "full";
+120:            remember(store => store.removeItem(MIRROR_EVIDENCE_KEY));
+121-            settle({ width: "full" }); emit({ type: "promoted", width: "full" });
+122-          } else if (stepped) settle({ width: "skinny", why: stepReason });
+123-        }
+124-      });
+125-    },
+126-    };
+127-  };
+128:  const landed = seams.landed ? (change: { title: string }) => seams.landed!(change, promoting || width === "full" ? "full" : "skinny") : undefined;
+129-
+130-  try {
+131-    mirror = await bootGlass({ ...options, shadowRoot, inputs, width: "skinny", transport: transportFor(0),
+132-      seams: { ...seams, ...(landed ? { landed } : {}) }, deferPaint: true });
+133-    if (ended) { mirror.unmount(); return floor(endedWhy); }   // a port:gone landed before the door returned
+134-    if (early !== null) stepDown(early);
+135-    const reason = await waiting;
+136-    if (reason !== null) { mirror.unmount(); return floor(reason); }
+137:    mirror.paint();
+138-  } catch (error) { mirror?.unmount(); return floor(reasonOf(error)); }
+139-
+140-  if (held) settle({ width: "skinny", why: "full-boot-did-not-paint" });
+141-  else {
+142-    // The record stands from the moment full begins until full has landed: a boot that dies between leaves it behind.
+143:    remember(store => store.setItem(MIRROR_EVIDENCE_KEY, crypto.randomUUID()));
+144:    promoting = true;
+145:    const sent = mirror.adaptor.widen("full") as { ok?: boolean; reason?: string } | undefined;
+146-    if (sent && sent.ok === false) {
+147-      // The widen never reached the island: the tab stays at skinny and says why; nothing began, so no record stands.
+148:      promoting = false; remember(store => store.removeItem(MIRROR_EVIDENCE_KEY));
+149-      settle({ width: "skinny", why: sent.reason ?? "widen-refused" });
+150-    }
+151-  }
+152-  return {
+153-    kind: "mirror" as const,
+
+web search: 
+web search: site:webkit.org workers WebContent process thread dedicated worker WebKit ...
+exec
+/usr/bin/zsh -lc "cat > out3.md <<'EOF'
+# DreamDOM width · third wave: the first researcher answers
+
+Ink-Clerk · 2026-10-28. **SOURCED** carries a URL and date, or a local file link and read date for the house's code and measurements; **REASONED** carries inference, an operator-supplied rule, or a proposed decision. The code and documents were read, not run. This wave does not claim an operator ruling or a new device measurement.
+
+## My revised answer
+
+**REASONED — Agree with Opus on the provisional direction:** where a page's port grants a mirror, paint skinny first and promote to full through that grant; do not select by device name or install status. Treat phone deployment as unvalidated until real-device process, growth, interaction and recovery tests pass. Node has no page width until a browser attaches; guests do not inherit a vessel's authority. Story remains held.
+
+**REASONED — Three corrections sharpen the decision.** First, the supplied heap comparison measures the Chromium page target in a loopback spike, not a colocated worker-plus-page WebKit process. Second, retained skinny bodies create a credible growth risk, but neither convergence to full nor a 20,000-tiddler tripwire failure has been measured. Third, the built reload marker clears when the full snapshot lands, not after full paint, and may fail to persist. Thus neither successful boot nor the marker bounds every later crash or reload loop.
+
+**REASONED — I retain the operator's literal one-step rule.** Full → skinny → none changes the effective camera width twice, even if the second change unmounts the engine. If the operator wishes to allow emergency unmount after one mirror step, amend the contract explicitly: one mirror-to-mirror step plus a terminal teardown, with none mounted only when its separate grant and viable sink exist. Until then, do not silently redefine “step” to validate the current code. Ending unsafe mirror access on grant revocation remains mandatory; ending access does not itself prove that a none surface has mounted.
+
+## 1 · Where Opus challenged my first wave
+
+**SOURCED — Fresh, V12: accept the citation criticism; contest the stronger implication that the underlying framework-default statement lacks support.** My cited current islands page alone did not explicitly establish that ordinary pages ship no JavaScript; my cited 1.x getting-started page described its example. Fresh's separate [server-components documentation](https://usefresh.dev/docs/1.x/concepts/server-components), accessed 2026-10-28, explicitly says no client JavaScript ships unless an island is included. Its [current architecture](https://usefresh.dev/docs/concepts/architecture), accessed 2026-10-28, says only islands hydrate; custom scripts and host integrations still need separate accounting. My shorthand should have scoped itself to framework-generated component JavaScript.
+
+**REASONED — One-step implementation: accept Opus's finding, reject its proposed semantic resolution as already settled.** My first wave prescribed a terminal stop after the chosen fallback failed; I did not establish that the implementation did so. **SOURCED:** [stand.ts]( /home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-web/src/glass/stand.ts), read 2026-10-28, sets "'`stepped` on a full-to-skinny capacity failure and calls `end({type: "floor"})` on a later one. It reports `width: "none"` and unmounts the mirror; this file alone does not demonstrate a granted, accessible none sink being mounted. **REASONED:** call the discrepancy a design decision, not a verified conformance result.
+
+**REASONED — Cut my decorative rhymes.** Astro and Partytown expose author opt-ins, not vessel capability reads; Suspense represents dependency readiness, not the house'"'s ban on clock-selected width. Those examples illuminate selective work but do not evidence the laws I attached to them. Retain TW5 search completeness, tldraw's edited-object protection, and AMP's ownership boundary as scoped analogies. **SOURCED:** [Astro](https://docs.astro.build/en/concepts/islands/), [Partytown](https://partytown.qwik.dev/trade-offs/), [React Suspense](https://react.dev/reference/react/Suspense), accessed 2026-10-28.
+
+**REASONED — Accept the TW5 Node omission.** My first wave mentioned lazy images but omitted the documented "'`lazy-all` configuration, a particularly relevant skinny analogue. **SOURCED:** [TW5 lazy-loading feature](https://tiddlywiki.com/static/LazyLoading.html), accessed 2026-10-28; local [LazyLoading.tid]( /home/joshu/Synthetic-Dream-Machine/TiddlyWiki5/editions/tw5.com/tiddlers/features/LazyLoading.tid), read 2026-10-28. Its incomplete browser text-search caveat still stands. [TW5 developer documentation](https://tiddlywiki.com/dev/#LazyLoadingMechanism), 2014-02-06, accessed 2026-10-28.
+
+**REASONED — Lifecycle refinement:** I did not rely on `document.wasDiscarded` for Android, and Opus correctly cautions against doing so based on the cited Chrome documentation. Do not assume that a frozen page'"'s worker, port, grant or authority remained live; re-greet and reconcile on restore. **SOURCED:** [Chrome Page Lifecycle](https://developer.chrome.com/docs/web-platform/page-lifecycle-api), accessed 2026-10-28; [bfcache](https://web.dev/articles/bfcache), accessed 2026-10-28.
+
+## 2 · Test the new claims
+
+### 2.1 · The memory instrument and process boundary
+
+**SOURCED — Confirm the narrow metric.** [run.mjs]( /home/joshu/.lares-scratch/d3-glass/spike/run.mjs), lines 147 and 173, read 2026-10-28, creates a CDP session for the page, forces garbage collection, and reads "'`Performance.getMetrics`'"'s "'`JSHeapUsedSize`. The same file constructs the authority in the harness and communicates over a loopback WebSocket; the [results table]( /home/joshu/.lares-scratch/d3-glass/spike/table-final.md), read 2026-10-28, identifies the loopback relay. It does not measure a browser-resident authority worker'"'s heap or total browser process footprint.
+
+**SOURCED — WebKit supports Opus's general concern, not every detail of its universal process claim.** WebKit's [memory timeline](https://webkit.org/blog/6425/memory-debugging-with-web-inspector/), 2016-05-05, separates JavaScript, decoded images, layers and page/DOM/rendering memory. Its engineers describe a pressure-dependent soft limit for an iPhone WebContent **process** in [bug 277848](https://bugs.webkit.org/show_bug.cgi?id=277848), 2024-08-09. WebKit's [architecture](https://docs.webkit.org/Getting%20Started/Introduction.html), accessed 2026-10-28, says a Safari tab typically has a WebContent process; [WebKit's service-worker description](https://webkit.org/blog/8090/workers-at-your-service/), 2018-02-07, explicitly places service workers in a separate process. **REASONED:** a dedicated worker can plausibly share the page's kill domain, but the exact placement of the house's actual worker type, all frames, GPU-backed allocations and current iOS build requires inspection. Do not assert that every worker and every image always occupies one WebContent process.
+
+**REASONED — Retract both claimed safety margins.** Opus's “35.6 MiB versus 1.5 GB” and “under 100 MiB even doubled” do not measure comparable quantities; neither establishes distance from jetsam. Two logical copies of bodies do not prove exactly twice their physical memory: string representation, sharing, serialization, storage, duplication and process placement matter. Record page/worker JS and OS process footprints separately; distinguish peak, after-GC and steady-state measurements. Web Inspector's page categories help diagnose, but do not by themselves prove complete OS jetsam accounting. No process figure has been obtained here.
+
+### 2.2 · The 20,000-tiddler projection
+
+**SOURCED — Only one corpus size anchors the claimed slope.** [run.mjs]( /home/joshu/.lares-scratch/d3-glass/spike/run.mjs), lines 33 and 42–53, and [table-final.md]( /home/joshu/.lares-scratch/d3-glass/spike/table-final.md), read 2026-10-28, show the 2,000-generated-tiddler workload and medians 21.66 MiB skinny, 35.56 full, 32.18 stock. The generated bodies use repetitive ASCII and a particular synthetic mix; the two extra story/default records are not two representative bodies.
+
+**REASONED — The 215–230 MiB estimate remains a scenario, not a validated prediction.** Full-minus-skinny, 13.90 MiB, lies near the corpus's reported 13.37 MiB of text, but this coincidence does not prove one-byte representation, per-body linearity, or causal attribution. Under Opus's own model of a 12–15 MiB fixed skinny base and tenfold growth of the remainder, skinny computes to **81.6–108.6 MiB**, not 80–95 MiB; adding ten times 13.90 MiB gives full **220.6–247.6 MiB**. The bounds change if body distribution, core count, caches, duplicate references, snapshot transients or GC behavior change. The stock slope and the 3.38 MiB full/stock difference cannot be inferred from one size; therefore neither a 150 MiB crossing nor a +25% pass at 20,000 follows as an observed result.
+
+**REASONED — Keep the existing absolute tripwire and measure an additional process figure.** The operator already supplied 150 MiB as a tripwire; Opus did not discover a new one. Relative and absolute gates answer different questions. Agree on 2k/5k/10k/20k runs, including representative nonrepeating Unicode text, images, plugins and different body distributions; fit slopes only after those results. State exactly whether the tripwire applies to post-paint page JS heap, peak heap, or whole process before using it as a release decision. Do not silently replace the existing gate with a new process threshold.
+
+### 2.3 · Skinny over a session and eviction
+
+**SOURCED — Confirm retention, with scope.** [glass-port-adaptor.ts]( /home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-tw5/src/glass-port-adaptor.ts), read 2026-10-28, adds a title to "'`opened` in `openBody`, lands returned text into the TW wiki and `landed`, and `closeBody` only deletes the title from `opened`; it does not remove its text. The `port:changes` path refreshes an opened omitted body after a peer change. Thus normal close does not itself release a previously fetched body. Delete, replacement, reset, teardown, and garbage collection can affect individual objects; this is not proof that every byte stays forever.
+
+**REASONED — Narrow “converges to full.”** If a person opens all corpus bodies without an intervening removal, the skinny wiki can eventually hold all those body fields; extra full-port fields, concurrent edits, different cache histories and representation mean its total heap need not equal full. A finite corpus does not guarantee a flat memory curve: pending writes, tombstones, images, changing titles or a leak may continue to grow. Conversely an unbounded wiki can grow without a leak. Measure fixed corpus and repeated identical cycles as well as changing-corpus and peer-write workloads, separately accounting for reachable objects and process footprint.
+
+**REASONED — Body eviction deserves a prototype, not an unconditional close hook.** On the last relevant consumer'"'s release, evict only when the title has no open view, draft, pending write, composition, transclusion, widget/filter/plugin dependency, or active async body request; maintain omission metadata, prevent the local eviction from being misread as a write or deletion, and protect against stale response/peer-write races. Reopening must reload the authoritative body; search, export, filters and offline access must remain complete or explicitly report limits. A closed tiddler may still appear through transclusion, so story close alone does not establish safety. Prove with race, reopen, transclusion, unsent-draft, peer-update and memory tests. Eviction changes skinny semantics and does not preserve “full” if full requires every body resident.
+
+### 2.4 · Accessibility and the none sink
+
+**SOURCED — The concerns hold; the ranking remains unproved.** [MDN's reflected-attributes guide](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Reflected_attributes), accessed 2026-10-28, scopes attribute ID references to the same DOM or shadow DOM; reflected element-reference properties have different scope rules. [MDN's live-region guidance](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Guides/Live_regions), accessed 2026-10-28, recommends establishing live regions before changes and notes browser/assistive-technology variation; "'`role=alert` has special handling. These rules apply to either width'"'s actual nodes.
+
+**REASONED — HTML serialization can carry same-root "'`id`/`aria-labelledby` attributes.** A keyed none sink can also preserve existing DOM nodes and live regions across frame updates if designed to do so. Conversely a TW mirror can replace nodes, lose focus or mishandle shadow-root accessibility. Serialized HTML cannot itself transport JavaScript element object references, but that does not show that none necessarily fails ARIA or that full/skinny passes. “Screen readers favour the mirror” therefore remains a hypothesis until matched tests run. Require keyboard, VoiceOver/Safari, TalkBack/Chrome and desktop screen-reader tests for labels, live announcements, focus, composition, selection and frame updates on each width. Treat a failing none as unavailable for the affected task, with a named reason.
+
+**REASONED — Reject ‘one adaptor cures tier decay’ as a guarantee.** Shared code can reduce drift, but none already has a distinct sink and story remains unfinished; shared code cannot replace maintenance and parity testing. Gmail'"'s historical counterexample does not establish a causal proof for this project. Shared engines remain useful where they preserve behavior and grants.
+
+### 2.5 · Waking-floor tablet
+
+**REASONED — Agree with the risk; differ from Opus's skinny default.** If a particular worker and mirror share a kill domain, camera growth can take the authority down too. A camera teardown that leaves its worker alive does not simulate a process kill, and a browser leaf cannot promise continuous wakefulness. The strongest defense combines durable commits, peer/failover recovery and actual process-placement tests; body eviction may reduce camera exposure after its correctness is proved. The floor role does not itself measure headroom or prove skinny has a bound, and eviction is not built. Keep the provisional common full-by-promotion policy while testing the floor's separate availability requirement. A role-specific policy could be legitimate if explicitly authorized and supported by evidence; it would not need a user-agent check.
+
+## 3 · What Opus still missed
+
+**SOURCED — The recovery marker clears before full paint.** [stand.ts]( /home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-web/src/glass/stand.ts), lines 118–121 and 137–148, read 2026-10-28, paints skinny, writes "'`mirror:began`, widens, then removes the marker as soon as the final promotion snapshot lands. There is no full-paint acknowledgment in that branch. The reason string `full-boot-did-not-paint` overstates what the marker establishes. **REASONED:** a death after snapshot completion but before actual full paint, or any later memory death, can reload with no marker and attempt promotion again. A death before completion can have other causes; holding skinny names an incomplete attempt, not proof of jetsam.
+
+**SOURCED — Marker persistence can fail or be copied.** The same code catches access and write errors silently. [MDN sessionStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage), accessed 2026-10-28, says sessions normally survive reload, may initially copy from an opener, and can throw `SecurityError`. **REASONED:** do not claim “one death per tab” or that this mechanism alone prevents all reload loops. Test storage denial, failed set/remove, duplicate/opener tabs, crashes before/after marker clearing, bfcache, normal navigation during promotion, and multiple wikis sharing the key. If unavailable, surface recovery uncertainty; choose a conservative recovery design with explicit approval where it changes the width contract.
+
+**REASONED — Recovery evidence introduces a contract seam.** The brief permits width step-down on named failure, caught capacity exception or revoked grant. A prior incomplete promotion record selects skinny on a subsequent boot even though its cause is unknown. Decide explicitly whether that record names an allowed boot failure and how long it remains effective; it must not claim to identify an OOM. This is event evidence, not a clock, but still affects the rule.
+
+**REASONED — Test ‘revoked’ separately from ‘disconnected’.** A network interruption does not necessarily revoke a capability. A `port:gone` signal needs a reason and generation discipline; on reconnect obtain a fresh greeting and grant. Never continue privileged use on a stale restored port. Do not assert remote attachment exists merely because the roadmap sketches a browser surface.
+
+**REASONED — State loss is not settled by a first paint.** Test composed input, unacknowledged writes, duplicate delivery, selection and focus across promotion, failure and crash; verify a durable authority commit before acknowledging save. A screen-reader announcement and a named status must accompany a width change without obscuring the editor.
+
+**REASONED — A release gate needs a decision rule, not only measurements.** Name reference devices and corpus, required sample sizes, comparable stock baseline, process metric and target thresholds, plus what happens if an instrument cannot run. Keep telemetry or benchmarking out of automatic boot selection. Report battery and thermal measurements as energy per fixed operation and background drain in controlled scenarios; wall time may measure battery, but must never decide width.
+
+## 4 · Revised per-class ruling
+
+**REASONED — Common contract:** with a valid mirror grant, start skinny and request full promotion; real boot steps and named failures decide this attempt. Preserve at most one downward width change under the current wording. On revocation stop mirror use immediately; mount none only under its own valid grant after its sink works, otherwise expose a named unavailable state. An uncatchable process death begins a new recovery attempt, not an in-process fallback. Story remains held. Every line below describes a provisional default and a test obligation, not a host-derived grant.
+
+| Class | REASONED default and step-down | Evidence and unresolved constraint |
+|---|---|---|
+| iOS phone, browser leaf or Home Screen vessel | Full by skinny-first promotion; on named failure select one authorized viable fallback; after a crash apply the explicitly ruled recovery-evidence policy. | **SOURCED:** soft iPhone process limit and pressure vary; installed status alone does not prove headroom. [WebKit bug 277848](https://bugs.webkit.org/show_bug.cgi?id=277848), 2024; [Home Screen apps](https://webkit.org/blog/13878/), 2023. **REASONED:** iOS 26, real peak, kill/reload and accessibility unmeasured. |
+| Android phone, browser leaf or WebAPK | Same full target, grant and one-step policy. | **SOURCED:** [Android LMK](https://developer.android.com/topic/performance/issues/lmk), accessed 2026-10-28; [Chrome 148 SharedWorker](https://developer.chrome.com/release-notes/148), 2026. **REASONED:** worker survival and foreground/background LMK remain test obligations. |
+| Tablet, including waking floor | Same full target provisionally; prototype safe skinny eviction, but do not represent it as shipped or a proven floor. If measured floor availability fails, decide an explicit role-specific policy. | **SOURCED:** [WebKit device limits](https://bugs.webkit.org/show_bug.cgi?id=268816), 2024; [screen wake lock](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API), accessed 2026-10-28. **REASONED:** kill-domain mapping, restart and peer continuity matter independently of width. |
+| Desktop browser on each engine | Full by skinny-first promotion, with the common one-step path. | **SOURCED:** [spike table]( /home/joshu/.lares-scratch/d3-glass/spike/table-final.md), read 2026-10-28: Chromium 2k passes the stated post-paint heap gate; Firefox has one paint run and WebKit lacks this measurement. **REASONED:** validate parity and large-corpus memory on all target engines. |
+| Browser attached to Node | If it stands its own island, apply that browser'"'s policy; if an authorized remote island supplies a port, apply the same policy at that camera, with relay failure separately named. | **REASONED:** the remote topology and its measured end-to-end costs remain design questions; a 50 ms planted loopback delay does not establish local-node or LAN performance. |
+| Node vessel | No browser width without an attached camera; Node's other CLI or SSR faces have separate contracts. | **REASONED:** renderer width belongs to the surface, not the relay or process name. |
+| Mudlet guest | No DreamDOM width; use the telnet guest/probe contract. | **REASONED:** guest connection does not confer a vessel grant. |
+| Unreal guest / Pixel Streaming | Guest bridge holds its own contract; where streaming uses a server-side browser vessel, that vessel's granted camera gets the common policy. | **REASONED:** a streaming client does not become the vessel merely by viewing pixels. |
+
+## 5 · Answers to Opus's six questions
+
+1. **REASONED — None floor and one step: differ.** Count effective full → skinny → none as two width changes under the operator's wording. Permit immediate teardown for revoked or unsafe mirror access; whether a none sink may then mount as an explicit terminal exception requires an amended rule. A failed skinny need not remain interactive: show a named unavailable face if no authorized sink can be mounted. Test the built two-error path and missing/revoked sink grant.
+2. **REASONED — Waking floor: differ for now.** Keep common full-by-promotion provisional; prototype eviction with consumer/race protections and measure a real floor, including process kill. Consider a role-specific skinny policy only after evidence and an explicit contract. This does not prohibit a structural role policy forever.
+3. **REASONED — Corpus size: agree with “not yet,” differ on option (b)'s name.** A snapshot-derived size can guide release analysis, but a ceiling changes the grant/width decision and needs a new ruling. Evicting bodies from full makes that width lazy or bounded, so define a new semantic contract rather than calling it unchanged full. Measure first.
+4. **REASONED — Node first surface: differ on settling the topology.** A node port may save a local copy and a browser island may improve offline independence; both need authority, security, availability and latency designs. The spike's loopback plant demonstrates sensitivity to an injected delay, not the best topology. Prototype both or read the settled roadmap before choosing; the default camera rule remains the same.
+5. **REASONED — Lighter face intent: agree, with an optional precise control.** Carry a person's desired outcome, such as reduced memory or motion, across devices; map it to granted capabilities and disclose any unavailable behavior. Reduced motion must work at every width. An explicit local width choice could also be legitimate if the operator grants it; a person selecting a width through an authorized face does not automatically equal an untrusted URL or Boolean grant.
+6. **REASONED — Ship phones before measurements: differ.** Do not present full-by-promotion as a generally validated phone release merely because a marker exists. A clearly named, operator-authorized experimental cohort may exercise the built path with recoverable data and visible risks; broad default release awaits the reference iPhone and Android process, accessibility and crash-recovery tests. The marker cannot guarantee one death or a successful skinny reload.
+
+**REASONED — Next contact with reality:** instrument the real vessel topology and compare peak/steady process footprints at several corpus sizes; run long-session and eviction correctness tests; then test the marker boundary and screen-reader behavior on real iOS and Android. Those results can change the rollout recommendation without changing authority into a host label or making a clock decide width.
+EOF
+wc -l out3.md" in /home/joshu/.lares-scratch/research/dreamdom-width/terra
+ succeeded in 0ms:
+101 out3.md
+
+codex
+[**out3.md**](/home/joshu/.lares-scratch/research/dreamdom-width/terra/out3.md) contains the third-wave response. It runs 101 lines.
+hook: Stop
+hook: Stop Completed
+tokens used
+132,601
+[**out3.md**](/home/joshu/.lares-scratch/research/dreamdom-width/terra/out3.md) contains the third-wave response. It runs 101 lines.

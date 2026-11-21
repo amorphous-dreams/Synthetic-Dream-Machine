@@ -20,7 +20,7 @@ function mount(inputMaxChars = 16) {
   document.body.appendChild(host);
   const sink = createProjectionSink(host, { inputMaxChars });
   const sent: Array<{ surface: string; ev: LarMsg_ControlEvent }> = [];
-  sink.arm({ sendControlEvent: (surface, ev) => { sent.push({ surface, ev }); } });
+  sink.arm({ sendControlEvent: (surface, ev) => { if (!sent.some((prior) => prior.ev.eventId === ev.eventId)) sent.push({ surface, ev }); } });
   const root = host.shadowRoot!;
   const pane = (): HTMLElement => root.querySelector<HTMLElement>(".lar-projection")!;
   const sheet = (): string => root.querySelector<HTMLStyleElement>("style.lar-frame-style")?.textContent ?? "<no sheet>";
@@ -336,14 +336,15 @@ describe("★ the answer rail paints a refusal beside its control and clears it 
     m.done();
   });
 
-  test("a result for another epoch is ignored; CONTROL: the same answer under the shown epoch paints", () => {
+  test("a new epoch ends the pending act with stale-target; CONTROL: later answers to that id do nothing", () => {
     const m = mount();
     m.sink.apply(frame("lares", { epoch: 1, rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">bump</button>` }));
     const late = click(m, "7");
     m.sink.apply(frame("lares", { epoch: 2, rev: 1, html: `<button data-lar-rid="7" data-lar-on="click">bump</button>` }));
+    expect(m.refusals()[0]?.dataset["larReason"]).toBe("stale-target");
+    expect(m.sink.pendingActs()).toBe(0);
     expect(m.sink.applyResult(answer(late, { status: "stale-target", mountEpoch: 1 }))).toBe("ignored");
-    expect(m.refusals()).toHaveLength(0);
-    expect(m.sink.applyResult(answer(late, { status: "stale-target", mountEpoch: 2 }))).toBe("painted");
+    expect(m.sink.applyResult(answer(late, { status: "stale-target", mountEpoch: 2 }))).toBe("ignored");
     expect(m.refusals()).toHaveLength(1);
     // NONSENSE CONTROL: an answer to an event this page never relayed reaches no control.
     expect(m.sink.applyResult(answer({ ...late, eventId: "never-sent" }, { status: "stale-target", mountEpoch: 2 }))).toBe("ignored");

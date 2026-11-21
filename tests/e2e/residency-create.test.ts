@@ -17,7 +17,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
 
 const CAT_BAG = "lar:///ha.ka.ba/bags/witness-cat";
 const ORC_BAG = "lar:///ha.ka.ba/bags/witness-orc";
@@ -27,9 +27,8 @@ let catDocUrl = "";
 beforeAll(async () => { lar = await targetInstance(); }, 120_000);
 afterAll(async () => { await lar.stop(); });
 
-describe("residency CREATE — mint + register + plane-aware gate (staged witness)", () => {
+describe.skipIf(!stagedTarget)("residency CREATE — mint + register + plane-aware gate (staged witness)", () => {
   test("C1 — CREATE a catalog bag mints + registers (catalog/read gate)", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "CREATE", "--bag", CAT_BAG, "--yes", "--json"]);
     expect(r.json?.["ok"], `CREATE on the catalog plane failed: ${JSON.stringify(r.json)}`).toBe(true);
     const data = r.json?.["data"] as Record<string, unknown> | undefined;
@@ -40,7 +39,6 @@ describe("residency CREATE — mint + register + plane-aware gate (staged witnes
   }, 90_000);
 
   test("C2 — re-CREATE the same bag is idempotent: SAME doc, never a double-mint", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "CREATE", "--bag", CAT_BAG, "--yes", "--json"]);
     // Behavior witnessed: a re-CREATE of the same bag does NOT mint a second doc.
     // (Idempotency-key replay returns the first outcome; ok:true, same docUrl.)
@@ -53,7 +51,6 @@ describe("residency CREATE — mint + register + plane-aware gate (staged witnes
   }, 60_000);
 
   test("C3 — CREATE an oracle-plane bag mints (oracle/admin gate)", async () => {
-    if (lar.mode !== "staged") return;
     const r = await lar.cli(["act", "CREATE", "--bag", ORC_BAG, "--plane", "oracle", "--yes", "--json"]);
     expect(r.json?.["ok"], `CREATE on the oracle plane failed: ${JSON.stringify(r.json)}`).toBe(true);
     expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["verb"]).toBe("CREATE");
@@ -63,7 +60,6 @@ describe("residency CREATE — mint + register + plane-aware gate (staged witnes
   const DRY_BAG = "lar:///ha.ka.ba/bags/witness-dry";
 
   test("D1 — CREATE --dry-run reports the projected effect (and needs no --yes)", async () => {
-    if (lar.mode !== "staged") return;
     // No --yes: a dry-run is read-only, so it bypasses the confirmation gate.
     const r = await lar.cli(["act", "CREATE", "--bag", DRY_BAG, "--dry-run", "--json"]);
     expect(r.json?.["ok"], `dry-run CREATE failed: ${JSON.stringify(r.json)}`).toBe(true);
@@ -74,7 +70,6 @@ describe("residency CREATE — mint + register + plane-aware gate (staged witnes
   }, 60_000);
 
   test("D2 — the dry-run committed NOTHING: a real CREATE of the same bag still mints fresh", async () => {
-    if (lar.mode !== "staged") return;
     // If D1 had registered @witness-dry, this real CREATE would conflict (the
     // executeCREATE conflict-check). It MINTS instead → the dry-run wrote nothing.
     const r = await lar.cli(["act", "CREATE", "--bag", DRY_BAG, "--yes", "--json"]);

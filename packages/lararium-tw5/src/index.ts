@@ -39,6 +39,9 @@ export {
 export type { ActiveWikiSelectionSource } from "./active-wiki.js";
 export type { CameraMount } from "./tw5-camera.js";
 export { mountCamera } from "./tw5-camera.js";
+export { mountGlassCamera } from "./glass-camera.js";
+export { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
+export { preloadsFromCasBlob } from "./cas-preloads.js";
 export { mountProjection, dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 export {
   mountCoherenceProjection,
@@ -107,23 +110,36 @@ export type {
 } from "./types/tiddlywiki.d.ts";
 
 export { IslandAdaptor } from "./island-adaptor.js";
-export { buildIslandRecipe } from "./island-recipe.js";
+export { buildIslandRecipe, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
 export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
+export { composeFaceEngine, enginePool, faceEngines } from "./face-engine.js";
+export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
+export type { WikiEngine, WikiEngineDeps, WikiEngineSource, WikiEngines } from "./wiki-engine.js";
+export type { EnginePool, FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 export { getOriginBag } from "./residency-surface.js";
-export { registerActionReactors, makeActionReactorFor, makeTw5Deserializer } from "./action-handler.js";
+export { registerActionReactors, makeActionReactorFor, isFaceOwnedLayer, makeTw5Deserializer, makeFresherCanonReactor, makeOverrideBasesReactor } from "./action-handler.js";
+export { CANON_OFFER_VERBS, registerCanonOfferVerbs, makeOfferMakeReactor, makeOfferListReactor, makeOfferShowReactor, makeOfferPromoteReactor, type CanonOfferVerbOptions } from "./canon-offer-verbs.js";
+export type { FaceTargetResolver, IngestAlert } from "./action-handler.js";
+export { fresherThanBase, fresherAfterChange, listFresherCanon, listBaseUnknown, type FresherCanon, type BaseUnknownCopy } from "./override-bases.js";
 export type { Tw5Deserializer } from "./action-handler.js";
 export { canonicalizeNativeCarrierText } from "./native-canonical.js";
 export type { NativeCanonicalCarrier } from "./native-canonical.js";
 export { makeWikiBehavior } from "./wiki-behavior.js";
+export { hasPortLease } from "./record-port-lease.js";
 export type { WikiBehaviorOptions } from "./wiki-behavior.js";
 export { startEngineWatch, ENGINE_WAITING_ALERT_TITLE } from "./engine-watch.js";
 export { startRecipeWatch } from "./recipe-watch.js";
 export type { ActionHandlerOptions } from "./action-handler.js";
 
-export { exportMemeText, exportCarrierFile } from "./meme-write.js";
+export { exportMemeText, exportCarrierFile, exportRecordCarrierFile } from "./meme-write.js";
+export { armRenderedTiddlers, hasRenderedTiddlers, marksRendered, renderedTitleOf, renderTypeOf, RENDER_TYPE_FIELD, RENDER_TITLE_FIELD, RENDERED_TITLE_SUFFIX, type RenderedTiddlerPorts } from "./rendered-tiddler.js";
+export {
+  familyRefsOf, familyViewOf, wikiFamilyView, surfaceOrphanAlert, tendOrphanAlert, tendOrphanAlerts, renameFamilyInWiki, retitleSlotsInWiki,
+  type FamilyRenameWiki, type MemeAlertWiki,
+} from "./place-meme.js";
 export type { CarrierFile } from "./meme-write.js";
 export { installLazyResolver, skinnyCid } from "./lazy-resolver.js";
 export type { CarrierResolver as LazyCarrierResolver } from "./lazy-resolver.js";
@@ -137,13 +153,14 @@ export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
 export { recipeUri } from "@lararium/mesh/lar-uris";
 
-export type { IslandContext, IslandBehavior } from "./island-context.js";
+export type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
+export { controlOf } from "./island-context.js";
 export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
 export type { CaptureCapOptions } from "./capture/has-capture.js";
 export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface } from "./verb-dispatcher.js";
-export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, SurfaceDeclared } from "./verb-dispatcher.js";
+export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
 export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
 export { runLocalVerb, makeCapVerify } from "./verb-local-dispatch.js";
@@ -151,11 +168,16 @@ export type { CapVerify, RunLocalVerbOptions } from "./verb-local-dispatch.js";
 export { makeDaemonBehavior } from "./daemon-behavior.js";
 export type { DaemonBehaviorOptions } from "./daemon-behavior.js";
 export { seedDaemonUiTiddlers, makeSwitcherStateReactor, DAEMON_UI_TIDDLERS, SWITCHER_STATE_TITLE, LARES_SURFACE_STATE, LARES_SURFACE_TAG } from "./daemon-ui-tiddlers.js";
+export { KAHUA_SHADOW_PREFIX, kahuaShadowTitle, kahuaShadowOf, type KahuaShadow } from "./kahua-shadow.js";
+export { librarySlotUrl, kahuaLayerStore, liveKahuaFace, type LiveKahuaFace } from "./kahua-layer.js";
 export { seedDaemonPersonaTiddlers, makePersonaStateReactor, DAEMON_PERSONA_TIDDLERS, PERSONA_STATE_TITLE } from "./daemon-persona-tiddlers.js";
 export { seedDaemonCircleTiddlers, makeCircleStateReactor, DAEMON_CIRCLE_TIDDLERS, CIRCLE_STATE_TITLE } from "./daemon-circle-tiddlers.js";
 export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
+export { seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_PINS_TITLE, LAW_PINS_DEFAULT, LAW_FILTER, LAW_STEPS, LAW_CANON_BAG_PATTERN, LAW_TITLE_PATTERN, LAW_CANON_GUARD, LAW_PINS_FILTER, LAW_INDEX_FILTER, LAW_BOOT_SEED, LAW_MU_ROOT } from "./daemon-law-tiddlers.js";
 export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP } from "./daemon-roster-tiddlers.js";
+export { seedDaemonIntentTiddlers, DAEMON_INTENT_TIDDLERS, makeIntentViewReactor, INTENT_VIEW_CAP, INTENT_STATE_TITLE, INTENT_PANE_TITLE } from "./daemon-intent-tiddlers.js";
+export { seedShadows, DAEMON_SEED_PLUGIN_PREFIX } from "./daemon-ui-tiddlers.js";
 
 export { IslandKernel } from "./island-kernel.js";
 export { runSovereignKernel } from "./sovereign-kernel.js";
@@ -175,10 +197,10 @@ export {
   makeWhereReactor, makeResolveReactor, makeListWikisReactor,
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor,
   makeWikiPinReactor, makeWikiUnpinReactor,
-  makeWardAlertReactor, fileWardRefusal,
+  makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
 } from "./worker-data-verbs.js";
 export type { ResidencyOpPost } from "./worker-data-verbs.js";
-// The FOLLOW-GRAPH verbs over the sovereign @circles doc (source of truth; PRIVATE, fleet-synced
+// The FOLLOW-GRAPH verbs over the sovereign circles-plane doc (source of truth; PRIVATE, fleet-synced
 // same-operator, NEVER federated). Both vessels register them through the shared operator-daemon-behavior.
 export {
   makeCircleReactors, makeCircleAddReactor, makeCircleRemoveReactor, makeCircleListReactor,
@@ -188,15 +210,22 @@ export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
 // stays local to whichever node holds it). Store-level moves alone: no verb answers them, and the vessel's main
 // thread calls them from its custody door.
 export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
-export type { PersonaSelfRow } from "./persona-selves-plane.js";
-// The CABAL-REALM verbs over @daemon — the OFFERING that feeds a realm, and the verdict-free capture-clock.
+export type { PersonaSelfEntry } from "./persona-selves-plane.js";
+// The CABAL-REALM verbs over daemon-plane — the OFFERING that feeds a realm, and the verdict-free capture-clock.
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
-export { makeInitWikiReactor, makeOpenWikiReactor }   from "./wiki-mint-handlers.js";
+export { makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, WikiRetireRefusal } from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
-export { makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
+export { makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
+// The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
+export {
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
+} from "./tiddler-verbs.js";
+export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
+// The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
+export { makeOracleCastReactor } from "./oracle-cast-verb.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
 export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiResolver, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
 export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
@@ -204,13 +233,15 @@ export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
 export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
 export type {
-  WikiHandlerOptions, WikiMintHandlerOptions, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
+  WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, WikiShellCounts, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";
 export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-handlers.js";
+export { makeRestampBagTierReactor } from "./bag-tier-restamp.js";
+export type { RestampBagTierOptions } from "./bag-tier-restamp.js";
 export type { EpochHandlerOptions, RotateRecipeOptions } from "./compaction-handlers.js";
 export { makeResidencyStatsReactor } from "./residency-handlers.js";
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";
-export { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";
+export { makeCatalogAccessor, makeCatalogAccessorOver, findOrThrow, catalogCanonAddress } from "./catalog-accessor.js";
 export type { CatalogAccessor } from "./catalog-accessor.js";
 export { RECIPE_PLANES, effectiveRecipe, effectiveRecipeOf } from "./recipe-planes.js";
 export type { RecipePlane, EffectiveRecipe } from "./recipe-planes.js";
@@ -224,6 +255,8 @@ export type {
   WikiSlotComponent, DaemonCapDeps,
 } from "./core-caps.js";
 export { openDaemonVmCore, HostWorkingBindingRefusal } from "./daemon-vm-core.js";
+export { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON } from "./daemon-vm-holder.js";
+export type { DaemonVmHolder } from "./daemon-vm-holder.js";
 export type {
   DaemonVmHost,
   DaemonVmCore,
@@ -244,6 +277,7 @@ export type {
 
 export * from "./memetic-wikitext-sensorium.js";
 export { readCarrierShape } from "./carrier-shape.js";
+export { memeticVerdict, metaParityFaults } from "./meta-parity.js";
 // THE ONE ROOT-META LOCATOR — every reader composes onto this, so semantics agree by construction.
 export { metaFenceAt, rootMetaFence, rootMetaFields, metaValueRaw } from "./root-meta.js";
 export type { MetaFenceSpan } from "./root-meta.js";
@@ -254,8 +288,8 @@ export type { MetaFenceSpan } from "./root-meta.js";
 // never the path — see carrier-files.ts.
 export {
   carrierFiles, readCarrierFiles, forgetCarrierFiles,
-  declaresCarrier, inSubmodule,
-  SUBMODULES,
+  declaresCarrier, inSubmodule, inFrozenSpecimen, outsideCorpus,
+  SUBMODULES, FROZEN_SPECIMENS,
 } from "./carrier-files.js";
 export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
 // The carrier reader the genesis floor cut shares with every door that reads a carrier (`genesis-floor.ts`).
@@ -272,11 +306,11 @@ export { getGrammar, resetGrammar } from "./grammar-cache.js";
 // positionals a scheme would steal.
 export {
   readSigilAttrs, sigilAttr, sigilAttrValue, quotableAttrs,
-  positionalsOf, schemeShapedPositionals, lostPositionals,
+  schemeShapedPositionals, lostPositionals,
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";
-export { readCarrierEdges } from "./carrier-edges.js";
+export { homedInTheKahuWorkbench, readCarrierEdges } from "./carrier-edges.js";
 export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
 // THE STAGE A GOVERNED CARRIER STANDS IN — read off `tags`, so a filter answers it in the wiki.
 export {
@@ -286,3 +320,10 @@ export {
   checkCarrierLifecycle,
 } from "./carrier-lifecycle.js";
 export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
+
+export { placedAskIsLocal } from "./daemon-behavior.js";
+
+export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PROMOTE_STATE_TITLE } from "./promote-ui-tiddlers.js";
+export { makeShareSetReactor, makeShareListReactor, readShareEntries } from "./share-verbs.js";
+// The ONE spelling of a person's view-state set: the shared workbench's admit filter reads it (cabal-realm#/the-workbench).
+export { isPersonalTitle } from "./filters/lar-kind.js";

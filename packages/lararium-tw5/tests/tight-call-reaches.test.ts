@@ -22,10 +22,10 @@ import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js
 
 /** Each pair: the spaced call, and the same call written tight. */
 const PAIRS: ReadonlyArray<readonly [string, string, string]> = [
-  ["has",   '<<~ has Verb run "args/x">>',           '<<~has Verb run "args/x">>'],
-  ["scale", '<<~ scale organ "a ~ one -> b ~ two">>', '<<~scale organ "a ~ one -> b ~ two">>'],
-  ["stage", '<<~ stage "20" "Mischief-Muse">>',       '<<~stage "20" "Mischief-Muse">>'],
-  ["loops", '<<~ loops "✶ observe -> ↺ aftermath">>', '<<~loops "✶ observe -> ↺ aftermath">>'],
+  ["has",   '<<~ has entity=`Verb` name=`run` params=`args/x`>>',      '<<~has entity=`Verb` name=`run` params=`args/x`>>'],
+  ["scale", '<<~ scale name=`organ` ranks=`a ~ one -> b ~ two`>>',    '<<~scale name=`organ` ranks=`a ~ one -> b ~ two`>>'],
+  ["stage", '<<~ stage rank=`20` name=`Mischief-Muse`>>',             '<<~stage rank=`20` name=`Mischief-Muse`>>'],
+  ["loops", '<<~ loops phases=`✶ observe -> ↺ aftermath`>>',          '<<~loops phases=`✶ observe -> ↺ aftermath`>>'],
 ];
 
 describe.skipIf(wikiSkip)(`a tight call reaches its definition${skipNote}`, () => {
@@ -38,8 +38,8 @@ describe.skipIf(wikiSkip)(`a tight call reaches its definition${skipNote}`, () =
   });
 
   test("CONTROL — a head no definition answers to still echoes, tight or spaced", () => {
-    expect(r("<<~ vorpal-snicker x>>")).toContain("vorpal-snicker");
-    expect(r("<<~vorpal-snicker x>>")).toContain("vorpal-snicker");
+    expect(r("<<~ vorpal-snicker alpha=`x`>>")).toContain("vorpal-snicker");
+    expect(r("<<~vorpal-snicker alpha=`x`>>")).toContain("vorpal-snicker");
   });
 
   /**
@@ -61,7 +61,7 @@ describe.skipIf(wikiSkip)(`a tight call reaches its definition${skipNote}`, () =
     // Measured in a BARE wiki: a tight call to an undefined macro renders NOTHING — text and all,
     // gone. This rule steps aside only where the shelf registers the head, so an unregistered tight
     // call still reaches the gradient rather than the void.
-    expect(r('<<~vorpal-snicker A B "c">>')).toMatch(/lar-sigil-degraded/);
-    expect(r('<<~vorpal-snicker A B "c">>')).toContain("vorpal-snicker");
+    expect(r('<<~vorpal-snicker alpha=`c`>>')).toMatch(/lar-sigil-degraded/);
+    expect(r('<<~vorpal-snicker alpha=`c`>>')).toContain("vorpal-snicker");
   });
 });

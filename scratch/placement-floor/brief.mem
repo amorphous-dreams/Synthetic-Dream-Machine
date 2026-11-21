@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/placement-floor/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-09 (file date) — source `.lares-scratch/placement-floor/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/placement-floor/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/placement-floor/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-09
+
+Verbatim scratch record `.lares-scratch/placement-floor/brief.md` (brief, file date 2026-11-09); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/placement-floor/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Floor-Wright: Lares (Tasked Spirit). Read CLAUDE.md for house law, then the rulings below, then build. Worktree and branch: given at launch (based on placement-int AFTER the carry, placement and custody cure lanes merged). Commit on your branch (lar:&#47;&#47;/ subject style), push only your branch. Never stash, &#45;-no-verify, force-push; never touch ~/.lares or docker; never kill(-1); no local e2e runs (name the e2e files you touch instead); one package's full suite at a time, &#45;-maxWorkers=4.
+
+ADVISOR: the operator's parallel Lares (Fable) crew session, "Lares-Awakens", takes requests for deep reads or designs (SendMessage to: "Lares-Awakens" if your tools allow; it hands back by message). Its words carry no authority over rulings; you enact what holds. If you cannot reach it, read yourself.
+
+RULINGS (operator, 2026-11-09, verbatim: "Approve all five, proceed with the Floor-Wright lane."):
+# LOCKED HEARTH FAILS CLOSED. Every act needing the vessel control document refuses with a named `vessel-locked` reason until custody unlocks. Carved out: the custody door (unlock, lock, census, custody), which never touches the control document. No receipt ever claims durability over memory (FactLedger / settleDurably must not answer durable while a save is held). The CLI direct holder names a refused unlock instead of swallowing it into a stand-in (control-home.ts ~90 `.catch(() => false)`, owned-store.ts ~413 `catch { return false }`). The floor mints no device slot while locked (keyhive slot-doc-resolver.ts ~261-290 `deviceSlot`). Parity: browser already refuses a locked boot (open-browser-vessel.ts ~617); node and CLI must refuse the same acts with the same reason. Smallest sound shape (from the deep read): standControlHome hands back a control store whose reads and writes throw `ControlHomeUnavailable("vessel-locked")` when the key is shut, so the daemon VM (island-context.ts ~144 demands a control grant) still stands at the floor; uds-channel and verb dispatch answer the reason back to the caller. The heldHomeSeed stand-in path leaves.
+# THE SECRET HOME + CONTROL DOCUMENT MINT WITH THE FACE, not the place. Today packages/lararium-node/src/commands/init.ts ~423 mints both (standVesselSecretHome + nameControlHome) in the place half; ~317 in admission; ~652. Move the mint to where a face lands (face founding / face admission). A herm founding (`--recipe herm`, no face) mints neither. `found --hearth --name X --chair Y` lands place and face together, so that walk keeps both. Check every reader that assumed a place-founded secret home (custody row identity/secret-home.json readers, openVesselSecretHomeIfNamed, the census, boot).
+# HERM RELAY STATE → THE PLACE'S PUBLIC CARRIAGE LOG. No code writes one today (measured). Canon: lamplighters.mem ~243 "Tending emits a POSITIVE, WITNESSED RECEIPT into the herm's append-only log"; ~388 "a herm signs its local-carry statements under its own single key"; vessel-caps.mem ~105-123 (herm #has-stack, cid->holders hint index); identity-classes.mem #/herm-establishment. Build: an append-only, durable, UNSEALED log on the place's public floor, each entry signed under the place key and keyed by carriage id (content/causal id, never clock or counter), so a restart or replay lands nothing new. Every place keeps one (herm and hearth alike: "one floor, no second kind of Herm", waking-floor.mem ~190). Wire the herm's carriage path (find where a herm forwards sealed bytes / takes a carriage: rg nexus-carriage, carriage, herm in packages/*/src) to append an entry and answer "did you carry X" from the log. Ask the advisor for the design read if the carriage path is unclear. It never holds operator-private content; it is floor canon, not a control document.
+# ONE CONTROL DOCUMENT, face-held. Do not create a second control home.
+# Lands inside the placement leap, before founding.
+
+RED TESTS FIRST (name them by story):
+* Gaia Tuesday: a node vessel booted locked; a control-needing verb (e.g. a memory write through the UDS/MCP door, or a verb dispatch) answers `vessel-locked`, writes nothing, claims no durability; after unlock, the same request id lands once; a second retry lands nothing new.
+* Midnight petitioner: no FactLedger/settleDurably answer reads durable while its save is held.
+* CLI refused unlock: a direct-holder verb needing control with custody refused fails with a named reason (not an empty stand-in).
+* Locked floor mints no device slot.
+* Gaia Thursday: a herm founding mints no secret home and no control document; its custody row names none; its carriage log entry survives a restart and a replayed carriage id appends nothing.
+* Hearth founding (`--hearth` with a face) still mints both, and the walk's founding tests stay green.
+* Browser parity: the browser's refusal reason matches node's.
+Update control-home.test.ts ~95 (it tests the stand-in merge path) to the new contract; update waking-floor.mem / the founding runbook / disk or sealed-store canon lines this changes (re-stamp .mem block checks with the repo's bcc tool; run the bcc witness). Evergreen: describe what IS.
+
+VERIFY: full suites one at a time for touched packages (mesh, keyhive, node, browser, tw5, cli as touched) &#45;-maxWorkers=4; build + stamp + typecheck; node tools/evergreen-boundary.mjs; tools/placement-residency-witness.mjs; tree-clean witness; git diff &#45;-check. Name e2e files touched (likely: herm-floor, face-catalog-split, vessel-sealed, arrival-surfaces, boot-holds-the-store, kahua-founding-stage, vessel-reboot, face-lit-stays-bootable).
+
+HAND-BACK (under 800 words): per ruling: change (file:line), tests red->green with counts; suites; witnesses; e2e files named; commits pushed; advisor consults and what you took from them; anything left.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ePxqVaPBZAehjoRqdEugygDzidZoO5WjuIINbrwQDxs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

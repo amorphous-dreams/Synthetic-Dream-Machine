@@ -16,7 +16,7 @@ import { world, presenter, AUDIENCE, type World, type Presenter } from "../../la
 import { faceGateServer, gateSessionRegistry } from "../src/face-gate-server.js";
 import { gateSyncServer } from "../src/gate-sync-server.js";
 import { restingRepo, type RestingRepo } from "./resting-repo.js";
-import { dialer, realDeadlines } from "./oracle-floor-rig.js";
+import { dialer, realDeadlines } from "./flow-floor-rig.js";
 
 /** Node-side readiness override (as `open-node-vessel` stands it): ready from listen, never from a first client. */
 class ReadyWSServerAdapter extends NodeWSServerAdapter {

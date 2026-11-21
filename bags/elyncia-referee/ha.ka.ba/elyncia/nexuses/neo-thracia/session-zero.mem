@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "kapu"
 role      = "referee doc — Session Zero notes for the Neo-Thracia campaign arc"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Neo-Thracia ~ Session Zero
 
@@ -26,7 +22,7 @@ untouched; md table separator rows dropped.//
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Session Zero — Caverns of Thracia Operation Dossier
 *Addressed from ''The Lindwyrm'' (New Delos Nexus) to ''Lady Aki'' (Grandmother Spider’s folk, Broken Isles) and crew*  
@@ -180,6 +176,6 @@ Bring three agreements to the first session:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;58LPhnePDS_UH03YtRxSYj1SNiEH9ep-5kINQXj38Hg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-36EYSbMRnFhXgV-4O1PLo_5Njd2jtBR2MBjU2XpvZk`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

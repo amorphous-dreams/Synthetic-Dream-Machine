@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-7/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-7/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The PID-namespace and hand-back changes address the specific round-6 examples, but the broker’s controller-side placement checks still admit state and push authority in another writable lane. Supervision failure paths also leave completion and cleanup incomplete.
+
+All findings are ''LEAD'' conclusions from source and test inspection. I did not run tests, construct payloads, or write files. Green CI at `5c21bc5aa` and run `41968486237`, including the live bubblewrap proofs, are ''MEASURED reports supplied in the hand-off'', not independent measurements by this review.
+
+# ''P1 — Controller authority can still be placed in another lane.'' [[commit-relay.mjs:27|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:27]] excludes the go directory from this relay’s lane and worktree, but does not exclude another scratch lane. Its broker-state check at [[line 40|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:40]] likewise compares against only the current lane and worktree’s top-level scratch directories. A different lead with that other lane writable can therefore control the go and supposedly broker-owned `broker-iso`, including its persisted worktree registry. That undermines both the push authorization and the ownership assumption behind broker staging and cleanup. The [[placement test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:477]] covers the current lane’s scratch tree, not a different writable lane. This repeats the ''whole cross-lane authority-placement surface'', even though the new launcher seat root itself excludes all of `.lares-scratch`.
+
+# ''P2 — Exceptional supervision and an unempty group bypass the complete hand-back and cleanup.'' [[superviseSeat|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:420]] writes only `verdict` and `error` when supervision throws; it does not remove the broker seat directory. [[superviseInner|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:465]] also returns `unstopped` before writing any completion marker or cleaning up. The caller’s PID check prevents an indefinite marker-only wait, but these paths do not provide the claimed marker fields or cleanup. The [[exception test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1087]] checks only the verdict, and the normal [[hand-back test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1041]] proves cleanup on success. The root size check is a pre-launch threshold, not a bound on a currently running seat’s output.
+
+# ''P2 — The fixed seat-root check does not establish isolation from every granted root.'' [[launch-codex.mjs:533|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:533]] checks the new root against this launch’s paths. Yet build preflight permits a worktree outside scratch ([[line 367|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:367]]), and build mode grants that worktree writable access ([[line 204|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:204]]). A separately launched build whose writable worktree is an ancestor of the fixed root is not accounted for when another seat starts. Mode `0700` does not isolate processes running as the same user. The [[root test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:929]] covers scratch placement, symlinks and permissions, not another seat’s granted ancestor.
+
+The round-6 cures otherwise have targeted evidence:
+
+* The fixed seat root rejects scratch locations and unsafe components; the [[root test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:929]] would catch those specific regressions. The [[dry-run test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:955]] checks that an absent root stays absent.
+* The [[namespace test and uncontained control|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1011]] exercise a descendant that creates a new session. The full containment command is probed at [[seat-walls.mjs:52|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:52]], and launch refuses if it is unavailable.
+* The [[hand-back cap test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1033]] puts directories and symlinks ahead of `final.md`; the [[reuse and marker test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1041]] pins moving prior results and writing the normal marker after copying. The partial-copy test checks `handbackError`; finding 2 concerns the other exits.
+* [[killGroup|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:415]] rejects non-integers and IDs at or below 1. Its [[guard and source-witness tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1096]] address the reported `kill(-1)` incident. The accepted PID-reuse edge remains: the exit handler and later poll signal the host process-group ID after exit ([[lines 444 and 465|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:444]]). The nested PID namespace contains seat descendants; it does not reserve that host ID after the child is reaped.
+
+On the remaining requested confirmations: the broker’s poison, hook, filter, submodule and read-race tests support the exercised paths, but finding 1 prevents a universal no-authority-leak conclusion. The relay rejects lead launches and binds push go to branch and head, subject to that placement finding. Marker matching and blindness/error tests support ordinary rollout association and fail-closed watching; the accepted host PID-reuse edge prevents saying the watchdog can //never// signal a wrong group.
+
+The receipt signs tree, check names and definitions, and the key and receipts remain in memory; the forgery and read-only-tree tests support those properties subject to the documented host ptrace and seat seccomp assumptions. Missing walls refuse by name before check or install execution. The mode and pool tests cover the stated floors and thresholds; I found no further floor regression, while findings 2–3 limit the new launch and completion guarantees.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0SNlFL0sca_CmWLFocCoN3jsSYlweyDvPdTFyiWjPDY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

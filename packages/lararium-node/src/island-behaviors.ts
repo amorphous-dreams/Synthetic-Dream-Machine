@@ -10,20 +10,29 @@
  * Meme: lar:///ha.ka.ba/lararium/node/island-behaviors
  */
 
-import { mkWikiVerbResult } from "@lararium/mesh";
+import { resolve as resolvePath, sep } from "node:path";
+import { mkWikiVerbResult, wikiSlotUri } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import type { VesselJournal } from "@lararium/mesh";
-import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText } from "@lararium/tw5";
+import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
-import { SyncedTree, syncedTreeDir } from "./synced-tree.js";
-import { larProjectionDir } from "./vessel-paths.js";
+import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
+import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
+import { facePoolHeads } from "./pool-head.js";
+import { checkoutTracking } from "./checkout-carriers.js";
+import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
+import { loadLaresConfig, tempExpiryDays, tempProjectionConsented } from "./lares-config.js";
 import { SHORE_VERB, answerShore } from "./shore-verb.js";
 import { bagProjectedEvent } from "./journal-append-gate.js";
+
+export function hostEvent(wikiUri: string, listenable: string, payload: Record<string, string | number | boolean>) {
+  return { type: "event" as const, wikiUri, listenable, payload: { ...payload, origin: "channel" as const } };
+}
 
 /** The projector this island mounted, while it stands. One island runs per worker, so one seat suffices. */
 let mountedProjector: LarDiskProjector | null = null;
@@ -72,6 +81,22 @@ export function carrierFileOf(exportFn: (uri: string) => CarrierFile | null): (u
   };
 }
 
+/**
+ * THE FAR SIDE CLOSES: a watch that resolves once the island's Repo holds no sync peer, at once where it holds
+ * none now, else when its last peer disconnects. The event is the link's own; no clock decides.
+ */
+export function farSideClosedOf(repo: Pick<IslandContext["repo"], "peers" | "networkSubsystem">): { readonly promise: Promise<void>; readonly cancel: () => void } {
+  const net = repo.networkSubsystem;
+  let cancel = (): void => {};
+  const promise = new Promise<void>((resolve) => {
+    if (repo.peers.length === 0) { resolve(); return; }
+    const onGone = (): void => { if (repo.peers.length === 0) { cancel(); resolve(); } };
+    cancel = () => { net.off("peer-disconnected", onGone); };
+    net.on("peer-disconnected", onGone);
+  });
+  return { promise, cancel: () => cancel() };
+}
+
 /** The carrier door a projector mounts over an island's own VM. */
 export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (uri: string) => Promise<CarrierFile | null> {
   return carrierFileOf((uri) => exportCarrierFile(tw5, uri));
@@ -85,24 +110,47 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  * Mount the disk projection an island's manifest grants: one `LarDiskProjector` over
  * `manifest.diskMirrors`, the ONE render shore, the shadow-aware unlink gate and the disk-ward.
  * A wiki island and the daemon island call the same function — the daemon wiki projects to
- * `<root>/wikis/daemon/` exactly as a wiki's working layer projects to `<root>/wikis/<slug>/`.
+ * `<projections>/faces/<pet name>/wikis/daemon/` much as a wiki's working layer projects to `<projections>/realms/<realm pet name>/wikis/<slug>/`.
  */
 export function mountDiskProjection(
   manifest: IslandMsg_Manifest,
   ctx: IslandContext,
   opts: { readonly journal?: VesselJournal } = {},
 ): (() => Promise<void>) | undefined {
-  const mirrorDefs = manifest.diskMirrors;
-  if (!mirrorDefs?.length) return undefined;
-  const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope, guardNexusHandles }) =>
-    namedBagMirror(bagId, scope, mirrorRoot, guardNexusHandles),
+  const allDefs = manifest.diskMirrors;
+  if (!allDefs?.length) return undefined;
+  // THE USER TEMP LAYER stands only for this island's own wiki and only under `<root>/projections`: any other temp grant
+  // drops here, before the projector learns of it.
+  const tempSlug = manifest.recipe?.wikiSlug ?? "";
+  const tempDefs = allDefs.filter((def) => def.tempLayer);
+  const projectionsRoot = tempDefs.length === 0 ? null : (() => { try { return resolvePath(larProjectionsHome()); } catch { return null; } })();
+  const tempMirrors = tempDefs.filter((def) =>
+    tempSlug !== "" && def.bagId === wikiSlotUri(tempSlug, "temp") && projectionsRoot !== null && resolvePath(def.mirrorRoot).startsWith(projectionsRoot + sep)
+    && ctx.composite.storeForBag(def.bagId) !== null);
+  const mirrors = allDefs.filter((def) => !def.tempLayer || tempMirrors.includes(def)).map(({ bagId, mirrorRoot, scope, titlePaths, mirrorClass, tempLayer }) =>
+    namedBagMirror(bagId, scope, mirrorRoot, titlePaths, mirrorClass, tempLayer),
   );
+  // READ-BACK AHEAD OF THE FIRST PASS: the temp layer comes up empty at every restart, so each carrier its mirror holds
+  // re-enters the layer's store before the projector starts; the start scan then finds every record standing, and no
+  // carrier reads as dropped (`temp-layer.ts`).
+  for (const def of tempMirrors) {
+    const store = ctx.composite.storeForBag(def.bagId)!;
+    const holds = (title: string): boolean => {
+      const record = (store as { readNow?: (t: string) => { record: { meta?: { deleted?: boolean } } | null } }).readNow?.(title)?.record;
+      return record !== null && record !== undefined && record.meta?.deleted !== true;
+    };
+    const read = readBackTempCarriers({
+      mirrorRoot: def.mirrorRoot, holds,
+      put: (fields) => { void store.put({ tiddler: fields }, { kind: "operator-import", sessionId: "temp-read-back" }); },
+    });
+    if (read.read > 0 || read.refused > 0) console.log(`[temp-layer] ${tempSlug}: ${read.read} carrier(s) read back, ${read.refused} refused`);
+  }
   // The Synced tree (Confluence merge base) sits at the INSTANCE ROOT (the dir
   // holding bags/) under .lararium-projection/ — observation state,
   // never a meme surface, never inside bags/; the ingest gate reads the
   // same file. mirrorRoot shape under the full-path-inside-bag ruling:
   // <root>/bags/<scope> → up two.
-  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionDir()));   // runtime → ~/.lares
+  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));   // runtime → <root>/hearth/checkpoints
   const projector = new LarDiskProjector({
   mirrors,
   // The ONE render shore: a carrier projects back to ITS OWN filetype
@@ -110,6 +158,38 @@ export function mountDiskProjection(
   // + a `.meta` sidecar). The VM registry decides type + bytes; the
   // projector only sites them.
   carrierFileFn: vmCarrierFile(ctx.tw5),
+  recoveryStore: (bagId) => ctx.composite.storeForBag(bagId),
+  // THE DOCUMENT EACH MIRRORED BAG RESTS IN: every base names it, so a file another face's workbench document mirrored
+  // under the same bag id answers to that document alone.
+  documentOf: (bagId) => (ctx.composite.storeForBag(bagId) as { readonly documentId?: unknown } | null)?.documentId as string | undefined ?? null,
+  recoveryFileFn: async (fields) => {
+    const title = fields["title"];
+    if (typeof title !== "string") return null;
+    const tiddler = new ctx.tw5.$tw.Tiddler(fields);
+    return {
+      ext: ".tid",
+      body: `${tiddler.getFieldStringBlock({ exclude: ["text", "bag", "$origin-bag"] })}\n\n${typeof fields["text"] === "string" ? fields["text"] : ""}`,
+      defaultRelPath: `${encodeURIComponent(title)}.tid`,
+    };
+  },
+  // A SHADOWED OWN RECORD renders off its bag's own records: the root and its own fragment records, read from that bag
+  // alone, through the same shore the resolved view renders through (`exportRecordCarrierFile`).
+  recordFileFn: async (bagId, uri) => {
+    const store = ctx.composite.storeForBag(bagId);
+    if (!store) return null;
+    const records = new Map<string, Record<string, unknown>>();
+    const root = await store.get(uri);
+    if (!root || root.meta?.deleted) return null;
+    records.set(uri, root.tiddler);
+    for (const title of await store.listVisible()) {
+      if (!title.startsWith(`${uri}#`)) continue;
+      const record = await store.get(title);
+      if (record && !record.meta?.deleted) records.set(title, record.tiddler);
+    }
+    return carrierFileOf((u) => exportRecordCarrierFile(ctx.tw5, u, records))(uri);
+  },
+  // The composition's top record, a tombstone included: a deliberate deletion above a mirrored bag stays a deletion.
+  topRecordFn: (uri) => ctx.composite.get(uri),
   // A POINTER projects as the whole file beside its `.meta`: the bytes come from the same
   // cid/ tier the lazy resolver reads (THE BLOB LAW, content-handle.ts).
   ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
@@ -121,51 +201,32 @@ export function mountDiskProjection(
   // Where a bag stands in this island's composition: the settle word tells a carrier a higher bag shadows from one
   // whose records have not reached the view yet.
   layerIndexOf: (bagId) => ctx.composite.layerIndexOf(bagId),
+  // THE SETTLE WORD FOLLOWS HEADS: the wiki has landed a bag's document up to the heads a gesture named
+  // (`wikiLandedCovers`), and the far side has closed when the island's Repo holds no sync peer: no record
+  // comes through a link that closed (`farSideClosedOf`), unless the island's own replica holds the heads (`docHolds`).
+  viewHolds: (bagId, _uri, heads) => wikiLandedCovers(ctx.tw5, bagId, heads),
+  farSideClosed: () => farSideClosedOf(ctx.repo),
+  docHolds: (bagId, heads) => ctx.composite.storeForBag(bagId)?.holdsHeads?.(heads) === true,
   // Disk-ward refusal → the daemon VM (the generic worker.event → placeVerb
   // bridge routes any event whose payload carries `verb`). The daemon audits
   // it durably and injects a $:/tags/Alert into the operator's pinned VM.
-  onRefusal: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "disk-ward:refused",
-    payload: { verb: "ward-alert", requestedBy: "disk-ward", bagId: info.bagId, uri: info.uri, reason: info.reason },
-  }),
+  onRefusal: (info) => ctx.post(hostEvent(ctx.wikiUri, "disk-ward:refused", { verb: "ward-alert", requestedBy: "disk-ward", bagId: info.bagId, uri: info.uri, reason: info.reason })),
   // The Confluence's projecting leg read a STANDOFF — disk and records both moved past the
   // merge base, so the projector stood down and the divergence must reach the operator
   // (the ruling: conflict-surfacing in BOTH legs). ONE RAIL, NOT A SECOND: it rides the
-  // same ward-alert verb the disk ward rides — the rail `fileWardRefusal` was already
-  // generalized for (the M3 archive-floor write files here too) — and `wardKind` names the
+  // same ward-alert verb the disk ward rides — the rail `fileWardRefusal` generalizes
+  // (the archive-floor write files here too) — and `wardKind` names the
   // mechanism that actually stood down, so an operator is never sent to the disk ward for
   // a conflict. The wire `kind`/`cause` stay Rail A's transport names, per that ruling.
-  onConflict: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:conflict",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff },
-  }),
+  onConflict: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:conflict", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff })),
   // The standoff the projector surfaced stands resolved: the same rail carries its key with `resolved`,
   // and the alert that key raised clears. No audit row rides a resolution.
-  onConflictResolved: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:resolved",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true },
-  }),
+  onConflictResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true })),
   // A file vanished from the path its base names: the projector wrote nothing back and tombstoned nothing.
   // ONE ALERT PER BAG names the count and rides the same rail under its own ward kind; the set's key names
   // the audit row and the live alert, and the set's end clears it.
-  onPendingRemoval: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:pending-removal",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key },
-  }),
-  onPendingRemovalResolved: (info) => ctx.post({
-    type: "event",
-    wikiUri: ctx.wikiUri,
-    listenable: "confluence:pending-removal-resolved",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", standoff: info.key, resolved: true },
-  }),
+  onPendingRemoval: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key })),
+  onPendingRemovalResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:pending-removal-resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", standoff: info.key, resolved: true })),
   // THE `remove` ANSWER'S DELETE DOOR: a hand's delete of the carrier root in this island's wiki. The wiki
   // shore carries it like any hand delete: its adaptor routes the tombstone (the working layer, shadowing
   // canon) and removes the slot children.
@@ -184,6 +245,12 @@ export function mountDiskProjection(
   canonicalizeNativeFn: (uri, ext, diskBody, diskMeta) =>
     canonicalizeNativeCarrierText(makeTw5Deserializer(ctx.tw5), uri, ext, diskBody, diskMeta),
   syncedTree,
+  // HEAD'S WORDS WHERE NO BASE STANDS (face-pools A5): a re-found clears the tree, and a face pool's last sitting names the
+  // agreement in its stead. A file outside every face pool, or a pool with no `.git`, reads none and spawns no git.
+  baseFromGit: facePoolHeads(() => { try { return larProjectionsHome(); } catch { return null; } }),
+  // THE OWED COMMITS: a file a mirror root inside a checkout holds and git never tracked holds the only copy, so the records
+  // dropping its carrier never unlinks it, and the census names it by path. The house's own face pools stand apart.
+  untrackedAt: checkoutTracking(() => { try { return larProjectionsHome(); } catch { return null; } }),
   ...(opts.journal ? { journal: opts.journal } : {}),
   ...(!opts.journal ? {
     onBagProjected: (info: { bagId: string; path: string }) => ctx.post(bagProjectedEvent(ctx.wikiUri, info)),
@@ -191,7 +258,30 @@ export function mountDiskProjection(
   });
   const stop = projector.start(ctx.tw5);
   mountedProjector = projector;
+  bindRecoveryAtRest(ctx.tw5, (bag, title, fields) => projector.recoveryAtRest(bag, title, fields));
+  // HOUSEKEEPING per temp mirror: once the first pass settles, then once a day; each run reads the consent row and the
+  // expiry window afresh from `<root>/config/config.json`.
+  const housekeepers = tempMirrors.map((def) => {
+    const store = ctx.composite.storeForBag(def.bagId)!;
+    return new TempLayerHousekeeper({
+      bagId: def.bagId, slug: tempSlug, mirrorRoot: def.mirrorRoot, projectionsRoot: projectionsRoot!,
+      policy: () => { const cfg = loadLaresConfig(); return { consent: tempProjectionConsented(cfg, tempSlug), expiryDays: tempExpiryDays(cfg, tempSlug) }; },
+      record: async (title) => {
+        const record = await store.get(title);
+        return record === null ? "absent" : record.meta?.deleted ? "gone" : "live";
+      },
+      lastWritten: (title, path) => { syncedTree.reread(syncedTreeKey(def.bagId, title)); return syncedTree.baseAt(syncedTreeKey(def.bagId, title), path)?.disk ?? null; },
+      forget: (title, path) => syncedTree.deleteAt(syncedTreeKey(def.bagId, title), path),
+      holdsOpen: (title) => projector.writing.has(title)
+        || projector.pendingRemovals().some((p) => p.bagId === def.bagId && p.uri === title)
+        || projector.standing().some((st) => st.bagId === def.bagId && st.uri === title),
+      onError: (err) => console.error(`[temp-layer] ${tempSlug}: housekeeping skipped: ${(err as Error).message}`),
+    });
+  });
+  if (housekeepers.length > 0) void projector.idle().then(() => { for (const h of housekeepers) h.start(); });
   return async () => {
+    for (const h of housekeepers) await h.stop();
+    bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
     await stop();
   };

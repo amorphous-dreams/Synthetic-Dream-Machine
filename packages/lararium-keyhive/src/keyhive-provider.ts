@@ -9,8 +9,8 @@
  *   - Peer DID = hex-encoded Identifier bytes (matches Keyhive.idString)
  *   - Access "read" / "admin" passes through verbatim
  *
- * Bag URL ↔ DocumentId mapping lives in-memory; TODO: persist it as
- * tiddler fields under each cap event so it survives daemon restart.
+ * The bag URL ↔ DocumentId mapping lives in memory here; `registerBagsDurably` (bag-doc-ledger.ts)
+ * persists it through a `BagDocLedger`, so it survives a daemon restart.
  *
  * Caveats (pre-alpha):
  *   - No security audit; not for adversarial multi-peer use
@@ -382,6 +382,21 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
+   * FORGET a bag's Document mapping (`lares wiki retire`): this provider names no Document for `bagUrl` until a later
+   * `registerBag` or `adoptBag`. The Document's capability events stay where they rest (Keyhive keeps no delete); only this
+   * stand's binding and the ciphertext it cached for the bag leave. Returns the Document id it named, or null.
+   */
+  async forgetBag(bagUrl: string): Promise<string | null> {
+    const prior = this.bagToDocId.get(bagUrl);
+    if (!prior) return null;
+    this.bagToDocId.delete(bagUrl);
+    this.docIdToBag.delete(prior);
+    this.bagChunks.delete(bagUrl);
+    if (this.chunkRest) await this.chunkRest.drop(await this.chunkShelf(bagUrl, prior));
+    return prior;
+  }
+
+  /**
    * Adopt a bag's document minted by a PEER — the joinee records the founder's `docId` for a shared bag URL
    * instead of generating its own (`registerBag` mints a NEW doc, which would never match). The founder ships
    * the docId; after the joinee ingests the membership events, `requireDoc` resolves it and content decrypts.
@@ -503,7 +518,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /** The opaque name a bag's tracked chunks rest under: a digest of the bag URL and its document, so the URL
-   *  never reaches the rest. A reminted bag takes a fresh shelf, and the old one gets dropped. */
+   *  never reaches the rest. A reminted bag takes a fresh shelf, and the shelf under its prior document gets dropped. */
   private async chunkShelf(bagUrl: string, docIdHex: string): Promise<string> {
     return hexEncode(await webDigest("SHA-256", new TextEncoder().encode(`${bagUrl}\n${docIdHex}`)));
   }
@@ -608,6 +623,30 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (!audience || !bagUrl) {
       throw new Error(`revoke(): no audience/bag tracked for delegationId ${delegationId.slice(0, 16)}…`);
     }
+    const bytes = await this.revokeMemberOfBag(bagUrl, audience);
+    // This delegation is revoked — drop local tracking so a re-revoke fails loud rather than re-firing.
+    this.delegations.delete(delegationId);
+    this.delegationAudience.delete(delegationId);
+    this.delegationBag.delete(delegationId);
+    return { bytes };
+  }
+
+  /**
+   * Take one audience back from one bag by the pair, with no delegation id: the id lives in this process's memory, and a
+   * share removal lands in a process that never made the delegation. `revoked` where the revocation fired; `none` where this
+   * hive holds no such bag, so no delegation of its own stands there. Every tracked delegation of the pair drops with it.
+   */
+  async revokeAudience(bagUrl: string, audience: string): Promise<"revoked" | "none"> {
+    if (!this.bagToDocId.get(bagUrl)) return "none";
+    await this.revokeMemberOfBag(bagUrl, audience);
+    for (const [id, who] of [...this.delegationAudience]) {
+      if (who !== audience || this.delegationBag.get(id) !== bagUrl) continue;
+      this.delegations.delete(id); this.delegationAudience.delete(id); this.delegationBag.delete(id);
+    }
+    return "revoked";
+  }
+
+  private async revokeMemberOfBag(bagUrl: string, audience: string): Promise<Uint8Array> {
     const docIdHex = this.bagToDocId.get(bagUrl);
     if (!docIdHex) throw new Error(`revoke(): bag not registered: ${bagUrl}`);
     const docId = new KH.DocumentId(hexToBytes(docIdHex));
@@ -625,18 +664,13 @@ export class KeyhiveProvider implements CapabilityProvider {
       throw new Error("revoke(): revokeMember produced no revocation events");
     }
     // Mirror delegate()'s "signature as id"; the events themselves ride the event_handler → EventStore.
-    const bytes = revocations[0]!.signature;
-    // This delegation is revoked — drop local tracking so a re-revoke fails loud rather than re-firing.
-    this.delegations.delete(delegationId);
-    this.delegationAudience.delete(delegationId);
-    this.delegationBag.delete(delegationId);
-    return { bytes };
+    return revocations[0]!.signature;
   }
 
   async verify(args: VerifyArgs): Promise<VerifyResult> {
     const docIdHex = this.bagToDocId.get(args.bagUrl);
     if (!docIdHex) {
-      return { ok: false, reason: `bag not registered: ${args.bagUrl}` };
+      return { ok: false, kind: "bag-not-registered", bagUrl: args.bagUrl, reason: `bag not registered: ${args.bagUrl}` };
     }
     await this.ensureIsland(docIdHex);   // CIV-2b — first access materializes a boot-deferred island
     const docId = new KH.DocumentId(hexToBytes(docIdHex));
@@ -896,6 +930,31 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
+   * Whether `agent` holds any access in the Document `docIdHex` AS THIS REPLICA READS IT. A Document this hive holds no
+   * reading of (another face's, never ingested here) answers false: a seat nobody can read seats nobody.
+   */
+  async seatedInDoc(agentIdentifierHex: string, docIdHex: string): Promise<boolean> {
+    return (await this.accessInDoc(agentIdentifierHex, docIdHex)) !== null;
+  }
+
+  /**
+   * The access `agent` holds in the Document `docIdHex` AS THIS REPLICA READS IT, lower-cased (`admin`, `read`, …), or null
+   * where it holds none or this hive holds no reading of the Document. The reading names the Document itself, never the
+   * Document this hive maps some bag to.
+   */
+  async accessInDoc(agentIdentifierHex: string, docIdHex: string): Promise<string | null> {
+    const id = `0x${docIdHex.trim().toLowerCase().replace(/^0x/, "")}`;
+    try {
+      await this.ensureIsland(id);
+      const kh = this.requireKh();
+      const docId = new KH.DocumentId(hexToBytes(id));
+      if (!(await kh.getDocument(docId))) return null;
+      const access = await kh.accessForDoc(new KH.Identifier(hexToBytes(agentIdentifierHex)), docId);
+      return access ? access.toString().toLowerCase() : null;
+    } catch { return null; }
+  }
+
+  /**
    * Whether this provider can name an agent (by Identifier hex) — a delegation to an unknown audience
    * throws, so a caller deciding WHETHER to delegate reads this first. A group agent reads known only
    * once its membership events reached this provider (the seat), never from the pinned id alone.
@@ -1008,7 +1067,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /** Run `leave` when this provider disposes: whatever stands over its identity (a content-key holder, a
-   *  subscription) leaves with it, so nothing keeps asking an identity that no longer stands. */
+   *  subscription) leaves with it, so nothing keeps asking a disposed identity. */
   whenDisposed(leave: () => void): void { this.leaving.push(leave); }
 
   async dispose(): Promise<void> {

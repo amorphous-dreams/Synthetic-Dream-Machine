@@ -80,14 +80,11 @@ beforeAll(async () => {
     // kept here as harness setup rather than production behavior.
     riteA: async (source, rootA) => {
       await growStagedQuorum(source, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
-      // Publishing signs in a held persona's name, and an unset selector refuses rather than choosing h0:
-      // the source wears its founding face explicitly before its daemon reads it.
-      const wear = await source(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`source: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
+      // Publishing signs in a held persona's name, and with several faces open the publish names its founding face.
       // The publish door opens the source's store directly, so it runs here, while NO daemon holds that
       // store (the single-owner law): a write beside a live holder lands on disk the holder never reads,
       // and the source's daemon would carry a board without the gift.
-      const published = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--json"]);
+      const published = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--face", "0", "--json"]);
       if (published.code !== 0 || published.json?.["ok"] !== true) {
         throw new Error(`source offering publish failed: ${published.stdout}\n${published.stderr}`);
       }
@@ -124,7 +121,7 @@ describe("source offering → receiver Crossroads evidence", () => {
     const seedBefore = readFileSync(join(receiver.root, "genesis", "seed.json"));
     const missing = await inspectUntil(receiver, offeringCid, "partial");
     expect(missing.json?.["data"]).toMatchObject({
-      transport: { status: "complete", source: "local-crossroads", remoteFetch: false },
+      transport: { status: "complete", source: "local-publication-board", remoteFetch: false },
       inspection: { status: "verified", byteStatus: "partial", adoption: "not-requested" },
       antigen: { status: "unavailable", reason: "not-configured" },
     });

@@ -2,7 +2,7 @@
  * hearth-canon — what an admitted leaf takes from ITS OWN HEARTH beyond the public boards.
  *
  * A leaf that a hearth admitted wears that hearth's face, and the wiki it opens there reads the hearth's
- * base canon: the `@lares` and `@lararium` documents. The carried admit NAMES those documents by url
+ * base canon: the `lares` and `lararium` documents. The carried admit NAMES those documents by url
  * (`hearthCanonDocs`), the way it names the persona plane and the hearth's door: a pointer per relation,
  * carried by the act that makes the relation. The cross-operator gate federates the public boards alone, so
  * without the names a carrier the hearth holds never reaches the page.
@@ -20,7 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
 import { interpretAsDocumentId, isValidAutomergeUrl, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
+import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc, ownEntry } from "@lararium/mesh";
 
 /** The canon titles an admit may name: the bags a leaf's wiki reads from its hearth. */
 export const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -80,16 +80,50 @@ export function hearthCanonDocIds(named: HearthCanonDocs): ReadonlySet<DocumentI
 export class HearthCanonGate implements FederationGate {
   readonly #outer: FederationGate;
   readonly #canon: ReadonlySet<DocumentId>;
+  readonly #planes = new Set<DocumentId>();
 
   constructor(outer: FederationGate, named: HearthCanonDocs) {
     this.#outer = outer;
     this.#canon = hearthCanonDocIds(named);
   }
 
+  /** The joined face's own plane documents, by id, which the own-hearth crossing opens beside the canon once the face proof names them. */
+  admitPlanes(planes: ReadonlySet<DocumentId>): void {
+    for (const id of planes) this.#planes.add(id);
+  }
+
   mayFederate(documentId: DocumentId, peerId?: PeerId): boolean | Promise<boolean> {
-    if (this.#canon.has(documentId)) return true;
+    if (this.#canon.has(documentId) || this.#planes.has(documentId)) return true;
     return this.#outer.mayFederate(documentId, peerId);
   }
+}
+
+/**
+ * THE FACE'S OWN PLANES CROSS AT ITS OWN HEARTH, AS ITS SIGNED LOG NAMES THEM (the Founding Walk, W4). The hearth's view
+ * federates a same-operator session's planes (`face-fleet-view`); the leaf's side of that law is this list. The
+ * bootstrap rests unsealed, so a plane url read from it proves nothing alone: the crossing opens a plane only once the
+ * face proof's projection names it (`provenCrossingPlanes`), and never a reserved document (the oracle, a board).
+ */
+export function facePlaneDocIds(planes: readonly unknown[] | undefined, nexusPubkey: string): ReadonlySet<DocumentId> {
+  const ids = new Set<DocumentId>();
+  if (!planes) return ids;
+  const oracleId = interpretAsDocumentId(oracleGenesisDocUrl());
+  const boards = new DeterministicFederationGate(nexusPubkey);
+  for (const url of planes) {
+    if (typeof url !== "string" || !isValidAutomergeUrl(url)) continue;
+    const docId = interpretAsDocumentId(url as AutomergeUrl) as DocumentId;
+    if (docId === oracleId || boards.mayFederate(docId)) continue;
+    ids.add(docId);
+  }
+  return ids;
+}
+
+/** Of the plane urls a vessel carries for its worn face, exactly those the face proof's projection names, plane by plane. */
+export function provenCrossingPlanes(
+  projection: { readonly planes: Readonly<Record<string, string | undefined>> },
+  carried: Readonly<Record<string, string | null | undefined>>,
+): readonly string[] {
+  return Object.entries(carried).flatMap(([plane, url]) => (url && projection.planes[plane] === url ? [url] : []));
 }
 
 /**
@@ -105,12 +139,48 @@ export function hearthCrossingOf(at: {
   readonly holdsDeviceEdge:  boolean;
   readonly hearthCanonDocs:  unknown;
   readonly nexusPubkey:      string;
-}): { readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null } {
+}): {
+  readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null;
+  /** Open the worn face's proven planes at the own-hearth crossing (`provenCrossingPlanes`); true where the gate widened. */
+  readonly openFacePlanes: (urls: readonly unknown[]) => boolean;
+  /**
+   * Open the HEARTH'S DAEMON WORKING DOCUMENT at the own-hearth crossing (road row `L4f`): the url the worn face's signed
+   * log names for this device (`provenHearthDaemon`). Answers the document id the gate now federates, which the vessel's
+   * share verdict lets reach the relay; null at every other crossing (a guest page), for an absent name, a torn url or a
+   * reserved document.
+   */
+  readonly openHearthDaemon: (url: unknown) => DocumentId | null;
+} {
   const ownHearth = isOwnHearthCrossing(at);
   const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
-  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null };
+  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null, openFacePlanes: () => false, openHearthDaemon: () => null };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
-  return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards };
+  if (!ownHearth) return { ownHearth, hearthCanon, gate: boards, openFacePlanes: () => false, openHearthDaemon: () => null };
+  const gate = new HearthCanonGate(boards, hearthCanon);
+  const openFacePlanes = (urls: readonly unknown[]): boolean => {
+    const ids = facePlaneDocIds(urls, at.nexusPubkey);
+    gate.admitPlanes(ids);
+    return ids.size > 0;
+  };
+  const openHearthDaemon = (url: unknown): DocumentId | null => {
+    const [id] = [...facePlaneDocIds([url], at.nexusPubkey)];
+    if (id === undefined) return null;
+    gate.admitPlanes(new Set([id]));
+    return id;
+  };
+  return { ownHearth, hearthCanon, gate, openFacePlanes, openHearthDaemon };
+}
+
+/**
+ * THE HEARTH'S DAEMON WORKING DOCUMENT AS THE FACE'S SIGNED LOG NAMES IT FOR THIS DEVICE (road row `L4f`). The root holder's
+ * admit door signs the name into the device's `device-edge` act, and the face proof folds it (`hearthDaemons`); the
+ * bootstrap carries no copy, so nothing unsigned names the document. Null where the log names none for `deviceKey`, or
+ * names a torn url.
+ */
+export function provenHearthDaemon(projection: { readonly hearthDaemons?: Readonly<Record<string, string>> }, deviceKey: string | null | undefined): string | null {
+  if (!deviceKey) return null;
+  const url = projection.hearthDaemons?.[deviceKey.toLowerCase()];
+  return typeof url === "string" && isValidAutomergeUrl(url) ? url : null;
 }
 
 /** The slice of a vessel catalog handle the seating reads and writes. */
@@ -121,13 +191,13 @@ export interface CatalogRegistry {
 
 /**
  * Seat the admitted canon on this vessel's own catalog: each named title points at the document the
- * admit named. The keel and every island resolve `@lares` and `@lararium` off that catalog, so the leaf's
+ * admit named. The keel and every island resolve `lares` and `lararium` off that catalog, so the leaf's
  * wiki mounts the hearth's canon. One change carries every pointer that differs; a replica that already
  * names them takes no write.
  */
 export function seatHearthCanon(registry: CatalogRegistry, named: HearthCanonDocs): void {
   const owed = Object.entries(admittedCanonDocs(named))
-    .filter(([title, url]) => tiddlerText(registry.doc()?.tiddlers?.[title]) !== url);
+    .filter(([title, url]) => tiddlerText(ownEntry(registry.doc()?.tiddlers, title)) !== url);
   if (owed.length === 0) return;
   registry.change((doc) => {
     for (const [title, url] of owed) doc.tiddlers[title] = storedLarRecord(title, { text: url }, "hearth-canon");

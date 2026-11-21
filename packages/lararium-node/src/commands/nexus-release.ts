@@ -1,7 +1,7 @@
 /**
  * nexus-release — the door that publishes a Nexus's FLOOR RELEASE: the one porch body that names the floor manifest
  * the Kahu cabal released, sealed by the steward, with the cabal's promotion approval over the manifest's exact bytes
- * attached, landed on the Nexus's crossroads board (`@lararium/mesh` `floor-release`).
+ * attached, landed on the Nexus's publication board (`@lararium/mesh` `floor-release`).
  *
  * THE STEWARD IS A SEAT HELD HERE. The first seat of the charter this vessel holds a key for seals the body under the
  * release domain; the AUTHORITY is the approval, which a person opened and carried between vaults beforehand
@@ -9,32 +9,34 @@
  * The door verifies the whole release exactly as a reader will, and lands it only where it counts: a short approval
  * lands nothing and the door says how many seats it still wants.
  *
- * THE CHAIN. The new release names the crossroads board's current head as its `prior`, and a chain already
+ * THE CHAIN. The new release names the publication board's current head as its `prior`, and a chain already
  * `unsettled` (two heads) refuses: the cabal settles a fork before another release builds on it.
  *
- * WHAT IT NEVER DOES. It signs no approval, moves no pin and accepts nothing: a face accepts a release by a person's
- * act (slice 5). A herm carries the answer and signs nothing.
+ * WHAT IT NEVER DOES. It signs no approval, moves no pin and accepts nothing: each vessel accepts a release by a
+ * person's act (`lares vessel floor accept`, road `W26`). A herm carries the answer and signs nothing.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
 import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  FLOOR_RELEASE_SURFACE, assembleFloorRelease, crossroadsDocUrl, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc,
-  openFloorReleaseBody, readPromotionApproval, resolveFloor, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
+  FLOOR_RELEASE_SURFACE, assembleFloorRelease, publicationDocUrl, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc,
+  floorRequiredBlobIds, openFloorReleaseBody, readPromotionApproval, resolveFloorWhole, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   type FloorRelease, type FloorReleaseStanding, type FloorReleaseRefusal,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
+import { readGenesisSeed } from "../genesis-artifact.js";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldSeatSigners } from "../held-quorum.js";
 import { NexusCabalError, cabalCore, type CabalCore } from "./nexus-cabal.js";
 
-/** The crossroads board this vessel's charter publishes on: the island the charter names, the same one the carriage board keys on. */
-async function crossroadsBoard(repo: Repo, core: CabalCore, vesselKey: string | undefined) {
+/** The publication board this vessel's charter publishes on: the island the charter names, the same one the carriage board keys on.
+ *  No recipe mounts it and no mirror names it, so a release never lands in the crossroads bag's mirror. */
+async function publicationBoard(repo: Repo, core: CabalCore, vesselKey: string | undefined) {
   const ownVesselKey = vesselKey ?? await loadVesselVerifyingKey();
-  return materializeSharedLarDoc(repo, crossroadsDocUrl(nodeNexusIsland({ ownVesselKey, sealHome: core.home })), "board:crossroads");
+  return materializeSharedLarDoc(repo, publicationDocUrl(nodeNexusIsland({ ownVesselKey, sealHome: core.home })), "board:publication");
 }
 
 export interface NexusReleaseResult {
@@ -44,15 +46,15 @@ export interface NexusReleaseResult {
   readonly threshold: number;
 }
 
-/** Where the Nexus's release chain stands on this vessel's replica of its crossroads board. */
+/** Where the Nexus's release chain stands on this vessel's replica of its publication board. */
 export async function runFloorReleaseStanding(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly aid?: string; readonly vesselKey?: string;
   /** The manifest's bytes by CID, from the caller's CAS; absent bytes count nothing. */
   readonly manifestBytesOf: (cid: string) => Promise<Uint8Array | null> | Uint8Array | null;
 }): Promise<FloorReleaseStanding & { readonly nexus: string }> {
   const core = await cabalCore(opts.repo, opts.sealHome, opts.aid, opts.vesselKey);
-  const board = await crossroadsBoard(opts.repo, core, opts.vesselKey);
-  const standing = await foldFloorReleases({ rows: floorReleaseRowsFromBoard(board.doc()), nexus: core.nexus, manifestBytesOf: opts.manifestBytesOf });
+  const board = await publicationBoard(opts.repo, core, opts.vesselKey);
+  const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: core.nexus, manifestBytesOf: opts.manifestBytesOf });
   return { ...standing, nexus: core.nexus };
 }
 
@@ -64,9 +66,10 @@ export async function runFloorReleaseStanding(opts: {
 export async function runFloorRelease(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly manifestFile: string; readonly approval: unknown;
   readonly aid?: string; readonly vesselKey?: string;
-  /** This hearth's CAS dir. Present: the manifest is staged there, and the floor it names must stand WHOLE in it (the
-   *  manifest and both snapshots, each re-hashed) before a release names it, since the porch serves what this CAS holds. */
-  readonly casDir?: string;
+  /** This hearth's CAS dir. The floor the manifest names must stand WHOLE in it (every snapshot, the plugins offering and each
+   *  blob it carries, each re-hashed) before a release names it, since the porch serves what this CAS holds; the manifest stages
+   *  there once the release counts. Required: no caller lands a release past the whole-floor check. */
+  readonly casDir: string;
 }): Promise<NexusReleaseResult> {
   let manifestBytes: Uint8Array;
   try { manifestBytes = new Uint8Array(readFileSync(opts.manifestFile)); }
@@ -81,18 +84,21 @@ export async function runFloorRelease(opts: {
   if (!lineage || lineage.length === 0) throw new NexusCabalError("this vessel's charter carries no epoch lineage, so a release has none to carry.");
   const [steward] = heldSeatSigners(core.roster);
   if (steward === undefined) throw new NexusCabalError("this vessel holds no seat of the charter, so it seals no release.");
-  const board = await crossroadsBoard(opts.repo, core, opts.vesselKey);
+  const board = await publicationBoard(opts.repo, core, opts.vesselKey);
 
   const manifest = sha256HexBytesSync(manifestBytes);
-  if (opts.casDir !== undefined) {
-    writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
-    const whole = await resolveFloor(manifest, async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir!));
+  {
+    // The blobs every mount needs, as the genesis this hearth ships declares them: a release may change the plugins, never drop these.
+    const required = floorRequiredBlobIds(readGenesisSeed()?.blobs);
+    // RESOLVE BEFORE STAGING: the manifest answers from these bytes, everything else from the CAS; the manifest stages only once
+    // the release counts, beside the row. A refused release writes nothing.
+    const whole = await resolveFloorWhole(manifest, async (cid) => (cid === manifest ? manifestBytes : readVerifiedCasBlobFromFs(cid, opts.casDir)), { required });
     if ("refusal" in whole) throw new NexusCabalError(`the floor this manifest names does not stand whole in this hearth's CAS, so no release names it: ${whole.refusal} (${whole.reason}).`);
   }
   // THE PRIOR is the head of the chain the rows' own bodies spell: the release no other row names as its prior. This
   // door cannot verify an older release (it holds this manifest's bytes alone), so it reads the structure; every
   // reader re-verifies every row before it counts one.
-  const parsed = floorReleaseRowsFromBoard(board.doc())
+  const parsed = floorReleaseEntriesFromBoard(board.doc())
     .map((r) => r.record as { body?: { prior?: unknown; manifest?: unknown }; cid?: unknown })
     .filter((r) => typeof r.cid === "string" && typeof r.body === "object");
   const cited = new Set(parsed.map((r) => r.body?.prior).filter((p): p is string => typeof p === "string"));
@@ -111,6 +117,7 @@ export async function runFloorRelease(opts: {
   if (!verdict.ok) {
     throw new NexusCabalError(`the release counts nothing here: ${describe(verdict.reason)}`);
   }
+  writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
   board.change((draft) => writeFloorRelease(draft, release));
   return { nexus: core.nexus, release, counted: verdict.counted, threshold: verdict.threshold };
 }

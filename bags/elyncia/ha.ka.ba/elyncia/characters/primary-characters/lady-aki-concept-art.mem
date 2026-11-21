@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "ano"
 role      = "Lady Aki concept-art package — true body, public glamour, threshold reveal, palette, negative directions"
 title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art"
@@ -17,13 +13,13 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Lady Aki ~ Concept Art Package
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ! Lady Aki — Concept Art Direction Notes v1
 
@@ -40,6 +36,17 @@ The design sheet should show both:
 Do ''not'' collapse these into one fixed costume.
 
 ---
+
+!! Reference Resonances — Guardians of Ruins and Veiled Magic
+
+''Outside-media touchstones only; translate their design moves rather than importing faction uniforms or emblems.''
+
+* ''Redmane Army:'' Aki and Ichi share the posture of soldiers who hold broken ground and preserve comradeship after disaster. Let gesture, mended gear, and group spacing carry the comparison.
+* ''Giants still guarding Anor Londo:'' Silent fidelity to a deserted sanctuary. Translate the stillness, scale contrast, and careful tending into Aki's mobile lararium rather than copying giant proportions.
+* ''Blue Moon knights under Gwyndolyn:'' Veiled guardianship, magical authority behind a vulnerable-looking silhouette, illusion and spatial distortion. Aki's apparent frailty contrasts with controlled, frighteningly precise ritual geometry and her partly concealed Spider Folk body.
+* ''Ichi's friendly mycelial armament:'' Show subtle spore-magic flowing into a weapon; a chitin Balefire pot may appear among field gear. Balefire reads as toxic, sticky, magic-corroding flame, without prescribing a physical construction recipe or settled damage rules.
+
+Preserve the three visual registers and Ichi's humanoid ashigaru anatomy. These references inform atmosphere and desired magical practice; active Powers, damage values, and new ability costs remain subject to the game rules.
 
 ! Main Visual Modes
 
@@ -219,6 +226,6 @@ When Aki walks into a settlement:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iwnaZE2_4T0XbHaXvcWbc9ssM_VtvB910Y1RIx0Rv-A
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;48I_W6xKVkvnMmVYE8bKUB1QMtkcCN9It4RplNDK8Oc`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

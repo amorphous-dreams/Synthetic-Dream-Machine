@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { groupSecretOpenerFromSeed, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { runDeviceAdmitEdge } from "../src/ceremony-core.js";
+import { frontierFromFoundingSeed } from "./admit-acts.js";
 import { faceOperationTitle, readFaceOperation } from "../src/face-operation-record.js";
 
 describe("a face operation record", () => {
@@ -19,8 +20,9 @@ describe("a face operation record", () => {
     const signedInput = new TextEncoder().encode("signed fleet join request");
     const input = {
       signerSeed: new Uint8Array(32).fill(72),
+      edgeFrontier: await frontierFromFoundingSeed(new Uint8Array(32).fill(72)),
       joineeVerifyingKey: groupSecretOpenerFromSeed(new Uint8Array(32).fill(73)).deviceKey,
-      personaKelPrefix: "prefix", personaKelChain: [{}] as never,
+      personaKelPrefix: "prefix", personaKelChain: [{}] as never, personaActs: [],
       hearthTrueName: "hearth", personaGroupId: "group", meshCabalDocIdHex: "cabal",
       syncUrl: null, hearthDaemonUrl: null, personaUrl: "automerge:face",
       operation: { store, atomSeed, signedInput },

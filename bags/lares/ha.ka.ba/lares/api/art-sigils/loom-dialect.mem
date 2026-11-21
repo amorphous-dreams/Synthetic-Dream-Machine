@@ -1,20 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/art-sigils/loom-dialect">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/loom-dialect`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-uri-path  = "ha.ka.ba/lares/api/art-sigils/loom-dialect"
-title     = "lar:///ha.ka.ba/lares/api/art-sigils/loom-dialect"
-file-path = "bags/lares/ha.ka.ba/lares/api/art-sigils/loom-dialect.mem"
-type      = "text/memetic-wikitext+tiddlywiki"
-register  = "Synthesis-Canon"
-role      = "Loom extension of canonical Art Sigils through current backed-source AI Fire"
-status    = "draft"
-retain    = true
+uri-path = "ha.ka.ba/lares/api/art-sigils/loom-dialect"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/loom-dialect"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "Loom extension of canonical Art Sigils through current backed-source AI Fire"
+status   = "draft"
+retain   = true
 ```
 
-<<~ ahu #/bearing>>
+<<~ ahu slot=`#/bearing`>>
 ! Projection Loom — Art Sigil Dialect
 
 This dialect **does not redefine** the canonical eight-attribute
@@ -40,7 +39,7 @@ Three boundaries remain independent:
 CAD operation or guaranteed relationship predicate.
 <<~/ahu>>
 
-<<~ ahu #/relation>>
+<<~ ahu slot=`#/relation`>>
 !! One optional Loom relation scope
 
 ```tiddlywiki
@@ -59,7 +58,7 @@ to a trusted implemented rule and identify its semantic endpoints. No
 unrecognized prose or raw code executes in the Loom.
 <<~/ahu>>
 
-<<~ ahu #/machine>>
+<<~ ahu slot=`#/machine`>>
 !! Bounded machine-facing handback
 
 Contract: `tools/projection-loom/schemas/fire_proposal.schema.json`.
@@ -81,5 +80,5 @@ dimensions are unchanged. Machine JSON, hash registers, camera controls,
 model execution, and source URLs stay outside the transmitted Inscription.
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qoGGBc_FFIhgRPLgYTK6deXygsZ9jbMc1MfSWVKMojw
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z_Z_aVuCsAOVXfVwF9c__Lm3VSwhVla9TMzweg_NIxs`>>
+<<^ code=`&#x0004;` to=`?`>>

@@ -61,13 +61,12 @@ def derive_cid(source_file: str, chunk_index: int) -> str:
 
 
 def _sha16(s: str) -> str:
-    """A 16-hex content hash — the turn-key FALLBACK when a surface turn carries no native uuid
-    (matches the CLI `sha` / `turnKeyOf`)."""
+    """A 16-hex content hash — the turn-key FALLBACK when a surface turn carries no native uuid."""
     return hashlib.sha256(s.encode("utf-8")).hexdigest()[:16]
 
 
 def _turn_key(source_file: str, turn: dict, chunk_index: int) -> str:
-    """The user turn's stable identity — its native uuid, else a content-hash fallback (turnKeyOf port).
+    """The user turn's stable identity — its native uuid, else a content-hash fallback.
     The kapae cascade + the rewind detector key on this SAME formula, so one gone uuid closes every leg.
     The fallback FOLDS `chunk_index`: two no-uuid turns (Codex user turns / Copilot) that share the same
     ts + text-prefix would otherwise collapse to ONE key and kapae would mute both together — the ordinal

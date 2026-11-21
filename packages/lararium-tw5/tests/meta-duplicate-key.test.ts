@@ -21,10 +21,10 @@ const URI = "lar:///ha.ka.ba/lares/docs/dup-probe";
 /** A framed carrier whose root meta body is `meta`, with `extra` in the body. */
 function carrier(meta: string[], extra: string[] = []): string {
   return [
-    `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>`,
+    `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>`,
     "",
-    `<<^ code="&#x0001;" from="?" -> to="${URI}">>`,
-    `<<^ code="&#x0002;">>`,
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>`,
+    `<<^ code=\`&#x0002;\`>>`,
     "",
     "```toml meta",
     ...meta,
@@ -35,9 +35,9 @@ function carrier(meta: string[], extra: string[] = []): string {
     "Prose.",
     ...extra,
     "",
-    `<<^ code="&#x0003;">>`,
+    `<<^ code=\`&#x0003;\`>>`,
     "",
-    `<<^ code="&#x0004;" -> to="?">>`,
+    `<<^ code=\`&#x0004;\` to=\`?\`>>`,
     "",
   ].join("\n");
 }
@@ -93,7 +93,7 @@ describe("normalize + ingest — a duplicate meta key reads non-canonical", () =
   });
 
   test("a duplicate inside a slot's own meta fence faults too", () => {
-    const text = carrier(BASE, ["", "<<~ ahu #/inner>>", "", "```toml meta", 'l-space = "a"', 'l-space = "b"', "```", "", "Slot.", "", "<<~/ahu>>"]);
+    const text = carrier(BASE, ["", "<<~ ahu slot=`#/inner`>>", "", "```toml meta", 'l-space = "a"', 'l-space = "b"', "```", "", "Slot.", "", "<<~/ahu>>"]);
     expect(normalizeMemeSource(text).faults.map((f) => f.code)).toEqual(["duplicate-meta-key"]);
     expect(dupCodes(text)).toHaveLength(1);
   });

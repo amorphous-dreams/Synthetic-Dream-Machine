@@ -57,6 +57,7 @@ export function readDdate(format?: string, when?: Date): string | null {
   if (format) args.push(`+${format}`);
   if (when) args.push(String(when.getDate()), String(when.getMonth() + 1), String(when.getFullYear()));
   try {
+    // LIVENESS: the external ddate process may hang without an exit event.
     const out = execFileSync("ddate", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 2_000 });
     const line = out.trim();
     // ddate answers an out-of-range date on stdout rather than by exiting non-zero, so the refusal

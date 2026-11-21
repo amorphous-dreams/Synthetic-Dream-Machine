@@ -10,7 +10,7 @@ module-type: wikirule
  * pranala-inline, ahu/kau invocation) are claimed at inline phase.
  *
  * Dispatch model:
- *   All compound + simple sigils → ~ dispatcher (name=SIGIL, p1=ARGS)
+ *   All compound + simple sigils → ~ dispatcher (name=SIGIL, args=ARGS, each named value by its own name)
  *   pranala block/inline         → ~pranala directly (keyword args: from/to/slot/…)
  *   generic block-with-closer    → text literal pass-through
  *
@@ -20,7 +20,7 @@ module-type: wikirule
 
 import { getGrammar } from "../grammar-cache.js";
 import { SLOT_PATH_SRC, SLOT_SEGMENT_SRC } from "../meme-ast/ahu-scan.js";
-import { positionalsOf, readSigilAttrs } from "../sigil-attrs.js";
+import { readSigilAttrs } from "../sigil-attrs.js";
 import { grammarHeadsOf } from "../grammar-heads.js";
 import type { SigilAttr } from "../sigil-attrs.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -36,14 +36,21 @@ import {
   grammarChildSlotNames,
   matchPranalaOpenAt,
   findCloseEnd,
+  closerHoldsLineLaw,
   findGenericOpenAt,
   buildClosers,
   grammarInlineSigils,
   attrToTree,
 } from "./lar-sigil-shared.js";
 
-/** The English `fragment` opener, its rooted slot path the scanner's one spelling. */
-const FRAGMENT_OPEN_RE = new RegExp(`^<<fragment\\s+(${SLOT_PATH_SRC})(?:\\s+->\\s+[^>]+)?\\s*>>`);
+/**
+ * The English `fragment` opener: ``<<fragment slot=`#/a` to=`lar:///x`?>>``, its rooted slot path the
+ * scanner's one spelling. The named values are captured whole and handed on as the call's argument run,
+ * where the one attribute reader names them, exactly as for ``<<~ ahu slot=`#/a`>>``.
+ */
+const FRAGMENT_OPEN_RE = new RegExp(`^<<fragment\\s+(slot=\`${SLOT_PATH_SRC}\`(?:\\s+to=\`[^\`\\n]*\`)?)\\s*>>`);
+/** A ticked `slot=` value, for the render pass's graceful read of a bare `#name`. */
+const SLOT_VALUE_RE = /(\bslot=`)([^`]*)`/;
 /** A slot written bare (`#name`), for the render pass's graceful read. */
 const BARE_SLOT_RE = new RegExp(`^#${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*$`);
 
@@ -52,6 +59,31 @@ export const types = { block: true, inline: true };
 
 export function init(this: RuleInstance, parser: WikiParser): void {
   this.parser = parser;
+}
+
+/**
+ * ── A BLOCK SIGIL ENDS ITS LINE ────────────────────────────────────────────────────────────────
+ * TiddlyWiki splits `<<m>>` by where the call's `>>` falls: alone on its line (`\r?\n` or the end of
+ * the source follows) it is `macrocallblock`; with anything after it — `<<m>>;abc`, `<<m>>* item`,
+ * `<<a>> <<b>>`, even one trailing space — the line is a paragraph holding `macrocallinline` and then
+ * text. The core instantiates each rule once per phase and marks it (`this.is.block` / `this.is.inline`),
+ * so this rule asks the SAME question in its block phase: every claim — the fragment, pranala, compound
+ * and generic forms alike — stands only when its opener's `>>` ends the line. A claim that fails the
+ * test declines, and the inline phase, which has no such condition, takes the sigil inside the paragraph
+ * with the text after it; the diagnostic floor (`sigil-trailing-text`, meme-ast) leaves its receipt.
+ *
+ * A closer-bearing pair (`ahu` …) answers to BOTH its ends. Stock TW5 has no closer-bearing block call
+ * to measure against, so the ruling reads the same law at each end: the block form stands when the
+ * CLOSER's `>>` ends a line AND the opener's `>>` ends its line — or the pair opens and closes on one
+ * line, where the closer's `>>` ends it. An opener with text after its `>>` is no block opener (its
+ * body begins at that same `>>`), so the pair reads inline. A pair whose OPENER ends its line but whose
+ * closer leaves text behind does not pair: the opener stands alone as a block and the lines after it,
+ * the closer's line among them, read as ordinary text — the tree-sitter grammar's reading too.
+ */
+const LINE_END_RE = /\r?\n|$/y;
+function endsLine(source: string, at: number): boolean {
+  LINE_END_RE.lastIndex = at;
+  return LINE_END_RE.test(source);
 }
 
 // TW5's evalGlobal injects `$tw` as a direct parameter into module code; in the Node VM sandbox
@@ -78,7 +110,7 @@ function attrNodeOf(a: SigilAttr): ParseTreeAttribute {
   switch (a.kind) {
     case "indirect":    return { type: "indirect",    textReference: a.value.replace(/^\{\{|\}\}$/g, "") };
     case "filtered":    return { type: "filtered",    filter: a.value.replace(/^\{\{\{|\}\}\}$/g, "") };
-    case "substituted": return { type: "substituted", rawValue: a.value.replace(/^`|`$/g, "") };
+    case "substituted": return { type: "substituted", rawValue: a.value };
     case "macro": {
       const parse = typeof $tw !== "undefined" ? $tw?.utils?.parseMacroInvocationAsTransclusion : undefined;
       const node  = parse ? parse(a.value, 0) : null;
@@ -103,6 +135,29 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       .filter((s) => (s as { kind?: string }).kind === "pragma" || (s as { kind?: string }).kind === "pragma-alias")
       .map((s) => s.name),
   );
+  const blockPhase = !!this.is?.block;
+  /**
+   * The verdict on one claim, in the block phase: `decline` when the opener leaves text on its line (and
+   * no closer ends that same line), `pair` when the opener's `>>` ends its line (or the pair shares the
+   * closer's line) and the closer's `>>` ends a line, `lone` when the opener ends its line but the pair
+   * does not stand — the opener alone, since declining would hand the line to stock TW5's macrocall
+   * block, which reads `<<~` as a macro named `~`. The inline phase pairs as before, save a block-only
+   * head (`lar-flow: block`), which holds the line law there too.
+   */
+  // BLOCK-ONLY heads (`lar-flow: block` on the sigil tiddler) hold the line law in the inline phase too,
+  // so the render pairs exactly what the decomposer cuts (scanAhu) and tree-sitter pairs.
+  const blockFlow = new Set((grammar?.sigils ?? []).filter((s) => (s as { flow?: string }).flow === "block").map((s) => s.name));
+  const verdict = (openEnd: number, closeStart: number, closeEnd: number | null, head?: string): "decline" | "pair" | "lone" => {
+    if (!blockPhase) {
+      if (closeEnd === null) return "lone";
+      if (head === undefined || !blockFlow.has(head)) return "pair";
+      const law = endsLine(source, closeEnd) && (endsLine(source, openEnd) || !source.slice(openEnd, closeStart).includes("\n"));
+      return law ? "pair" : "lone";
+    }
+    if (closeEnd !== null && endsLine(source, closeEnd) && !source.slice(openEnd, closeStart).includes("\n")) return "pair";
+    if (!endsLine(source, openEnd)) return "decline";
+    return closeEnd !== null && endsLine(source, closeEnd) ? "pair" : "lone";
+  };
   let pos = indexOfSigilOpen(source, startPos);
   while (pos >= 0) {
     // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
@@ -110,24 +165,40 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     if (source.startsWith("<<fragment", pos)) {
       const open = FRAGMENT_OPEN_RE.exec(source.slice(pos));
       if (open) {
-        const close = source.indexOf("<</fragment>>", pos + open[0].length);
+        const openEnd = pos + open[0].length;
+        // The English closer holds the same line law as every block-only head's (`lar-flow: block`).
+        let close = source.indexOf("<</fragment>>", openEnd);
+        while (close >= 0 && !closerHoldsLineLaw(source, openEnd, close, close + "<</fragment>>".length)) {
+          close = source.indexOf("<</fragment>>", close + 1);
+        }
+        const v = verdict(openEnd, close, close >= 0 ? close + "<</fragment>>".length : null, "fragment");
+        if (v === "decline") {
+          pos = indexOfSigilOpen(source, pos + 3);
+          continue;
+        }
+        const paired = v === "pair";
         this.matchPos = pos;
-        this.matchEnd = close >= 0 ? close + "<</fragment>>".length : pos + open[0].length;
-        const bodyEnd = close >= 0 ? close : this.matchEnd;
+        this.matchEnd = paired ? close + "<</fragment>>".length : openEnd;
+        const bodyEnd = paired ? close : this.matchEnd;
         this.attrs = { __compound__: "ahu", p1: open[1]!, __body__: source.slice(pos + open[0].length, bodyEnd),
           __verbatim__: source.slice(pos, pos + open[0].length) };
         return pos;
       }
     }
-    // pranala: permanent JS exception — <<~ pranala FROM -> TO>> arrow syntax with
-    // keyword attrs (from/to/slot/family/role/body) is structurally distinct from
-    // <<~ WORD ARGS>>. The ~ dispatcher's p1–p5 positional interface cannot carry
-    // named keyword pairs without losing the readable HUD form.
+    // pranala: its pair is TYPED — `from=` is where the edge stands and `to=` where it points, and
+    // the block form carries a body. `matchPranalaOpenAt` reads the call through the one attribute
+    // reader and hands back both ends by name, so the edge never reads backwards.
     const pranala = matchPranalaOpenAt(source, pos);
     if (pranala) {
       const closeEnd = findCloseEnd(source, "pranala", pranala.end);
-      if (closeEnd !== null) {
-        const closeTagStart = source.lastIndexOf("<<~/pranala", closeEnd);
+      const closeStart = closeEnd !== null ? source.lastIndexOf("<<~/pranala", closeEnd) : -1;
+      const v = verdict(pranala.end, closeStart, closeEnd);
+      if (v === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
+      }
+      if (v === "pair" && closeEnd !== null) {
+        const closeTagStart = closeStart;
         const body = source.slice(pranala.end, closeTagStart);
         this.matchPos = pos;
         this.matchEnd = closeEnd;
@@ -163,9 +234,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // two. Normalized HERE, for this render pass alone — the authored bytes on disk move only
       // through `lares meme normalize`'s own child-slot-roots clause, never silently through a
       // render.
+      const slotValue = SLOT_VALUE_RE.exec(compound.p1);
       if ((compound.name === "ahu" || compound.name.endsWith("~ahu")) &&
-          BARE_SLOT_RE.test(compound.p1)) {
-        compound = { ...compound, p1: `#/${compound.p1.slice(1)}` };
+          slotValue && BARE_SLOT_RE.test(slotValue[2]!)) {
+        compound = { ...compound, p1: compound.p1.replace(SLOT_VALUE_RE, (_m, k: string, v: string) => `${k}#/${v.slice(1)}\``) };
       }
       // ── A DECLARED CLOSER CLOSES ────────────────────────────────────────────────────────────────
       // The matcher reports the STRUCTURAL close key — a child slot or a compound head — because
@@ -175,9 +247,14 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // registry answers for the rest, and the matcher keeps its own narrow contract.
       const closeKey = compound.closeKey ?? (closers[compound.name] ? compound.name : null);
       if (closeKey) {
-        const closeEnd = findCloseEnd(source, closeKey, compound.end, closers);
-        if (closeEnd !== null) {
-          const closeTagStart = source.lastIndexOf(`<<~/${closeKey}`, closeEnd);
+        const closeEnd = findCloseEnd(source, closeKey, compound.end, closers, blockFlow.has(closeKey));
+        const closeTagStart = closeEnd !== null ? source.lastIndexOf(`<<~/${closeKey}`, closeEnd) : -1;
+        const v = verdict(compound.end, closeTagStart, closeEnd, closeKey);
+        if (v === "decline") {
+          pos = indexOfSigilOpen(source, pos + 3);
+          continue;
+        }
+        if (v === "pair" && closeEnd !== null) {
           const body = source.slice(compound.end, closeTagStart);
           this.matchPos = pos;
           this.matchEnd = closeEnd;
@@ -185,6 +262,10 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
                             __verbatim__: source.slice(pos, compound.end) };
           return pos;
         }
+      }
+      if (!closeKey && verdict(compound.end, -1, null) === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
       }
       this.matchPos = pos;
       this.matchEnd = compound.end;
@@ -210,14 +291,22 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // REGISTERS the head, the host runs it; where it does not, the floor catches what the host
       // would swallow.
       if (!generic.spaced && generic.sigil && registeredHeads.has(generic.sigil)) return undefined;
+      let genericCloseEnd: number | null = null;
       if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
-        const closeEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
-        if (closeEnd !== null) {
-          this.matchPos = pos;
-          this.matchEnd = closeEnd;
-          this.attrs    = { __literal__: source.slice(pos, closeEnd) };
-          return pos;
-        }
+        genericCloseEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
+      }
+      const genericClose = genericCloseEnd;
+      const genericVerdict = verdict(generic.end,
+        genericClose !== null ? source.lastIndexOf(`<<~/${generic.sigil}`, genericClose) : -1, genericClose);
+      if (genericVerdict === "decline") {
+        pos = indexOfSigilOpen(source, pos + 3);
+        continue;
+      }
+      if (genericVerdict === "pair" && genericClose !== null) {
+        this.matchPos = pos;
+        this.matchEnd = genericClose;
+        this.attrs    = { __literal__: source.slice(pos, genericClose) };
+        return pos;
       }
       if (generic.sigil && inlineSigils.has(generic.sigil)) {
         this.matchPos = pos;
@@ -293,7 +382,7 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     delete attrs["__verbatim__"];
     // ── THE NODE THE PARSER ITSELF EMITS ──────────────────────────────────────────────────────────
     // TiddlyWiki parses `<<name …>>` to a TRANSCLUDE carrying `$variable`
-    // (`parseMacroInvocationAsTransclusion`). The legacy `macrocall` widget survives, but it reads its
+    // (`parseMacroInvocationAsTransclusion`). The `macrocall` widget reads its
     // name from `parseTreeNode.name` — a node FIELD — or a `$name` attribute:
     //
     //     this.macroName = this.parseTreeNode.name || this.getAttribute("$name")
@@ -305,13 +394,10 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     // TiddlyWiki renders a transclude's CHILDREN where the target resolves to nothing. So a sigil
     // whose procedure this wiki has never seen puts its own text on the page instead of vanishing —
     // the mechanism is the parser's, not a second one bolted beside it.
-    // ── AND THE SLOTS ARE FILLED, NOT PROMISED ────────────────────────────────────────────────────
-    // The dispatcher declares `p1 … p5` and twenty-nine definitions write against them. Handing the
-    // whole argument run to `p1` alone leaves `p2 … p5` empty on every call, so a definition composing
-    // two slots renders one raw string and a gap — and reads correct, because the raw string still
-    // CONTAINS every word the call was written with. `positionalsOf` splits under TiddlyWiki's own
-    // rules: four delimiters stripped, `name=value` pairs stepped over, an unquoted scheme left to the
-    // name it binds.
+    // ── EVERY VALUE IS NAMED ──────────────────────────────────────────────────────────────────────
+    // Since the kupono cut a call writes ``name=`value` `` for every value, so no positional slot is
+    // left to fill: the dispatcher's `p1 … p5` burned, and the rule hands each named value to the
+    // definition's own parameter of that name.
     // ── THE RULE NAMES ITS TARGET ─────────────────────────────────────────────────────────────────
     // TiddlyWiki hands a procedure only the parameters it DECLARES, so a generic forwarder cannot
     // pass `hud=` to a callee whose signature it has never seen — and every named parameter a sigil
@@ -322,25 +408,19 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     // nothing, which is the very floor the dispatcher stood on. The dispatcher itself stays — it
     // answers INDIRECT dispatch, where a definition hands down a name it was given.
     const run   = attrs["p1"] ?? "";
-    const slots = positionalsOf(run);
     const macroAttrs: Record<string, ParseTreeAttribute> = {
       "$variable": { type: "string", value: `~${dispatchName}` },
       "args":      { type: "string", value: run },
       "src":       { type: "string", value: verbatim },
     };
-    for (let i = 0; i < 5; i++) macroAttrs[`p${i + 1}`] = { type: "string", value: slots[i] ?? "" };
     // ── HANA CARRIES A BODY; NO OTHER COMPOUND SIGIL DOES ─────────────────────────────────────────
     // Every other closer-bearing compound sigil (ahu, kumu, …) splits its block body into child
-    // tiddlers upstream (deserializer), so `__body__` never survives to this rule for them — `attrs`
-    // holds no such key and `body` reads `undefined`. hana (and its English alias `task`, which the
-    // scanner canonicalizes to `hana` but the wikirule's OWN compound matcher — a separate matcher —
-    // reports as its own literal name, so both spellings must be named here) is the one sigil whose
-    // block body is a FOREIGN grammar the host must hand forward untouched (guest-grammar.mem
-    // #/hana-worksite): the `~hana` widget's signature is `~hana(p1:grammar-key p2:body)`, and the
-    // `~task` alias procedure forwards both straight through to `~hana` — so the body rides as p2 on
-    // either name; dropping it here (as the code once did) left every hana body rendering as NOTHING.
+    // tiddlers upstream (deserializer), so `__body__` never survives to this rule for them. hana (and
+    // its English alias `task`, which this rule's own compound matcher reports by its literal name) is
+    // the one sigil whose block body is a FOREIGN grammar the host must hand forward untouched
+    // (guest-grammar.mem #/hana-worksite): the `~hana` widget reads it as `body`, beside `grammar`.
     if ((dispatchName === "hana" || dispatchName === "task") && body !== undefined) {
-      macroAttrs["p2"] = { type: "string", value: body };
+      macroAttrs["body"] = { type: "string", value: body };
     }
     // A NAME WINS ITS OWN SLOT. Written last, so a call carrying `args=` or `src=` reaches the
     // definition's own parameter rather than the rule's bookkeeping.

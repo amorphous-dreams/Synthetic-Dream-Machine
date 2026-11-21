@@ -10,8 +10,9 @@ import { faceOwnerVerifier } from "../src/face-bag-door.js";
 
 const PLACE = "ab".repeat(32);
 const ATOM = "cd".repeat(32);
-const lit = { vesselVerifyingKey: PLACE, atom: { seed: "00".repeat(32), key: ATOM }, personaGroupId: "group-x", deviceEdge: {} as never };
-const floor = { vesselVerifyingKey: PLACE };
+const SIBLING = "ef".repeat(32);
+const lit = { placeVerifyingKey: PLACE, atom: { seed: "00".repeat(32), key: ATOM }, personaGroupId: "group-x", deviceEdge: {} as never };
+const floor = { placeVerifyingKey: PLACE };
 const ask = (requestedBy: string, args: Record<string, unknown> = {}) => ({ requestedBy, args });
 
 describe("presenterFor", () => {
@@ -28,6 +29,22 @@ describe("presenterFor", () => {
   test("CONTROL: a synced summons borrows nothing from the local channel", () => {
     expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: false, auth: lit })).toBe(`0x${PLACE}`);
   });
+  test("CONTROL: a claim naming no DID (a label) stays the label, local or synced: the channel's label names no face and borrows none", () => {
+    for (const label of ["persona", "switcher", "disk-projector", "projection-confluence", "mailbox"]) {
+      expect(presenterFor({ invocation: ask(label), local: true, auth: lit }), label).toBe(label);
+      expect(presenterFor({ invocation: ask(label), local: false, auth: lit }), label).toBe(label);
+    }
+  });
+  test("a lit joined group may be named, and a dropped group refuses", () => {
+    const groups = new Set(["group-x", "group-y"]);
+    const auth = { ...lit, holds: (group: string) => groups.has(group), atomOf: (group: string) => groups.has(group) ? (group === "group-y" ? SIBLING : ATOM) : null };
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toBe(`0x${SIBLING}`);
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-x" }), local: true, auth })).toBe(`0x${ATOM}`);
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: true, auth })).toBe(`0x${ATOM}`);
+    expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "stranger" }), local: true, auth })).toThrow("wear stranger first");
+    groups.delete("group-y");
+    expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toThrow("wear group-y first");
+  });
   test("CONTROL: a verb naming another face refuses by name; the mounted face or none presents", () => {
     expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth: lit }))
       .toThrow("this vessel wears group-x; name it or wear group-y first");
@@ -35,32 +52,13 @@ describe("presenterFor", () => {
   });
 });
 
-describe("faceOwnerVerifier with a mounted atom", () => {
-  const seen: string[] = [];
-  const provider = (name: string, owns: (bag: string) => boolean, grants: string) => ({
-    docIdOfBag: (bag: string) => (owns(bag) ? "doc" : null),
-    verify: async (a: { presenter: string }) => { seen.push(`${name}:${a.presenter}`); return a.presenter.endsWith(grants) ? { ok: true } : { ok: false, reason: "no access granted" }; },
+describe("faceOwnerVerifier with one face provider", () => {
+  const face = { verify: async ({ presenter }: { presenter: string }) => ({ ok: presenter === `0x${ATOM}` }) };
+  const verifier = () => faceOwnerVerifier({ face: face as never, mount: { atomKey: ATOM, placeKey: PLACE } });
+  test("RED: the public place key never receives a Keyhive grant", async () => {
+    expect((await verifier().verify({ presenter: `0x${PLACE}`, bagUrl: "lar:///daemon", access: "admin", channel: "local" })).ok).toBe(false);
   });
-  const verifier = () => faceOwnerVerifier({
-    vessel: provider("vessel", () => true, PLACE) as never,
-    face: provider("face", (b) => b.includes("wikis"), ATOM) as never,
-    mount: { atomKey: ATOM, placeKey: PLACE },
-  });
-  test("RED: the mounted atom reads as the place's own hand on a ground bag, over the local channel alone", async () => {
-    expect((await verifier().verify({ presenter: `0x${ATOM}`, bagUrl: "lar:///daemon", access: "admin", channel: "local" })).ok).toBe(true);
-  });
-  test("RED: a synced summons claiming the mounted atom's public key gets no hand on a ground bag", async () => {
-    expect((await verifier().verify({ presenter: `0x${ATOM}`, bagUrl: "lar:///daemon", access: "admin" })).ok).toBe(false);
-  });
-  test("CONTROL: the mounted atom reaches a face bag as itself", async () => {
-    seen.length = 0;
+  test("CONTROL: the selected atom receives its face grant", async () => {
     expect((await verifier().verify({ presenter: `0x${ATOM}`, bagUrl: "lar:///wikis/x", access: "read" })).ok).toBe(true);
-    expect(seen).toEqual([`face:0x${ATOM}`]);
-  });
-  test("CONTROL: a stranger finds no grant on a ground bag or a face bag", async () => {
-    const stranger = `0x${"11".repeat(32)}`;
-    expect((await verifier().verify({ presenter: stranger, bagUrl: "lar:///daemon", access: "read", channel: "local" })).ok).toBe(false);
-    expect((await verifier().verify({ presenter: stranger, bagUrl: "lar:///daemon", access: "read" })).ok).toBe(false);
-    expect((await verifier().verify({ presenter: stranger, bagUrl: "lar:///wikis/x", access: "read" })).ok).toBe(false);
   });
 });

@@ -1,0 +1,70 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/seat-harness/` — 2 record(s) here, 51 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/seat-harness/`
+
+The scratch planning records of `.lares-scratch/seat-harness/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 51 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[canary1/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/canary1/index]] | 2 |
+| [[cop3/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop3/index]] | 3 |
+| [[cop5/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/index]] | 3 |
+| [[luna1/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna1/index]] | 2 |
+| [[luna10/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna10/index]] | 2 |
+| [[luna11/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna11/index]] | 2 |
+| [[luna12/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna12/index]] | 2 |
+| [[luna13/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna13/index]] | 2 |
+| [[luna14/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna14/index]] | 2 |
+| [[luna2/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna2/index]] | 2 |
+| [[luna3/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna3/index]] | 2 |
+| [[luna5/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna5/index]] | 2 |
+| [[luna6/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna6/index]] | 2 |
+| [[luna8/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna8/index]] | 2 |
+| [[m14/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/m14/index]] | 1 |
+| [[terra-final/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final/index]] | 2 |
+| [[terra-final-2/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-2/index]] | 2 |
+| [[terra-final-3/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-3/index]] | 2 |
+| [[terra-final-4/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-4/index]] | 2 |
+| [[terra-final-5/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-5/index]] | 2 |
+| [[terra-final-6/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-6/index]] | 2 |
+| [[terra-final-7/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-7/index]] | 2 |
+| [[terra-final-8/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-8/index]] | 2 |
+| [[terra-final-9/|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-9/index]] | 2 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/brief]] | brief | 2026-11-04 | `brief.md` |
+| [[row-7-brief|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/row-7-brief]] | brief | 2026-11-05 | `row-7-brief.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z7kW_JVzYfk1OCHcbEynwxNn4WGW5qZ9pw8ba00XhlI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -10,9 +10,10 @@ module-type: library
  * island's INGEST verb, and any MCP or CLI door that carries meme text all call `placeMeme`. The
  * placement law lives here once:
  *
- *   1. the meme's current GROUP in the sink — root · `uri#slot` · `uri/path` (the carrier-group law),
- *   2. the Confluence gate (`decideIngest`) over the group's present render vs the new text,
- *   3. land every fresh record, tombstone every group member the new text no longer declares.
+ *   1. the meme's current FAMILY in the sink: the root and its component slots, by the one family law
+ *      (`@lararium/mesh/family`). A `uri/path` title stands as its own meme and never joins it,
+ *   2. the Confluence gate (`decideIngest`) over the family's present render vs the new text,
+ *   3. land every fresh record, tombstone every family member the new text leaves undeclared.
  *
  * A `MemeSink` is the only thing a skin supplies: four verbs over whatever holds tiddlers — a live
  * `$tw.wiki` (`wikiMemeSink`), a bag store behind BagAccess, a Map in a test. The split itself runs
@@ -35,14 +36,20 @@ module-type: library
  */
 
 import { conflictWhy, decideIngest, QUOTEBLOCKED_CODE } from "./ingest-gate.js";
+import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
+import { readCarrierEdges } from "./carrier-edges.js";
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { expandMemeRefs } from "./deserializer.js";
+import { carriageUri, expandMemeRefs } from "./deserializer.js";
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 
-import { carrierMarkPattern, headUriOf, maskedExec } from "@lararium/memetic-frame";
+import { carrierMarkPattern, headUriOf, maskedExec, maskedExecAll } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import {
+  componentsBeneath, consequence, edgeDescendantsOf, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
+  type Consequence, type FamilyFields, type FamilyReference, type FamilyView,
+} from "@lararium/mesh/family";
 import { carrierHash } from "@lararium/mesh/crypto";
 
 type MaybePromise<T> = T | Promise<T>;
@@ -57,6 +64,21 @@ export interface MemeSink {
   land(fields: TiddlerFields): MaybePromise<void>;
   /** Remove one title. */
   tombstone(title: string): MaybePromise<void>;
+  /**
+   * Remove a family's titles as ONE change, where the holder can carry one (a bag's document). Absent, a
+   * removal tombstones title by title, and the holder's own shore gathers them (the island's drain lands a
+   * root and the slots that left with it as one family write).
+   */
+  tombstoneFamily?(titles: readonly string[]): MaybePromise<void>;
+  /**
+   * WHERE THE SINK KNOWS ITS LAYERS: whether a live record of the title rests in a layer beneath the one this sink
+   * writes. A removal tombstones only the titles that answer yes (a kāpae keeps the lower record hidden) and retracts
+   * the rest plainly, so no kāpae rises over nothing. A sink that does not know (`beneath` or `leaveFamily` absent)
+   * removes through `tombstone`, and the holder's own shore decides what leaves.
+   */
+  beneath?(title: string): MaybePromise<boolean>;
+  /** Remove a family as ONE change: `tombstones` raise a kāpae, `retracts` leave their layer to absent. */
+  leaveFamily?(tombstones: readonly string[], retracts: readonly string[]): MaybePromise<void>;
   /**
    * THE ALERT RAIL, where the sink has one: raise (or, with `null`, clear) the one coalesced alert a
    * meme root carries. A live wiki has it (`wikiMemeSink`); a bag store does not, and its placements
@@ -91,6 +113,13 @@ export interface MemeAlertWiki {
   getTiddler(title: string): unknown;
   addTiddler(fields: Record<string, unknown>): void;
   deleteTiddler(title: string): void;
+  /** The wiki's own change log, per title: the cursor an alert names in place of a clock (no global now). */
+  getChangeCount?(title: string): number;
+}
+
+/** WHERE AN ALERT SAW ITS FINDING: the record's title and the count of changes this wiki's log holds for it. */
+export function alertCursor(wiki: Pick<MemeAlertWiki, "getChangeCount">, title: string): string {
+  return `${title}@${wiki.getChangeCount?.(title) ?? 0}`;
 }
 
 /**
@@ -116,8 +145,60 @@ export function surfaceMemeAlert(wiki: MemeAlertWiki, root: string, finding: Mem
     root,
     child: finding.child,
     codes,
-    ts: new Date().toISOString(),
+    "seen-at": alertCursor(wiki, finding.child),
   });
+}
+
+/**
+ * THE ORPHAN RAIL, beside the child gate's: one alert per root whose slot children stand with no root above
+ * them (`$:/temp/lares/alert/meme-orphan/<root>`). The children stay live and named until a hand decides;
+ * the alert carries the root, the orphans as a list, and the log cursor it saw them at. The `$:/temp` layer
+ * keeps it per device and nothing persists it: each boot re-derives it from the view. An unchanged finding
+ * writes nothing; an empty one clears an alert that stands.
+ */
+export function surfaceOrphanAlert(wiki: MemeAlertWiki, root: string, orphans: readonly string[]): void {
+  const alertTitle = memeOrphanAlertTitle(root);
+  const standing = (wiki.getTiddler(alertTitle) as { fields?: Record<string, unknown> } | undefined)?.fields;
+  if (orphans.length === 0) {
+    if (standing) wiki.deleteTiddler(alertTitle);
+    return;
+  }
+  const list = orphans.map((title) => (/[\s\[\]]/.test(title) ? `[[${title}]]` : title)).join(" ");
+  if (standing && standing["orphans"] === list) return;
+  const one = orphans.length === 1;
+  wiki.addTiddler({
+    title: alertTitle,
+    text: `${orphans.length} slot record${one ? "" : "s"} of ${root} stand${one ? "s" : ""} with no root above: ${orphans.join(", ")}. ` +
+      `Each stays live as a plain tiddler until a hand keeps, re-roots or drops it.`,
+    tags: TW5_ALERT_TAG,
+    "alert-kind": "meme-orphan",
+    root,
+    orphans: list,
+    "seen-at": alertCursor(wiki, root),
+  });
+}
+
+/**
+ * RE-DERIVE EVERY ORPHAN FLAG FROM THE VIEW: one pass, the predicate the node projector and the browser
+ * mirror share (`orphanFamilies`). Raises the alert of each root that holds orphans and clears each standing
+ * alert whose root holds none. Answers the orphans by root.
+ */
+export function tendOrphanAlerts(wiki: MemeAlertWiki & Pick<TW5Wiki, "allTitles" | "getTiddler">): Map<string, string[]> {
+  const found = orphanFamilies(wikiFamilyView(wiki));
+  for (const title of wiki.allTitles()) {
+    if (!title.startsWith(MEME_ORPHAN_ALERT_PREFIX)) continue;
+    const root = title.slice(MEME_ORPHAN_ALERT_PREFIX.length);
+    if (!found.has(root)) surfaceOrphanAlert(wiki, root, []);
+  }
+  for (const [root, orphans] of found) surfaceOrphanAlert(wiki, root, orphans);
+  return found;
+}
+
+/** Re-derive ONE root's orphan flag from the view; answers the orphans standing under it. */
+export function tendOrphanAlert(wiki: MemeAlertWiki & Pick<TW5Wiki, "allTitles" | "getTiddler">, root: string): string[] {
+  const orphans = orphansUnder(wikiFamilyView(wiki), root);
+  surfaceOrphanAlert(wiki, root, orphans);
+  return orphans;
 }
 
 export interface PlaceMemeInput {
@@ -135,6 +216,8 @@ export interface PlaceMemeInput {
   /** True where no person stands behind the placement (a watcher's wave): with no base it never adopts
    *  over records that say something else, and answers `conflict`, `no-base` (`ingest-gate`, rule 4½). */
   readonly unattended?: boolean;
+  /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
+  readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
 }
 
 export interface PlaceMemeReceipt {
@@ -145,7 +228,7 @@ export interface PlaceMemeReceipt {
   readonly reason?: string;
   /** Titles landed (ingest only). */
   readonly landed: readonly string[];
-  /** Group members removed because the new text no longer declares them (ingest only). */
+  /** Group members removed because the new text leaves them undeclared (ingest only). */
   readonly tombstoned: readonly string[];
   /** Hash of the canonical render the records now carry — the next writer's base. */
   readonly canonicalHash?: string;
@@ -202,24 +285,127 @@ export function framedRootOf(fields: Record<string, unknown>): string | null {
   return headUriOf(text) ?? (title || null);
 }
 
-/** The carrier-group law: the root, its `#slot` fragments, its `/path` children. */
-export function groupOfMeme(titles: readonly string[], uri: string): string[] {
-  return titles.filter((t) => t === uri || t.startsWith(`${uri}#`) || t.startsWith(`${uri}/`));
+/**
+ * THE TEXT GRAMMAR THE FAMILY LAW READS THROUGH. A `kahea ahu` call names a COMPONENT of the record's own
+ * meme (the slot path composes onto the root's address); a `loulou` or a `pranala` names ANOTHER meme. Both
+ * scans read under the fence mask: a call quoted in a code fence names nothing.
+ */
+export function familyRefsOf(title: string, fields: FamilyFields): FamilyReference[] {
+  const text = typeof fields["text"] === "string" ? fields["text"] : "";
+  if (!text.includes("<<~")) return [];
+  const refs: FamilyReference[] = [];
+  const root = rootAddressOf(title);
+  if (text.includes("kahea")) for (const match of maskedExecAll(text, KAHEA_REF_RE)) refs.push({ kind: "kahea", to: root + match[1]! });
+  for (const edge of readCarrierEdges(text)) {
+    if (edge.form === "loulou" || edge.form === "pranala") refs.push({ kind: edge.form, to: `lar:///${edge.written}` });
+  }
+  return refs;
+}
+
+/** A family view over a plain `title -> fields` reader: the shape a wiki, a Map and a snapshot all lend. */
+export function familyViewOf(
+  titles: () => Iterable<string>, read: (title: string) => FamilyFields | undefined, extra: Partial<FamilyView> = {},
+): FamilyView {
+  return { titles, read, refs: familyRefsOf, ...extra };
+}
+
+/** The family view of a live wiki. */
+export function wikiFamilyView(wiki: Pick<TW5Wiki, "allTitles" | "getTiddler">, extra: Partial<FamilyView> = {}): FamilyView {
+  return familyViewOf(() => wiki.allTitles(), (title) => (wiki.getTiddler(title) as { fields?: FamilyFields } | undefined)?.fields, extra);
+}
+
+/** What a wiki lends a family re-title: its titles, its records, and the two writes a hand makes. */
+export interface FamilyRenameWiki {
+  allTitles(): string[];
+  getTiddler(title: string): unknown;
+  addTiddler(fields: Record<string, unknown>): void;
+  deleteTiddler(title: string): void;
+}
+
+const fieldsIn = (wiki: Pick<FamilyRenameWiki, "getTiddler">, title: string): Record<string, unknown> | undefined =>
+  (wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields;
+
+/** One record under a new title: the address-bearing fields follow the title. */
+function retitled(fields: Record<string, unknown>, to: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
+  const next: Record<string, unknown> = { ...fields, ...extra, title: to };
+  if (typeof fields["uri-path"] === "string" && to.startsWith("lar:///")) next["uri-path"] = to.slice("lar:///".length);
+  return next;
+}
+
+/**
+ * THE SLOTS FOLLOW THEIR ROOT. Re-title every slot record standing beneath `from` (by its parent edges, at
+ * every depth, whether or not `from` itself still stands) under `to`: the title, the parent edge and the
+ * `uri-path` move together, and the body rides untouched. A `kahea` call names its slot by a rooted path, so
+ * the root's text needs no rewrite. A title a record already holds is never landed over. Answers the new
+ * titles. A stock rename of a root re-titles the one record and strands every slot beneath it; this carries them.
+ */
+export function retitleSlotsInWiki(wiki: FamilyRenameWiki, from: string, to: string): string[] {
+  const moved: string[] = [];
+  const prefix = `${from}#`;
+  for (const old of edgeDescendantsOf(wikiFamilyView(wiki as never), from)) {
+    const fields = fieldsIn(wiki, old);
+    if (!fields || !old.startsWith(prefix)) continue;
+    const next = to + old.slice(from.length);
+    if (wiki.getTiddler(next) !== undefined) continue;
+    const parent = String(fields["$fragment-parent"] ?? "");
+    const parentNext = parent === from || parent.startsWith(prefix) ? to + parent.slice(from.length) : parent;
+    wiki.addTiddler(retitled(fields, next, { "$fragment-parent": parentNext }));
+    wiki.deleteTiddler(old);
+    moved.push(next);
+  }
+  return moved;
+}
+
+/**
+ * RENAME, MEME-AWARE, over a live wiki: the consequence gets read first, and a refusal lands nothing. A root
+ * re-titles and its slots follow it (the root first, so its writes lead its slots'); a plain tiddler
+ * re-titles alone; a slot refuses (`slot-without-root`). Relinking the references other tiddlers hold stays
+ * the engine's own act (`relinkTiddler`). Answers the consequence it read.
+ */
+export function renameFamilyInWiki(wiki: FamilyRenameWiki, from: string, to: string): Consequence {
+  const read = consequence(wikiFamilyView(wiki as never), { kind: "rename", title: from, to });
+  if (read.refusals.length > 0) return read;
+  const fields = fieldsIn(wiki, from)!;
+  wiki.addTiddler(retitled(fields, to));
+  wiki.deleteTiddler(from);
+  if (read.position === "root") retitleSlotsInWiki(wiki, from, to);
+  return read;
+}
+
+/**
+ * ONE CONSISTENT READ of a meme's neighbourhood in a sink: the record under the URI and every record whose
+ * title composes onto the same root address (`<root>#…`), which the address grammar makes the only titles a
+ * component can hold. The view names every title the sink holds, so a consequence can name a path child,
+ * and reads the records of this neighbourhood alone.
+ */
+async function familySnapshot(
+  uri: string, sink: Pick<MemeSink, "titles" | "read">,
+): Promise<{ view: FamilyView; records: Map<string, TiddlerFields> }> {
+  const titles = [...await sink.titles()];
+  const address = rootAddressOf(uri);
+  const prefix = `${address}#`;
+  const records = new Map<string, TiddlerFields>();
+  for (const title of titles) {
+    if (title !== uri && title !== address && !title.startsWith(prefix)) continue;
+    const fields = await sink.read(title);
+    if (fields) records.set(title, fields);
+  }
+  return { view: familyViewOf(() => titles, (title) => records.get(title)), records };
+}
+
+/** The family the placement law acts on: the record under the URI and its components; the orphans a dead root left. */
+function familyGroup(view: FamilyView, uri: string): string[] {
+  return view.read(uri) !== undefined ? componentsBeneath(view, uri) : orphansUnder(view, uri);
 }
 
 const defaultHash = (text: string): string => carrierHash(text);
 
-/** The meme's group in the sink and its present render — the text the records carry now. */
+/** The meme's family in the sink and its present render — the text the records carry now. */
 async function currentRender(
   uri: string, sink: Pick<MemeSink, "titles" | "read">,
-): Promise<{ group: string[]; text: string }> {
-  const group = groupOfMeme(await sink.titles(), uri);
-  const current = new Map<string, TiddlerFields>();
-  for (const title of group) {
-    const fields = await sink.read(title);
-    if (fields) current.set(title, fields);
-  }
-  return { group, text: expandMemeRefs((t) => current.get(t), uri) ?? heldText(current.get(uri)) };
+): Promise<{ group: string[]; text: string; view: FamilyView }> {
+  const { view, records } = await familySnapshot(uri, sink);
+  return { group: familyGroup(view, uri), text: expandMemeRefs((t) => records.get(t), uri) ?? heldText(records.get(uri)), view };
 }
 
 /**
@@ -251,16 +437,53 @@ export const POINTER_BODY_CODE = "pointer-body";
 /** The code a put that carries no bytes refuses under. */
 export const EMPTY_BODY_CODE = "empty-body";
 
+/**
+ * THE STAGE MEME LAW (road `L9`). The memory stage keys every meme by its path: a stage meme's title and
+ * `uri-path` carry the class and slug (a memory's class and slug, an event, a commit), never a clock or a
+ * counter, so a re-pour of an exported projection after a re-found lands the same tiddlers.
+ *
+ * A stage path reads as one or two lowercase path segments, and the meme stands at `STAGE_MEME_PREFIX` + path
+ * (`ha.ka.ba` + `kahua/memory` + at most two more keeps the uri's four path segments). The gate refuses by name
+ * a title under the stage prefix whose path reads otherwise (`stage-path-shape`).
+ */
+export const STAGE_MEME_PREFIX = "lar:///ha.ka.ba/kahua/memory/";
+export const STAGE_PATH_SHAPE_CODE = "stage-path-shape";
+
+const STAGE_PATH_SEGMENT = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Why a stage path reads no path, or null where it reads one. */
+function stagePathFault(path: string): string | null {
+  const segments = path.split("/");
+  if (segments.length > 2) return `"${path}" holds ${segments.length} segments; a stage path holds one or two`;
+  const bad = segments.find((seg) => !STAGE_PATH_SEGMENT.test(seg));
+  return bad === undefined ? null : `"${path}" holds the segment "${bad}"; a segment reads lowercase letters and digits, hyphen-joined`;
+}
+
+/** The title a stage meme stands at: the stage prefix and its path. Throws `stage-path-shape` on a path that reads no path. */
+export function stageMemeTitle(path: string): string {
+  const fault = stagePathFault(path);
+  if (fault !== null) throw new Error(`${STAGE_PATH_SHAPE_CODE}: ${fault}`);
+  return `${STAGE_MEME_PREFIX}${path}`;
+}
+
+/** The stage meme law over a title: the refusal, or null where the title stands outside the stage or reads a stage path. */
+function stageMemeRefusal(uri: string): MemeDiagnostic | null {
+  if (!uri.startsWith(STAGE_MEME_PREFIX)) return null;
+  const fault = stagePathFault(uri.slice(STAGE_MEME_PREFIX.length));
+  if (fault === null) return null;
+  return { from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: STAGE_PATH_SHAPE_CODE, message: `${STAGE_PATH_SHAPE_CODE}: ${uri}: ${fault}` };
+}
+
 /** The Confluence gate's own verdict, read once — shared by `placeMeme` (which lands it) and
  *  `evaluateMeme` (which never does). Internal: callers get the two typed entry points below. */
 async function evaluate(
   input: PlaceMemeInput, sink: Pick<MemeSink, "titles" | "read">,
-): Promise<{ group: readonly string[]; decision: ReturnType<typeof decideIngest<TiddlerFields>>; currentRenderHash: string }> {
+): Promise<{ group: readonly string[]; view: FamilyView; decision: ReturnType<typeof decideIngest<TiddlerFields>>; currentRenderHash: string }> {
   const { uri, text } = input;
   const hash = input.hash ?? defaultHash;
   const baseHash = input.baseHash ?? null;
 
-  const { group, text: currentText } = await currentRender(uri, sink);
+  const { group, view, text: currentText } = await currentRender(uri, sink);
   const currentRenderHash = hash(currentText);
 
   // A PUT THAT CARRIES NO BYTES REFUSES BY NAME. An empty text and an address nothing holds hash alike,
@@ -270,7 +493,7 @@ async function evaluate(
       from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: EMPTY_BODY_CODE,
       message: `${uri}: the put carries no bytes; nothing lands (a removal rides the delete verb)`,
     };
-    return { group, decision: { kind: "refuse", warnings: [wall.message], diagnostics: [wall] }, currentRenderHash };
+    return { group, view, decision: { kind: "refuse", warnings: [wall.message], diagnostics: [wall] }, currentRenderHash };
   }
 
   const decision = decideIngest({
@@ -284,7 +507,11 @@ async function evaluate(
     ...(input.unattended === true ? { unattended: true } : {}),
     recordsAbsent: !group.includes(uri),
   });
-  return { group, decision, currentRenderHash };
+  if (decision.kind === "ingest") {
+    const wall = stageMemeRefusal(uri);
+    if (wall !== null) return { group, view, decision: { kind: "refuse", warnings: [wall.message], diagnostics: [wall] }, currentRenderHash };
+  }
+  return { group, view, decision, currentRenderHash };
 }
 
 function receiptOfNonIngest(
@@ -307,22 +534,28 @@ function receiptOfNonIngest(
 export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
   const { uri } = input;
   const hash = input.hash ?? defaultHash;
-  const { group, decision, currentRenderHash } = await evaluate(input, sink);
+  const { view, decision, currentRenderHash } = await evaluate(input, sink);
 
   if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
   const grade = gradeOf(decision.diagnostics);
+  await input.vet?.(decision.records);
 
-  const landed: string[] = [];
+  const lands: string[] = [];
   for (const fields of decision.records) {
     const title = typeof fields.title === "string" ? fields.title : "";
     if (!title) throw new Error(`placeMeme: ${uri} produced a record without a title`);
-    await sink.land(fields);
-    landed.push(title);
+    lands.push(title);
   }
-  const fresh = new Set(landed);
+  // THE CONSEQUENCE NAMES THE STALE SLOTS: the family members the new text leaves undeclared, by the one
+  // family law. A title the address merely prefixes (`uri/path`, an edge-less `uri#…`) stays where it stands.
+  const stale = tombstonesOf(consequence(view, { kind: "put", title: uri, lands }));
+  const landed: string[] = [];
+  for (const fields of decision.records) {
+    await sink.land(fields);
+    landed.push(fields.title as string);
+  }
   const tombstoned: string[] = [];
-  for (const title of group) {
-    if (fresh.has(title)) continue;
+  for (const title of stale) {
     await sink.tombstone(title);
     tombstoned.push(title);
   }
@@ -354,6 +587,70 @@ export async function evaluateMeme(
   return { uri, decision: "ingest", grade, landed: [], tombstoned: [], canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
 }
 
+/** The code a slot patch refuses under when the meme holds no slot at the address it names. */
+export const SLOT_MISSING_CODE = "slot-missing";
+/** The code a slot patch refuses under when the meme moved past the base the writer read. */
+export const STALE_BASE_CODE = "stale-base";
+
+/** One slot's body edit: `append` lands a paragraph at the end of the body; `replace` swaps the whole body. */
+export interface SlotPatchInput {
+  readonly uri: string;
+  /** The slot's address under the root, `#/name` (or `#/name/child`). */
+  readonly slot: string;
+  readonly mode: "append" | "replace";
+  readonly text: string;
+  /** The canonical hash the writer read; the patch reads against it and nothing else. */
+  readonly baseHash: string;
+  readonly hash?: (text: string) => string;
+}
+
+export type SlotPatchReading =
+  | { readonly kind: "absent" }
+  | { readonly kind: "stale"; readonly canonicalHash: string }
+  | { readonly kind: "slot-missing"; readonly canonicalHash: string }
+  | { readonly kind: "carrier"; readonly text: string; readonly canonicalHash: string };
+
+/**
+ * A SLOT PATCH WRITES NO CARRIER BY HAND: it edits the slot's own record in a copy of the family and lets the one recompose
+ * (`expandMemeRefs`) frame the whole carrier, which mints the block check over the bytes it frames. The caller lands that text
+ * through the put's own gate under the same base, so a patch passes every law a put passes and reseals as a put does.
+ *
+ * The body a slot carries spans its record's text and its `$preamble` / `$postamble` carriage (the text before its meta, and
+ * the text after its last child). `append` adds to the body's end: the postamble where one stands, the slot's text otherwise.
+ * `replace` swaps the whole body: the slot's text takes the new bytes and both carriages leave; a child slot the new body
+ * does not call leaves with the put's consequence. The slot's fields (its meta) and its authored delimiters stay.
+ */
+export async function patchSlotCarrier(input: SlotPatchInput, sink: Pick<MemeSink, "titles" | "read">): Promise<SlotPatchReading> {
+  const hash = input.hash ?? defaultHash;
+  const { view, records } = await familySnapshot(input.uri, sink);
+  const group = familyGroup(view, input.uri);
+  if (!group.includes(input.uri)) return { kind: "absent" };
+  const reader = (map: ReadonlyMap<string, TiddlerFields>) => (title: string): TiddlerFields | undefined => map.get(title);
+  const canonicalHash = hash(expandMemeRefs(reader(records), input.uri) ?? heldText(records.get(input.uri)));
+  if (input.baseHash !== canonicalHash) return { kind: "stale", canonicalHash };
+  const title = `${rootAddressOf(input.uri)}${input.slot}`;
+  const slot = records.get(title);
+  if (!slot || !group.includes(title) || slot["$slot"] !== input.slot) return { kind: "slot-missing", canonicalHash };
+  const next = new Map(records);
+  const addition = input.text.replace(/^\n+/, "").replace(/\s+$/, "");
+  const pre = carriageUri(title, "preamble");
+  const post = carriageUri(title, "postamble");
+  if (input.mode === "replace") {
+    next.set(title, { ...slot, text: addition });
+    next.delete(pre);
+    next.delete(post);
+  } else {
+    const tail = next.get(post);
+    const into = tail && typeof tail.text === "string" && tail.text.trim() !== "" ? post : title;
+    const held = next.get(into)!;
+    const standing = typeof held.text === "string" ? held.text.replace(/\s+$/, "") : "";
+    next.set(into, { ...held, text: standing === "" ? addition : `${standing}\n\n${addition}` });
+  }
+  const text = expandMemeRefs(reader(next), input.uri);
+  if (text === null) return { kind: "slot-missing", canonicalHash };
+  return { kind: "carrier", text, canonicalHash };
+}
+
 /** The read half: the whole meme as text (children recomposed inline) and the canonical hash a
  *  writer hands back as its base. `null` when the sink holds no record under the URI. */
 export async function readMeme(
@@ -365,21 +662,35 @@ export async function readMeme(
 }
 
 /**
- * THE REMOVAL — the meme's whole group (root · `#slot` fragments · `/path` children) tombstones
- * through the sink. The same base law as a placement: a `baseHash` that fails to match the standing
- * render answers `conflict` and removes nothing. `absent` when no root stands under the URI.
+ * THE REMOVAL — the meme's whole FAMILY (the root and its component slots) leaves through the sink, as ONE
+ * change where the sink carries one (`tombstoneFamily`). A `uri/path` title stands as its own meme: the
+ * removal leaves it and the consequence names it. The same base law as a placement: a `baseHash` that fails
+ * to match the standing render answers `conflict` and removes nothing. `absent` when no root stands under
+ * the URI. The answer carries the `consequence` the removal read, so a caller sees what it left behind.
  */
 export async function removeMeme(
   input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
   sink: MemeSink,
-): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; canonicalHash?: string }> {
+): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; retracted?: readonly string[]; canonicalHash?: string; consequence?: Consequence }> {
   const hash = input.hash ?? defaultHash;
-  const { group, text } = await currentRender(input.uri, sink);
+  const { group, text, view } = await currentRender(input.uri, sink);
   if (!group.includes(input.uri)) return { decision: "absent", tombstoned: [] };
   const canonicalHash = hash(text);
   if (input.baseHash && input.baseHash !== canonicalHash) return { decision: "conflict", tombstoned: [], canonicalHash };
-  for (const title of group) await sink.tombstone(title);
-  return { decision: "removed", tombstoned: group, canonicalHash };
+  const read = consequence(view, { kind: "delete", title: input.uri });
+  const leaving = tombstonesOf(read);
+  // A KĀPAE ONLY WHERE A LOWER LAYER WOULD SURFACE (operator ruling 2026-11-20): over nothing beneath the family retracts plainly.
+  if (sink.beneath && sink.leaveFamily) {
+    const tombstoned: string[] = [];
+    const retracted: string[] = [];
+    for (const title of leaving) ((await sink.beneath(title)) ? tombstoned : retracted).push(title);
+    await sink.leaveFamily(tombstoned, retracted);
+    return { decision: "removed", tombstoned, retracted, canonicalHash, consequence: read };
+  }
+  const tombstoned = leaving;
+  if (sink.tombstoneFamily) await sink.tombstoneFamily(tombstoned);
+  else for (const title of tombstoned) await sink.tombstone(title);
+  return { decision: "removed", tombstoned, canonicalHash, consequence: read };
 }
 
 /**
@@ -389,7 +700,7 @@ export async function removeMeme(
  * native delete door — a second spelling of it would drift the day one of them moved.
  */
 export function isMemeRoot(title: string, fields: TiddlerFields | undefined): boolean {
-  return fields?.["type"] === CARRIER_TYPE && !title.includes("#") && fields["$fragment-parent"] === undefined;
+  return isFamilyRoot(title, fields);
 }
 
 /** One slot of a listed meme's tree: the slot name, the record's title, the slots it holds. */
@@ -471,7 +782,9 @@ export async function listOneMeme(
   if (!meme) return null;
   if (!tree) return { uri, canonicalHash: meme.canonicalHash };
   const fields = new Map<string, TiddlerFields>();
-  for (const title of groupOfMeme(await sink.titles(), uri)) {
+  const slotPrefix = `${rootAddressOf(uri)}#`;
+  for (const title of await sink.titles()) {
+    if (title !== uri && !title.startsWith(slotPrefix)) continue;
     const f = await sink.read(title);
     if (f && f["type"] === CARRIER_TYPE) fields.set(title, f);
   }

@@ -1,0 +1,255 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-29 (file date) — source `.lares-scratch/research/mirror-realm/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-29
+
+Verbatim scratch record `.lares-scratch/research/mirror-realm/out.md` (research, file date 2026-10-29); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-mirror-realm-findings-leans-open-questions`>>
+
+! The mirror realm: findings, leans, open questions
+
+Realm-Scout: Lares (Tasked Spirit), 2026-10-29. Read-only seat. Repo cites read the d3-glass worktree (`~/.lares-scratch/d3-glass/wt` &#64; `afa95922e`, TW5 at `5.5.0-prerelease` &#64; `ea94ca840`) for the lane's code, and the main tree (`feature/green-jello-dinosaur-5`) for custody. Web cites carry their URL; ''UNVERIFIED'' marks a claim whose page this seat never opened.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a-a-browser-mode-tw5-fed-by-the-port-alone`>>
+
+!! A. A browser-mode TW5 fed by the port alone
+
+!!! A0. The cause of the lends: the floor holds, with one refinement
+
+The floor named `configureIslandRuntime` as the cause. Confirmed, and the page path carries a second forge-shaped cause upstream of it.
+
+* The page branch boots with the ''Worker's'' boot env: `prepareHostBootInstance` calls `loadTiddlyWikiFromBlob(coreBlob, makeBrowserWorkerBootEnv())` (`packages/lararium-tw5/src/tw5-host-bridge.ts:476`).
+* That env pre-seeds `$tw` with `node: {}, browser: null` (`tw5-host-bridge.ts:299`) and hands the blob a `process` shim object (`:303`).
+* So `bootprefix.js` skips its own detection (`TiddlyWiki5/boot/bootprefix.js:30-35` read `"browser" in $tw` / `"node" in $tw`). With `$tw.node` truthy it then reads bare `global.window` (`bootprefix.js:36`). ''That line is the `global is not defined in the boot prefix` the lane measured.''
+* After eval, `configureIslandRuntime` nulls both flags (`tw5-host-bridge.ts:396-397`). Every module then executes with `Buffer: $tw.browser ? undefined : Buffer` (`boot/boot.js:862`) and `process: process` (`boot.js:876-879`): ''the `Buffer` and `process` lends.''
+* With a `process` global standing, `$tw.utils.nextTick` takes the `process.nextTick` branch (`core/modules/utils/utils.js:706-713`); the shim's `nextTick` queues a microtask (`tw5-host-bridge.ts:171`). That covers ''`setImmediate` / `clearImmediate`''.
+
+Stock browser detection reads `typeof window` / `typeof document` and `typeof process === "object"` (`bootprefix.js:30-35`). So the cure takes three moves, not one:
+# A ''page boot env'': no `node`/`browser` pre-seed (or `node: null` alone); no `process` parameter; the real `window`, not the scoped lend.
+# ''No `configureIslandRuntime`'' on the page path.
+# ''No lends.''
+
+Nothing found contradicts the floor.
+
+One hazard: if any page bundle defines a global `process` object (Vite/rolldown injected one into the Worker bundle, `tw5-host-bridge.ts:441-443`), stock detection sets `$tw.node = {}` and the boot takes the Node branch. A pre-seed of `node: null` alone states a measured fact (this realm holds no Node) and closes that hazard.
+
+''What browser mode still writes onto the page window.'' These are stock TW5's own claims, not lends:
+* `window.$tw` and `window.sjcl` (the core blob carries sjcl).
+* `window.onerror` (`boot.js:252-256`, from `trapErrors`, which `bootprefix.js:39-42` sets true in browser mode).
+* `window.onbeforeunload` (`bootprefix`/`boot.js:2524-2535`).
+* One hidden `PasswordPrompt` div on `document.body` (`boot.js:644-652, 2762-2765`).
+* `document.title` and a `<style>` in `document.head`, but only if the `render` module runs.
+
+The house's own unload hold (`packages/lararium-web/src/page-mirror.ts:31-33`) sits beside TW5's `onbeforeunload`. That is safe only while no TW5 unload task returns a message (see `saver-handler` below).
+
+!!! A1. Walk of the boot and startup modules
+
+Startup modules carry `platforms`; `$tw.boot.doesTaskMatchPlatform` gates them (`boot.js:2658-2680`), and `$tw.boot.disabledStartupModules` (a name list, honoured at `boot.js:2579, 2692, 2699`) removes any by name. Both mechanisms belong to TW5 and leave the engine's bytes, and so its CID, unchanged.
+
+| Piece | What it does in browser mode | Mirror wants it? | How it stays out cleanly |h
+| `bootprefix` platform detect (`bootprefix.js:30-42`) | sets `browser`, `node`, `trapErrors`, `readBrowserTiddlers` | yes | pre-seed `node: null` only |
+| autoboot (`boot.js:2777`) | `$tw.boot.boot()` on eval | no; the house boots by hand | pre-seed `boot.suppressBoot` (already done, `tw5-host-bridge.ts:299`) |
+| `trapErrors` → `window.onerror` (`boot.js:252`) | claims the page's error handler; error forms go on `document.body` (`boot.js:203-242`) | ''open (Q-A3)'' | flips only between bootprefix and `_boot`, so it needs a pre-seed hook; else accept it as stock |
+| `decryptEncryptedTiddlers`, browser (`boot.js:1742`) | reads `#encryptedStoreArea`; absent → callback | harmless | the page carries no such element |
+| `loadTiddlersBrowser` (`boot.js:1846-1862`), the DOM store-area reader | ingests `#storeArea`, `#styleArea`, `script.tiddlywiki-tiddler-store`, … from the ''page'' document | no; the port and `preloadTiddlers` feed it (`boot.js:2547`) | the page carries none of those selectors (a witness should assert it); the current no-op override (`tw5-host-bridge.ts:402`) belongs to the forge |
+| `PasswordPrompt` (`boot.js:2762`) | one hidden div in `document.body` | no | unavoidable in stock browser mode; harmless |
+| `load-modules` (`core/modules/startup/load-modules.js`) | applies `utils-browser`, builds `$tw.rootWidget` with the real `document` | ''yes'' | stock |
+| `startup` (`startup/startup.js:17-131`) | UA detect, language/theme switchers, keyboard manager on `document`, StartupActions (`/Browser` too), ''syncadaptor search, Syncer, SaverHandler'', Popup, Animator | yes, except the sync/save tail | see the syncer and saver rows below; disabling `startup` would cost the whole module |
+| `rootwidget` (`startup/rootwidget.js`) | `tm-http-request`, `tm-modal`, `tm-notify`, `tm-copy-to-clipboard`, `tm-focus-selector`, rename/relink, `tm-scroll`, `tm-full-screen` | ''yes'': this is most of G3's owed doors, for free | stock; but the camera must parent to `$tw.rootWidget` rather than mint its own root (`glass-camera.ts:34-35`) |
+| `story` (`startup/story.js`) | permalink/permaview ''writes `location.hash`'', `hashchange` listener, `tm-browser-refresh` (reload), `tm-home`, `tm-print`, `tm-open-external-window` | partly. It wants story and history, but ''the page URL belongs to DreamDOM's route door'' | ''open (Q-A2)''; `$:/config/Navigation/UpdateAddressBar` = `no` keeps the hash write out by config (`startup/story.js:25`) |
+| `render` (`startup/render.js`) | `document.title`, a `<style>` in `document.head`, the page template into `document.body`, the draft-throttled refresh, `th-page-refreshed` and `PostRender` actions | its ''behaviour'' yes; its ''DOM target'' no (the mirror paints into a shadow root) | `disabledStartupModules: ["render"]`, with the camera taking its place, ''but the camera must then emit the same hooks and actions'' (`th-page-refreshing`/`th-page-refreshed`, `$:/tags/StartupAction/PostRender`, the draft throttle). Plugins lean on them. The current camera emits none (`glass-camera.ts`) |
+| `favicon` (`startup/favicon.js`) | writes `#faviconLink` if it exists | optional | no-op unless the page carries that id |
+| `password` (`startup/password.js`) | `tm-set-password` / `tm-clear-password` → `$tw.crypto` (encrypts saved HTML) | ''no'': the house seals | `disabledStartupModules: ["password"]` |
+| `browser-messaging` (`startup/browser-messaging.js`) | iframe loader for plugin libraries (`tm-load-plugin-library`) | ''open'': it serves the "people customize" road; installs land as wiki changes and so as port writes | stock, or disable by name; ties to Q-B |
+| `windows` (`startup/windows.js`) | `tm-open-window` (`window.open`), unload task | yes (stock behaviour) | stock |
+| `eventbus`, `confirm`, `info`, `plugins` | fork-era buses, the `tm-confirm` door, `$:/info`, plugin switching | yes | stock |
+| ''syncer'' (`core/modules/syncer.js`) | built only if some module of type `syncadaptor` exports `adaptorClass` (`startup.js:104-118`) | ''no (ruled)'' | ship none. A shadow module drops when an ordinary tiddler of the same title overrides it (`boot.js:1539-1552`). The real risk: a ''person's plugin'' that carries a `syncadaptor` (the tiddlyweb plugin, for one) switches the syncer on silently. ''Open (Q-A1).'' |
+| ''saver-handler'' (`core/modules/saver-handler.js:17-111`) | built ''unconditionally'' (`startup.js:120-124`). In browser mode it runs `initSavers` (every `saver` module), and with no syncadaptor it runs dirty tracking: a change listener, `tc-dirty` on `document.body`, an ''unload task that raises "unsaved changes"'', and the `tm-save-wiki` / `tm-download-file` / `tm-auto-save-wiki` handlers | ''no'' (ruled) for saving; `tm-download-file` stays wanted as the download door | Config, no core patch: shadow-override `$:/config/SaverFilter` to an empty filter. The handler then counts nothing, never dirties, and its unload task returns nothing (`saver-handler.js:30-90`). Set `$:/config/AutoSave` = `no`. Drop `saver` modules by same-title ordinary-tiddler overrides (`boot.js:1543`). The handler object still stands, inert. |
+
+!!! A2. Writes out, landings in, no echo
+
+The house already holds the end-state. It does not use the syncer.
+
+* ''Out:'' `makeGlassPortAdaptor` listens on `wiki.addEventListener("change")` and posts one `port:write` per title, one write in flight per title; later keystrokes wait behind it, and the follow-up carries the latest image (`packages/lararium-tw5/src/glass-port-adaptor.ts:108-143`).
+* ''In:'' `land()` calls `wiki.addTiddler` / `deleteTiddler` and ''tags two images'': the wire fields, and the tiddler as TW5 reads it back after normalising tags, lists and dates. `onChange` consumes a matching tag instead of posting (`glass-port-adaptor.ts:78-124`). Its own echo comes back as `causedBy` txIds and marks the pending write `echoed` (`:176-181`).
+* ''Local-only titles'' (`$:/StoryList`, `$:/HistoryList`, `$:/temp`-style prefixes) never cross (`:73-75`).
+
+That shape rhymes with what TW5's syncer itself does. `storeTiddler` records `tiddlerInfo[title] = {revision, changeCount: wiki.getChangeCount(title)}`, and a title reads dirty only when `getChangeCount(title) > tiddlerInfo.changeCount` (https://github.com/TiddlyWiki/TiddlyWiki5/blob/master/core/modules/syncer.js, &#126;L215, L254-264, L490; the line numbers come from upstream master). The `"change"` event fires batched on `nextTick` after `changeCount` bumps (`core/modules/wiki.js` `enqueueTiddlerEvent`), so an "applying remote" flag set around `addTiddler` has already cleared when the event fires. Both the image tags and a changeCount snapshot survive that delay. A cheap second witness: record `getChangeCount(title)` after each `land()` and drop any change event at or below it.
+
+The image-tag approach is stronger than a changeCount for a CRDT, because a landing that TW5 rewrites (tag or list normalisation) still matches. Browser mode changes none of this. One seam moves: `nextTick` goes back to `window.setTimeout(fn,0)` once no `process` stands (`utils.js:709-711`). The mirror already overrides it to `queueMicrotask` (`tw5-host-bridge.ts:479`), a `$tw` property assignment and no byte change. Keep it, so event batching matches the island.
+
+!!! A3. Prior art
+
+See ''§A3-prior-art'' at the end; the TW5 prior-art agent's report folds in there.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b-privilege-custody-first`>>
+
+!! B. Privilege, custody first
+
+!!! B1. What page-realm code reaches today (the custody layer read)
+
+Every row here belongs to the ''origin'', not to a thread. Code anywhere in the page realm (the main thread where the mirror runs) reaches it with `indexedDB.open` or `navigator.storage.getDirectory()`, whichever thread wrote it.
+
+| Store | Contents at rest | Read gains | Write/delete gains |h
+| IDB `lares:vessel` / `keystore`, before a slot binds | ''cleartext'' device Ed25519 seed (`vessel-key`, hex `signingKey`), veil Archives, place seed (`packages/lararium-browser/src/browser-vessel-identity.ts:9-10, 216-227`; `browser-custody.ts:4-8`) | ''total'': sign as the vessel, decrypt veiled docs | swap keys, brick the vessel |
+| same, once a slot binds | `sealed/<row>` AEAD under the tree key; `custody-slots` holds salts, nonces and wrapped bytes (`browser-custody.ts:8-13`) | ciphertext only, so an offline attack on the passphrase | delete the tree (a refusal destroys nothing, but an attacker's delete does) |
+| persona-root seeds | ''cleartext by ruling'' (SLIP-0010 needs bytes); the PRF wrap rides //beside// the cleartext, never instead (`seed-wrap-prf.ts:5-11`) | ''total'' for every face that root derives | same |
+| the ''unlocked tree key'' | page memory, a module-level `Map` (`browser-custody.ts:96`) | not by reference, but same-realm code can ''poison `crypto.subtle`, `IDBObjectStore.prototype`, or `document` keydown before the unlock'' and catch the passphrase or the key | — |
+| IDB `<idbName>:repo` | the Automerge repo, via `IndexedDBStorageAdapter` (`open-browser-vessel.ts:565`) and the per-wiki island stores (`browser-sovereign-island-model.ts:39-41`). Not sealed by this adapter (UNVERIFIED whether a sealing layer wraps it upstream) | every wiki's truth in the clear | ''forge or corrupt truth'' under the vessel's own actor |
+| OPFS CAS dir | engine and plugin blobs by CID; re-verified by hash before reuse (`browser-genesis.ts:60-95`) | public bytes | denial only (a tampered blob refuses boot) |
+| `localStorage` continuity marker | `founding` / `founded` (`browser-vessel-identity.ts:247-274`) | little | flip it and the boot reads `local-storage-lost` |
+| `sessionStorage` crash records | the mirror's evidence | little | force skinny |
+
+''Net:'' under "privilege stays open", a person's TW5 plugin ''already holds the vessel's signing key'' on an unslotted vessel, and every persona-root seed on every vessel. Sealing fixes the first only at rest. A live plugin can then wait for the unlock in the same realm.
+
+So the question does not ask whether the mirror holds keys. ''The realm that runs the mirror holds the keys' storage.'' That remains true whatever "browser mode" fixes.
+
+!!! B2. The options against every vessel setup
+
+Setups: ''(1)'' a browser taking a port onto a node's own box; ''(2)'' an anon-device browser vessel; ''(3)'' a fleet of equivalent vessels; ''(4)'' a user-class cap-stack holding no node infrastructure.
+
+| Option | What it buys | (1) port onto a node | (2) anon-device vessel | (3) fleet | (4) no node infra | Cost |h
+| ''Accept full plugin trust'' (Obsidian: plugins hold the app's full access, and Obsidian "cannot technically limit" them, https://obsidian.md/help/plugin-security; VS Code: Workspace Trust "can't prevent a malicious extension…", https://code.visualstudio.com/docs/editing/workspaces/workspace-trust) | nothing; it names the stance | tolerable: keys live on the node, and the page holds a port | ''every key in reach'' | each vessel exposed alike | worst: the browser IS the vessel | zero build; an honest label at plugin install |
+| ''Key-side inversion'' (Privy: an isolated cross-origin iframe holds the key, rebuilt in memory only, signatures out, https://docs.privy.io/guide/security/; Turnkey's iframe stamper, https://docs.turnkey.com/sdks/advanced/iframe-stamper; Coinbase passkey popups, https://docs.base.org/identity/smart-wallet/features/single-sign-on) | custody leaves the app's origin; a plugin can ''ask'' for a signature but never ''read'' a key | moot: the node holds custody | ''fits'', but the custody origin's storage gets ''partitioned'' under the app's top-level site (see B3); Safari also partitions a same-site subdomain (WebKit 225297) and makes third-party storage ''ephemeral'' | each vessel's app origin and key origin pair alike | ''fits best'', but the partition trap hits hardest here | a second origin to serve (DNS, TLS: see the secure-context→DNS-01 memo); a signing RPC with per-request intent display (a plugin can still ask for a signature the person never meant) |
+| ''Inversion, top-level variant'' (the key origin opened as a ''popup/top-level'' window, Coinbase-style) | dodges partitioning: top-level storage stays first-party | moot | ''fits''; one popup per unlock | same | fits | UX: a popup per signing session; popup blockers |
+| ''App on a sandbox origin'' (the mirror's //page// moves to a user-content origin, the custody origin stays top-level; web.dev's pattern, https://web.dev/articles/securely-hosting-user-data; Observable, https://observablehq.com/@observablehq/security-model) | the mirror realm never shares an origin with custody | moot | fits | fits | fits | in effect the sandboxed iframe (lean B) that the operator ruled Mu on |
+| ''SES / Hardened JS'' (`lockdown`, Compartments, https://cdn.jsdelivr.net/npm/ses@2.2.0/README.md; LavaMoat in MetaMask, https://lavamoat.github.io/about/runtime-environment/) | per-plugin confinement if endowments exclude `window`/`indexedDB` | — | — | — | — | ''breaks TW5 as written'': modules expect bare `$tw`, `document`, and `window` through the DOM (`node.ownerDocument.defaultView` leaks `indexedDB`). TW5 mutates prototypes. A DOM membrane stands unbuilt anywhere this seat found. Figma tried a Realms shim on the main thread and ''left it after a shim escape'' for QuickJS-in-WASM (https://www.figma.com/blog/how-we-built-the-figma-plugin-system/). Refuse. |
+| ''Trusted Types + CSP'' (Baseline Feb 2026: Firefox 148, Chromium 83, Safari 26, https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API) | gates //injection// sinks (`innerHTML`, `eval`, `script.src`) | — | — | — | — | does ''not'' stop a plugin already running from `indexedDB.open`. TW5 ''evaluates plugin modules with `new Function`/`eval`'' (`boot.js` module executor), so a strict policy refuses plugins unless one named policy passes them; that turns the policy into a plugin-install gate, which has value as a ''choke point''. Worth it as hygiene (wikitext → HTML), not as custody. |
+| ''Origin-per-wiki'' | each wiki's realm holds only its own wiki's storage | moot | each origin partitions under the app; per-wiki subdomains need a PSL entry to count as separate sites, and ''any'' custody on any of them still meets the trap | — | — | heavy DNS/TLS; breaks cross-wiki transclusion inside one page |
+
+!!! B3. The storage-partition trap (current rules)
+
+* ''Chrome'' (on since 115): the key = the frame's origin + the top-level site + an ''ancestor bit'' set when any frame in the chain is cross-site. IndexedDB, OPFS, localStorage, Cache, BroadcastChannel, SharedWorker, ''Web Locks'' and third-party service workers all partition (https://privacysandbox.google.com/cookies/storage-partitioning). The same origin opened top-level and opened framed under the app's site ''read different IndexedDBs''. A same-site chain stays unpartitioned. `requestStorageAccess({all:true})` (Chrome 125+) returns a //handle// to unpartitioned storage; it prompts unless the two sites form a Related Website Set (https://privacysandbox.google.com/blog/saa-non-cookie-storage).
+* ''Firefox'' (State Partitioning / Total Cookie Protection): keyed on the top-level site; covers IDB, localStorage, Cache, workers and BroadcastChannel. A Storage Access grant holds per top-level site for 30 days (https://hacks.mozilla.org/introducing-state-partitioning/).
+* ''Safari'':
+** Third-party localStorage and IDB stand ''partitioned and ephemeral'' (https://webkit.org/tracking-prevention/).
+** ''WebKit bug 225297 (open)'': a same-eTLD+1 subdomain iframe also gets its own partition (https://bugs.webkit.org/show_bug.cgi?id=225297).
+** ''The 7-day cap'' deletes script-writable storage after seven days of use without interaction. Home Screen web apps stand exempt and hold storage separate from Safari's.
+** Safari 17: an origin's quota is 60% of disk; LRU eviction; `persist()` granted by heuristic; ''cross-origin frames get 10% of the main frame's quota'' (https://webkit.org/blog/14403/updates-to-storage-policy/). Whether `persist()` beats the 7-day cap: UNVERIFIED.
+** The house's own probe already reads the eviction class (`packages/lararium-browser/src/secure-context-gate.ts:154-176`).
+
+''What the trap means for the house:''
+* A key origin ''framed'' under the app keeps a keystore separate from the same key origin opened ''top-level'' (and from the Home Screen app's).
+* On Safari the framed one also evaporates after seven idle days, which ''destroys keys unless a slot backs them up''. That runs straight into the RECOVERY ruling.
+* Any framed-custody design therefore needs custody rows that the ''top-level'' context owns, or a re-derivation path (PRF, paper).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/c-golden-principles-and-pattern-integrities`>>
+
+!! C. Golden principles and pattern integrities
+
+# ''POLA: authority by reference, not by ambient reach.'' Sources: Miller, //Robust Composition//, http://www.erights.org/talks/thesis/ (UNVERIFIED, page not opened); Endo/SES docs above.
+#* ''Rhymes with'' "no keys, no truth, the port alone": the port works as a capability.
+#* ''Strains'' under "privilege stays open": the realm's //ambient// authority (origin storage) overrides the port's discipline. The port names what the mirror //should// use; the origin hands it everything.
+# ''Confinement belongs to the platform, not to discipline.'' Figma's lesson: a JS-level realm shim on the main thread lost to one escape (Figma blog above). Logseq's iframe sandbox escaped by attribute injection when CSP stood off, CVE-2026-47901 (https://www.incibe.es/en/incibe-cert/early-warning/vulnerabilities/cve-2026-47901).
+#* ''Rhymes with'' the lane's own line: "today the code keeps that by discipline, and the page realm enforces none of it" (`d3-glass-lane.mem` #/the-mirror-realm).
+# ''Put the boundary where the secret lives, not where the guest lives'' (the key-side inversion, the wallet industry's convergence). When the guest must keep full DOM power (people customize TW5), move the //keys// out, not the guest in.
+#* ''Rhymes with'' the Mu ruling on iframes for the //mirror//, and with "share substrate, not sovereignty".
+#* ''Strains'' under isomorphic-by-intent (custody read by capability, never by host), unless the key origin presents the //same// custody capability on every vessel setup.
+# ''Membranes wrap whole object graphs'' (Miller/Tribble; Agoric). The port already acts as a membrane of structured-clone data: no object identity crosses. ''Rhymes with'' "fed by the port alone". It argues against any shortcut that hands the mirror a live object from the island or custody.
+# ''Local-first: the user owns the data, which lives on their devices; the network stays optional'' (Ink & Switch, https://www.inkandswitch.com/local-first/, UNVERIFIED, page not opened).
+#* ''Rhymes with'' the house's own CRDT store over TW5's syncer and savers. TW5's savers presume a //file// as the truth; the house's truth sits in the CRDT, so saver paths stay out by principle, not taste.
+# ''Process/host separation for extensions'' (VS Code's extension host; MV3 bans remote code and `eval` in extension pages, https://developer.chrome.com/docs/extensions/develop/migrate/improve-security).
+#* ''Strains'' against TW5, whose plugin model //is// `eval` of wiki-carried code. Any MV3-style rule breaks the customization road.
+#* ''Rhymes with'' "the engine stays byte-identical by CID": what loads gets //named by hash//, the TW5 analogue of "no remote code".
+# ''One shape across setups.'' A design that holds only on the node's own box (setup 1) and fails the anon-device vessel (setup 2) breaks the boot/width/caps single pattern integrity (WIDTH RULING 3).
+#* Full-trust acceptance holds in setup 1 and fails in setups 2 and 4.
+#* The key-side inversion holds in setups 2 to 4 and stands moot in setup 1. It never contradicts any of them.
+# ''No global now.'' TW5's `render` throttles draft refresh with `setTimeout(…,400)` (`startup/render.js`), `nextTick` uses `setTimeout(fn,0)`, and `tm-notify` dismisses on a timer.
+#* A ''render cadence'' decides no truth, so it sits outside the no-global-now ruling's reach (a wall clock never //decides//).
+#* Name it in the camera so a reader sees the line: timers pace paint, never truth.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/leans`>>
+
+!! Leans (each with what overturns it)
+
+# ''Browser-mode boot:''
+#* A page boot env of its own: pre-seed `{boot:{suppressBoot:true}, node:null}`, real `window`, no `process` parameter, no `configureIslandRuntime`, no lends.
+#* `disabledStartupModules: ["render","password"]`.
+#* `$:/config/SaverFilter` empty and `$:/config/AutoSave` `no` as shipped shadow overrides (house plugin tiddlers, not core bytes).
+#* The camera mounts under `$tw.rootWidget` and emits `th-page-refreshing`/`th-page-refreshed` and `PostRender`.
+#* //Overturn:// a measured plugin from the house's corpus that needs `render` itself (one that reads `$tw.pageContainer` or `$tw.styleElement`). Then the camera must set those names too, or `render` runs stock into a document the mirror owns.
+# ''Syncer stays out by refusal, not by trust:'' at mount, a plugin census names any `syncadaptor` or `saver` module a person's plugin carries, and the mirror refuses to stand with it (a named floor: `none:plugin-syncadaptor`), or overrides it by same-title tiddler. //Overturn:// an operator ruling that a person's own syncadaptor counts as their intent.
+# ''Stock writes on the page window'' (`$tw`, `sjcl`, `onerror`, `onbeforeunload`): accept them as TW5's own browser-mode claims, documented beside the house's unload hold. //Overturn:// a page library that also claims `onerror`/`onbeforeunload` by property, not by `addEventListener`.
+# ''Privilege: the key-side inversion as the end-state, popup/top-level-first.''
+#* A key origin, opened ''top-level'' for unlock and signing (dodging partitioning and Safari's ephemeral third-party storage), holds the custody rows.
+#* The app origin, where the mirror and every plugin run, keeps only ciphertext CRDT chunks and public bytes.
+#* The first step, with no second origin needed: ''seal the Automerge repo at rest'', and ''refuse the cleartext keystore'' on any vessel that runs the mirror at full width.
+#* //Overturn:// a measured UX cost the operator refuses (a popup per session); or Safari Home Screen apps (exempt from the 7-day cap but separate from Safari) proving the only phone seat, which would push custody back into one origin and leave "accept full trust plus seal at rest" as the floor.
+# ''Refuse SES and origin-per-wiki for the mirror.'' TW5's model (bare globals, `eval`, prototype extension) defeats SES without a DOM membrane no one has built. Origin-per-wiki multiplies the partition trap and breaks one-page transclusion. //Overturn:// a working SES DOM membrane in production, which this seat found none of.
+# ''Trusted Types as a plugin-install choke point'', not as custody: one named policy through which every `new Function` of a module passes, hashed against the CID manifest. //Overturn:// measured breakage of stock widgets (TW5 sets `innerHTML` in places; UNVERIFIED in this fork's count).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/questions-only-the-operator-can-rule`>>
+
+!! Questions only the operator can rule
+
+* ''Q-A1.'' A person's plugin carrying a `syncadaptor` or `saver`: refuse the mirror, override by tiddler, or honour it as their intent?
+* ''Q-A2.'' Does the mirror's story own the page URL hash (permalinks, `#:safe` safe mode, which itself acts as a URL-string boot switch rhyming with the refused `?glass=`), or does DreamDOM's route door own it, with `UpdateAddressBar` off?
+* ''Q-A3.'' Do TW5's `window.onerror` claim and its error form on `document.body` stand (stock), or does the house own the page error rail? A pre-seeded `trapErrors:false` cannot ride `bootprefix.js:39`, which overwrites `tasks`; it would need a pre-`_boot` hook.
+* ''Q-A4.'' Modals and notifications: stock `Modal`/`Notifier` append to `document.body` (`utils/dom/notifier.js:58`, `modal.js:30-50`), outside the shadow root and its stylesheet. Either the mirror owns the document (the stylesheet goes into `document.head`), or the shadow root holds the page and these doors re-route.
+* ''Q-B1.'' Key-side inversion (a second origin, popup-first) versus full trust plus sealing at rest.
+* ''Q-B2.'' Persona-root seeds rest cleartext //by ruling//. Does the mirror's arrival at full width (any person's plugin in the realm) re-open that ruling for browser vessels?
+* ''Q-B3.'' Who serves the key origin on an anon-device vessel and a user-class cap-stack with no node infrastructure: the same static host under a sibling name, or a fixed house origin? This touches the DNS-01 and civic-TLS memos.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a3-prior-art`>>
+
+!! §A3-prior-art
+
+''Headline:'' this seat found ''no published TW5 build that runs without a syncer and is fed by an external CRDT.'' Every working integration goes through a `syncadaptor` plus `$tw.syncer`, or through a saver. The house's adaptor stands as its own prior art.
+
+| Project | Store and sync | Takeaway for a port-fed mirror |h
+| ''TiddlyPWA'' (https://codeberg.org/valpackett/tiddlypwa, `plugins/tiddlypwa/main.js`) | a `syncadaptor` whose "server" holds encrypted IndexedDB. Other tabs' changes arrive on BroadcastChannel into queues, drained through `$tw.syncer.syncFromServer()`. It ''shadows `$:/core/modules/savers/put.js` with a dummy'', because `put.js` probes the server from its constructor | ''The closest prior art.'' It proves the "port as the syncer's server" alternative, and it uses the same-title shadow override to kill a saver. The ruling keeps the syncer out, so it serves as a contrast, plus confirmation of the override technique. |
+| ''TidGi'' (Electron; https://cdn.jsdelivr.net/npm/tidgi@0.13.0-prerelease4/docs/internal/IPCSyncAdaptorAndFSAdaptor.md) | IPC syncadaptor; echo suppression by a `recentlySavedTiddlers` set plus a watcher exclusion list | "''timestamps proved unreliable''" for echo: matching by image or count beats `modified` |
+| ''TiddlyDesktop'' (https://github.com/TiddlyWiki/TiddlyDesktop) | single-file wikis in iframes, saving through the TiddlyFox DOM-event protocol (`source/js/utils/saving.js`); folder wikis through the Node server and the tiddlyweb adaptor. Overhaul PR #327 adds Yjs co-editing over a `$tw.wiki` change listener that never broadcasts drafts (summary only, https://talk.tiddlywiki.org/t/tiddlydesktop-rs-tiddlydesktop-overhaul/15389, code UNVERIFIED) | the host catches whole-file saves, the opposite shape. PR #327's "change listener, drafts never cross" rhymes with the adaptor's `local()` titles; ''check whether the adaptor sends `draft.of` tiddlers'' |
+| ''MultiWikiServer'' (https://github.com/TiddlyWiki/MultiWikiServer, `plugins/client/src/new-multiwikiclientadaptor.ts`) | syncadaptor under the stock syncer, plus SSE | Arlen22's design note names the syncer's ''one-tiddler-at-a-time'' saving as a bottleneck (https://mws.tiddlywiki.com/static/2025-05-06%2520-%2520syncer%2520design.html); TW5 PR #9117 (UNVERIFIED). Supports keeping the syncer out. |
+| ''TW5-Bob'' (https://github.com/OokTech/TW5-Bob, `FileSystem/BrowserWSAdaptor.js`) | WebSocket syncadaptor; an ack per save; hash compare on reconnect | per-write acks rhyme with the port's txId answers |
+| ''TW5-Yjs'' (the operator's own 2021 brainstorm, https://talk.tiddlywiki.org/t/tw5-yjs-real-time-sync-brainstorm/298) | fields as Yjs strings, forked from Bob; code status UNVERIFIED | linonetwo notes Yjs/yrs handles JSON well but plain wikitext poorly (https://talk.tiddlywiki.org/t/sharing-synchronizing-tiddlywikis-with-a-crdt-protocol/12324) |
+| ''tiddlywiki-ipfs'' (https://github.com/xmaysonnave/tiddlywiki-ipfs) | a saver: each save makes a new CID, optionally published under IPNS | whole-file and content-addressed; not per-tiddler |
+| ''Feather Wiki'' (https://codeberg.org/Alamantus/FeatherWiki) | one self-replicating HTML file; download, or a whole-file PUT | not a model |
+| TW5 + Automerge, WebRTC plugins | none found | — |
+
+''A gap the prior art flags:'' TiddlyPWA's `put.js` lesson applies here directly. In browser mode, `initSavers` ''constructs every saver'', and `put.js` fires network probes (OPTIONS/HEAD to the page URL) from its constructor (confirmed in this fork: `core/modules/savers/put.js:22-24` HEAD, `:49-51` OPTIONS; TiddlyPWA kills it the same way). An empty `SaverFilter` does ''not'' stop that. The mirror needs the saver modules overridden by same-title tiddlers (`boot.js:1543`), not just a filter.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;noxKNa96FX0w7c0GMfVH2J0svsjlVZcRNPgANDKERJA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,68 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/b1-lift/` — 8 record(s) here, 50 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/b1-lift/`
+
+The scratch planning records of `.lares-scratch/b1-lift/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 8 record(s) stand here and 50 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[live-event/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-event/index]] | 3 |
+| [[live-wait/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/index]] | 3 |
+| [[luna-carrier-read/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-carrier-read/index]] | 2 |
+| [[luna-collide-road/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/index]] | 2 |
+| [[stall-read/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/stall-read/index]] | 2 |
+| [[terra-b10/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-b10/index]] | 3 |
+| [[terra-globals-read/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-globals-read/index]] | 2 |
+| [[terra-measure/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-measure/index]] | 2 |
+| [[terra-s4-1/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-1/index]] | 4 |
+| [[terra-s4-2/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-2/index]] | 3 |
+| [[terra-s4-3/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s4-3/index]] | 3 |
+| [[terra-s6-1/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-1/index]] | 3 |
+| [[terra-s6-2/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s6-2/index]] | 3 |
+| [[terra-s7-1/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-s7-1/index]] | 3 |
+| [[terra-shore-read/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-shore-read/index]] | 2 |
+| [[terra-slice3/|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-slice3/index]] | 2 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[blind-warden-2|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/blind-warden-2]] | plan | 2026-11-06 | `blind-warden-2.md` |
+| [[collide-batch|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-batch]] | plan | 2026-11-05 | `collide-batch.md` |
+| [[collide-common|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-common]] | plan | 2026-11-05 | `collide-common.md` |
+| [[design|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/design]] | plan | 2026-11-06 | `design.md` |
+| [[measure|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/measure]] | plan | 2026-11-05 | `measure.md` |
+| [[pr-body|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/pr-body]] | PR body | 2026-11-06 | `pr-body.md` |
+| [[resume|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/resume]] | resume | 2026-11-06 | `resume.md` |
+| [[slice4-brief|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/slice4-brief]] | brief | 2026-11-06 | `slice4-brief.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X9wJ_ZkAdVfIg5riTAI5JMirCBRxNqM7tmJBeB0iDAU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

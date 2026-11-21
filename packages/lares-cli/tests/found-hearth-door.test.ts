@@ -12,16 +12,17 @@
  *        slot, and a body that opens and reads as no face (the restore's own `bundle-inconsistent`).
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { cpSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, existsSync, writeFileSync } from "node:fs";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { join } from "node:path";
 import { cmdVessel } from "../src/commands/vessel.js";
 import { cmdPersona } from "../src/commands/persona.js";
 import { setFoundingBundleRoute } from "../src/commands/found.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
-import { listPersonaRoots, readNexusDoc } from "@lararium/node";
+import { listPersonaRoots, readNexusDoc, seatReadBackStandIn } from "@lararium/node";
 import { NEXUS_AID_PATTERN, bindBundleRoutes, encodeFaceBundle, mintBundleKey, nexusAidOf, sealFaceBundleBody } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
@@ -31,13 +32,13 @@ const lastJson = (lines: string[]): Record<string, any> =>
   JSON.parse(lines.filter((l) => l.trim().startsWith("{")).at(-1) ?? "{}");
 
 describe("lares vessel found --hearth", () => {
+  let house: Scratch;
   let root: string;
-  let prior: string | undefined;
   let wire: string[];
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-found-hearth-door-"));
-    prior = process.env["LAR_ROOT"];
-    process.env["LAR_ROOT"] = root;
+    seatReadBackStandIn(true); // Explicit harness authority for the positive founding/read-back controls.
+    house = openScratch();
+    root = house.root;
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
     wire = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { wire.push(String(chunk)); return true; });
@@ -45,9 +46,9 @@ describe("lares vessel found --hearth", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
+    seatReadBackStandIn(false);
     vi.restoreAllMocks();
-    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    rmSync(root, { recursive: true, force: true });
+    closeScratch(house);
   });
 
   test("D1 — on a staged root it answers the AID, one seat, PRIVATE, and the stood-in card's code; persona zero stands", async () => {
@@ -67,17 +68,18 @@ describe("lares vessel found --hearth", () => {
   test("D2 — no label for persona zero refuses by name before any byte lands", async () => {
     writeFileSync(join(root, ".lar-test-scratch"), "");
     expect(await cmdVessel(found({}, { hearth: true }))).not.toBe(0);
-    expect(existsSync(join(root, "data", "lares", "vessel", "social-bootstrap.json"))).toBe(false);
+    expect(existsSync(join(root, "hearth", "vessel", "social-bootstrap.json"))).toBe(false);
     expect(readNexusDoc(larSealHome())).toBeNull();
   });
 
   test("D3 — off a staged root a JSON run refuses the card, seats no charter and founds no face", async () => {
+    seatReadBackStandIn(false);
     const errors: string[] = [];
     vi.mocked(console.error).mockImplementation((line: unknown) => { errors.push(String(line)); });
     expect(await cmdVessel(found({ name: "keeper" }, { hearth: true }))).not.toBe(0);
     expect(errors.join("\n")).toMatch(/CardReadBackRefused: .*prints each chair's cold-key card on the terminal/);
     expect(readNexusDoc(larSealHome())).toBeNull();
-    expect(await listPersonaRoots()).toEqual([0]);                 // the root its seat claim stood for stays held
+    expect(await listPersonaRoots()).toEqual([]);                  // the place card refuses first, so no persona root stood
   });
 
   test("D4 — persona new 0 on a place refuses and names the act — CONTROL: after the act it answers", async () => {
@@ -97,7 +99,7 @@ describe("lares vessel found --hearth", () => {
     const ROUTE = "the-bundle-route-for-a-founding-test";
     const bundleKey = mintBundleKey();
     const file = join(root, "face.bundle");
-    writeFileSync(file, encodeFaceBundle(bindBundleRoutes(bundleKey, [{ t: 1, pins: [{ kind: "passphrase", passphrase: ROUTE }] }]), sealFaceBundleBody(new TextEncoder().encode("{}"), bundleKey)));
+    writeFileSync(file, encodeFaceBundle(await bindBundleRoutes(bundleKey, [{ t: 1, pins: [{ kind: "passphrase", passphrase: ROUTE }] }], nativeKdf), sealFaceBundleBody(new TextEncoder().encode("{}"), bundleKey)));
     writeFileSync(join(root, "junk.bundle"), "no bundle here");
     try {
       setFoundingBundleRoute(async () => [{ kind: "passphrase", passphrase: ROUTE }]);

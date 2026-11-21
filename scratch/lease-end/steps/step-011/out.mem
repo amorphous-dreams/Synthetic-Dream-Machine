@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-011/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-011/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-011/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-11-hand-back`>>
+
+! Step 11 hand-back
+
+Head `dedd08ae444f4a3475b24d5694cb5a5c6065d9f6`; worktree clean; no live seats; no push. The supplied brief carried the controller's exact two attribution trailers; all four commits end with them.
+
+* `ace236936` commits the previously verified founder-fork red. `f2e98b5ec` moves the pinned lineage walk before dyad proof and preserves pending unknown/unavailable and final aside verdicts. Relay 011: face-grant-record.test.ts, 24 pass, 0 fail. Relay 009 established the red (23 pass, 1 fail).
+* The seat independently bypassed verification on unknown standing, still masking a held fork. `a75d114fb` commits a seat-level red with a pending control; relay 013 measured 26 pass, 1 fail at fork visibility. `dedd08ae4` routes the unknown reading through the verifier, retains an independent fail-closed guard if a verifier accepts unknown, and updates the existing stub expectations. Relay 015: face-seat-lands-on-grant.test.ts, 28 pass, 0 fail. The seat red uses a verifier stub; the separate grant test exercises the real verifier. No integrated seat-plus-real-verifier test was added.
+* Requests 010–016 all received broker receipts in this step. Next relay request: 017.
+
+Still owed: all remaining slice 2 rows in state, including the blind-read P3s (tri-state ring, boot-time/stale lineage and rollback, aside memoization, epoch-free consumers and test hygiene, join wiring and TOCTOU), the known-dyad census with independently evidenced completeness, runApplyAdmitPayload, holder-session-proof and leaf-peer-proof. The previous step's detailed source observations remain in step-010/out.md. In particular, the edge board alone holds no roster or completeness proof; do not infer a complete fleet from it. The seat memoizes final fork verdicts and holds a boot-time KEL snapshot; measure freshness and retries as part of the remaining work. No fleet-wide roll/epoch fields burned. Whole non-daemon suites remain due before ready; e2e remains CI only. Blind Opus custody read precedes land. No push without controller go.
+
+Next: continue the owed rows red-first with controls, starting with a bounded blind-read residue or the independently evidenced census design. Keep state step counter at 11 per step law.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b8Uj-eXLolJ-pArpkcc29LGihohpc71GmkVxgdk1f9U`>>
+
+<<^ code=`&#x0004;` to=`?`>>

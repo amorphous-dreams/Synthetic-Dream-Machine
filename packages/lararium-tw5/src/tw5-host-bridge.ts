@@ -1,4 +1,5 @@
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { MIRROR_TOKEN } from "./glass-token.js";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
@@ -110,6 +111,20 @@ function makeBrowserVmShim(): Record<string, unknown> {
     // boot on one broken module; a plain fault that keeps the name, message and stack takes the
     // executor's reporting branch, so the module ends by name and the island boots on.
     try {
+      // TW5's sandbox check enumerates its realm global after the module runs. This shim
+      // executes in the worker realm, so compare against that realm at each invocation.
+      const checkStart = code.lastIndexOf("  Object.defineProperty(Object.prototype, '__temp__', {");
+      if (checkStart >= 0 && code.slice(checkStart).includes('Warning: Global assignment detected')) {
+        const baseline: Set<string>[] = [];
+        const addedGlobals = () => Object.keys(globalThis).filter((key) => !baseline[baseline.length - 1]?.has(key));
+        const compiled = (new Function(...keys, "__larAddedGlobals", "return " +
+          code.slice(0, checkStart) + code.slice(checkStart).replaceAll("Object.keys(__temp__)", "__larAddedGlobals()")) as (...args: unknown[]) => unknown)(...vals, addedGlobals);
+        if (typeof compiled !== "function") return compiled;
+        return function(this: unknown, ...args: unknown[]) {
+          baseline.push(new Set(Object.keys(globalThis)));
+          try { return compiled.apply(this, args); } finally { baseline.pop(); }
+        };
+      }
       return (new Function(...keys, "return " + code) as (...args: unknown[]) => unknown)(...vals);
     } catch (error) {
       throw namedFault(error);
@@ -265,7 +280,7 @@ export function makeScopedWindowLend(onSjclWrite: () => void): Record<string, un
 interface HeadlessBootEnv {
   resolveBuiltin: (id: string) => unknown;
   preSeedTw:      Record<string, unknown>;
-  processArg:     unknown;
+  processArg?:    unknown;
 }
 
 async function makeNodeBootEnv(): Promise<HeadlessBootEnv> {
@@ -301,8 +316,15 @@ function makeBrowserWorkerBootEnv(): HeadlessBootEnv {
     preSeedTw:  { boot: { suppressBoot: true }, node: {}, browser: null },
     // The eval-scoped `process` capability (the third runtime is neither browser nor node;
     // the host injects what the kernel's module-execute sandbox closes over). NOT undefined —
-    // that was the 77389c01 regression that routed boot into the node `process.exit` branch.
+    // an undefined `process` routes boot into the node `process.exit` branch.
     processArg: makeBrowserProcessShim(),
+  };
+}
+
+function makePageBootEnv(): HeadlessBootEnv {
+  return {
+    resolveBuiltin: (id) => { throw new Error(`TW5 page boot refused require(${id})`); },
+    preSeedTw: { boot: { suppressBoot: true, disabledStartupModules: ["story", "rootwidget", "render", "password", "favicon", "windows"] }, node: null },
   };
 }
 
@@ -333,14 +355,17 @@ function loadTiddlyWikiFromBlob(
   const priorTw      = Object.getOwnPropertyDescriptor(g, "$tw");
   const priorLoad    = g["_load"];
   const priorWindowDescriptor = Object.getOwnPropertyDescriptor(g, "window");
-  const removeWindowAccessor = (): void => restoreGlobal(g, "window", priorWindowDescriptor);
+  // A page's own `window` cannot be redefined; the glass keeps it and the bundle's `window` parameter still carries the lend.
+  const page = typeof document !== "undefined" && typeof window !== "undefined";
+  const lendsWindow = !page && priorWindowDescriptor?.configurable !== false;
+  const removeWindowAccessor = (): void => { if (lendsWindow) restoreGlobal(g, "window", priorWindowDescriptor); };
   const windowLend = makeScopedWindowLend(removeWindowAccessor);
   const priorRequire = Object.getOwnPropertyDescriptor(g, "require");
   let twFromBlob: unknown;
   try {
     // The bundle gets the lend's two names (`LENT_WINDOW_NAMES`). It never receives the worker global or a
     // browser surface; the global accessor disappears at the first write of the crypto initialization.
-    Object.defineProperty(g, "window", { configurable: true, get: () => windowLend });
+    if (lendsWindow) Object.defineProperty(g, "window", { configurable: true, get: () => windowLend });
     lendGlobal(g, "require", requireShim);
     lendGlobal(g, "$tw", env.preSeedTw);
     // Evaluate with CommonJS-shaped `exports` so the standalone TW5 core (the
@@ -348,7 +373,7 @@ function loadTiddlyWikiFromBlob(
     // the bytes come from the content-addressed LarariumDoc blob, not a package.
     const source   = new TextDecoder().decode(new Uint8Array(coreBlob.bytes));
     const evaluate = new Function("exports", "module", "require", "window", "process", source);
-    evaluate(exportsShim, moduleShim, requireShim, windowLend, env.processArg);
+    evaluate(exportsShim, moduleShim, requireShim, page ? window : windowLend, env.processArg);
     twFromBlob = g["$tw"];
     if (twFromBlob && typeof twFromBlob === "object") {
       const tw = twFromBlob as Record<string, unknown>;
@@ -403,11 +428,14 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
   // readBrowserTiddlers:true steers initStartup AWAY from the node block (process/path/module);
   // paired with the no-op loadTiddlersBrowser above, it reads nothing from a (absent) DOM.
   tw.boot.tasks = { trapErrors: false, readBrowserTiddlers: true };
+  // TW5's `story` startup opens `$:/DefaultTiddlers` inside boot, before the island's seed lands, so the story read the core's
+  // GettingStarted (tw5-vm-gaps-scout row 17). The island opens its story once its seed drains (`default-story.ts`).
+  tw.boot.disabledStartupModules = [...(tw.boot.disabledStartupModules ?? []), "story"];
   // The ONE agnostic global-`document` leak: utils.extractVersionInfo() (startup.js) reads
   // `$tw.packageInfo.version` when set, else falls to `document.getElementsByTagName("meta")`.
   // Node sets packageInfo before startup; the island does the same — the version guard, not a
   // queryable fake DOM, is the root cure (every other `document.*` sits behind `if($tw.browser)`).
-  // The version IS the engine's content-address (its CID = hearthTrueName) — source-ridden-along,
+  // The version IS the engine's content-address (its CID) — source-ridden-along,
   // not a magic semver. A content-addressed engine has no version but the hash of its own bytes.
   tw.packageInfo ??= { name: "tiddlywiki", version: engineCid ?? "island-engine" };
   // TW5's utils-browser escapecss module reads window.CSS.escape. The island stays DOM-less;
@@ -417,6 +445,11 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
   // Headless surfaces and continues — the island never aborts the worker on a boot warning — and
   // raises the fault on the wiki's alert rail where one stands, so a surface paints it and a
   // person reads an island that booted with a dead module as that, never as a green one.
+  lendAlertRailError(instance);
+}
+
+function lendAlertRailError(instance: TW5Instance): void {
+  const tw = instance as unknown as Record<string, any>;
   let faults = 0;
   if (tw.utils) tw.utils.error = (err: unknown): void => {
     const text = err instanceof Error ? (err.stack ?? err.message) : String(err);
@@ -430,7 +463,8 @@ function configureIslandRuntime(instance: TW5Instance, engineCid?: string): void
 
 export async function prepareHostBootInstance(
   coreBlob?: TW5CoreBootBlob,
-): Promise<{ instance: TW5Instance; isBrowser: boolean }> {
+  mirrorToken?: symbol,
+): Promise<{ instance: TW5Instance; isBrowser: boolean; release?: () => void }> {
   const isBrowserMain = typeof window !== "undefined" && typeof document !== "undefined";
   // Distinguish a browser Worker from a Node worker_thread by a POSITIVE browser signal:
   // `WorkerGlobalScope` exists in every browser worker context (dedicated/module/shared)
@@ -440,10 +474,51 @@ export async function prepareHostBootInstance(
   const isBrowserWorker = !isBrowserMain &&
     typeof (globalThis as Record<string, unknown>)["WorkerGlobalScope"] !== "undefined";
 
-  if (isBrowserMain) {
-    // §9 sovereignty law: TW5 SHALL NOT instantiate on the main thread.
-    // Every TW5Engine lives inside a sovereign Worker. Boot via browser-wiki-worker.ts only.
+  if (isBrowserMain && mirrorToken !== MIRROR_TOKEN) {
+    // §9 sovereignty law: no sovereign VM and no key on a surface. Every sovereign TW5Engine
+    // lives inside a Worker (browser-wiki-worker.ts); the page boots only the mirror, a camera
+    // fed by the port alone, through its private door.
     throw new Error("TW5Engine: sovereignty violation — TW5 SHALL NOT instantiate on the main thread (§9). Boot TW5 in a Worker only.");
+  }
+
+  if (isBrowserMain) {
+    const host = globalThis as Record<string, unknown>;
+    const priorTw = Object.getOwnPropertyDescriptor(host, "$tw");
+    const priorError = window.onerror;
+    const priorUnload = window.onbeforeunload;
+    const release = () => restoreGlobal(host, "$tw", priorTw);
+    try {
+      let instance: TW5Instance;
+      try { instance = loadTiddlyWikiFromBlob(coreBlob, makePageBootEnv()).TiddlyWiki() as TW5Instance; }
+      finally { window.onerror = priorError; }
+      lendGlobal(host, "$tw", instance);
+      const tw = instance as unknown as Record<string, any>;
+      tw.boot.tasks.trapErrors = false;
+      lendAlertRailError(instance);
+      // The core's utils module reads a bare `process` for its tick and the boot's `applyMethods` reinstalls it over ours (F1); the
+      // page lends no `process`, so the tick stays the page's own microtask queue through every apply.
+      const microtaskTick = (callback: () => void) => queueMicrotask(callback);
+      instance.utils.nextTick = microtaskTick;
+      const applyMethods = tw.modules.applyMethods.bind(tw.modules);
+      tw.modules.applyMethods = (type: string, target: unknown) => { const applied = applyMethods(type, target); if (type === "utils") tw.utils.nextTick = microtaskTick; return applied; };
+      // A startup module that throws lands on the alert rail and the boot goes on (stock's window.onerror form stays uninstalled):
+      // the task left the queue before it ran, so the next call takes the next task.
+      const nextTask = tw.boot.executeNextStartupTask.bind(tw.boot);
+      tw.boot.executeNextStartupTask = (callback: unknown) => { try { return nextTask(callback); } catch (error) { tw.utils.error(error); return tw.boot.executeNextStartupTask(callback); } };
+      tw.__larPageAfterBoot = () => {
+        tw.utils.nextTick = microtaskTick;
+        window.onbeforeunload = priorUnload;
+        tw.passwordPrompt?.promptWrapper?.remove();
+        tw.passwordPrompt = { createPrompt: () => tw.wiki.addTiddler(new tw.Tiddler({ title: "$:/temp/lares/alert/refused/password", tags: ["$:/tags/Alert"], text: "Password prompt refused" })) };
+        delete host.sjcl;
+      };
+      return { instance, isBrowser: true, release };
+    } catch (error) {
+      window.onbeforeunload = priorUnload;
+      delete host.sjcl;
+      release();
+      throw error;
+    }
   }
 
   if (isBrowserWorker) {
@@ -470,6 +545,7 @@ export async function prepareHostBootInstance(
     // switcher surfacing) threw `setImmediate is not defined`. Supply it (macrotask
     // parity, arg-forwarding), the same "last missing Node-ism" contract as global/
     // process/Buffer above, lent only where the host lacks it.
+    // PACING: the fallback yields a host task, without deciding readiness.
     lendGlobalIfAbsent(globalThis as Record<string, unknown>, "setImmediate", (fn: (...a: unknown[]) => void, ...args: unknown[]) => setTimeout(fn, 0, ...args));
     lendGlobalIfAbsent(globalThis as Record<string, unknown>, "clearImmediate", (id: ReturnType<typeof setTimeout>) => clearTimeout(id));
 
@@ -505,7 +581,8 @@ export async function bootWithHostBridge(
     const hostGlobal = globalThis as Record<string, unknown>;
     const savedRequire = Object.getOwnPropertyDescriptor(hostGlobal, "require");
     const savedModule  = Object.getOwnPropertyDescriptor(hostGlobal, "module");
-    const browserRequire = isBrowser
+    const page = typeof window !== "undefined" && typeof document !== "undefined";
+    const browserRequire = isBrowser && !page
       ? (id: string): Record<string, unknown> => {
           const hostShim = (instance as unknown as Record<string, unknown>)["__larariumRequireShim"] as
             ((name: string) => Record<string, unknown>) | undefined;
@@ -528,6 +605,7 @@ export async function bootWithHostBridge(
     }
 
     instance.boot.boot(() => {
+      (instance as unknown as Record<string, any>).__larPageAfterBoot?.();
       restoreStdout?.();
       if (browserRequire || !isBrowser) restoreGlobal(hostGlobal, "require", savedRequire);
       if (!isBrowser) restoreGlobal(hostGlobal, "module", savedModule);

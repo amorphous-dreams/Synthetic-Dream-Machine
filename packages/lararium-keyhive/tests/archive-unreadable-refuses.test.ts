@@ -26,7 +26,7 @@ describe("an Archive this build cannot decode", () => {
 
   test("U2 the daemon boot refuses it: no fresh identity stands in its place", async () => {
     await expect(bootDaemonKeyhive({
-      seed: seed(9), eventStore: new InMemoryEventStore(), vesselVerifyingKey: "00".repeat(32),
+      seed: seed(9), eventStore: new InMemoryEventStore(), placeVerifyingKey: "00".repeat(32),
       registerBags: [], archiveBytes: undecodable,
     } as Parameters<typeof bootDaemonKeyhive>[0])).rejects.toThrow();
   });

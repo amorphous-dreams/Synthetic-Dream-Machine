@@ -18,17 +18,20 @@
  * exercise the live model, not fixtures).
  */
 
+import { pathToFileURL } from "node:url";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/ed25519-door.js";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync, appendFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
+import { FACE_PLANES, faceRoot, realmRoot, REALM_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
+import { realmPlacement } from "../../packages/lararium-node/src/realm-labels.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -51,6 +54,7 @@ import { tmpdir } from "node:os";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
+const TEST_WARD_ROUTE = pathToFileURL(join(REPO_ROOT, "tools/test-ward-route.mjs")).href;
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 const NODE_CWD  = join(REPO_ROOT, "packages/lararium-node");
 
@@ -146,7 +150,8 @@ function seedCustodyFor(env: Record<string, string>, args: readonly string[]): v
 function runCli(env: Record<string, string>, args: readonly string[]): Promise<CliResult> {
   seedCustodyFor(env, args);
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [CLI_BIN, ...args], {
+    // The harness hands its staged CLI the test ward route explicitly (the product binary never answers one from a file).
+    const child = spawn(process.execPath, ["--import", TEST_WARD_ROUTE, CLI_BIN, ...args], {
       env: { ...process.env, ...env },
       cwd: REPO_ROOT,
     });
@@ -167,7 +172,7 @@ function runCli(env: Record<string, string>, args: readonly string[]): Promise<C
 /**
  * A herm relay port the rig stands, PINNED: its gate seed chosen here, so the relay's address carries its gate key
  * in its fragment (`ws://127.0.0.1:<port>#<gate key>`), the address a sibling pins. The herm takes the seed as
- * `LAR_HERM_RELAY_SEED`.
+ * test-only direct relay standing.
  */
 export async function pinnedCarriageRelay(port: number): Promise<{ readonly url: string; readonly seedHex: string; readonly gatePubKey: string }> {
   const seed = new Uint8Array(randomBytes(32));
@@ -188,6 +193,32 @@ export function freePort(): Promise<number> {
       srv.close(() => (p ? resolve(p) : reject(new Error("freePort: no port assigned"))));
     });
   });
+}
+
+/**
+ * A LIVENESS RETRY, never a correctness decision. `freePort()` binds :0, reads the port and closes it, and only then does the daemon bind
+ * it: anything (another test's daemon, an outbound socket's ephemeral port) can take it in between. When an attempt dies naming
+ * "already in use", the next attempt stands on a fresh port, bounded, each retry named in the log. Any other failure, and a port the
+ * caller fixed, is final.
+ */
+export async function standOnFreePort<T>(
+  attempt: (port: number) => Promise<T>,
+  opts: { readonly port?: number; readonly first?: number; readonly tries?: number; readonly pick?: () => Promise<number>; readonly say?: (line: string) => void } = {},
+): Promise<{ readonly value: T; readonly port: number; readonly retries: number }> {
+  const tries = opts.port === undefined ? (opts.tries ?? 3) : 1;
+  const pick = opts.pick ?? freePort;
+  const say = opts.say ?? ((line: string) => console.warn(line));
+  let port = opts.port ?? opts.first ?? await pick();
+  for (let n = 1; ; n++) {
+    try { return { value: await attempt(port), port, retries: n - 1 }; }
+    catch (error) {
+      const text = error instanceof Error ? error.message : String(error);
+      if (n >= tries || !/already in use/i.test(text)) throw error;
+      const next = await pick();
+      say(`[harness] port ${port} was taken before the daemon bound it; standing again on ${next} (try ${n + 1} of ${tries})`);
+      port = next;
+    }
+  }
 }
 
 /**
@@ -262,6 +293,59 @@ const hearthCards = new Map<string, string>();
 /** Persona zero's PersonaGroup id by staged root: the group the founding admitted to the Kahu cabal. */
 const hearthGroups = new Map<string, string>();
 
+/** Persona zero's PersonaGroup id on a staged hearth `foundStagedHearth` founded; a root it never founded throws by name. */
+export function stagedHearthRelation(root: string): string {
+  const index = readFileSync(join(root, "projections", "kahua-index.toml"), "utf8");
+  const relation = /^\[faces\."([^"\n]+)"\]/m.exec(index)?.[1];
+  if (!relation) throw new Error("kahua index contains no face relation");
+  return relation;
+}
+
+export function stagedHearthGroup(root: string): string {
+  const group = hearthGroups.get(root);
+  if (!group) throw new Error(`no staged hearth founding answered a PersonaGroup id for ${root}`);
+  return group;
+}
+
+/**
+ * Persona zero's face root on a staged hearth, `<root>/projections/faces/<pet name>`: the pet name its founding labelled
+ * (`face-labels/<F>.json`, which rests beside `faces/`, never inside it).
+ */
+export function stagedFaceRoot(root: string): string {
+  const relation = stagedHearthRelation(root);
+  const label = JSON.parse(readFileSync(join(root, "projections", "face-labels", `${relation}.json`), "utf8")) as { petname?: unknown };
+  if (typeof label.petname !== "string") throw new Error(`the face label of ${relation} names no pet name`);
+  return faceRoot(join(root, "projections"), label.petname);
+}
+
+/** Where a staged hearth's daemon wiki (the kahua wiki's working top, bag `wikis/daemon/working`) projects on disk: the face
+ *  root's `wikis/daemon/`, `<root>/projections/faces/<pet name>/wikis/daemon`. */
+export function daemonWikiDir(root: string): string {
+  return join(stagedFaceRoot(root), FACE_PLANES.wiki);
+}
+
+/**
+ * Where a staged vessel's workbench of a wiki projects on disk when its canon stands under no canon source: the ONE
+ * folder `<root>/projections/realms/<realm pet name>/wikis/<slug>`, whichever seated writer wears (cabal-realm#/the-workbench).
+ * The realm labels name the pet name; before any label stands, the realm's default pet name, its slug.
+ */
+export function wikiWorkbenchDir(root: string, slug: string): string {
+  const projections = join(root, "projections");
+  return join(realmPlacement(projections).wikisBase(slug) ?? join(realmRoot(projections, slug), REALM_PLANES.wikis), slug);
+}
+
+/** Where a staged vessel's canon bag of a minted wiki projects on disk: `<root>/projections/realms/<realm pet name>/bags/<slug>`,
+ *  the realm's default pet name (its slug) before any label stands. */
+export function wikiCanonBagDir(root: string, slug: string): string {
+  const projections = join(root, "projections");
+  return join(realmPlacement(projections).bagsBase(slug) ?? join(realmRoot(projections, slug), REALM_PLANES.bags), slug);
+}
+
+/** The face's kahua stage on a staged hearth: `<root>/projections/faces/<pet name>/bags/kahua`. */
+export function kahuaStageDir(root: string): string {
+  return join(stagedFaceRoot(root), FACE_PLANES.stage);
+}
+
 /**
  * THE STABLE FOUNDING ACT on a staged root: the place, persona zero under `name`, its one-seat seed charter and the
  * face that binds its AID, in one CLI act. Answers the card's code (the stand-in printed it into the JSON answer).
@@ -293,7 +377,9 @@ export async function growStagedQuorum(cli: (args: readonly string[]) => Promise
     i += 1;
   }
   const chairs = handles.length + 1;
-  const roll = await cli(["nexus", "seal", "rotate", "--cold-key", code, "--threshold", String(Math.floor(chairs / 2) + 1), "--json"]);
+  // The founding face (persona zero, the seed chair's holder) acts the roll: several faces stand open now, and a command
+  // acts as the face it names.
+  const roll = await cli(["nexus", "seal", "rotate", "--face", "0", "--cold-key", code, "--threshold", String(Math.floor(chairs / 2) + 1), "--json"]);
   if (roll.code !== 0) throw new Error(`seal rotate failed (${roll.code})\n${roll.stdout.slice(-400)}\n${roll.stderr.slice(-800)}`);
   const next = ((roll.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> }).cards?.map((c) => c.code ?? "").filter((c) => c.length > 0) ?? [];
   hearthCards.set(root, next.join(","));
@@ -316,7 +402,7 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
   const root = opts.root ?? mkdtempSync(join(stageDir(), `lares-staged-${opts.tag ? `${opts.tag}-` : ""}`));
   stageGenesis(root);
   // OS-assigned free port — each staged island its own port, collision-free (causal-island isolation).
-  const port = opts.port ?? await freePort();
+  let port = opts.port ?? await freePort();
   const env  = { LAR_ROOT: root, LAR_PORT: String(port) };
   const cli  = (args: readonly string[]) => runCli(env, args);
   // ONE MONOTONIC ORIGIN for every stamp this vessel carries. The timeline is a measurement read by a human
@@ -348,21 +434,30 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
       if (m) phases.push({ phase: m[1]!, ms: since() });
     }
   };
-  const daemon: ChildProcess = spawn(process.execPath, [NODE_MAIN, "--root", root, "--port", String(port)], {
-    cwd: NODE_CWD,
-    env: { ...process.env, ...env, ...(opts.daemonEnv ?? {}) },
-  });
-  daemon.stdout?.on("data", capture);
-  daemon.stderr?.on("data", capture);
-
-  const liveBy = performance.now() + 120_000;
-  await new Promise<void>((resolve, reject) => {
-    const poll = setInterval(() => {
-      if (log.includes("phase → live")) { clearInterval(poll); resolve(); }
-      else if (daemon.exitCode !== null) { clearInterval(poll); reject(new Error(`staged daemon exited ${daemon.exitCode} before live:\n${log.slice(-6000)}`)); }
-      else if (performance.now() > liveBy) { clearInterval(poll); reject(new Error(`staged daemon never reached live (120s):\n${log.slice(-800)}`)); }
-    }, 250);
-  });
+  const standDaemon = async (atPort: number): Promise<ChildProcess> => {
+    log = ""; partial = ""; phases.length = 0;
+    env.LAR_PORT = String(atPort);
+    const child: ChildProcess = spawn(process.execPath, [NODE_MAIN, "--root", root, "--port", String(atPort)], {
+      cwd: NODE_CWD,
+      env: { ...process.env, ...env, ...(opts.daemonEnv ?? {}) },
+    });
+    child.stdout?.on("data", capture);
+    child.stderr?.on("data", capture);
+    const liveBy = performance.now() + 120_000;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const poll = setInterval(() => {
+          if (log.includes("phase → live")) { clearInterval(poll); resolve(); }
+          else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`staged daemon exited ${child.exitCode} before live:\n${log.slice(-6000)}`)); }
+          else if (performance.now() > liveBy) { clearInterval(poll); reject(new Error(`staged daemon never reached live (120s):\n${log.slice(-800)}`)); }
+        }, 250);
+      });
+    } catch (error) { await stopChild(child); throw error; }
+    return child;
+  };
+  const stood = await standOnFreePort(standDaemon, opts.port === undefined ? { first: port } : { port: opts.port });
+  const daemon: ChildProcess = stood.value;
+  port = stood.port;
   const name = root.split("/").pop() ?? root;
   recordTimeline({ vessel: name, event: "live", foundMs, phases });
 
@@ -418,10 +513,9 @@ function attachLive(): LarInstance {
   if (!root) throw new Error("LAR_TARGET=live requires LAR_ROOT (and usually LAR_PORT) to name the instance");
   // A FOUNDED vessel proves itself by its own address book, which lives with the store it addresses —
   // never in genesis/, where only the shared seed rides. Under LAR_ROOT the store sites at
-  // <root>/data/lares/vessel: every directory under an isolated root names an XDG KIND, and the two
-  // HOUSES nest inside the data kind exactly as they do under XDG.
-  if (!existsSync(join(root, "data", "lares", "vessel", "social-bootstrap.json"))) {
-    throw new Error(`LAR_TARGET=live: no social bootstrap at ${root}/data/lares/vessel — has this root been founded?`);
+  // <root>/hearth/vessel, the hearth class of the house root LAR_ROOT names.
+  if (!existsSync(join(root, "hearth", "vessel", "social-bootstrap.json"))) {
+    throw new Error(`LAR_TARGET=live: no social bootstrap at ${root}/hearth/vessel — has this root been founded?`);
   }
   const env = { LAR_ROOT: root, LAR_PORT: String(port) };
   return {
@@ -436,19 +530,25 @@ function attachLive(): LarInstance {
   };
 }
 
+/**
+ * Whether this run stands its own vessel (the default) rather than attaching to a live hearth (`LAR_TARGET=live`).
+ * Read at import, so a suite declares its mode at collection: a vector that only means something against an owned,
+ * mutable instance sits in `describe.skipIf(!stagedTarget)` and reads SKIPPED beside a live hearth — an early
+ * `return` inside the body would read GREEN having asserted nothing (tools/e2e-harness-law.test.mjs refuses it).
+ */
+export const stagedTarget: boolean = process.env["LAR_TARGET"] !== "live";
+
 /** Target an instance per LAR_TARGET: "live" attaches; anything else stages. */
 export async function targetInstance(): Promise<LarInstance> {
-  return process.env["LAR_TARGET"] === "live" ? attachLive() : openStaged();
+  return stagedTarget ? openStaged() : attachLive();
 }
 
 /**
  * The vessel's Automerge STORE on disk — the one path a raw-storage read may open.
  *
- * It rides in the SPIRITS' house (`<root>/data/lares/vessel`) because a vessel substrate is the spirits':
- * a Lar wakes, acts and gives way, and `bake` re-derives the genesis engine while the staged root starts from a fresh scratch directory. What
- * belongs to the HOUSE — the acquired shelf, the sensoriums — stands beside it at `<root>/data/lararium`,
- * and `<root>/state` keeps watermarks alone. A house never stands where a kind belongs, so an isolated
- * root reads as the real disk with a different prefix.
+ * It rides in the hearth (`<root>/hearth/vessel`), beside the identity and the seal, under the house root a staged
+ * vessel names; the staged root starts from a fresh scratch directory, so it reads as the real house with a different
+ * prefix.
  *
  * NAME THE ADDRESS EXACTLY. A wrong path here does not fail loudly — it opens an absent directory, finds
  * no chunks, and reports the document "unavailable", which reads as a replication fault.
@@ -473,7 +573,7 @@ export async function targetInstance(): Promise<LarInstance> {
 export function rendezvousSocket(instance: LarInstance): string {
   // THE DIGEST IS OVER THE SUBSTRATE DIR, NOT THE INSTANCE ROOT. `local-connector` derives
   // `rendezvousPath({ root: dataDir ?? larDataDir() })`, and `larDataDir()` resolves to
-  // `<LAR_ROOT>/data/lares/vessel` — so hashing the bare root names a socket nothing ever binds.
+  // `<LAR_ROOT>/hearth/vessel` — so hashing the bare root names a socket nothing ever binds.
   return rendezvousPath({ root: vesselStorageDir(instance), uid: process.getuid?.() ?? 0 });
 }
 
@@ -498,7 +598,7 @@ export async function awaitRendezvous(instance: LarInstance, timeoutMs = 60_000)
 }
 
 export function vesselStorageDir(instance: LarInstance): string {
-  return join(instance.root, "data", "lares", "vessel");
+  return join(instance.root, "hearth", "vessel");
 }
 
 /** Read a `key: automerge:...` line from the staged boot log (e.g. "lararium", "catalog"). */
@@ -534,7 +634,6 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
   const tag = opts.tag ? `${opts.tag}-` : "";
   const bookSlug = opts.bookSlug;
   const [portHerm, portRelay] = await Promise.all([freePort(), freePort()]);
-  const relay     = await pinnedCarriageRelay(portRelay);
   const hermShore = `http://127.0.0.1:${portHerm}`;
   const stood: LarInstance[] = [];
   let pairRef: StagedJoinee | null = null;
@@ -543,7 +642,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
     if (pairRef) { await pairRef.stop(); pairRef = null; }
     for (const v of stood.reverse()) await v.stop();
   };
-  const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay), LAR_HERM_RELAY_SEED: relay.seedHex };
+  const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) };
   const hermFound = async (cli: (a: readonly string[]) => Promise<CliResult>, root: string): Promise<void> => {
     const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
     if (found.code !== 0) throw new Error(`herm: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
@@ -561,9 +660,6 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
       tag: `${tag}fleet`,
       daemonEnv: { LAR_HERM_SHORE: hermShore },
       riteA: async (cliA, rootA) => {
-        // A registers a realm bag below, and a steward seals with the face she WEARS (`realm-steward`).
-        const wear = await cliA(["persona", "wear", "0"]);
-        if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
         // The seed charter grows to three chairs by the roll its founding armed; its AID stays A's hearth.
         await growStagedQuorum(cliA, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
       },
@@ -571,7 +667,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
       // A Herm holds no face by class (`personaSlotCeiling("herm") === 0`), so it enters a Nexus by the
       // CARRIER relation and never the member one: A's charter crosses by `seal export`/`seal import`, the
       // place signs "I carry for this Nexus" with its OWN vessel key (`nexus carry-for` — no persona read),
-      // and A's quorum seats that seal (`nexus carry <key> --carrier <hex>`). The Herm dials no hearth;
+      // and A's quorum seats that seal with the place's floor pin claim (`nexus carry <key> --carrier <hex> --floor-pin <file>`). The Herm dials no hearth;
       // A mints a user book and registers it at PUBLIC, the tier the carrier leg reads.
       beforeB: async (A) => {
         const exp = await A.cli(["nexus", "seal", "export", "--no-json"]);
@@ -588,7 +684,10 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         const nym = typeof cf["nym"] === "string" ? cf["nym"] : "";
         const sig = typeof cf["carrierSig"] === "string" ? cf["carrierSig"] : "";
         if (!nym || !sig) throw new Error(`fleet: carry-for minted no seal\n${carryFor.stdout}\n${carryFor.stderr.slice(-600)}`);
-        const carry = await A.cli(["nexus", "carry", nym, "--carrier", sig, "--json"]);
+        // The carry lands WITH the place's floor pin claim and the KEL rows that fold to its head (W14): the file `carry-for` printed.
+        const claimFile = join(herm.root, "floor-pin.json");
+        writeFileSync(claimFile, JSON.stringify({ floorPin: cf["floorPin"], placeKel: cf["placeKel"] }), "utf8");
+        const carry = await A.cli(["nexus", "carry", nym, "--carrier", sig, "--floor-pin", claimFile, "--json"]);
         crossing.push(`A nexus carry ${nym.slice(0, 12)}… → ${carry.code}: ${carry.stdout.trim().slice(0, 160)}`);
         if (carry.code !== 0) throw new Error(`fleet: A refused the carrier seal (${carry.code})\n${carry.stderr.slice(-600)}`);
         // `nexus carry` runs as a `nexus-contract` door row against A's standing vessel, which fires the SAME
@@ -602,7 +701,7 @@ export async function openStagedFleet(opts: { readonly bookSlug: string; readonl
         crossing.push(`A wiki init ${bookSlug} → ${minted.code}: ${minted.stdout.trim().slice(0, 200)}`);
         if (minted.code !== 0) throw new Error(`fleet: A minted no user book ${bookSlug} (${minted.code})\n${minted.stderr.slice(-600)}`);
         // The book registers at PUBLIC — the tier the carrier leg reads, and the only one it reads.
-        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "--tier", "public", "--json"]);
+        const reg = await A.cli(["nexus", "realm-bag", bookSlug, "--face", "0", "--tier", "public", "--json"]);
         crossing.push(`A nexus realm-bag ${bookSlug} --tier public → ${reg.code}: ${reg.stdout.trim().slice(0, 200)}`);
         if (reg.code !== 0) throw new Error(`fleet: A registered no public book ${bookSlug} (${reg.code})\n${reg.stderr.slice(-600)}`);
       },
@@ -708,7 +807,7 @@ export async function joinedFaceCard(pair: Pick<StagedJoinee, "rootB">): Promise
     try {
       const anchors = await loadIdentityAnchors(0);
       if (!anchors) throw new Error("joinedFaceCard: B holds no anchors for face 0");
-      return (await loadLeafIdentity("face", { handleIndex: 0, personaGroupId: anchors.personaGroupId })).contactCard;
+      return (await loadLeafIdentity({ handleIndex: 0, personaGroupId: anchors.personaGroupId })).contactCard;
     } finally { await seat.drop(); }
   });
 }
@@ -732,9 +831,16 @@ export interface StagedJoinee {
 }
 
 /** A vessel's lares wiki document url, off its registry at `dataDir`; "" when it holds none. */
-async function laresDocAt(dataDir: string): Promise<string> {
+/** A's lares document off A's own catalog, asked as A's place (the content fence admits the mounted face alone). */
+async function laresDocAt(instance: LarInstance): Promise<string> {
   const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
-  const wl = await invokeLocal("list-wikis", {}, `0x${"0".repeat(64)}`, { dataDir }) as
+  const { vesselDid } = await import("../../packages/lares-cli/src/env.js");
+  const prior = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = instance.root;
+  let place: string;
+  try { place = await vesselDid(); }
+  finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
+  const wl = await invokeLocal("list-wikis", {}, place, { dataDir: vesselStorageDir(instance) }) as
     { results?: { summary?: { output?: { wikis?: Array<{ slug: string; automergeUrl: string | null }> } } } };
   return wl.results?.summary?.output?.wikis?.find((w) => w.slug === "lares")?.automergeUrl ?? "";
 }
@@ -769,7 +875,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         const files = { offer: join(rootB, "fleet-offer.json"), request: join(rootB, "fleet-request.json"), answer: join(rootB, "fleet-answer.json") };
         const place = await cliB(["vessel", "found", "--skip-build"]);
         if (place.code !== 0) throw new Error(`B: vessel found (a place) failed (${place.code})\n${place.stderr.slice(-2500)}`);
-        const offer = await cliA(["fleet", "join", "offer", "--out", files.offer]);
+        const offer = await cliA(["fleet", "join", "offer", "--face", "0", "--out", files.offer]);
         if (offer.code !== 0) throw new Error(`A: fleet join offer failed (${offer.code})\n${offer.stderr.slice(-2500)}`);
         const request = await cliB(["fleet", "join", "request", files.offer, "--out", files.request]);
         if (request.code !== 0) throw new Error(`B: fleet join request failed (${request.code})\n${request.stderr.slice(-2500)}`);
@@ -781,13 +887,13 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
 
     // A's gate key off A's own log, A's lares doc off A's registry.
     const gateA = await awaitOwnGateKey(A);
-    const laresA = await laresDocAt(vesselStorageDir(A));
+    const laresA = await laresDocAt(A);
     // A answers through its own door, naming the document B asks for, and B lands the answer before it boots.
     const files = fleet!;
     const requestedDoc = (opts.dial ?? "pin+doc") === "pin+doc"
       ? (typeof opts.joinDocUrl === "function" ? await opts.joinDocUrl() : opts.joinDocUrl ?? laresA)
       : null;
-    const answer = await A.cli(["fleet", "join", "answer", files.request, "--sync-url", `ws://127.0.0.1:${portA}/ws`,
+    const answer = await A.cli(["fleet", "join", "answer", files.request, "--face", "0", "--sync-url", `ws://127.0.0.1:${portA}/ws`,
       ...(requestedDoc ? ["--doc-url", requestedDoc] : []), "--out", files.answer]);
     if (answer.code !== 0) throw new Error(`A: fleet join answer failed (${answer.code})\n${answer.stderr.slice(-2500)}`);
     await opts.beforeLand?.(cliB, files);

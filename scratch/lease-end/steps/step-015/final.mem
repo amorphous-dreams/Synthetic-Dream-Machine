@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-015/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-015/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-015/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-015/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-015/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-015/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://operator:operator@crossroads/lease.next.advances` to=`lar://lares:agent@crossroads/lease.race.closes` ooda-ha=`5/declare-glyphs` drift-ward=`the test covers notification before ingest, not every board race`>>
+
+Lares (Artificer): ->✶ The seat could ingest a grant after a clear founder-standing read had been overtaken by a set-aside notification. ->⏿ A controlled test reproduced that race. ->◇ The seat now discards the overtaken verdict and retries the read. ->▶ The broker committed the change as `19048159c1c5beec52f72c049e5c53dc20cb6779`; the named test file passes all 32 tests.
+
+->↺ Live board notifications on browser and node shores remain unwired, and an aside arriving after ingest starts remains unfenced. The [[step 15 hand-back|/home/joshu/.lares-scratch/lease-end/steps/step-015/out.md]] records those limits and the next work. No push occurred.
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚂(3) ⁂:🜁⊗⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`test board movement during refold and ingest against the live notification path · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://lares:agent@crossroads/lease.race.measured` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PRTFgzRskT1fUbUv7Df7xmbRmcvRYdEUzFX1rJFvl5c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

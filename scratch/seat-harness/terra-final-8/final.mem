@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-8/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-8/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-8/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-8/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-8/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-8/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The fixed broker root closes the specific round-7 placement examples, but authority placement remains unsafe across the staging and lane-identity surfaces. Both findings are ''LEAD'' conclusions from source and test inspection, not reproductions.
+
+# ''P1 — The worktree staging root can overlap a granted writable root.'' [[commit-relay.mjs:37|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:37]] places staging under `.lares-scratch/.broker-worktrees/<lane>` and creates it without checking its components or comparing it with granted roots. [[launch-codex.mjs:370|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:370]] permits a lead or build worktree anywhere below scratch, including an ancestor of that staging directory; a lead lane can also overlap it. A seat with such a grant can change staging pathnames while [[addWorktree|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:453]] uses them with broker authority for Git, export, and cleanup. This repeats the ''cross-lane authority-placement and pathname-write class'', across the staging surface. The [[fixed-root test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:497]] covers the go and iso root, while the [[granted-root test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1134]] covers overlap with the fixed root; neither establishes staging isolation.
+
+# ''P1 — Distinct lanes with the same basename share go and broker state.'' [[broker-root.mjs:62|/home/joshu/.lares-scratch/seat-harness/wt/tools/broker-root.mjs:62]] derives the lane identity solely from `basename`. Two accepted lane roots with the same basename consequently share both `go/<lane>/push-go` and `iso/<lane>`. A go intended for one can be consumed by the other when branch and head match, including when their controller-configured push targets differ; the relays also share `made.json` and temporary broker state ([[commit-relay.mjs:80|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:80]]). The [[controller-go test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:534]] exercises one lane, not colliding lane identities. Bind authority and state to an unambiguous lane identity and include the push destination in the authorization.
+
+These are present broker boundaries, so I would resolve them in this lane rather than defer them to the live-wiki design in row 7.
+
+On the requested confirmations:
+
+* The broker’s [[poison, hook, filter, submodule, and read-race tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:186]] support the paths they exercise. Finding 1 prevents confirming the universal no-authority-leak and lane-root claims. The relay rejects lead launches, but finding 2 limits push authorization.
+* Marker matching and fail-closed watch tests support ordinary rollout association and stop behavior, including overlapping launches ([[launch-codex.test.mjs:409|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:409]]). I cannot say the watchdog can ''never'' signal the wrong process: the hand-off explicitly accepts the host PID-reuse edge.
+* The receipt binds the tree, check names, and definitions; the key and receipts remain in memory. The [[forgery|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:391]] and [[read-only tree|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:403]] tests support those properties, subject to the documented host ptrace and seat seccomp assumptions.
+* Missing bubblewrap returns named refusals before check or install code runs, as pinned by the [[refusal test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:435]]. The [[mode and floor tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:365]] cover the stated floors and thresholds; I found no additional floor regression.
+* The revised supervisor has targeted tests for [[exceptional completion, live-group retention, and the per-tick size ceiling|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:1153]]. The size ceiling is a sampled stop threshold, not a hard filesystem quota.
+
+I did not run tests, construct payloads, or write files. Green CI at `6fcd541a0`, including live bubblewrap proofs, is a ''MEASURED report supplied in the hand-off'', not an independent measurement by this review.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LdAvqjKqqfebMnWIrIS9mLcyzm0ZXe-Q9Sx5F8CH7L4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

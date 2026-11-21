@@ -843,13 +843,13 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
   });
 
   test("RED (M1): a KEL that forks at one seat surfaces as `self: fork`, and the leaf keeps the standing it last read", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
     const chain = await rotatedKeeping([SEEDS.deviceX, SEEDS.deviceY]);
-    const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await (await import("@noble/ed25519")).signAsync(b, s)) })));
+    const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: async (b: Uint8Array) => hex(await (await import("@noble/ed25519")).signAsync(b, s)) })));
     const { rollEnrolments } = await import("../src/persona-group-secret.js");
     const { attestAndRotate } = await import("../src/recovery-keel-core.js");
     const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opC, devices: [{ deviceVerifyingKey: await pubOf(SEEDS.deviceX), hearthTrueName: "", boundEpoch: 0 }] });
-    const rival = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opC), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+    const rival = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opC), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments });
     if (!rival.ok) throw new Error(rival.reason);
     const { x, y } = await pair();
     try {

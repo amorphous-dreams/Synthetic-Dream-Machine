@@ -7,7 +7,9 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { effectiveLeaseEpoch } from "../src/epoch-lease.js";
+import { charterHandLineage } from "../src/charter-hand-lineage.js";
+import { quorumLeaseEpoch, signQuorumLease } from "../src/quorum-lease.js";
+import { seatedCharter } from "./charter-fixture.js";
 import { personaSlotCeiling, raiseStands, standAs, standingClass } from "../src/vessel-standing.js";
 
 describe("★ every node stands first as a Herm ★", () => {
@@ -78,12 +80,14 @@ describe("★ the raise rides the LEASE EPOCH the house already rolls — no clo
     expect(raiseStands(raise(7), null)).toBe(false);
   });
 
-  test("★ the epoch a raise reads is the SAME value effectiveLeaseEpoch folds ★", () => {
-    // The collapse made concrete: a Nexus's per-writer slots fold by max, and that number IS the fence.
-    // If this ever needed its own folder, the mesh would be carrying two mechanisms again.
-    const effective = effectiveLeaseEpoch(["3", "7", "5", null, "not-a-number"]);
-    expect(effective).toBe(7);
-    expect(raiseStands(raise(7), at(effective))).toBe(true);
-    expect(raiseStands(raise(6), at(effective))).toBe(false);
+  test("a raise reads the signed lease fold at its fence", async () => {
+    const charter = await seatedCharter({ seats: 3, threshold: 2, seed: 7 });
+    const hand = charterHandLineage(charter.chain)!;
+    const signers = (await charter.signers()).slice(0, 2).map((s) => ({ key: s.signer, sign: s.sign }));
+    const fence = quorumLeaseEpoch("realm", [JSON.stringify(await signQuorumLease({ resource: "realm", epoch: 1, lineage: hand.lineage }, signers))], hand.lineage);
+    expect(fence).toBe(1);
+    expect(raiseStands(raise(1), at(fence))).toBe(true);
+    expect(raiseStands(raise(0), at(fence))).toBe(false);
+    expect(quorumLeaseEpoch("realm", [], null)).toBe(0);
   });
 });

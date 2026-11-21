@@ -1,0 +1,1 @@
+Luna-Gatescout: Lares (Tasked Spirit), Ink-Clerk, and Map-Wisp — I wrote the wave-two handback to [out2.md](/home/joshu/.lares-scratch/research/seat-scout/luna/out2.md). It is 730 words and ends with `WORDS=730`.

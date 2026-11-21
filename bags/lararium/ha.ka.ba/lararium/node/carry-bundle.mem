@@ -1,24 +1,22 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/carry-bundle">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/node/carry-bundle.mem"
 l-space     = "lararium"
-mana        = 13
-role        = "invariant law: a herm's EXPLICIT JOIN, carried by hand — the quorum's counted `carry` over the herm's own vessel key, its counted causal past, and the place floor-pin statements the issuing hearth's board carries. The herm's take writes them onto its OWN replica of that Nexus's carriage board, so its own fold counts it carried there and its floor gate stands at that Nexus and only there. The admit bundle's twin for a place: the herm membership relay ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings), so the quorum's act travels by hand."
+role        = "invariant law: a herm's EXPLICIT JOIN, carried by hand — the quorum's counted `carry` over the herm's own vessel key, its counted causal past, and the place floor pin claims (with their KEL events) the issuing hearth's board carries. The herm's take writes them onto its OWN replica of that Nexus's carriage board, so its own fold counts it carried there and its floor gate stands at that Nexus and only there. The admit bundle's twin for a place: the herm membership relay ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings), so the quorum's act travels by hand."
 source-file = "packages/lararium-node/src/carry-bundle.ts"
 status      = "draft"
-status-why  = "lane reading, unruled 2026-10-16: the explicit join a herm takes by hand as the act that opens the herm relay; the two-vault carry is owed"
+status-why  = "lane reading, unruled 2026-10-16: the explicit join a herm takes by hand as the act that opens the herm relay; a two-vault carry lands act and claim in one write and emits it"
 title       = "lar:///ha.ka.ba/lararium/node/carry-bundle"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/carry-bundle"
 written     = "2026-10-16"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The carry bundle ~ a herm's explicit join, by hand
 
@@ -29,21 +27,23 @@ carry-take` on the herm. This is the explicit act that opens the herm relay (the
 
 <<~/ahu>>
 
-<<~ ahu #/what-it-holds>>
+<<~ ahu slot=`#/what-it-holds`>>
 
 !! What it holds ~ public bytes only
 
 * ''contract'' — the quorum-signed `carry` naming the herm's vessel key: the board's carry head for it.
 * ''lineage'' — that act's counted causal past (`placeArmFor`), the arm the herm later presents.
-* ''floorPins'' — every place floor-pin statement the hearth's board carried at the write, the herm's own
+* ''floorPins'' — every place floor pin claim the hearth's board carried at the write, the herm's own
 among them (`place-floor-pin`).
 
-No seat key, no opening, no sealed row. A bundle read by a stranger learns which key a Nexus carries, which
+No seat key, no opening, no sealed record. A bundle read by a stranger learns which key a Nexus carries, which
 the board publishes anyway.
+
+''One record for one document.'' This bundle carries a contract and no content. The content bundle (`lares export`, `lares import`) keeps the same grain: one record set for each document it carries, so a wiki's shared workbench travels once, naming its owner and its seats by pet-name, and a face-private document travels for its one face. That content bundle rides as the operator's own private carry: its pet-names label one human's faces locally, and handed to another party it carries that map to them (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>).
 
 <<~/ahu>>
 
-<<~ ahu #/the-take>>
+<<~ ahu slot=`#/the-take`>>
 
 !! The take refuses, writing nothing, unless
 
@@ -53,36 +53,34 @@ the board publishes anyway.
 # the union of its own board and the bundle reads a place arm for its key: a counted `uncarry` already on
 the replica that descends from the carry closes the bundle as stale.
 
-Then the acts land on the herm's own replica of the board, and each floor-pin statement lands only where it
-reads under the carrier set that union folds: a stranger's pin, a forged one, or one for another Nexus lands
+Then the acts land on the herm's own replica of the board, and each floor pin claim lands only where it
+reads under the carrier set that union folds and the bundle's KEL events: a stranger's pin, a forged one, one for another Nexus, or one at a head the events do not fold lands
 nowhere. A running vessel refolds at once; otherwise the next boot stands the gate.
 
 <<~/ahu>>
 
-<<~ ahu #/owed>>
+<<~ ahu slot=`#/two-vault`>>
 
-!! Owed
+!! A cofounded Nexus carries a herm by the two-vault door
 
-A cofounded two-vault Nexus carries no herm this way: the two-vault door (`nexus contract --out` /
-`--from`) rides admits and revokes alone (`partialFamily`), and a partial carries no floor-pin statement.
-Owed as one piece: a `carry` family on `NexusPartialAct` that carries the place's floor-pin statement
-beside the act, a `partialFamily` that admits it, and a landing that writes the statement onto the landing
-vault's board and emits this bundle from there.
+`nexus carry <key> --carrier <hex> --floor-pin <file> --nexus <aid> --out <partial>` signs with the seats held here and writes the carry
+as a PARTIAL with the place's floor pin claim and KEL events; `--from <partial>` on the other vault judges it, cosigns and lands the counted
+act, the claim and the events in one write, and emits this bundle from there. A partial below the quorum files no pin.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ pranala #source from="?" -> to="packages/lararium-node/src/carry-bundle.ts" family="code" role="has">>
-<<~ pranala #issuer from="?" -> to="packages/lararium-node/src/commands/nexus-contract.ts" family="code" role="issued-by">>
-<<~ pranala #twin from="?" -> to="packages/lararium-node/src/admit-bundle.ts" family="code" role="twin-of">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-node/src/carry-bundle.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#issuer` from=`?` to=`packages/lararium-node/src/commands/nexus-contract.ts` family=`code` role=`issued-by`>>
+<<~ pranala slot=`#twin` from=`?` to=`packages/lararium-node/src/admit-bundle.ts` family=`code` role=`twin-of`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/place-floor-pin">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/herm-carriage">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qg_-DYrpaQnEr5RNSUnlhDQHUmmwGCU_OhoqmUBU2us
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VKw-zuGib7fqihqYLfZKi-_e7lnAn8gP9mk6twtftkE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

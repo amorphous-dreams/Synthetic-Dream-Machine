@@ -47,9 +47,18 @@ vi.mock("../src/fleet-join-custody.js", () => ({
   clearPendingFleetJoin: async () => { seam.writes.push("clear"); return true; },
 }));
 vi.mock("@noble/ed25519", () => ({}));
-vi.mock("@lararium/keyhive", () => ({ carriedAdmitOfFleetJoin: () => ({ kind: "device-admit/v1" }) }));
-vi.mock("@lararium/mesh", () => ({
+vi.mock("@lararium/keyhive", () => ({ carriedAdmitOfFleetJoin: () => ({ kind: "device-admit" }) }));
+// The veil-lift link a landing keeps (node-veil-lift), signed over the atom the join minted.
+vi.mock("../src/node-veil-lift.js", () => ({ keepNodeVeilLift: async () => { seam.writes.push("veil-lift"); } }));
+vi.mock("../src/face-atom-store.js", () => ({ standFaceAtom: async () => new Uint8Array(32) }));
+vi.mock("@lararium/mesh", async () => {
+  const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
+  const stubs = {
+  faceAtomKeyFromSeed: () => ({ key: "c".repeat(64) }),
+  // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
+  ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
+  admitGatePinDigest: () => "a".repeat(64),
   nexusAidOf: () => "nexus-a",
   heldNexusRoot: () => ({ nexus: "nexus-a" }),
   makeMultiSigQuorumVerifier: () => ({}),
@@ -62,7 +71,9 @@ vi.mock("@lararium/mesh", () => ({
     personaGroup: "group-two", certificates: [], grants: [], edge: { hearthTrueName: "nexus-a" }, carriage: { gatePin: { signingKey: "k" }, canon: {} },
     reach: { syncUrl: null }, charter: "charter", admit: { admit: { nym: "d" }, lineage: [], salt: "s" }, floorPins: [],
   }, addressSecret: new Uint8Array(32) }),
-}));
+};
+  return { ...stubs, ...composerOverStubs(stubs) };
+});
 
 import { existsSync } from "node:fs";
 import { runFleetJoinLand } from "../src/commands/fleet-join.js";
@@ -85,13 +96,13 @@ describe("a refused take keeps no charter its landing imported", () => {
   test("RED: a charter landed where none stood is gone once the take refuses; CONTROL: a take that holds keeps it", async () => {
     bootstrapNaming(null);
     seam.takeFails = true;
-    await expect(runFleetJoinLand({ repo: {} as never, answer: {} })).rejects.toMatchObject({ refusal: "admit-refused" });
+    await expect(runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } })).rejects.toMatchObject({ refusal: "admit-refused" });
     expect(seam.writes).toEqual(["charter"]);
     expect(existsSync(seam.charterPath)).toBe(false);                                    // RED
 
     seam.takeFails = false;
     seam.writes = [];
-    await runFleetJoinLand({ repo: {} as never, answer: {} });
+    await runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } });
     expect(existsSync(seam.charterPath)).toBe(true);                                     // CONTROL
   });
 
@@ -99,7 +110,7 @@ describe("a refused take keeps no charter its landing imported", () => {
     bootstrapNaming(null);
     seam.takeFails = true;
     seam.outcome = "extended";
-    await expect(runFleetJoinLand({ repo: {} as never, answer: {} })).rejects.toMatchObject({ refusal: "admit-refused" });
+    await expect(runFleetJoinLand({ repo: {} as never, answer: { personaGroup: "group-two" } })).rejects.toMatchObject({ refusal: "admit-refused" });
     expect(existsSync(seam.charterPath)).toBe(true);
   });
 });

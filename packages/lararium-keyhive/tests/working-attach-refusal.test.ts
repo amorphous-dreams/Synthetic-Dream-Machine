@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const harness = vi.hoisted(() => ({
+  resolverArgs: undefined as unknown,
   bindings: vi.fn(),
+  slotDoc: vi.fn(),
   boot: vi.fn(),
 }));
 
 vi.mock("../src/boot-daemon-keyhive.js", () => ({ bootDaemonKeyhive: harness.boot }));
 vi.mock("../src/slot-doc-resolver.js", () => ({
-  makeSlotDocResolver: () => ({ bindings: (...args: unknown[]) => harness.bindings(...args) }),
+  makeSlotDocResolver: (args: never) => (harness.resolverArgs = args, { bindings: (...args: unknown[]) => harness.bindings(...args), slotDoc: (...args: unknown[]) => harness.slotDoc(...args) }),
 }));
 
 import { AutomergeDocStore, CompositeStore, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
@@ -16,7 +18,7 @@ import { makeOperatorDaemonBehavior, operatorDaemonOptions } from "../src/operat
 const working = wikiSlotUri("daemon", "working");
 const daemonBag = wikiBagUri("daemon");
 const manifest = {
-  daemonAuth: { seed: new Uint8Array(32), vesselVerifyingKey: "a".repeat(64), registerBags: [], archiveOpens: false },
+  daemonAuth: { atom: { seed: "00".repeat(32), key: "b".repeat(64) }, placeVerifyingKey: "a".repeat(64), registerBags: [], archiveOpens: false },
 } as never;
 
 function fakeProvider() {
@@ -38,6 +40,7 @@ function context(options: { daemonHandle?: boolean; composite?: CompositeStore }
   }
   return {
     composite,
+    control: new CompositeStore(),
     repo: {
       create: () => { throw new Error("working-slot resolver failed: resolver planted"); },
       find: async () => ({ doc: () => ({ tiddlers: {} }), heads: () => [], on: () => () => {} }),
@@ -50,15 +53,50 @@ function context(options: { daemonHandle?: boolean; composite?: CompositeStore }
 
 beforeEach(() => {
   harness.bindings.mockReset();
+  harness.slotDoc.mockReset();
   harness.boot.mockReset();
   harness.boot.mockImplementation(async () => ({ keyhive: fakeProvider(), did: "device", unreadable: null }));
-  harness.bindings.mockRejectedValue(new Error("working-slot resolver failed: resolver planted"));
+  harness.slotDoc.mockRejectedValue(new Error("working-slot resolver failed: resolver planted"));
 });
 
 describe("daemon working-layer attachment is a boot condition", () => {
+  // sealed-store#/U1: at the floor the daemon's working slot stands on the floor's own device document (the control document
+  // names it under the floor's key), so a faceless floor's verb outcomes land there (a herm's verb answers) and never meet
+  // NO_WORKING_LAYER. No floor anchor gates it: the device slot reads none.
+  test("a faceless floor attaches its daemon working slot as the default writable, on the marker and on ea", async () => {
+    const floorAuth = { daemonAuth: { placeVerifyingKey: "a".repeat(64), registerBags: [] } } as never;
+    harness.slotDoc.mockResolvedValue({ url: "automerge:daemon-working-floor", reach: "vessel-only" });
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    for (const hook of ["onWritable", "verifierFactory"] as const) {
+      harness.slotDoc.mockClear();
+      const ctx = context({ daemonHandle: true }) as unknown as ReturnType<typeof context>;
+      const workingDoc = { tiddlers: {} as Record<string, unknown> };
+      const workingHandle = { url: "automerge:daemon-working-floor", doc: () => workingDoc, heads: () => [], on: () => () => {}, change: (fn: (doc: typeof workingDoc) => void) => fn(workingDoc) };
+      (ctx.repo as unknown as { find: () => Promise<typeof workingHandle> }).find = async () => workingHandle;
+      // The marker rides the behavior; the verifier rides the options the behavior stands on.
+      const out = hook === "onWritable"
+        ? await makeOperatorDaemonBehavior(floorAuth).onWritable!(ctx as never)
+        : await operatorDaemonOptions(floorAuth).verifierFactory!(ctx as never);
+      if (hook === "onWritable") expect(out).toMatchObject({ state: "standing" });
+      expect(harness.slotDoc).toHaveBeenCalledWith("daemon", "working");
+      expect(harness.boot).not.toHaveBeenCalled();
+      expect(ctx.composite.defaultWritableBagId()).toBe(working);
+      await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/floor-outcome", text: "landed" } }, { kind: "test" });
+      expect(workingDoc.tiddlers["lar:///ha.ka.ba/floor-outcome"]).toBeDefined();
+      // The floor verifier reaches the slot it attached, on the local channel alone.
+      if (hook === "verifierFactory") {
+        const verifier = out as { verify: (a: unknown) => Promise<{ ok: boolean }> };
+        await expect(verifier.verify({ bagUrl: working, channel: "local" })).resolves.toMatchObject({ ok: true });
+        await expect(verifier.verify({ bagUrl: working, channel: "peer" })).resolves.toMatchObject({ ok: false });
+      }
+    }
+    log.mockRestore();
+  });
+
+
   test("a resolver failure rejects boot with the named slot refusal", async () => {
     const behavior = makeOperatorDaemonBehavior(manifest);
-    const error = await behavior.onEa(context({ daemonHandle: true }) as never).catch((err: unknown) => err);
+    const error = await behavior.onWritable!(context({ daemonHandle: true }) as never).catch((err: unknown) => err);
     expect((error as Error | undefined)?.name).toBe("WorkingLayerAttachRefusal");
     expect(error?.constructor.name).toBe("WorkingLayerAttachRefusal");
     expect((error as Error | undefined)?.message).toContain(working);
@@ -68,7 +106,7 @@ describe("daemon working-layer attachment is a boot condition", () => {
 
   test("a missing daemon handle refuses with the same name", async () => {
     const behavior = makeOperatorDaemonBehavior(manifest);
-    const error = await behavior.onEa(context() as never).catch((err: unknown) => err);
+    const error = await behavior.onWritable!(context() as never).catch((err: unknown) => err);
     expect((error as Error | undefined)?.name).toBe("WorkingLayerAttachRefusal");
     expect(error?.constructor.name).toBe("WorkingLayerAttachRefusal");
     expect((error as Error | undefined)?.message).toContain(working);
@@ -82,13 +120,15 @@ describe("daemon working-layer attachment is a boot condition", () => {
   });
 
   test("CONTROL — successful attachment announces the slot and makes it the default writable", async () => {
-    harness.bindings.mockResolvedValue({ workingUrl: "automerge:daemon-working" });
+    harness.slotDoc.mockResolvedValue({ url: "automerge:daemon-working", reach: "face" });
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const ctx = context({ daemonHandle: true }) as unknown as ReturnType<typeof context>;
     const workingDoc = { tiddlers: {} as Record<string, unknown> };
     const workingHandle = { url: "automerge:daemon-working", doc: () => workingDoc, heads: () => [], on: () => () => {}, change: (fn: (doc: typeof workingDoc) => void) => fn(workingDoc) };
     (ctx.repo as unknown as { find: () => Promise<typeof workingHandle> }).find = async () => workingHandle;
-    await operatorDaemonOptions(manifest).verifierFactory!(ctx as never);
+    await makeOperatorDaemonBehavior(manifest).onWritable!(ctx as never);
+    expect(harness.slotDoc).toHaveBeenCalledWith("daemon", "working");
+    expect(harness.bindings).not.toHaveBeenCalled();
     expect(log.mock.calls.flat().join(" ")).toContain(`[daemon] working layer attached: ${working}`);
     expect(ctx.composite.defaultWritableBagId()).toBe(working);
     await ctx.composite.put({ tiddler: { title: "lar:///ha.ka.ba/working-attach-save", text: "landed" } }, { kind: "test" });
@@ -96,4 +136,5 @@ describe("daemon working-layer attachment is a boot condition", () => {
     await expect((ctx.composite.storeForBag(daemonBag) as unknown as { get: (title: string) => Promise<unknown> }).get("lar:///ha.ka.ba/working-attach-save")).resolves.toBeNull();
     log.mockRestore();
   });
+
 });

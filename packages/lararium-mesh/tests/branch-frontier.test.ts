@@ -1,20 +1,17 @@
 /**
- * branch-frontier — the fork detector over a parentUuid turn-DAG, end-to-end through buildPatch.
- *
- * Proves slice-2's frontier-FEED: a forked transcript DAG → distinct per-branch frontiers →
- * (fed to buildPatch's 3rd arg) → distinct handles. Slice-1 made buildPatch ABLE; this makes it DO.
+ * branch-frontier — the fork detector over a parentUuid turn-DAG, end-to-end through the handle
+ * derivations: a forked transcript DAG → distinct per-branch frontiers → distinct handles.
  */
 import { describe, test, expect } from "vitest";
 import {
   buildChildIndex,
   findBranchPoints,
   branchContextForTurn,
-  buildPatch,
-  harvestTurnGradient,
+  deriveBranchFrontier,
+  deriveHandle,
+  deriveRootHandle,
   type TurnNode,
 } from "../src/index.js";
-
-const h = () => harvestTurnGradient("a plain turn, no instruments");
 
 /** A forked session: root r → a; a forks into b1 and b2 (the branch point); each extends. */
 const FORKED: TurnNode[] = [
@@ -90,31 +87,29 @@ describe("branchContextForTurn — the per-turn frontier", () => {
   });
 });
 
-describe("END-TO-END: forked DAG → branchContextForTurn → buildPatch → DISTINCT handles", () => {
+describe("END-TO-END: forked DAG → branchContextForTurn → the handle derivations → DISTINCT handles", () => {
   // The two branches are the SAME session run, so the source_file run-part collides.
   const MAIN = "claude__sessRUN.jsonl";
   const SPIRIT = "Scout__agent-abc123__run-sessRUN.jsonl";
+  const root = (turn?: string) => deriveRootHandle(MAIN, turn ? deriveBranchFrontier(branchContextForTurn(FORKED, turn)) : null);
+  const spirit = (turn: string) => deriveHandle(SPIRIT, deriveBranchFrontier(branchContextForTurn(FORKED, turn)));
 
   test("main-agent: two branches mint distinct root handles", () => {
-    const pa = buildPatch(h(), MAIN, branchContextForTurn(FORKED, "c1"));
-    const pb = buildPatch(h(), MAIN, branchContextForTurn(FORKED, "c2"));
-    expect(pa["lar_agent_handle"]).not.toBe(pb["lar_agent_handle"]);
-    expect(String(pa["lar_agent_handle"])).toMatch(/^sessRUN~[0-9a-f]{8}$/);
-    expect(String(pb["lar_root_handle"])).toMatch(/^sessRUN~[0-9a-f]{8}$/);
+    expect(root("c1")).not.toBe(root("c2"));
+    expect(root("c1")).toMatch(/^sessRUN~[0-9a-f]{8}$/);
+    expect(root("c2")).toMatch(/^sessRUN~[0-9a-f]{8}$/);
   });
 
-  test("spirit: two branches mint distinct lineage handles AND distinct parents", () => {
-    const pa = buildPatch(h(), SPIRIT, branchContextForTurn(FORKED, "c1"));
-    const pb = buildPatch(h(), SPIRIT, branchContextForTurn(FORKED, "c2"));
-    expect(pa["lar_agent_handle"]).not.toBe(pb["lar_agent_handle"]);
-    expect(pa["lar_parent_handle"]).not.toBe(pb["lar_parent_handle"]);
-    expect(String(pa["lar_agent_handle"])).toMatch(/^sessRUN~[0-9a-f]{8}\.abc123$/);
+  test("spirit: two branches mint distinct lineage handles AND distinct runs", () => {
+    const pa = spirit("c1");
+    const pb = spirit("c2");
+    expect(pa).not.toBe(pb);
+    expect(pa?.split(".")[0]).not.toBe(pb?.split(".")[0]);
+    expect(pa).toMatch(/^sessRUN~[0-9a-f]{8}\.abc123$/);
   });
 
-  test("the common-ancestor turn (no fork) leaves the handle byte-identical to unforked", () => {
-    const above = buildPatch(h(), MAIN, branchContextForTurn(FORKED, "a"));
-    const unforked = buildPatch(h(), MAIN);
-    expect(above["lar_agent_handle"]).toBe(unforked["lar_agent_handle"]);
-    expect(above["lar_agent_handle"]).toBe("sessRUN");
+  test("the common-ancestor turn (no fork) leaves the handle exactly the unforked run", () => {
+    expect(root("a")).toBe(root());
+    expect(root("a")).toBe("sessRUN");
   });
 });

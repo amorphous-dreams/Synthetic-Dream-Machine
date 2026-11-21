@@ -11,7 +11,7 @@ import { SyncedTree, contentHash, syncedTreeKey } from "../src/synced-tree.js";
 import { carrierHash } from "@lararium/mesh";
 
 // THE HANDSHAKE SEAM for the two-writers vector: the tree's own `renameSync` calls a hook the vector arms,
-// at the moment a row (or, under a single-file tree, the whole map) stands ready to land. Unarmed, it passes through.
+// at the moment a row stands ready to land. Unarmed, it passes through.
 const seam = vi.hoisted(() => ({ beforeRename: null as null | (() => void), unlinkFault: null as null | Error, readFault: null as null | Error }));
 vi.mock("fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("fs")>();
@@ -53,6 +53,23 @@ describe("synced-tree — observations persist atomically", () => {
     const t2 = new SyncedTree(p);
     expect(t2.get("lar:///a")).toBe(contentHash("alpha"));
     expect(t2.get("lar:///missing")).toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a folder moved whole carries its bases (and its shadows') to the same place below the new folder, durably", () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-"));
+    const p = join(dir, "synced-tree");
+    const t = new SyncedTree(p);
+    t.set("lar:///a", "/scratch/faces/Heron/wiki/a.mem", "h1", "r1", "doc-1");
+    t.set("lar:///b", "/scratch/faces/Heron/wikiish/b.mem", "h2");
+    t.shadows().set("lar:///c", "/scratch/faces/Heron/wiki/c.kapae", "h3");
+    expect(t.movePaths("/scratch/faces/Heron/wiki", "/scratch/faces/Heron/wikis/daemon")).toBe(2);
+    const again = new SyncedTree(p);
+    expect(again.baseAt("lar:///a", "/scratch/faces/Heron/wikis/daemon/a.mem")).toEqual({ path: "/scratch/faces/Heron/wikis/daemon/a.mem", disk: "h1", records: "r1", doc: "doc-1" });
+    expect(again.baseAt("lar:///a", "/scratch/faces/Heron/wiki/a.mem")).toBeNull();
+    expect(again.baseAt("lar:///b", "/scratch/faces/Heron/wikiish/b.mem"), "a sibling folder sharing the prefix stays").not.toBeNull();
+    expect(again.shadows().baseAt("lar:///c", "/scratch/faces/Heron/wikis/daemon/c.kapae")).not.toBeNull();
+    expect(again.movePaths("/scratch/faces/Heron/wiki", "/scratch/faces/Heron/wikis/daemon"), "a second move finds nothing").toBe(0);
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -99,6 +116,18 @@ describe("synced-tree — the base holds two sides", () => {
     t.set("k", AT, contentHash("render"));
     expect(t.base("k")).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render") });
     expect(t.get("k")).toBe(contentHash("render"));
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a base carries the document its records side read, across a reload; a writer that names none leaves none", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p);
+    t.set("k", AT, contentHash("render"), contentHash("render"), "automerge:face-a");
+    t.set("plain", AT, contentHash("render"));
+    const reloaded = new SyncedTree(p);
+    expect(reloaded.baseAt("k", AT)).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render"), doc: "automerge:face-a" });
+    expect(reloaded.baseAt("plain", AT)).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render") });
+    expect("doc" in reloaded.baseAt("plain", AT)!).toBe(false);
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -172,23 +201,38 @@ describe("synced-tree — the base holds two sides", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("a single-file tree of an earlier shape names no base, and the tree says so by name", () => {
+  test("a `.json` file beside the directory has no part in the tree and draws no word", () => {
     const { dir } = fresh();
     const p = join(dir, "synced-tree");
-    const earlier = `${p}.json`;
+    const beside = `${p}.json`;
     const bytes = JSON.stringify({ k: { path: AT, disk: "d1", records: "r1" } });
-    writeFileSync(earlier, bytes, "utf-8");
+    writeFileSync(beside, bytes, "utf-8");
     const said: string[] = [];
     const warn = console.warn;
     console.warn = (line: unknown) => { said.push(String(line)); };
     let t: SyncedTree;
     try { t = new SyncedTree(p); } finally { console.warn = warn; }
-    expect(said).toEqual([`[synced-tree] ${earlier} holds a tree in an earlier shape; it names no base here, and each carrier reads as never agreed`]);
+    expect(said).toEqual([]);
     expect(t.size).toBe(0);
-    expect(t.baseAt("k", AT)).toBeNull();
     t.set("k", AT, "d2");
     expect(new SyncedTree(p).baseAt("k", AT)).toEqual({ path: AT, disk: "d2", records: "d2" });
-    expect(readFileSync(earlier, "utf-8")).toBe(bytes);          // nothing rewrites the earlier file
+    expect(readFileSync(beside, "utf-8")).toBe(bytes);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a file standing at the directory's own path leaves the tree in memory, says so, and stays untouched", () => {
+    const { dir } = fresh();
+    const p = join(dir, "synced-tree");
+    writeFileSync(p, "occupied", "utf-8");
+    const said: string[] = [];
+    const warn = console.warn;
+    console.warn = (line: unknown) => { said.push(String(line)); };
+    let t: SyncedTree;
+    try { t = new SyncedTree(p); } finally { console.warn = warn; }
+    expect(said).toEqual([`[synced-tree] ${p} stands as a file; the tree holds its bases in memory`]);
+    t.set("k", AT, "d2");
+    expect(t.baseAt("k", AT)).toEqual({ path: AT, disk: "d2", records: "d2" });
+    expect(readFileSync(p, "utf-8")).toBe("occupied");
     rmSync(dir, { recursive: true, force: true });
   });
 });
@@ -244,12 +288,12 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     expect(t.renameSourceUri(BAG, h)).toBeNull();
   });
 
-  test("spelling-agnostic: every tagged spelling of one digest resolves the same carrier", () => {
+  test("a tagged digest and the RFC spelling of one digest resolve the same carrier; a dash spelling resolves nothing", () => {
     const t = freshTree();
     const hex = "a".repeat(64);
     t.set(syncedTreeKey(BAG, "lar:///a.b.c"), AT, `sha256:${hex}`);
     expect(t.renameSourceUri(BAG, `sha256:${hex}`)).toBe("lar:///a.b.c");
-    expect(t.renameSourceUri(BAG, `sha256-${hex}`)).toBe("lar:///a.b.c");     // SRI spelling, same digest
+    expect(t.renameSourceUri(BAG, `sha256-${hex}`)).toBeNull();
   });
 
   test("★ a BARE hex names no algorithm: stored, it stays out of the index; asked, it resolves nothing ★", () => {

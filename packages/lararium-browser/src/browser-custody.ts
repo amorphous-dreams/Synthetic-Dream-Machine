@@ -1,20 +1,39 @@
 /**
- * browser-custody — the browser keystore's slot tree wraps the device seed, Keyhive Archives and persona roots.
+ * browser-custody — the browser keystore's place tree, and the one row door every custody row rides; a face root rests under its ward.
  *
  * ── WHAT RESTS WHERE ─────────────────────────────────────────────────────────────────────────────
- * The vessel's IndexedDB `keystore` keeps three kinds of custody row: `vessel-key` (the device seed and its public
- * half), `keyhive-archive` (the vessel individual's Archive) and `veil-archive-h<N>` (face N's creator-veil
- * Archive), plus persona roots, per-Nexus keys, face keys, fleet-join secrets and pending joins, and walk records.
- * The device seed and Archives may stand clear before a slot binds; the face's secret rows require a slot.
- * Once a slot binds, the mesh slot tree rests
- * at `custody-slots` (plain bytes: ids, salts, nonces and wrapped bytes, nothing a route does not open), and each
- * custody row R rests sealed under the vessel key at `sealed/R`, its AEAD binding the carrier name
- * `browser-keystore/R`, so bytes moved from one row to another open nowhere. Every other keystore row
- * (`catalog-url`, public by construction) stays as it stood.
+ * The vessel's IndexedDB `keystore` keeps two kinds of custody row (k15-custody-step-zero#/row-census-browser).
+ * THE PLACE ROWS rest under this browser's own place tree (`custody-slots`), each sealed at `sealed/R` under the place key, its
+ * AEAD binding the carrier name `browser-keystore/R`, so bytes moved from one row to another open nowhere. Two kinds stand
+ * there, sorted by capability (the 2026-10-19 sort), beside the ward's public roster (below):
+ *   `vessel-key`  F: the place KEL seed and its public half. It routes the vessel and signs the place KEL alone, a floor
+ *                 duty of the place signer; it grants no face identity. It may stand clear before the place tree binds.
+ *   `walk/<gate>` F: the walk a carried invite opens, taken at the boot before any face stands. It holds the invite, the
+ *                 wallet's blind tokens and the hearth-signed grant over a per-Nexus public leaf: a walk at that hearth, no
+ *                 face secret. A carry receipt (a document key the face's carry secret derives) would read D, and the walk
+ *                 store refuses one by name (`walk-receipt-unhomed`, `browser-walk.ts`).
+ *   `secret-home` S: the vessel's secret home's address, its document id and the held key its rest seals it under
+ *                 (`browser-secret-home.ts`). The home holds this vessel's group-secret seals, dyads and Keyhive cap events.
+ * THE FACE ROWS rest under their own face's tree (`browser-face-custody.ts`, `face-sealed/<fcid>/<row>`), each named by the
+ * face's PersonaGroup and never by a handle index: `veil-archive-g<G>`, `face-atom/<G>`, `face-anchor/<G>`,
+ * `face-address-secret/<G>`, `vessel-face-tag/<G>`, `fleet-join-pending/<G>`, `vessel-face-key/<G>|<nexus>|<faceKey>`,
+ * `nexus-key/<G>/<aid>`, `promoted/<G>`, `kapae/<G>` and `veil-lift/<G>`. A face row never rests under the place tree, and no face's row
+ * rests before its own tree binds (`no-custody-slot`). Every other keystore row (`catalog-url`, public by construction)
+ * stays as it stood.
+ *
+ * ── A FACE'S ROOT AND WARD KEY REST UNDER ITS WARD ───────────────────────────────────────────────
+ * A face's ROOT, and a face's WARD KEY (the co-sign signer), rest elsewhere: each under a ward of its own (`browser-ward-tree.ts`,
+ * `ward-core.ts`, seat-harness#/the-ward), whose key no slot of any tree here wraps. No door here reads, writes, moves or removes
+ * one: each refuses `ward-needs-fresh-unlock` by name. The ward's roster (`persona-root-roster`: each held root's face tree and its
+ * PUBLIC key, no seed) rests sealed under the place tree beside it.
+ *
+ * ── A FACE ROW NEVER RESTS UNDER THE PLACE TREE ──────────────────────────────────────────────────
+ * A face row standing under the place tree (clear or sealed), or a custody row spelled by handle index (`persona-root-h<N>`,
+ * `nexus-key/h<N>/…`), names no face: the boot refuses `face-row-shared` and the row door `face-names-a-handle`.
  *
  * ── ONE WRITER ───────────────────────────────────────────────────────────────────────────────────
- * Every sealed byte and the tree itself pass through the mesh's one writer (`sealed-writer.ts`) over an IndexedDB
- * `CustodyIo` port (`browserKeystoreCustodyIo`): the VK in hand proves itself against the standing tree, a write
+ * Every place byte and the tree itself pass through the mesh's one writer (`sealed-writer.ts`) over an IndexedDB
+ * `CustodyIo` port (`browserKeystoreCustodyIo`): the tree key in hand proves itself against the standing tree, a write
  * seals to a sidecar, reads it back, opens it, and only then renames over the carrier. A write never replaces a
  * sealed carrier until the new seal reopens. The act lock (`lares:custody-act:<idbName>`) keeps row doors outside a
  * custody act; the writer lock (`lares:custody:<idbName>`) holds each mesh write inside it.
@@ -24,53 +43,105 @@
  * settle, no cleanup. A mistyped passphrase once destroyed an identity archive; here it reaches no write.
  *
  * ── LOCKED AND UNLOCKED ──────────────────────────────────────────────────────────────────────────
- * An unlock holds the opened VK in this page's memory alone, keyed by vessel; `lockBrowserCustody` drops it, and a
- * fresh page starts locked. While the keystore stands sealed and locked, every custody reader and writer refuses
+ * An unlock holds the opened place key in this thread's memory alone, keyed by vessel; `lockBrowserCustody` drops it, and a
+ * fresh thread starts locked. While the place tree stands sealed and locked, every place reader and writer refuses
  * `sealed-locked` by name: nothing mints over a sealed seed and nothing writes a clear row beside the tree. A clear
- * custody row standing beside the tree (a fault between steps, or an older page's write) reads `unsettled`: the
- * next unlock moves it under the seal when its sealed carrier stands absent or equal, and never chooses between two
- * different values.
+ * place row standing beside the tree (a fault between steps) reads `unsettled`: the next unlock moves it under the seal
+ * when its sealed carrier stands absent or equal, and never chooses between two different values.
  *
  * ── THE CLEAR-PASSWORD ACT ASKS THROUGH THE CONFIRM DOOR ─────────────────────────────────────────
- * Returning the rows to the clear takes the route AND a person's answer, asked the way the wiki asks
+ * Returning the place rows to the clear takes the route AND a person's answer, asked the way the wiki asks
  * (`$tw.utils.confirm`, `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-question`): the door answers false on the
  * first ask, the question parks, and the act abandons having written nothing; the person's "yes" re-dispatches the
  * asking message, the act runs from the top, and the door answers true on that pass. No closure resumes and no
- * blocking prompt stands.
+ * blocking prompt stands. A face's own clear names that face (`clearFaceCustody`).
  *
  * ── PIN KINDS ────────────────────────────────────────────────────────────────────────────────────
- * A slot binds the mesh's built kinds: a passphrase, or a paper sheet the person holds. A passkey slot joins only
- * after its PRF derivation gets measured on the person's own devices, and never alone; no passkey kind stands here.
+ * A slot binds the mesh's built kinds: a passphrase, a paper sheet the person holds, or a passkey (a WebAuthn PRF output
+ * over the pin's salt, the ceremony document's custody route). A passkey never stands as the tree's only route: a first
+ * seal under a passkey alone refuses `passkey-alone-refused`, and a passkey slot binds beside a passphrase or paper slot.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
 import {
-  bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintVk, vkEquals,
+  bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintTreeKey, treeKeyEquals,
   writeSealedCarrier, openSealedCarrier, removeSealedCarrier, commitSlotTree, settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX,
-  constantTimeBytesEqual, isWalkRecord, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type VesselKey,
+  constantTimeBytesEqual, isWalkRecord, VESSEL_LOCKED, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 import { clearCustodyQuestion } from "@lararium/mesh/lar-uris";
+import { readFaceRecord, removeFaceRecord, writeFaceRecord } from "./browser-face-custody.js";
 
 const STORE = "keystore";
-export const CUSTODY_TREE_ROW = "custody-slots";
-export const SEALED_ROW_PREFIX = "sealed/";
+export const CUSTODY_TREE_RECORD = "custody-slots";
+export const SEALED_RECORD_PREFIX = "sealed/";
 export const KEYSTORE_CARRIER_PREFIX = "browser-keystore/";
 
-const DEVICE_SEED_ROW = "vessel-key";
-const CUSTODY_ROW = /^(?:vessel-key|keyhive-archive|veil-archive-h\d+|persona-root-h\d+|persona-root-roster|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|face-atom\/.+|fleet-join-secret\/.+|fleet-join-pending|walk\/.+)$/;
+const DEVICE_SEED_RECORD = "vessel-key";
+/** The floor's rest seed row (`browser-floor-key.ts` `FLOOR_REST_RECORD`): 32 random bytes the floor's rest key derives from. */
+const FLOOR_REST_RECORD = "floor-rest";
+const CUSTODY_RECORD = /^(?:vessel-key|floor-rest|persona-root-roster|secret-home|walk\/.+)$/;
 
-/** Is `row` one the slot tree wraps: the device seed, an Archive, or one of a face's secret rows. */
-export function isCustodyRow(row: string): boolean { return CUSTODY_ROW.test(row); }
+/** Is `row` one the place tree wraps: the place seed, the ward's public roster or a walk. */
+export function isCustodyRecord(row: string): boolean { return CUSTODY_RECORD.test(row); }
+
+const hexUtf8 = (s: string): string => [...new TextEncoder().encode(s)].map((b) => b.toString(16).padStart(2, "0")).join("");
+
+/** The face-private row spellings: each names its face's PersonaGroup, and rests under that face's tree as the second part. */
+const FACE_RECORDS: readonly (readonly [RegExp, (m: RegExpExecArray) => string])[] = [
+  [/^veil-archive-g(.+)$/, () => "veil-archive"],
+  [/^face-atom\/(.+)$/, () => "face-atom"],
+  [/^face-anchor\/(.+)$/, () => "face-anchor"],
+  [/^face-address-secret\/(.+)$/, () => "face-address-secret"],
+  [/^vessel-face-tag\/(.+)$/, () => "vessel-face-tag"],
+  [/^fleet-join-pending\/(.+)$/, () => "fleet-join-pending"],
+  [/^promoted\/(.+)$/, () => "promoted"],
+  [/^kapae\/(.+)$/, () => "kapae"],
+  // The face's private link to the veil that joined it (`browser-veil-lift.ts`): under its own tree alone.
+  [/^veil-lift\/(.+)$/, () => "veil-lift"],
+  [/^vessel-face-key\/([^|]+)\|([^|]+)\|([^|]+)$/, (m) => `vessel-face-key/${hexUtf8(m[2]!)}/${m[3]!.toLowerCase()}`],
+  [/^nexus-key\/([^/]+)\/(.+)$/, (m) => `nexus-key/${hexUtf8(m[2]!)}`],
+];
+
+/** A face-private row's face (its PersonaGroup) and the row it rests as under that face's own tree; null for any other row. */
+export function faceRecordOf(row: string): { readonly face: string; readonly row: string } | null {
+  if (HANDLE_RECORD.test(row)) return null;
+  for (const [form, inner] of FACE_RECORDS) {
+    const m = form.exec(row);
+    if (m) return { face: m[1]!, row: inner(m) };
+  }
+  return null;
+}
+
+/** A custody row spelled by handle index, or a vessel Archive: none names a face. (The ward's roster names roots by index
+ *  under the ward's law, and rests under the place tree; see the header.) */
+const HANDLE_RECORD = /^(?:persona-root-h\d+|nexus-key\/h\d+\/.+|vessel-face-key\/[^|]+\|[^|]+|keyhive-archive)$/;
+
+/** The rows a ward holds: a face root's and a face ward key's logical names, and every ward tree and warded row. No custody door reaches one. */
+const WARD_RECORD = /^(?:persona-root-h\d+|face-root\/.+|ward-sign\/.+|ward\/.*)$/;
+export function isWardRow(row: string): boolean { return WARD_RECORD.test(row); }
+
+/** A ward act refused by name: no credential and no byte of the root rides the error. */
+export class BrowserWardRefused extends Error {
+  override readonly name = "BrowserWardRefused";
+  constructor(readonly reading: string, detail = "the face root opened to no ward act in this browser") { super(`${reading}: ${detail}`); }
+}
+
+/** Refuse a ward row at a door of unlocked custody: the root opens only fresh, for one ward act. */
+function refuseWardRow(row: string): void {
+  if (isWardRow(row)) throw new BrowserWardRefused("ward-needs-fresh-unlock", `${row} rests under its face's ward, which opens only fresh from the face's own route for one act; unlocked custody never reaches it`);
+}
 
 /** The sealed carrier a custody row rests in once a slot binds. */
 export function sealedCarrierOf(row: string): SealedCarrier {
-  if (!isCustodyRow(row)) throw new Error(`[browser-custody] "${row}" names no custody row`);
-  return { name: `${KEYSTORE_CARRIER_PREFIX}${row}`, path: `${SEALED_ROW_PREFIX}${row}` };
+  refuseWardRow(row);
+  if (!isCustodyRecord(row)) throw new Error(`[browser-custody] "${row}" names no custody row`);
+  return { name: `${KEYSTORE_CARRIER_PREFIX}${row}`, path: `${SEALED_RECORD_PREFIX}${row}` };
 }
 
 export type BrowserCustodyRefusalReading =
-  | "sealed-locked" | "no-custody-slot" | "already-sealed" | "not-sealed" | "unsettled" | "tree-unreadable" | "row-unopened" | "torn-without-tree";
+  | "sealed-locked" | "no-custody-slot" | "already-sealed" | "not-sealed" | "unsettled" | "tree-unreadable" | "row-unopened" | "torn-without-tree"
+  | "face-names-a-handle" | "face-row-shared";
 
 const SAYS: Record<BrowserCustodyRefusalReading, string> = {
   "sealed-locked": "the keystore rests sealed and this page holds no unlock; unlock it with its passphrase first",
@@ -81,7 +152,21 @@ const SAYS: Record<BrowserCustodyRefusalReading, string> = {
   "tree-unreadable": "the slot tree does not read, so no route can be judged against it; nothing was written",
   "row-unopened": "the key this page holds does not open the sealed row; nothing was written",
   "torn-without-tree": "a sealed row stands with no slot tree beside it, so no route can open it; nothing was written",
+  "face-names-a-handle": "a face's row names its PersonaGroup, never a local handle index h<N>; this row's shape names no face",
+  "face-row-shared": "a face's row rests under this browser's place tree, where no face row rests; nothing here reads that row, and this browser founds afresh once its site data clears",
 };
+
+/**
+ * Refuse a keystore whose place tree holds a face's row (clear or sealed), or a row spelled by handle index: each face's rows
+ * rest under its own tree alone. Nothing is read or written past the row names.
+ */
+export async function refuseSharedTreeFaceRecords(idbName: string): Promise<void> {
+  const shared = (await keystoreKeys(idbName)).filter((k) => {
+    const row = k.startsWith(SEALED_RECORD_PREFIX) ? k.slice(SEALED_RECORD_PREFIX.length).replace(new RegExp(`(?:${reEscape(SEALING_SUFFIX)}|${reEscape(ROTATING_SUFFIX)})$`), "") : k;
+    return HANDLE_RECORD.test(row) || faceRecordOf(row) !== null;
+  });
+  if (shared.length > 0) throw new BrowserCustodyRefused("face-row-shared", idbName, shared[0], shared.join(", "));
+}
 
 /** A custody act or row the keystore's standing state refuses. Nothing was written. */
 export class BrowserCustodyRefused extends Error {
@@ -89,17 +174,37 @@ export class BrowserCustodyRefused extends Error {
   constructor(readonly reading: BrowserCustodyRefusalReading, readonly idbName: string, readonly row?: string, detail?: string) {
     super(`[browser-custody] ${reading} — "${idbName}"${row ? ` row ${row}` : ""}: ${SAYS[reading]}${detail ? ` (${detail})` : ""}`);
   }
+  /** THE NAME A CALLER READS, one across platforms: a sealed keystore this page holds no unlock for refuses `vessel-locked`,
+   *  the name a node vessel's control acts and the CLI's direct holder answer; every other reading names itself. */
+  get refusal(): string { return this.reading === "sealed-locked" ? VESSEL_LOCKED : this.reading; }
 }
 
 // ── the page's unlocks ──────────────────────────────────────────────────────────────────────────────
 
-const unlocked = new Map<string, VesselKey>();
+const unlocked = new Map<string, TreeKey>();
 
 /** Drop this page's unlock of the vessel. The sealed rows stay; every custody read refuses until the next unlock. */
 export function lockBrowserCustody(idbName: string): void {
   unlocked.delete(idbName);
   for (const listener of [...lockListeners.get(idbName) ?? []]) listener();
 }
+
+/**
+ * The last session's lock (vessel-sessions.ts): wait out any custody act in flight, then overwrite the tree key's bytes and
+ * drop the unlock. Answers true when a key stood. Taking the act lock exclusive first means no act seals under a key this
+ * overwrites midway; an act that starts after reads no key and refuses `sealed-locked`.
+ */
+export async function overwriteBrowserCustody(idbName: string): Promise<boolean> {
+  return withCustodyActLock(idbName, "exclusive", async () => {
+    const held = unlocked.get(idbName);
+    held?.fill(0);
+    lockBrowserCustody(idbName);
+    return held !== undefined;
+  });
+}
+
+/** How many vessels this thread holds an unlock for: a count, never a key, for the lock's instrument. */
+export function browserCustodyKeysHeld(): number { return unlocked.size; }
 
 const lockListeners = new Map<string, Set<() => void>>();
 /** Hear this page's lock of the vessel: a tab that told the holder it can seal tells it again when it cannot. */
@@ -178,15 +283,15 @@ export function browserKeystoreCustodyIo(idbName: string): CustodyIo {
 
 // ── the rows, raw ──────────────────────────────────────────────────────────────────────────────────
 
-interface RowState { readonly tree: unknown; readonly clear: unknown; readonly sealed: unknown }
+interface RecordState { readonly tree: unknown; readonly clear: unknown; readonly sealed: unknown }
 
-async function rowState(idbName: string, row: string): Promise<RowState> {
+async function recordState(idbName: string, row: string): Promise<RecordState> {
   const idb = await openVesselIdb(idbName);
   try {
     const tx = idb.transaction(STORE, "readonly");
     const s = tx.objectStore(STORE);
     const req = (k: string) => new Promise<unknown>((resolve, reject) => { const r = s.get(k); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
-    const [tree, clear, sealed] = await Promise.all([req(CUSTODY_TREE_ROW), req(row), req(`${SEALED_ROW_PREFIX}${row}`)]);
+    const [tree, clear, sealed] = await Promise.all([req(CUSTODY_TREE_RECORD), req(row), req(`${SEALED_RECORD_PREFIX}${row}`)]);
     return { tree, clear, sealed };
   } finally { idb.close(); }
 }
@@ -210,7 +315,7 @@ async function putClearWhileNoTree(idbName: string, row: string, value: unknown)
     const done = txDone(tx, `write ${row}`);
     const s = tx.objectStore(STORE);
     const refused = await new Promise<BrowserCustodyRefused | null>((resolve, reject) => {
-      const t = s.get(CUSTODY_TREE_ROW);
+      const t = s.get(CUSTODY_TREE_RECORD);
       t.onerror = () => reject(t.error);
       t.onsuccess = () => {
         if (t.result !== undefined) { resolve(new BrowserCustodyRefused("sealed-locked", idbName, row)); return; }
@@ -248,9 +353,9 @@ async function deleteClearIfUnchanged(idbName: string, row: string, expected: Ui
 
 // ── the codecs: a row's clear value and its sealed plaintext ─────────────────────────────────────
 
-interface RowCodec { toBytes(value: unknown): Uint8Array; fromBytes(bytes: Uint8Array): unknown }
+interface RecordCodec { toBytes(value: unknown): Uint8Array; fromBytes(bytes: Uint8Array): unknown }
 
-const archiveCodec: RowCodec = {
+const archiveCodec: RecordCodec = {
   toBytes(value) {
     if (!(value instanceof Uint8Array) || value.byteLength === 0) throw new Error("[browser-custody] an Archive row holds non-empty bytes");
     return new Uint8Array(value);
@@ -258,7 +363,7 @@ const archiveCodec: RowCodec = {
   fromBytes: (bytes) => new Uint8Array(bytes),
 };
 
-const key32Codec: RowCodec = {
+const key32Codec: RecordCodec = {
   toBytes(value) {
     if (!(value instanceof Uint8Array) || value.length !== 32) throw new Error("[browser-custody] a face key holds exactly 32 bytes");
     return new Uint8Array(value);
@@ -267,7 +372,7 @@ const key32Codec: RowCodec = {
 };
 
 /** JSON carries nested typed bytes as numbered data, and rejects malformed byte tags on opening. */
-function jsonRecordCodec(check: (value: unknown) => boolean, name: string): RowCodec {
+function jsonRecordCodec(check: (value: unknown) => boolean, name: string): RecordCodec {
   const unpack = (value: unknown): unknown => {
     if (Array.isArray(value)) return value.map(unpack);
     if (value && typeof value === "object") {
@@ -307,8 +412,8 @@ const pendingCodec = jsonRecordCodec((v) => {
 }, "fleet join pending");
 const walkCodec = jsonRecordCodec(isWalkRecord, "walk");
 
-/** The device seed's record: its public half and its seed, as the clear row has always held them. */
-const deviceSeedCodec: RowCodec = {
+/** The device seed's record: its public half and its seed. */
+const deviceSeedCodec: RecordCodec = {
   toBytes(value) {
     const v = value as { verifyingKey?: unknown; signingKey?: unknown } | null;
     if (!v || typeof v.verifyingKey !== "string" || typeof v.signingKey !== "string") {
@@ -322,13 +427,18 @@ const deviceSeedCodec: RowCodec = {
   },
 };
 
-const personaRosterCodec: RowCodec = {
+/** The roster: one line per held root, its face's custody tree and its PUBLIC key, so a possession check or a signer's key reads no seed. */
+const personaRosterCodec: RecordCodec = {
   toBytes(value) {
     const roots = (value as { roots?: unknown } | null)?.roots;
-    if (!Array.isArray(roots) || !roots.every((n) => Number.isSafeInteger(n) && n >= 0)) {
-      throw new Error("[browser-custody] the persona-root roster holds no { roots } record");
+    const line = (l: unknown): boolean => {
+      const { tree, verifyingKey } = (l ?? {}) as { tree?: unknown; verifyingKey?: unknown };
+      return typeof tree === "string" && /^[0-9a-f]{32}$/.test(tree) && typeof verifyingKey === "string" && /^[0-9a-f]{64}$/.test(verifyingKey);
+    };
+    if (!Array.isArray(roots) || !roots.every(line)) {
+      throw new Error("[browser-custody] the persona-root roster holds no { roots: [{ tree, verifyingKey }] } record");
     }
-    return new TextEncoder().encode(JSON.stringify({ roots }));
+    return new TextEncoder().encode(JSON.stringify({ roots: roots.map((l: { tree: string; verifyingKey: string }) => ({ tree: l.tree, verifyingKey: l.verifyingKey })) }));
   },
   fromBytes(bytes) {
     const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
@@ -337,11 +447,12 @@ const personaRosterCodec: RowCodec = {
   },
 };
 
-const codecOf = (row: string): RowCodec =>
-  row === DEVICE_SEED_ROW || /^persona-root-h\d+$/.test(row) ? deviceSeedCodec
+const codecOf = (row: string): RecordCodec =>
+  row === DEVICE_SEED_RECORD ? deviceSeedCodec
     : row === "persona-root-roster" ? personaRosterCodec
-    : row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") ? key32Codec
-    : row === "fleet-join-pending" ? pendingCodec
+    : row === FLOOR_REST_RECORD || row.startsWith("nexus-key/") || row.startsWith("vessel-face-key/") || row.startsWith("face-atom/") || row.startsWith("vessel-face-tag/") ? key32Codec
+    : row.startsWith("face-anchor/") ? archiveCodec
+    : row.startsWith("fleet-join-pending/") ? pendingCodec
     : row.startsWith("walk/") ? walkCodec : archiveCodec;
 
 // ── the row door: every custody reader and writer rides it ───────────────────────────────────────
@@ -364,13 +475,35 @@ function treeOrRefuse(idbName: string, held: unknown, row?: string): SlotTree {
  * A custody row's clear value: as it rests in the clear, or opened under this page's unlock. `undefined` when the
  * row never stood. Sealed and locked refuses `sealed-locked`; a clear row beside a tree refuses `unsettled`.
  */
-export async function readKeystoreRow(idbName: string, row: string): Promise<unknown> {
-  return withCustodyActLock(idbName, "shared", () => readKeystoreRowHeld(idbName, row));
+export async function readKeystoreRecord(idbName: string, row: string): Promise<unknown> {
+  refuseWardRow(row);
+  const face = faceRecordOf(row);
+  if (face) return readFaceDoor(face, row, idbName);
+  return withCustodyActLock(idbName, "shared", () => readKeystoreRecordHeld(idbName, row));
 }
 
-async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknown> {
+/** A face row through its own face's tree: `no-custody-slot` before the tree binds, `face-locked` while it stands locked. */
+async function readFaceDoor(face: { readonly face: string; readonly row: string }, row: string, idbName: string): Promise<unknown> {
+  const bytes = await readFaceRecord(idbName, face.face, face.row);
+  if (bytes === null) return undefined;
+  try { return codecOf(row).fromBytes(bytes); } finally { bytes.fill(0); }
+}
+
+async function writeFaceDoor(face: { readonly face: string; readonly row: string }, row: string, idbName: string, value: unknown): Promise<void> {
+  const plaintext = codecOf(row).toBytes(value);
+  try { await writeFaceRecord(idbName, face.face, face.row, plaintext); } finally { plaintext.fill(0); }
+}
+
+function refuseHandleRecord(idbName: string, row: string): void {
+  if (HANDLE_RECORD.test(row)) throw new BrowserCustodyRefused("face-names-a-handle", idbName, row);
+}
+
+async function readKeystoreRecordHeld(idbName: string, row: string): Promise<unknown> {
+    const face = faceRecordOf(row);
+    if (face) return readFaceDoor(face, row, idbName);
+    refuseHandleRecord(idbName, row);
     const carrier = sealedCarrierOf(row);
-    const st = await rowState(idbName, row);
+    const st = await recordState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
       return st.clear;
@@ -379,10 +512,10 @@ async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknow
     if (st.clear !== undefined) throw new BrowserCustodyRefused("unsettled", idbName, row);
     // LOCKED REFUSES BEFORE ABSENT ANSWERS: a sealed keystore whose row never stood still names its lock, so no mint
     // reads "no seed yet" off a keystore it cannot open.
-    const vk = unlocked.get(idbName);
-    if (!vk) throw new BrowserCustodyRefused("sealed-locked", idbName, row);
+    const treeKey = unlocked.get(idbName);
+    if (!treeKey) throw new BrowserCustodyRefused("sealed-locked", idbName, row);
     if (st.sealed === undefined) return undefined;
-    const opened = await openSealedCarrier({ io: browserKeystoreCustodyIo(idbName), vk, carrier });
+    const opened = await openSealedCarrier({ io: browserKeystoreCustodyIo(idbName), treeKey, carrier });
     if (opened.reading !== "opens") throw new BrowserCustodyRefused("row-unopened", idbName, row, opened.reading);
     return codecOf(row).fromBytes(opened.plaintext);
 }
@@ -391,50 +524,62 @@ async function readKeystoreRowHeld(idbName: string, row: string): Promise<unknow
  * Keep a custody row: device and Archive rows may stand clear before binding; roots require a slot. A sealed
  * write lands through the mesh writer, so the standing seal stays until the new one reads back and opens.
  */
-export async function writeKeystoreRow(idbName: string, row: string, value: unknown): Promise<void> {
-  return withCustodyActLock(idbName, "shared", () => writeKeystoreRowHeld(idbName, row, value));
+export async function writeKeystoreRecord(idbName: string, row: string, value: unknown): Promise<void> {
+  refuseWardRow(row);
+  const face = faceRecordOf(row);
+  if (face) return writeFaceDoor(face, row, idbName, value);
+  return withCustodyActLock(idbName, "shared", () => writeKeystoreRecordHeld(idbName, row, value));
 }
 
-async function writeKeystoreRowHeld(idbName: string, row: string, value: unknown): Promise<void> {
+async function writeKeystoreRecordHeld(idbName: string, row: string, value: unknown): Promise<void> {
+    const face = faceRecordOf(row);
+    if (face) return writeFaceDoor(face, row, idbName, value);
+    refuseHandleRecord(idbName, row);
     const carrier = sealedCarrierOf(row);
     const plaintext = codecOf(row).toBytes(value);
-    const st = await rowState(idbName, row);
+    const st = await recordState(idbName, row);
     if (st.tree === undefined) {
       if (st.sealed !== undefined) throw new BrowserCustodyRefused("torn-without-tree", idbName, row);
-      // House reading under the operator's delegation, 2026-10-18: a face's secret rows take a slot first.
-      // A ruling that permits clear face secrets before a slot flips this gate.
-      if (!/^(?:vessel-key|keyhive-archive|veil-archive-h\d+)$/.test(row)) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
+      // THE PRE-BIND WINDOW: the place seed and the floor's rest seed (the veil floor's own key, the-veil-ladder#/the-base-model,
+      // in-house ruling 6) stand clear before the place tree binds, and the first bind moves both under the seal
+      // (`settleClearRows`). The page reports that window as open. The secret home's address never stands here: it mints
+      // with a face, under the seal (operator ruling 2026-11-09). A walk takes the slot first.
+      if (row !== DEVICE_SEED_RECORD && row !== FLOOR_REST_RECORD) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       return putClearWhileNoTree(idbName, row, value);
     }
     treeOrRefuse(idbName, st.tree, row);
     if (st.clear !== undefined) throw new BrowserCustodyRefused("unsettled", idbName, row);
-    const vk = unlocked.get(idbName);
-    if (!vk) throw new BrowserCustodyRefused("sealed-locked", idbName, row);
-    await writeSealedCarrier({ io: browserKeystoreCustodyIo(idbName), vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
+    const treeKey = unlocked.get(idbName);
+    if (!treeKey) throw new BrowserCustodyRefused("sealed-locked", idbName, row);
+    await writeSealedCarrier({ io: browserKeystoreCustodyIo(idbName), treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext });
 }
 
 /** Hold one exclusive act across a read, decision and any number of custody row writes. */
-export interface CustodyRowsAct {
+export interface CustodyRecordsAct {
   read(row: string): Promise<unknown>;
   write(row: string, value: unknown): Promise<void>;
   delete(row: string): Promise<void>;
 }
 
-export function withCustodyRows<T>(idbName: string, body: (rows: CustodyRowsAct) => Promise<T>): Promise<T> {
+export function withCustodyRecords<T>(idbName: string, body: (rows: CustodyRecordsAct) => Promise<T>): Promise<T> {
   if (!(globalThis as { navigator?: { locks?: LockManager } }).navigator?.locks) {
     throw new Error("[browser-custody] this engine offers no Web Locks, so a custody rows act cannot hold the keystore alone");
   }
   return withCustodyActLock(idbName, "exclusive", () => body({
-    read: (row) => readKeystoreRowHeld(idbName, row),
-    write: (row, value) => writeKeystoreRowHeld(idbName, row, value),
+    read: async (row) => { refuseWardRow(row); return readKeystoreRecordHeld(idbName, row); },
+    write: async (row, value) => { refuseWardRow(row); return writeKeystoreRecordHeld(idbName, row, value); },
     delete: async (row) => {
+      refuseWardRow(row);
+      const face = faceRecordOf(row);
+      if (face) { await removeFaceRecord(idbName, face.face, face.row); return; }
+      refuseHandleRecord(idbName, row);
       const carrier = sealedCarrierOf(row);
-      const st = await rowState(idbName, row);
+      const st = await recordState(idbName, row);
       if (st.tree === undefined) throw new BrowserCustodyRefused("no-custody-slot", idbName, row);
       treeOrRefuse(idbName, st.tree, row);
       if (st.clear !== undefined) throw new BrowserCustodyRefused("unsettled", idbName, row);
-      const vk = heldOrRefuse(idbName);
-      await removeSealedCarrier({ io: browserKeystoreCustodyIo(idbName), vk, treePath: CUSTODY_TREE_ROW, carrier });
+      const treeKey = heldOrRefuse(idbName);
+      await removeSealedCarrier({ io: browserKeystoreCustodyIo(idbName), treeKey, treePath: CUSTODY_TREE_RECORD, carrier });
     },
   }));
 }
@@ -443,7 +588,7 @@ export function withCustodyRows<T>(idbName: string, body: (rows: CustodyRowsAct)
 
 export type BrowserCustodyStatus =
   | { readonly reading: "clear" }
-  | { readonly reading: "sealed"; readonly unlocked: boolean; readonly slots: readonly { readonly id: string; readonly t: number; readonly kinds: readonly ("passphrase" | "paper")[] }[] }
+  | { readonly reading: "sealed"; readonly unlocked: boolean; readonly slots: readonly { readonly id: string; readonly t: number; readonly kinds: readonly ("passphrase" | "paper" | "passkey")[] }[] }
   | { readonly reading: "unreadable"; readonly why: string };
 
 /** What the keystore's custody reads as: clear, sealed (and whether this page holds an unlock), or unreadable. */
@@ -453,11 +598,11 @@ export async function readBrowserCustody(idbName: string): Promise<BrowserCustod
 }
 
 async function readBrowserCustodyHeld(idbName: string): Promise<BrowserCustodyStatus> {
-  const held = await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW).catch((e: unknown) => e as Error);
+  const held = await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_RECORD).catch((e: unknown) => e as Error);
   if (held instanceof Error) return { reading: "unreadable", why: held.message };
   const reading = decodeSlotTree(held);
   if (reading.reading === "absent") {
-    const torn = (await keystoreKeys(idbName)).filter((k) => k.startsWith(SEALED_ROW_PREFIX));
+    const torn = (await keystoreKeys(idbName)).filter((k) => k.startsWith(SEALED_RECORD_PREFIX));
     return torn.length > 0 ? { reading: "unreadable", why: `sealed rows stand with no slot tree: ${torn.join(", ")}` } : { reading: "clear" };
   }
   if (reading.reading === "unreadable") return { reading: "unreadable", why: reading.why };
@@ -468,18 +613,34 @@ async function readBrowserCustodyHeld(idbName: string): Promise<BrowserCustodySt
   };
 }
 
-function pinOf(route: Credential): PinSpec {
+/** A route a slot binds under: a credential, where a passkey also names the PRF salt its output answered. */
+export type CustodyBindRoute =
+  | Exclude<Credential, { readonly kind: "passkey" }>
+  | { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array; readonly prfOutput: Uint8Array };
+
+/** The pin a bind route makes (one face's tree binds through it too, `browser-face-custody.ts`). */
+export function custodyPinOf(route: CustodyBindRoute): PinSpec { return pinOf(route); }
+
+function pinOf(route: CustodyBindRoute): PinSpec {
   if (route.kind === "passphrase") return { kind: "passphrase", passphrase: route.passphrase };
   if (route.kind === "paper") return { kind: "paper", confirmed: confirmHeldPaper(route.sheets) };
-  throw new Error(`[browser-custody] a slot binds a passphrase or a paper sheet; got "${String((route as { kind: unknown }).kind)}"`);
+  if (route.kind === "passkey") return { kind: "passkey", credentialId: route.credentialId, prfSalt: route.prfSalt, prfOutput: route.prfOutput };
+  throw new Error(`[browser-custody] a slot binds a passphrase, a paper sheet or a passkey; got "${String((route as { kind: unknown }).kind)}"`);
 }
 
-/** Prove `route` opens `tree`'s encoded bytes to `vk` through `slotId`, before the tree lands anywhere. */
-function proveRouteOpens(tree: SlotTree, vk: VesselKey, route: Credential, slotId: string): void {
+/** The passkey pins' public halves (credential id and PRF salt), for the ceremony's assertion. A clear or unreadable tree names none. */
+export async function readBrowserCustodyPasskeys(idbName: string): Promise<readonly { readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array }[]> {
+  const reading = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_RECORD).catch(() => null));
+  if (reading.reading !== "readable") return [];
+  return reading.tree.slots.flatMap((s) => s.pins.flatMap((p) => p.kind === "passkey" ? [{ credentialId: p.credentialId.slice(), prfSalt: p.prfSalt.slice() }] : []));
+}
+
+/** Prove `route` opens `tree`'s encoded bytes to `treeKey` through `slotId`, before the tree lands anywhere. */
+async function proveRouteOpens(tree: SlotTree, treeKey: TreeKey, route: CustodyBindRoute, slotId: string): Promise<void> {
   const back = decodeSlotTree(encodeSlotTree(tree));
   if (back.reading !== "readable") throw new Error("[browser-custody] the bound slot tree does not read back; nothing was written");
-  const opened = openVk(back.tree, [route]);
-  if (opened.reading !== "opens" || !vkEquals(opened.vk, vk) || opened.slot !== slotId) {
+  const opened = await openTreeKey(back.tree, [route], nobleKdf);
+  if (opened.reading !== "opens" || !treeKeyEquals(opened.treeKey, treeKey) || opened.slot !== slotId) {
     throw new Error("[browser-custody] the route does not reopen the slot it just bound; nothing was written");
   }
 }
@@ -489,17 +650,17 @@ const reEscape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 async function standingCarriers(idbName: string): Promise<SealedCarrier[]> {
   const rows = new Set<string>();
   for (const key of await keystoreKeys(idbName)) {
-    if (isCustodyRow(key)) rows.add(key);
-    else if (key.startsWith(SEALED_ROW_PREFIX)) {
-      const row = key.slice(SEALED_ROW_PREFIX.length).replace(new RegExp(`(?:${reEscape(SEALING_SUFFIX)}|${reEscape(ROTATING_SUFFIX)})$`), "");
-      if (isCustodyRow(row)) rows.add(row);
+    if (isCustodyRecord(key)) rows.add(key);
+    else if (key.startsWith(SEALED_RECORD_PREFIX)) {
+      const row = key.slice(SEALED_RECORD_PREFIX.length).replace(new RegExp(`(?:${reEscape(SEALING_SUFFIX)}|${reEscape(ROTATING_SUFFIX)})$`), "");
+      if (isCustodyRecord(row)) rows.add(row);
     }
   }
   return [...rows].sort().map(sealedCarrierOf);
 }
 
 /** A clear custody row a settle left standing beside the tree, and why. Readers name it `unsettled`. */
-export interface UnsettledRow { readonly row: string; readonly why: string }
+export interface UnsettledRecord { readonly row: string; readonly why: string }
 
 /**
  * Move every clear custody row under the seal: write its sealed carrier when none stands (the writer's read-back
@@ -507,25 +668,25 @@ export interface UnsettledRow { readonly row: string; readonly why: string }
  * sealed. A clear row whose sealed carrier holds a DIFFERENT value stays, and so does every row the settle cannot
  * judge; each one returns in `left` with its reason, and the readers name it `unsettled`.
  */
-async function settleClearRows(idbName: string, vk: VesselKey): Promise<{ moved: string[]; left: UnsettledRow[] }> {
+async function settleClearRows(idbName: string, treeKey: TreeKey): Promise<{ moved: string[]; left: UnsettledRecord[] }> {
   const io = browserKeystoreCustodyIo(idbName);
   const moved: string[] = [];
-  const left: UnsettledRow[] = [];
-  for (const key of (await keystoreKeys(idbName)).filter(isCustodyRow).sort()) {
+  const left: UnsettledRecord[] = [];
+  for (const key of (await keystoreKeys(idbName)).filter(isCustodyRecord).sort()) {
     const carrier = sealedCarrierOf(key);
-    const st = await rowState(idbName, key);
+    const st = await recordState(idbName, key);
     if (st.clear === undefined) continue;
     let plaintext: Uint8Array;
     try { plaintext = codecOf(key).toBytes(st.clear); } catch (e) { left.push({ row: key, why: `the clear row holds no ${key} value (${(e as Error).message})` }); continue; }
-    const standing = await openSealedCarrier({ io, vk, carrier });
+    const standing = await openSealedCarrier({ io, treeKey, carrier });
     if (standing.reading === "absent") {
-      await writeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
+      await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext });
     } else if (standing.reading !== "opens") {
       left.push({ row: key, why: `its sealed row reads ${standing.reading}` }); continue;
     } else if (!constantTimeBytesEqual(standing.plaintext, plaintext)) {
       left.push({ row: key, why: "its sealed row holds a different value; nothing chooses between the two" }); continue;
     }
-    const back = await openSealedCarrier({ io, vk, carrier });
+    const back = await openSealedCarrier({ io, treeKey, carrier });
     if (back.reading !== "opens" || !constantTimeBytesEqual(back.plaintext, plaintext)) { left.push({ row: key, why: "its seal did not read back" }); continue; }
     if (await deleteClearIfUnchanged(idbName, key, plaintext)) moved.push(key);
     else left.push({ row: key, why: "the clear row changed while it settled" });
@@ -538,35 +699,35 @@ async function settleClearRows(idbName: string, vk: VesselKey): Promise<{ moved:
  * tree before the tree lands; the tree lands before any row moves; each row moves only after its seal reads back
  * and opens. An empty keystore seals too, so the slot stands before the first mint. Leaves this page unlocked.
  */
-export async function sealBrowserKeystore(idbName: string, route: Credential): Promise<{ readonly slot: string; readonly sealed: readonly string[]; readonly unsettled: readonly UnsettledRow[] }> {
+export async function sealBrowserKeystore(idbName: string, route: CustodyBindRoute): Promise<{ readonly slot: string; readonly sealed: readonly string[]; readonly unsettled: readonly UnsettledRecord[] }> {
   return withCustodyActLock(idbName, "exclusive", async () => {
     const io = browserKeystoreCustodyIo(idbName);
-    if ((await io.read(CUSTODY_TREE_ROW)) !== null) throw new BrowserCustodyRefused("already-sealed", idbName);
-    const vk = mintVk();
-    const tree = bindSlot(null, vk, { t: 1, pins: [pinOf(route)] });
+    if ((await io.read(CUSTODY_TREE_RECORD)) !== null) throw new BrowserCustodyRefused("already-sealed", idbName);
+    const treeKey = mintTreeKey();
+    const tree = await bindSlot(null, treeKey, { t: 1, pins: [pinOf(route)] }, nobleKdf);
     const slot = tree.slots[0]!.id;
-    proveRouteOpens(tree, vk, route, slot);
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, vk, tree, carriers: await standingCarriers(idbName) });
-    unlocked.set(idbName, vk);
-    const { moved, left } = await settleClearRows(idbName, vk);
+    await proveRouteOpens(tree, treeKey, route, slot);
+    await commitSlotTree({ io, path: CUSTODY_TREE_RECORD, expected: null, treeKey, tree, carriers: await standingCarriers(idbName) });
+    unlocked.set(idbName, treeKey);
+    const { moved, left } = await settleClearRows(idbName, treeKey);
     return { slot, sealed: moved, unsettled: left };
   });
 }
 
 export type BrowserCustodyUnlock =
-  | { readonly reading: "opens"; readonly slot: string; readonly settled: readonly string[]; readonly unsettled: readonly UnsettledRow[] }
+  | { readonly reading: "opens"; readonly slot: string; readonly settled: readonly string[]; readonly unsettled: readonly UnsettledRecord[] }
   | { readonly reading: "no-slot-opens"; readonly notes: readonly string[] };
 
-async function openWith(idbName: string, credentials: readonly Credential[]): Promise<{ tree: SlotTree; bytes: Uint8Array } & ({ opened: { vk: VesselKey; slot: string } } | { opened: null; notes: readonly string[] })> {
-  const bytes = await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW);
+async function openWith(idbName: string, credentials: readonly Credential[]): Promise<{ tree: SlotTree; bytes: Uint8Array } & ({ opened: { treeKey: TreeKey; slot: string } } | { opened: null; notes: readonly string[] })> {
+  const bytes = await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_RECORD);
   if (bytes === null) throw new BrowserCustodyRefused("not-sealed", idbName);
   const tree = treeOrRefuse(idbName, bytes);
-  const r = openVk(tree, credentials);
-  return r.reading === "opens" ? { tree, bytes, opened: { vk: r.vk, slot: r.slot } } : { tree, bytes, opened: null, notes: r.notes };
+  const r = await openTreeKey(tree, credentials, nobleKdf);
+  return r.reading === "opens" ? { tree, bytes, opened: { treeKey: r.treeKey, slot: r.slot } } : { tree, bytes, opened: null, notes: r.notes };
 }
 
 /**
- * Open the keystore's VK with the person's route and hold it for this page. A route that opens no slot answers
+ * Open the keystore's tree key with the person's route and hold it for this page. A route that opens no slot answers
  * `no-slot-opens` and writes nothing. An opening settles first: a stray sidecar goes, and a clear row a fault left
  * moves under the seal.
  */
@@ -575,46 +736,49 @@ export async function unlockBrowserCustody(idbName: string, credentials: readonl
     const o = await openWith(idbName, credentials);
     if (!o.opened) return { reading: "no-slot-opens", notes: o.notes };
     const io = browserKeystoreCustodyIo(idbName);
-    await settleRotation({ io, treePath: CUSTODY_TREE_ROW, carriers: await standingCarriers(idbName) });
-    unlocked.set(idbName, o.opened.vk);
-    const { moved, left } = await settleClearRows(idbName, o.opened.vk);
+    await settleRotation({ io, treePath: CUSTODY_TREE_RECORD, carriers: await standingCarriers(idbName) });
+    // A later session's own unlock opens the same key afresh: the copy it replaces gets overwritten, inside this act's lock.
+    const prior = unlocked.get(idbName);
+    unlocked.set(idbName, o.opened.treeKey);
+    if (prior && prior !== o.opened.treeKey) prior.fill(0);
+    const { moved, left } = await settleClearRows(idbName, o.opened.treeKey);
     return { reading: "opens", slot: o.opened.slot, settled: moved, unsettled: left };
   });
 }
 
-function heldOrRefuse(idbName: string): VesselKey {
-  const vk = unlocked.get(idbName);
-  if (!vk) throw new BrowserCustodyRefused("sealed-locked", idbName);
-  return vk;
+function heldOrRefuse(idbName: string): TreeKey {
+  const treeKey = unlocked.get(idbName);
+  if (!treeKey) throw new BrowserCustodyRefused("sealed-locked", idbName);
+  return treeKey;
 }
 
-/** Bind one more slot under `route`, over the VK this page holds. The route reopens the new tree before it lands. */
-export async function bindBrowserCustodySlot(idbName: string, route: Credential): Promise<{ readonly slot: string }> {
+/** Bind one more slot under `route`, over the tree key this page holds. The route reopens the new tree before it lands. */
+export async function bindBrowserCustodySlot(idbName: string, route: CustodyBindRoute): Promise<{ readonly slot: string }> {
   return withCustodyActLock(idbName, "exclusive", async () => {
-    const vk = heldOrRefuse(idbName);
+    const treeKey = heldOrRefuse(idbName);
     const io = browserKeystoreCustodyIo(idbName);
-    const expected = await io.read(CUSTODY_TREE_ROW);
+    const expected = await io.read(CUSTODY_TREE_RECORD);
     if (expected === null) throw new BrowserCustodyRefused("not-sealed", idbName);
-    const tree = bindSlot(treeOrRefuse(idbName, expected), vk, { t: 1, pins: [pinOf(route)] });
+    const tree = await bindSlot(treeOrRefuse(idbName, expected), treeKey, { t: 1, pins: [pinOf(route)] }, nobleKdf);
     const slot = tree.slots[tree.slots.length - 1]!.id;
-    proveRouteOpens(tree, vk, route, slot);
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected, vk, tree, carriers: [] });
+    await proveRouteOpens(tree, treeKey, route, slot);
+    await commitSlotTree({ io, path: CUSTODY_TREE_RECORD, expected, treeKey, tree, carriers: [] });
     return { slot };
   });
 }
 
 /**
- * Remove one slot, over the VK this page holds. The last slot never leaves. The answer carries the rotation offer:
- * a copy of the tree taken before the unbind still opens through the removed slot until the VK rotates.
+ * Remove one slot, over the tree key this page holds. The last slot never leaves. The answer carries the rotation offer:
+ * a copy of the tree taken before the unbind still opens through the removed slot until the tree key rotates.
  */
 export async function unbindBrowserCustodySlot(idbName: string, slotId: string): Promise<{ readonly rotationOffer: string }> {
   return withCustodyActLock(idbName, "exclusive", async () => {
-    const vk = heldOrRefuse(idbName);
+    const treeKey = heldOrRefuse(idbName);
     const io = browserKeystoreCustodyIo(idbName);
-    const expected = await io.read(CUSTODY_TREE_ROW);
+    const expected = await io.read(CUSTODY_TREE_RECORD);
     if (expected === null) throw new BrowserCustodyRefused("not-sealed", idbName);
     const { tree, rotationOffer } = unbindSlot(treeOrRefuse(idbName, expected), slotId);
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected, vk, tree, carriers: [] });
+    await commitSlotTree({ io, path: CUSTODY_TREE_RECORD, expected, treeKey, tree, carriers: [] });
     return { rotationOffer };
   });
 }
@@ -622,12 +786,9 @@ export async function unbindBrowserCustodySlot(idbName: string, slotId: string):
 /** The door the clear-password act asks through: false parks the question, true on the person's confirmed pass. */
 export type ConfirmDoor = (question: string) => boolean;
 
-/**
- * What this browser's clear returns to the clear, as the question names it. Today the act opens and clears the
- * whole slot tree; the per-face split, where a clear names one face and clears that face's rows alone, is K15's
- * (steps 0 to 3).
- */
-export const CLEAR_CUSTODY_CLEARS = "this browser's custody: the device seed, every Keyhive Archive and every persona root";
+/** What this browser's place clear returns to the clear, as the question names it: the place rows alone; a face's rows clear
+ *  with that face, and each face root stays under its face's ward. */
+export const CLEAR_CUSTODY_CLEARS = "this browser's place custody: the device seed, its walk records and the persona-root roster (each face root stays under its face's ward)";
 export const CLEAR_CUSTODY_QUESTION = clearCustodyQuestion(CLEAR_CUSTODY_CLEARS);
 
 export type BrowserCustodyClear =
@@ -646,56 +807,56 @@ export async function clearBrowserCustody(idbName: string, credentials: readonly
   // act lock is taken, so a door that waits on a person never holds another tab's row doors.
   const o = await openWith(idbName, credentials);
   if (!o.opened) return { reading: "no-slot-opens", notes: o.notes };
-  const { vk } = o.opened;
+  const { treeKey } = o.opened;
   // Every sealed row opens BEFORE the person is asked, so a confirmed clear never meets a refusal it could have named.
-  await openEverySealedRow(idbName, vk);
+  await openEverySealedRow(idbName, treeKey);
   // Only a literal `true` answers: a door that hands back anything else (a pending promise, a truthy string) parks.
   if (confirm(CLEAR_CUSTODY_QUESTION) !== true) return { reading: "asks", question: CLEAR_CUSTODY_QUESTION };
   return withCustodyActLock(idbName, "exclusive", async () => {
     const io = browserKeystoreCustodyIo(idbName);
     // The tree must still read as the one the route opened: another tab's bind, unbind or rotation meanwhile refuses.
-    const tree = await io.read(CUSTODY_TREE_ROW);
+    const tree = await io.read(CUSTODY_TREE_RECORD);
     if (tree === null || !constantTimeBytesEqual(tree, o.bytes)) {
       throw new BrowserCustodyRefused("unsettled", idbName, undefined, "the slot tree moved since the question; nothing was written");
     }
-    await settleRotation({ io, treePath: CUSTODY_TREE_ROW, carriers: await standingCarriers(idbName) });
+    await settleRotation({ io, treePath: CUSTODY_TREE_RECORD, carriers: await standingCarriers(idbName) });
     const cleared: string[] = [];
-    for (const { row, carrier, frame, plaintext } of await openEverySealedRow(idbName, vk)) {
+    for (const { row, carrier, frame, plaintext } of await openEverySealedRow(idbName, treeKey)) {
       // ONE TRANSACTION: the clear row lands only while the sealed row still holds the very frame this act opened, so
       // a newer seal another tab wrote meanwhile refuses the clear rather than losing to an older value.
       await putClearWhileSealedHolds(idbName, row, codecOf(row).fromBytes(plaintext), frame);
-      const back = (await rowState(idbName, row)).clear;
+      const back = (await recordState(idbName, row)).clear;
       if (back === undefined || !constantTimeBytesEqual(codecOf(row).toBytes(back), plaintext)) {
         throw new Error(`[browser-custody] the clear ${row} row did not read back as opened; its sealed row stays`);
       }
       // The sealed carrier leaves only while it still opens to what now rests in the clear.
-      const gone = await removeSealedCarrier({ io, vk, treePath: CUSTODY_TREE_ROW, carrier, when: (p) => constantTimeBytesEqual(p, plaintext) });
+      const gone = await removeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, when: (p) => constantTimeBytesEqual(p, plaintext) });
       if (!gone) throw new BrowserCustodyRefused("unsettled", idbName, row, "its sealed row changed during the clear; both rows stay");
       cleared.push(row);
     }
     await io.exclusive(async () => {
-      const left = (await io.list()).filter((k) => k.startsWith(SEALED_ROW_PREFIX));
+      const left = (await io.list()).filter((k) => k.startsWith(SEALED_RECORD_PREFIX));
       if (left.length > 0) throw new Error(`[browser-custody] sealed rows still stand (${left.join(", ")}); the tree stays`);
-      const now = await io.read(CUSTODY_TREE_ROW);
+      const now = await io.read(CUSTODY_TREE_RECORD);
       if (now === null || !constantTimeBytesEqual(now, o.bytes)) throw new Error("[browser-custody] the slot tree moved during the clear; it stays");
-      await io.remove(CUSTODY_TREE_ROW);
+      await io.remove(CUSTODY_TREE_RECORD);
     });
     unlocked.delete(idbName);
     return { reading: "cleared", cleared };
   });
 }
 
-/** Open every sealed custody row under `vk`, reading only: a row that will not open, or a clear row beside it, refuses. */
-async function openEverySealedRow(idbName: string, vk: VesselKey): Promise<{ row: string; carrier: SealedCarrier; frame: Uint8Array; plaintext: Uint8Array }[]> {
+/** Open every sealed custody row under `treeKey`, reading only: a row that will not open, or a clear row beside it, refuses. */
+async function openEverySealedRow(idbName: string, treeKey: TreeKey): Promise<{ row: string; carrier: SealedCarrier; frame: Uint8Array; plaintext: Uint8Array }[]> {
   const io = browserKeystoreCustodyIo(idbName);
   const out: { row: string; carrier: SealedCarrier; frame: Uint8Array; plaintext: Uint8Array }[] = [];
   for (const carrier of await standingCarriers(idbName)) {
-    const row = carrier.path.slice(SEALED_ROW_PREFIX.length);
-    const st = await rowState(idbName, row);
+    const row = carrier.path.slice(SEALED_RECORD_PREFIX.length);
+    const st = await recordState(idbName, row);
     if (st.clear !== undefined) throw new BrowserCustodyRefused("unsettled", idbName, row);
     if (st.sealed === undefined) continue;
     if (!(st.sealed instanceof Uint8Array)) throw new BrowserCustodyRefused("row-unopened", idbName, row, "the sealed row holds no bytes");
-    const sealed = await openSealedCarrier({ io, vk, carrier });
+    const sealed = await openSealedCarrier({ io, treeKey, carrier });
     if (sealed.reading !== "opens") throw new BrowserCustodyRefused("row-unopened", idbName, row, sealed.reading);
     out.push({ row, carrier, frame: new Uint8Array(st.sealed), plaintext: sealed.plaintext });
   }
@@ -711,7 +872,7 @@ async function putClearWhileSealedHolds(idbName: string, row: string, value: unk
     done.catch(() => undefined);
     const s = tx.objectStore(STORE);
     const refused = await new Promise<BrowserCustodyRefused | null>((resolve, reject) => {
-      const g = s.get(`${SEALED_ROW_PREFIX}${row}`);
+      const g = s.get(`${SEALED_RECORD_PREFIX}${row}`);
       g.onerror = () => reject(g.error);
       g.onsuccess = () => {
         if (!(g.result instanceof Uint8Array) || !constantTimeBytesEqual(g.result, frame)) {

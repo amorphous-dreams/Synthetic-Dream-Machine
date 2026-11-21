@@ -26,6 +26,7 @@
 import type { ResidencyAction, ActionVerb } from "./residency-actions.js";
 import { stableTagUri } from "./lar-uris.js";
 import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "./tiddler-store.js";
+import { VerbRefusal } from "./verb-refusal.js";
 
 // ── Archival verb vocabulary ────────────────────────────────────────────────
 
@@ -62,6 +63,21 @@ export function isArchivalVerb(verb: string): verb is ArchivalVerb {
 
 /** Tag carried by every effect-record tiddler in the bag's residency ledger. */
 export const LARES_EFFECT_RECORD_TAG = stableTagUri("lares-effect-record");
+
+/** Recognize an audit record by its declared record shape, independently of its address. */
+export function hasEffectRecordKind(fields: Record<string, unknown>): boolean {
+  const tags = fields["tags"];
+  const tagged = typeof tags === "string" ? tags.split(/\s+/).includes(LARES_EFFECT_RECORD_TAG)
+    : Array.isArray(tags) && tags.includes(LARES_EFFECT_RECORD_TAG);
+  return tagged
+    && typeof fields["event-id"] === "string" && fields["event-id"] !== ""
+    && typeof fields["request-id"] === "string" && fields["request-id"] !== ""
+    && typeof fields["bag"] === "string" && fields["bag"] !== ""
+    && typeof fields["actor"] === "string" && fields["actor"] !== ""
+    && typeof fields["timestamp"] === "string" && fields["timestamp"] !== ""
+    && typeof fields["action-verb"] === "string" && fields["action-verb"] !== ""
+    && typeof fields["archival-verb"] === "string" && isArchivalVerb(fields["archival-verb"]);
+}
 
 // ── URI shape ───────────────────────────────────────────────────────────────
 
@@ -106,6 +122,38 @@ export function isEffectRecordUri(title: string): boolean {
   // audit record on every plane (it is audit data, never a carrier surface). A
   // narrower prefix pattern leaks a ledger record held by a per-wiki slot to disk.
   return /^lar:\/\/\/[^/]+\/.+\/ledger\/residency\/[^/]+$/.test(title);
+}
+
+/** The refusal a residency-ledger write from any door but the house's effect recorder names. */
+export const EFFECT_LEDGER_HOUSE_ONLY = "effect-ledger-house-only";
+
+/**
+ * A RESIDENCY LEDGER TAKES THE HOUSE'S HAND ALONE. The effect recorder (`writeEffectRecord`, through a bag's own store) writes
+ * every row under `<holder>/ledger/residency/`; a hand's door (the tiddler door, the meme door, the engine's cascade from a
+ * page or a draft) neither writes nor removes one, whoever asks. The refusal names the title and the door.
+ */
+export function refuseEffectLedgerWrite(title: string, verb: string): void {
+  if (isEffectRecordUri(title)) {
+    throw new VerbRefusal(EFFECT_LEDGER_HOUSE_ONLY, `${EFFECT_LEDGER_HOUSE_ONLY}: "${title}" rests in a residency ledger; the house's effect recorder alone writes there, and ${verb} neither writes nor removes it.`);
+  }
+}
+
+/** Two flat field bags hold the same keys and the same values (each value read as its string). */
+function sameEffectFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) => Object.prototype.hasOwnProperty.call(b, k) && String(a[k]) === String(b[k]));
+}
+
+/**
+ * THE HOUSE'S OWN EFFECT RECORD IN ONE LAYER: the row reads back as the one the ledger's builder writes for THAT layer's bag
+ * (`buildEffectRecordTiddler`): its title rests under `effectLedgerPrefix(bag)` at its own event id, its `bag` field names
+ * that bag, and it carries no field beside the schema's (no text). The same reading the retired-bag passage holds.
+ */
+export function isHouseEffectRecordOf(bag: string, title: string, fields: Record<string, unknown>): boolean {
+  const parsed = parseEffectRecord(fields);
+  if (!parsed || parsed.bag !== bag || fields["title"] !== title || title !== effectRecordUri(bag, parsed.eventId)) return false;
+  return sameEffectFields(buildEffectRecordTiddler(parsed).tiddler as Record<string, unknown>, fields);
 }
 
 // ── EffectRecord shape ─────────────────────────────────────────────────────
@@ -289,18 +337,20 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
         reason:       "copy-overwrite",
       }];
     case "MOVE": {
+      // A layer MOVE names no title: its rows name the bags alone.
+      const titled: { tiddlerTitle?: string } = action.title !== undefined ? { tiddlerTitle: action.title } : {};
       const summary = opts?.result && typeof opts.result === "object" ? opts.result as Record<string, unknown> : {};
       if (summary["carried"] === "tombstone") {
         const shadow = summary["shadow"] === true;
         return [
           {
             ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.toBag,
-            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            ...titled, changeId: action.changeId, sourceBag: action.fromBag,
             destBag: action.toBag, disposition: `${shadow ? "shadowed" : "deleted"}-by-move-from:${action.fromBag}`,
           },
           {
             ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.fromBag,
-            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            ...titled, changeId: action.changeId, sourceBag: action.fromBag,
             destBag: action.toBag, disposition: `transferred-to:${action.toBag}`,
           },
         ];
@@ -312,7 +362,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
           eventId:      newId(),
           archivalVerb: "accession",
           bag:          action.toBag,
-          tiddlerTitle: action.title,
+          ...titled,
           changeId:     action.changeId,
           sourceBag:    action.fromBag,
           destBag:      action.toBag,
@@ -323,7 +373,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
           eventId:      newId(),
           archivalVerb: "deaccession",
           bag:          action.fromBag,
-          tiddlerTitle: action.title,
+          ...titled,
           changeId:     action.changeId,
           sourceBag:    action.fromBag,
           destBag:      action.toBag,
@@ -376,7 +426,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
         eventId:      newId(),
         archivalVerb: "creation",
         bag:          action.bag,
-        reason:       `bag minted in @${action.plane} plane`,
+        reason:       `bag minted in the ${action.plane} plane`,
       }];
   }
 }

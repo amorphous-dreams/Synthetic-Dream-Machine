@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-09`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "9. The Discordian"
+hexagram      = "9"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "111011"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-09"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-09"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷈ 9. The Discordian
+
+<<<
+"""
+GP: Is Eris true?
+M2: Everything is true.
+GP: Even false things?
+M2: Even false things are true.
+GP: How can that be?
+M2: I dont know man, I didnt do it.
+"""
+<<<
+
+This hexagram represents the power of small - the power of the individual against the mammoth corporation, organization or government. It implies that the strong can be whittled slowly down by the constant wear of the weak, as the wind erodes rock over time. It instructs one not to blindly charge ahead and attack, but to gradually move ahead, a step at a time, when battling outrageous jabberwockies.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HbXDqPSIBKRHqH4zPMuk7zSLlv2evuhgOZhemYkUbKU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

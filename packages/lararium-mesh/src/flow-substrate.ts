@@ -2,7 +2,7 @@
  * flow-substrate — the read-only PUBLIC substrate of the FLOW map: a content-addressed snapshot
  * + a signed causal pointer (the ratchet face).
  *
- * The floor of system canon answers by a different road: the Nexus's release names a floor manifest by CID
+ * The floor of house canon answers by a different road: the Nexus's release names a floor manifest by CID
  * (`floor-release`), and no pointer signs a floor. This substrate carries what a herm relays (the public flow map) and
  * nothing more. Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane (the Two-Faced Substrate).
  * The read face serves the flow doc as an IMMUTABLE blob — `Automerge.save(doc)` bytes named by their content hash — so
@@ -19,10 +19,10 @@
  * existing channel) rides a separate, node-side module.
  */
 
+import { frameFloorDuty, type PlaceSigner } from "./place-signer.js";
 import { FLOW_POINTER_DOMAIN } from "./domains.js";
-import * as ed25519 from "@noble/ed25519";
 import { save, getHeads, type Doc } from "@automerge/automerge";
-import { hex, sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
+import { sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 
 export { FLOW_POINTER_DOMAIN } from "./domains.js";
@@ -94,8 +94,8 @@ function pointerIdentityString(p: Pick<FlowPointer, "cid" | "heads" | "actCid" |
  * The SIGNED string — the identity itself; the signature covers every pointer field
  * except the signature.
  */
-function pointerSigningString(p: Omit<FlowPointer, "sig">): string {
-  return pointerIdentityString(p);
+export function flowPointerSigningImage(p: Omit<FlowPointer, "sig">): Uint8Array {
+  return frameFloorDuty(FLOW_POINTER_DOMAIN, utf8Bytes(pointerIdentityString(p)));
 }
 
 /**
@@ -113,10 +113,10 @@ export async function flowPointerId(
 export async function buildFlowPointer(args: {
   readonly snapshot: FlowSnapshot;
   readonly parents:  readonly string[];
-  /** 32-byte ed25519 seed (the publisher's signing key — operator/node). */
-  readonly signerSeed: Uint8Array;
+  /** The scoped place signer at the publisher's KEL head. */
+  readonly signer: PlaceSigner;
 }): Promise<FlowPointer> {
-  const pub    = hex(await ed25519.getPublicKeyAsync(args.signerSeed));
+  const pub = args.signer.key;
   const base = {
     cid:     args.snapshot.cid,
     heads:   canonicalHeads(args.snapshot.heads),
@@ -125,7 +125,7 @@ export async function buildFlowPointer(args: {
   };
   const actCid = await sha256Hex(utf8Bytes(pointerIdentityString({ ...base, actCid: "" })), defaultCryptoProvider);
   const fields: Omit<FlowPointer, "sig"> = { ...base, actCid };
-  const sig = hex(await ed25519.signAsync(utf8Bytes(pointerSigningString(fields)), args.signerSeed));
+  const sig = await args.signer.signFloor(FLOW_POINTER_DOMAIN, flowPointerSigningImage(fields));
   return { ...fields, sig };
 }
 
@@ -174,7 +174,7 @@ export async function verifyFlowPointer(
   // Signature.
   let sigOk = false;
   try {
-    sigOk = verifyEd25519(p.sig, utf8Bytes(pointerSigningString(p)), p.pub);
+    sigOk = verifyEd25519(p.sig, flowPointerSigningImage(p), p.pub);
   } catch { sigOk = false; }
   if (!sigOk) return { ok: false, reason: "signature verify failed" };
 

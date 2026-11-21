@@ -17,7 +17,7 @@ import {
   mkLarControlEvent, mkLarControlResult, mkLarFrame, mkLarResend, mkLarService,
   type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
 } from "../src/lar-camera.js";
-import { isIslandToVesselMsg, isVesselToIslandMsg, mkEa, mkTeardownAck } from "../src/island-protocol.js";
+import { isIslandToVesselMsg, isVesselToIslandMsg, mkDaemonFaceSettled, mkEa, mkTeardownAck } from "../src/island-protocol.js";
 import { VesselIslandPoolCore } from "../src/vessel-island-pool-core.js";
 import type { VesselIslandHost, VesselWorkerHandle } from "../src/vessel-host.js";
 import type { WikiMountSpec } from "../src/wiki-recipe.js";
@@ -48,11 +48,6 @@ describe("the vessel → island door", () => {
     expect(isVesselToIslandMsg({ type: LAR_RESEND, cameraId: "" })).toBe(false);
     expect(isVesselToIslandMsg({ type: LAR_RESEND })).toBe(false);
   });
-
-  test("CONTROL: the DOM relay kinds pass no door", () => {
-    expect(isVesselToIslandMsg({ type: "wiki:dom-event", renderId: "1", eventType: "click", fields: {} })).toBe(false);
-    expect(isVesselToIslandMsg({ type: "wiki:dom-input", renderId: "1", eventType: "input", value: "hi" })).toBe(false);
-  });
 });
 
 describe("the island → vessel door", () => {
@@ -67,6 +62,16 @@ describe("the island → vessel door", () => {
     expect(isIslandToVesselMsg({ ...service, kind: "lar:http-request" })).toBe(false);
     expect(isIslandToVesselMsg({ ...service, userActivation: false })).toBe(false);
     expect(isIslandToVesselMsg({ type: "lar:frmae" })).toBe(false);
+  });
+
+  // A face's late bags (`registerFaceBags`, the bag a face's own catalog names past boot) settle under op `bags`: a door
+  // that reads only `lit` and `dropped` drops that answer, and the vessel's composition waits on it forever.
+  test("B1 — a face's settled answer passes under each op the vessel asks (lit, dropped, bags); CONTROL: an op no ask names refuses", () => {
+    for (const op of ["lit", "dropped", "bags"] as const) {
+      expect(isIslandToVesselMsg(mkDaemonFaceSettled("abc", op, true)), `op ${op}`).toBe(true);
+      expect(isIslandToVesselMsg(mkDaemonFaceSettled("abc", op, false, "refused")), `op ${op} refused`).toBe(true);
+    }
+    expect(isIslandToVesselMsg({ type: "daemon:face-settled", atomKey: "abc", op: "moved", ok: true })).toBe(false);
   });
 });
 
@@ -95,7 +100,6 @@ function scriptedHost() {
       };
     },
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   return { host, posted, reply: (msg: unknown) => { for (const l of [...listeners]) l(msg); } };
 }

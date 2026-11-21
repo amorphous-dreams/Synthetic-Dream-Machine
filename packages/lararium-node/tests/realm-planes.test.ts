@@ -64,12 +64,12 @@ const signOf = (s: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.sig
 const aidOf = (label: string): string => `nexus-${createHash("sha256").update(label).digest("hex")}`;
 const charter = (label: string): NexusDoc => namedCharter(aidOf(label));
 
-interface Actor { readonly worn: string; readonly wornSeed: Uint8Array; readonly vault: StewardVault; }
+interface Actor { readonly face: string; readonly faceSeed: Uint8Array; readonly vault: StewardVault; }
 async function actor(n: number): Promise<Actor> {
-  const wornSeed = seed(n), worn = await keyOf(wornSeed);
-  return { worn, wornSeed, vault: {
-    async wornLeaf() { return { verifyingKey: worn, seed: wornSeed }; },
-    async heldKeys() { return { personaGroupRoots: [], vesselKeys: [], nexusScopedKeys: [worn], veiledHandles: [] }; },
+  const faceSeed = seed(n), face = await keyOf(faceSeed);
+  return { face, faceSeed, vault: {
+    async faceLeaf() { return { verifyingKey: face, seed: faceSeed }; },
+    async heldKeys() { return { personaGroupRoots: [], vesselKeys: [], nexusScopedKeys: [face], veiledHandles: [] }; },
   } };
 }
 function registryDoc(bags: ReadonlyArray<[string, string]>): LarDoc {
@@ -86,8 +86,8 @@ function makeHolder(repo: Repo, options: {
   leafAidOf?: (peerId: string) => string | null; dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null }; charter?: RealmCharterConsult;
 } = {}) {
   const registry = repo.create<LarDoc>(emptyLarDoc());
-  const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
-  const holder = makeRealmPlane({ repo, registry, crossroadsHandle, membership: options.membership ?? noMembers,
+  const announceHandle = repo.create<LarDoc>(emptyLarDoc());
+  const holder = makeRealmPlane({ repo, registry, announceHandle, membership: options.membership ?? noMembers,
     base: options.base ?? denyAll,
     // A bare name reads as a realm the ledger notes under no Nexus yet.
     ...(options.realms ? { realms: async () => (await options.realms!()).map((r) => typeof r === "string" ? { realm: r, nexus: null } : r) } : {}),
@@ -99,7 +99,7 @@ function makeHolder(repo: Repo, options: {
     ...(options.charter ? { charter: options.charter } : {}),
   });
   catalogs.set(holder, registry);
-  return { holder, registry, crossroadsHandle };
+  return { holder, registry, announceHandle };
 }
 async function bag(holder: ReturnType<typeof makeHolder>["holder"], args: Record<string, unknown>, who: Actor, docs: ReadonlyArray<[string, string]>) {
   return runRealmBag({ plane: holder as RealmDoorPlanes, args, vault: who.vault, registryDocs: () => [registryDoc(docs)] });
@@ -315,14 +315,14 @@ describe("a plane's lanes scope to its own Nexus", () => {
   });
 
   // R8
-  test("R8 each realm pins its own steward; control: distinct worn keys stay distinct", async () => {
+  test("R8 each realm pins its own steward; control: distinct face keys stay distinct", async () => {
     const repo = new Repo({}), { holder } = makeHolder(repo); await holder.refresh(charter("charter-r8"));
     const c = await actor(11), a = await actor(12);
     await bag(holder, { bag: BAG_A }, c, [[BAG_A, DOC_A]]);
     await bag(holder, { bag: BAG_B, realm: A }, a, [[BAG_B, DOC_B]]);
     const doc = await catalogDoc(repo, holder);
-    expect(tiddlerText(doc.tiddlers[realmStewardPointer(holder.realmId()!)])).toBe(c.worn);
-    expect(tiddlerText(doc.tiddlers[realmStewardPointer(A)])).toBe(a.worn); holder.dispose();
+    expect(tiddlerText(doc.tiddlers[realmStewardPointer(holder.realmId()!)])).toBe(c.face);
+    expect(tiddlerText(doc.tiddlers[realmStewardPointer(A)])).toBe(a.face); holder.dispose();
   });
 
   // R9

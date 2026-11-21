@@ -21,7 +21,7 @@ describe("filesystem store mirrors memory integrity laws", () => {
     const dir = join(root(), "sealed"), rest = fsSealedStoreRest(dir), store = new SealedStore(rest);
     try {
       const lockbox = { bag: "a".repeat(64), keyVersion: "b".repeat(64), wrap: "keyhive" as const, box: Uint8Array.of(1) };
-      await store.putLockbox(lockbox); await store.putIndexRows([]);
+      await store.putLockbox(lockbox); await store.putIndexEntries([]);
       const [name] = await rest.list("lockbox"); const bytes = readFileSync(join(dir, "lockbox", name!));
       writeFileSync(join(dir, "lockbox", name!), Buffer.concat([bytes.subarray(0, -1), Buffer.from([bytes[bytes.length - 1]! ^ 1])]));
       expect(await store.lockboxes()).toEqual([]);

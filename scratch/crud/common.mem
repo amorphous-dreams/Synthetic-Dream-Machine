@@ -1,0 +1,105 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/common`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-25 (file date) — source `.lares-scratch/crud/common.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/common"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/common"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! common.md — plan, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/common.md` (plan, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/burn-the-backward-facing-crud-shared-brief`>>
+
+! Burn the backward-facing crud: shared brief (wave 1)
+
+You are a walled Codex Sol-6 seat, a read-only scout for the Synthetic-Dream-Machine house. Repo: /home/joshu/Synthetic-Dream-Machine (span branch `feature/green-jello-dinosaur-5`, checked out there). Read the repo from that path. You can write only inside your own seat dir. Edit nothing in the repo, and run no suites, builds or installs. Read, grep and `git show`/`git grep` only.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-ruling-you-serve`>>
+
+!! The ruling you serve (operator, 2026-10-25)
+The house runs EVERGREEN: code and canon read as if they had always held their present shape. A refusal that names one of the house's OWN earlier shapes (an `OldShapeRefusal`, an "earlier shape" census, a check that a retired file name or magic no longer appears) stands pono for ONE commit, the one that moves the shape and proves it moved. After that commit, it gets o-takiage'd (burned): the check, its error kind, its tests and its census rows all go. The code then knows only the present shape. The git log and the CHANGELOG keep the record; the code never does.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-counts-as-crud`>>
+
+!! What counts as crud (burn candidates)
+Anything whose only reason to exist is a shape the house itself held before:
+* refusals, censuses or witnesses of our own retired names, files, magics, formats or rows;
+* tolerant readers that accept an old spelling beside the new one, dual readers, fallbacks to an old path;
+* migrations, upgrade steps and delete-on-upgrade paths (IndexedDB `onupgradeneeded` deletes, rename shims);
+* compat aliases, deprecated flags or verbs, re-exports kept for old importers;
+* version counters or `v0` branches kept only for artifacts we no longer write;
+* exception lists in witnesses (e.g. `tools/evergreen-boundary.mjs` excepted entries) that shelter any of the above;
+* canon or comments that narrate the past ("used to", "no longer", "previously", "the old X", "formerly", "retired") instead of stating the present law.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-does-not-count`>>
+
+!! What does NOT count (live law, keep)
+* A refusal of hostile, foreign, forged, tampered or malformed input at a trust boundary, meaning bytes from outside the house's own history.
+* A guard on a shape the code must never take (e.g. a census refusing a raw key read in a Handle file).
+* The CHANGELOG, git history, memory files, and testimony/hoike carriers, which serve as the record by design.
+* Vendored third-party code (`vendor/`, TiddlyWiki5 submodule, `*.generated.*`, plugin bundles).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/apertures-sweep-every-one`>>
+
+!! Apertures: sweep every one
+Report crud at each scale, and name the aperture on each finding:
+# ''line'': one condition, one alias, one comment;
+# ''function'': a reader branch, an upgrade step;
+# ''file/module'': a whole shim, a whole census;
+# ''seam'': a cross-package pairing (writer in one package, old-shape reader in another; a test pinning an old name);
+# ''system'': a scheme (an error-kind family, a version-counter convention, a witness exception mechanism, a rename pattern repeated across many files).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/inventories`>>
+
+!! Inventories (pre-grepped; start here, but do not stop at them)
+Pattern: OldShapeRefusal|earlier shape|legacy|back-compat|backward|deprecated|migrat|tolerant|old shape|old name|formerly|retired name|alias for|compat
+* /home/joshu/.lares-scratch/crud/inv-code-span.txt: span src, tools, plugins (168 lines)
+* /home/joshu/.lares-scratch/crud/inv-code-waved.txt: the same over `origin/feature/green-jello-dinosaur-5--k15-wave-d`, the lane in flight (171 lines). Read its files with `git show origin/feature/green-jello-dinosaur-5--k15-wave-d:<path>`.
+* /home/joshu/.lares-scratch/crud/inv-tests.txt: tests (251 lines)
+* /home/joshu/.lares-scratch/crud/inv-canon.txt: canon, CI and docker (889 lines, noisy)
+A grep finds words, not reasons. Crud also hides with no keyword: a second branch in a reader, a `?? oldField`, a file-exists check on a retired path. Read code around each hit, and hunt for the unworded kind.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/output`>>
+
+!! Output
+Write your full handback to `out.md` in your seat dir (never to final.md). Use one table per aperture with these columns:
+`id | file:line | what it does | why crud (the earlier shape it serves) | burn class | confidence`
+
+Burn classes:
+* ''B1'': delete outright;
+* ''B2'': delete and collapse a reader to the one shape;
+* ''B3'': delete with its tests and census rows;
+* ''R'': needs a ruling, because it might be live law (say why).
+
+Mark findings on the Wave D branch with ''[wave-d]''; that lane's owner burns those. End with: the top 10 by payoff, then any pattern (system aperture) the house should guard with a witness so the crud never regrows. Plain short sentences; every claim cites file:line.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zEtXHtlH3EWHRqzTV7qbqjtyqfWu4cWd4AZeqy9fffA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

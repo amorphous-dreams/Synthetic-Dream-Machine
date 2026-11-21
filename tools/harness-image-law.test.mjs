@@ -18,6 +18,49 @@ const EXCEPTIONS = new Map([
   ["browser-b", "Playwright supplies Chromium; the image-filled code volume mounts read-only"],
 ]);
 
+function inspectBrowserQa(text) {
+  const qa = blocks(text, 0, "services").find((service) => service.name === "qa")?.text ?? "";
+  const errors = [];
+  if (!qa) return ["qa: service absent"];
+  if (!/^\s*image:\s*\$\{BROWSER_CI_HARNESS_IMAGE:/m.test(qa)) errors.push("qa: harness image absent");
+  if (!/^\s*build:\s*\n\s*context:\s*\.\s*\n\s*dockerfile:\s*Dockerfile\s*\n\s*target:\s*browser-harness\s*$/m.test(qa)) errors.push("qa: browser-harness target absent");
+  const sources = [...qa.matchAll(/^\s*source:\s*["']?([^"'\n]+?)["']?\s*$/gm)].map((m) => m[1].trim());
+  const shortSources = [...qa.matchAll(/^\s*-\s*["']?([^:"'\n]+):\//gm)].map((m) => m[1].trim());
+  if ([...sources, ...shortSources].some((source) => source === "." || source === "./" || resolve(ROOT, source) === ROOT))
+    errors.push("qa: repository bind is forbidden");
+  if (/^\s*working_dir:\s*\/repo\s*$/m.test(qa)) errors.push("qa: old repository workdir");
+  return errors;
+}
+
+test("CONTROL: the old QA shape fails the image and repository bind law", () => {
+  const old = `services:\n  qa:\n    image: mcr.microsoft.com/playwright:v1.64.1-noble\n    working_dir: /repo\n    volumes:\n      - type: bind\n        source: .\n        target: /repo\n        read_only: true\n`;
+  assert.deepEqual(inspectBrowserQa(old), ["qa: harness image absent", "qa: browser-harness target absent", "qa: repository bind is forbidden", "qa: old repository workdir"]);
+  assert.ok(inspectBrowserQa(old.replace("source: .", `source: ${ROOT}`)).includes("qa: repository bind is forbidden"));
+});
+
+test("the QA runner builds the pinned harness and never binds the repository", () => {
+  const compose = readFileSync(join(ROOT, "docker-compose.browser-ci.yml"), "utf8");
+  assert.deepEqual(inspectBrowserQa(compose), []);
+  const dockerfile = readFileSync(join(ROOT, "Dockerfile"), "utf8");
+  const target = dockerfile.slice(dockerfile.search(/FROM mcr\.microsoft\.com\/playwright:v1\.64\.1-noble(?:@sha256:[0-9a-f]{64})? AS browser-harness/));
+  assert.ok(target.length > 0 && target.startsWith("FROM"), "the browser-harness target stands in the Dockerfile");
+  assert.match(target, /FROM mcr\.microsoft\.com\/playwright:v1\.64\.1-noble@sha256:[0-9a-f]{64} AS browser-harness/);
+  for (const path of ["tools/browser-ci-smoke.mjs", "tools/browser-ci-join.mjs", "packages/lararium-web/tests/live-wiki.mjs", "browser-test-custody.js"])
+    assert.ok(target.includes(path), `${path} absent from browser-harness target`);
+  assert.match(target, /COPY --from=build .*browser-test-custody\.js/);
+});
+
+test("the vessel image stands `lares` on PATH, one link to the CLI the image carries, laid while root", () => {
+  const dockerfile = readFileSync(join(ROOT, "Dockerfile"), "utf8");
+  const serve = dockerfile.slice(dockerfile.search(/AS serve\b/), dockerfile.search(/AS mcp-runtime\b/));
+  const link = serve.match(/^\s*RUN\s+ln\s+-s\S*\s+(\S+)\s+(\S+)\s*$/m);
+  assert.ok(link, "the serve stage links `lares` into a PATH directory");
+  assert.equal(link[1], "/app/packages/lares-cli/bin/lares.mjs", "the link names the CLI the image copies in");
+  assert.equal(link[2], "/usr/local/bin/lares");
+  assert.ok(serve.indexOf(link[0]) < serve.search(/^USER node$/m), "the link lays before the stage drops to the node user");
+  assert.ok(serve.indexOf(link[0]) > serve.indexOf("packages/lares-cli/bin"), "the link follows the copy of the CLI");
+});
+
 function fileList() {
   if (!process.env.HARNESS_LAW_FILE_LIST) return FILES.map((f) => join(ROOT, f));
   return JSON.parse(readFileSync(process.env.HARNESS_LAW_FILE_LIST, "utf8")).map((f) => resolve(ROOT, f));
@@ -118,7 +161,7 @@ function inspect(file, text) {
 }
 
 test("CONTROL: every scanner sees its planted compose fault", () => {
-  const planted = `services:\n  vessel:\n    image: node:24-slim\n    build: .\n    volumes:\n      - .:/app\n      - s:/state\n      - ./tools:/app/tools\n    command: node_modules/.bin/tsx probe.ts\n  longform:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - type: bind\n        source: ./packages\n        target: /app/packages\n  swallowed:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    command: ["node", "packages/lararium-node/dist/probes/x.js"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    volumes: [".:/app:ro"]\n    command: ["node", "probe.ts"]\n`;
+  const planted = `services:\n  vessel:\n    image: node:24-slim\n    build: .\n    volumes:\n      - .:/app\n      - s:/state\n      - ./tools:/app/tools\n    command: node_modules/.bin/tsx probe.ts\n  longform:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - type: bind\n        source: ./packages\n        target: /app/packages\n  swallowed:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    command: ["node", "packages/lararium-node/dist/probes/x.js"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.1-noble\n    volumes: [".:/app:ro"]\n    command: ["node", "probe.ts"]\n`;
   const hits = inspect("planted.yml", planted);
   for (const expected of ["image does not require", "build key", "repository bind", "one character", "TypeScript entrypoint", "browser-a: repository bind", "browser-a: the code volume", "browser-a: starts before", "probe-code: no service fills", "host bind ./tools", "rides entrypoint", "longform: host bind ./packages"])
     assert.ok(hits.some((hit) => hit.includes(expected)), `scanner missed ${expected}: ${hits.join("; ")}`);
@@ -144,7 +187,7 @@ test("each harness service runs the digest image with image-owned code and decla
 });
 
 test("CONTROL: a browser vessel on the image-filled code volume, waiting on its fill, passes", () => {
-  const good = `services:\n  probe-code:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - "probe-code:/app"\n    entrypoint: ["true"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.0-noble\n    volumes: ["probe-code:/app:ro"]\n    depends_on:\n      probe-code:\n        condition: service_completed_successfully\n    command: ["node", "packages/lararium-node/dist/probes/browser-vessel.js"]\n`;
+  const good = `services:\n  probe-code:\n    image: "\${LARES_HARNESS_IMAGE:?digest}"\n    volumes:\n      - "probe-code:/app"\n    entrypoint: ["true"]\n  browser-a:\n    image: mcr.microsoft.com/playwright:v1.64.1-noble\n    volumes: ["probe-code:/app:ro"]\n    depends_on:\n      probe-code:\n        condition: service_completed_successfully\n    command: ["node", "packages/lararium-node/dist/probes/browser-vessel.js"]\n`;
   assert.deepEqual(inspect("browser.yml", good), []);
   assert.ok(inspect("browser.yml", good.replace("probe-code:/app:ro", "probe-code:/app")).some((hit) => hit.includes("the code volume")));
   assert.ok(inspect("browser.yml", good.replace('- "probe-code:/app"', '- "probe-code:/elsewhere"')).some((hit) => hit.includes("the filler does not mount")));

@@ -13,6 +13,16 @@
           }
         ]
       },
+      "inline": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "inline_body",
+            "named": true
+          }
+        ]
+      },
       "open": {
         "multiple": false,
         "required": true,
@@ -633,6 +643,10 @@
   },
   {
     "type": "html_line",
+    "named": true
+  },
+  {
+    "type": "inline_body",
     "named": true
   },
   {

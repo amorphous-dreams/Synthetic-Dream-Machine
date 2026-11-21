@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/browser-persona-ring-parity.mem"
 l-space   = "lares"
-mana      = 17
-manao     = 17
-manaoio   = 16
 role      = "local and external engineering research with a red-first capability-parity contract for Node and Browser PersonaGroup identity rings"
 status    = "the parity this report sought stands on both shores: the gate signs its verdict, `LarWSClientAdapter.provenKeyOf` names the gate key, and the Browser path composes the PersonaGroup ring through `assemblePersonaGroupRing`"
 tags      = ["research", "vessel-parity", "persona-ring", "identity-as-relation", "causal-island"]
@@ -18,9 +14,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/browser-persona-ring-parity"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/scope-and-question>>
+<<~ ahu slot=`#/scope-and-question`>>
 
 ! Browser PersonaGroup ring — local capability scout
 
@@ -131,7 +127,7 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 * `packages/lararium-browser/src/open-browser-vessel.ts` — Browser repo, share gate, KEL reads, and outbound transport.
 * `packages/lararium-mesh/src/lar-ws-client-adapter.ts`, `face-dial.ts`, and `leaf-presentation.ts` — the Browser’s dial direction, signed verdict, and presentation.
 * `packages/lararium-keyhive/src/face-grant-record.ts` — shared grant verification.
-* `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem` #/the-loops, the carried lanes — where the open half of this question rests.
+* `lar:///ha.ka.ba/lares/docs/stable-founding-road` #/the-loops, the carried lanes — where the open half of this question rests.
 
 !! Outside engineering sources
 
@@ -144,5 +140,5 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G71ehAbuySK3P9aDTz6g7saQKWBc_5bwfmmybZ6MLQ0
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oZD5ZIstbkXhec5OsI4zRlG5JqYhMkebryNeoeVyof4`>>
+<<^ code=`&#x0004;` to=`?`>>

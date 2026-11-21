@@ -1,0 +1,74 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/handoff-awakens-to-kiai`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/handoff-awakens-to-kiai.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/handoff-awakens-to-kiai"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/handoff-awakens-to-kiai"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! handoff-awakens-to-kiai.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/handoff-awakens-to-kiai.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/handoff-lares-awakens-lares-kiai`>>
+
+! Handoff: Lares-Awakens -> Lares-Kiaʻi (2026-11-07 ~05:00Z)
+
+Read with `awakens-resume.md` (same dir). Span head on origin: 8f06d984a (tools-door landed, PR #186).
+Worktrees 5/6: b5b, clock-sweep, tag-burn, secrets-store (parked, operator's), spend-burn (parked, operator's).
+No Opus subagent runs; every live thing below rides disk and survives a /clear.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/live-re-arm-on-wake`>>
+
+!! Live, re-arm on wake
+* spend-research wave 2: Luna read seat pid 430424, ~/.lares-scratch/spend-research/wave-2; done marker `done-5a513b59-d4a4-467c-a591-24d8b1f0b0e9`; hand-back = its final.md. Deliver its tl;dr to the operator (their open ask: spend vs the 72 h before the setup mark 2026-11-04T08:46Z). Wave 1 (stopped by its supervisor after a 200-tick silence over 7.3 GB of Claude logs) left measured Claude day-series in wave-1/run.log; my first read: Claude ~$526 -> ~$634 per 24 h API-index (+20%), Codex ~$6 -> ~$16 (Terra-priced upper bound), Codex ~2% of the $-index vs the 80:20 lean, 11-06 Opus spike ~$983 = the controller seat + Opus subagents; Codex pool 22% used (resets 11-13).
+* clock-sweep CI: the failed job (node-b custody-io load-red, a file the lane never touched) rerun on run 42336186984 for head 52b62c0be; the lane head moved on to aecc19e00 (unpushed), so that verdict reads stale anyway.
+* tag-burn broker: node pid 122875 (kill the NODE pid, never the zsh wrapper).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lanes`>>
+
+!! Lanes
+* tag-burn (~/.lares-scratch/tag-burn): steps 10-13 landed in the lane: 687f5185e sensorium tag, 5c004ae90 wax-stamp, 15a141084 holder-continuity, e107c613f keel witness. ALLOW list empty, no versioned tag left in packages/*/src. Controller runs outside the wall: domain-registry witness test 2/2 (run it ALONE: two concurrent runs collide on the planted fixture dir), witness script exit 0, lararium-mesh full 5049 pass / 20 skip, sensorium py 10/10. Step 14 (state.json `next`): audit leftover stray tags + witness coverage. Then: Luna read, pre-push gate, push, CI, land. Owed (controller's word only): genesis format strings lararium-floor/v1 + lararium-tw5-plugin-build/v1 = a labelled GENESIS RE-BAKE.
+* 5b (~/.lares-scratch/b5b/wt): head 9f95bb4db (unpushed). a5de7c189 red + 9f95bb4db cure: per-seal ledger reads go flat (holder keeps `Line.heads`; a manifest cites the heads only); vessel-reboot 1/1 green, mesh 37/37. Part 2 (shared opened-store reader, tools/opened-store.mjs) sits UNCOMMITTED, snapshot ~/.lares-scratch/b5b/ctl/s13/wip.diff: face-catalog-split S1/S2 red on a hang, `openNodeVessel` never resolves on that root; suspect open-node-vessel.ts:4373 `await p.hostWorkingMounted()` for wiki lares. Next: `OPENED_STORE_TRACE=1 node tools/opened-store.mjs ~/.lares-scratch/b5b/ctl/s13b/kept /tmp/x.json`, cure the hang, strip trace + KEEP_ROOT lines, K1 under bwrap, realm-select K20 through `openedStoredApart`, rerun list, pre-push gate.
+* clock-sweep (~/.lares-scratch/clock-sweep/wt): head aecc19e00 (unpushed, tree clean). Step 3 commits: onExit + named ISLAND_ASK_LIVENESS_MS (0007059a0), census reads `// LIVENESS` (8be766d19), teardown-fault answer (187babae0), device-admit findOrThrow (44e23cc14), guarded-boot budget renamed LIVENESS (aecc19e00; no event says "never" for a blocked IndexedDB open: controller may overrule). PRODUCT-WAIT 102 -> 98. RED: herm-floor R5 e2e (`lares vessel found` after stopVessel refuses StoreHeld: the herm still holds its socket). Next: run herm-floor on base 52b62c0be in scratch; base red = predates; base green = bisect 0007059a0 / 187babae0. Then pre-push gate, blind Opus custody read, CI. Lane notes: clock-sweep/resume.md, triage.md.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-rows`>>
+
+!! Owed rows (carry)
+* tools-door leftovers (fresh lane): launcher ladder P1-3, broker test door, pono lines on the 3 other heavy-roster assertion messages.
+* product waits still open: store-door-verbs 182, pool 899/645, bag-residency 378, stand.ts 324, lock.ts 31, projection-sink 1135; the custody-io paced lock seize.
+* canon fold at the next canon land: G55/G56/G59/#185/#186 ashes, the rulings this seat held, controller-handoff state (alive plans live in canon).
+* the handoff moment test: does a background subagent's report reach a session after /clear? (unmeasured)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/slips-this-seat-made`>>
+
+!! Slips this seat made (so you skip them)
+* commits chained with `;` past a failing check; use `&&`.
+* a broker stopped by its zsh wrapper pid; kill the node child.
+* lead steps launched without a watcher; arm it in the same turn.
+* two witness-test runs overlapped and read a false red.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QSzk7ITjz5jrYDTlu-6_cFFCLo3PwuG_qn0AnHdEzSQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

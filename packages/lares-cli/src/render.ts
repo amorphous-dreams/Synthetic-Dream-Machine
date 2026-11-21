@@ -34,6 +34,23 @@ export function wantsJson(args: ParsedArgs): boolean {
 }
 
 /**
+ * A STATUS READ ANSWERS A PIPE IN PROSE (the operator, 2026-11-19: the re-stand's output read "spammy"). A read whose whole
+ * reading runs long (every sealed row, every document the store holds) prints the same summary on a terminal and through a
+ * pipe, so `| head` cuts it and a shim that pipes the CLI floods nothing; only an explicit `--json` asks for the envelope,
+ * and `--no-json` stays a working alias of the default. `meme get`'s carrier-first ruling (commands/meme.ts) runs the same
+ * law. A caller that parses one of these reads names `--json`.
+ */
+export function proseFirst(args: ParsedArgs): ParsedArgs {
+  return { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
+}
+
+/**
+ * The reads that answer a pipe in prose (`proseFirst`), as `<command> <sub>` the way an operator types them. A caller that
+ * parses one of them names `--json`; `tests/quiet-pipe-parse-sites.test.ts` holds every parse site in the tree to it.
+ */
+export const PROSE_FIRST_READS: readonly string[] = ["vault status", "vault unlock", "vessel read", "wear", "ddate", "law list"];
+
+/**
  * A failure an agent can branch on: a STABLE class `code`, a human `message`,
  * and an optional actionable `hint`. The `code` pairs with the process exit
  * (see `exitFor`), so the machine reads the same verdict two ways. Errors travel
@@ -43,7 +60,7 @@ export interface LaresError {
   /** Stable class: usage · not-found · daemon-unreachable · conflict · verb-error · cap-denied · error. */
   readonly code:    string;
   readonly message: string;
-  /** One actionable sentence, when the fix is obvious; omitted otherwise (never fabricated). */
+  /** One actionable sentence, when the cure is obvious; omitted otherwise (never fabricated). */
   readonly hint?:   string;
 }
 
@@ -80,7 +97,7 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   "request-interrupted": 6,
   // A caller reused a requestId the vessel already arbitrated, but with CHANGED content (D1,
   // M3″ — `uds-channel.ts`'s `request-id-reused-with-changed-input`). A fresh code (2, the
-  // USAGE family) rather than `verb-error`'s 4: the fix is "mint a new id", a USAGE correction,
+  // USAGE family) rather than `verb-error`'s 4: the cure is "mint a new id", a USAGE correction,
   // never a fault in the act's own handler.
   "request-id-reused": 2,
   // THE SAME EXIT FAMILY AS outcome-unknown/request-abandoned (6): the receipt ring (D1, M1)
@@ -119,11 +136,10 @@ export function exitFor(code: string): number {
 /**
  * REFUSE with a usage reading — through the choke point, like every other refusal.
  *
- * Every hand-rolled `usage()` printed prose to stderr and returned a bare code, so under `--json` — the
- * mode that exists for agents and pipes — the caller received ZERO parseable bytes and an exit status.
- * Measured on the built binary: `lares library bogus-verb --json` wrote nothing at all to stdout, while
- * every ORDINARY error on the same door emitted `{ok:false,error:{…}}`. The exit vocabulary was never the
- * gap (`EXIT_FOR.usage` is 2 and the refusals returned it); the PAYLOAD was.
+ * A hand-rolled `usage()` prints prose to stderr and returns a bare code, so under `--json` — the mode
+ * that exists for agents and pipes — its caller receives ZERO parseable bytes and an exit status, while
+ * every ORDINARY error on the same door emits `{ok:false,error:{…}}`. This carries the PAYLOAD beside
+ * the exit code (`EXIT_FOR.usage`, 2).
  *
  * A human still reads the same prose, line for line. An agent reads the refusal every other error already
  * speaks, so "unknown sub-verb" stops being the one failure it cannot see.
@@ -191,4 +207,15 @@ export function emit(args: ParsedArgs, e0: Emission): void {
   if (e.error     !== undefined) payload["error"]     =
     typeof e.error === "string" ? { code: "error", message: e.error } : e.error;
   stdout.write(JSON.stringify(payload) + "\n");
+}
+
+/**
+ * ONE ANSWER SHAPE for the hand verbs (`lei show|kui|unstring|restring|land`, `rite keep|kukulu`): the one-line JSON envelope
+ * rides stdout on a terminal and on a pipe alike, and a terminal also reads one line of prose on stderr (`say`: the verdict in
+ * words, the refusal by its message). Only an explicit `--no-json` asks the prose route (`e.human`) in place of the envelope.
+ */
+export function emitAnswer(args: ParsedArgs, e: Emission, say: string): void {
+  const asked = { ...args, flags: { ...args.flags, json: args.flags["json"] !== false } };
+  emit(asked, e);
+  if (asked.flags["json"] === true && stdout.isTTY) console.error(say);
 }

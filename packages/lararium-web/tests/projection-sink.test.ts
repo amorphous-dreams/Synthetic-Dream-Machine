@@ -18,6 +18,7 @@ function mount() {
   const sent: LarMsg_ControlEvent[] = [];
   sink.arm({
     sendControlEvent: (surface, ev) => {
+      if (sent.some((prior) => prior.eventId === ev.eventId)) return;
       sent.push(ev);
       const target = ev.controlId ?? ev.renderId;
       events.push(typeof ev.wholeValue === "string" ? `${surface}:${ev.action}:${target}=${ev.wholeValue}` : `${surface}:${ev.action}:${target}`);

@@ -40,7 +40,7 @@ const A = hearthNameOf(A_URL);
 const B = hearthNameOf(B_URL);
 const pinA = pinAt("nexus-a", 1);
 const pinB = pinAt("nexus-b", 2);
-const floorAt = (aid: string, route = "/oracle", tag = 8): GateBundlePin =>
+const floorAt = (aid: string, route = "/flow", tag = 8): GateBundlePin =>
   deriveGateBundle(floorGateRoot(floorKeyDoor({ derive: () => new Uint8Array(32).fill(tag) })), new TextEncoder().encode(aid), floorRoute(route)).pin;
 
 describe("chooseHearthDial", () => {
@@ -114,15 +114,15 @@ describe("chooseHearthDial", () => {
   });
 
   it("K9 RED: kept floor pins at the dialed pin's Nexus file under the dialed hearth, and nothing else does", () => {
-    const oracle = floorAt("nexus-a");
+    const flow = floorAt("nexus-a");
     const asked: string[] = [];
-    const keptFloor = (nexusHex: string) => { asked.push(nexusHex); return [oracle, floorAt("nexus-b", "/shelf"), { ...pinA }]; };
+    const keptFloor = (nexusHex: string) => { asked.push(nexusHex); return [flow, floorAt("nexus-b", "/shelf"), { ...pinA }]; };
     const c = chooseHearthDial({ hearthPin: { syncUrl: A_URL, gatePin: pinA }, kept: [], keptFloor });
     expect(asked).toEqual([pinA.nexus]);
-    expect(c.filings.map((f) => [f.hearth, f.pin.tier, f.pin.route])).toEqual([[A, "sovereign", "/ws"], [A, "floor", "/oracle"]]);
+    expect(c.filings.map((f) => [f.hearth, f.pin.tier, f.pin.route])).toEqual([[A, "sovereign", "/ws"], [A, "floor", "/flow"]]);
     const index = hearthPinIndex();
     fileHearthPins(index, c.filings);
-    expect(index.get({ hearth: A, nexus: oracle.nexus, route: "/oracle", tier: "floor" })).toEqual(oracle);
+    expect(index.get({ hearth: A, nexus: flow.nexus, route: "/flow", tier: "floor" })).toEqual(flow);
     // No dial pin: no floor pin files.
     const bare = chooseHearthDial({ hearthPin: { syncUrl: A_URL }, kept: [], keptFloor });
     expect(bare.filings).toEqual([]);

@@ -13,7 +13,7 @@
  * THE SALT IS A SUPERSET, NEVER A REPLACEMENT. It binds `senderPub ‖ recipientPub` ALWAYS, then appends whatever
  * session challenges the caller carries. That strictly dominates both prior salts: the pubkey pair pins the
  * derivation to this exact pairing, and `extraSalt` pins it to this exact session (so a repeated ephemeral key still
- * derives a fresh key). Nothing a caller previously bound gets dropped.
+ * derives a fresh key). Every input either salt binds stays bound.
  *
  * SEAL THROWS, OPEN WITHHOLDS. Sealing to a malformed recipient THROWS — a caller must never believe it delivered
  * something to nobody. Opening returns `null` on ANY failure (wrong key, tampered ciphertext, malformed frame) —

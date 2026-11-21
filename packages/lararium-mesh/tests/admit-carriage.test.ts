@@ -43,7 +43,7 @@ describe("an admit's carried pin and canon read only as the quorum committed to 
     expect(readAdmitCarriage(carriageOf(PIN_A))).toEqual(carriageOf(PIN_A));
     expect(readAdmitCarriage(carriageOf(PIN_A, {}))).toEqual(carriageOf(PIN_A, {}));
     for (const bad of [null, {}, { gatePin: PIN_A }, { canon: CANON_A }, carriageOf("a1".repeat(32) as never), carriageOf({ ...PIN_A, signingKey: "A1".repeat(32) }),
-      carriageOf({ ...PIN_A, tier: "floor" }), carriageOf({ ...PIN_A, route: "/oracle" }), carriageOf({ ...PIN_A, extra: 1 } as never),
+      carriageOf({ ...PIN_A, tier: "floor" }), carriageOf({ ...PIN_A, route: "/flow" }), carriageOf({ ...PIN_A, extra: 1 } as never),
       { ...carriageOf(PIN_A), extra: 1 }, carriageOf(PIN_A, { "": "automerge:x" }), carriageOf(PIN_A, { "bags/lares": "" }),
       carriageOf(PIN_A, { "bags/lares": 7 } as never), carriageOf(PIN_A, ["automerge:x"] as never)]) {
       expect(readAdmitCarriage(bad)).toBeNull();

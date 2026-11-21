@@ -1,0 +1,61 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/cop5/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/cop5/brief.md` (brief, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/cop5/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/build-row-5-the-ratcheted-broker-libraries`>>
+
+! Build: row 5, the ratcheted broker libraries (worktree /home/joshu/.lares-scratch/seat-harness/wt)
+RED tests stand in tools/commit-relay.test.mjs (everything from "the ratcheted broker: the five proofs" to the end). Create EXACTLY two new files so they pass: tools/seat-broker.mjs and tools/seat-walls.mjs. Do NOT edit tools/commit-relay.mjs or any test. You cannot run node:test; read the tests closely and match every signature. The lead runs them and sends failures back.
+Canon: bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem (#/the-broker) and ~/.lares-scratch/harness-design/luna-b/final.md (the ratcheted design). Node ESM, no dependencies, Node 24.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tools-seat-broker-mjs`>>
+
+!! tools/seat-broker.mjs  (data-only git plumbing; NEVER executes lane code, never checks out with filters, never touches submodules/hooks/installs)
+Pinned absolute binaries: GIT = "/usr/bin/git" (existence checked; no PATH lookup anywhere).
+* `export function brokerEnv(iso)` -> EXACT object with only: PATH "/usr/bin:/bin" is NOT allowed to hold lane or home dirs, use "/usr/bin:/bin"; HOME `${iso}/home`; TMPDIR `${iso}/tmp`; XDG_CONFIG_HOME `${iso}/home`; LC_ALL "C"; GIT_CONFIG_NOSYSTEM "1"; GIT_CONFIG_GLOBAL "/dev/null"; GIT_TERMINAL_PROMPT "0"; GIT_ATTR_NOSYSTEM "1"; GIT_OPTIONAL_LOCKS "0". Nothing inherited from process.env. (The test allows only those keys.)
+* Internal `git(ctx, args, {input, env, cwd})` = spawnSync(GIT, ["-c","core.hooksPath=/dev/null","-c","core.fsmonitor=false","-c","core.attributesFile=/dev/null","-c","credential.helper=","-c","core.sshCommand=/usr/bin/ssh","&#45;-git-dir",ctx.gitDir, ...args], {env: brokerEnv(ctx.iso) plus extras, input}) ; mkdir iso/home and iso/tmp first. Output capped to 8192 chars in `output`.
+* `export async function readSafe(worktree, rel)` -> `{mode: "100644"|"100755", content: Buffer}`. Refuse (reject Error with the words used in tests): absolute or ".." rel ("invalid path"); any lstat on a path component being a symlink ("symlink"); a directory or non-regular file ("not a regular file"); a gitlink/submodule path (a directory containing .git or listed as mode 160000 in HEAD: "gitlink"). Race-proof: open the final file with fs.open(path, O_RDONLY|O_NOFOLLOW), then readlink(`/proc/self/fd/${fd}`) and require it to equal realpath(worktree)+"/"+rel (else "outside"), fstat must be a regular file, read the bytes from the fd. Never read by path after the check.
+* `export async function commitWithReceipt(ctx, {paths, messageFile, expectHead})` -> `{ok, output, head?, tree?}`. ctx = {gitDir, worktree, iso, branch, author:{name,email}, receiptsDir, keyFile, requiredChecks:[names], checks:[{name,argv}], bwrap:boolean}. Steps: head = `rev-parse refs/heads/${branch}`; if expectHead !== head refuse with output containing "expected old head"; paths nonempty; for each path readSafe (a path deleted from the worktree but tracked in HEAD becomes a removal). Build a TEMP index in iso/tmp (GIT_INDEX_FILE env extra): `read-tree HEAD`, for each file `hash-object -w --no-filters --stdin` (content on stdin, NO path argument so no attribute/filter applies) then `update-index --add --cacheinfo <mode>,<sha>,<path>`; removals `update-index --force-remove -- path`; refuse a path whose HEAD entry mode is 160000 ("gitlink"). `write-tree` -> tree. Receipt: verifyReceipt({keyFile, receiptsDir, tree, requiredChecks}); if absent, run `runCheckSeat({...ctx, tree})` (from ./seat-walls.mjs) which writes the signed receipt; if the seat fails refuse with output naming "check" and the failing check; verify again. Message: read messageFile bytes (must be a regular file, no symlink). `commit-tree <tree> -p <head> -F` via stdin message with env GIT_AUTHOR_NAME/EMAIL and GIT_COMMITTER_NAME/EMAIL set from ctx.author and a fixed date left to git. `update-ref refs/heads/${branch} <new> <head>` (compare-and-swap on the old head). Then bring the REAL index to match for the committed paths with the same update-index &#45;-cacheinfo / &#45;-force-remove calls on the real index (GIT_INDEX_FILE unset, default `${gitDir}/index`). No hooks fire, no porcelain commit/add/checkout.
+* `export async function pushWithGo(ctx & {goFile})` -> `{ok, output}`. goFile must have exactly two lines: branch then head sha. Read it, then DELETE it (the go spends on the attempt, before any check result is returned, even when it refuses; if the file is absent: output "no push-go from the controller"). Refuse (output contains "go") if branch !== ctx.branch, or head !== current `refs/heads/${branch}` sha, or the file lacks two lines. Push: `git push origin ${head}:refs/heads/${branch}` with the pinned GIT and the fixed `-c` set above, env = brokerEnv plus HOME = the REAL home (os.userInfo().homedir) only for this call so the controller's ssh keys work; never -u, never &#45;-force.
+* `export async function addWorktree(ctx, {path, branch, base})` -> `{ok, output}`. `worktree add --no-checkout -b ${branch} ${path} ${base}` then fill the tree with NO filters and NO submodules: export base with `archive --format=tar ${base}` piped to `/usr/bin/tar -x -C ${path}` (pinned tar; ignore export-subst irrelevance), then in the new worktree set its index to base with `read-tree ${base}` using GIT_INDEX_FILE=&lt;that worktree's index path from `rev-parse --git-path index` run with &#45;-git-dir of the new worktree> . Gitlink paths stay empty directories (mkdir if archive omitted them). Write NO submodule config. The destination must not exist yet.
+* `export function verifyReceipt({keyFile, receiptsDir, tree, requiredChecks})` -> `{ok, reason?}`: reads `${receiptsDir}/${tree}.json` `{tree, checks, mac}`; recompute `signReceipt({keyFile, tree, checks})` mac with timingSafeEqual; require receipt.tree === tree and every requiredChecks name present in receipt.checks.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tools-seat-walls-mjs`>>
+
+!! tools/seat-walls.mjs  (the CHECK SEAT and INSTALL SEAT: the only places lane code runs, always behind bubblewrap)
+* `export const HAVE_BWRAP` = existsSync("/usr/bin/bwrap") && a spawnSync("/usr/bin/bwrap",["&#45;-ro-bind","/","/","/usr/bin/true"]) that exits 0.
+* `export function signReceipt({keyFile, tree, checks})` -> `{tree, checks, mac}` with mac = HMAC-SHA256(hex) keyed by the key file's bytes over `${tree}\n${checks.slice().sort().join(",")}`.
+* `export async function runCheckSeat({gitDir, tree, checks, keyFile, receiptsDir, iso, bwrap, keepWork})` -> `{ok, output, work?}`. TRUSTED parent process: makes a fresh work dir under iso/tmp, exports the exact tree: `/usr/bin/git --git-dir gitDir archive --format=tar ${tree}` into `${work}/tree` (pinned tar). For each check {name, argv}: run argv under `/usr/bin/bwrap --die-with-parent --new-session --unshare-pid --unshare-ipc --unshare-net --clearenv --ro-bind / / --tmpfs /tmp --tmpfs <real home> --dev /dev --proc /proc --bind ${work}/tree /work/tree... ` Concretely: bind the work dir read-write at /work (so the seat writes only /work, and tests read `${work}/out`), `--chdir /work/tree`, env set with &#45;-setenv to only PATH=/usr/bin:/bin HOME=/work/home LC_ALL=C. Everything else read-only (so a ref or go-file write fails), /tmp and the real home hidden by tmpfs, no network. A non-zero exit fails the seat: `{ok:false, output: "check <name> failed: ..."}` and NO receipt is written. If bwrap is false, refuse with output "no wall available" (never run unwalled). On all-pass write `signReceipt(...)` JSON to `${receiptsDir}/${tree}.json` (mkdir receiptsDir) and return ok. Remove the work dir unless keepWork (then return `work`). Only the PARENT ever reads keyFile; the sandboxed child never sees it (it sits under /tmp hidden by tmpfs or is otherwise unreadable: tests put it under os.tmpdir()).
+* `export async function runInstallSeat({worktree, gitDir, pnpm, storeDir, iso, protect, env})` -> `{ok, output}`. First read `${worktree}/.npmrc` if present: allow ONLY keys registry, store-dir, strict-peer-dependencies, auto-install-peers, shamefully-hoist, node-linker, public-hoist-pattern; any other key refuses with output naming that key (keys may look like `//registry.evil/:_authToken`). Then run `pnpm install --offline --frozen-lockfile --ignore-scripts --store-dir ${storeDir}` (the pinned pnpm path given) with cwd = worktree under bwrap: &#45;-ro-bind / /, then &#45;-bind worktree worktree (rw), &#45;-bind storeDir storeDir (rw), &#45;-ro-bind gitDir gitDir (so .git is read-only even though it sits inside the worktree), each `protect` path ro, &#45;-tmpfs /tmp, &#45;-tmpfs real home, &#45;-unshare-net &#45;-unshare-pid &#45;-die-with-parent &#45;-clearenv with only PATH=/usr/bin:/bin:&lt;dir of pnpm>, HOME=${iso}/home... NOTE the test fake pnpm logs `env` lines matching ^(NODE_OPTIONS|npm_config_|GIT_|HOME)= and expects NODE_OPTIONS, npm_config_*, GIT_* absent (HOME may appear); `env` option passed by the caller is IGNORED for the child (it exists to prove poison is dropped). The fake writes its log to a path outside the worktree under os.tmpdir(): that path is hidden by &#45;-tmpfs /tmp, so bind-mount the log's DIRECTORY? NO: instead do not tmpfs /tmp; bind /tmp read-only (it is part of &#45;-ro-bind /) and keep the test's log writable by additionally accepting an optional `extraRw` array of paths to bind read-write (add `extraRw: [logDir]` support; the lead will pass it). If bwrap is false refuse with "no wall available".
+Hand back by final message: files created, anything unclear.
+
+NOTE for runInstallSeat mount order: bind extraRw read-write first, then the gitDir read-only, then each `protect` path read-only LAST (later mounts win), so the test's controller dir stays unwritable although its parent is bound rw. The test passes extraRw: [x.root] and protect: [x.control].
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NmnIJIB6wFD9ZTS382goYaUdJ4NvERe62DqTS2iPf3w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

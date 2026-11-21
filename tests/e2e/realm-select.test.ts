@@ -23,6 +23,9 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
+import { censusOutcomeLinkage, OUTCOME_URI_PREFIX, plainValue, type LarDoc, type StoredTiddlers } from "../../packages/lararium-mesh/src/index.js";
+import { STORE_DOOR_FACE_VERBS } from "../../packages/lararium-node/src/store-door-verbs.js";
+import { openedStoredApart } from "../../tools/opened-store.mjs";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -35,7 +38,7 @@ const REALM_R = "c1ab".repeat(16);          // the book club's realm
 const REALM_NEVER = "0ddba11".padEnd(64, "0");   // a realm this vessel never enters
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const meme = (): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n<<~ ahu #/minutes>>\n\n! the minutes\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n<<~ ahu slot=\`#/minutes\`>>\n\n! the minutes\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
@@ -62,8 +65,6 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   beforeAll(async () => {
     A = await openStaged({ tag: "realms", port: await freePort(), found: async (cli, root) => {
       await foundStagedHearth(cli, root, "club-keeper");
-      const wear = await cli(["persona", "wear", "0"]);
-      if (wear.code !== 0) throw new Error(`persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
       await growStagedQuorum(cli, root, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`the vessel reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
@@ -98,7 +99,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   }, 60_000);
 
   test("★ a bag registered in realm R lists in R and in no other realm ★", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--realm", REALM_R, "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--realm", REALM_R, "--json"]);
     console.error(`realm-select MEASURE register in R: ${said(reg).trim().slice(0, 300)}`);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     expect(dataOf(reg)["realm"]).toBe(REALM_R);
@@ -134,7 +135,7 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
   }, 120_000);
 
   test("③ CONTROL: with no realm named, a verb routes to the charter-derived realm, and each realm keeps its own record", async () => {
-    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--json"]);
+    const reg = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--json"]);
     expect(reg.json?.["ok"], said(reg)).toBe(true);
     expect(dataOf(reg)["realm"]).toBe(charterRealm);
     expect(userBagsOf(await A!.cli(["nexus", "realm-bags", "--realm", charterRealm, "--json"]))).toEqual([LARES_BAG]);
@@ -145,8 +146,56 @@ describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb nam
     expect(rows.every((row) => typeof row["realm"] === "string")).toBe(true);
     expect(rows.map((row) => row["bag"])).toEqual([LARES_BAG, LARES_BAG]);
     // A name that reads as no realm refuses by name.
-    const bad = await A!.cli(["nexus", "realm-bag", "ford", "--realm", "not-a-realm", "--json"]);
+    const bad = await A!.cli(["nexus", "realm-bag", "ford", "--face", "0", "--realm", "not-a-realm", "--json"]);
     expect(bad.json?.["ok"], said(bad)).toBe(false);
     expect(said(bad)).toContain("realm-unreadable");
   }, 120_000);
+
+  test("★ K20: a face row's answer rides the socket alone — no daemon outcome pairs the face with its key at the Nexus ★", async () => {
+    // The face stands in the cabal realm R and the door prints its key at R's Nexus: a per-Nexus leaf.
+    const stood = await A!.cli(["cabal", "face", "--realm", REALM_R, "--face", "0", "--json"]);
+    expect(stood.json?.["ok"], said(stood)).toBe(true);
+    const leaf = String(dataOf(stood)["face"] ?? "");
+    expect(leaf).toMatch(/^[0-9a-f]{64}$/);
+    // The feed rides a session of the face too, and its island verb writes the leaf's slot.
+    const fed = await A!.cli(["cabal", "feed", "--realm", REALM_R, "--face", "0", "--json"]);
+    console.error(`realm-select MEASURE feed: ${said(fed).trim().slice(0, 300)}`);
+    expect(fed.json?.["ok"], said(fed)).toBe(true);
+    // The store rests once the vessel stops. The census reads EVERY document the store rests: the verb outcome ledger
+    // lands in the daemon wiki's working slot (the daemon composite's default writable, at the face's derived address the
+    // face fleet syncs), never in the daemon document, so a census of one named document reads nothing.
+    await A!.stopDaemonOnly();
+    // The ledger rests SEALED under the face (sealed-store): a plain Repo over the raw rest reads a sealed pointer and no
+    // row, so the census reads every document the way the vessel opens it (tools/opened-store.mjs, in a child process).
+    const opened = await openedStoredApart(A!.root);
+    expect(opened.docs.length, "the store rests documents").toBeGreaterThan(0);
+    let ledgerDocs = 0;
+    const out: Record<string, unknown> = {};
+    for (const { doc } of opened.docs) {
+      const rows = Object.entries((doc as LarDoc | undefined)?.tiddlers ?? {}).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX));
+      if (rows.length > 0) ledgerDocs += 1;
+      for (const [t, r] of rows) out[t] = r;
+    }
+    const tiddlers = out as StoredTiddlers;
+    console.error(`realm-select MEASURE ledger: ${ledgerDocs} document(s) of the store hold outcomes`);
+    const census = censusOutcomeLinkage(tiddlers, { socketOnly: STORE_DOOR_FACE_VERBS, keys: [leaf] });
+    const verbs = Object.entries(tiddlers).filter(([t]) => t.startsWith(OUTCOME_URI_PREFIX)).map(([, r]) => String(plainValue(((r as { tiddler?: Record<string, unknown> }).tiddler ?? {})["verb"])));
+    console.error(`realm-select MEASURE census: ${census.outcomes} outcomes (${[...new Set(verbs)].join(",")}), linked ${JSON.stringify(census.linked)}`);
+    expect(census.outcomes, "the census read the vessel's outcomes").toBeGreaterThan(0);
+    // The record the story turns on stands among them: the feed's own island verb, which lands beside its leaf's slot.
+    expect(verbs, "the census read the realm feed's outcome").toContain("realm-feed");
+    expect(census.linked).toEqual([]);
+    // KNOWN POSITIVE: the same census over the same record set, with one outcome pairing a requester and the leaf.
+    const planted = `${OUTCOME_URI_PREFIX}k20-planted`;
+    // Planted as the document keeps a record: `{ tiddler, meta }`, its strings wrapped as Automerge hands them out.
+    const wrap = (val: string) => ({ val, [Symbol.for("_am_immutableString")]: true });
+    // A session's outcome names its `face`; one beside the leaf, and one of a face row, each read linked.
+    const plantedRow = `${OUTCOME_URI_PREFIX}k20-planted-row`;
+    const withPlant = { ...tiddlers,
+      [planted]: { tiddler: { title: wrap(planted), verb: wrap("load"), status: wrap("done"), face: wrap("planted-proof-subject"),
+        results: wrap(JSON.stringify({ summary: { ok: true, output: { writer: leaf } } })) }, meta: {} },
+      [plantedRow]: { tiddler: { title: wrap(plantedRow), verb: wrap("cabal-face"), status: wrap("done") }, meta: {} } } as unknown as StoredTiddlers;
+    expect(censusOutcomeLinkage(withPlant, { socketOnly: STORE_DOOR_FACE_VERBS, keys: [leaf] }).linked.map((l) => [l.title, l.why]))
+      .toEqual(expect.arrayContaining([[planted, "requester-beside-key"], [plantedRow, "socket-only-verb"]]));
+  }, 240_000);
 });

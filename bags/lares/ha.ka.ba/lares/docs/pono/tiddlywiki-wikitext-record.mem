@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-wikitext-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = false
+l-space   = "stable"
+role      = "the making-record of the TiddlyWiki 5 base-syntax specification draft: its revision passes and the dated checks behind its claims; the draft itself reads at api/pono/tiddlywiki-wikitext"
+tags      = ["api/pono/tiddlywiki-wikitext"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-wikitext-record"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/tiddlywiki-wikitext-record"
+```
+
+<<~ ahu slot=`#/revisions`>>
+
+! TiddlyWiki 5 wikitext ~ the draft's record
+
+The specification draft reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`>>; this record keeps how it reached its present text.
+
+''The deep pass (the draft's revision note).'' A deep pass on two measured waves: the degradation law rewritten to the engine's real behavior (an unbound macro call renders as nothing, the parse stays total, storage round-trips verbatim), the extension mechanism stood up as a normative rule-object contract, the rule inventory corrected to real exported names (44), security gates measured, the test corpus cited as the executable conformance suite, references seated, and the document's voice held to TW5 ontology alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/checks`>>
+
+!! Dated checks
+
+* 2026-08-24: the IANA media-types registry checked for `text/vnd.tiddlywiki` — no entry (the draft's #/media-type states the standing claim with the registry to read).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pysJXg-6HEhjGYRrpL89h6nNvOuXzHPftZw1igWQPLg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

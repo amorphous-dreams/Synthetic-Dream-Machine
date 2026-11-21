@@ -5,11 +5,11 @@ exports[`lares nexus — every verb reaches its door > the three usage surfaces 
 usage: lares nexus kahuli <engine | grammar>
 
   the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:
-    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device
+    engine   the SLOW ratchet: the engine CID (engineCid), signed into every device
              delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;
              the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.
     grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —
-             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).
+             never the engine CID. Reads the current epoch; --apply re-derives the island (the bake).
 
   a read NEVER builds — the deliberate build+push lives behind --apply and in \`nexus rite kahuli\`."
 `;
@@ -37,8 +37,10 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own
                                             VESSEL-key seal. It NEVER enters the member set; its whole grant is
                                             the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)
-        [--floor-pin <file>]                the place's signed floor pin (\`carry-for --json\`); it lands beside the
-                                            act, and the carry emits the CARRY BUNDLE the place takes
+        --floor-pin <file>                  the place's signed floor pin CLAIM with its KEL rows (\`carry-for --out\`); REQUIRED:
+                                            it lands atomically beside the counted act, and the carry emits the CARRY BUNDLE
+                                            the place takes. With \`--out <partial>\` a Nexus whose seats rest in two vaults
+                                            carries it as a PARTIAL (\`carry --from <partial>\` on the other vault)
   uncarry <place-vessel-key>                end a carrier contract (quorum-only)
   members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never
                                             authority (default: the primary charter's Nexus)
@@ -50,8 +52,8 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   carry-for [--nexus <aid>] [--out <file>]  (joining PLACE, on itself) mint the carrier seal with its OWN vessel
                                             key — reads no persona, because a crossroads holds none — and sign
                                             its floor pin at this Nexus (default the primary charter's; --nexus
-                                            names a carried one) with the same key. --out writes the floor pin
-                                            statement: the file the kahu's \`carry --floor-pin\` reads
+                                            names a carried one) at the head of its own place KEL. --out writes the
+                                            claim with the KEL rows: the file the kahu's \`carry --floor-pin\` reads
   carry-take <bundle-file>                  (carried PLACE, on itself) verify the carry bundle and write it onto
                                             its own board replica: its floor gate stands at that Nexus, only there
   posture [private | open]                  read / flip the cross-Nexus federation posture of this hearth's charter (a herm
@@ -59,7 +61,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   rite <petname>                            the pet-named procedures — \`cabal\` seats the founding quorum, \`kahuli\` overturns a ratchet tier
   kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition
   realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);
-                                            the WORN face's key for this Nexus seals it (\`lares persona wear N\` first)
+                                            the acting face's key for this Nexus seals it (--face N, else the one face standing open)
             [--realm <id>]                  the realm the act lands in: a cabal realm (64 hex) or the charter-derived realm (the default)
             [--join]                        ASK to keep a bag another hand keeps — the record waits on each standing steward
             [--cosign [--with <key>]]       consent as a named steward to a record that waits on this hand;
@@ -82,7 +84,11 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync
   release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the
                                             manifest, the seats' approval of its exact bytes (\`promote open --surface floor-release\`) rides
-                                            attached, and it lands on the crossroads board once it counts
+                                            attached, and it lands on the Nexus's publication board once it counts
+  release <manifest-file> --cut [--nexus <aid>]   cut that manifest from LIVE house canon (a promoted offer rides it),
+                                            stage the floor in this hearth's CAS; it lands nothing (offering#/the-canon-offer);
+                                            a bag whose live rows count under half its prior snapshot's refuses floor-cut-thin,
+                                            unless --thin <slug[,slug]> names it as shrunk on purpose
 
 Examples:
   lares nexus rite quorum

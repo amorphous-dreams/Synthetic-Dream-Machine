@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-63`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "63. Aneris"
+hexagram    = "63"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "101010"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-63"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-63"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷾ 63. Aneris
+
+<<<
+Aneris swore that no matter how many existent things Eris brought forth, she would eventually find them and turn them into non-existent things for her own.
+<<<
+
+This hexagram stands for chaos changing into order. As we all know this can be a very bad thing. The only salvagable aspect about this hexagram is that if all is order, there are many, many oppertunities for an enterprising Discordian to have loads of fun trying to bring about Hexagram 64.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CzHN1tfD0d5fmz4MkeazV6W9Nv_hip_vE4xhNxPIHeY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

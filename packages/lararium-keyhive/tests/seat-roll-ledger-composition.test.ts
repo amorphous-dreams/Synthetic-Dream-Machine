@@ -5,35 +5,47 @@ import {
   emptyLarDoc, fleetEdgeBoardDocUrl, makeIslandRepo, materializeSharedLarDoc, signEdgeKapae, writeEdgeKapae,
 } from "@lararium/mesh";
 import { markRaiseRolled } from "../../lararium-mesh/src/edge-ledger.js";
+import { signSeatRoll } from "../../lararium-mesh/src/seat-duties.js";
+/** A roll under this vessel's own receipt, as its island signs it (road `T33`): a mark counts under nothing less. */
+const ownRoll = (scope: string, edgeId: string, cid: string, seed: Uint8Array) =>
+  signSeatRoll({ kind: "seat-roll", scope, edgeId, raiseCids: [cid], how: "gone" }, ed25519SignerFromSeed(seed));
 
 const boot = vi.hoisted(() => ({ dyad: "" }));
 vi.mock("../src/boot-daemon-keyhive.js", () => ({
   bootDaemonKeyhive: async (args: { dyad: string }) => { boot.dyad = args.dyad; throw new Error("dyad-captured"); },
 }));
+import { fleetFixture } from "./fleet-fixture.js";
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 
 describe("the island reads the vessel's seat-roll ledger", () => {
   test("missing vessel ledger answers owing now and a later synced roll answers returned", async () => {
     const rootSeed = new Uint8Array(32).fill(121);
     const root = await ed25519VerifyingKeyFromSeed(rootSeed);
-    const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(122));
+    const ownSeed = new Uint8Array(32).fill(122);
+    const own = await ed25519VerifyingKeyFromSeed(ownSeed);
     const peer = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(123));
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     try {
       const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
+      const fx = await fleetFixture(rootSeed);
+      await fx.found(board);
       const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
       const edgeId = deviceEdgeId(root, peer);
       const up = await signEdgeKapae({ edgeId, raised: true, hand: "holder", parents: [] }, signer);
       const down = await signEdgeKapae({ edgeId, raised: false, hand: "holder", parents: [up.actCid] }, signer);
       board.change((draft) => { writeEdgeKapae(draft, up); writeEdgeKapae(draft, down); });
+      await fx.register(board, [up.actCid]);
       const privateLedger = repo.create(emptyLarDoc());
       const daemonAuth = {
-        seed: new Uint8Array(32).fill(124), vesselVerifyingKey: own, archiveOpens: false, registerBags: [],
+        placeVerifyingKey: own, archiveOpens: false, registerBags: [],
         personaGroupId: "group", atom: { seed: "00".repeat(32), key: own },
         deviceEdge: { personaRootDid: root, deviceVerifyingKey: peer },
+        personaKel: { prefix: fx.prefix, chain: fx.chain },
       };
-      const read = () => operatorDaemonOptions({ daemonAuth } as never,
-        { readDyadFromBoard: true, dyadLedger: privateLedger }).verifierFactory!({ repo, composite: new CompositeStore(), post: () => {} } as never);
+      const options = operatorDaemonOptions({ daemonAuth } as never,
+        { readDyadFromBoard: true, dyadLedger: privateLedger });
+      const find = vi.spyOn(repo, "find");
+      const read = () => options.verifierFactory!({ repo, composite: new CompositeStore(), post: () => {} } as never);
       // No clock can deliver the missing document. A local read must settle from documents already in this Repo.
       vi.useFakeTimers();
       let settled = false;
@@ -45,9 +57,15 @@ describe("the island reads the vessel's seat-roll ledger", () => {
       expect(settled, "the absent roll ledger cannot hold the reading for the find timeout").toBe(true);
       await first;
       expect(boot.dyad, "an unrolled lift still owes its seat when the ledger is absent").toBe("owing");
+      await Promise.all([read(), read(), read()].map((result) => result.catch((error: unknown) => {
+        if (!(error instanceof Error) || error.message !== "dyad-captured") throw error;
+      })));
+      expect(find.mock.calls.filter(([url]) => url === edgeLedgerDocUrl(own)),
+        "N missing-ledger gate reads share one pending find").toHaveLength(1);
       vi.useRealTimers();
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(own), "ledger:edge");
-      ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, { edgeId, how: "gone" }));
+      const roll = await ownRoll(root, edgeId, up.actCid, ownSeed);
+      ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, roll, own));
       boot.dyad = "";
       await expect(read()).rejects.toThrow("dyad-captured");
       expect(boot.dyad, "the next reading sees the roll that arrived in the main Repo").toBe("returned");
@@ -57,23 +75,31 @@ describe("the island reads the vessel's seat-roll ledger", () => {
   test.each([false, true])("lifted peer with vessel roll=%s", async (rolled) => {
     const rootSeed = new Uint8Array(32).fill(111);
     const root = await ed25519VerifyingKeyFromSeed(rootSeed);
-    const own = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(112));
+    const ownSeed = new Uint8Array(32).fill(112);
+    const own = await ed25519VerifyingKeyFromSeed(ownSeed);
     const peer = await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(113));
     const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     const privateRepo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
     try {
       const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(root), "board:edge-kapae");
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(own), "ledger:edge");
+      const fx = await fleetFixture(rootSeed);
+      await fx.found(board);
       const signer = [{ signer: root, sign: ed25519SignerFromSeed(rootSeed) }];
       const up = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: true, hand: "holder", parents: [] }, signer);
       const down = await signEdgeKapae({ edgeId: deviceEdgeId(root, peer), raised: false, hand: "holder", parents: [up.actCid] }, signer);
       board.change((draft) => { writeEdgeKapae(draft, up); writeEdgeKapae(draft, down); });
-      if (rolled) ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, { edgeId: deviceEdgeId(root, peer), how: "gone" }));
+      await fx.register(board, [up.actCid]);
+      if (rolled) {
+        const roll = await ownRoll(root, deviceEdgeId(root, peer), up.actCid, ownSeed);
+        ledger.change((draft) => markRaiseRolled(draft, root, up.actCid, roll, own));
+      }
       const islandLedger = privateRepo.create(emptyLarDoc());
       const daemonAuth = {
-        seed: new Uint8Array(32).fill(114), vesselVerifyingKey: own, archiveOpens: false, registerBags: [],
+        placeVerifyingKey: own, archiveOpens: false, registerBags: [],
         personaGroupId: "group", atom: { seed: "00".repeat(32), key: own },
         deviceEdge: { personaRootDid: root, deviceVerifyingKey: peer },
+        personaKel: { prefix: fx.prefix, chain: fx.chain },
       };
       const ctx = { repo, composite: new CompositeStore(), post: () => {} };
       boot.dyad = "";

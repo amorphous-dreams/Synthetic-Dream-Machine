@@ -7,29 +7,22 @@
  *   · a sub-quorum hands the door's own refusal the held count and the threshold, and throws THAT error,
  *   · CONTROL: a roster seating none of the held roots refuses at zero held.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { beforeEach, describe, expect } from "vitest";
 import type { KahuQuorumSeats } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../src/held-quorum.js";
 import { seatChairs } from "./seat-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 
-beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-held-quorum-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();
+const house = keepHouse("lares-held-quorum-", async () => {
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
 });
-afterEach(() => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
-});
+beforeEach(() => house.into(root, scratchHome));
 
 class DoorRefusal extends Error {}
 const refuse = (held: number, k: number): Error => new DoorRefusal(`door: ${held} of ${k}`);

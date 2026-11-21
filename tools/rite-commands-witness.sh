@@ -25,6 +25,8 @@ cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
 import os, re, json, pathlib, subprocess, sys
+sys.path.insert(0, str(pathlib.Path("tools").resolve()))
+from code_scan import mask_non_code
 
 # EVERY RITE, not only the founding one. A rite states commands as CLAIMS a reader resolves the next
 # move from, and that property belongs to the tending rite too — it asks to be walked end to end, each
@@ -32,6 +34,7 @@ import os, re, json, pathlib, subprocess, sys
 RITES = [
     pathlib.Path("bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem"),
     pathlib.Path("bags/lararium/ha.ka.ba/lararium/api/sensorium-runbook.mem"),
+    pathlib.Path("bags/lares/ha.ka.ba/wsl2/new-hearth.mem"),
 ]
 BIN  = "packages/lares-cli/dist/src/bin/lares.js"
 for _r in RITES:
@@ -50,20 +53,88 @@ rite = "\n".join(r.read_text() for r in RITES)
 cmds = {m.group(1) for m in re.finditer(
     r'(?m)^\s*lares ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite)}
 
-# A rite that walks the container instructs through the HOST SHIM. The shim keeps three verbs of its
-# own (the engine's: up, down, logs), spells the founding act `found`, and hands every other word to
-# the CLI. So a shim line claims a CLI door exactly as a bare `lares` line does.
-SHIM_OWN = {"up", "down", "logs"}
+# THE HOST `lares` ANSWERS THE SHIM'S OWN VERBS. With the container house standing, the host's `lares <verb>` hands
+# a vessel verb to the shim with the same argv (`packages/lares-cli/src/host-bridge.ts`), and the bridge names the
+# verbs the shim alone answers (`SHIM_VERB_HELP`: `lares up --help` reads its row there). So a bare `lares up` in
+# a rite claims the shim's door, as a shim line does. The set DERIVES from the bridge's own table, each name held
+# against a `<verb>)` case in the shim, so a verb either side drops reads red here by name.
+_bridge = pathlib.Path("packages/lares-cli/src/host-bridge.ts").read_text()
+_table = re.search(r'const SHIM_VERB_HELP\b[^=]*=\s*\{(.*?)\n\};', _bridge, re.S)
+HOST_SHIM = set(re.findall(r'(?m)^\s*([a-z][a-z0-9-]*):\s*\{\s*usage:', _table.group(1))) if _table else set()
+if not HOST_SHIM:
+    print("[rite-commands] host-bridge.ts PARSED TO ZERO SHIM VERBS — the probe binds `<verb>: { usage:` rows of SHIM_VERB_HELP.")
+    sys.exit(1)
+_shim = pathlib.Path("tools/lares-container.sh").read_text()
+_orphans = sorted(v for v in HOST_SHIM if not re.search(rf'(?m)^\s*{re.escape(v)}\)', _shim))
+if _orphans:
+    print(f"[rite-commands] the host bridge names shim verbs the shim holds no case for: {', '.join(_orphans)}")
+    sys.exit(1)
+_bare_shim = {c for c in cmds if c.split()[0] in HOST_SHIM}
+cmds -= _bare_shim
+if any(c.split()[0] == "found" for c in _bare_shim):
+    cmds.add("vessel found")
+
+# A rite that walks the container instructs through the HOST SHIM. The shim answers some verbs itself (the engine's
+# up, down, logs, build; reset, which clears the hearth on the host; the pūlama's own verb; rebuild, the restand `lares rite kukulu` calls), spells the
+# founding act `found`, and hands every other word to the CLI. So a shim line claims a CLI door exactly as a bare
+# `lares` line does, unless the shim's own arm answers it.
+#
+# THE SHIM'S OWN VERBS DERIVE FROM ITS DISPATCH. Each top-level arm of the shim's `case "$verb" in` either hands the
+# word to the CLI (`route_cli`, or `waited_run` for `found`) or answers it on the host. An arm that names neither hands
+# nothing to the CLI, so it stands as the shim's own door, and a sub-word the rite gives it must name a branch in that
+# arm's own nested `case` (`pulama admit` reads `admit)`). A shim verb added later joins without a hand edit, and a
+# sub-word the arm drops reads red here by name. The PowerShell shim keeps the same verbs (both shims answer one
+# surface), so the bash shim's dispatch carries the reading for both spellings.
+shim_fail = []
+_main = re.search(r'(?ms)^case "\$verb" in\n(.*?)^esac', _shim)
+if not _main:
+    print("[rite-commands] tools/lares-container.sh PARSED TO NO VERB DISPATCH — the probe binds its `case \"$verb\" in` … `esac`.")
+    sys.exit(1)
+_arms = {}
+_spans = list(re.finditer(r'(?m)^  ([a-z][a-z0-9|-]*)\)', _main.group(1)))
+for _i, _a in enumerate(_spans):
+    _end = _spans[_i + 1].start() if _i + 1 < len(_spans) else len(_main.group(1))
+    _body = _main.group(1)[_a.end():_end]
+    for _name in _a.group(1).split("|"):
+        _arms[_name] = _body
+SHIM_OWN = {v for v, b in _arms.items() if not re.search(r'\b(?:route_cli|waited_run)\b', b)}
+if not SHIM_OWN:
+    print("[rite-commands] tools/lares-container.sh PARSED TO ZERO OWN VERBS — the probe reads arms that call no `route_cli`.")
+    sys.exit(1)
 for m in re.finditer(
         r'(?m)^\s*tools/lares-container\.(?:sh|ps1) ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite):
     words = m.group(1).split()
     if words[0] in SHIM_OWN:
+        if len(words) > 1 and not re.search(
+                rf'(?m)^\s*(?:[a-z][a-z0-9-]*\|)*{re.escape(words[1])}(?:\|[a-z][a-z0-9-]*)*\)', _arms[words[0]]):
+            shim_fail.append(f"{m.group(1)!r} — `{words[1]}` names no branch in the shim's own `{words[0]})` arm")
         continue
     cmds.add("vessel found" if words[0] == "found" else m.group(1))
 cmds = sorted(cmds)
 
 CMDS_DIR = pathlib.Path("packages/lares-cli/src/commands")
-fail, subs_checked = [], 0
+
+# THE VERB'S MODULE DERIVES FROM THE CLI'S OWN TABLE. The binary dispatches each verb to its row's `handler`, and the
+# handler names the module it imports from (`home` and `repo` both answer through `commands/tunnel-door.ts`). So the
+# module a sub-door must dispatch in reads off the row and the import, never off the verb's spelling; a verb whose row
+# names no imported handler falls to `commands/<verb>.ts`, and a module absent there still reads red by name.
+_BIN_SRC = pathlib.Path("packages/lares-cli/src/bin/lares.ts").read_text()
+if not re.search(r'(?m)^\s*\{\s*name:\s*"[a-z][a-z0-9-]*",.*\bhandler:', _BIN_SRC):
+    print("[rite-commands] packages/lares-cli/src/bin/lares.ts PARSED TO NO COMMAND ROW — the probe binds `{ name: \"<verb>\", … handler:` rows.")
+    sys.exit(1)
+_IMPORTED = {}
+for _m in re.finditer(r'import\s*\{([^}]*)\}\s*from\s*["\']\.\./commands/([A-Za-z0-9_-]+)\.js["\']', _BIN_SRC):
+    for _name in _m.group(1).split(","):
+        _name = _name.strip().split(" as ")[-1].strip()
+        if _name:
+            _IMPORTED[_name] = _m.group(2)
+
+def module_of(verb: str) -> pathlib.Path:
+    row = re.search(rf'(?m)^\s*\{{\s*name:\s*"{re.escape(verb)}",.*?\bhandler:\s*[^,]*?\b(cmd[A-Z][A-Za-z0-9_]*)', _BIN_SRC)
+    if row and row.group(1) in _IMPORTED:
+        return CMDS_DIR / f"{_IMPORTED[row.group(1)]}.ts"
+    return CMDS_DIR / f"{verb}.ts"
+fail, subs_checked = list(shim_fail), 0
 
 # ── A SUB-DOOR READS AT A DISPATCH POSITION, NEVER AS A LOOSE STRING ────────────────────────────
 # Three shapes carry every dispatch in this CLI, and the VALUE side is half of each:
@@ -86,17 +157,43 @@ _HANDLER = r'(?:cmd[A-Za-z]|run[A-Z]|\{\s*(?:summary|composes|run|handler)\b)'
 # ghost door through that the substring test did.
 _SUBVAR  = r'(?:sub|subverb|subcmd|verb|op)'
 
-def dispatches(body: str, sub: str) -> bool:
-    s = re.escape(sub)
-    return bool(re.search(rf'case\s+["\'`]{s}["\'`]\s*:', body)
-                or re.search(rf'(?m)^\s*["\'`]?{s}["\'`]?\s*:\s*{_HANDLER}', body)
-                or re.search(rf'{_SUBVAR}\s*[=!]==?\s*["\'`]{s}["\'`]', body))
+# THE SUB-DOOR VARIABLE ALSO DERIVES FROM THE MODULE ITSELF: whatever name the module binds from the first positional
+# word (`const act = args.positional[0]` in rite.ts, its `if (act === "receipts")` the dispatch) carries the sub-door
+# there, beside the conventional names above. A name bound from any other place stays an internal parameter, so
+# nexus.ts's `action === "admit"` still names no door.
+def _subvar(body: str) -> str:
+    bound = set(re.findall(r'\b(?:const|let)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*positional\[0\]', body))
+    return _SUBVAR if not bound else rf'(?:{_SUBVAR[3:-1]}|\b(?:{"|".join(sorted(map(re.escape, bound)))})\b)'
 
+# ── AND IT READS AT A CODE POSITION, NEVER IN PROSE ─────────────────────────────────────────────
+# A `case "admit":` left in a comment over a retired branch, or a usage string that spells `admit: cmdAdmit`, reads
+# exactly like a live dispatch to a regex over raw text. Each shape matches the raw body (its key sits inside quotes)
+# and counts only where the same span, with comments and strings masked (tools/code_scan.py), still carries the
+# shape's code half: the `case` keyword, the colon and its handler, the comparison against the sub-door variable.
 def dispatch_keys(body: str) -> set:
-    """Every sub-door a module answers — the same derivation the check above runs, read forward."""
-    return ({m for m in re.findall(r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', body)}
-            | {m for m in re.findall(rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', body)}
-            | {m for m in re.findall(rf'{_SUBVAR}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', body)})
+    """Every sub-door a module answers, read at dispatch positions in code alone."""
+    code = mask_non_code(body)
+    subvar = _subvar(code)
+    shapes = (
+        (r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', r'\bcase\s+:'),
+        (rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', rf':\s*{_HANDLER}'),
+        (rf'{subvar}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', rf'{subvar}\s*[=!]==?'),
+    )
+    found = set()
+    for pattern, code_half in shapes:
+        for m in re.finditer(pattern, body):
+            if re.search(code_half, code[m.start():m.end()]):
+                found.add(m.group(1))
+    return found
+
+def dispatches(body: str, sub: str) -> bool:
+    return sub in dispatch_keys(body)
+
+# AN EMPTY CENSUS CHECKS NOTHING. Rites that parse to zero instructed commands (a re-laid fence, a moved prefix) would
+# walk the loop below zero times and print "every instructed command resolves" over a reading of nothing.
+if not cmds:
+    print("[rite-commands] the rites instruct NO command — the census reads `lares <verb>` and shim lines; nothing was checked.")
+    sys.exit(1)
 
 for c in cmds:
     parts = c.split()
@@ -106,12 +203,15 @@ for c in cmds:
     if len(parts) < 2:
         continue
     sub = parts[1]
-    module = CMDS_DIR / f"{verb}.ts"
+    module = module_of(verb)
     if not module.exists():
-        continue                      # the door dispatches elsewhere; the top verb already answered
+        # A SUB-DOOR WITH NO MODULE READS RED BY NAME. The skip that stood here waved through every sub-word of a verb
+        # whose module moved or vanished, so the rite's `lares ghost walk` read green while nothing read `walk`.
+        fail.append(f"{c!r} — commands/{module.name} is absent; `{sub}` has no mapped module")
+        continue
     subs_checked += 1
     if not dispatches(module.read_text(), sub):
-        fail.append(f"{c!r} — `{sub}` names no dispatch branch in commands/{verb}.ts")
+        fail.append(f"{c!r} — `{sub}` names no dispatch branch in commands/{module.name}")
 
 # ── AND EVERY CODE SYMBOL THE RITE CITES MUST EXIST ─────────────────────────────────────────────
 # The rite explains itself by pointing at functions — `provisionThresholdRecoveryAtFounding`,
@@ -143,7 +243,10 @@ if unscanned and os.environ.get("GITHUB_ACTIONS") == "true":
     fail.append(f"{', '.join(unscanned)} — absent on a runner that checks submodules out; the python half went unscanned")
 cited = sorted({m for m in re.findall(r'`([a-zA-Z_][a-zA-Z0-9_]*(?:#[a-zA-Z][a-zA-Z0-9_]*)?)`', rite)
                 if re.search(r'[a-z][A-Z]|#', m)})
-ghosts = [c for c in cited if c.split("#")[-1] not in blob]
+# A NAME, NEVER A SUBSTRING. `sealKey` sits inside `sealKeySetHash`, so a substring test kept a truncated or renamed
+# citation alive on any longer name that starts with it. The scan still reads comments and strings: the rites cite
+# notation (`hN`) and wire values (`CPUExecutionProvider`) that code holds only there.
+ghosts = [c for c in cited if not re.search(rf'(?<![A-Za-z0-9_$]){re.escape(c.split("#")[-1])}(?![A-Za-z0-9_$])', blob)]
 for g in ghosts:
     if unscanned:
         print(f"[rite-commands] UNREAD `{g}` — found in no scanned source, and {', '.join(unscanned)} "
@@ -155,11 +258,19 @@ for g in ghosts:
 # A door count reports a collapse an operator cannot feel: the fan-out lives one level below the
 # number, so a surface halved by doors may not have moved at all. Both figures ride together — either
 # alone flatters — and both DERIVE, so neither can go stale in a file somebody has to remember.
+# A CENSUS THAT CRASHED READS NO SURFACE, never a surface of zero doors.
 doors_json = subprocess.run(["node", BIN, "help", "--json"], capture_output=True, text=True)
-doors = json.loads(doors_json.stdout)["data"]["entries"] if doors_json.returncode == 0 else []
+try:
+    doors = json.loads(doors_json.stdout)["data"]["entries"] if doors_json.returncode == 0 else []
+except (ValueError, KeyError, TypeError):
+    doors = []
+if not doors:
+    print(f"[rite-commands] the built binary's `help --json` did not answer a door census (exit {doors_json.returncode}) — "
+          "the surface figure is underivable.")
+    sys.exit(1)
 addressable = 0
 for d in doors:
-    module = CMDS_DIR / f"{d['name']}.ts"
+    module = module_of(d['name'])
     addressable += 1 + (len(dispatch_keys(module.read_text())) if module.exists() else 0)
 
 print(f"[rite-commands] {len(cmds)} commands instructed, {subs_checked} sub-doors checked, "

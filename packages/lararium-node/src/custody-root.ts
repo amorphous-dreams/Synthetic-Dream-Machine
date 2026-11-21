@@ -1,18 +1,18 @@
 /**
- * custody-root — THE CUSTODY ROOT: a hot carrier minted at founding, sealed under the vessel KEK (VK), and the
+ * custody-root — THE CUSTODY ROOT: a hot carrier minted at founding, sealed under the S key, and the
  * one root every sovereign derivation of an unlocked vessel stands on.
  *
  * ── TWO ROOTS, NEVER ONE ────────────────────────────────────────────────────────────────────────
- * The FLOOR key (the vessel key) rests outside the VK. It signs the knock and the floor's announcement and
- * derives the per-Nexus wire key, because those acts run before any VK opens. The CUSTODY root rests under
- * the VK and derives what only an unlocked vessel uses: the veil, the keyhive signer, the hosting key, the
+ * The FLOOR key (the vessel key) rests outside the S key. It signs the knock and the floor's announcement and
+ * derives the per-Nexus wire key, because those acts run before any S key opens. The CUSTODY root rests under
+ * the S key and derives what only an unlocked vessel uses: the veil, the keyhive signer, the hosting key, the
  * sovereign caps. A stolen box at rest yields the floor key's reach and nothing the custody root derives.
  * The custody root never feeds a floor act.
  *
  * ── TWO DOORS, BOTH ON THE CUSTODY PATH ─────────────────────────────────────────────────────────
  * A root comes from `mintCustodyRoot` (the founding act's CSPRNG) or from `custodyRootFromBytes`, and the
  * load door takes no bytes at all: it takes an `OpenedCustodyRoot`, which only `openCustodyRootCarrier`
- * mints, after the one sealed writer's opening of the custody carrier under the VK the slot tree commits to.
+ * mints, after the one sealed writer's opening of the custody carrier under the S key the slot tree commits to.
  * The opened bytes ride a module-private WeakMap behind that token, so no caller holds 32 bytes that a door
  * would brand. Every root either door hands out enters a module-private WeakSet, and a derivation refuses,
  * by name, any value the doors never handed out: the floor key's bytes — raw, dressed as `{ bytes }`, or
@@ -25,15 +25,15 @@
  *
  * ── THE CARRIER ─────────────────────────────────────────────────────────────────────────────────
  * The carrier rests at `custodyRootPath()`, written once at founding through the one sealed writer
- * (`sealCustodyRoot`). Its seal names it by home and file (`identity/custody-root.bin`), the name the
- * carrier table's VK-sealed census gives it, so the AAD binds where the bytes rest.
+ * (`sealCustodyRoot`). Its seal names it by home and file (`identity/gate-root.bin`), the name the
+ * carrier table's S-sealed census gives it, so the AAD binds where the bytes rest.
  */
 
 import { hkdfSync, randomBytes } from "node:crypto";
 import { join } from "node:path";
 import {
   ALL_DOMAINS, openSealedCarrier, writeSealedCarrier,
-  type CustodyIo, type SealedCarrier, type VesselKey, type VkOpening,
+  type CustodyIo, type SealedCarrier, type TreeKey, type TreeKeyOpening,
 } from "@lararium/mesh";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -48,7 +48,7 @@ export type CustodyRoot = { readonly bytes: Uint8Array } & { readonly [CUSTODY_R
 const issued = new WeakSet<object>();
 
 declare const OPENED_BRAND: unique symbol;
-/** The custody carrier, opened under the VK. Only `openCustodyRootCarrier` mints one; it carries no bytes a caller reads. */
+/** The custody carrier, opened under the S key. Only `openCustodyRootCarrier` mints one; it carries no bytes a caller reads. */
 export type OpenedCustodyRoot = { readonly [OPENED_BRAND]: true };
 
 const openedBytes = new WeakMap<object, Uint8Array>();
@@ -61,7 +61,7 @@ export class CustodyRootRefused extends Error {
   }
 }
 
-const CARRIER_FILE = "custody-root.bin";
+const CARRIER_FILE = "gate-root.bin";
 
 /** The custody root carrier's path in the identity home. */
 export function custodyRootPath(identityDir: string = larIdentityDir()): string {
@@ -94,15 +94,15 @@ export function custodyRootFromBytes(opened: OpenedCustodyRoot): CustodyRoot {
 }
 
 /**
- * Open the custody carrier under `vk`. `opens` hands back the opening the load door takes; every other reading
+ * Open the custody carrier under `treeKey`. `opens` hands back the opening the load door takes; every other reading
  * stays named (`absent`, `key-fails`, `torn`, …). A carrier that opens to any width but 32 bytes refuses.
  */
 export async function openCustodyRootCarrier(args: {
   readonly io:           CustodyIo;
-  readonly vk:           VesselKey;
+  readonly treeKey:           TreeKey;
   readonly identityDir?: string;
-}): Promise<{ readonly reading: "opens"; readonly opened: OpenedCustodyRoot } | Exclude<VkOpening, { reading: "opens" }>> {
-  const o = await openSealedCarrier({ io: args.io, vk: args.vk, carrier: custodyRootCarrier(args.identityDir) });
+}): Promise<{ readonly reading: "opens"; readonly opened: OpenedCustodyRoot } | Exclude<TreeKeyOpening, { reading: "opens" }>> {
+  const o = await openSealedCarrier({ io: args.io, treeKey: args.treeKey, carrier: custodyRootCarrier(args.identityDir) });
   if (o.reading !== "opens") return o;
   if (o.plaintext.length !== CUSTODY_ROOT_BYTES) {
     throw new CustodyRootRefused(`the custody carrier opens to ${o.plaintext.length} bytes; a custody root holds ${CUSTODY_ROOT_BYTES}`);
@@ -112,17 +112,17 @@ export async function openCustodyRootCarrier(args: {
   return { reading: "opens", opened };
 }
 
-/** Seal `root` as the custody carrier through the one sealed writer, under the VK the tree at `treePath` commits to. */
+/** Seal `root` as the custody carrier through the one sealed writer, under the S key the tree at `treePath` commits to. */
 export async function sealCustodyRoot(args: {
   readonly io:           CustodyIo;
-  readonly vk:           VesselKey;
+  readonly treeKey:           TreeKey;
   readonly treePath:     string;
   readonly root:         CustodyRoot;
   readonly identityDir?: string;
 }): Promise<void> {
   assertRoot(args.root);
   await writeSealedCarrier({
-    io: args.io, vk: args.vk, treePath: args.treePath, carrier: custodyRootCarrier(args.identityDir), plaintext: args.root.bytes,
+    io: args.io, treeKey: args.treeKey, treePath: args.treePath, carrier: custodyRootCarrier(args.identityDir), plaintext: args.root.bytes,
   });
 }
 

@@ -20,7 +20,8 @@ import type { ChangeOrigin, LarTiddlerRecord } from "../src/tiddler-store.js";
 
 const BAG = "lar:///ha.ka.ba/bags/retiring";
 const OTHER = "lar:///ha.ka.ba/bags/standing";
-const origin: ChangeOrigin = { kind: "tw-local", instanceId: "test" };
+// The house's own writer (a residency verb): a hand's origin meets `effect-ledger-house-only` before the retired gate reads.
+const origin: ChangeOrigin = { kind: "lares-verb", requestId: "test" };
 const rec = (title: string, text: string): LarTiddlerRecord => ({ tiddler: { title, text } });
 
 const marker = (bag: string): LarTiddlerRecord => buildEffectRecordTiddler({

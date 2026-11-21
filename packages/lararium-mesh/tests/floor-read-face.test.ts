@@ -8,6 +8,9 @@ import type { LarTiddlerRecord } from "../src/tiddler-store.js";
 const title = "lar:///ha.ka.ba/lares/api/probe";
 const laresRows: Record<string, LarTiddlerRecord> = { [title]: { tiddler: { title, text: "floor carrier" } } };
 const larariumRows: Record<string, LarTiddlerRecord> = {};
+/** A house-canon bag past the system canon (v2 keys one snapshot per slug): its floor rows stack as a peer layer. */
+const sdmTitle = "lar:///ha.ka.ba/sdm/probe";
+const sdmRows: Record<string, LarTiddlerRecord> = { [sdmTitle]: { tiddler: { title: sdmTitle, text: "sdm floor" } } };
 const origin = { kind: "tw-local", instanceId: "floor-read-face-test" } as const;
 
 describe("floor read-face in a wiki cascade", () => {
@@ -15,7 +18,7 @@ describe("floor read-face in a wiki cascade", () => {
     const base = new MemoryTiddlerStore();
     await base.put({ tiddler: { title: "lar:///base-only", text: "base" } }, origin);
     await base.put({ tiddler: { title, text: "base shadow" } }, origin);
-    const face = floorReadFace({ rows: [laresRows, larariumRows], base });
+    const face = floorReadFace({ rows: [larariumRows, laresRows, sdmRows], base });
     const composite = new CompositeStore();
     const slug = "floor-read-face";
     composite.addLayer({ bagId: ORACLE_BAG, store: face, ...slotLayerFlags(ORACLE_BAG, slug) });
@@ -28,6 +31,12 @@ describe("floor read-face in a wiki cascade", () => {
     await composite.put({ tiddler: { title, text: "wiki edit" } }, origin);
     expect((await working.get(title))?.tiddler.text).toBe("wiki edit");
     expect((await face.get(title))?.tiddler.text).toBe("floor carrier"); expect(laresRows[title]?.tiddler.text).toBe("floor carrier");
+    // A house-canon snapshot past lares/lararium reads the same way: an edit copies up into working, never into the floor.
+    expect((await composite.get(sdmTitle))?.tiddler.text).toBe("sdm floor");
+    await composite.put({ tiddler: { title: sdmTitle, text: "sdm wiki edit" } }, origin);
+    expect((await working.get(sdmTitle))?.tiddler.text).toBe("sdm wiki edit");
+    expect((await face.get(sdmTitle))?.tiddler.text).toBe("sdm floor"); expect(sdmRows[sdmTitle]?.tiddler.text).toBe("sdm floor");
+    await expect(face.put({ tiddler: { title: sdmTitle, text: "no" } }, origin)).rejects.toBeInstanceOf(FloorWriteRefusal);
     expect(composite.writableStoreForBag(ORACLE_BAG)).toBeNull();
     await expect(face.put({ tiddler: { title, text: "no" } }, origin)).rejects.toBeInstanceOf(FloorWriteRefusal);
     await expect(face.tombstone(title, origin)).rejects.toMatchObject({ code: "floor-write" });

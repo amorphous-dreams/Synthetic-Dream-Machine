@@ -36,14 +36,13 @@ import {
 } from "@lararium/mesh";
 
 /**
- * ── THE CLIMB'S CARRY MOVED TO MESH, and the reason reads as a MEASUREMENT rather than tidying ────
+ * ── THE CLIMB'S CARRY LIVES IN MESH, because both shores compose it ──────────────────────────────
  *
- * The carry reaches nothing but a Repo and mesh's own board reader, so it was platform-blind from the day
- * it was written — and housing it on THIS shore is what kept the browser leaf from composing it. Measured:
- * `open-browser-vessel` stands the SAME fail-closed Binding Gate ("a chain the replica does not carry HALTS
- * the boot") and could not import this function, so a whole vessel class stood brickable on the walk this
- * function exists to cure. The body now lives at `@lararium/mesh` → `persona-kel-climb`, beside
- * `climbNexusBoards`, whose header already vowed that both shores compose the identical call.
+ * The carry reaches nothing but a Repo and mesh's own board reader, so it reads platform-blind, and the
+ * browser leaf composes it too: `open-browser-vessel` stands the SAME fail-closed Binding Gate ("a chain the
+ * replica does not carry HALTS the boot"), so a vessel class that could not import it would stand brickable
+ * on the walk this function exists to cure. The body lives at `@lararium/mesh` → `persona-kel-climb`, beside
+ * `climbNexusBoards`, whose header vows that both shores compose the identical call.
  *
  * Re-exported HERE so the node boot's import and its vectors keep naming one door. The ruling, the
  * refusals and the at-boot-not-at-the-rite reasoning live in the mesh module's header — read it there.

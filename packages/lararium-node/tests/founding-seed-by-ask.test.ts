@@ -1,3 +1,6 @@
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,6 +13,7 @@ import {
   faceAtomGroupFile, loadFaceAtomOfGroup, loadPendingFoundingSeed,
   pendingFoundingFile, standPendingFoundingSeed, type FoundingAtomAsk,
 } from "../src/face-atom-store.js";
+import { askRecordPath, faceRecordNames, groupRecordPath } from "./face-paths.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
@@ -47,8 +51,8 @@ describe("a founding seed follows its ask", () => {
       expect(resumed).toEqual(stopped);
       const founded = await foundFace({ storageDir: larDataDir(), genesisDir });
       expect(founded.alreadyStood).toBe(false);
-      expect(existsSync(join(larIdentityDir(), pendingFoundingFile(ask)))).toBe(false);
-      expect(existsSync(join(larIdentityDir(), faceAtomGroupFile(founded.personaGroupId)))).toBe(true);
+      expect(faceRecordNames()).not.toContain(pendingFoundingFile(ask));
+      expect(existsSync(groupRecordPath(founded.personaGroupId, faceAtomGroupFile(founded.personaGroupId)))).toBe(true);
       expect(await loadFaceAtomOfGroup(founded.personaGroupId)).toEqual(stopped);
       stopped.fill(0); resumed.fill(0);
     });

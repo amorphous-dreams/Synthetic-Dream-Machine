@@ -14,17 +14,21 @@
  * by ending it, and neither boots a vm.
  */
 
+import { repoRoot } from "@lararium/mesh/node";
 import { larDataDir, larPort, vesselDid, larBootstrapPath } from "../env.js";
 import { stopIncumbent, probePort } from "../port-control.js";
 import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport } from "@lararium/node";
-import { readClaudeCleanupPeriod, CLEANUP_PERIOD_DAYS_FLOOR } from "../claude-wire.js";
-import { emit } from "../render.js";
+import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile } from "@lararium/node";
+import { floorShadowLine } from "@lararium/mesh";
+import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
+import { homeItems } from "../reality-tunnel/catalog.js";
+import { resolveHomes } from "../reality-tunnel/homes.js";
+import { homeLedgerDir } from "../reality-tunnel/places.js";
+import { emit, proseFirst } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-const CLAUDE_DEFAULT_CLEANUP_DAYS = 30; // Claude's own default when the key is unset.
 
 /**
  * `lares vessel read --palaces` — the palace-organ health table (re-runnable). Reads the SAME registry
@@ -131,7 +135,7 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
  * `lares vessel read vessel` — the DEEP health lens (the `git fsck` role, reached through the one
  * read door rather than a verb of its own): probes every Automerge doc in the vessel store through a
  * disposable child-process boundary and charts MOUNTED vs CONDEMNED (a torn doc that would
- * abort the WASM runtime on load). Read-only; a condemned doc can be re-seeded from its disk holding with `lares vessel seed --apply --yes`.
+ * abort the WASM runtime on load). Read-only; a condemned doc can be laid again from its disk holding with `lares vessel lay --apply --yes`.
  * Exits non-zero on a tear, so a boot/CI gate reads health off the exit code.
  */
 async function cmdReadVessel(args: ParsedArgs): Promise<number> {
@@ -152,7 +156,10 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
   return report.degraded ? 1 : 0;
 }
 
-export async function cmdRead(args: ParsedArgs): Promise<number> {
+export async function cmdRead(given: ParsedArgs): Promise<number> {
+  // EVERY LENS ANSWERS A PIPE IN PROSE (render.ts `proseFirst`): the deep probe's JSON names every document in the store, so a
+  // piped read prints the terminal's lines and only `--json` answers the envelope.
+  const args = proseFirst(given);
   // An explicit --root moves the whole reading, as it does for `vessel found` (never a default).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
   // The one named lens is `vessel`; any other positional names a door that does not exist (no alias stands),
@@ -174,7 +181,7 @@ export async function cmdRead(args: ParsedArgs): Promise<number> {
 /** Node health — bootstrap presence, storage size, port probe, retention. Pure local inspection. */
 async function cmdReadNode(args: ParsedArgs): Promise<number> {
 
-  const storage   = larDataDir();   // runtime → <lares>/vessel
+  const storage   = larDataDir();   // runtime → <root>/hearth/vessel
   const bootstrap = larBootstrapPath();
   const portRaw   = process.env["LAR_PORT"] ?? "8080";
   const port      = Number(portRaw);
@@ -183,12 +190,22 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
   const hasBoot    = existsSync(bootstrap);
   const storageStr = dirSizeHint(storage);
 
-  // Session-file retention — the mempalace's verbatim harvest source lives in
-  // ~/.claude/projects and Claude prunes it on startup by cleanupPeriodDays. Surface
-  // it so a short window (evaporating raw memory before it's mined) stays visible.
-  const cleanupRaw = readClaudeCleanupPeriod();
-  const cleanupEffective = cleanupRaw ?? CLAUDE_DEFAULT_CLEANUP_DAYS;
-  const cleanupProtected = cleanupEffective >= CLEANUP_PERIOD_DAYS_FLOOR;
+  // THE MEMORY GUARDS. Every harness's session store seeds the operator's memory, and each host prunes
+  // by its own retention; `lares home` keeps each at its maximum. The read surfaces the guards' rows so a
+  // lowered one (a hand, a host update) stays visible here as well as at the wake.
+  // A TREE WITHOUT THE CATALOG (an older image against a newer checkout, or the reverse) names the skew and reads on: the
+  // read never throws over the guards it cannot find.
+  let guards: ReturnType<typeof readIntent> | null = null;
+  let guardsUnread: string | null = null;
+  try {
+    guards = readIntent(
+      homeItems({ repo: repoRoot, homes: resolveHomes(), mcp: null, claudeCli: false }).filter((i) => /\.retain/.test(i.id)),
+      new Ledger(homeLedgerDir()),
+    ).filter((r) => r.state !== "absent");
+  } catch (e) {
+    guardsUnread = `${e instanceof Error ? e.message : String(e)} under ${repoRoot}: this CLI and the tree it reads stand at different revisions; rebuild the image (or update the checkout) so both carry one catalog`;
+  }
+  const guardsHeld = guards === null ? null : guards.every((r) => r.state === "aligned");
 
   // Snapshot fields — the same data the prose renders, shaped for an agent.
   const data: Record<string, unknown> = {
@@ -196,9 +213,16 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
     storage:   storageStr,
     port,
     portInUse,
-    cleanupPeriodDays: cleanupRaw,
-    cleanupProtected,
+    memoryGuards: guards === null ? null : guards.map((r) => ({ id: r.id, path: r.path, state: r.state })),
+    memoryGuardsHeld: guardsHeld,
+    ...(guardsUnread !== null ? { memoryGuardsUnread: guardsUnread } : {}),
   };
+  // THE FLOOR SHADOW COUNT (backlog-awakens 3a): the tally each boot's mounts keep beside the vessel store, read from the
+  // file whether or not the vessel stands, keyed by floor: the line names the current floor's count and sets older floors
+  // aside. The operator flips mounts onto the floor once the current floor reads clean.
+  const shadow = readFloorShadowFile(storage);
+  data["floorShadow"] = shadow;
+  const shadowLine = floorShadowLine(shadow);
   let residencyLine: string | null = null;
 
   // C.4 — when the daemon is reachable, ask it for a residency snapshot. The CLI
@@ -238,9 +262,12 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
       console.log(`  storage:     ${storageStr}`);
       console.log(`  port ${port}:  ${portInUse ? "in use (node likely running)" : "free"}`);
       if (residencyLine) console.log(`  residency:   ${residencyLine}`);
-      console.log(cleanupProtected
-        ? `  retention:   ${cleanupEffective} days — session files kept ~forever (mempalace source safe)`
-        : `  retention:   ${cleanupEffective} days${cleanupRaw === null ? " (Claude default, unset)" : ""} — raise with \`lares cleanup-days max\` (mempalace source evaporates)`);
+      console.log(`  ${shadowLine}`);
+      console.log(guards === null
+        ? `  memory:      the retention guards read nowhere: ${guardsUnread ?? "unread"}`
+        : guardsHeld
+        ? `  memory:      ${guards.length} retention guard(s) at their maximum`
+        : `  memory:      ${guards.filter((r) => r.state !== "aligned").map((r) => r.id).join(", ")} below the maximum — \`lares home tend\` raises them`);
     },
   });
   return 0;

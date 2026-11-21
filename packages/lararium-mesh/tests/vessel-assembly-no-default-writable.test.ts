@@ -19,6 +19,7 @@ describe("the vessel assembly composite", () => {
       repo,
       catalogHandle: repo.create<LarDoc>(emptyLarDoc()),
       waitHandle: async <T>(url: string) => repo.find(url as never) as unknown as Promise<T>,
+      systemCanon: async () => ({}),
       loadGenesis: async () => ({
         islandHandle: repo.create<LarDoc>(emptyLarDoc()),
         coreHash: "test-core-hash",

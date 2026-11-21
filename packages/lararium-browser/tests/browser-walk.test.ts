@@ -10,15 +10,15 @@
  *   · the walker's leaf derives from its own persona root, per Nexus — one root, a different leaf in each Nexus;
  *   · RED: the retired newcomer-side burn store is gone from a fresh vessel; the walk store stands in its place.
  */
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   encodeInvite, takeInvite, walkArm, popInvite,
   type HostingGrant, type InviteToken,
 } from "@lararium/mesh";
 import { browserWalkStore, browserWalkLeaf } from "../src/browser-walk.js";
-import { generateOrLoadBrowserPersonaRoot, openVesselIdb } from "../src/browser-vessel-identity.js";
-import { readKeystoreRow } from "../src/browser-custody.js";
+import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
+import { readKeystoreRecord } from "../src/browser-custody.js";
 
 let created = 0;
 const opened = new Set<string>();
@@ -35,14 +35,14 @@ const TOKEN: InviteToken = { purpose: "host-invite", n: "12".repeat(32), y: "34"
 describe("the browser walk", () => {
   test("the invite is kept before any dial; the token presents until the invite settles, then the grant", async () => {
     const name = idb();
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
+    const face = await bindSyntheticBrowserCustodySlot(name);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
     const store = browserWalkStore(name);
     const carried = encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: TOKEN });
     const taken = await takeInvite(store, carried);
     expect(taken?.gatePubKey).toBe(GATE);
     expect((await store.read(GATE))?.invite).toBe(carried);
-    const leaf = await browserWalkLeaf(name, AID, 0);
+    const leaf = await browserWalkLeaf(name, AID, face);
     expect(walkArm((await store.read(GATE))!, leaf)?.kind).toBe("token");
     const grant: HostingGrant = { nexusAid: AID, leaf: leaf.verifyingKey, epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) };
     await store.update(GATE, () => ({ nexusAid: AID, invite: carried, grant }));
@@ -91,31 +91,22 @@ describe("the browser walk", () => {
 
   test("one persona root, a different leaf in each Nexus", async () => {
     const name = idb();
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
-    const a = await browserWalkLeaf(name, AID, 0);
-    const b = await browserWalkLeaf(name, "nexus-" + "b".repeat(64), 0);
+    const face = await bindSyntheticBrowserCustodySlot(name);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
+    const a = await browserWalkLeaf(name, AID, face);
+    const b = await browserWalkLeaf(name, "nexus-" + "b".repeat(64), face);
     expect(a.verifyingKey).toMatch(/^[0-9a-f]{64}$/);
     expect(a.verifyingKey).not.toBe(b.verifyingKey);
-    expect((await browserWalkLeaf(name, AID, 0)).verifyingKey).toBe(a.verifyingKey);
+    expect((await browserWalkLeaf(name, AID, face)).verifyingKey).toBe(a.verifyingKey);
   });
 
   test("RED: a face's key at a Nexus rests as the 32 bytes it signs with, in its own store, and a face this vessel holds no root for presents nowhere", async () => {
     const name = idb();
-    await bindSyntheticBrowserCustodySlot(name);
-    await generateOrLoadBrowserPersonaRoot(name, 0);
-    const a = await browserWalkLeaf(name, AID, 0);
-    const kept = await readKeystoreRow(name, `nexus-key/h0/${AID}`);
+    const face = await bindSyntheticBrowserCustodySlot(name);
+    await generateOrLoadBrowserPersonaRoot(name, 0, FIXTURE_WARD);
+    const a = await browserWalkLeaf(name, AID, face);
+    const kept = await readKeystoreRecord(name, `nexus-key/${face}/${AID}`);
     expect(kept).toEqual(a.seed);
-    await expect(browserWalkLeaf(name, AID, 1)).rejects.toThrow();
-  });
-
-  test("RED: the newcomer-side burn store is gone; the walk store stands in its place", async () => {
-    const db = await openVesselIdb(idb());
-    try {
-      expect(db.objectStoreNames.contains("boot-invite-burned")).toBe(false);
-      expect(db.objectStoreNames.contains("hosting-walk")).toBe(false);
-      expect(db.objectStoreNames.contains("nexus-keys")).toBe(false);
-    } finally { db.close(); }
+    await expect(browserWalkLeaf(name, AID, `pg-held-nowhere-${crypto.randomUUID()}`)).rejects.toThrow();
   });
 });

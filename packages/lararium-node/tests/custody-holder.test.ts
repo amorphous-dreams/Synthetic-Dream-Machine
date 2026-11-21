@@ -3,11 +3,12 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { TreeVkRefusal, type Credential } from "@lararium/mesh";
+import { TreeKeyRefusal, type Credential } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
-import { makeCustodyHolder, CustodyLocked, CustodyRowUnknown } from "../src/custody-holder.js";
-import { vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
+import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRecordUnknown } from "../src/custody-holder.js";
+import { sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
+import { handleRecordPathIn } from "./face-paths.js";
 
 // Every unlock runs the slot's own key derivation, priced to cost a guesser; the suite waits it out.
 vi.setConfig({ testTimeout: 180_000 });
@@ -41,8 +42,14 @@ function hashes(dir: string): Record<string, string> {
   }
   return out;
 }
-beforeEach(() => { const s = stage("main"); root = s.root; homes = s.homes; io = s.io; });
-afterEach(() => { for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true }); });
+beforeEach(() => {
+  seatFaceAutoFounder(() => [{ t: 1, pins: [pass(RIGHT)] }]);
+  const s = stage("main"); root = s.root; homes = s.homes; io = s.io;
+});
+afterEach(() => {
+  seatFaceAutoFounder(null);
+  for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
+});
 
 describe("CustodyHolder", () => {
   test("H1 wrong route holds nothing and changes no file; right route opens", async () => {
@@ -58,7 +65,7 @@ describe("CustodyHolder", () => {
 
   test("H2 the fourth guess does not read the slot tree; two misses still permit success", async () => {
     const h = await found();
-    const target = vkSlotsPath(homes.identity);
+    const target = sSlotsPath(homes.identity);
     let reads = 0;
     const read = io.read.bind(io);
     io.read = async (path) => { if (path === target) reads++; return read(path); };
@@ -72,25 +79,25 @@ describe("CustodyHolder", () => {
     expect((await control.unlock([pass(RIGHT)])).reading).toBe("opens");
   });
 
-  test("H3 a tree for another VK refuses without changing the row or leaving a sidecar", async () => {
+  test("H3 a tree for another S key refuses without changing the row or leaving a sidecar", async () => {
     const h = await found();
     const b = stage("h3-b");
     await foundCustody({ io: b.io, homes: b.homes, slots: [{ t: 1, pins: [pass(RIGHT)] }] });
     await h.unlock([pass(RIGHT)]);
-    const file = ".handle-book.json";
+    const file = ".persona-admissions.json";
     const first = new TextEncoder().encode('{"first":true}');
-    await h.writeRow("identity", file, first);
+    await h.writeRecord("identity", file, first);
     const path = join(homes.identity, file);
     const kept = readFileSync(path);
-    const tree = readFileSync(vkSlotsPath(homes.identity));
-    writeFileSync(vkSlotsPath(homes.identity), readFileSync(vkSlotsPath(b.homes.identity)));
-    await expect(h.writeRow("identity", file, new TextEncoder().encode('{"second":true}'))).rejects.toBeInstanceOf(TreeVkRefusal);
+    const tree = readFileSync(sSlotsPath(homes.identity));
+    writeFileSync(sSlotsPath(homes.identity), readFileSync(sSlotsPath(b.homes.identity)));
+    await expect(h.writeRecord("identity", file, new TextEncoder().encode('{"second":true}'))).rejects.toBeInstanceOf(TreeKeyRefusal);
     expect(readFileSync(path).equals(kept)).toBe(true);
-    expect(existsSync(`${path}.vk-sealing`)).toBe(false);
-    writeFileSync(vkSlotsPath(homes.identity), tree);
+    expect(existsSync(`${path}.s-sealing`)).toBe(false);
+    writeFileSync(sSlotsPath(homes.identity), tree);
     const fresh = makeCustodyHolder({ io, homes });
     await fresh.unlock([pass(RIGHT)]);
-    const got = await fresh.readRow("identity", file);
+    const got = await fresh.readRecord("identity", file);
     expect(got.reading).toBe("opens");
     if (got.reading === "opens") expect(got.plaintext).toEqual(first);
   });
@@ -98,24 +105,26 @@ describe("CustodyHolder", () => {
   test("H4 bare, absent and truncated rows keep distinct readings", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     const file = "anchors-h0.json";
-    writeFileSync(join(homes.identity, file), '{"bare":true}');
-    expect(await h.readRow("identity", file)).toEqual({ reading: "unavailable", why: "bare" });
-    expect(await h.readRow("identity", "anchors-h1.json")).toEqual({ reading: "absent" });
+    await h.writeRecord("identity", file, new TextEncoder().encode('{"whole":true}'));
+    writeFileSync(handleRecordPathIn(homes.identity, file), '{"bare":true}');
+    expect(await h.readRecord("identity", file)).toEqual({ reading: "unavailable", why: "bare" });
+    await h.writeRecord("identity", "recovery-contact-set-h1.json", new TextEncoder().encode('{"whole":true}'));
+    expect(await h.readRecord("identity", "anchors-h1.json")).toEqual({ reading: "absent" });
     // A sealed row cut short: it bears the seal and no longer opens. It reads unavailable by the reader's own
     // name for it, never `opens` and never `absent`.
-    await h.writeRow("identity", "anchors-h2.json", new TextEncoder().encode('{"whole":true}'));
-    const whole = readFileSync(join(homes.identity, "anchors-h2.json"));
-    writeFileSync(join(homes.identity, "anchors-h2.json"), whole.subarray(0, whole.length - 5));
-    const cut = await h.readRow("identity", "anchors-h2.json");
+    await h.writeRecord("identity", "anchors-h2.json", new TextEncoder().encode('{"whole":true}'));
+    const whole = readFileSync(handleRecordPathIn(homes.identity, "anchors-h2.json"));
+    writeFileSync(handleRecordPathIn(homes.identity, "anchors-h2.json"), whole.subarray(0, whole.length - 5));
+    const cut = await h.readRecord("identity", "anchors-h2.json");
     expect(cut.reading).toBe("unavailable");
     expect(["torn", "key-fails", "unopenable"]).toContain((cut as { why: string }).why);
   });
 
   test("H5 lock drops access and permits another successful unlock", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]); await h.lock();
-    expect(await h.readRow("identity", ".handle-book.json")).toEqual({ reading: "locked" });
-    await expect(h.writeRow("identity", ".handle-book.json", new Uint8Array())).rejects.toBeInstanceOf(CustodyLocked);
-    await expect(h.updateRow("identity", ".handle-book.json", () => ({ plaintext: new Uint8Array(), value: 1 }))).rejects.toBeInstanceOf(CustodyLocked);
+    expect(await h.readRecord("identity", ".persona-admissions.json")).toEqual({ reading: "locked" });
+    await expect(h.writeRecord("identity", ".persona-admissions.json", new Uint8Array())).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(h.updateRecord("identity", ".persona-admissions.json", () => ({ plaintext: new Uint8Array(), value: 1 }))).rejects.toBeInstanceOf(CustodyLocked);
     expect((await h.unlock([pass(RIGHT)])).reading).toBe("opens");
   });
 
@@ -127,19 +136,19 @@ describe("CustodyHolder", () => {
 
   test("H7 cold plaintext is scoped to the act and zeroed afterward", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    const file = ".persona-group-root-h0.json";
+    const file = "recovery-device-share-h0.bin";
     const plain = new TextEncoder().encode('{"secret":"synthetic"}');
-    await h.writeRow("identity", file, plain);
+    await h.writeRecord("identity", file, plain);
     let handed!: Uint8Array;
-    await h.openColdRow("identity", file, (bytes) => { handed = bytes; expect(bytes).toEqual(plain); });
+    await h.openColdRecord("identity", file, (bytes) => { handed = bytes; expect(bytes).toEqual(plain); });
     expect(handed.every((n) => n === 0)).toBe(true);
-    await expect(h.readRow("identity", file)).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(h.readRecord("identity", file)).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 
   test("H8 unknown addresses refuse on reads and writes", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    await expect(h.readRow("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRowUnknown);
-    await expect(h.writeRow("identity", "not-a-row.bin", new Uint8Array())).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(h.readRecord("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRecordUnknown);
+    await expect(h.writeRecord("identity", "not-a-row.bin", new Uint8Array())).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 
   test("H9 holder diagnostics and readings do not contain the credential", async () => {
@@ -165,7 +174,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
   test("P1 the vessel's own route proves, opens nothing new and spends no attempt", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     const before = hashes(root);
-    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves" });
+    expect(await h.proves([pass(RIGHT)])).toMatchObject({ reading: "proves", opener: [0], proved: [expect.objectContaining({ t: 1, pins: 1, opener: [0] })] });
     expect(h.attemptsLeft()).toBe(3);
     expect(h.isUnlocked()).toBe(true);
     expect(hashes(root)).toEqual(before);
@@ -176,7 +185,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     expect(await h.proves([pass("holder-wrong-P2-a")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
     expect(await h.proves([pass("holder-wrong-P2-b")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 1 });
     expect(await h.proves([pass("holder-wrong-P2-c")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 0 });
-    const target = vkSlotsPath(homes.identity);
+    const target = sSlotsPath(homes.identity);
     let reads = 0;
     const read = io.read.bind(io);
     io.read = async (path) => { if (path === target) reads++; return read(path); };
@@ -207,14 +216,14 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     // Another vessel's tree, founded under another route, laid over this vessel's tree file.
     const other = stage("p5-other");
     await foundCustody({ ...other, slots: [{ t: 1, pins: [pass("the-other-vessels-route")] }] });
-    const mine = readFileSync(vkSlotsPath(homes.identity));
-    writeFileSync(vkSlotsPath(homes.identity), readFileSync(vkSlotsPath(other.homes.identity)));
+    const mine = readFileSync(sSlotsPath(homes.identity));
+    writeFileSync(sSlotsPath(homes.identity), readFileSync(sSlotsPath(other.homes.identity)));
     // THE BYTES MOVED: the tree at this vessel's path now reads as the other vessel's.
-    expect(readFileSync(vkSlotsPath(homes.identity)).equals(mine)).toBe(false);
+    expect(readFileSync(sSlotsPath(homes.identity)).equals(mine)).toBe(false);
     expect(await h.proves([pass("the-other-vessels-route")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
     // CONTROL: with its own tree back, its own route proves.
-    writeFileSync(vkSlotsPath(homes.identity), mine);
-    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves" });
+    writeFileSync(sSlotsPath(homes.identity), mine);
+    expect(await h.proves([pass(RIGHT)])).toMatchObject({ reading: "proves", opener: [0], proved: [expect.objectContaining({ t: 1, pins: 1, opener: [0] })] });
   });
 
   test("P6 a proof's answer carries no credential", async () => {
@@ -225,43 +234,44 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
   });
 });
 
-describe("CustodyHolder.removeColdRow — an act removes the cold row it committed", () => {
-  const COLD = ".restore-pending.json";
-  const HOT = ".persona-roster.json";
+describe("CustodyHolder.removeColdRecord — an act removes the cold row it committed", () => {
+  const COLD = "recovery-device-share-h0.bin";
+  const HOT = ".persona-admissions.json";
   test("C1 a cold row leaves, and a second removal answers that none stood", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
-    expect(existsSync(join(homes.identity, COLD))).toBe(true);
-    expect(await h.removeColdRow("identity", COLD)).toBe(true);
-    expect(existsSync(join(homes.identity, COLD))).toBe(false);
-    expect(await h.removeColdRow("identity", COLD)).toBe(false);
+    await h.writeRecord("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
+    expect(existsSync(handleRecordPathIn(homes.identity, COLD))).toBe(true);
+    expect(await h.removeColdRecord("identity", COLD)).toBe(true);
+    expect(existsSync(handleRecordPathIn(homes.identity, COLD))).toBe(false);
+    expect(await h.removeColdRecord("identity", COLD)).toBe(false);
   });
 
   test("C2 a hot row refuses the cold removal and stays; an unknown address refuses", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    await h.writeRow("identity", HOT, new TextEncoder().encode('{"roots":[]}'));
-    await expect(h.removeColdRow("identity", HOT)).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await h.writeRecord("identity", HOT, new TextEncoder().encode('{"roots":[]}'));
+    await expect(h.removeColdRecord("identity", HOT)).rejects.toBeInstanceOf(CustodyRecordUnknown);
     expect(existsSync(join(homes.identity, HOT))).toBe(true);
-    await expect(h.removeColdRow("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(h.removeColdRecord("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 
   test("C3 a locked holder removes nothing", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
+    await h.writeRecord("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
     await h.lock();
-    await expect(h.removeColdRow("identity", COLD)).rejects.toBeInstanceOf(CustodyLocked);
-    expect(existsSync(join(homes.identity, COLD))).toBe(true);
+    await expect(h.removeColdRecord("identity", COLD)).rejects.toBeInstanceOf(CustodyLocked);
+    expect(existsSync(handleRecordPathIn(homes.identity, COLD))).toBe(true);
   });
 
   test("C4 a cold row another vessel's key sealed stays, and the removal refuses by name", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
+    await h.writeRecord("identity", COLD, new TextEncoder().encode('{"pending":"of this vessel"}'));
     const other = stage("c4-other");
     const o = await found(other); await o.unlock([pass(RIGHT)]);
-    await o.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"of another vessel"}'));
-    mkdirSync(homes.identity, { recursive: true });
-    writeFileSync(join(homes.identity, COLD), readFileSync(join(other.homes.identity, COLD)));
-    const before = readFileSync(join(homes.identity, COLD));
-    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/\.restore-pending\.json reads/);
-    expect(readFileSync(join(homes.identity, COLD)).equals(before)).toBe(true);
+    await o.writeRecord("identity", COLD, new TextEncoder().encode('{"pending":"of another vessel"}'));
+    const ownPath = handleRecordPathIn(homes.identity, COLD);
+    writeFileSync(ownPath, readFileSync(handleRecordPathIn(other.homes.identity, COLD)));
+    const before = readFileSync(ownPath);
+    await expect(h.removeColdRecord("identity", COLD)).rejects.toThrow(/custody record identity\/recovery-device-share-h0\.bin reads/);
+    expect(readFileSync(ownPath).equals(before)).toBe(true);
   });
 });

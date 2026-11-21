@@ -138,6 +138,7 @@ export class ShoreRig {
       carriers: o.candidates.map((r) => ({
         uri: r.uri, file: r.file, size: Buffer.byteLength(r.text, "utf8"), diskHash: r.diskHash, syncedHash: r.syncedHash,
         ...(r.syncedRecordsHash !== undefined ? { syncedRecordsHash: r.syncedRecordsHash } : {}),
+        ...((r as { headBase?: boolean }).headBase === true ? { headBase: true } : {}),
         ext: r.ext, text: r.text, ...(r.meta !== undefined ? { meta: r.meta } : {}),
       })),
       ...(o.deletions && o.deletions.length > 0 ? { deletions: o.deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),

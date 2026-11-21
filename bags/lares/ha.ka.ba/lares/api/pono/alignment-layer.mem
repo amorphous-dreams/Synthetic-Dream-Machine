@@ -1,30 +1,23 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/alignment-layer">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/alignment-layer`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/alignment-layer.mem"
-l-space     = "stable"
-mana        = 16
-manao       = 15
-manaoio     = 13
-namespace   = "&#x2299;"
-proposed-on = "2026-06-01"
-role        = "design invariant: the alignment plane — non-monotonic subjective trust ABOVE cryptographic capability; the lemures layer; how a mesh survives adversaries at federation scale without global consensus or a central registry"
-status-why  = "doctrine; no source carries it yet"
-tags        = ["api/pono/causal-islands", "lifecycle/designed"]
-title       = "lar:///ha.ka.ba/lares/api/pono/alignment-layer"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/alignment-layer"
+cacheable  = true
+l-space    = "stable"
+namespace  = "&#x2299;"
+role       = "design invariant: the alignment plane — non-monotonic subjective trust ABOVE cryptographic capability; the lemures layer; how a mesh survives adversaries at federation scale without global consensus or a central registry"
+status-why = "doctrine; no source carries it yet"
+tags       = ["api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/api/pono/alignment-layer"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/alignment-layer"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Alignment Layer
 
@@ -43,7 +36,7 @@ ABOVE capability. This meme defines it. It sits beside Beelay sync and above Key
 
 <<~/ahu>>
 
-<<~ ahu #/two-planes>>
+<<~ ahu slot=`#/two-planes`>>
 
 !! The two planes never merge
 
@@ -65,7 +58,7 @@ trust — spammers pass DMARC. Authenticity passes as necessary but insufficient
 
 <<~/ahu>>
 
-<<~ ahu #/primitives>>
+<<~ ahu slot=`#/primitives`>>
 
 !! Primitives — all live as signed assertions stored as ordinary content
 
@@ -75,8 +68,8 @@ bags like any other content, evaluated locally against a per-island trust root.
 # ''`peer-stance`'' — a signed assertion over a target principal: `block | limit | neutral | allow`.
    Two SEPARATE consequences (the separation-of-powers move):
 *** //filter// — I will not surface/accept this actor's content locally.
-*** //relay// — I will not relay this actor's CRDT ops to others (SSB semantics: "no longer
-     willing to be a peer that shares their posts"). This marks the ''Beelay-layer'' enforcement point.
+*** //relay// — I will not relay this actor's CRDT ops to others (SSB semantics: the blocker declines
+     to stand as a peer that shares their posts). This marks the ''Beelay-layer'' enforcement point.
 # ''`vouch`'' — a signed invitation/endorsement edge. Membership in a Cabal/Nexus comes by vouch;
    the vouch edge stays on record. Severing a vouch stops RE-LIFTING the invitee's standing in
    the voucher's subgraph. This edge carries the Sybil defense (see #sybil).
@@ -90,7 +83,7 @@ bags like any other content, evaluated locally against a per-island trust root.
 
 <<~/ahu>>
 
-<<~ ahu #/transitive-trust>>
+<<~ ahu slot=`#/transitive-trust`>>
 
 !! Transitive trust — capped, area-scoped (TrustNet/Appleseed)
 
@@ -113,7 +106,7 @@ causal-island model denies.
 
 <<~/ahu>>
 
-<<~ ahu #/sybil>>
+<<~ ahu slot=`#/sybil`>>
 
 !! Sybil resistance — the invitation tree CARRIES the defense
 
@@ -127,7 +120,7 @@ make them ''socially reachable only through accountable edges''.
 
 <<~/ahu>>
 
-<<~ ahu #/enforcement>>
+<<~ ahu slot=`#/enforcement`>>
 
 !! Enforcement — at the Beelay boundary, by withholding
 
@@ -147,7 +140,7 @@ Beelay       → the enforcement surface: consult the verdict before sync/relay.
 
 <<~/ahu>>
 
-<<~ ahu #/scale-composition>>
+<<~ ahu slot=`#/scale-composition`>>
 
 !! Composition with the scale ladder
 
@@ -171,7 +164,7 @@ only the //root// and the //default subscriptions// change:
 
 <<~/ahu>>
 
-<<~ ahu #/must-not>>
+<<~ ahu slot=`#/must-not`>>
 
 !! Purity constraints — what the alignment layer holds
 
@@ -185,7 +178,7 @@ only the //root// and the //default subscriptions// change:
 
 <<~/ahu>>
 
-<<~ ahu #/closure-coherence>>
+<<~ ahu slot=`#/closure-coherence`>>
 
 !! Coherence — the membership face the closure model formalizes
 
@@ -197,7 +190,7 @@ The veil's cost-dial reads as the ''WHO-plane membership face'' that [[group-as-
 
 <<~/ahu>>
 
-<<~ ahu #/fiction>>
+<<~ ahu slot=`#/fiction`>>
 
 !! Fiction-layer reading — the Lemuria rite
 
@@ -210,7 +203,7 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<~ ahu #/prior-art>>
+<<~ ahu slot=`#/prior-art`>>
 
 !! Prior art
 
@@ -228,16 +221,16 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/group-as-closure`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rhCZHcumogmxUwIGOVK-4mFt8tZrJ48k1hAEfqv65ps
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MiXNdjrYd0g4x3vdhvtoXS8zE8wuXlt0B6APhUbDWk8`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -5,11 +5,11 @@
  */
 import { describe, expect, it } from "vitest";
 import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
-import { SEALED_INDEX_ROW_DOMAIN, SEALED_LOCKBOX_RECORD_DOMAIN, SEALED_RECORD_REST_DOMAIN } from "../src/domains.js";
+import { SEALED_INDEX_ENTRY_DOMAIN, SEALED_LOCKBOX_RECORD_DOMAIN, SEALED_RECORD_REST_DOMAIN } from "../src/domains.js";
 import { readContentKey, keyVersionIdOf, sealedImage, type KeyVersionId } from "../src/sealed-chunk.js";
-import { bagLocatorOf, recordIdOf, signRecord, type BagLocator, type KeyVersionBody, type KeyVersionPrivate, type RecordSigner, type SealedRecord, type SealedChunkIndexRow, type LockboxRecord } from "../src/sealed-records.js";
+import { bagLocatorOf, recordIdOf, signRecord, type BagLocator, type KeyVersionBody, type KeyVersionPrivate, type RecordSigner, type SealedRecord, type SealedChunkIndexEntry, type LockboxRecord } from "../src/sealed-records.js";
 import { chain, signHex } from "./face-proof-fixture.js";
-import { encodeCarriedRecord, encodeIndexRow, encodeLockboxRecord, indexRowNameOf, isRestKind, isRestName, lockboxNameOf, memorySealedStoreRest, readCarriedRecord, readIndexRow, readLockboxRecord, recordNameOf, restDigest, restNameHolds, SealedStore, mintOutboxKey, openOutboxParcel, OutboxShut, readOutboxKey, readsAsOutboxSeal, sealOutboxParcel, type RestKind, type SealedStoreRest } from "../src/sealed-store-rest.js";
+import { encodeCarriedRecord, encodeIndexEntry, encodeLockboxRecord, indexEntryNameOf, isRestKind, isRestName, lockboxNameOf, memorySealedStoreRest, readCarriedRecord, readIndexEntry, readLockboxRecord, recordNameOf, restDigest, restNameHolds, SealedStore, mintOutboxKey, openOutboxParcel, OutboxShut, readOutboxKey, readsAsOutboxSeal, sealOutboxParcel, type RestKind, type SealedStoreRest } from "../src/sealed-store-rest.js";
 
 const BAG_ID = "lar:///ha.ka.ba/@test/bags/garden";
 const nexus = "nexus-test-one";
@@ -27,7 +27,7 @@ const signed = async (span: KeyVersionId = v1): Promise<SealedRecord<"key-versio
   return r.record;
 };
 const lockbox: LockboxRecord = { bag, keyVersion: v1, wrap: "keyhive", box: new Uint8Array([1, 2, 3]) };
-const row: SealedChunkIndexRow = { bag, keyVersion: v1, role: "blob", address: (`blake3:${"c".repeat(64)}`) as SealedChunkIndexRow["address"], locator: "d".repeat(64), parents: [], manifest: "e".repeat(64) as SealedChunkIndexRow["manifest"] };
+const row: SealedChunkIndexEntry = { bag, keyVersion: v1, role: "blob", address: (`blake3:${"c".repeat(64)}`) as SealedChunkIndexEntry["address"], locator: "d".repeat(64), parents: [], manifest: "e".repeat(64) as SealedChunkIndexEntry["manifest"] };
 const spyRest = (base: SealedStoreRest) => {
   const gets: string[] = [];
   const overrides = new Map<string, Uint8Array>();
@@ -56,7 +56,7 @@ describe("codec round trips preserve each encoded value", () => {
     const handover = { kind: "hand-over" as const, body: { bag, keyVersion: v1, span: v1, versions: [v1] }, sealed: new Uint8Array([5]) };
     expect(readCarriedRecord(encodeCarriedRecord(manifest))).toEqual(manifest);
     expect(readCarriedRecord(encodeCarriedRecord(handover))).toEqual(handover);
-    expect(readIndexRow(encodeIndexRow(row))).toEqual(row);
+    expect(readIndexEntry(encodeIndexEntry(row))).toEqual(row);
   });
 });
 
@@ -91,42 +91,42 @@ describe("index rows enforce canonical fields", () => {
   it("row reader and encoder refuse malformed roles, parents, locators and addresses", () => {
     const malformed = [
       { ...row, role: "unknown" as never },
-      { ...row, role: "change", parents: [`blake3:${"b".repeat(64)}`, `blake3:${"a".repeat(64)}`] as SealedChunkIndexRow["parents"] },
-      { ...row, parents: [`blake3:${"a".repeat(64)}`, `blake3:${"a".repeat(64)}`] as SealedChunkIndexRow["parents"] },
-      { ...row, parents: [`blake3:${"a".repeat(64)}`] as SealedChunkIndexRow["parents"] },
+      { ...row, role: "change", parents: [`blake3:${"b".repeat(64)}`, `blake3:${"a".repeat(64)}`] as SealedChunkIndexEntry["parents"] },
+      { ...row, parents: [`blake3:${"a".repeat(64)}`, `blake3:${"a".repeat(64)}`] as SealedChunkIndexEntry["parents"] },
+      { ...row, parents: [`blake3:${"a".repeat(64)}`] as SealedChunkIndexEntry["parents"] },
       { ...row, locator: "a".repeat(62) },
-      { ...row, address: "none" as SealedChunkIndexRow["address"] },
+      { ...row, address: "none" as SealedChunkIndexEntry["address"] },
     ];
-    expect(readIndexRow(encodeIndexRow(row))).toEqual(row);
-    for (const bad of malformed) expect(() => encodeIndexRow(bad)).toThrow(TypeError);
+    expect(readIndexEntry(encodeIndexEntry(row))).toEqual(row);
+    for (const bad of malformed) expect(() => encodeIndexEntry(bad)).toThrow(TypeError);
     for (const bad of malformed) {
-      const image = (() => { try { return encodeIndexRow({ ...row, role: "blob", parents: [] }); } catch { return new Uint8Array(); } })();
-      if (image.length) expect(readIndexRow(image)).not.toBeNull();
-      expect(() => encodeIndexRow(bad)).toThrow();
+      const image = (() => { try { return encodeIndexEntry({ ...row, role: "blob", parents: [] }); } catch { return new Uint8Array(); } })();
+      if (image.length) expect(readIndexEntry(image)).not.toBeNull();
+      expect(() => encodeIndexEntry(bad)).toThrow();
     }
   });
 });
 
 describe("index row images refuse every malformed field", () => {
   it("row reader refuses unknown roles, unsorted and repeated parents, blob parents, short locators and none addresses", () => {
-    const valid = encodeIndexRow(row);
-    expect(readIndexRow(valid)).toEqual(row);
+    const valid = encodeIndexEntry(row);
+    expect(readIndexEntry(valid)).toEqual(row);
     const images = [
-      sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("unknown"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 0]), hexToBytes(row.manifest)),
-      sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`)]), hexToBytes(row.manifest)),
-      sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 1, ...utf8Bytes("blake3:z"), 0, 0, 0, 8, ...utf8Bytes("blake3:a")]), hexToBytes(row.manifest)),
-      sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`), 0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`)]), hexToBytes(row.manifest)),
-      sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`)]), hexToBytes(row.manifest)),
-      sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), new Uint8Array(31), new Uint8Array([0, 0, 0, 0]), hexToBytes(row.manifest)),
-      sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes("none"), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 0]), hexToBytes(row.manifest)),
+      sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("unknown"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 0]), hexToBytes(row.manifest)),
+      sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`)]), hexToBytes(row.manifest)),
+      sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 1, ...utf8Bytes("blake3:z"), 0, 0, 0, 8, ...utf8Bytes("blake3:a")]), hexToBytes(row.manifest)),
+      sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`), 0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`)]), hexToBytes(row.manifest)),
+      sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 71, ...utf8Bytes(`blake3:${"a".repeat(64)}`)]), hexToBytes(row.manifest)),
+      sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes(row.address), new Uint8Array(31), new Uint8Array([0, 0, 0, 0]), hexToBytes(row.manifest)),
+      sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(bag), hexToBytes(v1), utf8Bytes("blob"), utf8Bytes("none"), hexToBytes(row.locator), new Uint8Array([0, 0, 0, 0]), hexToBytes(row.manifest)),
     ];
-    for (const image of images) expect(readIndexRow(image)).toBeNull();
+    for (const image of images) expect(readIndexEntry(image)).toBeNull();
   });
 });
 
 describe("rest names bind prefixes and bytes", () => {
   it("names lead with required ids, end in digests and reject unsafe spellings", async () => {
-    const ln = lockboxNameOf(lockbox), rn = indexRowNameOf(row), lb = encodeLockboxRecord(lockbox), rb = encodeIndexRow(row);
+    const ln = lockboxNameOf(lockbox), rn = indexEntryNameOf(row), lb = encodeLockboxRecord(lockbox), rb = encodeIndexEntry(row);
     expect(ln.startsWith(`${v1}.${bag}.`)).toBe(true); expect(rn.startsWith(`${bag}.${v1}.${row.locator}.`)).toBe(true);
     expect(ln.endsWith(restDigest(lb))).toBe(true); expect(rn.endsWith(restDigest(rb))).toBe(true);
     for (const name of [ln, rn]) expect(isRestName(name)).toBe(true);
@@ -140,8 +140,8 @@ describe("stored bytes must prove their names", () => {
     const base = memorySealedStoreRest(), rest = spyRest(base), store = new SealedStore(rest);
     const lb = await store.putLockbox(lockbox), lock2 = { ...lockbox, keyVersion: v2 };
     const key = await signed(), key2 = { ...key, sealed: Uint8Array.from([...key.sealed, 1]) };
-    await store.putLockbox(lock2); await store.putRecord(key); await store.putRecord(key2); await store.putIndexRows([row]);
-    const ln = lb, kn = recordNameOf(key), rn = indexRowNameOf(row);
+    await store.putLockbox(lock2); await store.putRecord(key); await store.putRecord(key2); await store.putIndexEntries([row]);
+    const ln = lb, kn = recordNameOf(key), rn = indexEntryNameOf(row);
     const oldLock = await base.get("lockbox", ln), oldRecord = await base.get(key.kind, kn), oldRow = await base.get("index", rn);
     await rest.bytes("lockbox", ln, tamper(oldLock!)); await rest.bytes(key.kind, kn, tamper(oldRecord!)); await rest.bytes("index", rn, tamper(oldRow!));
     expect(hex((await rest.get("lockbox", ln))!)).not.toBe(hex(oldLock!));
@@ -175,7 +175,7 @@ describe("write once replaces only broken named values", () => {
 describe("restarts preserve one copy of each value", () => {
   it("repeated writes and a new vessel recover lockbox, record and row", async () => {
     const rest = memorySealedStoreRest(), first = new SealedStore(rest), key = await signed();
-    await first.putLockbox(lockbox); await first.putLockbox(lockbox); await first.putRecord(key); await first.putRecord(key); await first.putIndexRows([row, row]);
+    await first.putLockbox(lockbox); await first.putLockbox(lockbox); await first.putRecord(key); await first.putRecord(key); await first.putIndexEntries([row, row]);
     const restarted = new SealedStore(rest); expect(await restarted.lockboxes()).toHaveLength(1); expect(await restarted.records("key-version")).toHaveLength(1); expect(await restarted.rowsOf(bag)).toHaveLength(1);
   });
 });
@@ -201,8 +201,8 @@ describe("forged record names do not read", () => {
 describe("held names require no value reads", () => {
   it("lists locator and version names without get calls and rejects malformed locators", async () => {
     const rest = spyRest(memorySealedStoreRest()), store = new SealedStore(rest);
-    await store.putLockbox(lockbox); await store.putIndexRows([row]);
-    const names = await store.heldNames(bag); expect(names.lockboxes).toContain(lockboxNameOf(lockbox)); expect(names.rows).toContain(indexRowNameOf(row));
+    await store.putLockbox(lockbox); await store.putIndexEntries([row]);
+    const names = await store.heldNames(bag); expect(names.lockboxes).toContain(lockboxNameOf(lockbox)); expect(names.rows).toContain(indexEntryNameOf(row));
     expect(rest.gets).toEqual([]); expect(await store.heldNames("bad" as BagLocator)).toEqual({ lockboxes: [], rows: [] });
     expect(await store.heldNames(bag, v1)).toEqual(names);
   });
@@ -215,10 +215,10 @@ describe("held names filter bags and versions by name", () => {
     await store.putLockbox({ ...lockbox, keyVersion: v2 });
     const otherBag = { ...lockbox, bag: "f".repeat(64) as BagLocator };
     await store.putLockbox(otherBag);
-    await store.putIndexRows([row, { ...row, bag: "f".repeat(64) as BagLocator }]);
+    await store.putIndexEntries([row, { ...row, bag: "f".repeat(64) as BagLocator }]);
     expect((await store.heldNames(bag)).lockboxes).toEqual([lockboxNameOf(lockbox), lockboxNameOf({ ...lockbox, keyVersion: v2 })].sort());
     expect((await store.heldNames(bag, v2)).lockboxes).toEqual([lockboxNameOf({ ...lockbox, keyVersion: v2 })]);
-    expect((await store.heldNames(bag)).rows).toEqual([indexRowNameOf(row)]);
+    expect((await store.heldNames(bag)).rows).toEqual([indexEntryNameOf(row)]);
     expect(await store.heldNames(bag, "bad" as KeyVersionId)).toEqual({ lockboxes: [], rows: [] });
   });
 });
@@ -238,17 +238,17 @@ describe("row and lockbox queries honor their prefixes", () => {
   it("finds one locator row, narrows lockboxes and rejects a row under a forged name", async () => {
     const base = memorySealedStoreRest(), rest = spyRest(base), store = new SealedStore(rest);
     const neighbour = { ...row, locator: "f".repeat(64) }, second = { ...row, bag: "f".repeat(64) as BagLocator };
-    await store.putIndexRows([row, neighbour, second]); await store.putLockbox(lockbox); await store.putLockbox({ ...lockbox, keyVersion: v2 });
+    await store.putIndexEntries([row, neighbour, second]); await store.putLockbox(lockbox); await store.putLockbox({ ...lockbox, keyVersion: v2 });
     expect(await store.rowsAt(bag, v1, row.locator)).toEqual([row]); expect(await store.lockboxes(v2)).toHaveLength(1);
-    const forged = `${second.bag}.${second.keyVersion}.${second.locator}.${restDigest(encodeIndexRow(row))}`;
-    await rest.put("index", forged, encodeIndexRow(row)); expect(await store.rowsOf(bag)).toEqual([row, neighbour]); expect(await store.rowsOf(second.bag)).toEqual([second]);
+    const forged = `${second.bag}.${second.keyVersion}.${second.locator}.${restDigest(encodeIndexEntry(row))}`;
+    await rest.put("index", forged, encodeIndexEntry(row)); expect(await store.rowsOf(bag)).toEqual([row, neighbour]); expect(await store.rowsOf(second.bag)).toEqual([second]);
   });
 });
 
 describe("resting lockboxes and rows hide bag identifiers", () => {
   it("stores no recognisable bag id bytes and the control buffer contains them", async () => {
     const secretId = "lar:///ha.ka.ba/@test/bags/SEARCH-ME", locator = bagLocatorOf(k1, secretId), rest = memorySealedStoreRest(), store = new SealedStore(rest);
-    await store.putLockbox({ ...lockbox, bag: locator }); await store.putIndexRows([{ ...row, bag: locator }]);
+    await store.putLockbox({ ...lockbox, bag: locator }); await store.putIndexEntries([{ ...row, bag: locator }]);
     const contains = (bytes: Uint8Array) => new TextDecoder().decode(bytes).includes(secretId);
     expect(contains(utf8Bytes(secretId))).toBe(true);
     for (const kind of ["lockbox", "index"] as const) for (const name of await rest.list(kind)) expect(contains((await rest.get(kind, name))!)).toBe(false);
@@ -260,12 +260,12 @@ describe("every name fits one file name, and the outbox stays apart", () => {
     expect(isRestName("a".repeat(255))).toBe(true);
     expect(isRestName("a".repeat(256))).toBe(false);
     expect(restDigest(new Uint8Array([1, 2, 3]))).toMatch(/^[0-9a-f]{32}$/);
-    for (const name of [lockboxNameOf(lockbox), recordNameOf(await signed()), indexRowNameOf(row)]) {
+    for (const name of [lockboxNameOf(lockbox), recordNameOf(await signed()), indexEntryNameOf(row)]) {
       expect(name.length).toBeLessThanOrEqual(255);
       expect(isRestName(name)).toBe(true);
     }
     // The longest name the store forms: three 64-character ids and the digest.
-    expect(indexRowNameOf(row).length).toBe(64 * 3 + 32 + 3);
+    expect(indexEntryNameOf(row).length).toBe(64 * 3 + 32 + 3);
   });
 
   it("a parcel rests in the outbox apart from every other shelf, and reads back whole for its reader alone", async () => {

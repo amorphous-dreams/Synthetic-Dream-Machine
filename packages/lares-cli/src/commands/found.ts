@@ -2,7 +2,7 @@
  * `lares vessel found` — bootstrap a new Lararium node.
  *
  * Thin shim over `runInit` from @lararium/node. Idempotent; pass --force to
- * re-seed when the social bootstrap already lives on disk (<lares>/vessel — see larBootstrapPath).
+ * re-seed when the social bootstrap already lives on disk (<root>/hearth/vessel — see larBootstrapPath).
  *
  * A FOUNDING RUNS WITH NO VESSEL STANDING. It holds the store for its act (`ownedStore`), so a vessel standing
  * on the same store refuses it by name, before any key mints and before any byte of the store moves.
@@ -28,16 +28,18 @@
  */
 
 import { readFileSync } from "node:fs";
-import { OldShapeRefusal, assertNoOldCustodyShape, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
+import { OccupiedStoreRefusal, assertStoreUnoccupied, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import {
   runInit, runFoundHearth, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,
-  CustodyLockRefused, HearthFoundingRefused, NameTooLong, vkSealedCarriers, vkSlotsPath,
+  CustodyLockRefused, HearthFoundingRefused, NameTooLong, occupantCarriers, sSlotsPath,
 } from "@lararium/node";
 import { larDataDir, larGenesisDir, larIdentityDir, larSealHome } from "../env.js";
 import { CredentialTtyRefusal, gatherCredentials, gatherFoundingRoute } from "../custody-prompt.js";
 import { restoreLines, type RestoreLanded } from "../vault-restore.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
+import { noteFoundingNodeRoute, seatNewFaceRoute } from "../face-route-prompt.js";
 
 /**
  * The founding route: the human route (a passphrase or paper pin) the custody binds at birth.
@@ -56,7 +58,7 @@ export function setFoundingRoute(gather: FoundingRoute): void { gatherRoute = ga
  * on a TTY by default. A test installs its own; no flag and no env var carries it.
  */
 export type BundleRoute = () => Promise<readonly Credential[]>;
-let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found --hearth --restore");
+let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found --hearth --restore", { kind: "bundle" });
 export function setFoundingBundleRoute(gather: BundleRoute): void { gatherBundle = gather; }
 
 /** The refusals a founding names on one line each, with their advice; every other error keeps its own voice. */
@@ -68,8 +70,8 @@ function foundingRefusal(err: unknown): { name: string; advice: string } | null 
   if (err instanceof StoreHeld) {
     return { name: "StoreHeld", advice: "a founding runs with no vessel standing — stop the standing vessel, then found." };
   }
-  if (err instanceof OldShapeRefusal) {
-    return { name: "OldShapeRefusal", advice: "nothing was written and no route was asked. This store holds carriers from an earlier shape; found into an empty root (LAR_ROOT) or follow the fresh-start runbook." };
+  if (err instanceof OccupiedStoreRefusal) {
+    return { name: "OccupiedStoreRefusal", advice: "nothing was written and no route was asked. This store holds carriers no slot tree commits to; found into an empty root (LAR_ROOT)." };
   }
   if (err instanceof CustodyLockRefused) {
     return { name: "CustodyLockRefused", advice: "another process holds this custody; let it finish, then found again." };
@@ -88,9 +90,10 @@ function foundingRefusal(err: unknown): { name: string; advice: string } | null 
 }
 
 export async function cmdFound(args: ParsedArgs): Promise<number> {
+  seatNewFaceRoute();
   // ONLY an explicit --root sets LAR_ROOT (never a default — that would defeat the ~/.lares uplift).
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];
-  // storage (runtime) → <lares>/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
+  // storage (runtime) → <root>/hearth/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
   const storageDir = args.options["storage"] ?? larDataDir();
   const genesisDir = args.options["genesis"] ?? larGenesisDir();   // --genesis → LAR_GENESIS → <root>/genesis
   try {
@@ -100,14 +103,19 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
     let slots: readonly SlotSpec[] = [];
     if (!(await custodyTreeStands(io, homes))) {
       // THE STORE'S SHAPE, READ BEFORE ANY ROUTE GETS ASKED: the sealed writer's own founding check, as a read. A
-      // store that holds a carrier and no tree refuses `OldShapeRefusal` here, before the operator types anything;
+      // store that holds a carrier and no tree refuses `OccupiedStoreRefusal` here, before the operator types anything;
       // the founding itself runs the same check again under its custody claim.
-      await assertNoOldCustodyShape({ io, treePath: vkSlotsPath(homes.identity), carriers: vkSealedCarriers(homes) });
+      await assertStoreUnoccupied({ io, treePath: sSlotsPath(homes.identity), carriers: occupantCarriers(homes) });
       slots = await gatherRoute();
+      noteFoundingNodeRoute(slots);
     }
     if (args.flags["hearth"] === true) return await foundHearth(args, { storageDir, genesisDir, slots });
+    const { readBack } = await import("../cold-card-readback.js");
     await ownedStore(storageDir, (repo) => runInit({
       repo, storageDir, genesisDir, custody: { slots },
+      placeFoundingCard: { readBack: async (card, fingerprint, generation) => {
+        await readBack(args, [{ chair: "place", seed: card.seed, digest: card.digest }], generation, fingerprint);
+      } },
       ...(args.flags["force"] ? { force: true } : {}),
     }));
   } catch (err) {
@@ -141,6 +149,12 @@ async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDi
       repo, storageDir: at.storageDir, genesisDir: at.genesisDir, custody: { slots: at.slots },
       ...(args.flags["force"] ? { force: true } : {}),
       name, ...(chair ? { chair } : {}), ...(restore ? { restore } : {}),
+      placeFoundingCard: { readBack: async (card, fingerprint, generation) => {
+        if (args.flags["json"] !== true) process.stdout.write(`2 cold-key cards print next: first PLACE (this hearth's own card), then the chair ${chair || "you named"}.\n`
+          + "Write each card's three code lines on paper before you type them back; the card backs up that chair's next key, and nothing keeps it for you.\n"
+          + "The confirm words let two people check they hold the same card; never type them here.\n");
+        await readBack(args, [{ chair: "place", seed: card.seed, digest: card.digest }], generation, fingerprint);
+      } },
       readBack: async (cards, fingerprint) => { printed = await readBack(args, cards, 1, fingerprint); },
     }));
   } finally { restore?.bundleKey.fill(0); }
@@ -180,7 +194,7 @@ async function openRestoreBundle(file: string): Promise<{ readonly sealedBody: U
   catch (err) { throw new HearthFoundingRefused(`bundle-unreadable: no bundle reads at ${file} (${(err as NodeJS.ErrnoException).code ?? "unreadable"}). Nothing was written.`); }
   const read = readFaceBundle(bytes);
   if (read.reading !== "readable") throw new HearthFoundingRefused(`bundle-malformed: ${file} reads as no backup bundle (${read.why}). Nothing was written.`);
-  const opened = openBundleKey(read.tree, await gatherBundle());
+  const opened = await openBundleKey(read.tree, await gatherBundle(), nativeKdf);
   if (opened.reading !== "opens") throw new HearthFoundingRefused(`no-slot-opens: no route of the bundle opens under what was presented${opened.notes.length ? ` (${opened.notes.join("; ")})` : ""}. Nothing was written.`);
   return { sealedBody: read.sealedBody, bundleKey: opened.bundleKey };
 }

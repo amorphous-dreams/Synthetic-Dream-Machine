@@ -2,16 +2,16 @@
  * browser-gate-pins — the browser vessel's pair index of gate pins and its dial clock.
  *
  * A dial reaches only the gate it pinned. This vessel makes ONE `hearthPinIndex` at boot and hands it to the relay
- * dial and to the oracle reader; no module holds a second. The index holds what a full `GateBundlePin` carrier hands
- * it: the sovereign pin and floor pins a joined face's fleet join carried inside the root's signature, and the oracle's
- * floor pin a floor card carries by hand. A HEX64 key stands for no pin.
+ * dial and to the flow reader; no module holds a second. The index holds what a full `GateBundlePin` carrier hands
+ * it: the sovereign pin and floor pins a joined face's fleet join carried inside the root's signature, and the flow's
+ * floor pin CLAIM a floor card carries by hand against an anchor conveyed apart from it. A HEX64 key stands for no pin.
  *
  * NAMED: `hearthNameOf` files a hearth by its URL's origin (the page is handed no other true name for it). What the
  * vessel presents at a gate composes in `browser-face-presentation`; this file reads no custody.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-gate-pins
  */
-import { hearthPinIndex, readHearthFloorPins, type GateBundlePin, type HearthFloorCard, type HearthPinIndex, type LarWSClientOptions } from "@lararium/mesh";
+import { fileHearthFloorCard, hearthPinIndex, readHearthFloorPins, type FloorAnchor, type FloorCardFiling, type GateBundlePin, type HearthFloorCard, type HearthPinIndex, type LarWSClientOptions } from "@lararium/mesh";
 
 export type BrowserFacePresentation = LarWSClientOptions["presentation"];
 
@@ -28,7 +28,7 @@ export function hearthNameOf(url: string): string {
 /**
  * File the page's OWN hearth's pins, as the root-signed fleet-join answer carried them, under the relay's name: the
  * sovereign pin the relay dial knocks with, and the floor pins at that pin's Nexus (house ruling "The admit's gate pin", carrier
- * (b)), so the oracle read at this hearth holds its pin before any crossing. A floor set that fails its read (another
+ * (b)), so the flow read at this hearth holds its pin before any crossing. A floor set that fails its read (another
  * Nexus, a non-floor tier, a route twice) files none of it; without a relay or a sovereign pin nothing files. Returns
  * how many the index took.
  */
@@ -47,10 +47,10 @@ export function fileOwnHearthPins(
 }
 
 /**
- * The Nexus an oracle read at `baseUrl` dials under: the relay's own Nexus where `baseUrl` names the relay's hearth, and
+ * The Nexus an flow read at `baseUrl` dials under: the relay's own Nexus where `baseUrl` names the relay's hearth, and
  * none (null) for any other hearth. The page knows one hearth's Nexus; a read elsewhere never borrows it.
  */
-export function oracleNexusFor(baseUrl: string, relay: { readonly relayUrl: string | null | undefined; readonly nexus: string | null | undefined }): string | null {
+export function flowNexusFor(baseUrl: string, relay: { readonly relayUrl: string | null | undefined; readonly nexus: string | null | undefined }): string | null {
   if (!relay.relayUrl || !relay.nexus) return null;
   const place = (url: string): string | null => {
     try {
@@ -68,6 +68,7 @@ export function oracleNexusFor(baseUrl: string, relay: { readonly relayUrl: stri
 export function dialDeadlines(ms = 15_000): { draw(lapse: () => void): { cancel(): void } } {
   return {
     draw(lapse) {
+      // LIVENESS: a silent hearth may never answer the dial, and no event says never.
       const timer = setTimeout(lapse, ms);
       return { cancel: () => clearTimeout(timer) };
     },
@@ -75,11 +76,13 @@ export function dialDeadlines(ms = 15_000): { draw(lapse: () => void): { cancel(
 }
 
 /**
- * File the oracle's floor pin a floor card carried, under the relay's name: the floor tier on the oracle route alone, so it
- * seats no face. Where the index already holds another pin at that place (the signed set a joined face's fleet join
- * carried), the index keeps what it held. Without a relay nothing files. Answers whether the index took it.
+ * File the flow's floor pin CLAIM a floor card carried, under the relay's name, against the anchor conveyed apart from the card
+ * (`fileHearthFloorCard`): the floor tier on the flow route alone, so it seats no face. The card verifies whole before it files:
+ * an unanchored card, a forged claim, a head its rows cannot fold and another place's claim each refuse by name. KEL descent
+ * orders it against what the index holds: a descendant replaces, a card at a known older head refuses `rollback` and the newer
+ * head keeps serving, and a fork holds the last accepted pin. Without a relay nothing files.
  */
-export function fileFloorCardPin(index: HearthPinIndex, relayUrl: string | null | undefined, card: HearthFloorCard | null): boolean {
-  if (!relayUrl || card === null) return false;
-  return index.put(hearthNameOf(relayUrl), card.pin);
+export function fileFloorCard(index: HearthPinIndex, relayUrl: string | null | undefined, card: HearthFloorCard | null, anchor: FloorAnchor | null | undefined): FloorCardFiling {
+  if (!relayUrl) return { filed: false, refusal: "index-refused" };
+  return fileHearthFloorCard(index, hearthNameOf(relayUrl), card, anchor);
 }

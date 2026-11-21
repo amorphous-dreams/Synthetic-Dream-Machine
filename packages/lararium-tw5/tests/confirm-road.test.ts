@@ -23,7 +23,7 @@ import { dispatchLarControlEvent } from "../src/tw5-projection.js";
 import { htmlOf, mountSurface, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";
 import {
-  afterDispatch, draftBag, draftTitleOf, ManualTimers, peerWrite, remote, shoreRig, storeDeleted, storeText, tempBag,
+  afterDispatch, draftBag, draftTitleOf, ManualBoundary, peerWrite, remote, shoreRig, storeAbsent, storeDeleted, storeText, tempBag,
   turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -147,8 +147,8 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
   }, 120_000);
 
   test("Delete parks a question that never reaches a store, then applies on yes; an empty tiddler deletes at once", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, upperSlots: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, upperSlots: true });
     const x = "lar:///t/confirm/delete";
     const e = "lar:///t/confirm/empty";
     await seedRecords(r, [{ title: x, text: "landed" }, { title: e, text: "" }]);
@@ -159,7 +159,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     // No DOM event rides this message: the handler reads no window, so it neither throws nor needs a view.
     expect(() => nav.dispatchEvent({ type: "tm-delete-tiddler", tiddlerTitle: x })).not.toThrow();
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     const q = standingQuestion(r);
     expect(q.title.startsWith("$:/temp/confirm/")).toBe(true);
@@ -171,10 +171,10 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
 
     answer(nav, q.title, "yes");
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(r.wiki.getTiddler(x)).toBeUndefined();
-    expect(storeDeleted(r, workingBag, x)).toBe(true);
+    expect(storeAbsent(r, workingBag, x), "the delete retracts plainly; no kāpae rises over nothing").toBe(true);
     expect(questions(r)).toEqual([]);
     expect(namesAny(r, mark, "$:/temp/confirm/"), "no store call ever named a question").toBe(false);
 
@@ -187,15 +187,15 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     const markTemp = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler({ title: "$:/temp/lararium-test/ordinary", text: "volatile but routed" }));
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(r.calls.slice(markTemp).some((c) => c.bag === tempBag && c.puts.includes("$:/temp/lararium-test/ordinary"))).toBe(true);
     await r.stop();
   }, 120_000);
 
   test("Discard of a typed draft parks, survives the draft's own landing, and applies; decline leaves every tiddler as it stood", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const z = "lar:///t/confirm/discard";
     await seedRecords(r, [{ title: z, text: "landed" }]);
     await r.adaptor.armSeedCheckpoint();
@@ -209,7 +209,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(questions(r)).toEqual([]);
     expect(r.wiki.getTiddler(d)).toBeUndefined();
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
 
     nav.dispatchEvent({ type: "tm-edit-tiddler", tiddlerTitle: z });
@@ -231,7 +231,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(q2.title).not.toBe(q1.title);
     const stampAtAsk = r.wiki.getTiddler(d)!.fields["$origin-bag"];
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(storeText(r, draftBag, d), "the draft landed while the question stood").toBe("typed by a person");
     expect(r.wiki.getTiddler(d)!.fields["$origin-bag"], "the landing re-stamped the envelope field").not.toBe(stampAtAsk);
@@ -242,15 +242,85 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("landed");
     expect(r.wiki.getTiddler(CORE_ALERT)).toBeUndefined();
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(storeDeleted(r, draftBag, d)).toBe(true);
     await r.stop();
   }, 120_000);
 
+  test("A draft edit arriving while a save receipt is pending is neither lost nor wrongly confirmed", async () => {
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
+    const z = "lar:///t/confirm/discard-receipt-race";
+    await seedRecords(r, [{ title: z, text: "landed" }]);
+    await r.adaptor.armSeedCheckpoint();
+    const nav = standNavigator(r);
+    let releaseAck!: () => void;
+    const ackHeld = new Promise<void>((resolve) => { releaseAck = resolve; });
+    let ackCount = 0;
+    r.adaptor.caps.receipt = {
+      begin: () => ({ done: () => {} }),
+      held: () => null,
+      idle: async () => {},
+      answer: () => false,
+      stalledAsks: () => 0,
+      close: () => {},
+      ack: async () => { ackCount++; await ackHeld; },
+    } as never;
+
+    nav.dispatchEvent({ type: "tm-edit-tiddler", tiddlerTitle: z });
+    const d = draftTitleOf(z);
+    await afterDispatch();
+    typeInto(r, d, "first save value");
+    await afterDispatch();
+    boundary.fire();
+    await turns(24);
+
+    nav.dispatchEvent({ type: "tm-save-tiddler", tiddlerTitle: d });
+    await afterDispatch();
+    await turns(24);
+    expect(ackCount, "control: the save receipt is pending").toBeGreaterThan(0);
+    expect(storeDeleted(r, draftBag, d), "the draft's recovery copy still stands while the save receipt is pending").toBe(false);
+    expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("first save value");
+
+    nav.dispatchEvent({ type: "tm-edit-tiddler", tiddlerTitle: z });
+    await afterDispatch();
+    typeInto(r, d, "second typed value");
+    nav.dispatchEvent({ type: "tm-cancel-tiddler", tiddlerTitle: d });
+    const first = standingQuestion(r);
+    expect(first.fields["confirm-type"]).toBe("cancel");
+    typeInto(r, d, "third typed value");
+    await afterDispatch();
+
+    answer(nav, first.title, "yes");
+    expect(r.wiki.getTiddler(d), "a stale confirm must not remove the newer draft").toBeDefined();
+    expect(r.wiki.getTiddler(d)!.fields["text"]).toBe("third typed value");
+    expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("first save value");
+    expect(storeDeleted(r, draftBag, d), "the recovery copy stays while the first save receipt is still pending").toBe(false);
+
+    releaseAck();
+    await turns(48);
+    boundary.fire();
+    await turns(24);
+    expect(storeText(r, draftBag, d), "the newer draft edit survives receipt completion").toBe("third typed value");
+
+    nav.dispatchEvent({ type: "tm-cancel-tiddler", tiddlerTitle: d });
+    const second = standingQuestion(r);
+    expect(second.title).not.toBe(first.title);
+    answer(nav, second.title, "yes");
+    expect(r.wiki.getTiddler(d)).toBeUndefined();
+    expect(r.wiki.getTiddler(z)?.fields["text"]).toBe("first save value");
+    await afterDispatch();
+    boundary.fire();
+    await turns(24);
+    expect(storeDeleted(r, draftBag, d)).toBe(true);
+    expect(storeText(r, workingBag, z)).toBe("first save value");
+    await r.stop();
+  }, 120_000);
+
   test("a rename onto a standing title whose content changed underneath refuses on the alert rail and writes nothing", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/confirm/rename-from";
     const y = "lar:///t/confirm/rename-onto";
     await seedRecords(r, [{ title: x, text: "source" }, { title: y, text: "standing" }]);
@@ -261,7 +331,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     const d = draftTitleOf(x);
     await afterDispatch();
     typeInto(r, d, "renamed text", { "draft.title": y });
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     nav.dispatchEvent({ type: "tm-save-tiddler", tiddlerTitle: d });
     const q = standingQuestion(r);
@@ -270,11 +340,12 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(y)?.fields["text"]).toBe("standing");
 
     await peerWrite(r, workingBag, [{ tiddler: { title: y, text: "a peer wrote this" } } as LarTiddlerRecord]);
+    await r.adaptor.landingIdle();
     expect(r.wiki.getTiddler(y)?.fields["text"]).toBe("a peer wrote this");
     const mark = r.calls.length;
     answer(nav, q.title, "yes");
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     expect(r.wiki.getTiddler(y)?.fields["text"], "the peer's text stands").toBe("a peer wrote this");
     expect(r.wiki.getTiddler(d), "the draft stays open").toBeDefined();
@@ -290,7 +361,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     expect(r.wiki.getTiddler(y)?.fields["text"]).toBe("renamed text");
     expect(r.wiki.getTiddler(x)).toBeUndefined();
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     await r.stop();
   }, 120_000);

@@ -115,6 +115,23 @@ describe.skipIf(wikiSkip)(`the island's root services${skipNote}`, () => {
     expect(answer(s, "lar:service:never-minted", "ok")).toMatchObject({ status: "refused", reason: "unknown-request" });
   }, 120_000);
 
+  test("notification persists until dismissed or superseded", async () => {
+    s = await mountSurface([
+      `<$button class="note-one" message="tm-notify" param="${T("one")}">one</$button>`,
+      `<$button class="note-two" message="tm-notify" param="${T("two")}">two</$button>`,
+    ].join(""), [{ title: T("one"), text: "First notice" }, { title: T("two"), text: "Second notice" }]);
+    click(s, "note-one");
+    await s.flush();
+    expect(htmlOf(s.last())).toContain("First notice");
+    click(s, "note-two");
+    await s.flush();
+    expect(htmlOf(s.last())).not.toContain("First notice");
+    expect(htmlOf(s.last())).toContain("Second notice");
+    expect(click(s, "lar-notify-dismiss")).toMatchObject({ status: "applied" });
+    await s.flush();
+    expect(htmlOf(s.last())).not.toContain("Second notice");
+  }, 120_000);
+
   test("RED: tm-http-request refuses by name under the Web3-only law — the alert names it, no ask crosses — CONTROL: the alert stands only after the click", async () => {
     s = await mountSurface(BUTTONS, WORLD);
     expect(alert(s, "http-request")).toBeUndefined();

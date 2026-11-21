@@ -14,7 +14,7 @@ import { larBootstrapPath, larDataDir } from "@lararium/node";
 import { cmdHerm } from "../src/commands/herm.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
-const ORIGIN_ENV = ["LAR_WEB_ORIGIN", "LAR_ORACLE_ORIGIN", "LAR_SAME_ORIGIN", "LAR_PUBLIC_URL", "LAR_RECIPE"];
+const ORIGIN_ENV = ["LAR_WEB_ORIGIN", "LAR_FLOW_ORIGIN", "LAR_SAME_ORIGIN", "LAR_PUBLIC_URL", "LAR_RECIPE"];
 const WAYSTONE = /a waystone serves no arrival page; light a Pronaos on a lararium/;
 
 let root: string;

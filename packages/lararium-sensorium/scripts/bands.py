@@ -27,7 +27,7 @@ prefix code on the li side. The wavelet/EWT/scalogram functions below
 (modwt_mra · ewt_servo · ridges) stand as an UNSEATED shelf — callable,
 tested, canon-retired; a future aperture may re-summon them by name.
 
-loci_io-style NDJSON over stdio (the established holder contract). Faces:
+NDJSON over stdio (the established holder contract). Faces:
   * the library: cohesion_signal · modwt_mra · ewt_servo · changepoint_tree ·
     stability_gate · ffz_cells (pure, chroma-free — the VERIFY surface)
   * `decompose --signal <file|-> [--planes N]`  → the full stack over a raw signal
@@ -109,8 +109,8 @@ def cohesion_signal(planes: list[np.ndarray]) -> np.ndarray:
     For each plane's stacked embeddings `V` (N×dim, in corpus sequence order), the drift
     at chunk i is `1 − cosine(V[i], V[i-1])` (monotone: more drift = less cohesion; the
     first chunk opens at drift 0). This is the wavelet-over-COHESION signal (corpus.md's
-    NOVEL ground) — the SAME `1 − cosine` transform the Measure servo's centroidDriftStep
-    reads, here run against the PRIOR chunk (sequential) rather than a running centroid, so
+    NOVEL ground) — the `1 − cosine` transform,
+    here run against the PRIOR chunk (sequential) rather than a running centroid, so
     the wavelet sees the raw scale-structure of the drift, un-smoothed. Returns an N×P
     matrix; a single all-zero-length plane contributes a zero column (graceful)."""
     cols = []
@@ -238,7 +238,7 @@ def ridge_scales(signal: np.ndarray, n_ridges: int = 3) -> list[float]:
 def ewma_hysteresis(prev: float, target: float, evidence: float, threshold: float, alpha: float) -> float:
     """Move a boundary toward `target` by an EWMA step ONLY when the spectral `evidence`
     clears the damped `threshold`; otherwise HOLD (hysteresis). The damped step is the
-    Measure servo's EWMA lifted to the boundary domain — it tracks a drifting natural scale
+    EWMA lifted to the boundary domain — it tracks a drifting natural scale
     without chasing noise. Returns the nudged boundary."""
     if evidence <= threshold:
         return prev
@@ -326,8 +326,8 @@ def _ecp_divisive_R(matrix: np.ndarray, min_size: int, sig_lvl: float) -> list[i
     """Invoke the thin R leg (bands_ecp.R) → `ecp::e.divisive` over the multivariate
     drift matrix. Returns the ORDERED changepoint indices (0-based, coarse→fine — the
     divisive discovery order IS the hierarchy) or None when R / the leg / ecp is
-    unavailable (⇒ the caller falls to the ruptures path). loci_io-style: one NDJSON
-    request on stdin, one NDJSON response on stdout."""
+    unavailable (⇒ the caller falls to the ruptures path). One NDJSON request on stdin,
+    one NDJSON response on stdout."""
     if not _r_available():
         return None
     r_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bands_ecp.R")
@@ -426,7 +426,7 @@ def _couple_ete_R(matrix: np.ndarray, lx: int = 1, ly: int = 1, shuffles: int = 
     matrix (ete[i][j] = flow i→j) + a source-permutation bootstrap p-value matrix. Returns the
     parsed verdict dict, or None when R / the leg / RTransferEntropy is unavailable (⇒ the
     caller degrades to a graceful skip — coupling has NO python fallback, TE is the R plane).
-    loci_io-style: one NDJSON request on stdin, one NDJSON response on stdout."""
+    One NDJSON request on stdin, one NDJSON response on stdout."""
     if not _r_available():
         return None
     r_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "coupling.R")
@@ -981,7 +981,6 @@ def forecast_ews(matrix: np.ndarray, window: int = 50, n_surr: int = 200,
     # (ramp-biased) AC1 that reads significant is untrustworthy under it, so it vetoes the fire.
     strong_ramp = bool(var_sig and ramp_ratio >= _NOISE_RAMP_RATIO)
     noise_inflation = bool(strong_ramp or (var_sig and not ac1_sig))  # ramp, or var-up-AC1-flat
-    surrogate_sig = ac1_sig or var_sig                # kept for back-compat (any null beaten)
     multi_band = n_rising >= min_bands
 
     # THE FIRE CONDITION — AC1-significant (CSD-specific) AND multi-band agreement, AND NO
@@ -1008,7 +1007,6 @@ def forecast_ews(matrix: np.ndarray, window: int = 50, n_surr: int = 200,
         "noise_inflation": noise_inflation,
         "variance_ramp_ratio": ramp_ratio,
         "strong_variance_ramp": strong_ramp,
-        "surrogate_significant": surrogate_sig,
         "multi_band_agreement": multi_band,
         "bands_rising": n_rising, "min_bands": min_bands,
         "band_taus": band_taus,
@@ -1369,8 +1367,7 @@ def run_stack(tree_matrix: np.ndarray, spine_signal: np.ndarray | None = None,
 def _read_sensorium_planes(sensorium: str, *, require_one_source: bool = False) -> tuple[list[np.ndarray], list[str], str]:
     """Read content embeddings from a rooted sensorium in declared source order.
     Returns (planes, ids, note).
-    NEVER re-embeds — reads the STORED nomic vectors (the readback discipline of loci_io's
-    cmd_embeddings). Graceful: no chroma / mempalace / no vectors ⇒ ([], [], note)."""
+    NEVER re-embeds — reads the STORED nomic vectors (the readback discipline). Graceful: no chroma / mempalace / no vectors ⇒ ([], [], note)."""
     from order_vectors import source_ordered_vectors
     ids_sorted, content, note = source_ordered_vectors(sensorium, require_one_source=require_one_source)
     if not ids_sorted:

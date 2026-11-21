@@ -9,6 +9,7 @@ from worldline_io import WorldlineStore
 
 def _manifest(root, *, real=("in-file",), arbitrary=("walk-order",)):
     (root / "manifest.json").write_text(json.dumps({
+        "lifecycle": "durable",
         "worldline": {"real": list(real), "arbitrary": list(arbitrary)},
     }), encoding="utf-8")
 
@@ -34,7 +35,7 @@ def test_backfill_projects_only_declared_in_file_order(tmp_path, monkeypatch):
 
 
 def test_backfill_refuses_an_undeclared_worldline(tmp_path):
-    (tmp_path / "manifest.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "manifest.json").write_text('{"lifecycle":"durable"}', encoding="utf-8")
     with pytest.raises(SystemExit, match="declares no worldline"):
         cw.backfill(str(tmp_path))
 

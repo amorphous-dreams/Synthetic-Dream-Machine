@@ -36,12 +36,16 @@ import type { AnchorStore } from "./anchor-store.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { RecoveryShareStore } from "./recovery-keel-core.js";
 
-/** How a runtime persists WHICH persona the vessel currently wears (one pointer, never a root). */
+/**
+ * WHICH persona a vessel's composition mounts (one pointer, never a root). A browser tab keeps the pointer it wore; a
+ * node keeps none (`save` absent): its composition mounts the face its unlock named, and no command reads that as a
+ * default face.
+ */
 export interface ActivePersonaStore {
-  /** The worn handle-index, or undefined when the vessel wears none yet (no inference from an empty home). */
+  /** The mounted handle-index, or undefined when the vessel mounts none yet (no inference from an empty home). */
   load(): Promise<number | undefined>;
-  /** Persist the worn handle-index — moves only the pointer, never a root. */
-  save(handleIndex: number): Promise<void>;
+  /** Persist the worn handle-index — moves only the pointer, never a root. Absent where the vessel keeps no pointer. */
+  save?(handleIndex: number): Promise<void>;
 }
 
 /**
@@ -197,6 +201,7 @@ export async function wearPersona(vault: PersonaVault, handleIndex: number): Pro
       `(custody-by-type: sign only as a persona whose sovereign secret this vessel carries)`,
     );
   }
+  if (!vault.selector.save) throw new Error("[persona-vault] this vessel keeps no worn pointer: a command names its face (--face N)");
   await vault.selector.save(handleIndex);
 }
 
@@ -222,16 +227,16 @@ export { generateOrLoadKeypair };
  *
  * `wearPersona` writes the selector and nothing else — "only the selector pointer moves; the root never
  * does". A vessel's singular mount pins are written ONCE, by the FOUNDING face, and never move again (an
- * added compartment founds mount:false and pins none), so a reboot after a wear re-mounted the founding
- * face whatever mask was on, while the door told the operator the opposite. A pointer moved and nothing
- * followed it.
+ * added compartment founds mount:false and pins none), so a reboot that read those pins alone would mount the
+ * founding face whatever mask stands worn, while the door tells the operator the opposite. This module makes
+ * the mount follow the pointer.
  *
  * The switched face's material is not missing — it lives in that face's OWN anchors, persisted at its
  * founding: the signer DID, the persona-KEL prefix, and the SIGNED device→persona edge. All of it is
  * PUBLIC re-pin material (a verifying-key identifier, a KEL prefix, a signed grant record); no secret
  * rides here, which is why it may sit beside the doc-ids at all.
  *
- * PLATFORM-BLIND, because the bug is. It reads a `PersonaVault` — the selector and the anchors, both of
+ * PLATFORM-BLIND, because the hazard runs on every platform. It reads a `PersonaVault` — the selector and the anchors, both of
  * which every vessel class already implements — so the node fs vault and the browser IDB vault answer the
  * same question with one function rather than two that drift (the composeLararium/composeBrowser law).
  *
@@ -243,8 +248,8 @@ export { generateOrLoadKeypair };
  * FAIL-CLOSED, AND SILENT ONLY WHERE SILENCE IS HONEST. `null` carries two unlike meanings and the reader
  * keeps them apart. NO SWITCH IS OWED — nothing worn, or the FOUNDING face worn (the pins already name it)
  * — is honest silence: the boot proceeds correctly and there is nothing to say. A SWITCH IS OWED AND
- * REFUSED — a non-founding face is worn but its anchors carry no mount material (written before the slot
- * existed, or held by a joinee that minted no edge of its own) — is not. A half-anchor never re-pins,
+ * REFUSED — a non-founding face is worn but its anchors carry no mount material (held by a joinee that
+ * minted no edge of its own) — is not. A half-anchor never re-pins,
  * because a partial switch would mount one face's planes under another face's authority, the one outcome
  * worse than not switching at all; but the vessel then comes up wearing the FOUNDING face's pins while the
  * operator expects the face they wore, and the cure (re-found that face) is invisible from the symptom. So
@@ -268,15 +273,25 @@ export interface WornPersonaMount {
  * Index 0 answers `null` by design: the founding face already owns the mount pins, so re-pinning it from
  * anchors would replace a reading with an identical one and invite the two sources to drift.
  */
+/** A worn face whose mount material is lost: the boot refuses by name rather than come up wearing another face. */
+export class WornFaceRefused extends Error {
+  constructor(readonly handleIndex: number, readonly lacking: string) {
+    super(`[persona] worn h${handleIndex} cannot mount: its anchors lack ${lacking}; the vessel will not come up on another face's pins. Re-found h${handleIndex} to write its full mount material, or wear another face.`);
+    this.name = "WornFaceRefused";
+  }
+}
+
 export async function readWornPersonaMount(
   vault: PersonaVault,
   report?: (reason: string) => void,
+  opts: { readonly refuse?: "null" | "throw" } = {},
 ): Promise<WornPersonaMount | null> {
   const handleIndex = await vault.selector.load();
   if (handleIndex === undefined || handleIndex === 0) return null;
 
   // Past this line a switch IS owed, so every `null` below is a REFUSAL and says so.
   const refuse = (lacking: string): null => {
+    if (opts.refuse === "throw") throw new WornFaceRefused(handleIndex, lacking);
     report?.(`worn h${handleIndex} cannot mount — its anchors lack ${lacking}; the vessel comes up on the founding face's pins. Re-found h${handleIndex} to write its full mount material.`);
     return null;
   };

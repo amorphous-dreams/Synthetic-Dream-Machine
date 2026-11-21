@@ -22,6 +22,9 @@
  *        sealed by persona zero's per-Nexus key, each naming a live document of its own; run again it registers nothing
  *        new, and the catalog carries no pointer row for either bag (W26 slice 3).
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -41,6 +44,7 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { fixtureKey } from "./fixture-keys.js";
 import { loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
+import { openVesselSecretHome } from "../src/secret-home-store.js";
 import { heldSeatKey, listSeatKeys } from "../src/seat-key-store.js";
 import { armGenesis } from "../src/seal-ceremony.js";
 import { larBootstrapPath, larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";
@@ -78,6 +82,11 @@ function packed(): Record<string, { text?: string }> {
 }
 
 /** The daemon doc the bootstrap names, read on the store's one holder. */
+/** The vessel's secret home, reopened from its custody row by a fresh direct holder: the dyads rest there. */
+async function secretDoc(): Promise<LarDoc> {
+  return ownedStore(larDataDir(), async (repo) => (await openVesselSecretHome(repo)).handle.doc() as LarDoc);
+}
+
 async function daemonDoc(): Promise<LarDoc> {
   const url = packed()[DAEMON_BAG_ID]!.text!;
   return ownedStore(larDataDir(), async (repo) => (await repo.find<LarDoc>(url as AutomergeUrl)).doc() as LarDoc);
@@ -85,7 +94,7 @@ async function daemonDoc(): Promise<LarDoc> {
 
 /** Found a hearth at `r`, keeping each card's seed for a later look. */
 async function foundAt(r: string, readBack?: (cards: readonly HearthCard[]) => Promise<void>) {
-  return withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "data", "lares", "vessel"), genesisDir: join(r, "genesis"), ...(readBack ? { readBack } : {}) }));
+  return withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis"), ...(readBack ? { readBack } : {}) }));
 }
 
 describe("the Stable founding act", () => {
@@ -111,8 +120,8 @@ describe("the Stable founding act", () => {
       expect(existsSync(join(larIdentityDir(), "sk-slots.bin"))).toBe(true);
       expect(founded.face.alreadyStood).toBe(false);
     });
-    expect(seeds).toHaveLength(1);
-    expect(seeds[0]!.every((b) => b === 0)).toBe(true);                                    // the card's seed zero-filled
+    expect(seeds).toHaveLength(2);                                                          // the place card, then the chair's
+    expect(seeds.every((seed) => seed.every((b) => b === 0))).toBe(true);                   // each card's seed zero-filled
   });
 
   test("H2 — the device edge, the true-name pin and the dyad binding each name the charter's AID", async () => {
@@ -124,7 +133,9 @@ describe("the Stable founding act", () => {
       expect(tiddlerText(doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER])).toBe(aid);
       // A committed founding leaves no write-ahead checkpoint and no title that spells its atom on the vessel-wide doc.
       expect(Object.keys(doc.tiddlers).filter((title) => /checkpoint/.test(title) || title.includes(edge.deviceVerifyingKey))).toEqual([]);
-      const dyads = vesselDyads(doc);
+      // THE DYADS REST IN THE SECRET HOME (placement over patterns), and none in the daemon document.
+      expect(vesselDyads(doc)).toEqual([]);
+      const dyads = vesselDyads(await secretDoc());
       expect(dyads.length).toBeGreaterThan(0);
       expect(dyads.every((d) => d.binding?.epochCid === aid)).toBe(true);
       expect(await verifiedFleetOfGroup(dyads, edge.personaRootDid, new Set(), aid)).toHaveLength(dyads.length);
@@ -265,7 +276,7 @@ describe("the card reads back before the charter moves", () => {
   test("H5 — a refused read-back writes no charter and no face and retires its seat key — the act run again completes", async () => {
     const r = freshRoot("refused");
     let seen: Uint8Array | null = null;
-    await expect(foundAt(r, async (cards) => { seen = cards[0]!.seed; throw new Error("the card read back otherwise"); }))
+    await expect(foundAt(r, async (cards) => { if (cards[0]!.chair === "place") return; seen = cards[0]!.seed; throw new Error("the card read back otherwise"); }))
       .rejects.toThrow(/read back otherwise/);
     await withLarRoot(r, async () => {
       expect(existsSync(join(larSealHome(), "founding-roster.mem"))).toBe(false);

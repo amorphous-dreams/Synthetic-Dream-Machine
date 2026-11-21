@@ -25,7 +25,7 @@ function mount(opts: ProjectionSinkOptions = {}) {
     ...opts,
   });
   const sent: Array<{ surface: string; ev: LarMsg_ControlEvent }> = [];
-  sink.arm({ sendControlEvent: (surface, ev) => { sent.push({ surface, ev }); } });
+  sink.arm({ sendControlEvent: (surface, ev) => { if (!sent.some((prior) => prior.ev.eventId === ev.eventId)) sent.push({ surface, ev }); } });
   const root = host.shadowRoot!;
   const frame: LarSurfaceFrame = {
     type: LAR_FRAME, wikiUri: "lar:///wiki/w", cameraId: LAR_CAMERA_STORY, mountEpoch: 7, surface: "w", sensedRevision: {},

@@ -1,0 +1,1 @@
+Handback written to [out.md](/home/joshu/.lares-scratch/research/k15-bonds/luna/out.md). It ends with `WORDS=1582` and stays under the 1,600-word limit. The repository remained read-only; I ran no suites.

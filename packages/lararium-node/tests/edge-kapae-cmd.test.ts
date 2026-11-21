@@ -1,8 +1,8 @@
 /** edge-kapae command vectors: board scope, hand authority, causal heads, and vessel accretion. */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { afterEach, beforeEach, describe, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
@@ -18,26 +18,27 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
-import { seatOwnCharter, wear } from "./worn-face-fixture.js";
-import { atomKeyOf, atomSeedOf, seedFaceAtom, wornAtomKey } from "./atom-fixture.js";
+import { seatOwnCharter, presentFace } from "./acting-face-fixture.js";
+import { FaceNotNamed } from "../src/face-selector.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 const EDGE = "a".repeat(64), REALM = "b".repeat(64), MEMBER = "c".repeat(64), DEVICE = "d".repeat(64);
-beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-kapae-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();
+// The house stands once per file (kept-house): a founding's worth of derivations per case ran past the 10 s hook
+// default on a loaded runner. Each case takes its own copy, so no case reads another's acts.
+const house = keepHouse("lares-ekc-", async () => {
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
+  await seedFleet(0);
 });
+beforeEach(() => house.into(root, scratchHome));
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 async function boardState(url: string, authority: string) {
@@ -51,9 +52,9 @@ async function boardState(url: string, authority: string) {
 }
 
 describe("runEdgeKapae", () => {
-  it("a realm holder raise stands under its signer: the worn face's key at the realm's Nexus", async () => {
+  it("a realm holder raise stands under its signer: the acting face's key at the realm's Nexus", async () => {
     await seatOwnCharter([0]);
-    const face = await wear(0);
+    const face = await presentFace(0);
     const vouch = await direct(runCabalVouch)({ joiner: MEMBER, realm: REALM, boundEpoch: 0 });
     const r = await direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true });
     expect(r.board).toBe("realm");
@@ -63,6 +64,21 @@ describe("runEdgeKapae", () => {
     const state = await boardState(r.boardUrl, r.signers[0]!);
     expect(state.readings.get(vouch.edgeId)?.stands).toBe(true);
     await state.repo.rest();
+  });
+
+  it("RED: an unnamed device act with two faces held refuses by name, never the first root held; CONTROL: the face named signs as its own root", async () => {
+    await generateOrLoadPersonaGroupRoot(1);
+    await seedFaceAtom(1);
+    await seedFleet(1);
+    const root0 = await loadPersonaGroupRootVerifyingKey(0), root1 = await loadPersonaGroupRootVerifyingKey(1);
+    expect(root0).not.toBe(root1);
+    await seatOwnCharter([0, 1]);
+    await presentFace(1);
+    await expect(direct(runEdgeKapae)({ device: DEVICE, raised: true })).rejects.toThrow(FaceNotNamed);
+    const named1 = await direct(runEdgeKapae)({ device: DEVICE, raised: true, handleIndex: 1 });
+    expect(named1.boardUrl, "the named face's fleet board").toBe(fleetEdgeBoardDocUrl(root1!));
+    const named0 = await direct(runEdgeKapae)({ device: DEVICE, raised: true, handleIndex: 0 });
+    expect(named0.boardUrl).toBe(fleetEdgeBoardDocUrl(root0!));
   });
 
   it("a device act lands on the signing root fleet board and names its device edge", async () => {
@@ -112,7 +128,7 @@ describe("runEdgeKapae", () => {
 
   it("refuses realm holder acts without authority over the named edge", async () => {
     await seatOwnCharter([0]);
-    await wear(0);
+    await presentFace(0);
     const vouch = await direct(runCabalVouch)({ joiner: MEMBER, realm: REALM, boundEpoch: 0 });
     const url = realmEdgeBoardDocUrl(REALM);
     const assertEmpty = async () => {
@@ -125,11 +141,12 @@ describe("runEdgeKapae", () => {
     await assertEmpty();
     await expect(direct(runEdgeKapae)({ member: MEMBER, realm: REALM, raised: true })).rejects.toThrow(EdgeKapaeError);
     await assertEmpty();
-    // `--as` names no hand on a realm's board, and another worn face holds no vouch there.
+    // `--as` names no hand on a realm's board, and another face named holds no vouch there.
     await expect(direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true, handleIndex: 0 })).rejects.toThrow(EdgeKapaeError);
     await assertEmpty();
-    await wear(1);
-    await expect(direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true })).rejects.toThrow(EdgeKapaeError);
+    await presentFace(1);
+    await seedFaceAtom(1);
+    await expect(direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true, face: 1 })).rejects.toThrow(EdgeKapaeError);
     await assertEmpty();
   });
 

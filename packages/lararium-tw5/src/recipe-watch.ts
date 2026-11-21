@@ -23,17 +23,22 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-watch
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   AutomergeDocStore,
   LARES_BAG,
+  KAHUA_BAG,
   ORACLE_BAG,
   structuralSlots,
   wikiSlotUri,
+  wikiSlotKindOf,
+  expandRecipe,
+  recipeFromRecord,
   bagStackFromRec,
   type ChangeOrigin,
-  type LarTiddlerRecord,
-} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry} from "@lararium/mesh";
 import { makeCatalogAccessor, findOrThrow, libraryDocUrl } from "./catalog-accessor.js";
+import { kahuaLayerStore, librarySlotUrl } from "./kahua-layer.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 import { REBOOT_ALERT_TITLE } from "./wiki-behavior.js";
 import type { IslandContext } from "./island-context.js";
@@ -53,20 +58,21 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   // Two registry planes (wiki-layer-ontology#oracle-planes):
   // The oracle carries system wiki recipes as defaults; the catalog carries every
   // document pointer and the vessel's own recipes.
-  const catalog   = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
+  const catalog   = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;
   const sysPlane  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
   const catHandle = catalog ? await catalog.handle() : null;
   const sysHandle = sysPlane ? await sysPlane.handle() : null;
 
   // Every bag document pointer resolves from the vessel catalog.
+  // `bags/kahua` answers from the island's grant alone (`kahua-layer`): a catalog row any holder rewrites moves no stage.
   const urlOfBag = async (bagId: string): Promise<string | null> =>
-    catalog ? libraryDocUrl(catalog, bagId) : null;
+    librarySlotUrl(bagId, { kahuaUrl: ctx.kahuaUrl ?? null }, catalog ? (s) => libraryDocUrl(catalog, s) : null);
 
   // The island's own recipe record, through the one reader every site shares: the vessel's own
   // composition (catalog) shadows a system wiki's default (oracle), the same two planes, own first.
   const loadRecipeRec = (): LarTiddlerRecord | undefined =>
     effectiveRecipe(slug, (plane, title) =>
-      (plane === "oracle" ? sysHandle : catHandle)?.doc()?.tiddlers?.[title],
+      ownEntry((plane === "oracle" ? sysHandle : catHandle)?.doc()?.tiddlers, title),
     )?.record;
 
   // Slots the recipe model owns structurally (`structuralSlots` — the ONE spelling the record
@@ -98,11 +104,14 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
       });
       return false;
     }
-    const store = new AutomergeDocStore(handle, bagId);
-    ctx.composite.addLayer({ bagId, store, writable: true, defaultWritable: false }, at);
+    // The kahua stage stands read-only on the seam's store; every other library on its document store.
+    const kahua = bagId === KAHUA_BAG;
+    const store = kahua ? kahuaLayerStore(handle, ctx.kahuaFace ?? (() => null), ctx.kahuaFaceWatch) : new AutomergeDocStore(handle, bagId, wearOf(ctx.repo));
+    ctx.composite.addLayer({ bagId, store, writable: !kahua, defaultWritable: false }, at);
     ctx.handles.set(bagId, handle);
-    store.emitInitialReplay();
-    store.markSyncComplete();
+    const replays = store as Partial<Pick<AutomergeDocStore, "emitInitialReplay" | "markSyncComplete">>;
+    replays.emitInitialReplay?.();
+    replays.markSyncComplete?.();
     return true;
   };
 
@@ -153,8 +162,15 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
       applied = true;
     }
 
+    // THE SLOTS THIS PASS LEFT UNMOUNTED STAND UNREAD: a library the catalog cannot resolve yet, or a slot an oracle move
+    // dropped when its new document would not open, may hold any title, so a delete above it raises a kāpae, never a plain
+    // retract (recipe-layer-model#/the-delete). The order reads the live record's libraries over the island's own recipe, by
+    // the one rule `buildIslandRecipe` names at boot: an unbound instance slot holds no record yet, and temp lives here alone.
+    const order = expandRecipe({ ...ctx.recipe, libraryBags: recipeFromRecord(rec, slug).libraryBags ?? [] });
+    ctx.composite.markUnreached(order, order.filter((slot) => slot !== tempBag && !ctx.composite.hasBag(slot) && wikiSlotKindOf(slug, slot) === null));
+
     // The change just applied live — the reboot-pending notice (if the daemon's
-    // alert verb raced ahead of this reconcile) no longer holds.
+    // alert verb raced ahead of this reconcile) stands void.
     if (applied && ctx.composite.hasWritableBag(tempBag)) {
       await ctx.composite.tombstoneInBag(tempBag, REBOOT_ALERT_TITLE, origin());
     }

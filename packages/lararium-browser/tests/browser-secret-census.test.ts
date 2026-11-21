@@ -14,11 +14,12 @@
  *            connection reopens.
  */
 import { describe, expect, test } from "vitest";
-import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
+import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { generateOrLoadBrowserPersonaRoot, generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet } from "../src/browser-vessel-identity.js";
 import { browserFleetJoinLand, browserFleetJoinRequest } from "../src/browser-fleet-join.js";
 import { browserWalkLeaf, browserWalkStore } from "../src/browser-walk.js";
-import { lockBrowserCustody, readBrowserCustody, readKeystoreRow, unlockBrowserCustody } from "../src/browser-custody.js";
+import { lockBrowserCustody, readBrowserCustody, readKeystoreRecord, unlockBrowserCustody } from "../src/browser-custody.js";
+import { bindFirstFaceSlot, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import {
   admitCarriageCommit, custodyRootDoor, deriveGateBundle, encodeInvite, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer,
   sealAddressSecret, sovereignGateRoot, sovereignRoute, type FleetJoinRequest, type VesselFaceKey,
@@ -91,11 +92,11 @@ describe("browser secret census", () => {
   test("RED: once a slot binds, a face's secrets rest as plaintext in no store — unlocked, locked, and after the connection reopens", async () => {
     const idbName = name();
     await generateOrLoadBrowserVesselIdentity(idbName);
-    await bindSyntheticBrowserCustodySlot(idbName);
-    await generateOrLoadBrowserPersonaRoot(idbName, 0);
+    const own = await bindSyntheticBrowserCustodySlot(idbName);
+    await generateOrLoadBrowserPersonaRoot(idbName, 0, FIXTURE_WARD);
 
     // The per-Nexus key: the walk leaf returns its seed.
-    const leaf = await browserWalkLeaf(idbName, NEXUS, 0);
+    const leaf = await browserWalkLeaf(idbName, NEXUS, own);
     // A walk record carrying a bearer invite.
     const gateKey = "ab".repeat(32);
     const inviteText = encodeInvite({ nexusAid: NEXUS, gatePubKey: gateKey, token: { purpose: "host-invite", n: "12".repeat(32), y: "34".repeat(64) } });
@@ -104,9 +105,11 @@ describe("browser secret census", () => {
     const root = await pair("census fleet root");
     const face = await chain("census fleet face", NEXUS);
     const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce: "c3".repeat(32), scopes: [face.scope] });
-    const request = await browserFleetJoinRequest({ offer, idbName });
-    const faceKey = await secretAt(idbName, ["vessel-face-keys", `${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`], `vessel-face-key/${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`) as Uint8Array;
-    const pending = await secretAt(idbName, ["fleet-join", "pending"], "fleet-join-pending") as { sealSecret: string };
+    // The joinee face's own tree binds before the join's first secret.
+    await bindFirstFaceSlot(idbName, GROUP, PASS);
+    const request = await browserFleetJoinRequest({ offer, idbName, ward: { route: async () => FIXTURE_WARD } });
+    const faceKey = await secretAt(idbName, ["vessel-face-keys", `${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`], `vessel-face-key/${GROUP}|${face.scope.nexus}|${face.scope.faceKey.toLowerCase()}`) as Uint8Array;
+    const pending = await secretAt(idbName, ["fleet-join", "pending"], `fleet-join-pending/${GROUP}`) as { sealSecret: string };
     const sealSecret = fromHex(pending.sealSecret);
     await browserFleetJoinLand({ answer: await answerTo(root, face, request), idbName });
 
@@ -118,9 +121,11 @@ describe("browser secret census", () => {
     const none = Object.fromEntries(Object.keys(needles).map((k) => [k, []]));
     expect(await readAll(), "unlocked").toEqual(none);
     lockBrowserCustody(idbName);
+    lockFaceCustody(idbName, GROUP);
     expect((await readBrowserCustody(idbName)).reading).toBe("sealed");
     expect(await readAll(), "locked, the connection reopened by each census").toEqual(none);
     expect((await unlockBrowserCustody(idbName, [PASS])).reading).toBe("opens");
+    expect((await unlockFaceCustody(idbName, GROUP, [PASS])).reading).toBe("opens");
     expect(await readAll(), "unlocked again").toEqual(none);
   });
 });
@@ -134,7 +139,7 @@ async function secretAt(idbName: string, [store, key]: [string, string], custody
       if (clear !== undefined) return clear;
     }
   } finally { db.close(); }
-  const held = await readKeystoreRow(idbName, custodyRow);
+  const held = await readKeystoreRecord(idbName, custodyRow);
   if (held === undefined) throw new Error(`no ${custodyRow} stands in either home`);
   return held;
 }
@@ -150,7 +155,7 @@ async function answerTo(root: Awaited<ReturnType<typeof pair>>, face: Awaited<Re
   const carriage = { gatePin: pin, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon-lares" } };
   const body = {
     nonce: request.nonce, atomKey: request.atomKey, personaGroup: GROUP,
-    edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: NEXUS },
+    edge: { kind: "device-admit", personaGroupId: GROUP, deviceEdge: "synthetic", hearthTrueName: NEXUS },
     carriage,
     reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: NEXUS },
     charter: "the hearth's charter",

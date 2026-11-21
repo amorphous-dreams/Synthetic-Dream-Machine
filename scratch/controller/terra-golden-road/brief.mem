@@ -1,0 +1,48 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-golden-road/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-golden-road/brief.md` (brief, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-golden-road/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Terra-Golden-Road: Lares (Tasked Spirit). Read-only diagnosis. Repo: /home/joshu/Synthetic-Dream-Machine (span b8c325a19; its last code CI read green at ffe05bc79; every commit since is canon only). Write nothing. Mark claims MEASURED (file:line, log line) or INFER.
+packages/lararium-web/tests/e2e/golden-whole-road.e2e.test.ts ("golden 01 on the whole road: a staged hearth, the page it serves, …") reads red in CI with `TimeoutError: locator.fill: Timeout 30000ms exceeded` on 2 of 3 runs of a lane (tools-ci) whose diff touches only tools/ and one tw5 test budget — so the fault rides span code. Excerpt: /home/joshu/.lares-scratch/controller/terra-golden-road/fail-excerpt.log; full logs: /home/joshu/.lares-scratch/tools-ci/ci-42211158872.log and /home/joshu/.lares-scratch/tools-ci/ci-42205171960.log. Tonight's other web-tw5 e2e timeouts on other lanes (shore-writes, rest-before-reload) — rest-before-reload's root turned out a FOCUS RACE: the mirror's skinny->full promotion re-renders an open edit frame mid-typing and TW5 returns focus to the title field (cured on b1-lift by d70dd8196 keepsFocus, not on the span). Find: which locator.fill in golden-whole-road times out, what the page shows then, and whether the same promotion focus race (or a promotion that re-renders the field away mid-fill) explains it; whether d70dd8196 (git show it) cures it; if not, the root. Name the minimal cure and its red. Final message under 600 words.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iufXU_6Ep49TmqNVO__UguKg7RuNmLJeE4dphfCekJk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

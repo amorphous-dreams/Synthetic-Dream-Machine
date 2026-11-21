@@ -20,7 +20,7 @@
  * append-only-witness (authority stores, e.g. the Mempalace: standing never cools, only a defeater
  * lowers it) · policy.halfLife finite → affinity-maturation (ephemeral sensoria: a witness edge's
  * contribution decays by half-life, so un-re-vouched standing cools toward the floor). This
- * completes the 7 biological moves — decay-as-tunable-dial was the one the keel lacked.
+ * completes the 7 biological moves, decay-as-tunable-dial among them.
  *
  * DERIVE, NEVER STORE: the record persists only content + a signed witness-log; standing and voice
  * derive at read, so a persisted record cannot CLAIM "spoken" without the witnesses backing it.
@@ -36,6 +36,7 @@
 
 
 import { verifyEd25519 } from "./ed25519-door.js";
+import { WITNESS_DOMAIN } from "./domains.js";
 
 /** The 0..20 STANDING dial's floor/step/ceiling for a testimony's lifecycle. */
 export const STANDING_FLOOR = 3;    // born at the noise band — quiet, honest, not failed
@@ -153,13 +154,13 @@ export function witness(t: Testimony, edge: Witness): Testimony {
  * signature's — the seal proves possession of `signer`'s key and nothing more.
  */
 
-/** The version-tagged, strict `|`-delimited canonical bytes a witness edge signs (the wax-stamp proof shape). */
+/** The domain-separated, strict `|`-delimited canonical bytes a witness edge signs (the wax-stamp proof shape). */
 export function witnessProofBytes(
   claimCid: string,
   edge: Pick<Witness, "signer" | "frontier" | "polarity" | "tick">,
 ): Uint8Array {
   return new TextEncoder().encode(
-    `lar-witness/v1|${claimCid}|${edge.signer}|${edge.frontier}|${edge.polarity}|${edge.tick ?? ""}`,
+    `${WITNESS_DOMAIN}|${claimCid}|${edge.signer}|${edge.frontier}|${edge.polarity}|${edge.tick ?? ""}`,
   );
 }
 
@@ -198,7 +199,7 @@ export async function verifyWitnessSig(
   signerKeyHex: string = edge.signer,
 ): Promise<boolean> {
   // Defensive fail-closed: the type names `signature` mandatory, but an edge RE-LOADED from a py store that
-  // does not yet carry the field arrives without it (the owed cross-language fixture, not back-compat) — deny.
+  // does not yet carry the field arrives without it (the owed cross-language fixture) — deny.
   if ((edge.signature as string | undefined) === undefined) return false;  // no string → nothing attested → deny
   if (!/^[0-9a-fA-F]{64}$/.test(signerKeyHex)) return false;      // not a 32-byte verifying key
   if (!/^[0-9a-fA-F]{128}$/.test(edge.signature)) return false;   // not a 64-byte signature

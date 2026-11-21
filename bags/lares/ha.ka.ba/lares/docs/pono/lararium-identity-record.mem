@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind api/pono/lararium-identity: the dated scouts and research syntheses its laws rest on, and the work its laws name as owed, kept as testimony; the law speaks in the api meme"
+tags        = ["api/pono/meme", "api/pono/lararium-identity"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/lararium-identity-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/lararium-identity-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Lararium Identity ~ the record
+
+The identity law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>; its dated rulings stand in that meme's `#/rulings`. This record keeps what the law points to: the scouts, the syntheses, and the owed work.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/scouts`>>
+
+!! Scouts
+
+''Wire-C (Keyhive 0.1.0 scout, 2026-06-24) — the two layers COMPOSE, not duplicate.'' The scout found Keyhive's membership graph serving as the authority for the face↔device binding and revocation, with the `device-delegation` edge beside it as the offline projection. Its reading of the binding at that day: Group still could not round-trip in 0.1.0-alpha.3, so a Document-sentinel stood in; the Beelay JS ciphertext transport still blocked full multi-vessel.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/syntheses`>>
+
+!! Syntheses
+
+* ''The boundary rule'' (2026-06-25): four blind domains converged — crypto key-rotation · persona-unlinkability · immune/fungal commitment · institutional ceremony — on the HOLD/refound test (irreversible AND jointly-witnessed AND costly AND unlinkable).
+* ''The lease'' (2026-06-25): four blind domains converged on the shape — DHCP soft-state · UCAN attenuation · quorum-sensing hysteresis · the institutional lease-not-ceremony.
+* ''The veil + the lease — the design crystallized'' (2026-06-25, two research-swarms + the Elyncia/Shadowtalk/Mage fiction layer): anon stands a first-class veil, the crossing runs LIFT or HOLD on the boundary rule, decay rides native as the lease. Lift built (the edge); HOLD (refound-sever) named-unbuilt. The crossing CEREMONY rides a siege-gate (born-besieged; cost + witness + invite-graph Sybil-filter) and dissent/forking stays allowed but COSTLY (Mage-Paradox: cost parts a schism from a siege) — both to land in federation + dreamnet-architecture once the cost calibrates.
+* ''The cost dial — synthesized'' (swarm complete, 2026-06-25): four blind domains (Sybil-graph defense · ZK-credential · immune costimulation · ritual/club economics) converged on the VOUCHER as the cost — MARGINAL-not-absolute (set the slope), invite-graph-relative (`rb>c`, the voucher supplies r), voucher-co-pays-and-watches, anergy-not-ban (no vouch → stay at floor=anon, re-presentable), entry-dear/maintenance-cheap/re-entry-costlier, group-value-tracking. The ZK-vouch rides the kahu as a blind oracle (carry rep across a HOLD without a link; price the HOLD at the staked rep). The mechanism stood unbuilt and contact-deferred (LIFT built; HOLD · siege-cost · ZK-vouch await the second spore).
+* ''The contract performs the key-agreement'' (deep-domain grounded, 2026-06-24).
+* ''The FS-limit'': the neg-entropy swarm refuted puncturable encryption for a replicated mesh; CORRECTION (2026-06-23): the earlier "threshold pays the kue" was wrong.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed ~ for the kahu road
+
+* ''The integer `boundEpoch` retires'' (approved 2026-11-12, not built). An edge will name the head digest of the PersonaGroup lineage it bound under, a causal link in place of a counter. Supersession rides acts (a Keyhive revoke, a kapae, a renewal record linked by digest), and a hard break forks as exit: a new PersonaGroup id, or a new seed charter for a hearth. No clock and no global count orders any of it.
+* ''The porch answer'' (LAW THE BUILD OWES): R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
+* ''HOLD's content half'' (a join that lifts nothing) and its choice at the door stand owed.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ddrVPQlM69rmX_Ni80ovbKocEzFUb591y_FkWBfPa6A`>>
+
+<<^ code=`&#x0004;` to=`?`>>

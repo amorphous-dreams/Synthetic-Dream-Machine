@@ -17,7 +17,7 @@ const ROOT = mkdtempSync(join(tmpdir(), "lr-cas-read-"));
 const CAS  = join(ROOT, "cas");
 const cidOf = (s: string): string => createHash("sha256").update(Buffer.from(s, "utf8")).digest("hex");
 const seedFor = (cid: string): object => ({
-  format: "lararium-genesis-seed/v1", actorSeed: "actor",
+  format: "lararium-genesis-seed", actorSeed: "actor",
   blobs: { tiddlywikicore: { id: "tiddlywikicore", sha256: cid, mimeType: "application/javascript", version: "1" } },
   tiddlers: {
     "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },
@@ -140,5 +140,26 @@ describe("★ the genesis seed's three answers reach the report ★", () => {
     const line = casSummaryLine(readCas(f));
     expect(line).toMatch(/protected \(genesis\) 1/);
     expect(line).not.toMatch(/UNKNOWN/);
+  });
+});
+
+describe("the report reads the daemon's protect set, the seed and the stored island together", () => {
+  test("a blob only the stored island names reads `protected: true` when the daemon's set rides the read; CONTROL: without it, the seed alone leaves it false", () => {
+    const root = mkdtempSync(join(tmpdir(), "lr-cas-island-"));
+    dirs.push(root);
+    const casDir = join(root, "cas");
+    mkdirSync(casDir, { recursive: true });
+    const seeded = "engine core the seed names", island = "engine core only the stored island names";
+    for (const s of [seeded, island]) writeFileSync(join(casDir, cidOf(s)), s);
+    const genesisDir = join(root, "genesis");
+    mkdirSync(genesisDir, { recursive: true });
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seedFor(cidOf(seeded))));
+    const base = { casDir, bagsDir: join(root, "bags"), wikisDir: join(root, "wikis"), genesisDir };
+    const bare = readCas(base);
+    expect(bare.entries.find((e) => e.cid === cidOf(island))?.protected).toBe(false);
+    const withDaemon = readCas({ ...base, protect: [cidOf(seeded), cidOf(island)] } as CasOpts);
+    expect(withDaemon.entries.find((e) => e.cid === cidOf(island))?.protected).toBe(true);
+    expect(withDaemon.entries.find((e) => e.cid === cidOf(seeded))?.protected).toBe(true);
+    expect(withDaemon.protected.sort()).toEqual([cidOf(seeded), cidOf(island)].sort());
   });
 });
