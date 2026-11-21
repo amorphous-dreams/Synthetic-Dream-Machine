@@ -1,0 +1,63 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/island-host-contract`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+hydrate   = true
+l-space   = "stable"
+role      = "island-host-contract — the shore between a host and the TW5 engine it boots inside an island: the golden principle (the host reproduces the engine's expected contracts, withholds the authorities the island should not hold, and decides the platform the engine never sniffs) and the SES gate (unpinned code waits outside the island realm until a Compartment boundary holds it)"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/island-host-contract"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/island-host-contract"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! The island host contract
+
+''The host shapes the island; the engine never sniffs it.'' Two laws hold the shore between a host and the TW5 engine it boots inside an island. The golden principle names the contracts the host reproduces and the authorities it withholds; `packages/lararium-tw5/src/tw5-host-bridge.ts` enacts it today. The SES gate names the boundary unpinned code waits on; that boundary rests on the road.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/golden-principle`>>
+
+!! The golden principle
+
+''The island reproduces the engine's expected contracts and denies the authorities it should not hold, so platform detection becomes a decision the host makes and never a sniff the engine does.''
+
+* ''One boot flow, a small shore.'' `loadTiddlyWikiFromBlob` evaluates the core for every runtime. A `HeadlessBootEnv` carries the three pieces that differ (`resolveBuiltin`, `preSeedTw`, `processArg`), and `prepareHostBootInstance` picks the runtime; the rest of the flow stays platform-blind. The Node env hands back real builtins from an allowlist, the browser Worker env synthesizes `vm`, `path` and `os` shims, both deny `fs`, and each refuses every other `require` by name. The canonical model's proven collapse (a core plus injected closures, never `if(platform)`) repeats here one level down.
+* ''The host decides the platform.'' On both island paths (the Node `worker_thread` and the browser Worker) `configureIslandRuntime` sets `$tw.node` and `$tw.browser` both to null: the third runtime, neither browser nor node. TW5's own platform filter then skips the `["browser"]` and `["node"]` startup modules and runs the agnostic ones. The host stubs the two loaders the kernel calls regardless (`loadTiddlersBrowser`, `loadTiddlersNode`), passes `decryptEncryptedTiddlers` straight through, steers `initStartup` away from the node block with `readBrowserTiddlers`, seats `packageInfo.version` as the SHA-256 of the engine's own bytes so `extractVersionInfo` never reaches for `document`, lends `escapeCSS` as a pure capability in place of a faked `window.CSS`, and routes `utils.error` onto the alert rail in place of `process.exit`.
+* ''Why never a faked-browser DOM.'' A fake `window` and `document` that answer to `$tw.browser` route boot into the browser block and inherit its footguns: the encrypted-store decrypt path, which reads `encryptedStoreArea` off the document and raises a password prompt, and the autoboot, which fires on evaluation wherever `$tw.browser` answers and `suppressBoot` stands unset. Every pre-seed carries `boot.suppressBoot`, so the core never boots itself on evaluation; the host calls `boot()` once its neutralization stands. Headless render goes to `$tw.fakeDocument`, the engine's own DOM-less document, which camera-mount and deletion-map already hold for Node, MCP and worker-side render.
+* ''Runtime injection stays irreducible.'' The core arrives as content-addressed bytes in the `coreBlob`, evaluated through `new Function`, and no bundler or build-time transform reaches inside a blob evaluated that way. So the host shapes the engine at run time alone: the pre-seed before evaluation, the env's closures during it, and `configureIslandRuntime` after it, before `boot()`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ses-gate`>>
+
+!! The SES gate
+
+''No unpinned code enters the island realm until a Compartment boundary holds it, because hash-pinning vouches for provenance and never for intent.''
+
+* ''Soundness.'' Pinning holds sound if and only if the set of code the island evaluates equals the set the host hash-verified. Any evaluation path outside that set (a module tiddler, a plugin, an evaluated string) breaks the equality, and a pin on the core then vouches for nothing the island runs beside it.
+* ''What stands.'' `verifyCoreBootBlob` checks the core blob's bytes against the SHA-256 the blob carries and refuses a mismatch before evaluation. A blob that carries no expected hash passes unchecked, so the core check vouches only where a pin rides along.
+* ''What rests on the road.'' No Compartment boundary stands in the code: no SES `lockdown`, no `Compartment`, no `harden`. This gate names the boundary unpinned code waits on; it never claims the boundary stands built. Until one stands, code without a pin MUST NOT enter the island realm.
+* ''Never vm2.'' The island MUST NOT take `vm2`, or any `vm`-context sandbox, as its boundary. Node's `vm` serves the engine's module loader and grants no isolation.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/lararium-canonical-model`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/open-vessel`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/camera-mount`>> · <<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/deletion-map`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AyeyhQc4-2J2oatCIv9ThZsE7ZnYv_vGD58N9_c63gY`>>
+
+<<^ code=`&#x0004;` to=`?`>>
