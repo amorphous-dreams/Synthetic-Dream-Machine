@@ -165,10 +165,13 @@ keep_before_down() {
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
   else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
-  # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
+  # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
+  # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
   if kb_out=$("$@" rite keep --if-due --json); then
-    if printf '%s' "$kb_out" | tr -d ' \t\r\n' | grep -q '"workspace":null'; then KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed"
-    else KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)"; fi
+    kb_flat=$(printf '%s' "$kb_out" | tr -d ' \t\r\n')
+    if printf '%s' "$kb_flat" | grep -q '"workspace":null'; then KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed"
+    elif printf '%s' "$kb_flat" | grep -q '^{"ok":true,' && printf '%s' "$kb_flat" | grep -Eq '"data":\{.*"workspace":"[^"]+"'; then KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)"
+    else KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed"; fi
   else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
@@ -1212,6 +1215,9 @@ case "$verb" in
       terms=$(compose exec $(pass_env) -T lares node "$CLI" rite abandon --terms "$@" </dev/null) || exit $?
       answer=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" lei abandon "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
       [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
+      # ONLY A SIGNED ANSWER LANDS: a refusal the pūlama read (another group's half, a wrong route) lands nothing.
+      ab_reading=$(printf '%s' "$answer" | tr -d ' ' | sed -n 's/.*"reading":"\([^"]*\)".*/\1/p' | head -n 1)
+      [ "$ab_reading" = signed ] || die "the pūlama signed nothing (${ab_reading:-no reading}); nothing lands"
       # shellcheck disable=SC2046
       waited_exec $(pass_env) -T lares node "$CLI" rite abandon --signed "$answer" "$@" </dev/null
       exit $?

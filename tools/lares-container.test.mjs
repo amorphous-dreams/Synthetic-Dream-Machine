@@ -70,7 +70,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       // THE ABANDON'S TERMS and the kūkulu's debt read, as the vessel answers them where a test scripts one.
-      `case " $* " in *" rite abandon "*"--terms"*) printf '%s\\n' "\${FAKE_ABANDON_TERMS:-}"; exit 0;; esac\n` +
+      `case " $* " in *" rite abandon "*"--terms"*) printf '%s\\n' "\${FAKE_ABANDON_TERMS:-}"; exit "\${FAKE_ABANDON_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       // THE REAL HAND VERB, where a test names its module: the pūlama's own `lei` verb (`runHandVerb`) reads the terms the shim
       // passes, over a door that signs what it is asked, so the chain's shapes walk end to end.
@@ -674,10 +674,11 @@ for (const [name, shim] of shims) {
 
   // THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
   // still stands, before the census; a keep that refuses never blocks the down.
+  const KEPT_ENVELOPE = '{"ok":true,"data":{"rite":"keep","due":true,"workspace":"house-backup"}}';
   const fakeHostCli = async (rc) => {
     const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
     const f = join(d, "lares");
-    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nexit ${rc}\n`);
+    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\n${rc === 0 ? `printf '%s\\n' '${KEPT_ENVELOPE}'\n` : ""}exit ${rc}\n`);
     await chmod(f, 0o755);
     return f;
   };
@@ -1075,7 +1076,8 @@ for (const [name, shim] of shims) {
   const keepTwice = async (first, second) => {
     const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
     const f = join(d, "lares");
-    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nif [ -e "$CALL_LOG.kept1" ]; then exit ${second}; fi\n: > "$CALL_LOG.kept1"\nexit ${first}\n`);
+    // A keep that kept answers the CLI's envelope naming its workspace, as `rite keep --if-due --json` does.
+    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nif [ -e "$CALL_LOG.kept1" ]; then rc=${second}; else : > "$CALL_LOG.kept1"; rc=${first}; fi\n[ "$rc" -ne 0 ] || printf '%s\\n' '${KEPT_ENVELOPE}'\nexit $rc\n`);
     await chmod(f, 0o755);
     return f;
   };
@@ -1192,6 +1194,21 @@ for (const [name, shim] of shims) {
     assert.match(nothing.calls, /HOSTCLI rite keep --if-due/);
     assert.equal(nothing.keepOwed, true);
     assert.match(nothing.stderr, /keep: no keep workspace resolved, so nothing kept; the keep stays owed/);
+  });
+  test(`${name}: keep-clears-on-a-real-keep (the fifth read): a keep that exits zero with no answer, or an answer that reads as no envelope naming its workspace, keeps the mark; CONTROL: the envelope naming the workspace clears it`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}' };
+    for (const out of ["", "kept, probably", '{"ok":true,"data":{"rite":"keep","workspace":""}}', '{"ok":false,"data":{"workspace":"house-backup"}}']) {
+      const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+      const cli = join(d, "lares");
+      await writeFile(cli, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' '${out}'\nexit 0\n`);
+      await chmod(cli, 0o755);
+      const r = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: cli } });
+      assert.match(r.calls, /HOSTCLI rite keep --if-due/);
+      assert.equal(r.keepOwed, true, JSON.stringify(out));
+      assert.match(r.stderr, /keep: the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed|keep: no keep workspace resolved/);
+    }
+    const kept = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await fakeHostCli(0) } });
+    assert.equal(kept.keepOwed, false);
   });
   test(`${name}: vessel-image-fails-loud (the fourth read): an inspect that fails exits non-zero and prints nothing, never a digest`, async () => {
     const r = await run(shim, ["vessel-image"], { env: { ...STANDING, FAKE_VESSEL_IMAGE: "sha256:" + "ee".repeat(32), FAKE_VESSEL_INSPECT_RC: "1" } });
@@ -1408,6 +1425,19 @@ test(`${name}: rite-abandon-hand-door-chain: under a pūlama, rite abandon reads
   const refused = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms } });
   assert.notEqual(refused.status, 0);
   assert.doesNotMatch(refused.calls, /rite abandon --signed/);
+});
+// THE FIFTH READ: terms the vessel refuses (none of this face's own, an unlent face) ask no route; an answer that reads anything
+// but signed lands nothing.
+test(`${name}: rite-abandon-chain-asks-nothing-it-cannot-sign: terms the vessel refuses never reach the pūlama; a pūlama answer that is not signed never lands`, { skip }, async () => {
+  const terms = '{"face":0,"rite":"kukulu","branch":"main","parts":[{"tessera":"' + "c".repeat(64) + '","group":"g","branch":"main","begun":"' + "d".repeat(64) + '"}]}';
+  const refused = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: "", FAKE_ABANDON_TERMS_RC: "2", FAKE_LEI_ANSWER: '{"op":"lei","act":"abandon","reading":"signed","records":[]}' } });
+  assert.notEqual(refused.status, 0);
+  assert.doesNotMatch(refused.calls, /pulama-main\.js lei|rite abandon --signed/);
+  const unsigned = await run(shim, ["rite", "abandon", "--rite", "kukulu", "--branch", "main"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_ABANDON_TERMS: terms, FAKE_LEI_ANSWER: '{"op":"lei","act":"abandon","reading":"abandon-other-group","face":0}' } });
+  assert.notEqual(unsigned.status, 0);
+  assert.match(unsigned.calls, /pulama-main\.js lei abandon/);
+  assert.doesNotMatch(unsigned.calls, /rite abandon --signed/);
+  assert.match(unsigned.stdout, /the pūlama signed nothing \(abandon-other-group\); nothing lands/);
 });
 // THE CHAIN END TO END (the fourth read): the terms ride as the vessel CLI's own answer (its envelope, as `emitAnswer` writes it),
 // the pūlama's own `lei` verb reads them, and the shim lands what it answers: the shapes cannot drift apart unseen.

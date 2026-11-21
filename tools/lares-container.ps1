@@ -433,7 +433,11 @@ function KeepBeforeDown {
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
   # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
   $kbOut = ((& $cmd @pre rite keep --if-due --json) -join '') -replace '\s', ''
-  if ($LASTEXITCODE -eq 0 -and $kbOut.Contains('"workspace":null')) { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
+  $kbRc = $LASTEXITCODE
+  # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
+  if ($kbRc -eq 0 -and $kbOut.Contains('"workspace":null')) { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
+  if ($kbRc -eq 0 -and -not ($kbOut.StartsWith('{"ok":true,') -and $kbOut -match '"data":\{.*"workspace":"[^"]+"')) { $script:KeepSaid = 'the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed'; return }
+  $global:LASTEXITCODE = $kbRc
   if ($LASTEXITCODE -ne 0) {
     $script:KeepSaid = 'the keep did not complete'
     New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
@@ -1206,6 +1210,9 @@ switch ($verb) {
         $answer += $line
       }
       if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
+      # ONLY A SIGNED ANSWER LANDS: a refusal the pūlama read (another group's half, a wrong route) lands nothing.
+      $abReading = if (($answer -replace '\s', '') -match '"reading":"([^"]*)"') { $Matches[1] } else { 'no reading' }
+      if ($abReading -ne 'signed') { Die "the pūlama signed nothing ($abReading); nothing lands" }
       $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli rite abandon --signed $answer @more
       exit $LASTEXITCODE
     }
