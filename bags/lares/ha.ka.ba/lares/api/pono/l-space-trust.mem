@@ -73,6 +73,18 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/read-doors`>>
+
+!! Read Doors ~ Provenance and Weight
+
+''A model's context stream holds its state.'' Text a model reads both informs and steers it: the black speaks and the red acts in every span, a weighting and never a split (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/classifier-channel`>>). So no door can hand an AI reader text that only informs.
+
+''An AI-facing door labels provenance and weight, never a data/instruction split.'' Every read names where its text came from ~ the wiki or bag that answered ~ so a reader tells a canon layer from a working one, and the operator's turn from a document's or a peer's words; the text weighs on the reader's next moves as that standing earns, by the ladder above (#/precedence). Canon law weighs most; a working layer's, a document's or a peer's words earn little steering weight; the operator's own turns hold the steering seat.
+
+''The guards carry the trust.'' A label alone steers nothing; residency makes it trustworthy. A law row prints only where a canon layer answers its record, under a title that reads as one `lar:` address, and a face's pins reorder canon and add none, so nothing a face writes prints as law. A read verb carries no outward channel. A door MUST keep these guards whole, and MUST NOT word its framing as a wall the reader's attention cannot cross.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -85,6 +97,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AUtZH3XtXtHAIsc56eHiht1vNM95yOaZLv4ryGOtAgY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lr4hMtT8lInivFKNKR-er6o3qJCaskdft1OYgxRgkO4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

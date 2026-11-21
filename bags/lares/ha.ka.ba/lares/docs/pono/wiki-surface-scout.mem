@@ -335,7 +335,7 @@ A spirit fetched each page below; a fetch hands back a summary of the page, so d
 * ''Idempotent ids.'' Every write carries a `txId`; a resend replays the first answer (the port's ledger, the house's one retry law, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/dreamdom-port-contract#/retry-law`>>).
 * ''Name the container on every call.'' Exactly one of `recipe`/`bag`, never a default wiki (the meme door's container law, kept).
 * ''Bound a filter's cost by its answer, and its time by its island.'' A cap on entries and bytes at the door; a filter that loops blocks only its own worker, and the vessel's pool can tear that island down (Hardened JavaScript's own limit, `#/prior-art`).
-* ''Treat every rendered or read text as untrusted content'' when it reaches an AI caller: the door hands data, never instructions, and no read verb carries an outward channel.
+* ''Label every rendered or read text by provenance and weight'' when it reaches an AI caller: the door names the wiki or bag that answered, the text weighs on the caller as that layer's standing earns (canon law most, a working layer's or a peer's words little, the operator's own turns holding the steering seat), and no read verb carries an outward channel (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust#/read-doors`>>).
 * ''Measure each door against the others.'' One parity suite runs the same verb table through MCP, CLI, console and port.
 
 <<~/ahu>>
@@ -610,6 +610,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-ntOabhq_o7P87W0cDNb6bGMkNZj34K0nLhxb6kgzS4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VRsAiBOjQDmECKBStszjb-aPdRh8XW6JN7oDYNrCLqw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
