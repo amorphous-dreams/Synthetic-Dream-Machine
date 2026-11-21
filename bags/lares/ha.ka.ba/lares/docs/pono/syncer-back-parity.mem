@@ -161,7 +161,7 @@ Witnesses: `tests/syncer-native-delete-door.test.ts` (6 vectors — the group le
 * ''(b′) CLOSED'' — the root law got ONE spelling (`framedRootOf` reads `isMemeRoot`; all three doors inherit it; no stall — `3d0f7248a`), the fragment PUT door walls itself with 400 for every other skin (`bf9d9e04f`), and the scanner no longer counts a `kahea` CALL as a declared slot (`75e895c3e` — a second defect fell beside it: a call before its own block dropped the slot's body into no record at all).
 * ''(c′) RULED Mu, marked'' — a member's death leaves the call standing (never-invent-bytes); the ahu template distinguishes `unresolved · arriving · empty · filled` (`79420f5b5`); the served text keeps the call, the page marks it. The re-cut lean below was REFUTED by measure: a re-place lands the marker again.
 * ''(d′) CLOSED on the server'' — `native-skinny-door` re-inflates slot children in stock's own `tiddlers.json` (`61ac87090`); measured 132 tiddlers 23 798 B → 38 967 B (×1.64); dial `$:/config/lares/memes/fat-children` (default yes); the cord for //arriving// rides the same template.
-* ''(b) STANDS, and says why'' — the backstop widening REFUTED at its red (`3dfb06170`): `placeMeme(root, readMeme(root))` is the canonical form's own fixed point, so seven kinds of child edit read `noop · clean · 0 diagnostics` while the same shapes refuse at the root's door. A child's save grades only against the child's OWN authored text, and no congruence reads a fragment body as a gradeable unit. The operator's call.
+* ''(b) CLOSED by the built path'' (operator ruling, 2026-11-20, quote license: //"approve truing up to today's state, that reads pono, even if it gets reexamined later"//) — a child's save grades (#/rulings, answer (7)): the backstop's child gate runs the ingest gate's READ HALF, `evaluateMeme` and never `placeMeme`, over the composed root, and surfaces what it finds on the quoteblock's alert rail (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`>>). The re-place route fell at its red (`3dfb06170`): `placeMeme(root, readMeme(root))` reaches the canonical form's own fixed point, so seven kinds of child edit read `noop · clean · 0 diagnostics` while the same shapes refuse at the root's door.
 
 The leans as first written, kept for the record:
 
@@ -183,7 +183,7 @@ The leans as first written, kept for the record:
 
 <<~ moolelo held=```(1) (c′) = SCAR, MARKED — the crossroads' answer; keep the pointer, mark it dead; never-invent-bytes rules · (2) no re-cut, so no 412 on a party who did nothing · (3) the pasted frame stays as AUTHORED TEXT; the grade speaks in Phase 5 · (4) the payload gets a dial, `$:/config/lares/memes/fat-children` default yes, with the measured size reported · (5) (d′) IS a defect for this house's carriers (eleven-slot documents are the normal); Phase 3 stands whole · (6) `<<~?` waits its own pass; unbound here · (7) a child's save IS graded, through the root re-place · (8) order 0 · 1 · 4 · 2 · 3 · 5 — (b′) first, the human's screen second, arrival third, the ungated child last (operator, on the house's answers)```>>the same hand that sat the table enacts, red-first, every phase with its anti-stall control<<~/moolelo>>
 
-''⚠ A conflict named, never chosen ~ answer (7).'' The ruling reads "a child's save IS graded, through the root re-place". Two readings in canon pull against it: #/leans above carries ''(b) STANDS'' (the re-place REFUTED at its red, `3dfb06170`, and "The operator's call"), and <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`>> re-grades a child-slot save's root through the backstop's child gate, which runs the ingest gate's READ HALF (`evaluateMeme`, never `placeMeme`). The ruling names a re-place; canon names a read with no re-place. This slot carries both and settles neither; the operator rules.
+''Answer (7), trued (operator ruling, 2026-11-20).'' Quote license: //"approve truing up to today's state, that reads pono, even if it gets reexamined later"//. The ruling's intent binds: a child's save IS graded. Its route clause, //through the root re-place//, stands SUPERSEDED by the built path: the backstop's child gate grades the composed root through the ingest gate's READ HALF (`evaluateMeme`, never `placeMeme`), with no re-place (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`>>); the re-place fell at its red (`3dfb06170`). #/leans reads (b) closed by that path. The operator left the truing open to a later look.
 
 ''The population the never-refuse law binds'' (operator ruling, 2026-09-13; first told at `syncer-seams-roundtable#/refusals`, under its refusal "No cure may answer 4xx on a path the stock syncer drives."), quote license:
 
@@ -204,6 +204,6 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Nm5lqcSWB2qwjZ8gKxy5D0ta4vePq6zSgdCdwvnMmmk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;r-IG7UnUUZBoZYY49QSIke5fX7zj93O4trItf_gzD5A`>>
 
 <<^ code=`&#x0004;` to=`?`>>
