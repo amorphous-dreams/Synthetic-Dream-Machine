@@ -19,10 +19,11 @@
  */
 import {
   CONTROL_HOME_ID, DAEMON_BAG_ID, KAHUA_BAG, PRIVATE_SLOT_KINDS, daemonFaceCanonBag, documentIdOfUrl, expandRecipe, sha256HexBytesSync,
-  tiddlerText, wikiSlotUri, type DocHandle, type FaceActorDoor, type LarDoc, type LarTiddlerStore, type WikiRecipe, type WikiSlotKind,
+  tiddlerText, wikiSlotUri, type DocHandle, type FaceActorDoor, type LarDoc, type LarTiddlerStore, type WikiRecipe,
 } from "@lararium/mesh";
 import { TW5Engine, crossFaceViewSource, preloadsFromCasBlob, type CrossFaceViewSource, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
 import type { LitFace, LitFaceDocs } from "./lit-face-target.js";
+import type { BindingKind } from "./resolve-binding.js";
 
 export interface SiblingEngineDeps {
   /** The lit sibling the engine answers for. */
@@ -112,6 +113,9 @@ export async function composeCrossFaceViewSource(deps: CrossFaceViewDeps): Promi
   });
 }
 
+/** The binding kinds the resolver writes for a PRIVATE slot kind (`resolve-binding` `BindingKind`: `<kind>-binding`). */
+const PRIVATE_BINDING_KINDS: ReadonlySet<string> = new Set([...PRIVATE_SLOT_KINDS].map((kind): BindingKind => `${kind as "personal" | "draft"}-binding`));
+
 /** Where the documents a private slot names rest on this island. */
 export interface CrossFacePrivateDocsDeps {
   /** Every lit face: the worn one and each sibling. */
@@ -127,8 +131,8 @@ export interface CrossFacePrivateDocsDeps {
 /**
  * THE DOCUMENTS A VISIT NEVER COMPOSES: every document a PRIVATE slot names here. Each lit face's daemon personal and draft
  * documents (the worn face's as its island mounted them, every face's as the control document names them), and each personal or
- * draft binding the daemon document records for any wiki (`kind`, or a mint row's `binding-kind`). A url that names no document
- * adds nothing.
+ * draft binding the daemon document records for any wiki: a binding row's `kind`, or a mint row's `binding-kind`, read as the
+ * resolver writes them (`BindingKind`: `personal-binding`, `draft-binding`). A url that names no document adds nothing.
  */
 export async function crossFacePrivateDocs(deps: CrossFacePrivateDocsDeps): Promise<Set<string>> {
   const docs = new Set<string>();
@@ -144,7 +148,7 @@ export async function crossFacePrivateDocs(deps: CrossFacePrivateDocsDeps): Prom
     for (const title of await deps.daemon.listVisible()) {
       const fields = (await deps.daemon.get(title))?.tiddler as Record<string, unknown> | undefined;
       const kind = fields?.["kind"] === "binding-mint" ? fields["binding-kind"] : fields?.["kind"];
-      if (typeof kind === "string" && PRIVATE_SLOT_KINDS.has(kind as WikiSlotKind)) add(documentIdOfUrl(typeof fields?.["text"] === "string" ? fields["text"] : null));
+      if (typeof kind === "string" && PRIVATE_BINDING_KINDS.has(kind)) add(documentIdOfUrl(typeof fields?.["text"] === "string" ? fields["text"] : null));
     }
   }
   return docs;

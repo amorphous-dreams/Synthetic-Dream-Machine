@@ -278,3 +278,11 @@ test("RED XV3 (H2): a visit's body answers its caller once; a receipt under its 
   await v.oneShot({ verb: "tiddler-get", args: VISIT, requestedBy: "0xplace", requestId: "own-read" });
   expect(JSON.stringify(await v.oneShot({ op: "receipt", requestId: "own-read" }))).toContain("own");
 });
+
+test("RED XV4 (Sol 407c H2): a visit whose target shut before the answer left delivers no body: the door reads the lit set at delivery", async () => {
+  const lit = [1];
+  const v = await stand({ lit, output: (o) => { if (o.args["target"] !== undefined) lit.splice(0); return visitOut(o); } });
+  const reply = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-shut" });
+  expect(JSON.stringify(reply), "the shut face's body never leaves").not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+});

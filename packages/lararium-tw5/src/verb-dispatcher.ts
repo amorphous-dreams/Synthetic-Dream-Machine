@@ -57,7 +57,7 @@ import {
   ControlHomeUnavailable,
 } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
+import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
@@ -510,8 +510,9 @@ export class VerbDispatcher {
         return;
       }
       const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
-      if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
-        const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
+      const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
+      // A VISIT NEVER REPLAYS: an index naming a visit's outcome copies nothing, and the reactor runs with its opening check.
+      if (priorDigest === inputDigest && !isVisitResults(priorResults) && this.replayAdmitted(invocation)) {
         await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
           priorRequestId, priorResults, inputDigest, ...this.markOf(invocation),
         });

@@ -1835,8 +1835,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // it as the mount, on a lit sibling's own lane, or refuses a shut face `face-not-open`. A synced claim still refuses.
           // Only a DID naming one of this island's own faces (the mount, or a face joined beside it) reaches the lane: a
           // stranger's DID names no face here, so it meets the fence below and refuses `content-mounted-only`.
+          // A sibling's DID reaches its lane only on a session the vessel's door bound (`invocation.face`): a one-shot with no bound
+          // session never admits as a face other than the mount (Sol 407c H4).
           if (context.local === true && context.presenter !== undefined && FACE_LANE_VERBS.has(verb)
-            && (bareKey(context.presenter) === bareKey(daemonAuth.atom.key) || litSiblings.has(bareKey(context.presenter)))) return;
+            && (bareKey(context.presenter) === bareKey(daemonAuth.atom.key)
+              || (litSiblings.has(bareKey(context.presenter)) && (context.invocation as { face?: unknown } | undefined)?.face !== undefined))) return;
           // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
           // names the mounted atom stays a claim and refuses like any other.
           if (context.local !== true || context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
@@ -2216,7 +2219,7 @@ const namesADid = (claim: string): boolean => /^did:/i.test(claim.trim()) || /^[
  * a held face's group, or it refuses by name: a session never falls back silently to another face.
  */
 export function presenterFor(input: {
-  readonly invocation: { readonly requestedBy: string; readonly args: Readonly<Record<string, unknown>> };
+  readonly invocation: { readonly requestedBy: string; readonly args: Readonly<Record<string, unknown>>; readonly face?: string };
   readonly local: boolean;
   readonly auth: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "placeVerifyingKey" | "atom" | "personaGroupId" | "deviceEdge"> & { readonly holds?: (group: string) => boolean; readonly atomOf?: (group: string) => string | null };
 }): string {
@@ -2230,6 +2233,9 @@ export function presenterFor(input: {
   }
   if (bareKey(claim) !== bareKey(auth.placeVerifyingKey)) return claim;
   if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId) {
+    // A ONE-SHOT NEVER PRESENTS A SIBLING (Sol 407c H4): naming a lit sibling's group presents as it only on a session the
+    // vessel's door bound to a face (`invocation.face`); a line with none presents the mount alone.
+    if (invocation.face === undefined) throw new VerbRefusal("presenter-rides-a-session", `presenter-rides-a-session: this ask names ${named} with no bound session; a one-shot presents the worn face alone, and a sibling acts on a session of its own`);
     const atom = auth.atomOf?.(named);
     if (!atom) throw new Error(`no atom for held group ${named}`);
     return `0x${bareKey(atom)}`;

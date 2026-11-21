@@ -921,8 +921,22 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ...(inv.chore !== undefined && { chore: inv.chore }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
-    try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs); }
+    try { return deliveredVisit(await awaitOutcome(inv.verb, requestId, inv.timeoutMs), requestId); }
     finally { opts.retireAsk?.(requestId); }
+  };
+
+  /**
+   * A VISIT'S BODY LEAVES ONLY WHILE ITS TARGET STANDS LIT (Sol 407c H2): the island read the target's opening before it answered;
+   * the door reads the lit set again as the answer leaves, so a face that shut between the island's answer and this delivery
+   * hands its caller `face-not-open` and no body.
+   */
+  const deliveredVisit = (outcome: Record<string, unknown>, requestId: string): Record<string, unknown> => {
+    if (!isVisitOutcome(outcome)) return outcome;
+    const output = ((outcome["results"] as Record<string, unknown>)["summary"] as Record<string, unknown>)["output"] as Record<string, unknown>;
+    const face = output["face"];
+    if (typeof face === "number" && litFaces().includes(face)) return outcome;
+    const message = `face-not-open: the visited face${typeof face === "number" ? ` h${face}` : ""} shut before its answer left; nothing is delivered`;
+    return { status: "error", requestId, errorMessage: message, refusal: { reason: "face-not-open" } };
   };
 
   /** Answer a `{op:"receipt"}` query (H1, now durable) — a READ, built from the fact ledger plus

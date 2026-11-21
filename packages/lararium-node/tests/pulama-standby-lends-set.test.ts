@@ -134,6 +134,15 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     expect(light.indexOf("unlitServedFaces(")).toBeLessThan(light.indexOf("lightFace("));
   });
 
+  test("RED WELD (Sol 407c): a lock that narrows the lend (the pūlama's standing event, or the custody's own close) drops each lit sibling it no longer serves from the daemon island, so its opening ends and no visit reads it", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    expect(source).toMatch(/onClosed\?\.\(\(\) => void lightServedFaces\(/);
+    const light = source.slice(source.indexOf("const lightServedFaces"));
+    const tend = light.slice(0, light.indexOf("stood.push"));
+    expect(tend.indexOf("unservedLitFaces(")).toBeGreaterThan(-1);
+    expect(tend.indexOf("unservedLitFaces(")).toBeLessThan(tend.indexOf("dropFace("));
+  });
+
   test("WELD: the composition proves another face, and lists the faces it walks, only inside what the vessel serves", () => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     const proof = source.slice(source.indexOf("async function proofOfOtherFace"));

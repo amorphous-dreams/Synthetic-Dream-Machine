@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri, selvesRecordOf } from "@lararium/mesh";
-import { joinedFaceAuth, unlitServedFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
 
 const edge = { deviceVerifyingKey: "ab" } as NonNullable<NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchors"]>>>["deviceEdge"]>;
 const anchor = {} as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchor"]>>>;
@@ -62,6 +62,13 @@ describe("a face the lend serves after the composition stood", () => {
     expect(unlitServedFaces([2, 0, 1], 0, new Set([2]))).toEqual([1]);
     expect(unlitServedFaces([0, 2], 0, new Set([2]))).toEqual([]);
     expect(unlitServedFaces([0, 1, 2], null, new Set())).toEqual([]);
+  });
+
+  test("RED (Sol 407c): a lit sibling the lend no longer serves (a pūlama lock narrowed it) stands to drop, in ordinal order; the mount never drops here, and a face still served stays", () => {
+    expect(unservedLitFaces([0], 0, new Set([1, 2]))).toEqual([1, 2]);
+    expect(unservedLitFaces([0, 2], 0, new Set([1, 2]))).toEqual([1]);
+    expect(unservedLitFaces([0, 1, 2], 0, new Set([1, 2]))).toEqual([]);
+    expect(unservedLitFaces([], 0, new Set([0]))).toEqual([]);
   });
 });
 

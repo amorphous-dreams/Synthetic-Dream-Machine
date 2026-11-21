@@ -31,6 +31,16 @@ export function unlitServedFaces(served: readonly number[], mount: number | null
   return [...new Set(served)].filter((o) => o !== mount && !lit.has(o)).sort((a, b) => a - b);
 }
 
+/**
+ * The lit siblings the lend leaves unserved: every face lit beside the mount that the served set leaves out, in ordinal order.
+ * A lock narrows the served set (the pūlama's standing event, the custody's own close), and each such face drops from the
+ * daemon island, so its island opening ends and no visit reads it. The mount never drops here (its lock recomposes the vessel).
+ */
+export function unservedLitFaces(served: readonly number[], mount: number | null, lit: ReadonlySet<number>): number[] {
+  const serving = new Set(served);
+  return [...lit].filter((o) => o !== mount && !serving.has(o)).sort((a, b) => a - b);
+}
+
 /** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground and the bags it OWNS while lit
  *  (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half, its selves record), so its own memory seals
  *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the house canon belong to

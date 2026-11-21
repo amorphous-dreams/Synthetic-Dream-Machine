@@ -13,7 +13,7 @@ const ATOM = "cd".repeat(32);
 const SIBLING = "ef".repeat(32);
 const lit = { placeVerifyingKey: PLACE, atom: { seed: "00".repeat(32), key: ATOM }, personaGroupId: "group-x", deviceEdge: {} as never };
 const floor = { placeVerifyingKey: PLACE };
-const ask = (requestedBy: string, args: Record<string, unknown> = {}) => ({ requestedBy, args });
+const ask = (requestedBy: string, args: Record<string, unknown> = {}, face?: string) => ({ requestedBy, args, ...(face !== undefined ? { face } : {}) });
 
 describe("presenterFor", () => {
   test("RED: a local verb naming the place presents as the lit face's atom", () => {
@@ -35,15 +35,22 @@ describe("presenterFor", () => {
       expect(presenterFor({ invocation: ask(label), local: false, auth: lit }), label).toBe(label);
     }
   });
-  test("a lit joined group may be named, and a dropped group refuses", () => {
+  test("a lit joined group may be named on a bound session, and a dropped group refuses", () => {
     const groups = new Set(["group-x", "group-y"]);
     const auth = { ...lit, holds: (group: string) => groups.has(group), atomOf: (group: string) => groups.has(group) ? (group === "group-y" ? SIBLING : ATOM) : null };
-    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toBe(`0x${SIBLING}`);
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }, "proof-y"), local: true, auth })).toBe(`0x${SIBLING}`);
     expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-x" }), local: true, auth })).toBe(`0x${ATOM}`);
     expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: true, auth })).toBe(`0x${ATOM}`);
     expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "stranger" }), local: true, auth })).toThrow("wear stranger first");
     groups.delete("group-y");
-    expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toThrow("wear group-y first");
+    expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }, "proof-y"), local: true, auth })).toThrow("wear group-y first");
+  });
+  test("RED (Sol 407c H4): a one-shot (no bound session) naming a lit sibling's group never presents as that sibling", () => {
+    const auth = { ...lit, holds: (group: string) => group === "group-x" || group === "group-y", atomOf: (group: string) => (group === "group-y" ? SIBLING : group === "group-x" ? ATOM : null) };
+    expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth })).toThrow(/presenter-rides-a-session/);
+    // CONTROL: the mount's own group, or none, presents the mount on a one-shot.
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-x" }), local: true, auth })).toBe(`0x${ATOM}`);
+    expect(presenterFor({ invocation: ask(`0x${PLACE}`), local: true, auth })).toBe(`0x${ATOM}`);
   });
   test("CONTROL: a verb naming another face refuses by name; the mounted face or none presents", () => {
     expect(() => presenterFor({ invocation: ask(`0x${PLACE}`, { personaGroup: "group-y" }), local: true, auth: lit }))

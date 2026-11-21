@@ -174,7 +174,7 @@ import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from 
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
-import { joinedFaceAuth, unlitServedFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -3779,6 +3779,9 @@ async function prepareNodeBootOn(
     // A FACE SERVED AFTER THE COMPOSITION STOOD lights on the custody's open: the pūlama lights a waiting face and its standing
     // event widens the served set, and each served face neither mounted nor lit lights here, in turn, before a session on it
     // reads (the island refuses an unlit face's presenter, `no provider for face`, and never serves it as the mount).
+    // A LOCK THAT NARROWS THE LEND DROPS WHAT IT LEAVES UNSERVED: the pūlama's standing event fires the same open, and the
+    // custody's own close fires it too; each lit sibling the served set leaves out drops from the daemon island first, so its
+    // island opening ends and no visit (in flight or fresh) reads it.
     let lighting: Promise<void> = Promise.resolve();
     const lightServedFaces = (): Promise<void> => {
       // Capture at the event, before either the queue or custody enumeration can yield to a drop.
@@ -3787,6 +3790,10 @@ async function prepareNodeBootOn(
         if (!siblingPorts || mountFace === null) return;
         let served: number[];
         try { served = await unlockedFaceOrdinals(); } catch { return; }
+        for (const ordinal of unservedLitFaces(served, mountedFace, litSiblingOrdinals(siblingFaces.values()))) {
+          try { await dropFace(ordinal); }
+          catch (e) { console.warn(`[lit-set] the face h${ordinal} the lend leaves unserved did not drop: ${e instanceof Error ? e.message : String(e)}`); }
+        }
         for (const ordinal of unlitServedFaces(served, mountedFace, litSiblingOrdinals(siblingFaces.values()))) {
           if (generations.get(ordinal)?.() !== true) continue;
           try { await lightFace(ordinal); }
@@ -3796,9 +3803,11 @@ async function prepareNodeBootOn(
       }));
     };
     const stopLendOpened = standingCustody()?.onOpened?.(() => void lightServedFaces()) ?? null;
+    const stopLendClosed = standingCustody()?.onClosed?.(() => void lightServedFaces()) ?? null;
     stood.push({ what: "the lend's light watch", down: () => {
       siblingWork.close();
       stopLendOpened?.();
+      stopLendClosed?.();
       for (const keeper of siblingBasesKeepers.values()) keeper.stop();
       siblingBasesKeepers.clear();
     } });

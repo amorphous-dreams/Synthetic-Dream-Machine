@@ -5,10 +5,14 @@
  *   P1  RED: the deny set names every lit face's daemon personal and draft documents (the worn face's mounted ones, each face's
  *       as the control document names it), and every personal or draft binding the daemon document records for any wiki
  *   P2  RED: working, canon and other binding kinds stay out of the set; a torn url names nothing
+ *   P3  RED (Sol 407c H3): the kinds the resolver really writes: a binding row and its mint row, minted through
+ *       `resolveOrMintBinding` itself for a personal and a draft slot, both land in the set, so the scan cannot drift
+ *       from the rows production writes
  */
 import { describe, expect, it } from "vitest";
-import { CONTROL_HOME_ID, wikiSlotUri } from "@lararium/mesh";
+import { CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, wikiSlotUri, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
 import { crossFacePrivateDocs } from "../src/face-engine-source.js";
+import { resolveOrMintBinding } from "../src/resolve-binding.js";
 
 const rec = (fields: Record<string, string>) => ({ tiddler: fields });
 const slotTitle = (kind: string, group: string) => `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`;
@@ -21,10 +25,10 @@ describe("a lit face receives visits: the documents a view refuses by identity",
     [slotTitle("working", "group-1"), rec({ title: slotTitle("working", "group-1"), text: "automerge:sib-working" })],
   ]);
   const daemon = new Map<string, unknown>([
-    ["b/personal", rec({ title: "b/personal", text: "automerge:garden-personal", kind: "personal" })],
-    ["b/draft-mint", rec({ title: "b/draft-mint", text: "automerge:garden-draft", kind: "binding-mint", "binding-kind": "draft" })],
-    ["b/working", rec({ title: "b/working", text: "automerge:garden-working", kind: "working" })],
-    ["b/torn", rec({ title: "b/torn", text: "not a url", kind: "personal" })],
+    ["b/personal", rec({ title: "b/personal", text: "automerge:garden-personal", kind: "personal-binding" })],
+    ["b/draft-mint", rec({ title: "b/draft-mint", text: "automerge:garden-draft", kind: "binding-mint", "binding-kind": "draft-binding" })],
+    ["b/working", rec({ title: "b/working", text: "automerge:garden-working", kind: "working-binding" })],
+    ["b/torn", rec({ title: "b/torn", text: "not a url", kind: "personal-binding" })],
   ]);
   const deps = {
     faces: [{ handleIndex: 0, group: "group-0", relation: null }, { handleIndex: 1, group: "group-1", relation: null }],
@@ -41,5 +45,28 @@ describe("a lit face receives visits: the documents a view refuses by identity",
   it("P2 RED: working, canon and other kinds stay out; a torn url names nothing", async () => {
     const docs = await crossFacePrivateDocs(deps as never);
     for (const id of ["mounted-working", "sib-working", "garden-working", "not a url"]) expect(docs.has(id), id).toBe(false);
+  });
+
+  it("P3 RED: rows minted through resolveOrMintBinding itself, a binding row and its mint row for each private kind, all land", async () => {
+    const records = new Map<string, LarTiddlerRecord>();
+    const store = {
+      get: async (title: string) => records.get(title) ?? null,
+      put: async (record: LarTiddlerRecord) => { records.set(record.tiddler.title, record); },
+      listVisible: async () => [...records.keys()],
+    } as unknown as CompositeStore;
+    let n = 0;
+    const repo = { create: () => { n++; return { url: `automerge:real-${n}`, documentId: `real-${n}`, whenReady: async () => {} }; }, flush: async () => {} };
+    const base = { repo, daemonStore: store, mintedByHex: "synthetic", recipeTrace: { wikiDocId: "wiki", libraryBagDocIds: [] } };
+    const personal = await resolveOrMintBinding({ ...base, kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX, fingerprint: "a".repeat(64) });
+    const draft = await resolveOrMintBinding({ ...base, kind: "draft-binding", prefix: DRAFT_BINDINGS_PREFIX, fingerprint: "b".repeat(64) });
+    // Both rows each mint wrote: the binding row keyed by fingerprint, and the mint row beside it.
+    expect([...records.values()].map((r) => r.tiddler["kind"]).sort()).toEqual(["binding-mint", "binding-mint", "draft-binding", "personal-binding"]);
+    const docs = await crossFacePrivateDocs({ faces: [], mounted: () => null, control: null, daemon: store });
+    expect(docs.has(personal.url.slice("automerge:".length)), "the personal binding's document").toBe(true);
+    expect(docs.has(draft.url.slice("automerge:".length)), "the draft binding's document").toBe(true);
+    // A mint row alone (its binding row not yet written) still names its document.
+    for (const [title, record] of [...records]) if (record.tiddler["kind"] !== "binding-mint") records.delete(title);
+    const minted = await crossFacePrivateDocs({ faces: [], mounted: () => null, control: null, daemon: store });
+    expect([...minted].sort()).toEqual(["real-1", "real-2"]);
   });
 });
