@@ -90,20 +90,18 @@ describe("a forced re-seed mints a fresh atom", () => {
       const archiveBytes = readFileSync(veilArchivePath(orphan));
       removePlaneEntry(orphan);
 
-      const next = await foundFace({ genesisDir, handleIndex: 1 });
-      const fresh = next.personaGroupId;
-      expect(next.alreadyStood).toBe(false);
-      expect(fresh, "a new founding stands a new PersonaGroup").not.toBe(orphan);
-      const freshSeed = (await loadFaceAtomOfGroup(fresh))!;
-      expect(faceAtomKeyFromSeed(freshSeed, fresh).key, "the new group mints a fresh atom key").not.toBe(orphanKey);
-      expect((await loadIdentityAnchors(1))?.personaGroupId).toBe(fresh);
+      // EACH ANCHORS ROW NAMES ITS FACE: handle 1 still stands under the orphan's PersonaGroup, so the re-seed's new group mints
+      // its own atom and archive in its own face and its anchors refuse to land in the orphan's face (`anchors-face-mismatch`).
+      const refusal = await foundFace({ genesisDir, handleIndex: 1 }).catch((e: unknown) => e);
+      expect(String(refusal)).toMatch(/anchors-face-mismatch/);
+      expect((await loadIdentityAnchors(1))?.personaGroupId, "handle 1 keeps the orphan's own anchors").toBe(orphan);
       expect(readFileSync(groupRecordPath(orphan, faceAtomGroupFile(orphan))).equals(atomBytes), "the orphan's group atom row keeps its bytes").toBe(true);
       expect(readFileSync(veilArchivePath(orphan)).equals(archiveBytes), "the orphan's archive keeps its bytes").toBe(true);
-      expect(readFileSync(veilArchivePath(fresh)).equals(archiveBytes), "the new archive belongs to its group").toBe(false);
 
       const rows = await groupRows();
       expect(rows.map(({ file }) => file)).toContain(faceAtomGroupFile(orphan));
-      expect(rows.map(({ file }) => file)).toContain(faceAtomGroupFile(fresh));
+      expect(rows.length, "the re-seed minted a second group row beside the orphan's").toBeGreaterThan(1);
+      for (const { seed, file } of rows) if (file !== faceAtomGroupFile(orphan)) expect(faceAtomKeyFromSeed(seed, file).key, "the new group mints a fresh atom key").not.toBe(orphanKey);
       const seeds = rows.map(({ seed }) => hex(seed));
       // The public atom key derives from the seed alone; each row supplies its own custody label here.
       const keys = rows.map(({ seed, file }) => faceAtomKeyFromSeed(seed, file).key);

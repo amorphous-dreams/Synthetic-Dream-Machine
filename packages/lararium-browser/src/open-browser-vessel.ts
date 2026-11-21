@@ -93,7 +93,7 @@ import type { CoherenceStatus } from "@lararium/tw5";
 import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
-import { foundTheFace, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf, requireArchiveOf } from "@lararium/keyhive";
+import { foundTheFace, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
   standControlHome, vesselFloorCid, raiseFloorAlert, genesisFloorCidOf, floorRequiredBlobIds, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, faceRelationOf,
@@ -2118,12 +2118,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // seal under the vessel-held key with no session (the held homes), and every face-half bag stays unmapped.
       if (unlocked !== null && wornGroup !== null) {
         const closeSession = unlocked.close;
-        // EACH ARCHIVE NAMES ITS FACE, and the seal proves it: a write naming another face than the worn one refuses, and bytes
-        // that restore another identity than the worn face's own atom refuse `ArchiveIdentityMismatch` with the row unchanged.
+        // EACH ARCHIVE NAMES ITS FACE, and the seal proves it (`saveBrowserVeilArchive`): a write naming another face than the
+        // worn one refuses, and bytes that restore another identity than the worn face's own atom refuse with the row unchanged.
         const lift = browserSessionLift(unlocked.session, async (_carrier, bytes, face) => {
           if (face !== wornGroup) throw new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive");
-          const seed = await requireBrowserFaceAtomSeed(idbName, wornGroup);
-          try { await requireArchiveOf(seed, bytes); } finally { seed.fill(0); }
           await saveBrowserVeilArchive(idbName, wornGroup, bytes);
         });
         const lifted = await composeVessel(islandLiftStack(islandVessel, lift.lift));

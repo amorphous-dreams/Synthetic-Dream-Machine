@@ -378,7 +378,7 @@ function buildTable(): readonly CarrierRow[] {
     faceRecordOf({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), inner: VEIL_ARCHIVE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
     // One generation back: the bytes a face's last veil-archive overwrite replaced, kept so a bad write can be reversed. It stays
-    // on this vessel: a bundle carries the face's live row alone.
+    // on this vessel, as the live row does: no bundle carries a seat's own key state.
     faceRecordOf({ row: "veil-archive-prev", target: tgt(["D"]), inner: VEIL_ARCHIVE_PREV_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-prev-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A face's private veil-lift link (`node-veil-lift`): the vessel's key signed {veil, face, atom}, so it names THIS vessel's veil and

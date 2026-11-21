@@ -114,6 +114,7 @@ import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtect
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { faceNamedCustodyWrite } from "./face-named-custody-write.js";
+import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
@@ -1567,8 +1568,16 @@ async function prepareNodeBootOn(
   // Repo and rests in its store — so no binding names a document a hard stop could leave unsaved.
   const receiptClosers = new Set<() => void>();
   const onReceiptClose = (fn: () => void): (() => void) => { receiptClosers.add(fn); return () => { receiptClosers.delete(fn); }; };
-  const receiptDoor: ReceiptIssuer = (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads);
+  // THE STOP'S RECEIPT FENCE (`fenceReceiptAtStop`): from the stop's first step, a receipt whose document holds a save in
+  // memory refuses `held-in-memory`, so a write that lands after the stop sealed (its session dropped, the lift lifted) never
+  // reads as resting.
+  let stopping = false;
+  const receiptDoor: ReceiptIssuer = fenceReceiptAtStop(
+    (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads),
+    { stopping: () => stopping, held: () => sealedRest.store.held() },
+  );
   stood.push({ what: "the receipt waits", down: () => { for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
+  stood.push({ what: "the stop's receipt fence", phase: "producers", down: () => { stopping = true; } });
   houseIslands = islandPeersOf(repo);
   wikiIslands = wikiIslandPeersOf(repo);
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte, and the rest

@@ -379,13 +379,15 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     await persistVeilArchive(archive, payload.personaGroupId);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
+    // THE ANCHORS LAND IN THE FACE THIS ADMIT NAMES (the handle its request founded), never a default: a faceless vessel
+    // holding two pending joins lands each in its own face, whichever lands first.
     await persistIdentityAnchors({
       personaGroupId:          payload.personaGroupId,
       meshCabalDocIdHex:       payload.meshCabalDocIdHex,
       signerDid:               payload.signerDid,
       personaKelPrefix:        payload.personaKelPrefix,
       deviceEdge,
-    });
+    }, handleIndex);
     writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
       ...placeTiddlers(daemonUrl),
       ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl,

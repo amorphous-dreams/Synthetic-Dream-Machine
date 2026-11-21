@@ -60,7 +60,8 @@ describe("e2e/session-wears-the-lit-face", () => {
  *       census reads no `held-save`, since the lit sibling's selves record seals under that sibling's own hive
  *   W6  EACH ARCHIVE NAMES ITS FACE (the 2026-11-20 custody incident): wear face 1 with face 0 lit beside it, stop the
  *       daemon, boot it again on the same root and wear face 1 again: face 1 stands (no `ArchiveIdentityMismatch`), and
- *       neither boot's log names a veil archive the seal refused, so no hive's Archive ever reached another face's row
+ *       neither boot's log names a veil archive the seal refused, so no hive's Archive ever reached another face's row; a
+ *       write the lit sibling (face 0) made before the stop reads back after the boot, so the stop dropped none of its saves
  */
 describe("e2e/two-face-walk: a lit sibling writes into its own layers while another face stands worn", () => {
   const MEME = "lar:///ha.ka.ba/kahua/memory/walk/sibling-lane";
@@ -72,6 +73,8 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
   let walk: LarInstance;
   /** W6's second daemon over the walk's own root, after the stop. */
   let restand: LarInstance | null = null;
+  /** Face 0's own daemon canon, the walk's first worn face. */
+  let faceZeroBag = "";
   let scratch = "";
   /** The sibling's own daemon canon: its lane's one bag, by its own relation (`bags/daemon-<relation>`). */
   let siblingBag = "";
@@ -92,6 +95,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };
     const faceBagOf = (r: CliResult): string => ((data(r)["layers"] ?? []) as Array<{ bag: string }>).map((l) => l.bag).find((b) => /\/bags\/daemon-/.test(b)) ?? "";
     const wornBag = faceBagOf(await walk.cli(["wiki", "status", "--recipe", "default", "--json"]));
+    faceZeroBag = wornBag;
     await door.unlockTestCustody(walk.root, "lock");
     const wearOne = await door.unlockTestCustody(walk.root, "unlock", 1);
     if ((wearOne as { wears?: number } | null)?.wears !== 1) throw new Error(`the test door never wore face 1: ${JSON.stringify(wearOne)}`);
@@ -213,9 +217,20 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect((wearOne as { wears?: number } | null)?.wears, JSON.stringify(wearOne)).toBe(1);
     expect(await awaitRendezvous(walk), walk.bootLog().slice(-800)).toBe(true);
     expect(await wornBagOf(walk), "face 1 never stood worn before the stop").toBe(siblingBag);
+    // THE LIT SIBLING WRITES BEFORE THE STOP: face 0, lit beside the worn face 1, lands a meme in its own layer.
+    const SIB_MEME = "lar:///ha.ka.ba/kahua/memory/walk/sibling-before-stop";
+    const sibFile = join(scratch, "sibling-before-stop.mem");
+    writeFileSync(sibFile, memeText(SIB_MEME, "Before-stop"));
+    const sibPut = await walk.cli(["meme", "put", SIB_MEME, "--bag", faceZeroBag, "--file", sibFile, "--face", "0", "--json"]);
+    expect(sibPut.code, out(sibPut)).toBe(0);
+    // Before the stop the sibling's save rests sealed: the census names no save held in memory.
+    const preStop = await walk.cli(["vessel", "census", "--json"]);
+    const heldBefore = ((data(preStop)["census"] as { items?: Array<{ kind: string; bagId?: string | null }> } | undefined)?.items ?? []).filter((i) => i.kind === "held-save");
+    expect(heldBefore, `a save waits in memory before the stop: ${out(preStop)}`).toEqual([]);
     // THE STOP: every seat that rolls at the stand-down rests its Archive in its own face's row, or nowhere.
     await walk.stopDaemonOnly();
     expect(walk.bootLog(), "the stop sealed no Archive into another face's row").not.toMatch(refusedSeal);
+    const stopLines = walk.bootLog().split("\n").filter((l) => /held|waits|unsealed|teardown|shutdown/.test(l)).slice(-30).join("\n");
     // THE BOOT over the same root (the harness unlocks face 0), then face 1 worn again.
     restand = await openStaged({ root: walk.root, port: walk.port, tag: "two-face-walk-restand", found: async () => {} });
     if (!(await awaitRendezvous(restand))) throw new Error(`the restood daemon bound no rendezvous:\n${restand.bootLog().slice(-800)}`);
@@ -228,5 +243,13 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(restand.bootLog(), "face 1's row restores its own identity").not.toContain("ArchiveIdentityMismatch");
     expect(restand.bootLog()).not.toMatch(/archive restores identity .* and the seed derives/);
     expect(restand.bootLog()).not.toMatch(refusedSeal);
+    // THE SIBLING'S WRITE SURVIVED THE STOP: face 0, lit again beside face 1, reads it back from its own layer.
+    let back: CliResult | null = null;
+    for (let look = 0; look < 30; look++) {
+      back = await restand.cli(["meme", "get", SIB_MEME, "--bag", faceZeroBag, "--face", "0", "--json"]);
+      if (back.code === 0 && out(back).includes("Before-stop stands in its own layer")) break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    expect(out(back!), `the sibling's write before the stop did not survive the boot; the stop said:\n${stopLines}`).toContain("Before-stop stands in its own layer");
   }, 480_000);
 });

@@ -76,7 +76,7 @@ afterEach(async () => { await c.drop(); });
 describe("the identity home's sealed family", () => {
   test("A1 an anchors row seals at rest and reads back whole", async () => {
     expect(await loadIdentityAnchors()).toBeNull();
-    await persistIdentityAnchors(anchors);
+    await persistIdentityAnchors(anchors, 0);
     expect(readFckCarrier(readFileSync(at("anchors-h0.json")))).toBe("sealed");
     expect(readFileSync(at("anchors-h0.json")).includes(Buffer.from("aa11"))).toBe(false);
     expect(await loadIdentityAnchors()).toEqual(anchors);
@@ -107,7 +107,7 @@ describe("the identity home's sealed family", () => {
   });
 
   test("A4 a torn row and a bare row each refuse by name; neither reads null", async () => {
-    await persistIdentityAnchors(anchors);
+    await persistIdentityAnchors(anchors, 0);
     const sealed = readFileSync(at("anchors-h0.json"));
     writeFileSync(at("anchors-h0.json"), sealed.subarray(0, sealed.length - 9));
     await expect(loadIdentityAnchors()).rejects.toThrow(/anchors-h0\.json reads (torn|key-fails)/);
@@ -115,7 +115,7 @@ describe("the identity home's sealed family", () => {
   });
 
   test("A5 at the floor every reader and writer refuses CustodyLocked and no file moves", async () => {
-    await persistIdentityAnchors(anchors);
+    await persistIdentityAnchors(anchors, 0);
     await persistVeilArchive(await faceArchive(anchors.personaGroupId), anchors.personaGroupId);
     const before = ["anchors-h0.json", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRecordPathIn(c.homes.identity, f) : at(f)));
     await c.holder.lock();
@@ -136,7 +136,7 @@ describe("the identity home's sealed family", () => {
   test("A6 TAMPER PROBE: a holder over another key lands no write; the standing bytes still open under the first", async () => {
     const underA = await faceArchive(anchors.personaGroupId);
     await persistVeilArchive(underA, anchors.personaGroupId);
-    await persistIdentityAnchors(anchors);
+    await persistIdentityAnchors(anchors, 0);
     const anchorStanding = readFileSync(at("anchors-h0.json"));
     const veilStanding = readFileSync(veilArchivePath(anchors.personaGroupId));
 
@@ -229,5 +229,37 @@ describe("the identity home's sealed family", () => {
     const dir = dirname(veilArchivePath("group-p"));
     expect(readdirSync(dir).filter((f) => f.startsWith("veil-archive-"))).toEqual([basename(veilArchivePath("group-p")), veilArchivePrevFile("group-p")].sort());
     expect(readFckCarrier(readFileSync(join(dir, veilArchivePrevFile("group-p"))))).toBe("sealed");
+  });
+
+  test("A13 an anchors row lands only in the face it names: another face's group at this handle refuses, and nothing writes", async () => {
+    await ensureFaceCustodyOfGroup("group-h0");
+    await ensureFaceCustodyOfGroup("group-h1");
+    const ofH1: IdentityAnchors = { personaGroupId: "group-h1", meshCabalDocIdHex: "bb22" };
+    await expect(persistIdentityAnchors(ofH1, 0)).rejects.toThrow(/^anchors-face-mismatch/);
+    expect(await loadIdentityAnchors(0), "h0 took none of h1's anchors").toBeNull();
+    // control: the face that names the group takes its own anchors
+    await persistIdentityAnchors(ofH1, 1);
+    expect(await loadIdentityAnchors(1)).toEqual(ofH1);
+  });
+
+  test("A11 a wrong current never displaces a good .prev: rotation copies only an Archive the face's own seed proves", async () => {
+    const good = await faceArchive("group-q");
+    const later = await faceArchive("group-q");
+    const foreign = await faceArchive("group-stranger");
+    await c.holder.writeRecord("identity", veilArchivePrevFile("group-q"), good);
+    await c.holder.writeRecord("identity", veilArchiveFile("group-q"), foreign);   // a wrong current, as the misroute left one
+    await persistVeilArchive(later, "group-q");
+    expect(same(await loadVeilArchive("group-q"), later)).toBe(true);
+    expect(same(await loadVeilArchivePrev("group-q"), good), "the good generation back still stands").toBe(true);
+  });
+
+  test("A12 two saves of one face at once serialize: the second rotates the first, never the generation both read", async () => {
+    const first = await faceArchive("group-r");
+    const b = await faceArchive("group-r");
+    const cc = await faceArchive("group-r");
+    await persistVeilArchive(first, "group-r");
+    await Promise.all([persistVeilArchive(b, "group-r"), persistVeilArchive(cc, "group-r")]);
+    expect(same(await loadVeilArchive("group-r"), cc)).toBe(true);
+    expect(same(await loadVeilArchivePrev("group-r"), b), "the save that landed last rotated the one before it").toBe(true);
   });
 });

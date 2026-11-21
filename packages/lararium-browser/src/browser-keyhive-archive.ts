@@ -20,6 +20,8 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-keyhive-archive
  */
 import { readKeystoreRecord, writeKeystoreRecord } from "./browser-custody.js";
+import { requireArchiveOf } from "@lararium/keyhive";
+import { requireBrowserFaceAtomSeed } from "./browser-face-atom.js";
 
 /** The row that keeps one PersonaGroup's creator-veil Archive. */
 export function browserVeilArchiveRow(personaGroup: string): string {
@@ -57,7 +59,18 @@ export function loadBrowserVeilArchive(idbName: string, personaGroup: string): P
   return readRow(idbName, browserVeilArchiveRow(personaGroup));
 }
 
-/** Keep a PersonaGroup's creator-veil Archive. */
-export function saveBrowserVeilArchive(idbName: string, personaGroup: string, bytes: Uint8Array): Promise<void> {
-  return writeRow(idbName, browserVeilArchiveRow(personaGroup), bytes);
+/**
+ * Keep a PersonaGroup's creator-veil Archive. THE SEAL PROVES THE BYTES: the face's atom seed stands a throwaway provider over
+ * them (`requireArchiveOf`) before the row moves, so an Archive of another identity refuses `ArchiveIdentityMismatch`, one that
+ * does not decode refuses its own fault, and a face holding no atom refuses; the row stands unchanged on every refusal. Every
+ * writer passes here: the founding, the admit and the lift's custody write alike.
+ */
+export async function saveBrowserVeilArchive(idbName: string, personaGroup: string, bytes: Uint8Array): Promise<void> {
+  const row = browserVeilArchiveRow(personaGroup);
+  if (!(bytes instanceof Uint8Array) || bytes.byteLength === 0) {
+    throw new Error(`[browser-keyhive-archive] refusing to keep an empty Archive in the ${row} row`);
+  }
+  const seed = await requireBrowserFaceAtomSeed(idbName, personaGroup);
+  try { await requireArchiveOf(seed, bytes); } finally { seed.fill(0); }
+  await writeRow(idbName, row, bytes);
 }

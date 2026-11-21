@@ -96,7 +96,7 @@ async function stage(): Promise<string> {
   const holder = makeCustodyHolder({ io, homes });
   await holder.adopt(founded.treeKey);
   seatCustody(holder);
-  await persistIdentityAnchors(ANCHORS);
+  await persistIdentityAnchors(ANCHORS, 0);
   await holder.lock();
   seatCustody(null);
   return root;
