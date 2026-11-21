@@ -16,9 +16,9 @@ retain   = true
 <<~ ahu slot=`#/orientation`>>
 ! Art Sigils — Formal Analysis
 
-When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first visible output must supply one complete Inscription**: a single `<<art ...>>` invocation, total transmitted source <= 1,024 characters, with no explanatory preamble. Then proceed with a *verbose natural-language analysis*. A Folio requires a distinct request rather than following automatically from Formal Analysis. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
+When the operator invokes Formal Analysis upon an existing image, examine the evidence before forming conclusions; **the first artistic output after the Lares turn opening must supply one complete Inscription**: a single `<<~ art ...>>` invocation, total transmitted source <= 1,024 characters, with no explanatory preamble between the opening ``set lares=`aim` `` and the Inscription. Then proceed with a *verbose natural-language analysis*. A Folio requires a distinct request rather than following automatically from Formal Analysis. The initial reverse-specified sigil remains a plausible artistic description, never a recovered original prompt or verified creator intention.
 
-The native core procedure bears the name `art`, while the discipline retains the name Art Sigils. The canonical declaration and its defaults live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]], outside the Inscription. A TW5 runtime requires that procedure in scope; a model may read the invocation directly. The source block excludes definitions, critical prose and wrapper metadata from its character budget.
+The house core sigil bears the name `art`, invoked as `<<~ art ...>>`, while the discipline retains the name Art Sigils. The canonical declaration and its defaults live in [[Art Sigils Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]], outside the Inscription. A Lares-enabled wiki requires that procedure in scope; a model may read the invocation directly. The source block excludes definitions, critical prose and wrapper metadata from its character budget.
 <<~/ahu>>
 
 <<~ ahu slot=`#/discipline`>>
@@ -40,7 +40,7 @@ The opening Inscription may keep weakly evidenced fields delegated or broad. Its
 <<~ ahu slot=`#/response`>>
 !! Required output shape for invoked Formal Analysis
 
-**First visible output:** one native `<<art ...>>` invocation in a fenced `tiddlywiki` block, at most 1,024 characters including no procedure definition. Invocation arguments use backtick-wrapped values; the referenced canonical definition lives in the Procedures meme. Supply defensible `subject` and `read` values and other fields as supported. No explanatory preamble precedes this initial source block.
+**First artistic output (after the opening ``set lares=`aim` ``):** one `<<~ art ...>>` invocation in a fenced `tiddlywiki` block, at most 1,024 characters including no procedure definition. Invocation arguments use backtick-wrapped values; the referenced canonical definition lives in the Procedures meme. Supply defensible `subject` and `read` values and other fields as supported. No explanatory preamble stands between the turn opening and this source block; the turn frame still brackets the whole response.
 
 **Then:** natural-language formal analysis at the depth warranted by the work, normally addressing:
 
@@ -62,7 +62,7 @@ When closer inspection contradicts the opening Inscription, the analysis names t
 
 When an operator presents several versions of a work, make comparisons on **visible and source-grounded grounds**.
 
-* **Identify the comparison:** record which works share a source, which differ, and whether a receiver saw native TW5 syntax, literal prose expansion, external visual references, an edited image or other contextual information.
+* **Identify the comparison:** record which works share a source, which differ, and whether a receiver saw Lares sharktooth syntax, its literal prose expansion, external visual references, an edited image or other contextual information.
 * **Retain available conditions:** model or artist, version, effort, generation or performance controls, aspect ratio, material setup, references and selection history. A missing condition remains unknown; never reconstruct a hidden prompt or latent mechanism from the result.
 * **Name specific criteria:** worktype fidelity, the primary read, formal arrangement, figure-ground hierarchy, space, color relationships, apparent facture, depicted boundaries, any explicitly assigned inter-image relationships and the consequences a viewer can perceive.
 * **Match criteria to subject:** compare portrait expression where the work concerns faces, gesture and social address; compare interval, edge or color relationships for abstraction; compare circulation and material presence for installation; examine terrain or perspective fidelity only when the specific artwork requires them.
@@ -78,6 +78,19 @@ The authored Inscription, any associated Folio and the rendered work occupy dist
 !! Formal Analysis and reception testing
 
 Formal Analysis describes what an artwork shows and what evidence supports a reading. [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] checks a known artifact against a known invitation and optional [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]]. Neither approach reconstructs a hidden original prompt.
+
+!!! Technical-art plates — rendered bytes beside the artistic invitation
+
+When the assigned worktype names an isolated transparent technical-art asset, reception reads the received bytes as well as the picture, through [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]], without importing its assumptions into ordinary formal analysis.
+
+* Record the image-facing Inscription apart from receiver settings and supplied image seeds. Measure actual RGBA dimensions, fully and partially transparent pixels, the alpha bounding box, and any labels, panels, backgrounds or scene fragments that entered the image.
+* Keep a renderer's output apart from later hand-extracted sprites or code-masked corrections. A clean isolation pass and a compelling flattened painting yield different results; neither shows why the generator behaved as it did.
+* Test placement, scale, side and bottom bleed, local overlap, edge haloes, blend mode and internal gradient opacity against the intended composite; a verbal bounding box proves no pixel registration.
+* Read at full frame and at local crop: silhouette and value hierarchy, faces and hands, atmospheric depth, sun and wind consistency, and whether reflections meet the intended material or water plane.
+* Name layer-global opacity apart from pixel alpha and from a precomputed clip-to-alpha fade. When a maximum rises and a minimum holds, check the gradient source and its denominator.
+* Record operator-approved state, unapproved companions, diagnostic settings and rollback sources. A small batch of generations offers examples and alternatives, never a causal benchmark.
+
+A post-process that can rescue a failed requirement never converts it into a completed one; an attractive failure keeps its recorded merit and provenance, and the operator chooses between reroll and surgical extraction.
 <<~/ahu>>
 
 <<~ ahu slot=`#/counter-read`>>
@@ -108,6 +121,6 @@ Across painting, print, photography, installation, abstraction and pictures with
 Getty CDWA subject analysis, material and facture; Harvard Project Zero's See, Think, Wonder and What Makes You Say That?; Panofsky, Arnheim, Baxandall, Kress/van Leeuwen, Mitchell and Warburg; Feldman's descriptive/interpretive/critical moves. See [[Art Methods|ha.ka.ba/lares/docs/art-sigils/research/art-methods]] for critical sources and [[Cartography|ha.ka.ba/lares/docs/art-sigils/research/cartography]] for terrain methods. No reference source alone settles the intention of an unknown artist.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TYNG2JXuIiHJsgOX95mxBkJgqESYR_FBn02M-1KmIbc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cPgjagZIyCu7EQFJ3-_gDbaFVRWm5JBarumZnbiz_5k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

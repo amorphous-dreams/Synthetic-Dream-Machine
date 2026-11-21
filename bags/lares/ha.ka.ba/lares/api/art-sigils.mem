@@ -30,6 +30,7 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 * [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] — outcome inspection
 * [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]] — component assembly
 * [[Provenance and Publication|ha.ka.ba/lares/api/art-sigils/provenance-publication]] — credits and release
+* [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]] — isolated transparent plates
 
 !! Practice, examples, research
 
@@ -38,13 +39,13 @@ Eight artistic dimensions: worktype, subject, read, imagery, treatment, composit
 * [[Mixed Media|ha.ka.ba/lares/docs/art-sigils/example-five-mixed-media]] · [[Exact Text|ha.ka.ba/lares/docs/art-sigils/example-six-exact-type]]
 * [[Cartography|ha.ka.ba/lares/docs/art-sigils/research/cartography]] · [[Art Methods|ha.ka.ba/lares/docs/art-sigils/research/art-methods]]
 
-Companions remain drafts. The eight-dimension `art()` nucleus is unchanged.
+Companions remain drafts. Every call rides the sharktooth form `<<~ art ...>>`; the eight-dimension `~art` nucleus holds steady across them.
 <<~/ahu>>
 
 <<~ ahu slot=`#/aftermath`>>
 The grammar governs expression, not an artwork's subject, medium or style.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5WgRvXKmKalJAHbg4EcYA03cNY1b2UhuZvMqyeRN6M4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pi8Cvj7MCA-hKM4Irch2Ph45u-ZjGWEIFAZwJGQ4-2U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

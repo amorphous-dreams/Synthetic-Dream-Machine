@@ -17,7 +17,7 @@ retain   = true
 ! Nonrepresentational color field
 
 ```tiddlywiki
-<<art worktype=`nonrepresentational color-field painting` subject=`unequal rhythms of compression and release` read=`a held interval that rewards prolonged attention without resolving into a depicted scene` imagery=`overlapping diffuse fields, one spare hard-edged interruption, breathing unpainted space` treatment=`matte pigmented planes and delicate optical vibration; no representational light source` composition=`asymmetric all-over tension with no compulsory focal center` relation=`the hard interruption redirects the diffuse fields without illustrating a literal impact` depiction-scope=`only the painting's surface; no landscape, figure, or external spectator depicted`>>
+<<~ art worktype=`nonrepresentational color-field painting` subject=`unequal rhythms of compression and release` read=`a held interval that rewards prolonged attention without resolving into a depicted scene` imagery=`overlapping diffuse fields, one spare hard-edged interruption, breathing unpainted space` treatment=`matte pigmented planes and delicate optical vibration; no representational light source` composition=`asymmetric all-over tension with no compulsory focal center` relation=`the hard interruption redirects the diffuse fields without illustrating a literal impact` depiction-scope=`only the painting's surface; no landscape, figure, or external spectator depicted`>>
 ```
 <<~/ahu>>
 
@@ -30,5 +30,5 @@ No scene, human figure, paper effect or central object enters from a default.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hZ9Bh0hg9nkBzrW9G8H2VgbkQR5swf7YcFxtJgK_NRg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SX-9DcCP_pheKW2vL0iZMeuFY4B1J17FhXyL23g2xEA`>>
 <<^ code=`&#x0004;` to=`?`>>

@@ -16,7 +16,7 @@ retain   = true
 <<~ ahu slot=`#/cartography-research`>>
 !! Cartography, terrain portrayal, and plan-oblique relief — optional specialist register
 
-A cartographic image may aim to convey spatial relationships, terrain morphology, travel affordances, or measured data. These intentions differ; visual appeal alone cannot validate a survey. **This ahu offers specialist research for terrain-related art; no cartographic convention enters the core `art()` defaults or its other applications.**
+A cartographic image may aim to convey spatial relationships, terrain morphology, travel affordances, or measured data. These intentions differ; visual appeal alone cannot validate a survey. **This ahu offers specialist research for terrain-related art; no cartographic convention enters the core `~art` defaults or its other applications.**
 
 * **Planimetric / orthographic map:** an overhead plan with a chosen projection and scale convention. Such a plan can support route comparison without inheriting a painted panorama's perspective.
 * **Plan-oblique relief:** an elevated view that preserves a recognizable overhead spatial organization while giving terrain vertical relief and expressive volume. Perspective and occlusion may distort local measurements. See Tom Patterson and Bernhard Jenny, `Introducing Plan Oblique Relief`: https://cartographicperspectives.org/index.php/journal/article/view/cp57-jenny-patterson
@@ -31,5 +31,5 @@ A cartographic image may aim to convey spatial relationships, terrain morphology
 The same semantic grammar serves a technical topographic plate, a freely invented dream landscape, a narrative route painting or a terrain-themed installation. Use `worktype`, `read`, `treatment` and `relation` to determine what viewers should understand or question.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0YtLTcV2QfWsVYLDHg3Ow4TEJstUPYfuG4xUuX9gzYs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zvTIWKdWzs7e_BhCVRW4JJwwrMueREupecVPMpzbvlQ`>>
 <<^ code=`&#x0004;` to=`?`>>

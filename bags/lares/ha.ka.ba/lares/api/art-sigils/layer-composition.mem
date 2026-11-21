@@ -16,7 +16,7 @@ retain   = true
 <<~ ahu slot=`#/bearing`>>
 ! Layer Composition
 
-Use a layer stack where an artwork is built from independently controlled components. A layer can be valuable only in relation to the full composition. This companion does not add `art-layer()` or require every worktype to use layers.
+Use a layer stack where an artwork builds from independently controlled components. A layer earns its value only in relation to the full composition. This companion adds no `~art-layer` sigil and requires no worktype to use layers.
 
 <<~/ahu>>
 
@@ -67,9 +67,9 @@ relation = "changes underlying hue without replacing subjects"
 
 A composite preview may differ between renderers. When pixel equality matters, test the target renderer rather than assuming identical blend or color-management behavior.
 
-See [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] and [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]].
+See [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] and [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]]; for image-generator plates on true alpha, [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]].
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uGTJ-PIsj5PivPzoYkNpXPuTcuHakxjnaP6MDPLTO28`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jvq5x7gRH6KUlsSH6IynBinT7NDkNUsS3iXuceBBjSE`>>
 <<^ code=`&#x0004;` to=`?`>>
