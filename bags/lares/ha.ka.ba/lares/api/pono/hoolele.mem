@@ -36,7 +36,7 @@ task tree. `spawn` exits the tree entirely, creating a new root. It hides the
 ''Use `hoolele` (`\spawn`) only when the work MUST complete regardless of what''
 ''cancels around it.''
 
-Concurrency runtime pending (async-first sprint). Current tiddler registers grammar only.
+''Standing:'' the grammar table registers `hoolele` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a hoolele call. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -123,19 +123,21 @@ Returns a `task(t)` handle. The caller MUST retain it for later `Cancel()` or
 !! Lararium-Specific Use Cases
 
 In the Lararium stack, the irreducible TS infrastructure layer (CRDT, network,
-Keyhive) represents work that MUST complete regardless of wiki VM lifecycle.
-These are the natural `hoolele` boundaries:
+Keyhive) carries work that MUST complete regardless of wiki VM lifecycle.
+These form the natural `hoolele` boundaries:
 
-* ''`LarTiddlerStore` CRDT flush'' — must complete even if the `MemeSyncAdaptor`
-  is disposed; spawn the flush, hold the task handle in the store.
-* ''`VmPool` cross-VM coordination'' — work that spans wiki VM instances has no
-  single containing scope; spawn the coordination task at pool level.
+* ''`LarTiddlerStore` CRDT flush'' — must complete even when the wiki shore that
+  fed it closes; spawn the flush, hold the task handle in the store.
+* ''Cross-island coordination'' — work that spans wiki VM instances has no
+  single containing scope; spawn the coordination task at the vessel's island
+  pool (`VesselIslandPool`).
 * ''Keyhive capability delegation'' — async crypto; survives the UI context that
   initiated it.
 
-The `MemeSyncAdaptor` boundary IS the `hoolele` boundary in the Lararium stack:
+The wiki shore (`IslandAdaptor`) marks the `hoolele` boundary in the Lararium stack:
 work above it (wiki reactions, widget handlers) uses structured concurrency;
 work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
+The record keeps the boundary's first naming (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -148,6 +150,6 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;TxTrBeczxlXw0abAfhTQX_xktgpsnm7I3vTP5IN-UnA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IhRBHbKJoGd2f4V5pFNNF37KAvt2BGpkfFBg8o5sKZE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

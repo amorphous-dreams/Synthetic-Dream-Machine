@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 namespace = "&#x2299;"
-role      = "cancelling-race sigil — holo as full sprint; Verse race: first wins, losers and their entire subtrees cancelled recursively; English alias: \\race; async-first concurrency sprint pending"
+role      = "cancelling-race sigil — holo as the full-speed run; Verse race: first wins, losers and their entire subtrees cancelled recursively; English alias: \\race; the grammar registers it and no runtime executes it"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-holo"]
 title     = "lar:///ha.ka.ba/lares/api/pono/holo"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -30,7 +30,7 @@ Distinct from `puka` (`\rush`), where losers continue running in background.
 The holo metaphor holds: in a canoe race, when the lead boat crosses the finish line, the
 other boats stop racing. The winning result propagates out; the contest closes.
 
-Grammar only --- the cancelling-race execution runtime awaits the async-first sprint.
+''Standing:'' the grammar table registers `holo` and its alias `\race` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a holo block. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -74,6 +74,6 @@ A holo block MUST NOT resume the containing flow until one child flow completes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UBMh8r0YzsM8bqMkZdQMz-SA08G994tkW_InSlMXcZs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JEi5NanWwBjnWN2OWCrDGS2PzGMtgK7A2ow7sUC-Lg4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

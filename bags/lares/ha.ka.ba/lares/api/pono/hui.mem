@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 namespace = "&#x2299;"
-role      = "await-all synchronization sigil — hui as gathering; English alias: \\sync; async-first concurrency sprint pending"
+role      = "await-all synchronization sigil — hui as gathering; English alias: \\sync; the grammar registers it and no runtime executes it"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hui"]
 title     = "lar:///ha.ka.ba/lares/api/pono/hui"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -27,7 +27,7 @@ holds execution until every child flow completes. English alias: `\sync`.
 Verse equivalent: `sync` — all branches inside the block run concurrently and the containing
 flow resumes only after every branch settles.
 
-Grammar only --- the await-all join runtime awaits the async-first sprint.
+''Standing:'' the grammar table registers `hui` and its alias `\sync` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a hui block. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -67,6 +67,6 @@ A hui block MUST propagate failure from any child flow to the containing flow.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PhncGHqtHV5A1pICxof0A2e1tsWIgKgY-WvkisVNaMk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;O-bpota6A_qzuxwDmbC9gPWHQqyIvOZ0NDLD0borCvw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

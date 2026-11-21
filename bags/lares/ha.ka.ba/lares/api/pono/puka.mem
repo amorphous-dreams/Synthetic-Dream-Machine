@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 namespace = "&#x2299;"
-role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue until enclosing scope exits (NOT cancelled by winner); English alias: \\rush; async-first concurrency sprint pending"
+role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue until enclosing scope exits (NOT cancelled by winner); English alias: \\rush; the grammar registers it and no runtime executes it"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-puka"]
 title     = "lar:///ha.ka.ba/lares/api/pono/puka"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -32,7 +32,7 @@ cancelling-race form.
 The puka metaphor holds: when a fish finds the gap in the net, it passes through. The net
 remains open — the others may pass through later or not. The outcome already holds.
 
-Grammar only --- the selecting-race execution runtime awaits the async-first sprint.
+''Standing:'' the grammar table registers `puka` and its alias `\rush` (`packages/lararium-tw5/src/meme-ast/grammar-table.generated.ts`, derived from the sigil tiddlers); no runtime executes a puka block. The execution runtime rests on the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>); the record keeps the sigil's earlier status lines (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/concurrency-sigils-record`>>).
 
 <<~/ahu>>
 
@@ -77,6 +77,6 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;N9_V68Btn94-bFWVZw8FFdjhxb5pOGyySVsHFyTskcM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jNsbwoQxnBnoI1fQp14wnAVx-XQ3yjilvyaVWtHYOQg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
