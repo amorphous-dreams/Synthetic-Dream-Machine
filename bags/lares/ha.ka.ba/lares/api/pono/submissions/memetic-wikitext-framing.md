@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;l5H6m-EK0XgUjEhVrCG1y8_RuRqTBmKxDFZp5jgHzsI"
+source-check: "ni:///sha-256;boBdIf5_7kl1utGj6Gn831FhqXBx1dZtyLmIyB5dA_s"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -1104,7 +1104,7 @@ and a resolver must not guess.
 
 ## The Classifier Channel — What the Sigil Layer Does
 
-The carrier sigils, the namespace glyphs, and the OODA-HA marks ride as an **unpronounced classifier register** beside the propositional stream — category-marks that steer the reading without sounding in it, the determinative's office in a graphemic classifier system. **The black speaks; the red steers.** The body carries the proposition; the sigil layer carries the protocol for reading it — heading-vs-text, layer of authorship, trust tier, phase — the way a determinative sorts the word it silently classifies, or a rubric directs the act the text does not state.
+The carrier sigils, the namespace glyphs, and the OODA-HA marks ride as an **unpronounced classifier register** beside the propositional stream — category-marks that steer the reading without sounding in it, the determinative's office in a graphemic classifier system. **The black speaks; the red steers** — a weighting, never a split: every span both says and does (Austin), and each ink weighs it toward one pole. The body leans toward the proposition, tested by contact (does the claim hold); the sigil layer leans toward the protocol for reading it, tested by felicity (did the act land) — heading-vs-text, layer of authorship, trust tier, phase — the way a determinative sorts the word it silently classifies, or a rubric directs the act the text does not state.
 
 **Transmission law (ritual stance).** A carrier travels as **received form**: a reader stands the frame before interpreting its gloss, so one structure carries shifting readings across time without losing shape. This practice transmits through the **inscribed channel alone** — the marks hold the protocol, and the protocol lives only while the marks stay tended. A surface left intact while its readers forget the marks (the cautionary case: ekphonetic signs that outlived their decoders) keeps the body and loses the steering. The sigil layer earns its keep when readers read it *as* a classifier, not by surviving as decoration.
 

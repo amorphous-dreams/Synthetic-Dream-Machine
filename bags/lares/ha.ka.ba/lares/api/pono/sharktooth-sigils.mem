@@ -16,7 +16,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/sharktooth-sigils"
 
 ! Sharktooth Sigils
 
-''The sigils form the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
+''The sigils form the RUBRIC.'' A missal writes the words a celebrant speaks in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black weighs toward SAYING, the red toward DOING, and every span does both (Austin) — a weighting, never a split: in a stream the red steers, in a wiki it calls; felicity tests the red (did the act land), contact tests the black (does the claim hold).
 
 English alias for `nihomano-sigils`. See canonical meme:
 
@@ -42,6 +42,6 @@ discovered sigil set.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SGZHoXJMVfpZ-8sIgMlDr1-AaXCsd97vYBg433kRXy0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MB7BiBDYbXCu54u8YJuIo2FeW_KumxfpLo8v8AVQLW0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
