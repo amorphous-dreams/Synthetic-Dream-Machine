@@ -145,8 +145,22 @@ function _tombstoneRecord(title: string): LarTiddlerRecord {
   return Object.freeze({ tiddler: { title }, meta: { deleted: true } });
 }
 
+/**
+ * THE STAND-INS: handles a vessel mounted in place of a document it has not read (a degraded or pending doc's read-only
+ * blank, `waitHandle`'s fallback before the real doc merges). A store over one reads `unknown()` until it is released.
+ */
+const STAND_INS = new WeakSet<object>();
+/** Mark a handle as standing in for an unread document. */
+export function markStandIn(handle: DocHandle<unknown>): void { STAND_INS.add(handle); }
+/** The real document merged into the handle: it now reads what the document holds. */
+export function releaseStandIn(handle: DocHandle<unknown>): void { STAND_INS.delete(handle); }
+/** Whether a handle still stands in for a document it has not read. */
+export function standsIn(handle: DocHandle<unknown>): boolean { return STAND_INS.has(handle); }
+
 export class AutomergeDocStore implements LarTiddlerStore {
   readonly notifiesSynchronously = true;
+  /** True while the handle stands in for a document the vessel has not read (`markStandIn`). */
+  unknown(): boolean { return standsIn(this.handle); }
   protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
   readonly bagId: string | undefined;

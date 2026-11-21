@@ -143,7 +143,7 @@ export class UnroutedSaveRefusal extends Error {
  * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
  * store that could only write to its own default would land a routed save in a bag no rule chose.
  */
-export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "resolveAll" | "defaultWritableBagId" | "layerIndexOf">;
+export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "resolveAll" | "defaultWritableBagId" | "layerIndexOf"> & Partial<Pick<CompositeStore, "unknownBeneath">>;
 
 export class LandingDoorUnavailableError extends Error {
   override readonly name = "LandingDoorUnavailableError";
@@ -1504,9 +1504,12 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * HOW A HAND'S DELETE LEAVES (operator ruling 2026-11-20: a kāpae is needed only where a record beneath would otherwise
    * surface). Each member of the delete splits by its own layers: a member with a live record in a layer beneath `bag`
    * leaves as a tombstone that keeps that record hidden (the browser's delete of a canon tiddler stays gone); any other
-   * member retracts to absent from `bag`, so no tombstone rises over nothing.
+   * member retracts to absent from `bag`, so no tombstone rises over nothing. A layer beneath `bag` this composition could
+   * not read (a recipe slot the composer skipped, a stand-in for an unread document: `unknownBeneath`) counts as holding
+   * every member, since another face's composition of the same recipe reads what it holds.
    */
   private async _leavesAs(bag: string, members: readonly string[]): Promise<{ tombstones: string[]; retracts: string[] }> {
+    if (this.store.unknownBeneath?.(bag)) return { tombstones: [...members], retracts: [] };
     const at = this.store.layerIndexOf(bag);
     const tombstones: string[] = [];
     const retracts: string[] = [];

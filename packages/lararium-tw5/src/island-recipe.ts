@@ -20,6 +20,7 @@ import {
   defaultWritableSlot,
   expandRecipe,
   slotLayerFlags,
+  wikiSlotKindOf,
   wikiSlotUri,
   ORACLE_BAG,
   KAHUA_BAG,
@@ -121,6 +122,12 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug, writeSlot) });
     stores.push({ slot, store });
   }
+
+  // THE SLOTS THE COMPOSER SKIPPED STAND UNREAD. A slot of the recipe the composer handed no binding for (a bag this face does
+  // not reach, a library the island does not hold, the kahua stage and daemon document a sibling's engine leaves out) may hold
+  // any title, and another face's composition of the same recipe reads it: a delete above it raises a kāpae, never a plain
+  // retract (recipe-layer-model#/the-delete). An instance slot with no binding holds no record yet, and temp lives here alone.
+  composite.markUnreached(slots, slots.filter((slot) => slot !== tempSlot && !boundBySlot.has(slot) && wikiSlotKindOf(slug, slot) === null));
 
   const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
   adaptor.installLandingQueue();

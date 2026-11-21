@@ -604,6 +604,52 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
     expect((await working.get(LAR_URI))?.meta?.deleted, "the working layer shadows the canon record").toBe(true);
     expect((await canon.get(LAR_URI))?.meta?.deleted, "canon keeps its own record").not.toBe(true);
   });
+
+  /** Delete a record only the working layer holds, over `composite`; answers the working layer's record after. */
+  async function deleteWorkingOnly(composite: CompositeStore, working: MemoryTiddlerStore): Promise<LarTiddlerRecord | null> {
+    vi.useFakeTimers();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    return working.get(LAR_URI);
+  }
+
+  test("★ a recipe slot beneath the working layer the composer could not reach counts as holding the title: the engine delete raises the kāpae, so a face that reaches that bag never sees its record surface ★", async () => {
+    // A shared workbench [working, realm canon R, canon]: this face reaches no R, and R may hold the title.
+    const realm = "lar:///ha.ka.ba/bags/realm-r";
+    const { composite, working } = stackOf();
+    composite.markUnreached([WORKING, realm, CANON], [realm]);
+    expect((await deleteWorkingOnly(composite, working))?.meta?.deleted, "a kāpae over the unread layer").toBe(true);
+  });
+
+  test("★ a mounted layer beneath that stands in for an unread document (a degraded, pending or late blank) counts as holding the title: the delete raises the kāpae ★", async () => {
+    const working = new MemoryTiddlerStore();
+    const blank = Object.assign(new MemoryTiddlerStore(), { unknown: () => true });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: CANON, store: blank, writable: false });
+    composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    expect((await deleteWorkingOnly(composite, working))?.meta?.deleted, "a kāpae over the stand-in").toBe(true);
+  });
+
+  test("CONTROL: an unreached slot or a stand-in ABOVE the working layer, or a stand-in released, leaves the plain retract", async () => {
+    const { composite, working } = stackOf();
+    composite.markUnreached([wikiSlotUri("test-wiki", "draft"), WORKING, CANON], [wikiSlotUri("test-wiki", "draft")]);
+    expect(await deleteWorkingOnly(composite, working), "nothing unread beneath: plain").toBeNull();
+    let unread = true;
+    const released = new MemoryTiddlerStore();
+    const blank = Object.assign(new MemoryTiddlerStore(), { unknown: () => unread });
+    const stacked = new CompositeStore();
+    stacked.addLayer({ bagId: CANON, store: blank, writable: false });
+    stacked.addLayer({ bagId: WORKING, store: released, writable: true, defaultWritable: true });
+    unread = false;
+    expect(await deleteWorkingOnly(stacked, released), "the real document merged in, and it holds nothing: plain").toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------

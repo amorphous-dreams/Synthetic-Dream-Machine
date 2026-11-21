@@ -81,6 +81,9 @@ export function compositeMemeSink(composite: CompositeStore, bag: string, origin
     throw new Error(`meme: bag "${bag}" holds no writable layer in this island — a placement never shadows up to the default writable`);
   }
   const at = composite.layerIndexOf(bag);
-  const beneath = async (title: string): Promise<boolean> => (await composite.resolveAll(title)).some((row) => composite.layerIndexOf(row.bagId) < at);
+  // A layer beneath the bag this composite could not read (a skipped recipe slot, a stand-in for an unread document) counts
+  // as holding the title: a kāpae, never a plain retract that would let its record surface.
+  const beneath = async (title: string): Promise<boolean> =>
+    composite.unknownBeneath(bag) || (await composite.resolveAll(title)).some((row) => composite.layerIndexOf(row.bagId) < at);
   return storeMemeSink(store, bag, origin, undefined, beneath);
 }

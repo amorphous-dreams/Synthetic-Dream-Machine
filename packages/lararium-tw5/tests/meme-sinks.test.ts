@@ -10,7 +10,7 @@
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, type ChangeOrigin } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { placeMeme, readMeme } from "../src/place-meme.js";
+import { placeMeme, readMeme, removeMeme } from "../src/place-meme.js";
 import { storeMemeSink, compositeMemeSink } from "../src/meme-sinks.js";
 
 const URI = "lar:///t/x";
@@ -79,6 +79,24 @@ describe("compositeMemeSink — a bag the island mounts writable", () => {
     const composite = new CompositeStore();
     composite.addLayer({ bagId: bagUri("top"), store: new MemoryTiddlerStore(bagUri("top")), writable: true });
     expect(() => compositeMemeSink(composite, bagUri("nope"), ORIGIN)).toThrow(bagUri("nope"));
+  });
+
+  test("★ an unread layer beneath the bag (a skipped recipe slot, a stand-in blank) reads as beneath: the meme delete raises a kāpae; CONTROL: none, it retracts ★", async () => {
+    for (const unread of ["unreached", "stand-in", "none"] as const) {
+      const composite = new CompositeStore();
+      const sdm = new MemoryTiddlerStore(bagUri("sdm"));
+      const lower = unread === "stand-in" ? Object.assign(new MemoryTiddlerStore(bagUri("low")), { unknown: () => true }) : new MemoryTiddlerStore(bagUri("low"));
+      composite.addLayer({ bagId: bagUri("low"), store: lower, writable: false });
+      composite.addLayer({ bagId: bagUri("sdm"), store: sdm, writable: true });
+      if (unread === "unreached") composite.markUnreached([bagUri("sdm"), bagUri("realm"), bagUri("low")], [bagUri("realm")]);
+      const sink = compositeMemeSink(composite, bagUri("sdm"), ORIGIN);
+      await placeMeme({ uri: URI, text: meme(["a"]) }, sink);
+      expect(await sink.beneath!(URI), unread).toBe(unread !== "none");
+      await removeMeme({ uri: URI }, sink);
+      const left = await sdm.get(URI);
+      if (unread === "none") expect(left, "nothing unread beneath: a plain retract").toBeNull();
+      else expect(left?.meta?.deleted, `${unread}: a kāpae`).toBe(true);
+    }
   });
 
   test("CONTROL: a READ-ONLY layer of the bag fails the same way (a residency placement never copies up)", () => {

@@ -409,6 +409,19 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     expect(await working.get(`${URI}#/w`)).toBeNull();
   });
 
+  test("★ a delete through the recipe over a layer that stands in for an unread document (a degraded or pending blank) counts it as holding the meme: the family tombstones ★", async () => {
+    const r = rig();
+    stacked(r);
+    r.reached.set(bagUri("lares"), Object.assign(new MemoryTiddlerStore(bagUri("lares")), { unknown: () => true }));
+    r.reached.set(bagUri("oracle"), new MemoryTiddlerStore(bagUri("oracle")));
+    const working = r.slots.get("garden/working")!;
+    await land(working, wikiSlotUri("garden", "working"), ["w"]);
+    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect(gone).toMatchObject({ decision: "removed", retracted: [] });
+    expect([...(gone["tombstoned"] as string[])].sort()).toEqual([URI, `${URI}#/w`].sort());
+    expect((await working.get(URI))?.meta?.deleted).toBe(true);
+  });
+
   test("a child a slot ABOVE the designated bag holds gets its tombstone in that slot; the canon root's lands in the working layer", async () => {
     const r = rig();
     const { canon, draft } = stacked(r);

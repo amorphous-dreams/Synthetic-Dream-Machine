@@ -794,6 +794,8 @@ async function deleteThroughRecipe(
     if (unreached.some((other) => stack.indexOf(other) > at)) return true;
     for (const layer of layers) {
       if (stack.indexOf(layer.bag) <= at) continue;
+      // A store that stands in for a document it has not read (a degraded or pending blank) counts as unreached.
+      if (layer.store.unknown?.() === true) return true;
       const record = await layer.store.get(title);
       if (record && !record.meta?.deleted) return true;
     }
