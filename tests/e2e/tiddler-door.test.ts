@@ -433,6 +433,24 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(dataOf(removed)).toMatchObject({ recipe: WALK_WIKI, decision: "removed" });
   }, 300_000);
 
+  test("THE FIRST LOOK AFTER A COLD BOOT: a named wiki's working document rests in the vessel's own store, and the very first filter after a fresh boot answers", async () => {
+    const W = ["--recipe", WALK_WIKI, "--json"] as const;
+    const put = await lar.cli(["tiddler", "put", "Cold boot note", ...W, "--create", "--text", "rests in the store", "--fields", "{\"tags\":\"coldboot\"}"]);
+    expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
+    // The daemon stands down and a second stands over the same root: the working document now loads from the store alone.
+    await lar.stopDaemonOnly();
+    lar = await openStaged({ root: lar.root, port: lar.port, found: async () => {} });
+    if (!(await awaitRendezvous(lar))) throw new Error(`the re-stood daemon bound no rendezvous:\n${lar.bootLog().slice(-800)}`);
+    // ONE look, never a loop: the first filter after the boot answers or the wiki's slot refuses by the store's own name.
+    const first = await lar.cli(["wiki", "filter", "[tag[coldboot]]", ...W]);
+    say(`CLI first wiki filter --recipe ${WALK_WIKI} after a cold boot`, dataOf(first));
+    expect(first.code, `${first.stdout}\n${first.stderr}`).toBe(0);
+    expect(first.stdout).not.toContain("document-unavailable");
+    expect(dataOf(first)).toMatchObject({ recipe: WALK_WIKI, titles: ["Cold boot note"] });
+    const removed = await lar.cli(["tiddler", "delete", "Cold boot note", ...W]);
+    expect(dataOf(removed)).toMatchObject({ recipe: WALK_WIKI, decision: "removed" });
+  }, 600_000);
+
   test("THE CALLER'S FACE DECIDES REACH: a second face, worn, reaches none of the first face's daemon wiki", async () => {
     const filter = `[prefix[${STAGE}]]`;
     const first = await lar.cli(["wiki", "filter", filter, "--limit", "3", ...D]);

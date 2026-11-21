@@ -82,7 +82,13 @@ describe("a working slot resolves its named document", () => {
   }, 30_000);
 
   test("a peer that stays silent cannot hang the resolve: the bound elapses and the document refuses by name", async () => {
-    const silent = { find: () => new Promise<never>(() => {}) } as unknown as Repo;
+    const silent = {
+      findWithProgress: () => ({
+        peek: () => ({ state: "loading", sources: { storage: "unavailable", sync: "pending" } }),
+        subscribe: () => () => {},
+      }),
+      find: () => new Promise<never>(() => {}),
+    } as unknown as Repo;
     const refusal = await findOrThrow(silent, "automerge:silent", "a silent document", { timeoutMs: 30 }).catch((e: unknown) => e);
     expect(refusal).toBeInstanceOf(DocumentUnavailableRefusal);
     expect((refusal as DocumentUnavailableRefusal).waitedMs).toBe(30);
