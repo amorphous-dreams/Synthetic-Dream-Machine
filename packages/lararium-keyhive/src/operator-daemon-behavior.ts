@@ -306,7 +306,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     active.add(pending); inFlight.set(provider, active);
     try { return await pending; } finally { active.delete(pending); if (!active.size) inFlight.delete(provider); }
   };
-  let faceChanges = Promise.resolve();
+  /** ONE QUEUE PER FACE, never one across faces: each face's light, bag registration and drop take their turns in order, and a
+   *  face whose drop never settles holds only its own queue, so another face lights meanwhile (the vessel's face actor). */
+  const faceChanges = new Map<string, Promise<void>>();
   // What each lit face booted from, by its bare atom key: a later lit message for that key matches it or refuses by name.
   const litInputs = new Map<string, string>();
   /** THE LIT SET: every sibling face lit beside the mounted one, by bare atom key (each under its own hive, `providers`). */
@@ -1771,7 +1773,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
     },
     onHostMessage: (msg, ctx) => {
-      const change = faceChanges.then(async () => {
+      const face = bareKey(msg.type === "daemon:face-lit" ? msg.entry.atom.key : msg.atomKey);
+      const change = (faceChanges.get(face) ?? Promise.resolve()).then(async () => {
         if (msg.type === "daemon:face-lit") {
           try { await lightJoinedFace(msg.entry, ctx); }
           catch (error) { throw new Error(`face ${msg.entry.atom.key} refused: ${String(error)}`); }
@@ -1795,7 +1798,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
       });
-      faceChanges = change.catch(() => {});
+      const tail = change.catch(() => {});
+      faceChanges.set(face, tail);
+      void tail.then(() => { if (faceChanges.get(face) === tail) faceChanges.delete(face); });
       return change;
     },
     onWritable: async (ctx: IslandContext) => {
