@@ -9,7 +9,7 @@ hydrate           = true
 l-space           = "stable"
 namespace         = "&#x2299;"
 pattern-integrity = true
-role              = "live-equivocation — the exposure the federated-mesh collision named (Fork C, 2026-09-09): detection catches a live-key equivocator but cannot PREVENT it, and KERI has no admin recovery for a live current+next capture, so that case falls only to recovery-quorum — which the roadmap built last. Recovery and detection each sit in the other's blind spot; pull recovery FORWARD beside the sensorium. This meme LOGS the exposure for later research spirits to resolve with outside negentropy + load-bearing fiction user stories, and frames Elyncia's DreamNet as the first QA world."
+role              = "live-equivocation — the exposure the federated-mesh collision names (Fork C): detection catches a live-key equivocator but cannot PREVENT it, and KERI offers no admin recovery for a live current+next capture, so that case falls only to recovery-quorum. Recovery and detection each sit in the other's blind spot. The meme holds the exposure open, carries the field's answers (only a time-lock + veto window touches a live key; CHURP bounds the FROST branch), names what a ruling on the recovery sequence waits for (measured detection latency), and frames Elyncia's DreamNet as the first QA world."
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/live-equivocation"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -18,9 +18,9 @@ uri-path          = "ha.ka.ba/lares/api/pono/live-equivocation"
 
 <<~ ahu slot=`#/head`>>
 
-! Live Equivocation ~ the one attack detection cannot fix, built last
+! Live Equivocation ~ the one attack detection cannot fix
 
-The federated-mesh collision (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>> #the-mesh-field) named the roadmap's biggest exposure. This meme holds it OPEN for later work — the outside negentropy to gather, the fiction stories to run, and the ruling the operator leans toward (pull recovery-quorum FORWARD beside the sensorium).
+The federated-mesh collision (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>> #the-mesh-field) names this as the mesh's biggest exposure. This meme holds it OPEN: the two thieves, the blind spot detection and recovery share, the field's answers (#/owed), and what a ruling on the recovery sequence waits for (#/what-decides-it). The research still owed on it rests in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/live-equivocation-queue`>>.
 
 <<~/ahu>>
 
@@ -45,7 +45,7 @@ The sensorium ''DETECTS'' the equivocation — it sees two of you. But ''seeing 
 
 !! Who this serves (the irl tension)
 
-The journalist who loses a source-protecting identity to seizure under duress. The activist whose shared movement-name a defector turns. The family cabal one compromised device betrays. For all of them, ''detection that only says "there are two of you" gives a diagnosis with no cure.'' Recovery beside detection — a quorum that re-keys the moment a watcher sees the equivocation — gives the cure, and it must ''already stand when the attack lands,'' not built two milestones later.
+The journalist who loses a source-protecting identity to seizure under duress. The activist whose shared movement-name a defector turns. The family cabal one compromised device betrays. For all of them, ''detection that only says "there are two of you" gives a diagnosis with no cure.'' Recovery beside detection — a quorum that re-keys the moment a watcher sees the equivocation — gives the cure, and it must ''already stand when the attack lands,'' never trail it by a milestone.
 
 <<~/ahu>>
 
@@ -59,11 +59,10 @@ Real cabals with real stakes do not exist yet, so abstract unit tests cannot fee
 
 <<~ ahu slot=`#/owed`>>
 
-!! Owed to later spirits (the research queue)
+!! The field's answers ~ what primary sources settle
 
-# ''Outside negentropy'' — collide the live-equivocation case against the field: KERI/vLEI live-key recovery ceremonies, threshold re-keying (FROST resharing), social-recovery wallets (Argent, safe-guardians), duress/coercion-resistant schemes (deniable keys, canaries), MPC custody rotation. What does anyone deployed do when a key gets stolen WHILE ALIVE?
-# ''Fiction user stories'' — mine the Elyncia canon for concrete hijack/inheritance/dormancy scenarios and render each as a QA vector against the mechanics.
-# ''The ruling'' — the operator leans PULL RECOVERY-QUORUM FORWARD beside the sensorium (co-design detection + recovery). A later pass confirms the sequence and the recovery-rotation ⊥ equivocation-fork distinction a watcher must draw. See the code seam `packages/lararium-mesh/src/recovery-registration.ts` and <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/after-the-seat`>> (`W30`).
+The open research queue on this exposure (outside negentropy, fiction user stories, the recovery-sequence ruling) rests in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/live-equivocation-queue`>>; this slot holds what the field answers.
+
 # ''ANSWERED at primary source — the recovery-field survey.'' No deployed or researched system recovers from a fully live key capture using key material alone; the residual (an attacker holding current+next, or a full threshold within one epoch, ''acting inside the window'') holds universally. KERI states it: "there is no recovery mechanism once the keys for the root control authority have been fully captured," and its superseding-rule A1 (a non-delegated rotation cannot supersede another rotation) makes a root-level live capture terminal. ONLY a ''time-lock + veto window'' touches a genuinely live key, deployed everywhere: did:plc's priority-ordered rotation keys + a ''72-hour window'' in which a colder higher-authority key rewrites history, clobbering the lower-authority key; Nostr NIP-41's pre-committed successor + OpenTimestamps anchor + a ''30-day public contest window''; social-recovery wallets' guardian time-lock+veto (Argent 36h, Safe 28d) — which confirm the civic keel (''the recovery quorum and the impersonation quorum stand as ONE quorum''). Duress schemes (GrapheneOS wipe, LUKS-nuke, hidden volumes) only ''destroy or signal, never rotate an already-copied key'', and all fall to observe-first suppression — a duress key denies future access or raises an alarm; it does not recover you. The residual stays inherent, not a shortfall to engineer away.
 # ''CONSTRUCTIVE — CHURP makes the GRAFT a share-refresh, bounding the living-thief window on the FROST tier.'' CHURP (Maram et al., eprint 2019/017) performs dynamic-committee proactive secret sharing: at each handoff the committee re-shares so ''shares from epoch //e// become useless in epoch //e+1//, while the secret and its public key stay unchanged'', with members joining/leaving and threshold //t// changing at the handoff — mechanism-for-mechanism the GRAFT (`mintHandleGraft` rolls the owner-set + threshold, `prefix`/`handleKeyDid` fixed). The built k-of-n runs as a MULTISIG (`graftSigs` gathers //t// distinct Ed25519 signatures), with no shared secret to refresh; CHURP earns its keep only on the ''FROST/veiled-Circle branch'' (the-veil-ladder), where a private Circle signs as ONE invisible key — there a captured share ''dies at the next graft, public handle key unchanged, no rotation visible on the wire.'' A scheduled graft cadence, paced by FfzClock to the adversary's measured creep, then serves as a proactive-refresh interval. Take the ''OFF-CHAIN construction only'' — CHURP's dispute path resolves on-chain; route accusation to the duplicity-proof + veto (`detectDuplicity`, `foldPersonaContests`), never a chain. The residual stays inherent: PSS refreshes a STANDING secret and does nothing once an adversary holds ≥//t// shares WITHIN one epoch (they reconstruct) — it shrinks the window, it does not close the simultaneous-quorum seizure the two-thieves already name.
 
@@ -71,7 +70,7 @@ Real cabals with real stakes do not exist yet, so abstract unit tests cannot fee
 
 <<~ ahu slot=`#/what-decides-it`>>
 
-!! What this path needs before anyone can rule it (operator, 2026-09-13)
+!! What this path needs before anyone can rule it (#/rulings)
 
 ''The PULL-FORWARD lean stands SET ASIDE — not the plan.'' Sequencing recovery-quorum construction beside
 the sensorium reads reasonable and rests on nothing measured. The path DEFERS until the infrastructure
@@ -105,8 +104,8 @@ long one suits a public contest (NIP-41's shape), and the two want different cod
 !!! What a later pass should NOT re-derive
 
 ''The residual stays inherent.'' An adversary holding current+next, or a full threshold inside one epoch,
-acting within the window, defeats every deployed scheme — KERI states it outright. A pass that arrives
-hoping to close that hole will spend itself; the work lies in BOUNDING the window, never closing it.
+acting within the window, defeats every deployed scheme — KERI states it outright. A pass that sets out
+to close that hole spends itself; the work lies in BOUNDING the window, never closing it.
 
 ''CHURP bounds the FROST branch and only that branch'' (§#/owed): it earns its keep where a private Circle
 signs as one invisible key, and buys nothing against the built multisig graft, which holds no shared secret
@@ -114,6 +113,14 @@ to refresh.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;F_CPOOOj1XbcCxa7PR77AKuw9fMBbyGvM6jom-9MGLM`>>
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator ruling 2026-09-13: the pull-forward lean (recovery-quorum built beside the sensorium) stands set aside; the path defers until a running sensorium stack and a set-up meshpalace can measure detection latency (#/what-decides-it).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k6wp1Wn3EQA7gJAmUzlrrVgZGBRb6cV7XzbG_KpENRc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
