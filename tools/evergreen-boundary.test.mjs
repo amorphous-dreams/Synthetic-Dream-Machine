@@ -293,3 +293,8 @@ test("E18 canon-dated-meta: an authored date key in a live canon meta reads; a r
   const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": meta('written = "2026-06-12"'), "tools/a.mjs": "const x = 1;" });
   assert.equal(record.status, 0, record.stdout + record.stderr);
 });
+test("E19 canon corpus reads the cli surface: a history word in a cli meme reads; a docs record beside it does not", () => {
+  const r = fixture({ "bags/lares/ha.ka.ba/lares/cli/door.mem": "A door.\nThe old name was renamed to the new one.\n" });
+  assert.equal(r.status, 1); assert.match(r.stdout, /canon-history +bags\/lares\/ha\.ka\.ba\/lares\/cli\/door\.mem:2/);
+  const c = fixture({ "bags/lares/ha.ka.ba/lares/cli/door.mem": "A door answers its own name.\n" }); assert.equal(c.status, 0, c.stdout + c.stderr);
+});

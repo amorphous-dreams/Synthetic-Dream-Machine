@@ -27,7 +27,7 @@
 //                     retired-name list;
 //   upgrade-delete  — in `packages/*/src`, an `onupgradeneeded` body that deletes stores or rows (`deleteObjectStore`,
 //                     a row `.delete(`, `.clear(`), since a present schema creates what it holds and carries no deletions;
-//   canon-history   — in live canon (`bags/*/…/{api,mesh,browser}/**/*.mem`, never a record carrier under `docs/`), a
+//   canon-history   — in live canon (`bags/*/…/{api,mesh,browser,cli}/**/*.mem`, never a record carrier under `docs/`), a
 //                     word that narrates the house's past (used to, formerly, legacy, no longer, retired, earlier shape…);
 //   canon-dated-history — in the same corpus, a verb of history (landed, burned, retired, cured, …) within 40 characters
 //                     of an ISO date: a line that dates the canon's making. A date with a ruling or correction marker
@@ -85,6 +85,7 @@ export const EXCEPTIONS = [
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "lives for one commit", reason: "This law line states the one-commit refusal it permits." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Recursive o-takiage", reason: "This law line names the retired-name lists it bans." },
+  { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/cli/problems.mem", match: "retired-trailer", reason: "The problem table names the live `retired-trailer` frame-problem code the checker emits (memetic-frame check.ts and span.ts, tw5 ingest-gate.ts)." },
   { rule: "canon-dated-meta", file: "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext.mem", match: "date", reason: "The submittable spec projects to an RFC I-D whose kramdown-rfc2629 front matter requires a date; weave's I-D profile reads this key (packages/lararium-tw5/src/weave/index.ts requiredMeta)." },
   { rule: "canon-dated-meta", file: "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem", match: "date", reason: "The submittable framing spec projects to an RFC I-D whose kramdown-rfc2629 front matter requires a date; weave's I-D profile reads this key (packages/lararium-tw5/src/weave/index.ts requiredMeta)." },
 ];
@@ -294,8 +295,8 @@ function isTestFile(rel) {
     && (/^packages\/[^/]+\/tests?\//.test(rel) || /^tests\//.test(rel) || /^tools\/.*\.test\.[a-z]+$/.test(rel) || /^packages\/[^/]+\/scripts\/test_[^/]*\.py$/.test(rel));
 }
 function isUpgradeFile(rel) { return /\.(?:ts|mts|js|mjs)$/.test(rel) && !BUILT.test(rel) && /^packages\/[^/]+\/src\//.test(rel); }
-/** Live canon: a `.mem` under a bag's `api`, `mesh` or `browser` directory; `docs/` and every other directory hold record carriers. */
-function isCanonFile(rel) { return /^bags\/[^/]+\/[^/]+\/[^/]+\/(?:.*\/)?(?:api|mesh|browser)\/(?:.*\/)?[^/]+\.mem$/.test(rel) && !/\/docs\//.test(rel); }
+/** Live canon: a `.mem` under a bag's `api`, `mesh`, `browser` or `cli` directory; `docs/` and every other directory hold record carriers. */
+function isCanonFile(rel) { return /^bags\/[^/]+\/[^/]+\/[^/]+\/(?:.*\/)?(?:api|mesh|browser|cli)\/(?:.*\/)?[^/]+\.mem$/.test(rel) && !/\/docs\//.test(rel); }
 const CLASSES = {
   "old-shape": { has: eligible, scan: () => [] },
   "retired-test": { has: isTestFile, scan: scanTestText },
