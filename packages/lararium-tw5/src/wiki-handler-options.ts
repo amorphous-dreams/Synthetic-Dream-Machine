@@ -83,18 +83,27 @@ export interface DraftHandlerOptions {
 
 /**
  * THE SHELL A FACE'S MINT LEFT, as `retire-wiki` reaches it (the keyhive-holding daemon supplies each port; tw5 stays
- * keyhive-free). Every port acts for the WORN face alone.
+ * keyhive-free). Every port acts for the WORN face alone. A read port that cannot read THROWS: no fault ever reads as empty.
  */
 export interface WikiShellPorts {
   /** Every realm the vessel's ledger binds the slug's workbench under, and the worn face's own derived cabal of one. */
   owner(slug: string): Promise<{ readonly bound: readonly string[]; readonly own: string }>;
-  /** How many live records the face's working layer (its workbench) and draft layer of the slug hold; a layer that stands none reads 0. */
-  contents(slug: string): Promise<{ readonly working: number; readonly draft: number }>;
-  /** Drop the ledger's rows binding the slug to the face's own cabal and forget the working slot's Document: the titles dropped. */
+  /** Who else reaches the shell: the faces (other than the worn one) the ledger seats in its workbench, and the share rows naming the slug. */
+  shared(slug: string): Promise<{ readonly seats: readonly string[]; readonly shares: readonly string[] }>;
+  /** How many live records the face's working (workbench), draft and personal layers of the slug hold; a layer no document stands for reads 0. */
+  contents(slug: string): Promise<WikiShellCounts>;
+  /** Delete every record in those three layers' documents (a forced retire only), so a later mint at the same address opens empty. */
+  clear(slug: string): Promise<void>;
+  /** Drop the face's draft and personal slot binding rows for the slug: the titles dropped. */
+  unbindSlots(slug: string): Promise<readonly string[]>;
+  /** Drop the ledger's rows binding the slug to the face's own cabal: the realm and the titles dropped. */
   unbind(slug: string): Promise<{ readonly realmId: string | null; readonly ledgerRows: readonly string[] }>;
   /** Forget the face's Keyhive bindings of these shell bags (never a canon bag): the bags whose binding stood. */
   forget(bags: readonly string[]): Promise<readonly string[]>;
 }
+
+/** The live records each layer of a shell holds. */
+export interface WikiShellCounts { readonly working: number; readonly draft: number; readonly personal: number }
 
 /** Options for `retire-wiki`: the catalog (the face's half takes the removal) and the shell's ports. */
 export interface WikiRetireOptions {

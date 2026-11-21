@@ -30,6 +30,7 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { randomBytes } from "node:crypto";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { faceSegmentRefusal, isPrivateProjectionSlug, realmRoot, REALM_PLANES, REALMS_PROJECTION_DIR } from "./bag-paths.js";
 import { commitRealmMove, retagRealmAuthor } from "./pool-tree.js";
@@ -276,6 +277,26 @@ export function releaseRealmId(projections: string, slug: string): RealmLabel | 
   const released: RealmLabel = { ...holder, realms: holder.realms.map((r) => (r.slug === slug ? { slug, id: null } : r)) };
   writeRealmLabel(projections, released);
   return released;
+}
+
+/**
+ * A RETIRED WIKI'S FOLDER STEPS ASIDE (`lares wiki retire`): the workbench mirror folder the realm labels place for `slug`
+ * (`<projections>/realms/<pet>/wikis/<slug>/`) moves BY RENAME to `<slug>.retired-<hex>` beside it, never deleted, so the next
+ * owner's workbench lays into a fresh folder and its catch-up ingests none of the retired shell's files. A folder that holds
+ * nothing, or none at all, stays as it is (null). A folder beside a canon source (a checkout-sourced slug's) never rests under
+ * the realms and never moves here.
+ */
+export function setAsideRetiredWiki(projections: string, slug: string, tag: string = randomBytes(4).toString("hex")): { readonly from: string; readonly to: string } | null {
+  if (!SLUG.test(slug)) return null;
+  const base = realmPlacement(projections).wikisBase(slug);
+  if (base === null) return null;
+  const from = join(base, slug);
+  let entries: string[];
+  try { entries = readdirSync(from); } catch { return null; }
+  if (entries.length === 0) return null;
+  const to = `${from}.retired-${tag}`;
+  renameSync(from, to);
+  return { from, to };
 }
 
 /** Where a slug's folders rest by the labels and the disk, read once: the base its workbench and its canon bag lay under. */

@@ -183,3 +183,17 @@ test("RED: the session act's `settled` hook fires once per RUN act, after its re
   await new Promise((r) => setTimeout(r, 50));
   expect(v.settled.map((s) => s.act), "a refusal ran nothing, so nothing settles").toEqual(["kapae-raise"]);
 });
+
+test("RED: a seat session's `retire-wiki` call refuses `retire-needs-hand` and places nothing; CONTROL: a cli session's call places it", async () => {
+  expect(STORE_DOOR_HAND_CODES.get("retire-wiki")).toBe("retire-needs-hand");
+  expect(STORE_DOOR_HAND_ONLY_ACTS.has("retire-wiki")).toBe(true);
+  const v = await stand();
+  const seat = await v.open("hint-a", "seat");
+  expect(await v.peer.ask({ op: "session:call", ...seat, requestId: "seat-retire", verb: "retire-wiki", args: { slug: "s" } }))
+    .toMatchObject({ kind: "session:refused", refusal: "retire-needs-hand" });
+  expect(v.placed).toEqual([]);
+  const w = await stand();
+  const cli = await w.open("hint-a", "cli");
+  await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-retire", verb: "retire-wiki", args: { slug: "s" } });
+  expect(w.placed.map((p) => p.verb)).toEqual(["retire-wiki"]);
+});

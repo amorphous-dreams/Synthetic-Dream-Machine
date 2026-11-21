@@ -26,7 +26,8 @@ import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-re
 import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { cmdShare } from "./share-cmd.js";
-import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, type RealmDoors } from "./realm-doors.js";
+import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
+import { sealedAct } from "../sealed-act-door.js";
 import { RealmRefused } from "@lararium/node";
 import { containerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
@@ -180,19 +181,35 @@ export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIV
   return 0;
 }
 
-const RETIRE_USAGE = "usage: lares wiki retire <slug> [--face N] [--force --count <records>]";
-/** The refusals `retire-wiki` names by code (`<code>: <detail>`); any other failure reads as the transport's. */
-const RETIRE_REFUSAL = /^(no-face|system-bag|wiki-face-private|no-such-wiki|not-the-owner|wiki-not-empty|retire-count-moved|waking-floor|content-mounted-only|face-not-open|workbench-slug-bound)\b/;
+const RETIRE_USAGE = "usage: lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]";
+/** The refusals `retire-wiki` (and the session door before it) names by code (`<code>: <detail>`); any other failure reads as the transport's. */
+const RETIRE_REFUSAL = /^(retire-needs-hand|no-face|system-bag|wiki-face-private|no-such-wiki|not-the-owner|wiki-shared|wiki-not-empty|retire-count-missing|retire-count-moved|waking-floor|content-mounted-only|face-not-open|workbench-slug-bound)\b/;
+
+/** The doors `lares wiki retire` reads, injectable for a test: the worn face's ordinal and the one session call. */
+export interface RetireDoors {
+  wornFace(): Promise<number>;
+  call(verb: string, args: Record<string, unknown>, face: number): Promise<SubmitResult>;
+}
+const LIVE_RETIRE_DOORS: RetireDoors = {
+  wornFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
+  call: (verb, args, face) => runVerbAsFace(verb, args, face),
+};
 
 /**
  * `lares wiki retire <slug>` — THE OWNER FACE'S UNMINT: the shell the worn face's `wiki init` laid over a slug (its catalog
- * rows, its workbench's ledger rows, its Keyhive bindings of the working and draft bags) leaves, so the slug mints again
- * cleanly under the face that should hold it. The canon bag's document and its files stay. A face that does not own the shell
- * refuses `not-the-owner`; a shell holding records refuses `wiki-not-empty` unless `--force --count <records>` names the
- * very count it holds. A hand act: no agent surface reaches it. `--face N` names the face whose session asks (it must be
- * the worn face, which owns the shell).
+ * rows, its workbench's ledger rows, its slot and Keyhive bindings) leaves, so the slug mints again cleanly under the face that
+ * should hold it. The canon bag's document and its files stay.
+ *
+ * A HAND ACT: it rides a session of the worn face (or `--face N`) opened by the `cli` hand, so a seat session refuses at the
+ * socket and the island refuses any ask no hand placed. `--dry-run` reads what would leave and the record counts, writing
+ * nothing; a shell holding records refuses `wiki-not-empty` unless `--force --count <records>` names that very count.
+ *
+ * ONCE IT LANDS, the local half: the wiki's hold drops, the workbench mirror folder under its realm steps aside by rename, and
+ * the slug's realm label releases the realm id the retired workbench held. Each step reads the state it changes, so a run
+ * that died midway finishes on a second run (the vessel then answers `no-such-wiki`, and the local half still runs where the
+ * vessel's ledger binds the slug nowhere).
  */
-export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = LIVE_REALM_DOORS): Promise<number> {
+export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = LIVE_REALM_DOORS, doors: RetireDoors = LIVE_RETIRE_DOORS): Promise<number> {
   const slug = args.positional[0];
   if (!slug) { console.error(RETIRE_USAGE); return 2; }
   let named: { face?: number };
@@ -203,36 +220,71 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
     return 2;
   }
   const force = args.flags["force"] === true;
+  const dryRun = args.flags["dry-run"] === true;
   const countText = args.options["count"];
   if (countText !== undefined && (!force || !/^\d+$/.test(countText))) { console.error(`${RETIRE_USAGE}\n  --count names the record count a --force retire destroys`); return 2; }
-  const verbArgs: Record<string, unknown> = { slug, ...(force ? { force: true } : {}), ...(countText !== undefined ? { count: Number(countText) } : {}) };
-  const did = await vesselDid();
-  const r = named.face === undefined ? await call("retire-wiki", verbArgs, did)
-    : await runVerbAsFace("retire-wiki", verbArgs, named.face).catch((err: unknown) => { const f = verbFailure(err); return { status: "error" as const, requestId: f.requestId ?? "", errorMessage: f.message }; });
+  if (dryRun && force) { console.error(`${RETIRE_USAGE}\n  --dry-run reads and writes nothing; it takes no --force`); return 2; }
+  const verbArgs: Record<string, unknown> = { slug, ...(dryRun ? { "dry-run": true } : {}), ...(force ? { force: true } : {}), ...(countText !== undefined ? { count: Number(countText) } : {}) };
+  let r: SubmitResult;
+  try { r = await doors.call("retire-wiki", verbArgs, named.face ?? await doors.wornFace()); }
+  catch (err) { const f = verbFailure(err); r = { status: "error", requestId: f.requestId ?? "", errorMessage: f.message }; }
+
+  // THE LOCAL HALF, idempotent: each step changes only what still stands.
+  const localHalf = async (realmRetired: boolean) => {
+    const released = await call("wiki-release", { slug }, await vesselDid());
+    const folder = setAsideWikiFolder(realmDoors, slug);
+    const label = realmRetired ? releaseWikiRealm(realmDoors, slug) : null;
+    return { holdReleased: released.status !== "error", folder, label };
+  };
+
   if (r.status === "error") {
     const msg = (r.errorMessage ?? "unknown").replace(/^\[daemon\] /, "");
-    const code = RETIRE_REFUSAL.exec(msg)?.[1];
+    const code = RETIRE_REFUSAL.exec(msg)?.[1] ?? (typeof r.refusal?.reason === "string" && RETIRE_REFUSAL.test(r.refusal.reason) ? r.refusal.reason : undefined);
+    // A RUN THAT DIED AFTER THE VESSEL'S HALF: the vessel names no shell now; where its ledger binds the slug nowhere, the local
+    // half finishes (the label's id, the folder), and the run says so.
+    if (code === "no-such-wiki" && !dryRun) {
+      const seat = await realmDoors.seat(slug);
+      if (seat.answered && seat.realms.length === 0) {
+        const done = await localHalf(true);
+        if (done.folder !== null || done.label?.realms.some((x) => x.slug === slug && x.id === null)) {
+          emit(args, { ok: true, requestId: r.requestId, data: { slug, status: "already-retired", ...done.folder ? { folderSetAside: done.folder.to } : {} },
+            human: () => console.log(`wiki: ${slug}  status: already-retired (the vessel holds no shell of it; the local half finished${done.folder ? `, its folder set aside at ${done.folder.to}` : ""})`) });
+          return 0;
+        }
+      }
+    }
     emit(args, { ok: false, requestId: r.requestId, error: code ? { code, message: msg } : msg, human: () => console.error(`retire refused: ${msg}`) });
     return code ? 1 : 4;
   }
   const result = summaryOutput(r) ?? {};
-  // The retired workbench's realm id leaves the slug's local label (its pet name and folders stay), and the wiki's hold drops.
-  const label = releaseWikiRealm(realmDoors, slug);
-  const released = await call("wiki-release", { slug }, did);
   const list = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+  const records = (result["records"] ?? {}) as { working?: number; draft?: number; personal?: number };
+  const counted = `working ${records.working ?? 0}, draft ${records.draft ?? 0}, personal ${records.personal ?? 0}`;
+  if (dryRun) {
+    emit(args, { ok: true, requestId: r.requestId, data: result, human: () => {
+      console.log(`wiki: ${slug}  would retire (nothing written)`);
+      console.log(`  catalog rows:  ${list(result["catalogRows"]).join(", ") || "(none)"}`);
+      console.log(`  workbench:     ${typeof result["realmId"] === "string" ? `realm ${result["realmId"].slice(0, 12)}…` : "(none stood)"}`);
+      console.log(`  records:       ${String(result["total"] ?? 0)} (${counted})`);
+    } });
+    return 0;
+  }
+  const done = await localHalf(typeof result["realmId"] === "string");
   emit(args, {
-    ok: true, requestId: r.requestId, data: { ...result, ...(label ? { realm: label.petName } : {}), holdReleased: released.status !== "error" },
+    ok: true, requestId: r.requestId,
+    data: { ...result, ...(done.label ? { realm: done.label.petName } : {}), holdReleased: done.holdReleased, ...(done.folder ? { folderSetAside: done.folder.to } : {}) },
     human: () => {
-      const records = (result["records"] ?? {}) as { working?: number; draft?: number };
-      const kept = (result["kept"] ?? {}) as { canonBag?: string; canonDoc?: string | null };
+      const kept = (result["kept"] ?? {}) as { canonBag?: string };
       console.log("");
       console.log(`wiki: ${slug}  status: ${result["status"]}${result["forced"] === true ? " (forced)" : ""}`);
       console.log(`  catalog rows removed:  ${list(result["catalogRows"]).length}${list(result["catalogRows"]).map((t) => `\n    ${t}`).join("")}`);
       console.log(`  ledger rows removed:   ${list(result["ledgerRows"]).length}${typeof result["realmId"] === "string" ? ` (realm ${result["realmId"].slice(0, 12)}…)` : ""}`);
+      console.log(`  slot bindings removed: ${list(result["slotBindings"]).length}`);
       console.log(`  keyhive bindings:      ${list(result["keyhiveBindings"]).length}${list(result["keyhiveBindings"]).map((t) => `\n    ${t}`).join("")}`);
-      console.log(`  records destroyed:     ${(records.working ?? 0) + (records.draft ?? 0)} (working ${records.working ?? 0}, draft ${records.draft ?? 0})`);
+      console.log(`  records destroyed:     ${result["forced"] === true ? counted : "none"}`);
       console.log(`  kept:                  ${kept.canonBag ?? `bags/${slug}`} (its document and files untouched)`);
-      if (label) console.log(`  realm label:           ${label.petName} keeps its pet name and folders; its realm id reads unset until the next mint`);
+      if (done.folder) console.log(`  folder set aside:      ${done.folder.to} (renamed, never deleted)`);
+      if (done.label) console.log(`  realm label:           ${done.label.petName} keeps its pet name; its realm id reads unset until the next mint`);
       console.log(`  next: wear the face that should hold it, then \`lares wiki init ${slug}\``);
       console.log("");
     },
@@ -813,7 +865,7 @@ async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
   "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
-  "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--force --count <records>]`): its catalog rows, its workbench's ledger rows and its Keyhive bindings leave, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shell holding records refuses `wiki-not-empty` unless `--force --count` names that count. A hand act: no agent surface reaches it." },
+  "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]`), a person's hand alone (a seat session refuses): its catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave, its workbench folder steps aside by rename, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shared shell refuses `wiki-shared` (remove the shares first); `--dry-run` reads the record counts; a shell holding records refuses `wiki-not-empty` unless `--force --count` names that count." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },

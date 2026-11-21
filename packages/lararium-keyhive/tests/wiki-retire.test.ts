@@ -8,25 +8,35 @@
  *
  * R1 (red) face A mints S and stands its workbench; face B's stand refuses `workbench-slug-bound`. A retires S; B mints S and
  *    stands its workbench, founding its own cabal, and the canon document A minted stands untouched.
- * R2 (red) a face that does not own the shell refuses `not-the-owner` and nothing leaves.
- * R3 (red) a shell that holds records refuses `wiki-not-empty` (naming the count); `--force` with a count that moved refuses
- *    `retire-count-moved`; `--force --count <the count>` retires.
- * R4 a face that holds no shell refuses `no-such-wiki`; a system slug and the daemon wiki never retire.
+ * R2 (red) a face that does not own the shell refuses `not-the-owner` and nothing leaves; the reactor's owner reading agrees
+ *    with `retireWorkbench` (a ledger binding the slug under the face's own realm AND another's refuses).
+ * R3 (red) a shell holding records refuses `wiki-not-empty` naming no count and no forcing line; `--force` alone refuses
+ *    `retire-count-missing`; a wrong count `retire-count-moved`; `--dry-run` reads the counts and writes nothing; the very
+ *    count retires and CLEARS the layers' documents, so the same face's re-mint opens its deterministic workbench empty.
+ * R4 a face that holds no shell refuses `no-such-wiki`; a system slug and the daemon wiki never retire; a catalog with no face
+ *    half refuses `no-face`.
+ * R5 (red, H1) a shell another face reaches (a seat noted in its workbench, or a share row naming the slug) refuses
+ *    `wiki-shared`, and every seat stays.
+ * R6 (red, H2) a layer lookup that faults fails the retire closed: nothing leaves, no zero stands in for the fault.
+ * R7 (red, M1) only a person's hand retires: a seat asker, a watcher and an ask no door read refuse `retire-needs-hand`.
+ * R8 (red, M2/M3) a count that moves between the two readings refuses with nothing written; a fault midway leaves the catalog
+ *    rows, and the same retire run again finishes.
  */
 import { describe, test, expect } from "vitest";
 import {
-  emptyLarDoc, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, privateCabalRealmId, recipeUri, wikiBagUri, wikiSlotUri,
+  emptyLarDoc, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, materializeSharedLarDoc, noteWorkbench, noteWorkbenchSeat,
+  privateCabalRealmId, realmWorkbenchDocUrl, recipeUri, wikiBagUri, wikiSlotUri, workbenchSeats,
   type DocHandle, type LarDoc, type Repo,
 } from "@lararium/mesh";
-import { makeCatalogAccessorOver, makeInitWikiReactor, makeRetireWikiReactor, type VerbContext } from "@lararium/tw5";
+import { makeCatalogAccessorOver, makeInitWikiReactor, makeRetireWikiReactor, type VerbContext, type WikiShellPorts } from "@lararium/tw5";
 import { InMemoryEventStore, KeyhiveProvider } from "../src/index.js";
 import { standWorkbench, type LedgerDoc } from "../src/workbench-realm.js";
-import { wikiShellPorts } from "../src/wiki-shell-ports.js";
+import { wikiShellPorts, type ShellLayerDoc } from "../src/wiki-shell-ports.js";
 
 const SLUG = "elyncia-referee";
 const ENGINEER = "0x" + "e1".repeat(32);
 const REFEREE = "0x" + "4e".repeat(32);
-const ctx = {} as VerbContext;
+const HAND = { asker: "cli" } as unknown as VerbContext;
 
 async function hive(fill: number): Promise<KeyhiveProvider> {
   const p = new KeyhiveProvider();
@@ -37,32 +47,54 @@ function memLedger(): LedgerDoc {
   const d = { tiddlers: {} } as LarDoc;
   return { doc: () => d, change: (fn) => fn(d) };
 }
+const seed = (h: ShellLayerDoc, n: number, tag: string): void => h.change((d) => {
+  for (let i = 0; i < n; i++) d.tiddlers[`${tag} ${i}`] = { tiddler: { title: `${tag} ${i}`, text: "x" } } as never;
+});
+const live = (h: { doc(): LarDoc | undefined }): number => Object.keys(h.doc()?.tiddlers ?? {}).length;
 
-/** One vessel: one floor catalog, one ledger, one repo; each face its own catalog half and hive. */
+/** One vessel: one floor catalog, one ledger, one repo; each face its own catalog half, hive and draft/personal documents. */
 async function vessel() {
   const repo: Repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
   const floor = repo.create<LarDoc>(emptyLarDoc());
   const ledger = memLedger();
-  const face = async (group: string, fill: number, records: { working: number; draft: number } = { working: 0, draft: 0 }) => {
+  const shareRows: string[] = [];
+  const face = async (group: string, fill: number) => {
     const half = repo.create<LarDoc>(emptyLarDoc()) as DocHandle<LarDoc>;
     const catalog = makeCatalogAccessorOver(repo, makeCatalogView(floor as DocHandle<LarDoc>, half));
     const provider = await hive(fill);
-    const contents = { ...records };
-    const shell = wikiShellPorts({ provider: () => provider, face: group, ledger: async () => ledger, contents: async () => ({ ...contents }) });
+    const draft = repo.create<LarDoc>(emptyLarDoc()) as DocHandle<LarDoc>;
+    const personal = repo.create<LarDoc>(emptyLarDoc()) as DocHandle<LarDoc>;
+    // The working layer rests at the realm's deterministic address while the ledger binds the face's own realm.
+    const working = async (): Promise<DocHandle<LarDoc> | null> => ledgerWorkbenchRealms(ledger.doc(), SLUG).includes(privateCabalRealmId(group, SLUG))
+      ? materializeSharedLarDoc(repo, realmWorkbenchDocUrl(privateCabalRealmId(group, SLUG), SLUG), "board:workbench") : null;
+    const faults = { layers: false, unbind: false, moveAfterReads: 0 };
+    let reads = 0;
+    const ports = wikiShellPorts({
+      provider: () => provider, face: group, ledger: async () => ledger,
+      shares: async (slug) => shareRows.filter((s) => s === `wiki:${slug}`),
+      layers: async () => {
+        if (faults.layers) throw new Error("document-unavailable: the working layer did not answer");
+        if (faults.moveAfterReads > 0 && ++reads === faults.moveAfterReads) seed(draft, 1, "late");
+        return { working: await working(), draft, personal };
+      },
+      unbindSlots: async () => [],
+    });
+    const shell: WikiShellPorts = { ...ports, unbind: async (slug) => { if (faults.unbind) throw new Error("ledger write faulted"); return ports.unbind(slug); } };
     return {
-      group, half, catalog, provider, contents,
+      group, half, catalog, provider, draft, personal, working, faults,
       init: () => makeInitWikiReactor({
         repo, catalog, rootDir: "", vesselDid: () => "did:key:vessel",
         registerBag: async (bag) => { await provider.registerBag(bag); },
-        resolveDraftDoc: async () => ({ url: "automerge:draft", reach: "face" as never }),
-      })({ slug: SLUG }, ctx),
-      retire: (args: Record<string, unknown> = {}) => makeRetireWikiReactor({ catalog, shell })({ slug: SLUG, ...args }, ctx),
+        resolveDraftDoc: async () => ({ url: draft.url, reach: "face" as never }),
+      })({ slug: SLUG }, HAND),
+      retire: (args: Record<string, unknown> = {}, ctx: VerbContext = HAND) => makeRetireWikiReactor({ catalog, shell })({ slug: SLUG, ...args }, ctx),
       stand: () => standWorkbench(provider, ledger, SLUG, group),
       rows: () => Object.keys(half.doc()?.tiddlers ?? {}).sort(),
     };
   };
-  return { repo, floor, ledger, face };
+  return { repo, floor, ledger, shareRows, face };
 }
+const SHELL_ROWS = [wikiBagUri(SLUG), recipeUri("catalog", SLUG)].sort();
 
 describe("R1 — the owner retires its shell, and another face mints the slug cleanly", () => {
   test("A mints and stands S; B refuses `workbench-slug-bound`; A retires; B mints and founds its own workbench; A's canon document stands", async () => {
@@ -72,17 +104,14 @@ describe("R1 — the owner retires its shell, and another face mints the slug cl
     const minted = await engineer.init();
     expect(minted["status"]).toBe("minted");
     const canonDoc = String(minted["wikiDocUrl"]);
-    expect(engineer.rows()).toEqual([wikiBagUri(SLUG), recipeUri("catalog", SLUG)].sort());
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
     await engineer.stand();
     expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([privateCabalRealmId(ENGINEER, SLUG)]);
-    // THE LIVE FAULT: the referee's own stand refuses while the engineer's workbench binds the slug.
     await expect(referee.stand()).rejects.toThrow(/workbench-slug-bound/);
 
-    // The canon document carries content the retire must never touch.
     const canon = await v.repo.find<LarDoc>(canonDoc as never);
     canon.change((d) => { d.tiddlers["Referee Canon"] = { tiddler: { title: "Referee Canon", text: "house canon" } } as never; });
     const canonBefore = JSON.stringify(canon.doc());
-    expect(engineer.provider.docIdOfBag(wikiBagUri(SLUG))).not.toBeNull();
 
     const retired = await engineer.retire();
     expect(retired).toMatchObject({ slug: SLUG, status: "retired", realmId: privateCabalRealmId(ENGINEER, SLUG), forced: false, kept: { canonBag: wikiBagUri(SLUG), canonDoc } });
@@ -90,23 +119,20 @@ describe("R1 — the owner retires its shell, and another face mints the slug cl
     expect((retired["ledgerRows"] as string[]).length).toBeGreaterThanOrEqual(3);   // binding · key Document · founder's seat
     expect(retired["keyhiveBindings"]).toEqual([wikiSlotUri(SLUG, "working"), wikiSlotUri(SLUG, "draft")]);
     expect(engineer.rows()).toEqual([]);
-    expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([]);
     expect(Object.keys(v.ledger.doc()?.tiddlers ?? {})).toEqual([]);
     expect(engineer.provider.docIdOfBag(wikiSlotUri(SLUG, "working"))).toBeNull();
     // NEVER THE CANON: its document, its content and the face's binding of the canon bag all stand.
     expect(JSON.stringify(canon.doc())).toBe(canonBefore);
     expect(engineer.provider.docIdOfBag(wikiBagUri(SLUG))).not.toBeNull();
 
-    // The referee mints the slug on its own half and founds its own cabal of one: no `workbench-slug-bound`.
     expect((await referee.init())["status"]).toBe("minted");
-    expect(referee.rows()).toEqual([wikiBagUri(SLUG), recipeUri("catalog", SLUG)].sort());
-    const stood = await referee.stand();
-    expect(stood).toMatchObject({ realmId: privateCabalRealmId(REFEREE, SLUG), founded: true });
+    expect(referee.rows()).toEqual(SHELL_ROWS);
+    expect(await referee.stand()).toMatchObject({ realmId: privateCabalRealmId(REFEREE, SLUG), founded: true });
     expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([privateCabalRealmId(REFEREE, SLUG)]);
   });
 });
 
-describe("R2 — only the owner retires", () => {
+describe("R2 — only the owner retires, by one reading", () => {
   test("a face whose cabal the ledger does not bind refuses `not-the-owner`, and nothing leaves", async () => {
     const v = await vessel();
     const engineer = await v.face(ENGINEER, 0x61), referee = await v.face(REFEREE, 0x62);
@@ -115,7 +141,20 @@ describe("R2 — only the owner retires", () => {
     const ledgerBefore = JSON.stringify(v.ledger.doc());
     await expect(referee.retire()).rejects.toThrow(/^not-the-owner:/);
     expect(JSON.stringify(v.ledger.doc())).toBe(ledgerBefore);
-    expect(engineer.rows()).toEqual([wikiBagUri(SLUG), recipeUri("catalog", SLUG)].sort());
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+    expect(engineer.provider.docIdOfBag(wikiSlotUri(SLUG, "working"))).not.toBeNull();
+  });
+
+  test("RED (M2) a ledger binding the slug under the face's own realm AND another's refuses `not-the-owner` before any write", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0x65);
+    await engineer.init();
+    await engineer.stand();
+    v.ledger.change((d) => noteWorkbench(d, privateCabalRealmId(REFEREE, SLUG), SLUG));   // two ledgers merged
+    const before = JSON.stringify(v.ledger.doc());
+    await expect(engineer.retire()).rejects.toThrow(/^not-the-owner:/);
+    expect(JSON.stringify(v.ledger.doc())).toBe(before);
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
     expect(engineer.provider.docIdOfBag(wikiSlotUri(SLUG, "working"))).not.toBeNull();
   });
 
@@ -130,18 +169,32 @@ describe("R2 — only the owner retires", () => {
 });
 
 describe("R3 — nothing destroys content by default", () => {
-  test("a shell holding records refuses `wiki-not-empty`; a moved count refuses; the very count retires", async () => {
+  test("refuses `wiki-not-empty` with no count; `retire-count-missing`; `retire-count-moved`; dry-run reads; the count retires and clears", async () => {
     const v = await vessel();
-    const engineer = await v.face(ENGINEER, 0x71, { working: 2, draft: 1 });
+    const engineer = await v.face(ENGINEER, 0x71);
     await engineer.init();
     await engineer.stand();
-    await expect(engineer.retire()).rejects.toThrow(/^wiki-not-empty: "elyncia-referee" holds 3 records \(working 2, draft 1\)/);
-    await expect(engineer.retire({ force: true })).rejects.toThrow(/^retire-count-moved:/);
-    await expect(engineer.retire({ force: true, count: 2 })).rejects.toThrow(/^retire-count-moved:/);
-    expect(engineer.rows()).toEqual([wikiBagUri(SLUG), recipeUri("catalog", SLUG)].sort());
+    seed((await engineer.working())!, 2, "work");
+    seed(engineer.draft, 1, "draft");
+    seed(engineer.personal, 1, "mine");
+    const refusal = engineer.retire();
+    await expect(refusal).rejects.toThrow(/^wiki-not-empty:/);
+    // The refusal hands no one the forcing line: no count, no `--force`.
+    await expect(refusal).rejects.not.toThrow(/\d|--force|--count/);
+    await expect(engineer.retire({ force: true })).rejects.toThrow(/^retire-count-missing:/);
+    await expect(engineer.retire({ force: true, count: 3 })).rejects.toThrow(/^retire-count-moved:/);
+    expect(await engineer.retire({ "dry-run": true })).toMatchObject({ status: "would-retire", total: 4, records: { working: 2, draft: 1, personal: 1 } });
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
     expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([privateCabalRealmId(ENGINEER, SLUG)]);
-    expect(await engineer.retire({ force: true, count: 3 })).toMatchObject({ status: "retired", forced: true, records: { working: 2, draft: 1 } });
+
+    const workbench = (await engineer.working())!;
+    expect(await engineer.retire({ force: true, count: 4 })).toMatchObject({ status: "retired", forced: true, records: { working: 2, draft: 1, personal: 1 } });
     expect(engineer.rows()).toEqual([]);
+    // RED (M4) THE LAYERS CLEARED: the deterministic workbench a re-mint by the same face reopens holds nothing.
+    expect([live(workbench), live(engineer.draft), live(engineer.personal)]).toEqual([0, 0, 0]);
+    await engineer.init();
+    await engineer.stand();
+    expect(live((await engineer.working())!)).toBe(0);
   });
 });
 
@@ -152,5 +205,89 @@ describe("R4 — what never retires", () => {
     await expect(engineer.retire()).rejects.toThrow(/^no-such-wiki:/);
     await expect(engineer.retire({ slug: "lares" })).rejects.toThrow(/^system-bag:/);
     await expect(engineer.retire({ slug: "daemon" })).rejects.toThrow(/^wiki-face-private:/);
+  });
+
+  test("RED (L1) a catalog with no face half laid over the floor refuses `no-face`, never reading the floor as the face's", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0x82);
+    const floorOnly = makeCatalogAccessorOver(v.repo, makeCatalogView(v.floor as DocHandle<LarDoc>, null));
+    const shell = wikiShellPorts({ provider: () => engineer.provider, face: ENGINEER, ledger: async () => v.ledger, shares: async () => [], layers: async () => ({ working: null, draft: null, personal: null }), unbindSlots: async () => [] });
+    await expect(makeRetireWikiReactor({ catalog: floorOnly, shell })({ slug: SLUG }, HAND)).rejects.toThrow(/^no-face:/);
+  });
+});
+
+describe("R5 (H1) — a shared shell never retires", () => {
+  test("a seat another face holds in the workbench refuses `wiki-shared`, naming the clearing line, and every seat stays", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0x91);
+    await engineer.init();
+    await engineer.stand();
+    v.ledger.change((d) => noteWorkbenchSeat(d, privateCabalRealmId(ENGINEER, SLUG), SLUG, REFEREE, "ab".repeat(32)));
+    await expect(engineer.retire()).rejects.toThrow(/^wiki-shared: .*lares wiki share elyncia-referee --remove/);
+    expect([...workbenchSeats(v.ledger.doc(), privateCabalRealmId(ENGINEER, SLUG), SLUG).keys()].sort()).toEqual([ENGINEER, REFEREE].sort());
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+  });
+
+  test("a share row naming the slug refuses `wiki-shared` though no member seat stands yet", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0x92);
+    await engineer.init();
+    v.shareRows.push(`wiki:${SLUG}`);
+    await expect(engineer.retire()).rejects.toThrow(/^wiki-shared:/);
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+  });
+});
+
+describe("R6 (H2) — a lookup fault fails closed", () => {
+  test("a layer read that faults refuses with the fault itself; nothing leaves", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xa1);
+    await engineer.init();
+    await engineer.stand();
+    engineer.faults.layers = true;
+    await expect(engineer.retire()).rejects.toThrow(/document-unavailable/);
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+    expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([privateCabalRealmId(ENGINEER, SLUG)]);
+    expect(engineer.provider.docIdOfBag(wikiSlotUri(SLUG, "working"))).not.toBeNull();
+  });
+});
+
+describe("R7 (M1) — a person's hand alone", () => {
+  test("a seat, a watcher and an ask no door read refuse `retire-needs-hand`; nothing leaves", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xb1);
+    await engineer.init();
+    for (const ctx of [{ asker: "seat" }, { asker: "watcher" }, {}]) {
+      await expect(engineer.retire({}, ctx as unknown as VerbContext)).rejects.toThrow(/^retire-needs-hand:/);
+    }
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+  });
+});
+
+describe("R8 (M2/M3) — the count holds across the act, and a fault midway finishes on a second run", () => {
+  test("a record landing between the two readings refuses `retire-count-moved` with nothing written", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xc1);
+    await engineer.init();
+    await engineer.stand();
+    engineer.faults.moveAfterReads = 2;   // the first reading reads empty; a draft lands before the second
+    await expect(engineer.retire()).rejects.toThrow(/^retire-count-moved:/);
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+    expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([privateCabalRealmId(ENGINEER, SLUG)]);
+    expect(engineer.provider.docIdOfBag(wikiSlotUri(SLUG, "working"))).not.toBeNull();
+  });
+
+  test("a ledger fault midway leaves the catalog rows (the owner's mark), and the same retire run again finishes", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xc2);
+    await engineer.init();
+    await engineer.stand();
+    engineer.faults.unbind = true;
+    await expect(engineer.retire()).rejects.toThrow(/ledger write faulted/);
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+    engineer.faults.unbind = false;
+    expect(await engineer.retire()).toMatchObject({ status: "retired", realmId: privateCabalRealmId(ENGINEER, SLUG) });
+    expect(engineer.rows()).toEqual([]);
+    expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([]);
   });
 });

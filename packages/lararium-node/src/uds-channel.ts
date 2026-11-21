@@ -1150,6 +1150,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
     // outcome body rests in the vessel's control document beside the session's face, so neither rides one.
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
+    // A SPIRIT'S HAND PROPOSES on a call too: a hand-only island verb (`retire-wiki`) refuses a seat session by its code.
+    if (state.supply.profile === "seat" && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, opts.handOnlyCodes?.get(frame["verb"]) ?? "beyond-profile", requestId);
     // NO SILENT STEWARD (`chore-face`): the daemon runs a chore on its mount's authority, so the session's face meets
     // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
     const mount = mountOf();
