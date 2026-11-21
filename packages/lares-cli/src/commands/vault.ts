@@ -447,7 +447,7 @@ async function vaultLockFace(args: ParsedArgs, daemonUp: boolean, face: number):
   if (a === null) {
     const census = await confirmLockByCensus(face, () => sendCustodyFrame({ op: "census" }));
     if (census.confirmed) {
-      emit(args, { ok: true, data: { locked: true, face, confirmedBy: "census", standing: census.census["standing"] }, human: () => console.log(`locked; confirmed by census: face h${face} holds no open key, and the vessel stands as ${String(census.census["standing"])}.`) });
+      emit(args, { ok: true, data: { locked: true, face, confirmedBy: "census", standing: census.census["standing"] }, human: () => console.log(`locked; confirmed by census: the census names face h${face} locked, and the vessel stands as ${String(census.census["standing"])}.`) });
       return 0;
     }
   }
