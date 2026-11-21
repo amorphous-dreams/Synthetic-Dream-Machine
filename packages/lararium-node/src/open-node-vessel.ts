@@ -176,8 +176,9 @@ import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from 
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
-import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { faceLives, type FaceLives, type FaceLit } from "./face-lifecycle.js";
+import { faceLend } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -608,10 +609,18 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   litOrdinals: () => readonly number[];
   /** EACH FACE LIVES ONE LIFE: the face actors the door admits work and visits through (`face-lifecycle`). */
   faceLife: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
-  /** Close every face through its actor (a whole lock, ahead of the custody door's line): resolves once each closed or faulted. */
-  closeFaces: (reason: string) => Promise<void>;
-  /** Lift the hold a lock's close set on a face (`dropFace`), once its key locked or the lock let it be. */
+  /**
+   * Close every face through its actor (a whole lock, ahead of the custody door's line; a stand-down): resolves once each closed or
+   * faulted. Under `strict` (a whole lock) a face that did not close whole rejects, naming it, so the key stays open.
+   */
+  closeFaces: (reason: string, options?: { readonly strict?: boolean }) => Promise<void>;
+  /** Lift the hold a lock's close set on a face (`dropFace`), once its key locked or the lock let it be: a mount that went dark
+   *  while its key still stands open reads lit again. */
   releaseFace: (ordinal: number) => void;
+  /** Lift every hold (a whole lock that did not lock its key). */
+  releaseFaces: () => void;
+  /** Hold a face past CLOSED right before its key locks; false where it lit again since its close (the key stays open). */
+  holdFace: (ordinal: number) => boolean;
   /** Hear the mounted face close at its custody's word (a pūlama's close, a forced lock): the vessel stands again. Returns the unsubscribe. */
   onMountClosed: (listener: () => void) => () => void;
   /** The bare atom key of the lit sibling a verified presenter names (its place session stands), or undefined. */
@@ -813,8 +822,10 @@ interface NodeBootPrep {
   mountOrdinal: () => number | null;
   litOrdinals: () => readonly number[];
   faceLife: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
-  closeFaces: (reason: string) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean }) => Promise<void>;
   releaseFace: (ordinal: number) => void;
+  releaseFaces: () => void;
+  holdFace: (ordinal: number) => boolean;
   onMountClosed: (listener: () => void) => () => void;
   siblingFaceOf: (presenter: string) => string | undefined;
   daemonVm:         () => DaemonVmCore;
@@ -2518,7 +2529,8 @@ async function prepareNodeBootOn(
   /** A closed face's host side drops: what still waits unsaved (from memory, never to disk), its cache, session and keepers. */
   const teardownFaceHost = (ordinal: number): void => {
     for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held);
-    custodyIdOf.delete(ordinal);
+    // THE CUSTODY ID STAYS PAST DARK: the lend sweep the return to dark replays reads it to skip a face its pūlama names closing
+    // (the next light reads it afresh).
     faceEntries.delete(ordinal);
     sealedRest.store.mapMoved();
     void intentRelay?.refresh().catch((e: unknown) => console.warn(`[lit-set] the relay did not refresh after face h${ordinal} closed: ${e instanceof Error ? e.message : String(e)}`));
@@ -2528,6 +2540,13 @@ async function prepareNodeBootOn(
    * island told, the host side down), the moment a custody holder may lock the key; the island's ack is not waited on.
    */
   const dropFace = (ordinal: number): Promise<void> => faceLife.close(ordinal, "the lock door closes it", { hold: true });
+  /** A dark mount whose key still stands open reads lit again (bound once the composition stands). */
+  let readoptMount: (ordinal: number) => void = () => {};
+  /**
+   * A LOCK THAT DID NOT LOCK LETS ITS FACE BE: the hold lifts, a sibling the lend still serves lights again (its return to dark
+   * replays the lend), and the mount, which no lend relights, reads lit again while its key stands open.
+   */
+  const releaseFace = (ordinal: number): void => { faceLife.release(ordinal); readoptMount(ordinal); };
   /** Each listener hears the mounted face close at its custody's word: the vessel stands again (main recomposes). */
   const mountClosedListeners = new Set<() => void>();
   let mountClosedHeard = false;
@@ -3896,61 +3915,30 @@ async function prepareNodeBootOn(
     lightFace = async (ordinal) => {
       if ((await faceLife.light(ordinal)) === "refused") console.warn(`[lit-set] face h${ordinal} did not light`);
     };
-    // THE MOUNT LIVES ITS ONE LIFE TOO: its actor reads lit for this composition, so the door admits its work and its visits
-    // through it, and a pūlama's close stops them before the key locks. Its island entry is the composition's own (no drop).
-    if (mountFace !== null) {
-      const mount = mountFace;
-      void noteCustody(mount).then((custody) => faceLife.adopt(mount, { atomKey: null, custody }));
-    }
-    /**
-     * THE LEND WATCH sends messages and never waits on a face's work. On every custody event it reads the served set: a lit
-     * sibling the lend left out closes; one whose custody opening moved closes and lights again (one mailbox, so the relight
-     * always lands under a fresh opening); a served face neither mounted, lit nor named closing by its pūlama lights.
-     */
-    const sweepLend = async (): Promise<void> => {
-      if (!siblingPorts || mountFace === null) return;
-      let served: number[];
-      try { served = await unlockedFaceOrdinals(); } catch { return; }
-      const closingAtSource = new Set(standingCustody()?.closingFaces?.() ?? []);
-      for (const ordinal of faceLife.lit()) {
-        if (ordinal === mountedFace) {
-          // THE MOUNT HEARS A LOCK IT NEVER WAS ASKED TO CLOSE FOR (a forced lock): it closes through its actor, and the vessel stands again.
-          if (!served.includes(ordinal)) void faceLife.close(ordinal, "its custody locked it").then(mountClosed, (e: unknown) => console.warn(`[lit-set] the mount did not close whole: ${e instanceof Error ? e.message : String(e)}`));
-          continue;
-        }
-        if (!served.includes(ordinal)) { void faceLife.close(ordinal, "the lend left it").catch(() => {}); continue; }
-        const at = faceLife.custodyOf(ordinal), now = custodyOpeningNow(ordinal);
-        if (at !== null && now !== null && now !== at) {
-          void faceLife.close(ordinal, "its custody opening moved").catch(() => {});
-          void lightFace(ordinal);
-        }
-      }
-      for (const ordinal of unlitServedFaces(served, mountedFace, new Set(faceLife.lit()))) {
-        const fcid = custodyIdOf.get(ordinal);
-        if (fcid !== undefined && closingAtSource.has(fcid)) continue;
-        if (faceLife.state(ordinal).kind !== "dark") continue;
-        void lightFace(ordinal).catch((e: unknown) => console.warn(`[lit-set] the served face h${ordinal} did not light: ${e instanceof Error ? e.message : String(e)}`));
-      }
-    };
-    const sweep = (): void => { void sweepLend().catch((e: unknown) => console.warn(`[lit-set] the lend watch faulted: ${e instanceof Error ? e.message : String(e)}`)); };
+    // THE LEND WATCH AND THE MOUNT'S ONE LIFE (`face-lend`): the mount's actor reads lit from this turn on; every custody event
+    // sweeps the served set; a pūlama's close closes a face through its actor before `face.closed`; a lock that did not lock its
+    // key lets a mount its close took dark read lit again.
+    const lend = faceLend({
+      faceLife, mount: mountFace,
+      served: () => unlockedFaceOrdinals(),
+      closingAtSource: () => standingCustody()?.closingFaces?.() ?? [],
+      custodyIdOf: (ordinal) => custodyIdOf.get(ordinal),
+      custodyOpeningNow, noteCustody,
+      faceStanding: async (face) => await standingCustody()?.faceStanding(face) ?? null,
+      faceClosed: async (fcid, opening) => { await standingCustody()?.faceClosed?.(fcid, opening); },
+      lightFace: (ordinal) => lightFace(ordinal),
+      mountClosed,
+      log: (line) => console.warn(line),
+    });
+    readoptMount = (ordinal) => { void lend.release(ordinal).catch((e: unknown) => console.warn(`[lit-set] the mount did not read lit again: ${e instanceof Error ? e.message : String(e)}`)); };
+    // No sibling ports, no lend to read: only the mount stands.
+    const sweep = (): void => { if (siblingPorts) void lend.sweep().catch((e: unknown) => console.warn(`[lit-set] the lend watch faulted: ${e instanceof Error ? e.message : String(e)}`)); };
     replayLend = sweep;
     const stopLendOpened = standingCustody()?.onOpened?.(sweep) ?? null;
     const stopLendClosed = standingCustody()?.onClosed?.(sweep) ?? null;
-    /**
-     * TWO-PHASE CLOSE, THE VESSEL'S HALF: the pūlama asks a lent face to close; its actor stops admitting, refuses undelivered
-     * visits, drains, tells the island and tears the host side down, and only then answers `face.closed`, after which the pūlama
-     * locks the key. A face this composition holds no actor for answers at once: nothing here serves it.
-     */
+    // TWO-PHASE CLOSE, THE VESSEL'S HALF: a face this composition holds no actor for answers at once: nothing here serves it.
     const stopLendClosing = standingCustody()?.onClosing?.((fcid, opening) => {
-      void (async () => {
-        const holder = standingCustody();
-        const standing = await holder?.faceStanding({ fcid }).catch(() => null) ?? null;
-        // A drain that faults rejects here: the vessel answers no `face.closed`, so the key never locks over unsealed saves.
-        if (standing !== null) await faceLife.close(standing.ordinal, "the pūlama closes it", { custody: opening });
-        await holder?.faceClosed?.(fcid, opening);
-        // THE MOUNT CLOSED AT ITS PŪLAMA'S WORD: its saves drained under its own session, and the vessel stands again.
-        if (standing !== null && standing.ordinal === mountFace) mountClosed();
-      })().catch((e: unknown) => console.warn(`[lit-set] the close the pūlama asked did not answer: ${e instanceof Error ? e.message : String(e)}`));
+      void lend.closing(fcid, opening).catch((e: unknown) => console.warn(`[lit-set] the close the pūlama asked did not answer: ${e instanceof Error ? e.message : String(e)}`));
     }) ?? null;
     stood.push({ what: "the lend's light watch", down: () => {
       faceLife.stop();
@@ -5211,13 +5199,15 @@ async function prepareNodeBootOn(
     openDaemon, wireVerbs, afterDaemon,
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     lightFace: (ordinal) => lightFace(ordinal), dropFace, mountOrdinal: () => mountFace,
-    // A lit sibling counts once its own place session stands: its lane books under its own chain, or not at all.
     // A lit sibling counts once its actor reads lit and its own place session stands: its lane books under its own chain, or not at all.
     litOrdinals: () => [...siblingFaces].filter(([group, f]) => faceLife.state(f.ordinal).kind === "lit" && siblingSessions.get(group)?.cell.session() != null).map(([, f]) => f.ordinal),
     faceLife,
-    // Every face closes held: none lights again on this composition, whose key drops or which stands down next.
-    closeFaces: async (reason) => { await faceLife.closeAll(reason, { hold: true }); },
-    releaseFace: (ordinal) => faceLife.release(ordinal),
+    // Every face closes held: none lights again on this composition, whose key drops or which stands down next. A whole lock
+    // closes strict: a face whose saves did not seal rejects, and its key stays open.
+    closeFaces: async (reason, options) => { await faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}) }); },
+    releaseFace,
+    releaseFaces: () => { for (const ordinal of faceLife.ordinals()) releaseFace(ordinal); },
+    holdFace: (ordinal) => faceLife.hold(ordinal),
     onMountClosed: (listener) => { mountClosedListeners.add(listener); return () => { mountClosedListeners.delete(listener); }; },
     siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
@@ -5354,7 +5344,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

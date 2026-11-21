@@ -116,7 +116,11 @@ export interface CustodyFrameDeps {
   readonly dropFace?: (ordinal: number) => Promise<void>;
   /** Lift the hold `dropFace` set, once the lock locked the key or let it be. */
   readonly releaseFace?: (ordinal: number) => void;
-  /** Close every face through its actor (a whole lock): resolves once each closed or faulted. */
+  /** Lift every hold `closeFaces` set (a whole lock that did not lock its key). */
+  readonly releaseFaces?: () => void;
+  /** Hold a face past CLOSED, right before its key locks; false where it lit again since its close (the key stays open). */
+  readonly holdFace?: (ordinal: number) => boolean;
+  /** Close every face through its actor (a whole lock): resolves once each closed; rejects where one did not close whole. */
   readonly closeFaces?: () => Promise<void>;
   /** What stands now. */
   readonly standing: () => string;
@@ -442,14 +446,21 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * `lock --face N`: one face drops its key. The mounted face's lock stands the vessel back at the floor through the same gate the
    * unlock reads (`sovereignStands`); a sibling's lock leaves the sovereign composition standing.
    */
-  const lockFaceOf = composing(async (ordinal: number): Promise<CustodyAnswer> => {
+  const lockFaceOf = composing(async (ordinal: number, closedAhead: boolean): Promise<CustodyAnswer> => {
     // The hold the door's close set lifts once this lock locked the key or let it be.
-    try { return await lockFaceHeld(ordinal); } finally { deps.releaseFace?.(ordinal); }
+    try { return await lockFaceHeld(ordinal, closedAhead); } finally { deps.releaseFace?.(ordinal); }
   });
-  const lockFaceHeld = async (ordinal: number): Promise<CustodyAnswer> => {
+  const lockFaceHeld = async (ordinal: number, closedAhead: boolean): Promise<CustodyAnswer> => {
     const named = await holder.faceStanding({ ordinal });
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
+    // THE FACE STILL STANDS PAST CLOSED RIGHT BEFORE ITS KEY LOCKS, in this line: a composition that stood again while this lock waited
+    // (a wear, an unlock) may have lit the face anew, and its new actor never heard the close. The lock then leaves the key open
+    // and says so, never closing that new life here, where its work could wait on this very line.
+    if (closedAhead && wasOpen && deps.holdFace && !deps.holdFace(ordinal)) {
+      deps.onLog(`face h${ordinal} lit again before its key locked; the key stays open`);
+      throw new Error(`face h${ordinal} lit again (a composition stood again) before its key locked, so the key stays open; send the lock again`);
+    }
     const wasMounted = sovereignStands();
     // The face the composition wears now, by the unlock's name or the default rule: a lock of THAT face composes again, always.
     const mountBefore = wasOpen ? await daemonMountOrdinal() : undefined;
@@ -478,8 +489,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   };
 
   const lock = composing(async (): Promise<CustodyAnswer> => {
-    if (!holder.isUnlocked()) return { op: "lock", locked: true, was: "locked", standing: deps.standing() };
-    await holder.lock();
+    // A WHOLE LOCK THAT DID NOT LOCK LETS EVERY FACE BE: the holds its close set lift (a key already shut, a lock that threw);
+    // a lock that lands stands the vessel at the floor, and no hold outlives the composition it stood in.
+    let landed = false;
+    try {
+      if (!holder.isUnlocked()) return { op: "lock", locked: true, was: "locked", standing: deps.standing() };
+      await holder.lock();
+      landed = true;
+    } finally { if (!landed) deps.releaseFaces?.(); }
     dropWardTickets();
     deps.onLog("locked: the vessel key dropped");
     const stood = await deps.recompose(false);
@@ -651,15 +668,22 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         answer(sock, { op, status: "error", errorMessage: "a lock frame's `face` names a handle index (a whole number from 0)", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      act = face === undefined ? lock : () => lockFaceOf(face as number);
       // THE CLOSE RUNS AHEAD OF THE LINE: a face's actor closes (and the whole lock's faces close) before the lock takes its
       // turn, so the line never waits on a drain whose work (a session act) waits on the line behind this very lock.
       // A drop that faults leaves the key open and the answer an error, and lifts the face's hold.
+      // A FACE LOCK THAT CANNOT LAND CLOSES NOTHING: a pūlama holds this vessel's face keys (its lent holder refuses every face
+      // lock, the person's own act at the pūlama), so no close runs ahead of a lock that will refuse.
+      let closedAhead = false;
+      act = face === undefined ? lock : () => lockFaceOf(face as number, closedAhead);
       ahead = face === undefined
-        ? (deps.closeFaces ? () => deps.closeFaces!() : null)
-        : (deps.dropFace ? async () => {
+        ? (deps.closeFaces ? async () => {
+          try { await deps.closeFaces!(); }
+          catch (error) { deps.releaseFaces?.(); throw error; }
+        } : null)
+        : (deps.dropFace && !deps.pulama ? async () => {
           const standing = await holder.faceStanding({ ordinal: face as number });
           if (standing?.unlocked !== true) return;
+          closedAhead = true;
           try { await deps.dropFace!(face as number); }
           catch (error) { deps.releaseFace?.(face as number); deps.onLog(`face h${String(face)} provider drop refused: ${String(error)}`); throw error; }
         } : null);
@@ -721,9 +745,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return true;
     }
     waiting += 1;
+    // AN ACT WHOSE CLOSE RAN AHEAD RUNS TO ITS END though its caller left: it locks the key or lifts the holds its close set, so
+    // no face stays dark behind a caller who went away. Its answer goes nowhere.
+    const committed = ahead !== null;
     const turn = async (): Promise<CustodyAnswer | null> => {
       waiting -= 1;
-      if (sock.destroyed) return null;
+      if (sock.destroyed && !committed) return null;
       return act();
     };
     const refused = (e: unknown): void => {

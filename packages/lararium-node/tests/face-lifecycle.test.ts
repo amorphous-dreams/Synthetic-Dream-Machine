@@ -316,4 +316,55 @@ describe("each face lives one life: the lifecycle actor", () => {
     await t.lives.close(9, "lock", { hold: true });
     expect(t.lives.known(9)).toBe(false);
   });
+  test("a WHOLE LOCK's close reads strict: a face whose drain faulted rejects closeAll by name, so the key stays open; a stand-down logs it and carries on", async () => {
+    const t = island();
+    await lit(t, 1); await lit(t, 2);
+    const strict = t.lives.closeAll("a whole lock closes every face", { hold: true, strict: true });
+    t.drains.get(1)!.resolve();
+    t.drains.get(2)!.reject(new Error("seal refused"));
+    await expect(strict).rejects.toThrow(/face h2 did not close whole, so the key stays open: seal refused/);
+    const t2 = island();
+    await lit(t2, 2);
+    const loose = t2.lives.closeAll("the composition stands down");
+    t2.drains.get(2)!.reject(new Error("seal refused"));
+    await expect(loose).resolves.toBeUndefined();
+  });
+
+  test("a close naming another custody opening holds nothing: the face keeps standing and a later dark lights again", async () => {
+    const t = island();
+    await lit(t, 1, "p:2");
+    await t.lives.close(1, "the pūlama closes it", { custody: "p:1", hold: true });
+    expect(t.lives.state(1).kind).toBe("lit");
+    const closing = t.lives.close(1, "lock");
+    t.drains.get(1)!.resolve(); await closing;
+    t.drops.get(1)!.resolve(); await settle();
+    expect(t.lives.state(1), "the stale close set no hold").toEqual({ kind: "dark", held: false });
+  });
+
+  test("hold takes a face past CLOSED and refuses a lit or draining one: a lock reads it right before its key locks", async () => {
+    const t = island();
+    await lit(t, 1);
+    expect(t.lives.hold(1), "a lit face holds not").toBe(false);
+    expect(t.lives.state(1).kind).toBe("lit");
+    const closing = t.lives.close(1, "lock");
+    expect(t.lives.hold(1), "a face still draining holds not: its saves have not sealed").toBe(false);
+    t.drains.get(1)!.resolve(); await closing;
+    // Past CLOSED, before the worker's ack: the hold takes, and the dark that follows lights not.
+    expect(t.lives.hold(1)).toBe(true);
+    t.drops.get(1)!.resolve(); await settle();
+    expect(t.lives.state(1)).toEqual({ kind: "dark", held: true });
+    expect(t.lives.hold(1)).toBe(true);
+    expect(await t.lives.light(1)).toBe("refused");
+    expect(t.lives.hold(9), "a face never known holds nothing and stays unknown").toBe(true);
+    expect(t.lives.known(9)).toBe(false);
+  });
+
+  test("a face adopted before its custody read names the opening once the read lands, and never overwrites one it holds", async () => {
+    const t = island();
+    t.lives.adopt(0, { atomKey: null, custody: null });
+    t.lives.noteCustody(0, "p:4");
+    expect(t.lives.custodyOf(0)).toBe("p:4");
+    t.lives.noteCustody(0, "p:5");
+    expect(t.lives.custodyOf(0)).toBe("p:4");
+  });
 });

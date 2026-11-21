@@ -131,6 +131,8 @@ type Message =
   | { t: "light-settled"; opening: string; lit: FaceLit | null; error?: unknown }
   | { t: "close"; reason: string; custody: string | null | undefined; hold: boolean; waiter: Closed }
   | { t: "release" }
+  | { t: "hold"; answer: (held: boolean) => void }
+  | { t: "custody"; custody: string | null }
   | { t: "work-done"; opening: string; id: number }
   | { t: "saves-drained"; opening: string }
   | { t: "saves-failed"; opening: string; error: unknown }
@@ -155,8 +157,23 @@ export interface FaceLives {
   close(ordinal: number, reason: string, options?: { readonly custody?: string | null; readonly hold?: boolean }): Promise<void>;
   /** Lift a close's hold: the face may light again, and the vessel replays its lend. */
   release(ordinal: number): void;
-  /** Close every face this set knows through its actor (a stand-down, a stop, a slide): resolves once each closed or faulted. */
-  closeAll(reason: string, options?: { readonly hold?: boolean }): Promise<void>;
+  /**
+   * Close every face this set knows through its actor (a stand-down, a stop, a slide, a whole lock): resolves once each closed or
+   * faulted. A stand-down logs a face that did not close whole and carries on; under `strict` (a whole lock, whose key must not
+   * drop over saves that did not seal) a face that did not close whole rejects, naming each such face.
+   */
+  closeAll(reason: string, options?: { readonly hold?: boolean; readonly strict?: boolean }): Promise<void>;
+  /**
+   * Hold a face past CLOSED (dark, or closing with its saves drained and its host side down), so it lights not until `release`;
+   * answers false (holding nothing) where the face lit, lights, or still settles or drains, and true (holding nothing) for a face
+   * this set never knew. A lock reads it in its line, right before the key locks: a face its close took dark that lit again since (a new
+   * composition's) answers no, and the lock leaves the key open.
+   */
+  hold(ordinal: number): boolean;
+  /** The custody opening a lit face stands under, read after its adoption: a face that adopted none takes it. */
+  noteCustody(ordinal: number, custody: string | null): void;
+  /** Every ordinal this set knows (ever lit or adopted), in order. */
+  ordinals(): number[];
   /** The opening a face stands lit under now, or null. */
   opening(ordinal: number): string | null;
   /** The custody opening a lit face lit under, or null. */
@@ -295,6 +312,8 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         return [];
       }
       case "close": {
+        // A close naming a custody opening this face did not light under (one it knows) answers at once and holds nothing: nothing serves it.
+        if (life.kind === "lit" && m.custody !== undefined && m.custody !== null && life.custody !== null && life.custody !== m.custody) return [() => m.waiter.resolve()];
         if (m.hold) actor.held = true;
         if (life.kind === "dark") return [() => m.waiter.resolve()];
         if (life.kind === "closing") {
@@ -304,8 +323,6 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
           if (life.phase === "drain-failed") { life.phase = "draining"; return [drain(ordinal, life.opening)]; }
           return [];
         }
-        // A close naming a custody opening this face did not light under (one it knows) answers at once: nothing serves it.
-        if (life.kind === "lit" && m.custody !== undefined && m.custody !== null && life.custody !== null && life.custody !== m.custody) return [() => m.waiter.resolve()];
         effects.log(`[face-life] h${ordinal} closes (${m.reason})`);
         const refused: Array<() => void> = [];
         if (life.kind === "lit") {
@@ -330,6 +347,19 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         if (!actor.held) return [];
         actor.held = false;
         return life.kind === "dark" ? [darkNow(ordinal)] : [];
+      }
+      case "hold": {
+        // A face past CLOSED takes the hold: dark, or closing with its saves drained and its host side down (the worker told, or
+        // the island composing again). One that lit, lights, or still settles or drains answers no, and nothing changes.
+        const pastClosed = life.kind === "dark" || (life.kind === "closing" && (life.phase === "told" || life.phase === "recomposing"));
+        if (!pastClosed) return [() => m.answer(false)];
+        actor.held = true;
+        return [() => m.answer(true)];
+      }
+      case "custody": {
+        // The custody opening a face adopted before its read landed: the first read names it, and a later light names its own.
+        if (life.kind === "lit" && life.custody === null) life.custody = m.custody;
+        return [];
       }
       case "work-done": {
         if (life.kind === "lit" && life.opening === m.opening) { life.work.delete(m.id); return []; }
@@ -439,9 +469,24 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     close,
     release: (ordinal) => { if (lives.has(ordinal)) send(ordinal, { t: "release" }); },
     async closeAll(reason, opts) {
-      const faults = (await Promise.allSettled([...lives.keys()].map((ordinal) => close(ordinal, reason, opts)))).filter((r) => r.status === "rejected");
-      for (const fault of faults) effects.log(`[face-life] a face did not close whole (${reason}): ${describe((fault as PromiseRejectedResult).reason)}`);
+      const ordinals = [...lives.keys()];
+      const settled = await Promise.allSettled(ordinals.map((ordinal) => close(ordinal, reason, opts)));
+      const faults = settled.flatMap((r, i) => r.status === "rejected" ? [{ ordinal: ordinals[i]!, why: describe(r.reason) }] : []);
+      for (const fault of faults) effects.log(`[face-life] face h${fault.ordinal} did not close whole (${reason}): ${fault.why}`);
+      if (opts?.strict === true && faults.length > 0) {
+        throw new Error(`${faults.map((f) => `face h${f.ordinal}`).join(", ")} did not close whole, so the key stays open: ${faults.map((f) => f.why).join("; ")}`);
+      }
     },
+    hold(ordinal) {
+      // A face this set never knew never lit here: nothing stands to hold, and it stays unknown (its door stays ungated).
+      if (!lives.has(ordinal)) return true;
+      let held = false;
+      // The hold answers in the caller's own turn: no handler runs here, so the mailbox drains at once.
+      send(ordinal, { t: "hold", answer: (yes) => { held = yes; } });
+      return held;
+    },
+    noteCustody: (ordinal, custody) => { if (lives.has(ordinal)) send(ordinal, { t: "custody", custody }); },
+    ordinals: () => [...lives.keys()].sort((a, b) => a - b),
     opening: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.opening : null; },
     custodyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.custody : null; },
     atomKeyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.atomKey : null; },

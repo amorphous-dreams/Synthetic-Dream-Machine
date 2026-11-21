@@ -5,7 +5,7 @@ import { custodyFrameHandler } from "../src/custody-frames.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
-function harness() {
+function harness(opts: { pulama?: boolean; lockThrows?: boolean } = {}) {
   const open = new Set(["0"]);
   const holder = {
     unlock: async () => ({ reading: "already-unlocked" }),
@@ -22,19 +22,34 @@ function harness() {
   const recompose = vi.fn(async () => ({ standing: "hearth" }));
   const releaseFace = vi.fn((_ordinal: number) => {});
   const closeFaces = vi.fn(async () => {});
+  const releaseFaces = vi.fn(() => {});
+  const holdFace = vi.fn((_ordinal: number) => true);
+  let unlocked = true;
   const order: string[] = [];
   const lockFace = holder.lockFace.bind(holder);
   (holder as { lockFace: (fcid: string) => Promise<void> }).lockFace = async (fcid) => { order.push(`lockFace ${fcid}`); await lockFace(fcid); };
   const lock = vi.fn(async () => { order.push("lock"); });
   (holder as unknown as { lock: () => Promise<void>; isUnlocked: () => boolean }).lock = lock;
-  (holder as unknown as { isUnlocked: () => boolean }).isUnlocked = () => true;
-  const handle = custodyFrameHandler({ holder, lightFace, dropFace, releaseFace, closeFaces, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false,
-    runAct: async () => ({ ran: true }) });
+  (holder as unknown as { isUnlocked: () => boolean }).isUnlocked = () => unlocked;
+  if (opts.pulama === true || opts.lockThrows === true) {
+    // A pūlama's lent holder refuses every face lock (the person's own act at the pūlama); a local holder may throw.
+    (holder as { lockFace: (fcid: string) => Promise<void> }).lockFace = async () => { order.push("lockFace refused"); throw new Error("needs-the-human: a face's lock"); };
+  }
+  const handle = custodyFrameHandler({ holder, lightFace, dropFace, releaseFace, releaseFaces, holdFace, closeFaces, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false,
+    runAct: async () => ({ ran: true }),
+    ...(opts.pulama === true ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [], tellWorn: () => {} } } : {}) } as Parameters<typeof custodyFrameHandler>[0]);
   const send = (frame: unknown) => new Promise<Record<string, unknown>>((resolve) => {
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line)) }) as unknown as Socket;
     handle(frame, sock);
   });
-  return { send, open, lightFace, dropFace, recompose, releaseFace, closeFaces, order, handle };
+  /** A caller who leaves once the frame went in: its socket reads destroyed and every answer goes nowhere. */
+  const sendAndLeave = (frame: unknown): void => {
+    const sock = Object.assign(new EventEmitter(), { destroyed: false, end: () => {} }) as unknown as Socket & { destroyed: boolean };
+    handle(frame, sock);
+    sock.destroyed = true;
+  };
+  const setUnlocked = (yes: boolean): void => { unlocked = yes; };
+  return { send, sendAndLeave, open, lightFace, dropFace, recompose, releaseFace, releaseFaces, holdFace, closeFaces, lock, order, handle, setUnlocked };
 }
 afterEach(() => setMountedFace(undefined));
 test("locking an open sibling drops its provider without recomposition", async () => {
@@ -112,3 +127,64 @@ test("a lock's hold on the face lifts once the key locked, and lifts too when th
   expect(h.open.has("1")).toBe(true);
   expect(h.releaseFace).toHaveBeenCalledWith(1);
 });
+
+test("FINDING 1 (a refused lock darkened the mount): under a pūlama the face lock cannot land here, so no close runs ahead of it: the mount and every sibling keep standing", async () => {
+  setMountedFace(0); const h = harness({ pulama: true }); h.open.add("1");
+  const answer = await h.send({ op: "lock", face: 0 });
+  expect(answer).toMatchObject({ status: "error" });
+  expect(h.dropFace, "no drain, no dark mount").not.toHaveBeenCalled();
+  expect(h.recompose).not.toHaveBeenCalled();
+  expect(h.open.has("0")).toBe(true);
+});
+
+test("FINDING 1: a local lock whose key did not lock (the holder threw) answers the fault and lifts the hold its close set", async () => {
+  setMountedFace(0); const h = harness({ lockThrows: true });
+  const answer = await h.send({ op: "lock", face: 0 });
+  expect(answer).toMatchObject({ status: "error" });
+  expect(h.dropFace).toHaveBeenCalledWith(0);
+  expect(h.releaseFace).toHaveBeenCalledWith(0);
+  expect(h.open.has("0")).toBe(true);
+});
+
+test("FINDING 2 (a caller who leaves strands the hold): a face lock whose close ran ahead runs to its end though its caller left: the key locks and the hold lifts", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  h.sendAndLeave({ op: "lock", face: 1 });
+  await vi.waitFor(() => expect(h.releaseFace).toHaveBeenCalledWith(1));
+  expect(h.dropFace).toHaveBeenCalledWith(1);
+  expect(h.open.has("1"), "the key locked behind the caller who left").toBe(false);
+});
+
+test("FINDING 2: a whole lock whose faces closed ahead runs to its end though its caller left: the vessel key locks", async () => {
+  setMountedFace(0); const h = harness();
+  h.sendAndLeave({ op: "lock" });
+  await vi.waitFor(() => expect(h.lock).toHaveBeenCalledOnce());
+  expect(h.closeFaces).toHaveBeenCalledOnce();
+});
+
+test("FINDING 2: a whole lock over a key already shut lifts every hold its close set", async () => {
+  setMountedFace(0); const h = harness(); h.setUnlocked(false);
+  expect(await h.send({ op: "lock" })).toMatchObject({ locked: true, was: "locked" });
+  expect(h.releaseFaces).toHaveBeenCalledOnce();
+  expect(h.lock).not.toHaveBeenCalled();
+});
+
+test("FINDING 3 (a whole lock over unsealed saves): a face that did not close whole leaves the vessel key open, names the fault, and lifts every hold", async () => {
+  setMountedFace(0); const h = harness();
+  h.closeFaces.mockRejectedValueOnce(new Error("face h1 did not close whole, so the key stays open: seal refused"));
+  const answer = await h.send({ op: "lock" });
+  expect(answer).toMatchObject({ status: "error", refusal: { reason: "face-close-held" } });
+  expect(String(answer["errorMessage"])).toContain("face h1");
+  expect(h.lock, "the key never locked over unsealed saves").not.toHaveBeenCalled();
+  expect(h.releaseFaces).toHaveBeenCalledOnce();
+});
+
+test("FINDING 4 (a lock queued behind a recompose): a face lit again under a new composition before its key locks leaves the key open", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  h.holdFace.mockReturnValueOnce(false);
+  const answer = await h.send({ op: "lock", face: 1 });
+  expect(answer).toMatchObject({ status: "error" });
+  expect(String(answer["errorMessage"])).toMatch(/lit again/);
+  expect(h.open.has("1"), "the new life's key stays open").toBe(true);
+  expect(h.holdFace).toHaveBeenCalledWith(1);
+});
+
