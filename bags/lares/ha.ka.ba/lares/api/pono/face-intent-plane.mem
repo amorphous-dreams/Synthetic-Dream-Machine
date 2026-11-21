@@ -94,6 +94,45 @@ An agent off every device of the face (a cloud sandbox, another machine) never h
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-vow`>>
+
+!! The vow ~ an intent addressed to a face
+
+''The lift.'' The plane's audience grows from device grain to face grain. A ''votum'' (plural ''vota'') names an intent addressed to a face: the vower issues it, the face's own actor drains it, and the outcome answers it. `intent` stays the wire kind, and the chain keeps its nouns: the verb, the summons that invokes it, the outcome that answers (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>). ''Receipt'' stays the ledger's word for what a vessel says about a request id (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/receipt-ledger`>>), and a votum's outcome never takes that name.
+
+''Lineage.'' The vow grows from the operator's household and the hat-alignment keel, and from Freyja's vow, the operator's daughter's.
+
+!!! Seven pattern integrities
+
+# ''One object, many rotations.'' The Lararium shows each seat a face, and the shown face holds that seat's reality tunnel; one seat's turn never moves another seat's view.
+# ''The vower binds itself; the face only admits.'' A seat's reach equals its grant, meeting the face's vow cap, meeting the face's own grants and lei; a votum's text requests, and caps grant.
+# ''Later means the face's next causal turn.'' A votum voids by a causal event (supersede, cancel, revoke, a roster edge) and lapses by a counted number of the face's turns, never by time (#/no-clock).
+# ''One face, one drainer, one turn.'' The face's lifecycle actor answers its vota one at a time; order holds within a face, and across faces only a named ref orders, a ref cycle refusing at issue.
+# ''Effect once, outcome owed.'' The intent id hashes issuer, verb, arguments and nonce; a lost outcome retries as an outcome and never as the act, and an AI answer lands recorded once and never replays.
+# ''Each enactor keeps its own lane.'' A deterministic votum never falls to an AI, and no votum reaches the hand-only class (promote, retire, unlock, kui) by attenuation, never by policy (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>).
+# ''The wave delivers; a new cause re-arms.'' Vota land on the nalu wave (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>), and an outcome never re-arms its own votum.
+
+!!! Eight flows ~ what the house does with a votum
+
+|! Flow |! Roman stage |! What it does |
+| 1. Word | //concipere// | a seat issues an intent addressed to face F: verb, arguments, nonce, enactor, optional refs |
+| 2. Admit | //suscipere// | F's door checks reach, refs and the hand-only class, then queues the votum or answers a void outcome naming the broken condition |
+| 3. Bind | //voti reus// | a votum with refs waits until each named outcome lands; the others stand ready |
+| 4. Answer | | on F's lit turn the actor drains ready vota one by one, `mayAct` first |
+| 5. Pay | //solvere// | a deterministic votum runs its declared effect (oracle cast, ddate, cabalculate, grant landings, TW5 affordances); an AI votum reads the brief through F's tunnel from a seat holding F's standing and answers once, the house witnessing what it can check |
+| 6. Inscribe | //V.S.L.M.// | a signed outcome names who paid (seat, face, on whose behalf), how it landed (void, landed, witnessed) and against what (intent id, lei spent) |
+| 7. Read back | | the hearth roster at wake shows seats, rotations, lanes, open vota and unclaimed outcomes, and a votum stuck past its turn count shows stuck |
+| 8. Withdraw | | the vower cancels, a revoke stops admission, and an admitted votum finishes or voids with its cause |
+
+!!! What stands built, and what rests on the road
+
+* ''Built.'' The plane and its entries, `mayAct`, the delegations a far agent carries, owed outcomes, and the door's `runDeclaredEffect` port for idempotent declared verbs (`packages/lararium-mesh/src/intent-*.ts`, `packages/lararium-keyhive/src/face-intent-door.ts`).
+* ''Rests on the road.'' The face actor's lit turn feeding the door on a nalu wave; the face-named vow cap (a standing lei: reach `standing`, scope seat, affordance and enactor); conditional refs; the AI enactor; the hearth roster. Flows 3, 4 and 7, and flow 5's AI branch, therefore read as design until those land, and the pattern integrities above name the law each must keep.
+
+''Cross-reads.'' The verb, summons and outcome records rest at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>; the ledger's facts at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/receipt-ledger`>>; the wave at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>; the hands that issue and answer at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>. A votum may pay into a Votive, the bounty pool of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/libation-pool#/the-wave`>>.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-rubric`>>
 
 !! The rubric ~ what earns a place in a face's log
@@ -161,6 +200,6 @@ Road item `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-roa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_hrCUiy0o8tq--WED1Q4vsd6s54RINJW2A62pmW0i70`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LsxUUfRRpFJR-2RnJHv1Ge_dnP_2zNXLMzbiXuIj4RI`>>
 
 <<^ code=`&#x0004;` to=`?`>>
