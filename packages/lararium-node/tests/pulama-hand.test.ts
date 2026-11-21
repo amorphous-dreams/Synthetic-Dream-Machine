@@ -79,7 +79,7 @@ describe("only the hand door lights the pūlama", () => {
     const door = pulamaHandDoor({ holder: fx.kept, server: fx.server, image: pulamaImage(dir), records: pulamaRecords(dir) });
     expect(await door({ op: "close", face: "h0" })).toMatchObject({ op: "close", reading: "malformed" });
     expect(await door({ op: "close", face: 0 })).toMatchObject({ op: "close", reading: "closing", face: 0, unanswered: 1 });
-    expect(await door({ op: "status" })).toMatchObject({ closing: [{ face: 0, unanswered: 1, note: "face h0: the vessel has not answered its close" }] });
+    expect(await door({ op: "status" })).toMatchObject({ closing: [{ face: 0, unanswered: 1, note: "face h0: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand" }] });
     expect(fx.kept.unlockedFaces()).toContain(face.fcid);
     expect(await door({ op: "close", face: 0, force: true })).toMatchObject({ op: "close", reading: "locked", forced: true });
     expect(fx.kept.unlockedFaces()).not.toContain(face.fcid);

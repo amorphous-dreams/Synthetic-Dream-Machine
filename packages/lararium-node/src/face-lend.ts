@@ -29,6 +29,8 @@ export interface FaceLendPorts {
   readonly closingAtSource: () => readonly string[];
   /** A face's custody id, kept from its light past its dark. */
   readonly custodyIdOf: (ordinal: number) => string | undefined;
+  /** The ordinal whose kept custody id names `fcid`, or undefined. */
+  readonly ordinalOf?: (fcid: string) => number | undefined;
   /** The custody opening a face stands under now, or null. */
   readonly custodyOpeningNow: (ordinal: number) => string | null;
   /** Read and keep a face's custody id; its custody opening now. */
@@ -53,6 +55,20 @@ export interface FaceLend {
 }
 
 const why = (e: unknown): string => e instanceof Error ? e.message : String(e);
+
+/**
+ * Whether the custody opening a face lives under came AFTER `asked` (the opening a pūlama's close names): both read
+ * `<boot nonce>:<n>` from one holder, so the same nonce orders them by `n`. Anything else reads not-newer.
+ */
+export function openingNewer(lives: string, asked: string): boolean {
+  const at = (o: string): { nonce: string; n: number } | null => {
+    const cut = o.lastIndexOf(":");
+    const n = Number(o.slice(cut + 1));
+    return cut > 0 && Number.isSafeInteger(n) ? { nonce: o.slice(0, cut), n } : null;
+  };
+  const a = at(lives), b = at(asked);
+  return a !== null && b !== null && a.nonce === b.nonce && a.n > b.n;
+}
 
 export function faceLend(ports: FaceLendPorts): FaceLend {
   const { faceLife, mount } = ports;
@@ -91,12 +107,23 @@ export function faceLend(ports: FaceLendPorts): FaceLend {
       }
     },
     async closing(fcid, opening) {
-      const standing = await ports.faceStanding({ fcid }).catch(() => null);
-      // A drain that faults rejects here: the vessel answers no `face.closed`, so the key never locks over unsealed saves.
-      if (standing !== null) await faceLife.close(standing.ordinal, "the pūlama closes it", { custody: opening });
+      // THE FACE BY ITS KEPT CUSTODY ID FIRST, then the custody's read. A read that faults answers nothing: no `face.closed`
+      // lands for a face this vessel could not name, so the key never locks over a life it may still hold.
+      const ordinal = ports.ordinalOf?.(fcid) ?? (await ports.faceStanding({ fcid }))?.ordinal ?? null;
+      if (ordinal !== null) {
+        // A LIFE UNDER A LATER OPENING answers nothing: the close names a life other than the one this vessel holds, and its answer could
+        // lock the key under the life it does. A life under the named opening, an earlier one or one unread closes whole.
+        const lives = faceLife.custodyOf(ordinal);
+        if (lives !== null && opening !== null && lives !== opening && openingNewer(lives, opening)) {
+          ports.log(`[lit-set] the pūlama's close of h${ordinal} names an opening before the one it lives under; no face.closed answers`);
+          return;
+        }
+        // A drain that faults rejects here: the vessel answers no `face.closed`, so the key never locks over unsealed saves.
+        await faceLife.close(ordinal, "the pūlama closes it");
+      }
       await ports.faceClosed?.(fcid, opening);
       // THE MOUNT CLOSED AT ITS PŪLAMA'S WORD: its saves drained under its own session, and the vessel stands again.
-      if (standing !== null && standing.ordinal === mount) ports.mountClosed();
+      if (ordinal !== null && ordinal === mount) ports.mountClosed();
     },
     async release(ordinal) {
       if (ordinal !== mount) return;
@@ -105,6 +132,9 @@ export function faceLend(ports: FaceLendPorts): FaceLend {
       // Only while its key stands open: a lock that landed leaves the mount dark, and the vessel stands again by its own road.
       const standing = await ports.faceStanding({ ordinal: mount }).catch(() => null);
       if (standing?.unlocked !== true) return;
+      // The read awaited: a close, a hold or another adoption may have landed meanwhile, so the mount must still read dark, unheld.
+      const now = faceLife.state(mount);
+      if (now.kind !== "dark" || now.held) return;
       ports.log(`[lit-set] the lock of the mount h${mount} did not lock its key; the mount reads lit again`);
       adoptMount();
     },

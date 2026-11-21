@@ -520,4 +520,21 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
   };
 }
 
+/** One plan of a face's drain: the session that seals its saves (null where none stands) and the documents it names. */
+export interface DrainPlan<S> { readonly session: S | null; readonly docs: readonly string[] }
+
+/**
+ * A CLOSING FACE'S DRAIN, plan by plan: each session drains its own documents; a plan with no session drains nothing and counts
+ * what still waits. Any save left waiting throws, so the close holds (no CLOSED, no key lock, no teardown forgetting it).
+ */
+export async function drainPlans<S>(ordinal: number, plans: ReadonlyArray<DrainPlan<S>>, ports: {
+  readonly drain: (session: S, docs: readonly string[]) => Promise<number>;
+  readonly waiting: (documentId: string) => number;
+}): Promise<void> {
+  for (const { session, docs } of plans) {
+    const left = session !== null ? await ports.drain(session, docs) : docs.reduce((n, id) => n + ports.waiting(id), 0);
+    if (left > 0) throw new Error(`face h${ordinal}: ${left} save(s) still wait unsealed${session === null ? " and no session stands to seal them" : ""}, so its close holds`);
+  }
+}
+
 function describe(error: unknown): string { return error instanceof Error ? error.message : String(error); }

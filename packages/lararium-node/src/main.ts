@@ -494,6 +494,7 @@ async function main(): Promise<void> {
     releaseFaces: () => { composition?.releaseFaces?.(); },
     // At the floor no face lights, so nothing holds and the lock may land.
     holdFace: (ordinal) => composition?.holdFace?.(ordinal) ?? true,
+    holdFaces: () => composition?.holdFaces?.() ?? true,
     // A WHOLE LOCK CLOSES EVERY FACE THROUGH ITS ACTOR before its key drops: a face whose saves did not seal rejects, and the key stays open.
     closeFaces: async () => { await composition?.closeFaces?.(); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
@@ -573,6 +574,8 @@ interface StandingComposition {
   readonly releaseFaces?: () => void;
   /** Hold a face past CLOSED right before its key locks; false where it lit again. Absent at the floor. */
   readonly holdFace?: (ordinal: number) => boolean;
+  /** Hold every face past CLOSED right before the vessel key locks; false where any stands lit. Absent at the floor. */
+  readonly holdFaces?: () => boolean;
   /** Close every face through its actor, holding each dark (a whole lock, ahead of the key); rejects where a face did not close
    *  whole. Absent at the floor. */
   readonly closeFaces?: () => Promise<void>;
@@ -975,7 +978,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     standing: "hearth",
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
-    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace,
+    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces,
     closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
     teardown: () => result.teardown(() => front.detach()),

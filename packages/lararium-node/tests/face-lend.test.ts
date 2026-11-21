@@ -1,11 +1,11 @@
 import { describe, expect, test, vi } from "vitest";
 import { faceLives, type FaceLifeEffects } from "../src/face-lifecycle.js";
-import { faceLend, type FaceLendPorts } from "../src/face-lend.js";
+import { faceLend, openingNewer, type FaceLendPorts } from "../src/face-lend.js";
 
 const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
 /** A vessel's lend over a scripted custody: the mount h0 (no island entry), siblings lit by hand, every drain answered by hand. */
-function vessel(opts: { served?: number[]; open?: Set<number> } = {}) {
+function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLendPorts["faceStanding"]; ordinalOf?: FaceLendPorts["ordinalOf"] } = {}) {
   const served = opts.served ?? [0, 1];
   const open = opts.open ?? new Set(served);
   const drains = new Map<number, { resolve: () => void; reject: (e: unknown) => void }>();
@@ -31,10 +31,11 @@ function vessel(opts: { served?: number[]; open?: Set<number> } = {}) {
     custodyIdOf: (ordinal) => `f${ordinal}`,
     custodyOpeningNow: () => null,
     noteCustody: async () => "p:1",
-    faceStanding: async (face) => {
+    faceStanding: opts.standing ?? (async (face) => {
       const ordinal = "ordinal" in face ? face.ordinal : Number(face.fcid.slice(1));
       return { ordinal, fcid: `f${ordinal}`, unlocked: open.has(ordinal) };
-    },
+    }),
+    ...(opts.ordinalOf ? { ordinalOf: opts.ordinalOf } : {}),
     faceClosed, lightFace, mountClosed, log: () => {},
   };
   lend = faceLend(ports);
@@ -130,5 +131,49 @@ describe("the lend watch and the mount's one life", () => {
     ports.closing = [];
     await lend.sweep();
     expect(v.lightFace).toHaveBeenCalledWith(1);
+  });
+  test("F2: a pūlama's close whose custody read faults answers nothing; a face named by its kept custody id needs no read", async () => {
+    const faulted = vessel({ standing: async () => { throw new Error("the pūlama channel dropped"); } });
+    await expect(faulted.lend.closing("f0", "p:1")).rejects.toThrow("the pūlama channel dropped");
+    expect(faulted.faceClosed, "no face.closed for a face this vessel could not name").not.toHaveBeenCalled();
+    const kept = vessel({ standing: async () => { throw new Error("never read"); }, ordinalOf: (fcid) => fcid === "f0" ? 0 : undefined });
+    const closing = kept.lend.closing("f0", "p:1");
+    await settle();
+    kept.drains.get(0)!.resolve();
+    await closing;
+    expect(kept.faceClosed).toHaveBeenCalledWith("f0", "p:1");
+  });
+
+  test("F4: a close naming an opening before the one the face lives under answers nothing and closes nothing; one naming a later opening closes the older life whole before it answers", async () => {
+    const v = vessel();
+    await settle();
+    expect(v.lives.custodyOf(0)).toBe("p:1");
+    await v.lend.closing("f0", "p:0");
+    expect(v.lives.state(0).kind, "a stale close leaves the newer life standing").toBe("lit");
+    expect(v.faceClosed, "and no key locks under it").not.toHaveBeenCalled();
+    const closing = v.lend.closing("f0", "p:2");
+    await settle();
+    expect(v.events).toContain("drain h0");
+    v.drains.get(0)!.resolve();
+    await closing;
+    expect(v.lives.state(0).kind).toBe("dark");
+    expect(v.faceClosed).toHaveBeenCalledWith("f0", "p:2");
+    expect(openingNewer("boot:3", "boot:2")).toBe(true);
+    expect(openingNewer("boot:2", "boot:3")).toBe(false);
+    expect(openingNewer("a:3", "b:2"), "two holders' openings never order").toBe(false);
+  });
+
+  test("F5: a release whose custody read lands after a new hold adopts nothing", async () => {
+    let answer!: (v: { ordinal: number; fcid: string; unlocked: boolean }) => void;
+    const v = vessel({ standing: () => new Promise((r) => { answer = r; }) });
+    const closed = v.lives.close(0, "the lock door closes it", { hold: true });
+    v.drains.get(0)!.resolve(); await closed;
+    v.lives.release(0);
+    const released = v.lend.release(0);
+    // Another lock's close holds the mount while the read waits.
+    await v.lives.close(0, "the lock door closes it", { hold: true });
+    answer({ ordinal: 0, fcid: "f0", unlocked: true });
+    await released;
+    expect(v.lives.state(0)).toEqual({ kind: "dark", held: true });
   });
 });

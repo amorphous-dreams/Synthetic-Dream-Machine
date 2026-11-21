@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { faceLives, type FaceLifeEffects, type FaceLit } from "../src/face-lifecycle.js";
+import { drainPlans, faceLives, type FaceLifeEffects, type FaceLit } from "../src/face-lifecycle.js";
 
 interface Deferred<T> { readonly promise: Promise<T>; resolve(value: T): void; reject(error: unknown): void }
 function deferred<T = void>(): Deferred<T> {
@@ -366,5 +366,13 @@ describe("each face lives one life: the lifecycle actor", () => {
     expect(t.lives.custodyOf(0)).toBe("p:4");
     t.lives.noteCustody(0, "p:5");
     expect(t.lives.custodyOf(0)).toBe("p:4");
+  });
+  test("F1: a face whose saves wait with no session to seal them holds its close; with none waiting, it closes clean", async () => {
+    const waiting = new Map([["doc-a", 2], ["doc-b", 0]]);
+    const drain = async (): Promise<number> => 0;
+    await expect(drainPlans(1, [{ session: null, docs: ["doc-a", "doc-b"] }], { drain, waiting: (id) => waiting.get(id) ?? 0 }))
+      .rejects.toThrow(/face h1: 2 save\(s\) still wait unsealed and no session stands to seal them/);
+    await expect(drainPlans(1, [{ session: null, docs: ["doc-b"] }], { drain, waiting: (id) => waiting.get(id) ?? 0 })).resolves.toBeUndefined();
+    await expect(drainPlans(1, [{ session: "s", docs: ["doc-a"] }], { drain: async () => 1, waiting: () => 0 })).rejects.toThrow(/1 save\(s\) still wait unsealed, so/);
   });
 });
