@@ -90,6 +90,11 @@ const CLI_FORMS = {
   // THE ORACLE CAST — the MCP `oracle_cast` tool mirrors `lares oracle cast`, a vessel verb: the vessel casts and writes
   // the cast as one tiddler, so the draw lives in the tool and never in the prompt.
   oracle_cast:    "oracle cast",
+  // THE LAW INDEX — the pinned law first, then the law canon derives, read in the worn face's daemon wiki; a pin orders it.
+  // Each tool mirrors `lares law <sub>` (the host `law` is a real top-level CLI command), riding the tiddler door's verbs.
+  law_index:      "law list",
+  law_pin:        "law pin",
+  law_unpin:      "law unpin",
   // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
   // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
   // holds no MCP tool, the way `kahua lift` holds none.

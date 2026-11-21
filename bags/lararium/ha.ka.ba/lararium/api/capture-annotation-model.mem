@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/capture-annotation-model"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/capture-annotation-model"
-written   = "2026-06-25"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
@@ -349,6 +348,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bc08o45TqaR9RwOa0Xhv-ymbISy5Lu-Z1wbgCqfEoYM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y1qwNbo9mO5mXBpRppVb3bzl3_Qb1DlZRaT0nbG7M6o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

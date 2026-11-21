@@ -53,9 +53,9 @@ Tool render mode controls how ASCII tool-carry symbols project to glyphs on HUD 
 
 ''Masks'' allow persistent session-level overlays on Lares Voices.
 A mask colors the Ka/Podge face of the Voice house without touching the Ha/Hodge structure.
-Grammar defined in `lar:///ha.ka.ba/lares/docs/voices/masks`.
+Grammar defined in `lar:///ha.ka.ba/lares/api/voices#/mask-layer`.
 
-The agent MUST read `lar:///ha.ka.ba/lares/docs/voices/masks` before interpreting any mask declaration in this session.
+The agent MUST read `lar:///ha.ka.ba/lares/api/voices#/mask-layer` before interpreting any mask declaration in this session.
 
 <<~/ahu>>
 
@@ -110,6 +110,6 @@ Live stage positions — shift inline with `[Stage: mask-name 15]`; edits here p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O-uRMsIiKwP0gMcZTBcjws8WIpLUYQR-caKyaHnYK8Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fSXO8u0t5YGllwMMzT7M6WDouzol_p7NxbLojQp7E_g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

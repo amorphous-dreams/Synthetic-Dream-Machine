@@ -11,7 +11,7 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-10-11"
 role              = "blob-carriage — the binaries tension RULED: TYPED TIDDLER (bytes ride the tiddler) vs POINTER TIDDLER (the tiddler carries a reference, the bytes live on a plane the reference names). Reads the house as built (THE BLOB LAW in `content-handle.ts` · the pointer · `_lar_cas` · `cid/` vs `@cad` · the raw-bytes CID · the whole-file projection beside a `.meta` · the automerge wall), the field whole (TW5's own `_canonical_uri` + MWS + external-attachments · IPFS/IPLD · AT-proto blobs · Matrix media · git-LFS · Automerge · Solid · Nostr NIP-94/96 · Willow · Obsidian/Logseq), the golden principles they converge on, the pattern-integrity rhymes and where each held or broke, the three held cases (live streams · gameart.net-scale packs · authorized photo galleries), THE BLOB LAW as ruled and enacted, and the questions that stand open."
-status-why        = "Clauses 1-6 under #/proposed-law stand in code with red-first witnesses; clauses 7 and 8 stand in part. Clause 7 moves a cleartext pointer between bags; a move into an `@cad` tier stays unbuilt. Clause 8 retains blobs by locally-held references or PIN tags. A typed PIN write requires `holder` and `tier` (a torn sidecar record that still names a CID holds its blob under defaults); an optional `fence` names the holder's boot epoch at `--held` pin time. `CasSweepOptions.currentFence` stands required, and production threads the vessel claim's required `bootEpoch`, captured once per boot. An explicit `--pin` without a fence stands until `--release`; a fence-bearing pin yields by causal supersession at a verified epoch fence. Quiet never means lapse. `readBootEpoch` serves `lares bag cas --pin --held` fence stamping and the vessel's own boot-epoch bump. The sweep and PIN stand built; pack-PIN recursion, per-tier grace in the production sweep, and a production caller of `assertBodyIndexTier` remain unbuilt. The operator's rulings ride under #/questions"
+status-why        = "Clauses 1-6 under #/proposed-law stand in code with red-first witnesses; clauses 7 and 8 stand in part. Clause 7 moves a cleartext pointer between bags; a move into an `@cad` tier stays unbuilt. Clause 8 retains blobs by locally-held references or PIN tags. A typed PIN write requires `holder` and `tier` (a torn sidecar record that still names a CID holds its blob under defaults); an optional `fence` names the holder's boot epoch at `--held` pin time. `CasSweepOptions.currentFence` stands required, and production threads the vessel claim's required `bootEpoch`, captured once per boot. An explicit `--pin` without a fence stands until `--release`; a fence-bearing pin yields by causal supersession at a verified epoch fence. Quiet never means lapse. `readBootEpoch` serves `lares bag cas --pin --held` fence stamping and the vessel's own boot-epoch bump. The sweep and PIN stand built; pack-PIN recursion, per-tier grace in the production sweep, and a production caller of `assertBodyIndexTier` remain unbuilt. The operator's rulings ride under #/questions; the law stands at api/pono/blob-carriage (operator ruling 2026-11-21, the ever-speaking present)"
 tags              = ["api/pono/meme", "lifecycle/standing"]
 title             = "lar:///ha.ka.ba/lares/docs/pono/blob-carriage"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -23,6 +23,8 @@ uri-path          = "ha.ka.ba/lares/docs/pono/blob-carriage"
 <<~ ahu slot=`#/tension`>>
 
 ! Blob Carriage ~ a scout against the binaries tension
+
+''The law stands at'' <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>. This carrier keeps the scout the law rests on: the charge, the house as built and measured, the field, the golden principles, the rhymes, the held cases, the clauses as ruled and enacted with what moved, and the questions.
 
 ''Register: Model-Standing.'' A scout read the house whole, then the field whole; every house claim names a file and a line, every field claim names a URL and quotes the page. A claim without either names itself as inference.
 
@@ -204,6 +206,7 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 !! Edges
 
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
@@ -212,8 +215,8 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-uris`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/convergent-mesh`>>
@@ -221,6 +224,6 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RkSdnIa8hlv24OEoiIvCNm-qTCvL4p--YFOKoJyr3mM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DPAxhHTA5AAibohcgydxrrSn_G-4wvG8u58rjXamKjM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

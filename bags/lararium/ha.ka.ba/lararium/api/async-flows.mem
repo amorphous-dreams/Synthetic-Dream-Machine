@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/async-flows"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/async-flows"
-written   = "2026-06-25"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
@@ -174,6 +173,6 @@ write toward; it describes no current emission.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cZfe4rb2WT1G6YEV-PdsmmUMr0QgTV5_nAr4ScooPsw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OfPh6oIyjPiaSEVl3NFFg3a55n3ZLzpS1ajW-sDEjCw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

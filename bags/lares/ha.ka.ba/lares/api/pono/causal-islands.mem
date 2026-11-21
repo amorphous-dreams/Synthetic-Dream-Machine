@@ -10,7 +10,6 @@ l-space       = "stable"
 namespace     = "&#x2299;"
 role          = "invariant law: causal island doctrine — three structural axes (access × scale × powers) + alignment plane; authority-first sync order; visibility gate; edge island lifecycle"
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
-status-date   = "2026-06-01"
 tags          = ["api/pono/orichalcum-capabilities", "api/pono/federated-causal-islands", "api/pono/alignment-layer"]
 title         = "lar:///ha.ka.ba/lares/api/pono/causal-islands"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -25,11 +24,10 @@ A causal island carries its own trigger surface, event horizon, and capability g
 The doctrine partitions cross-node causality (MUST) from within-node causality (MAY).
 Authority MUST precede content — this invariant holds without exception.
 
-''Authority has three structural axes plus one alignment plane'' (refined 2026-06-01
-against Frazee, //Practical Decentralization//, and prior-art research across ATProto,
-SSB, Holochain, Nostr, IPFS, ActivityPub, and the local-first lineage). A
-single linear ability-ladder fuses independent axes into one rope;
-this model separates them.
+''Authority has three structural axes plus one alignment plane'', grounded in Frazee,
+//Practical Decentralization//, and the prior art of ATProto, SSB, Holochain, Nostr, IPFS,
+ActivityPub, and the local-first lineage (#/rulings). A single linear ability-ladder fuses
+independent axes into one rope; this model separates them.
 
 <<~/ahu>>
 
@@ -50,7 +48,7 @@ uses `CapabilityVerifier.verify({ access: "read" | "admin" })`; the four-verb tu
 the edge-island federation scaffolding a typed vocabulary for the same levels. The
 relay-law exception governs the bottom rung.
 
-''Grain debt (POLA, 2026-06-03).'' Because the live gate collapses to `read | admin`, an
+''Grain debt (POLA).'' Because the live gate collapses to `read | admin`, an
 `edit`-intent delegation — the POLA-correct grain for a surface a principal co-edits but
 should NOT re-delegate — currently rounds ''up'' to `admin`. Documented over-grant: e.g.
 delegating an operator's `@personal`/`@draft` view-state to their own PersonaGroup grants
@@ -63,7 +61,7 @@ homogeneous-trust (those devices already hold `admin` on `@daemon`, so marginal 
 ''Axis 2 — Scale.'' Membership nests as Keyhive groups-within-groups on the ''SOCIAL axis'':
 `Individual ⊂ PersonaGroup ⊂ Cabal`. Each social ring forms a causal island with a ''cryptographic''
 ''shore'' — the Keyhive delegation chain carries the join-rule. ''Delegation tops at the Cabal''
-(2026-06-29 cohere); above it the mesh scales on the orthogonal ''INFRA axis'' — `Nexus` and
+(#/rulings); above it the mesh scales on the orthogonal ''INFRA axis'' — `Nexus` and
 `DreamNet` join by ''treaty / mutual-carriage contract'' (who relays whose sealed bytes), never by
 delegation-up, a relay carrying without reading
 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology`>>). "DreamNet"
@@ -108,7 +106,7 @@ Stage band serves as a UX annotation — NOT a gate condition.
 ''Shore law'' (Scale axis): joining a ''social'' ring (≤ Cabal) requires a capability delegation
 from that ring's Keyhive group. The delegation chain functions as the join-rule for the SOCIAL axis;
 no central admission authority stands. ''Above the Cabal the INFRA axis takes over'' — `Nexus` and
-`DreamNet` join by ''treaty / mutual-carriage contract'', never delegation-up (2026-06-29 cohere →
+`DreamNet` join by ''treaty / mutual-carriage contract'', never delegation-up (#/rulings →
 dreamnet-architecture#two-axis-topology).
 
 ''Alignment law'' (Plane 0): trust assertions take the form of ordinary signed content, evaluated LOCALLY
@@ -312,7 +310,7 @@ export function visibilityGate(input: VisibilityGateInput): boolean {
 
 !! A time value MAY enter as a KEY, never as an arbiter
 
-''The refusal of wall clocks holds; its stated form over-reached.'' Geodesy runs dynamic reference frames where every coordinate carries a real date — and it still trusts no device clock: its time scale arrives as a post-hoc weighted ensemble of hundreds of clocks with each contributor's residual published. ''No individual clock sources the frame; each one MEASURES it.''
+''The refusal of wall clocks holds, in a narrower form than a blanket ban.'' Geodesy runs dynamic reference frames where every coordinate carries a real date — and it still trusts no device clock: its time scale arrives as a post-hoc weighted ensemble of hundreds of clocks with each contributor's residual published. ''No individual clock sources the frame; each one MEASURES it.''
 
 The transferable law:
 
@@ -357,12 +355,23 @@ meant to escape):
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings and provenance
+
+# The axes, 2026-06-01: the single ability-ladder splits into three structural axes and one alignment plane, read against Frazee, //Practical Decentralization//, and the prior art of ATProto, SSB, Holochain, Nostr, IPFS, ActivityPub and the local-first lineage (#/head, #/model).
+# The POLA grain debt, 2026-06-03: an `edit`-intent delegation rounds up to `admin` while the live gate reads `read | admin` alone (#/model).
+# The cohere ruling, 2026-06-29: delegation tops at the Cabal; Nexus and DreamNet join on the INFRA axis by treaty / mutual-carriage contract, never by delegation-up (#/model, #/law).
+# The wall-clock refusal holds in the key-not-arbiter form #/the-model-key states, narrower than a blanket ban on time values.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YytlMyeInKGuuhdeRCqHry5osaPQbk1lcnDbyKkBBCE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VuSJSPgaMc4s5UtvaVFbHGRYYQsOGznXf6se6OFpBgc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

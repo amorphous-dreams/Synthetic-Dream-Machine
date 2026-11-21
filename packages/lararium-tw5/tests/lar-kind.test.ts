@@ -23,7 +23,7 @@
  * `deleteTiddler` before the cascade; a title never seen this session falls back to the cascade's
  * title read. The witness below holds it.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model
+ * Meme: lar:///ha.ka.ba/lares/api/pono/recipe-layer-model
  */
 
 import { describe, expect, test, beforeAll } from "vitest";

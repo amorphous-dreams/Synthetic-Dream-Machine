@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/causal-island-pattern"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/causal-island-pattern"
-written   = "2026-06-26"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/api/network-edge`>>
@@ -119,6 +118,6 @@ The high-confidence bearings for the build (when the forks unblock):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1R4QoJ_Pi_vzn6jOq_4Tbqc29C85-clT9cWZMxzlOJg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7qe48nkyKB2HDwK6pWnuW_gfpPyTse9r6eYvmWeERNE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

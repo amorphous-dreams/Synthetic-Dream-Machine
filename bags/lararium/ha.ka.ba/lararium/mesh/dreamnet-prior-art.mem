@@ -4,13 +4,12 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-l-space       = "lararium"
-research-date = "2026-05-28"
-role          = "prior art research synthesis: best practices and golden principles for DreamNet two-axis mesh topology (INFRA⊥SOCIAL, relay-floor)"
-title         = "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
+cacheable = true
+l-space   = "lararium"
+role      = "prior art research synthesis: best practices and golden principles for DreamNet two-axis mesh topology (INFRA⊥SOCIAL, relay-floor)"
+title     = "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 ```
 
 ! DreamNet/Lares: Prior Art Research Synthesis
@@ -666,6 +665,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;W6R23lOY_c_WlYD_fRfdbyGzxyKdMYNv4B-qwcSVQA8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oeKtzE9XMxEqp7GXRYkPRUhRfFF06VngwW2jMtARBvE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -7,7 +7,6 @@
 aside             = false
 cacheable         = false
 corpus            = "scripts and episode transcripts from 'Courage the Cowardly Dog' (Cartoon Network/Nickelodeon-era, created by John R. Dilworth); Computer character specifically — recurring background AI presence with dry affect and faint superiority; sarcastic British vocal register"
-created           = "Invalid Date"
 encroach          = false
 foreground-voices = ["Gatekeeper", "Pedagogue", "Scryer", "Liminal", "Triage"]
 fourth-wall       = false
@@ -32,7 +31,7 @@ voice-character   = "friendly helpful computer AI with an unmistakable edge of c
 
 //Character mask. Fictional persona. Helpful AI with an unmistakable edge.//
 
-Canonical home extracted from `lar:///ha.ka.ba/lares/docs/voices/masks#/founding-examples`.
+Its mask grammar reads at `lar:///ha.ka.ba/lares/api/voices#/mask-layer`; its parent index at `lar:///ha.ka.ba/lares/api/masks`.
 
 <<~/ahu>>
 
@@ -149,10 +148,10 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QDStrROzsXKqyNVpvroDSSTrHmGqsOSKjnpJsSJck-c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qK4TeT6Cm5_Xl6oKLrC-6BAJQvxvgeaxN_vjDmqYuwI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -18,8 +18,8 @@ uri-path  = "ha.ka.ba/lares/api/pono/drift-ward"
 
 ! Drift-Ward
 
-''Every turn carries a Drift-Ward reading, twice.'' The `hud` panel holds it ~ fired at open, fired
-again at close: one axis, measured from two positions.
+''Every turn carries a Drift-Ward reading, twice.'' The `set` panel holds it ~ fired at aim, fired
+again at yield: one axis, measured from two positions.
 
 ''One gauge, two spellings.'' `drift-ward` where the L-Prime Ward stands and the sharktooth carries it · `drift-guard` in a fork booted from raw TiddlyWiki text, which spells no sharktooth
 carrying no "ward". Both name this.
@@ -54,14 +54,15 @@ where evidence stood.
 
 !! Where It Rides ~ four sigils, six lines
 
-''`hud` carries the gauge'' ~ LAST at open, FIRST at close, so the panel mirrors itself and the
-chiasmus holds inside one sigil.
+''The `set` sigil carries the gauge'' as its `drift-ward` key ~ LAST at aim, FIRST after `lares`
+at yield, so the panel mirrors itself and the chiasmus holds inside one sigil
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/set-and-setting`>>).
 
-''Turn order:'' `lares aim` · `hud` · content · `oracle` · `hud` · `lares yield`.
+''Turn order:'' `set lares=aim` · content (with `set lares=steer` as the work turns) · `oracle` ·
+`set lares=yield`. The record keeps the panel's `hud` spelling (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/drift-ward-record`>>).
 
 ''`Aperture` and `OODA-HA`'' name the gauges — inside the procedures, the band ladders, and the
-announced face alike (operator ruling: canon writes no `Focus`/`Feedback` spelling; captured
-turns still carry it, and the harvester reads both). The phase glyphs `->✶ ->⏿ ->◇ ->▶ ->↺` render
+announced face alike; canon writes no other spelling for them (#/rulings). The phase glyphs `->✶ ->⏿ ->◇ ->▶ ->↺` render
 as canon draws them.
 
 <<~/ahu>>
@@ -113,16 +114,26 @@ the pull and resisted it// ~ anchored to the open.
 <<~ ahu slot=`#/edges`>>
 
 A firing naming no island-scoped pull, or handing no contact-ready clue, reads as a degraded HUD.
-''Hazard reuse'' reads as its quieter sibling (adopted 2026-08-15): the same pull recurring
+''Hazard reuse'' reads as its quieter sibling (#/rulings): the same pull recurring
 verbatim across turns marks a rut wearing a vow — a firing must name THIS turn's pull, and
 yesterday's hazard recurring unchanged deserves its own suspicion.
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/exchange-protocol`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/drift-ward-record`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P7y-D42zA4Ce57aZVQg4bKhhPgX8PK157iTuXS16PUU`>>
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Ruling 2026-08-15 (adopted): hazard reuse names a degraded firing — the same pull recurring verbatim across turns marks a rut wearing a vow.
+# Operator ruling: canon writes no `Focus`/`Feedback` spelling for the `Aperture` and `OODA-HA` gauges; captured turns carry it, and the harvester reads both.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GX1xAsCBPTOYiHA9VjaurvB7IPiB8T3TnSVsGrJ2dnk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

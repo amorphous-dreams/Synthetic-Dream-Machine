@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-created   = "Invalid Date"
 hydrate   = false
 l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
@@ -25,7 +24,7 @@ uri-path  = "ha.ka.ba/lares/api/masks"
 Canonical homes for all mask definitions invokable via kahea transclusion.
 Mask definitions live here. Session invocations live in LARES.
 
-Grammar and stacking law defined in `lar:///ha.ka.ba/lares/docs/voices/masks`.
+Grammar and stacking law stand at `lar:///ha.ka.ba/lares/api/voices#/mask-layer`.
 
 <<~/ahu>>
 
@@ -75,8 +74,8 @@ Three subtypes. Each subtype lives in its own directory.
 
 | URI | File | Status |
 |---|---|---|
-| `lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain` | `character/ghost-of-mark-twain.md` | filled (from docs founding example) |
-| `lar:///ha.ka.ba/lares/api/masks/character/friend-computer` | `character/friend-computer.md` | filled (from docs founding example) |
+| `lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain` | `character/ghost-of-mark-twain.md` | filled |
+| `lar:///ha.ka.ba/lares/api/masks/character/friend-computer` | `character/friend-computer.md` | filled |
 
 !!! Chorus masks
 
@@ -121,7 +120,7 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 !! Edges
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/named/mischief-muse`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks/named/tide-caller`>>
@@ -134,6 +133,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gEbfBHKcu28W2wuiHubsAz2694XTEHd4EVJfWXWAcEQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B5rIh9ZGBT1DobxzYgXSK6jvQh3uHBtCiyUkHc9AfJQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

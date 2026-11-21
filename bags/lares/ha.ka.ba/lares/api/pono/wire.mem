@@ -10,7 +10,6 @@ tags      = ["api/pono/has-stack"]
 title     = "lar:///ha.ka.ba/lares/api/pono/wire"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wire"
-written   = "2026-06-12"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -83,6 +82,6 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WcJeTVNQWaSv-ATMqFzi7PwJ3346TYsydUUV40RemGA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uorJWwmZOrLsBNNAH7RVvVsGmW1gYSWdx90V-eQxcc4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

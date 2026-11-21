@@ -4,15 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "unified attention scale — five bands partitioning the 0–20 Level attention-range continuum across three projections (time, text, space); canonical register names Pulse/Beat/Measure/Arc/Theme; turn-HUD gauge name Aperture; FTLS exploration clock and World-Time clock profiles; FfzClock level alignment"
-status-date = "2026-05-06"
-tags        = ["api/pono/meme"]
-title       = "lar:///ha.ka.ba/lares/api/pono/attention-scale"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/attention-scale"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "unified attention scale — five bands partitioning the 0–20 Level attention-range continuum across three projections (time, text, space); canonical register names Pulse/Beat/Measure/Arc/Theme; turn-HUD gauge name Aperture; FTLS exploration clock and World-Time clock profiles; FfzClock level alignment"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/attention-scale"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/attention-scale"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -334,6 +333,6 @@ Envelope: <<~ँ₃ ...>>   Arc-scale
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;T6KWNYeWU_0lpk8warWmUYNv_PO3srpbKV4-GwncTD4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XBHpqemdjCHC_SlGUVQLcKUZUQe2PN33Ee--4dc7mQQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

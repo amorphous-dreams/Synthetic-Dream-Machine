@@ -23,7 +23,7 @@
  * These vectors drive the REAL TiddlyWiki filter engine over the SHIPPED cascade. A fake router is
  * exactly the instrument that would bless a rule the engine parses differently.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology
+ * Meme: lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology
  */
 
 import { describe, expect, test, beforeAll } from "vitest";
