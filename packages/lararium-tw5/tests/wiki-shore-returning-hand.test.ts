@@ -105,8 +105,10 @@ describe.skipIf(wikiSkip)(`wiki shore faults${skipNote}`, () => {
     await afterDispatch();
     boundary.fire();
     await turns(24);
-    expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "a working-layer title tombstones where it lives").toHaveLength(1);
-    expect(storeDeleted(r, workingBag, own)).toBe(true);
+    expect(r.calls.slice(mark).filter((c) => c.retracts?.includes(own)), "a working-layer title with nothing beneath retracts where it lives").toHaveLength(1);
+    expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "no tombstone rises over nothing").toEqual([]);
+    expect(storeDeleted(r, workingBag, own)).toBe(false);
+    expect(r.doc(workingBag).tiddlers[own]).toBeUndefined();
     expect(r.wiki.getTiddler(own)).toBeUndefined();
     await r.stop();
   }, 120_000);

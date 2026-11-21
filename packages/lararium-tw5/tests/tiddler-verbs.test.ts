@@ -555,6 +555,48 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.tiddlerExists("Canon Only")).toBe(true);
   });
 
+  test("unread-beneath-asks-the-mode: a recipe slot beneath the working layer the composer could not reach, or a stand-in for an unread document beneath it, counts as holding the title, so a plain delete refuses `delete-mode-needed` and a bare kāpae over it stays; CONTROL: an unread slot above the working layer leaves the plain delete and the bare retract plain", async () => {
+    const UNREAD = "lar:///ha.ka.ba/bags/corpus/unread";
+    const ABOVE = "lar:///ha.ka.ba/bags/corpus/above";
+    const o = { kind: "lares-verb", requestId: "seed" } as const;
+    const seed = async (r: Awaited<ReturnType<typeof rig>>): Promise<void> => {
+      const working = r.composite.storeForBag(DAEMON)!;
+      await working.put({ tiddler: { title: "Solo", text: "mine alone" }, meta: {} }, o);
+      await working.put({ tiddler: { title: "Ghost", text: "gone" }, meta: {} }, o);
+      await working.tombstone("Ghost", o);
+      await r.landed();
+    };
+    // An unreached slot beneath the working layer (top-first order: working, the unread slot, canon).
+    const r = await rig();
+    await seed(r);
+    r.composite.markUnreached([DAEMON, UNREAD, CANON], [UNREAD]);
+    const del = makeTiddlerDeleteReactor(r.opts);
+    const needed = await del({ ...A, title: "Solo" }, ctx());
+    expect(needed).toMatchObject({ decision: "refused", refusal: "delete-mode-needed", tombstoned: [], retracted: [] });
+    expect(String(needed["why"])).toContain("an unread layer");
+    expect(r.engine.wiki.getTiddlerText("Solo")).toBe("mine alone");
+    expect(await del({ ...A, title: "Ghost" }, ctx())).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
+    expect((await r.composite.storeForBag(DAEMON)!.get("Ghost"))?.meta?.deleted).toBeTruthy();
+    expect(await del({ ...A, title: "Solo", mode: "kapae" }, ctx())).toMatchObject({ decision: "removed", mode: "kapae", tombstoned: ["Solo"] });
+
+    // A mounted stand-in beneath the working layer reads unknown the same way.
+    const s = await rig();
+    const standIn = Object.assign(new MemoryTiddlerStore(UNREAD), { unknown: () => true });
+    s.composite.addLayer({ bagId: UNREAD, store: standIn, writable: false }, 1);
+    await seed(s);
+    const sdel = makeTiddlerDeleteReactor(s.opts);
+    expect(await sdel({ ...A, title: "Solo" }, ctx())).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
+    expect(await sdel({ ...A, title: "Ghost" }, ctx())).toMatchObject({ decision: "refused", refusal: "delete-mode-needed" });
+
+    // CONTROL: the unread slot stands above the working layer, so nothing beneath stays unknown.
+    const c = await rig();
+    await seed(c);
+    c.composite.markUnreached([ABOVE, DAEMON, CANON], [ABOVE]);
+    const cdel = makeTiddlerDeleteReactor(c.opts);
+    expect(await cdel({ ...A, title: "Solo" }, ctx())).toMatchObject({ decision: "removed", mode: "plain", retracted: ["Solo"] });
+    expect(await cdel({ ...A, title: "Ghost" }, ctx())).toMatchObject({ decision: "removed", mode: "plain", retracted: ["Ghost"] });
+  });
+
   test("retract-a-bare-kapae: a tombstone that shadows nothing retracts under a plain delete, leaving no record at all; a meme's tombstoned family retracts whole under `family`; CONTROL: a kāpae over a canon record refuses with no mode named, and `reveal` retracts it so canon surfaces", async () => {
     const r = await rig();
     const o = { kind: "lares-verb", requestId: "seed" } as const;

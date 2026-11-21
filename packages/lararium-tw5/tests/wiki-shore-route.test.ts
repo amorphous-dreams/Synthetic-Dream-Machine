@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, canonBag, draftBag, ManualBoundary, personalBag, remote, shoreRig, storeDeleted, storeText,
+  afterDispatch, canonBag, draftBag, ManualBoundary, personalBag, remote, shoreRig, storeAbsent, storeDeleted, storeText,
   tempBag, turns, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -93,7 +93,7 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("a title a tombstone hides from the personal layer is re-created there, so the wiki keeps showing it", async () => {
+  test("a title a plain delete took from the personal layer is re-created where the cascade lands a new save, so the wiki shows it again", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary, upperSlots: true });
     const x = "lar:///t/route/hidden-then-recreated";
@@ -103,11 +103,12 @@ describe.skipIf(wikiSkip)(`wiki shore routing${skipNote}`, () => {
     await r.adaptor.landingIdle();
     r.wiki.deleteTiddler(x);
     await hand(r, boundary);
-    expect(storeDeleted(r, personalBag, x)).toBe(true);
+    expect(storeAbsent(r, personalBag, x), "nothing lies beneath, so the delete retracts and raises no kāpae").toBe(true);
     r.wiki.addTiddler(new r.Tiddler({ title: x, text: "back again" }));
     await hand(r, boundary);
-    expect(storeText(r, personalBag, x)).toBe("back again");
-    expect(r.doc(workingBag).tiddlers[x], "the working layer holds no record").toBeUndefined();
+    // No kāpae stands in the personal layer to pin the title there: a new save lands where the cascade names, the working layer.
+    expect(storeAbsent(r, personalBag, x), "the personal layer keeps no entry").toBe(true);
+    expect(storeText(r, workingBag, x)).toBe("back again");
     expect(r.wiki.getTiddler(x)!.fields.text).toBe("back again");
     await r.stop();
   }, 120_000);

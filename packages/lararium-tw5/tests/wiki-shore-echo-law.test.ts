@@ -12,7 +12,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { afterDispatch, ManualBoundary, remote, shoreRig, storeDeleted, storeText, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { afterDispatch, ManualBoundary, remote, shoreRig, storeAbsent, storeText, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 /** The dispatch, the gate's fire, the landing queue's idle: the barrier a zero reads behind. */
 const barrier = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
@@ -49,10 +49,10 @@ describe.skipIf(wikiSkip)(`the wiki shore's echo law${skipNote}`, () => {
       for (const title of leaked) expect(storeText(r, workingBag, title), `${title} rests in the working layer`).toBe(`hand ${title}`);
       expect(storeText(r, workingBag, echo)).toBe("edited by hand");
 
-      // A VANISHED TITLE routes too: the deletion lands as a tombstone, never as silence.
+      // A VANISHED TITLE routes too: with nothing beneath it the deletion retracts plainly, never as silence.
       r.wiki.deleteTiddler(leaked[0]!);
       await barrier(r, boundary);
-      expect(storeDeleted(r, workingBag, leaked[0]!), "the deletion rests as a tombstone").toBe(true);
+      expect(storeAbsent(r, workingBag, leaked[0]!), "the deletion leaves the layer with no kāpae").toBe(true);
       expect(storeText(r, workingBag, leaked[1]!), "its siblings stand").toBe(`hand ${leaked[1]}`);
     } finally { await r.stop(); }
   }, 120_000);

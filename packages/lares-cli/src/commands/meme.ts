@@ -498,6 +498,7 @@ async function memeDelete(args: ParsedArgs): Promise<number> {
   const receipt = outcome.output;
   const decision = String(receipt["decision"] ?? "");
   const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
+  const retracted = Array.isArray(receipt["retracted"]) ? (receipt["retracted"] as string[]) : [];
   const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
   const message = decision === "conflict" ? `conflict: the records moved past ${plan.args["base"] ?? "the base"} — read again and hand back the live hash`
                 : decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${plan.args["uri"]}`;
@@ -509,7 +510,7 @@ async function memeDelete(args: ParsedArgs): Promise<number> {
     human: () => {
       if (code !== "ok") { console.error(`lares meme delete: ${message}`); return; }
       console.log(`removed: ${plan.args["uri"]}`);
-      console.log(`  tombstoned ${tombstoned.length}`);
+      console.log(`  tombstoned ${tombstoned.length}${retracted.length > 0 ? ` · retracted ${retracted.length}` : ""}`);
       if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
     },
   });

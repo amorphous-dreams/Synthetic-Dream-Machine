@@ -1172,8 +1172,10 @@ def build_mcp(coordinator: LaresCoordinator):
         `no-container`. Slugs ride bare. `base` carries the canonical
         hash the writer read (the CLI's `--if-match`, the route's `If-Match`): stale → the receipt's
         `decision` reads "conflict" and NOTHING moves; absent → the removal proceeds. Returns {uri,
-        decision: removed|absent|conflict, tombstoned, canonicalHash}. A tombstone hides (kāpae) — a
-        re-put restores. Rides the @daemon wire, never a store."""
+        decision: removed|absent|conflict, tombstoned, retracted, canonicalHash}. A kāpae (`tombstoned`)
+        rises only where a lower layer holds the title and would surface; over nothing beneath the
+        record leaves plainly (`retracted`), no tombstone — a re-put restores either. Rides the @daemon
+        wire, never a store."""
         args: dict = {**_meme_container("meme_delete", recipe, bag), "uri": uri}
         if base is not None:
             args["base"] = base

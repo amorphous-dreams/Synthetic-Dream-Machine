@@ -161,7 +161,8 @@ describe("meme put and meme delete", () => {
       expect(await reasonOf(async () => del())).toBe("kahu-reach");
       expect(r.heads()).toEqual(before);
       await del(await kahuHand());
-      expect((await r.stores.get(LARARIUM)!.get(URI))?.meta?.deleted).toBe(true);
+      // Nothing lies beneath, so the Kahu hand's delete retracts the record plainly (no kāpae).
+      expect(await r.stores.get(LARARIUM)!.get(URI)).toBeNull();
     } finally { await r.repo.shutdown(); }
   });
 
