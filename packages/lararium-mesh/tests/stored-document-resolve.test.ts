@@ -70,8 +70,8 @@ describe("a stored document resolves from the store", () => {
       findWithProgress: () => ({
         peek: () => ({ state: "loading", sources: { storage: "unavailable", sync: "pending" } }),
         subscribe: () => () => {},
-        whenReady: () => new Promise<never>(() => {}),
       }),
+      find: () => new Promise<never>(() => {}),
     } as unknown as Repo;
     const refusal = await findOrThrow(silent, "automerge:silent", "a silent document", { timeoutMs: 30 }).catch((e: unknown) => e);
     expect(refusal).toBeInstanceOf(DocumentUnavailableRefusal);

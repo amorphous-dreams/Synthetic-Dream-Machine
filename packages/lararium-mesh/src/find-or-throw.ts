@@ -73,13 +73,16 @@ export async function findOrThrow(repo: Repo, url: string, what: string, opts: F
   const peerMs = opts.timeoutMs ?? DOCUMENT_READY_TIMEOUT_MS;
   const storeMs = Math.max(opts.storeBoundMs ?? DOCUMENT_HANG_BOUND_MS, peerMs);
   const Refusal = opts.refusal ?? DocumentUnavailableRefusal;
-  const query = repo.findWithProgress<LarDoc>(url as AutomergeUrl);
-  const storeLoading = (): boolean => query.peek().sources["storage"] === "pending";
+  // The READY wait rides `find` (the library's one door, which every Repo stand-in answers); the store's own progress
+  // rides the same query through `findWithProgress`, observed where the Repo offers it. A Repo that reports none has
+  // no store phase to wait on, so its wait starts on the peer bound.
+  const query = typeof repo.findWithProgress === "function" ? repo.findWithProgress<LarDoc>(url as AutomergeUrl) : null;
+  const storeLoading = (): boolean => query?.peek().sources["storage"] === "pending";
   let timer: ReturnType<typeof setTimeout> | undefined;
   let unsubscribe: (() => void) | undefined;
   let failure: unknown;
   try {
-    // automerge-repo 2.6: whenReady() resolves only when READY and rejects on unavailable or failed.
+    // automerge-repo 2.6: find() resolves only when READY and rejects on unavailable or failed.
     const outcome = await new Promise<DocHandle<LarDoc> | { elapsed: "store" | "peers" } | null>((resolve) => {
       let phase: "store" | "peers" = storeLoading() ? "store" : "peers";
       const arm = (): void => {
@@ -88,10 +91,10 @@ export async function findOrThrow(repo: Repo, url: string, what: string, opts: F
         timer = setTimeout(() => resolve({ elapsed: phase }), phase === "store" ? storeMs : peerMs);
       };
       arm();
-      unsubscribe = query.subscribe(() => {
+      unsubscribe = query?.subscribe(() => {
         if (phase === "store" && !storeLoading()) { phase = "peers"; arm(); }
       });
-      query.whenReady().then(resolve, (cause: unknown) => { failure = cause; resolve(null); });
+      repo.find<LarDoc>(url as AutomergeUrl).then(resolve, (cause: unknown) => { failure = cause; resolve(null); });
     });
     if (outcome === null) throw new Refusal(url, what, null, failure, "answered");
     if ("elapsed" in outcome) throw new Refusal(url, what, outcome.elapsed === "store" ? storeMs : peerMs, undefined, outcome.elapsed);
