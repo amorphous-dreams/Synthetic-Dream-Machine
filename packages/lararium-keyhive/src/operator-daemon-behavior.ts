@@ -52,12 +52,12 @@ import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTidd
  *  Forwarded straight to makeDaemonBehavior — the daemon always carries the caps; this makes them live.
  *  Absent → the cap stays inert (sink not wired / no projection mount).
  *
- *  `persistVeilArchive` lets the node rest a face's archive without giving the island a path: the mounted face's, or a lit
- *  sibling's named by its PersonaGroup (each hat its own holder rests its own Archive). */
+ *  `persistVeilArchive` lets the node rest a face's archive without giving the island a path: every write names its face, the mounted
+ *  face's and each lit sibling's alike, by its PersonaGroup (each hat its own holder rests its own Archive). */
 type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTickMs" | "onBoot" | "runnableHulls"> & {
   /** The veil identity's archive persistence — the same inversion, its own file. Absent → the veil's
    *  prekeys regenerate per boot, and material keyed to an earlier card stops opening. */
-  persistVeilArchive?: (bytes: Uint8Array, face?: string) => void | Promise<void>;
+  persistVeilArchive?: (bytes: Uint8Array, face: string) => void | Promise<void>;
   /** `shore` — a person's answers at THIS island's disk shore (`lares shore`): the node entry injects the
    *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
    *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
@@ -716,8 +716,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const seatOfFace = (keyhive: KeyhiveProvider, entry: FaceSeat, face: {
     readonly groupId: string | null; readonly fleetRoot: string | null; readonly atomKey: () => string;
     readonly bags: () => readonly string[]; readonly dyad: () => DyadReader | undefined;
-    /** The sibling's PersonaGroup, whose own row its Archive rests in; absent for the mounted face. */
-    readonly archiveFace?: string;
+    /** The face's PersonaGroup, whose own row its Archive rests in: the mounted face's and each lit sibling's alike. */
+    readonly archiveFace: string | null;
   }): ContentKeySeat => {
     const bareId = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
     const fleetRoot = face.fleetRoot;
@@ -732,8 +732,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (daemonAuth.archiveOpens !== true) throw new Error("the archive holds shut: a locked vessel rests no Archive, so no lockbox wraps");
         const write = persistVeilArchive;
         if (!write) throw new Error("no Archive writer stands on this shore, so a wrap could not open again");
+        // EACH ARCHIVE NAMES ITS FACE: the hive that exports names the row its bytes rest in, never a row the vessel holds
+        // as its current one. A seat whose face names no PersonaGroup rests nothing, so its wrap seals nothing.
+        if (!face.archiveFace) throw new Error("face-not-named: this seat's face names no PersonaGroup, so its Archive rests nowhere");
         const archive = await keyhive.exportArchiveAfterTheCard();
-        await (face.archiveFace !== undefined ? write(archive, face.archiveFace) : write(archive));
+        await write(archive, face.archiveFace);
       },
       group: face.groupId && fleetRoot ? { groupId: face.groupId, scope: fleetRoot } : null,
       bags: face.bags,
@@ -779,7 +782,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const fleetRoot = daemonAuth.deviceEdge?.personaRootDid;
       mountedFace.seat = seatOfFace(keyhive, mountedFace, {
         groupId: daemonAuth.personaGroupId ?? null, fleetRoot: fleetRoot ?? null, atomKey: () => faceAtom().key,
-        bags: () => daemonAuth.registerBags, dyad: () => dyadReader(ctx),
+        bags: () => daemonAuth.registerBags, dyad: () => dyadReader(ctx), archiveFace: daemonAuth.personaGroupId ?? null,
       });
       // THE HOLDER LEAVES WITH ITS IDENTITY: a disposed provider opens no lockbox, so the seat unsubscribes
       // and overwrites every key in the same breath.
@@ -874,6 +877,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const floor = await persistArchiveFloor({
         archiveOpens: daemonAuth.archiveOpens,
         writers: { ...(persistVeilArchive ? { persistVeilArchive } : {}) },
+        // EACH ARCHIVE NAMES ITS FACE: the mounted hive's own PersonaGroup names the row, so the vessel never picks one.
+        face: daemonAuth.personaGroupId ?? null,
         // EACH STAND'S CARD MINTS BEFORE ITS ARCHIVE LEAVES. Every later ask in this boot (a binding's
         // a face-join or a crossing) presents that same card, so the Archive that
         // lands here holds the secret behind every prekey this boot presents.

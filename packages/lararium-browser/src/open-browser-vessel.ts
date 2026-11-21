@@ -2118,7 +2118,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // seal under the vessel-held key with no session (the held homes), and every face-half bag stays unmapped.
       if (unlocked !== null && wornGroup !== null) {
         const closeSession = unlocked.close;
-        const lift = browserSessionLift(unlocked.session, (_carrier, bytes) => saveBrowserVeilArchive(idbName, wornGroup, bytes));
+        // EACH ARCHIVE NAMES ITS FACE, and the seal proves it (`saveBrowserVeilArchive`): a write naming another face than the
+        // worn one refuses, and bytes that restore another identity than the worn face's own atom refuse with the row unchanged.
+        const lift = browserSessionLift(unlocked.session, async (_carrier, bytes, face) => {
+          if (face !== wornGroup) throw new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive");
+          await saveBrowserVeilArchive(idbName, wornGroup, bytes);
+        });
         const lifted = await composeVessel(islandLiftStack(islandVessel, lift.lift));
         // R1 · R2: while the lift stands, the worn face's wiki bags map sealed and the vessel's session books each change;
         // every save that waited for a session seals under it now. The face reads by its subject at the session's anchor.

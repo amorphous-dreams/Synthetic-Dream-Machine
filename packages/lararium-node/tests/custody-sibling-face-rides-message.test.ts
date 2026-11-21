@@ -14,6 +14,8 @@ function harness() {
     unlockedFaces: () => [...open],
     faceStanding: async ({ ordinal }: { ordinal: number }) => ({ ordinal, fcid: String(ordinal), unlocked: open.has(String(ordinal)) }),
     lockFace: async (fcid: string) => { open.delete(fcid); },
+    // Every face here LANDED: its anchors row stands, so each may take the mount.
+    readRecord: async () => ({ reading: "opens", plaintext: new Uint8Array() }),
   } as unknown as CustodyHolder;
   const lightFace = vi.fn(async (_ordinal: number) => {});
   const dropFace = vi.fn(async (_ordinal: number) => {});

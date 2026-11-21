@@ -113,6 +113,8 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
+import { faceNamedCustodyWrite } from "./face-named-custody-write.js";
+import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
@@ -1566,8 +1568,16 @@ async function prepareNodeBootOn(
   // Repo and rests in its store — so no binding names a document a hard stop could leave unsaved.
   const receiptClosers = new Set<() => void>();
   const onReceiptClose = (fn: () => void): (() => void) => { receiptClosers.add(fn); return () => { receiptClosers.delete(fn); }; };
-  const receiptDoor: ReceiptIssuer = (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads);
+  // THE STOP'S RECEIPT FENCE (`fenceReceiptAtStop`): from the stop's first step, a receipt whose document holds a save in
+  // memory refuses `held-in-memory`, so a write that lands after the stop sealed (its session dropped, the lift lifted) never
+  // reads as resting.
+  let stopping = false;
+  const receiptDoor: ReceiptIssuer = fenceReceiptAtStop(
+    (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads),
+    { stopping: () => stopping, held: () => sealedRest.store.held() },
+  );
   stood.push({ what: "the receipt waits", down: () => { for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
+  stood.push({ what: "the stop's receipt fence", phase: "producers", down: () => { stopping = true; } });
   houseIslands = islandPeersOf(repo);
   wikiIslands = wikiIslandPeersOf(repo);
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte, and the rest
@@ -2618,20 +2628,17 @@ async function prepareNodeBootOn(
   const islandCaps = islandVessel.record;
   stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
   // THE LIFT'S CUSTODY WRITE: a sovereign composition's island exports reach the sealed writer under the key this thread
-  // holds, into the mounted face's own row (`openDaemon` names it). The lift alone seats it; at the floor none stands, so an
-  // island's ask answers unwritten.
-  let custodyWriteGroup: string | null = null;
-  // EACH HAT ITS OWN HOLDER: a lit sibling's seat rests its Archive in that sibling's own row, named by its PersonaGroup; a
-  // face that stands shut takes no write.
+  // holds. The lift alone seats it; at the floor none stands, so an island's ask answers unwritten.
+  // EACH ARCHIVE NAMES ITS FACE (`faceNamedCustodyWrite`): the island names the PersonaGroup of the hive that exported the
+  // bytes, and the write lands in that face's own row or nowhere; the vessel never picks a row for a faceless ask. The
+  // mounted face (`openDaemon` names it) and each lit sibling with a session stand open; any other face takes no write. The
+  // seal itself proves the bytes are that face's own identity (`persistVeilArchive`), so a misnamed ask writes nothing either.
+  let mountedCustodyGroup: string | null = null;
   const liftCustodyWrite: CustodyWriter | undefined = sovereign
-    ? (_carrier, bytes, face) => {
-      if (face !== undefined) {
-        return siblingFaces.has(face) && siblingSessions.has(face)
-          ? sovereign.writeVeilArchive(bytes, face) : Promise.reject(new Error(`face-not-open: face ${face.slice(0, 8)}… stands shut, so its Archive rests nowhere`));
-      }
-      return custodyWriteGroup
-        ? sovereign.writeVeilArchive(bytes, custodyWriteGroup) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup"));
-    }
+    ? faceNamedCustodyWrite({
+      opens: (face) => face === mountedCustodyGroup || (siblingFaces.has(face) && siblingSessions.has(face)),
+      write: (bytes, face) => sovereign.writeVeilArchive(bytes, face),
+    })
     : undefined;
   stood.push({ what: "the daemon island", phase: "islands", down: async () => {
     const receipt = await (daemonVm as DaemonVmCore | undefined)?.shutdown();
@@ -2776,7 +2783,9 @@ async function prepareNodeBootOn(
       // family, the pin and every face plane read off the bootstrap alone.
       const {
         personaPlanes, personaBagId, personaUrl, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl,
-      } = bootFacePlanes(bootstrapTiddlers, wornMount?.personaGroupId ?? null);
+      // THE PLANES FOLLOW THE FACE CUSTODY SELECTED (the worn mount, else the founding handle's own anchors), never a bootstrap pin a
+      // sibling's landing left naming another face: selection and mount resolution agree on one face.
+      } = bootFacePlanes(bootstrapTiddlers, custodyGroup);
       // ── THE PLACE STANDS ALONE; THE FACE RIDES OPTIONAL ────────────────────────────────────────
       // Only the daemon doc reads required — a founding stands a PLACE first (`lares vessel found`) and a FACE
       // later (`lares persona new 0`), so a vessel that carries and serves while holding no persona names
@@ -2920,11 +2929,13 @@ async function prepareNodeBootOn(
     catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
     // At the FLOOR no key is held, custody refuses `CustodyLocked`, and the vessel boots faceless (no pin rests in the clear).
-    let atFloor = false;
+    // A COMPOSITION THAT HOLDS NO SOVEREIGN READERS STANDS AT THE FLOOR, whatever key custody holds: it reads no face's anchors (a
+    // face left open beside a locked worn face, or a join still pending, names no mount here).
+    let atFloor = sovereign === null;
     const orFloor = async <T,>(read: () => Promise<T | null>): Promise<T | null> => {
       try { return await read(); } catch (e) { if (e instanceof CustodyLocked) { atFloor = true; return null; } throw e; }
     };
-    const foundingAnchors = wornMount ? null : await orFloor(() => loadIdentityAnchors(0));
+    const foundingAnchors = wornMount || atFloor ? null : await orFloor(() => loadIdentityAnchors(0));
     const bootMount = wornMount ?? foundingAnchors;
     // Custody selects the mounted face. The daemon document may project its pins but never selects one.
     const personaGroupId = bootMount?.personaGroupId ?? undefined;
@@ -3578,9 +3589,9 @@ async function prepareNodeBootOn(
         return null;
       })
       : null;
-    // THE CUSTODY WRITE's row: the lift's `custodyWrite` (seated by `composeNodeVesselOn` on a sovereign composition)
-    // writes the mounted face's own veil archive row, named here.
-    custodyWriteGroup = personaGroupId ?? null;
+    // THE MOUNTED FACE STANDS OPEN to the lift's `custodyWrite` (seated by `composeNodeVesselOn` on a sovereign composition):
+    // an island write that names this face lands in its own row. It admits a named face; it never names a row itself.
+    mountedCustodyGroup = personaGroupId ?? null;
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before the first open snapshots `standingAnchor`; a re-open snapshots the anchor the vessel holds now, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
     // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL

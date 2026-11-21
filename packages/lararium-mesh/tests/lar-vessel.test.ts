@@ -67,7 +67,7 @@ describe("LarVessel — one island record", () => {
     const lift = await composeVessel(islandLiftStack(vessel, {
       face: "G-A", drop: () => {}, custodyWrite: () => new Promise<void>((resolve) => { land = resolve; }),
     }));
-    const write = vessel.record.custodyWrite!("veil-archive" as never, new Uint8Array([1]));
+    const write = vessel.record.custodyWrite!("veil-archive" as never, new Uint8Array([1]), "G-A");
     await lift.dispose();
     land();
     await expect(write).rejects.toThrow(/lift-locked/);
@@ -77,8 +77,20 @@ describe("LarVessel — one island record", () => {
     const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
     const landed: Uint8Array[] = [];
     await composeVessel(islandLiftStack(vessel, { face: "G-A", drop: () => {}, custodyWrite: async (_c, bytes) => { landed.push(bytes); } }));
-    await expect(vessel.record.custodyWrite!("veil-archive" as never, new Uint8Array([1]))).resolves.toBeUndefined();
+    await expect(vessel.record.custodyWrite!("veil-archive" as never, new Uint8Array([1]), "G-A")).resolves.toBeUndefined();
     expect(landed).toHaveLength(1);
+  });
+
+  // EACH ARCHIVE NAMES ITS FACE (the 2026-11-20 custody incident): a lit sibling's seat names its own PersonaGroup on every
+  // custody write, and the lift's fence carried the bytes on but dropped that name, so the host read a faceless write and sealed
+  // the sibling's Archive into the worn face's row. The fence hands the face through whole.
+  test("L2 RED: a face-named custody write through the lift reaches the host naming that face", async () => {
+    const vessel = larVesselOf(await composeVessel(islandFloorStack({ cas, receipt })));
+    const asked: Array<string | undefined> = [];
+    await composeVessel(islandLiftStack(vessel, { face: "G-A", drop: () => {}, custodyWrite: async (_c, _bytes, face) => { asked.push(face); } }));
+    await vessel.record.custodyWrite!("veil" as never, new Uint8Array([1]), "G-SIBLING");
+    await vessel.record.custodyWrite!("veil" as never, new Uint8Array([2]), "G-A");
+    expect(asked).toEqual(["G-SIBLING", "G-A"]);
   });
 
   test("a lift over a record no floor composed refuses", async () => {

@@ -22,15 +22,25 @@ function pair(): { island: { post(m: unknown): void; listen(cb: (m: unknown) => 
 describe("the island's custody write", () => {
   test("RED: the bytes reach the lift's custodyWrite, and an unseated lift rejects by name", async () => {
     const { island, vessel } = pair();
-    const written: Array<{ carrier: string; bytes: number[] }> = [];
-    const caps = { custodyWrite: async (carrier: string, bytes: Uint8Array) => { written.push({ carrier, bytes: [...bytes] }); } } as unknown as CapabilityRecord;
+    const written: Array<{ carrier: string; bytes: number[]; face: string }> = [];
+    const caps = { custodyWrite: async (carrier: string, bytes: Uint8Array, face: string) => { written.push({ carrier, bytes: [...bytes], face }); } } as unknown as CapabilityRecord;
     const stop = answerIslandAsks(vessel, caps);
     const write = islandCustodyWriter(island, { idPrefix: "t" });
-    await write("veil", Uint8Array.of(1, 2, 3));
-    expect(written).toEqual([{ carrier: "veil", bytes: [1, 2, 3] }]);
+    await write("veil", Uint8Array.of(1, 2, 3), "G-A");
+    expect(written).toEqual([{ carrier: "veil", bytes: [1, 2, 3], face: "G-A" }]);
     stop();
     const bare = pair();
     answerIslandAsks(bare.vessel, {} as CapabilityRecord);
-    await expect(islandCustodyWriter(bare.island, { idPrefix: "u" })("veil", Uint8Array.of(4))).rejects.toThrow(/did not seal the veil carrier/);
+    await expect(islandCustodyWriter(bare.island, { idPrefix: "u" })("veil", Uint8Array.of(4), "G-A")).rejects.toThrow(/did not seal the veil carrier/);
+  });
+
+  test("EACH ARCHIVE NAMES ITS FACE: an ask naming no face seals nowhere and the vessel's writer never runs", async () => {
+    const { island, vessel } = pair();
+    const written: string[] = [];
+    answerIslandAsks(vessel, { custodyWrite: async (_c: string, _b: Uint8Array, face: string) => { written.push(face); } } as unknown as CapabilityRecord);
+    const write = islandCustodyWriter(island, { idPrefix: "v" }) as (carrier: "veil", bytes: Uint8Array, face?: string) => Promise<void>;
+    await expect(write("veil", Uint8Array.of(5))).rejects.toThrow(/face-not-named/);
+    await expect(write("veil", Uint8Array.of(6), "")).rejects.toThrow(/face-not-named/);
+    expect(written).toEqual([]);
   });
 });

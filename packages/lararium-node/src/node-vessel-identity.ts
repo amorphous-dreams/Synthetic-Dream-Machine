@@ -780,11 +780,21 @@ export async function orphanPersonaRootKey(handleIndex: number, ward?: WardCrede
  * command never reads this: it names its face (`--face N`), or resolves the one face standing open (`face-selector`).
  */
 let mountedFace: number | undefined;
+/** NO MOUNT: the worn face locked and no open face holding anchors stands to take its place, so the composition stands at the
+ *  floor until an opening chooses again; the default rule never picks a face meanwhile (a pending face holds no anchors). */
+const NO_MOUNT = -1;
 export function setMountedFace(handleIndex: number | undefined): void { mountedFace = handleIndex; }
+/** Clear the mount to NO MOUNT: the vessel stands at the floor, and the next opening chooses afresh. */
+export function clearDaemonMount(): void { mountedFace = NO_MOUNT; }
+/** The mount exactly as it stands (a named face, the default rule, or NO MOUNT), for a rollback that restores it whole. */
+export type DaemonMountState = { readonly raw: number | undefined };
+export function daemonMountState(): DaemonMountState { return { raw: mountedFace }; }
+export function restoreDaemonMount(state: DaemonMountState): void { mountedFace = state.raw; }
 
 /** The face the composition mounts among the faces standing open (ascending): the face the unlock named where it stands open,
  *  else the first open face (the steward's face 0 where it stands open); undefined where the named face or every face rests shut. */
 function daemonMountOf(open: readonly number[]): number | undefined {
+  if (mountedFace === NO_MOUNT) return undefined;
   if (mountedFace !== undefined) return open.includes(mountedFace) ? mountedFace : undefined;
   return open[0];
 }
@@ -812,7 +822,7 @@ export async function daemonMountOrdinal(): Promise<number | undefined> {
 }
 
 /** The face the unlock named for the composition to mount, or undefined where it named none. */
-export function mountedFaceOrdinal(): number | undefined { return mountedFace; }
+export function mountedFaceOrdinal(): number | undefined { return mountedFace === NO_MOUNT ? undefined : mountedFace; }
 
 /** The composition's mount reader: the daemon mount (`daemonMountOf`) over the faces standing open. It keeps no pointer. */
 function nodeMountedFaceStore(): ActivePersonaStore {

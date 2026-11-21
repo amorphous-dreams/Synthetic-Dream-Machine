@@ -90,7 +90,7 @@ export { makeFaceIntentDoor, requestFaceJoin, faceJoinNonce, makeFaceIntentReade
 export { makeSeatSummons, foundingHearthOf, standingOfReading, standingOwnSummons, ownSummonsOf } from "./face-seat-summons.js";
 export type { SeatSummonsPorts, SeatSummonsAnswer } from "./face-seat-summons.js";
 export type { FaceIntentDoorPorts, FaceIntentAdmissionPorts, AuthorityAcquisition } from "./face-intent-door.js";
-export { archiveIsOf } from "./archive-is-of.js";
+export { archiveIsOf, requireArchiveOf } from "./archive-is-of.js";
 export type { GrantPlane, FaceJoinOperationInput } from "./face-join-operation.js";
 export type {
   FoundingCeremonyInput, FoundingCeremonyResult,

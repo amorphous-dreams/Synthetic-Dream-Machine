@@ -47,6 +47,22 @@ describe("the browser keeps only a face Archive", () => {
     await expect(requireBrowserFaceAtomSeed(idbName, "no-face")).rejects.toMatchObject({ name: "FaceAtomMissing" });
   });
 
+  // THE SEAL PROVES THE BYTES on every browser writer (the founding, the admit and the lift pass this one door): an Archive of
+  // another identity, or bytes that decode as none, refuse, and the face's row stands unchanged.
+  test("the seal proves the bytes: another identity's Archive and undecodable bytes refuse, the row unchanged", async () => {
+    const { idbName, group } = await foundHalted();
+    const standing = (await loadBrowserVeilArchive(idbName, group))!;
+    const stranger = new KeyhiveProvider();
+    await stranger.init({ seed: await placeSeed(idbName), eventStore: new InMemoryEventStore() });
+    const foreign = await stranger.exportArchiveAfterTheCard();
+    await stranger.dispose();
+    await expect(saveBrowserVeilArchive(idbName, group, foreign)).rejects.toBeInstanceOf(ArchiveIdentityMismatch);
+    await expect(saveBrowserVeilArchive(idbName, group, new TextEncoder().encode("no archive at all"))).rejects.toThrow();
+    expect(await loadBrowserVeilArchive(idbName, group)).toEqual(standing);
+    // CONTROL: the face's own Archive lands.
+    await expect(saveBrowserVeilArchive(idbName, group, standing)).resolves.toBeUndefined();
+  });
+
   test("a torn veil row refuses by row name, and an empty replacement leaves its bytes", async () => {
     const { idbName, group } = await foundHalted();
     const standing = await loadBrowserVeilArchive(idbName, group);

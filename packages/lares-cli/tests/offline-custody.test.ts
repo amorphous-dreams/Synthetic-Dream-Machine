@@ -48,7 +48,7 @@ async function stage(passphrase: string, opts: { marked: boolean }): Promise<str
   // The face must answer the same route as the vessel; the suite's automatic face founder uses its own scratch route.
   await holder.foundFace({ ordinal: 0, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase }] }] });
   seatCustody(holder);
-  await persistIdentityAnchors(ANCHORS);
+  await persistIdentityAnchors(ANCHORS, 0);
   await holder.lock();
   seatCustody(null);
   return root;

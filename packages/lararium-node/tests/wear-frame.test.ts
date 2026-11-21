@@ -8,6 +8,7 @@ import type { Socket } from "node:net";
 import { afterEach, describe, expect, test } from "vitest";
 import type { SlotSpec } from "@lararium/mesh";
 import { custodyFrameHandler } from "../src/custody-frames.js";
+import { personaGroupDigest } from "../src/persona-group-file.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
 import type { WardCredential } from "../src/ward-credential.js";
@@ -32,7 +33,11 @@ interface Composing { readonly refuse: Set<number>; readonly throwOn: Set<number
 async function vessel(faceRoutes: readonly string[], refuseWearing?: number, ctl: Composing = { refuse: new Set(), throwOn: new Set() }) {
   seat = await seatScratchCustody("wear-frame");
   const { holder } = seat;
-  for (const [i, route] of faceRoutes.entries()) await holder.foundFace({ group: `${String(i + 1).repeat(64)}`, slots: [slot(route)] });
+  // EACH FACE LANDED: its group, and its anchors naming that group (a face whose join waits holds none, and never takes the mount).
+  for (const [i, route] of faceRoutes.entries()) {
+    await holder.foundFace({ group: personaGroupDigest(`wear-frame-face-${i}`), slots: [slot(route)] });
+    await holder.writeRecord("identity", `anchors-h${i}.json`, new TextEncoder().encode(JSON.stringify({ personaGroupId: `wear-frame-face-${i}`, meshCabalDocIdHex: "ab" })));
+  }
   await holder.lock();
   const composed: Array<{ sovereign: boolean; ward: WardCredential | undefined; mount: number | undefined }> = [];
   const logs: string[] = [];
@@ -162,14 +167,16 @@ describe("RED wear under a pūlama: the lent set bounds it", () => {
 });
 
 describe("RED wear's rollback: a key never rests over a floor", () => {
-  test("wear-rollback-that-also-refuses-locks-and-answers-not-held", async () => {
+  // A SECOND REFUSAL DROPS NO KEY: a wear opened no key, so the vessel stands at the floor (NO MOUNT) with every key it held.
+  test("wear-rollback-that-also-refuses-stands-the-floor-and-keeps-every-key", async () => {
     const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
     await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
     v.ctl.refuse.add(0); v.ctl.refuse.add(1);
     const a = await v.send({ op: "wear", face: 1 });
-    expect(a).toMatchObject({ op: "wear", face: 1, held: false, switchRefused: "h1 would not stand" });
-    expect(a["held"]).not.toBe(true);
-    expect(v.holder.isUnlocked()).toBe(false);
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, switchRefused: "h1 would not stand" });
+    expect(v.holder.isUnlocked(), "the node key stays held").toBe(true);
+    expect(v.holder.unlockedFaces().length, "every face key stays open").toBe(2);
+    expect(sovereignStands(), "the vessel stands at the floor").toBe(false);
   });
 
   test("wear-whose-recompose-throws-restores-the-prior-mount", async () => {

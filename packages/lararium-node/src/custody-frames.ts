@@ -48,7 +48,7 @@ import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } 
 import type { Socket } from "node:net";
 import type { Credential, DocCensusReading, HeldSaves, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
-import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
+import { clearDaemonMount, daemonMountOrdinal, daemonMountState, mountedFaceOrdinal, restoreDaemonMount, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
@@ -254,6 +254,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * unnamed daemon mount did, and never drops the vessel to the floor while another face stands open.
    */
   let mountByOpening = false;
+  /**
+   * WHETHER A FACE HOLDS ANCHORS: a face whose join still waits (its handle reserved, its anchors absent) never takes the mount,
+   * by an opening, a lock's slide or a held selection. The boot would read its anchors empty while the daemon names the face that
+   * landed, and stand at the floor.
+   */
+  const holdsAnchors = async (ordinal: number): Promise<boolean> =>
+    (await holder.readRecord("identity", `anchors-h${ordinal}.json`).catch(() => null))?.reading === "opens";
+  /** The lowest face of `ordinals` that holds anchors, or undefined where none does. */
+  const lowestAnchored = async (ordinals: readonly number[]): Promise<number | undefined> => {
+    for (const ordinal of [...ordinals].sort((x, y) => x - y)) if (await holdsAnchors(ordinal)) return ordinal;
+    return undefined;
+  };
   const composing = <A extends unknown[], T>(act: (...args: A) => Promise<T>) => async (...args: A): Promise<T> => {
     composingDepth += 1;
     try { return await act(...args); } finally { composingDepth -= 1; }
@@ -301,7 +313,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         return refuseFaces("face-refused", { face: sel.face, faceReading: named === undefined ? "not-standing" : named.reading.replace(/^stayed-shut:/, "") });
       }
       // THE MOUNT AFTER AN OPENING: the one face this route opened, else the lowest of those it opened; `lares wear N` switches.
-      if (mounted === undefined && mountedBefore === undefined && opened.length > 0) { mounted = Math.min(...opened); chosenByOpening = true; }
+      // A FACE WHOSE ANCHORS STAND ABSENT (a join still pending, its handle reserved) never takes the mount: the boot would read
+      // its anchors empty while the daemon names the face that landed. The opening mounts the lowest opened face holding anchors.
+      // A HELD SELECTION THAT NAMES A FACE HOLDING NO ANCHORS is no selection: the opening chooses again, as a fresh one does.
+      const keepsBefore = mountedBefore !== undefined && await holdsAnchors(mountedBefore);
+      if (mounted === undefined && !keepsBefore && opened.length > 0) {
+        mounted = (await lowestAnchored(opened)) ?? [...opened].sort((x, y) => x - y)[0]!;
+        chosenByOpening = true;
+      }
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
       if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
@@ -388,6 +407,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const before = mountedFaceOrdinal();
     // A wear that names the face already worn names it by choice: the mount reads as named, and a lock of that face never slides it on as an opening's mount slides.
     if (before === face) { mountByOpening = false; tellWorn(); return { op: "wear", face, held: true, already: true, standing: deps.standing() }; }
+    // THE ROLLBACK RESTORES THE MOUNT EXACTLY: a named face, the default rule, or NO MOUNT (never the default rule in NO MOUNT's place).
+    const priorMount = daemonMountState();
     const byOpeningBefore = mountByOpening;
     setMountedFace(face);
     mountByOpening = false;
@@ -395,17 +416,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     let stood: CustodyStanding;
     // A RECOMPOSE THAT THROWS puts the mount back on the face it left before the fault names itself to the caller.
     try { stood = await deps.recompose(true); }
-    catch (e) { setMountedFace(before); mountByOpening = byOpeningBefore; throw e; }
+    catch (e) { restoreDaemonMount(priorMount); mountByOpening = byOpeningBefore; throw e; }
     if (stood.refused === undefined) { tellWorn(); return { op: "wear", face, held: true, ...stood }; }
-    setMountedFace(before);
+    restoreDaemonMount(priorMount);
     mountByOpening = byOpeningBefore;
     const back = await deps.recompose(true);
     if (back.refused !== undefined) {
-      // A KEY NEVER RESTS OVER A FLOOR: the face it left would not stand again either, so the vessel drops the key, as an
-      // unlock whose composition refused does, and the answer says so.
-      await holder.lock();
-      deps.onLog(`the composition wearing h${face} did not stand, nor ${before !== undefined ? `h${before} again` : "the floor's sovereign rows"}; the node key dropped`);
-      return { op: "wear", face, held: false, ...back, switchRefused: stood.refused };
+      // A SECOND REFUSAL DROPS NO KEY: a wear opened no key, so the vessel stands at the floor with every key it held (NO MOUNT),
+      // and the answer says so.
+      clearDaemonMount();
+      const floor = await deps.recompose(true);
+      deps.onLog(`the composition wearing h${face} did not stand, nor ${before !== undefined ? `h${before} again` : "the mount before it"}; the vessel stands at the floor, every key held`);
+      return { op: "wear", face, held: true, ...floor, switchRefused: stood.refused };
     }
     deps.onLog(`the composition wearing h${face} did not stand; ${before !== undefined ? `h${before} worn again` : "no face named"}, the node key held`);
     return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}) };
@@ -420,6 +442,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
     const wasMounted = sovereignStands();
+    // The face the composition wears now, by the unlock's name or the default rule: a lock of THAT face composes again, always.
+    const mountBefore = wasOpen ? await daemonMountOrdinal() : undefined;
+    const namedMount = mountedFaceOrdinal() === ordinal && !mountByOpening;
     if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) {
       // A lock answers locked only once the provider is gone: a refused drop leaves the key open and the answer an error.
       try { await deps.dropFace(ordinal); }
@@ -430,16 +455,16 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     }
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
-    // A MOUNT THE OPENING CHOSE SLIDES: locked, it moves to the next face standing open, and the vessel composes there.
-    if (wasOpen && mountByOpening && ordinal === mountedFaceOrdinal()) {
+    // A MOUNT THE OPENING (OR THE DEFAULT RULE) CHOSE SLIDES: locked, it moves to the next open face holding anchors, and the
+    // vessel composes there. With none, NO MOUNT stands: the vessel composes at the floor (no default rule picks a pending face),
+    // and the next opening chooses afresh. A mount a person named does not slide: its lock leaves the floor.
+    if (wasOpen && ordinal === mountBefore && !namedMount) {
       const open = new Set(holder.unlockedFaces());
-      const next = listFaceCustodyIds().filter((f) => open.has(f.fcid)).map((f) => f.ordinal).sort((x, y) => x - y)[0];
-      if (next !== undefined) {
-        setMountedFace(next);
-        deps.onLog(`the mount slides to h${next}, the next face standing open`);
-        const stood = await deps.recompose(true);
-        return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
-      }
+      const next = await lowestAnchored(listFaceCustodyIds().filter((f) => open.has(f.fcid)).map((f) => f.ordinal));
+      if (next !== undefined) { setMountedFace(next); mountByOpening = true; } else clearDaemonMount();
+      deps.onLog(next !== undefined ? `the mount slides to h${next}, the next face standing open that holds anchors` : `no open face holding anchors takes h${ordinal}'s mount; the vessel stands at the floor`);
+      const stood = await deps.recompose(true);
+      return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
     }
     if (wasOpen && wasMounted && !sovereignStands()) {
       const stood = await deps.recompose(true);
