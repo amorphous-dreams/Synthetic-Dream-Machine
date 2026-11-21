@@ -1197,7 +1197,7 @@ for (const [name, shim] of shims) {
   });
   test(`${name}: keep-clears-on-a-real-keep (the fifth read): a keep that exits zero with no answer, or an answer that reads as no envelope naming its workspace, keeps the mark; CONTROL: the envelope naming the workspace clears it`, async () => {
     const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}' };
-    for (const out of ["", "kept, probably", '{"ok":true,"data":{"rite":"keep","workspace":""}}', '{"ok":false,"data":{"workspace":"house-backup"}}']) {
+    for (const out of ["", "kept, probably", '{"ok":true,"data":{"rite":"keep","workspace":""}}', '{"ok":false,"data":{"workspace":"house-backup"}}', '{"ok":true,"data":{"workspace":"house-backup"', '{"ok":true,"note":"x","data":{"workspace":7},"also":{"workspace":"house-backup"}}']) {
       const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
       const cli = join(d, "lares");
       await writeFile(cli, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' '${out}'\nexit 0\n`);

@@ -7,7 +7,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
-import { abandonRites, beginRite, conferre, landRite, pendingBegins, retireMarkStands, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
+import { abandonRites, beginRite, conferre, landRite, pendingBegins, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
 import {
   checkReturn, claimReturn, putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmTesseraTitle,
   type SwarmBodyParts, type SwarmWikiPort,
@@ -253,12 +253,9 @@ describe("an-abandon-mark-stands-only-where-it-verifies", () => {
 });
 
 /**
- * THE FIFTH READ (gate 2): a verified mark takes the slot an unverified one occupies; and SEAT ZERO RETIRES a half whose root is
- * gone (the kāpae pattern: set aside by name, never deleted), one tessera at a time, binding the house, group, branch, tessera,
- * guest cid, the gone root and the operator's statement. Only a reader that names seat zero's key and the house honours it.
+ * THE FIFTH READ (gate 2): a verified mark takes the slot an unverified one occupies.
  */
-describe("a-verified-mark-takes-the-slot-and-seat-zero-retires-a-lost-root", () => {
-  const HOUSE = "E" + "h".repeat(43);
+describe("a-verified-mark-takes-the-slot", () => {
 
   test("RED: the half's own root abandons a half whose slot an unverified (vessel-signed) mark occupies: the verified mark replaces it and the debt clears; CONTROL: a verified mark already resting stays", async () => {
     const f = await fixture();
@@ -274,27 +271,4 @@ describe("a-verified-mark-takes-the-slot-and-seat-zero-retires-a-lost-root", () 
     expect(f.rows.get(title)).toBe(kept);
   });
 
-  test("RED: seat zero's retire mark ends a half for a reader that names seat zero's key and the house; it binds the house, group, branch, tessera, guest cid, the gone root and a statement; CONTROL: a reader naming no seat zero, another house, another signer, or a mark with no statement ends nothing, and the return stays spent", async () => {
-    const f = await fixture();
-    const cid = await f.kui("kukulu", { reach: "wide", returns: 2 });
-    const one = await f.begin();
-    const seatZero = await keyed(9);
-    const ctx = { seatZero: seatZero.key, house: HOUSE };
-    const body = (over: Record<string, unknown> = {}) => ({ act: "rite-retired", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: one.tessera, begun: one.begun, house: HOUSE, root: f.hand.key, statement: "the face's root is lost with its device; set its half aside", ...over }) as never;
-    const title = swarmTesseraTitle(one.tessera, "retired");
-    f.rows.set(title, JSON.stringify(await signSwarmAct(body(), seatZero)));
-    expect(await retireMarkStands(f.wiki, one.tessera, ctx)).toBe(true);
-    expect(await pendingBegins(f.wiki, "kukulu", BRANCH, ctx)).toEqual([]);
-    expect((await conferre(f.wiki, f.trust, GROUP, ctx)).red).toEqual([expect.objectContaining({ tessera: one.tessera, red: "retired" })]);
-    await expect(landRite(f.wiki, { tessera: one.tessera, head: HEAD }, f.trust, GROUP, f.vessel, ctx)).rejects.toMatchObject({ code: "rite-retired" });
-    expect(f.rows.has(swarmLeiReturnedTitle(cid, 1))).toBe(true);
-    // A reader that names no seat zero, or another house, still owes the half.
-    expect((await pendingBegins(f.wiki, "kukulu", BRANCH)).map((p) => p.tessera)).toEqual([one.tessera]);
-    expect((await pendingBegins(f.wiki, "kukulu", BRANCH, { ...ctx, house: "Eother" })).map((p) => p.tessera)).toEqual([one.tessera]);
-    for (const [signer, over] of [[f.hand, {}], [seatZero, { begun: "9".repeat(64) }], [seatZero, { root: "ab".repeat(32) }]] as const) {
-      f.rows.set(title, JSON.stringify(await signSwarmAct(body(over), signer)));
-      expect(await retireMarkStands(f.wiki, one.tessera, ctx)).toBe(false);
-    }
-    await expect(signSwarmAct(body({ statement: "" }), seatZero)).rejects.toMatchObject({ code: "swarm-shape" });
-  });
 });

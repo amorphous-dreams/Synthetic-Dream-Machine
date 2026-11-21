@@ -168,10 +168,25 @@ keep_before_down() {
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
   # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
   if kb_out=$("$@" rite keep --if-due --json); then
-    kb_flat=$(printf '%s' "$kb_out" | tr -d ' \t\r\n')
-    if printf '%s' "$kb_flat" | grep -q '"workspace":null'; then KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed"
-    elif printf '%s' "$kb_flat" | grep -q '^{"ok":true,' && printf '%s' "$kb_flat" | grep -Eq '"data":\{.*"workspace":"[^"]+"'; then KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)"
-    else KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed"; fi
+    # The envelope parses as JSON (python3: the host carries no jq); a reader that cannot parse it reads nothing kept.
+    kb_read=$(printf '%s' "$kb_out" | python3 -c 'import json, sys
+lines = [l for l in sys.stdin.read().splitlines() if l.strip()]
+try:
+    d = json.loads(lines[-1])
+except Exception:
+    sys.exit(0)
+data = d.get("data") if isinstance(d, dict) else None
+if d.get("ok") is True and isinstance(data, dict):
+    w = data.get("workspace")
+    if w is None and "workspace" in data:
+        print("none")
+    elif isinstance(w, str) and w.strip():
+        print("kept")' 2>/dev/null) || kb_read=""
+    case "$kb_read" in
+      kept) KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)" ;;
+      none) KEEP_SAID="no keep workspace resolved, so nothing kept; the keep stays owed" ;;
+      *) KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed" ;;
+    esac
   else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 

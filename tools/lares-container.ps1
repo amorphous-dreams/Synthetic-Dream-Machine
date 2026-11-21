@@ -432,11 +432,18 @@ function KeepBeforeDown {
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
   # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
-  $kbOut = ((& $cmd @pre rite keep --if-due --json) -join '') -replace '\s', ''
+  $kbLines = @(& $cmd @pre rite keep --if-due --json)
   $kbRc = $LASTEXITCODE
-  # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
-  if ($kbRc -eq 0 -and $kbOut.Contains('"workspace":null')) { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
-  if ($kbRc -eq 0 -and -not ($kbOut.StartsWith('{"ok":true,') -and $kbOut -match '"data":\{.*"workspace":"[^"]+"')) { $script:KeepSaid = 'the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed'; return }
+  # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty),
+  # parsed as JSON; an answer that parses as none reads nothing kept.
+  if ($kbRc -eq 0) {
+    $kb = $null
+    $last = @($kbLines | Where-Object { "$_".Trim() }) | Select-Object -Last 1
+    try { $kb = "$last" | ConvertFrom-Json -ErrorAction Stop } catch { $kb = $null }
+    $hasWs = $null -ne $kb -and $kb.ok -eq $true -and $null -ne $kb.data -and ($kb.data.PSObject.Properties.Name -contains 'workspace')
+    if ($hasWs -and $null -eq $kb.data.workspace) { $script:KeepSaid = 'no keep workspace resolved, so nothing kept; the keep stays owed'; return }
+    if (-not ($hasWs -and $kb.data.workspace -is [string] -and $kb.data.workspace.Trim())) { $script:KeepSaid = 'the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed'; return }
+  }
   $global:LASTEXITCODE = $kbRc
   if ($LASTEXITCODE -ne 0) {
     $script:KeepSaid = 'the keep did not complete'

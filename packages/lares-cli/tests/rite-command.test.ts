@@ -16,7 +16,7 @@ import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisD
 import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, hostRefill, hostRowLine, retireOf, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
+import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
 import { storeVerbRidesWorn } from "../src/store-door.js";
 import { kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
@@ -832,19 +832,5 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify({ op: "lei", reading: "signed", records: [rec] }))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
     expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", JSON.stringify([rec]))).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", signed: [rec] } });
     expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--signed", "not json")).toThrow(RiteUsage);
-  });
-
-  it("RED (the fifth read): seat zero's retire rides the abandon's hand gate: `--abandon --retire <tessera> --statement <text>` hands both to the vessel; the plan carries them; a retire with no statement refuses by usage before anything reads", async () => {
-    const f = fakes();
-    const seen: unknown[] = [];
-    f.ports.abandon = async (branch, face, retire) => { seen.push([branch, face, retire]); return { ok: true, output: { attached: true } }; };
-    await riteKukulu(f.ports, { abandon: true, retire: { tessera: TESSERA, statement: "h1's root is lost; set its half aside" } });
-    expect(seen).toEqual([["main", undefined, { tessera: TESSERA, statement: "h1's root is lost; set its half aside" }]]);
-    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--retire", TESSERA, "--statement", "lost")).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", retire: TESSERA, statement: "lost" } });
-    expect(plan("abandon", "--rite", "kukulu", "--branch", "main", "--retire", TESSERA, "--statement", "lost", "--terms")).toEqual({ verb: "rite-abandon", args: { rite: "kukulu", branch: "main", retire: TESSERA, statement: "lost", terms: true } });
-    expect(() => plan("abandon", "--rite", "kukulu", "--branch", "main", "--retire", TESSERA)).toThrow(RiteUsage);
-    expect(retireOf(parseArgs(["rite", "kukulu", "--abandon", "--retire", TESSERA, "--statement", "lost"]))).toEqual({ retire: { tessera: TESSERA, statement: "lost" } });
-    expect(() => retireOf(parseArgs(["rite", "kukulu", "--abandon", "--retire", TESSERA]))).toThrow(RiteUsage);
-    expect(() => retireOf(parseArgs(["rite", "kukulu", "--retire", TESSERA, "--statement", "lost"]))).toThrow(RiteUsage);
   });
 });

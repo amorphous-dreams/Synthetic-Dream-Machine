@@ -127,7 +127,7 @@ export interface RitePorts {
    */
   standing?(branch: string, face?: number): Promise<StandingAnswer>;
   /** The hand's abandon of every half resting unlanded on the line (`rite abandon --rite kukulu`): it answers each half it ended. */
-  abandon?(branch: string, face?: number, retire?: { readonly tessera: string; readonly statement: string }): Promise<RiteVerbAnswer>;
+  abandon?(branch: string, face?: number): Promise<RiteVerbAnswer>;
   /** The keep a down left owed, run after the landing (`keep-owed`); absent, the raise runs it itself. */
   keepOwed?(): Promise<number>;
   /** The image the raised vessel runs, by digest, as the vessel's container reports it (null where none reads); absent, the rite lands over the digest it staged. */
@@ -211,7 +211,7 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  * wears. `rollback` stands the image that ran before (`true`) or the image of an older revision, with no checkout move.
  * `abandon` ends every kūkulu half resting unlanded on the line, by name, on a terminal alone, and raises nothing.
  */
-export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string; readonly abandon?: true; readonly retire?: { readonly tessera: string; readonly statement: string } }): Promise<{ code: number; data: Record<string, unknown> }> {
+export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string; readonly abandon?: true }): Promise<{ code: number; data: Record<string, unknown> }> {
   if (opts.abandon === true) return abandonKukulu(ports, opts);
   const forward = opts.rollback === undefined;
   if (forward && ports.sync) {
@@ -493,7 +493,7 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
  * spent, conferre reading it red `abandoned`. A terminal alone runs it (the store door refuses a seat's session too); it syncs,
  * builds and raises nothing.
  */
-async function abandonKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly retire?: { readonly tessera: string; readonly statement: string } }): Promise<{ code: number; data: Record<string, unknown> }> {
+async function abandonKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number }): Promise<{ code: number; data: Record<string, unknown> }> {
   const checkout = await ports.checkout();
   const branch = opts.branch ?? checkout.branch;
   const base = { rite: RITE_KUKULU, branch };
@@ -501,7 +501,7 @@ async function abandonKukulu(ports: RitePorts, opts: { readonly branch?: string;
     ports.say(`kūkulu: an abandon ends a pending begin on the operator's hand, and this seat holds no terminal; run \`${HAND_ACT} --abandon --branch ${branch}\` on a terminal; nothing abandoned`);
     return { code: 1, data: { ...base, refusal: "kukulu-abandon-needs-hand" } };
   }
-  const out = await ports.abandon(branch, opts.face, opts.retire);
+  const out = await ports.abandon(branch, opts.face);
   if (!out.ok) {
     ports.say(`kūkulu: the abandon refused: ${out.message}; nothing abandoned`);
     return { code: 1, data: { ...base, refusal: out.code } };
