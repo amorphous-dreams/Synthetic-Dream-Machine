@@ -169,6 +169,35 @@ describe("the share door", () => {
     expect(g.file()).toBeNull();
   });
 
+  test("SH14 (red, #428 F2) — a name taken out rides the landing as a retraction: the owner revokes its grant, and the line says so", async () => {
+    const f = fake({ file: serializeShareFile([{ slug: "notes", kind: "bag", read: "joshua-fontany-engineer [[the referee]]", write: "joshua-fontany-engineer" }]), applied: { granted: 1, pending: 0, retracted: 1, stillGranted: [] } });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], { "read-remove": "h1", "write-remove": "h1" }))).toBe(0);
+    expect(parseShareFile(f.file()!)[0]).toMatchObject({ read: "[[the referee]]", write: "" });
+    expect(f.verbs.map((v) => v.name)).toEqual(["share-set", "share-apply"]);
+    expect(f.verbs[1]!.args["retract"]).toEqual([{ slug: "notes", grantee: 1 }]);
+    expect(f.out.join("\n")).toMatch(/revoked: 1 grant\(s\) the names this line took out had landed/);
+    // A writer demoted to a reader rides the retraction too (its edit grant leaves, a read grant lands in its place).
+    const g = fake({ file: serializeShareFile([{ slug: "notes", kind: "bag", read: "joshua-fontany-engineer", write: "joshua-fontany-engineer" }]), applied: { granted: 1, retracted: 1, stillGranted: [] } });
+    expect(await cmdShare("bag", g.doors)(args(["notes"], { "write-remove": "h1" }))).toBe(0);
+    expect(g.verbs[1]!.args["retract"]).toEqual([{ slug: "notes", grantee: 1 }]);
+    // CONTROL: a line that takes no one out names no retraction.
+    const h = fake({ file: serializeShareFile([{ slug: "notes", kind: "bag", read: "joshua-fontany-engineer", write: "" }]) });
+    expect(await cmdShare("bag", h.doors)(args(["notes"], { read: "h2" }))).toBe(0);
+    expect(h.verbs[1]!.args["retract"]).toBeUndefined();
+  });
+
+  test("SH15 (red, #428 F2) — a grant the landing cannot take back keeps the row as it stood: the door refuses, names who still reads, and the same line retries", async () => {
+    const standing = serializeShareFile([{ slug: "notes", kind: "bag", read: "joshua-fontany-engineer [[the referee]]", write: "" }]);
+    const f = fake({ file: standing, applied: { granted: 0, retracted: 0, stillGranted: [{ slug: "notes", grantee: 1 }] } });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], { "read-remove": "h1" }))).toBe(1);
+    expect(f.file(), "the row stands as it stood").toBe(standing);
+    expect(f.verbs.map((v) => v.name)).toEqual(["share-set", "share-apply", "share-set", "share-apply"]);
+    expect(f.verbs[2]!.args).toMatchObject({ slug: "notes", read: "joshua-fontany-engineer [[the referee]]" });
+    expect(f.err.join("\n")).toMatch(/joshua-fontany-engineer \(h1\) still reads notes/);
+    expect(f.err.join("\n")).toMatch(/lares vault unlock --face N/);
+    expect(f.out.join("\n")).not.toMatch(/reads for the referee \(h2\), writes/);
+  });
+
   test("SH13 (red) — the echo prints the resolved row: a name given twice (by pet-name and by --face) reads once", async () => {
     const f = fake();
     expect(await cmdShare("wiki", f.doors)(args(["elyncia-referee"], { read: "joshua-fontany", face: "0" }))).toBe(0);

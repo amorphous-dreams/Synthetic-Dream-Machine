@@ -379,6 +379,23 @@ describe("R10 (referee walk #1/#6) — init completes what a partial left, and s
     expect(JSON.stringify(v.ledger.doc())).toBe(ledgerBefore);
   });
 
+  test("RED (#428 F3) a re-init where no hive reads, or where a registration refuses, answers what stands and never throws", async () => {
+    const v = await vessel();
+    await floorMint(v);
+    const steward = await v.face(REFEREE, 0xe5);
+    const reinit = (bagRegistered: () => Promise<boolean | null>) => makeInitWikiReactor({
+      repo: v.repo, catalog: steward.catalog, rootDir: "", vesselDid: () => "did:key:vessel",
+      registerBag: async () => { throw new Error("waking-floor: lightAFace before minting a bag"); },
+      bagRegistered,
+      resolveDraftDoc: async () => ({ url: steward.draft.url, reach: "face" as never }),
+    })({ slug: SLUG }, HAND);
+    expect(await reinit(async () => null)).toMatchObject({ status: "already-exists", bagsRegistered: [] });
+    const refused = await reinit(async () => false);
+    expect(refused).toMatchObject({ status: "already-exists", bagsRegistered: [] });
+    expect((refused["bagsRefused"] as Array<{ bag: string; why: string }>).map((r) => r.bag)).toEqual([wikiBagUri(SLUG), wikiSlotUri(SLUG, "working"), wikiSlotUri(SLUG, "draft")]);
+    expect((refused["bagsRefused"] as Array<{ why: string }>)[0]!.why).toMatch(/^waking-floor:/);
+  });
+
   test("a fresh mint stands its workbench in the same act; a re-init answers `already-exists`", async () => {
     const v = await vessel();
     const steward = await v.face(REFEREE, 0xe2);
@@ -419,6 +436,30 @@ describe("R11 (referee walk #5) — the house's effect records never count as a 
     expect(await engineer.retire()).toMatchObject({ status: "retired", forced: false, records: { effects: 1 } });
     expect(live(workbench)).toBe(0);
     expect(engineer.rows()).toEqual([]);
+  });
+
+  test("RED (#428 F1b) a full-shape record that names another bag, rests under another layer's ledger, carries text or a field beside the schema counts as authored", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xf3);
+    await engineer.init();
+    await engineer.stand();
+    const workbench = (await engineer.working())!;
+    const WORKING = wikiSlotUri(SLUG, "working"), DRAFT = wikiSlotUri(SLUG, "draft");
+    const shaped = (bag: string, eventId: string, more: Record<string, unknown> = {}) => {
+      const rec = buildEffectRecordTiddler({ eventId, archivalVerb: "accession", actionVerb: "ADD" as never, requestId: "r", bag, actor: "lares", timestamp: "2026-11-21T00:00:00.000Z" });
+      return { ...rec, tiddler: { ...rec.tiddler, ...more } };
+    };
+    workbench.change((d) => {
+      const put = (title: string, rec: unknown) => { d.tiddlers[title] = rec as never; };
+      put(effectRecordUri(WORKING, "real"), shaped(WORKING, "real"));                                       // the house's own: an effect
+      put(effectRecordUri(wikiBagUri(SLUG), "ingest"), shaped(wikiBagUri(SLUG), "ingest"));                 // a gated ingest's canon row: an effect
+      put(effectRecordUri(WORKING, "other-bag"), shaped(DRAFT, "other-bag"));                                // names another bag
+      put(effectRecordUri(DRAFT, "other-ledger"), shaped(DRAFT, "other-ledger"));                            // another layer's ledger, in this layer
+      put(effectRecordUri(WORKING, "with-text"), shaped(WORKING, "with-text", { text: "my words" }));        // carries text
+      put(effectRecordUri(WORKING, "extra"), shaped(WORKING, "extra", { mood: "wry" }));                     // a field beside the schema
+    });
+    expect(await engineer.retire({ "dry-run": true })).toMatchObject({ total: 4, records: { working: 4, effects: 2 } });
+    await expect(engineer.retire()).rejects.toThrow(/^wiki-not-empty:/);
   });
 
   test("authored records still need the count; a record wearing the effect tag at an authored title counts as authored", async () => {
