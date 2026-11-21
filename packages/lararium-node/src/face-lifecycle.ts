@@ -34,6 +34,19 @@
  * ── THE SUPERVISOR READS THE ACTORS ────────────────────────────────────────────────────────────
  * The island composes again (a refused drop, a restart) from the actors' own states: it lights only faces whose actor reads
  * `lit` and never asks custody, so a face `closing` stays out whether or not custody has locked it, and no cycle can form.
+ *
+ * ── A DRAIN THAT FAILS HOLDS ───────────────────────────────────────────────────────────────────
+ * A drain that faults never reaches CLOSED: the face holds `closing` (drain-failed), admitting nothing, and every close waiter
+ * hears the fault, so no custody holder locks the key over saves that did not seal. The next close drains again.
+ *
+ * ── A HELD FACE LIGHTS NOT ─────────────────────────────────────────────────────────────────────
+ * A close may HOLD the face (`hold`): once dark it refuses every light until `release`, so a lock that closes the face and then
+ * locks its key never meets a relight in between. Each return to dark tells the vessel (`onDark`), which replays its lend.
+ *
+ * ── EVERY WRITE OF A VISIT RUNS IN ONE DELIVERY TURN ───────────────────────────────────────────
+ * A visit answers exactly once. Its reply, its failure and the close's refusal all reach the asker through the actor's mailbox:
+ * the delivery message reads `lit`, the admitted opening and whether the visit already answered, and writes or refuses in that
+ * same turn. A second delivery, after a close refused it or after it answered, writes nothing.
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 
@@ -52,7 +65,7 @@ export interface FaceLifeEffects {
    * island took the face (so the close drops that entry), or throws once nothing of the face stands in the island.
    */
   light(ordinal: number, opening: string, live: () => boolean): Promise<FaceLit>;
-  /** Drain the face's queued saves under its own session, while its sealing seat in the island still stands. */
+  /** Drain the face's queued saves under its own session, while its sealing seat in the island still stands. A fault holds the close. */
   drainSaves(ordinal: number, opening: string): Promise<void>;
   /** Tell the island to drop the face's entry: resolve = the island acknowledged, reject = it refused the drop. */
   dropWorker(ordinal: number, atomKey: string): Promise<void>;
@@ -63,34 +76,37 @@ export interface FaceLifeEffects {
    * `recomposed`, naming the faces it composed with; this promise only says the restart ran.
    */
   recompose(reason: string): Promise<void>;
+  /** The face reads dark again (a close ended, a light refused, a release): the vessel replays its lend. */
+  onDark?(ordinal: number): void;
   readonly log: (line: string) => void;
 }
 
 /** A face's lifecycle state, as one read of its actor. */
 export type FaceLifeState =
-  | { readonly kind: "dark" }
+  | { readonly kind: "dark"; readonly held: boolean }
   | { readonly kind: "lighting"; readonly opening: string }
   | { readonly kind: "lit"; readonly opening: string; readonly atomKey: string | null; readonly custody: string | null }
   | { readonly kind: "closing"; readonly opening: string; readonly phase: ClosingPhase };
 
-/** Where a close stands: waiting out a light or work, draining saves, the worker told, or the island composing again. */
-export type ClosingPhase = "settling" | "draining" | "told" | "recomposing";
+/** Where a close stands: waiting out a light or work, draining saves (or held by a drain that faulted), the worker told, or the island composing again. */
+export type ClosingPhase = "settling" | "draining" | "drain-failed" | "told" | "recomposing";
 
-/** Admitted work on a face (a session verb or act): the door dispatches only on the actor's yes, and says `done` once it settled. */
+/** Admitted work on a face (a session verb or act): the door dispatches only on the actor's yes, and says `done` once the work itself settled. */
 export interface WorkTicket {
   readonly opening: string;
   done(): void;
 }
 
-/** An admitted visit to a face: its reply delivers through the actor, or the actor refuses it first. */
+/** An admitted visit to a face: every answer it gives rides the actor's one delivery turn, exactly once. */
 export interface VisitTicket {
   readonly opening: string;
   /**
-   * Deliver the reply in the actor: `write` runs in this same turn when the face still stands lit under the admitted opening and
-   * the visit was not refused; otherwise `refuse` runs, unless the visit already answered (refused at a close, or dropped).
+   * Deliver one answer through the actor's mailbox: `write` runs in the delivery turn when the face still stands lit under the
+   * admitted opening and the visit has not answered; `refuse` runs when the face moved; nothing runs once the visit answered
+   * (refused at a close, delivered before, or its asker left).
    */
   deliver(write: () => void, refuse: (reason: string) => void): void;
-  /** The asker left: the actor forgets the visit and writes nothing for it. */
+  /** The asker left: the visit answers nothing more. */
   drop(): void;
 }
 
@@ -98,38 +114,49 @@ export interface VisitTicket {
 export type LightAnswer = "lit" | "refused";
 
 type Waiter<T> = (value: T) => void;
-interface Visit { readonly refuse: (reason: string) => void }
+interface Closed { readonly resolve: () => void; readonly reject: (error: unknown) => void }
+/** One admitted visit, shared by the actor and its ticket: `answered` flips once, at its one answer. */
+interface Visit { readonly id: number; readonly refuse: (reason: string) => void; answered: boolean }
 
 type Life =
   | { kind: "dark" }
   | { kind: "lighting"; opening: string; waiters: Array<Waiter<LightAnswer>> }
   | { kind: "lit"; opening: string; atomKey: string | null; custody: string | null; visits: Map<number, Visit>; work: Set<number> }
   | { kind: "closing"; opening: string; atomKey: string | null; custody: string | null; phase: ClosingPhase; lightPending: boolean; work: Set<number>;
-      closedWaiters: Array<Waiter<void>>; relight: Array<Waiter<LightAnswer>> | null };
+      closedWaiters: Closed[]; relight: Array<Waiter<LightAnswer>> | null };
 
 type Message =
   | { t: "light"; waiter: Waiter<LightAnswer> }
   | { t: "adopt"; lit: FaceLit }
   | { t: "light-settled"; opening: string; lit: FaceLit | null; error?: unknown }
-  | { t: "close"; reason: string; custody: string | null | undefined; waiter: Waiter<void> }
+  | { t: "close"; reason: string; custody: string | null | undefined; hold: boolean; waiter: Closed }
+  | { t: "release" }
   | { t: "work-done"; opening: string; id: number }
   | { t: "saves-drained"; opening: string }
+  | { t: "saves-failed"; opening: string; error: unknown }
   | { t: "worker-ack"; opening: string }
   | { t: "worker-refused"; opening: string; error: unknown }
-  | { t: "recomposed"; composed: ReadonlySet<number> };
+  | { t: "recomposed"; composed: ReadonlySet<number> }
+  | { t: "deliver"; visit: Visit; opening: string; write: () => void; refuse: (reason: string) => void }
+  | { t: "drop-visit"; visit: Visit; opening: string };
 
 /** The vessel's set of face actors and its island supervisor. */
 export interface FaceLives {
-  /** Light a face: dark lights under a fresh opening; lighting or lit joins; closing lights again, fresh, once it reads dark. */
+  /** Light a face: dark lights under a fresh opening; lighting or lit joins; closing lights again, fresh, once it reads dark; held refuses. */
   light(ordinal: number): Promise<LightAnswer>;
   /** The composition stood with this face lit (the island's manifest carried it): the actor reads lit under a fresh opening. */
   adopt(ordinal: number, lit: FaceLit): void;
   /**
-   * Close a face, resolving at CLOSED (saves drained, worker told, host torn down); a dark face resolves at once. Where `custody`
-   * names the custody opening a close answers (the pūlama's `closing`), a face lit under ANOTHER known custody opening keeps
-   * standing and the close resolves at once: nothing serves the opening it names.
+   * Close a face, resolving at CLOSED (saves drained, worker told, host torn down) and rejecting where its drain faulted (the
+   * face holds closing); a dark or never-known face resolves at once. Where `custody` names the custody opening a close answers
+   * (the pūlama's `closing`), a face lit under ANOTHER known custody opening keeps standing and the close resolves at once.
+   * `hold` keeps the face from lighting once dark until `release`.
    */
-  close(ordinal: number, reason: string, custody?: string | null): Promise<void>;
+  close(ordinal: number, reason: string, options?: { readonly custody?: string | null; readonly hold?: boolean }): Promise<void>;
+  /** Lift a close's hold: the face may light again, and the vessel replays its lend. */
+  release(ordinal: number): void;
+  /** Close every face this set knows through its actor (a stand-down, a stop, a slide): resolves once each closed or faulted. */
+  closeAll(reason: string, options?: { readonly hold?: boolean }): Promise<void>;
   /** The opening a face stands lit under now, or null. */
   opening(ordinal: number): string | null;
   /** The custody opening a lit face lit under, or null. */
@@ -146,8 +173,9 @@ export interface FaceLives {
   /** Admit a visit to a face; `refuse` answers it if the face closes first. Null where the face does not stand lit. */
   admitVisit(ordinal: number, refuse: (reason: string) => void): VisitTicket | null;
   /**
-   * THE SUPERVISOR: the island stood again, composed with `composed` (the faces whose actor read lit at its open). Every closing
-   * face it left out now reads dark (the fresh island holds no entry for it); a face it composed keeps closing.
+   * THE SUPERVISOR: the island stood again, composed with `composed` (the faces whose actor read lit at its open). The restart
+   * ended every verb in flight, so no admitted work holds a close past it; every closing face it left out now reads dark (the
+   * fresh island holds no entry for it); a face it composed keeps closing.
    */
   recomposed(composed: ReadonlySet<number>): void;
   /** Stop: no new light; a pending waiter still resolves as its message lands. */
@@ -157,18 +185,18 @@ export interface FaceLives {
 /** The never-repeating opening for one light: this vessel's boot nonce and a count across every face. */
 const openingName = (nonce: string, n: number): string => `${nonce}:${n}`;
 
+type Actor = { life: Life; queue: Message[]; draining: boolean; held: boolean };
+
 export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: string }): FaceLives {
-  const lives = new Map<number, { life: Life; queue: Message[]; draining: boolean }>();
+  const lives = new Map<number, Actor>();
   let opened = 0;
   let nextId = 1;
   let stopped = false;
   let recomposing: Promise<void> | null = null;
-  /** Visits that already answered by another road (refused at a close, or their asker left): their delivery writes nothing. */
-  const settledVisits = new Set<number>();
 
-  const actorOf = (ordinal: number) => {
+  const actorOf = (ordinal: number): Actor => {
     let actor = lives.get(ordinal);
-    if (!actor) { actor = { life: { kind: "dark" }, queue: [], draining: false }; lives.set(ordinal, actor); }
+    if (!actor) { actor = { life: { kind: "dark" }, queue: [], draining: false, held: false }; lives.set(ordinal, actor); }
     return actor;
   };
   const fresh = (): string => openingName(options.nonce, ++opened);
@@ -199,50 +227,52 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     );
   };
 
+  const drain = (ordinal: number, opening: string): (() => void) => () => {
+    effects.drainSaves(ordinal, opening).then(
+      () => send(ordinal, { t: "saves-drained", opening }),
+      (error: unknown) => send(ordinal, { t: "saves-failed", opening, error }),
+    );
+  };
+
   /** Take a closing face one step on where its waits allow; every step's effects return. */
-  const advance = (ordinal: number, actor: { life: Life }): Array<() => void> => {
+  const advance = (ordinal: number, actor: Actor): Array<() => void> => {
     const life = actor.life;
     if (life.kind !== "closing" || life.phase !== "settling" || life.lightPending || life.work.size > 0) return [];
     life.phase = "draining";
-    const opening = life.opening;
-    return [() => {
-      effects.drainSaves(ordinal, opening).then(
-        () => send(ordinal, { t: "saves-drained", opening }),
-        (error: unknown) => {
-          effects.log(`[face-life] h${ordinal}: its queued saves did not drain before it closed: ${describe(error)}`);
-          send(ordinal, { t: "saves-drained", opening });
-        },
-      );
-    }];
+    return [drain(ordinal, life.opening)];
   };
 
-  /** Reach dark from closing: a light asked for during the close lights again now, under a fresh opening. */
-  const toDark = (ordinal: number, actor: { life: Life }): Array<() => void> => {
+  const darkNow = (ordinal: number): (() => void) => () => effects.onDark?.(ordinal);
+
+  /** Reach dark from closing: a light asked for during the close lights again now, under a fresh opening, unless the close held it. */
+  const toDark = (ordinal: number, actor: Actor): Array<() => void> => {
     const life = actor.life;
     const relight = life.kind === "closing" ? life.relight : null;
-    if (relight !== null && !stopped) {
+    if (relight !== null && !stopped && !actor.held) {
       const opening = fresh();
       actor.life = { kind: "lighting", opening, waiters: relight };
       return [startLight(ordinal, opening)];
     }
     actor.life = { kind: "dark" };
-    return relight ? relight.map((w) => () => w("refused")) : [];
+    return [...(relight ? relight.map((w) => () => w("refused")) : []), darkNow(ordinal)];
   };
 
-  const handle = (ordinal: number, actor: { life: Life }, m: Message): Array<() => void> => {
+  const refusal = (ordinal: number): string => `face-not-open: face h${ordinal} closed before this visit's answer left; nothing is delivered`;
+
+  const handle = (ordinal: number, actor: Actor, m: Message): Array<() => void> => {
     const life = actor.life;
     switch (m.t) {
       case "light": {
         if (life.kind === "lit") return [() => m.waiter("lit")];
         if (life.kind === "lighting") { life.waiters.push(m.waiter); return []; }
+        if (actor.held || stopped) return [() => m.waiter("refused")];
         if (life.kind === "closing") { (life.relight ??= []).push(m.waiter); return []; }
-        if (stopped) return [() => m.waiter("refused")];
         const opening = fresh();
         actor.life = { kind: "lighting", opening, waiters: [m.waiter] };
         return [startLight(ordinal, opening)];
       }
       case "adopt": {
-        if (life.kind !== "dark") return [];
+        if (life.kind !== "dark" || actor.held) return [];
         actor.life = { kind: "lit", opening: fresh(), atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set() };
         return [];
       }
@@ -252,7 +282,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
           if (m.lit === null) {
             actor.life = { kind: "dark" };
             effects.log(`[face-life] h${ordinal} did not light: ${describe(m.error)}`);
-            return waiters.map((w) => () => w("refused"));
+            return [...waiters.map((w) => () => w("refused")), darkNow(ordinal)];
           }
           actor.life = { kind: "lit", opening: life.opening, atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set() };
           return waiters.map((w) => () => w("lit"));
@@ -265,21 +295,25 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         return [];
       }
       case "close": {
-        if (life.kind === "dark") return [() => m.waiter()];
+        if (m.hold) actor.held = true;
+        if (life.kind === "dark") return [() => m.waiter.resolve()];
         if (life.kind === "closing") {
-          if (life.phase === "told" || life.phase === "recomposing") return [() => m.waiter()];
+          if (life.phase === "told" || life.phase === "recomposing") return [() => m.waiter.resolve()];
           life.closedWaiters.push(m.waiter);
+          // A drain that faulted drains again at the next close.
+          if (life.phase === "drain-failed") { life.phase = "draining"; return [drain(ordinal, life.opening)]; }
           return [];
         }
         // A close naming a custody opening this face did not light under (one it knows) answers at once: nothing serves it.
-        if (life.kind === "lit" && m.custody !== undefined && m.custody !== null && life.custody !== null && life.custody !== m.custody) return [() => m.waiter()];
+        if (life.kind === "lit" && m.custody !== undefined && m.custody !== null && life.custody !== null && life.custody !== m.custody) return [() => m.waiter.resolve()];
         effects.log(`[face-life] h${ordinal} closes (${m.reason})`);
         const refused: Array<() => void> = [];
         if (life.kind === "lit") {
-          // Every admitted visit not yet delivered refuses now; its reply, when it lands, writes nothing.
-          for (const [id, visit] of life.visits) {
-            settledVisits.add(id);
-            refused.push(() => visit.refuse(`face-not-open: face h${ordinal} closed before this visit's answer left; nothing is delivered`));
+          // Every admitted visit not yet answered refuses now, its one answer; its reply, when it lands, writes nothing.
+          for (const visit of life.visits.values()) {
+            if (visit.answered) continue;
+            visit.answered = true;
+            refused.push(() => visit.refuse(refusal(ordinal)));
           }
           life.visits.clear();
         }
@@ -292,10 +326,24 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         };
         return [...refused, ...advance(ordinal, actor)];
       }
+      case "release": {
+        if (!actor.held) return [];
+        actor.held = false;
+        return life.kind === "dark" ? [darkNow(ordinal)] : [];
+      }
       case "work-done": {
         if (life.kind === "lit" && life.opening === m.opening) { life.work.delete(m.id); return []; }
         if (life.kind === "closing" && life.opening === m.opening) { life.work.delete(m.id); return advance(ordinal, actor); }
         return [];
+      }
+      case "saves-failed": {
+        if (life.kind !== "closing" || life.opening !== m.opening || life.phase !== "draining") return [];
+        // THE CLOSE HOLDS: no CLOSED over saves that did not seal; each waiter hears the fault, and the next close drains again.
+        life.phase = "drain-failed";
+        const waiters = life.closedWaiters;
+        life.closedWaiters = [];
+        effects.log(`[face-life] h${ordinal}: its queued saves did not drain, so it holds closing and reaches no CLOSED: ${describe(m.error)}`);
+        return waiters.map((w) => () => w.reject(m.error));
       }
       case "saves-drained": {
         if (life.kind !== "closing" || life.opening !== m.opening || life.phase !== "draining") return [];
@@ -311,7 +359,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
           });
         }
         out.push(() => effects.teardownHost(ordinal, opening));
-        out.push(...closedWaiters.map((w) => () => w()));
+        out.push(...closedWaiters.map((w) => () => w.resolve()));
         life.closedWaiters = [];
         // No island entry stands: the host side down is the whole close.
         if (atomKey === null) out.push(...toDark(ordinal, actor));
@@ -328,8 +376,23 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         return [() => superviseRecompose(`face h${ordinal} refused its drop`)];
       }
       case "recomposed": {
+        // The restart ended every verb in flight: no admitted work holds a close past it.
+        if (life.kind === "lit") life.work.clear();
+        if (life.kind === "closing" && life.phase === "settling") { life.work.clear(); return advance(ordinal, actor); }
         if (life.kind !== "closing" || (life.phase !== "told" && life.phase !== "recomposing") || m.composed.has(ordinal)) return [];
         return toDark(ordinal, actor);
+      }
+      case "deliver": {
+        // THE ONE DELIVERY TURN: read lit, the admitted opening and whether the visit answered, then write or refuse here.
+        if (m.visit.answered) return [];
+        m.visit.answered = true;
+        if (life.kind === "lit" && life.opening === m.opening && life.visits.delete(m.visit.id)) return [m.write];
+        return [() => m.refuse(`face-not-open: face h${ordinal} shut, or shut and lit again, before this visit's answer left; nothing is delivered`)];
+      }
+      case "drop-visit": {
+        m.visit.answered = true;
+        if (life.kind === "lit" && life.opening === m.opening) life.visits.delete(m.visit.id);
+        return [];
       }
     }
   };
@@ -354,25 +417,39 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
   const release = (composed: ReadonlySet<number>): void => { for (const ordinal of [...lives.keys()]) send(ordinal, { t: "recomposed", composed }); };
 
   const read = (ordinal: number): FaceLifeState => {
-    const life = lives.get(ordinal)?.life ?? { kind: "dark" as const };
+    const actor = lives.get(ordinal);
+    const life = actor?.life ?? { kind: "dark" as const };
     switch (life.kind) {
-      case "dark": return { kind: "dark" };
+      case "dark": return { kind: "dark", held: actor?.held === true };
       case "lighting": return { kind: "lighting", opening: life.opening };
       case "lit": return { kind: "lit", opening: life.opening, atomKey: life.atomKey, custody: life.custody };
       case "closing": return { kind: "closing", opening: life.opening, phase: life.phase };
     }
   };
 
+  const close = (ordinal: number, reason: string, opts?: { readonly custody?: string | null; readonly hold?: boolean }): Promise<void> => {
+    // A face this set never knew has nothing to close, and stays unknown (its door stays ungated).
+    if (!lives.has(ordinal)) return Promise.resolve();
+    return new Promise<void>((resolve, reject) => send(ordinal, { t: "close", reason, custody: opts?.custody, hold: opts?.hold === true, waiter: { resolve, reject } }));
+  };
+
   return {
     light: (ordinal) => new Promise<LightAnswer>((resolve) => send(ordinal, { t: "light", waiter: resolve })),
     adopt: (ordinal, lit) => send(ordinal, { t: "adopt", lit }),
-    close: (ordinal, reason, custody) => new Promise<void>((resolve) => send(ordinal, { t: "close", reason, custody, waiter: resolve })),
+    close,
+    release: (ordinal) => { if (lives.has(ordinal)) send(ordinal, { t: "release" }); },
+    async closeAll(reason, opts) {
+      const faults = (await Promise.allSettled([...lives.keys()].map((ordinal) => close(ordinal, reason, opts)))).filter((r) => r.status === "rejected");
+      for (const fault of faults) effects.log(`[face-life] a face did not close whole (${reason}): ${describe((fault as PromiseRejectedResult).reason)}`);
+    },
     opening: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.opening : null; },
     custodyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.custody : null; },
     atomKeyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.atomKey : null; },
     state: read,
     known: (ordinal) => lives.has(ordinal),
     lit: () => [...lives].filter(([, a]) => a.life.kind === "lit").map(([o]) => o).sort((a, b) => a - b),
+    // An admission reads the state the last handler left (each handler mutates whole before its effects run), so it never meets
+    // a half-made transition, and it answers in the caller's own turn.
     admitWork(ordinal) {
       const life = lives.get(ordinal)?.life;
       if (life?.kind !== "lit") return null;
@@ -384,23 +461,13 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     admitVisit(ordinal, refuse) {
       const life = lives.get(ordinal)?.life;
       if (life?.kind !== "lit") return null;
-      const id = nextId++, opening = life.opening;
-      life.visits.set(id, { refuse });
+      const visit: Visit = { id: nextId++, refuse, answered: false };
+      const opening = life.opening;
+      life.visits.set(visit.id, visit);
       return {
         opening,
-        // THE CHECK AND THE WRITE IN ONE TURN: no await stands between reading the opening and writing the reply.
-        deliver(write, refuseNow) {
-          // A visit that already answered (refused at a close, or its asker left) writes nothing more.
-          if (settledVisits.delete(id)) return;
-          const now = lives.get(ordinal)?.life;
-          if (now?.kind === "lit" && now.opening === opening && now.visits.delete(id)) { write(); return; }
-          refuseNow(`face-not-open: face h${ordinal} shut, or shut and lit again, before this visit's answer left; nothing is delivered`);
-        },
-        drop() {
-          const now = lives.get(ordinal)?.life;
-          if (now?.kind === "lit" && now.opening === opening) now.visits.delete(id);
-          settledVisits.add(id);
-        },
+        deliver(write, refuseNow) { if (!visit.answered) send(ordinal, { t: "deliver", visit, opening, write, refuse: refuseNow }); },
+        drop() { if (!visit.answered) send(ordinal, { t: "drop-visit", visit, opening }); },
       };
     },
     recomposed: release,

@@ -22,6 +22,7 @@ function island() {
     drainSaves(ordinal) { events.push(`drain h${ordinal}`); const d = deferred(); drains.set(ordinal, d); return d.promise; },
     dropWorker(ordinal, atomKey) { events.push(`drop h${ordinal} ${atomKey}`); const d = deferred(); drops.set(ordinal, d); return d.promise; },
     teardownHost(ordinal) { events.push(`teardown h${ordinal}`); },
+    onDark(ordinal) { events.push(`dark h${ordinal}`); },
     // The island's open reads the actors' lit set at its start, and answers them with it once it stands.
     recompose(reason) { const d = { ...deferred(), litAtStart: lives.lit() }; events.push(`recompose (${reason})`); recomposes.push(d); return d.promise.then(() => lives.recomposed(new Set(d.litAtStart))); },
     log: () => {},
@@ -130,7 +131,7 @@ describe("each face lives one life: the lifecycle actor", () => {
   test("a close naming a custody opening the face did not light under answers at once and leaves the face standing", async () => {
     const t = island();
     await lit(t, 1, "p:2");
-    await t.lives.close(1, "pulama closing", "p:1");
+    await t.lives.close(1, "pulama closing", { custody: "p:1" });
     expect(t.lives.state(1).kind).toBe("lit");
   });
 
@@ -223,12 +224,96 @@ describe("each face lives one life: the lifecycle actor", () => {
     expect(t.lives.state(0).kind).toBe("dark");
   });
 
-  test("a failed drain still closes: the saves' fault is logged and the close goes on", async () => {
+  test("SOL R7 (a drain failure advances to ACK): a drain that faults holds the face closing, rejects every close waiter, tells no worker and tears nothing down; the next close drains again", async () => {
+    const t = island();
+    await lit(t, 1);
+    const closing = t.lives.close(1, "pulama closing");
+    t.drains.get(1)!.reject(new Error("seal refused"));
+    await expect(closing).rejects.toThrow("seal refused");
+    expect(t.lives.state(1)).toMatchObject({ kind: "closing", phase: "drain-failed" });
+    expect(t.events.filter((e) => e.startsWith("drop") || e.startsWith("teardown")), "no ACK path ran").toEqual([]);
+    expect(t.lives.admitWork(1)).toBeNull();
+    const again = t.lives.close(1, "pulama closing");
+    t.drains.get(1)!.resolve();
+    await again;
+    expect(t.events).toContain("drop h1 k1");
+  });
+
+  test("SOL R7 (delivery bypasses the mailbox, a second response after a close): a visit answers exactly once through the delivery turn, whatever road its answers take", async () => {
+    const t = island();
+    await lit(t, 1);
+    const said: string[] = [];
+    const visit = t.lives.admitVisit(1, (r) => said.push(`close ${r.split(":")[0]}`))!;
+    visit.deliver(() => said.push("body"), (r) => said.push(`refused ${r.split(":")[0]}`));
+    visit.deliver(() => said.push("body again"), (r) => said.push(`refused again ${r.split(":")[0]}`));
+    // A failure answer after the body (an arbitration fault, a flush fault) writes nothing either.
+    visit.deliver(() => said.push("failure"), () => said.push("failure refused"));
+    expect(said).toEqual(["body"]);
+    const second = t.lives.admitVisit(1, (r) => said.push(`close ${r.split(":")[0]}`))!;
+    const closing = t.lives.close(1, "lock");
+    second.deliver(() => said.push("late failure"), () => said.push("late refusal"));
+    expect(said, "the close's refusal stands as its one answer").toEqual(["body", "close face-not-open"]);
+    t.drains.get(1)!.resolve(); await closing;
+  });
+
+  test("SOL R7 (a relight lost behind a pending drop): every return to dark tells the vessel, which replays its lend", async () => {
     const t = island();
     await lit(t, 1);
     const closing = t.lives.close(1, "lock");
-    t.drains.get(1)!.reject(new Error("seal refused"));
-    await closing;
-    expect(t.events).toContain("drop h1 k1");
+    t.drains.get(1)!.resolve(); await closing;
+    expect(t.events).not.toContain("dark h1");
+    t.drops.get(1)!.resolve(); await settle();
+    expect(t.events.at(-1)).toBe("dark h1");
+  });
+
+  test("a held close refuses every light until release: a lock's close-then-lock meets no relight between", async () => {
+    const t = island();
+    await lit(t, 1);
+    const closing = t.lives.close(1, "lock", { hold: true });
+    const relight = t.lives.light(1);
+    t.drains.get(1)!.resolve(); await closing;
+    t.drops.get(1)!.resolve(); await settle();
+    expect(await relight).toBe("refused");
+    expect(await t.lives.light(1)).toBe("refused");
+    expect(t.lives.state(1)).toEqual({ kind: "dark", held: true });
+    t.lives.release(1);
+    expect(t.events.at(-1)).toBe("dark h1");
+    const answer = t.lives.light(1);
+    t.lights.get(1)!.resolve({ atomKey: "k1", custody: null });
+    expect(await answer).toBe("lit");
+  });
+
+  test("SOL R7 (STOP and slides skip the actor): closeAll closes every face through its actor, refusing its visits and waiting its work, before it resolves", async () => {
+    const t = island();
+    await lit(t, 1); await lit(t, 2);
+    const refused: number[] = [];
+    t.lives.admitVisit(1, () => refused.push(1));
+    const work = t.lives.admitWork(2)!;
+    let done = false;
+    const all = t.lives.closeAll("the composition stands down").then(() => { done = true; });
+    expect(refused).toEqual([1]);
+    t.drains.get(1)!.resolve(); await settle();
+    expect(done, "the work on h2 still holds its close").toBe(false);
+    work.done(); t.drains.get(2)!.resolve();
+    await all;
+    expect(t.lives.lit()).toEqual([]);
+  });
+
+  test("SOL R7 (a caller timeout releases the ticket): an island restart, never a caller's wait, frees the work a close waits on", async () => {
+    const t = island();
+    await lit(t, 1);
+    t.lives.admitWork(1);
+    const closing = t.lives.close(1, "lock");
+    await settle();
+    expect(t.drains.has(1)).toBe(false);
+    t.lives.recomposed(new Set([1]));
+    expect(t.drains.has(1), "the restart ended the verb, so the drain runs").toBe(true);
+    t.drains.get(1)!.resolve(); await closing;
+  });
+
+  test("a close of a face this set never knew resolves and leaves it unknown", async () => {
+    const t = island();
+    await t.lives.close(9, "lock", { hold: true });
+    expect(t.lives.known(9)).toBe(false);
   });
 });
