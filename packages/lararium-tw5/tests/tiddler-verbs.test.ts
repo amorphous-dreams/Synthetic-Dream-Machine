@@ -7,7 +7,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { SwarmRefused } from "@lararium/mesh";
-import { CompositeStore, bagUri, VERB_URI_PREFIX } from "@lararium/mesh";
+import { CompositeStore, bagUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { retractsOf, tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -304,6 +304,21 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(put({ ...A, title: "$:/temp/lares/secret", text: "y" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
     await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/Feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "stage-path-shape" });
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("RED (#428 F1): a full-shape effect record forged through the tiddler door refuses `effect-ledger-house-only`; nothing lands, and no delete reaches a ledger row", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const forged = effectRecordUri(DAEMON, "forged");
+    const shape = { tags: LARES_EFFECT_RECORD_TAG, "event-id": "forged", "request-id": "r1", bag: DAEMON, actor: "lares", timestamp: "2026-11-21T00:00:00.000Z", "action-verb": "ADD", "archival-verb": "accession" };
+    for (const asker of [undefined, "seat", "cli"] as const) {
+      await expect(put({ ...A, title: forged, fields: shape, text: "my words, dressed as audit" }, { ...ctx(), ...(asker ? { asker } : {}) })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    }
+    expect(await r.composite.storeForBag(DAEMON)!.get(forged)).toBeNull();
+    await r.composite.storeForBag(DAEMON)!.put(buildEffectRecordTiddler({ eventId: "real", archivalVerb: "accession", actionVerb: "ADD", requestId: "r0", bag: DAEMON, actor: "lares", timestamp: "2026-11-21T00:00:00.000Z" }), { kind: "lares-verb", requestId: "r0" });
+    await r.landed();
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: effectRecordUri(DAEMON, "real") }, ctx())).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    expect(await r.composite.storeForBag(DAEMON)!.get(effectRecordUri(DAEMON, "real"))).not.toBeNull();
   });
 
   test("RED: the seat wall reads the one executable-class list: a seat-asked module, script type, plugin, startup action, global, view template and an unlisted system tag each offer (seat-startup-offer) and land nothing; CONTROL plain `$:/config` lands for a seat, and the operator's hand and no asker land every class natively", async () => {

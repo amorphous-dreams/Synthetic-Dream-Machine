@@ -63,6 +63,57 @@ describe("an unshared row takes its landed grants back", () => {
   });
 });
 
+describe("RED (#428 F2) — a name a share line takes out loses its landed grant", () => {
+  /** The row as it stands AFTER `--read-remove reader`: the landing revokes the retracted pair and re-delegates nothing to it. */
+  function narrowed(granteeLit: boolean, write = "") {
+    const ownerHalf = half({ [NOTES]: "automerge:notesDoc" });
+    const granted: string[] = [], revoked: string[] = [];
+    const faces: ShareLitFace[] = [
+      { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => ownerHalf },
+      { handleIndex: 1, petname: "reader", group: granteeLit ? "g1" : null, catalog: async () => (granteeLit ? half({}) : null) },
+    ];
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "bag", read: write, write }];
+    const run = () => applyShares({
+      rows: async () => rows, faces, salt: "salt", retract: [{ slug: "notes", grantee: 1 }],
+      grant: async (g) => { granted.push(`${g.ownerGroup}->${g.granteeGroup}:${g.access}`); },
+      revoke: async (g) => { revoked.push(`${g.ownerGroup}->${g.granteeGroup}`); },
+      flag: { set: async () => {}, clear: async () => {} },
+    });
+    return { run, granted, revoked };
+  }
+
+  test("a reader taken out: the owner's hive revokes it and the landing delegates nothing to it", async () => {
+    const r = narrowed(true);
+    expect(await r.run()).toMatchObject({ retracted: 1, stillGranted: [] });
+    expect(r.revoked).toEqual(["g0->g1"]);
+    expect(r.granted).toEqual([]);
+  });
+
+  test("a writer taken out who still reads: the edit grant leaves and a read grant lands in its place", async () => {
+    const r = narrowed(true, "");
+    const rows = [{ slug: "notes", kind: "bag" as const, read: "reader", write: "" }];
+    const out = await applyShares({
+      rows: async () => rows, salt: "salt", retract: [{ slug: "notes", grantee: 1 }],
+      faces: [
+        { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => half({ [NOTES]: "automerge:notesDoc" }) },
+        { handleIndex: 1, petname: "reader", group: "g1", catalog: async () => half({}) },
+      ],
+      grant: async (g) => { r.granted.push(`${g.ownerGroup}->${g.granteeGroup}:${g.access}`); },
+      revoke: async (g) => { r.revoked.push(`${g.ownerGroup}->${g.granteeGroup}`); },
+      flag: { set: async () => {}, clear: async () => {} },
+    });
+    expect(out).toMatchObject({ retracted: 1, stillGranted: [] });
+    expect(r.revoked).toEqual(["g0->g1"]);
+    expect(r.granted).toEqual(["g0->g1:read"]);
+  });
+
+  test("a grantee standing shut keeps its grant: the landing names it still granted, never counted retracted", async () => {
+    const r = narrowed(false);
+    expect(await r.run()).toMatchObject({ retracted: 0, stillGranted: [{ slug: "notes", grantee: 1 }] });
+    expect(r.revoked).toEqual([]);
+  });
+});
+
 describe("a real hive takes a bag's reader back", () => {
   test("SR2 RED — after `revokeAudience` the grantee's read answers no access; CONTROL: before it, the read stood", { timeout: 90_000 }, async () => {
     const strip = (id: string): string => id.replace(/^0x/, "").toLowerCase();

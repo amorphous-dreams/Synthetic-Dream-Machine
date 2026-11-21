@@ -640,3 +640,30 @@ describe("CompositeStore — a listener's fault stays its own", () => {
     expect(heard.filter(title => title === "Populated").length).toBeGreaterThanOrEqual(2);
   });
 });
+
+import { buildEffectRecordTiddler, effectRecordUri } from "../src/effect-record.js";
+
+describe("RED (#428 F1) — the engine cascade never writes a residency ledger", () => {
+  const BAG = wikiBagUri("ledger-test");
+  const real = () => buildEffectRecordTiddler({ eventId: "e1", archivalVerb: "accession", actionVerb: "ADD", requestId: "r", bag: BAG, actor: "lares", timestamp: "2026-11-21T00:00:00.000Z" });
+  const rig = () => { const c = new CompositeStore(); c.addLayer({ bagId: BAG, store: new AtomicMemoryStore(BAG), writable: true }); return c; };
+
+  test("a tw-local, mcp-draft or canvas-draft put, family, tombstone or remove of a ledger title refuses `effect-ledger-house-only`", async () => {
+    const c = rig();
+    const title = effectRecordUri(BAG, "e1");
+    for (const origin of [{ kind: "tw-local", instanceId: "i" }, { kind: "mcp-draft", toolCallId: "t" }, { kind: "canvas-draft", shapeId: "s" }] as ChangeOrigin[]) {
+      await expect(c.put(real(), origin, { bag: BAG })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.writeFamily([real()], [], origin, { bag: BAG })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.writeFamily([], [title], origin, { bag: BAG })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.tombstoneInBag(BAG, title, origin)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(c.removeInBag(BAG, title, origin)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    }
+    expect(await c.storeForBag(BAG)!.get(title)).toBeNull();
+  });
+
+  test("CONTROL: the house's own writer lands its ledger record", async () => {
+    const c = rig();
+    await c.put(real(), { kind: "lares-verb", requestId: "r" }, { bag: BAG });
+    expect(await c.storeForBag(BAG)!.get(effectRecordUri(BAG, "e1"))).not.toBeNull();
+  });
+});

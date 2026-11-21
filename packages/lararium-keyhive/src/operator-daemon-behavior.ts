@@ -1553,6 +1553,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           rootDir:     "",
           vesselDid: async () => didFromVerifyingKey(faceAtom().key),
           registerBag: registerBagCap,
+          // AN INIT COMPLETES WHAT A PARTIAL LEFT (idempotent by intent): it registers the bags this face's hive does not
+          // hold yet, and stands the face's workbench in the same act (the realm seating its hive, else its own cabal of one).
+          // No hive booted yet reads as unknown (null), never as missing: a re-init then registers nothing and answers quietly.
+          bagRegistered: async (bag: string) => (kh ? kh.docIdOfBag(bag) !== null : null),
+          ...(daemonAuth.personaGroupId ? {
+            workbench: async (slug: string) => {
+              const before = ledgerWorkbenchRealms((await workbenchLedgerOf(ctx)).doc(), slug);
+              const realmId = await faceWorkbench(ctx, () => kh, daemonAuth.personaGroupId!)(slug, true);
+              return { realmId, founded: realmId !== null && !before.includes(realmId) };
+            },
+          } : {}),
           resolveDraftDoc: (slug: string) => slotDocsOf(ctx).draft(slug),
         };
         // The wiki-minting and composing verbs write under the face's reach, so a floor refuses them by
@@ -1570,7 +1581,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const veilMintOpts = {
           ...wikiMintOpts,
           vesselDid: async () => didFromVerifyingKey(daemonAuth.placeVerifyingKey),
+          // The veil registers no Keyhive bag: none reads as missing, so its answer names none registered.
           registerBag: async () => {},
+          bagRegistered: async () => true,
           veilFloor: {
             mintedBy: daemonAuth.placeVerifyingKey,
             nameCanon: async (slug: string, documentId: string, url: string) => {
@@ -1713,6 +1726,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         const control = controlOf(ctx);
         const unshare = Array.isArray(args["unshare"]) ? (args["unshare"] as unknown[]).filter((s): s is string => typeof s === "string") : [];
+        // THE NAMES A SHARE LINE TOOK OUT (`--read-remove`, `--write-remove`): each pair's landed grant revokes.
+        const retract = Array.isArray(args["retract"])
+          ? (args["retract"] as unknown[]).flatMap((r) => {
+            const o = r as { slug?: unknown; grantee?: unknown } | null;
+            return o && typeof o.slug === "string" && typeof o.grantee === "number" && Number.isSafeInteger(o.grantee) ? [{ slug: o.slug, grantee: o.grantee }] : [];
+          })
+          : [];
         const ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
         const applied = await applyShares({
           rows: () => readShareEntries(control), faces,
@@ -1758,6 +1778,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // THE UNSHARE TAKES THE READER BACK: the owner's hive revokes the grantee's agent from the bag, by the pair (the delegation id
           // lived only in the process that made it).
           ...(unshare.length > 0 ? { unshare } : {}),
+          ...(retract.length > 0 ? { retract } : {}),
           revoke: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
             if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");

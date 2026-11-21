@@ -65,7 +65,7 @@
  */
 
 import {
-  NoWorkingLayerRefusal, VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  NoWorkingLayerRefusal, VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -600,6 +600,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-put: args.title is required");
     refuseWithheld(title, "tiddler-put");
+    refuseEffectLedgerWrite(title, "tiddler-put");
     await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
     const { wiki, utils, Tiddler } = anchor.engine;
     const standing = wiki.getTiddler(title);
@@ -667,6 +668,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     const title = stringArg(args, "title");
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
+    refuseEffectLedgerWrite(title, "tiddler-delete");
     await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
     const named = optionalStringArg(args, "mode");
     if (named !== null && named !== "kapae" && named !== "reveal") {
