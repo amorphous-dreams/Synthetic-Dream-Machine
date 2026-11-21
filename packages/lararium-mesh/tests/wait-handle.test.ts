@@ -13,6 +13,7 @@
 import { describe, expect, test } from "vitest";
 
 import { waitHandle, LOCAL_READY_MS } from "../src/wait-handle.js";
+import { standsIn } from "../src/automerge-doc-store.js";
 
 type Handle = { id: string; merged: string[]; doc: () => unknown };
 /** A handle stand-in: the guarded merge reads the source document, so each carries a clean empty `doc()`. */
@@ -85,5 +86,20 @@ describe("the window", () => {
     land(handle("from-peer"));
     await new Promise((r) => setTimeout(r, 0));
     expect(h.merged).toEqual(["from-peer"]);
+  });
+});
+
+describe("the fallback stands in, unread", () => {
+  test("★ a fallback the window handed back reads as a stand-in until the real doc merges; a doc the store held never does ★", async () => {
+    let land!: (h: Handle) => void;
+    const late = new Promise<Handle>((r) => { land = r; });
+    const { fn } = recordingFallback("fresh");
+    const got = await waitHandle(fakeRepo(late), "automerge:x", fn, 0);
+    expect(standsIn(got as never), "the blank says nothing of what the doc holds").toBe(true);
+    land(handle("from-peer"));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(standsIn(got as never), "the real doc merged in: it reads what the doc holds").toBe(false);
+    const local = await waitHandle(fakeRepo(Promise.resolve(handle("local"))), "automerge:y", () => handle("fresh") as never);
+    expect(standsIn(local as never)).toBe(false);
   });
 });

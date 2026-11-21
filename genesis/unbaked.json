@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "03878409594ae66fcecc7a2ef4ca429c2274246dc4906872e5221e00afe4f50a",
+      "why": "The every-delete-plain lane (#376) re-packs the memetic-wikitext bundle: its place-meme module carries the plain leave (`beneath` and `leaveFamily` before any tombstone). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
+    }
+  ]
+}
