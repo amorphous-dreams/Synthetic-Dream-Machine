@@ -57,7 +57,8 @@ import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type Holde
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
-import { handActRefusal } from "./hand-act-gate.js";
+import { readHand } from "./hand-act-gate.js";
+import type { PeerKind } from "./uds-peer.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
@@ -163,7 +164,7 @@ export interface CustodyFrameDeps {
   /** Rehive one SHUT face under its own route (`rehiveShutFace`). Absent, every `rehive` frame refuses `rehive-unavailable`. */
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
   /** Who sent a hand act's frame (`hand-act-gate`); the test seam alone replaces it. */
-  readonly peerOf?: (sock: Socket) => Promise<"ai" | null>;
+  readonly peerOf?: (sock: Socket) => Promise<PeerKind>;
 }
 
 const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "act", "backup", "face-route", "ward", "prove", "rehive"]);
@@ -480,6 +481,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       const stood = await deps.recompose(true);
       return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
     }
+    // A LOCK CLEARS THE SELECTION IT ENDS: a named face whose key dropped leaves NO MOUNT behind, never a selection a door reads worn.
+    if (wasOpen && namedMount) clearDaemonMount();
     if (wasOpen && wasMounted && !sovereignStands()) {
       const stood = await deps.recompose(true);
       return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
@@ -553,15 +556,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "rehive", status: "error", errorMessage, refusal: { reason } };
     };
     // A HAND ACT: the peer reads first, before any credential the frame carries reaches the holder.
-    const notHand = await handActRefusal(sock, deps.peerOf);
-    if (notHand !== null) return refuse(notHand, "a rehive is a person's own act at their terminal: an AI seat's peer never runs it; nothing moved");
+    // An unknown peer stands only because this act proves a person itself: the face's own route, checked against its budget.
+    const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
+    if ("refusal" in hand) return refuse(hand.refusal, "a rehive is a person's own act at their terminal: an AI seat's peer never runs it; nothing moved");
     if (!deps.rehive) return refuse("rehive-unavailable", "this vessel's custody door rehives no face");
     // UNDER A PŪLAMA the face's custody rests with the pūlama, which lights faces on its own hand: the rehive runs where it rests.
     if (deps.pulama) return refuse("rehive-under-pulama", `this vessel's custody rests with its pūlama: rehive the face at the pūlama's own hand door, which holds its keys and lights faces on one chain: tools/lares-container.sh pulama lock (it shuts every face), then tools/lares-container.sh pulama rehive ${face}; nothing moved`);
-    if (!holder.isUnlocked()) return refuse("custody-locked", "this vessel holds no key: open it first (`lares vault unlock`), leaving the face to rehive shut");
+    // A COLD VESSEL REHIVES TOO: the face's own route opens its key for the act, and the node key never needs to stand, so a
+    // single-face vessel whose one face's row mismatches never waits on an unlock that would mount that face and refuse.
     const at = await holder.faceStanding({ ordinal: face });
     if (at === null) return refuse("face-not-standing", `no face h${face} stands on this vessel; nothing moved`);
-    if (at.unlocked || mountedFaceOrdinal() === face) {
+    // A FACE IS OPEN WHEN ITS KEY IS: a selection a lock left behind names no face the composition wears.
+    if (at.unlocked) {
       return refuse("face-open", `face h${face} stands open (worn or lit): a rehive moves its rows only while it stands shut. Lock it first (\`lares vault lock --face ${face}\`), wearing another face if it is the worn one, then rehive; nothing moved`);
     }
     try {

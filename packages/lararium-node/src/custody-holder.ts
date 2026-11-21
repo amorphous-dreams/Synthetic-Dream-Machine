@@ -579,7 +579,7 @@ export function makeCustodyHolder(a: {
     return { reading: "opens", fcid: opened.fcid, ordinal: opened.ordinal, slot: opened.slot };
   };
   /** One face's key opened and checked (budget, `face-owner`, anchors), never seated: unlock seats it, an act holds it alone. */
-  const doOpenVerified = async (by: FaceRef, credentials: readonly Credential[]): Promise<
+  const doOpenVerified = async (by: FaceRef, credentials: readonly Credential[], opts: { readonly requireAnchors?: boolean } = {}): Promise<
     { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string; readonly group: string | null; readonly fck: FaceCustodyKey }
     | Exclude<FaceUnlock, { readonly reading: "opens" }>
   > => {
@@ -621,7 +621,12 @@ export function makeCustodyHolder(a: {
         }
       } else if (anchored.reading !== "absent") {
         return refuse(`the anchors row reads ${anchored.reading}`);
+      } else if (opts.requireAnchors === true) {
+        // AN ACT ON ONE FACE'S ROWS PROVES ITS ORDINAL: the anchors row at the handle the index routed by must stand and agree.
+        return refuse(`the anchors row at h${ordinal} stands absent, so nothing proves the handle names this face`);
       }
+    } else if (opts.requireAnchors === true) {
+      return refuse("no anchors row stands in the carrier table to prove the handle");
     }
     return { reading: "opens", fcid, ordinal, slot: opened.slot, group: found.group, fck: opened.fck };
   };
@@ -909,7 +914,7 @@ export function makeCustodyHolder(a: {
       return run;
     },
     openFaceForAct(face, credentials) {
-      const run = unlockChain.then(() => doOpenVerified(face, credentials), () => doOpenVerified(face, credentials));
+      const run = unlockChain.then(() => doOpenVerified(face, credentials, { requireAnchors: true }), () => doOpenVerified(face, credentials, { requireAnchors: true }));
       unlockChain = run.catch(() => undefined);
       return run.then((o): FaceActOpening => (o.reading === "opens" ? { reading: "opens", fcid: o.fcid, ordinal: o.ordinal, groupDigest: o.group, fck: o.fck } : o));
     },

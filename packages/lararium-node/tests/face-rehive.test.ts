@@ -191,3 +191,15 @@ test("R4 nothing half-done: a stop before the replace leaves the foreign row who
   expect(Buffer.from((await loadVeilArchive(h1))!).equals(Buffer.from(own2)), "the racing write stands").toBe(true);
 });
 
+test("R5 an ordinal its anchors row does not prove refuses before anything moves", async () => {
+  const { g0, g1 } = await twoFaces("unproved");
+  const foreign = (await loadVeilArchive(g0))!;
+  await misroute(foreign, g1);
+  // h1's anchors row leaves: face-owner still names the custody id and group, but nothing proves the ordinal h1 names this face.
+  await seatedCustody()!.removeRecord("identity", "anchors-h1.json");
+  const refused = await rehive(1).catch((e: unknown) => e);
+  expect(reasonOf(refused)).toBe("index-mismatch");
+  await reopen(1);
+  expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from(foreign)), "nothing moved").toBe(true);
+});
+

@@ -2,15 +2,31 @@
  * hand-act-gate — an act a person's own hand alone runs, read off the socket's PEER before the act reads its frame.
  *
  * The vessel's verb socket answers any process of its own user, so a frame's own words never decide who sent it: an AI seat or
- * a spirit under a harness may write the same bytes a terminal writes. The peer does decide (`uds-peer`): a peer that runs on a
- * harness's process branch reads as an AI seat, and a hand act refuses it by name (`hand-act-only`) before any credential the
- * frame carries reaches a holder. The same gate serves every hand act on the custody door; `rite abandon`'s hand gate (#409)
- * names the same need and may take this helper when the two land.
+ * a spirit under a harness may write the same bytes a terminal writes. The peer reads one of three ways (`uds-peer`):
+ *
+ *   ai       a harness stands on the branch of a process holding the peer's end: the hand act refuses `hand-act-only`.
+ *   hand     the peer's processes read, and no harness stands on their branch.
+ *   unknown  the peer's processes cannot be read (no socket table, a gone peer): attribution proves NOTHING, so the act stands
+ *            only where it proves a person by itself, through a typed route its holder checks against an attempt budget
+ *            (`proveRoute`); an act that proves no route refuses `hand-unattested`. Unknown never reads as allowed.
+ *
+ * The same gate serves every hand act on the custody door and the pūlama's hand door; `rite abandon`'s hand gate (#409) names the
+ * same need and takes this helper when the two land.
  */
 import type { Socket } from "node:net";
-import { peerSeatOf } from "./uds-peer.js";
+import { peerKindOf, type PeerKind } from "./uds-peer.js";
 
-/** Null where the peer reads as a person's hand; else the refusal reason a hand act answers. */
-export async function handActRefusal(sock: Socket, read: (sock: Socket) => Promise<"ai" | null> = peerSeatOf): Promise<"hand-act-only" | null> {
-  return (await read(sock)) === "ai" ? "hand-act-only" : null;
+export type HandReading =
+  | { readonly admit: "hand" | "route-proves" }
+  | { readonly refusal: "hand-act-only" | "hand-unattested" };
+
+/**
+ * Read the hand behind a hand act. `proveRoute` names an act whose own frame carries a route the holder checks against an attempt
+ * budget before anything moves (a rehive's face route): only such an act stands for an unknown peer.
+ */
+export async function readHand(sock: Socket, opts: { readonly proveRoute: boolean }, read: (sock: Socket) => Promise<PeerKind> = peerKindOf): Promise<HandReading> {
+  const kind = await read(sock).catch((): PeerKind => "unknown");
+  if (kind === "ai") return { refusal: "hand-act-only" };
+  if (kind === "hand") return { admit: "hand" };
+  return opts.proveRoute ? { admit: "route-proves" } : { refusal: "hand-unattested" };
 }

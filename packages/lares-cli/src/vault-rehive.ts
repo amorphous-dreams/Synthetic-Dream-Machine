@@ -35,10 +35,11 @@ export async function vaultRehive(args: ParsedArgs): Promise<number> {
     emit(args, { ok: false, error: { code, message }, ...(data ? { data } : {}), human: () => console.error(`lares vault rehive: ${message}`) });
     return 1;
   };
-  // THE DOOR READS FIRST: a rehive runs through the standing vessel's custody door, with its key open and the face shut.
+  // THE DOOR READS FIRST: a rehive runs through the standing vessel's custody door with the face shut. A cold vessel rehives
+  // too (the face's own route opens its key for the act alone), so no unlock comes first: on a single-face vessel that unlock
+  // would mount the very face whose row refuses, and drop the key again.
   const door = await sendCustodyFrame({ op: "custody" });
-  if (door === null || door["op"] !== "custody") return refuse("daemon-unreachable", "no vessel answers its custody door: stand it (`lares vessel stand`) and open it (`lares vault unlock`), leaving the face to rehive shut");
-  if (door["unlocked"] !== true) return refuse("custody-locked", "this vessel holds no key: open it first (`lares vault unlock`), leaving the face to rehive shut");
+  if (door === null || door["op"] !== "custody") return refuse("daemon-unreachable", "no vessel answers its custody door: stand it (`lares vessel stand`), leaving the face to rehive shut");
   // THE FACE'S OWN ROUTE, read on this terminal alone: a person who holds the face stands at this act.
   const credentials = await gatherCredentials(`lares vault rehive --face ${face}`, { kind: "face", ordinal: face });
   const a = await sendCustodyFrame({ op: "rehive", credentials, face });

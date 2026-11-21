@@ -6,6 +6,7 @@
  *       marker replaces the row, nothing lights, and the answer's lines name the pūlama-path wear (`pulama light`, `vault unlock`,
  *       `wear N`). A route that opens no slot of the face refuses `face-refused` and spends the face's own attempt.
  *   P3  `light` and `rehive` ride the hand door's one chain: a light sent while a rehive runs answers only after it.
+ *   P4  the hand verb's exit: a rehive that did not land (`face-open`, `face-refused`, `hand-act-only`) exits 1, a landed one 0.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { InMemoryEventStore, KeyhiveProvider } from "@lararium/keyhive";
@@ -14,6 +15,7 @@ import { makeCustodyHolder } from "../src/custody-holder.js";
 import { rehiveShutFace } from "../src/face-rehive.js";
 import { rehiveMarkerAside, veilArchiveFile } from "../src/identity-anchors.js";
 import { pulamaHandDoor } from "../src/pulama-hand.js";
+import { handVerbExit } from "../src/pulama-verbs.js";
 import { servePulama } from "../src/pulama-server.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
@@ -106,5 +108,11 @@ describe("the pūlama's hand door rehives a shut face", () => {
     release();
     await Promise.all([rehiving, lighting]);
     expect(order).toEqual(["rehive", "rehive-answered:probe", "light-answered"]);
+  });
+
+  test("P4 a refused rehive exits 1 and a landed one 0", () => {
+    for (const reading of ["face-open", "face-refused", "hand-act-only", "hand-unattested"]) expect(handVerbExit("rehive", { op: "rehive", reading })).toBe(1);
+    expect(handVerbExit("rehive", { op: "rehive", reading: "rehived" })).toBe(0);
+    expect(handVerbExit("status", { op: "status", lit: false })).toBe(0);
   });
 });

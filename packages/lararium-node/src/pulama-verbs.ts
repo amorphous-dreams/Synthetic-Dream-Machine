@@ -87,6 +87,14 @@ export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [f
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
 
 /**
+ * The exit a hand verb's answer leaves: a rehive that did not land (`face-open`, `face-refused`, `hand-act-only`, any reading
+ * but `rehived`) exits 1, so a script reading the line's status never takes a refusal for a rehive. Every other verb exits 0.
+ */
+export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
+  return verb === "rehive" && answer["reading"] !== "rehived" ? 1 : 0;
+}
+
+/**
  * Run one hand verb: `ask` sends one frame to the hand door, `route` reads the operator's route. Answers the door's answer.
  */
 export async function runHandVerb(verb: string, arg: string | readonly string[] | undefined, ports: {

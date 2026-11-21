@@ -139,6 +139,16 @@ export async function peerPidsOf(sock: Socket): Promise<number[] | null> {
   return table === null ? null : peerPidsIn(table, own);
 }
 
+/** How a peer reads: an AI seat, a person's hand (its processes read, no harness on their branch), or unknown (unread). */
+export type PeerKind = "ai" | "hand" | "unknown";
+
+/** The peer's kind, read at the door: `unknown` where the socket table or the peer cannot be read, never a guess. */
+export async function peerKindOf(sock: Socket): Promise<PeerKind> {
+  const pids = await peerPidsOf(sock).catch(() => null);
+  if (pids === null) return "unknown";
+  return pids.some((pid) => pid !== process.pid && harnessOnBranch(pid, process.pid)) ? "ai" : "hand";
+}
+
 /**
  * THE PEER'S SEAT, read at the door: `"ai"` where a harness stands on the branch of any process holding the peer's end,
  * else null (no harness, or the peer reads unknown: the door then keeps the line's own reading).

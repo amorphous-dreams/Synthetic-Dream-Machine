@@ -2,8 +2,11 @@
  * The custody door's `rehive` frame: a SHUT face stands its hive again from its own seed (`face-rehive`).
  *
  *   E1  a shut face's rehive runs with the face and its own route, answers the outcome, and the door logs no route.
- *   E2  a face that stands open (its key open in the holder) or worn refuses `face-open`, and nothing runs.
- *   E3  a locked vessel refuses `custody-locked`; a face that stands nowhere refuses `face-not-standing`; nothing runs.
+ *   E2  a face that stands open (its key open in the holder: lit, or worn) refuses `face-open`, and nothing runs.
+ *   E3  a COLD vessel (no node key held) rehives a shut face: the face's own route proves the act, and a single-face vessel whose
+ *       one face's row mismatches never deadlocks on an unlock that mounts that face; a face standing nowhere refuses
+ *       `face-not-standing`, and nothing runs.
+ *   E8  a face a person named and then locked (its selection left behind) stands shut: the rehive runs, never `face-open`.
  *   E4  a frame beside its three keys, or with no usable route, refuses whole before anything runs.
  *   E5  a rehive that refuses answers its own reason; a door with no rehive wired refuses `rehive-unavailable`.
  *   E6  A HAND ACT: a frame whose peer reads as an AI seat refuses `hand-act-only` before any route reaches the holder.
@@ -24,7 +27,7 @@ const OUTCOME: RehiveOutcome = { outcome: "stood-from-seed", foreignIdentity: "4
 const priorMount = mountedFaceOrdinal();
 afterEach(() => { setMountedFace(priorMount); });
 
-function door(opts: { unlocked?: boolean; faces?: Record<number, { unlocked: boolean }>; rehive?: ((face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>) | null; peer?: "ai" | null; pulama?: boolean } = {}) {
+function door(opts: { unlocked?: boolean; faces?: Record<number, { unlocked: boolean }>; rehive?: ((face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>) | null; peer?: "ai" | "hand" | "unknown"; pulama?: boolean } = {}) {
   const asked: Array<{ face: number; credentials: readonly Credential[] }> = [];
   const logs: string[] = [];
   const holder = {
@@ -38,7 +41,7 @@ function door(opts: { unlocked?: boolean; faces?: Record<number, { unlocked: boo
   const handle = custodyFrameHandler({
     holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: (l) => logs.push(l),
     ...(rehive ? { rehive } : {}),
-    peerOf: async () => opts.peer ?? null,
+    peerOf: async () => opts.peer ?? "unknown",
     ...(opts.pulama ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [0, 1], tellWorn: async () => {} } } : {}),
   });
   const send = (frame: unknown): Promise<Record<string, unknown>> => new Promise((resolve) => {
@@ -64,19 +67,27 @@ describe("the custody door's rehive frame", () => {
     const lit = door({ faces: { 1: { unlocked: true } } });
     expect(await lit.send(frame(1))).toMatchObject({ op: "rehive", status: "error", refusal: { reason: "face-open" } });
     expect(lit.asked).toEqual([]);
+    // The worn face: its key stands open, so it refuses the same way.
     setMountedFace(1);
-    const worn = door({ faces: { 1: { unlocked: false } } });
+    const worn = door({ faces: { 1: { unlocked: true } } });
     expect(await worn.send(frame(1))).toMatchObject({ refusal: { reason: "face-open" } });
     expect(worn.asked).toEqual([]);
   });
 
-  test("E3 a locked vessel and a face standing nowhere refuse, and nothing runs", async () => {
-    setMountedFace(0);
-    const locked = door({ unlocked: false });
-    expect(await locked.send(frame(1))).toMatchObject({ refusal: { reason: "custody-locked" } });
+  test("E3 a cold vessel rehives a shut face; a face standing nowhere refuses, and nothing runs", async () => {
+    setMountedFace(undefined);
+    const cold = door({ unlocked: false, faces: { 0: { unlocked: false } } });
+    expect(await cold.send(frame(0))).toEqual({ op: "rehive", face: 0, ...OUTCOME });
+    expect(cold.asked).toHaveLength(1);
     const nowhere = door();
     expect(await nowhere.send(frame(7))).toMatchObject({ refusal: { reason: "face-not-standing" } });
-    expect([...locked.asked, ...nowhere.asked]).toEqual([]);
+    expect(nowhere.asked).toEqual([]);
+  });
+
+  test("E8 a face named and then locked stands shut: the rehive runs, never face-open", async () => {
+    setMountedFace(1);
+    const d = door({ faces: { 1: { unlocked: false } } });
+    expect(await d.send(frame(1))).toEqual({ op: "rehive", face: 1, ...OUTCOME });
   });
 
   test("E4 a frame beside its keys, or with no route, refuses whole", async () => {

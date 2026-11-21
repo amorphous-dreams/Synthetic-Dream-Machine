@@ -53,8 +53,8 @@ import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { pulamaAdmissions } from "./pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "./pulama-hand.js";
 import { rehiveShutFace } from "./face-rehive.js";
-import { handActRefusal } from "./hand-act-gate.js";
-import { PulamaVerbUsage, keepSeatLine, readRoute, runHandVerb } from "./pulama-verbs.js";
+import { readHand } from "./hand-act-gate.js";
+import { PulamaVerbUsage, handVerbExit, keepSeatLine, readRoute, runHandVerb } from "./pulama-verbs.js";
 import { servePulama } from "./pulama-server.js";
 import { listenPulama, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
@@ -112,7 +112,7 @@ async function serve(): Promise<void> {
       buffered = "";
       // A HAND ACT reads its peer first (`hand-act-gate`): an AI seat's peer never rehives a face.
       const gated = (frame as { op?: unknown } | null)?.op === "rehive"
-        ? handActRefusal(sock).then((refused) => (refused === null ? door(frame) : { op: "rehive", reading: refused }))
+        ? readHand(sock, { proveRoute: true }).then((hand) => ("refusal" in hand ? { op: "rehive", reading: hand.refusal } : door(frame)))
         : door(frame);
       gated.then(
         (answer) => sock.end(JSON.stringify(answer) + "\n"),
@@ -166,7 +166,11 @@ async function main(): Promise<void> {
     process.exit(code);
   }
   try {
-    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" || verb === "lei" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)}), null, 2));
+    const answer = await runHandVerb(verb, verb === "admit" || verb === "lei" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)});
+    console.log(JSON.stringify(answer, null, 2));
+    // A REFUSED REHIVE EXITS NON-ZERO: the JSON names the refusal, and the status keeps a script from reading it as landed.
+    const exit = handVerbExit(verb, answer);
+    if (exit !== 0) process.exit(exit);
   } catch (err) {
     if (!(err instanceof PulamaVerbUsage)) throw err;
     console.error(err.message);

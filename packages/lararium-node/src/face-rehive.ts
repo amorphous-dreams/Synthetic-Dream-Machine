@@ -159,8 +159,9 @@ export async function rehiveShutFace(args: {
     const anchors = await port.read(`anchors-h${args.ordinal}.json`);
     let personaGroup: string | null = null;
     try { const g = anchors ? (JSON.parse(new TextDecoder().decode(anchors)) as { personaGroupId?: unknown }).personaGroupId : null; personaGroup = typeof g === "string" ? g : null; } catch { personaGroup = null; }
-    if (personaGroup !== null && createHash("sha256").update(personaGroup).digest("hex") !== opened.groupDigest) {
-      throw new RehiveRefused("index-mismatch", `face h${args.ordinal}'s anchors name another group than its custody; nothing moved`);
+    // THE ORDINAL STANDS PROVED or nothing moves: the anchors row at hN must stand and name the group this custody holds.
+    if (personaGroup === null || createHash("sha256").update(personaGroup).digest("hex") !== opened.groupDigest) {
+      throw new RehiveRefused("index-mismatch", `face h${args.ordinal}'s anchors ${personaGroup === null ? "stand absent" : "name another group than its custody"}, so nothing proves the handle names this face; nothing moved`);
     }
     const out = await rehiveFaceRows(port, opened.groupDigest);
     return { ...out, personaGroup };

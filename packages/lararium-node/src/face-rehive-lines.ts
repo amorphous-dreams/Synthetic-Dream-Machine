@@ -43,7 +43,7 @@ export function rehiveLines(a: RehiveAnswerReading, seat: RehiveSeat): string[] 
       "",
       "next:",
       ...wearSteps(face, seat),
-      `  2. read its reach: lares wiki status --recipe default --face ${face}. Where a shared bag or the kahua stage refuses to open, land that reach again as a rehive from the seed does (lares bag share --list --json first, then each row again with the same policy; ${carry}).`,
+      `  2. read its reach: lares wiki status --recipe default --face ${face}. Where a shared bag or the kahua stage refuses to open, land that reach again as a rehive from the seed does (lares bag share --list --json first, which prints each row as written, then each row granted again under that same policy, with no mechanical round trip promised; ${carry}).`,
     );
     return lines;
   }
@@ -53,7 +53,10 @@ export function rehiveLines(a: RehiveAnswerReading, seat: RehiveSeat): string[] 
     "",
     "next, in order:",
     ...wearSteps(face, seat),
-    `  2. land its reach again, keeping each share's own policy: first keep the rows, lares bag share --list --json > shares-before.json. For each row that names h${face}, land it again with exactly the readers, writers and note that row names: lares bag share <bag> --remove, then lares bag share <bag> --read <its readers> [--write <its writers>] [--note <its note>]. A wiki share lands again the same way through lares wiki share <wiki> … [--workspace <its workspace>].`,
+    `  2. list its shares and grant each again under the same policy. First keep the rows: lares bag share --list --json > shares-before.json prints each row as written (its read and write title lists with * kept, its note, workspace and owner; config/share.tid holds the same rows).`,
+    `     For each row whose read or write names h${face}'s pet-name or *: lares <bag|wiki> share <slug> --remove, then lares <bag|wiki> share <slug> --read '<its read>' [--write '<its write>'] [--note '<its note>'] [--workspace <its workspace>, a wiki row only], each value copied from that row as written.`,
+    `     A row that named an owner loses it at --remove, and the grant writes none back until a landing names it: where the owner does not stand again in lares bag share --list --json, write its owner back into config/share.tid by hand (the file wins at the next boot).`,
+    `     This grants each row again; it promises no mechanical round trip. Compare lares bag share --list --json against shares-before.json, and read the face's reach (lares wiki status --recipe default --face ${face}) once it wears.`,
     `  3. the kahu share: lares nexus cabal standing ${group} reads whether the face's PersonaGroup still stands in the Kahu cabal. The group did not change, so its admission stands unless that reading says otherwise.`,
     `     Then lares kahua list --face ${face}: items that read mean the kahu share holds and nothing more is owed. Items that refuse to open (a key the face no longer holds) mean the kahu share needs granting again: ${carry}, and a Kahu chair re-admits the group where the standing reads it out (lares nexus cabal admit ${group}).`,
   );

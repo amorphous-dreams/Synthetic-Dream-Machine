@@ -27,7 +27,10 @@ describe("the rehive's answer", () => {
     expect(text).toContain("lares kahua list --face 1");
     expect(text).toContain("lares kahua carry --all --face 1");
     expect(text).toContain("lares bag share --list --json > shares-before.json");
-    expect(text).toContain("--note <its note>");
+    expect(text).toContain("--note '<its note>'");
+    expect(text).toContain("with * kept, its note, workspace and owner");
+    expect(text).toMatch(/owner back into config\/share\.tid by hand/);
+    expect(text).toContain("it promises no mechanical round trip");
   });
   test("V2 a restored generation names only the last overwrite lost", () => {
     const text = rehiveLines({ ...ANSWER, outcome: "restored-prev" }).join("\n");
