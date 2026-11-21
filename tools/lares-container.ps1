@@ -419,16 +419,16 @@ function Indent([string]$text) {
 # THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
 # host's lares door, else the checkout's own bin under the host's node.
-$script:KeepSaid = ''
+$script:KeepSaid = ''; $script:KeepOwed = $false
 function KeepBeforeDown {
-  $script:KeepSaid = 'no keep workspace named'
+  $script:KeepSaid = 'no keep workspace named'; $script:KeepOwed = $false
   if ([string]::IsNullOrEmpty((ValueOf 'LARES_KEEP_WORKSPACE') + (ValueOf 'LARES_WORKSPACES'))) { return }
   $hostCli = ValueOf 'LARES_HOST_CLI'
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
   & $cmd @pre rite keep --if-due --no-json
-  if ($LASTEXITCODE -ne 0) { $script:KeepSaid = 'the keep did not complete'; [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
+  if ($LASTEXITCODE -ne 0) { $script:KeepSaid = 'the keep did not complete'; $script:KeepOwed = $true; [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
   else { $script:KeepSaid = 'kept (rite keep --if-due)' }
 }
 # The census exec, bounded: `--no-json` gives the lines down prints, `--json` the frame a mount read greps.
@@ -464,6 +464,16 @@ function WearLastFace {
   if ((DetachedWear "$wear") -eq 0) { $script:Wore = "h$wear" }
   else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
 }
+# A CENSUS OF HELD SAVES ALONE says so plainly before the accept-loss offer: how many documents, that each waits in memory for a
+# session in this vessel, and that no carrier and no untracked file waits, so accept-loss drops exactly these. Under a restand it
+# adds that the keep runs after the raise once the new vessel's census reads clean.
+function HeldOnlyLine([string]$out) {
+  $lines = @($out -split "`r?`n" | Where-Object { $_ })
+  if ($lines.Count -eq 0 -or ($lines | Where-Object { -not $_.StartsWith('held-save ') })) { return }
+  $docs = if ($lines.Count -eq 1) { '1 document' } else { "$($lines.Count) documents" }
+  $more = if ($script:InRebuild) { "; the keep runs after the raise once the new vessel's census reads clean" } else { '' }
+  [Console]::Error.WriteLine("lares-container: the census names held saves alone ($docs): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these$more")
+}
 function CensusBeforeStop {
   $c = RunCensus '--no-json'
   $out = $c.Out; $err = $c.Err; $rc = $c.Rc; $timedOut = $c.TimedOut
@@ -477,6 +487,7 @@ function CensusBeforeStop {
   if ($rc -eq 3 -and -not $timedOut) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:')
     Indent $out
+    HeldOnlyLine $out
   } else {
     $why = if ($timedOut) { "no answer within ${CensusWaitSeconds}s (the vessel may stand wedged)" } else { "the census exec ended with status $rc" }
     [Console]::Error.WriteLine("lares-container: down refuses a silent stop: the census could not answer ($why), so what a stop would drop reads unknown")
@@ -900,7 +911,9 @@ function PulamaRestand {
 #   3  the down path (keep, census) where the vessel runs another image or the pūlama re-stands; a vessel already on the
 #      image stays standing
 #   4  the pūlama re-stands where its code moved, then lights ATTACHED on this terminal: the pūlama reads the route
-#   5  up on the image; under a pūlama its admit, attached, where owed, then the vessel's unlock (detached) and the face last worn
+#   5  up on the image; under a pūlama its admit, attached, where owed (a vessel left standing at the floor on an image
+#      neither admitted nor offered, as a Ctrl+C at the admit leaves it, owes it too), then the vessel's unlock (detached)
+#      and the face last worn; a keep that refused before the down runs now where the new census reads clean
 #   6  one closing line: the revision, the worn face, the keep
 # It never switches a branch, never moves the checkout, and never reads or types a route.
 $script:InRebuild = $false
@@ -1019,10 +1032,29 @@ function PrintReading {
       if ($script:PsAdmitted -eq 'yes') { $adm = 'true' } elseif ($script:PsAdmitted -eq 'no') { $adm = 'false' }
     }
   }
-  $offer = if (OfferCarries $img) { 'true' } else { 'false' }
-  [Console]::Out.WriteLine("{`"op`":`"rebuild-image`",`"revision`":`"$($script:RRev)`",`"image`":`"$img`",`"how`":`"$($script:RHow)`",`"vessel`":`"$vessel`",`"current`":$current,`"pulama`":`"$pul`",`"lit`":$lit,`"admitted`":$adm,`"offer`":$offer}")
+  # An offer that rests names when it rested (its file's time, UTC), so a resumed rite names the begin it picks up.
+  $offer = 'false'; $at = ''
+  if (OfferCarries $img) {
+    $offer = 'true'
+    $f = Join-Path (Join-Path $House 'config') 'kukulu-offer.json'
+    try { $at = ",`"offerAt`":`"$((Get-Item -LiteralPath $f).LastWriteTimeUtc.ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture))`"" } catch { $at = '' }
+  }
+  [Console]::Out.WriteLine("{`"op`":`"rebuild-image`",`"revision`":`"$($script:RRev)`",`"image`":`"$img`",`"how`":`"$($script:RHow)`",`"vessel`":`"$vessel`",`"current`":$current,`"pulama`":`"$pul`",`"lit`":$lit,`"admitted`":$adm,`"offer`":$offer$at}")
 }
 $HandLine = 'your hand: lares rite kukulu on a terminal'
+# THE KEEP AFTER THE RAISE: a keep that refused before the down (its census named what rests nowhere yet) runs again once the
+# new vessel's census reads clean, so a restand never skips the keep silently; a census that still names items defers it by name.
+function KeepAfterRaise {
+  if (-not $script:KeepOwed) { return }
+  $c = RunCensus '--no-json'
+  if ($c.Rc -eq 0 -and ($c.Out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
+    [Console]::Error.WriteLine("lares-container: the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now")
+    KeepBeforeDown
+    if ($script:KeepSaid -eq 'kept (rite keep --if-due)') { $script:KeepSaid = 'kept after the raise (rite keep --if-due)' }
+  } else {
+    $script:KeepSaid = 'deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean'
+  }
+}
 function StandHouse {
   $digest = ImageId
   $restand = $false; $light = $false; $admit = $false; $why = ''
@@ -1041,6 +1073,9 @@ function StandHouse {
     }
     if ($restand) { $stays = $false }
     if (-not $light -and -not $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest)) { $admit = $true }
+    # A CTRL+C AT THE ADMIT left the vessel standing on the image at the floor, the image unadmitted and no offer carrying it:
+    # the admit it never took is owed again, never a bare unlock that cannot open.
+    if (-not $light -and $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest) -and -not (KeyHeld)) { $admit = $true }
     if (-not $script:Tty) {
       if ($light) { Die "rebuild stops before anything moves: $why, and its light reads your route on a terminal; $HandLine" }
       if ($admit) { Die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HandLine (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)" }
@@ -1074,6 +1109,7 @@ function StandHouse {
       if (NoneWorn) { WearLastFace }
     }
   } elseif ($stays) { UnlockOrName }
+  KeepAfterRaise
   $worn = $script:Wore -replace '^h', ''
   if (-not $worn) { $worn = WornNow }
   $rev = LabelOf $ImageRef

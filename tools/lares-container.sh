@@ -148,16 +148,16 @@ done
 # THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
 # host's lares door, else the checkout's own bin under the host's node.
-KEEP_SAID=""
+KEEP_SAID=""; KEEP_OWED=""
 keep_before_down() {
-  KEEP_SAID="no keep workspace named"
+  KEEP_SAID="no keep workspace named"; KEEP_OWED=""
   [ -n "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ] || return 0
   host_cli=$(value_of LARES_HOST_CLI)
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
   else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
   if "$@" rite keep --if-due --no-json; then KEEP_SAID="kept (rite keep --if-due)"
-  else KEEP_SAID="the keep did not complete"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
+  else KEEP_SAID="the keep did not complete"; KEEP_OWED=yes; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
 # Make every bound class as the operator, so the engine never makes one owned by root.
@@ -424,6 +424,19 @@ offer_accept_loss() {
   printf '%s\n' 'lares-container: accept-loss typed; stopping the vessel' >&2
 }
 
+# A CENSUS OF HELD SAVES ALONE says so plainly before the accept-loss offer: how many documents, that each waits in memory for a
+# session in this vessel, and that no carrier and no untracked file waits, so accept-loss drops exactly these. Under a restand it
+# adds that the keep runs after the raise once the new vessel's census reads clean.
+held_only_line() {
+  ho_lines=$(printf '%s\n' "$census_out" | sed -e '/^$/d')
+  [ -n "$ho_lines" ] || return 0
+  if printf '%s\n' "$ho_lines" | grep -qv '^held-save '; then return 0; fi
+  ho_n=$(printf '%s\n' "$ho_lines" | wc -l | tr -d ' ')
+  if [ "$ho_n" = 1 ]; then ho_docs="1 document"; else ho_docs="$ho_n documents"; fi
+  ho_more=""; [ -z "$IN_REBUILD" ] || ho_more="; the keep runs after the raise once the new vessel's census reads clean"
+  printf 'lares-container: the census names held saves alone (%s): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these%s\n' "$ho_docs" "$ho_more" >&2
+}
+
 # Census the standing vessel; return only when the stop may go on (clean, or accept-loss typed).
 census_before_stop() {
   if run_census; then rc=0; else rc=$?; fi
@@ -437,6 +450,7 @@ census_before_stop() {
   if [ "$rc" -eq 3 ] && [ -z "$census_timed_out" ]; then
     printf '%s\n' 'lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:' >&2
     printf '%s\n' "$census_out" | sed -e '/^$/d' -e 's/^/  /' >&2
+    held_only_line
   else
     if [ -n "$census_timed_out" ]; then why="no answer within ${CENSUS_WAIT_SECONDS}s (the vessel may stand wedged)"
     else why="the census exec ended with status $rc"; fi
@@ -935,7 +949,9 @@ pulama_restand() {
 #   3  the down path (keep, census) where the vessel runs another image or the pūlama re-stands; a vessel already on the
 #      image stays standing
 #   4  the pūlama re-stands where its code moved, then lights ATTACHED on this terminal: the pūlama reads the route
-#   5  up on the image; under a pūlama its admit, attached, where owed, then the vessel's unlock (detached) and the face last worn
+#   5  up on the image; under a pūlama its admit, attached, where owed (a vessel left standing at the floor on an image
+#      neither admitted nor offered, as a Ctrl+C at the admit leaves it, owes it too), then the vessel's unlock (detached)
+#      and the face last worn; a keep that refused before the down runs now where the new census reads clean
 #   6  one closing line: the revision, the worn face, the keep
 # It never switches a branch, never moves the checkout, and never reads or types a route.
 IN_REBUILD=""
@@ -1032,11 +1048,30 @@ print_reading() {
          case "$ps_admitted" in yes) rd_admitted=true ;; no) rd_admitted=false ;; esac ;;
     esac
   fi
-  if offer_carries "$rd_image"; then rd_offer=true; else rd_offer=false; fi
-  printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s}\n' \
-    "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer"
+  # An offer that rests names when it rested (its file's time, UTC), so a resumed rite names the begin it picks up.
+  rd_at=""
+  if offer_carries "$rd_image"; then
+    rd_offer=true
+    rd_when=$(date -u -r "$HOUSE/config/kukulu-offer.json" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null) || rd_when=""
+    if printf '%s' "$rd_when" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'; then rd_at=",\"offerAt\":\"$rd_when\""; fi
+  else rd_offer=false; fi
+  printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s%s}\n' \
+    "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_at"
 }
 HAND_LINE='your hand: lares rite kukulu on a terminal'
+# THE KEEP AFTER THE RAISE: a keep that refused before the down (its census named what rests nowhere yet) runs again once the
+# new vessel's census reads clean, so a restand never skips the keep silently; a census that still names items defers it by name.
+keep_after_raise() {
+  [ -n "$KEEP_OWED" ] || return 0
+  if run_census && printf '%s\n' "$census_out" | grep -q '^census: clean'; then
+    printf '%s\n' "lares-container: the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now" >&2
+    keep_before_down
+    if [ "$KEEP_SAID" = "kept (rite keep --if-due)" ]; then KEEP_SAID="kept after the raise (rite keep --if-due)"; fi
+  else
+    # shellcheck disable=SC2016
+    KEEP_SAID='deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean'
+  fi
+}
 stand_house() {
   s_digest=$(image_id) || s_digest=""
   s_restand=""; s_light=""; s_admit=""; s_stays=""; s_why=""
@@ -1056,6 +1091,9 @@ stand_house() {
     esac
     [ -z "$s_restand" ] || s_stays=""
     if [ -z "$s_light" ] && [ -z "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest"; then s_admit=yes; fi
+    # A CTRL+C AT THE ADMIT left the vessel standing on the image at the floor, the image unadmitted and no offer carrying it:
+    # the admit it never took is owed again, never a bare unlock that cannot open.
+    if [ -z "$s_light" ] && [ -n "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest" && ! key_held; then s_admit=yes; fi
     if [ -z "$HAVE_TTY" ]; then
       [ -z "$s_light" ] || die "rebuild stops before anything moves: $s_why, and its light reads your route on a terminal; $HAND_LINE"
       [ -z "$s_admit" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)"
@@ -1089,6 +1127,7 @@ stand_house() {
       if none_worn; then wear_last_face; fi
     fi
   elif [ -n "$s_stays" ]; then unlock_or_name; fi
+  keep_after_raise
   r_worn=${WORE#h}; [ -n "$r_worn" ] || r_worn=$(worn_now)
   r_rev=$(label_of "$IMAGE_REF" | cut -c1-12)
   if [ -n "$r_worn" ]; then r_wearing="wearing h$r_worn"; else r_wearing="no face worn (wear one: \`tools/lares-container.sh wear N\`)"; fi

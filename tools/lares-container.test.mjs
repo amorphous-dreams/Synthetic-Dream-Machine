@@ -43,6 +43,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const log = join(dir, "calls.log");
     await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n[ -z "\${LAR_KUKULU_OFFER:-}" ] || printf 'LAR_KUKULU_OFFER=%s\\n' "$LAR_KUKULU_OFFER" >> "$CALL_LOG"\n` +
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
+      `case " $* " in *" down --remove-orphans"*|*" stop "*lares*) : > "$CALL_LOG.down";; esac\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `last=''; for a in "$@"; do last=$a; done\n` +
@@ -72,7 +73,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
-      `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
+      // After a stop (a down marks the run), the census answers FAKE_CENSUS_AFTER where a test names one: the new vessel's census.
+      `case " $* " in *" vessel census "*) if [ -e "$CALL_LOG.down" ] && [ -n "\${FAKE_CENSUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CENSUS_AFTER}"; exit "\${FAKE_CENSUS_AFTER_RC:-0}"; fi; [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
       `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_STOOD_ID:-\${FAKE_RUNNING_ID:-}}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
@@ -1061,6 +1063,54 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 2);
     assert.doesNotMatch(r.calls, /up -d --wait lares|down --remove-orphans/);
   });
+  // KŪKULU SURVIVES A CTRL+C (gate 2): the down path's keep refused `carry-unsettled` over the same census the stop then asked,
+  // and the keep never ran again. Now the restand keeps AFTER the raise once the new vessel's census reads clean, and says so.
+  const keepTwice = async (first, second) => {
+    const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+    const f = join(d, "lares");
+    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nif [ -e "$CALL_LOG.kept1" ]; then exit ${second}; fi\n: > "$CALL_LOG.kept1"\nexit ${first}\n`);
+    await chmod(f, 0o755);
+    return f;
+  };
+  test(`${name}: rebuild-keeps-after-the-raise: a keep that refused before the down runs again after the up once the census reads clean, and the closing line names it; CONTROL: a keep that kept before the down runs once`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup" };
+    const r = await run(shim, ["rebuild"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(1, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    const lines = r.calls.split("\n");
+    const keeps = lines.flatMap((l, i) => (/HOSTCLI rite keep --if-due/.test(l) ? [i] : []));
+    const up = lines.findIndex((l) => /up -d --wait lares/.test(l));
+    assert.equal(keeps.length, 2, r.calls);
+    assert.ok(keeps[0] < up && keeps[1] > up, `the second keep follows the up:\n${r.calls}`);
+    assert.ok(lines.findLastIndex((l) => /vessel census --no-json/.test(l)) > up, `the census after the up asks before the keep:\n${r.calls}`);
+    assert.match(r.stderr, /the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now/);
+    assert.match(r.stderr, /keep: kept after the raise \(rite keep --if-due\)/);
+    const once = await run(shim, ["rebuild"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(once.status, 0, once.stderr);
+    assert.equal(once.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, once.calls);
+    assert.match(once.stderr, /keep: kept \(rite keep --if-due\)/);
+  });
+  test(`${name}: rebuild-defers-the-keep-past-an-unsettled-census: a census after the raise that still names items keeps nothing and names the deferral, never silently`, async () => {
+    const r = await run(shim, ["rebuild"], { checkout: "clean", env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CENSUS_AFTER: ITEMS, FAKE_CENSUS_AFTER_RC: "3", FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(1, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, r.calls);
+    assert.match(r.stderr, /keep: deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean/);
+  });
+  test(`${name}: down-names-a-held-saves-only-census-plainly: before the accept-loss offer, a census of held saves alone says so (how many, that no carrier or untracked file waits, that accept-loss drops exactly these); CONTROL: a census with a carrier says nothing of the kind`, async () => {
+    const held = "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag notes\nheld-save  save-unmapped  doc doc-wren  1 save(s) in memory  bag (none mapped)";
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: held, FAKE_CENSUS_RC: "3" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /the census names held saves alone \(2 documents\): each a save the sealed rest keeps in memory until a session books it in this vessel; no carrier and no untracked file waits, so accept-loss drops exactly these/);
+    assert.ok(r.stderr.indexOf("held saves alone") < r.stderr.indexOf("Two ways on"), r.stderr);
+    const mixed = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
+    assert.doesNotMatch(mixed.stderr, /held saves alone/);
+  });
+  test(`${name}: rebuild-image-names-when-the-offer-rested: an offer naming the image carries its time (UTC) in the reading; CONTROL: none resting names none`, async () => {
+    const r = await run(shim, ["rebuild", "--image"], { checkout: "clean", houseFiles: { "config/kukulu-offer.json": '{"vouch":[{"body":{"image":"sha256:new"}}]}\n' }, env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
+    assert.equal(r.status, 0, r.stderr);
+    const reading = JSON.parse(r.stdout.trim().split("\n").at(-1));
+    assert.equal(reading.offer, true);
+    assert.match(reading.offerAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+  });
   test(`${name}: rebuild-takes-at-or-prior: --at <rev> builds that commit; --resume, --prior beside --at, or a stray word, refuses before anything moves`, async () => {
     const at = await run(shim, ["rebuild", "--at", "HEAD"], { checkout: "clean", env: { ...MOUNTS, FAKE_CUSTODY_OUTPUT: HELD } });
     assert.equal(at.status, 0, at.stderr);
@@ -1498,6 +1548,29 @@ test(`${name}: rebuild-flows-with-no-terminal-where-no-route-is-owed: a kūkulu 
     assert.match(r.calls, /up -d --wait lares[\s\S]* vault unlock --all\n[\s\S]* wear 2/);
     assert.match(r.stderr, /the house stands on revision 0123456789ab, wearing h2/);
   }
+});
+// A CTRL+C AT THE ADMIT (gate 2) leaves the vessel standing on the image at the floor, the image unadmitted and no offer carrying
+// it. The next run reads that house: the vessel stays, and the admit it never took is owed again, never a bare unlock that fails.
+const FLOOR = '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}';
+test(`${name}: rebuild-owes-the-admit-a-ctrl-c-left: a vessel on the image at the floor, the image neither admitted nor offered, owes the admit (no terminal: the hand act, nothing moves); CONTROL: a vessel that holds its key, or an offer naming the image, owes none`, { skip }, async () => {
+  const stays = { ...REBUILT, FAKE_IMAGE_REV_LABEL: "@HEAD@", FAKE_RUNNING_ID: "vessel", FAKE_VESSEL_IMAGE: "sha256:new", FAKE_IMAGE_CLOSURE: CL("a"), FAKE_PULAMA_CLOSURE: CL("a") };
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...stays, FAKE_CUSTODY_OUTPUT: FLOOR } });
+  assert.equal(r.status, 2, r.stderr);
+  assert.match(r.stderr, /rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it[\s\S]*your hand: lares rite kukulu on a terminal/);
+  assert.doesNotMatch(r.calls, /down --remove-orphans|up -d --wait lares|pulama-main\.js admit/);
+  for (const [env, houseFiles] of [[{}, {}], [{ FAKE_CUSTODY_OUTPUT: FLOOR }, OFFER]]) {
+    const ok = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, checkout: "clean", houseFiles, env: { ...stays, ...env } });
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.doesNotMatch(ok.calls, /pulama-main\.js admit/);
+    assert.match(ok.stderr, /the vessel runs sha256:new already and stays standing/);
+  }
+});
+test(`${name}: rebuild-owes-the-admit-a-ctrl-c-left, on a terminal: the stayed vessel's admit runs attached, then the unlock`, { skip: skip || !haveScript }, async () => {
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", env: { ...REBUILT, FAKE_IMAGE_REV_LABEL: "@HEAD@", FAKE_RUNNING_ID: "vessel", FAKE_VESSEL_IMAGE: "sha256:new", FAKE_IMAGE_CLOSURE: CL("a"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_CUSTODY_OUTPUT: FLOOR } });
+  const lines = r.calls.split("\n");
+  const admit = lines.findIndex((l) => /pulama-main\.js admit$/.test(l)), unlock = lines.findIndex((l) => / vault unlock/.test(l));
+  assert.ok(admit >= 0 && unlock > admit, `order admit, unlock:\n${r.calls}`);
+  assert.doesNotMatch(r.calls, /down --remove-orphans|up -d --wait lares/);
 });
 test(`${name}: rebuild-keeps-a-lit-pulama-on-a-vessel-only-build: no restand, no light; up, the pūlama's admit on this terminal, the last face worn, one closing line`, { skip: skip || !haveScript }, async () => {
   const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("a"), FAKE_PULAMA_CLOSURE: CL("a") } });

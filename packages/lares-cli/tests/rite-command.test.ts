@@ -16,7 +16,7 @@ import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisD
 import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, syncCheckout } from "../src/commands/rite.js";
+import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
 import { kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
@@ -527,5 +527,155 @@ describe("the kūkulu's seed port reads the genesis dir the image carries (the h
     const out = await riteKukulu({ ...g.ports, seedOffer: hostSeedOfferPort({ genesisDir: genesisDirWith(shippedBytes()), record: async () => ({ unread: "no vessel answers" }) }) }, {});
     expect(g.said).toContain("kūkulu: the host reads no founding record beside the seed this image offers; the rite goes on, and moves no ratchet");
     expect(out.code).toBe(0);
+  });
+});
+
+/**
+ * KŪKULU SURVIVES A CTRL+C (gate 2, beta-release-zero, operator ruling 2026-11-20). The live red: a Ctrl+C at the census's
+ * accept-loss prompt, then a re-run, began AGAIN (a second lei return spent, new tesserae minted, the offer written again). The
+ * rite now reads the begin that stands before it begins: at this head it RESUMES it (no return, no tessera, the offer that
+ * rests reused); at another head it refuses by name with the one line that clears it.
+ */
+describe("kukulu-survives-a-ctrl-c", () => {
+  const OLD = "b".repeat(40);
+  const AT = "2026-11-20T04:12:09Z";
+  type Begin = { face: string; ordinal?: number; tessera: string; head: string };
+  const STANDING = (head = HEAD): Begin[] => [{ face: "h0", ordinal: 0, tessera: TESSERA, head }];
+  const STANDS = "standing main";
+  /** The fake ports with a standing read: what the standing vessel answers before the raise, and what the new one answers after. */
+  function standingFakes(before: readonly Begin[] | null, over: Parameters<typeof fakes>[0] = {}, after: readonly Begin[] = []) {
+    const f = fakes(over);
+    let raised = false;
+    const raise = f.ports.raise;
+    f.ports.raise = async (rev) => { raised = true; return raise(rev); };
+    f.ports.standing = async (branch) => {
+      f.calls.push(`standing ${branch}`);
+      return before === null ? { ok: false, code: "vessel-locked", message: "this vessel's key rests unopened" } : { ok: true, begins: raised ? after : before };
+    };
+    return f;
+  }
+
+  it("RED: a begin already standing at this head and image is RESUMED: no begin row (no lei return spent, no tessera minted), the offer that rests reused, the raise, then the landing reads par; the line names it plainly", async () => {
+    const f = standingFakes(STANDING(), { reading: { offer: true, offerAt: AT } });
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls).toEqual(["checkout", STAGE, STANDS, `raise ${HEAD}`, LAND]);
+    expect(out).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, tesserae: [{ face: "h0", tessera: TESSERA }], resumed: true, begun: true, landed: true, par: true } });
+    const said = f.said.join("\n");
+    expect(said).toMatch(new RegExp(`kūkulu: resuming the begin of ${AT}; no lei spent \\(h0 tessera ${TESSERA}\\)`));
+    expect(said).toMatch(/the offer the begin rested still stands for the next vessel over sha256:abab[0-9a-f]*; reused, none written/);
+    expect(said).not.toMatch(/kūkulu: begun;/);
+  });
+
+  it("RED: resuming where no offer rests for the image (the stop came before the offer) writes the offer once and still spends no return; the line names the head where no time reads", async () => {
+    const f = standingFakes(STANDING());
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls).toEqual(["checkout", STAGE, STANDS, OFFER, `raise ${HEAD}`, LAND]);
+    expect(out).toMatchObject({ code: 0, data: { resumed: true, landed: true, par: true } });
+    expect(f.said.join("\n")).toMatch(/kūkulu: resuming the begin at aaaaaaaaaaaa; no lei spent/);
+  });
+
+  it("RED: a begun-but-never-landed rite older than the new head (the operator pulled meanwhile) refuses by name with the one line that clears it, never stacks: no begin, no offer, no raise", async () => {
+    const f = standingFakes(STANDING(OLD));
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls).toEqual(["checkout", STAGE, STANDS]);
+    expect(out).toMatchObject({ code: 1, data: { begun: false, stopped: "begun-stale", refusal: "kukulu-begun-stale", stale: [{ face: "h0", tessera: TESSERA, head: OLD }] } });
+    const said = f.said.join("\n");
+    expect(said).toMatch(/a kūkulu begun at bbbbbbbbbbbb stands unlanded \(h0 tessera c+\), and this run raises aaaaaaaaaaaa; it never stacks a second begin/);
+    expect(said).toMatch(/clear it with: lares rite kukulu --rollback bbbbbbbbbbbb \(it lands that begin at its own head and spends no lei\), then run lares rite kukulu again; nothing spent, nothing moved/);
+    // CONTROL: the line it names resumes that begin at its own head (the rollback stands the old revision's image).
+    const back = standingFakes(STANDING(OLD), { reading: { revision: OLD, current: true } });
+    const cleared = await riteKukulu(back.ports, { rollback: OLD.slice(0, 12) });
+    expect(back.calls).toEqual(["checkout", `stage ${JSON.stringify({ at: OLD.slice(0, 12) })}`, STANDS, `raise ${OLD}`, `rite-land ${JSON.stringify({ tessera: TESSERA, head: OLD, face: 0 })}`]);
+    expect(cleared).toMatchObject({ code: 0, data: { resumed: true, landed: true, par: true } });
+  });
+
+  it("RED: a quiet day (the vessel already runs the image) with a begin standing at this head lands it after the top-up, spending nothing; CONTROL: a quiet day with none standing lands nothing", async () => {
+    const f = standingFakes(STANDING(), { reading: { ...LIT, current: true } });
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls).toEqual(["checkout", STAGE, STANDS, `raise ${HEAD}`, LAND]);
+    expect(out).toMatchObject({ code: 0, data: { quiet: true, resumed: true, landed: true, par: true } });
+    const none = standingFakes([], { reading: { ...LIT, current: true } });
+    expect(await riteKukulu(none.ports, {})).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, begun: false, quiet: true } });
+    expect(none.calls).toEqual(["checkout", STAGE, STANDS, `raise ${HEAD}`]);
+  });
+
+  it("RED: with no vessel standing at the start (a Ctrl+C at the light left it down), the raise stands the new vessel and the rite lands the begun halves it reads there; CONTROL: none standing there lands nothing", async () => {
+    const f = standingFakes([], { reading: { vessel: "down", offer: true } }, STANDING());
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls).toEqual(["checkout", STAGE, `raise ${HEAD}`, STANDS, LAND]);
+    expect(out).toMatchObject({ code: 0, data: { resumed: true, landed: true, par: true } });
+    const none = standingFakes([], { reading: { vessel: "down" } });
+    expect(await riteKukulu(none.ports, {})).toMatchObject({ code: 0, data: { begun: false, raised: true } });
+    expect(none.calls).toEqual(["checkout", STAGE, `raise ${HEAD}`, STANDS]);
+  });
+
+  it("RED: a standing read the vessel refuses stops before anything spends, naming the refusal; never a second begin over an unread line", async () => {
+    const f = standingFakes(null);
+    expect(await riteKukulu(f.ports, {})).toMatchObject({ code: 1, data: { begun: false, stopped: "standing", refusal: "vessel-locked" } });
+    expect(f.calls).toEqual(["checkout", STAGE, STANDS]);
+    expect(f.said.join("\n")).toMatch(/reads no begun halves \(this vessel's key rests unopened\); nothing spent, nothing moved/);
+  });
+
+  it("RED: a Ctrl+C during the restand (the shim answers 130) names the interrupt and the resume, never a lost return", async () => {
+    const f = standingFakes([], { raise: 130 });
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toMatchObject({ code: 1, data: { begun: true, landed: false, stopped: "raise", interrupted: true } });
+    expect(f.said.join("\n")).toMatch(/kūkulu: interrupted during the restand; the begun halves rest and the offer stands, so `lares rite kukulu` resumes them and spends no lei/);
+  });
+
+  /** A fake house that holds its state across runs: the stage reads it, each row and the raise move it. */
+  function house(interruptAt: "accept-loss" | "light" | "admit") {
+    const st = { vessel: "standing" as "standing" | "down", current: false, offer: false, guests: [] as string[], landed: new Set<string>(), begins: 0, offers: 0, raises: 0 };
+    const said: string[] = [];
+    const ports: RitePorts = {
+      checkout: async () => ({ head: HEAD, branch: "main" }),
+      stage: async () => ({ code: 0, reading: { ...READING, vessel: st.vessel, current: st.current, offer: st.offer } }),
+      standing: async () => ({ ok: true, begins: st.vessel === "standing" ? st.guests.filter((t) => !st.landed.has(t)).map((tessera) => ({ face: "h0", ordinal: 0, tessera, head: HEAD })) : [] }),
+      raise: async () => {
+        st.raises++;
+        if (st.raises === 1) {
+          // THE INTERRUPT: accept-loss stops before the down (the vessel stands); the light after it (the vessel down); the admit after the up.
+          if (interruptAt === "light") st.vessel = "down";
+          if (interruptAt === "admit") st.current = true;
+          return 130;
+        }
+        st.vessel = "standing"; st.current = true;
+        return 0;
+      },
+      row: async (verb, args) => {
+        if (verb === "rite-begin") { st.begins++; const tessera = String(st.begins).repeat(64); st.guests.push(tessera); return { ok: true, output: { rite: "kukulu", faces: [{ face: "h0", ordinal: 0, tessera }], waits: [] } }; }
+        if (verb === "rite-offer") { st.offers++; st.offer = true; return { ok: true, output: { lei: 1, faces: ["h0"], waits: [] } }; }
+        st.landed.add(String(args["tessera"]));
+        return { ok: true, output: { par: true } };
+      },
+      say: (line) => { said.push(line); },
+    };
+    return { st, ports, said };
+  }
+
+  for (const at of ["accept-loss", "light", "admit"] as const) {
+    it(`RED: a Ctrl+C at the ${at} prompt, then a re-run, lands par: one begin across both runs, one offer, no second return`, async () => {
+      const h = house(at);
+      expect(await riteKukulu(h.ports, {})).toMatchObject({ code: 1, data: { stopped: "raise", interrupted: true } });
+      const again = await riteKukulu(h.ports, {});
+      expect(again).toMatchObject({ code: 0, data: { resumed: true, landed: true, par: true } });
+      expect([h.st.begins, h.st.offers, h.st.guests.length, h.st.landed.size]).toEqual([1, 1, 1, 1]);
+      expect(h.said.filter((l) => l.startsWith("kūkulu: begun;"))).toHaveLength(1);
+      // CONTROL: a third run reads nothing standing, and the quiet day spends nothing.
+      expect(await riteKukulu(h.ports, {})).toMatchObject({ code: 0, data: { begun: false, quiet: true } });
+      expect(h.st.begins).toBe(1);
+    });
+  }
+
+  it("RED: the host's standing read takes the vessel's `standing` rows, each landing under its face; an older vessel's receipts answer reads its conferre's unlanded kūkulu halves on the line", () => {
+    expect(standingOf({ rite: "kukulu", standing: [{ face: "h2", ordinal: 2, tessera: TESSERA, branch: "main", head: HEAD }] }, "main")).toEqual([{ face: "h2", ordinal: 2, tessera: TESSERA, head: HEAD }]);
+    expect(standingOf({ receipts: [], conferre: { par: [], red: [
+      { tessera: TESSERA, rite: "kukulu", begun: "e", landed: null, branch: "main", head: HEAD, par: false, red: "landed-absent" },
+      { tessera: "d".repeat(64), rite: "kukulu", begun: "e", landed: null, branch: "other", head: HEAD, par: false, red: "landed-absent" },
+      { tessera: "f".repeat(64), rite: "kukulu", begun: "e", landed: "g", branch: "main", head: HEAD, par: false, red: "head-differs" },
+      { tessera: "9".repeat(64), rite: "keep", begun: "e", landed: null, branch: "main", head: HEAD, par: false, red: "landed-absent" },
+    ] } }, "main")).toEqual([{ face: "the worn face", tessera: TESSERA, head: HEAD }]);
+    expect(hostRowLine("rite-receipts", { rite: "kukulu", branch: "main" })).toEqual(["rite", "receipts", "--rite", "kukulu", "--branch", "main"]);
+    expect(plan("receipts", "--rite", "kukulu", "--branch", "main")).toEqual({ verb: "rite-receipts", args: { rite: "kukulu", branch: "main" } });
   });
 });

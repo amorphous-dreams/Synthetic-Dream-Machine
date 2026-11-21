@@ -7,9 +7,9 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { beginLentFaces, lentOfferFaces } from "../src/commands/rite.js";
+import { beginLentFaces, lentOfferFaces, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
 import {
-  SwarmRefused, beginChecked, checkReturn, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiReturnedPrefix, swarmLeiReturnedTitle,
+  SwarmRefused, beginChecked, checkReturn, conferre, landRite, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiReturnedPrefix, swarmLeiReturnedTitle,
   type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 
@@ -107,4 +107,45 @@ test("RED: three lent faces each hold a kukulu lei and no receipt stands for the
   for (const t of [...absent.rows.keys()]) if (t === swarmLeiRecordTitle("kukulu", "develop", absent.faces[1]!.lei)) absent.rows.delete(t);
   expect((await absent.kukulu()).waits).toEqual(["h1"]);
   expect([absent.claimed(), absent.guests()]).toEqual([[1, 0, 1], 2]);
+});
+
+/**
+ * ONE BEGIN PER RAISE (gate 2, beta-release-zero): a kūkulu begun and never landed (a Ctrl+C at the census, the light or the
+ * admit) reads as each lent face's guest half standing unlanded on its line, and a second begin spends nothing more.
+ */
+test("RED: a kūkulu begun and never landed reads each lent face's guest half standing on its line, and a second begin refuses `rite-begun-stands` before any return is claimed; CONTROL: a landed face reads nothing standing, and another line reads none", async () => {
+  const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+  const rows = new Map<string, string>();
+  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
+    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
+  const faces: { group: string; trust: SwarmTrust; atom: Awaited<ReturnType<typeof keyed>>; lei: string }[] = [];
+  for (const ordinal of [0, 1]) {
+    const group = `face-group-${ordinal}`, hand = await keyed(30 + ordinal), atom = await keyed(40 + ordinal);
+    const trust: SwarmTrust = { hand: (k) => k === hand.key, vessel: (k) => k === atom.key, lead: () => false };
+    const lei = await signSwarmAct({ act: "lei", group, rite: "kukulu", branch: "develop", after: null, reach: "wide", returns: 3 }, hand);
+    await wiki.write(swarmLeiRecordTitle("kukulu", "develop", swarmActCid(lei)), JSON.stringify(lei));
+    faces.push({ group, trust, atom, lei: swarmActCid(lei) });
+  }
+  const head = "a".repeat(40);
+  const at = { rite: "kukulu" as const, branch: "develop", head, tree: "b".repeat(40) };
+  const red = async (ordinal: number) => (await conferre(wiki, faces[ordinal]!.trust, faces[ordinal]!.group)).red;
+  const claimed = () => faces.map((f) => [...rows.keys()].filter((t) => t.startsWith(swarmLeiReturnedPrefix(f.lei))).length);
+  const begin = async () => {
+    refuseStandingBegin(await standingKukuluBegins([0, 1], red, "develop"));
+    return beginLentFaces([0, 1], (o) => checkReturn(wiki, at, faces[o]!.trust, faces[o]!.group, faces[o]!.atom, { accepts: () => true }), (c) => beginChecked(wiki, c));
+  };
+  const first = await begin();
+  const standing = await standingKukuluBegins([0, 1], red, "develop");
+  expect(standing).toEqual(first.faces.map((f) => ({ face: f.face, ordinal: f.ordinal, tessera: f.tessera, branch: "develop", head })));
+  // RED: the re-run's begin refuses by name and claims no second return.
+  await expect(begin()).rejects.toMatchObject({ code: "rite-begun-stands", message: expect.stringContaining(first.faces[0]!.tessera) });
+  expect(claimed()).toEqual([1, 1]);
+  // CONTROL: another line reads none; a face whose half landed reads nothing standing.
+  expect(await standingKukuluBegins([0, 1], red, "main")).toEqual([]);
+  await landRite(wiki, { tessera: first.faces[0]!.tessera, head }, faces[0]!.trust, faces[0]!.group, faces[0]!.atom);
+  expect((await standingKukuluBegins([0, 1], red, "develop")).map((s) => s.face)).toEqual(["h1"]);
+  await landRite(wiki, { tessera: first.faces[1]!.tessera, head }, faces[1]!.trust, faces[1]!.group, faces[1]!.atom);
+  expect(await standingKukuluBegins([0, 1], red, "develop")).toEqual([]);
+  // CONTROL: once every half landed, the next raise begins afresh (one return more per face).
+  expect((await begin()).faces.map((f) => f.n)).toEqual([2, 2]);
 });

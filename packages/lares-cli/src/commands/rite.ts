@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { priorImageRef, riteKukulu, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type StageTarget, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
+import { INTERRUPTED, priorImageRef, riteKukulu, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -64,7 +64,11 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
   const face = faceWord === undefined ? {} : { face: Number(faceWord) };
   const head = word(args.options["head"]);
-  if (act === "receipts") return { verb: "rite-receipts", args: { ...face } };
+  if (act === "receipts") {
+    // `--rite kukulu` reads every lent face's begun halves resting unlanded (`--branch` narrows them to its line).
+    const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
+    return { verb: "rite-receipts", args: { ...(rite === undefined ? {} : { rite }), ...(branch === undefined ? {} : { branch }), ...face } };
+  }
   if (act === "begin") {
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
     if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit> (a keep adds --staging <path>, the bundle it staged inside its workspace)");
@@ -201,11 +205,17 @@ const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promis
 /** Row args as flags: `true` rides as a bare flag, every other value as the next word. */
 const flagsOf = (rowArgs: Record<string, unknown>): string[] => Object.entries(rowArgs).flatMap(([k, v]) => (v === true ? [`--${k}`] : [`--${k}`, String(v)]));
 
-/** One shim line on this terminal; the answer carries its exit code (a spawn that never ran reads as a failure). */
+/**
+ * One shim line on this terminal; the answer carries its exit code (a spawn that never ran reads as a failure). A CTRL+C reaches
+ * the shim, which shares this terminal's foreground group and stops what it started; this process holds SIGINT until the shim
+ * ends, so the rite still says where the house stands, and a shim ended by the signal answers `INTERRUPTED`.
+ */
 const runShim = (shim: string, argv: readonly string[]): Promise<number> => new Promise((resolve) => {
+  const hold = (): void => {};
+  process.on("SIGINT", hold);
   const child = spawn(shim, [...argv], { stdio: "inherit" });
-  child.once("error", () => resolve(127));
-  child.once("close", (code) => resolve(code ?? 1));
+  child.once("error", () => { process.off("SIGINT", hold); resolve(127); });
+  child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
 });
 
 /** The shim's image step (`rebuild --image`): its lines show on this terminal, and its last stdout line carries the reading. */
@@ -305,8 +315,25 @@ async function keepPins(dir: string): Promise<{ readonly ok: boolean; readonly l
  * One vessel row as the host's CLI line. The begin and the offer gather every lent face in the vessel, so they name none;
  * each landing names the face its tessera began under in its own arguments.
  */
-export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", rowArgs: Record<string, unknown>): string[] =>
-  ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs)];
+export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
+  ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : verb === "rite-receipts" ? "receipts" : "land", ...flagsOf(rowArgs)];
+
+/**
+ * THE BEGIN THAT STANDS, from the vessel's `rite receipts --rite kukulu` answer: its `standing` rows, each naming its face and
+ * ordinal. A vessel of an older image answers its worn face's receipts and conferre instead, so the host reads that conferre's
+ * kūkulu halves resting unlanded on the line (each lands under the worn face): the vessel standing during the very next run
+ * is the one that stopped, and it never begins over a half it already rests.
+ */
+export function standingOf(output: Record<string, unknown>, branch: string): StandingBegin[] {
+  const rows = (v: unknown): Array<Record<string, unknown>> => (Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => typeof x === "object" && x !== null) : []);
+  if (Array.isArray(output["standing"])) {
+    return rows(output["standing"]).map((s) => ({ face: String(s["face"]), ...(Number.isSafeInteger(s["ordinal"]) ? { ordinal: s["ordinal"] as number } : {}), tessera: String(s["tessera"]), head: String(s["head"]) }));
+  }
+  const conf = output["conferre"];
+  const red = typeof conf === "object" && conf !== null ? rows((conf as Record<string, unknown>)["red"]) : [];
+  return red.filter((t) => t["red"] === "landed-absent" && t["rite"] === "kukulu" && t["branch"] === branch && typeof t["head"] === "string")
+    .map((t) => ({ face: "the worn face", tessera: String(t["tessera"]), head: String(t["head"]) }));
+}
 
 /**
  * The founding record beside the seed the image offers, through the host's one seed read (`../seed-offered.ts`, the read
@@ -352,7 +379,12 @@ export function hostRefill(ask: (q: string) => Promise<boolean>, run: (argv: rea
 }
 
 const liveRefill: RefillPort = hostRefill(
-  (q) => new Promise((resolve) => { const rl = createInterface({ input: process.stdin, output: process.stderr }); rl.question(`${q} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); }); }),
+  // A CTRL+C at the refill's question reads as no: nothing strung, nothing spent, and the refusal names the plain line.
+  (q) => new Promise((resolve) => {
+    const rl = createInterface({ input: process.stdin, output: process.stderr });
+    rl.once("SIGINT", () => { rl.close(); process.stderr.write("\n"); resolve(false); });
+    rl.question(`${q} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); });
+  }),
   (argv) => new Promise((resolve) => { const c = spawn(join(CHECKOUT, "tools", "lares-container.sh"), [...argv], { stdio: "inherit" }); c.once("error", () => resolve(127)); c.once("close", (code) => resolve(code ?? 1)); }),
   () => process.stdin.isTTY === true && process.stdout.isTTY === true,
 );
@@ -382,6 +414,10 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     raise: (revision) => runShim(shim, ["rebuild", "--at", revision]),
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
+    standing: async (branch) => {
+      const read = await cliVerb(hostRowLine("rite-receipts", { rite: "kukulu", branch }));
+      return read.ok ? { ok: true, begins: standingOf(read.output, branch) } : read;
+    },
     say,
   };
 }
