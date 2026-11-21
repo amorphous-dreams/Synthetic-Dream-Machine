@@ -261,8 +261,15 @@ export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entr
 /** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
 export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
 
-/** The socket's one hand-only table: every code a seat session refuses, promote, swarm and floor together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES]);
+/**
+ * The daemon island's wiki verbs a person's hand alone runs: `retire-wiki` unmints a face's wiki shell. It rides a session's
+ * `session:call` (an island verb, never a face row), so the socket refuses a seat's call by this code, and the island's own
+ * reactor refuses any asker that is not a hand (`retire-needs-hand`).
+ */
+export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([["retire-wiki", "retire-needs-hand"]]);
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor and wiki together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
 export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_VERBS, ...STORE_DOOR_HAND_CODES.keys()]);
 

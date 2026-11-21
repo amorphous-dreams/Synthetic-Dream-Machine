@@ -20,7 +20,7 @@ import {
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor, findOrThrow,
-  makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
+  makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
   makeOracleCastReactor,
@@ -40,7 +40,8 @@ import {
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
-import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText } from "@lararium/mesh";
+import { faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
+import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
@@ -1577,6 +1578,51 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           },
         };
         registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts), makeInitWikiReactor(veilMintOpts)));
+        // THE OWNER'S UNMINT (`lares wiki retire`): a hand act on the worn face's own shell, never the AI seat. It needs a face (the
+        // veil floor mints no shell a face could own), and the content fence keeps a sibling's session off it.
+        const bindingRows = () => ctx.composite.hasBag(DAEMON_BAG_ID) ? ctx.composite.storeForBag(DAEMON_BAG_ID) : null;
+        const ownSlot = async (slug: string, kind: "draft" | "personal") =>
+          faceOwnSlot(bindingRows(), kind === "draft" ? DRAFT_BINDINGS_PREFIX : PERSONAL_BINDINGS_PREFIX, daemonAuth.personaGroupId!,
+            (await slotDocsOf(ctx).slotDoc(slug, kind, { mint: false }))?.url ?? null);
+        registry.register("retire-wiki", faceStands ? makeRetireWikiReactor({
+          catalog,
+          shell: wikiShellPorts({
+            provider: () => kh,
+            face: daemonAuth.personaGroupId!,
+            ledger: async () => asLedgerDoc(await workbenchLedgerOf(ctx)),
+            faceLedger: () => faceLedger,
+            shares: async (slug) => (await readShareEntries(controlOf(ctx))).filter((r) => r.slug === slug).map((r) => `${r.kind}:${r.slug}`),
+            // EVERY LOOKUP FAULT THROWS: only a slot no document stands for reads as no layer (never a zero for a fault). A draft or
+            // personal slot reads only where the face's OWN binding row names it (`faceOwnSlot`): the floor's fallback reads none.
+            layers: async (slug) => {
+              const slots = slotDocsOf(ctx);
+              const working = await slots.slotDoc(slug, "working", { mint: false });
+              const draft = await ownSlot(slug, "draft");
+              const personal = await ownSlot(slug, "personal");
+              const found = async (url: string, kind: string) => await findOrThrow(ctx.repo, url, `${wikiSlotUri(slug, kind as never)} (the ${kind} layer a retire reads)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as DocHandle<LarDoc>;
+              return {
+                working: working ? await materializeSharedLarDoc(ctx.repo, working.url as AutomergeUrl, "board:workbench") : null,
+                draft: draft ? await found(draft.url, "draft") : null,
+                personal: personal ? await found(personal.url, "personal") : null,
+              };
+            },
+            // THE FACE'S SLOT BINDINGS: its own draft and personal rows (`slotBindingKey` under its group) naming this slug's documents.
+            unbindSlots: async (slug) => {
+              const store = bindingRows();
+              if (!store) return [];
+              const dropped: string[] = [];
+              for (const kind of ["draft", "personal"] as const) {
+                for (const title of (await ownSlot(slug, kind))?.titles ?? []) {
+                  await store.remove(title, { kind: "lares-verb", requestId: "retire-wiki" });
+                  dropped.push(title);
+                }
+              }
+              return dropped.sort();
+            },
+            // Each named wiki's engine composed over the shell that left: the next ask composes afresh.
+            afterForget: async () => { await namedWikiEngines?.dropAll().catch(() => undefined); },
+          }),
+        }) : lightAFace("retire-wiki"), { summary: "Retire a wiki shell the worn face minted (its catalog rows, its workbench's ledger rows, its slot bindings and its Keyhive bindings) so the slug mints again under another face; the canon bag and its files stay. A person's hand alone; refuses a face that does not own it, a shell another face reaches, and a shell that holds records unless forced with the count.", surfaces: [VERB_SURFACE.cli] });
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
         registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
         registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane, systemCanonUrl));
