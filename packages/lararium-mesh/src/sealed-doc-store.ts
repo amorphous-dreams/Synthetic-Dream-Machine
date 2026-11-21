@@ -218,7 +218,8 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   /** The documents this store mapped sealed, this process: a map that drops never moves their rest class. */
   readonly #classedSealed = new Set<string>();
   /** Seals run one at a time, in arrival order, so a change's parents name what rested before it. */
-  #tail: Promise<unknown> = Promise.resolve();
+  /** ONE TURN LINE PER BAG: seals of one bag take their turns in order, and a bag of one face never waits behind another's. */
+  readonly #tails = new Map<string, Promise<unknown>>();
 
   constructor(ports: SealedDocumentPorts) { this.#ports = ports; }
 
@@ -259,14 +260,20 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     }
   }
 
-  #inTurn<T>(act: () => Promise<T>): Promise<T> {
-    const run = this.#tail.then(act, act);
-    this.#tail = run.then(() => undefined, () => undefined);
+  #inTurn<T>(bagId: string, act: () => Promise<T>): Promise<T> {
+    const run = (this.#tails.get(bagId) ?? Promise.resolve()).then(act, act);
+    const tail = run.then(() => undefined, () => undefined);
+    this.#tails.set(bagId, tail);
+    void tail.then(() => { if (this.#tails.get(bagId) === tail) this.#tails.delete(bagId); });
     return run;
   }
 
-  /** Await every seal in flight: a lock flushes here, after the Repo's own flush, before any signer drops. */
-  async flush(): Promise<void> { await this.#inTurn(async () => undefined); }
+  /** Await every seal in flight (or those of the named bags alone): a lock flushes here, after the Repo's own flush, before any
+   *  signer drops; a face's drain names its own bags, so it never waits behind another face's seals. */
+  async flush(bagIds?: readonly string[]): Promise<void> {
+    const tails = bagIds === undefined ? [...this.#tails.values()] : bagIds.flatMap((b) => { const t = this.#tails.get(b); return t ? [t] : []; });
+    await Promise.all(tails);
+  }
 
   /** How many saves wait unbooked, for one document or for all. */
   waiting(documentId?: string): number {
@@ -292,7 +299,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (session === null || !this.#wears(bag.face, session.subject)) return false;
     this.#classedSealed.add(documentId);
     this.#swept.delete(documentId);
-    await this.#inTurn(() => this.#sweep(bag, documentId, clear[0]!.data, session));
+    await this.#inTurn(bag.bagId, () => this.#sweep(bag, documentId, clear[0]!.data, session));
     return true;
   }
 
@@ -315,7 +322,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     for (const chunk of under) {
       const opened = openHeld({ bagId: bag.bagId, held, role: ROLES[chunk.key[1]!]!, ref: logicalRefOf(chunk.key), sealed: chunk.data });
       if (!("plaintext" in opened)) continue;
-      await this.#inTurn(() => this.#seal(bag, chunk.key, opened.plaintext, session));
+      await this.#inTurn(bag.bagId, () => this.#seal(bag, chunk.key, opened.plaintext, session));
       refiled++;
     }
     return refiled;
@@ -352,10 +359,13 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   /** The documents with a save waiting unbooked. */
   waitingDocuments(): string[] { return [...new Set([...this.#waiting.values()].map((w) => w.key[0]!))]; }
 
-  /** Seal every waiting save whose document a session now books; the rest keep waiting. Answers how many sealed. */
-  async reseal(): Promise<number> {
+  /** Seal every waiting save (of the named documents alone, where named) whose document a session now books; the rest keep
+   *  waiting. Answers how many sealed. */
+  async reseal(documentIds?: readonly string[]): Promise<number> {
     let sealed = 0;
+    const only = documentIds === undefined ? null : new Set(documentIds);
     for (const [name, { key, data }] of [...this.#waiting]) {
+      if (only !== null && !only.has(key[0]!)) continue;
       const bag = this.#bagOf(key);
       // A HELD HOME WHOSE KEY NOW STANDS (the vessel's custody opened): its waiting saves seal under the held key, no session.
       if (bag !== null && isHeld(bag)) {
@@ -370,7 +380,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       }
       const session = this.#ports.sessionOf(key[0]!, data);
       if (bag === null || isKeyed(bag) || session === null || !this.#wears(bag.face, session.subject)) continue;
-      try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
+      try { await this.#inTurn(bag.bagId, () => this.#seal(bag, key, data, session)); }
       catch (error) { if (error instanceof SealedDocumentRefusal) continue; throw error; }
       this.#waiting.delete(name);
       sealed++;
@@ -453,7 +463,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     }
     if (!this.#wears(bag.face, session.subject)) throw new SealedDocumentRefusal("session-face-foreign");
     // A SEAL THE HOLDER CANNOT ANSWER KEEPS ITS CHANGE: the save waits in memory, readable, and the next reseal seals it.
-    try { await this.#inTurn(() => this.#seal(bag, key, data, session)); }
+    try { await this.#inTurn(bag.bagId, () => this.#seal(bag, key, data, session)); }
     catch (error) {
       if (!(error instanceof SealedDocumentRefusal)) throw error;
       this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unsealed" });

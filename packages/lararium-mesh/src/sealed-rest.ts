@@ -463,6 +463,12 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
   /** The lock ritual's first move: flush the Repo and the store, so every pending save lands sealed, then drop the
    *  bookings of one session (or all). The caller drops signers and overwrites keys only after this resolves. */
   lock(sessionId?: string): Promise<void>;
+  /**
+   * ONE FACE'S DRAIN: book every waiting save of `documentIds` that `session` wears, seal them, flush those documents and the
+   * seals of their bags alone, then drop the session's bookings. It never waits behind another face's documents or seals; a
+   * save that did not seal stays waiting, counted in the answer (the caller holds the face's close over it).
+   */
+  drain(session: S, documentIds: readonly string[]): Promise<number>;
   /** The stand-down's flush (T3), exactly as the lock's: every waiting save whose face `standing` still wears books it,
    *  the Repo and the store flush while the island still answers, and the bookings drop. Answers how many saves still
    *  wait unbooked: those rest nowhere new, and their changes come back by sync from the replica that holds them. */
@@ -494,7 +500,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
    *  a bag of the face the vessel wears. */
   readonly wornAt?: (face: string, subject: string) => boolean;
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
-  readonly flushRepo: () => Promise<void>;
+  /** The Repo's own flush: every document, or the named ones alone (a face's drain names its own). */
+  readonly flushRepo: (documentIds?: readonly string[]) => Promise<void>;
   readonly onHeld?: (held: HeldNotice) => void;
   /** A hydrating load waits (`SealedDocumentPorts.onHydrationWait`): once per document and refusal, with the bag the map names. */
   readonly onHydrationWait?: (wait: { readonly documentId: string; readonly refusal: string; readonly bagId: string | null }) => void;
@@ -567,6 +574,18 @@ export function composeSealedRest<S extends SaveSession>(input: {
         if (bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
       }
       return store.reseal();
+    },
+    async drain(session, documentIds) {
+      const ids = new Set(documentIds);
+      for (const id of store.waitingDocuments()) {
+        const bag = input.bagOf(id);
+        if (ids.has(id) && bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
+      }
+      await store.reseal(documentIds);
+      await input.flushRepo(documentIds);
+      await store.flush(documentIds.flatMap((id) => { const bag = input.bagOf(id); return bag !== null ? [bag.bagId] : []; }));
+      book.drop(session.id);
+      return documentIds.reduce((n, id) => n + store.waiting(id), 0);
     },
     async lock(sessionId) {
       try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }

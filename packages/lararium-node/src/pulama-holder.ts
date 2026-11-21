@@ -54,6 +54,8 @@ export interface PulamaStanding {
   readonly openings: Readonly<Record<string, string>>;
   /** The lent faces still dark at the pūlama, by ordinal. */
   readonly waiting: readonly number[];
+  /** The lent faces the pūlama names closing (two-phase close), by custody id: their key stays until this vessel answers. */
+  readonly closing: readonly string[];
   /** The face a wear door last wore, as the pūlama remembers it; absent where it heard no wear since it was lit. */
   readonly worn?: number;
 }
@@ -91,7 +93,7 @@ const needsHuman = (what: string): Promise<never> =>
   Promise.reject(new PulamaRefused("needs-the-human", `${what} asks a human route, and a pūlama session carries none: ask it at the pūlama's own hand door`));
 
 const standingOf = (raw: unknown): PulamaStanding => {
-  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; openings?: unknown; waiting?: unknown; worn?: unknown };
+  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; openings?: unknown; waiting?: unknown; closing?: unknown; worn?: unknown };
   return {
     slot: typeof s.slot === "string" ? s.slot : null,
     attemptsLeft: typeof s.attemptsLeft === "number" ? s.attemptsLeft : 0,
@@ -99,6 +101,7 @@ const standingOf = (raw: unknown): PulamaStanding => {
     openings: typeof s.openings === "object" && s.openings !== null
       ? Object.fromEntries(Object.entries(s.openings).filter((e): e is [string, string] => typeof e[1] === "string" && e[1].length > 0)) : {},
     waiting: Array.isArray(s.waiting) ? s.waiting.filter((o): o is number => Number.isSafeInteger(o) && o >= 0) : [],
+    closing: Array.isArray(s.closing) ? s.closing.filter((f): f is string => typeof f === "string") : [],
     ...(Number.isSafeInteger(s.worn) && (s.worn as number) >= 0 ? { worn: s.worn as number } : {}),
   };
 };
@@ -124,6 +127,7 @@ export function makePulamaHolder(a: {
   let refused: string | null = null;
   const openedListeners = new Set<() => void>();
   const closedListeners = new Set<() => void>();
+  const closingListeners = new Set<(fcid: string, opening: string | null) => void>();
   const fire = (set: Set<() => void>): void => { for (const l of [...set]) { try { l(); } catch { /* a listener's fault never reaches the holder */ } } };
 
   const drop = (s: Session): void => {
@@ -156,6 +160,10 @@ export function makePulamaHolder(a: {
       s.standing = standingOf(f["standing"]);
       s.derived = derivedOf(f["derived"]);
       fire(openedListeners);
+    } else if (f.t === "closing" && typeof f["fcid"] === "string" && (f["opening"] === null || typeof f["opening"] === "string")) {
+      // THE FIRST PHASE: the pūlama asks this vessel to stop serving a lent face; it keeps the key until `faceClosed` answers.
+      const fcid = f["fcid"], opening = f["opening"] as string | null;
+      for (const l of [...closingListeners]) { try { l(fcid, opening); } catch { /* a listener's fault never reaches the holder */ } }
     }
   };
 
@@ -327,6 +335,10 @@ export function makePulamaHolder(a: {
     unlockedFaces: () => session?.standing.faces ?? [],
     // THE OPENING COMES FROM ITS SOURCE: the pūlama's own number, verbatim; a face it names no opening for reads none (fail closed).
     faceOpening: (fcid) => (session?.standing.faces.includes(fcid) ? session.standing.openings[fcid] ?? null : null),
+    onClosing(listener) { closingListeners.add(listener); return () => { closingListeners.delete(listener); }; },
+    closingFaces: () => session?.standing.closing ?? [],
+    // THE SECOND PHASE: this vessel's face actor reached closed; the pūlama locks once every session it told answered.
+    async faceClosed(fcid, opening) { await call("face.closed", { fcid, opening }); },
     withWardKey: () => needsHuman("a ward act"),
     async wardPublicKey(face) { return await call("face.ward-key", { face }) as string | null; },
     watchWardKeys() { /* this side opens no ward key */ },
