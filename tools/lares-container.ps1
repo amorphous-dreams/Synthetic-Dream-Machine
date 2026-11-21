@@ -1190,9 +1190,15 @@ function KeepOwedVerb([string[]]$kargs) {
   if ($kargs.Count -gt 0) { Die 'keep-owed takes no argument' }
   if (-not (Test-Path -LiteralPath (KeepOwedMark))) { [Console]::Error.WriteLine('lares-container: keep: none owed'); return }
   # THE KEEP WAITS FOR THE LANDING: a kūkulu half resting unlanded on any line, or a debt read that fails, keeps nothing.
-  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts --rite kukulu --json 2>$null) -join '') -replace '\s', ''
-  if ($LASTEXITCODE -ne 0 -or -not $debt.Contains('"pending":[]')) {
-    [Console]::Error.WriteLine('lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for `lares rite kukulu` to land it')
+  # The read names a face, so a house with several faces open never refuses it for no face named: the
+  # face last worn, else face 0, the keep's face.
+  $koFace = LastWornFace; if ($koFace -eq '') { $koFace = '0' }
+  $debt = (($null | & docker compose @Base exec -T lares node $Cli rite receipts --rite kukulu --face $koFace --json 2>$null) -join '') -replace '\s', ''
+  $koRc = $LASTEXITCODE
+  if ($koRc -ne 0 -or -not $debt.Contains('"pending":[]')) {
+    $why = ''
+    if ($koRc -ne 0) { $why = '; the debt read refused (with several faces open and none worn, wear a face: `lares wear N`)' }
+    [Console]::Error.WriteLine('lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for `lares rite kukulu` to land it' + $why)
     return
   }
   KeepAfterRaise

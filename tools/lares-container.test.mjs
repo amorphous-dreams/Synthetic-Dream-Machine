@@ -1176,6 +1176,16 @@ for (const [name, shim] of shims) {
     assert.match(r.stderr, /the keep a down left owed waits for the rite's landing/);
     assert.equal(r.keepOwed, true);
   });
+  test(`${name}: keep-owed-names-a-face: the debt read names the face last worn (face 0, the keep's face, where none rests remembered), so a house with several faces open answers; a read that refuses names "wear a face"`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup", FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}' };
+    const none = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.match(none.calls, /rite receipts --rite kukulu --face 0 --json/);
+    const worn = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "", "config/last-worn-face": "2\n" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.match(worn.calls, /rite receipts --rite kukulu --face 2 --json/);
+    const refused = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: "", FAKE_RECEIPTS_RC: "2", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.match(refused.stderr, /the debt read refused \(with several faces open and none worn, wear a face: `lares wear N`\)/);
+    assert.equal(refused.keepOwed, true);
+  });
   test(`${name}: keep-owed-reads-the-debt-whole (the fourth read): a debt read that exits non-zero waits even where its output names no pending half; a keep that resolves no workspace keeps the mark`, async () => {
     const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, LARES_KEEP_WORKSPACE: "house-backup" };
     const masked = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_RECEIPTS: '{"ok":true,"data":{"pending":[]}}', FAKE_RECEIPTS_RC: "2", LARES_HOST_CLI: await keepTwice(0, 0) } });

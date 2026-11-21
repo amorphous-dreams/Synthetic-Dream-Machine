@@ -1202,10 +1202,17 @@ keep_owed_verb() {
   if [ ! -e "$(keep_owed_mark)" ]; then printf '%s\n' 'lares-container: keep: none owed' >&2; return 0; fi
   # THE KEEP WAITS FOR THE LANDING: a kūkulu half resting unlanded on any line, or a debt read that fails, keeps nothing.
   # The read's own exit status counts (a separate capture, never masked by a pipeline): a failed read waits.
-  if ko_raw=$(compose exec -T lares node "$CLI" rite receipts --rite kukulu --json </dev/null 2>/dev/null); then ko_debt=$(printf '%s' "$ko_raw" | tr -d ' \t\r\n'); else ko_debt=""; fi
+  # The read names a face, so a house with several faces open never refuses it for no face named: the
+  # face last worn, else face 0, the keep's face.
+  ko_face=$(last_worn_face); [ -n "$ko_face" ] || ko_face=0
+  ko_read=ok
+  if ko_raw=$(compose exec -T lares node "$CLI" rite receipts --rite kukulu --face "$ko_face" --json </dev/null 2>/dev/null); then ko_debt=$(printf '%s' "$ko_raw" | tr -d ' \t\r\n'); else ko_debt=""; ko_read=refused; fi
   case "$ko_debt" in
     *'"pending":[]'*) ;;
-    *) printf '%s\n' 'lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for `lares rite kukulu` to land it' >&2; return 0 ;;
+    *)
+      ko_why=''
+      [ "$ko_read" = refused ] && ko_why='; the debt read refused (with several faces open and none worn, wear a face: `lares wear N`)'
+      printf '%s\n' "lares-container: keep: owed; a kūkulu half rests unlanded (or the debt reads nowhere), so the keep waits for \`lares rite kukulu\` to land it$ko_why" >&2; return 0 ;;
   esac
   keep_after_raise
   printf 'lares-container: keep: %s\n' "$KEEP_SAID" >&2

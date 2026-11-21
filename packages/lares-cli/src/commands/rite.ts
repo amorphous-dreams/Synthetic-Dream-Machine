@@ -330,6 +330,12 @@ export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "r
   ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
 
 /**
+ * The standing read's CLI line: it always names a face, the operator's where one is named, else face 0 (the keep's face), so a
+ * house with several faces open never reads it as `FaceNotNamed`.
+ */
+export const standingRowLine = (branch: string, face?: number): string[] => hostRowLine("rite-receipts", { rite: "kukulu", branch, face: face ?? 0 });
+
+/**
  * THE BEGIN THAT STANDS, from the vessel's `rite receipts --rite kukulu` answer: its `standing` rows, each naming its face and
  * ordinal. A vessel of an older image answers its worn face's receipts and conferre instead, so the host reads that conferre's
  * kūkulu halves resting unlanded on the line (each lands under the worn face): the vessel standing during the very next run
@@ -432,7 +438,7 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     standing: async (branch, face) => {
-      const read = await cliVerb(hostRowLine("rite-receipts", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) }));
+      const read = await cliVerb(standingRowLine(branch, face));
       return read.ok ? { ok: true, ...standingOf(read.output, branch) } : read;
     },
     ranImage: () => shimRead(shim, ["vessel-image"]),

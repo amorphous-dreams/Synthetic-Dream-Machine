@@ -16,7 +16,7 @@ import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisD
 import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, standingOf, syncCheckout } from "../src/commands/rite.js";
+import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, standingOf, standingRowLine, syncCheckout } from "../src/commands/rite.js";
 import { storeVerbRidesWorn } from "../src/store-door.js";
 import { kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
@@ -650,6 +650,11 @@ describe("kukulu-survives-a-ctrl-c", () => {
     expect(await riteKukulu(g.ports, {})).toMatchObject({ code: 1, data: { begun: false, stopped: "standing", refusal: "vessel-locked" } });
     expect(g.calls).toEqual(["checkout", STAGE, STANDS]);
     expect(g.said.join("\n")).toMatch(/reads no begun halves \(this vessel's key rests unopened\); nothing spent, nothing moved/);
+  });
+
+  it("RED: the standing read always names a face, so a house with three faces open never reads FaceNotNamed: the operator's face where named, else face 0", () => {
+    expect(standingRowLine("main")).toEqual(["rite", "receipts", "--rite", "kukulu", "--branch", "main", "--face", "0"]);
+    expect(standingRowLine("main", 2)).toEqual(["rite", "receipts", "--rite", "kukulu", "--branch", "main", "--face", "2"]);
   });
 
   it("RED: the standing read and the begin name the face the operator names; the begin and each landing carry the image the host made", async () => {
