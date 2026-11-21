@@ -9,7 +9,7 @@
 # run, so a stopped run picks up from there; with no terminal, a light or admit owed stops it before anything moves; `--image`
 # stops after the image and prints the reading as one JSON line; `--keep-after-landing` leaves a keep a down left owed
 # (`run/keep-owed`) to `keep-owed`, which the rite runs once it lands its halves (it waits while a kūkulu half rests
-# unlanded). `vessel-image` prints the image the running vessel runs. The pūlama reads every route; this shim never reads or
+# unlanded). `vessel-image` prints the image the running vessel runs; `rite abandon` under a pūlama walks the hand door. The pūlama reads every route; this shim never reads or
 # types one. The CLI runs by exec while a vessel stands and through the offline door while none
 # stands. The host holds the engine: the shim reads the CLI's standing verdict after a verb and restarts the vessel
 # itself when the verdict reads `restand`. The app gets no docker socket.
@@ -1213,6 +1213,39 @@ switch ($verb) {
       if ($LASTEXITCODE -ne 0) { Die "vessel-image: the running vessel's image reads nowhere (docker inspect failed)" }
       [Console]::Out.WriteLine($img)
     }
+  }
+  'rite' {
+    # THE ABANDON'S HAND DOOR UNDER A PŪLAMA: the vessel reads the abandon's terms, the pūlama reads the route on this terminal and
+    # signs one mark per pending half as the hand, and the vessel lands them. Without a pūlama the vessel's own ward reads the route.
+    $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
+    if ($PulamaMode -and $sub -eq 'abandon') {
+      $more = @(); if ($rest.Count -gt 1) { $more = @($rest[1..($rest.Count - 1)]) }
+      if (-not $script:Tty) { Die 'an abandon under a pūlama reads its route on a terminal; run it on one (nothing signed)' }
+      $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli rite abandon --terms @more) -join ''
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      $answer = ''
+      & docker compose @Base --profile pulama exec --no-TTY=false pulama node $PulamaMain lei abandon $terms | ForEach-Object {
+        [Console]::Error.WriteLine($_)
+        $line = "$_".Trim("`r")
+        if ($line.StartsWith('{')) { $answer = '' }
+        $answer += $line
+      }
+      if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
+      # ONLY A SIGNED ANSWER LANDS: a refusal the pūlama read (another group's half, a wrong route) lands nothing.
+      $abReading = if (($answer -replace '\s', '') -match '"reading":"([^"]*)"') { $Matches[1] } else { 'no reading' }
+      if ($abReading -ne 'signed') { Die "the pūlama signed nothing ($abReading); nothing lands" }
+      # THE SIGNED BATCH RIDES A FILE in the house's config (the vessel reads /lar/config), never argv: a large batch trips E2BIG.
+      EnsureHouse
+      $abFile = "rite-abandon-signed-$([Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(8)).ToLowerInvariant()).json"
+      $abPath = Join-Path (Join-Path $House 'config') $abFile
+      [System.IO.File]::WriteAllText($abPath, $answer)
+      try {
+        $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli rite abandon --signed-file $abFile @more
+        $abRc = $LASTEXITCODE
+      } finally { Remove-Item -LiteralPath $abPath -Force -ErrorAction SilentlyContinue }
+      exit $abRc
+    }
+    RouteCli (@($verb) + $rest) $true
   }
   'down'  { DownVessel $rest }
   'pulama' {

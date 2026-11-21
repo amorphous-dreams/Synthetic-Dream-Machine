@@ -146,6 +146,8 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
   if (verb === "edge-kapae") return typeof args["realm"] !== "string";
   // A HAND RECORD carries its own root signature (the hand signed it at the pūlama's hand door), so landing it opens no ward.
   if ((verb === "swarm-lei-kui" || verb === "swarm-lei-unstring") && args["signed"] !== undefined) return false;
+  // THE ABANDON IS THE HAND'S: bare, the route opens the face root here; its terms read and its hand-signed marks land open no ward.
+  if (verb === "rite-abandon") return args["signed"] === undefined && args["terms"] !== true;
   return WARD_VERBS.has(verb);
 }
 

@@ -47,6 +47,12 @@ async function stand(opts: { readonly lei?: boolean; readonly unanchored?: boole
       if (credentials.some((c) => c.kind !== "passphrase" || c.passphrase !== FIXTURE_PASSPHRASE)) throw new WardRefused("ward-no-slot-opens", "the route opens no slot of this face's ward (2 attempt(s) left)");
       return root;
     },
+    // ONE OPENING PER ACT: the root opens once under the route and signs each mark of the act.
+    session: async (ordinal: number, credentials: readonly Credential[]) => {
+      opened.push(ordinal);
+      if (credentials.some((c) => c.kind !== "passphrase" || c.passphrase !== FIXTURE_PASSPHRASE)) throw new WardRefused("ward-no-slot-opens", "the route opens no slot of this face's ward (2 attempt(s) left)");
+      return { ...root, close: () => {} };
+    },
   };
   const lines: string[] = [];
   const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records, onLog: (l) => lines.push(l), ...(opts.lei === false ? {} : { lei }) } as Parameters<typeof pulamaHandDoor>[0]);
@@ -122,5 +128,45 @@ describe("the hand strings, restrings and unstrings a lei at the pūlama's hand 
     await bare.light();
     expect(await bare.door({ op: "lei", act: "kui", face: 0, rite: "kukulu", branch: BRANCH, returns: 1, credentials: route })).toMatchObject({ op: "lei", reading: "face-group-unread", face: 0 });
     expect(bare.opened).toEqual([]);
+  });
+});
+
+describe("the hand abandons a pending kūkulu at the pūlama's hand door (gate 2)", () => {
+  test("RED: under the face's route a lit pūlama signs one `rite-abandoned` mark per pending half of THAT face's own group, binding each half's guest cid, as the hand, and writes nothing; a part of another group, or naming no guest cid, refuses before the route; CONTROL: a wrong route signs nothing", async () => {
+    const s = await stand();
+    await s.light();
+    const parts = [{ tessera: "c".repeat(64), group: GROUP, branch: BRANCH, begun: "e".repeat(64) }];
+    const out = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: route });
+    expect(out).toMatchObject({ op: "lei", act: "abandon", reading: "signed", face: 0 });
+    const records = out["records"] as Array<{ body: Record<string, unknown>; signer: string }>;
+    expect(records.map((r) => [r.body["act"], r.body["tessera"], r.body["group"], r.body["begun"], r.signer])).toEqual([["rite-abandoned", "c".repeat(64), GROUP, "e".repeat(64), s.root.key]]);
+    expect(s.verify(records[0], `$:/lares/swarm/tessera/${"c".repeat(64)}/abandoned`)).toMatchObject({ ok: true });
+    expect(await s.records.list("$:/")).toEqual([]);
+    const opened = s.opened.length;
+    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: [...parts, { tessera: "d".repeat(64), group: "old-group-h1", branch: BRANCH, begun: "f".repeat(64) }], credentials: route })).toMatchObject({ reading: "abandon-other-group" });
+    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: [{ tessera: "c".repeat(64), group: GROUP, branch: BRANCH }], credentials: route })).toMatchObject({ reading: "lei-malformed" });
+    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: [], credentials: route })).toMatchObject({ reading: "lei-malformed" });
+    expect(s.opened.length).toBe(opened);
+    const wrong = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] });
+    expect(wrong["records"]).toBeUndefined();
+  });
+});
+
+describe("the hand door signs every part the vessel asks (the seventh read)", () => {
+  test("RED: 65 pending halves of the face's own group sign as 65 marks, so the vessel's exact-terms landing accepts them; none drops past 64", async () => {
+    const s = await stand();
+    await s.light();
+    const hex = (n: number, c: string) => (n.toString(16).padStart(4, "0") + c.repeat(60));
+    const parts = Array.from({ length: 65 }, (_, i) => ({ tessera: hex(i, "c"), group: GROUP, branch: BRANCH, begun: hex(i, "e") }));
+    const before = s.opened.length;
+    const out = await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts, credentials: route });
+    expect(out).toMatchObject({ reading: "signed" });
+    expect((out["records"] as unknown[]).length).toBe(65);
+    // RED (the eighth read): the ward opens ONCE for the act, never once per mark.
+    expect(s.opened.length - before).toBe(1);
+    // RED: past the per-act bound (100) the door refuses by count before the route; the vessel pages its terms within it.
+    const many = Array.from({ length: 101 }, (_, i) => ({ tessera: hex(i, "c"), group: GROUP, branch: BRANCH, begun: hex(i, "e") }));
+    expect(await s.door({ op: "lei", act: "abandon", face: 0, rite: "kukulu", branch: BRANCH, parts: many, credentials: route })).toMatchObject({ reading: "abandon-batch-over-bound", detail: expect.stringContaining("101") });
+    expect(s.opened.length - before).toBe(1);
   });
 });
