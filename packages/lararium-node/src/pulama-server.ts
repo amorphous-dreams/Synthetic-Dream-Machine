@@ -146,7 +146,7 @@ export function servePulama(a: {
    * ended unanswered (`dropped`). A dropped session's vessel may still hold a save it never sealed, and no later session proves
    * it the same vessel, so a close any session dropped locks only by the operator's hand (`force`), never by the others' answers.
    */
-  const closings = new Map<string, { readonly ordinal: number; readonly opening: string | null; awaiting: Set<Session>; dropped: number }>();
+  const closings = new Map<string, { readonly ordinal: number; readonly opening: string | null; awaiting: Set<Session>; dropped: number; locking: Promise<void> | null }>();
 
   /** Whether the session's lend names this face: its ordinal in the set, and its custody id where the set names one. */
   /** Whether a face closes and `s` stands outside the sessions its close told: such a session reads the face shut. */
@@ -328,7 +328,7 @@ export function servePulama(a: {
         // NOTHING NAMED BACK: a face not closing, outside this session's lend, or under another opening answers null alike.
         if (held === undefined || !held.awaiting.has(s) || held.opening !== args["opening"]) return null;
         held.awaiting.delete(s);
-        if (held.awaiting.size === 0 && held.dropped === 0) await lockClosed(args["fcid"]);
+        if (held.awaiting.size === 0 && held.dropped === 0 && held.locking === null) await lockClosed(args["fcid"]);
         return null;
       }
       case "face.ward-key": {
@@ -381,13 +381,30 @@ export function servePulama(a: {
     );
   };
 
-  /** The second phase: every told session answered (or the operator's hand forced it), so the key locks. */
-  const lockClosed = async (fcid: string): Promise<void> => {
+  /**
+   * The second phase: every told session answered (or the operator's hand forced it), so the key locks. THE CLOSE STANDS UNTIL
+   * THE KEY LOCKED: the holder's lock waits its turn (an unlock ahead of it, the rows in flight), and through that wait the face
+   * still reads closing and shut to every session (its answer set stands empty), so no standing sent meanwhile (an open, a
+   * refresh, a new session) shows it lit and no vessel relights it to take a save the key then locks over. One lock runs per close:
+   * a second answer, a re-close or a force joins it. A lock that throws leaves the face closing, its key open.
+   */
+  const lockClosed = (fcid: string): Promise<void> => {
     const held = closings.get(fcid);
-    if (held === undefined) return;
-    closings.delete(fcid);
-    await holder.lockFace(fcid);
-    log(`face h${held.ordinal} closed and locked`);
+    if (held === undefined) return Promise.resolve();
+    held.awaiting = new Set();
+    held.locking ??= (async () => {
+      try {
+        await holder.lockFace(fcid);
+      } catch (error) {
+        held.locking = null;
+        throw error;
+      }
+      if (closings.get(fcid) === held) closings.delete(fcid);
+      // The close ends with the lock: every session's standing drops it from the closing set.
+      for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived }));
+      log(`face h${held.ordinal} closed and locked`);
+    })();
+    return held.locking;
   };
 
   holder.onOpened?.(() => { for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived })); });
@@ -443,12 +460,17 @@ export function servePulama(a: {
       if (!holder.unlockedFaces().includes(fcid)) return { reading: "face-locked", face: ordinal };
       if (options?.force === true) {
         // THE OPERATOR'S HAND: the lock lands now, whoever has not answered.
-        if (!closings.has(fcid)) closings.set(fcid, { ordinal, opening: null, awaiting: new Set(), dropped: 0 });
+        if (!closings.has(fcid)) closings.set(fcid, { ordinal, opening: null, awaiting: new Set(), dropped: 0, locking: null });
         await lockClosed(fcid);
         log(`face h${ordinal}: a forced lock by the operator's hand`);
         return { reading: "locked", face: ordinal, forced: true };
       }
       const already = closings.get(fcid);
+      if (already !== undefined && already.locking !== null) {
+        // A close whose key already locks: this ask joins that lock.
+        await already.locking;
+        return { reading: "locked", face: ordinal };
+      }
       if (already !== undefined) {
         // THE CLOSE ASKED AGAIN tells every live session that lends the face, a late one included (a vessel that came back under a
         // new session): each joins the close's answer set, its rows open to its drain, and a vessel whose drain faulted drains
@@ -474,7 +496,7 @@ export function servePulama(a: {
       const opening = holder.faceOpening?.(fcid) ?? null;
       // A vessel whose session ended BEFORE this close stands outside it: no session names that vessel here, so the close tells the
       // live lenders alone (and, with none, locks). Its unsealed saves, if any, wait in its own memory for a session to seal them.
-      closings.set(fcid, { ordinal, opening, awaiting: new Set(told), dropped: 0 });
+      closings.set(fcid, { ordinal, opening, awaiting: new Set(told), dropped: 0, locking: null });
       for (const s of told) s.channel.send({ t: "closing", fcid, opening });
       for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived }));
       log(`face h${ordinal} closing: ${told.length} session(s) to answer`);

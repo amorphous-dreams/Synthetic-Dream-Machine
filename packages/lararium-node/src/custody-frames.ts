@@ -294,6 +294,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A second unlock that names no face finds the key held and the composition standing: nothing to open, nothing to compose.
     if (!freshly && sel.face === undefined && sel.all !== true) return { op: "unlock", ...u, standing: deps.standing() };
     const standing = listFaceOrdinals();
+    // A pūlama's vessel never reaches here: its unlock frame dials the pūlama (the `deps.pulama` branch), so this direct
+    // `lockFace` only ever drops a key this vessel's own holder opened.
     const refuseFaces = async (reading: "face-refused" | "face-not-named", detail: object): Promise<CustodyAnswer> => {
       if (freshly) await holder.lock();           // a key never rests over a floor
       else for (const fcid of holder.unlockedFaces()) if (!openBefore.has(fcid)) await holder.lockFace(fcid);
@@ -471,6 +473,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A LOCAL LOCK RUNS THE TWO PHASES IN ONE PROCESS, the mounted face's as every sibling's: the door closed the face through its
     // actor AHEAD of its line (`dropFace` answered at CLOSED: no visit or work admits, its saves drained, its island told, its
     // host side down, the face held dark), so no act queued behind this lock holds that close, and only now does the key lock.
+    // A PŪLAMA HOLDS THIS VESSEL'S FACE KEYS: a face lock lands at the pūlama alone (its hand's `close`), never here.
+    if (deps.pulama) throw new Error(`face h${ordinal}'s key rests with this vessel's pūlama: close it there, by its hand`);
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
     // A MOUNT THE OPENING (OR THE DEFAULT RULE) CHOSE SLIDES: locked, it moves to the next open face holding anchors, and the
