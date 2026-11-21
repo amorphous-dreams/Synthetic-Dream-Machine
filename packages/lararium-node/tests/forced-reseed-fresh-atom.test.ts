@@ -7,7 +7,7 @@ import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync }
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
-import { faceAtomKeyFromSeed, hex, personaScopedBagIds } from "@lararium/mesh";
+import { hex, personaScopedBagIds } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 
 const fault = vi.hoisted(() => ({ afterGroup: false, group: "" }));
@@ -32,7 +32,7 @@ import { faceAtomGroupFile, loadFaceAtomOfGroup } from "../src/face-atom-store.j
 import { loadIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
-import { foundDirect, seatSeedCharter } from "./found-route.js";
+import { TEST_PASSPHRASE, foundDirect, seatSeedCharter } from "./found-route.js";
 
 const foundFace = direct(runFoundTheFace);
 const genesisSource = join(import.meta.dirname, "..", "..", "..", "genesis");
@@ -84,29 +84,31 @@ describe("a forced re-seed mints a fresh atom", () => {
     await withLarRoot(root, async () => {
       const first = await foundFace({ genesisDir, handleIndex: 1 });
       const orphan = first.personaGroupId;
-      const orphanSeed = (await loadFaceAtomOfGroup(orphan))!;
-      const orphanKey = faceAtomKeyFromSeed(orphanSeed, orphan).key;
       const atomBytes = readFileSync(groupRecordPath(orphan, faceAtomGroupFile(orphan)));
       const archiveBytes = readFileSync(veilArchivePath(orphan));
       removePlaneEntry(orphan);
 
-      // EACH ANCHORS ROW NAMES ITS FACE: handle 1 still stands under the orphan's PersonaGroup, so the re-seed's new group mints
-      // its own atom and archive in its own face and its anchors refuse to land in the orphan's face (`anchors-face-mismatch`).
+      // EACH ANCHORS ROW NAMES ITS FACE: handle 1 still stands under the orphan's PersonaGroup, so a re-seed that mints a new group
+      // there refuses (`anchors-face-mismatch`) before it writes any row of that group.
       const refusal = await foundFace({ genesisDir, handleIndex: 1 }).catch((e: unknown) => e);
       expect(String(refusal)).toMatch(/anchors-face-mismatch/);
       expect((await loadIdentityAnchors(1))?.personaGroupId, "handle 1 keeps the orphan's own anchors").toBe(orphan);
       expect(readFileSync(groupRecordPath(orphan, faceAtomGroupFile(orphan))).equals(atomBytes), "the orphan's group atom row keeps its bytes").toBe(true);
       expect(readFileSync(veilArchivePath(orphan)).equals(archiveBytes), "the orphan's archive keeps its bytes").toBe(true);
-
+      // NEVER HALF-WRITTEN: the refusal reads before the new group's first row, so no group atom and no veil archive of another
+      // group stands beside the orphan's.
       const rows = await groupRows();
-      expect(rows.map(({ file }) => file)).toContain(faceAtomGroupFile(orphan));
-      expect(rows.length, "the re-seed minted a second group row beside the orphan's").toBeGreaterThan(1);
-      for (const { seed, file } of rows) if (file !== faceAtomGroupFile(orphan)) expect(faceAtomKeyFromSeed(seed, file).key, "the new group mints a fresh atom key").not.toBe(orphanKey);
-      const seeds = rows.map(({ seed }) => hex(seed));
-      // The public atom key derives from the seed alone; each row supplies its own custody label here.
-      const keys = rows.map(({ seed, file }) => faceAtomKeyFromSeed(seed, file).key);
-      expect(new Set(seeds).size, "no two group rows hold the same seed").toBe(rows.length);
-      expect(new Set(keys).size, "no two group rows name the same atom key").toBe(rows.length);
+      const zero = (await loadIdentityAnchors(0))!.personaGroupId;
+      expect(rows.map(({ file }) => file).sort(), "only persona zero's and the orphan's group atoms stand").toEqual([faceAtomGroupFile(zero), faceAtomGroupFile(orphan)].sort());
+      expect(faceRecordNames().filter((name) => /^veil-archive-g[0-9a-f]{64}\.bin$/.test(name)).length, "only the faces' own archives stand").toBe(faceRecordNames().filter((name) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(name)).length);
+      // WHY THE ANCHORS REFUSE: the state an unguarded re-seed left (handle 1's own face under the orphan's group, its anchors
+      // naming the new group) never opens again. The holder reads the face's anchors against its floor index entry at unlock.
+      const holder = seatedCustody()!;
+      const h1 = (await holder.faceStanding({ ordinal: 1 }))!;
+      await holder.writeRecord("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ personaGroupId: "a-fresh-group", meshCabalDocIdHex: "ab".repeat(32) })));
+      await holder.lockFace(h1.fcid);
+      const reopened = await holder.unlockFace({ ordinal: 1 }, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+      expect(reopened.reading, JSON.stringify(reopened)).not.toBe("opens");
     });
   }, 180_000);
 

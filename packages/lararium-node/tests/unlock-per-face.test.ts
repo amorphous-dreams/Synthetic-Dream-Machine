@@ -7,6 +7,7 @@ import type { Socket } from "node:net";
 import { afterEach, describe, expect, test } from "vitest";
 import type { SlotSpec } from "@lararium/mesh";
 import { custodyFrameHandler } from "../src/custody-frames.js";
+import { personaGroupDigest } from "../src/persona-group-file.js";
 import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
@@ -15,11 +16,11 @@ const cred = (passphrase: string) => [{ kind: "passphrase" as const, passphrase 
 let seat: SeatedScratchCustody | null = null;
 afterEach(async () => { setMountedFace(undefined); await seat?.drop(); seat = null; });
 
-async function vessel(faceRoutes: readonly string[], refuseWearing?: number) {
+async function vessel(faceRoutes: readonly string[], refuseWearing?: number, groups?: readonly string[]) {
   seat = await seatScratchCustody("unlock-per-face");
   const { holder } = seat;
   const fcids: string[] = [];
-  for (const [i, route] of faceRoutes.entries()) fcids.push((await holder.foundFace({ group: `${String(i + 1).repeat(64)}`, slots: [slot(route)] })).fcid);
+  for (const [i, route] of faceRoutes.entries()) fcids.push((await holder.foundFace({ group: groups?.[i] ?? `${String(i + 1).repeat(64)}`, slots: [slot(route)] })).fcid);
   await holder.lock();
   const composed: boolean[] = [];
   const handle = custodyFrameHandler({
@@ -212,5 +213,19 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     const a = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 0 });
     expect(a).toMatchObject({ reading: "opens", held: false });
     expect(v.holder.isUnlocked()).toBe(false);
+  });
+
+  // THE FIRST ADMIT LANDS ON ITS OWN FACE (Sol, #408): a faceless vessel reserves h0 and h1 for two pending joins, and h1's lands
+  // first. An opening `--all` that mounts the lowest face it opened mounts h0, whose anchors stand absent, and the boot reads them
+  // empty while the daemon names h1. The opening mounts the lowest face that holds anchors, h1.
+  test("RED: `--all` naming no face mounts the lowest opened face that holds anchors, never a pending one", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, FIXTURE_PASSPHRASE], undefined, [personaGroupDigest("the-pending-group"), personaGroupDigest("the-landed-group")]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 1 });
+    await v.holder.writeRecord("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ personaGroupId: "the-landed-group", meshCabalDocIdHex: "ab" })));
+    await v.holder.lock();
+    setMountedFace(undefined);
+    const all = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
+    expect(all).toMatchObject({ reading: "opens", held: true, wears: 1 });
+    expect(mountedFaceOrdinal()).toBe(1);
   });
 });

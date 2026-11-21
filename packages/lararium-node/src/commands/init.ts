@@ -41,7 +41,7 @@ import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
-import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
+import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistVeilArchive, loadVeilArchive, requireAnchorsLand, type IdentityAnchors } from "../identity-anchors.js";
 import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
 import { personaGroupDigest } from "../persona-group-file.js";
 import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
@@ -297,6 +297,8 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
     const handleIndex = standingFace?.ordinal ?? stoodIndex ?? (landsBeside ? Math.max(0, ...anchored) + 1 : 0);
     const admitSeed = await loadFaceAtomOfGroup(payload.personaGroupId);
     if (!admitSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+    // The admit's anchors land in the face it names, read before any row of the admit moves.
+    requireAnchorsLand(payload.personaGroupId, handleIndex);
     if (stoodIndex !== undefined) {
       await retireApplyCheckpoint((await openVesselSecretHome(repo)).handle, admitSeed);
       await repo.flush();
@@ -697,6 +699,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });
+  // THE ANCHORS MUST LAND WHERE THIS FOUNDING NAMES THEM, read before the first row of the new group moves: a handle the floor
+  // index binds to another group refuses here, whole, and never after the archive is written.
+  requireAnchorsLand(face.personaGroupId, handleIndex);
   await settleFaceCustody(askDigest, face.personaGroupId, async () => {
     await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
     // THE VEIL-LIFT LINK: a founding over the floor links the veil to its first face as a join does, under the face's custody alone.

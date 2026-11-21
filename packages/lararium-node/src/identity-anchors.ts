@@ -53,15 +53,25 @@ export function warnIfIdentityHomeOpen(): void {
   if (!verdict.closed) console.warn(`[identity] ${verdict.reading}`);
 }
 
+/**
+ * Whether `personaGroup`'s anchors may land at `handleIndex`: refuses `anchors-face-mismatch` where the floor index binds that
+ * face to another PersonaGroup. A founding and an admit ask this BEFORE their first row, so neither leaves a half-written act
+ * (an archive written, its anchors refused). A face so bound never takes another group's anchors: the holder's unlock reads a
+ * face's anchors against its index entry, and a mismatched face never opens again.
+ */
+export function requireAnchorsLand(personaGroup: string, handleIndex: number): void {
+  const entry = readFaceIndexSync(larIdentityDir()).faces[handleIndex];
+  if (entry !== undefined && "fcid" in entry && entry.group !== null && entry.group !== personaGroupDigest(personaGroup)) {
+    throw new Error(`anchors-face-mismatch: face h${handleIndex} stands under another PersonaGroup than this act's own; nothing was written`);
+  }
+}
+
 /** Write ONE persona's anchor set (founding and admit both land it here). `handleIndex` names the face the row rests in,
  *  always: EACH ANCHORS ROW NAMES ITS FACE. Where the floor index already binds that face to a PersonaGroup, the anchors must
  *  name the same group, or the write refuses `anchors-face-mismatch` and nothing writes (a join that lands at another face's
  *  handle never hands that face its anchors). */
 export async function persistIdentityAnchors(anchors: IdentityAnchors, handleIndex: number): Promise<void> {
-  const entry = readFaceIndexSync(larIdentityDir()).faces[handleIndex];
-  if (entry !== undefined && "fcid" in entry && entry.group !== null && entry.group !== personaGroupDigest(anchors.personaGroupId)) {
-    throw new Error(`anchors-face-mismatch: face h${handleIndex} stands under another PersonaGroup than these anchors name; nothing was written`);
-  }
+  requireAnchorsLand(anchors.personaGroupId, handleIndex);
   // THE HOME CARRIES THE MODE, not just the file. A recursive mkdir takes the process umask for the directory,
   // ordinarily 0755, and the floor key rests here outside the seal. Created owner-only, then READ BACK and
   // reported: a home that already stood open keeps its mode, because a vessel widened on purpose has reasons and

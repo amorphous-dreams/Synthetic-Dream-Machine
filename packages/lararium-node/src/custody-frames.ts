@@ -301,7 +301,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         return refuseFaces("face-refused", { face: sel.face, faceReading: named === undefined ? "not-standing" : named.reading.replace(/^stayed-shut:/, "") });
       }
       // THE MOUNT AFTER AN OPENING: the one face this route opened, else the lowest of those it opened; `lares wear N` switches.
-      if (mounted === undefined && mountedBefore === undefined && opened.length > 0) { mounted = Math.min(...opened); chosenByOpening = true; }
+      // A FACE WHOSE ANCHORS STAND ABSENT (a join still pending, its handle reserved) never takes the mount: the boot would read
+      // its anchors empty while the daemon names the face that landed. The opening mounts the lowest opened face holding anchors.
+      if (mounted === undefined && mountedBefore === undefined && opened.length > 0) {
+        const sorted = [...opened].sort((x, y) => x - y);
+        let anchored: number | undefined;
+        for (const ordinal of sorted) {
+          const reading = await holder.readRecord("identity", `anchors-h${ordinal}.json`).catch(() => null);
+          if (reading?.reading === "opens") { anchored = ordinal; break; }
+        }
+        mounted = anchored ?? sorted[0]!;
+        chosenByOpening = true;
+      }
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
       if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
