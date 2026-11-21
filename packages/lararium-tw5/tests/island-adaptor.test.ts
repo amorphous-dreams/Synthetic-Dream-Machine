@@ -544,7 +544,7 @@ describe("IslandAdaptor — cascade config drift guard", () => {
 });
 
 describe("IslandAdaptor — outbound deleteTiddler", () => {
-  test("lar: URI → store.tombstone() called", async () => {
+  test("★ an engine delete over nothing beneath leaves no tombstone: the record retracts to absent ★", async () => {
     const tw5     = new FakeTW5Engine();
     const store   = new MemoryTiddlerStore();
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
@@ -557,7 +557,52 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
     store.tombstone = async (t, o) => { tombstones.push(t); return orig(t, o); };
 
     await Promise.all([adaptor.deleteTiddler(LAR_URI), adaptor.boundary()]);
-    expect(tombstones).toContain(LAR_URI);
+    expect(tombstones).toEqual([]);
+    expect(await store.get(LAR_URI), "the record leaves its layer; no kāpae stands in its place").toBeNull();
+  });
+
+  /** The stacks the two controls share: a writable canon layer beneath the working layer, the default writable. */
+  const WORKING = wikiSlotUri("test-wiki", "working");
+  const CANON = "lar:///ha.ka.ba/bags/writable-canon";
+  function stackOf(): { composite: CompositeStore; working: MemoryTiddlerStore; canon: MemoryTiddlerStore } {
+    const working = new MemoryTiddlerStore();
+    const canon = new MemoryTiddlerStore();
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: CANON, store: canon, writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    return { composite, working, canon };
+  }
+
+  test("★ a record only the working layer holds leaves plainly, with no kāpae over it ★", async () => {
+    vi.useFakeTimers();
+    const { composite, working, canon } = stackOf();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    expect(await working.get(LAR_URI)).toBeNull();
+    expect(await canon.get(LAR_URI)).toBeNull();
+  });
+
+  test("★ CONTROL: a delete over a lower canon title still raises the kāpae, so the browser's delete keeps the canon record hidden ★", async () => {
+    vi.useFakeTimers();
+    const { composite, working, canon } = stackOf();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await canon.put({ tiddler: { title: LAR_URI, text: "canon" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    expect((await working.get(LAR_URI))?.meta?.deleted, "the working layer shadows the canon record").toBe(true);
+    expect((await canon.get(LAR_URI))?.meta?.deleted, "canon keeps its own record").not.toBe(true);
   });
 });
 
@@ -594,16 +639,17 @@ describe("IslandAdaptor — the apply flag does not classify a hand", () => {
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
-    let tombstoneCount = 0;
-    const orig = store.tombstone.bind(store);
-    store.tombstone = async (t, o) => { tombstoneCount++; return orig(t, o); };
+    await store.put({ tiddler: { title: LAR_URI, text: "exist" } }, crdtRemote());
+    let leaveCount = 0;
+    const orig = store.remove.bind(store);
+    store.remove = async (t, o, opts) => { leaveCount++; return orig(t, o, opts); };
 
     tw5.applying = true;
     const deleted = adaptor.deleteTiddler(LAR_URI);
     await adaptor.boundary();
     await deleted;
 
-    expect(tombstoneCount).toBe(1);
+    expect(leaveCount, "nothing lies beneath, so the delete retracts the record").toBe(1);
     await adaptor.stop();
     vi.useRealTimers();
   });

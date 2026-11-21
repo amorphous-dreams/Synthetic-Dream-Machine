@@ -8,7 +8,7 @@
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
  *   meme-patch    { recipe?, bag?, uri, slot, append | replace, base } → PlaceMemeReceipt & { slot } | { decision: absent }
  *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
- *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, canonicalHash?, readFrom?, tombstonedIn?, unreached? }
+ *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, retracted?, canonicalHash?, readFrom?, tombstonedIn?, unreached? }
  *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
  *
  * `meme-list` answers every ROOT the seat holds with the canonical hash a writer hands back as its base,
@@ -17,9 +17,10 @@
  * named recipe lists the roots its whole stack resolves, each row naming the bag that answered
  * (`listRecipeStack`). `tree` nests each root's slot tree. `meme-delete` removes the whole group through `removeMeme` — a
  * stale `base` answers `conflict` and moves nothing; an absent root answers `absent`. A named recipe's delete
- * reads the meme where the stack answers it and tombstones it where the tombstone shadows that bag
- * (`deleteThroughRecipe`); its receipt names the bag that answered the root (`readFrom`) and each bag a
- * tombstone landed in (`tombstonedIn`).
+ * reads the meme where the stack answers it and removes it where a tombstone shadows that bag
+ * (`deleteThroughRecipe`): a member with a live record in a layer beneath leaves as a tombstone (`tombstoned`), any other
+ * retracts plainly from its own layer (`retracted`), so no kāpae rises over nothing. Its receipt names the bag that
+ * answered the root (`readFrom`) and each bag the delete landed in (`tombstonedIn`).
  *
  * `to` names a target — mem · md · html · tid · json (`meme-project.ts`); `meta` rides on `md` alone,
  * the `.md.meta` sidecar. The anchor projects through the in-VM face (`$tw.lares.meme.project`), so
@@ -784,18 +785,41 @@ async function deleteThroughRecipe(
   // ONE CHANGE PER BAG: the members a bag takes leave together where its document writes atomically. Cross-bag
   // atomicity cannot exist, so a family split across layers lands as ordered writes, each named.
   const tombstoned: string[] = [];
+  const retracted: string[] = [];
   const failed: Array<{ title: string; bag: string; why: string }> = [];
-  const perBag = new Map<string, string[]>();
-  for (const [title, bag] of shadowAt) perBag.set(bag, [...(perBag.get(bag) ?? []), title]);
-  for (const [bag, members] of perBag) {
+  // A KĀPAE ONLY WHERE A LOWER LAYER WOULD SURFACE (operator ruling 2026-11-20): a member with no live record in a layer
+  // beneath its landing bag, and no unreached layer there that might hold one, retracts plainly from that bag.
+  const lowerLive = async (title: string, bag: string): Promise<boolean> => {
+    const at = stack.indexOf(bag);
+    if (unreached.some((other) => stack.indexOf(other) > at)) return true;
+    for (const layer of layers) {
+      if (stack.indexOf(layer.bag) <= at) continue;
+      const record = await layer.store.get(title);
+      if (record && !record.meta?.deleted) return true;
+    }
+    return false;
+  };
+  const perBag = new Map<string, { tombs: string[]; plain: string[] }>();
+  for (const [title, bag] of shadowAt) {
+    const group = perBag.get(bag) ?? { tombs: [], plain: [] };
+    ((await lowerLive(title, bag)) ? group.tombs : group.plain).push(title);
+    perBag.set(bag, group);
+  }
+  for (const [bag, { tombs, plain }] of perBag) {
     const writer = writers.get(bag)!;
     if (typeof writer.writeFamily === "function") {
-      try { await writer.writeFamily([], members, origin, { bag }); tombstoned.push(...members); }
-      catch (err) { for (const title of members) failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+      try {
+        await writer.writeFamily([], tombs, origin, { bag, ...(plain.length > 0 ? { retracts: plain } : {}) });
+        tombstoned.push(...tombs); retracted.push(...plain);
+      } catch (err) { for (const title of [...tombs, ...plain]) failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
       continue;
     }
-    for (const title of members) {
+    for (const title of tombs) {
       try { await writer.tombstone(title, origin); tombstoned.push(title); }
+      catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+    }
+    for (const title of plain) {
+      try { await writer.remove(title, origin); retracted.push(title); }
       catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
     }
   }
@@ -804,7 +828,7 @@ async function deleteThroughRecipe(
   const unreachedAbove = unreached.filter((bag) => stack.indexOf(bag) < stack.indexOf(answered.bag));
   const decision = failed.length > 0 ? "partial" : unreachedAbove.length > 0 ? "unconfirmed" : "removed";
   return {
-    uri, decision, tombstoned, ...(failed.length > 0 ? { failed } : {}), canonicalHash: meme.canonicalHash, readFrom: answered.bag,
+    uri, decision, tombstoned, retracted, ...(failed.length > 0 ? { failed } : {}), canonicalHash: meme.canonicalHash, readFrom: answered.bag,
     tombstonedIn: writeBags, ...(unreached.length > 0 ? { unreached } : {}), ...(unreachedAbove.length > 0 ? { unreachedAbove } : {}),
   };
 }

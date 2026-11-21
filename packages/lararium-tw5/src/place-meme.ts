@@ -71,6 +71,15 @@ export interface MemeSink {
    */
   tombstoneFamily?(titles: readonly string[]): MaybePromise<void>;
   /**
+   * WHERE THE SINK KNOWS ITS LAYERS: whether a live record of the title rests in a layer beneath the one this sink
+   * writes. A removal tombstones only the titles that answer yes (a kāpae keeps the lower record hidden) and retracts
+   * the rest plainly, so no kāpae rises over nothing. A sink that does not know (`beneath` or `leaveFamily` absent)
+   * removes through `tombstone`, and the holder's own shore decides what leaves.
+   */
+  beneath?(title: string): MaybePromise<boolean>;
+  /** Remove a family as ONE change: `tombstones` raise a kāpae, `retracts` leave their layer to absent. */
+  leaveFamily?(tombstones: readonly string[], retracts: readonly string[]): MaybePromise<void>;
+  /**
    * THE ALERT RAIL, where the sink has one: raise (or, with `null`, clear) the one coalesced alert a
    * meme root carries. A live wiki has it (`wikiMemeSink`); a bag store does not, and its placements
    * carry the finding on the receipt alone.
@@ -662,14 +671,23 @@ export async function readMeme(
 export async function removeMeme(
   input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
   sink: MemeSink,
-): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; canonicalHash?: string; consequence?: Consequence }> {
+): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; retracted?: readonly string[]; canonicalHash?: string; consequence?: Consequence }> {
   const hash = input.hash ?? defaultHash;
   const { group, text, view } = await currentRender(input.uri, sink);
   if (!group.includes(input.uri)) return { decision: "absent", tombstoned: [] };
   const canonicalHash = hash(text);
   if (input.baseHash && input.baseHash !== canonicalHash) return { decision: "conflict", tombstoned: [], canonicalHash };
   const read = consequence(view, { kind: "delete", title: input.uri });
-  const tombstoned = tombstonesOf(read);
+  const leaving = tombstonesOf(read);
+  // A KĀPAE ONLY WHERE A LOWER LAYER WOULD SURFACE (operator ruling 2026-11-20): over nothing beneath the family retracts plainly.
+  if (sink.beneath && sink.leaveFamily) {
+    const tombstoned: string[] = [];
+    const retracted: string[] = [];
+    for (const title of leaving) ((await sink.beneath(title)) ? tombstoned : retracted).push(title);
+    await sink.leaveFamily(tombstoned, retracted);
+    return { decision: "removed", tombstoned, retracted, canonicalHash, consequence: read };
+  }
+  const tombstoned = leaving;
   if (sink.tombstoneFamily) await sink.tombstoneFamily(tombstoned);
   else for (const title of tombstoned) await sink.tombstone(title);
   return { decision: "removed", tombstoned, canonicalHash, consequence: read };

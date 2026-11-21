@@ -396,6 +396,19 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     expect((await working.get(`${URI}#/extra`))?.meta?.deleted).toBe(true);
   });
 
+  test("★ a delete through the recipe of a meme only the working layer holds, every layer beneath read and empty, retracts plainly and raises no tombstone ★", async () => {
+    const r = rig();
+    stacked(r);
+    for (const beneath of ["lares", "oracle"]) r.reached.set(bagUri(beneath), new MemoryTiddlerStore(bagUri(beneath)));
+    const working = r.slots.get("garden/working")!;
+    await land(working, wikiSlotUri("garden", "working"), ["w"]);
+    const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect(gone).toMatchObject({ decision: "removed", tombstoned: [] });
+    expect([...(gone["retracted"] as string[])].sort()).toEqual([URI, `${URI}#/w`].sort());
+    expect(await working.get(URI)).toBeNull();
+    expect(await working.get(`${URI}#/w`)).toBeNull();
+  });
+
   test("a child a slot ABOVE the designated bag holds gets its tombstone in that slot; the canon root's lands in the working layer", async () => {
     const r = rig();
     const { canon, draft } = stacked(r);
@@ -814,6 +827,30 @@ describe("meme-delete — the daemon skin of removeMeme", () => {
     expect(r.wiki.store.has(`${URI}#/b`)).toBe(true);
     // The live base lets the removal through.
     expect((await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: moved["canonicalHash"] }, ctx()))["decision"]).toBe("removed");
+  });
+
+  test("★ a meme delete over nothing beneath raises no tombstone: the family retracts plainly from its layer ★", async () => {
+    const r = rig();
+    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a", "b"]) }, ctx());
+    const out = await makeMemeDeleteReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
+    expect(out["decision"]).toBe("removed");
+    expect(out["tombstoned"]).toEqual([]);
+    expect([...(out["retracted"] as string[])].sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
+    const sdm = r.composite.storeForBag(bagUri("sdm"))!;
+    for (const title of [URI, `${URI}#/a`, `${URI}#/b`]) expect(await sdm.get(title), `${title} leaves with no kāpae`).toBeNull();
+  });
+
+  test("★ CONTROL: a meme delete over a lower layer's record still tombstones, so the lower record stays hidden ★", async () => {
+    const r = rig();
+    const put = makeMemePutReactor(r.opts);
+    await put({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
+    await put({ bag: "daemon", uri: URI, text: meme(["a"]) }, ctx());
+    const out = await makeMemeDeleteReactor(r.opts)({ bag: "daemon", uri: URI }, ctx());
+    expect(out["decision"]).toBe("removed");
+    expect([...(out["tombstoned"] as string[])].sort()).toEqual([URI, `${URI}#/a`]);
+    expect(out["retracted"]).toEqual([]);
+    expect((await r.composite.storeForBag(bagUri("daemon"))!.get(URI))?.meta?.deleted).toBe(true);
+    expect((await r.composite.storeForBag(bagUri("sdm"))!.get(URI))?.meta?.deleted, "the lower layer keeps its record").not.toBe(true);
   });
 
   test("an absent root answers absent; a named bag removes from that bag's writable layer", async () => {

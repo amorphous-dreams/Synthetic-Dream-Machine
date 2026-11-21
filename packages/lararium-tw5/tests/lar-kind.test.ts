@@ -197,6 +197,7 @@ describe.skipIf(wikiSkip)(`lar-kind — the cascade reads the kind${skipNote}`, 
 class SlotRecordingStore extends MemoryTiddlerStore {
   readonly putBags = new Map<string, string | undefined>();
   readonly tombstoneBags: Array<{ title: string; bag: string | null }> = [];
+  readonly retractBags: Array<{ title: string; bag: string }> = [];
   override async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
     this.putBags.set(record.tiddler.title, options?.bag);
     return super.put(record, origin, options);
@@ -204,6 +205,10 @@ class SlotRecordingStore extends MemoryTiddlerStore {
   override async tombstone(title: string, origin: ChangeOrigin): Promise<void> {
     this.tombstoneBags.push({ title, bag: null });
     return super.tombstone(title, origin);
+  }
+  async removeInBag(bag: string, title: string, origin: ChangeOrigin): Promise<void> {
+    this.retractBags.push({ title, bag });
+    return super.remove(title, origin);
   }
   async tombstoneInBag(bag: string, title: string, origin: ChangeOrigin): Promise<void> {
     this.tombstoneBags.push({ title, bag });
@@ -239,7 +244,7 @@ describe.skipIf(wikiSkip)(`lar-kind — the adaptor lands a draft where the fiel
   });
 
   /** An acknowledged draft save keeps its destination beside the hand base until a wave lands. */
-  test("★ deleting a saved draft uses its own last acknowledged bag after its fields are gone ★", async () => {
+  test("★ deleting a saved draft retracts from its own last acknowledged bag after its fields are gone ★", async () => {
     const { adaptor, store, wiki } = rig();
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
     const fields = { title: "Draft of 'Y' by Alice", "draft.of": "Y", "draft.title": "Y", text: "drafting" };
@@ -247,7 +252,9 @@ describe.skipIf(wikiSkip)(`lar-kind — the adaptor lands a draft where the fiel
     await Promise.all([adaptor.saveTiddler({ fields }), adaptor.boundary()]);
     (wiki as never as { deleteTiddler(t: string): void }).deleteTiddler(fields.title);
     await Promise.all([adaptor.deleteTiddler(fields.title), adaptor.boundary()]);
-    expect(store.tombstoneBags).toEqual([{ title: fields.title, bag: SLOT_DRAFT }]);
+    // Nothing lies beneath the draft, so it retracts plainly from its own slot: no tombstone rises.
+    expect(store.retractBags).toEqual([{ title: fields.title, bag: SLOT_DRAFT }]);
+    expect(store.tombstoneBags).toEqual([]);
   });
 });
 

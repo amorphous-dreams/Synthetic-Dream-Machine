@@ -156,7 +156,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("control: a working-layer title tombstones in the working layer at its landed base, and a draft in the draft layer", async () => {
+  test("control: a working-layer title with nothing beneath retracts from the working layer at its landed base, and a draft from the draft layer", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const own = "lar:///t/shadow/own";
@@ -171,8 +171,9 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await afterDispatch();
     boundary.fire();
     await turns(32);
-    const calls = r.calls.slice(mark).filter((c) => c.deletes.includes(own));
+    const calls = r.calls.slice(mark).filter((c) => c.retracts?.includes(own));
     expect(calls).toHaveLength(1);
+    expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "no tombstone rises over nothing").toEqual([]);
     expect(calls[0]!.bag).toBe(workingBag);
     expect(calls[0]!.base).toEqual(ownHeads);
     const d = openDraft(r, target, "typing");
