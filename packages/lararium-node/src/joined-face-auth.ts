@@ -36,42 +36,47 @@ export function unlitServedFaces(served: readonly number[], mount: number | null
  *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the house canon belong to
  *  the mounted face. Each entry names its handle index and relation, so a face-named wave finds it. */
 export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<JoinedFaceAuth[]> {
-  const result: JoinedFaceAuth[] = [];
-  for (const ordinal of ports.ordinals()) {
-    if (ordinal === ports.mounted) continue;
+  // EACH FACE READS ON ITS OWN: no face's custody-backed reads wait behind another's; the answer keeps ordinal order.
+  const each = await Promise.all(ports.ordinals().map((ordinal) => ordinal === ports.mounted ? Promise.resolve(null) : oneJoinedFace(ports, ordinal)));
+  return each.filter((face): face is JoinedFaceAuth => face !== null);
+}
+
+/** One sibling's gate input, or null where it stands shut, moved, or reads torn (the log names it). */
+async function oneJoinedFace(ports: JoinedFaceAuthPorts, ordinal: number): Promise<JoinedFaceAuth | null> {
+  {
     let seed: Uint8Array | null = null;
     let secret: Uint8Array | null = null;
     try {
-      if (!ports.current(ordinal)) continue;
-      if (!await ports.unlocked(ordinal) || !ports.current(ordinal)) continue;
+      if (!ports.current(ordinal)) return null;
+      if (!await ports.unlocked(ordinal) || !ports.current(ordinal)) return null;
       const pins = await ports.anchors(ordinal);
-      if (!ports.current(ordinal)) continue;
+      if (!ports.current(ordinal)) return null;
       if (!pins?.personaGroupId || !pins.signerDid || !pins.personaKelPrefix || !pins.deviceEdge) throw new Error("identity anchors missing");
       const group = pins.personaGroupId;
       const anchor = await ports.anchor(group);
-      if (!ports.current(ordinal)) continue;
+      if (!ports.current(ordinal)) return null;
       const chain = await ports.chain(pins.personaKelPrefix);
-      if (!ports.current(ordinal)) continue;
+      if (!ports.current(ordinal)) return null;
       seed = await ports.atomSeed(group);
-      if (!ports.current(ordinal)) continue;
+      if (!ports.current(ordinal)) return null;
       if (!anchor || !chain?.length || !seed) throw new Error("face anchor, KEL chain, or atom missing");
       const key = ports.atomKey(seed, group);
       if (key !== pins.deviceEdge.deviceVerifyingKey) throw new Error("atom differs from device edge");
       secret = await ports.addressSecret(group);
-      if (!ports.current(ordinal)) continue;
+      if (!ports.current(ordinal)) return null;
       const archive = await ports.veilArchive(group);
-      if (!ports.current(ordinal)) continue;
+      if (!ports.current(ordinal)) return null;
       const relation = (await ports.relation?.(group)) ?? null;
-      if (!ports.current(ordinal)) continue;
-      result.push({ atom: { seed: Buffer.from(seed).toString("hex"), key }, personaGroupId: group, faceAnchor: anchor, handleIndex: ordinal,
+      if (!ports.current(ordinal)) return null;
+      return { atom: { seed: Buffer.from(seed).toString("hex"), key }, personaGroupId: group, faceAnchor: anchor, handleIndex: ordinal,
         ...(relation ? { faceRelation: relation } : {}),
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
         ...(pins.meshCabalDocIdHex ? { meshCabalDocIdHex: pins.meshCabalDocIdHex } : {}),
         ...(secret ? { faceAddressSecret: Buffer.from(secret).toString("hex") } : {}),
-        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation, group) }) });
+        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation, group) }) };
     } catch (e) {
       ports.log(`joined face h${ordinal} skipped: ${e instanceof Error ? e.message : String(e)}`);
     } finally { seed?.fill(0); secret?.fill(0); }
   }
-  return result;
+  return null;
 }

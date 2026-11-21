@@ -461,6 +461,14 @@ async function main(): Promise<void> {
     recomposing = run.catch(() => undefined);
     return run;
   };
+  /** THE MOUNT CLOSED AT ITS CUSTODY'S WORD (a pūlama's close, a forced lock): the vessel stands again, once, by the same road
+   *  a lock takes; the standing composition's own teardown closes every other face through its actor first. */
+  const standAgainOnMountClose = (stood: StandingComposition): void => {
+    stood.onMountClosed?.(() => {
+      if (composition !== stood) return;
+      void recompose(true).catch((err: unknown) => console.error(`[lararium] the vessel did not stand again after its mount closed: ${err instanceof Error ? err.message : String(err)}`));
+    });
+  };
   const composeAgain = async (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
     await first;
     const prior = composition;
@@ -468,6 +476,7 @@ async function main(): Promise<void> {
     await prior?.teardown();
     const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
     composition = out.stood;
+    standAgainOnMountClose(out.stood);
     if (signalHeld !== null) composition.onSignal(signalHeld);
     return { standing: out.stood.standing, ...(out.refused !== undefined ? { refused: out.refused } : {}) };
   };
@@ -481,6 +490,9 @@ async function main(): Promise<void> {
     ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial(), lent: () => pulama.lends(), tellWorn: (o) => pulama.tellWorn(o) } } : {}),
     lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
     dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
+    releaseFace: (ordinal) => { composition?.releaseFace?.(ordinal); },
+    // A WHOLE LOCK CLOSES EVERY FACE THROUGH ITS ACTOR before its key drops.
+    closeFaces: async () => { await composition?.closeFaces?.(); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
@@ -501,6 +513,7 @@ async function main(): Promise<void> {
   });
 
   composition = (await composeOrFloor(null)).stood;
+  standAgainOnMountClose(composition);
   firstStood();
   // The boot's one dial: the sovereign composition over the session, mounted on its own daemon mount among the faces lent.
   const byPulama = standBy !== null && (await standBy.dial()).session;
@@ -551,6 +564,12 @@ interface StandingComposition {
   readonly island: NonNullable<SealedActContext["island"]>;
   readonly lightFace: (ordinal: number) => Promise<void>;
   readonly dropFace: (ordinal: number) => Promise<void>;
+  /** Lift the hold a lock's close set on a face. Absent at the floor. */
+  readonly releaseFace?: (ordinal: number) => void;
+  /** Close every face through its actor, holding each dark (a whole lock, ahead of the key). Absent at the floor. */
+  readonly closeFaces?: () => Promise<void>;
+  /** Hear the mounted face close at its custody's word: the vessel stands again. Absent at the floor. */
+  readonly onMountClosed?: (listener: () => void) => () => void;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
   readonly onSignal: (sig: string) => void;
   /** Tear this composition down and leave the process and its floor standing. */
@@ -948,6 +967,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     standing: "hearth",
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
+    releaseFace: result.releaseFace, closeFaces: () => result.closeFaces("a whole lock closes every face"), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
     teardown: () => result.teardown(() => front.detach()),
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
