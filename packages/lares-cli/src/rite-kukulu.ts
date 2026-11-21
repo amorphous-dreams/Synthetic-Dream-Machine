@@ -126,6 +126,8 @@ export interface RitePorts {
    * where the operator names one (the worn face otherwise). Absent, the rite reads none and begins as it did.
    */
   standing?(branch: string, face?: number): Promise<StandingAnswer>;
+  /** The hand's abandon of every half resting unlanded on the line (`rite abandon --rite kukulu`): it answers each half it ended. */
+  abandon?(branch: string, face?: number): Promise<RiteVerbAnswer>;
   /** The keep a down left owed, run after the landing (`keep-owed`); absent, the raise runs it itself. */
   keepOwed?(): Promise<number>;
   /** The image the raised vessel runs, by digest, as the vessel's container reports it (null where none reads); absent, the rite lands over the digest it staged. */
@@ -207,8 +209,10 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  * `face` names the face the begin's and the offer's sessions act as where several faces stand open; each row still gathers
  * every lent face, one lei and one vouch apiece. Naming none, the rows name none, and their sessions ride the face the operator
  * wears. `rollback` stands the image that ran before (`true`) or the image of an older revision, with no checkout move.
+ * `abandon` ends every kūkulu half resting unlanded on the line, by name, on a terminal alone, and raises nothing.
  */
-export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
+export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string; readonly abandon?: true }): Promise<{ code: number; data: Record<string, unknown> }> {
+  if (opts.abandon === true) return abandonKukulu(ports, opts);
   const forward = opts.rollback === undefined;
   if (forward && ports.sync) {
     const synced = await ports.sync();
@@ -285,18 +289,10 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     const heads = [...new Set(off.map(({ p }) => p.head))];
     const allStale = off.every(({ p }) => p.head !== head);
     const halves = off.map(({ p, w }) => `${p.face ?? p.group} tessera ${p.tessera} (begun at ${p.head.slice(0, 12)}${p.image === undefined ? "" : ` over ${p.image}`}: ${w})`).join(", ");
-    // THE CLEARING LINE: each half a lent face lands, landed by hand where the vessel stands (conferre reads it red, and the debt
-    // clears); a half no lent face lands waits for its face. The abandon that ends a half by name waits on its own branch.
-    const stands = prior !== null && /^[0-9a-f]{40}$/.test(prior.revision) ? prior.revision : "<the head the vessel runs>";
-    const landLine = (p: PendingBegin): string => {
-      const ordinal = landable.get(p.tessera)?.ordinal ?? opts.face;
-      return `lares rite land --tessera ${p.tessera} --head ${stands}${ordinal === undefined ? "" : ` --face ${ordinal}`}`;
-    };
-    const landed = off.filter(({ p }) => landable.has(p.tessera)), waiting = off.filter(({ p }) => !landable.has(p.tessera));
-    const clear = [
-      ...(landed.length > 0 ? [`land each by hand where the vessel stands (conferre reads it red): ${landed.map(({ p }) => landLine(p)).join("; ")}`] : []),
-      ...(waiting.length > 0 ? [`${waiting.map(({ p }) => `${p.face ?? p.group} tessera ${p.tessera}`).join(", ")} waits for its face to stand again`] : []),
-    ].join("; ") + "; the abandon that ends a half by name waits on its own branch (develop--a-begun-rite-sets-down)";
+    // THE CLEARING LINE: the abandon ends each half by name. A read that names no raw debt names no abandon door either, so it names the landing by hand.
+    const clear = legacy
+      ? off.map(({ p }) => `lares rite land --tessera ${p.tessera} --head ${p.head}${opts.face === undefined ? "" : ` --face ${opts.face}`}`).join("; ")
+      : `lares rite kukulu --abandon --branch ${branch} (it ends each half by name; their returns stay spent)`;
     // ONE OTHER HEAD for EVERY pending half, each landable there: the rite rolled back to it lands them at their own head instead.
     const back = allStale && heads.length === 1 && pending.every((p) => p.head === heads[0] && landable.has(p.tessera)) ? `; or land it at its own head: lares rite kukulu --rollback ${heads[0]!.slice(0, 12)} --branch ${branch}` : "";
     return {
@@ -490,4 +486,34 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   await readRan();
   if (!begun) return readAfter ? landWhatStands({ ...base, ...spent, begun: false, raised: true }) : kept({ code: 0, data: { ...base, ...spent, begun: false, raised: true } });
   return landAll(begunFaces, { ...base, ...spent });
+}
+
+/**
+ * THE HAND'S ABANDON (`lares rite kukulu --abandon`): every kūkulu half resting unlanded on the line ends by name, its return
+ * spent, conferre reading it red `abandoned`. A terminal alone runs it (the store door refuses a seat's session too); it syncs,
+ * builds and raises nothing.
+ */
+async function abandonKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number }): Promise<{ code: number; data: Record<string, unknown> }> {
+  const checkout = await ports.checkout();
+  const branch = opts.branch ?? checkout.branch;
+  const base = { rite: RITE_KUKULU, branch };
+  if (!(ports.tty ? ports.tty() : true) || !ports.abandon) {
+    ports.say(`kūkulu: an abandon ends a pending begin on the operator's hand, and this seat holds no terminal; run \`${HAND_ACT} --abandon --branch ${branch}\` on a terminal; nothing abandoned`);
+    return { code: 1, data: { ...base, refusal: "kukulu-abandon-needs-hand" } };
+  }
+  const out = await ports.abandon(branch, opts.face);
+  if (!out.ok) {
+    ports.say(`kūkulu: the abandon refused: ${out.message}; nothing abandoned`);
+    return { code: 1, data: { ...base, refusal: out.code } };
+  }
+  // AN ATTACHED ABANDON (the route read on this terminal) prints its own lines, each half by the hand's mark.
+  if (out.output["attached"] === true) {
+    ports.say("kūkulu: the vessel named each half it abandoned above, each by the hand's own mark; their returns stay spent");
+    return { code: 0, data: { ...base, attached: true } };
+  }
+  const rows = Array.isArray(out.output["abandoned"]) ? (out.output["abandoned"] as Array<Record<string, unknown>>) : [];
+  const abandoned = rows.map((a) => ({ tessera: String(a["tessera"]), ...(typeof a["face"] === "string" ? { face: a["face"] } : {}), group: String(a["group"]), head: String(a["head"]), ...(a["digestless"] === true ? { digestless: true } : {}) }));
+  if (abandoned.length === 0) ports.say(`kūkulu: no begun half stands unlanded on ${branch}; nothing abandoned`);
+  for (const a of abandoned) ports.say(`kūkulu: abandoned ${a.face ?? a.group} tessera ${a.tessera} (begun at ${a.head.slice(0, 12)}${a.digestless ? ", naming no image" : ""}); its lei's return stays spent, and conferre reads it red \`abandoned\``);
+  return { code: 0, data: { ...base, abandoned } };
 }

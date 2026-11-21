@@ -29,7 +29,8 @@
  *            a pūlama holds no face root, so the hand's lei acts come here, where the root rests: the face's root opens fresh
  *            under the operator's route (a ward act; a miss spends the face's own ward attempts), signs ONE record (a lei, or
  *            an unstring) for the face's own group, and zeroes. An UNSTRING also rests in the pūlama's own records, so its own
- *            reuse of a begun half sees the revocation whatever offer a vessel carries; otherwise the act writes nothing: the vessel lands the record
+ *            reuse of a begun half sees the revocation whatever offer a vessel carries. `abandon` signs one `rite-abandoned`
+ *            mark per pending kūkulu half the vessel's terms name (`parts`), as the hand. Otherwise it writes nothing: the vessel lands the record
  *            (`lares lei land`), where the chain's tip, the returns left and the push co-sign gate judge it. A restring rides
  *            kui: it names the line's tip it follows (`after`, as `lares lei show` reads it), and signs a lei after that tip.
  *            An unlit pūlama, an unopened face, a face whose anchors name no group, malformed terms, a count above twelve
@@ -71,7 +72,12 @@ export interface PulamaLeiHand {
   /** The face root's signer for ONE act, opened fresh under the operator's route (a ward act); a route that opens no slot of the
    *  face's ward throws the ward's refusal by its reading. */
   signer(ordinal: number, credentials: readonly Credential[]): Promise<SwarmSignerPort>;
+  /** The face root for ONE act that signs several marks, opened ONCE under the route and closed when the act settles. */
+  session?(ordinal: number, credentials: readonly Credential[]): Promise<SwarmSignerPort & { close(): void }>;
 }
+
+/** The most marks one abandon act signs: the vessel pages its terms within it. */
+export const ABANDON_ACT_BOUND = 100;
 
 type LeiAct = "kui" | "restring" | "unstring";
 const CID = /^[0-9a-f]{64}$/;
@@ -194,14 +200,52 @@ export function pulamaHandDoor(a: {
         // UNLIT REFUSES BEFORE ANYTHING READS: no root rests open to sign under.
         if (!holder.isUnlocked()) return { op: "lei", reading: "pulama-locked", ...status() };
         const act = f["act"], face = f["face"];
-        if ((act !== "kui" && act !== "restring" && act !== "unstring") || typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) {
-          return { op: "lei", reading: "lei-malformed", detail: "a lei act names kui, restring or unstring, and the face by its whole ordinal" };
+        if ((act !== "kui" && act !== "restring" && act !== "unstring" && act !== "abandon") || typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) {
+          return { op: "lei", reading: "lei-malformed", detail: "a lei act names kui, restring, unstring or abandon, and the face by its whole ordinal" };
         }
         let open = false;
         for (const fcid of holder.unlockedFaces()) { if ((await holder.faceStanding({ fcid }))?.ordinal === face) { open = true; break; } }
         if (!open) return { op: "lei", act, reading: "face-locked", face, ...status() };
         const group = await a.lei.group(face);
         if (group === null) return { op: "lei", act, reading: "face-group-unread", face, detail: `face h${face} names no PersonaGroup in its anchors, so no lei signs for it` };
+        if (act === "abandon") {
+          // THE HAND'S ABANDON: one mark per pending half the vessel's terms name (its own group's, or a shut or rehived face's old
+          // group), each a `rite-abandoned` record the face's root signs under the operator's route. Malformed parts sign nothing.
+          const src = typeof f["data"] === "object" && f["data"] !== null ? f["data"] as Record<string, unknown> : f;
+          const raw = src["parts"], branch = src["branch"] ?? f["branch"];
+          // EVERY PART THE VESSEL ASKS signs: the vessel lands only the exact set its terms named, so none may drop.
+          const parts = Array.isArray(raw) ? raw : [];
+          // A SANE PER-ACT BOUND: past it the door refuses by count, before the route; the vessel pages its terms within it.
+          if (parts.length > ABANDON_ACT_BOUND) return { op: "lei", act, reading: "abandon-batch-over-bound", face, detail: `the terms name ${parts.length} halves, past the ${ABANDON_ACT_BOUND} one abandon signs; the vessel pages them` };
+          const ok = typeof branch === "string" && branch !== "" && parts.length > 0 && parts.every((x) => typeof x === "object" && x !== null
+            && typeof (x as Record<string, unknown>)["tessera"] === "string" && CID.test((x as Record<string, unknown>)["tessera"] as string)
+            && typeof (x as Record<string, unknown>)["begun"] === "string" && CID.test((x as Record<string, unknown>)["begun"] as string)
+            && typeof (x as Record<string, unknown>)["group"] === "string" && (x as Record<string, unknown>)["group"] !== ""
+            && (x as Record<string, unknown>)["branch"] === branch);
+          if (!ok) return { op: "lei", act, reading: "lei-malformed", detail: "an abandon names its branch and one part per pending half: its tessera, its guest cid, its group and that branch" };
+          // EACH FACE'S HAND ENDS ITS OWN HALVES: a part of another group signs nothing, before the route reads.
+          if (parts.some((x) => (x as Record<string, unknown>)["group"] !== group)) return { op: "lei", act, reading: "abandon-other-group", face, detail: `face h${face}'s hand ends only its own group's halves; abandon another face's as that face (--face N)` };
+          const credentials = credentialsOf(f["credentials"]);
+          if (credentials === null) return { op: "lei", act, reading: "malformed" };
+          const records: Array<Awaited<ReturnType<typeof signSwarmAct>>> = [];
+          // ONE OPENING PER ACT where the hand offers a session (closed when the act settles); otherwise one opening per mark.
+          let session: (SwarmSignerPort & { close(): void }) | null = null;
+          try {
+            if (a.lei.session) session = await a.lei.session(face, credentials);
+            for (const x of parts as Array<Record<string, string>>) {
+              records.push(await signSwarmAct({ act: "rite-abandoned", group: x["group"]!, rite: "kukulu", branch: branch as string, tessera: x["tessera"]!, begun: x["begun"]! }, session ?? await a.lei.signer(face, credentials)));
+            }
+          } catch (err) {
+            session?.close();
+            const e = err as { reading?: unknown; code?: unknown; message?: unknown };
+            const reading = typeof e.reading === "string" ? e.reading : typeof e.code === "string" ? e.code : "lei-sign-refused";
+            log(`lei abandon: ${reading}`);
+            return { op: "lei", act, reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
+          }
+          session?.close();
+          log(`signed by hand: ${records.length} abandon mark(s) for h${face}; the vessel lands them`);
+          return { op: "lei", act, reading: "signed", face, records };
+        }
         const terms = leiPartsOf(act, group, f);
         if ("reading" in terms) return { op: "lei", act, ...terms };
         // THE SHAPE READS BEFORE THE ROUTE: a body no swarm control forms signs nothing, so a probe that signs nothing judges it.
