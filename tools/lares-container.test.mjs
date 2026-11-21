@@ -678,6 +678,7 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /HOSTCLI rite keep --if-due --no-json/);
     assert.ok(r.calls.indexOf("HOSTCLI rite keep") < r.calls.indexOf("vessel census"), r.calls);
+    assert.match(r.stderr, /keeping first \(rite keep --if-due\)/, "down says up front why it takes the time a keep takes");
   });
   test(`${name}: down-goes-on-past-a-refused-keep: the keep's refusal is named and the down still stops the vessel`, async () => {
     const cli = await fakeHostCli(1);
@@ -691,6 +692,7 @@ for (const [name, shim] of shims) {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_HOST_CLI: cli } });
     assert.equal(r.status, 0, r.stderr);
     assert.doesNotMatch(r.calls, /HOSTCLI/);
+    assert.doesNotMatch(r.stderr, /keeping first/);
   });
 
   test(`${name}: a census naming items refuses with no terminal, listing each, and stops nothing`, async () => {
