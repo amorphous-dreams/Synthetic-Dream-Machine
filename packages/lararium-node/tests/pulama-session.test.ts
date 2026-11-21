@@ -457,6 +457,65 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     await vi.waitFor(() => expect(vessel.closingFaces!()).toEqual([]));
   });
 
+  test("R7 F1 (a first close with no lender locked bare): the close stands through the lock's wait, so a session admitted meanwhile reads the face shut and its rows refuse face-closing", async () => {
+    fx = await standPulama("pulama-close-unlent-wait", () => openGate({ faces: lend(0), coldReads: [] }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    let letLock!: () => void;
+    const gate = new Promise<void>((r) => { letLock = r; });
+    const lockFace = fx.kept.lockFace.bind(fx.kept);
+    (fx.kept as { lockFace: (fcid: string) => Promise<void> }).lockFace = async (fcid) => { await gate; await lockFace(fcid); };
+    const closed = fx.server.closeFace(0);
+    for (let i = 0; i < 10; i++) await new Promise((r) => setImmediate(r));
+    // A vessel that lends the face is admitted while the key waits to lock.
+    const late = fx.vessel();
+    await late.unlock([]);
+    expect(late.unlockedFaces(), "the late session reads the face shut").toEqual([]);
+    await expect(late.readRecord("identity", faceAtomGroupFile(GROUP_A))).rejects.toMatchObject({ reading: "face-closing" });
+    letLock();
+    expect(await closed).toMatchObject({ reading: "locked", face: 0 });
+    expect(fx.kept.unlockedFaces()).not.toContain(a.fcid);
+    expect(fx.server.closing()).toEqual([]);
+  });
+
+  test("R7 F2: a force asked while a lock runs joins it (one lock); a lock that throws puts back the sessions still owing, so a plain close never locks over them", async () => {
+    fx = await standPulama("pulama-close-force-join", () => openGate({ faces: lend(0, 1), coldReads: [] }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    const b = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const lockFace = fx.kept.lockFace.bind(fx.kept);
+    let letLock!: () => void;
+    let gate = new Promise<void>((r) => { letLock = r; });
+    let locks = 0;
+    let fault: Error | null = null;
+    (fx.kept as { lockFace: (fcid: string) => Promise<void> }).lockFace = async (fcid) => {
+      locks += 1;
+      await gate;
+      if (fault !== null) { const f = fault; fault = null; throw f; }
+      await lockFace(fcid);
+    };
+    // THE JOIN: the vessel answers, the lock waits; a force asked meanwhile joins that one lock.
+    const openingA = fx.kept.faceOpening!(a.fcid);
+    expect(await fx.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 1 });
+    const answered = vessel.faceClosed!(a.fcid, openingA);
+    await vi.waitFor(() => expect(locks).toBe(1));
+    const forced = fx.server.closeFace(0, { force: true });
+    letLock();
+    expect(await forced).toMatchObject({ reading: "locked", forced: true });
+    await answered;
+    expect(locks, "one lock per close").toBe(1);
+    expect(fx.kept.unlockedFaces()).not.toContain(a.fcid);
+    // THE THROW: face 1's vessel never answers; a forced lock throws; the vessel owes its answer again.
+    locks = 0;
+    gate = Promise.resolve();
+    fault = new Error("the holder refused the lock");
+    expect(await fx.server.closeFace(1)).toMatchObject({ reading: "closing", unanswered: 1 });
+    await expect(fx.server.closeFace(1, { force: true })).rejects.toThrow("the holder refused the lock");
+    expect(fx.server.closing(), "the told session owes its answer again").toMatchObject([{ face: 1, unanswered: 1 }]);
+    expect(await fx.server.closeFace(1), "a plain close tells it again, and locks nothing").toMatchObject({ reading: "closing", unanswered: 1 });
+    expect(fx.kept.unlockedFaces()).toContain(b.fcid);
+  });
+
   test("H1 (a dropped session plus another's answer locked the key): two lenders are told; one drops unanswered, the other answers; the key stays open until the operator's hand", async () => {
     fx = await standPulama("pulama-close-drop-answer", () => openGate({ faces: lend(0), coldReads: [] }));
     const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });

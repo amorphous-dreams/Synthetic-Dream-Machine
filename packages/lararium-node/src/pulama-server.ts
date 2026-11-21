@@ -386,17 +386,23 @@ export function servePulama(a: {
    * THE KEY LOCKED: the holder's lock waits its turn (an unlock ahead of it, the rows in flight), and through that wait the face
    * still reads closing and shut to every session (its answer set stands empty), so no standing sent meanwhile (an open, a
    * refresh, a new session) shows it lit and no vessel relights it to take a save the key then locks over. One lock runs per close:
-   * a second answer, a re-close or a force joins it. A lock that throws leaves the face closing, its key open.
+   * a second answer, a re-close or a force joins it. A lock that throws leaves the face closing, its key open, and puts back the
+   * sessions still owing an answer (a forced lock clears them): each live one owes it again, and each that ended meanwhile counts
+   * dropped, so no later plain close locks over any of them.
    */
   const lockClosed = (fcid: string): Promise<void> => {
     const held = closings.get(fcid);
     if (held === undefined) return Promise.resolve();
+    if (held.locking !== null) return held.locking;
+    const owed = [...held.awaiting];
     held.awaiting = new Set();
-    held.locking ??= (async () => {
+    held.locking = (async () => {
       try {
         await holder.lockFace(fcid);
       } catch (error) {
         held.locking = null;
+        held.awaiting = new Set(owed.filter((s) => s.open));
+        held.dropped += owed.filter((s) => !s.open).length;
         throw error;
       }
       if (closings.get(fcid) === held) closings.delete(fcid);
@@ -488,12 +494,14 @@ export function servePulama(a: {
         return { reading: "closing", face: ordinal, unanswered: owed.length };
       }
       const told = [...live].filter((s) => lends(s, { ordinal, fcid }));
+      const opening = holder.faceOpening?.(fcid) ?? null;
       if (told.length === 0) {
-        await holder.lockFace(fcid);
+        // No session lends it: the close stands through the lock's wait, so a session admitted meanwhile reads it shut.
+        closings.set(fcid, { ordinal, opening, awaiting: new Set(), dropped: 0, locking: null });
+        await lockClosed(fcid);
         log(`face h${ordinal} locked: no session lends it`);
         return { reading: "locked", face: ordinal };
       }
-      const opening = holder.faceOpening?.(fcid) ?? null;
       // A vessel whose session ended BEFORE this close stands outside it: no session names that vessel here, so the close tells the
       // live lenders alone (and, with none, locks). Its unsealed saves, if any, wait in its own memory for a session to seal them.
       closings.set(fcid, { ordinal, opening, awaiting: new Set(told), dropped: 0, locking: null });
