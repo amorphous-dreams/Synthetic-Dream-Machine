@@ -41,9 +41,10 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
 /**
  * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
  * alone or `--check <x>`; `--grammar`; `rite kukulu --rollback` alone or `--rollback <rev>`). The parser cannot tell which spelling comes, so these
- * stay greedy. `--face` takes a value (`fleet join offer --face 1`); its flag read only refuses the bare spelling.
+ * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`);
+ * each flag read only refuses the bare spelling.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target"]);
 
 
 /** A command line the grammar itself refuses (`--no-key=…`, `--=v`); the dispatcher turns it into exit 2. */

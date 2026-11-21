@@ -3,10 +3,14 @@
  * face's own lane (its own document, as the lit set resolves it for that face), and its answer names the face; a verb from
  * the mounted face runs as before and names the mounted face; a presenter neither mounted nor lit refuses `face-not-open`;
  * a sibling's container naming anything but its own lane refuses `face-lane-holds-its-own`.
+ *
+ * A LIT FACE RECEIVES VISITS (operator ruling 2026-11-20, the cross-face reach): a read naming another lit face as its `target`
+ * keeps the session's worn face and answers from that face's CROSS-FACE VIEW with no lei, under the target's own standing read;
+ * a private bag refuses first; a write naming another face refuses; a shut target refuses `face-not-open`.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import { describe, expect, it } from "vitest";
-import { faceEngineReactor, faceLaneReactor, FACE_ENGINE_VERBS, FACE_LANE_VERBS } from "../src/face-lane.js";
+import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_ENGINE_VERBS, FACE_LANE_VERBS } from "../src/face-lane.js";
 
 const MOUNT = "a".repeat(64), SIB = "b".repeat(64), SHUT = "c".repeat(64);
 const LANE = "lar:///ha.ka.ba/bags/daemon-rel-b";
@@ -109,5 +113,76 @@ describe("each hat reached by name: a lit sibling's own engine answers the tiddl
       await expect(r.reactor({ title: "T", ...args }, r.ctx(`0x${SIB}`)), JSON.stringify(args)).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
     }
     expect(r.ran).toEqual([]);
+  });
+});
+
+describe("a lit face receives visits: a read names another lit face as its target", () => {
+  function visitRig(verb = "tiddler-get") {
+    const ran: string[] = [];
+    const caps: string[] = [];
+    const views = new Map([[1, { tw5: { name: "view-h1" }, composite: { name: "view-composite-h1" } }], [0, { tw5: { name: "view-h0" }, composite: { name: "view-composite-h0" } }]]);
+    const reactor = crossFaceReactor(verb,
+      async (args) => { ran.push(`routed:${JSON.stringify(args)}`); return { decision: "read", face: 0 }; },
+      (view) => async (args, ctx) => {
+        ran.push(`view:${(view.tw5 as unknown as { name: string }).name}:${JSON.stringify(args)}`);
+        caps.push(JSON.stringify(await ctx.cap("read", "lar:///ha.ka.ba/wikis/daemon/working")), JSON.stringify(await ctx.cap("admin", "lar:///ha.ka.ba/wikis/daemon/working")));
+        return { decision: "read" };
+      },
+      {
+        mountedKey: () => MOUNT, mountedOrdinal: () => 0,
+        lit: (key: string) => (key === SIB ? { handleIndex: 1 } : null),
+        litFace: (face: number) => face === 0 || face === 1,
+        view: async (face: number) => (views.get(face) as never) ?? null,
+        readAs: (face: number) => async (access) => (access === "read" ? { ok: true, reason: `read as h${face}` } : { ok: false, reason: "cross-face read" }),
+      });
+    const ctx = (presenter?: string) => ({ ...(presenter !== undefined ? { presenter } : {}), local: true, cap: async () => ({ ok: true, reason: "worn" }) }) as never;
+    return { reactor, ran, caps, ctx };
+  }
+
+  it("V1 RED: the worn face reads a lit sibling's daemon wiki through ITS cross-face view, under its standing read, and the answer names both", async () => {
+    const r = visitRig();
+    expect(await r.reactor({ recipe: "default", title: "T", target: 1 }, r.ctx(`0x${MOUNT}`))).toEqual({ decision: "read", face: 1, worn: 0 });
+    expect(r.ran, "the view answers, never the worn engine or the sibling's own; the target leaves the args").toEqual([`view:view-h1:${JSON.stringify({ recipe: "default", title: "T" })}`]);
+    expect(r.caps, "the door asks the target's standing read, and no admin passes").toEqual([JSON.stringify({ ok: true, reason: "read as h1" }), JSON.stringify({ ok: false, reason: "cross-face read" })]);
+  });
+
+  it("V2 RED: a sibling's session reads the mount the same way; a target naming the face worn reads as no target", async () => {
+    const r = visitRig();
+    expect(await r.reactor({ recipe: "default", title: "T", target: "h0" }, r.ctx(`0x${SIB}`))).toMatchObject({ face: 0, worn: 1 });
+    expect(await r.reactor({ recipe: "default", title: "T", target: 0 }, r.ctx(`0x${MOUNT}`))).toEqual({ decision: "read", face: 0 });
+    expect(r.ran).toEqual([`view:view-h0:${JSON.stringify({ recipe: "default", title: "T" })}`, `routed:${JSON.stringify({ recipe: "default", title: "T" })}`]);
+  });
+
+  it("V3 RED: PRIVATE FIRST: a bag naming a private layer refuses `cross-face-private` before the verb, the lit set or a view is read", async () => {
+    const r = visitRig("meme-get");
+    for (const target of [1, 7]) {
+      await expect(r.reactor({ uri: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/daemon/personal", target }, r.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "cross-face-private" });
+    }
+    const write = visitRig("meme-put");
+    await expect(write.reactor({ uri: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/garden/personal", target: 1 }, write.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "cross-face-private" });
+    expect([...r.ran, ...write.ran]).toEqual([]);
+  });
+
+  it("V4 RED: a write naming another face refuses `cross-face-write-refused`, and nothing runs", async () => {
+    for (const verb of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete"]) {
+      const r = visitRig(verb);
+      await expect(r.reactor({ recipe: "default", title: "T", target: 1 }, r.ctx(`0x${MOUNT}`)), verb).rejects.toMatchObject({ reason: "cross-face-write-refused" });
+      expect(r.ran).toEqual([]);
+    }
+  });
+
+  it("V5 RED: a shut target refuses `face-not-open`; an unresolved target and a named wiki refuse by name; nothing runs", async () => {
+    const r = visitRig();
+    await expect(r.reactor({ recipe: "default", title: "T", target: 7 }, r.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "face-not-open" });
+    await expect(r.reactor({ recipe: "default", title: "T", target: "sibling-face" }, r.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "target-unresolved" });
+    await expect(r.reactor({ recipe: "garden", title: "T", target: 1 }, r.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "cross-face-wiki-unreached" });
+    await expect(r.reactor({ recipe: "default", title: "T", target: 1 }, r.ctx(`0x${SHUT}`))).rejects.toMatchObject({ reason: "face-not-open" });
+    expect(r.ran).toEqual([]);
+  });
+
+  it("V6: no target runs the face's own route unchanged", async () => {
+    const r = visitRig();
+    expect(await r.reactor({ recipe: "default", title: "T" }, r.ctx(`0x${SIB}`))).toEqual({ decision: "read", face: 0 });
+    expect(r.ran).toEqual([`routed:${JSON.stringify({ recipe: "default", title: "T" })}`]);
   });
 });

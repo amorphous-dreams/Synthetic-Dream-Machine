@@ -28,6 +28,7 @@ import { stdin, stdout } from "node:process";
 import { containerArgs } from "../container-target.js";
 import { emit, exitFor } from "../render.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
+import { targetOf } from "../target-option.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -38,7 +39,9 @@ type Sub = typeof SUBS[number];
 export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   const title = args.positional[1];
   if (!title) throw new DoorUsage(`a title is required (e.g. \`lares tiddler ${sub} "My Note" --recipe default\`)`);
-  const out: Record<string, unknown> = { ...containerArgs(args, `tiddler ${sub}`, sub === "get" ? "read" : "write"), title };
+  // A LIT FACE RECEIVES VISITS: `--target` names another lit face; a get reads its daemon wiki while the command keeps the
+  // face it wears, and a put or delete naming it rides to the vessel, which refuses a write to another face by name.
+  const out: Record<string, unknown> = { ...containerArgs(args, `tiddler ${sub}`, sub === "get" ? "read" : "write"), title, ...targetOf(args) };
   if (sub === "get") {
     const slot = wordOf(args.options["slot"]);
     if (slot) out["slot"] = slot;

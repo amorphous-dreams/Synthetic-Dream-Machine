@@ -38,7 +38,7 @@
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.
  */
 
-import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
+import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { peerSeatOf } from "./uds-peer.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
@@ -79,6 +79,9 @@ export interface UdsChannelOptions {
   /** The bare atom key of the lit SIBLING a session's verified presenter names, or undefined (the mount, or a face not lit):
    *  the session's signer books under that key, so the island reads that face's own chain and seals through its own holder. */
   readonly siblingFaceOf?: (presenter: string) => string | undefined;
+  /** A LIT FACE RECEIVES VISITS (`seat-hand`): the pet names this vessel holds for its faces, read when a call names its
+   *  `target` face by name. Absent: a target names a face by its handle index alone. */
+  readonly petnames?: () => Promise<ReadonlyArray<readonly [number, string]>>;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -1022,6 +1025,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal, ...(message !== undefined && { message }) });
   /** The daemon mount's ordinal, or null where no mount reads (no reader, or the floor): the chore gate then stands aside. */
   const mountOf = (): number | null => opts.mountOrdinal?.() ?? null;
+  /** The lit set a visit reaches (`crossFaceTargetAtDoor`): the mount and every sibling lit beside it. */
+  const litFaces = (): readonly number[] => { const mount = mountOf(); return [...(mount !== null ? [mount] : []), ...(opts.litOrdinals?.() ?? [])]; };
+  const petnames = async (): Promise<ReadonlyArray<readonly [number, string]>> => (opts.petnames ? opts.petnames() : []);
   const sessionState = (sock: Socket) => {
     let state = sessionSockets.get(sock);
     if (!state) {
@@ -1157,7 +1163,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       lit: opts.litOrdinals?.() ?? [],
       hand: state.hand ?? "cli", session: checked.session.sessionId, generation: checked.session.generation });
     if (chore !== null && !chore.ok) return sessionRefuse(sock, chore.refusal, requestId, chore.message);
-    const args = frame["args"] as Record<string, unknown>;
+    // A LIT FACE RECEIVES VISITS: a read naming another lit face as its `target` keeps the face this session wears.
+    const visit = await crossFaceTargetAtDoor({ verb: frame["verb"], args: frame["args"] as Record<string, unknown>, worn: state.supply.ordinal, lit: litFaces(), petnames });
+    if (!visit.ok) return sessionRefuse(sock, visit.refusal, requestId, visit.message);
+    if (closing || sock.destroyed || !state.supply) return;
+    const args = visit.args ?? {};
     const face = checked.session.face.proofSubject;
     // THE SIGN DOOR'S BOOKING: the daemon island signs a sealed record through the session that placed this call, for
     // the call's life and under its verb alone; the booking drops when the call concludes or its socket goes.
@@ -1466,6 +1476,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         const lent = (seat !== null && named !== null) || oneShotChore ? await lentOf() : null;
         const seatRefused = seat === null || named === null ? null : seatFaceRefusal({ seat, named, worn: opts.mountOrdinal?.() ?? null, lent });
         if (seatRefused !== null) return fail(seatRefused, seatRefusalClass(seatRefused));
+        // A LIT FACE RECEIVES VISITS: a read naming another lit face as its `target` keeps the face the line acts as (the mount).
+        const visit = await crossFaceTargetAtDoor({ verb: inv.verb, args: inv.args, worn: mount, lit: litFaces(), petnames });
+        if (!visit.ok) return fail(visit.message, visit.refusal);
+        if (visit.args !== undefined) inv.args = visit.args;
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });
           if (chore !== null && !chore.ok) return fail(chore.message, chore.refusal);
