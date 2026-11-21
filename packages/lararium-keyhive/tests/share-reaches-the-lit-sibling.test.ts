@@ -10,6 +10,7 @@
  *   W1 RED  the verb names NO catalog document for a lit sibling, hands the landing a carry over the control document,
  *           and the worn face's stand lifts what carried
  *   W2 RED  a lit sibling's hive hands the worn hive the cap events it delegated to it, at the sibling's light
+ *   W3 RED  a landed share closes every named wiki's engine, so the next ask composes over the seat the landing left
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
@@ -30,5 +31,11 @@ describe("the share landing reaches a lit sibling", () => {
     const light = island.slice(island.indexOf("const lightJoinedFace = async"), island.indexOf("THE LIFT'S RE-REGISTRATION"));
     expect(light).toMatch(/joined\.keyhive\.receiveContactCard\(await worn\.contactCard\(\)\)/);
     expect(light).toMatch(/worn\.ingestPeerEvents\(await joined\.keyhive\.eventsForPeer\(id\)\)/);
+  });
+
+  test("W3 RED (static): the share landing closes the named wikis' engines, whose write slot a seat change leaves stale", () => {
+    const verb = island.slice(island.indexOf('registry.register("share-apply"'), island.indexOf('registry.register("workbench-seat"'));
+    expect(verb).toMatch(/await applyShares\(/);
+    expect(verb, "after the landing, before the answer, every named wiki's engine closes").toMatch(/await applyShares\([\s\S]*await namedWikiEngines\?\.dropAll\(\)[\s\S]*return \{ ok: true, \.\.\.applied/);
   });
 });

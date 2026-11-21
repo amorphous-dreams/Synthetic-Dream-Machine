@@ -1725,6 +1725,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             return grantShare({ owner, grantee, bag: g.bag, access: g.access, ...(ownerIsMounted && faceLedger ? { ownerLedger: faceLedger } : {}) });
           },
         });
+        // A SEAT OR SHARE CHANGE CLOSES THE NAMED WIKIS' ENGINES: each composed over the write slot its face's seat named then
+        // (`writeSlot`), so the next ask composes afresh over the seat this landing left, never after the cold clock.
+        await namedWikiEngines?.dropAll().catch((error: unknown) => console.warn(`[share-apply] a named wiki's engine closed with a fault: ${error instanceof Error ? error.message : String(error)}`));
         return { ok: true, ...applied, waiting: [...applied.waiting], ...(applied.standing ? { standing: [...applied.standing] } : {}), workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };
       }, { summary: "Land the share config: lift each shared bag's row into each lit grantee's catalog half and delegate it from its owner's hive; a shut face's grant waits behind an opaque flag.", surfaces: [VERB_SURFACE.cli] });
       // THE SEAT A CARRY ACT ASKS (cabal-realm#/the-workbench): a seed or an import lays a workbench once, at the wear of a face
