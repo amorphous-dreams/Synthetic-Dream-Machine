@@ -2,11 +2,14 @@
  * cross-face-reach — A LIT FACE RECEIVES VISITS (operator ruling 2026-11-20, state/decisions "the cross-face reach"): a seat
  * wearing one face reads another lit face's wikis standing, with no lei, and PRIVATE bags refuse every cross-face reach.
  *
- *   X1  RED: the personal layer of every wiki reads PRIVATE by law; canon, working, draft and the libraries read visitable
+ *   X1  RED: the personal and draft layers of every wiki read PRIVATE by law (what a face keeps for itself, and its unsaved
+ *       edits); canon, working and the libraries read visitable
  *   X2  RED: the cross-face view's slots: canon, working, the libraries and the floor; never personal, draft, temp, the kahua
  *       stage or the vessel's own daemon document; the private classification runs before every other choice
  *   X3  RED: the designated read verbs, and nothing that writes; the verbs whose `target` names a face
  *   X4  RED: the refusal names the private bag by class
+ *   X5  RED (Sol H3): the classification canonicalizes the address (case, a trailing slash) and reads another wiki's private
+ *       layer as private wherever a recipe lays it, as a library or otherwise
  */
 import { describe, expect, test } from "vitest";
 import {
@@ -17,11 +20,12 @@ import { DAEMON_BAG_ID, KAHUA_BAG, ORACLE_BAG, daemonFaceCanonBag, wikiBagUri, w
 const REL = "11111111-1111-4111-8111-111111111111";
 
 describe("a lit face receives visits: the PRIVATE classification", () => {
-  test("X1 RED: the personal layer of every wiki reads PRIVATE; canon, working, draft and libraries read visitable", () => {
+  test("X1 RED: the personal and draft layers of every wiki read PRIVATE; canon, working and libraries read visitable", () => {
     for (const slug of ["daemon", "garden", "lares"]) {
       expect(isPrivateBag(wikiSlotUri(slug, "personal")), slug).toBe(true);
       expect(bagReachOf(wikiSlotUri(slug, "personal")), slug).toBe("private");
-      for (const kind of ["working", "draft"] as const) expect(isPrivateBag(wikiSlotUri(slug, kind)), `${slug} ${kind}`).toBe(false);
+      expect(isPrivateBag(wikiSlotUri(slug, "draft")), `${slug} draft`).toBe(true);
+      expect(isPrivateBag(wikiSlotUri(slug, "working")), `${slug} working`).toBe(false);
       expect(isPrivateBag(wikiBagUri(slug)), `${slug} canon`).toBe(false);
     }
     expect(isPrivateBag(daemonFaceCanonBag(REL))).toBe(false);
@@ -55,5 +59,14 @@ describe("a lit face receives visits: the PRIVATE classification", () => {
     expect(crossFacePrivateRefusal(wikiSlotUri("daemon", "personal"))).toMatch(/^cross-face-private: /);
     expect(crossFacePrivateRefusal(wikiSlotUri("daemon", "personal"))).toContain(wikiSlotUri("daemon", "personal"));
     expect(crossFacePrivateRefusal(wikiSlotUri("daemon", "working"))).toBeNull();
+  });
+
+  test("X5 RED: case and a trailing slash never hide a private layer, and another wiki's private layer stays private as a library", () => {
+    for (const spelled of ["LAR:///HA.KA.BA/WIKIS/GARDEN/PERSONAL", "lar:///ha.ka.ba/wikis/garden/personal/", "lar:///ha.ka.ba/wikis/Garden/Draft//"]) {
+      expect(isPrivateBag(spelled), spelled).toBe(true);
+    }
+    const slots = crossFaceViewSlots({ wikiSlug: "daemon", libraryBags: [wikiSlotUri("garden", "draft"), "LAR:///ha.ka.ba/wikis/garden/personal/", "lar:///ha.ka.ba/bags/shared-lib"] });
+    expect(slots).toContain("lar:///ha.ka.ba/bags/shared-lib");
+    for (const out of [wikiSlotUri("garden", "draft"), "LAR:///ha.ka.ba/wikis/garden/personal/"]) expect(slots, out).not.toContain(out);
   });
 });

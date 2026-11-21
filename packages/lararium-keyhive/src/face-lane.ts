@@ -27,7 +27,11 @@
  * the read set refuses `cross-face-write-refused` (the cross-face write rite rides a lei, in a later lane); a target neither
  * mounted nor lit refuses `face-not-open`; a named wiki or a realm refuses `cross-face-wiki-unreached` (a sibling's named
  * wikis compose under its own catalog and workbench seat, which this island reads for the worn face alone). The answer names
- * the face it read (`face`) and the face worn (`worn`). A target naming the face worn reads as no target.
+ * the face it read (`face`) and the face worn (`worn`), and carries `visit: true`, which the vessel's receipt doors read to
+ * withhold a visit's body from every retrieval but the answer itself. A target naming the face worn reads as no target.
+ * A VISIT BINDS TO THE TARGET'S OPENING on this island (`opening`: each light of a face names a fresh one, and a drop names
+ * none): it captures the opening before it reads and reads it again before it answers, so a lock, or a lock and re-light,
+ * while the read runs refuses `face-not-open` and hands no body back.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
@@ -118,8 +122,9 @@ export function faceEngineReactor(
 
 /** The ports a visit reads: who the presenter names, which faces stand lit, a target's cross-face view and its standing read. */
 export interface CrossFacePorts extends Pick<FaceLanePorts, "mountedKey" | "mountedOrdinal" | "lit"> {
-  /** Whether `face` stands lit on this island: the mount, or a lit sibling. */
-  litFace(face: number): boolean;
+  /** The opening `face` stands under on this island (the mount, or a lit sibling: each light names a fresh one), or null where
+   *  it stands shut. */
+  opening(face: number): string | null;
   /** The target's cross-face view over its daemon wiki, or null where none composes. */
   view(face: number): Promise<Pick<FaceEngine, "tw5" | "composite"> | null>;
   /** The target's standing read: the cap a visit's door asks, which answers a read alone. */
@@ -163,7 +168,8 @@ export function crossFaceReactor(
     if (!CROSS_FACE_READ_VERBS.has(verb)) {
       throw new VerbRefusal("cross-face-write-refused", `cross-face-write-refused: ${verb} names face h${target} while the session wears ${worn === null ? "no face" : `h${worn}`}; a seat reads and renders another lit face (${[...CROSS_FACE_READ_VERBS].join(", ")}), and a write to another face waits on the cross-face write rite, so nothing moved.`);
     }
-    if (!ports.litFace(target)) {
+    const opened = ports.opening(target);
+    if (opened === null) {
       throw new VerbRefusal("face-not-open", `face-not-open: ${verb} — face h${target} stands shut on this island; a visit reads a lit face alone, and nothing ran.`);
     }
     if (rest["realm"] !== undefined || (rest["recipe"] !== undefined && rest["recipe"] !== "default")) {
@@ -174,6 +180,10 @@ export function crossFaceReactor(
       throw new VerbRefusal("face-not-open", `face-not-open: ${verb} — face h${target} composes no cross-face view on this island; nothing ran.`);
     }
     const out = await viewOf(view)(rest, { ...ctx, cap: ports.readAs(target) });
-    return { ...withFace(out, target), ...(worn !== null ? { worn } : {}) };
+    // THE SAME OPENING, OR NO ANSWER: a face that shut, or shut and lit again, while the visit read hands no body back.
+    if (ports.opening(target) !== opened) {
+      throw new VerbRefusal("face-not-open", `face-not-open: ${verb} — face h${target} shut while the visit read (its opening moved), so the read answers nothing.`);
+    }
+    return { ...withFace(out, target), ...(worn !== null ? { worn } : {}), visit: true };
   };
 }

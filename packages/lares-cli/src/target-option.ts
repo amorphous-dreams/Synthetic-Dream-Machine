@@ -31,3 +31,9 @@ export function targetOf(args: ParsedArgs): { target?: string } {
   try { return targetOption(args); }
   catch (error) { if (error instanceof TargetOptionMalformed) throw new DoorUsage(error.message); throw error; }
 }
+
+/** The refusal a write naming `--target` answers before any door opens: a visit reads, and a write to another face waits on
+ *  the rusuban rite (its own lane, its own lei). */
+export function targetOnWriteRefusal(door: string): string {
+  return `cross-face-write-refused: \`lares ${door}\` writes the face you wear, and --target names a face to READ; a write to another face waits on the rusuban rite, so nothing moved`;
+}

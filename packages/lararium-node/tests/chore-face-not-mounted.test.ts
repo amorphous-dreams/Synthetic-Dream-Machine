@@ -50,7 +50,7 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook } = {}) {
+async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly output?: (o: { verb: string; args: Record<string, unknown> }) => Record<string, unknown> } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -62,7 +62,7 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
   const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "nexus", aid: "nexus-one.synthetic" }), open: async ({ faceRef }) => ({ ok: true, supply: {
     face: face(faceRef), ordinal: Number(faceRef.slice(1)), profile: "seat", presenter: `verified-${faceRef}`,
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } as unknown as UdsSessionSigner }) } }) };
-  const placed: Array<{ verb: string; requestId: string; ordinal?: number }> = [];
+  const placed: Array<{ verb: string; requestId: string; ordinal?: number; args: Record<string, unknown>; requestedBy: string }> = [];
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     switchActs: { write: async () => {} },
@@ -74,7 +74,7 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
       placed.push(o);
       // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
       const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
-        batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
+        batchMode: "best-effort", results: { summary: { ok: true, output: lane.output ? lane.output(o) : { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
       daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
     } }));
   const connect = async (): Promise<Peer> => {
@@ -236,3 +236,45 @@ test("EACH HAT REACHED BY NAME, CONTROL: the lane carries its own writes alone; 
   expect(held.filter((h) => h.verb === "meme-put")).toEqual([{ verb: "meme-put" }]);
 });
 
+/**
+ * A LIT FACE RECEIVES VISITS at the vessel's door (Sol H1, H2, H4): "the face worn" means the SESSION's own face at every pass,
+ * so a sibling's session visiting the mount keeps its target; a one-shot line presents the worn face alone (a `requestedBy` naming
+ * a lit sibling refuses); and a visit's body answers its caller once: a receipt read later under its id withholds it.
+ */
+const VISIT = { recipe: "default", title: "T" };
+const visitOut = (o: { verb: string; args: Record<string, unknown> }) => (o.args["target"] !== undefined ? { face: o.args["target"], worn: 0, visit: true, tiddler: { text: "the visited word" } } : { tiddler: { text: "own" } });
+
+test("RED XV1 (H1): a session wearing lit h1 that targets the mount keeps its target past every pass of the door", async () => {
+  const v = await stand({ lit: [1] });
+  const env = await v.open("h1");
+  const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "visit-mount", verb: "tiddler-get", args: { ...VISIT, target: 0 } });
+  expect(reply).toMatchObject({ kind: "session:result", status: "done" });
+  expect(v.placed.map((p) => p.args["target"]), "the target the session named reaches the island").toEqual([0]);
+});
+
+test("RED XV2 (H4): a one-shot line naming a lit sibling as its presenter refuses, and nothing places; the worn face's line places", async () => {
+  const v = await stand({ lit: [1] });
+  const reply = await v.oneShot({ verb: "tiddler-get", args: VISIT, requestedBy: "verified-h1" });
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "presenter-rides-a-session" } });
+  expect(v.placed).toEqual([]);
+  expect(await v.oneShot({ verb: "tiddler-get", args: VISIT, requestedBy: "0xplace" })).toMatchObject({ status: "done" });
+});
+
+test("RED XV3 (H2): a visit's body answers its caller once; a receipt under its id (one-shot or session) withholds it", async () => {
+  const v = await stand({ lit: [1], output: visitOut });
+  const live = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-once" });
+  expect(JSON.stringify(live), "the caller reads the visit").toContain("the visited word");
+  const later = await v.oneShot({ op: "receipt", requestId: "visit-once" });
+  expect(later).toMatchObject({ requestId: "visit-once", state: "done", visit: { withheld: true } });
+  expect(JSON.stringify(later), "a receipt hands no visit body back").not.toContain("the visited word");
+  const again = await v.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "visit-once" });
+  expect(JSON.stringify(again), "a re-ask under the same id hands no stored body back").not.toContain("the visited word");
+  const env = await v.open("h0");
+  const call = await v.peer.ask({ op: "session:call", ...env, requestId: "s-visit", verb: "tiddler-get", args: { ...VISIT, target: 1 } });
+  expect(JSON.stringify(call)).toContain("the visited word");
+  const receipt = await v.peer.ask({ op: "session:receipt", ...env, requestId: "s-visit" });
+  expect(JSON.stringify(receipt), "a session receipt hands no visit body back").not.toContain("the visited word");
+  // CONTROL: an own read's body still reads back.
+  await v.oneShot({ verb: "tiddler-get", args: VISIT, requestedBy: "0xplace", requestId: "own-read" });
+  expect(JSON.stringify(await v.oneShot({ op: "receipt", requestId: "own-read" }))).toContain("own");
+});

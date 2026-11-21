@@ -173,7 +173,7 @@ import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floor
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { slotAnnouncer } from "./slot-announcer.js";
 import { makeLitFaceDocs, makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
-import { bootFromSet, composeCrossFaceViewSource, composeSiblingEngineSource } from "./face-engine-source.js";
+import { bootFromSet, composeCrossFaceViewSource, composeSiblingEngineSource, crossFacePrivateDocs } from "./face-engine-source.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
@@ -311,6 +311,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const litInputs = new Map<string, string>();
   /** THE LIT SET: every sibling face lit beside the mounted one, by bare atom key (each under its own hive, `providers`). */
   const litSiblings = new Map<string, JoinedFaceAuth>();
+  /** Each lit sibling's OPENING on this island: every light names a fresh one, and a drop names none (a visit binds to it). */
+  const litOpenings = new Map<string, number>();
+  let lightsSeen = 0;
   const lightJoinedFace = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
     const key = bareKey(face.atom.key);
     if (providers.has(key)) {
@@ -336,6 +339,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
       litSiblings.set(key, face);
+      litOpenings.set(key, ++lightsSeen);
       // EACH HAT ITS OWN HOLDER: the sibling seats its own content-key holder beside its own identity, once the mounted
       // holder stood (a sibling lit earlier seats at that standing).
       if (holderCtx !== null) standSiblingSeat(holderCtx, key, face, joined.keyhive);
@@ -468,6 +472,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const worn = asLit(daemonAuth);
     const face = worn !== null && worn.handleIndex === handleIndex ? worn : litSiblingFaces().find((f) => f.handleIndex === handleIndex) ?? null;
     if (face === null) return null;
+    // PRIVATE BY DOCUMENT: every document a lit face's private slot names here, which the view refuses whatever label binds it.
+    const privateDocs = await crossFacePrivateDocs({
+      faces: [...(worn ? [worn] : []), ...litSiblingFaces()],
+      mounted: (slot) => ctx.handles.get(slot) ?? null,
+      control: controlOf(ctx),
+      daemon: ctx.composite.hasBag(DAEMON_BAG_ID) ? ctx.composite.storeForBag(DAEMON_BAG_ID) : null,
+    });
     return composeCrossFaceView(await composeCrossFaceViewSource({
       face, recipe: ctx.recipe, bootSet: ctx.bootSet, resolveByCid: ctx.resolveByCid,
       docs: makeLitFaceDocs({ worn: () => asLit(daemonAuth), siblings: litSiblingFaces, control: () => controlOf(ctx) }),
@@ -475,7 +486,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       open: async (url, bag) => await findOrThrow(ctx.repo, url, `${bag} (h${handleIndex}'s own layer, visited)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never,
       // Only the worn face's own view reads the documents this island mounted: a sibling's never borrows the mount's.
       worn: face === worn ? (slot) => ctx.handles.get(slot) ?? null : null,
-    }));
+    }), { privateDocs });
   }, { idleMs: NAMED_WIKI_ENGINE_COLD_MS }));
   /**
    * EVERY WIKI ITS ENGINE: each registered wiki the worn face reaches answers the tiddler door in its OWN engine (`wiki-engine`),
@@ -1057,7 +1068,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       };
       const crossPorts: CrossFacePorts = {
         ...lanePorts,
-        litFace: (face) => faceKeyOf(face) !== null,
+        // The mount stands under the island's one opening; a sibling under the light that lit it, until it drops.
+        opening: (face) => {
+          const key = faceKeyOf(face);
+          if (key === null) return null;
+          if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) return "mount";
+          const n = litOpenings.get(key);
+          return n === undefined ? null : `h${face}:${n}`;
+        },
         view: (face) => crossFaceViewsOf(ctx).of(face),
         readAs: (face) => async (access, bagUrl) => {
           const key = faceKeyOf(face);
@@ -1843,6 +1861,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             litInputs.delete(key);
             const dropped = litSiblings.get(key);
             litSiblings.delete(key);
+            litOpenings.delete(key);
             // Its own engine closes with it: owed saves drain, the bridge detaches, the VM releases.
             if (typeof dropped?.handleIndex === "number") await siblingEngines?.drop(dropped.handleIndex).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s own engine closed with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // Its cross-face view closes with it: a shut face receives no visit, cached or fresh.

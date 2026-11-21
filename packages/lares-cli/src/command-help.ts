@@ -734,7 +734,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
       "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
-      "--target <h1|name>   (get, and `wiki filter | render | status`; on put or delete it refuses) READ another lit face's daemon wiki while keeping the face worn: its canon and working layer, never its personal layer (a personal bag refuses cross-face-private); a shut face refuses face-not-open; a write naming another face refuses cross-face-write-refused",
+      "--target <h1|name>   (get, and `wiki filter | render | status`; on put or delete it refuses) READ another lit face's daemon wiki while keeping the face worn: its canon and working layer, never its personal or draft layer (either bag refuses cross-face-private); a shut face refuses face-not-open; a write naming another face refuses cross-face-write-refused",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--skinny             (get) every field, the text left home",
@@ -793,7 +793,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--replace <file>   (patch) the slot's whole body",
       "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
       "--file <path>      (put) the meme text (stdin when absent)",
-      "--target <h1|name> (get, list) READ another lit face's daemon wiki (`--recipe default`, or one of its daemon bags) while keeping the face worn; its personal layer never answers (cross-face-private), a shut face refuses face-not-open, and a write naming another face refuses",
+      "--target <h1|name> (get, list) READ another lit face's daemon wiki (`--recipe default`, or one of its daemon bags) while keeping the face worn; its personal and draft layers never answer (cross-face-private), a shut face refuses face-not-open, and a write naming another face refuses at the CLI",
       "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
         "`list --bag` names that one bag's own",

@@ -94,15 +94,30 @@ export async function crossFaceViewSource(deps: {
   return { boot: deps.boot, recipe: deps.recipe, ready };
 }
 
+/** What a view checks each binding's DOCUMENT against: every document a lit face's private slot names. */
+export interface CrossFaceViewGuard {
+  readonly privateDocs: ReadonlySet<string>;
+}
+
+/** The document a binding resolves to: its handle's id, or the id its store stands on; null where none names it. */
+function documentIdOf(binding: RecipeReadyBinding): string | null {
+  const id = "handle" in binding ? binding.handle.documentId : (binding.store as { documentId?: unknown }).documentId;
+  return typeof id === "string" && id.length > 0 ? id : null;
+}
+
 /**
- * Compose a target face's CROSS-FACE VIEW. PRIVATE FIRST: a source that binds a private layer refuses `cross-face-private`
- * before anything boots, and one that binds a layer outside the view's own slots refuses `cross-face-view-holds-its-layers`.
- * The engine then lays every layer read-only, with no actor door and no write slot.
+ * Compose a target face's CROSS-FACE VIEW. PRIVATE FIRST, by label and by DOCUMENT: a binding whose slot names a private layer,
+ * or whose document a lit face's private slot names (`guard.privateDocs`), refuses `cross-face-private`, and one whose document
+ * no id names refuses `cross-face-view-unidentified`, all before anything boots; a binding outside the view's own slots refuses
+ * `cross-face-view-holds-its-layers`. The engine then lays every layer read-only, with no actor door and no write slot.
  */
-export async function composeCrossFaceView(source: CrossFaceViewSource): Promise<FaceEngine> {
-  for (const { slot } of source.ready) {
-    const refusal = crossFacePrivateRefusal(slot);
+export async function composeCrossFaceView(source: CrossFaceViewSource, guard: CrossFaceViewGuard): Promise<FaceEngine> {
+  for (const binding of source.ready) {
+    const refusal = crossFacePrivateRefusal(binding.slot);
     if (refusal !== null) throw new VerbRefusal(CROSS_FACE_PRIVATE, refusal);
+    const doc = documentIdOf(binding);
+    if (doc === null) throw new VerbRefusal("cross-face-view-unidentified", `cross-face-view-unidentified: ${binding.slot} binds a store no document id names, so a view cannot check it against the private layers, and nothing composed`);
+    if (guard.privateDocs.has(doc)) throw new VerbRefusal(CROSS_FACE_PRIVATE, `${CROSS_FACE_PRIVATE}: ${binding.slot} binds a document a face's personal or draft layer names, and no cross-face view composes it`);
   }
   const viewed = new Set<string>(crossFaceViewSlots(source.recipe));
   for (const { slot } of source.ready) {

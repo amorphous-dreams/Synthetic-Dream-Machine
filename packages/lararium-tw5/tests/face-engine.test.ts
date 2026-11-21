@@ -12,6 +12,10 @@
  *       there that shadows a working record reads the working record; the view never asks for a private slot
  *   E5  RED: the view refuses a source that binds a private layer (`cross-face-private`) before any engine boots, and takes
  *       no write: a put through it lands nothing
+ *   E6  RED (Sol H3): the view classifies the DOCUMENT each binding resolves to: a binding labelled as a library or the
+ *       working layer whose document a private slot names refuses `cross-face-private`, another wiki's draft laid as a library
+ *       refuses, and a binding whose document cannot be named refuses; nothing boots
+ *   E7  RED (Sol M2): no layer of the view takes a write, its temp layer included, and the stores it hands out refuse a put
  *
  * A real engine boots here (`bootTestWiki`), with the real recipe, adaptor and bridge.
  */
@@ -125,7 +129,7 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     });
     expect(asked, "the view never asks for a private slot or a draft").not.toContain(PERSONAL);
     expect(asked).not.toContain(DRAFT);
-    const view = await composeCrossFaceView(source); downs.push(() => view.close());
+    const view = await composeCrossFaceView(source, { privateDocs: new Set([docs.get(PERSONAL)!.documentId, docs.get(DRAFT)!.documentId]) }); downs.push(() => view.close());
     const get = makeTiddlerGetReactor(view as never);
     expect(((await get({ recipe: "default", title: "Note of h1" }, ctx()))["tiddler"] as { fields: Record<string, string> } | null)?.fields["text"]).toBe("the working word");
     expect(((await get({ recipe: "default", title: "Canon of h1" }, ctx()))["tiddler"] as { bag: string } | null)?.bag).toBe(daemonFaceCanonBag(R1));
@@ -144,12 +148,12 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     let booted = 0;
     const leaking = { boot: () => { booted++; return bootTestWiki(); }, recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
       ready: [{ slot: WORKING, handle: h1.working }, { slot: PERSONAL, handle: personal }] };
-    await expect(composeCrossFaceView(leaking)).rejects.toMatchObject({ reason: "cross-face-private" });
+    await expect(composeCrossFaceView(leaking, { privateDocs: new Set() })).rejects.toMatchObject({ reason: "cross-face-private" });
     expect(booted, "nothing boots over a private layer").toBe(0);
     const view = await composeCrossFaceView(await crossFaceViewSource({
       boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
       bind: async (slot) => { const handle = docs.get(slot); return handle ? { slot, handle } : null; },
-    }));
+    }), { privateDocs: new Set([personal.documentId]) });
     downs.push(() => view.close());
     // A visit reads by the target's standing read alone: its door's admin ask refuses, and the put refuses with it.
     const readOnly: VerbContext = { ...ctx(), cap: async (access) => (access === "read" ? { ok: true } : { ok: false, reason: "cross-face read" }) };
@@ -159,5 +163,42 @@ describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skip
     const deadline = Date.now() + 2_000;
     while (!holds(h1.working, "Visitor note") && Date.now() < deadline) await turns(8);
     expect(holds(h1.working, "Visitor note"), "a visit writes nothing into the face's working document").toBe(false);
+  }, 60_000);
+
+  test("E6 RED: a private document under a visitable label refuses, as does another wiki's draft laid as a library", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const { h1, personal } = visited(repo);
+    let booted = 0;
+    const boot = () => { booted++; return bootTestWiki(); };
+    const LIB = "lar:///ha.ka.ba/bags/shared-lib";
+    const recipe = { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1), libraryBags: [LIB] };
+    const guard = { privateDocs: new Set([personal.documentId]) };
+    // The personal document, bound under a library's label and under the working layer's.
+    await expect(composeCrossFaceView({ boot, recipe, ready: [{ slot: LIB, handle: personal }] }, guard)).rejects.toMatchObject({ reason: "cross-face-private" });
+    await expect(composeCrossFaceView({ boot, recipe, ready: [{ slot: WORKING, handle: personal }] }, guard)).rejects.toMatchObject({ reason: "cross-face-private" });
+    // Another wiki's draft laid as a library reads private by its address, whatever recipe lays it.
+    const garden = { ...recipe, libraryBags: [wikiSlotUri("garden", "draft")] };
+    await expect(composeCrossFaceView({ boot, recipe: garden, ready: [{ slot: wikiSlotUri("garden", "draft"), handle: h1.working }] }, guard)).rejects.toMatchObject({ reason: "cross-face-private" });
+    // A binding whose document no id names cannot be checked, and refuses.
+    const anonymous = { listVisible: async () => [], get: async () => null, put: async () => {}, tombstone: async () => {}, remove: async () => {}, subscribe: () => () => {} };
+    await expect(composeCrossFaceView({ boot, recipe, ready: [{ slot: LIB, store: anonymous as never }] }, guard)).rejects.toMatchObject({ reason: "cross-face-view-unidentified" });
+    expect(booted, "nothing boots over a refused binding").toBe(0);
+  }, 60_000);
+
+  test("E7 RED: no layer of the view takes a write, temp included, and a store it hands out refuses a put", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const { h1, docs } = visited(repo);
+    const view = await composeCrossFaceView(await crossFaceViewSource({
+      boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+      bind: async (slot) => { const handle = docs.get(slot); return handle ? { slot, handle } : null; },
+    }), { privateDocs: new Set() });
+    downs.push(() => view.close());
+    for (const bag of [WORKING, daemonFaceCanonBag(R1), wikiSlotUri("daemon", "temp")]) expect(view.composite.hasWritableBag(bag), bag).toBe(false);
+    const handed = view.composite.storeForBag(WORKING)!;
+    await expect(handed.put({ tiddler: { title: "Through the store", text: "x" } } as never, { kind: "lares-verb", requestId: "r" } as never)).rejects.toThrow(/cross-face-view-reads/);
+    await turns(16);
+    expect(holds(h1.working, "Through the store")).toBe(false);
+    // The view still reads.
+    expect(((await makeTiddlerGetReactor(view as never)({ recipe: "default", title: "Note of h1" }, ctx()))["tiddler"] as { fields: Record<string, string> } | null)?.fields["text"]).toBe("the working word");
   }, 60_000);
 });

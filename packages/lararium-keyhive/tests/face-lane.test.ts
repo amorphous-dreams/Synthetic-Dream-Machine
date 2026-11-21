@@ -6,7 +6,10 @@
  *
  * A LIT FACE RECEIVES VISITS (operator ruling 2026-11-20, the cross-face reach): a read naming another lit face as its `target`
  * keeps the session's worn face and answers from that face's CROSS-FACE VIEW with no lei, under the target's own standing read;
- * a private bag refuses first; a write naming another face refuses; a shut target refuses `face-not-open`.
+ * a private bag refuses first; a write naming another face refuses; a shut target refuses `face-not-open`. A visit binds to the
+ * target's OPENING on this island and reads it again before it answers: a lock or a lock and re-light mid-read refuses
+ * `face-not-open` and hands no body back (Sol H2); every visit's answer carries `visit: true`, which the vessel's receipt doors
+ * read to withhold its body from any later retrieval.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import { describe, expect, it } from "vitest";
@@ -121,27 +124,30 @@ describe("a lit face receives visits: a read names another lit face as its targe
     const ran: string[] = [];
     const caps: string[] = [];
     const views = new Map([[1, { tw5: { name: "view-h1" }, composite: { name: "view-composite-h1" } }], [0, { tw5: { name: "view-h0" }, composite: { name: "view-composite-h0" } }]]);
+    const openings = new Map<number, string>([[0, "mount"], [1, "h1:1"]]);
+    const during: Array<() => void> = [];
     const reactor = crossFaceReactor(verb,
       async (args) => { ran.push(`routed:${JSON.stringify(args)}`); return { decision: "read", face: 0 }; },
       (view) => async (args, ctx) => {
         ran.push(`view:${(view.tw5 as unknown as { name: string }).name}:${JSON.stringify(args)}`);
+        for (const act of during.splice(0)) act();
         caps.push(JSON.stringify(await ctx.cap("read", "lar:///ha.ka.ba/wikis/daemon/working")), JSON.stringify(await ctx.cap("admin", "lar:///ha.ka.ba/wikis/daemon/working")));
         return { decision: "read" };
       },
       {
         mountedKey: () => MOUNT, mountedOrdinal: () => 0,
         lit: (key: string) => (key === SIB ? { handleIndex: 1 } : null),
-        litFace: (face: number) => face === 0 || face === 1,
+        opening: (face: number) => openings.get(face) ?? null,
         view: async (face: number) => (views.get(face) as never) ?? null,
         readAs: (face: number) => async (access) => (access === "read" ? { ok: true, reason: `read as h${face}` } : { ok: false, reason: "cross-face read" }),
       });
     const ctx = (presenter?: string) => ({ ...(presenter !== undefined ? { presenter } : {}), local: true, cap: async () => ({ ok: true, reason: "worn" }) }) as never;
-    return { reactor, ran, caps, ctx };
+    return { reactor, ran, caps, ctx, openings, during };
   }
 
   it("V1 RED: the worn face reads a lit sibling's daemon wiki through ITS cross-face view, under its standing read, and the answer names both", async () => {
     const r = visitRig();
-    expect(await r.reactor({ recipe: "default", title: "T", target: 1 }, r.ctx(`0x${MOUNT}`))).toEqual({ decision: "read", face: 1, worn: 0 });
+    expect(await r.reactor({ recipe: "default", title: "T", target: 1 }, r.ctx(`0x${MOUNT}`))).toEqual({ decision: "read", face: 1, worn: 0, visit: true });
     expect(r.ran, "the view answers, never the worn engine or the sibling's own; the target leaves the args").toEqual([`view:view-h1:${JSON.stringify({ recipe: "default", title: "T" })}`]);
     expect(r.caps, "the door asks the target's standing read, and no admin passes").toEqual([JSON.stringify({ ok: true, reason: "read as h1" }), JSON.stringify({ ok: false, reason: "cross-face read" })]);
   });
@@ -184,5 +190,17 @@ describe("a lit face receives visits: a read names another lit face as its targe
     const r = visitRig();
     expect(await r.reactor({ recipe: "default", title: "T" }, r.ctx(`0x${SIB}`))).toEqual({ decision: "read", face: 0 });
     expect(r.ran).toEqual([`routed:${JSON.stringify({ recipe: "default", title: "T" })}`]);
+  });
+
+  it("V7 RED (Sol H2): a lock, or a lock and re-light, while the visit reads refuses face-not-open and hands no body back", async () => {
+    const shut = visitRig();
+    shut.during.push(() => shut.openings.delete(1));
+    await expect(shut.reactor({ recipe: "default", title: "T", target: 1 }, shut.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "face-not-open" });
+    const relit = visitRig();
+    relit.during.push(() => relit.openings.set(1, "h1:2"));
+    await expect(relit.reactor({ recipe: "default", title: "T", target: 1 }, relit.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "face-not-open" });
+    // CONTROL: an opening that stands through the read answers, marked a visit.
+    const steady = visitRig();
+    expect(await steady.reactor({ recipe: "default", title: "T", target: 1 }, steady.ctx(`0x${MOUNT}`))).toMatchObject({ face: 1, visit: true });
   });
 });

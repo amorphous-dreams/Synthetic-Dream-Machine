@@ -12,12 +12,14 @@
  * and the shared libraries and floor (`crossFaceViewSlots`), and asks for no other: never its personal layer (PRIVATE), never a
  * draft. The worn face's own layers answer from the documents its island mounted; a sibling's from the documents its own wear
  * named, each only where the control document names that face as the owner. The view takes no actor door: it reads.
+ * `crossFacePrivateDocs` names every document a private slot names on this island, which the view refuses by identity, so a
+ * binding's label never carries a private document past it.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import {
-  DAEMON_BAG_ID, KAHUA_BAG, daemonFaceCanonBag, expandRecipe, sha256HexBytesSync, wikiSlotUri,
-  type DocHandle, type FaceActorDoor, type LarDoc, type WikiRecipe,
+  CONTROL_HOME_ID, DAEMON_BAG_ID, KAHUA_BAG, PRIVATE_SLOT_KINDS, daemonFaceCanonBag, documentIdOfUrl, expandRecipe, sha256HexBytesSync,
+  tiddlerText, wikiSlotUri, type DocHandle, type FaceActorDoor, type LarDoc, type LarTiddlerStore, type WikiRecipe, type WikiSlotKind,
 } from "@lararium/mesh";
 import { TW5Engine, crossFaceViewSource, preloadsFromCasBlob, type CrossFaceViewSource, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
 import type { LitFace, LitFaceDocs } from "./lit-face-target.js";
@@ -108,4 +110,42 @@ export async function composeCrossFaceViewSource(deps: CrossFaceViewDeps): Promi
       return doc !== null && doc.owner === face.handleIndex ? { slot, handle: await deps.open(doc.url, slot) } : null;
     },
   });
+}
+
+/** Where the documents a private slot names rest on this island. */
+export interface CrossFacePrivateDocsDeps {
+  /** Every lit face: the worn one and each sibling. */
+  readonly faces: readonly LitFace[];
+  /** The worn face's own document for a daemon slot its island mounted, or null. */
+  readonly mounted: (slot: string) => Pick<DocHandle<LarDoc>, "documentId"> | null;
+  /** The control document's reader (each face's daemon slots, `daemon-slot/<kind>/<group>`), or null. */
+  readonly control: { get(title: string): Promise<unknown> } | null;
+  /** The daemon document's store (each wiki's slot bindings), or null. */
+  readonly daemon: Pick<LarTiddlerStore, "listVisible" | "get"> | null;
+}
+
+/**
+ * THE DOCUMENTS A VISIT NEVER COMPOSES: every document a PRIVATE slot names here. Each lit face's daemon personal and draft
+ * documents (the worn face's as its island mounted them, every face's as the control document names them), and each personal or
+ * draft binding the daemon document records for any wiki (`kind`, or a mint row's `binding-kind`). A url that names no document
+ * adds nothing.
+ */
+export async function crossFacePrivateDocs(deps: CrossFacePrivateDocsDeps): Promise<Set<string>> {
+  const docs = new Set<string>();
+  const add = (id: string | null | undefined): void => { if (typeof id === "string" && id.length > 0) docs.add(id); };
+  const kinds = [...PRIVATE_SLOT_KINDS];
+  for (const kind of kinds) add(deps.mounted(wikiSlotUri("daemon", kind))?.documentId);
+  if (deps.control) {
+    for (const face of deps.faces) {
+      for (const kind of kinds) add(documentIdOfUrl(tiddlerText((await deps.control.get(`${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(face.group)}`)) as never)));
+    }
+  }
+  if (deps.daemon) {
+    for (const title of await deps.daemon.listVisible()) {
+      const fields = (await deps.daemon.get(title))?.tiddler as Record<string, unknown> | undefined;
+      const kind = fields?.["kind"] === "binding-mint" ? fields["binding-kind"] : fields?.["kind"];
+      if (typeof kind === "string" && PRIVATE_SLOT_KINDS.has(kind as WikiSlotKind)) add(documentIdOfUrl(typeof fields?.["text"] === "string" ? fields["text"] : null));
+    }
+  }
+  return docs;
 }

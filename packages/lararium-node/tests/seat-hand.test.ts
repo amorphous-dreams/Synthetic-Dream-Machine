@@ -15,6 +15,8 @@
  *   SH8 — the door's order: a private bag refuses `cross-face-private` first; a write naming another face refuses
  *         `cross-face-write-refused`; a shut target refuses `face-not-open`; an unknown or doubled pet name refuses by name; a
  *         target naming the worn face reads as none; a verb that reads `target` otherwise passes untouched
+ *   SH10 — (Sol M3) a private bag refuses before any name resolves; a pet name spelled as an ordinal (`h1`, `1`) that a face
+ *         holds refuses `target-ambiguous`; pet names match case folded, and two faces whose names fold alike refuse
  *   SH9 — both doors resolve the target (the one-shot line against the mount, a session against the face it wears), and main
  *         hands the door the faces' pet names
  */
@@ -125,8 +127,24 @@ describe("a lit face receives visits: the door resolves a read's target", () => 
 
   test("SH9 — both doors resolve the target, and main hands the door the faces' pet names", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "uds-channel.ts"), "utf8");
-    expect(src).toMatch(/crossFaceTargetAtDoor\(\{ verb: inv\.verb, args: inv\.args, worn: mount, lit: litFaces\(\), petnames \}\)/);
+    // The line's pass reads the face worn as the session's own on a session, the mount on a one-shot (Sol H1).
+    expect(src).toMatch(/crossFaceTargetAtDoor\(\{ verb: inv\.verb, args: inv\.args, worn: sessionRequestId === undefined \? mount : inv\.ordinal \?\? mount, lit: litFaces\(\), petnames \}\)/);
     expect(src).toMatch(/crossFaceTargetAtDoor\(\{ verb: frame\["verb"\], args: frame\["args"\] as Record<string, unknown>, worn: state\.supply\.ordinal, lit: litFaces\(\), petnames \}\)/);
     expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/petnames:\s+async \(\) => \(await makeNodePersonaPetnameStore\(\)\)\.entries\(\)/);
+  });
+});
+
+describe("a lit face receives visits: privacy before names, and names that cannot pose as ordinals (Sol M3)", () => {
+  const door = (args: Record<string, unknown>, names: ReadonlyArray<readonly [number, string]>) =>
+    crossFaceTargetAtDoor({ verb: "meme-get", args, worn: 0, lit: [0, 1, 2], petnames: async () => names });
+  const refusal = async (args: Record<string, unknown>, names: ReadonlyArray<readonly [number, string]> = [[1, "sibling-face"]]) => { const r = await door(args, names); return r.ok ? null : r.refusal; };
+
+  test("SH10 — private first, ordinal-looking pet names refuse, names fold case", async () => {
+    expect(await refusal({ bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: "nobody" })).toBe("cross-face-private");
+    expect(await refusal({ bag: "LAR:///ha.ka.ba/wikis/daemon/draft/", target: "1" })).toBe("cross-face-private");
+    expect(await refusal({ recipe: "default", target: "h1" }, [[2, "h1"]])).toBe("target-ambiguous");
+    expect(await refusal({ recipe: "default", target: "1" }, [[2, "1"]])).toBe("target-ambiguous");
+    expect(await door({ recipe: "default", target: "SIBLING-FACE" }, [[1, "sibling-face"]])).toEqual({ ok: true, args: { recipe: "default", target: 1 } });
+    expect(await refusal({ recipe: "default", target: "twin" }, [[1, "Twin"], [2, "twin"]])).toBe("target-ambiguous");
   });
 });
