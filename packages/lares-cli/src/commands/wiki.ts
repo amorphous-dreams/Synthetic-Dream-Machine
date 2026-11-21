@@ -9,6 +9,7 @@
  * Verbs (full E-arc surface ships; the `lares act` residency verbs land next):
  *   list / which / resolve   — read & inspect: enumerate, presence-query, coordinate-resolve
  *   init / open / sync       — lifecycle: mint, set-active, ingest memes
+ *   retire                   — the owner face's unmint of a shell it minted by mistake (canon untouched)
  *   pin / unpin              — whole-recipe residency
  *   add-bag / remove-bag     — recipe composition (hot-reload via composite.addLayer)
  *   epoch / rotate-recipe    — bound history (snapshot-restart, Nix-generations)
@@ -25,7 +26,7 @@ import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-re
 import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { cmdShare } from "./share-cmd.js";
-import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, type RealmDoors } from "./realm-doors.js";
+import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, type RealmDoors } from "./realm-doors.js";
 import { RealmRefused } from "@lararium/node";
 import { containerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
@@ -173,6 +174,66 @@ export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIV
       console.log(`  recipe:    ${result["recipeUri"]}`);
       if (hold) console.log(`  hold:      ${hold.note}`);
       if (placed) console.log(`  realm:     ${placed.petName} (its workbench lays under projections/realms/${placed.petName}/wikis/${slug}/)`);
+      console.log("");
+    },
+  });
+  return 0;
+}
+
+const RETIRE_USAGE = "usage: lares wiki retire <slug> [--face N] [--force --count <records>]";
+/** The refusals `retire-wiki` names by code (`<code>: <detail>`); any other failure reads as the transport's. */
+const RETIRE_REFUSAL = /^(no-face|system-bag|wiki-face-private|no-such-wiki|not-the-owner|wiki-not-empty|retire-count-moved|waking-floor|content-mounted-only|face-not-open|workbench-slug-bound)\b/;
+
+/**
+ * `lares wiki retire <slug>` — THE OWNER FACE'S UNMINT: the shell the worn face's `wiki init` laid over a slug (its catalog
+ * rows, its workbench's ledger rows, its Keyhive bindings of the working and draft bags) leaves, so the slug mints again
+ * cleanly under the face that should hold it. The canon bag's document and its files stay. A face that does not own the shell
+ * refuses `not-the-owner`; a shell holding records refuses `wiki-not-empty` unless `--force --count <records>` names the
+ * very count it holds. A hand act: no agent surface reaches it. `--face N` names the face whose session asks (it must be
+ * the worn face, which owns the shell).
+ */
+export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = LIVE_REALM_DOORS): Promise<number> {
+  const slug = args.positional[0];
+  if (!slug) { console.error(RETIRE_USAGE); return 2; }
+  let named: { face?: number };
+  try { named = args.options["face"] === undefined && args.flags["face"] === undefined ? {} : faceOption(args); }
+  catch (error) {
+    if (!(error instanceof FaceOptionMalformed)) throw error;
+    emit(args, { ok: false, error: { code: "face-malformed", message: error.message }, human: () => console.error(error.message) });
+    return 2;
+  }
+  const force = args.flags["force"] === true;
+  const countText = args.options["count"];
+  if (countText !== undefined && (!force || !/^\d+$/.test(countText))) { console.error(`${RETIRE_USAGE}\n  --count names the record count a --force retire destroys`); return 2; }
+  const verbArgs: Record<string, unknown> = { slug, ...(force ? { force: true } : {}), ...(countText !== undefined ? { count: Number(countText) } : {}) };
+  const did = await vesselDid();
+  const r = named.face === undefined ? await call("retire-wiki", verbArgs, did)
+    : await runVerbAsFace("retire-wiki", verbArgs, named.face).catch((err: unknown) => { const f = verbFailure(err); return { status: "error" as const, requestId: f.requestId ?? "", errorMessage: f.message }; });
+  if (r.status === "error") {
+    const msg = (r.errorMessage ?? "unknown").replace(/^\[daemon\] /, "");
+    const code = RETIRE_REFUSAL.exec(msg)?.[1];
+    emit(args, { ok: false, requestId: r.requestId, error: code ? { code, message: msg } : msg, human: () => console.error(`retire refused: ${msg}`) });
+    return code ? 1 : 4;
+  }
+  const result = summaryOutput(r) ?? {};
+  // The retired workbench's realm id leaves the slug's local label (its pet name and folders stay), and the wiki's hold drops.
+  const label = releaseWikiRealm(realmDoors, slug);
+  const released = await call("wiki-release", { slug }, did);
+  const list = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+  emit(args, {
+    ok: true, requestId: r.requestId, data: { ...result, ...(label ? { realm: label.petName } : {}), holdReleased: released.status !== "error" },
+    human: () => {
+      const records = (result["records"] ?? {}) as { working?: number; draft?: number };
+      const kept = (result["kept"] ?? {}) as { canonBag?: string; canonDoc?: string | null };
+      console.log("");
+      console.log(`wiki: ${slug}  status: ${result["status"]}${result["forced"] === true ? " (forced)" : ""}`);
+      console.log(`  catalog rows removed:  ${list(result["catalogRows"]).length}${list(result["catalogRows"]).map((t) => `\n    ${t}`).join("")}`);
+      console.log(`  ledger rows removed:   ${list(result["ledgerRows"]).length}${typeof result["realmId"] === "string" ? ` (realm ${result["realmId"].slice(0, 12)}…)` : ""}`);
+      console.log(`  keyhive bindings:      ${list(result["keyhiveBindings"]).length}${list(result["keyhiveBindings"]).map((t) => `\n    ${t}`).join("")}`);
+      console.log(`  records destroyed:     ${(records.working ?? 0) + (records.draft ?? 0)} (working ${records.working ?? 0}, draft ${records.draft ?? 0})`);
+      console.log(`  kept:                  ${kept.canonBag ?? `bags/${slug}`} (its document and files untouched)`);
+      if (label) console.log(`  realm label:           ${label.petName} keeps its pet name and folders; its realm id reads unset until the next mint`);
+      console.log(`  next: wear the face that should hold it, then \`lares wiki init ${slug}\``);
       console.log("");
     },
   });
@@ -752,6 +813,7 @@ async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
   "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
+  "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--force --count <records>]`): its catalog rows, its workbench's ledger rows and its Keyhive bindings leave, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shell holding records refuses `wiki-not-empty` unless `--force --count` names that count. A hand act: no agent surface reaches it." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },

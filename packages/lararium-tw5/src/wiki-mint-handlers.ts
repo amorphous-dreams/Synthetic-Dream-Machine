@@ -1,6 +1,6 @@
 import type { AutomergeUrl } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
-import { houseCanonUrl, resolveHouseCanon } from "@lararium/mesh";
+import { catalogViewOf, houseCanonUrl, isFacePrivateSlug, resolveHouseCanon, tiddlerText } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
 import {
   DAEMON_BAG_ID,
@@ -17,7 +17,7 @@ import {
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { makeRequestId, stringArg } from "./handler-args.js";
-import type { WikiHandlerOptions, WikiMintHandlerOptions } from "./wiki-handler-options.js";
+import type { WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions } from "./wiki-handler-options.js";
 
 // makeListWikisReactor RELOCATED to @lararium/tw5 (worker-data-verbs) — list-wikis now
 // runs in every vessel's daemon worker (sovereign-worker, verify-then-delegate gated).
@@ -124,6 +124,75 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
       draftReach: draft.reach,
       recipeUri: recipeTitle,
     };
+  };
+}
+
+/** A `retire-wiki` refusal, by name: the code leads the message (`<code>: <detail>`), as every verb refusal reads. */
+export class WikiRetireRefusal extends Error {
+  override readonly name = "WikiRetireRefusal";
+  constructor(readonly code: "no-face" | "system-bag" | "wiki-face-private" | "no-such-wiki" | "not-the-owner" | "wiki-not-empty" | "retire-count-moved", detail: string) {
+    super(`${code}: ${detail}`);
+  }
+}
+
+/**
+ * RETIRE A WIKI SHELL (`lares wiki retire <slug>`, the owner face's hand, never the AI seat): unmint what one face's
+ * `init-wiki` laid over a slug, so the slug mints again cleanly under the face that should hold it.
+ *
+ * THE OWNER RETIRES. The worn face owns the shell where the vessel's ledger binds the slug's workbench under that face's own
+ * cabal of one, or, where no workbench stands yet, where the face's own catalog half holds the canon row. A slug the ledger
+ * binds under another face's realm, or a row resting on another half (the floor's veil mint), refuses `not-the-owner`.
+ *
+ * NOTHING DESTROYS CONTENT BY DEFAULT. A working layer or draft layer that holds a live record refuses `wiki-not-empty`,
+ * naming the counts; `force` with `count` set to that very total retires anyway (the typed confirmation), and a total that
+ * moved since refuses `retire-count-moved`.
+ *
+ * WHAT LEAVES: the face's catalog-half rows for the slug (the canon-bag row and the recipe row), the ledger rows binding the
+ * workbench to the face's cabal (binding, key Documents, seats), and the face's Keyhive bindings of the shell's working and
+ * draft bags. WHAT STAYS: the canon bag's document and every file of it (house canon from the checkout stays canon), and every
+ * other face's rows. The answer names each.
+ */
+export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
+  return async (args) => {
+    const slug = stringArg(args, "slug");
+    if (!slug) throw new Error("args.slug is required (the wiki name)");
+    const canonBag = wikiBagUri(slug);
+    if (SYSTEM_BAGS.has(canonBag)) throw new WikiRetireRefusal("system-bag", `"${slug}" names a system bag; no face minted it, and none retires it`);
+    if (isFacePrivateSlug(slug)) throw new WikiRetireRefusal("wiki-face-private", `"${slug}" holds one face's memory (the daemon wiki); it never retires`);
+    const recipeTitle = recipeUri("catalog", slug);
+
+    // THE FACE'S OWN HALF: a split catalog names it; a plain catalog (a rig with no split) reads as the face's alone.
+    const handle = await opts.catalog.handle();
+    const view = catalogViewOf(handle);
+    const half = view ? view.faceHandle() : handle;
+    if (!half) throw new WikiRetireRefusal("no-face", "no face's catalog half stands here: wear the face that minted the wiki (`lares vault unlock`)");
+    const own = (title: string): boolean => Object.hasOwn(half.doc()?.tiddlers ?? {}, title);
+    const rows = [canonBag, recipeTitle].filter(own);
+
+    const { bound, own: ownRealm } = await opts.shell.owner(slug);
+    if (bound.length > 0 && !bound.includes(ownRealm)) {
+      throw new WikiRetireRefusal("not-the-owner", `the workbench of "${slug}" stands under another face's realm on this vessel; wear that face to retire it`);
+    }
+    if (bound.length === 0 && rows.length === 0) {
+      if (handle.doc()?.tiddlers?.[canonBag]) throw new WikiRetireRefusal("not-the-owner", `"${slug}" rests on another half of the catalog (the floor's), not this face's; this face minted no shell of it`);
+      throw new WikiRetireRefusal("no-such-wiki", `this face holds no shell of "${slug}": no catalog row and no workbench`);
+    }
+
+    const contents = await opts.shell.contents(slug);
+    const total = contents.working + contents.draft;
+    if (total > 0 && args["force"] !== true) {
+      throw new WikiRetireRefusal("wiki-not-empty", `"${slug}" holds ${total} record${total === 1 ? "" : "s"} (working ${contents.working}, draft ${contents.draft}); nothing retired. Carry them out first, or retire with --force --count ${total} to destroy them`);
+    }
+    if (total > 0 && Number(args["count"]) !== total) {
+      throw new WikiRetireRefusal("retire-count-moved", `"${slug}" holds ${total} record${total === 1 ? "" : "s"} (working ${contents.working}, draft ${contents.draft}), and the confirmation named ${args["count"] === undefined ? "no count" : String(args["count"])}; nothing retired`);
+    }
+
+    const canonDoc = tiddlerText(half.doc()?.tiddlers?.[canonBag] as never) ?? null;
+    if (rows.length > 0) half.change((doc) => { for (const title of rows) delete doc.tiddlers[title]; });
+    const { realmId, ledgerRows } = await opts.shell.unbind(slug);
+    const keyhiveBindings = await opts.shell.forget([wikiSlotUri(slug, "working"), wikiSlotUri(slug, "draft")]);
+
+    return { slug, status: "retired", catalogRows: rows, ledgerRows, realmId, keyhiveBindings, records: contents, forced: total > 0, kept: { canonBag, canonDoc } };
   };
 }
 

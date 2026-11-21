@@ -214,7 +214,7 @@ export type { PersonaSelfEntry } from "./persona-selves-plane.js";
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
-export { makeInitWikiReactor, makeOpenWikiReactor }   from "./wiki-mint-handlers.js";
+export { makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, WikiRetireRefusal } from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
 export { makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
@@ -232,7 +232,7 @@ export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
 export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
 export type {
-  WikiHandlerOptions, WikiMintHandlerOptions, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
+  WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";
 export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-handlers.js";
 export { makeRestampBagTierReactor } from "./bag-tier-restamp.js";

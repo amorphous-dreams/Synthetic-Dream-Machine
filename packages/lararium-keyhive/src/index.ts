@@ -106,9 +106,11 @@ export type { FoundCabalRealmOpts, FoundedCabalRealm } from "./cabal-realm-cerem
 // EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
 export {
   foundWorkbench, standWorkbench, adoptWorkbench, admitWorkbenchFace, removeWorkbenchFace, workbenchFaceHolds, requireWorkbenchWriter, workbenchWriterSeat, workbenchFoundsOnWrite,
-  landWorkbench, projectWorkbenchRoster,
+  landWorkbench, projectWorkbenchRoster, retireWorkbench, workbenchOwnership,
 } from "./workbench-realm.js";
-export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";
+export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench, WorkbenchOwnership } from "./workbench-realm.js";
+export { wikiShellPorts, liveRecordCount } from "./wiki-shell-ports.js";
+export type { WikiShellPortsArgs } from "./wiki-shell-ports.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
 // THE FLEET-JOIN ANSWER'S ADMIT: the one shape the node's `runInit` and the browser's admit boot found a face by.
 export * from "./carried-seat.js";

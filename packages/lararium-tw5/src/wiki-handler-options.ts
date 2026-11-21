@@ -80,3 +80,24 @@ export interface DraftHandlerOptions {
   /** The vessel's source of the Kahu predicate's facts; a draft into a house canon bag asks it first. Absent → a stranger. */
   readonly kahuReach?: KahuReachSource;
 }
+
+/**
+ * THE SHELL A FACE'S MINT LEFT, as `retire-wiki` reaches it (the keyhive-holding daemon supplies each port; tw5 stays
+ * keyhive-free). Every port acts for the WORN face alone.
+ */
+export interface WikiShellPorts {
+  /** Every realm the vessel's ledger binds the slug's workbench under, and the worn face's own derived cabal of one. */
+  owner(slug: string): Promise<{ readonly bound: readonly string[]; readonly own: string }>;
+  /** How many live records the face's working layer (its workbench) and draft layer of the slug hold; a layer that stands none reads 0. */
+  contents(slug: string): Promise<{ readonly working: number; readonly draft: number }>;
+  /** Drop the ledger's rows binding the slug to the face's own cabal and forget the working slot's Document: the titles dropped. */
+  unbind(slug: string): Promise<{ readonly realmId: string | null; readonly ledgerRows: readonly string[] }>;
+  /** Forget the face's Keyhive bindings of these shell bags (never a canon bag): the bags whose binding stood. */
+  forget(bags: readonly string[]): Promise<readonly string[]>;
+}
+
+/** Options for `retire-wiki`: the catalog (the face's half takes the removal) and the shell's ports. */
+export interface WikiRetireOptions {
+  readonly catalog: CatalogAccessor;
+  readonly shell:   WikiShellPorts;
+}

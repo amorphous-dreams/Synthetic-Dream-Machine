@@ -10,7 +10,7 @@ import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   ensureRealmLabel, FACES_PROJECTION_DIR, findRealmLabel, labelledRelations, larProjectionsHome, placeInRealm, readFaceLabel,
-  RealmRefused, type RealmEnsured, type RealmLabel,
+  RealmRefused, releaseRealmId, type RealmEnsured, type RealmLabel,
 } from "@lararium/node";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -77,6 +77,11 @@ export async function placeWikiInRealm(doors: RealmDoors, slug: string, petName:
   placeInRealm(projections, petName, { slug, id: null });
   const id = oneId(await doors.seat(slug));
   return id === null ? findRealmLabel(projections, petName)! : placeInRealm(projections, petName, { slug, id });
+}
+
+/** THE RELEASE AT RETIRE: the slug's label forgets the canon realm id the retired workbench held, keeping its pet name and folders. */
+export function releaseWikiRealm(doors: RealmDoors, slug: string): RealmLabel | null {
+  return releaseRealmId(doors.projections(), slug);
 }
 
 /** THE DEFAULT AT MINT: a wiki minted with no `--realm` takes its own realm label under its slug (or the collision rule's name), with
