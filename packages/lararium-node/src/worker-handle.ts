@@ -77,7 +77,7 @@ function attachCustodyWrite(w: Worker, caps: CapabilityRecord): void {
   hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CustodyWrite> | null;
     if (!m || m.type !== "custody:write" || typeof m.requestId !== "string") return;
-    void answerCustodyWrite(caps, { requestId: m.requestId, carrier: m.carrier as CustodyWriteCarrier, bytes: m.bytes as Uint8Array, ...(m.face !== undefined ? { face: m.face } : {}) }).then((reply) => {
+    void answerCustodyWrite(caps, { requestId: m.requestId, carrier: m.carrier as CustodyWriteCarrier, bytes: m.bytes as Uint8Array, face: m.face as string }).then((reply) => {
       try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
     });
   });

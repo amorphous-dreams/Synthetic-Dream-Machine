@@ -110,7 +110,7 @@ export function asksOf() {
   return [
     { cap: "cas",          msg: { type: "cas:want", requestId: "probe-cas", cid: "bafkprobe" } },
     { cap: "receipt",      msg: { type: "receipt:request", requestId: "probe-receipt", documentIds: ["probe-document"] } },
-    { cap: "custodyWrite", msg: { type: "custody:write", requestId: "probe-custody", carrier: "veil", bytes: new Uint8Array([1]) } },
+    { cap: "custodyWrite", msg: { type: "custody:write", requestId: "probe-custody", carrier: "veil", bytes: new Uint8Array([1]), face: "probe-face" } },
     { cap: "dyad",         msg: { type: "dyad:ask", requestId: "probe-dyad", fleetRoot: "probe-fleet", deviceKey: "probe-device" } },
     { cap: "sessionSign",  msg: { type: "session:sign", requestId: "probe-sign", op: "sign", ask: "probe-ask", verb: "probe-verb", payload: new Uint8Array([1]) } },
   ];

@@ -58,6 +58,9 @@ describe("e2e/session-wears-the-lit-face", () => {
  *   W4  CONTROL: a face that stands shut refuses `face-not-open`, and nothing writes
  *   W5  a read of every face's names (`persona list`, the custody door's `selves.read`) leaves no save held in memory: the
  *       census reads no `held-save`, since the lit sibling's selves record seals under that sibling's own hive
+ *   W6  EACH ARCHIVE NAMES ITS FACE (the 2026-11-20 custody incident): wear face 1 with face 0 lit beside it, stop the
+ *       daemon, boot it again on the same root and wear face 1 again: face 1 stands (no `ArchiveIdentityMismatch`), and
+ *       neither boot's log names a veil archive the seal refused, so no hive's Archive ever reached another face's row
  */
 describe("e2e/two-face-walk: a lit sibling writes into its own layers while another face stands worn", () => {
   const MEME = "lar:///ha.ka.ba/kahua/memory/walk/sibling-lane";
@@ -67,6 +70,8 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.replace("lar:///", "")}"\n\`\`\`\n\n` +
     `<<~ ahu slot=\`#/entry\`>>\n\n! ${word}\n\n${word} stands in its own layer.\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
   let walk: LarInstance;
+  /** W6's second daemon over the walk's own root, after the stop. */
+  let restand: LarInstance | null = null;
   let scratch = "";
   /** The sibling's own daemon canon: its lane's one bag, by its own relation (`bags/daemon-<relation>`). */
   let siblingBag = "";
@@ -107,7 +112,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
       await new Promise((r) => setTimeout(r, 1000));
     }
   }, 240_000);
-  afterAll(async () => { await walk?.stop(); });
+  afterAll(async () => { await restand?.stopDaemonOnly(); await walk?.stop(); });
 
   const data = (r: CliResult): Record<string, unknown> => (r.json?.["data"] ?? {}) as Record<string, unknown>;
   const errCode = (r: CliResult): unknown => (r.json?.["error"] as { code?: unknown } | undefined)?.code;
@@ -189,4 +194,39 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(tid.code).not.toBe(0);
     expect(errCode(tid), out(tid)).toBe("face-not-open");
   }, 120_000);
+
+  test("W6 RED: wear face 1 with face 0 lit, stop, boot, wear face 1 again: it stands, and no Archive reached another face's row", async () => {
+    const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };
+    const faceBagOf = (r: CliResult): string => ((data(r)["layers"] ?? []) as Array<{ bag: string }>).map((l) => l.bag).find((b) => /\/bags\/daemon-/.test(b)) ?? "";
+    const wornBagOf = async (instance: LarInstance): Promise<string> => {
+      for (let look = 0; look < 90; look++) {
+        const status = await instance.cli(["wiki", "status", "--recipe", "default", "--json"]);
+        if (status.code === 0 && faceBagOf(status) === siblingBag) return siblingBag;
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      return "";
+    };
+    const refusedSeal = /veil archive for face [0-9a-f]{8}… refused/;
+    // THE WEAR: face 1 worn, face 0 lit beside it (the walk's beforeAll left face 0 worn with face 1 lit).
+    await door.unlockTestCustody(walk.root, "lock");
+    const wearOne = await door.unlockTestCustody(walk.root, "unlock", 1);
+    expect((wearOne as { wears?: number } | null)?.wears, JSON.stringify(wearOne)).toBe(1);
+    expect(await awaitRendezvous(walk), walk.bootLog().slice(-800)).toBe(true);
+    expect(await wornBagOf(walk), "face 1 never stood worn before the stop").toBe(siblingBag);
+    // THE STOP: every seat that rolls at the stand-down rests its Archive in its own face's row, or nowhere.
+    await walk.stopDaemonOnly();
+    expect(walk.bootLog(), "the stop sealed no Archive into another face's row").not.toMatch(refusedSeal);
+    // THE BOOT over the same root (the harness unlocks face 0), then face 1 worn again.
+    restand = await openStaged({ root: walk.root, port: walk.port, tag: "two-face-walk-restand", found: async () => {} });
+    if (!(await awaitRendezvous(restand))) throw new Error(`the restood daemon bound no rendezvous:\n${restand.bootLog().slice(-800)}`);
+    await door.unlockTestCustody(walk.root, "lock");
+    const wearAgain = await door.unlockTestCustody(walk.root, "unlock", 1);
+    expect((wearAgain as { wears?: number; held?: boolean } | null)?.wears, `face 1 refused to stand again: ${JSON.stringify(wearAgain)}\n${restand.bootLog().slice(-1600)}`).toBe(1);
+    expect((wearAgain as { held?: boolean } | null)?.held, JSON.stringify(wearAgain)).not.toBe(false);
+    expect(await awaitRendezvous(restand), restand.bootLog().slice(-800)).toBe(true);
+    expect(await wornBagOf(restand), `face 1 never stood worn after the boot:\n${restand.bootLog().slice(-1600)}`).toBe(siblingBag);
+    expect(restand.bootLog(), "face 1's row restores its own identity").not.toContain("ArchiveIdentityMismatch");
+    expect(restand.bootLog()).not.toMatch(/archive restores identity .* and the seed derives/);
+    expect(restand.bootLog()).not.toMatch(refusedSeal);
+  }, 480_000);
 });

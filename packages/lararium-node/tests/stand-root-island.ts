@@ -110,7 +110,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
     dyadReading: () => (args.dyad ? args.dyad() : "clear"), sealedStore: nodeSealedStoreShore(islandDir),
     // The island's Archives rest where a vessel rests them: sealed rows under this root's own custody. A wrap
     // rests the wrapping identity's Archive first, so an island that stands again opens what it wrapped.
-    persistVeilArchive: (bytes: Uint8Array) => persistVeilArchive(bytes, anchors.personaGroupId),
+    persistVeilArchive: (bytes: Uint8Array, face: string) => persistVeilArchive(bytes, face),
     ...(args.sessionProof ? { sessionProof: args.sessionProof } : {}),
   });
   const kh = await opts.verifierFactory!(ctx) as { dispose?: () => Promise<void> };

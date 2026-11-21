@@ -109,10 +109,12 @@ export function islandLiftStack(vessel: LarVessel, lift: IslandLift): CapModule[
   // face switch locks this lift and composes the next face's over the same record. So each member this lift seats refuses
   // `lift-locked` once the lift locks: a held call never enters the host (whose writer may resolve the worn face at call
   // time), and a sign that settles after the lock hands back no signature of a session the lock ended.
+  // EACH ARCHIVE NAMES ITS FACE: the fence hands the face the island named through whole, so the host never reads a
+  // sibling's write as a faceless one and seals it into the worn face's row.
   const custodyWrite: CustodyWriter | undefined = lift.custodyWrite
-    ? async (carrier, bytes) => {
+    ? async (carrier, bytes, face) => {
       if (locked) throw new Error(`lift-locked: face ${lift.face}'s lift locked; its custody write lands nowhere`);
-      await lift.custodyWrite!(carrier, bytes);
+      await lift.custodyWrite!(carrier, bytes, face);
       // A write the lock overtook in flight answers as the lock, never as landed: the caller reads no write of an ended face.
       if (locked) throw new Error(`lift-locked: face ${lift.face}'s lift locked while its custody write stood in flight`);
     }

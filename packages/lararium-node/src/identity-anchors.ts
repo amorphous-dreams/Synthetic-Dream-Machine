@@ -11,6 +11,8 @@ import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@la
 import { identityHomeClosure } from "./identity-home-closure.js";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, unlockedFaceOrdinals, writeCustodyRecord } from "./custody-seat.js";
+import { requireArchiveOf } from "@lararium/keyhive";
+import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
@@ -105,6 +107,8 @@ export function listFaceCustodyIds(): Array<{ readonly ordinal: number; readonly
 
 /** The veil archive family's filename law: one row per PersonaGroup. */
 export const VEIL_ARCHIVE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin$/;
+/** One generation back: the row a face's last overwrite replaced, so a write can be reversed. Never more than one. */
+export const VEIL_ARCHIVE_PREV_FILE = /^veil-archive-g([0-9a-f]{64})\.bin\.prev$/;
 
 /** One face's veil archive filename. */
 export function veilArchiveFile(personaGroup: string): string {
@@ -116,11 +120,51 @@ export function veilArchivePath(personaGroup: string): string {
   return faceFilePathSync(larIdentityDir(), { group: personaGroupDigest(personaGroup) }, veilArchiveFile(personaGroup));
 }
 
-/** Seal ONE face's veil archive: the group creator's prekeys and key agreement state survive a boot, or material
- *  keyed to the card that veil presented stops opening and its creator seats nobody. */
+/** One face's previous veil archive filename: the generation its last overwrite replaced. */
+export function veilArchivePrevFile(personaGroup: string): string {
+  return `${veilArchiveFile(personaGroup)}.prev`;
+}
+
+/** A face holds no atom, so nothing can prove an Archive is its own: the seal refuses rather than write unproven bytes. */
+export class VeilArchiveUnproven extends Error {
+  override readonly name = "VeilArchiveUnproven";
+  constructor(readonly personaGroup: string) {
+    super(`archive-unproven: face ${personaGroup.slice(0, 8)}… holds no atom, so no Archive proves itself its own and none rests`);
+  }
+}
+
+const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((byte, i) => byte === b[i]);
+
+/**
+ * Seal ONE face's veil archive: the group creator's prekeys and key agreement state survive a boot, or material
+ * keyed to the card that veil presented stops opening and its creator seats nobody.
+ *
+ * THE SEAL PROVES THE BYTES ARE THE FACE'S OWN. Before anything moves, the face's atom seed stands a throwaway provider
+ * over the bytes (`requireArchiveOf`): an Archive that restores another identity refuses `ArchiveIdentityMismatch`, one
+ * that does not decode refuses its own fault, and a face holding no atom refuses `VeilArchiveUnproven`. On any refusal
+ * the row stands unchanged. This one guard stands under every route that reaches the row, named or not.
+ *
+ * ONE GENERATION BACK. An overwrite first seals the standing row's bytes as `….bin.prev` (replacing any older one), then
+ * the new bytes over the row, each a whole sealed write: a stop between the two leaves the standing row whole beside its
+ * copy. A row that stands and does not open is never copied (no plaintext stands to copy) and the new bytes replace it.
+ */
 export async function persistVeilArchive(bytes: Uint8Array, personaGroup: string): Promise<void> {
+  const seed = await loadFaceAtomOfGroup(personaGroup);
+  if (!seed) throw new VeilArchiveUnproven(personaGroup);
+  try { await requireArchiveOf(seed, bytes); } finally { seed.fill(0); }
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await writeCustodyRecord("identity", veilArchiveFile(personaGroup), bytes);
+  const file = veilArchiveFile(personaGroup);
+  const standing = await readCustodyRecord("identity", file).catch((error: unknown) => {
+    if (error instanceof CustodyRecordUnavailable) return null;
+    throw error;
+  });
+  if (standing && !sameBytes(standing, bytes)) await writeCustodyRecord("identity", veilArchivePrevFile(personaGroup), standing);
+  await writeCustodyRecord("identity", file, bytes);
+}
+
+/** ONE face's previous veil archive (the generation its last overwrite replaced), or null when none stands. */
+export function loadVeilArchivePrev(personaGroup: string): Promise<Uint8Array | null> {
+  return readCustodyRecord("identity", veilArchivePrevFile(personaGroup));
 }
 
 /** ONE face's veil archive, or null when none stands. */

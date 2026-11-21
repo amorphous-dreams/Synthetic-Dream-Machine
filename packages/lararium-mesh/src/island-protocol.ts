@@ -1049,8 +1049,9 @@ export type CustodyWriteCarrier = "veil";
  */
 export interface IslandMsg_CustodyWrite {
   type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array;
-  /** The lit face whose row the bytes rest in, by its PersonaGroup; absent, the worn face's. */
-  face?: string;
+  /** The face whose row the bytes rest in, by its PersonaGroup: the mounted face's or a lit sibling's. An ask naming none
+   *  seals nowhere (`face-not-named`). */
+  face: string;
 }
 /**
  * Island → vessel: THE BINDING GATE'S VERDICT, posted by a persona-bound daemon island once its gate ran. `gate:clear`

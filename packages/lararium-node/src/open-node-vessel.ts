@@ -113,6 +113,7 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
+import { faceNamedCustodyWrite } from "./face-named-custody-write.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
@@ -2618,20 +2619,17 @@ async function prepareNodeBootOn(
   const islandCaps = islandVessel.record;
   stood.push({ what: "the island's floor", down: () => islandFloor.dispose() });
   // THE LIFT'S CUSTODY WRITE: a sovereign composition's island exports reach the sealed writer under the key this thread
-  // holds, into the mounted face's own row (`openDaemon` names it). The lift alone seats it; at the floor none stands, so an
-  // island's ask answers unwritten.
-  let custodyWriteGroup: string | null = null;
-  // EACH HAT ITS OWN HOLDER: a lit sibling's seat rests its Archive in that sibling's own row, named by its PersonaGroup; a
-  // face that stands shut takes no write.
+  // holds. The lift alone seats it; at the floor none stands, so an island's ask answers unwritten.
+  // EACH ARCHIVE NAMES ITS FACE (`faceNamedCustodyWrite`): the island names the PersonaGroup of the hive that exported the
+  // bytes, and the write lands in that face's own row or nowhere; the vessel never picks a row for a faceless ask. The
+  // mounted face (`openDaemon` names it) and each lit sibling with a session stand open; any other face takes no write. The
+  // seal itself proves the bytes are that face's own identity (`persistVeilArchive`), so a misnamed ask writes nothing either.
+  let mountedCustodyGroup: string | null = null;
   const liftCustodyWrite: CustodyWriter | undefined = sovereign
-    ? (_carrier, bytes, face) => {
-      if (face !== undefined) {
-        return siblingFaces.has(face) && siblingSessions.has(face)
-          ? sovereign.writeVeilArchive(bytes, face) : Promise.reject(new Error(`face-not-open: face ${face.slice(0, 8)}… stands shut, so its Archive rests nowhere`));
-      }
-      return custodyWriteGroup
-        ? sovereign.writeVeilArchive(bytes, custodyWriteGroup) : Promise.reject(new Error("face-not-named: the mounted face names no PersonaGroup"));
-    }
+    ? faceNamedCustodyWrite({
+      opens: (face) => face === mountedCustodyGroup || (siblingFaces.has(face) && siblingSessions.has(face)),
+      write: (bytes, face) => sovereign.writeVeilArchive(bytes, face),
+    })
     : undefined;
   stood.push({ what: "the daemon island", phase: "islands", down: async () => {
     const receipt = await (daemonVm as DaemonVmCore | undefined)?.shutdown();
@@ -3578,9 +3576,9 @@ async function prepareNodeBootOn(
         return null;
       })
       : null;
-    // THE CUSTODY WRITE's row: the lift's `custodyWrite` (seated by `composeNodeVesselOn` on a sovereign composition)
-    // writes the mounted face's own veil archive row, named here.
-    custodyWriteGroup = personaGroupId ?? null;
+    // THE MOUNTED FACE STANDS OPEN to the lift's `custodyWrite` (seated by `composeNodeVesselOn` on a sovereign composition):
+    // an island write that names this face lands in its own row. It admits a named face; it never names a row itself.
+    mountedCustodyGroup = personaGroupId ?? null;
     // THE ANCHOR THE DAEMON STANDS ON ALREADY CARRIES THE VERIFIED LEASE: this runs before the first open snapshots `standingAnchor`; a re-open snapshots the anchor the vessel holds now, so the
     // daemon's live join and grant reads floor under the anchor this boot raised, never an older copy (read 6, opening row 2).
     // The sealed frontier rises only on a VERIFIED observation (`lease-observation`): a signed advance from a key the KEL

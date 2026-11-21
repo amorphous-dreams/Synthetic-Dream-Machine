@@ -4,7 +4,7 @@
  *
  * THE HAZARD the one composer carries: an island's ask reads its member off the record at ask time (`answerCustodyWrite`,
  * `answerSessionSign`) and may hold it across an await. A switch locks A's lift (its dispose) and composes B's over the same
- * record. The node's host custody writer resolves its face at call time (`custodyWriteGroup`, open-node-vessel.ts), and the
+ * record. A host custody writer that resolves its face at call time (the shape this probe's host takes), and the
  * node's lift drop runs nothing (each session's signer drops at its own lock), so a member A's lift seated, called after A's
  * lock, writes into B's custody and signs with a session the lock already ended. The cure fences each member the lift seats:
  * once the lift locks, a call refuses `lift-locked` before it enters the host, and an answer that settles after the lock
@@ -53,7 +53,7 @@ function signer(face: string) {
 }
 
 /**
- * The node-shaped host: ONE custody writer that resolves the worn face at call time (the `custodyWriteGroup` cell), and a
+ * The node-shaped host: ONE custody writer that resolves the worn face at call time (a "current face" cell), and a
  * lift whose drop runs nothing. Each face's lift books one call under its own session.
  */
 function nodeHost() {
@@ -90,11 +90,11 @@ describe("B8: an ask begun under face A never reaches face B", () => {
     const vessel = await floor();
     const a = host.liftOf("G-A");
     const la = await composeVessel(islandLiftStack(vessel, a.lift));
-    expect((await answerCustodyWrite(vessel.record, { requestId: "c0", carrier: "veil", bytes: bytes("veil") })).written).toBe(true);
+    expect((await answerCustodyWrite(vessel.record, { requestId: "c0", carrier: "veil", bytes: bytes("veil"), face: "G-A" })).written).toBe(true);
     expect(await answerSessionSign(vessel.record, { requestId: "s0", ...SIGN })).toMatchObject({ signature: "sig-G-A-4" });
     const { b, composed } = await switchToB(host, vessel, la);
     expect(vessel.liftedFace()).toBe("G-B");
-    expect((await answerCustodyWrite(vessel.record, { requestId: "c1", carrier: "veil", bytes: bytes("veil") })).written).toBe(true);
+    expect((await answerCustodyWrite(vessel.record, { requestId: "c1", carrier: "veil", bytes: bytes("veil"), face: "G-B" })).written).toBe(true);
     expect(await answerSessionSign(vessel.record, { requestId: "s1", ...SIGN })).toMatchObject({ signature: "sig-G-B-4" });
     expect(host.rows).toEqual(["G-A", "G-B"]);
     expect([a.s.signed, b.s.signed]).toEqual([1, 1]);
@@ -107,7 +107,7 @@ describe("B8: an ask begun under face A never reaches face B", () => {
     const la = await composeVessel(islandLiftStack(vessel, host.liftOf("G-A").lift));
     const heldWrite = vessel.record.custodyWrite!;   // the island's ask read its member under A
     const { composed } = await switchToB(host, vessel, la);
-    await expect(heldWrite("veil", bytes("A's veil"))).rejects.toThrow(/lift-locked/);
+    await expect(heldWrite("veil", bytes("A's veil"), "G-A")).rejects.toThrow(/lift-locked/);
     expect(host.rows, "A's write landed in B's custody").toEqual([]);
     await composed.dispose();
   });

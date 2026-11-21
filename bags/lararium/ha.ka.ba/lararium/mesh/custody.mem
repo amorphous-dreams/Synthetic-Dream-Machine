@@ -71,7 +71,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `persona-petnames` | `lines` | this face's own pet-name |
 | `persona-declarations` | `lines` | this face's declared Handle; the seat claim and the chair label name a seat on one node, and stay |
 | `handle-book` | `lines` | the records this face recognised, each with this face's own label. A record that names no recognising face stays on its vessel and enters no bundle (house reading) |
-| `veil-archive`, `keyhive-archive` | `stays` | a seat's own key state: a carried copy would let its holder sign as that seat |
+| `veil-archive`, `veil-archive-prev`, `keyhive-archive` | `stays` | a seat's own key state: a carried copy would let its holder sign as that seat |
 | `seat-key` | `stays` | a chair's own key in a charter: a carried copy would let its holder sign as that chair (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>) |
 | `cadence-key` | `stays` | a hearth's own cadence key and its next key: a carried copy would let its holder offer an engine as that hearth (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/contract`>>) |
 | `face-provisional` | `stays` | one restored face's provisional mark: the head its restore read on this vessel. A fresh restore elsewhere reads its own head and marks its own face (#/the-restore, the provisional standing) |
@@ -356,6 +356,6 @@ Every refusal of a restore lands before the commit record, so before any record 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;p6Vg6vtwHh8hrv-XMiNEEylqd-dzIF0p4FMPVKZtsGU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zIt1XYZf7eqSRppyN4KCHF1JGxdzA0agHTWKdrShohg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

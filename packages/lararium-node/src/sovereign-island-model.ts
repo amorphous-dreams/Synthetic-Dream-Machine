@@ -167,7 +167,7 @@ export function vesselReceiptAsker(port: { postMessage(msg: unknown): void; on(e
  * THE CUSTODY WRITE CAPABILITY, worker side. Workers hold bytes to seal but never the vessel key; the vessel seals the
  * named carrier and answers on the same request id. A refusal rejects without exposing the bytes.
  */
-export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): (carrier: CustodyWriteCarrier, bytes: Uint8Array, face?: string) => Promise<void> {
+export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): (carrier: CustodyWriteCarrier, bytes: Uint8Array, face: string) => Promise<void> {
   const pending = new Map<string, (answer: IslandMsg_CustodyWritten) => void>();
   port.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CustodyWritten> | null;
@@ -185,7 +185,7 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
       else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer.why ?? "unwritten"})`));
     };
     pending.set(requestId, settleWith);
-    const ask: IslandMsg_CustodyWrite = { type: "custody:write", requestId, carrier, bytes, ...(face !== undefined ? { face } : {}) };
+    const ask: IslandMsg_CustodyWrite = { type: "custody:write", requestId, carrier, bytes, face };
     port.postMessage(ask);
   });
 }

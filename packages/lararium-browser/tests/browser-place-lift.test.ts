@@ -148,16 +148,17 @@ describe("a self-founded browser face lifts at its own place", () => {
     answerIslandAsks(w.vesselSide, floor.record);
     const write = islandCustodyWriter(w.islandSide, { idPrefix: "archive" });
     // AT THE FLOOR: no custody door stands, so the wrap's Archive refuses by name and nothing rests.
-    await expect(write("veil", utf8Bytes("archive at the floor"))).rejects.toThrow(/did not seal the veil carrier/);
+    await expect(write("veil", utf8Bytes("archive at the floor"), GROUP)).rejects.toThrow(/did not seal the veil carrier/);
     const sl = browserSessionLift(minted.session, async (_carrier, bytes) => { rested.push(bytes); });
     const lifted = await composeVessel(islandLiftStack(floor, sl.lift));
-    await write("veil", utf8Bytes("archive under the lift"));
+    await write("veil", utf8Bytes("archive under the lift"), GROUP);
     expect(rested.map((b) => new TextDecoder().decode(b))).toEqual(["archive under the lift"]);
     await lifted.dispose();
     minted.close();
-    await expect(write("veil", utf8Bytes("after the lock"))).rejects.toThrow(/did not seal/);
+    await expect(write("veil", utf8Bytes("after the lock"), GROUP)).rejects.toThrow(/did not seal/);
     const island = (SOURCES["../src/daemon-island-start.ts"] ?? "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    // The worn face's Archive rests through the custody door; a lit sibling's (face-named) refuses by name, never the worn row.
-    expect(island).toMatch(/persistVeilArchive: \(bytes: Uint8Array, face\?: string\) => face === undefined\s*\? custodyOnVessel\("veil", bytes\)\s*: Promise\.reject\(new Error\("face-archive-unrouted/);
+    // The mounted face's Archive rests through the custody door, named by its own PersonaGroup; any other face's refuses by name,
+    // never the worn row.
+    expect(island).toMatch(/persistVeilArchive: \(bytes: Uint8Array, face: string\) => face === manifest\.daemonAuth\?\.personaGroupId\s*\? custodyOnVessel\("veil", bytes, face\)\s*: Promise\.reject\(new Error\("face-archive-unrouted/);
   });
 });

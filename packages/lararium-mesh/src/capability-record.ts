@@ -32,8 +32,9 @@ export type ReceiptIssuer = (documentIds: readonly string[], heads?: Readonly<Re
 export type CasFetcher = (cid: string) => Promise<Uint8Array | null>;
 /** The vessel's reading of one device edge on one fleet root. */
 export type DyadReader = (fleetRoot: string, deviceKey: string) => EdgeStanding | Promise<EdgeStanding>;
-/** The vessel's seal of bytes an island hands across under the vessel key. */
-export type CustodyWriter = (carrier: CustodyWriteCarrier, bytes: Uint8Array, face?: string) => Promise<void>;
+/** The vessel's seal of bytes an island hands across under the vessel key, into the row of the face the island names (its
+ *  PersonaGroup). The island alone knows whose hive exported the bytes, so every write names its face. */
+export type CustodyWriter = (carrier: CustodyWriteCarrier, bytes: Uint8Array, face: string) => Promise<void>;
 
 /** The vessel's answer to a daemon island's `session:sign` ask — read the booked session, sign through it, or refuse by name. */
 export type SessionSignDoor = (ask: Pick<IslandMsg_SessionSign, "op" | "ask" | "verb" | "payload" | "face">) => Promise<
@@ -87,9 +88,11 @@ export async function answerDyad(caps: CapabilityRecord, ask: Pick<IslandMsg_Dya
 export async function answerCustodyWrite(caps: CapabilityRecord, ask: Pick<IslandMsg_CustodyWrite, "requestId" | "carrier" | "bytes" | "face">): Promise<IslandMsg_CustodyWritten> {
   const base = { type: "custody:written" as const, requestId: ask.requestId };
   if (ask.carrier !== "veil" || !(ask.bytes instanceof Uint8Array) || (ask.face !== undefined && typeof ask.face !== "string")) return { ...base, written: false, why: "bad custody write ask" };
+  // EACH ARCHIVE NAMES ITS FACE: an ask that names none seals nowhere, so no row the vessel holds as current takes bytes whose face it never read.
+  if (typeof ask.face !== "string" || ask.face.trim() === "") return { ...base, written: false, why: "face-not-named: the custody write names no face, so no row takes its bytes" };
   const custodyWrite = caps.custodyWrite;
   if (!custodyWrite) return { ...base, written: false, why: "no custodyWrite capability stands on this vessel" };
-  try { await (ask.face !== undefined ? custodyWrite(ask.carrier, ask.bytes, ask.face) : custodyWrite(ask.carrier, ask.bytes)); return { ...base, written: true }; }
+  try { await custodyWrite(ask.carrier, ask.bytes, ask.face); return { ...base, written: true }; }
   catch (e) { return { ...base, written: false, why: e instanceof Error ? e.message : String(e) }; }
 }
 
@@ -152,7 +155,7 @@ export function receiptSettlement(close: () => void): { answering<T>(answer: Pro
 export function islandCustodyWriter(
   port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): unknown },
   opts: { readonly idPrefix: string },
-): (carrier: CustodyWriteCarrier, bytes: Uint8Array, face?: string) => Promise<void> {
+): (carrier: CustodyWriteCarrier, bytes: Uint8Array, face: string) => Promise<void> {
   const pending = new Map<string, (answer: IslandMsg_CustodyWritten) => void>();
   port.listen((raw) => {
     const m = raw as Partial<IslandMsg_CustodyWritten> | null;
@@ -170,7 +173,7 @@ export function islandCustodyWriter(
       else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer.why ?? "unwritten"})`));
     });
     // A post that fails refuses at once by name: the island holds no key to fall back on.
-    try { port.post({ type: "custody:write", requestId, carrier, bytes, ...(face !== undefined ? { face } : {}) } satisfies IslandMsg_CustodyWrite); }
+    try { port.post({ type: "custody:write", requestId, carrier, bytes, face } satisfies IslandMsg_CustodyWrite); }
     catch (e) { pending.delete(requestId); reject(e instanceof Error ? e : new Error(String(e))); }
   });
 }
@@ -214,7 +217,7 @@ export function answerIslandAsks(port: { post(msg: unknown): void; listen(cb: (m
         void answerDyad(caps, { requestId, fleetRoot: m["fleetRoot"] as string, deviceKey: m["deviceKey"] as string }).then(reply);
         return;
       case "custody:write":
-        void answerCustodyWrite(caps, { requestId, carrier: m["carrier"] as CustodyWriteCarrier, bytes: m["bytes"] as Uint8Array, ...(m["face"] !== undefined ? { face: m["face"] as string } : {}) }).then(reply);
+        void answerCustodyWrite(caps, { requestId, carrier: m["carrier"] as CustodyWriteCarrier, bytes: m["bytes"] as Uint8Array, face: m["face"] as string }).then(reply);
         return;
       case "session:sign":
         void answerSessionSign(caps, m as Partial<IslandMsg_SessionSign> & { requestId: string }).then(reply);

@@ -16,6 +16,12 @@
  *                                                                        control: back at its own path it opens
  *   A8  an archive written through the family never rests in the clear: the file carries the vessel key's seal
  *       and none of the plaintext.
+ *   A9  THE SEAL PROVES THE BYTES (the 2026-11-20 custody incident): face A's Archive sent to face B's row refuses
+ *       `ArchiveIdentityMismatch` naming A's identity, B's sealed bytes never move and no `.prev` stands; a face holding no
+ *       atom refuses `VeilArchiveUnproven`; bytes that decode as no Archive refuse.
+ *                                                                        control: B's own Archive lands
+ *   A10 ONE GENERATION BACK: an overwrite seals the standing bytes as `….bin.prev` first; a later overwrite replaces that
+ *       copy, so never more than one stands; the same bytes again rotate nothing.
  */
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -26,6 +32,10 @@ import {
   persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas,
   persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors,
 } from "../src/identity-anchors.js";
+import { ArchiveIdentityMismatch, InMemoryEventStore, KeyhiveProvider } from "@lararium/keyhive";
+import { readdirSync } from "node:fs";
+import { loadVeilArchivePrev, veilArchivePrevFile, VeilArchiveUnproven } from "../src/identity-anchors.js";
+import { standFaceAtom } from "../src/face-atom-store.js";
 import { CustodyLocked, CustodyRecordUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { faceCarrierFor } from "../src/face-custody.js";
@@ -42,6 +52,21 @@ const edge: DeviceDelegationTiddler = {
   deviceVerifyingKey: "cc".repeat(32), hearthTrueName: "", boundEpoch: "1", signature: "dd".repeat(64),
 };
 const bytesOf = (marker: string): Uint8Array => new TextEncoder().encode(`${marker}:${"x".repeat(64)}`);
+/** A face's own Archive: its custody stands, its atom row mints (or reads), and a fresh provider over that seed exports. Each
+ *  call stands a fresh provider, so two calls answer two Archives of the same identity with different prekeys. */
+async function faceArchive(group: string): Promise<Uint8Array> {
+  await ensureFaceCustodyOfGroup(group);
+  const seed = await standFaceAtom(group);
+  const provider = new KeyhiveProvider();
+  try {
+    await provider.init({ seed, eventStore: new InMemoryEventStore() });
+    return await provider.exportArchiveAfterTheCard();
+  } finally {
+    seed.fill(0);
+    await provider.dispose();
+  }
+}
+const same = (a: Uint8Array | null, b: Uint8Array): boolean => a !== null && Buffer.from(a).equals(Buffer.from(b));
 
 let c: SeatedScratchCustody;
 const at = (file: string): string => file.startsWith("anchors-h") ? handleRecordPathIn(c.homes.identity, file) : join(c.homes.identity, file);
@@ -91,8 +116,7 @@ describe("the identity home's sealed family", () => {
 
   test("A5 at the floor every reader and writer refuses CustodyLocked and no file moves", async () => {
     await persistIdentityAnchors(anchors);
-    await ensureFaceCustodyOfGroup(anchors.personaGroupId);
-    await persistVeilArchive(bytesOf("veil"), anchors.personaGroupId);
+    await persistVeilArchive(await faceArchive(anchors.personaGroupId), anchors.personaGroupId);
     const before = ["anchors-h0.json", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRecordPathIn(c.homes.identity, f) : at(f)));
     await c.holder.lock();
     await expect(loadIdentityAnchors()).rejects.toThrow(CustodyLocked);
@@ -110,8 +134,8 @@ describe("the identity home's sealed family", () => {
   });
 
   test("A6 TAMPER PROBE: a holder over another key lands no write; the standing bytes still open under the first", async () => {
-    await ensureFaceCustodyOfGroup(anchors.personaGroupId);
-    await persistVeilArchive(bytesOf("veil-under-A"), anchors.personaGroupId);
+    const underA = await faceArchive(anchors.personaGroupId);
+    await persistVeilArchive(underA, anchors.personaGroupId);
     await persistIdentityAnchors(anchors);
     const anchorStanding = readFileSync(at("anchors-h0.json"));
     const veilStanding = readFileSync(veilArchivePath(anchors.personaGroupId));
@@ -134,33 +158,76 @@ describe("the identity home's sealed family", () => {
     expect(readFileSync(at("anchors-h0.json")).equals(anchorStanding), "the face row never moved").toBe(true);
     expect(readFileSync(veilArchivePath(anchors.personaGroupId)).equals(veilStanding), "the veil row never moved").toBe(true);
     expect(readFckCarrier(anchorStanding)).toBe("sealed");
-    expect(Array.from((await loadVeilArchive(anchors.personaGroupId))!)).toEqual(Array.from(bytesOf("veil-under-A")));
+    expect(same(await loadVeilArchive(anchors.personaGroupId), underA)).toBe(true);
     expect(await loadIdentityAnchors()).toEqual(anchors);
   });
 
   test("A7 three faces keep three veil archives and none opens at another's path", async () => {
-    for (const n of [0, 1, 2]) await ensureFaceCustodyOfGroup(`group-${n}`);
-    for (const n of [0, 1, 2]) await persistVeilArchive(bytesOf(`veil-of-face-${n}`), `group-${n}`);
+    const own: Uint8Array[] = [];
+    for (const n of [0, 1, 2]) own.push(await faceArchive(`group-${n}`));
+    for (const n of [0, 1, 2]) await persistVeilArchive(own[n]!, `group-${n}`);
     for (const n of [0, 1, 2]) {
       expect(readFckCarrier(readFileSync(veilArchivePath(`group-${n}`)))).toBe("sealed");
-      expect(Array.from((await loadVeilArchive(`group-${n}`))!)).toEqual(Array.from(bytesOf(`veil-of-face-${n}`)));
+      expect(same(await loadVeilArchive(`group-${n}`), own[n]!)).toBe(true);
     }
     expect(await loadVeilArchive("group-3")).toBeNull();
-    const own = readFileSync(veilArchivePath("group-0"));
+    const sealedOwn = readFileSync(veilArchivePath("group-0"));
     copyFileSync(veilArchivePath("group-1"), veilArchivePath("group-0"));
     await expect(loadVeilArchive("group-0")).rejects.toThrow(/veil-archive-g[0-9a-f]{64}\.bin reads key-fails/);
     // control: its own bytes back at its own path open again
-    writeFileSync(veilArchivePath("group-0"), own);
-    expect(Array.from((await loadVeilArchive("group-0"))!)).toEqual(Array.from(bytesOf("veil-of-face-0")));
+    writeFileSync(veilArchivePath("group-0"), sealedOwn);
+    expect(same(await loadVeilArchive("group-0"), own[0]!)).toBe(true);
   });
 
   test("A8 a face archive never rests in the clear", async () => {
-    const marker = bytesOf("PLAINTEXT-MARKER-veil-archive");
-    await ensureFaceCustodyOfGroup(anchors.personaGroupId);
-    await persistVeilArchive(marker, anchors.personaGroupId);
+    const archive = await faceArchive(anchors.personaGroupId);
+    await persistVeilArchive(archive, anchors.personaGroupId);
     const rest = readFileSync(veilArchivePath(anchors.personaGroupId));
     expect(readFckCarrier(rest)).toBe("sealed");
-    expect(rest.includes(Buffer.from("PLAINTEXT-MARKER"))).toBe(false);
-    expect(Array.from((await loadVeilArchive(anchors.personaGroupId))!)).toEqual(Array.from(marker));
+    // No run of the plaintext rests in the file: each 32-byte window of the Archive reads absent from the sealed bytes.
+    for (let at = 0; at + 32 <= archive.length; at += 32) expect(rest.includes(Buffer.from(archive.subarray(at, at + 32)))).toBe(false);
+    expect(same(await loadVeilArchive(anchors.personaGroupId), archive)).toBe(true);
+  });
+
+  test("A9 the seal proves the bytes: another face's Archive refuses by name and the row never moves", async () => {
+    const ofA = await faceArchive("group-a");
+    const ofB = await faceArchive("group-b");
+    await persistVeilArchive(ofB, "group-b");
+    const standing = readFileSync(veilArchivePath("group-b"));
+    const refusal = await persistVeilArchive(ofA, "group-b").catch((error: unknown) => error);
+    expect(refusal).toBeInstanceOf(ArchiveIdentityMismatch);
+    expect(readFileSync(veilArchivePath("group-b")).equals(standing), "B's sealed bytes never moved").toBe(true);
+    expect(same(await loadVeilArchive("group-b"), ofB)).toBe(true);
+    expect(await loadVeilArchivePrev("group-b"), "a refused write rotates nothing").toBeNull();
+    // A face holding no atom proves nothing, so nothing rests; bytes that decode as no Archive refuse too.
+    await ensureFaceCustodyOfGroup("group-unatomed");
+    await expect(persistVeilArchive(ofA, "group-unatomed")).rejects.toBeInstanceOf(VeilArchiveUnproven);
+    expect(await loadVeilArchive("group-unatomed")).toBeNull();
+    await expect(persistVeilArchive(bytesOf("no archive at all"), "group-b")).rejects.toThrow();
+    expect(readFileSync(veilArchivePath("group-b")).equals(standing)).toBe(true);
+    // control: A's own row takes A's own Archive
+    await persistVeilArchive(ofA, "group-a");
+    expect(same(await loadVeilArchive("group-a"), ofA)).toBe(true);
+  });
+
+  test("A10 one generation back: an overwrite keeps the replaced bytes as .prev, never more than one", async () => {
+    const first = await faceArchive("group-p");
+    const second = await faceArchive("group-p");
+    const third = await faceArchive("group-p");
+    expect(same(first, second), "two exports carry different prekeys").toBe(false);
+    await persistVeilArchive(first, "group-p");
+    expect(await loadVeilArchivePrev("group-p"), "a first write replaces nothing").toBeNull();
+    await persistVeilArchive(second, "group-p");
+    expect(same(await loadVeilArchive("group-p"), second)).toBe(true);
+    expect(same(await loadVeilArchivePrev("group-p"), first)).toBe(true);
+    await persistVeilArchive(third, "group-p");
+    expect(same(await loadVeilArchive("group-p"), third)).toBe(true);
+    expect(same(await loadVeilArchivePrev("group-p"), second)).toBe(true);
+    // the same bytes again rotate nothing
+    await persistVeilArchive(third, "group-p");
+    expect(same(await loadVeilArchivePrev("group-p"), second)).toBe(true);
+    const dir = dirname(veilArchivePath("group-p"));
+    expect(readdirSync(dir).filter((f) => f.startsWith("veil-archive-"))).toEqual([basename(veilArchivePath("group-p")), veilArchivePrevFile("group-p")].sort());
+    expect(readFckCarrier(readFileSync(join(dir, veilArchivePrevFile("group-p"))))).toBe("sealed");
   });
 });

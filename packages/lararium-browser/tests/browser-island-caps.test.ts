@@ -52,7 +52,7 @@ describe("slice 5b: the browser's island asks answer through its capability reco
     // The floor's own members answer: cas by its plane, and a custody write refuses by the absent member's name.
     expect(new TextDecoder().decode((await w.ask({ type: "cas:want", requestId: "c1", cid: "cid-held" }))["bytes"] as Uint8Array)).toBe("held bytes");
     expect((await w.ask({ type: "cas:want", requestId: "c2", cid: "cid-absent" }))["bytes"]).toBeNull();
-    const custody = await w.ask({ type: "custody:write", requestId: "w1", carrier: "veil", bytes: utf8Bytes("archive") });
+    const custody = await w.ask({ type: "custody:write", requestId: "w1", carrier: "veil", bytes: utf8Bytes("archive"), face: "G-A" });
     expect(custody).toMatchObject({ written: false, why: "no custodyWrite capability stands on this vessel" });
     // CONTROL: a nonsense op refuses too, and a dyad ask with no reader stands aside.
     expect((await w.ask({ type: "session:sign", requestId: "s3", op: "mint", ask: "call-1", verb: "sealed-seal" }))["refusal"]).toBe("signer-unavailable");

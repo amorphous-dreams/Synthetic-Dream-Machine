@@ -46,10 +46,11 @@ runBrowserSovereignWorker((manifest) => {
     // under the ask its book holds for the session that booked the change, and opens each value it hydrates.
     docStoreDoor: docStorePort,
     freshBase: freshBasePort(liveOnVessel),
-    // A BROWSER VESSEL ROUTES NO SIBLING'S SESSION (its book seats its own unlocked session alone), so a lit sibling's seat
-    // rests no Archive here: a face-named write refuses by name rather than land in the worn face's row.
-    persistVeilArchive: (bytes: Uint8Array, face?: string) => face === undefined
-      ? custodyOnVessel("veil", bytes)
+    // A BROWSER VESSEL ROUTES NO SIBLING'S SESSION (its book seats its own unlocked session alone), so only the mounted
+    // face's Archive rests here, named by its own PersonaGroup: any other face's write refuses by name rather than land in
+    // the worn face's row.
+    persistVeilArchive: (bytes: Uint8Array, face: string) => face === manifest.daemonAuth?.personaGroupId
+      ? custodyOnVessel("veil", bytes, face)
       : Promise.reject(new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive")),
     // ONE SEED SITE: `makeDaemonBehavior` runs the cap-gated `seedDaemonProtocol` in onEa, so the daemon
     // protocol seed (Ui+Persona+Circle+Flow) stands identically on either boot. This ts-only browser vessel
