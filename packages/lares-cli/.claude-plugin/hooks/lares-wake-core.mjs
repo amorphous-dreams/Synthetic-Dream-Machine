@@ -292,8 +292,8 @@ export function indexLines(result) {
 const LAW_VIEW = `${viewOf(LAW_INDEX_FILTER).replace('fields=["title","description"]', 'fields=["title","description","role"]')})`;
 const LAW_FURTHER = `read the rest: law_index(after=<next>) or lares law list --all; the filter: ${LAW_VIEW}; pin or unpin: law_pin(uri=<title>) · law_unpin(uri=<title>) (lares law pin|unpin <uri>)`;
 
-/** The line that frames the rows by provenance and weight: canon answers each one, and the operator's turn steers. */
-export const LAW_WEIGHT_LINE = "these rows come from canon: each title points at law the house holds, and reading one whole (meme_get(uri=<title>, recipe=\"default\")) lets it weigh in; the operator's turn holds the steering seat";
+/** The line that frames the rows by provenance and weight: canon grounds each one, the five tools turn it, and both hands hold the frame. */
+export const LAW_WEIGHT_LINE = "these rows come from canon, the house's settled ground (🜃); read one whole (meme_get(uri=<title>, recipe=\"default\")) and turn it through the five tools beside the live work; operator and node hold the frame together";
 /** A title prints only as one `lar:` address with no whitespace, within its byte cap. */
 const printableTitle = (title) => typeof title === "string" && /^lar:\/\/\/\S+$/.test(title) && bytes(title) <= LAW_TITLE_BYTES;
 

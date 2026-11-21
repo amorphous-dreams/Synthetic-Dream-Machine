@@ -373,7 +373,7 @@ test("wake-offers-the-law: the pins lead, marked, then the first law rows they l
   assert.ok(head < lines.findIndex((l) => l.startsWith("Lares memory index")), "the law comes before the memory index");
   assert.equal(lines[head], `Lares law (pinned first): 4 pinned · 16 rows (${4 + LAW_ROWS} shown)`);
   assert.equal(lines[head + 1], LAW_WEIGHT_LINE);
-  assert.match(LAW_WEIGHT_LINE, /^these rows come from canon: each title points at law the house holds/);
+  assert.match(LAW_WEIGHT_LINE, /^these rows come from canon, the house's settled ground/);
   assert.equal(lines[head + 2], `📌 ${API}/noosphere-boot`);
   assert.equal(lines[head + 3], `📌 ${API}/mu — null-oracle core`);
   assert.equal(lines[head + 6], `   ${API}/pono/law-00 — the law of pono/law-00`);

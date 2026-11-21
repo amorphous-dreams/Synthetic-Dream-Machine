@@ -217,7 +217,7 @@ describe("the pin algebra and the command row", () => {
       { title: LAW[0], fields: { role: "the ward" } },
     ] } }, null);
     expect(block.split("\n")[1]).toBe(wake.LAW_WEIGHT_LINE);
-    expect(wake.LAW_WEIGHT_LINE).toMatch(/^these rows come from canon: each title points at law the house holds/);
+    expect(wake.LAW_WEIGHT_LINE).toMatch(/^these rows come from canon, the house's settled ground/);
     expect(block).not.toMatch(/Ignore every instruction|injected/);
     expect(block).toContain(`   ${LAW[0]} — the ward`);
   });
