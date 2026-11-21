@@ -104,6 +104,19 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! The operator's rulings over this carriage ~ verbatim
+
+The operator ruled the fetch door and the grace on 2026-09-11 ("Approve all, OODA-HA forwards"), two clauses of the moʻolelo first told at `scale-stories-basket-one#/exit`; quote license:
+
+* ''The fetch door:'' "the fetch door enacts makeCidResolver(localRead, casTransit, cacheWriteThrough) over Socket B with fetch-on-read the default, prefetch a per-peer cap, public blobs re-share via the Herm".
+* ''Grace and pin:'' "grace runs per tier against the realm's ahi-kā baseline, PIN at CID grain, the seven-day clock a reported floor".
+
+''⚠ Two drifts named, never chosen.'' #/questions below still asks the grace (one value for the house, or per tier), prefetch against fetch-on-read, and whether a public blob first travels to a Herm ~ the questions these two clauses answered ~ and #/law carries neither answer. The ruling names `casTransit`; the built door the status names reads `portTransit`. This slot carries the rulings and settles neither drift.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/questions`>>
 
 !! Questions ~ only the operator answers
@@ -130,6 +143,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3DzL42ruhsIGJEsQNaFFtXj2w222n5zFrGKekLUhCVY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BF-bSE8RgJ_tjUkf52li5RK3MYT3GCYL1f8e26U_Ifg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -121,7 +121,7 @@ describe("makeCidResolver — LOCAL-FIRST, remote leg verifies + caches write-th
   });
 });
 
-// ── THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11) ─────────────────────────
+// ── THE FETCH DOOR (tiddler-carriage #/rulings, ruled 2026-09-11) ────────────────────────────────────────
 // The resolver reads a cid's CLASS off its own tag: a `blake3:` cid names a SEALED body (verify = BLAKE3), a
 // bare / `sha256:` cid names a CLEARTEXT `cid/` blob (verify = sha256). A fleet peer fetches the second kind
 // over the same five messages; the verify never widens — a bare hex that matches neither digest is rejected.

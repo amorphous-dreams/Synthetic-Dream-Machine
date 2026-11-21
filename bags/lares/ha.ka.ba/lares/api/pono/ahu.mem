@@ -127,6 +127,8 @@ A meme rests as a ''family'' of tiddlers under one address: a root and the slot 
 
 Content that will not decompose fences to a quoteblock. The fence stands as the artifact a writer surfaces to the operator: a demotion, never an overwrite, never a drop.
 
+''Ruled (operator, 2026-10-04) ~ the write-grain half of syncer seam (b).'' The record first told at `child-grade-decision#/what-a-ruling-would-say` reads: "un-decomposable content fences to a quoteblock, never drops, at the grain the WRITE lands in — the whole chunk on ingest (no family exists yet), or just that ahu's body on an in-place update (the family, and the ``<<~ ahu slot=`#/slot`>>`` wrapper, untouched)". The ruling sets this floor and picks no instrument for reading a child's own bytes.
+
 The grain matches the write that produces the un-decomposable content:
 
 * ''Whole-chunk ingest'' — a carrier arrives through the deserializer, or from outside the wiki into it, whole and partially un-decomposable. The whole chunk quoteblocks; no family stands yet at that point, so the carrier offers the only grain available.
@@ -190,6 +192,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vrjp9uoRpLZvvUXV-twXK5P5oFoE5h1sO8rUkdcwNMw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AvUC3ERBesH0v4MEA1EApfBm3jCMJYdmcrAkgcbtZSM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

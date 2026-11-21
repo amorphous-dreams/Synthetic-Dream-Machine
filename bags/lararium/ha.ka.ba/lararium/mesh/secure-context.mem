@@ -173,13 +173,25 @@ A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-phone-seat`>>
+
+!! The phone seat ~ the operator's ruling of 2026-09-11
+
+> ''RULED (operator, 2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`).'' Quote license: "the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x".
+
+''Keys, not storage (operator ruling, 2026-11-20).'' The operator, asked whether the pair reads keys against storage, answered //"agree"//. So //PRF wraps beside and never mints// speaks of KEYS: the wrap stands beside the device-minted key and never mints one. Of STORAGE it reads with #/custody-leans: PRF wraps the resting form in place of the cleartext. The clause's last two parts (//Mudlet probes the bulb face, Unreal builds against 5.x//) govern host seats beyond this wall and ride here whole with their clause. The witness reads `packages/lararium-web/tests/phone-seat.test.ts`.
+
+''Deferred, and recorded so it can reopen.'' The browser, phone and tablet vessel rewrite sits deferred (the browser Mu, from scratch). This collapse of the wave-form to the ruling stands recorded here so that rewrite can revisit it.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/custody-leans`>>
 
 !! Custody across a storage reset ~ operator-approved LEANS, with a crucible's conditions
 
 > ''Register: APPROVED LEANS (operator, 2026-10-11), never rulings and never built.'' Quote license: //"Approve the leans; send a Luna pair to crucible it"//. A two-lens crucible then tested them across two traded waves, read-only; its conditions ride below as research the leans must meet.
 
-# ''PRF-wrapped custody REPLACES the cleartext resting form'' of a browser vessel's roots (the cleartext stands measured at #/what-the-key-format-buys). It replaces; it never sits beside the cleartext as an opt-in. PRF wraps and never mints.
+# ''PRF wraps the resting form in place of the cleartext'' of a browser vessel's roots (the cleartext stands measured at #/what-the-key-format-buys), and ''never mints a key'' (#/the-phone-seat, trued 2026-11-20: the ruling's //beside// names the device-minted key, never the cleartext). The wrap never sits beside the cleartext as an opt-in.
 # ''The herm carries the wrapped blob'': carry, never read. Ciphertext rests with the party that cannot read it, and the unwrapping key rests behind the passkey, which a storage reset cannot reach. After an eviction the human presents the passkey, fetches the blob and unwraps it.
 # ''The install gets offered, never required'' (#/storage-that-vanishes). The passkey gives an uninstalled phone its reason to keep its memory.
 # ''Three cautions ride with them.'' A synced passkey reads `cloud-synced`, a seed-class secret, and `vault status` names the class. The served-page hole stays open, since PRF cures nothing there. The herm's blob locator stays an opaque address and never grows into a roster.
@@ -294,6 +306,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uiwTlMZ-DClopvZuH0BP038hhVzTPSLl2P09iGqSS80`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2OOqAC_F-k0Mq6JoQgFUl9Z3NguGvVYzjMzBsxHW58Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>
