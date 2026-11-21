@@ -62,6 +62,12 @@ export interface BuildIslandRecipeInput {
   kahuaFaceWatch?: (fn: () => void) => () => void;
   /** The island Repo's actor door (`wearOf(repo)`'s door): each slot's store writes a worn face's change through it. */
   wear?: FaceActorDoor;
+  /**
+   * A VIEW THAT TAKES NO WRITE (a cross-face view, `face-engine`): every slot but the engine's own temp layer lays read-only, so
+   * a save routed at the write layer refuses there. The write-layer pointer still names the working slot, which the read gate
+   * reads as the bag the view answers for.
+   */
+  readOnly?: true;
 }
 
 /**
@@ -83,7 +89,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
-  const { tw5, composite, recipe, ready, floorRecords, writeSlot } = input;
+  const { tw5, composite, recipe, ready, floorRecords, writeSlot, readOnly } = input;
   // The titles TW5's own startup pass already ran over the preloads: these never run again.
   const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
   const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
@@ -92,6 +98,8 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
   const tempSlot       = wikiSlotUri(slug, "temp");
+  const flagsOf = (slot: SlotUri): { writable: boolean; defaultWritable: boolean } =>
+    readOnly && slot !== tempSlot ? { writable: false, defaultWritable: false } : slotLayerFlags(slot, slug, writeSlot);
   const stores: Array<{ slot: SlotUri; store: LarTiddlerStore }> = [];
 
   // Bottom-up addLayer order. Slot at index slots.length-1 (oracle, the floor) lands first.
@@ -100,7 +108,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const slot = slots[i]!;
     if (slot === tempSlot) {
       tempStore = new MemoryTiddlerStore();
-      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug, writeSlot) });
+      composite.addLayer({ bagId: slot, store: tempStore, ...flagsOf(slot) });
       stores.push({ slot, store: tempStore });
       continue;
     }
@@ -118,7 +126,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
     // default (an unbagged write or tombstone) is the working slot; without its handle no default
     // writable stands. The ONE law `slotLayerFlags` spells for the host mount and this island alike.
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug, writeSlot) });
+    composite.addLayer({ bagId: slot, store, ...flagsOf(slot) });
     stores.push({ slot, store });
   }
 

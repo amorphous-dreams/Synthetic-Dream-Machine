@@ -8,13 +8,18 @@
  * The worn face's kahua stage and the place's daemon document stay out: the first folds under the worn face, the second holds
  * the vessel's own state, and neither belongs to the sibling's own wiki.
  *
+ * A LIT FACE RECEIVES VISITS (`composeCrossFaceViewSource`): a face's CROSS-FACE VIEW lays its daemon canon and working layer
+ * and the shared libraries and floor (`crossFaceViewSlots`), and asks for no other: never its personal layer (PRIVATE), never a
+ * draft. The worn face's own layers answer from the documents its island mounted; a sibling's from the documents its own wear
+ * named, each only where the control document names that face as the owner. The view takes no actor door: it reads.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import {
   DAEMON_BAG_ID, KAHUA_BAG, daemonFaceCanonBag, expandRecipe, sha256HexBytesSync, wikiSlotUri,
   type DocHandle, type FaceActorDoor, type LarDoc, type WikiRecipe,
 } from "@lararium/mesh";
-import { TW5Engine, preloadsFromCasBlob, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
+import { TW5Engine, crossFaceViewSource, preloadsFromCasBlob, type CrossFaceViewSource, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
 import type { LitFace, LitFaceDocs } from "./lit-face-target.js";
 
 export interface SiblingEngineDeps {
@@ -76,4 +81,31 @@ export async function composeSiblingEngineSource(deps: SiblingEngineDeps): Promi
     if (handle) ready.push({ slot, handle });
   }
   return { boot: bootFromSet(deps.bootSet, deps.resolveByCid), recipe, ready, ...(deps.wear ? { wear: deps.wear } : {}) };
+}
+
+/** What a face's cross-face view composes from: the sibling engine's doors, and the worn face's own mounted documents. */
+export interface CrossFaceViewDeps extends Omit<SiblingEngineDeps, "wear"> {
+  /** The worn face's own document for a slot its island mounted (its working layer, its daemon canon), or null. Asked only
+   *  where the face visited is the worn face. */
+  readonly worn: ((slot: string) => DocHandle<LarDoc> | null) | null;
+}
+
+/** A face's cross-face view source over its daemon wiki: its canon by its own relation, its working layer, and the shared slots. */
+export async function composeCrossFaceViewSource(deps: CrossFaceViewDeps): Promise<CrossFaceViewSource> {
+  const { face } = deps;
+  const { canonBag: _mounted, ...base } = deps.recipe;
+  const canon = face.relation !== null ? daemonFaceCanonBag(face.relation) : null;
+  const recipe: WikiRecipe = canon !== null ? { ...base, canonBag: canon } : base;
+  const own = new Set<string>([wikiSlotUri(recipe.wikiSlug, "working"), ...(canon !== null ? [canon] : [])]);
+  return crossFaceViewSource({
+    boot: bootFromSet(deps.bootSet, deps.resolveByCid),
+    recipe,
+    bind: async (slot) => {
+      if (!own.has(slot)) { const handle = deps.shared(slot); return handle ? { slot, handle } : null; }
+      const mounted = deps.worn?.(slot) ?? null;
+      if (mounted) return { slot, handle: mounted };
+      const doc = await deps.docs(face.handleIndex, slot);
+      return doc !== null && doc.owner === face.handleIndex ? { slot, handle: await deps.open(doc.url, slot) } : null;
+    },
+  });
 }

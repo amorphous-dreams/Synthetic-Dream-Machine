@@ -7,14 +7,19 @@
  *   E2  RED: two faces' engines stand apart: one face's put never reads in the other's wiki
  *   E3  RED: the engines cache one engine per face; a drop closes it and the next ask composes afresh; a face with no source
  *       composes nothing
+ *   E4  RED (a lit face receives visits): the CROSS-FACE VIEW of a face reads its daemon canon and working layer, and its
+ *       personal layer never appears: a title only there reads absent to a get, a filter and a transclusion, and a title
+ *       there that shadows a working record reads the working record; the view never asks for a private slot
+ *   E5  RED: the view refuses a source that binds a private layer (`cross-face-private`) before any engine boots, and takes
+ *       no write: a put through it lands nothing
  *
  * A real engine boots here (`bootTestWiki`), with the real recipe, adaptor and bridge.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
 import { daemonFaceCanonBag, emptyLarDoc, wikiSlotUri, type DocHandle, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
-import { composeFaceEngine, faceEngines, type FaceEngineSource } from "../src/face-engine.js";
-import { makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiFilterReactor } from "../src/tiddler-verbs.js";
+import { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, faceEngines, type FaceEngineSource } from "../src/face-engine.js";
+import { makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiFilterReactor, makeWikiRenderReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
@@ -88,5 +93,71 @@ describe.skipIf(wikiSkip)(`a lit face's own engine answers the tiddler door${ski
     const b = await engines.of(1);
     expect(b).not.toBe(a);
     expect(composed).toBe(2);
+  }, 60_000);
+});
+
+describe.skipIf(wikiSkip)(`a lit face receives visits: its cross-face view${skipNote}`, () => {
+  const PERSONAL = wikiSlotUri("daemon", "personal"), DRAFT = wikiSlotUri("daemon", "draft");
+  /** Face h1's daemon documents: canon and working as the face engine binds them, and a personal and a draft layer beside. */
+  function visited(repo: RepoType) {
+    const h1 = faceDocs(repo, R1, "Canon of h1");
+    const write = (h: DocHandle<LarDoc>, title: string, text: string): void => {
+      h.change((d) => { (d.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text } }; });
+    };
+    write(h1.working, "Note of h1", "the working word");
+    write(h1.working, "Shadowed", "the working text");
+    const personal = repo.create<LarDoc>(emptyLarDoc());
+    write(personal, "Private of h1", "the private word");
+    write(personal, "Shadowed", "the private text");
+    const draft = repo.create<LarDoc>(emptyLarDoc());
+    write(draft, "Draft of Note", "the unsaved word");
+    const docs = new Map<string, DocHandle<LarDoc>>([[daemonFaceCanonBag(R1), h1.canon], [WORKING, h1.working], [PERSONAL, personal], [DRAFT, draft]]);
+    return { h1, personal, docs };
+  }
+
+  test("E4 RED: the view reads h1's canon and working layer, and its personal layer never appears", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const { docs } = visited(repo);
+    const asked: string[] = [];
+    const source = await crossFaceViewSource({
+      boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+      bind: async (slot) => { asked.push(slot); const handle = docs.get(slot); return handle ? { slot, handle } : null; },
+    });
+    expect(asked, "the view never asks for a private slot or a draft").not.toContain(PERSONAL);
+    expect(asked).not.toContain(DRAFT);
+    const view = await composeCrossFaceView(source); downs.push(() => view.close());
+    const get = makeTiddlerGetReactor(view as never);
+    expect(((await get({ recipe: "default", title: "Note of h1" }, ctx()))["tiddler"] as { fields: Record<string, string> } | null)?.fields["text"]).toBe("the working word");
+    expect(((await get({ recipe: "default", title: "Canon of h1" }, ctx()))["tiddler"] as { bag: string } | null)?.bag).toBe(daemonFaceCanonBag(R1));
+    expect((await get({ recipe: "default", title: "Private of h1" }, ctx()))["tiddler"], "a title only in the personal layer reads absent").toBeNull();
+    expect((await get({ recipe: "default", title: "Draft of Note" }, ctx()))["tiddler"], "a draft never composes").toBeNull();
+    expect(((await get({ recipe: "default", title: "Shadowed" }, ctx()))["tiddler"] as { fields: Record<string, string> } | null)?.fields["text"], "a private record shadows nothing").toBe("the working text");
+    const filtered = await makeWikiFilterReactor(view as never)({ recipe: "default", filter: "[[Private of h1]is[tiddler]] [[Note of h1]is[tiddler]] [search:text:literal[the private word]]" }, ctx());
+    expect(filtered["titles"]).toEqual(["Note of h1"]);
+    const rendered = await makeWikiRenderReactor(view as never)({ recipe: "default", text: "[{{Private of h1}}] [{{Note of h1}}] [{{Shadowed}}]" }, ctx());
+    expect(rendered["text"]).toBe("[] [the working word] [the working text]");
+  }, 60_000);
+
+  test("E5 RED: a source binding a private layer refuses before any engine boots, and the view takes no write", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const { h1, personal, docs } = visited(repo);
+    let booted = 0;
+    const leaking = { boot: () => { booted++; return bootTestWiki(); }, recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+      ready: [{ slot: WORKING, handle: h1.working }, { slot: PERSONAL, handle: personal }] };
+    await expect(composeCrossFaceView(leaking)).rejects.toMatchObject({ reason: "cross-face-private" });
+    expect(booted, "nothing boots over a private layer").toBe(0);
+    const view = await composeCrossFaceView(await crossFaceViewSource({
+      boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag: daemonFaceCanonBag(R1) },
+      bind: async (slot) => { const handle = docs.get(slot); return handle ? { slot, handle } : null; },
+    }));
+    downs.push(() => view.close());
+    // A visit reads by the target's standing read alone: its door's admin ask refuses, and the put refuses with it.
+    const readOnly: VerbContext = { ...ctx(), cap: async (access) => (access === "read" ? { ok: true } : { ok: false, reason: "cross-face read" }) };
+    await expect(makeTiddlerPutReactor(view as never)({ recipe: "default", title: "Visitor note", text: "x" }, readOnly)).rejects.toThrow(/cap-denied/);
+    // And the view's layers take no write even where a door would pass one: the save lands nowhere.
+    await makeTiddlerPutReactor(view as never)({ recipe: "default", title: "Visitor note", text: "x" }, ctx()).catch(() => null);
+    const deadline = Date.now() + 2_000;
+    while (!holds(h1.working, "Visitor note") && Date.now() < deadline) await turns(8);
+    expect(holds(h1.working, "Visitor note"), "a visit writes nothing into the face's working document").toBe(false);
   }, 60_000);
 });

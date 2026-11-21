@@ -13,9 +13,18 @@
  * THE ONE POOL (`enginePool`) holds engines by any key: a face by its handle index here, a named wiki by its slug in
  * `wiki-engine`. A pool given `idleMs` closes an engine no ask touched for that long (cold), and the next ask composes afresh.
  *
+ * A LIT FACE RECEIVES VISITS (`cross-face-reach`, operator ruling 2026-11-20): a seat wearing another face reads this face
+ * through a CROSS-FACE VIEW (`composeCrossFaceView`), never through this face's own engine, which carries its personal layer.
+ * The view lays the layers `crossFaceViewSlots` names (working, canon, libraries, floor) and asks for no other
+ * (`crossFaceViewSource`); it refuses a source that binds a PRIVATE layer before any engine boots, and lays every layer
+ * read-only, so a visit takes no write.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { CompositeStore, type FaceActorDoor, type WikiRecipe } from "@lararium/mesh";
+import {
+  CompositeStore, VerbRefusal, crossFacePrivateRefusal, crossFaceViewSlots, CROSS_FACE_PRIVATE,
+  type FaceActorDoor, type WikiRecipe,
+} from "@lararium/mesh";
 import { buildIslandRecipe, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -32,6 +41,8 @@ export interface FaceEngineSource {
   readonly wear?: FaceActorDoor;
   /** The face holds no writer's seat in the wiki's workbench: its `personal` slot takes the default write. */
   readonly writeSlot?: "personal";
+  /** Every layer but the engine's own temp lays read-only (a cross-face view). */
+  readonly readOnly?: true;
 }
 
 /** One face's engine and the composition it answers over: the tiddler door's options for that face. */
@@ -50,6 +61,7 @@ export async function composeFaceEngine(source: FaceEngineSource): Promise<FaceE
     tw5, composite, recipe: source.recipe, ready: source.ready,
     ...(source.wear ? { wear: source.wear } : {}),
     ...(source.writeSlot ? { writeSlot: source.writeSlot } : {}),
+    ...(source.readOnly ? { readOnly: true as const } : {}),
   });
   const unbridge = bridgeWikiToAdaptor(tw5, adaptor);
   let closed: Promise<void> | null = null;
@@ -59,6 +71,44 @@ export async function composeFaceEngine(source: FaceEngineSource): Promise<FaceE
   try { await seedDrained(tw5); }
   catch (error) { await close().catch(() => {}); throw error; }
   return { tw5, composite, close };
+}
+
+/** What a cross-face view composes from: the face engine's source, with no actor door, no write slot and no write. */
+export type CrossFaceViewSource = Pick<FaceEngineSource, "boot" | "recipe" | "ready">;
+
+/**
+ * The target face's cross-face view source for `recipe`: each layer `crossFaceViewSlots` names, as `bind` resolves it for that
+ * face (null where the face holds none). `bind` never hears a private slot, a draft, the temp layer, the kahua stage or the
+ * vessel's own daemon document.
+ */
+export async function crossFaceViewSource(deps: {
+  readonly boot: () => Promise<TW5Engine>;
+  readonly recipe: WikiRecipe;
+  readonly bind: (slot: string) => Promise<RecipeReadyBinding | null>;
+}): Promise<CrossFaceViewSource> {
+  const ready: RecipeReadyBinding[] = [];
+  for (const slot of crossFaceViewSlots(deps.recipe)) {
+    const bound = await deps.bind(slot);
+    if (bound !== null) ready.push(bound);
+  }
+  return { boot: deps.boot, recipe: deps.recipe, ready };
+}
+
+/**
+ * Compose a target face's CROSS-FACE VIEW. PRIVATE FIRST: a source that binds a private layer refuses `cross-face-private`
+ * before anything boots, and one that binds a layer outside the view's own slots refuses `cross-face-view-holds-its-layers`.
+ * The engine then lays every layer read-only, with no actor door and no write slot.
+ */
+export async function composeCrossFaceView(source: CrossFaceViewSource): Promise<FaceEngine> {
+  for (const { slot } of source.ready) {
+    const refusal = crossFacePrivateRefusal(slot);
+    if (refusal !== null) throw new VerbRefusal(CROSS_FACE_PRIVATE, refusal);
+  }
+  const viewed = new Set<string>(crossFaceViewSlots(source.recipe));
+  for (const { slot } of source.ready) {
+    if (!viewed.has(slot)) throw new VerbRefusal("cross-face-view-holds-its-layers", `cross-face-view-holds-its-layers: ${slot} lies outside a cross-face view (working, canon, libraries and the floor), and nothing composed`);
+  }
+  return composeFaceEngine({ boot: source.boot, recipe: source.recipe, ready: source.ready, readOnly: true });
 }
 
 /** Engines by key, each composed on its first ask. */
