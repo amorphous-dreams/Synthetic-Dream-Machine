@@ -375,4 +375,29 @@ describe("each face lives one life: the lifecycle actor", () => {
     await expect(drainPlans(1, [{ session: null, docs: ["doc-b"] }], { drain, waiting: (id) => waiting.get(id) ?? 0 })).resolves.toBeUndefined();
     await expect(drainPlans(1, [{ session: "s", docs: ["doc-a"] }], { drain: async () => 1, waiting: () => 0 })).rejects.toThrow(/1 save\(s\) still wait unsealed, so/);
   });
+  test("R8 (a stand-down's relight spun the vessel): a refused light replays no lend, and once a stand-down began no light runs", async () => {
+    // A lend that lights every face it hears go dark, over an island that refuses every light (it stands down).
+    const events: string[] = [];
+    let lights = 0;
+    let lives!: ReturnType<typeof faceLives>;
+    lives = faceLives({
+      light: async () => { lights += 1; throw new Error("daemon-down"); },
+      drainSaves: async () => {},
+      dropWorker: async () => {},
+      teardownHost: () => {},
+      recompose: async () => {},
+      onDark: (ordinal) => { events.push(`dark h${ordinal}`); void lives.light(1); },
+      log: () => {},
+    }, { nonce: "boot" });
+    expect(await lives.light(1)).toBe("refused");
+    await settle(); await settle();
+    expect(lights, "a refused light lights nothing again on its own").toBe(1);
+    expect(events).toEqual([]);
+    // THE STAND-DOWN: the mount closes, its dark replays the lend, and the lend's light refuses without running.
+    lives.adopt(0, { atomKey: null, custody: null });
+    await lives.closeAll("the composition stands down", { hold: true, stop: true });
+    await settle(); await settle();
+    expect(events).toEqual(["dark h0"]);
+    expect(lights, "no light runs once the stand-down began").toBe(1);
+  });
 });

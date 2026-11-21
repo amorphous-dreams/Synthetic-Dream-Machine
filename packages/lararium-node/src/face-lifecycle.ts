@@ -41,7 +41,8 @@
  *
  * ── A HELD FACE LIGHTS NOT ─────────────────────────────────────────────────────────────────────
  * A close may HOLD the face (`hold`): once dark it refuses every light until `release`, so a lock that closes the face and then
- * locks its key never meets a relight in between. Each return to dark tells the vessel (`onDark`), which replays its lend.
+ * locks its key never meets a relight in between. Each close's return to dark tells the vessel (`onDark`), which replays its
+ * lend; a refused light tells nothing, so no lend spins on a light that keeps refusing, and a stand-down lights nothing more.
  *
  * ── EVERY WRITE OF A VISIT RUNS IN ONE DELIVERY TURN ───────────────────────────────────────────
  * A visit answers exactly once. Its reply, its failure and the close's refusal all reach the asker through the actor's mailbox:
@@ -162,7 +163,7 @@ export interface FaceLives {
    * faulted. A stand-down logs a face that did not close whole and carries on; under `strict` (a whole lock, whose key must not
    * drop over saves that did not seal) a face that did not close whole rejects, naming each such face.
    */
-  closeAll(reason: string, options?: { readonly hold?: boolean; readonly strict?: boolean }): Promise<void>;
+  closeAll(reason: string, options?: { readonly hold?: boolean; readonly strict?: boolean; readonly stop?: boolean }): Promise<void>;
   /**
    * Hold a face past CLOSED (dark, or closing with its saves drained and its host side down), so it lights not until `release`;
    * answers false (holding nothing) where the face lit, lights, or still settles or drains, and true (holding nothing) for a face
@@ -297,9 +298,11 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         if (life.kind === "lighting" && life.opening === m.opening) {
           const waiters = life.waiters;
           if (m.lit === null) {
+            // A REFUSED LIGHT REPLAYS NO LEND: the lend would light it again at once, and a light that keeps refusing (an island
+            // standing down) would spin the vessel's turn forever. The next custody event or close replays the lend.
             actor.life = { kind: "dark" };
             effects.log(`[face-life] h${ordinal} did not light: ${describe(m.error)}`);
-            return [...waiters.map((w) => () => w("refused")), darkNow(ordinal)];
+            return waiters.map((w) => () => w("refused"));
           }
           actor.life = { kind: "lit", opening: life.opening, atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set() };
           return waiters.map((w) => () => w("lit"));
@@ -469,6 +472,8 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     close,
     release: (ordinal) => { if (lives.has(ordinal)) send(ordinal, { t: "release" }); },
     async closeAll(reason, opts) {
+      // A STAND-DOWN LIGHTS NOTHING MORE: every light asked from here on (a lend a close's dark replays) refuses.
+      if (opts?.stop === true) stopped = true;
       const ordinals = [...lives.keys()];
       const settled = await Promise.allSettled(ordinals.map((ordinal) => close(ordinal, reason, opts)));
       const faults = settled.flatMap((r, i) => r.status === "rejected" ? [{ ordinal: ordinals[i]!, why: describe(r.reason) }] : []);
