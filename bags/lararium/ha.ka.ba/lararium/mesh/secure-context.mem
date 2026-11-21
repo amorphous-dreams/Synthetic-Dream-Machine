@@ -173,6 +173,16 @@ A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-phone-seat`>>
+
+!! The phone seat ~ the operator's ruling of 2026-09-11
+
+> ''RULED (operator, 2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`).'' Quote license: "the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x".
+
+''⚠ A conflict named, never chosen.'' The ruling reads //PRF wraps beside and never mints//; #/custody-leans carries the operator's APPROVED LEANS of 2026-10-11, which read //PRF-wrapped custody REPLACES the cleartext resting form// and //It replaces; it never sits beside the cleartext as an opt-in//. Those leans name themselves //never rulings//, and the later word points the other way; this slot carries both and settles neither. The clause's last two parts (//Mudlet probes the bulb face, Unreal builds against 5.x//) govern host seats beyond this wall and ride here whole with their clause. The witness reads `packages/lararium-web/tests/phone-seat.test.ts`.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/custody-leans`>>
 
 !! Custody across a storage reset ~ operator-approved LEANS, with a crucible's conditions
@@ -294,6 +304,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uiwTlMZ-DClopvZuH0BP038hhVzTPSLl2P09iGqSS80`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Gp8SBpN-dvvYk6Ukyy1dntH7fuz5kVIe7BdqYuy-VE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

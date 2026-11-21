@@ -1,5 +1,5 @@
 /**
- * phone-seat.test — THE PHONE SEAT EXPLAINS AND OFFERS (basket-one #/the-phone-seat, ruled 2026-09-11: "the phone
+ * phone-seat.test — THE PHONE SEAT EXPLAINS AND OFFERS (secure-context #/the-phone-seat, ruled 2026-09-11: "the phone
  * seat explains and offers the install, projection stays the node's"). ONE line renders — only on a secure
  * context, only when the page does NOT already stand installed, only when the eviction class reads WebKit's
  * seven-day best-effort. Never a demand. CONTROLS: a persisted origin, a standalone (installed) page, a

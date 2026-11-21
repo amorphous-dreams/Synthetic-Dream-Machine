@@ -26,6 +26,8 @@ uri-path          = "ha.ka.ba/lares/api/pono/registry-filter"
 
 > ''If a fork's downstream builds a "global registry" of even ONE-NEXUS scope, the fork is REJECTED.''
 
+The attestation seat's form of the same law, as `two-integrities` first recorded it (quote license): //no roster, because a roster is a global now//.
+
 The stance behind the rule runs adversarial: adversity-from-empire holds this stack in the pre-SIN posture. Empire subpoenas, scrapes, and correlates registries; a thing never compiled offers nothing to read. The law fires at DESIGN time — a rejected fork never reaches code, so no gate needs to catch it later.
 
 <<~/ahu>>
@@ -96,6 +98,6 @@ Two deployed systems compile the registry this law forbids, and their measured p
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RTWae95UoY1lx8eSDjBT0pMeHBEF6TJm-I-qjfeacNI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sEop8rev7kPrEer9z-AcNRCNyKaoclF9AH47Btj4KuI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

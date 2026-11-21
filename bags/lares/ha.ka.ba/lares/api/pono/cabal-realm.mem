@@ -232,6 +232,20 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-shared-bag`>>
+
+!! The shared bag ~ where a realm's book registers, and which documents cross
+
+> ''Operator ruling (2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`).'' Quote license: "the shared bag registers in the realm's shared CRDT, crossroads-plane names only that it exists, read at CONTRACT".
+
+> ''Operator ruling ~ the realm leg (2026-09-12; the moʻolelo first told at `scale-stories-basket-one#/the-shared-bag`).'' Quote license: "the Nexus decides whether a SOCKET stands (the contract edge); the REALM's own registration decides which DOCUMENTS cross it — read to any CONTRACT-tier holder of that charter, write to keptBy, the PUBLIC tier carried by the Herm by hash; the cabal keeps no roster; 'admit' is a Nexus verb and never decides carriage. Upgrades approved: the realm leg of mayFederate · keptBy charter-aware from day one · registration expiry in realm rolls · the Herm follows the realm's public registrations (operator)". Its record: //enacted as the third leg of the one law the reads and writes already walk//.
+
+''⚠ A collision named, never chosen.'' The realm leg reads "'admit' is a Nexus verb and never decides carriage"; #/the-realm reads //admission belongs to infrastructure management// and //it sits on the vessel and the cabal, never in the realm//, and the three-plane sorting test sends //who joins// to the CABAL plane (measured at `realm-nexus-unblur-scout`, which finds the word `admit` astride two rulings). This slot carries the ruling and settles neither reading; the operator rules.
+
+The registration's code reads `packages/lararium-mesh/src/realm-bag.ts`; the steward set it names rides #/the-steward-signer.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-unswept-corner`>>
 
 !! The Unswept Corner ~ persistence ≠ legitimacy (OPEN)
@@ -297,6 +311,8 @@ A cabal-realm shares content without materializing a reader-set. It seals each p
 
 ''A private Cabal simply declares none'', and lives in its members' own address books under pet-names. ''Declaring a face reads as an ACT with a cost, never as a stage every Cabal grows into.''
 
+> ''Operator ruling (2026-09-12; held beside the realm leg at `scale-stories-basket-one#/the-shared-bag`, its words verbatim at `heraldry#/ruling`).'' Quote license: "any nameless thing on the DreamNet — infra, persona, or cabal — may publish a Handle, a public Face/Heraldry".
+
 ''A sealed collective loses no self.'' One with no public face and no signed leyline stays fully itself — severable because rendezvous ≠ identity, so no seizable object stands (the shelter-against-empire shape, #/verb-not-noun). Opening a door later stays cheap: sign a carriage contract and `#has-NOT {read}` survives it; across a DIFFERENT engine two sealed realms interoperate only at the content-address floor (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>> #/the-severability-law).
 
 <<~/ahu>>
@@ -332,6 +348,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VdiZ-0jSPd-Ur6FefzBn4aEcOMmjwxqIxbbnMi9jpN4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GBX2AfMxCfEUmDyVHUpk1zj8tO-Oxflr8BXQs8MQF2g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

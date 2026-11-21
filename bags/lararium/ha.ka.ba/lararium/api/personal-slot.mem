@@ -351,6 +351,8 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 ''The grant that seats a later joiner.'' A vessel that joins a PersonaGroup after its founding holds bindings minted on its own vessel key. The founder writes a signed face-join grant record on the PersonaGroup plane; the joinee's own kit reads and verifies that record, takes the seat, and re-grants its vessel-only bindings on reuse. Verification checks the persona KEL's genesis against the pinned root, then the founder's edge against the KEL head and the current lease epoch; reading never re-cuts (`packages/lararium-keyhive/src/face-grant-record.ts`, witnessed in `tests/e2e/meme-two-vessel-bag.test.ts`).
 
+''Ruled'' (operator, 2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`), quote license: "the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat against the published seal, reading never re-cuts".
+
 ''Never-delete.'' Operator view state carries durability — `$:/StoryList`, `$:/state/folded/*`, `$:/state/tab-*`, and `$:/palette` represent the operator's actual viewing history per recipe. Bindings persist indefinitely; the operator's view state across all recipes they have ever opened stays recoverable.
 
 ''Cap-rotation on PersonaGroup membership change.'' When the operator admits a new device, the founding ceremony already grants the new device admin access to the admin doc. The new device reads the admin doc, sees existing binding tiddlers, mounts the same `@personal`/`@draft` docs. Keyhive's CRDT-of-capabilities means the new device also gains access to the underlying `@personal`/`@draft` docs (each carries a delegation to the PersonaGroup, and the new device joined the PersonaGroup) — no per-binding re-grant required. //(Verified 2026-06-03: access is membership-graph reachability, so the new edge covers every doc the group can reach, retroactively.)//
@@ -496,6 +498,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BenvpEu-zJq1UPDztE9LOEuTayaPZAxam44F9rXRgGs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qx1DRAekKsJFFVLPPKnLIBnzYl7IxrC8tx7wSKRVIs4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

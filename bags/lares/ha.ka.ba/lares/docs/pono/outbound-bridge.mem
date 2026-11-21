@@ -124,7 +124,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 * Costs: the dirty set, `isDirty()`, the unload warning and `tc-dirty` stay OWED to the island. Every upstream change to `syncer.js` demands a fresh reading and a re-spelling by hand — parity by shape drifts the way every hand-derived enumeration drifts. The `SyncFilter` dial stays absent; the cascade alone says what leaves.
 * Where it lands: `sovereign-kernel.ts` (the subscription + teardown) · `outbound-bridge.ts` (the dispatch read whole) · `island-adaptor.ts` (the ledger, the gate, the acts).
 
-''RULED: Road B'' (`scale-stories-basket-one#/the-bridge`): `outbound-bridge.ts` carries it, with the echo law read from the landed ledger. Road A stays costed above as the road not taken; the witnesses in #/reds hold the five-clause contract either road would owe.
+''RULED: Road B'' (operator, 2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`), quote license: "the bridge rides Road B with the five-clause contract pinned as reds both roads must pass, the reach plane stays locked". `outbound-bridge.ts` carries it, with the echo law read from the landed ledger. Road A stays costed above as the road not taken; the witnesses in #/reds hold the five-clause contract either road would owe.
 
 ''VERIFIED (`G10`): every leaked change routes as a save.'' `wiki-shore-echo-law.test.ts` reads an inbound landing's echo as zero store calls, behind a barrier (the dispatch, the gate's fire, the landing queue's idle), and proves that zero with a known positive in the same dispatch: four leaked titles and a hand edit over the inbound title each route as a save into the working layer, and a vanished title routes as a tombstone. Foam routes nothing; a leak always routes.
 
@@ -198,6 +198,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WMp4Zb3MwVo5WlXO_3CoEjJw0xLTnNg27nRso5NoP4Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XXG7E-LvGQA0MgSzHEm4nz7YjdcIXKpkGkiP0C-dsoM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
