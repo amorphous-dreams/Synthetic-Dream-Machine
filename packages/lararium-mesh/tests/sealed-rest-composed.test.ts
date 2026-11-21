@@ -10,6 +10,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, FACE_CATALOG_BAG_ID, daemonFaceCanonBag, selvesRecordOf } from "../src/index.js";
 
 const stripped = (path: readonly string[]): string => {
   const source = readFileSync(join(import.meta.dirname, "..", "..", ...path), "utf8");
@@ -69,6 +70,15 @@ describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
     const island = stripped(["lararium-keyhive", "src", "operator-daemon-behavior.ts"]);
     expect(island).toMatch(/faceTarget: litFaceTargetOf\(ctx\)/);
     expect(island).toMatch(/litSiblings\.set\(key, face\)/);
-    expect(stripped(["lararium-node", "src", "joined-face-auth.ts"])).toMatch(/registerBags: deriveRegisterBags\(\{ fleets: \[\], wikiBags: litFaceOwnBags\(relation\) \}\)/);
+  });
+
+  // BEHAVIOUR, NOT A CALL SITE: what a lit sibling's hive registers reads off `litFaceOwnBags` itself (the node's
+  // `joined-face-auth.test.ts` pins that `joinedFaceAuth` hands each sibling exactly this set, by its own group).
+  it("a lit face's own bags carry its daemon slots, its canon, its catalog half and its own selves record, never another face's", () => {
+    const relation = "11111111-1111-4111-8111-111111111111";
+    const own = litFaceOwnBags(relation, "group-own");
+    expect(own).toEqual(expect.arrayContaining([...DAEMON_WIKI_SLOT_BAGS, daemonFaceCanonBag(relation), FACE_CATALOG_BAG_ID, selvesRecordOf("group-own").bagId]));
+    expect(own).not.toContain(selvesRecordOf("group-other").bagId);
+    expect(litFaceOwnBags(null).some((b) => b.includes("/selves-")), "no group, no selves record").toBe(false);
   });
 });
