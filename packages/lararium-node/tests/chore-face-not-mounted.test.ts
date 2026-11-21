@@ -7,7 +7,7 @@
  * Reads keep their path, and a place row acts as the place.
  */
 import { controlStoreOf } from "@lararium/mesh";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -18,6 +18,7 @@ import type { SessionFace } from "@lararium/mesh/session-contract";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor, type UdsSessionSigner } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 import { SessionSignBook, type BookedSession } from "@lararium/mesh";
+import { faceLives, type FaceLives } from "../src/face-lifecycle.js";
 
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`, causalRevision: `revision-${name}`,
@@ -27,6 +28,8 @@ const face = (name: string): SessionFace => ({
 class Peer {
   private buf = "";
   private readonly waiters: Array<(reply: Record<string, unknown>) => void> = [];
+  /** Every reply this peer read, in order. */
+  readonly heard: Array<Record<string, unknown>> = [];
   constructor(readonly sock: Socket) {
     sock.setEncoding("utf8");
     sock.on("data", (chunk: string) => {
@@ -35,10 +38,13 @@ class Peer {
       while ((nl = this.buf.indexOf("\n")) !== -1) {
         const reply = JSON.parse(this.buf.slice(0, nl)) as Record<string, unknown>;
         this.buf = this.buf.slice(nl + 1);
+        this.heard.push(reply);
         this.waiters.shift()?.(reply);
       }
     });
   }
+  /** Send a frame without waiting on an answer in order: read it back from `heard` by its requestId. */
+  send(frame: Record<string, unknown>): void { this.waiters.push(() => {}); this.sock.write(JSON.stringify(frame) + "\n"); }
   ask(frame: Record<string, unknown>): Promise<Record<string, unknown>> {
     const reply = new Promise<Record<string, unknown>>((resolve) => this.waiters.push(resolve));
     this.sock.write(JSON.stringify(frame) + "\n");
@@ -50,7 +56,7 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook } = {}) {
+async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly faceLife?: FaceLives; readonly visitVerbs?: ReadonlySet<string>; readonly hold?: ReadonlySet<string> } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -63,6 +69,7 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
     face: face(faceRef), ordinal: Number(faceRef.slice(1)), profile: "seat", presenter: `verified-${faceRef}`,
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } as unknown as UdsSessionSigner }) } }) };
   const placed: Array<{ verb: string; requestId: string; ordinal?: number }> = [];
+  const held: Array<() => void> = [];
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     switchActs: { write: async () => {} },
@@ -70,12 +77,18 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
     lentOrdinals: async () => [0, 1],
     ...(lane.lit ? { litOrdinals: () => lane.lit!, siblingFaceOf: (presenter: string) => presenter === "verified-h1" && lane.lit!.includes(1) ? "atom-h1" : undefined } : {}),
     ...(lane.signers ? { signers: lane.signers } : {}),
+    ...(lane.faceLife ? { faceLife: lane.faceLife } : {}),
+    ...(lane.visitVerbs ? { visitVerbs: lane.visitVerbs } : {}),
     placeVerb: (o) => {
       placed.push(o);
       // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
-      const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
-        batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
-      daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      const land = () => {
+        const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
+          batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
+        daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      };
+      // A held verb's outcome lands only when the test releases it: its reply is still on its way.
+      if (lane.hold?.has(o.verb)) held.push(land); else land();
     } }));
   const connect = async (): Promise<Peer> => {
     const sock = createConnection(claim.socketPath);
@@ -91,7 +104,8 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
   };
   /** One maintenance-frame line on its own socket, as the MCP seat sends it. */
   const oneShot = async (frame: Record<string, unknown>) => (await connect()).ask(frame);
-  return { peer, open, placed, oneShot, connect };
+  const release = () => { for (const land of held.splice(0)) land(); };
+  return { peer, open, placed, oneShot, connect, release };
 }
 
 const MEME = { recipe: "default", uri: "lar:///ha.ka.ba/kahua/memory/project/steward", text: "x" };
@@ -236,3 +250,76 @@ test("EACH HAT REACHED BY NAME, CONTROL: the lane carries its own writes alone; 
   expect(held.filter((h) => h.verb === "meme-put")).toEqual([{ verb: "meme-put" }]);
 });
 
+
+/** The face actors a door admits through, over a scripted island: each face adopted lit; drains wait on the test's hand. */
+function actors(...ordinals: number[]) {
+  const drains: Array<() => void> = [];
+  const lives = faceLives({
+    light: async () => ({ atomKey: null, custody: null }),
+    drainSaves: () => new Promise<void>((resolve) => { drains.push(resolve); }),
+    dropWorker: async () => {}, teardownHost: () => {}, recompose: async () => {}, log: () => {},
+  }, { nonce: "door" });
+  for (const ordinal of ordinals) lives.adopt(ordinal, { atomKey: `k${ordinal}`, custody: null });
+  return { lives, drains };
+}
+const VISIT = new Set(["tiddler-get"]);
+const replyTo = (peer: Peer, requestId: string) => peer.heard.filter((r) => r["requestId"] === requestId);
+
+test("SOL R6 M (writes enter during the drain): a write dispatched before the close holds the drain until it settles; one sent after refuses face-closing and nothing places", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ faceLife: lives, hold: new Set(["meme-put"]) });
+  const env = await v.open("h0");
+  v.peer.send({ op: "session:call", ...env, requestId: "put-before", verb: "meme-put", args: MEME });
+  await vi.waitFor(() => expect(v.placed.map((p) => p.verb)).toEqual(["meme-put"]));
+  const closed = lives.close(0, "lock");
+  await new Promise((r) => setImmediate(r));
+  expect(drains, "the drain waits out the write already dispatched").toHaveLength(0);
+  const after = await (await v.connect()).ask({ op: "session:open", requestId: "open-again", faceRef: "h0", hand: "cli" });
+  expect(after).toMatchObject({ kind: "session:opened" });
+  v.release();
+  await vi.waitFor(() => expect(replyTo(v.peer, "put-before")[0]).toMatchObject({ status: "done" }));
+  await vi.waitFor(() => expect(drains).toHaveLength(1));
+  const other = await v.connect();
+  const env2 = await v.open("h0", other);
+  expect(await other.ask({ op: "session:call", ...env2, requestId: "put-during", verb: "meme-put", args: MEME }))
+    .toMatchObject({ kind: "session:result", status: "error", refusal: { reason: "face-closing" } });
+  expect(v.placed.map((p) => p.requestId).filter((id) => id.includes("put-during"))).toEqual([]);
+  drains[0]!();
+  await closed;
+});
+
+test("SOL R6 H (a reply after close across an await): a visit whose reply is on its way when the target closes answers face-not-open once, and its body never leaves", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISIT, hold: new Set(["tiddler-get"]) });
+  const env = await v.open("h0");
+  v.peer.send({ op: "session:call", ...env, requestId: "visit-h1", verb: "tiddler-get", args: { title: "x", target: 1 } });
+  await vi.waitFor(() => expect(v.placed.map((p) => p.verb)).toEqual(["tiddler-get"]));
+  const closed = lives.close(1, "pulama closing");
+  await vi.waitFor(() => expect(replyTo(v.peer, "visit-h1")).toHaveLength(1));
+  expect(replyTo(v.peer, "visit-h1")[0]).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  v.release();
+  await new Promise((r) => setTimeout(r, 200));
+  expect(replyTo(v.peer, "visit-h1"), "the body never writes after the close").toHaveLength(1);
+  drains[0]!(); await closed;
+});
+
+test("SOL R6 M (a silent confirm blocks the session): a visit's reply rides its own request id, so the session answers its next frame while the visit still waits", async () => {
+  const { lives } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISIT, hold: new Set(["tiddler-get"]) });
+  const env = await v.open("h0");
+  v.peer.send({ op: "session:call", ...env, requestId: "visit-slow", verb: "tiddler-get", args: { title: "x", target: 1 } });
+  v.peer.send({ op: "session:call", ...env, requestId: "put-next", verb: "meme-put", args: MEME });
+  await vi.waitFor(() => expect(replyTo(v.peer, "put-next")[0]).toMatchObject({ status: "done" }));
+  expect(replyTo(v.peer, "visit-slow"), "the visit still waits on its own channel").toEqual([]);
+  v.release();
+  await vi.waitFor(() => expect(replyTo(v.peer, "visit-slow")[0]).toMatchObject({ status: "done" }));
+});
+
+test("a visit to a face its actor holds shut refuses face-not-open at the door, and nothing places", async () => {
+  const { lives } = actors(0);
+  const v = await stand({ faceLife: lives, visitVerbs: VISIT });
+  const env = await v.open("h0");
+  expect(await v.peer.ask({ op: "session:call", ...env, requestId: "visit-shut", verb: "tiddler-get", args: { title: "x", target: 2 } }))
+    .toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  expect(v.placed).toEqual([]);
+});
