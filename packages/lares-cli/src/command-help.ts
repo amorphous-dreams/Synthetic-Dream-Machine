@@ -137,7 +137,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> [--image <digest>] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
       "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
       "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
@@ -147,7 +147,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "terminal in the same run; an image no admission and no lei carries asks the pūlama's admit there too. With no terminal, a day " +
       "that owes either route stops before anything moves and names the hand act (`lares rite kukulu` on a terminal); every other " +
       "day flows. --rollback stands the image that ran before (--rollback <rev>: an older revision's kept image, or a build from " +
-      "that commit), with no checkout move. " +
+      "that commit), with no checkout move. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
+      "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
+      "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
+      "shut or rehived since) refuses by name with the line that clears it: each half a lent face lands, landed by hand where the " +
+      "vessel stands (`lares rite land --tessera <id> --head <the head the vessel runs>`; conferre reads it red). " +
       "keep lays the house's authored memory, cut as a cleartext house bundle a new house imports, into a workspace the operator " +
       "bound, and keeps it in the operator's repo: on the host it guards the workspace clone (only <into> changes; a committed `* -text` " +
       ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
@@ -166,13 +170,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
+      "lares rite receipts --rite kukulu --branch main --json  # data.standing: each lent face's begun half resting unlanded",
     ],
-    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
+    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite; (receipts) kukulu reads every lent face's unlanded begin", "--head <commit>   (begin, offer, land) the head",
       "--staging <path>   (begin, a keep) the bundle the keep staged inside its workspace; the vessel derives the id from it",
       "--workspace <name>   (keep, keep-cut) the bound workspace the bundle rests in", "--into <path>   (keep, keep-cut) the place inside it (house where absent)",
       "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled",
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
-      "--image <digest>   (offer) the digest of the image the host built",
+      "--image <digest>   (offer, begin, land) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },
   kapae: {
@@ -637,7 +642,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "wiki folder inside rides that tree, never a tree of its own): the same block plus each wiki folder's recovery/ and temp/, author " +
       "<pet name> <folded>@realm.invalid (the realm's identity, never a face's), the same hook; a tree nested below the root lifts into it with " +
       "its history kept (its git dir rests in .git/lifted/). A workspace a share row names for one of its wikis takes its own pool, author " +
-      "<slug> <slug>@realm.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
+      "<slug> <slug>@workspace.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
       "workspaces all stand nowhere, refuses by name. " +
       "--workspace <name> makes the operator's bound workspace (seen at /lar/workspaces/<name>) one pool by the same init, on the operator's ask: " +
       "the house never founds a workspace's tree by itself (the wake offers this where a bound workspace holds no tree); a workspace binding no " +

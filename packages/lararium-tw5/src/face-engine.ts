@@ -15,7 +15,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { CompositeStore, type FaceActorDoor, type WikiRecipe } from "@lararium/mesh";
+import { CompositeStore, wikiSlotUri, type FaceActorDoor, type WikiRecipe } from "@lararium/mesh";
 import { buildIslandRecipe, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -120,9 +120,31 @@ export function enginePool<K, E extends { close(): Promise<void> }>(
 /** One engine per face, composed on its first ask. */
 export type FaceEngines = EnginePool<number, FaceEngine>;
 
+/** Whether a source binds the face's working slot: the layer a write lands in. */
+const bindsWorking = (source: FaceEngineSource): boolean =>
+  source.ready.some((binding) => binding.slot === wikiSlotUri(source.recipe.wikiSlug, "working"));
+
+/**
+ * One engine per face, composed on its first ask. An engine composed before its face recorded a working slot holds no write
+ * layer, so each ask re-reads the source while that stands and rebuilds on the slot's arrival, never at the face's drop.
+ */
 export function faceEngines(sourceOf: (face: number) => Promise<FaceEngineSource | null>): FaceEngines {
-  return enginePool<number, FaceEngine>(async (face) => {
+  const unslotted = new Set<number>();
+  const pool = enginePool<number, FaceEngine>(async (face) => {
     const source = await sourceOf(face);
-    return source ? composeFaceEngine(source) : null;
+    if (source === null) { unslotted.delete(face); return null; }
+    if (bindsWorking(source)) unslotted.delete(face); else unslotted.add(face);
+    return composeFaceEngine(source);
   });
+  return {
+    of: async (face) => {
+      if (unslotted.has(face)) {
+        const fresh = await sourceOf(face);
+        if (fresh !== null && bindsWorking(fresh)) await pool.drop(face);
+      }
+      return pool.of(face);
+    },
+    drop: (face) => { unslotted.delete(face); return pool.drop(face); },
+    dropAll: () => { unslotted.clear(); return pool.dropAll(); },
+  };
 }

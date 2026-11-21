@@ -28,7 +28,8 @@
  *   lei      THE HAND STRINGS, RESTRINGS OR UNSTRINGS A LEI (`act`: `kui` · `restring` · `unstring`), SIGN-ONLY. The vessel under
  *            a pūlama holds no face root, so the hand's lei acts come here, where the root rests: the face's root opens fresh
  *            under the operator's route (a ward act; a miss spends the face's own ward attempts), signs ONE record (a lei, or
- *            an unstring) for the face's own group, and zeroes. The act writes nothing: the vessel lands the record
+ *            an unstring) for the face's own group, and zeroes. An UNSTRING also rests in the pūlama's own records, so its own
+ *            reuse of a begun half sees the revocation whatever offer a vessel carries; otherwise the act writes nothing: the vessel lands the record
  *            (`lares lei land`), where the chain's tip, the returns left and the push co-sign gate judge it. A restring rides
  *            kui: it names the line's tip it follows (`after`, as `lares lei show` reads it), and signs a lei after that tip.
  *            An unlit pūlama, an unopened face, a face whose anchors name no group, malformed terms, a count above twelve
@@ -39,7 +40,7 @@
  */
 import type { ExecLeiScope } from "@lararium/mesh";
 import {
-  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmTesseraPrefix,
+  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix,
   type Credential, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
@@ -217,6 +218,8 @@ export function pulamaHandDoor(a: {
           log(`lei ${act}: ${reading}`);
           return { op: "lei", act, reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
         }
+        // AN UNSTRING RESTS HERE TOO: the pūlama's own reuse of a begun half reads its records, never an offer that may omit it.
+        if (terms.parts.act === "lei-unstrung") await a.records.writeNew(swarmLeiUnstrungTitle(terms.parts.lei), JSON.stringify(record));
         log(`signed by hand: a ${terms.parts.act === "lei-unstrung" ? "lei's unstring" : "lei"} for h${face}; the vessel lands it`);
         return { op: "lei", act, reading: "signed", face, record, cid: swarmActCid(record), ...(act === "restring" ? { restrung: terms.after } : {}) };
       }
