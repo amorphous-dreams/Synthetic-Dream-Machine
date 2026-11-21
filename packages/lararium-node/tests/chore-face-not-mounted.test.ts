@@ -313,3 +313,10 @@ test("RED XV6 (Sol 407d): a lock during the session reply's durability flush del
   const env2 = await steady.open("h0");
   expect(JSON.stringify(await steady.peer.ask({ op: "session:call", ...env2, requestId: "s-visit-steady", verb: "tiddler-get", args: { ...VISIT, target: 1 } }))).toContain("the visited word");
 });
+
+test("RED XV7 (Sol 407e): a verb outside the visit reads, carrying a numeric `target` of its own, never meets the opening gate", async () => {
+  const v = await stand({ lit: [], opening: () => null });
+  const reply = await v.oneShot({ verb: "floor-pin", args: { target: 7 }, requestedBy: "0xplace", requestId: "pin-target" });
+  expect(reply).not.toMatchObject({ refusal: { reason: "face-not-open" } });
+  expect(v.placed.map((p) => [p.verb, p.args["target"]])).toEqual([["floor-pin", 7]]);
+});

@@ -151,6 +151,15 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     expect(body, "no sealed-anchor read gates the worker's drop").not.toContain("loadIdentityAnchors(");
   });
 
+  test("RED WELD (Sol 407e): the lit set the narrowing watcher reconciles includes every face the worker still holds lit (`workerLit`), and the visit gate reads the custody holder, never a watcher's copy", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    const light = source.slice(source.indexOf("const lightServedFaces"));
+    const tend = light.slice(0, light.indexOf("stood.push"));
+    expect(tend).toMatch(/unservedLitFaces\(served, mountedFace, new Set\(\[\.\.\.litSiblingOrdinals\(siblingFaces\.values\(\)\), \.\.\.workerLit\.keys\(\)\]\)\)/);
+    expect(source).toMatch(/const gateOpening = faceOpeningFrom\(standingCustody, /);
+    expect(source).toMatch(/faceOpening: \(ordinal\) => \(closingOrdinals\.has\(ordinal\) \? null : gateOpening\(ordinal\)\)/);
+  });
+
   test("WELD: the composition proves another face, and lists the faces it walks, only inside what the vessel serves", () => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     const proof = source.slice(source.indexOf("async function proofOfOtherFace"));

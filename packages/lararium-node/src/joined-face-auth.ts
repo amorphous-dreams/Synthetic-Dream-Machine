@@ -49,6 +49,8 @@ export interface SiblingDropOrder {
   readonly groups: readonly string[];
   /** The daemon island drops the face (its provider, engine, view and opening), draining its in-flight verbs first. */
   readonly dropWorker: (atomKey: string) => Promise<void>;
+  /** The island acknowledged the drop of `atomKey`: only now does the vessel let its retry key go. */
+  readonly acknowledged: (atomKey: string) => void;
   /** The face's queued saves flush and land sealed under its own session before that session drops. */
   readonly flushSaves: (group: string) => Promise<void>;
   /** The host side drops: what still waits unsaved, the cache, the face's session and its keepers. */
@@ -57,21 +59,23 @@ export interface SiblingDropOrder {
 }
 
 /**
- * A FACE THAT LEAVES DROPS FROM THE WORKER FIRST (Sol 407d): the daemon island hears the drop from the key held in memory, before
- * any host teardown and before any read a lock could have sealed, so its opening ends whatever follows. Then the face's queued
- * saves flush under its own session, and the host side drops. A worker drop that fails still tears the host side down, and a
- * host teardown that fails leaves the worker dropped; each failure answers after the order ran.
+ * A FACE THAT LEAVES (Sol 407d, 407e): the face stands closed to new reads before this runs (the visit gate reads the custody
+ * holder, and the door's lit set leaves it out). Its queued saves seal first, while its sealing seat in the daemon island and
+ * its document ownership still stand; then the island hears the drop from the key held in memory (never from a read a lock
+ * could have sealed) and acknowledges it, and only then does the vessel let that retry key go; then the host side drops. A
+ * failed flush logs by name and the drop goes on; a worker drop that fails keeps its key and still tears the host side down;
+ * a host teardown that fails leaves the worker dropped. Each failure answers after the order ran.
  */
 export async function dropSiblingInOrder(order: SiblingDropOrder): Promise<void> {
-  let workerFault: unknown = null;
-  for (const atomKey of new Set(order.workers)) {
-    try { await order.dropWorker(atomKey); } catch (error) { workerFault ??= error; }
-  }
   for (const group of order.groups) {
     try { await order.flushSaves(group); }
     catch (error) { order.log(`[lit-set] face ${group}'s queued saves did not flush before it dropped: ${error instanceof Error ? error.message : String(error)}`); }
-    order.teardownHost(group);
   }
+  let workerFault: unknown = null;
+  for (const atomKey of new Set(order.workers)) {
+    try { await order.dropWorker(atomKey); order.acknowledged(atomKey); } catch (error) { workerFault ??= error; }
+  }
+  for (const group of order.groups) order.teardownHost(group);
   if (workerFault !== null) throw workerFault;
 }
 

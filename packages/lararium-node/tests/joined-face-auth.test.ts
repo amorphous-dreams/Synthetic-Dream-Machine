@@ -178,35 +178,35 @@ describe("sibling generation ownership", () => {
   });
 });
 
-describe("a face that leaves drops from the worker first (Sol 407d)", () => {
+describe("a face that leaves: its saves seal first, the worker drops, the host side last (Sol 407d, 407e)", () => {
   const rig = (fail: { worker?: boolean; flush?: boolean; host?: boolean } = {}) => {
     const steps: string[] = [];
     const run = () => dropSiblingInOrder({
       workers: ["atom-1", "atom-1"], groups: ["group-1"],
-      dropWorker: async (key) => { steps.push(`worker:${key}`); if (fail.worker) throw new Error("worker drop failed"); },
       flushSaves: async (group) => { steps.push(`flush:${group}`); if (fail.flush) throw new Error("flush failed"); },
+      dropWorker: async (key) => { steps.push(`worker:${key}`); if (fail.worker) throw new Error("worker drop failed"); },
+      acknowledged: (key) => steps.push(`ack:${key}`),
       teardownHost: (group) => { steps.push(`host:${group}`); if (fail.host) throw new Error("host teardown failed"); },
       log: (line) => steps.push(`log:${line.split(":")[0]}`),
     });
     return { steps, run };
   };
 
-  test("RED: the worker drops first, from the key held in memory; the face's queued saves flush before its host side drops", async () => {
+  test("RED (407e): the face's queued saves seal while its seat and ownership still stand, then the worker drops (from memory) and acknowledges, then the host side drops", async () => {
     const r = rig();
     await r.run();
-    expect(r.steps).toEqual(["worker:atom-1", "flush:group-1", "host:group-1"]);
+    expect(r.steps).toEqual(["flush:group-1", "worker:atom-1", "ack:atom-1", "host:group-1"]);
   });
 
-  test("RED: a host teardown that fails still leaves the worker dropped; a worker drop that fails still tears the host side down", async () => {
-    const host = rig({ host: true });
-    await expect(host.run()).rejects.toThrow("host teardown failed");
-    expect(host.steps.slice(0, 1)).toEqual(["worker:atom-1"]);
+  test("RED (407e): a worker drop that fails keeps its retry key (no acknowledgement) and still tears the host side down; a failed host teardown leaves the worker dropped; a failed flush logs and the drop goes on", async () => {
     const worker = rig({ worker: true });
     await expect(worker.run()).rejects.toThrow("worker drop failed");
-    expect(worker.steps).toEqual(["worker:atom-1", "flush:group-1", "host:group-1"]);
-    // A flush that fails logs by name and the host side still drops.
+    expect(worker.steps).toEqual(["flush:group-1", "worker:atom-1", "host:group-1"]);
+    const host = rig({ host: true });
+    await expect(host.run()).rejects.toThrow("host teardown failed");
+    expect(host.steps).toEqual(["flush:group-1", "worker:atom-1", "ack:atom-1", "host:group-1"]);
     const flush = rig({ flush: true });
     await flush.run();
-    expect(flush.steps).toEqual(["worker:atom-1", "flush:group-1", "log:[lit-set] face group-1's queued saves did not flush before it dropped", "host:group-1"]);
+    expect(flush.steps).toEqual(["flush:group-1", "log:[lit-set] face group-1's queued saves did not flush before it dropped", "worker:atom-1", "ack:atom-1", "host:group-1"]);
   });
 });

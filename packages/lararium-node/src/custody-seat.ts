@@ -359,3 +359,18 @@ export async function faceWardKeyCustody(face: FaceRef): Promise<string> {
   return key;
 }
 
+/**
+ * THE VISIT GATE READS THE HOLDER (Sol 407e): the opening a face stands under right now, read synchronously off the standing
+ * custody holder (`faceOpening`: each open names a fresh one; a close names none), never off a copy a watcher keeps. A face the
+ * vessel holds no custody id for, or a holder that stands no reading, reads shut.
+ */
+export function faceOpeningFrom(
+  holder: () => { faceOpening?(fcid: string): string | null } | null,
+  fcidOf: (ordinal: number) => string | null,
+): (ordinal: number) => string | null {
+  return (ordinal) => {
+    const fcid = fcidOf(ordinal);
+    const standing = holder();
+    return fcid !== null && standing?.faceOpening ? standing.faceOpening(fcid) : null;
+  };
+}

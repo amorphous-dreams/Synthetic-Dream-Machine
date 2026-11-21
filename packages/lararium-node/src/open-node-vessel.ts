@@ -173,7 +173,7 @@ import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from "./persona-act-store.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
-import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
+import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened, faceOpeningFrom } from "./custody-seat.js";
 import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, siblingFaceWork, litSiblingOrdinals, dropSiblingInOrder, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -998,6 +998,15 @@ async function prepareNodeBootOn(
   /** The atom key the daemon island lit each sibling ordinal under, held in memory from its light to its drop: a drop tells the
    *  island from here, never from a read a lock could have sealed. */
   const workerLit = new Map<number, string>();
+  /** Each lit face's custody id by ordinal (the mount's and each sibling's, read at its light): the visit gate reads that
+   *  face's opening off the custody holder through it. An identity, never a copy of the opening. */
+  const custodyIds = new Map<number, string>();
+  /** The faces closing now: shut to new reads at once (the door's lit set leaves them out) while their saves still seal. */
+  const closingOrdinals = new Set<number>();
+  const noteCustodyId = (ordinal: number): void => {
+    void standingCustody()?.faceStanding({ ordinal }).then((standing) => { if (standing) custodyIds.set(ordinal, standing.fcid); }, () => {});
+  };
+  const gateOpening = faceOpeningFrom(standingCustody, (ordinal) => custodyIds.get(ordinal) ?? null);
   const siblingWork = siblingFaceWork();
   const litDevices = (): LitDeviceFaces => [
     ...(wornDeviceGroup !== null ? [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() }] : []),
@@ -2467,18 +2476,19 @@ async function prepareNodeBootOn(
     // The face leaves the lit set before the first await (the door reads it shut), and its proof flights void, including those
     // that have not named a group yet; its host side waits until the worker heard the drop.
     siblingWork.invalidate(ordinal);
+    closingOrdinals.add(ordinal);
     const leaving = [...siblingFaces].filter(([, held]) => held.ordinal === ordinal);
-    for (const [group, held] of leaving) detachSibling(group, held, false);
     return siblingWork.remove(ordinal, async () => {
       // THE WORKER FIRST, FROM MEMORY (Sol 407d): no read a lock could have sealed gates the island's drop. A pending provider
       // admission settles before its removal; a replacement light waits for both. Then the face's queued saves flush under its
       // own session, and its host side drops.
       try {
         const workers = [...leaving.map(([, held]) => held.atomKey), ...(workerLit.has(ordinal) ? [workerLit.get(ordinal)!] : [])];
-        workerLit.delete(ordinal);
         await dropSiblingInOrder({
           workers, groups: leaving.map(([group]) => group),
           dropWorker: (atomKey) => daemonVm.dropFace(atomKey),
+          // The retry key leaves only once the island acknowledged its drop.
+          acknowledged: (atomKey) => { if (workerLit.get(ordinal) === atomKey) workerLit.delete(ordinal); },
           flushSaves: async (group) => {
             const session = siblingSessions.get(group)?.cell.session() ?? null;
             if (session === null) return;
@@ -2487,10 +2497,17 @@ async function prepareNodeBootOn(
             try { await sealedRest.rebook(saving); } catch { /* it keeps waiting, and the host side forgets it below */ }
             await sealedRest.lock(saving.id);
           },
-          teardownHost: (group) => teardownSiblingHost(group, leaving.find(([g]) => g === group)![1]),
+          teardownHost: (group) => {
+            const held = leaving.find(([g]) => g === group)![1];
+            if (detachSibling(group, held, false)) teardownSiblingHost(group, held);
+          },
           log: (line) => console.warn(line),
         });
-      } finally { await intentRelay?.refresh(); }
+      } finally {
+        closingOrdinals.delete(ordinal);
+        custodyIds.delete(ordinal);
+        await intentRelay?.refresh();
+      }
     });
   };
   let daemonHolder!: DaemonVmHolder;
@@ -3603,6 +3620,8 @@ async function prepareNodeBootOn(
     // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
     // row the island's export lands in. The island receives only that face's atom and archive.
     mountFace = sovereign && deviceEdge ? mountedFace : null;
+    // The mount's custody id: a sibling's session visiting the mount meets the gate through it.
+    if (mountFace !== null) noteCustodyId(mountFace);
     const veilArchiveBytes = sovereign && activeAtom && personaGroupId ? await sovereign.veilArchive(personaGroupId) : null;
     // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
     // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
@@ -3714,6 +3733,7 @@ async function prepareNodeBootOn(
         held = { ordinal: entry.handleIndex, relation, face, atomKey: entry.atom.key, opening: ++siblingLights };
         siblingFaces.set(group, held);
         workerLit.set(entry.handleIndex, entry.atom.key);
+        noteCustodyId(entry.handleIndex);
       }
       const mine = held;
       const current = (): boolean => live() && siblingFaces.get(group) === mine;
@@ -3829,7 +3849,7 @@ async function prepareNodeBootOn(
         if (!siblingPorts || mountFace === null) return;
         let served: number[];
         try { served = await unlockedFaceOrdinals(); } catch { return; }
-        for (const ordinal of unservedLitFaces(served, mountedFace, litSiblingOrdinals(siblingFaces.values()))) {
+        for (const ordinal of unservedLitFaces(served, mountedFace, new Set([...litSiblingOrdinals(siblingFaces.values()), ...workerLit.keys()]))) {
           try { await dropFace(ordinal); }
           catch (e) { console.warn(`[lit-set] the face h${ordinal} the lend leaves unserved did not drop: ${e instanceof Error ? e.message : String(e)}`); }
         }
@@ -5098,13 +5118,10 @@ async function prepareNodeBootOn(
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     lightFace: (ordinal) => lightFace(ordinal), dropFace, mountOrdinal: () => mountFace,
     // A lit sibling counts once its own place session stands: its lane books under its own chain, or not at all.
-    litOrdinals: () => [...siblingFaces].filter(([group]) => siblingSessions.get(group)?.cell.session() != null).map(([, f]) => f.ordinal),
-    // The opening a lit face stands under: the mount's one standing, a sibling's light (each names a fresh one), none once shut.
-    faceOpening: (ordinal) => {
-      if (ordinal === mountFace) return "mount";
-      const lit = [...siblingFaces].find(([group, f]) => f.ordinal === ordinal && siblingSessions.get(group)?.cell.session() != null);
-      return lit ? `h${ordinal}:${lit[1].opening}` : null;
-    },
+    litOrdinals: () => [...siblingFaces].filter(([group, f]) => !closingOrdinals.has(f.ordinal) && siblingSessions.get(group)?.cell.session() != null).map(([, f]) => f.ordinal),
+    // THE VISIT GATE READS THE CUSTODY HOLDER (Sol 407e): the opening a face stands under right now, synchronously, off the
+    // holder's own standing; a face closing on this vessel reads shut at once.
+    faceOpening: (ordinal) => (closingOrdinals.has(ordinal) ? null : gateOpening(ordinal)),
     siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
     hostWorkingMounted: () => mountHostWorking(),

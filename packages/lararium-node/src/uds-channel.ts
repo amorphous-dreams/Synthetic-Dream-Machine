@@ -39,6 +39,7 @@
  */
 
 import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
+import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
 import { peerSeatOf } from "./uds-peer.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
@@ -1528,7 +1529,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         const visit = await crossFaceTargetAtDoor({ verb: inv.verb, args: inv.args, worn: sessionRequestId === undefined ? mount : inv.ordinal ?? mount, lit: litFaces(), petnames });
         if (!visit.ok) return fail(visit.message, visit.refusal);
         if (visit.args !== undefined) inv.args = visit.args;
-        const visited = inv.args?.["target"];
+        // Only a visit (a designated read naming another face's target, as the door resolved it) meets the opening gate.
+        const visited = CROSS_FACE_READ_VERBS.has(inv.verb) ? inv.args?.["target"] : undefined;
         if (typeof visited === "number") {
           const opening = openingOf(visited);
           if (opening === null) return fail(`face-not-open: ${inv.verb} — face h${visited} stands shut; a visit reads a lit face alone, and nothing ran`, "face-not-open");
