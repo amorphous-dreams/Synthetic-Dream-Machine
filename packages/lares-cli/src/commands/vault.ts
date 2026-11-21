@@ -25,6 +25,7 @@ import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
 import { houseFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
+import { wearOpenFace } from "./wear.js";
 import { pulamaStands } from "../house-config.js";
 import { emit, exitFor, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -353,6 +354,19 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
       emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. No route was asked; to wear another face standing open, run \`lares wear N\`.`) });
       return 0;
+    }
+    // `--face N` ON A HELD KEY READS THE CENSUS BEFORE ANY PROMPT: N standing open takes the wear (no route), a face standing
+    // nowhere refuses by name, and only a face shut under its own route still asks for that route.
+    if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] !== undefined) {
+      const face = faceOption(args)!;
+      const faces = await houseFaces();
+      if (faces.open.includes(face)) return await wearOpenFace(args, face, "vault unlock");
+      if (!faces.shut.includes(face) && faces.open.length + faces.shut.length > 0) {
+        const named = [...faces.open, ...faces.shut].sort((x, y) => x - y).map((f) => `h${f}`).join(", ");
+        const line = `no face h${face} stands on this vessel (it holds ${named}) — nothing was asked; name a face it holds (\`lares persona list\`).`;
+        emit(args, { ok: false, error: { code: "face-not-standing", message: line }, human: () => console.error(`lares vault unlock: ${line}`) });
+        return 1;
+      }
     }
   } else if (pulamaStands()) {
     // NO VESSEL STANDS AND A PŪLAMA KEEPS THIS HOUSE: a route proved here would open the slot tree around the pūlama, so
