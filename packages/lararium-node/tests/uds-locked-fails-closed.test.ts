@@ -90,7 +90,7 @@ describe("a locked hearth fails closed at the verb door", () => {
   test("L2 — RED (midnight petitioner): the receipt ledger over a locked control store answers no fact, durable or absent; it refuses `vessel-locked`", async () => {
     const v = await foundedThenLocked();
     const control = await standControlHome(v.repo, v.daemon);
-    const ledger = new FactLedger(controlStoreOf(control), v.repo, 16, 1);
+    const ledger = new FactLedger(controlStoreOf(control), v.repo, 16, "life-one");
     await expect(ledger.get("midnight-1")).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
     await expect(ledger.arbitrate("midnight-1", "digest", undefined, "memory-write")).rejects.toMatchObject({ refusal: VESSEL_LOCKED });
     await v.repo.shutdown();

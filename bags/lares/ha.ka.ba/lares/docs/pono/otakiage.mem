@@ -144,7 +144,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 | counted answer | `commands/shore.ts` `--all --count`; `shore-core.ts` `askShore` | a person answering more than one pending removal names the observed count; a moved count refuses the answer before anything changes |
 | ambiguity declines | `delete-gate.ts` `pairRenames` | a hash shared by more than one vanished address or more than one arrival re-links none of them; unmatched addresses remain pending |
 | grace per cap-tier | `cas-caps.ts` `GRACE_RATIO_BY_TIER`, `graceForTier` — `veil: 8 · personagroup: 4 · contract: 2 · public: 1` rolls | private tiers hold longest, because "Private tiers (one holder-set, no re-fetch road) hold longest" — a VEIL blob has no second copy to re-fetch |
-| PIN | `cas-caps.ts` `pinHolds`, `pinnedCids`; `node-cas.ts` `readCasPins` | a pinned blob never sweeps while its pin stands; explicit release or a later boot epoch superseding a fenced pin releases it to ordinary grace |
+| PIN | `cas-caps.ts` `pinHolds`, `pinnedCids`; `node-cas.ts` `readCasPins` | a pinned blob never sweeps while its pin stands; explicit release, or the end of the vessel life a held pin names (another life holding the store), releases it to ordinary grace |
 | the genesis protect set | `node-cas.ts` `CasSweepOptions.protect`, `casSweep` | the seed-derived genesis blobs never sweep |
 | ''the unbuilt one'' | `commands/watch.ts` module comment | "OWED: the file-grain rolling backup (`.stversions`-style) belongs at the PROJECTOR (backup-on-write) — content is gone from disk by the time a delete is detected" |
 
@@ -470,6 +470,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hbo4nqEPBXNBsUWDqPxocx9PfVnYyEK9JNuMvjvV09o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;my0VY-tNNDZiplv5d5rmExDnrWeGLv8RcPh6G9swCf8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

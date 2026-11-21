@@ -50,11 +50,12 @@ export function readKukuluOffer(path: string | undefined): unknown {
   } catch { return {}; }
 }
 
-/** The holder a vessel seats when its environment names a pūlama, or null where it names none. */
-export function vesselPulamaHolder(homes: CustodyHomes, env: Readonly<Record<string, string | undefined>> = process.env): PulamaHolder | null {
+/** The holder a vessel seats when its environment names a pūlama, or null where it names none. `life` names the vessel life
+ *  each hello dials for: the life id this vessel's store claim minted. */
+export function vesselPulamaHolder(homes: CustodyHomes, env: Readonly<Record<string, string | undefined>> = process.env, life?: { readonly id: string }): PulamaHolder | null {
   const socket = env[PULAMA_SOCKET_ENV]?.trim();
   if (!socket) return null;
-  return makePulamaHolder({ homes, dial: () => dialPulama(socket), offer: () => readKukuluOffer(env[KUKULU_OFFER_ENV]) });
+  return makePulamaHolder({ homes, dial: () => dialPulama(socket), offer: () => readKukuluOffer(env[KUKULU_OFFER_ENV]), ...(life ? { life: () => life } : {}) });
 }
 
 /** What a dial left standing: a session, or the reading the pūlama waits on. */

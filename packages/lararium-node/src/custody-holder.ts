@@ -280,6 +280,16 @@ export interface CustodyHolder {
   /** Hear each time one face this holder held open shuts (`lockFace`; a whole-holder `lock` drops every session instead). Returns the unsubscribe. */
   onClosed?(listener: () => void): () => void;
   /**
+   * TWO-PHASE CLOSE, FIRST PHASE (a pūlama's holder alone): hear the pūlama ask a lent face to close, naming its custody id and
+   * the opening it closes; the key stays until this vessel answers `faceClosed`. Returns the unsubscribe. A local holder closes in
+   * process (its lock door runs the face's close before `lockFace`), so it carries none.
+   */
+  onClosing?(listener: (fcid: string, opening: string | null) => void): () => void;
+  /** The faces the pūlama names closing now, by custody id (a pūlama's holder alone). */
+  closingFaces?(): readonly string[];
+  /** TWO-PHASE CLOSE, SECOND PHASE: this vessel stopped serving `fcid` under `opening`; the pūlama may lock the key. */
+  faceClosed?(fcid: string, opening: string | null): Promise<void>;
+  /**
    * ONE WARD ACT: open the face's ward key fresh from `credentials` (a human route; a passkey refuses), run `act` over that face's
    * warded rows, then zero the key. The face must stand unlocked. A miss spends one of the face's unlock attempts, as `unlockFace`'s
    * does. The key never enters the faces this holder holds open, and nothing here caches a credential or a key between acts.

@@ -177,4 +177,15 @@ describe("the shore census", () => {
     expect(census.carriers).toEqual([]);
     expect(census.unanswered.map((u) => u.part)).toEqual(["the active wiki's island's disk projector", "the daemon island's disk projector"]);
   });
+  test("R9 — a face served by custody and dark here prints its cause and clearing line, and leaves a clean census clean", async () => {
+    const c = capture();
+    const NOTE = "h1 served by custody, dark here: its light refused (daemon-down); clear it with `lares vault unlock` (it replays the lend), or the next custody event";
+    const code = await cmdCensus(args(false), lines({
+      custody: async () => ({ op: "census", held: [], standing: "hearth", facesLit: [0, 1], worn: 0, facesDark: [{ face: 1, cause: "daemon-down", note: NOTE }] }),
+    }));
+    expect(code).toBe(0);
+    expect(c.err).toContain(`census: ${NOTE}`);
+    expect((await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", facesLit: [0, 1], worn: 0, facesDark: [{ face: 1, cause: "daemon-down", note: NOTE }] }) }))).facesDark)
+      .toEqual([{ face: 1, cause: "daemon-down", note: NOTE }]);
+  });
 });

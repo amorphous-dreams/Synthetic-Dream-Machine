@@ -3,9 +3,9 @@
  *   · graceForTier reads RATIOS over the realm's baseline unit, never a constant; VEIL/PERSONAGROUP hold
  *     longer than CONTRACT/PUBLIC (the private tiers have one holder-set and no re-fetch road);
  *   · a torn baseline (0 / NaN / negative) reads as ONE unit, never a zero grace;
- *   · pinHolds / pinnedCids / prefetchAllows read a pin against its holder's own FENCE (M7, never a wall
- *     clock): no fence recorded → presence alone holds, forever; a recorded fence the holder's CURRENT
- *     fence has since passed → no longer holds. `PinCap`/`PrefetchCap` carry no `expiry` field at all.
+ *   · pinHolds / pinnedCids / prefetchAllows read a pin against its holder's own LIFE (M7, never a wall
+ *     clock and never an order): no life recorded → presence alone holds, forever; a recorded life holds while
+ *     it IS the holder's current life and nothing once another stands. `PinCap`/`PrefetchCap` carry no `expiry`.
  */
 import { describe, test, expect } from "vitest";
 import { graceForTier, GRACE_RATIO_BY_TIER, tiersByGraceDescending, pinHolds, pinnedCids, prefetchAllows, type PinCap, type PrefetchCap } from "../src/cas-caps.js";
@@ -30,41 +30,41 @@ describe("graceForTier — per tier, over the realm's baseline", () => {
   });
 });
 
-describe("PIN at cid grain — M7: no `expiry`, an OPTIONAL causal `fence` instead", () => {
-  test("no `fence` recorded: presence alone holds, under ANY reading (even one that looks like a far-future or a zero clock)", () => {
+describe("PIN at cid grain — M7: no `expiry`, an OPTIONAL causal `life` instead", () => {
+  test("no `life` recorded: presence alone holds, under ANY current life", () => {
     const pin: PinCap = { cid: "a".repeat(64), tier: "veil", holder: "vessel-1" };
-    expect(pinHolds(pin, pin.cid, 0)).toBe(true);
-    expect(pinHolds(pin, pin.cid, Number.MAX_SAFE_INTEGER)).toBe(true);   // CONTROL: no clock-shaped reading ever ends it
-    expect(pinHolds(pin, "b".repeat(64), 0)).toBe(false);                  // the wrong cid never holds
-    expect(pinHolds(undefined, pin.cid, 0)).toBe(false);
+    expect(pinHolds(pin, pin.cid, "life-a")).toBe(true);
+    expect(pinHolds(pin, pin.cid, "life-z")).toBe(true);
+    expect(pinHolds(pin, "b".repeat(64), "life-a")).toBe(false);           // the wrong cid never holds
+    expect(pinHolds(undefined, pin.cid, "life-a")).toBe(false);
   });
 
-  test("a recorded fence holds while the holder's CURRENT fence has not yet passed it, never past", () => {
-    const pin: PinCap = { cid: "a".repeat(64), tier: "veil", holder: "vessel-1", fence: 5 };
-    expect(pinHolds(pin, pin.cid, 5)).toBe(true);    // at the fence — inclusive
-    expect(pinHolds(pin, pin.cid, 4)).toBe(true);    // before it — holds
-    expect(pinHolds(pin, pin.cid, 6)).toBe(false);   // MUTATION: the holder's own next epoch supersedes it
+  test("a recorded life holds while it IS the holder's current life, and nothing once another stands — whatever the spelling would sort as", () => {
+    const pin: PinCap = { cid: "a".repeat(64), tier: "veil", holder: "vessel-1", life: "life-m" };
+    expect(pinHolds(pin, pin.cid, "life-m")).toBe(true);
+    expect(pinHolds(pin, pin.cid, "life-a")).toBe(false);   // MUTATION: another life (sorting before) ends it
+    expect(pinHolds(pin, pin.cid, "life-z")).toBe(false);   // and another sorting after ends it alike
   });
 
-  test("pinnedCids folds the standing set: a fenced pin past its fence drops, a presence-only one never does", () => {
-    const fenced   = { cid: "a".repeat(64), tier: "veil" as const, holder: "vessel-1", fence: 1 };
+  test("pinnedCids folds the standing set: a pin of another life drops, a presence-only one never does", () => {
+    const lived    = { cid: "a".repeat(64), tier: "veil" as const, holder: "vessel-1", life: "life-1" };
     const presence = { cid: "c".repeat(64), tier: "veil" as const, holder: "vessel-1" };
-    expect([...pinnedCids([fenced, presence], 4)].sort()).toEqual([presence.cid]);   // fenced (fence=1) superseded at reading 4
-    expect([...pinnedCids([fenced, presence], 0)].sort()).toEqual([fenced.cid, presence.cid].sort());
+    expect([...pinnedCids([lived, presence], "life-2")].sort()).toEqual([presence.cid]);
+    expect([...pinnedCids([lived, presence], "life-1")].sort()).toEqual([lived.cid, presence.cid].sort());
   });
 });
 
-describe("PREFETCH per peer — the same fence law, never a wall clock", () => {
+describe("PREFETCH per peer — the same life law, never a wall clock", () => {
   test("absent cap, or another holder, never opens", () => {
-    const cap: PrefetchCap = { tier: "contract", holder: "peer-a", fence: 5 };
-    expect(prefetchAllows(undefined, "peer-a", 0)).toBe(false);
-    expect(prefetchAllows(cap, "peer-b", 0)).toBe(false);
+    const cap: PrefetchCap = { tier: "contract", holder: "peer-a", life: "life-5" };
+    expect(prefetchAllows(undefined, "peer-a", "life-5")).toBe(false);
+    expect(prefetchAllows(cap, "peer-b", "life-5")).toBe(false);
   });
-  test("no fence recorded opens for every reading; a recorded fence closes once superseded", () => {
+  test("no life recorded opens under every life; a recorded life closes once another stands", () => {
     const openForever: PrefetchCap = { tier: "contract", holder: "peer-a" };
-    expect(prefetchAllows(openForever, "peer-a", Number.MAX_SAFE_INTEGER)).toBe(true);
-    const fenced: PrefetchCap = { tier: "contract", holder: "peer-a", fence: 5 };
-    expect(prefetchAllows(fenced, "peer-a", 5)).toBe(true);
-    expect(prefetchAllows(fenced, "peer-a", 6)).toBe(false);
+    expect(prefetchAllows(openForever, "peer-a", "life-any")).toBe(true);
+    const lived: PrefetchCap = { tier: "contract", holder: "peer-a", life: "life-5" };
+    expect(prefetchAllows(lived, "peer-a", "life-5")).toBe(true);
+    expect(prefetchAllows(lived, "peer-a", "life-6")).toBe(false);
   });
 });

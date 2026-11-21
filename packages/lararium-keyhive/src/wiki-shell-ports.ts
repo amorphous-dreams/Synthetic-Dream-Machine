@@ -6,8 +6,8 @@
  *
  *   · `owner`  — every realm the ledger binds the slug under, and the face's own derived cabal of one (`workbenchOwnership`);
  *   · `shared` — the faces other than this one the ledger seats in the face's workbench, and the share rows naming the slug;
- *   · `contents` / `clear` — the face's working, draft and personal layers (the daemon reads and clears its slot documents); a
- *                read that faults THROWS, never a zero;
+ *   · `contents` / `clear` — the face's working, draft and personal layers (the daemon reads and clears its slot documents),
+ *                the house's effect records counted apart from authored ones; a read that faults THROWS, never a zero;
  *   · `unbindSlots` — the face's draft and personal slot binding rows for the slug leave the daemon document;
  *   · `unbind` — the ledger rows binding the slug to the face's cabal leave (`retireWorkbench`);
  *   · `forget` — the hive forgets each shell bag's Document and the face plane's bag ledger drops its record, so the face's next
@@ -15,8 +15,8 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
-import { storedDeleted, workbenchSeats, type LarDoc } from "@lararium/mesh";
-import type { WikiShellCounts, WikiShellPorts } from "@lararium/tw5";
+import { isHouseEffectRecordOf, plainRecord, storedDeleted, wikiBagUri, wikiSlotUri, workbenchSeats, type LarDoc, type StoredLarRecord } from "@lararium/mesh";
+import type { WikiShellPorts } from "@lararium/tw5";
 import type { BagDocLedger } from "./bag-doc-ledger.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 import { retireWorkbench, workbenchOwnership, type LedgerDoc } from "./workbench-realm.js";
@@ -24,6 +24,38 @@ import { retireWorkbench, workbenchOwnership, type LedgerDoc } from "./workbench
 /** The live records a layer's document holds: every row but a tombstone. */
 export function liveRecordCount(doc: LarDoc | undefined | null): number {
   return Object.values(doc?.tiddlers ?? {}).filter((r) => !storedDeleted(r as never)).length;
+}
+
+/**
+ * THE HOUSE'S OWN EFFECT RECORD IN ONE LAYER (`isHouseEffectRecordOf`): the row reads back exactly as the effect recorder
+ * writes it for one bag that layer's ledger may hold (its own slot bag, or the wiki's canon bag): its title under
+ * `effectLedgerPrefix(<that bag>)` at its own event id, its `bag` field naming that very bag, no text, and no field beside the
+ * effect-record schema. The shape alone proves nothing (every field is
+ * writable), so the second wall stands on the write side: no hand's door writes a residency ledger
+ * (`refuseEffectLedgerWrite`: the tiddler door, the meme door, the engine's cascade). A row that fails any reading, or that
+ * no stored-record reading parses, counts as authored.
+ */
+export function isHouseEffectRecord(bags: readonly string[], title: string, record: unknown): boolean {
+  try {
+    const fields = plainRecord(record as StoredLarRecord).tiddler as Record<string, unknown>;
+    return bags.some((bag) => isHouseEffectRecordOf(bag, title, fields));
+  } catch { return false; }
+}
+
+/**
+ * The bags whose ledger a layer of `slug` may hold: the layer's own slot bag, and the wiki's canon bag (a gated ingest into
+ * canon lands its residency row beside the layer's records, `bags/<slug>/ledger/residency/*`, as the referee walk met it).
+ */
+const ledgerBagsOf = (slug: string, kind: "working" | "draft" | "personal"): readonly string[] => [wikiSlotUri(slug, kind), wikiBagUri(slug)];
+
+/** A layer's live records, split: the authored ones and the house's effect records for that layer's slot bag. */
+export function liveRecordSplit(doc: LarDoc | undefined | null, bags: readonly string[]): { readonly authored: number; readonly effects: number } {
+  let authored = 0, effects = 0;
+  for (const [title, r] of Object.entries(doc?.tiddlers ?? {})) {
+    if (storedDeleted(r as never)) continue;
+    if (isHouseEffectRecord(bags, title, r)) effects++; else authored++;
+  }
+  return { authored, effects };
 }
 
 /** The binding rows a face's draft or personal slot reads (the daemon document's store), as the shell ports scan them. */
@@ -65,7 +97,7 @@ export interface WikiShellPortsArgs {
   /** The share rows naming the slug (any kind), by their slug: the control document's `config/share` rows. */
   readonly shares: (slug: string) => Promise<readonly string[]>;
   /** The face's documents for each layer of the slug, null where none stands. A fault throws. */
-  readonly layers: (slug: string) => Promise<Readonly<Record<keyof WikiShellCounts, ShellLayerDoc | null>>>;
+  readonly layers: (slug: string) => Promise<Readonly<Record<"working" | "draft" | "personal", ShellLayerDoc | null>>>;
   readonly unbindSlots: WikiShellPorts["unbindSlots"];
   /** Runs once the shell's bindings left: a holder closes what it composed over them. */
   readonly afterForget?: () => Promise<void>;
@@ -81,12 +113,14 @@ export function wikiShellPorts(args: WikiShellPortsArgs): WikiShellPorts {
     },
     contents: async (slug) => {
       const l = await args.layers(slug);
-      return { working: liveRecordCount(l.working?.doc()), draft: liveRecordCount(l.draft?.doc()), personal: liveRecordCount(l.personal?.doc()) };
+      const w = liveRecordSplit(l.working?.doc(), ledgerBagsOf(slug, "working")), d = liveRecordSplit(l.draft?.doc(), ledgerBagsOf(slug, "draft")), p = liveRecordSplit(l.personal?.doc(), ledgerBagsOf(slug, "personal"));
+      return { working: w.authored, draft: d.authored, personal: p.authored, effects: w.effects + d.effects + p.effects };
     },
-    clear: async (slug) => {
+    clear: async (slug, only) => {
       const l = await args.layers(slug);
-      for (const layer of [l.working, l.draft, l.personal]) {
-        if (layer && Object.keys(layer.doc()?.tiddlers ?? {}).length > 0) layer.change((d) => { for (const title of Object.keys(d.tiddlers)) delete d.tiddlers[title]; });
+      for (const [kind, layer] of [["working", l.working], ["draft", l.draft], ["personal", l.personal]] as const) {
+        const doomed = Object.entries(layer?.doc()?.tiddlers ?? {}).filter(([title, r]) => only !== "effects" || isHouseEffectRecord(ledgerBagsOf(slug, kind), title, r)).map(([title]) => title);
+        if (layer && doomed.length > 0) layer.change((d) => { for (const title of doomed) delete d.tiddlers[title]; });
       }
     },
     unbindSlots: args.unbindSlots,

@@ -58,7 +58,9 @@ describe("e2e/session-wears-the-lit-face", () => {
  *   W4  CONTROL: a face that stands shut refuses `face-not-open`, and nothing writes
  *   W5  a read of every face's names (`persona list`, the custody door's `selves.read`) leaves no save held in memory: the
  *       census reads no `held-save`, since the lit sibling's selves record seals under that sibling's own hive
- *   W6  EACH ARCHIVE NAMES ITS FACE (the 2026-11-20 custody incident): wear face 1 with face 0 lit beside it, stop the
+ *   W6  EACH FACE LIVES ONE LIFE: a lock of the lit sibling closes it through its actor before its key locks; it then
+ *       refuses work by name while the worn face keeps writing, and a fresh light serves it again
+ *   W7  EACH ARCHIVE NAMES ITS FACE (the 2026-11-20 custody incident): wear face 1 with face 0 lit beside it, stop the
  *       daemon, boot it again on the same root and wear face 1 again: face 1 stands (no `ArchiveIdentityMismatch`), and
  *       neither boot's log names a veil archive the seal refused, so no hive's Archive ever reached another face's row; a
  *       write the lit sibling (face 0) made before the stop reads back after the boot, so the stop dropped none of its saves
@@ -71,7 +73,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.replace("lar:///", "")}"\n\`\`\`\n\n` +
     `<<~ ahu slot=\`#/entry\`>>\n\n! ${word}\n\n${word} stands in its own layer.\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
   let walk: LarInstance;
-  /** W6's second daemon over the walk's own root, after the stop. */
+  /** W7's second daemon over the walk's own root, after the stop. */
   let restand: LarInstance | null = null;
   /** Face 0's own daemon canon, the walk's first worn face. */
   let faceZeroBag = "";
@@ -199,7 +201,31 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(errCode(tid), out(tid)).toBe("face-not-open");
   }, 120_000);
 
-  test("W6 RED: wear face 1 with face 0 lit, stop, boot, wear face 1 again: it stands, and no Archive reached another face's row", async () => {
+  test("W6 EACH FACE LIVES ONE LIFE: a lock of the lit sibling closes it through its actor before its key locks; it then refuses work by name while the worn face keeps writing, and a fresh light serves it again", async () => {
+    const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };
+    const locked = await door.unlockTestCustody(walk.root, "lock", 1);
+    expect(locked, JSON.stringify(locked)).toMatchObject({ locked: true, face: 1 });
+    const file = join(scratch, "closed-lane.mem");
+    writeFileSync(file, memeText("lar:///ha.ka.ba/kahua/memory/walk/closed-lane", "Closed"));
+    const shut = await walk.cli(["meme", "put", "lar:///ha.ka.ba/kahua/memory/walk/closed-lane", "--bag", siblingBag, "--file", file, "--face", "1", "--json"]);
+    expect(shut.code, out(shut)).not.toBe(0);
+    expect(["face-not-open", "face-closing"], out(shut)).toContain(errCode(shut));
+    const wornFile = join(scratch, "worn-after-close.mem");
+    writeFileSync(wornFile, memeText("lar:///ha.ka.ba/kahua/memory/walk/worn-after-close", "Worn"));
+    const worn = await walk.cli(["meme", "put", "lar:///ha.ka.ba/kahua/memory/walk/worn-after-close", "--recipe", "default", "--file", wornFile, "--json"]);
+    expect(worn.code, out(worn)).toBe(0);
+    // The light again: the unlock lights the sibling under a fresh opening, and its lane takes a write.
+    await door.unlockTestCustody(walk.root, "unlock", 0);
+    let relit: CliResult | null = null;
+    for (let look = 0; look < 60; look++) {
+      relit = await walk.cli(["meme", "get", MEME, "--bag", siblingBag, "--face", "1", "--json"]);
+      if (relit.code === 0) break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    expect(relit?.code, relit ? out(relit) : "never asked").toBe(0);
+  }, 240_000);
+
+  test("W7 RED: wear face 1 with face 0 lit, stop, boot, wear face 1 again: it stands, and no Archive reached another face's row", async () => {
     const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };
     const faceBagOf = (r: CliResult): string => ((data(r)["layers"] ?? []) as Array<{ bag: string }>).map((l) => l.bag).find((b) => /\/bags\/daemon-/.test(b)) ?? "";
     const wornBagOf = async (instance: LarInstance): Promise<string> => {

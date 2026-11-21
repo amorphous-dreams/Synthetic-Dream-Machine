@@ -482,3 +482,41 @@ describe("P2-6: a stop inside the fresh base's rest never strands the base", () 
     expect("refusal" in after ? said(after) : "sealed").toBe("sealed");
   });
 });
+
+// EACH FACE LIVES ONE LIFE (face-lifecycle): a face's drain flushes its own bags alone, so one face's seal in flight never holds
+// another face's close. Seals of one bag still take their turns in order.
+describe("SOL R7 (face drains share the sealed-store flush queue): each bag takes its own turn line", () => {
+  it("a seal of one bag held in flight never holds the flush of another bag; the whole flush still waits for it", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const own = faceProofSubjectRef(a.chain.scope);
+    const OTHER = "lar:///ha.ka.ba/@test/bags/other-face-notes";
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let held = false;
+    const store = new SealedDocumentStore({
+      inner: memoryAdapter(),
+      bagOf: (documentId) => ({ bagId: documentId === "doc-slow" ? BAG : OTHER, face: own }),
+      sessionFace: () => own,
+      sessionOf: () => ({ id: "the-writing-session", subject: own }),
+      seal: async ({ bagId, values }) => {
+        if (bagId === BAG && !held) { held = true; await gate; }
+        return a.holder.sealValues({ bagId, values, signer: a.signer });
+      },
+      open: (args) => a.holder.openValue(args),
+    });
+    const bytes = A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; }));
+    const slow = store.save(["doc-slow", "incremental", "c1"], bytes);
+    await new Promise((r) => setTimeout(r, 20));
+    await store.save(["doc-quick", "incremental", "c1"], bytes);
+    let otherFlushed = false, allFlushed = false;
+    const other = store.flush([OTHER]).then(() => { otherFlushed = true; });
+    const all = store.flush().then(() => { allFlushed = true; });
+    await other;
+    expect(otherFlushed, "the other bag's flush never waits on the held seal").toBe(true);
+    expect(allFlushed, "the whole flush still waits for every seal").toBe(false);
+    release();
+    await slow; await all;
+    expect(allFlushed).toBe(true);
+  });
+});

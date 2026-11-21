@@ -35,8 +35,9 @@ export interface PulamaFixture {
   readonly treeKey: TreeKey;
   /** Every line each end of every channel sent. */
   readonly lines: { readonly fromVessel: string[]; readonly fromPulama: string[] };
-  /** A vessel-side holder over a fresh channel pair; `channel` reads the vessel's end of the latest pair. */
-  vessel(offer?: unknown): PulamaHolder;
+  /** A vessel-side holder over a fresh channel pair; `channel` reads the vessel's end of the latest pair. `life` rides the hello
+   *  beside the offer, as a vessel names the life id its store claim minted; absent, the hello names no life. */
+  vessel(offer?: unknown, life?: unknown): PulamaHolder;
   channel(): PulamaChannel | null;
   drop(): Promise<void>;
 }
@@ -51,10 +52,11 @@ export async function standPulama(label: string, gate: (kept: CustodyHolder) => 
   let latest: PulamaChannel | null = null;
   return {
     seat, local: seat.holder, kept, server, faceKeys, treeKey: seat.treeKey, lines,
-    vessel(offer = {}) {
+    vessel(offer = {}, life?: unknown) {
       return makePulamaHolder({
         homes: seat.homes,
         offer: () => offer,
+        ...(life !== undefined ? { life: () => life } : {}),
         dial: async () => {
           const pair = pulamaChannelPair();
           // The pair's own line logs fold into the fixture's, so a witness scans every channel a test opened.

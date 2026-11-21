@@ -23,6 +23,10 @@
  *            lights. It rides this door's one chain, so `light` never opens the face mid-act. The answer names what moved, what
  *            was lost and the pūlama-path acts that come next.
  *   lock     every session drops and every key zero-fills.
+ *   close    ONE FACE CLOSES IN TWO PHASES (`face`, by its whole ordinal): the pūlama tells every vessel that lends it, keeps
+ *            the key while each drains, and locks it once each answered; one no vessel lends locks at once. It answers
+ *            `closing` with the count still to answer, and `status` names each such face ("the vessel has not answered its
+ *            close"). No clock locks it: `force: true` is the operator's hand confirming the forced lock.
  *   status   lit or not, the faces open, the sessions standing, attempts left, the image the host reported; while lit, the
  *            admitted digests and the ended ones. Opens nothing.
  *   image    THE HOST'S REPORT of the image digest it raises (the kūkulu gate's input port), with an optional seed line: the
@@ -133,7 +137,11 @@ export function pulamaHandDoor(a: {
   let chain: Promise<unknown> = Promise.resolve();
   // THE SEED LINE the host reported beside the image; a later report with no line clears it.
   let seed: string | null = null;
-  const status = () => ({ lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised(), ...(seed !== null ? { seed } : {}) });
+  const status = () => {
+    const closing = server.closing();
+    return { lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised(),
+      ...(seed !== null ? { seed } : {}), ...(closing.length ? { closing } : {}) };
+  };
   /** The admitted digests and the ended ones, read under the pūlama's key: an unlit pūlama names none. */
   const admissionDigests = async () => {
     if (!a.admissions || !holder.isUnlocked()) return {};
@@ -274,6 +282,16 @@ export function pulamaHandDoor(a: {
         }
       }
       case "lock": await server.lock(); return { op: "lock", ...status() };
+      case "close": {
+        if (!holder.isUnlocked()) return { op: "close", reading: "pulama-locked", ...status() };
+        const face = f["face"];
+        if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || (f["force"] !== undefined && typeof f["force"] !== "boolean")) {
+          return { op: "close", reading: "malformed", detail: "a close names the face by its whole ordinal, and `force` true or false" };
+        }
+        const closed = await server.closeFace(face, { force: f["force"] === true });
+        log(`close: face h${face} ${closed.reading}`);
+        return { op: "close", ...closed, ...status() };
+      }
       case "status": return { op: "status", ...status(), ...await admissionDigests() };
       case "image": {
         if (typeof f["digest"] !== "string") return { op: "image", reading: "malformed" };

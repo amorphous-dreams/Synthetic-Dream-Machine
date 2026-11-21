@@ -69,6 +69,22 @@ describe("only the hand door lights the pūlama", () => {
     expect(JSON.stringify([lit, lines])).not.toContain(FIXTURE_PASSPHRASE);
     expect(JSON.stringify(lines)).not.toContain("a-wrong-route");
   });
+
+  test("THE OPERATOR'S HAND CLOSES ONE FACE: `close` tells the lending vessel and answers closing, `status` names the face its vessel has not answered, and `force` locks it", async () => {
+    fx = await standPulama("pulama-hand-close", () => openGate({ faces: lend(0), coldReads: [] }));
+    const face = await fx.kept.foundFace({ group: personaGroupDigest("group-hand-close"), ordinal: 0, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const dir = scratch();
+    const door = pulamaHandDoor({ holder: fx.kept, server: fx.server, image: pulamaImage(dir), records: pulamaRecords(dir) });
+    expect(await door({ op: "close", face: "h0" })).toMatchObject({ op: "close", reading: "malformed" });
+    expect(await door({ op: "close", face: 0 })).toMatchObject({ op: "close", reading: "closing", face: 0, unanswered: 1 });
+    expect(await door({ op: "status" })).toMatchObject({ closing: [{ face: 0, unanswered: 1, note: "face h0: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand" }] });
+    expect(fx.kept.unlockedFaces()).toContain(face.fcid);
+    expect(await door({ op: "close", face: 0, force: true })).toMatchObject({ op: "close", reading: "locked", forced: true });
+    expect(fx.kept.unlockedFaces()).not.toContain(face.fcid);
+    expect(await door({ op: "status" })).not.toHaveProperty("closing");
+  });
 });
 
 describe("a vessel finds its pūlama by one name and stands by it", () => {

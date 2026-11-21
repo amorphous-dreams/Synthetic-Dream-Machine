@@ -134,3 +134,15 @@ test("--force --count rides as the typed confirmation; --count without --force a
   expect(sent).toEqual([]);
   expect(existsSync(folder())).toBe(true);
 });
+
+test("RED (referee walk #5) --dry-run and the landed retire name the house's effect records apart from the authored ones", async () => {
+  answer = { status: "done", output: { slug: SLUG, status: "would-retire", catalogRows: ["a"], realmId: ID, records: { working: 0, draft: 0, personal: 0, effects: 1 }, total: 0 } };
+  expect(await run("--dry-run")).toBe(0);
+  expect(text).toMatch(/authored records: 0 \(working 0, draft 0, personal 0\)/);
+  expect(text).toMatch(/effect records:\s+1 \(the house's own residency rows; they leave with the shell, unforced\)/);
+  text = "";
+  answer = retired(ID);
+  (answer.output!["records"] as Record<string, number>)["effects"] = 1;
+  expect(await run()).toBe(0);
+  expect(text).toMatch(/records destroyed:\s+none authored; 1 effect record\(s\) dropped with the shell/);
+});

@@ -139,6 +139,18 @@ The CLI's `connectAdminVessel`+`submitVerb` (Repo + sync) becomes `invokeLocal`
    (`verb-call.runVerb`); an absent socket raises `DaemonUnreachable`, never a replica.
 # ''Auth:'' SO_PEERCRED + socket perms gate the channel; the per-call Ed25519/
    capability stays the authority verified by the daemon.
+# ''The state-side presence claim'' (`owned-store`, `<storageDir>/.holder`): the
+   rendezvous lives in a runtime dir a second container never sees, so every store
+   holder also binds a socket named inside the storage dir itself, taken FIRST and
+   released LAST around the rendezvous claim. A second holder on the same state, in
+   another container or namespace, finds it answering and refuses
+   `StoreHeldElsewhere`; a holder the rendezvous can see gets the store refusal
+   instead. Its reach holds within ONE KERNEL: a unix socket on a shared mount meets
+   across containers on one host. ''Named hazard, the VM line:'' a hearth on a share
+   that crosses a VM boundary (9p, virtiofs, a network share, `/mnt/c` under WSL, a
+   Docker Desktop host mount) may carry the socket file without its listener, so two
+   holders could each read the other as gone. A claim-time probe that refuses such a
+   hearth stands unbuilt and waits on a measured rehearsal.
 
 ''Measured (first live run, recall + status migrated):'' the per-command connect+sync
 overhead drops from ~0.4–0.5s (WS leaf-replica + sync) to ~0.1s (UDS round-trip) —
@@ -161,6 +173,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Noe__OWPV6OgMCHluyoDkqPVDRV2elNbX30IOuJ37I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CKj0o8kdOG1DpThkx5LFo8DfYNPzNt8RfDxU6Xr8v3Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>
