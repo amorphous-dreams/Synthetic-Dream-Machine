@@ -11,7 +11,7 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { hex, personaScopedBagIds } from "@lararium/mesh";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 
-const fault = vi.hoisted(() => ({ afterGroup: false, group: "" }));
+const fault = vi.hoisted(() => ({ afterGroup: false, afterAnchors: false, group: "" }));
 vi.mock("../src/identity-anchors.js", async (importActual) => {
   const actual = await importActual<typeof import("../src/identity-anchors.js")>();
   return {
@@ -23,6 +23,15 @@ vi.mock("../src/identity-anchors.js", async (importActual) => {
         throw new Error("planted after the group row");
       }
       return actual.persistVeilArchive(...args);
+    },
+    // A STOP AFTER THE ANCHORS LAND: the row rests, and the founding stops before its bootstrap entry commits.
+    persistIdentityAnchors: async (...args: Parameters<typeof actual.persistIdentityAnchors>) => {
+      await actual.persistIdentityAnchors(...args);
+      if (fault.afterAnchors) {
+        fault.afterAnchors = false;
+        fault.group = args[0].personaGroupId;
+        throw new Error("planted after the anchors");
+      }
     },
   };
 });
@@ -147,6 +156,23 @@ describe("a forced re-seed mints a fresh atom", () => {
       expect(hex((await loadFaceAtomOfGroup(resumed.personaGroupId))!), "the checkpoint keeps the same seed").toBe(hex(stoppedSeed));
       const rows = await groupRows();
       expect(rows.filter(({ seed }) => hex(seed) === hex(stoppedSeed)), "exactly one row holds the stopped seed").toHaveLength(1);
+    });
+  }, 180_000);
+
+  test("control: a persona new stopped after its anchors land resumes on retry: the same group, and the face stands", async () => {
+    const { root, genesisDir } = await rig();
+    await withLarRoot(root, async () => {
+      fault.afterAnchors = true;
+      await expect(foundFace({ genesisDir, handleIndex: 1 })).rejects.toThrow("planted after the anchors");
+      const stoppedGroup = fault.group;
+      expect((await loadIdentityAnchors(1))?.personaGroupId, "the anchors landed before the stop").toBe(stoppedGroup);
+      const resumed = await foundFace({ genesisDir, handleIndex: 1 });
+      expect(resumed.alreadyStood).toBe(false);
+      expect(resumed.personaGroupId, "the retry finishes the same group").toBe(stoppedGroup);
+      const packed = JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, { text?: string }> };
+      expect(packed.tiddlers[personaScopedBagIds(stoppedGroup).identities]?.text, "the bootstrap entry commits the face").toBeTruthy();
+      // and a third run reads it stood
+      expect((await foundFace({ genesisDir, handleIndex: 1 })).alreadyStood).toBe(true);
     });
   }, 180_000);
 });

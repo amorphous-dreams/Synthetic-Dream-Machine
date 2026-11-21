@@ -2929,11 +2929,13 @@ async function prepareNodeBootOn(
     catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
     // At the FLOOR no key is held, custody refuses `CustodyLocked`, and the vessel boots faceless (no pin rests in the clear).
-    let atFloor = false;
+    // A COMPOSITION THAT HOLDS NO SOVEREIGN READERS STANDS AT THE FLOOR, whatever key custody holds: it reads no face's anchors (a
+    // face left open beside a locked worn face, or a join still pending, names no mount here).
+    let atFloor = sovereign === null;
     const orFloor = async <T,>(read: () => Promise<T | null>): Promise<T | null> => {
       try { return await read(); } catch (e) { if (e instanceof CustodyLocked) { atFloor = true; return null; } throw e; }
     };
-    const foundingAnchors = wornMount ? null : await orFloor(() => loadIdentityAnchors(0));
+    const foundingAnchors = wornMount || atFloor ? null : await orFloor(() => loadIdentityAnchors(0));
     const bootMount = wornMount ?? foundingAnchors;
     // Custody selects the mounted face. The daemon document may project its pins but never selects one.
     const personaGroupId = bootMount?.personaGroupId ?? undefined;

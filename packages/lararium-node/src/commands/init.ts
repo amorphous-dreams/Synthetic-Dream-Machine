@@ -47,7 +47,7 @@ import { personaGroupDigest } from "../persona-group-file.js";
 import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
 import { foundingVesselFaceTagDoor, settleFoundingVesselFaceTag } from "../vessel-face-tag-store.js";
 import { landFaceAddressSecret, mintFaceAddressSecret } from "../fleet-join-custody.js";
-import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingGroup, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
+import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, foundingCheckpointNames, recoverFoundingGroup, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
 import { readFaceIndexSync } from "../face-index.js";
 import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
@@ -560,9 +560,11 @@ export async function armRecoveryAtFounding(
  * one founding that may stand there is the interrupted founding of that same group, which its checkpoint (opened under the group's
  * own seed) names. Refuses `anchors-face-mismatch`; a re-found takes a new handle.
  */
-async function refuseFreshGroupAtHeldHandle(handleIndex: number, ask: FoundingAtomAsk, repo: Repo): Promise<void> {
+async function refuseFreshGroupAtHeldHandle(handleIndex: number, ask: FoundingAtomAsk, repo: Repo, anchoredResume: string | null): Promise<void> {
   const held = readFaceIndexSync(larIdentityDir()).faces[handleIndex];
   if (held === undefined || !("fcid" in held) || held.group === null) return;
+  // A FOUNDING STOPPED AFTER ITS ANCHORS LANDED resumes its own group: the handle's anchors name the bound group and this ask.
+  if (anchoredResume !== null && personaGroupDigest(anchoredResume) === held.group) return;
   const home = await openVesselSecretHomeIfNamed(repo);
   const resume = await recoverFoundingGroup(ask, home?.handle.doc()?.tiddlers ?? {});
   if (resume !== null && personaGroupDigest(resume.group) === held.group) { resume.seed.fill(0); return; }
@@ -570,8 +572,18 @@ async function refuseFreshGroupAtHeldHandle(handleIndex: number, ask: FoundingAt
   throw new Error(`anchors-face-mismatch: face h${handleIndex} stands under another PersonaGroup, and this founding would mint a new one there; a re-found takes a new handle; nothing was written`);
 }
 
+/** The group of an interrupted founding of this ask that stopped after its anchors landed, or null. */
+async function anchoredFoundingResume(ask: FoundingAtomAsk, prior: IdentityAnchors | null, repo: Repo): Promise<string | null> {
+  if (prior === null || prior.foundingAskDigest !== foundingAskDigest(ask)) return null;
+  const seed = await loadFaceAtomOfGroup(prior.personaGroupId);
+  if (!seed) return null;
+  try {
+    const home = await openVesselSecretHomeIfNamed(repo);
+    return await foundingCheckpointNames(ask, home?.handle.doc()?.tiddlers ?? {}, seed, prior.personaGroupId) ? prior.personaGroupId : null;
+  } finally { seed.fill(0); }
+}
+
 export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFaceResult> {
-  await sweepFoundingSeeds();
   const defaults    = defaultDirs();
   const genesisDir  = opts.genesisDir ?? defaults.genesisDir;
   const handleIndex = opts.handleIndex ?? 0;
@@ -661,7 +673,13 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // A HANDLE ANOTHER GROUP HOLDS TAKES NO NEW GROUP, read before this founding touches anything (its custody, root, secret home,
   // ask row, plane documents, genesis or checkpoint): only the interrupted founding of that same group resumes there. A re-found
   // takes a handle of its own.
-  await refuseFreshGroupAtHeldHandle(handleIndex, foundingAsk, repo);
+  // The founding this ask stopped after its anchors landed (their ask digest names this ask; no bootstrap entry commits it yet).
+  // Its anchors name this ask, and its checkpoint (opened under that group's own seed) still stands: a completed founding retires
+  // its checkpoint with its bootstrap entry, so an orphan whose entry left reads as no resume.
+  const anchoredResume = await anchoredFoundingResume(foundingAsk, priorAnchors, repo);
+  await refuseFreshGroupAtHeldHandle(handleIndex, foundingAsk, repo, anchoredResume);
+  // THE SEED SWEEP RUNS PAST THE GUARD: a refused founding retires no pending row.
+  await sweepFoundingSeeds();
   let born: WardCredential | null = null;
   await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex, (slots) => { born = wardCredentialOfRoute(slots); });
   const ward = opts.ward ?? born ?? undefined;
@@ -680,7 +698,8 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside the secret home (operator ruling 2026-11-09): the daemon document names
   // it, so a locked floor's stand finds it before the custody row opens. The first name the daemon document took holds.
   if (secret.controlUrl) nameControlHome(daemonHandle, secret.controlUrl);
-  const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
+  const atomSeed = (anchoredResume !== null ? await loadFaceAtomOfGroup(anchoredResume) : null)
+    ?? (await loadPendingFoundingSeed(foundingAsk))
     ?? await recoverFoundingSeedFromGroup(foundingAsk, secret.handle.doc()?.tiddlers ?? {})
     ?? await standPendingFoundingSeed(foundingAsk);
   const face = await foundTheFace({

@@ -74,8 +74,22 @@ describe("e2e/first-admit-lands-second", () => {
   }, 120_000);
 
   test("L2 RED: lock --face 1 never slides onto the pending h0, and a second unlock --all wears h1 again", async () => {
+    // The lock composes the vessel again, down to the floor; the caller's line may close with the sovereign composition it
+    // leaves (its answer then reads null), so the census below reads what stands once the floor answers.
     const locked = await send({ op: "lock", face: 1 });
-    expect(locked, JSON.stringify(locked)).toMatchObject({ op: "lock", locked: true });
+    if (locked !== null) expect(locked, JSON.stringify(locked)).toMatchObject({ op: "lock", locked: true });
+    expect(B!.bootLog()).toContain("no open face holding anchors takes h1's mount; the vessel stands at the floor");
+    // BETWEEN THE LOCK AND THE REOPEN: no composition stands for h1 (its key dropped), and no default mount stands on the pending h0;
+    // the vessel reads the floor.
+    let between: Record<string, unknown> | null = null;
+    for (let look = 0; look < 120 && (between === null || between["standing"] === "recomposing"); look++) {
+      between = await send({ op: "census" });
+      if (between === null || between["standing"] === "recomposing") await new Promise((r) => setTimeout(r, 500));
+    }
+    expect(between, B!.bootLog().slice(-2000)).not.toBeNull();
+    expect(between?.["worn"], `h1's composition outlived its key: ${JSON.stringify(between)}`).toBeUndefined();
+    expect(between?.["facesLit"] ?? [], JSON.stringify(between)).not.toContain(1);
+    expect(between?.["standing"], "the vessel composed again, off h1's sovereign standing").not.toBe(unlocked?.["standing"]);
     const again = await send({ op: "unlock", credentials: route, all: true });
     expect(again, JSON.stringify(again)).toMatchObject({ op: "unlock", held: true, wears: 1 });
     expect(again?.["refused"], `the composition refused: ${B!.bootLog().slice(-2000)}`).toBeUndefined();

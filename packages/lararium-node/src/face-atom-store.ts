@@ -159,6 +159,25 @@ export async function recoverFoundingSeedFromGroup(
   return (await recoverFoundingGroup(ask, checkpoints))?.seed ?? null;
 }
 
+/** Whether a founding checkpoint for this ask, opened under `seed`, names `group`: the founding of that group stands interrupted
+ *  (a completed founding retires its checkpoint with its bootstrap entry). */
+export async function foundingCheckpointNames(
+  ask: FoundingAtomAsk, checkpoints: Readonly<Record<string, unknown>>, seed: Uint8Array, group: string,
+): Promise<boolean> {
+  const scope = JSON.stringify([ask.hearthTrueName, ask.bindingMode, ask.personaKelPrefix, ask.mount, foundingAskDigest(ask)]);
+  const prefix = "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/";
+  for (const [title, record] of Object.entries(checkpoints)) {
+    if (!title.startsWith(prefix)) continue;
+    const body = tiddlerText(record as StoredLarRecord);
+    if (body === null) continue;
+    try {
+      const checkpoint = await openCheckpoint(body, seed) as { scope?: unknown; result?: { personaGroupId?: unknown } };
+      if (checkpoint.scope === scope && checkpoint.result?.personaGroupId === group) return true;
+    } catch { /* another seed's checkpoint */ }
+  }
+  return false;
+}
+
 /** The interrupted founding this ask resumes, as `recoverFoundingSeedFromGroup` finds it: its group seed and the group its checkpoint names. */
 export async function recoverFoundingGroup(
   ask: FoundingAtomAsk, checkpoints: Readonly<Record<string, unknown>>,

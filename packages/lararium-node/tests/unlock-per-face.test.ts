@@ -239,9 +239,14 @@ describe("the unlock answers honestly, and a failed switch wears the face it lef
     await v.holder.lock();
     setMountedFace(undefined);
     expect(await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true })).toMatchObject({ held: true, wears: 1 });
+    const composedBefore = v.composed.length;
     const locked = await v.send({ op: "lock", face: 1 });
     expect(locked).toMatchObject({ op: "lock", locked: true });
     expect(mountedFaceOrdinal(), "the mount never slides onto the pending h0").not.toBe(0);
+    // NO COMPOSITION STANDS FOR h1 ONCE ITS KEY DROPS: the vessel composed again, and no default mount picks the pending h0, so it
+    // stands at the floor (Sol, #408 round 4).
+    expect(v.composed.length, "the lock composed again").toBe(composedBefore + 1);
+    expect(sovereignStands(), "no default mount stands on the pending h0").toBe(false);
     const again = await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
     expect(again).toMatchObject({ held: true, wears: 1 });
     expect(mountedFaceOrdinal()).toBe(1);

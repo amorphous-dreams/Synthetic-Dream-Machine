@@ -48,7 +48,7 @@ import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } 
 import type { Socket } from "node:net";
 import type { Credential, DocCensusReading, HeldSaves, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
-import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
+import { clearDaemonMount, daemonMountOrdinal, mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";
 import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
@@ -439,6 +439,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
     const wasMounted = sovereignStands();
+    // The face the composition wears now, by the unlock's name or the default rule: a lock of THAT face composes again, always.
+    const mountBefore = wasOpen ? await daemonMountOrdinal() : undefined;
+    const namedMount = mountedFaceOrdinal() === ordinal && !mountByOpening;
     if (wasOpen && ordinal !== mountedFaceOrdinal() && deps.dropFace) {
       // A lock answers locked only once the provider is gone: a refused drop leaves the key open and the answer an error.
       try { await deps.dropFace(ordinal); }
@@ -449,18 +452,16 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     }
     await holder.lockFace(named.fcid);
     deps.onLog(`locked: face h${ordinal} key dropped`);
-    // A MOUNT THE OPENING CHOSE SLIDES: locked, it moves to the next face standing open, and the vessel composes there.
-    if (wasOpen && mountByOpening && ordinal === mountedFaceOrdinal()) {
+    // A MOUNT THE OPENING (OR THE DEFAULT RULE) CHOSE SLIDES: locked, it moves to the next open face holding anchors, and the
+    // vessel composes there. With none, NO MOUNT stands: the vessel composes at the floor (no default rule picks a pending face),
+    // and the next opening chooses afresh. A mount a person named does not slide: its lock leaves the floor.
+    if (wasOpen && ordinal === mountBefore && !namedMount) {
       const open = new Set(holder.unlockedFaces());
-      // The slide lands only on a face holding anchors; with none, the mount clears and the next opening chooses afresh.
       const next = await lowestAnchored(listFaceCustodyIds().filter((f) => open.has(f.fcid)).map((f) => f.ordinal));
-      if (next === undefined) setMountedFace(undefined);
-      if (next !== undefined) {
-        setMountedFace(next);
-        deps.onLog(`the mount slides to h${next}, the next face standing open`);
-        const stood = await deps.recompose(true);
-        return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
-      }
+      if (next !== undefined) { setMountedFace(next); mountByOpening = true; } else clearDaemonMount();
+      deps.onLog(next !== undefined ? `the mount slides to h${next}, the next face standing open that holds anchors` : `no open face holding anchors takes h${ordinal}'s mount; the vessel stands at the floor`);
+      const stood = await deps.recompose(true);
+      return { op: "lock", locked: true, was: "unlocked", face: ordinal, ...stood };
     }
     if (wasOpen && wasMounted && !sovereignStands()) {
       const stood = await deps.recompose(true);
