@@ -1,6 +1,6 @@
 import type { AutomergeUrl } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
-import { catalogViewOf, houseCanonUrl, isFacePrivateSlug, resolveHouseCanon, tiddlerText } from "@lararium/mesh";
+import { catalogViewOf, houseCanonUrl, isFacePrivateSlug, ownEntry, resolveHouseCanon, tiddlerText } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
 import {
   DAEMON_BAG_ID,
@@ -192,7 +192,7 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
       throw new WikiRetireRefusal("not-the-owner", `the workbench of "${slug}" stands under another face's realm on this vessel; wear that face to retire it`);
     }
     if (bound.length === 0 && rows.length === 0) {
-      if (handle.doc()?.tiddlers?.[canonBag]) throw new WikiRetireRefusal("not-the-owner", `"${slug}" rests on another half of the catalog (the floor's), not this face's; this face minted no shell of it`);
+      if (ownEntry(handle.doc()?.tiddlers, canonBag)) throw new WikiRetireRefusal("not-the-owner", `"${slug}" rests on another half of the catalog (the floor's), not this face's; this face minted no shell of it`);
       // The face's own realm id rides the refusal, so a CLI that died after this face's retire finishes only its own local half.
       throw new WikiRetireRefusal("no-such-wiki", `this face holds no shell of "${slug}": no catalog row and no workbench (own realm ${ownRealm})`);
     }
@@ -221,7 +221,7 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
       throw new WikiRetireRefusal("retire-count-moved", `"${slug}" took or lost records while the retire read it; nothing retired`);
     }
 
-    const canonDoc = tiddlerText(handle.doc()?.tiddlers?.[canonBag] as never) ?? null;
+    const canonDoc = tiddlerText(ownEntry(handle.doc()?.tiddlers, canonBag)) ?? null;
     if (total > 0) await opts.shell.clear(slug);
     const keyhiveBindings = await opts.shell.forget([wikiSlotUri(slug, "working"), wikiSlotUri(slug, "draft"), wikiSlotUri(slug, "personal")]);
     const slotBindings = await opts.shell.unbindSlots(slug);
