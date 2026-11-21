@@ -358,6 +358,73 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     expect(vessel.faceOpening?.(a.fcid)).not.toBe(first);
   });
 
+  test("TWO-PHASE CLOSE, WITH THE ACK: the pūlama's close sends closing(face, opening) and keeps the key; it locks only once the vessel answers closed for that opening", async () => {
+    fx = await standPulama("pulama-close-ack", () => openGate({ faces: lend(0, 2), coldReads: [] }));
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    const c = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_C), ordinal: 2, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const heard: Array<{ fcid: string; opening: string | null }> = [];
+    vessel.onClosing!((fcid, opening) => heard.push({ fcid, opening }));
+    const opening = fx.kept.faceOpening!(c.fcid);
+    expect(await fx.server.closeFace(2)).toMatchObject({ reading: "closing", face: 2, unanswered: 1 });
+    await vi.waitFor(() => expect(heard).toEqual([{ fcid: c.fcid, opening }]));
+    // The key stays while the vessel drains: its rows still serve, and no clock locks it.
+    expect(fx.kept.unlockedFaces()).toContain(c.fcid);
+    expect(vessel.closingFaces!()).toEqual([c.fcid]);
+    await vessel.faceClosed!(c.fcid, opening);
+    await vi.waitFor(() => expect(fx!.kept.unlockedFaces()).not.toContain(c.fcid));
+    await vi.waitFor(() => expect(vessel.faceOpening?.(c.fcid)).toBeNull());
+    expect(fx.server.closing()).toEqual([]);
+  });
+
+  test("TWO-PHASE CLOSE, WITHOUT THE ACK: a silent vessel keeps the face closing with no clock; the pūlama names it, and only the operator's hand forces the lock", async () => {
+    fx = await standPulama("pulama-close-silent", () => openGate({ faces: lend(0), coldReads: [] }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    expect(await fx.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 1 });
+    for (let i = 0; i < 20; i++) await new Promise((r) => setImmediate(r));
+    expect(fx.kept.unlockedFaces(), "no clock locks a face its vessel never answered").toContain(a.fcid);
+    expect(fx.server.closing()).toEqual([{ face: 0, unanswered: 1, note: "face h0: the vessel has not answered its close" }]);
+    // A closed naming another opening answers nothing and leaves the close waiting.
+    await vessel.faceClosed!(a.fcid, "not-the-opening");
+    expect(fx.kept.unlockedFaces()).toContain(a.fcid);
+    // THE OPERATOR'S HAND confirms the forced lock.
+    expect(await fx.server.closeFace(0, { force: true })).toMatchObject({ reading: "locked", face: 0, forced: true });
+    expect(fx.kept.unlockedFaces()).not.toContain(a.fcid);
+    expect(fx.server.closing()).toEqual([]);
+  });
+
+  test("a close of a face no session lends locks at once; a shut face answers face-locked", async () => {
+    fx = await standPulama("pulama-close-unlent", () => openGate({ faces: lend(0), coldReads: [] }));
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    const b = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    expect(await fx.server.closeFace(1)).toMatchObject({ reading: "locked", face: 1 });
+    expect(fx.kept.unlockedFaces()).not.toContain(b.fcid);
+    expect(await fx.server.closeFace(1)).toMatchObject({ reading: "face-locked", face: 1 });
+    expect(await fx.server.closeFace(7)).toMatchObject({ reading: "face-absent", face: 7 });
+  });
+
+  test("SOL R6 L (existence leak): face.closed names nothing back: a face outside the lend, an unknown id and a face not closing all answer alike", async () => {
+    fx = await standPulama("pulama-closed-scope", () => openGate({ faces: lend(0), coldReads: [] }));
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    const b = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const channel = fx.channel()!;
+    const outside = await ask(channel, 900, "face.closed", { fcid: b.fcid, opening: "x" });
+    const unknown = await ask(channel, 901, "face.closed", { fcid: "no-such-face", opening: "x" });
+    expect(outside).toEqual({ t: "res", id: 900, ok: true, v: null });
+    expect(unknown).toEqual({ t: "res", id: 901, ok: true, v: null });
+    expect(fx.kept.unlockedFaces()).toContain(b.fcid);
+    // The opening question leaves the session: no frame asks a face's opening.
+    expect(await ask(channel, 902, "face.opening", { fcid: b.fcid })).toMatchObject({ ok: false });
+  });
+
   test("RED no-set-serves-no-face: a gate scope naming no lent set refuses the hello by name and no session stands; NO SET NEVER MEANS EVERY FACE", async () => {
     let faces: unknown = null;
     fx = await standPulama("pulama-lend-none", () => ({ admit: async () => ({ ok: true, scope: { faces, coldReads: [] } as never }) }));

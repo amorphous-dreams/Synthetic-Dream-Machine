@@ -45,13 +45,16 @@ test("RED: the vessel stands, refreshes and closes the intent relay; CONTROL: th
 
 test("RED: a sibling's lock and light refresh the relay at once; CONTROL: the census finds a planted refresh and the dropFace body", () => {
   expect(scan("const dropFace = async () => { await intentRelay?.refresh(); };", /intentRelay\??\.refresh\s*\(/)).toBe(true);
-  const dropStart = source.indexOf("const dropFace = (ordinal: number): Promise<void> =>");
-  expect(dropStart).toBeGreaterThan(-1);
-  const dropBody = source.slice(dropStart, source.indexOf("\n  };", dropStart));
-  expect(dropBody).toMatch(/daemonVm\.dropFace[\s\S]*intentRelay\??\.refresh\s*\(/);
-  const lightStart = source.indexOf("lightFace = (ordinal) => siblingWork.run(ordinal, async (live) =>");
+  // EACH FACE LIVES ONE LIFE: a lock closes the face through its actor, which tells the island and then drops the host side,
+  // where the relay refreshes.
+  expect(source).toMatch(/const dropFace = \(ordinal: number\): Promise<void> => faceLife\.close\(/);
+  expect(source).toMatch(/dropWorker: \(_ordinal, atomKey\) => daemonVm\.dropFace\(atomKey\)/);
+  const teardownStart = source.indexOf("const teardownFaceHost = (ordinal: number): void =>");
+  expect(teardownStart).toBeGreaterThan(-1);
+  expect(source.slice(teardownStart, source.indexOf("\n  };", teardownStart))).toMatch(/intentRelay\??\.refresh\s*\(/);
+  const lightStart = source.indexOf("lightSlow = async (ordinal, _opening, live) =>");
   expect(lightStart).toBeGreaterThan(-1);
-  const lightBody = source.slice(lightStart, source.indexOf("\n    });", lightStart));
+  const lightBody = source.slice(lightStart, source.indexOf("\n    };", lightStart));
   expect(lightBody).toMatch(/daemonVm\.lightFace[\s\S]*intentRelay\??\.refresh\s*\(/);
 });
 
@@ -193,9 +196,9 @@ test("RED: relay-enabled siblings register planes when proven and lit; CONTROL: 
   const call = /registerFacePlanesForRelay\s*\(\s*\{[\s\S]*?register\s*:\s*registerInCatalog[\s\S]*?\}\s*\)/;
   expect(scan("registerFacePlanesForRelay({ group, register: registerInCatalog })", call)).toBe(true);
   expect(source).toMatch(/import\s*\{[^}]*\bregisterFacePlanesForRelay\b[^}]*\}\s*from\s*["'][^"']*face-plane-registration\.js["']/s);
-  const light = source.indexOf("lightFace = (ordinal) => siblingWork.run(ordinal, async (live) =>");
+  const light = source.indexOf("lightSlow = async (ordinal, _opening, live) =>");
   expect(light).toBeGreaterThan(-1);
-  expect(source.slice(light, source.indexOf("\n    });", light))).toMatch(/registerFacePlanesForRelay\s*\(\s*\{[\s\S]*?register\s*:\s*\(bag, url\) => \{ if \(live\(\)\) registerInCatalogOf\(group\)\(bag, url\); \}/);
+  expect(source.slice(light, source.indexOf("\n    };", light))).toMatch(/registerFacePlanesForRelay\s*\(\s*\{[\s\S]*?register\s*:\s*\(bag, url\) => \{ if \(live\(\)\) registerInCatalogOf\(group\)\(bag, url\); \}/);
   const loop = source.indexOf("for (const plane of bootstrap.personaPlanes)", source.indexOf("const registerInCatalog"));
   const proven = source.indexOf("provenPlanes.set", loop);
   const end = source.indexOf("\n    for (const plane of bootstrap.personaPlanes)", proven);

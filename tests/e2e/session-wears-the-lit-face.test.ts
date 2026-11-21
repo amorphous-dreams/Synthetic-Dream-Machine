@@ -189,4 +189,28 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(tid.code).not.toBe(0);
     expect(errCode(tid), out(tid)).toBe("face-not-open");
   }, 120_000);
+
+  test("W6 EACH FACE LIVES ONE LIFE: a lock of the lit sibling closes it through its actor before its key locks; it then refuses work by name while the worn face keeps writing, and a fresh light serves it again", async () => {
+    const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };
+    const locked = await door.unlockTestCustody(walk.root, "lock", 1);
+    expect(locked, JSON.stringify(locked)).toMatchObject({ locked: true, face: 1 });
+    const file = join(scratch, "closed-lane.mem");
+    writeFileSync(file, memeText("lar:///ha.ka.ba/kahua/memory/walk/closed-lane", "Closed"));
+    const shut = await walk.cli(["meme", "put", "lar:///ha.ka.ba/kahua/memory/walk/closed-lane", "--bag", siblingBag, "--file", file, "--face", "1", "--json"]);
+    expect(shut.code, out(shut)).not.toBe(0);
+    expect(["face-not-open", "face-closing"], out(shut)).toContain(errCode(shut));
+    const wornFile = join(scratch, "worn-after-close.mem");
+    writeFileSync(wornFile, memeText("lar:///ha.ka.ba/kahua/memory/walk/worn-after-close", "Worn"));
+    const worn = await walk.cli(["meme", "put", "lar:///ha.ka.ba/kahua/memory/walk/worn-after-close", "--recipe", "default", "--file", wornFile, "--json"]);
+    expect(worn.code, out(worn)).toBe(0);
+    // The light again: the unlock lights the sibling under a fresh opening, and its lane takes a write.
+    await door.unlockTestCustody(walk.root, "unlock", 0);
+    let relit: CliResult | null = null;
+    for (let look = 0; look < 60; look++) {
+      relit = await walk.cli(["meme", "get", MEME, "--bag", siblingBag, "--face", "1", "--json"]);
+      if (relit.code === 0) break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    expect(relit?.code, relit ? out(relit) : "never asked").toBe(0);
+  }, 240_000);
 });

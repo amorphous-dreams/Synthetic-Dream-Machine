@@ -848,6 +848,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     lentOrdinals: () => unlockedFaceOrdinals(),
     // EACH HAT REACHED BY NAME: a lit sibling's session carries its own lane's chores as itself and books its own face key.
     litOrdinals:  () => result.litOrdinals(),
+    // EACH FACE LIVES ONE LIFE: each session verb and act admits on its face's actor, so a face closing takes no new work.
+    faceLife:     result.faceLife,
     siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),
