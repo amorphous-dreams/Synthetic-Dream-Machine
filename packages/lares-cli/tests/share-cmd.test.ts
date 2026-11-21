@@ -142,6 +142,40 @@ describe("the share door", () => {
     await cmdShare("bag", plain.doors)(args(["notes"], { read: "h1" }));
     expect(plain.verbs.map((v) => v.name), "CONTROL: a landing that names no owner sets nothing again").toEqual(["share-set", "share-apply"]);
   });
+
+  // THE REFEREE WALK (road/referee-walk-frictions #2, #3): a re-share changes only the parts it names, and the echo reads the row.
+  test("SH11 (red) — a re-share naming --write alone leaves the readers, the note and the workspace standing; the same line again changes nothing", async () => {
+    const standing = serializeShareFile([{ slug: "elyncia-referee", kind: "wiki", read: "joshua-fontany", write: "", workspace: "referee-bench", owner: "joshua-fontany", note: "for the walk" }]);
+    const f = fake({ file: standing });
+    expect(await cmdShare("wiki", f.doors)(args(["elyncia-referee"], { write: "h2" }))).toBe(0);
+    expect(parseShareFile(f.file()!)).toEqual([{ slug: "elyncia-referee", kind: "wiki", read: "joshua-fontany", write: "[[the referee]]", workspace: "referee-bench", owner: "joshua-fontany", note: "for the walk" }]);
+    expect(f.out[0]).not.toMatch(/\(none named\)/);
+    const once = f.file();
+    expect(await cmdShare("wiki", f.doors)(args(["elyncia-referee"], { write: "h2" }))).toBe(0);
+    expect(f.file(), "the same line twice writes the same row").toBe(once);
+    expect(f.out.join("\n")).toMatch(/unchanged/);
+  });
+
+  test("SH12 (red) — --read adds a reader beside the standing ones; --read-remove and --write-remove take one name out and leave the rest", async () => {
+    const f = fake({ file: serializeShareFile([{ slug: "notes", kind: "bag", read: "joshua-fontany", write: "joshua-fontany" }]) });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], { read: "h2" }))).toBe(0);
+    expect(parseShareFile(f.file()!)[0]).toMatchObject({ read: "joshua-fontany [[the referee]]", write: "joshua-fontany" });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], { "read-remove": "joshua-fontany", "write-remove": "h0" }))).toBe(0);
+    expect(parseShareFile(f.file()!)[0]).toMatchObject({ read: "[[the referee]]", write: "" });
+    expect(f.out.join("\n")).toMatch(/reads for the referee \(h2\), writes for \(none named\)/);
+    // A removal over no standing row refuses: there is nothing to take a name out of.
+    const g = fake();
+    expect(await cmdShare("bag", g.doors)(args(["notes"], { "read-remove": "h2" }))).toBe(2);
+    expect(g.file()).toBeNull();
+  });
+
+  test("SH13 (red) — the echo prints the resolved row: a name given twice (by pet-name and by --face) reads once", async () => {
+    const f = fake();
+    expect(await cmdShare("wiki", f.doors)(args(["elyncia-referee"], { read: "joshua-fontany", face: "0" }))).toBe(0);
+    expect(parseShareFile(f.file()!)[0]).toMatchObject({ read: "joshua-fontany" });
+    expect(f.out[0]).toMatch(/reads for joshua-fontany \(h0\), writes for \(none named\)/);
+    expect(f.out[0]).not.toMatch(/joshua-fontany.*joshua-fontany/);
+  });
 });
 
 describe("a share verb that outruns the local wait", () => {

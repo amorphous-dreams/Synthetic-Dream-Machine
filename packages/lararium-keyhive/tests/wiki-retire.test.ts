@@ -23,10 +23,16 @@
  *    is neither counted nor cleared.
  * R8 (red, M2/M3) a count that moves between the two readings refuses with nothing written; a fault midway leaves the catalog
  *    rows, and the same retire run again finishes.
+ * R10 (red, referee-walk #1/#6) `wiki init` over a shell another init left stands what is missing (the face's bag
+ *    registrations, its workbench) and names what it completed (the canon reused from the floor); the same init again
+ *    answers `already-exists` and changes nothing; a workbench another face's realm holds names its refusal, never throws.
+ * R11 (red, referee-walk #5) a gated-ingest residency row the house minted counts as an effect record, never an authored one:
+ *    `--dry-run` names the two apart, a shell holding effect records alone retires unforced and drops them, and a record that
+ *    only wears the effect tag (no residency-ledger title) counts as authored.
  */
 import { describe, test, expect } from "vitest";
 import {
-  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, emptyLarDoc, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, materializeSharedLarDoc, noteWorkbench, noteWorkbenchSeat,
+  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, buildEffectRecordTiddler, effectRecordUri, emptyLarDoc, LARES_EFFECT_RECORD_TAG, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, materializeSharedLarDoc, noteWorkbench, noteWorkbenchSeat,
   privateCabalRealmId, realmWorkbenchDocUrl, recipeUri, wikiBagUri, wikiSlotUri, workbenchSeats,
   type DocHandle, type LarDoc, type Repo,
 } from "@lararium/mesh";
@@ -87,6 +93,14 @@ async function vessel() {
       init: () => makeInitWikiReactor({
         repo, catalog, rootDir: "", vesselDid: () => "did:key:vessel",
         registerBag: async (bag) => { await provider.registerBag(bag); },
+        resolveDraftDoc: async () => ({ url: draft.url, reach: "face" as never }),
+      })({ slug: SLUG }, HAND),
+      /** The init the daemon runs: it reads which bags the face's hive holds and stands the face's workbench. */
+      initWhole: () => makeInitWikiReactor({
+        repo, catalog, rootDir: "", vesselDid: () => "did:key:vessel",
+        registerBag: async (bag) => { await provider.registerBag(bag); },
+        bagRegistered: async (bag) => provider.docIdOfBag(bag) !== null,
+        workbench: async (slug) => { const r = await standWorkbench(provider, ledger, slug, group); return { realmId: r.realmId, founded: r.founded }; },
         resolveDraftDoc: async () => ({ url: draft.url, reach: "face" as never }),
       })({ slug: SLUG }, HAND),
       retire: (args: Record<string, unknown> = {}, ctx: VerbContext = HAND) => makeRetireWikiReactor({ catalog, shell })({ slug: SLUG, ...args }, ctx),
@@ -336,5 +350,89 @@ describe("R9 (F1/F2) — the CLI hand alone, and the face's own slots alone", ()
     expect(await makeRetireWikiReactor({ catalog: engineer.catalog, shell })({ slug: SLUG, "dry-run": true }, HAND)).toMatchObject({ total: 0 });
     expect(await makeRetireWikiReactor({ catalog: engineer.catalog, shell })({ slug: SLUG }, HAND)).toMatchObject({ status: "retired", forced: false });
     expect([live(floorDraft), live(floorPersonal)]).toEqual([2, 1]);
+  });
+});
+
+describe("R10 (referee walk #1/#6) — init completes what a partial left, and says so plainly", () => {
+  /** The veil floor's mint: the vessel, wearing no face, laid the canon and recipe rows on the floor's half. */
+  const floorMint = (v: Awaited<ReturnType<typeof vessel>>) => makeInitWikiReactor({
+    repo: v.repo, catalog: makeCatalogAccessorOver(v.repo, makeCatalogView(v.floor as DocHandle<LarDoc>, null)), rootDir: "", vesselDid: () => "did:key:vessel",
+    registerBag: async () => {}, veilFloor: { mintedBy: "ab".repeat(32), nameCanon: async () => {} },
+    resolveDraftDoc: async () => ({ url: "automerge:floor-draft", reach: "floor" as never }),
+  })({ slug: SLUG }, HAND);
+
+  test("a face's init over the floor's rows registers its bags and stands its workbench; the same init again changes nothing", async () => {
+    const v = await vessel();
+    const steward = await v.face(REFEREE, 0xe1);
+    const floor = await floorMint(v);
+    expect(floor["status"]).toBe("minted");
+
+    const done = await steward.initWhole();
+    expect(done).toMatchObject({ status: "completed", canonReused: "floor", wikiDocUrl: floor["wikiDocUrl"], workbench: { realmId: privateCabalRealmId(REFEREE, SLUG), founded: true } });
+    expect(done["bagsRegistered"]).toEqual([wikiBagUri(SLUG), wikiSlotUri(SLUG, "working"), wikiSlotUri(SLUG, "draft")]);
+    expect(steward.provider.docIdOfBag(wikiSlotUri(SLUG, "working"))).not.toBeNull();
+    expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([privateCabalRealmId(REFEREE, SLUG)]);
+
+    const ledgerBefore = JSON.stringify(v.ledger.doc());
+    const again = await steward.initWhole();
+    expect(again).toMatchObject({ status: "already-exists", bagsRegistered: [], workbench: { realmId: privateCabalRealmId(REFEREE, SLUG), founded: false } });
+    expect(JSON.stringify(v.ledger.doc())).toBe(ledgerBefore);
+  });
+
+  test("a fresh mint stands its workbench in the same act; a re-init answers `already-exists`", async () => {
+    const v = await vessel();
+    const steward = await v.face(REFEREE, 0xe2);
+    expect(await steward.initWhole()).toMatchObject({ status: "minted", workbench: { founded: true } });
+    expect(await steward.initWhole()).toMatchObject({ status: "already-exists", bagsRegistered: [], workbench: { founded: false } });
+  });
+
+  test("a workbench another face's realm holds names its refusal in the answer; the init still lands its rows and bags", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xe3), referee = await v.face(REFEREE, 0xe4);
+    await engineer.init();
+    await engineer.stand();
+    const out = await referee.initWhole();
+    expect(out["status"]).toBe("minted");
+    expect(String((out["workbench"] as { refused?: string }).refused)).toMatch(/^workbench-slug-bound:/);
+    expect(referee.rows()).toEqual(SHELL_ROWS);
+  });
+});
+
+describe("R11 (referee walk #5) — the house's effect records never count as a shell's authored records", () => {
+  const effect = (h: ShellLayerDoc, eventId: string): void => h.change((d) => {
+    const rec = buildEffectRecordTiddler({
+      eventId, archivalVerb: "accession", actionVerb: "INGEST" as never, requestId: "req-1", bag: wikiSlotUri(SLUG, "working"),
+      actor: "lares", timestamp: "2026-11-21T00:00:00.000Z", tiddlerTitle: "Some Tiddler",
+    });
+    d.tiddlers[rec.tiddler.title] = rec as never;
+  });
+
+  test("a shell holding only a residency row retires unforced, names the effect apart in --dry-run, and drops the row with the shell", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xf1);
+    await engineer.init();
+    await engineer.stand();
+    const workbench = (await engineer.working())!;
+    effect(workbench, "evt-1");
+    expect(Object.keys(workbench.doc()!.tiddlers)).toEqual([effectRecordUri(wikiSlotUri(SLUG, "working"), "evt-1")]);
+    expect(await engineer.retire({ "dry-run": true })).toMatchObject({ status: "would-retire", total: 0, records: { working: 0, draft: 0, personal: 0, effects: 1 } });
+    expect(await engineer.retire()).toMatchObject({ status: "retired", forced: false, records: { effects: 1 } });
+    expect(live(workbench)).toBe(0);
+    expect(engineer.rows()).toEqual([]);
+  });
+
+  test("authored records still need the count; a record wearing the effect tag at an authored title counts as authored", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xf2);
+    await engineer.init();
+    await engineer.stand();
+    const workbench = (await engineer.working())!;
+    effect(workbench, "evt-2");
+    engineer.draft.change((d) => { d.tiddlers["Dressed Up"] = { tiddler: { title: "Dressed Up", tags: LARES_EFFECT_RECORD_TAG, text: "mine" } } as never; });
+    await expect(engineer.retire()).rejects.toThrow(/^wiki-not-empty:/);
+    expect(await engineer.retire({ "dry-run": true })).toMatchObject({ total: 1, records: { working: 0, draft: 1, personal: 0, effects: 1 } });
+    await expect(engineer.retire({ force: true, count: 2 })).rejects.toThrow(/^retire-count-moved:/);
+    expect(await engineer.retire({ force: true, count: 1 })).toMatchObject({ status: "retired", forced: true });
+    expect([live(workbench), live(engineer.draft)]).toEqual([0, 0]);
   });
 });
