@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable = true
-created   = "Invalid Date"
 family    = "design"
 l-space   = "stable"
 name      = "Meta-Perspective"
@@ -61,6 +60,6 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZBD3-7f7HgmQX-Nb28I6wdLuOLK2RtMRNcm4HXnn8iQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kep6CQxBKKUHrtdUYElXc_d9Y33qifMfKXZt3EtBBIk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

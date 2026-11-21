@@ -7,14 +7,12 @@
 cacheable  = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-revised-on = "2026-11-10"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
 tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
 title      = "lar:///ha.ka.ba/lararium/mesh/founding-runbook"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/founding-runbook"
-written    = "2026-07-20"
 ```
 
 
@@ -574,7 +572,7 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>> identity classes and their promotion paths
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>> persona custody, recovery contacts and face rules
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>> personal slot bindings and Keyhive registration
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> wiki layers, working writes and canon promotion
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>> wiki layers, working writes and canon promotion
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout`>> recovery custody evidence, reserve rehearsal and open work
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor`>> host boundary, vessel shim and household reach
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>> secure origins and browser custody boundaries
@@ -594,6 +592,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lbqzxvY2WqQ7iTVtKz1fNQxTQ94ojVCkv7Cqm18NwAE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cn8IvS8f197M2EHL3hHiae0g6MXs3vmlf1yOv6YgtN8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

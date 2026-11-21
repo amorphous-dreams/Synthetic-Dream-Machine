@@ -14,7 +14,6 @@ tags       = ["mesh/secure-context", "mesh/attestation-plane", "mesh/dreamnet-ar
 title      = "lar:///ha.ka.ba/lararium/mesh/nexus-topology"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/nexus-topology"
-written    = "2026-08-08"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -233,6 +232,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xhty93Tu03XlgR7LZWS_PreGz854fu1yKaMf_vk1DqA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6dtsJCgJe7MhqbHs1ZKrpKNnPxiYJFclk5mw8caPa5g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

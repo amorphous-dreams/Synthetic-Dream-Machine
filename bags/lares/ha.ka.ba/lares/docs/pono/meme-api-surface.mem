@@ -55,7 +55,7 @@ The meme's URI projects onto the path with the scheme as its own segment: `lar:/
 | `GET` | `/{recipes\|bags}/default/memes.json[?tree=1]` | every ROOT with its canonical hash (`listMemes`); `tree=1` nests each root's slot tree. A sibling of stock's `tiddlers.json`: a `$:/`-titled root rides only while `$:/config/SyncSystemTiddlersFromServer` reads `yes` | `200` JSON array · `404` |
 | `PUT` | `/recipes/default/tiddlers/<title>` | THE NATIVE DOOR, gated ahead of stock: a framed root refuses (#/two-doors); every other record reaches stock's own handler | `422` · stock's `204` |
 
-Both container kinds read the same records on a plain server; on an island `--recipe` reads the wiki's whole cascade top-down and writes its designated bag — <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>.
+Both container kinds read the same records on a plain server; on an island `--recipe` reads the wiki's whole cascade top-down and writes its designated bag — <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>.
 
 <<~/ahu>>
 
@@ -216,14 +216,14 @@ The CLI walk names its container on each store verb: `lares meme put lar:///t/x 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddler-record`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YhYigdR9LCSmTDEQDf2_Ha9g8NybW2H9MUg9eVq8mec`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Dpxukn3z6R4Px7mOTYmELqAmUv5RghMCtddSe5B66Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -120,12 +120,12 @@ One caveat carried sharp: the ''perceptual'' center (where attention rests) may 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/network-edge`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/voice-house`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/exchange-vector`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/RFC-2119`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7BgDzA-GD9g7ncJ2nEvICHdD6muH16ljUkWVxYz5rxQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lre0WNAvVGSHefwK1it7KoYtzOIVVCN1jARRmMWiPzI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

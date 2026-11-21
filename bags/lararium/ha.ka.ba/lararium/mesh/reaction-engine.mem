@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "lararium"
-namespace   = "&#x0950; &#x0901;"
-role        = "canonical pipeline invariant: five-layer reactive architecture from CRDT patch to observable outcome — nalu, live-query, IslandMsg_Event, CRDT-as-distributed-promise"
-status-date = "2026-05-28"
-title       = "lar:///ha.ka.ba/lararium/mesh/reaction-engine"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lararium/mesh/reaction-engine"
+cacheable = true
+l-space   = "lararium"
+namespace = "&#x0950; &#x0901;"
+role      = "canonical pipeline invariant: five-layer reactive architecture from CRDT patch to observable outcome — nalu, live-query, IslandMsg_Event, CRDT-as-distributed-promise"
+title     = "lar:///ha.ka.ba/lararium/mesh/reaction-engine"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/reaction-engine"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -165,6 +164,6 @@ One wave. All observers. Same synchronous context.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6dy6NXu-RV1BpJpRjhdxjrv6d-3EHpMki2YgMv_i40A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;req7kRfp_v0rbAf0g5atqLJ6WQ9mSYhLN-AhHifR-8o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

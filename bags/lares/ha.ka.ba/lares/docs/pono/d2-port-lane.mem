@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/d2-port-lane"
 
 ! D2 close ~ the record port reaches a page
 
-Order (controller, 2026-10-26): the lane runs in slot two, after I1 (the intent plane, PR #99). The operator ruled the same day to close as much open work as possible before the bake and founding, so D2 closes whole: every item of the port contract's #/owed stands built or stands ruled out of the lane by name (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>). The D3 glass engine follows as its own lane on a port a page can now reach (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> D3).
+Order (controller, 2026-10-26): the lane runs in slot two, after I1 (the intent plane, PR #99). The operator ruled the same day to close as much open work as possible before the bake and founding, so D2 closes whole: every item of the port contract's #/owed stands built or stands ruled out of the lane by name (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/dreamdom-port-contract`>>). The D3 glass engine follows as its own lane on a port a page can now reach (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> D3).
 
 The worker half stood since PR #87: the port log, the wire, the island handler, one island to one face, the bounds. No page reached it, because the composer lent nothing and the holder dropped port replies by name. This lane builds the road and closes the items beside it.
 
@@ -56,13 +56,13 @@ The worker half stood since PR #87: the port log, the wire, the island handler, 
 
 <<~ ahu slot=`#/edges`>>
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/dreamdom-port-contract`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Pj1xIXiTecR3UbS-xffRnCvItwxrOxGOTTHOMeDc7to`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UuMwdln-wDhMxmCuLmJxwrJmNwMSVM7NS4HJ0bjQipY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

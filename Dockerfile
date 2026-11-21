@@ -81,8 +81,9 @@ WORKDIR /app
 # use Bookworm. Install the shared libraries explicitly before probing imports.
 # git reads the mounted checkout's tracking: the census names a mirror file git never
 # tracked as an owed commit, and the projector keeps such a file rather than delete it.
+# iproute2 carries `ss`, which reads a verb socket's peer (`uds-peer`): without it every hand act's peer reads unknown.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 git \
+      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 git iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 # One explicit Python interpreter and installed dependency closure live beside

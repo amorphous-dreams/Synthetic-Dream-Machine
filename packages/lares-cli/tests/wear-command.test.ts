@@ -21,6 +21,13 @@ let door: (frame: Record<string, unknown>) => Record<string, unknown> | null = (
 vi.mock("../src/custody-door.js", async (real) => ({
   ...(await real<typeof import("../src/custody-door.js")>()),
   sendCustodyFrame: async (frame: Record<string, unknown>) => { frames.push(frame); return door(frame); },
+  // The census rides the same door, so a test reads which faces stand open and shut off one stub.
+  houseFaces: async () => {
+    frames.push({ op: "census" });
+    const c = door({ op: "census" });
+    const list = (v: unknown): number[] => (Array.isArray(v) ? (v as number[]) : []);
+    return { open: list(c?.["facesLit"]), shut: list(c?.["facesLocked"]) };
+  },
 }));
 vi.mock("../src/local-connector.js", async (real) => ({ ...(await real<typeof import("../src/local-connector.js")>()), udsAlive: async () => true }));
 
@@ -138,6 +145,33 @@ describe("RED vault unlock gathers a route only while custody stays closed", () 
     expect(frames).toEqual([{ op: "custody" }]);
     expect(answer()).toMatchObject({ ok: true, data: { reading: "already-unlocked" } });
     expect(out.join("\n")).toMatch(/lares wear N/);
+  });
+
+  it("★ `unlock --face N` on a held key with N standing open asks nothing: it wears N ★", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true)
+      : frame["op"] === "census" ? { op: "census", facesLit: [0, 1, 2], facesLocked: [] }
+      : { op: "wear", face: 1, held: true, standing: "hearth" };
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--face", "1", "--json"]))).toBe(0);
+    expect(prompts).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }, { op: "census" }, { op: "wear", face: 1 }]);
+    expect(answer()).toMatchObject({ ok: true, data: { op: "wear", face: 1 } });
+  });
+
+  it("`unlock --face N` on a held key where no face hN stands refuses by name and asks nothing", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "census", facesLit: [0], facesLocked: [1] };
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--face", "4", "--json"]))).toBe(1);
+    expect(prompts).toBe(0);
+    expect(frames.map((f) => f["op"])).toEqual(["custody", "census"]);
+    expect(answer().error?.code).toBe("face-not-standing");
+  });
+
+  it("CONTROL: `unlock --face N` on a held key with N shut still asks N's own route", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true)
+      : frame["op"] === "census" ? { op: "census", facesLit: [0], facesLocked: [1] }
+      : { op: "unlock", reading: "opens", slot: "slot-1", held: true, standing: "hearth" };
+    await cmdVault(parseArgs(["vault", "unlock", "--face", "1", "--json"]));
+    expect(prompts).toBeGreaterThan(0);
+    expect(frames.map((f) => f["op"]).slice(0, 3)).toEqual(["custody", "census", "unlock"]);
   });
 
   it("CONTROL: on a closed vessel the unlock gathers its route and sends it", async () => {

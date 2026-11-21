@@ -12,7 +12,6 @@ tags       = ["api/pono/meme", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lararium/api/island-isomorphism"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/island-isomorphism"
-written    = "2026-06-12"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -92,6 +91,6 @@ re-entry: the kue key; or the migration's step 4 boundary, where the residue get
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Tpjey5t22DO4CMwiN-bbpO9U4k514UJfZDmmlcQ5tVc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J26Gw5EPwPw8k6VYwc4RgNwKHI1CdEhctlupKmftDNA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

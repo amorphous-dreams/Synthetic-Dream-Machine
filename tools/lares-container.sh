@@ -162,6 +162,8 @@ keep_before_down() {
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
   else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
+  # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
+  printf '%s\n' 'lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop' >&2
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
   # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
   if kb_out=$("$@" rite keep --if-due --json); then
@@ -1253,6 +1255,13 @@ case "$verb" in
         done
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" admit "$@" ;;
+      rehive)
+        # rehive stands a SHUT face's hive again from its own seed (its veil-archive row holds another identity's Archive): the
+        # face's own route reads on a real terminal inside the pūlama, which holds its keys; `pulama lock` shuts every face first.
+        [ "$#" -eq 2 ] || die "pulama rehive takes one face ordinal (a number)"
+        case "$2" in ''|*[!0-9]*) die "pulama rehive takes one face ordinal (a number)" ;; esac
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" rehive "$2" ;;
       unadmit)
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
@@ -1293,7 +1302,7 @@ case "$verb" in
         tmp="$seat_file.$$.tmp"
         ( umask 077; printf '%s\n' "$file" > "$tmp" ) && chmod 600 "$tmp" && mv -f -- "$tmp" "$seat_file" || { rm -f -- "$tmp"; die "the seat could not be written to $seat_file"; }
         printf 'lares-container: the keep seat rests at %s (0600); a keep now seals under it\n' "$seat_file" >&2 ;;
-      *) die "pulama takes up, down, restand, light, admit, unadmit, keep-seat, lock, status or tessera" ;;
+      *) die "pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"

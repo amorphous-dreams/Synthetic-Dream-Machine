@@ -5,7 +5,7 @@
 
 ```toml meta
 cacheable          = true
-role               = "deferred-offering record: Streams plugin by Saq Imtiaz — hierarchical tree-of-tiddlers TW5 UI, not yet packed"
+role               = "deferred-offering record: Streams plugin by Saq Imtiaz — hierarchical tree-of-tiddlers TW5 UI; this tree carries no packed bytes"
 tags               = ["api/pono/meme"]
 title              = "lar:///ha.ka.ba/lares/api/vendor/sq-streams"
 tw5-plugin-id      = "$:/plugins/sq/streams"
@@ -33,10 +33,10 @@ Enter for a new node, and every node standing as an ordinary tiddler.
 
 Streams is DEFERRED (operator ruling): no packed plugin for it sits anywhere in this tree, and
 genesis's boot set carries nothing beyond the engine core, the grammar and the boot shadows. This
-carrier is the record of the terms an eventual offering would carry, written before the packing — a
-future `nexus-publish`-style act packs the upstream bytes, mints a signed offering naming this same
-licence and provenance, and carries it as a recipe-selected plugin (never a boot-set member) exactly
-as `offerings/highlight/` already does for the PoC.
+carrier records the terms an offering of Streams carries: a `nexus-publish`-style act packs the upstream
+bytes, mints a signed offering naming this same licence and provenance, and carries it as a
+recipe-selected plugin (never a boot-set member), the way `offerings/highlight/` carries the PoC. No such
+act stands on this tree; the packing rests on the road until the deferral lifts.
 
 !! Two vocabularies for one tree
 
@@ -73,6 +73,6 @@ record saying one thing and the offering carrying another.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YM2ZsiR6to74TxD0IV6mYK9nIAcI1hhhxS0PfBQZLx0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wpNbCB2bcZ7Zqa9YBHUPR3j7Yy48c7uac8-yR_NxI5A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

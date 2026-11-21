@@ -160,7 +160,7 @@ Act IV receives:
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 
 <<~ pranala slot=`#follows-the-quine` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine` family=`relation` role=`follows`>>
@@ -168,6 +168,6 @@ Act IV receives:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iOEKgTURyNp7zuN3NK8uxD4U1tWg6D6FQJ2XeEuVIh4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l8k5exf7VmIcf53WDAhwvrxMTT8-A10WvwcPpi3Ulvg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

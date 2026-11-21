@@ -27,11 +27,14 @@
 //                     retired-name list;
 //   upgrade-delete  — in `packages/*/src`, an `onupgradeneeded` body that deletes stores or rows (`deleteObjectStore`,
 //                     a row `.delete(`, `.clear(`), since a present schema creates what it holds and carries no deletions;
-//   canon-history   — in live canon (`bags/*/…/{api,mesh,browser}/**/*.mem`, never a record carrier under `docs/`), a
+//   canon-history   — in live canon (`bags/*/…/{api,mesh,browser,cli}/**/*.mem`, never a record carrier under `docs/`), a
 //                     word that narrates the house's past (used to, formerly, legacy, no longer, retired, earlier shape…);
 //   canon-dated-history — in the same corpus, a verb of history (landed, burned, retired, cured, …) within 40 characters
 //                     of an ISO date: a line that dates the canon's making. A date with a ruling or correction marker
-//                     (`RULED`, `ruled`, `ruling`, `CORRECTION`, `CORRECTED`) within 40 characters carries provenance and reads nothing.
+//                     (`RULED`, `ruled`, `ruling`, `CORRECTION`, `CORRECTED`) within 40 characters carries provenance and reads nothing;
+//   canon-dated-meta — in the same corpus, a line of the `toml meta` fence that names a date key (`date`, `written`,
+//                     a `-date` or `-on` key, `created`, `updated`, `revised`, `proposed`), an authored date field:
+//                     git dates every revision, so an authored date in the meta drifts the way a version field drifts.
 // A class whose corpus reads no file fails the run; each class carries a planted red and a lawful control in the self-test.
 //
 // NAMED EXCEPTIONS. Each names its rule, its file, a substring of the line it allows (never a line number), how many
@@ -43,15 +46,15 @@
 // ceiling fails and names every open finding of that rule; a rule under it passes and asks for the ceiling to come
 // down; a corpus that reads no file fails, since a zero from no reading proves nothing.
 //
-// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,old-shape=N,retired-test=N,upgrade-delete=N,canon-history=N,canon-dated-history=N --no-exceptions]
+// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,old-shape=N,retired-test=N,upgrade-delete=N,canon-history=N,canon-dated-history=N,canon-dated-meta=N --no-exceptions]
 import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
+export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history", "canon-dated-meta"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 0, clock: 52, narration: 0, "old-shape": 0, "retired-test": 0, "upgrade-delete": 0, "canon-history": 0, "canon-dated-history": 0 };
+export const CEILINGS = { version: 0, clock: 52, narration: 0, "old-shape": 0, "retired-test": 0, "upgrade-delete": 0, "canon-history": 0, "canon-dated-history": 0, "canon-dated-meta": 0 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
   { rule: "version", file: "tools/domain-registry-witness.test.mjs", match: "const names = ['lar-planted-versioned/v1'", reason: "The domain witness's self-test plants versioned domain literals in a scratch fixture to prove the witness refuses each by name." },
@@ -82,6 +85,10 @@ export const EXCEPTIONS = [
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "lives for one commit", reason: "This law line states the one-commit refusal it permits." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Recursive o-takiage", reason: "This law line names the retired-name lists it bans." },
+  { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/dreamdom-port-contract.mem", match: "a retired bag or a refused title", reason: "A retired bag names the present bag-retired disposition the island's family precheck refuses (effect-record.ts RETIRED_EVENT_ID), never history." },
+  { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/cli/problems.mem", match: "retired-trailer", reason: "The problem table names the live `retired-trailer` frame-problem code the checker emits (memetic-frame check.ts and span.ts, tw5 ingest-gate.ts)." },
+  { rule: "canon-dated-meta", file: "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext.mem", match: "date", reason: "The submittable spec projects to an RFC I-D whose kramdown-rfc2629 front matter requires a date; weave's I-D profile reads this key (packages/lararium-tw5/src/weave/index.ts requiredMeta)." },
+  { rule: "canon-dated-meta", file: "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem", match: "date", reason: "The submittable framing spec projects to an RFC I-D whose kramdown-rfc2629 front matter requires a date; weave's I-D profile reads this key (packages/lararium-tw5/src/weave/index.ts requiredMeta)." },
 ];
 const REPO = fileURLToPath(new URL("../", import.meta.url));
 const SOURCE = /\.(?:ts|mts|cts|js|mjs|cjs|sh|py)$/;
@@ -229,6 +236,21 @@ export function scanCanonDatedText(rel, text) {
   return findings;
 }
 
+// A meta date key: a bare `date`, `written`, `created`, `updated`, `revised` or `proposed`, or any key ending `-date`
+// or `-on` (`status-date`, `revised-on`, `proposed-on`).
+const META_DATE_KEY = /^\s*(?:date|written|created|updated|revised|proposed|[a-z][\w-]*-(?:date|on))\s*=/i;
+/** Live canon `toml meta` lines that carry an authored date field. */
+export function scanCanonMetaText(rel, text) {
+  const findings = [];
+  let inMeta = false;
+  text.split(/\r?\n/).forEach((raw, index) => {
+    if (!inMeta) { if (/^```toml meta\s*$/.test(raw)) inMeta = true; return; }
+    if (/^```\s*$/.test(raw)) { inMeta = false; return; }
+    if (META_DATE_KEY.test(raw)) findings.push({ rule: "canon-dated-meta", file: rel, line: index + 1, text: raw.trim() });
+  });
+  return findings;
+}
+
 /** Live canon lines that narrate the house's past. */
 export function scanCanonText(rel, text) {
   const findings = [];
@@ -274,14 +296,15 @@ function isTestFile(rel) {
     && (/^packages\/[^/]+\/tests?\//.test(rel) || /^tests\//.test(rel) || /^tools\/.*\.test\.[a-z]+$/.test(rel) || /^packages\/[^/]+\/scripts\/test_[^/]*\.py$/.test(rel));
 }
 function isUpgradeFile(rel) { return /\.(?:ts|mts|js|mjs)$/.test(rel) && !BUILT.test(rel) && /^packages\/[^/]+\/src\//.test(rel); }
-/** Live canon: a `.mem` under a bag's `api`, `mesh` or `browser` directory; `docs/` and every other directory hold record carriers. */
-function isCanonFile(rel) { return /^bags\/[^/]+\/[^/]+\/[^/]+\/(?:.*\/)?(?:api|mesh|browser)\/(?:.*\/)?[^/]+\.mem$/.test(rel) && !/\/docs\//.test(rel); }
+/** Live canon: a `.mem` under a bag's `api`, `mesh`, `browser` or `cli` directory; `docs/` and every other directory hold record carriers. */
+function isCanonFile(rel) { return /^bags\/[^/]+\/[^/]+\/[^/]+\/(?:.*\/)?(?:api|mesh|browser|cli)\/(?:.*\/)?[^/]+\.mem$/.test(rel) && !/\/docs\//.test(rel); }
 const CLASSES = {
   "old-shape": { has: eligible, scan: () => [] },
   "retired-test": { has: isTestFile, scan: scanTestText },
   "upgrade-delete": { has: isUpgradeFile, scan: scanUpgradeText },
   "canon-history": { has: isCanonFile, scan: scanCanonText },
   "canon-dated-history": { has: isCanonFile, scan: scanCanonDatedText },
+  "canon-dated-meta": { has: isCanonFile, scan: scanCanonMetaText },
 };
 function walkFiles(root, dir = root) {
   const out = [];

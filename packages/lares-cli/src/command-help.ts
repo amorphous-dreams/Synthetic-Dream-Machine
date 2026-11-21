@@ -93,6 +93,34 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--json        emit {decision, created, title, cast, text, readings, note}",
     ],
   },
+  law: {
+    usage: "usage: lares law list [--limit N] [--after <cursor>] [--all]  |  lares law pin <uri>  |  lares law unpin <uri>",
+    synopsis:
+      "Read the house's law, pinned law first, from the worn face's daemon wiki. The index derives from canon by filter and no list stands " +
+      "in code: the law reads every root meme under a bag's api/ tree, by title, and $:/config/lares/law/pins holds the pin set (the boot " +
+      "seed, then the Mu family), a TiddlyWiki filter the wiki's own engine runs. Only canon prints: a row stands where a canon layer " +
+      "answers its record, so nothing a face writes reads as law. A pin edits the pin set by one run, keeping its layout, and lands it in " +
+      "the face's working layer, never in house canon; a pin orders canon law and adds none.",
+    details: [
+      "  lares law list            the pinned titles (marked 📌), then the law they leave out, each with its description or role",
+      "  lares law pin <uri>       add a law meme to the pin set (a `[[uri]]` run); a title no canon law holds refuses law-pin-absent",
+      "  lares law unpin <uri>     take it out (its `[[uri]]` run leaves; a title a broader run names takes a `-[[uri]]` run)",
+    ],
+    examples: [
+      "lares law list                                              # the first page: pins, then law by title",
+      "lares law list --all --json                                 # every row: {filter, pins, rows, total, next}",
+      "lares law pin lar:///ha.ka.ba/lares/api/pono/lar-uri        # read the address law right after the Mu family",
+      "lares law unpin lar:///ha.ka.ba/lares/api/mu/chao           # drop one Mu member from the pins",
+    ],
+    flags: [
+      "--limit N        rows per page (the door's ceiling holds)",
+      "--after <c>      the page behind a cursor `list` named",
+      "--all            follow every cursor to the end",
+      "--json           emit the answer: list {filter, pinsTitle, pins, rows, total, next}; pin {title, uri, decision, pinned, text, hash}",
+    ],
+    next: ["lares meme get <uri> --recipe default      # read one law meme whole"],
+    meme: "lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers",
+  },
   herm: {
     usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
     synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",
@@ -979,7 +1007,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>]> [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>] | rehive --face <N>> [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
@@ -1009,11 +1037,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
       "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked on the face)",
       "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
+      "lares vault rehive --face <N>          # a SHUT face whose veil-archive row holds another identity's Archive stands from its own seed; the answer names the next acts",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
       "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
-      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open",
+      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open; (rehive) the SHUT face to rehive",
       "--out <file>       (backup) the bundle file to write; a file already standing there refuses",
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
@@ -1021,7 +1050,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--verbose          (status) one reading of each standing file the carrier table names, beside the summary",
       "--json             (status) the whole custody object (the slot tree, every row, the files outside the table, the door); (unlock) the door's answer as one object; the form a caller parses, since a pipe reads prose",
       "--face <key|pfx>   (restore --cards) the face the cards should rebuild: its root's public key or its prefix",
-      "unlock | bind | unbind | reseat | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
+      "unlock | bind | unbind | reseat | backup | restore | rehive read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
     next: ["lares vault status", "lares vault unlock"],
   },
@@ -1044,6 +1073,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],
     meme: "lar:///ha.ka.ba/lares/docs/pono/the-worn-house",
   },
+
 
   cabal: {
     usage: "usage: lares cabal <face | vouch | join | feed | clock>",

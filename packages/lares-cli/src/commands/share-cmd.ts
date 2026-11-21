@@ -4,6 +4,8 @@
  *   lares bag share <bag> --read <names> [--write <names>] [--note <why>] [--face N]
  *   lares wiki share <wiki> --read <names> [--write <names>] [--note <why>] [--workspace <name>]
  *   lares bag share --list        every row, and the one resolver's answer per bag: who reads, who writes, who waits
+ *   lares bag share --list --json each row AS WRITTEN (its read and write title lists, `*` kept, its note, workspace and
+ *                                 owner), beside the resolver's answer (`resolved`): a re-grant reads the row's own policy here
  *   lares bag share <bag> --remove · lares wiki share <wiki> --remove   unshare: the row leaves the file and the control document
  *
  * ONE ROW PER SLUG: a share of the other kind over a standing row refuses `share-kind-standing` and writes nothing; unshare
@@ -44,6 +46,19 @@ export function petnamesOf(filter: string, faces: readonly ShareFace[]): string 
   return [...(parsed.all ? ["*"] : []), ...quoted].join(" ");
 }
 
+/**
+ * What `--list --json` prints: each row as `config/share.tid` holds it (the policy a re-grant keeps: `*` stays `*`, a pet-name
+ * no face carries yet stays named, the note, workspace and owner ride), and beside it the resolver's answer by handle index.
+ */
+export function shareListJson(rows: readonly ShareEntry[], faces: readonly ShareFace[]): { rows: Array<ShareEntry & { resolved: { read: number[]; write: number[]; waiting: string[] } }> } {
+  return {
+    rows: rows.map((row) => {
+      const a = resolveShare({ bag: shareEntryBag(row), rows, faces });
+      return { ...row, resolved: { read: [...a.read], write: [...a.write], waiting: [...a.waiting] } };
+    }),
+  };
+}
+
 /** The lines `--list` prints: each row and the one resolver's answer. */
 export function shareListLines(rows: readonly ShareEntry[], faces: readonly ShareFace[]): string[] {
   if (rows.length === 0) return ["share: no row stands; house canon reads the floor for every face, and every other bag stays its owner's"];
@@ -65,6 +80,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)} (in ${SHARE_CONFIG_FILE})`); return 2; }
     const faces = await doors.faces().catch(() => [] as ShareFace[]);
     if (args.flags["list"] === true) {
+      if (args.flags["json"] === true) { doors.out(JSON.stringify(shareListJson(rows, faces))); return 0; }
       for (const line of shareListLines(rows, faces)) doors.out(line);
       return 0;
     }

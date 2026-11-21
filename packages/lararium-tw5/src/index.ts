@@ -174,6 +174,7 @@ export { seedDaemonPersonaTiddlers, makePersonaStateReactor, DAEMON_PERSONA_TIDD
 export { seedDaemonCircleTiddlers, makeCircleStateReactor, DAEMON_CIRCLE_TIDDLERS, CIRCLE_STATE_TITLE } from "./daemon-circle-tiddlers.js";
 export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
+export { seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_PINS_TITLE, LAW_PINS_DEFAULT, LAW_FILTER, LAW_STEPS, LAW_CANON_BAG_PATTERN, LAW_TITLE_PATTERN, LAW_CANON_GUARD, LAW_PINS_FILTER, LAW_INDEX_FILTER, LAW_BOOT_SEED, LAW_MU_ROOT } from "./daemon-law-tiddlers.js";
 export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP } from "./daemon-roster-tiddlers.js";
 export { seedDaemonIntentTiddlers, DAEMON_INTENT_TIDDLERS, makeIntentViewReactor, INTENT_VIEW_CAP, INTENT_STATE_TITLE, INTENT_PANE_TITLE } from "./daemon-intent-tiddlers.js";
 export { seedShadows, DAEMON_SEED_PLUGIN_PREFIX } from "./daemon-ui-tiddlers.js";

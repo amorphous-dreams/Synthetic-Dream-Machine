@@ -5,13 +5,14 @@
  *   SH1 — a row writes to the file (hN and --face resolve to pet-names), then share-set and share-apply ride in that order
  *   SH2 — no vessel standing: the file alone takes the row, and the line says the next boot reconciles it
  *   SH3 — `--list` prints each row's resolved readers and writers, and names a pet-name no face carries
+ *   SH3b — `--list --json` prints each row as written (`*`, an unheld pet-name, workspace, owner, note kept) beside the resolver
  *   SH4 — a filter operator refuses by name and writes nothing
  *   SH6 — a row of the other kind standing for the slug refuses `share-kind-standing`, writes nothing and rides no verb;
  *         `--remove` unshares the row (file and control document), and the other kind then shares
  */
 import { describe, expect, test } from "vitest";
 import { parseShareFile, serializeShareFile, type ShareFace } from "@lararium/mesh";
-import { cmdShare, petnamesOf, shareListLines } from "../src/commands/share-cmd.js";
+import { cmdShare, petnamesOf, shareListJson, shareListLines } from "../src/commands/share-cmd.js";
 import { readBackOnExpiry, type ShareDoors } from "../src/share-doors.js";
 import { LocalWaitExpired, type ReceiptAnswer } from "../src/local-connector.js";
 
@@ -58,6 +59,23 @@ describe("the share door", () => {
     const g = fake({ file: f.file() });
     expect(await cmdShare("bag", g.doors)(args([], {}, { list: true }))).toBe(0);
     expect(g.verbs).toEqual([]);
+  });
+
+  test("SH3b — --list --json keeps each row's own policy beside the resolver's answer", async () => {
+    const rows = [
+      { slug: "garden", kind: "wiki" as const, read: "*", write: "[[the referee]] nobody-here", workspace: "garden-bench", owner: "joshua-fontany", note: "for the walk" },
+      { slug: "notes", kind: "bag" as const, read: "joshua-fontany-engineer", write: "" },
+    ];
+    const f = fake({ file: serializeShareFile(rows) });
+    expect(await cmdShare("bag", f.doors)(args([], {}, { list: true, json: true }))).toBe(0);
+    expect(f.out).toHaveLength(1);
+    const printed = JSON.parse(f.out[0]!) as ReturnType<typeof shareListJson>;
+    const garden = printed.rows.find((r) => r.slug === "garden")!;
+    expect(garden).toMatchObject({ kind: "wiki", read: "*", write: "[[the referee]] nobody-here", workspace: "garden-bench", owner: "joshua-fontany", note: "for the walk" });
+    expect(garden.resolved.waiting).toContain("nobody-here");
+    expect(garden.resolved.write).toEqual([2]);
+    expect(printed.rows.find((r) => r.slug === "notes")).toMatchObject({ read: "joshua-fontany-engineer", resolved: { read: [1] } });
+    expect(f.verbs).toEqual([]);
   });
 
   test("SH4 — a filter operator refuses and writes nothing", async () => {

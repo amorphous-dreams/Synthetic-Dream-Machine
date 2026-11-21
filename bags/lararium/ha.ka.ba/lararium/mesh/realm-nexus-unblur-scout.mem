@@ -14,7 +14,6 @@ tags       = ["mesh/cabal-realm", "mesh/nexus-topology", "mesh/lar-uris", "api/p
 title      = "lar:///ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
-written    = "2026-09-13"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -202,6 +201,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vib12It4dEcoJ0GSKYAzskqR5tsO78kcKIDAckMF7oM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oEMF9QeOI414gJJMhFRB4NmJcu30fDH8MtGmlxe4bkU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

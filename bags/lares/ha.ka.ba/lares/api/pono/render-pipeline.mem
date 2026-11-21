@@ -170,9 +170,9 @@ The render posture difference (live vs. frozen) lives in the template cascade se
 Some `ahu` slots are structural, not content — they MUST NOT render as tldraw body nodes on the canvas surface. The carrier spine (`memetic-wikitext-framing`) carries identity and structure; the canvas projects content slots only.
 
 ```toml
-# ⚠ Named `packages/lararium-tldraw/src/project.ts SUPPRESSED_WORKSITES` — THAT PACKAGE DOES NOT EXIST
-# (measured 2026-09-02: no tldraw dependency, submodule, or install anywhere in the tree).
-# The suppression list below is the record; its consumer is unbuilt.
+# ⚠ No consumer reads this list: no tldraw package, dependency or submodule stands in the tree
+# (`ls packages | grep -i tldraw` and `grep -rn SUPPRESSED_WORKSITES packages/*/src` read empty).
+# The suppression list below stands as the record a canvas projector reads once built.
 suppressed-worksites = ["meta", "meme-body-open", "body-close", "edges"]
 ```
 
@@ -246,6 +246,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;K5bloIpaPE9hqUg7-dfRDcdUz_kzRI_-hcirlTNXVEY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aXmKabdJGO62NP_VMBT3ktK-7de02x2KNYkc--i-Obs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

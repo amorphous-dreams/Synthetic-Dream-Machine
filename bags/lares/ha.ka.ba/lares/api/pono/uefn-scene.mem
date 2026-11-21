@@ -134,7 +134,7 @@ no UEFN process, no Epic servers, no network round-trip.
 
 !! Import Pipeline (Declared Unresolved)
 
-The import pipeline converts a UEFN project into a Lararium bag. Sprint pending.
+The import pipeline converts a UEFN project into a Lararium bag. It stands as design: no importer runs, and its build rests on the road.
 
 ```
 uefn-project/
@@ -163,7 +163,7 @@ Two viable import paths, each with limits:
 | ''`.umap` binary parse'' | Read UE asset file directly; deserialize actor properties to extract DEB arrays | Requires UE asset format knowledge; format can shift across engine versions |
 | ''Verse relay device'' | A custom Verse device placed in the level subscribes to all target events on `OnBegin` and emits its own inventory at runtime | Can only observe events it subscribes to; cannot introspect arbitrary device graphs it wasn't designed for |
 
-''Sprint entry gate:'' the import pipeline sprint MUST resolve this path before committing to a DEB extraction approach. No code work begins on the importer until one path is selected and prototyped.
+''Entry gate:'' the importer MUST resolve this path before it commits to a DEB extraction approach. No importer code begins until one path stands selected and prototyped.
 
 <<~/ahu>>
 
@@ -209,6 +209,6 @@ pranala edge payloads. They feed future Verse code generation from the graph.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GrsHC__Zde2xeEeMvreol29XbWWkNctbNhCMhyex6h4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;We2c0qhLtpQXkd-F5yPS3m_zcQiwwhan7tvu8j3Xpeo`>>
 
 <<^ code=`&#x0004;` to=`?`>>
