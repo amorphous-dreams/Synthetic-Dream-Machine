@@ -30,6 +30,17 @@ describe("a locked persona list", () => {
   });
 
 
+  test("★ an open face's row names its PersonaGroup, so a rite reads the group off `persona list --json` ★", async () => {
+    const said: string[] = [];
+    vi.spyOn(process.stdout, "write").mockImplementation((c) => { said.push(String(c)); return true; });
+    vi.mocked(console.log).mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
+    expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags: { json: true } })).toBe(0);
+    const answer = JSON.parse(said.join("").trim().split("\n").at(-1) ?? "{}") as { data?: { personas?: Array<{ handleIndex: number; group?: unknown }> } };
+    const h0 = answer.data?.personas?.find((p) => p.handleIndex === 0);
+    expect(typeof h0?.group).toBe("string");
+    expect(String(h0?.group).length).toBeGreaterThan(0);
+  });
+
   test("a vessel with no face standing refuses a locked list naming the unlock", async () => {
     rmSync(join(root, "hearth"), { recursive: true, force: true });
     const holder = seatedCustody();

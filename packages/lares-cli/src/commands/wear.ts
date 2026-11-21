@@ -58,6 +58,18 @@ export async function cmdWear(given: ParsedArgs): Promise<number> {
   const door = await sendCustodyFrame({ op: "custody" });
   if (door === null || door["op"] !== "custody") return refuse("daemon-unreachable", "no vessel answers its custody door: stand it (`lares vessel stand`), then unlock and wear");
   if (door["unlocked"] !== true) return refuse("custody-locked", "this vessel holds no key: open it first (`lares vault unlock`); a wear opens nothing");
+  return await wearOpenFace(args, face, "wear");
+}
+
+/**
+ * The wear frame and its answer, over a vessel already read holding its key. `vault unlock --face N` rides it where N stands
+ * open on a held key, so that unlock asks no route either (`verb` names the command the refusal speaks for).
+ */
+export async function wearOpenFace(args: ParsedArgs, face: number, verb: string): Promise<number> {
+  const refuse = (code: string, message: string, data?: CustodyDoorAnswer): number => {
+    emit(args, { ok: false, error: { code, message }, ...(data ? { data } : {}), human: () => console.error(`lares ${verb}: ${message}`) });
+    return 1;
+  };
   const a = await sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}) });
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the wear landed — check `lares vault status`, then wear again");
   const refusal = a["refusal"] as { reason?: unknown } | undefined;

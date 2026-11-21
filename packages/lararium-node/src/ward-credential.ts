@@ -166,14 +166,14 @@ export function storeVerbGatesFirst(verb: string): boolean { return GATED_WARD_V
  * route by name; a test fixture seats its synthetic route. A daemon seats none, so an act that reaches it with no route refuses
  * `ward-needs-fresh-unlock`. The gatherer asks once per act and keeps nothing (the face route's own pattern, `face-route`).
  */
-export type WardGatherer = (what: string) => Promise<readonly Credential[]>;
+export type WardGatherer = (what: string, face?: number) => Promise<readonly Credential[]>;
 let gatherer: WardGatherer | null = null;
 export function seatWardGatherer(gather: WardGatherer | null): void { gatherer = gather; }
 export function wardGathererSeated(): boolean { return gatherer !== null; }
 /** Ask the seated gatherer for one act's route; refuses `ward-needs-fresh-unlock` where none is seated. */
-export async function gatherSeatedWardRoute(what: string): Promise<readonly Credential[]> {
+export async function gatherSeatedWardRoute(what: string, face?: number): Promise<readonly Credential[]> {
   if (!gatherer) throw new WardNeedsFreshUnlock(what);
-  return gatherer(what);
+  return face === undefined ? gatherer(what) : gatherer(what, face);
 }
 
 /** The act's own token, else one the seated gatherer asks for this act, else none. */
