@@ -33,51 +33,15 @@
  */
 
 import { createConnection, type Socket } from "node:net";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes, wireIdentityOf } from "@lararium/mesh";
 
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName, type ReapWord } from "./socket-claim.js";
-import { atomicWriteFileSync } from "./fs-atomic.js";
+import { mintVesselLife } from "./vessel-life.js";
 
-// ── THE BOOT EPOCH (M7′) — a per-vessel monotone counter, bumped once per VESSEL claim ──────────────
-//
-// "A held pin dies with the holder's own next boot." A `--held` pin (`node-cas.ts`'s `pinCas`) stamps the
-// epoch THIS was pinned under; the sweep later asks whether the CURRENT epoch has moved past that stamp.
-// The epoch therefore needs exactly ONE writer, bumped at exactly the moment a NEW vessel life begins —
-// never a direct one-shot CLI act claiming the store for a single command, which is not a "boot" at all and
-// whose churn (`lares bag cas --pin`, `lares vessel found`, …) would otherwise retire every `--held` pin on
-// every unrelated command. `claimStore` bumps it itself, inline with the claim it already serializes through
-// one bound socket name — no second lock, no race between "who bumped" and "who claimed".
-
-const BOOT_EPOCH_FILE = ".boot-epoch";
-
-/** The boot-epoch sidecar path for a vessel's storage dir. */
-export function bootEpochPath(storageDir: string): string {
-  return join(storageDir, BOOT_EPOCH_FILE);
-}
-
-/** The current boot epoch for `storageDir` — 0 for a vessel that has never bumped one (never missing,
- *  never negative). A torn or non-numeric file reads as 0 too: FAIL TOWARD THE OLDEST EPOCH, never a
- *  made-up high one that would retire every `--held` pin at once. */
-export function readBootEpoch(storageDir: string): number {
-  let raw: string;
-  try { raw = readFileSync(bootEpochPath(storageDir), "utf8"); }
-  catch { return 0; }
-  const n = Number(raw.trim());
-  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
-}
-
-/** Bump and return the NEW boot epoch for `storageDir` — one past whatever stood (or 0 → 1 for a vessel's
- *  first-ever boot). Atomic write (M7′): a reader (a pin stamp, a sweep) never observes a torn counter. */
-function bumpBootEpoch(storageDir: string): number {
-  const next = readBootEpoch(storageDir) + 1;
-  atomicWriteFileSync(bootEpochPath(storageDir), String(next) + "\n");
-  return next;
-}
+export { readVesselLife, vesselLifePath, isVesselLife } from "./vessel-life.js";
 
 /**
  * A claim on a store that another holder answers for. The claim opened nothing and wrote nothing.
@@ -126,7 +90,7 @@ export interface ClaimOptions {
   readonly onPark?: (verb: string) => void;
 }
 
-/** The claim's shape apart from `holder`/`bootEpoch`, which {@link StoreClaim} discriminates on `holder`. */
+/** The claim's shape apart from `holder`/`life`, which {@link StoreClaim} discriminates on `holder`. */
 interface StoreClaimShape {
   readonly socketPath: string;
   /**
@@ -143,15 +107,14 @@ interface StoreClaimShape {
 }
 
 /**
- * A held claim on a store's rendezvous name. A `"vessel"` holder's claim IS a boot — `bootEpoch` is REQUIRED
- * on it (M7″): the epoch THIS claim bumped, which `installCasSweep`'s production caller threads straight
- * through as `currentFence`, so a `--held` pin is judged against the epoch THIS boot owns, never a re-read
- * of the sidecar file (which could race a concurrent bump). A `"direct"` one-shot act never bumps the
- * counter, so it carries no `bootEpoch` at all — never 0, never a stale number read back off disk.
+ * A held claim on a store's rendezvous name. A `"vessel"` holder's claim BEGINS A VESSEL LIFE: `life` names it, the fresh
+ * id this claim minted (`vessel-life.ts`), which every fence on a life reads from the claim itself (a `--held` pin, a
+ * committed receipt fact, the session contract's `ownerEpoch`, the pūlama hello), never re-read off disk. A `"direct"`
+ * one-shot act begins no life, so it carries no `life` at all.
  */
 export type StoreClaim =
-  | (StoreClaimShape & { readonly holder: "vessel"; readonly bootEpoch: number })
-  | (StoreClaimShape & { readonly holder: "direct"; readonly bootEpoch?: undefined });
+  | (StoreClaimShape & { readonly holder: "vessel"; readonly life: string })
+  | (StoreClaimShape & { readonly holder: "direct"; readonly life?: undefined });
 
 const uid = (): number => process.getuid?.() ?? 0;
 
@@ -192,7 +155,7 @@ function heldAs(path: string): Promise<{ holder: StoreHolder | null; message: st
  * Claim the store at `storageDir`: bind its rendezvous name, or refuse by name when a holder answers there. A
  * socket file nobody answers at reads as a corpse, and exactly one racing claimant replaces it.
  */
-export function claimStore(storageDir: string, opts: ClaimOptions & { readonly holder: "vessel" }): Promise<StoreClaim & { readonly holder: "vessel"; readonly bootEpoch: number }>;
+export function claimStore(storageDir: string, opts: ClaimOptions & { readonly holder: "vessel" }): Promise<StoreClaim & { readonly holder: "vessel"; readonly life: string }>;
 export function claimStore(storageDir: string, opts?: ClaimOptions): Promise<StoreClaim>;
 export async function claimStore(storageDir: string, opts: ClaimOptions = {}): Promise<StoreClaim> {
   const holder = opts.holder ?? "direct";
@@ -205,13 +168,16 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
   for (;;) {
     try {
       const claim = await bindClaim(storageDir, holder, refuse, opts.parkLimit ?? PARK_LIMIT, opts);
-      // THE BOOT EPOCH BUMPS HERE, ONLY FOR A VESSEL (M7′): a vessel's claim IS a boot — exactly the event
-      // a `--held` pin means to die on next. A "direct" one-shot CLI act claims this same name for a single
-      // command and releases it moments later; bumping on THAT claim would retire every `--held` pin on
-      // every unrelated `lares` invocation, which is not what "this boot" names.
-      // M7″: the bumped epoch rides the claim itself (`bootEpoch`), so the production sweep reads THIS
-      // boot's own number, never a second, racy re-read of the sidecar file.
-      if (holder === "vessel") return { ...claim, holder: "vessel", bootEpoch: bumpBootEpoch(storageDir) };
+      // A VESSEL LIFE BEGINS HERE, AND ONLY FOR A VESSEL: its claim mints the life's id, inside the claim it already
+      // holds. A "direct" one-shot CLI act claims this same name for one command and releases it moments later, and
+      // begins no life, so a `--held` pin outlives every unrelated `lares` invocation.
+      if (holder === "vessel") {
+        // A MINT THAT THROWS BEGINS NO LIFE: the claim it bound releases before the fault rises, so the next claim stands.
+        let life: string;
+        try { life = mintVesselLife(storageDir); }
+        catch (error) { await claim.release().catch(() => { /* the mint's fault names the cause */ }); throw error; }
+        return { ...claim, holder: "vessel", life };
+      }
       return { ...claim, holder: "direct" };
     }
     catch (err) {

@@ -514,7 +514,7 @@ async function loadVesselSigningSeed(): Promise<Uint8Array> {
   return signingSeedFromHex(raw.signingKey);
 }
 
-/** Open only the seven framed place duties after proving the key at the current KEL head. */
+/** Open only the six framed place duties after proving the key at the current KEL head. */
 export async function vesselPlaceSignerDoor(): Promise<PlaceSigner> {
   const seed = await loadVesselSigningSeed();
   try { return placeSignerFromSeed(seed); }

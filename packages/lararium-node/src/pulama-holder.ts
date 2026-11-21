@@ -117,6 +117,12 @@ export function makePulamaHolder(a: {
   readonly dial: () => Promise<PulamaChannel>;
   /** What this kūkulu wears into the hello: its lei and its vouch, as the pūlama's gate reads them. */
   readonly offer: () => unknown | Promise<unknown>;
+  /**
+   * The vessel life this holder dials for, beside the offer: `{ id }`, the life id the vessel's store claim minted
+   * (`StoreClaim.life`). The pūlama checks it against the life its own hearth names and ties every session of one life
+   * together by it; absent, the hello names no life and its session stands with none.
+   */
+  readonly life?: () => unknown;
 }): PulamaHolder {
   let session: Session | null = null;
   let nextId = 1;
@@ -171,13 +177,14 @@ export function makePulamaHolder(a: {
     const began = left;
     const channel = await a.dial();
     const offer = await a.offer();
+    const life = a.life?.();
     const answered = await new Promise<PulamaFrame | null>((resolve) => {
       channel.onClose(() => resolve(null));
       channel.onFrame((f) => {
         const s = session;
         if (s !== null && s.channel === channel) onFrame(s, f); else resolve(f);
       });
-      channel.send({ t: "hello", offer });
+      channel.send({ t: "hello", offer, ...(life !== undefined ? { life } : {}) });
     });
     if (answered === null) throw new PulamaRefused("pulama-unreachable", "the pūlama closed the channel before it answered the hello");
     if (answered.t !== "session") {

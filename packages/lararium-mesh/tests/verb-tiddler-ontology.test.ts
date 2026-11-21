@@ -88,7 +88,7 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
   });
 
   test("a minimal fact (no effectKey/terminal) round-trips with those absent", () => {
-    const fact = { requestId: "r2", inputDigest: "sha256:cc", state: "committed" as const, seq: 1, bootEpoch: 4 };
+    const fact = { requestId: "r2", inputDigest: "sha256:cc", state: "committed" as const, seq: 1, life: "life-four" };
     const parsed = parseReceiptFact(buildReceiptFact(fact).tiddler as Record<string, unknown>);
     expect(parsed).toEqual(fact);
   });
@@ -110,16 +110,18 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     }
   });
 
-  test("an in-flight fact (`committed` or `interrupted`) with no boot-epoch reads as torn; with one it round-trips", () => {
+  test("an in-flight fact (`committed` or `interrupted`) with no life reads as torn; with one it round-trips", () => {
     for (const state of ["committed", "interrupted"] as const) {
       const bag = { title: `${RECEIPT_FACT_URI_PREFIX}r5`, "request-id": "r5", "input-digest": "sha256:dd", state, seq: "2" };
       expect(parseReceiptFact(bag)).toBeNull();
-      const fact = { requestId: "r5", inputDigest: "sha256:dd", state, seq: 2, bootEpoch: 3 };
+      const fact = { requestId: "r5", inputDigest: "sha256:dd", state, seq: 2, life: "life-three" };
       const record = buildReceiptFact(fact);
-      expect(record.tiddler["boot-epoch"]).toBe("3");
+      expect(record.tiddler["life"]).toBe("life-three");
+      expect(parseReceiptFact({ ...bag, life: "" }), "an empty life reads torn").toBeNull();
+      expect(parseReceiptFact({ ...bag, life: 3 }), "a counter in the life field reads torn").toBeNull();
       expect(parseReceiptFact(record.tiddler as Record<string, unknown>)).toEqual(fact);
     }
-    // CONTROL: a settled fact needs no boot-epoch.
+    // CONTROL: a settled fact needs no life.
     expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r6`, "request-id": "r6", "input-digest": "sha256:ee", state: "done", seq: "2", "outcome-bytes": "0" }))
       .toEqual({ requestId: "r6", inputDigest: "sha256:ee", state: "done", seq: 2, outcomeBytes: 0 });
   });
@@ -140,7 +142,7 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     const evicted = { requestId: "r8", inputDigest: "sha256:ab", state: "evicted" as const, terminal: "done" as const, seq: 5 };
     expect(buildReceiptFact(evicted).tiddler["outcome-bytes"]).toBeUndefined();
     expect(parseReceiptFact(buildReceiptFact(evicted).tiddler as Record<string, unknown>)).toEqual(evicted);
-    const committed = { requestId: "r9", inputDigest: "sha256:cd", state: "committed" as const, seq: 6, bootEpoch: 1 };
+    const committed = { requestId: "r9", inputDigest: "sha256:cd", state: "committed" as const, seq: 6, life: "life-one" };
     expect(buildReceiptFact(committed).tiddler["outcome-bytes"]).toBeUndefined();
   });
 
@@ -249,6 +251,6 @@ describe("an evicted fact may name no digest, and then names no verdict", () => 
 
   test("CONTROL: an evicted fact with its digest keeps its verdict; a digest-less committed fact reads torn", () => {
     expect(parseReceiptFact({ ...base, "input-digest": "sha256:d", terminal: "done" })).toMatchObject({ state: "evicted", inputDigest: "sha256:d", terminal: "done" });
-    expect(parseReceiptFact({ ...base, state: "committed", "boot-epoch": "1" })).toBeNull();
+    expect(parseReceiptFact({ ...base, state: "committed", life: "life-one" })).toBeNull();
   });
 });

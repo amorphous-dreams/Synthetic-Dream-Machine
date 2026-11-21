@@ -43,7 +43,6 @@ import { peerSeatOf } from "./uds-peer.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
-import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
 import { FLOOR_VERBS } from "./floor-verbs.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
@@ -357,7 +356,8 @@ export class FactLedger {
     private readonly composite: CompositeStore,
     private readonly repo: Pick<Repo, "flush">,
     private readonly ring: number,
-    private readonly bootEpoch: number,
+    /** The vessel life this ledger serves (`StoreClaim.life`): a `committed` fact of any other life settles at seed. */
+    private readonly life: string,
     private readonly ringBytes: number = RECEIPT_RING_BYTES_DEFAULT,
     /** Where a ring pass that failed says so. The act that started the pass stands either way. */
     private readonly onRingFault: (line: string) => void = () => { /* quiet */ },
@@ -451,13 +451,14 @@ export class FactLedger {
         else this.torn.add(title.slice(RECEIPT_FACT_URI_PREFIX.length));
       }
       facts.sort((a, b) => a.seq - b.seq);
-      // SETTLE AT SEED. A `committed` fact of an EARLIER boot cannot complete: its worker's
-      // invocation lived in that process's scratch. An outcome that landed unobserved promotes the
-      // fact to that terminal; none reads `interrupted`. A fact of THIS boot stays `committed`.
+      // SETTLE AT SEED. A `committed` fact of ANOTHER life cannot complete: its worker's invocation
+      // lived in that process's scratch. An outcome that landed unobserved promotes the fact to that
+      // terminal; none reads `interrupted`. A fact of THIS life stays `committed`. Equality alone decides:
+      // a fact names the life that committed it, and no reading orders two lives.
       let settledAny = false;
       for (let i = 0; i < facts.length; i++) {
         const fact = facts[i]!;
-        if (fact.state !== "committed" || fact.bootEpoch >= this.bootEpoch) continue;
+        if (fact.state !== "committed" || fact.life === this.life) continue;
         const landed = await this.composite.get(`${OUTCOME_URI_PREFIX}${fact.requestId}`);
         const fields = landed && !landed.meta?.deleted ? landed.tiddler as Record<string, unknown> : null;
         const status = fields && fields["face"] === fact.face ? fields["status"] : undefined;
@@ -534,7 +535,7 @@ export class FactLedger {
         if (existing.inputDigest !== inputDigest) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
         return { verdict: "refuse", reason: "already-committed" };
       }
-      await this.record({ requestId, inputDigest, state: "committed", bootEpoch: this.bootEpoch,
+      await this.record({ requestId, inputDigest, state: "committed", life: this.life,
         ...(face !== undefined && { face }), ...(action !== undefined && { action }), ...(effectKey !== undefined && { effectKey }) });
       return { verdict: "run" };
     });
@@ -600,7 +601,7 @@ export class FactLedger {
           ...(existing.effectKey !== undefined && { effectKey: existing.effectKey }),
           ...(existing.face !== undefined && { face: existing.face }),
           ...(existing.action !== undefined && { action: existing.action }),
-          ...("bootEpoch" in existing && existing.bootEpoch !== undefined && { bootEpoch: existing.bootEpoch }),
+          ...("life" in existing && existing.life !== undefined && { life: existing.life }),
         };
         await this.composite.put(buildReceiptFact(updated), { kind: "lares-verb", requestId });
         await this.repo.flush();
@@ -821,8 +822,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
-  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
-  const ownerEpoch = randomUUID();
+  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.life, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
+  // THE OWNER'S EPOCH IS THE VESSEL'S LIFE (session-contract): one name for one relation, minted by the store claim.
+  const ownerEpoch = claim.life;
   // NO RECEIPT CLAIMS DURABILITY OVER MEMORY: a stand-in control handle (the vessel's key shut) refuses by name, never
   // answers heads a save still holds.
   const settleDurably = async (): Promise<DurabilityReceipt> => {
@@ -1007,7 +1009,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     return { requestId, action: fact?.action ?? owed?.action ?? (typeof fields?.["verb"] === "string" && fields["face"] === face ? fields["verb"] : "unknown"),
       face, state,
       ...(outcome && (state === "done" || state === "error") && { outcome: { ...outcome, requestId } }),
-      position: { ownerEpoch, bootEpoch: fact && "bootEpoch" in fact && fact.bootEpoch !== undefined ? fact.bootEpoch : claim.bootEpoch,
+      // The position names the life the request belongs to: the life that committed it where the ledger names one.
+      position: { ownerEpoch: fact && "life" in fact && fact.life !== undefined ? fact.life : ownerEpoch,
         ...(fact && { seq: fact.seq }), ...(durable && { durable }) } };
   };
 

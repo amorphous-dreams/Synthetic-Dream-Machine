@@ -36,7 +36,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/session-contract"
 
 |! Field |! What it holds |! What it never holds |
 | `sessionId` | a fresh random handle the owner mints; it ROUTES a message to its session | authority: a copied id opens nothing |
-| `ownerEpoch` | the owner's own boot epoch, a fresh random mint at each boot; it fences a restarted holder | a wall-clock reading, or a counter derived from one |
+| `ownerEpoch` | the owner's own life, a fresh random mint at each life; it fences a restarted holder. On a node it reads the vessel's life id, the one its store claim minted (`vessel-life`), the same name a receipt fact, a held pin and the pūlama hello carry. The life id NAMES a life and grants nothing: it rests in receipts and in `ownerEpoch`, and every holder proof carries its own `sessionId` and nonce | a wall-clock reading, a counter, or a second epoch beside it |
 | `generation` | a counter that advances at a switch; an effect of an earlier generation never lands in a later one | |
 | `face` | the resolved face, immutable within one generation: the PersonaGroup, its proof subject, its verified admit, the causal revision the relation stood at, and the absolute ids of its four planes (`@persona` · `@circles` · `@identities` · `@sessions`) | a persona root, or any root bytes |
 | `caps` | operation facets the sovereign worker holds for this session | a Repo, a root, or a signer map |
@@ -195,7 +195,7 @@ The working kind of every wiki but the daemon's rests in the wiki's REALM WORKBE
 
 ''A face namespaces its ids.'' A session's request ids and effect keys rest under a hash of its proof subject (`faceScopedId`), so two faces never collide on an id, a cancel by one face never abandons another face's id, and the effect index never serves one face another's effect. The outcome and the receipt fact stamp the face and the action; the input digest names `{verb, args, face, effectKey}`. A receipt reads as `unknown` whenever a fact or an outcome stands under another face, so a refusal tells a session nothing about what stands.
 
-''A receipt displays'' the request id, the action, the verified face, the outcome (`pending` and `unknown` said in words), the owner epoch, the boot epoch and the fence; `renderSessionReceipt` prints those lines and no clock. ''A terminal answer leaves only after the disk fence'' (the durability receipt, F5): the seat reads the daemon document's heads, flushes the Repo and names the document url, those heads and the owner epoch (`DurabilityReceipt`) in every terminal `session:result` and terminal receipt. A pending, unknown or abandoned answer carries none.
+''A receipt displays'' the request id, the action, the verified face, the outcome (`pending` and `unknown` said in words), the owner epoch (the life that committed the request where the ledger names one) and the fence; `renderSessionReceipt` prints those lines and no clock. ''A terminal answer leaves only after the disk fence'' (the durability receipt, F5): the seat reads the daemon document's heads, flushes the Repo and names the document url, those heads and the owner epoch (`DurabilityReceipt`) in every terminal `session:result` and terminal receipt. A pending, unknown or abandoned answer carries none.
 
 > ''A house reading, marked as one.'' One vessel-wide outcome document MAY hold several faces' results while each session reads only its own face's. The operator's ruling supports the reading (plane isolation runs by capability-limited sessions under a trusted daemon, so the daemon may hold what no single session may read); the operator ruled the isolation bound and never this document's shape.
 
@@ -340,6 +340,6 @@ The debts and the history behind this contract: <<~ loulou uri=`lar:///ha.ka.ba/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;incpmuIRm-YVbRhKGQcCi49kMNDLffbJ-zzR2qMpsIc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rUq4M1YBDIp8TPlmvEsLtYigNnvA3bE7S1BpV8bwo5M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

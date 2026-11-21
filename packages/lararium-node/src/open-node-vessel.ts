@@ -4663,13 +4663,10 @@ async function prepareNodeBootOn(
     if (genesisProtect === "unreadable") {
       console.warn("[cas-sweep] the genesis seed or the stored oracle island stands but will not derive — withholding the sweep. Nothing sweeps until both read, so no genesis blob can age out unprotected. Repair or remove the malformed seed.");
     } else {
-      // M7″: `storeClaim.bootEpoch` is REQUIRED on a vessel-held claim (never undefined, never a guessed
-      // 0) — the epoch THIS vessel's own boot bumped once, at claim time (step 0, above). Epoch 0 HOLDS
-      // every pin (`currentFence <= fence` for any non-negative fence), so a first boot withholds nothing
-      // it should keep. Each sweep takes this boot's captured epoch, so a `--held` pin is judged against
-      // the boot that stands, never a re-read of the `.boot-epoch` sidecar file.
-      const bootEpoch = storeClaim.bootEpoch;
-      const sweep = installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => bootEpoch, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(ownEntry(doc?.tiddlers, MESH_CABAL_DOC_ID_TIDDLER)); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+      // `storeClaim.life` stands on every vessel-held claim: the life THIS vessel's claim minted (step 0, above).
+      // Each sweep takes it, so a `--held` pin reads against the life that stands, never a re-read of disk.
+      const life = storeClaim.life;
+      const sweep = installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentLife: () => life, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(ownEntry(doc?.tiddlers, MESH_CABAL_DOC_ID_TIDDLER)); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
       stood.push({ what: "the CAS sweep tick", down: () => sweep.stop() });
     }
 

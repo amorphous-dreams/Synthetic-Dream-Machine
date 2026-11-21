@@ -181,7 +181,7 @@ Gates: mesh unit suites, the unbuilt-laws witness reading each declared red that
 
 ### O1: first three commits and gates
 
-1. **PURE: the working address and the receipt.** The address image comes from N's identity lead (`train-o1-launch#/ground`). Its witness shows two offline vessels converging and each input diverging. The durability receipt carries `docUrl`, the stored heads and the boot epoch.
+1. **PURE: the working address and the receipt.** The address image comes from N's identity lead (`train-o1-launch#/ground`). Its witness shows two offline vessels converging and each input diverging. The durability receipt carries `docUrl`, the stored heads and the owner's life.
 2. **LIVE: scoped surface mounts** from both composers through `mountSurface`. It unskips `PRODUCTION_SURFACES_USE_SCOPED_VIEW` (`unbuilt-laws.test.ts:522`).
 3. **LIVE: node verbs, the watcher and the seat move to session scope.**
 

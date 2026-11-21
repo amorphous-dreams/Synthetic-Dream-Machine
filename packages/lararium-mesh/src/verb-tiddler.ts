@@ -152,24 +152,24 @@ export interface ReceiptFactAbandoned extends ReceiptFactCommon {
   readonly inputDigest?: string;
 }
 
-/** A request the vessel committed and has not seen land. `bootEpoch` names the boot that committed
- *  it (a per-store counter, a fence, never a time): a later boot settles a `committed` fact of an
- *  earlier epoch to `interrupted` when no outcome landed. Both states REQUIRE the epoch. */
+/** A request the vessel committed and has not seen land. `life` names the vessel life that committed it
+ *  (the id its store claim minted: a name, never a time and never an order): a later life settles a `committed`
+ *  fact of ANOTHER life to `interrupted` when no outcome landed. Both states REQUIRE the life. */
 export interface ReceiptFactInFlight extends ReceiptFactCommon {
   readonly state:       "committed" | "interrupted";
   readonly inputDigest: string;
-  readonly bootEpoch:   number;
+  readonly life:        string;
 }
 
 /**
  * A request whose outcome landed, and whose outcome record this vessel keeps. `outcomeBytes` measures that
  * record ({@link outcomeBytesOf}); the ring's byte bound sums it across every landed fact. Both landed states
- * REQUIRE the measure. It keeps the epoch of the boot that committed it when known.
+ * REQUIRE the measure. It keeps the life that committed it when known.
  */
 export interface ReceiptFactLanded extends ReceiptFactCommon {
   readonly state:        "done" | "error";
   readonly inputDigest:  string;
-  readonly bootEpoch?:   number;
+  readonly life?:        string;
   readonly outcomeBytes: number;
 }
 
@@ -181,7 +181,7 @@ export interface ReceiptFactLanded extends ReceiptFactCommon {
 export interface ReceiptFactEvicted extends ReceiptFactCommon {
   readonly state:        "evicted";
   readonly inputDigest?: string;
-  readonly bootEpoch?:   number;
+  readonly life?:        string;
 }
 
 /** A request that reached a verdict. */
@@ -215,7 +215,7 @@ export function buildReceiptFact(fact: ReceiptFact): LarTiddlerRecord {
       ...(fact.face !== undefined && { face: fact.face }),
       ...(fact.action !== undefined && { action: fact.action }),
       ...(fact.terminal    !== undefined && { terminal:       fact.terminal }),
-      ...("bootEpoch" in fact && fact.bootEpoch !== undefined && { "boot-epoch":   String(fact.bootEpoch) }),
+      ...("life" in fact && fact.life !== undefined && { life: fact.life }),
       ...("outcomeBytes" in fact && { "outcome-bytes": String(fact.outcomeBytes) }),
     },
     meta: { authority: "lares-daemon-channel" },
@@ -265,21 +265,19 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   // Every other state claims a digest — a committed/done/error fact with none on the wire reads as torn,
   // never as an "unverifiable" absence.
   if (inputDigest === undefined) return null;
-  const epochRaw = fields["boot-epoch"];
-  const epoch = typeof epochRaw === "string" && /^\d+$/.test(epochRaw) ? Number.parseInt(epochRaw, 10)
-              : typeof epochRaw === "number" && Number.isInteger(epochRaw) && epochRaw >= 0 ? epochRaw
-              : undefined;
+  const lifeRaw = fields["life"];
+  const life = typeof lifeRaw === "string" && /^\S+$/.test(lifeRaw) ? lifeRaw : undefined;
   const common: { requestId: string; seq: number; inputDigest: string; face?: string; action?: string; effectKey?: string; terminal?: "done" | "error" } = {
     requestId, seq, inputDigest, ...identity,
     ...(effectKey !== undefined && { effectKey }),
     ...(terminal  !== undefined && { terminal }),
   };
-  // An in-flight fact names the boot that committed it; none on the wire reads as torn.
+  // An in-flight fact names the life that committed it; none on the wire reads as torn.
   if (state === "committed" || state === "interrupted") {
-    if (epoch === undefined) return null;
-    return { ...common, state, bootEpoch: epoch };
+    if (life === undefined) return null;
+    return { ...common, state, life };
   }
-  if (state === "evicted") return { ...common, state, ...(epoch !== undefined && { bootEpoch: epoch }) };
+  if (state === "evicted") return { ...common, state, ...(life !== undefined && { life }) };
   // A landed fact names the measure of the outcome it keeps; none on the wire reads as torn.
   const bytesRaw = fields["outcome-bytes"];
   const bytesRead = typeof bytesRaw === "string" && /^\d+$/.test(bytesRaw) ? Number.parseInt(bytesRaw, 10)
@@ -288,7 +286,7 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
   // A measure a sum can hold: a whole count of bytes. A run of digits past that reads as no measure at all.
   const outcomeBytes = Number.isSafeInteger(bytesRead) && bytesRead >= 0 ? bytesRead : undefined;
   if (outcomeBytes === undefined) return null;
-  return { ...common, state, outcomeBytes, ...(epoch !== undefined && { bootEpoch: epoch }) };
+  return { ...common, state, outcomeBytes, ...(life !== undefined && { life }) };
 }
 
 /**
