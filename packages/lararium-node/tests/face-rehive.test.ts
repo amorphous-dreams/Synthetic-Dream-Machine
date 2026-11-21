@@ -16,6 +16,7 @@
  */
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
+import { createHash } from "node:crypto";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -152,6 +153,32 @@ test("R3 a foreign row beside an own .prev restores that generation", async () =
   await reopen(1);
   expect(out.outcome).toBe("restored-prev");
   expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from(own))).toBe(true);
+});
+
+test("R3b a retry after the swap, before the answer, finds the row own beside its aside and answers resumed", async () => {
+  const { g0, g1 } = await twoFaces("prev-resumed");
+  const own = (await loadVeilArchive(g1))!;
+  await seatedCustody()!.writeRecord("identity", veilArchivePrevFile(g1), own);
+  await misroute((await loadVeilArchive(g0))!, g1);
+  const first = await rehive(1);
+  await reopen(1);
+  expect(first.outcome).toBe("restored-prev");
+  // The process died after the swap and before the answer: the retry finds the row own and the aside standing.
+  const again = await rehive(1);
+  await reopen(1);
+  expect(again).toMatchObject({ outcome: "restored-prev", aside: first.aside, foreignIdentity: first.foreignIdentity, resumed: true });
+  expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from(own))).toBe(true);
+});
+
+test("R3c an aside under the foreign row's name with DIFFERENT bytes refuses aside-differs and moves nothing", async () => {
+  const { g0, g1 } = await twoFaces("collide");
+  const foreign = (await loadVeilArchive(g0))!;
+  await misroute(foreign, g1);
+  const name = `${veilArchiveFile(g1)}.mismatch-${createHash("sha256").update(foreign).digest("hex").slice(0, 16)}`;
+  await seatedCustody()!.writeRecord("identity", name, new Uint8Array([1, 2, 3]));
+  expect(reasonOf(await rehive(1).catch((e: unknown) => e))).toBe("aside-differs");
+  await reopen(1);
+  expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from(foreign)), "the row stays whole").toBe(true);
 });
 
 /** The rehive over face `ordinal`'s rows through a port `wrap` may stop or race, under a key opened for the act alone. */

@@ -558,7 +558,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A HAND ACT: the peer reads first, before any credential the frame carries reaches the holder.
     // An unknown peer stands only because this act proves a person itself: the face's own route, checked against its budget.
     const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
-    if ("refusal" in hand) return refuse(hand.refusal, "a rehive is a person's own act at their terminal: an AI seat's peer never runs it; nothing moved");
+    if ("refusal" in hand) return refuse(hand.refusal, "a rehive is a person's own act at their terminal: a detected AI seat refuses, and the face's own route is the gate; nothing moved");
     if (!deps.rehive) return refuse("rehive-unavailable", "this vessel's custody door rehives no face");
     // UNDER A PŪLAMA the face's custody rests with the pūlama, which lights faces on its own hand: the rehive runs where it rests.
     if (deps.pulama) return refuse("rehive-under-pulama", `this vessel's custody rests with its pūlama: rehive the face at the pūlama's own hand door, which holds its keys and lights faces on one chain: tools/lares-container.sh pulama lock (it shuts every face), then tools/lares-container.sh pulama rehive ${face}; nothing moved`);

@@ -18,8 +18,10 @@
  * WHAT IT CANNOT BIND. The reading adds the seat, never removes one: a line's own `seat: "ai"` mark stands regardless.
  * A hostile process under the same uid escapes it by leaving the branch (a double fork reparents it to init or a
  * subreaper; a process started outside the harness, such as a tmux server or `systemd-run --user`, asks for it), and a
- * harness launched under another name with no mark reads as no harness. Across a pid namespace (the container's
- * `docker exec`) or where `ss` stands absent, the peer reads unknown and the door keeps the line's own reading. It
+ * harness launched under another name with no mark reads as no harness. A node one-liner run by `docker exec` into the container shares its pid
+ * namespace: the parent pid reads 0, the walk stops and the harness mark never passes, so such a peer reads hand, not unknown;
+ * where `ss` stands absent the peer reads unknown and the door keeps the line's own reading. A detected AI seat refuses; the
+ * typed route and the per-face budget stay the gate. It
  * closes the casual omission (`env -u CLAUDECODE`, a script that clears its environment), not a determined one.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/uds-peer

@@ -33,7 +33,7 @@ import { ArchiveIdentityMismatch, requireArchiveOf } from "@lararium/keyhive";
 import { openFaceCarrier, updateFaceCarrier, writeFaceCarrier, type Credential, type CustodyIo, type FaceCustodyKey } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import { faceCarrierFor } from "./face-custody.js";
-import { faceTreePath } from "./face-index.js";
+import { faceDir, faceTreePath } from "./face-index.js";
 import { rehiveMarker, rehiveMarkerAside } from "./identity-anchors.js";
 import { carrierTable, type CustodyHomes } from "./vault-carriers.js";
 
@@ -47,6 +47,8 @@ export class RehiveRefused extends Error {
 export interface FaceRowPort {
   read(file: string): Promise<Uint8Array | null>;
   write(file: string, bytes: Uint8Array): Promise<void>;
+  /** The names of the files standing in this face's directory. */
+  list(): Promise<readonly string[]>;
   /** Seal `next` over `file` only where it holds exactly `expected` now, in one step; else refuse `row-moved`. */
   replace(file: string, expected: Uint8Array, next: Uint8Array): Promise<void>;
 }
@@ -94,13 +96,22 @@ export async function rehiveFaceRows(port: FaceRowPort, groupDigest: string): Pr
       return { outcome: "stood-from-seed", foreignIdentity: reading.restored, ownIdentity: reading.seed, aside: marked, resumed: true };
     }
     const reading = await readAgainst(seed, standing);
-    if (reading.own) throw new RehiveRefused("row-is-own", "this face's veil-archive row restores the face's own identity: there is nothing to rehive, and nothing moved");
+    if (reading.own) {
+      // A RETRY OVER THE SWAP: a run that died after the replace and before its answer left the own row beside the aside it sealed.
+      for (const name of (await port.list()).filter((n) => n.startsWith(`${row}.mismatch-`)).sort()) {
+        const kept = await port.read(name);
+        const other = kept ? await readAgainst(seed, kept).catch(() => null) : null;
+        if (other && !other.own) return { outcome: "restored-prev", foreignIdentity: other.restored, ownIdentity: other.seed, aside: name, resumed: true };
+      }
+      throw new RehiveRefused("row-is-own", "this face's veil-archive row restores the face's own identity: there is nothing to rehive, and nothing moved");
+    }
     const aside = `${row}.mismatch-${createHash("sha256").update(standing).digest("hex").slice(0, 16)}`;
     const prev = await port.read(`${row}.prev`);
     const prevIsOwn = prev !== null && (await readAgainst(seed, prev).catch(() => ({ own: false as const }))).own;
     // THE COPY STANDS BEFORE THE ROW CHANGES; an aside a stopped run already sealed is the same name and the same bytes.
     const already = await port.read(aside);
-    if (!already || !same(already, standing)) await port.write(aside, standing);
+    if (already && !same(already, standing)) throw new RehiveRefused("aside-differs", `${aside} already holds other bytes than the row's (a name collision or a damaged copy); read it before anything moves again, and nothing moved`);
+    if (!already) await port.write(aside, standing);
     // ONE STEP replaces the row, and only over the bytes just copied aside.
     await port.replace(row, standing, prevIsOwn ? prev! : rehiveMarker(aside));
     return { outcome: prevIsOwn ? "restored-prev" : "stood-from-seed", foreignIdentity: reading.restored, ownIdentity: reading.seed, aside, ...(already ? { resumed: true } : {}) };
@@ -123,6 +134,10 @@ export function faceRowPortOf(args: { readonly io: CustodyIo; readonly homes: Cu
       if (opened.reading === "opens") return opened.plaintext;
       if (opened.reading === "absent") return null;
       throw new RehiveRefused("row-unavailable", `the face row ${file} reads ${opened.reading}; nothing moved`);
+    },
+    async list() {
+      const dir = faceDir(args.homes.identity, args.fcid);
+      return (await args.io.list()).filter((p) => p.startsWith(`${dir}/`)).map((p) => p.slice(dir.length + 1)).filter((n) => !n.includes("/"));
     },
     write: (file, bytes) => writeFaceCarrier({ io: args.io, key: args.fck, treePath, carrier: carrier(file), plaintext: bytes }),
     async replace(file, expected, next) {

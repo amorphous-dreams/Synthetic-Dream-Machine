@@ -110,7 +110,7 @@ async function serve(): Promise<void> {
       let frame: unknown = null;
       try { frame = JSON.parse(buffered.slice(0, at)); } catch { /* answers unknown-act */ }
       buffered = "";
-      // A HAND ACT reads its peer first (`hand-act-gate`): an AI seat's peer never rehives a face.
+      // A HAND ACT reads its peer first (`hand-act-gate`): a detected AI seat refuses; the face's own route and per-face budget are the gate.
       const gated = (frame as { op?: unknown } | null)?.op === "rehive"
         ? readHand(sock, { proveRoute: true }).then((hand) => ("refusal" in hand ? { op: "rehive", reading: hand.refusal } : door(frame)))
         : door(frame);
