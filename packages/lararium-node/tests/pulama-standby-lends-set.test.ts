@@ -127,11 +127,18 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
 
   test("RED WELD: a face the pūlama lights after the composition stood (its lend widened by the pūlama's standing event) lights in the daemon island on the custody's open, so a session on it reads its own documents and never meets `no provider for face`", () => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
-    const watch = source.indexOf("onOpened?.(() => void lightServedFaces(");
+    const watch = source.indexOf("onOpened?.(sweep)");
     expect(watch).toBeGreaterThan(-1);
-    const light = source.slice(source.indexOf("const lightServedFaces"));
+    const light = source.slice(source.indexOf("const sweepLend"));
     expect(light.indexOf("unlitServedFaces(")).toBeGreaterThan(-1);
-    expect(light.indexOf("unlitServedFaces(")).toBeLessThan(light.indexOf("lightFace("));
+    expect(light.indexOf("unlitServedFaces(")).toBeLessThan(light.lastIndexOf("lightFace(", light.indexOf("const sweep =")));
+  });
+
+  test("WELD: TWO-PHASE CLOSE, THE VESSEL'S HALF: a pūlama's closing closes the face through its actor before the vessel answers face.closed", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    const half = source.slice(source.indexOf("onClosing?.((fcid, opening)"));
+    expect(half.indexOf("faceLife.close(")).toBeGreaterThan(-1);
+    expect(half.indexOf("faceLife.close(")).toBeLessThan(half.indexOf("faceClosed?.("));
   });
 
   test("WELD: the composition proves another face, and lists the faces it walks, only inside what the vessel serves", () => {

@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { faceLives, type FaceLifeEffects, type FaceLit } from "../src/face-lifecycle.js";
 
-function deferred<T = void>() {
+interface Deferred<T> { readonly promise: Promise<T>; resolve(value: T): void; reject(error: unknown): void }
+function deferred<T = void>(): Deferred<T> {
   let resolve!: (value: T) => void, reject!: (error: unknown) => void;
   const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
   return { promise, resolve, reject };
@@ -11,17 +12,18 @@ const settle = async (): Promise<void> => { for (let i = 0; i < 8; i++) await Pr
 /** A scripted island: each effect records itself, and the test answers each one by hand. */
 function island() {
   const events: string[] = [];
-  const lights = new Map<number, ReturnType<typeof deferred<FaceLit>> & { live: () => boolean; opening: string }>();
-  const drains = new Map<number, ReturnType<typeof deferred>>();
-  const drops = new Map<number, ReturnType<typeof deferred>>();
-  const recomposes: Array<ReturnType<typeof deferred> & { litAtStart: number[] }> = [];
+  const lights = new Map<number, Deferred<FaceLit> & { live: () => boolean; opening: string }>();
+  const drains = new Map<number, Deferred<void>>();
+  const drops = new Map<number, Deferred<void>>();
+  const recomposes: Array<Deferred<void> & { litAtStart: number[] }> = [];
   let lives!: ReturnType<typeof faceLives>;
   const effects: FaceLifeEffects = {
     light(ordinal, opening, live) { events.push(`light h${ordinal} ${opening}`); const d = { ...deferred<FaceLit>(), live, opening }; lights.set(ordinal, d); return d.promise; },
     drainSaves(ordinal) { events.push(`drain h${ordinal}`); const d = deferred(); drains.set(ordinal, d); return d.promise; },
     dropWorker(ordinal, atomKey) { events.push(`drop h${ordinal} ${atomKey}`); const d = deferred(); drops.set(ordinal, d); return d.promise; },
     teardownHost(ordinal) { events.push(`teardown h${ordinal}`); },
-    recompose(reason) { const d = { ...deferred(), litAtStart: lives.lit() }; events.push(`recompose (${reason})`); recomposes.push(d); return d.promise; },
+    // The island's open reads the actors' lit set at its start, and answers them with it once it stands.
+    recompose(reason) { const d = { ...deferred(), litAtStart: lives.lit() }; events.push(`recompose (${reason})`); recomposes.push(d); return d.promise.then(() => lives.recomposed(new Set(d.litAtStart))); },
     log: () => {},
   };
   lives = faceLives(effects, { nonce: "boot" });
@@ -194,7 +196,9 @@ describe("each face lives one life: the lifecycle actor", () => {
     await lit(t, 1);
     const closing = t.lives.close(1, "lock");
     t.drains.get(1)!.resolve(); await closing;
-    t.lives.recomposed();
+    t.lives.recomposed(new Set([1]));
+    expect(t.lives.state(1), "an open that composed the face leaves it closing").toMatchObject({ kind: "closing" });
+    t.lives.recomposed(new Set());
     expect(t.lives.state(1).kind).toBe("dark");
   });
 
