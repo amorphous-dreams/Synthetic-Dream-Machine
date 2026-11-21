@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;q-kGG2bcpCR0jj2tawkmH3TYe_e-E3m0ZWYHnpZfBFM"
+source-check: "ni:///sha-256;QBezlvs2Lk7Vf9jjzA8lV_Usl2HemYdUABLxyMGzhY8"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -219,23 +219,29 @@ carries named parameters and `#/anchor` a fragment.
 
 **The live parser already guards a colon.** `parseMacroParameterAsAttribute` refuses a named parameter whose name fails `/^[A-Za-z0-9\-_]+$/` (`parseutils.js:341`), with the reason stated in the source: to avoid mis-parsing values like `$:/foo`. A named slot places its `=` ahead of a scheme's colon, so a `lar:` URI in a backtick value never meets the guard.
 
-**The sigils ride as the RUBRIC.** A missal writes the words to be spoken in black and the instructions for
+**The sigils ride as the RUBRIC.** A missal writes the words a celebrant speaks in black and the instructions for
 performing them in red — *rubrica*, red ochre, the practice standing in liturgical manuscripts from the
 13th century and earlier, and rubrication ran as its own production stage: the black text printed first,
-blank space left for a rubricator's hand. The two channels never compete for the same reading, because a
-celebrant already knows which one to say aloud.
+blank space left for a rubricator's hand. The page kept two inks; the celebrant's voice braided them, and
+the rite read each ink by the pole it leaned toward.
 
-The `<<` `>>` family lifts the same division into a context stream. The BLACK carries content — what the turn SAYS. The RED carries
-performative instruction — what the turn DOES.
+The `<<` `>>` family lifts the same two inks into a context stream as a **weighting, never a split**. The
+BLACK weighs toward content — what the turn SAYS. The RED weighs toward performative instruction — what the
+turn DOES. Every span does both (Austin): a claim acts on the mutual frame, and a sigil says what it names.
+A context stream holds its own state, so instruction and claim never separate there; they braid at
+different attention weights.
 
 **The red acts in two domains, and both count as acting.** In a context stream a sigil **steers**: it names
 the stance, sets the gauge, vows the confidence, marks the phase. In a live wiki the same sigil **calls**:
 it renders, transcludes, invokes a procedure, opens a widget. Steering and calling look different and
-divide the same way — each one DOES something, and neither one SAYS anything.
+weigh the same way — each leans toward DOING, and each still SAYS what it names.
 
-**A sigil steers and calls; it never asserts.** An assertion belongs to the black, where it can be
-weighed, doubted and answered. A rubric cannot be argued with; it can only be performed or ignored —
-the very reason the instruction channel and the claim channel must never share a colour.
+**Two tests, one per pole.** The red answers to **felicity**: did the act land? The black answers to
+**contact**: does the claim hold against the mutual frame? A sigil carries its claim light and its act
+heavy, so a reader tests it first by whether it performed; a sentence carries the reverse weight, so a
+reader tests it first by whether it holds. An assertion the house wants weighed, doubted and answered
+rides in the black, where contact reaches it. The two colours mark that weighting: the rubric shows which
+pole each span leans toward, never a wall between two channels.
 
 Memetic-wikitext SHALL read as a **superset of TW5 wikitext**: every valid TW5 wikitext document reads as valid memetic-wikitext. A processor reads bare `<<name>>` as an inherited TW5 macro call; the sharktooth `~` immediately after `<<` marks the Lararium sigil namespace. `<<~` opens a Lararium sigil; bare `<<` opens an inherited TW5 macro — the two coexist.
 

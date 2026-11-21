@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/pono-sigil"
 
 ! Pono (Sigil)
 
-''The sigils form the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
+''The sigils form the RUBRIC.'' A missal writes the words a celebrant speaks in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black weighs toward SAYING, the red toward DOING, and every span does both (Austin) — a weighting, never a split: in a stream the red steers, in a wiki it calls; felicity tests the red (did the act land), contact tests the black (does the claim hold).
 
 //pono// — Hawaiian: rightness, correctness, balance, moral alignment; proper, fit, just.
 
@@ -64,6 +64,6 @@ An optional `role:` qualifier further specifies the constraint kind.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ETwxQQGu3ytkhMGy9laHTCSQM8MvXYC3YWRRK9-re-g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UKmDBDBLcYiToBtsvI6OgOWY5Q_ri7PzofxxA8FtB-g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

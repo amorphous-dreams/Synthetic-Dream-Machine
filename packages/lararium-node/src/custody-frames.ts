@@ -107,7 +107,7 @@ export type CustodyAnswer =
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   /** Each document with saves held in memory (`SealedDocumentStore.held`), by id and never by body; `standing` names
    *  the composition that answered ("recomposing" while none sits, when `held` reads null). */
-  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[]; readonly facesLit?: readonly number[]; readonly worn?: number }
+  | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[]; readonly facesLit?: readonly number[]; readonly facesDark?: readonly ServedDark[]; readonly worn?: number }
   /** Each document by id, its store, counts and class, and the names that reach it; never a body. */
   | { readonly op: "doc-census"; readonly census: DocCensusReading; readonly standing: string }
   | { readonly op: "face-route"; readonly ref: string }
@@ -115,6 +115,17 @@ export type CustodyAnswer =
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
   | ({ readonly op: "rehive"; readonly face: number } & RehiveOutcome)
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
+
+/** A face its custody serves that stands dark here: its last light refused. The note names the cause and the clearing line. */
+export interface ServedDark { readonly face: number; readonly cause: string; readonly note: string }
+
+/** The served-but-dark line: the face, why its light refused, and the act that lights it again (the lend's replay). */
+export const servedDarkNote = (face: number, cause: string): string =>
+  `h${face} served by custody, dark here: its light refused (${cause}); clear it with \`lares vault unlock\` (it replays the lend), or the next custody event`;
+
+/** The served-but-dark set: each face whose light refused here that its custody serves (the lit set), with its note. */
+export const servedDark = (refused: ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, lit: readonly number[]): ServedDark[] =>
+  refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause) }));
 
 export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
@@ -131,6 +142,10 @@ export interface CustodyFrameDeps {
   readonly holdFace?: (ordinal: number) => boolean;
   /** Hold every face the standing composition knows past CLOSED, right before the vessel key locks; false where any stands lit. */
   readonly holdFaces?: () => boolean;
+  /** Each face dark here because its last light refused, with its cause. */
+  readonly refusedLights?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>;
+  /** Replay the lend now (the served-but-dark clearing line), awaited. */
+  readonly replayLend?: () => Promise<void>;
   /** Close every face through its actor (a whole lock): resolves once each closed; rejects where one did not close whole. */
   readonly closeFaces?: () => Promise<void>;
   /** What stands now. */
@@ -306,8 +321,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const openBefore = new Set(holder.unlockedFaces());
     const mountedBefore = mountedFaceOrdinal();
     const mountedWasOpen = mountedBefore !== undefined && (await holder.faceStanding({ ordinal: mountedBefore }))?.unlocked === true;
-    // A second unlock that names no face finds the key held and the composition standing: nothing to open, nothing to compose.
-    if (!freshly && sel.face === undefined && sel.all !== true) return { op: "unlock", ...u, standing: deps.standing() };
+    // A second unlock that names no face finds the key held and the composition standing: nothing to open, nothing to compose;
+    // it replays the lend, so a served face whose light refused lights again (the served-but-dark clearing line).
+    if (!freshly && sel.face === undefined && sel.all !== true) { await deps.replayLend?.(); return { op: "unlock", ...u, standing: deps.standing() }; }
     const standing = listFaceOrdinals();
     // A pūlama's vessel never reaches here: its unlock frame dials the pūlama (the `deps.pulama` branch), so this direct
     // `lockFace` only ever drops a key this vessel's own holder opened.
@@ -368,6 +384,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (mounted !== undefined) { setMountedFace(mounted); mountByOpening = chosenByOpening; }
     // An unlock over a held key that opens no new face and changes no mounted face stands nothing new.
     if (!freshly && holder.unlockedFaces().every((f) => openBefore.has(f)) && (mounted === undefined || mounted === mountedBefore)) {
+      await deps.replayLend?.();
       return { op: "unlock", ...u, ...perFace, standing: deps.standing() };
     }
     if (!freshly && mountedWasOpen && mountedBefore !== undefined && (mounted === undefined || mounted === mountedBefore) && deps.lightFace) {
@@ -701,6 +718,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       act = composing(async (): Promise<CustodyAnswer> => {
         const was = pulama.standing().session;
         const dialed: { readonly session: boolean; readonly waits: string | null; readonly refused?: string } = was ? pulama.standing() : await pulama.dial();
+        // A session already standing replays the lend: a lent face whose light refused lights again (the served-but-dark line).
+        if (was) await deps.replayLend?.();
         // THE ANSWER NAMES THE FAULT: a composition refused over the session names its own reason to the caller who asked,
         // beside the `composition-refused` reading, so no probe of the door and no read of the vessel's log stands between.
         const { refused, ...now } = dialed;
@@ -799,7 +818,10 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // `worn` names the daemon mount under a held key, absent where none wears: a stop over faces lit and none worn names the
       // wear that lets the house settle, never an unlock the key already holds.
       const worn = holder.isUnlocked() ? mountedFaceOrdinal() : undefined;
-      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}), ...(worn !== undefined ? { worn } : {}) });
+      // `facesDark` names each face the custody serves (lit set) that stands dark here, its light refused, with its clearing line.
+      let facesDark: ServedDark[] = [];
+      try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit); } catch { facesDark = []; }
+      answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(worn !== undefined ? { worn } : {}) });
       return true;
     } else {
       // THE STATE QUERY IS READ-ONLY: it answers at once, beside the chain, so a caller asking while an unlock

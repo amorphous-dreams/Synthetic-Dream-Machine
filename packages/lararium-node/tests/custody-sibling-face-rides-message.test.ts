@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, expect, test, vi } from "vitest";
-import { custodyFrameHandler } from "../src/custody-frames.js";
+import { custodyFrameHandler, servedDark } from "../src/custody-frames.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
@@ -25,6 +25,7 @@ function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Pr
   const releaseFaces = vi.fn(() => {});
   const holdFace = vi.fn((_ordinal: number) => true);
   const holdFaces = vi.fn(() => true);
+  const replayLend = vi.fn(async () => {});
   let unlocked = true;
   const order: string[] = [];
   const lockFace = holder.lockFace.bind(holder);
@@ -36,7 +37,7 @@ function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Pr
     // A pūlama's lent holder refuses every face lock (the person's own act at the pūlama); a local holder may throw.
     (holder as { lockFace: (fcid: string) => Promise<void> }).lockFace = async () => { order.push("lockFace refused"); throw new Error("needs-the-human: a face's lock"); };
   }
-  const handle = custodyFrameHandler({ holder, lightFace, dropFace, releaseFace, releaseFaces, holdFace, holdFaces, closeFaces, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false,
+  const handle = custodyFrameHandler({ holder, lightFace, dropFace, releaseFace, releaseFaces, holdFace, holdFaces, replayLend, closeFaces, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false,
     runAct: async () => ({ ran: true }),
     ...(opts.pulama === true ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [], tellWorn: () => {} } } : {}) } as unknown as Parameters<typeof custodyFrameHandler>[0]);
   const send = (frame: unknown) => new Promise<Record<string, unknown>>((resolve) => {
@@ -50,7 +51,7 @@ function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Pr
     sock.destroyed = true;
   };
   const setUnlocked = (yes: boolean): void => { unlocked = yes; };
-  return { send, sendAndLeave, open, lightFace, dropFace, recompose, releaseFace, releaseFaces, holdFace, holdFaces, closeFaces, lock, order, handle, setUnlocked };
+  return { send, sendAndLeave, open, lightFace, dropFace, recompose, releaseFace, releaseFaces, holdFace, holdFaces, replayLend, closeFaces, lock, order, handle, setUnlocked };
 }
 afterEach(() => setMountedFace(undefined));
 test("locking an open sibling drops its provider without recomposition", async () => {
@@ -219,5 +220,24 @@ test("F7: a whole lock finds a face lit in its line (a composition stood again a
   expect(String(answer["errorMessage"])).toMatch(/stands lit/);
   expect(h.lock).not.toHaveBeenCalled();
   expect(h.releaseFaces).toHaveBeenCalledOnce();
+});
+
+test("R9 SERVED BUT DARK: the census names each face its custody serves that stands dark here, its cause and its clearing line; a face the custody does not serve reads nowhere", () => {
+  expect(servedDark([{ ordinal: 1, cause: "daemon-down" }, { ordinal: 3, cause: "x" }], [0, 1])).toEqual([
+    { face: 1, cause: "daemon-down", note: "h1 served by custody, dark here: its light refused (daemon-down); clear it with `lares vault unlock` (it replays the lend), or the next custody event" },
+  ]);
+});
+
+test("R9 THE CLEARING LINE: an unlock over a held key replays the lend, so a served face whose light refused lights again", async () => {
+  setMountedFace(0); const h = harness();
+  expect(await h.send({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "x" }] })).toMatchObject({ op: "unlock" });
+  expect(h.replayLend).toHaveBeenCalledOnce();
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+
+test("R9 THE CLEARING LINE under a pūlama: an unlock over a standing session replays the lend", async () => {
+  setMountedFace(0); const h = harness({ pulama: true });
+  expect(await h.send({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "x" }] })).toMatchObject({ op: "unlock", reading: "already-unlocked" });
+  expect(h.replayLend).toHaveBeenCalledOnce();
 });
 

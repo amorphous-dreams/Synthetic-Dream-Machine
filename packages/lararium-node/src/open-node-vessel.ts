@@ -623,6 +623,10 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   holdFace: (ordinal: number) => boolean;
   /** Hold every face this composition knows past CLOSED right before the vessel key locks; false where any stands lit. */
   holdFaces: () => boolean;
+  /** Each face dark here because its last light refused, with its cause (the census names it served-but-dark). */
+  refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Replay the lend now: every served face neither mounted, lit nor closing at its source lights (the served-but-dark clearing line). */
+  replayLend: () => Promise<void>;
   /** Hear the mounted face close at its custody's word (a pūlama's close, a forced lock): the vessel stands again. Returns the unsubscribe. */
   onMountClosed: (listener: () => void) => () => void;
   /** The bare atom key of the lit sibling a verified presenter names (its place session stands), or undefined. */
@@ -829,6 +833,8 @@ interface NodeBootPrep {
   releaseFaces: () => void;
   holdFace: (ordinal: number) => boolean;
   holdFaces: () => boolean;
+  refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  replayLend: () => Promise<void>;
   onMountClosed: (listener: () => void) => () => void;
   siblingFaceOf: (presenter: string) => string | undefined;
   daemonVm:         () => DaemonVmCore;
@@ -1027,6 +1033,8 @@ async function prepareNodeBootOn(
   let restartForFaces: (reason: string) => Promise<void> = async () => {};
   /** The lend watch, bound once the composition stands: every return of a face to dark replays it. */
   let replayLend: () => void = () => {};
+  /** The same replay, awaited: the served-but-dark clearing line (an unlock over a held key) waits on its lights. */
+  let replayLendNow: () => Promise<void> = async () => {};
   /** Each lit sibling's joined entry, held from its light to its teardown: the supervisor composes the island again from these
    *  alone, with no custody read on the restart's path. */
   const faceEntries = new Map<number, JoinedFaceAuth>();
@@ -3942,6 +3950,7 @@ async function prepareNodeBootOn(
     // No sibling ports, no lend to read: only the mount stands.
     const sweep = (): void => { if (siblingPorts) void lend.sweep().catch((e: unknown) => console.warn(`[lit-set] the lend watch faulted: ${e instanceof Error ? e.message : String(e)}`)); };
     replayLend = sweep;
+    replayLendNow = async () => { if (siblingPorts) await lend.sweep(); };
     const stopLendOpened = standingCustody()?.onOpened?.(sweep) ?? null;
     const stopLendClosed = standingCustody()?.onClosed?.(sweep) ?? null;
     // TWO-PHASE CLOSE, THE VESSEL'S HALF: a face this composition holds no actor for answers at once: nothing here serves it.
@@ -5215,6 +5224,8 @@ async function prepareNodeBootOn(
     holdFace: (ordinal) => faceLife.hold(ordinal),
     // Every face reads, none skipped: each past CLOSED takes its hold, and one standing lit answers no.
     holdFaces: () => faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal)).every(Boolean),
+    refusedLights: () => faceLife.refusedLights(),
+    replayLend: () => replayLendNow(),
     onMountClosed: (listener) => { mountClosedListeners.add(listener); return () => { mountClosedListeners.delete(listener); }; },
     siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
@@ -5351,7 +5362,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, replayLend: p.replayLend, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

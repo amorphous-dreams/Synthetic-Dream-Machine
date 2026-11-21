@@ -379,14 +379,16 @@ describe("each face lives one life: the lifecycle actor", () => {
     // A lend that lights every face it hears go dark, over an island that refuses every light (it stands down).
     const events: string[] = [];
     let lights = 0;
+    const lit: number[] = [];
     let lives!: ReturnType<typeof faceLives>;
     lives = faceLives({
-      light: async () => { lights += 1; throw new Error("daemon-down"); },
+      light: async (ordinal) => { lights += 1; lit.push(ordinal); throw new Error("daemon-down"); },
       drainSaves: async () => {},
       dropWorker: async () => {},
       teardownHost: () => {},
       recompose: async () => {},
-      onDark: (ordinal) => { events.push(`dark h${ordinal}`); void lives.light(1); },
+      // The lend this dark replays lights h1 (held by nothing) and h2, a face this set never knew: only `stop` refuses h2.
+      onDark: (ordinal) => { events.push(`dark h${ordinal}`); void lives.light(1); void lives.light(2); },
       log: () => {},
     }, { nonce: "boot" });
     expect(await lives.light(1)).toBe("refused");
@@ -399,5 +401,20 @@ describe("each face lives one life: the lifecycle actor", () => {
     await settle(); await settle();
     expect(events).toEqual(["dark h0"]);
     expect(lights, "no light runs once the stand-down began").toBe(1);
+    expect(lit, "the face this set never knew never reached the island's light").toEqual([1]);
+    expect(lives.known(2) ? lives.state(2) : { kind: "dark", held: false }).toEqual({ kind: "dark", held: false });
+  });
+  test("R9 SERVED BUT DARK: a face whose light refused names its cause until it lights again; a held or lit face names none", async () => {
+    const t = island();
+    const answer = t.lives.light(1);
+    t.lights.get(1)!.reject(new Error("the island lost the recompose race"));
+    expect(await answer).toBe("refused");
+    expect(t.lives.refusedLights()).toEqual([{ ordinal: 1, cause: "the island lost the recompose race" }]);
+    // The clearing line lights it again: the refusal clears with the new light.
+    const again = t.lives.light(1);
+    expect(t.lives.refusedLights(), "a light under way names no refusal").toEqual([]);
+    t.lights.get(1)!.resolve({ atomKey: "k1", custody: null });
+    expect(await again).toBe("lit");
+    expect(t.lives.refusedLights()).toEqual([]);
   });
 });

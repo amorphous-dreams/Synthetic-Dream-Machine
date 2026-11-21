@@ -63,7 +63,7 @@ Observation, relation, process, and scoped carrying outrank essence and ownershi
 
 !! The Ward in the Turn Frame --- the ward speaks Mu
 
-''A ward PERFORMS; it never asserts.'' Its failures read as //infelicities// rather than falsehoods and sort two ways (Austin): a ''misfire'' violates the form and voids the act, checkable from outside; an ''abuse'' keeps the form and rings hollow, visible only across turns from the navigator's seat. An abuse never voids the act — a turn that warded hollowly still warded, and the record still reads.
+''A ward weighs toward PERFORMING.'' Like every span it both says and does, and its weight sits on the act, so its failures read first as //infelicities// rather than falsehoods and sort two ways (Austin): a ''misfire'' violates the form and voids the act, checkable from outside; an ''abuse'' keeps the form and rings hollow, visible only across turns from the navigator's seat. An abuse never voids the act — a turn that warded hollowly still warded, and the record still reads.
 
 The discipline surfaces in the turn HUD as the ''`Drift-Ward`'' firing --- a spring-loaded gate whose value carries the pull at open and the clue at close, alone; the Mu tool the turn works rides the `mu` key, never the ward. The open firing names the pull toward exposure (`drift-ward="<the pull this island carries>"`); an operator lift reads `drift-ward="lifted · <pull>"` (an operator act only, set by ``<<~ set drift-ward=`0`>>``) and holds for one turn; a crossing into primed ground names its zone (`drift-ward="crossing: <zone> · <pull>"`); a span held up to the navigator without verdict quotes it and asks (`drift-ward="“span” --- question"`) --- raised ''before'' an act whose fork belongs to the operator, it suspends the loop at the named phase, asking-before counting as discipline, never weakness (#exchange-protocol grounds: `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds#/cup-before`); the close firing MUST appear at every turn end, marking the turn's own copula breaches and ''re-arming'' `L-Prime` for the next turn.
 
@@ -136,6 +136,6 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uepvo_IVWq024RsM_6bUZGQ5UK--qjaM2LW6g0lwa9M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bxsZc9Li02bHoG6MYuMCg_luxsQoO6cbWCtTMm_lvrc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
