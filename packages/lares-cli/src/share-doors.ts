@@ -117,6 +117,6 @@ export const LIVE_SHARE_DOORS: ShareDoors = {
  * THE OPERATOR'S HAND LANDS THE SHARES (`share-apply`): each lit grantee takes a shared bag's row by reference and a delegation
  * from its owner's hive; a grant whose face stands shut waits behind an opaque flag. Null where no vessel answers.
  */
-export async function landShares(doors: Pick<ShareDoors, "verb">, faces: readonly ShareFace[]): Promise<Record<string, unknown> | null> {
-  return doors.verb("share-apply", { faces: faces.map((f) => ({ handleIndex: f.handleIndex, petname: f.petname })) });
+export async function landShares(doors: Pick<ShareDoors, "verb">, faces: readonly ShareFace[], extra?: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+  return doors.verb("share-apply", { faces: faces.map((f) => ({ handleIndex: f.handleIndex, petname: f.petname })), ...(extra ?? {}) });
 }

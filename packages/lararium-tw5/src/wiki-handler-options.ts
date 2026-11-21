@@ -44,9 +44,10 @@ export interface WikiMintHandlerOptions {
   readonly registerBag?: (bagUrl: string) => Promise<void>;
   /**
    * Whether the asking face's hive already holds a bag (`registerBag` ran for it before). Present, an init over a shell a
-   * partial init left registers exactly the bags still missing, and a re-init registers none; absent, only a fresh mint registers.
+   * partial init left registers exactly the bags still missing, and a re-init registers none; absent, or answering null (no
+   * hive stands to read), only a fresh mint registers.
    */
-  readonly bagRegistered?: (bagUrl: string) => Promise<boolean>;
+  readonly bagRegistered?: (bagUrl: string) => Promise<boolean | null>;
   /**
    * STAND THE WIKI'S WORKBENCH for the asking face (`faceWorkbenchRealm` with mint): the realm that seats its hive, else its own
    * private cabal of one, founded once (`founded` says whether this call founded it). A refusal (another face's realm holds the
@@ -117,8 +118,10 @@ export interface WikiShellPorts {
 
 /**
  * The live records each layer of a shell holds. `working`, `draft` and `personal` count AUTHORED records (what a person or a
- * seat wrote); `effects` counts the house's own effect records across the three layers (a gated ingest's residency row, under
- * `<bag>/ledger/residency/`, tagged `lares-effect-record`): audit the house minted, which leaves with the shell unforced.
+ * seat wrote); `effects` counts the house's own effect records across the three layers (a gated ingest's residency row): a row
+ * that reads back exactly as the effect recorder writes it for a bag that layer's ledger holds (its title under that bag's
+ * `ledger/residency/`, its `bag` field naming that bag, no text, no field beside the schema). The shape alone proves nothing, so
+ * no hand's door writes a residency ledger (`refuseEffectLedgerWrite`): audit the house minted, which leaves with the shell unforced.
  */
 export interface WikiShellCounts { readonly working: number; readonly draft: number; readonly personal: number; readonly effects: number }
 

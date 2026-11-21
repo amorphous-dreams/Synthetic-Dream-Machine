@@ -15,7 +15,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
-import { hasEffectRecordKind, isEffectRecordUri, plainRecord, storedDeleted, workbenchSeats, type LarDoc, type StoredLarRecord } from "@lararium/mesh";
+import { isHouseEffectRecordOf, plainRecord, storedDeleted, wikiBagUri, wikiSlotUri, workbenchSeats, type LarDoc, type StoredLarRecord } from "@lararium/mesh";
 import type { WikiShellPorts } from "@lararium/tw5";
 import type { BagDocLedger } from "./bag-doc-ledger.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
@@ -27,22 +27,33 @@ export function liveRecordCount(doc: LarDoc | undefined | null): number {
 }
 
 /**
- * THE HOUSE'S OWN EFFECT RECORD: a row at a residency-ledger title (`<holder>/ledger/residency/<event-id>`) carrying the whole
- * effect-record shape (the `lares-effect-record` tag and every audit field). Both must hold: a record that only wears the tag,
- * at a title a hand writes, counts as authored, so no dressing-up moves a person's record out of the retire's count.
+ * THE HOUSE'S OWN EFFECT RECORD IN ONE LAYER (`isHouseEffectRecordOf`): the row reads back exactly as the effect recorder
+ * writes it for one bag that layer's ledger may hold (its own slot bag, or the wiki's canon bag): its title under
+ * `effectLedgerPrefix(<that bag>)` at its own event id, its `bag` field naming that very bag, no text, and no field beside the
+ * effect-record schema. The shape alone proves nothing (every field is
+ * writable), so the second wall stands on the write side: no hand's door writes a residency ledger
+ * (`refuseEffectLedgerWrite`: the tiddler door, the meme door, the engine's cascade). A row that fails any reading, or that
+ * no stored-record reading parses, counts as authored.
  */
-export function isHouseEffectRecord(title: string, record: unknown): boolean {
-  if (!isEffectRecordUri(title)) return false;
-  try { return hasEffectRecordKind(plainRecord(record as StoredLarRecord).tiddler as Record<string, unknown>); }
-  catch { return false; }
+export function isHouseEffectRecord(bags: readonly string[], title: string, record: unknown): boolean {
+  try {
+    const fields = plainRecord(record as StoredLarRecord).tiddler as Record<string, unknown>;
+    return bags.some((bag) => isHouseEffectRecordOf(bag, title, fields));
+  } catch { return false; }
 }
 
-/** A layer's live records, split: the authored ones and the house's effect records. */
-export function liveRecordSplit(doc: LarDoc | undefined | null): { readonly authored: number; readonly effects: number } {
+/**
+ * The bags whose ledger a layer of `slug` may hold: the layer's own slot bag, and the wiki's canon bag (a gated ingest into
+ * canon lands its residency row beside the layer's records, `bags/<slug>/ledger/residency/*`, as the referee walk met it).
+ */
+const ledgerBagsOf = (slug: string, kind: "working" | "draft" | "personal"): readonly string[] => [wikiSlotUri(slug, kind), wikiBagUri(slug)];
+
+/** A layer's live records, split: the authored ones and the house's effect records for that layer's slot bag. */
+export function liveRecordSplit(doc: LarDoc | undefined | null, bags: readonly string[]): { readonly authored: number; readonly effects: number } {
   let authored = 0, effects = 0;
   for (const [title, r] of Object.entries(doc?.tiddlers ?? {})) {
     if (storedDeleted(r as never)) continue;
-    if (isHouseEffectRecord(title, r)) effects++; else authored++;
+    if (isHouseEffectRecord(bags, title, r)) effects++; else authored++;
   }
   return { authored, effects };
 }
@@ -102,13 +113,13 @@ export function wikiShellPorts(args: WikiShellPortsArgs): WikiShellPorts {
     },
     contents: async (slug) => {
       const l = await args.layers(slug);
-      const w = liveRecordSplit(l.working?.doc()), d = liveRecordSplit(l.draft?.doc()), p = liveRecordSplit(l.personal?.doc());
+      const w = liveRecordSplit(l.working?.doc(), ledgerBagsOf(slug, "working")), d = liveRecordSplit(l.draft?.doc(), ledgerBagsOf(slug, "draft")), p = liveRecordSplit(l.personal?.doc(), ledgerBagsOf(slug, "personal"));
       return { working: w.authored, draft: d.authored, personal: p.authored, effects: w.effects + d.effects + p.effects };
     },
     clear: async (slug, only) => {
       const l = await args.layers(slug);
-      for (const layer of [l.working, l.draft, l.personal]) {
-        const doomed = Object.entries(layer?.doc()?.tiddlers ?? {}).filter(([title, r]) => only !== "effects" || isHouseEffectRecord(title, r)).map(([title]) => title);
+      for (const [kind, layer] of [["working", l.working], ["draft", l.draft], ["personal", l.personal]] as const) {
+        const doomed = Object.entries(layer?.doc()?.tiddlers ?? {}).filter(([title, r]) => only !== "effects" || isHouseEffectRecord(ledgerBagsOf(slug, kind), title, r)).map(([title]) => title);
         if (layer && doomed.length > 0) layer.change((d) => { for (const title of doomed) delete d.tiddlers[title]; });
       }
     },

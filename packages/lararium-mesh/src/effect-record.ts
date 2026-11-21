@@ -26,6 +26,7 @@
 import type { ResidencyAction, ActionVerb } from "./residency-actions.js";
 import { stableTagUri } from "./lar-uris.js";
 import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "./tiddler-store.js";
+import { VerbRefusal } from "./verb-refusal.js";
 
 // ── Archival verb vocabulary ────────────────────────────────────────────────
 
@@ -121,6 +122,38 @@ export function isEffectRecordUri(title: string): boolean {
   // audit record on every plane (it is audit data, never a carrier surface). A
   // narrower prefix pattern leaks a ledger record held by a per-wiki slot to disk.
   return /^lar:\/\/\/[^/]+\/.+\/ledger\/residency\/[^/]+$/.test(title);
+}
+
+/** The refusal a residency-ledger write from any door but the house's effect recorder names. */
+export const EFFECT_LEDGER_HOUSE_ONLY = "effect-ledger-house-only";
+
+/**
+ * A RESIDENCY LEDGER TAKES THE HOUSE'S HAND ALONE. The effect recorder (`writeEffectRecord`, through a bag's own store) writes
+ * every row under `<holder>/ledger/residency/`; a hand's door (the tiddler door, the meme door, the engine's cascade from a
+ * page or a draft) neither writes nor removes one, whoever asks. The refusal names the title and the door.
+ */
+export function refuseEffectLedgerWrite(title: string, verb: string): void {
+  if (isEffectRecordUri(title)) {
+    throw new VerbRefusal(EFFECT_LEDGER_HOUSE_ONLY, `${EFFECT_LEDGER_HOUSE_ONLY}: "${title}" rests in a residency ledger; the house's effect recorder alone writes there, and ${verb} neither writes nor removes it.`);
+  }
+}
+
+/** Two flat field bags hold the same keys and the same values (each value read as its string). */
+function sameEffectFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) => Object.prototype.hasOwnProperty.call(b, k) && String(a[k]) === String(b[k]));
+}
+
+/**
+ * THE HOUSE'S OWN EFFECT RECORD IN ONE LAYER: the row reads back as the one the ledger's builder writes for THAT layer's bag
+ * (`buildEffectRecordTiddler`): its title rests under `effectLedgerPrefix(bag)` at its own event id, its `bag` field names
+ * that bag, and it carries no field beside the schema's (no text). The same reading the retired-bag passage holds.
+ */
+export function isHouseEffectRecordOf(bag: string, title: string, fields: Record<string, unknown>): boolean {
+  const parsed = parseEffectRecord(fields);
+  if (!parsed || parsed.bag !== bag || fields["title"] !== title || title !== effectRecordUri(bag, parsed.eventId)) return false;
+  return sameEffectFields(buildEffectRecordTiddler(parsed).tiddler as Record<string, unknown>, fields);
 }
 
 // ── EffectRecord shape ─────────────────────────────────────────────────────

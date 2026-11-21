@@ -61,6 +61,12 @@ export interface ShareApplyDeps {
   readonly revoke?: (g: OwedGrant & { readonly ownerGroup: string; readonly granteeGroup: string }) => Promise<void>;
   /** The slugs whose rows the operator unshares now: their grants revoke instead of landing, and their workbenches seat no one. The rows still stand in `rows` for this landing. */
   readonly unshare?: readonly string[];
+  /**
+   * The faces a share line took out of a row (`--read-remove`, `--write-remove`; a writer demoted to a reader among them), by
+   * slug and handle index, the row in `rows` already narrowed: the owner's hive revokes each one's landed grant (by the pair),
+   * and the grants loop then lands whatever the narrowed row still owes it (a read grant for a demoted writer).
+   */
+  readonly retract?: ReadonlyArray<{ readonly slug: string; readonly grantee: number }>;
   /** `has` (optional) reads whether a grant's flag stood before this landing: a grant that waited counts as a move when it lands. */
   readonly flag: { set(title: string): Promise<void>; clear(title: string): Promise<void>; has?(title: string): Promise<boolean> };
   /** A vessel-own salt, so the opaque flag reads alike on no other vessel. */
@@ -119,6 +125,10 @@ export interface ShareApplied {
   readonly revoked?: number;
   /** Each unshared slug whose landed grants this landing could not take back (an owner or grantee stands shut, no door to revoke, or the revoke refused): they still read. */
   readonly standing?: readonly string[];
+  /** Grants a retraction took back; absent where no `retract` rode. */
+  readonly retracted?: number;
+  /** Each retracted face whose landed grant this landing could not take back: it still holds the grant. */
+  readonly stillGranted?: ReadonlyArray<{ readonly slug: string; readonly grantee: number }>;
 }
 
 /**
@@ -192,6 +202,28 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       catch (e) { standingBags.add(bag); deps.log?.(`[share-apply] revoke ${g.bag} h${g.owner} -> h${g.grantee} refused: ${e instanceof Error ? e.message : String(e)}`); }
     }
   }
+  // A NAME TAKEN OUT TAKES ITS GRANT BACK: the owner's hive revokes the pair; a face of the pair that stands shut keeps it, named.
+  let retracted = 0;
+  const stillGranted: Array<{ slug: string; grantee: number }> = [];
+  for (const r of deps.retract ?? []) {
+    const row = rows.find((x) => x.slug === r.slug);
+    if (!row) continue;
+    const bag = shareEntryBag(row);
+    if (isHouseCanonBag(bag)) continue;
+    const ownerIndex = ownerOf(bag);
+    if (ownerIndex === r.grantee) continue;
+    const owner = ownerIndex === null ? undefined : deps.faces.find((f) => f.handleIndex === ownerIndex);
+    const grantee = deps.faces.find((f) => f.handleIndex === r.grantee);
+    if (ownerIndex === null || !owner?.group || !grantee?.group || !halves.get(ownerIndex) || !deps.revoke) { stillGranted.push({ slug: r.slug, grantee: r.grantee }); continue; }
+    try {
+      await deps.revoke({ bag, owner: ownerIndex, grantee: r.grantee, access: "read", ownerGroup: owner.group, granteeGroup: grantee.group });
+      retracted++;
+      for (const access of ["read", "edit"] as const) await deps.flag.clear(sharePendingTitle({ bag, owner: ownerIndex, grantee: r.grantee, access }, deps.salt));
+    } catch (e) {
+      stillGranted.push({ slug: r.slug, grantee: r.grantee });
+      deps.log?.(`[share-apply] retract ${bag} h${ownerIndex} -> h${r.grantee} refused: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
   const t0 = performance.now();
   deps.log?.(`[share-apply] ${rows.length} row(s), ${deps.faces.filter((f) => f.group).length} lit face(s), ${grants.length} grant(s) owed`);
   let granted = 0, pending = 0, carried = 0, moved = 0;
@@ -255,5 +287,5 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   deps.log?.(`[share-apply] done in ${Math.round(performance.now() - t0)}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
   const unowned = rows.filter((row) => !isHouseCanonBag(shareEntryBag(row)) && ownerOf(shareEntryBag(row)) === null).map((row) => row.slug).sort();
   const standing = rows.filter((r) => standingBags.has(shareEntryBag(r)) && (deps.unshare ?? []).includes(r.slug)).map((r) => r.slug).sort();
-  return { granted, moved, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned, ...(deps.unshare ? { revoked, standing } : {}) };
+  return { granted, moved, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned, ...(deps.unshare ? { revoked, standing } : {}), ...(deps.retract ? { retracted, stillGranted } : {}) };
 }

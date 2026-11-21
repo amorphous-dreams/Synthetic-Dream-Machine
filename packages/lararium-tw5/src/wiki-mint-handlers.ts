@@ -115,13 +115,19 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     // IDEMPOTENT BY INTENT: an init over rows a partial init left (another face's, or the floor's) registers each bag this
     // face's hive does not hold yet, and only those, so the same init run twice registers nothing the second time. Where no
     // reader of the hive stands, only a fresh mint registers (each bag is new then).
+    // A RE-INIT FAILS SOFT: a registration that refuses over a wiki that already stood (a face not yet lit, a hive not yet
+    // booted) lands in the answer (`bagsRefused`) and the init still answers; a fresh mint's registration still throws, since
+    // a new wiki is born with its cap or not at all.
     const bags = [canonBag, workingBagId, draftBagId];
     const bagsRegistered: string[] = [];
+    const bagsRefused: Array<{ bag: string; why: string }> = [];
     for (const bag of bags) {
-      const missing = opts.bagRegistered ? !(await opts.bagRegistered(bag)) : !existingWikiUrl;
+      const held = opts.bagRegistered ? await opts.bagRegistered(bag) : null;
+      const missing = held === null ? !existingWikiUrl : !held;
       if (!missing || !opts.registerBag) continue;
-      await opts.registerBag(bag);
-      bagsRegistered.push(bag);
+      if (!existingWikiUrl) { await opts.registerBag(bag); bagsRegistered.push(bag); continue; }
+      try { await opts.registerBag(bag); bagsRegistered.push(bag); }
+      catch (err) { bagsRefused.push({ bag, why: err instanceof Error ? err.message : String(err) }); }
     }
 
     // THE WORKBENCH STANDS IN THE SAME ACT (where the daemon supplies the port): the realm that seats this face's hive, else its
@@ -141,6 +147,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
       ...(canonReused ? { canonReused } : {}),
       ...(existingWikiUrl && !existingRecipeRec ? { recipeWritten: true } : {}),
       bagsRegistered,
+      ...(bagsRefused.length > 0 ? { bagsRefused } : {}),
       ...(workbench ? { workbench } : {}),
       wikiUri: stackUri,
       canonBag,
@@ -184,8 +191,10 @@ const sameCounts = (a: WikiShellCounts, b: WikiShellCounts): boolean => a.workin
  * ledger notes for a face other than the worn one, or a share row naming the slug) refuses `wiki-shared`: the shares leave first.
  *
  * NOTHING AUTHORED LEAVES BY DEFAULT. The counts name AUTHORED records apart from the house's EFFECT records (a gated ingest's
- * residency row, minted by the vessel, never by a hand): a shell holding effect records alone retires unforced and drops them
- * with the shell. A working, draft or personal layer holding a live authored record refuses `wiki-not-empty`
+ * residency row): two walls hold that line, the write side (no hand's door, the tiddler door, the meme door or the engine's
+ * cascade, writes a residency ledger: `effect-ledger-house-only`) and the reading (`isHouseEffectRecordOf`: the row reads
+ * back exactly as the recorder writes it for that layer's bag). A shell holding effect records alone retires unforced and
+ * drops them with the shell, though the effect-record canon calls these rows indelible: the operator approved the drop. A working, draft or personal layer holding a live authored record refuses `wiki-not-empty`
  * (naming no count: `dry-run` reads the counts, and the refusal never carries the forcing line). `force` with no `count`
  * refuses `retire-count-missing`; a `count` other than the total refuses `retire-count-moved`; the very total retires and
  * clears those layers' documents, so a later mint at the same deterministic address opens empty. The counts read twice, the

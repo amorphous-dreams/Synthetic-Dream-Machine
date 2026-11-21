@@ -79,6 +79,18 @@ export function shareListJson(rows: readonly ShareEntry[], faces: readonly Share
 }
 
 /** The lines `--list` prints: each row and the one resolver's answer. */
+/**
+ * THE FACES A LINE TOOK OUT: each face the standing row reads for that the narrowed row leaves out of its readers, and each it
+ * writes for that the narrowed row leaves out of its writers (a writer demoted to a reader), by handle index. The row's owner
+ * never counts.
+ */
+export function retractedFaces(prior: ShareEntry, row: ShareEntry, priorRows: readonly ShareEntry[], nextRows: readonly ShareEntry[], faces: readonly ShareFace[]): number[] {
+  const before = resolveShare({ bag: shareEntryBag(prior), rows: priorRows, faces });
+  const after = resolveShare({ bag: shareEntryBag(row), rows: nextRows, faces });
+  const owner = faces.find((f) => f.petname !== null && f.petname === row.owner)?.handleIndex;
+  return before.read.filter((i) => i !== owner && (!after.read.includes(i) || (before.write.includes(i) && !after.write.includes(i))));
+}
+
 /** The resolver's answer for one row, each face by pet-name and handle (`the referee (h2)`). */
 function resolvedOf(row: ShareEntry, rows: readonly ShareEntry[], faces: readonly ShareFace[]): { read: string; write: string; waiting: readonly string[] } {
   const label = (i: number): string => { const f = faces.find((x) => x.handleIndex === i); return f?.petname ? `${f.petname} (h${i})` : `h${i}`; };
@@ -155,14 +167,40 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     const next = prior ? rows.map((r) => (r === prior ? row : r)) : [...rows.filter((r) => r.slug !== slug), row];
     try { serializeShareFile(next); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
     const unchanged = prior !== undefined && serializeShareFile([prior]) === serializeShareFile([row]);
+    // A NAME TAKEN OUT TAKES ITS GRANT BACK: each face the standing row reads for (or writes for) that the narrowed row leaves out
+    // rides the landing as a retraction, and the owner's hive revokes its landed grant (a demoted writer's read lands again).
+    const retract = prior ? retractedFaces(prior, row, rows, next, faces) : [];
     doors.file.write(serializeShareFile(next));
-    // THE ECHO READS THE RESOLVED ROW, each face once (the answer `--list` gives).
+    // THE ECHO READS THE RESOLVED ROW, each face once (the answer `--list` gives). A narrowing echoes once its grants left.
     const resolved = resolvedOf(row, next, faces);
-    doors.out(`share: ${kind} ${slug} reads for ${resolved.read}, writes for ${resolved.write}; ${unchanged ? "unchanged in" : "written to"} config/${SHARE_CONFIG_FILE}`);
+    const echo = `share: ${kind} ${slug} reads for ${resolved.read}, writes for ${resolved.write}; ${unchanged ? "unchanged in" : "written to"} config/${SHARE_CONFIG_FILE}`;
+    if (retract.length === 0) doors.out(echo);
     const set = await doors.verb("share-set", shareSetArgs(row));
-    if (set === null) { doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning"); return 0; }
+    if (set === null) {
+      if (retract.length > 0) doors.out(echo);
+      doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning");
+      if (retract.length > 0) doors.err(`  a grant a taken-out name had landed stays until a landing revokes it: run this line again with the vessel standing`);
+      return 0;
+    }
     // THE OPERATOR'S HAND LANDS IT: each lit grantee takes the row by reference and a delegation from the owner's hive.
-    const applied = await landShares(doors, faces);
+    const applied = await landShares(doors, faces, retract.length > 0 ? { retract: retract.map((grantee) => ({ slug, grantee })) } : undefined);
+    if (retract.length > 0 && applied !== null) {
+      const still = (Array.isArray(applied["stillGranted"]) ? applied["stillGranted"] as Array<{ slug?: unknown; grantee?: unknown }> : [])
+        .filter((g) => g.slug === slug && typeof g.grantee === "number").map((g) => g.grantee as number);
+      if (still.length > 0) {
+        // THE ROW STANDS AS IT STOOD: the file and the control document take the standing row back, its grants land again, and
+        // the same line retries once the faces stand lit.
+        if (text !== null) doors.file.write(text);
+        await doors.verb("share-set", shareSetArgs(prior!));
+        await landShares(doors, faces);
+        const label = (i: number): string => { const f = faces.find((x) => x.handleIndex === i); return f?.petname ? `${f.petname} (h${i})` : `h${i}`; };
+        for (const i of still) doors.err(`lares ${kind} share: ${label(i)} still reads ${slug}: the grant its row landed stands, and this vessel cannot revoke it while the owner's face or that face stands shut here.`);
+        doors.err(`  The row stands as it stood in config/${SHARE_CONFIG_FILE} and the control document. Light the faces (\`lares vault unlock --face N\`), then run the same line again.`);
+        return 1;
+      }
+      doors.out(echo);
+      doors.out(`  revoked: ${Number(applied["retracted"] ?? 0)} grant(s) the names this line took out had landed`);
+    } else if (retract.length > 0) doors.out(echo);
     if (applied !== null) {
       const carried = Number(applied["carried"] ?? 0), pending = Number(applied["pending"] ?? 0);
       doors.out(`  landed: ${Number(applied["granted"] ?? 0)} grant(s)`

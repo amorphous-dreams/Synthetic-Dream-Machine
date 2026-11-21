@@ -29,9 +29,19 @@ import { headsEqual } from "./wiki-recipe.js";
 import { assertStorableTitle } from "./title-law.js";
 import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf } from "./override-base.js";
 import { carrierHashOf } from "./carrier-form.js";
-import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
+import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, refuseEffectLedgerWrite, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
+/**
+ * THE HAND'S ORIGINS: a page's save (`tw-local`), a tool's draft, a canvas's draft. None writes a residency ledger: the
+ * house's effect recorder alone does (`refuseEffectLedgerWrite`), so a forged row never stands beside the real ones.
+ */
+const HAND_ORIGINS: ReadonlySet<string> = new Set(["tw-local", "mcp-draft", "canvas-draft"]);
+function refuseHandOnLedger(origin: ChangeOrigin, titles: readonly string[], verb: string): void {
+  if (!HAND_ORIGINS.has(origin.kind)) return;
+  for (const title of titles) refuseEffectLedgerWrite(title, `CompositeStore.${verb} (${origin.kind})`);
+}
+
 function sameFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
   const keys = Object.keys(a);
   if (keys.length !== Object.keys(b).length) return false;
@@ -274,6 +284,7 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
+    refuseHandOnLedger(origin, [record.tiddler.title as string], "put");
     this._requireBagForBase(options, "put");
     const store = this._writeTargetFor(options?.bag, "put");
     const retired = this._refuseRetired(store, [record], "put");
@@ -349,6 +360,7 @@ export class CompositeStore implements LarTiddlerStore {
     origin:     ChangeOrigin,
     options?:   LarWriteOptions,
   ): Promise<void> {
+    refuseHandOnLedger(origin, [...puts.map((r) => r.tiddler.title as string), ...tombstones, ...(options?.retracts ?? [])], "writeFamily");
     const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
@@ -506,6 +518,7 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    refuseHandOnLedger(origin, [title], "tombstone");
     this._requireBagForBase(options, "tombstone");
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless tombstone");
     const retired = this._refuseRetired(this.writableStore, [], "tombstone", [title]);
@@ -514,6 +527,7 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
+    refuseHandOnLedger(origin, [title], "remove");
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless remove");
     const retired = this._refuseRetired(this.writableStore, [], "remove", [title]);
     if (retired) await retired;
@@ -527,6 +541,7 @@ export class CompositeStore implements LarTiddlerStore {
    * Throws when the named bag is absent or not writable.
    */
   async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    refuseHandOnLedger(origin, [title], "tombstoneInBag");
     const store = this._writableLayerOf(bagId);
     const retired = this._refuseRetired(store, [], "tombstoneInBag", [title]);
     if (retired) await retired;
@@ -536,6 +551,7 @@ export class CompositeStore implements LarTiddlerStore {
   /** HARD-remove a title from one bag (ABSENT — falls through), distinct from
    *  tombstoneInBag's kāpae hide. The retract a MOVE/promotion uses on its source. */
   async removeInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
+    refuseHandOnLedger(origin, [title], "removeInBag");
     const store = this._writableLayerOf(bagId);
     const retired = this._refuseRetired(store, [], "removeInBag", [title]);
     if (retired) await retired;
