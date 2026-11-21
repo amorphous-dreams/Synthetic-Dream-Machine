@@ -347,3 +347,61 @@ test("wake-offers-the-workspace-tree: a bound workspace in no git tree draws one
   assert.deepEqual(workspaceBindsOf({}, "LARES_WORKSPACES=backup=/srv/b\n"), [{ name: "backup", dir: "/srv/b" }]);
   assert.deepEqual(workspaceBindsOf({}, null), []);
 });
+
+// The law: the pins that stand, then the law they leave out, read on every wake beside the working memory.
+const { lawArgv, lawPinsArgv, renderLaw, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_ROWS } = core;
+const API = "lar:///ha.ka.ba/lares/api";
+const lawRow = (path, fields) => ({ title: `${API}/${path}`, fields: { title: `${API}/${path}`, ...fields } });
+const PINS = ["noosphere-boot", "mu", "mu/chao", "mu/the-four-tools"];
+const LAW = Array.from({ length: 12 }, (_, i) => `pono/law-${String(i).padStart(2, "0")}`);
+const lawFields = (p) => (p === "noosphere-boot" ? {} : p === "mu" ? { description: "null-oracle core", role: "a role the description outranks" } : { role: `the law of ${p}` });
+const lawPage = (paths) => JSON.stringify({ ok: true, requestId: "l", data: { recipe: "default", filter: LAW_INDEX_FILTER, total: paths.length, next: null, asOf: "90a1a6dbea5e1f15", rows: paths.map((p) => lawRow(p, lawFields(p))) } });
+const pinsPage = (paths) => JSON.stringify({ ok: true, requestId: "p", data: { recipe: "default", filter: LAW_PINS_FILTER, titles: paths.map((p) => `${API}/${p}`), total: paths.length, next: null, asOf: "90a1a6dbea5e1f15" } });
+
+test("wake-offers-the-law: the pins lead, marked, then the first law rows they leave out, between the rows in play and the index", async () => {
+  const calls = {};
+  const context = await wake({ run: runner({
+    observe: answered(UP), homes: answered("h"),
+    state: answered(statePage(STATE)),
+    law: answered(lawPage([...PINS, ...LAW])),
+    lawPins: answered(pinsPage(PINS)),
+    index: answered(page([row("project/house-laws", "The seven house laws.")])),
+  }, calls) });
+  const lines = context.split("\n");
+  const head = lines.findIndex((l) => l.startsWith("Lares law (pinned first)"));
+  assert.ok(head > lines.findIndex((l) => l.startsWith("Lares working memories on the stage")), "the law follows the rows in play");
+  assert.ok(head < lines.findIndex((l) => l.startsWith("Lares memory index")), "the law comes before the memory index");
+  assert.equal(lines[head], `Lares law (pinned first): 4 pinned · 16 rows (${4 + LAW_ROWS} shown)`);
+  assert.equal(lines[head + 1], `📌 ${API}/noosphere-boot`);
+  assert.equal(lines[head + 2], `📌 ${API}/mu — null-oracle core`);
+  assert.equal(lines[head + 5], `   ${API}/pono/law-00 — the law of pono/law-00`);
+  assert.equal(lines[head + 4 + LAW_ROWS], `   ${API}/pono/law-07 — the law of pono/law-07`);
+  assert.ok(lines[head + 5 + LAW_ROWS].startsWith(`read the rest: law_index(after=<next>) or lares law list --all; the filter: wiki_filter(filter="${LAW_INDEX_FILTER}", recipe="default", fields=["title","description","role"]); pin or unpin: law_pin(`));
+  assert.doesNotMatch(context, /law-08/);
+  // Both reads ride the vessel's own filter door over the daemon wiki.
+  assert.deepEqual(calls.law, lawArgv());
+  assert.deepEqual(calls.law.slice(0, 7), ["wiki", "filter", LAW_INDEX_FILTER, "--recipe", "default", "--fields", "title,description,role"]);
+  assert.deepEqual(calls.lawPins, lawPinsArgv());
+  assert.deepEqual(calls.lawPins.slice(0, 5), ["wiki", "filter", LAW_PINS_FILTER, "--recipe", "default"]);
+});
+
+test("the law block: an unread pins read marks none; an empty answer names the config; a fault names its cause", async () => {
+  const unmarked = renderLaw(JSON.parse(lawPage([...PINS, ...LAW])), null);
+  assert.ok(unmarked.startsWith(`Lares law (pinned first): 0 pinned · 16 rows (${LAW_ROWS} shown)\n   ${API}/noosphere-boot\n`));
+  assert.doesNotMatch(unmarked, /📌/);
+  const empty = renderLaw(JSON.parse(lawPage([])), JSON.parse(pinsPage([])));
+  assert.ok(empty.startsWith("Lares law (pinned first): 0 rows; no law answers in the worn face's daemon wiki (its config: $:/config/lares/law/pins, $:/config/lares/law/filter)"));
+  const refused = JSON.stringify({ ok: false, error: { code: "filter-malformed", message: "filter-malformed: the engine could not parse it" } });
+  const context = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), law: answered(refused, 4), lawPins: answered(pinsPage(PINS)) }) });
+  assert.match(context, /Lares law unread: filter-malformed: the engine could not parse it; the view: wiki_filter\(/);
+});
+
+test("a vessel that answers down stops the law reads and prints no law block", async () => {
+  const killed = [];
+  const context = await wake({ run: runner({
+    observe: answered(JSON.stringify({ data: { node: { up: false } } })), homes: answered("h"),
+    index: hung(killed, "index"), law: hung(killed, "law"), lawPins: hung(killed, "lawPins"),
+  }) });
+  assert.doesNotMatch(context, /Lares law/);
+  assert.deepEqual(killed.sort(), ["index", "law", "lawPins"]);
+});

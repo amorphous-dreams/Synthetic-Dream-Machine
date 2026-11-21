@@ -23,10 +23,11 @@ import { seedDaemonCircleTiddlers } from "./daemon-circle-tiddlers.js";
 import { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 import { seedDaemonRosterTiddlers } from "./daemon-roster-tiddlers.js";
 import { seedDaemonIntentTiddlers } from "./daemon-intent-tiddlers.js";
+import { seedDaemonLawTiddlers } from "./daemon-law-tiddlers.js";
 
 /**
  * Seed the whole daemon protocol surface into the live wiki, ONCE: the UI widgets, the persona circle,
- * the circle-of-trust, and the cap-gated FLOW set. `runnableHulls` gates ONLY the flow seed (the flows a
+ * the circle-of-trust, the law index's config (`daemon-law-tiddlers`), and the cap-gated FLOW set. `runnableHulls` gates ONLY the flow seed (the flows a
  * vessel can enact); the Ui/Persona/Circle seeds are hull-blind. Every seed rests in the shadow layer (`seedShadows`),
  * so no store and no mirror holds it. Idempotent (each seed re-lays its shadow plugin).
  * A ts-only vessel seeds crystal alone; a full node vessel seeds all three flows.
@@ -37,6 +38,7 @@ export function seedDaemonProtocol(tw5: TW5Engine, runnableHulls: RunnableHulls 
   seedDaemonPersonaTiddlers(tw5);
   seedDaemonCircleTiddlers(tw5);
   seedDaemonRosterTiddlers(tw5);
+  seedDaemonLawTiddlers(tw5);
   if (faceIntents) seedDaemonIntentTiddlers(tw5);
   seedDaemonFlowTiddlers(tw5, runnableHulls);
 }

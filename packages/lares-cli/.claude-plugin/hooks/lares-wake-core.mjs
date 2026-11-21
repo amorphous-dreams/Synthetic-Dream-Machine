@@ -11,6 +11,11 @@
  * (`rite-begun`, `rite-landed`); `keep` reads the keep lei at the workspace the house config names (`keepWorkspace`), and a red
  * keep tessera in conferre's reading names its cure. A runner that answers none of them leaves the wake as it stood.
  *
+ * THE LAW BEFORE THE ACT. Two more reads ride the shim beside the memory: the law index (`lawArgv`) and the pins that head it
+ * (`lawPinsArgv`), both the tiddler door's `wiki filter` over the worn face's daemon wiki, so the session reads the house's
+ * law the way it reads its working memory. The filters name the wiki's own law config (`$:/config/lares/law/pins` and
+ * `$:/config/lares/law/filter`, `@lararium/tw5`'s `daemon-law-tiddlers`), so the derivation lives in the wiki.
+ *
  * ONE BUDGET. The harness bounds a hook (`hooks/hooks.json`, 15 seconds), and past that bound it discards the hook's
  * whole answer. So the three reads start together and share one budget that closes inside the harness's bound: a read
  * still open then stops and reports itself by name, and the wake carries what the other reads answered. The budget
@@ -81,6 +86,20 @@ export const INDEX_FILTER = `[tag[${INDEX_TAG}]!prefix[${STATE_PREFIX}]]`;
 export const STATE_ROWS = 8;
 export const STATE_BYTES = 2048;
 export const STATE_LINE_BYTES = 320;
+/**
+ * The law index (lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers): the pin set's standing titles first, then every law meme
+ * they leave out, as the wiki's own law config derives them. The same strings `@lararium/tw5` exports, welded by a test.
+ */
+export const LAW_PINS_TITLE = "$:/config/lares/law/pins";
+export const LAW_FILTER_TITLE = "$:/config/lares/law/filter";
+export const LAW_PINS_FILTER = `[subfilter{${LAW_PINS_TITLE}}is[tiddler]]`;
+export const LAW_INDEX_FILTER = `${LAW_PINS_FILTER} =[subfilter{${LAW_FILTER_TITLE}}] +[unique[]]`;
+/** The law block: every pin, then this many law rows; a byte cap on the block and one on each row's line. */
+export const LAW_ROWS = 8;
+export const LAW_BYTES = 4096;
+export const LAW_LINE_BYTES = 240;
+/** The page the law read asks: the door's row ceiling, and room for that many rows of `role` lines. */
+const LAW_PAGE_BYTES = 16384;
 
 const CURE = "stand it with tools/lares-container.sh up";
 const viewOf = (filter) => `wiki_filter(filter="${filter}", recipe="default", fields=["title","description"]`;
@@ -108,6 +127,13 @@ export const stateArgv = () => [
   "wiki", "filter", STATE_FILTER, "--recipe", "default", "--fields", "title,description",
   "--limit", String(STATE_ROWS), "--max-bytes", String(INDEX_BYTES), "--json",
 ];
+/** The shim's argv for one page of the law index, read in the worn face's daemon wiki: title, description and role. */
+export const lawArgv = () => [
+  "wiki", "filter", LAW_INDEX_FILTER, "--recipe", "default", "--fields", "title,description,role",
+  "--limit", String(INDEX_ROWS), "--max-bytes", String(LAW_PAGE_BYTES), "--json",
+];
+/** The shim's argv for the pins that stand, titles alone. */
+export const lawPinsArgv = () => ["wiki", "filter", LAW_PINS_FILTER, "--recipe", "default", "--limit", String(INDEX_ROWS), "--json"];
 /** The host CLI's argv for the homes line. */
 export const homesArgv = () => ["home", "read", "--brief"];
 
@@ -255,6 +281,45 @@ export function stateLines(result) {
 export function indexLines(result) {
   const { fault, answer } = filterAnswer(result);
   return fault ? `memory index unread: ${fault}` : renderIndex(answer);
+}
+
+const LAW_VIEW = `${viewOf(LAW_INDEX_FILTER).replace('fields=["title","description"]', 'fields=["title","description","role"]')})`;
+const LAW_FURTHER = `read the rest: law_index(after=<next>) or lares law list --all; the filter: ${LAW_VIEW}; pin or unpin: law_pin(uri=<title>) · law_unpin(uri=<title>) (lares law pin|unpin <uri>)`;
+
+/**
+ * The law block: every standing pin (marked), then the first `LAW_ROWS` law rows the pins leave out, each with its
+ * description or role, and the calls that read the rest. `pinsAnswer` names the pins; where it stands unread the block
+ * marks none and shows `LAW_ROWS` rows.
+ */
+export function renderLaw(answer, pinsAnswer = null, cap = LAW_BYTES) {
+  const data = answer?.data ?? {};
+  const rows = Array.isArray(data.rows) ? data.rows : [];
+  const total = typeof data.total === "number" ? data.total : rows.length;
+  const pinned = new Set(Array.isArray(pinsAnswer?.data?.titles) ? pinsAnswer.data.titles : []);
+  if (total === 0 && rows.length === 0) {
+    return `Lares law (pinned first): 0 rows; no law answers in the worn face's daemon wiki (its config: ${LAW_PINS_TITLE}, ${LAW_FILTER_TITLE}); the view: ${LAW_VIEW}`;
+  }
+  let pins = 0;
+  while (pins < rows.length && pinned.has(rows[pins]?.title)) pins++;
+  const lines = [];
+  let size = 0;
+  for (const [at, row] of rows.slice(0, pins + LAW_ROWS).entries()) {
+    const fields = row?.fields ?? {};
+    const one = { title: row.title, fields: { description: String(fields.description ?? "").trim() || String(fields.role ?? "") } };
+    const line = `${at < pins ? "📌" : "  "} ${rowLine(one, LAW_LINE_BYTES)}`;
+    if (size + bytes(line) + 1 > cap && lines.length > 0) break;
+    lines.push(line);
+    size += bytes(line) + 1;
+  }
+  return [`Lares law (pinned first): ${pins} pinned · ${total} rows${lines.length < total ? ` (${lines.length} shown)` : ""}`, ...lines, LAW_FURTHER].join("\n");
+}
+
+/** The law reads' lines: the block where the door answered a page, else `Lares law unread: <cause>` with the view. */
+export function lawLines(result, pinsResult = null) {
+  const { fault, answer } = filterAnswer(result);
+  if (fault) return `Lares law unread: ${fault}; the view: ${LAW_VIEW}`;
+  const pins = pinsResult ? filterAnswer(pinsResult).answer ?? null : null;
+  return renderLaw(answer, pins);
 }
 
 /** The refusal a locked vessel answers, in the words a session reads: it calls the operator at once. */
@@ -411,8 +476,8 @@ function underBudget(budgetMs) {
 }
 
 /**
- * The SessionStart context: the vessel's frame, the homes line, the rows in play (the state rows, handoff first), then
- * the memory index, on every wake. The reads start together. A vessel that answers anything but up stops the memory
+ * The SessionStart context: the vessel's frame, the homes line, the rows in play (the state rows, handoff first), the
+ * law (pinned first), then the memory index, on every wake. The reads start together. A vessel that answers anything but up stops the memory
  * reads, and the wake says once that it skipped them.
  */
 // `source` (startup, resume, clear, compact) changes nothing the wake reads: every wake leads with the rows in play.
@@ -421,6 +486,8 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   // The optional reads: a runner that answers none leaves their lines out.
   const optional = (name, argv) => run(name, argv) ?? null;
   const stateRead = optional("state", stateArgv());
+  const lawRead = optional("law", lawArgv());
+  const lawPinsRead = optional("lawPins", lawPinsArgv());
   const gitRead = optional("git", gitArgv());
   const halvesRead = optional("halves", halvesArgv());
   const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
@@ -428,8 +495,10 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, stateRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
   const state = stateRead && seen.up ? await budget.settle(stateRead) : null;
+  const law = lawRead && seen.up ? await budget.settle(lawRead) : null;
+  const lawPins = lawPinsRead && seen.up ? await budget.settle(lawPinsRead) : null;
   const index = seen.up ? await budget.settle(reads.index) : null;
   const leiAnswers = {};
   const checkout = gitRead && seen.up ? checkoutOf(await budget.settle(gitRead)) : null;
@@ -451,6 +520,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
     `Lares homes: ${homesLine}`,
   ];
   if (state !== null) lines.push(stateLines(state));
+  if (law !== null) lines.push(lawLines(law, lawPins));
   lines.push(seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)");
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
