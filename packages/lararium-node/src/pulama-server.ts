@@ -166,8 +166,25 @@ export function servePulama(a: {
    * (it came back and drained); a drop whose hello named no life clears by the operator's hand (`force`) alone.
    */
   const closings = new Map<string, { readonly ordinal: number; readonly opening: string | null; awaiting: Set<Session>; dropped: Drop[]; locking: Promise<void> | null }>();
-  /** THE LIVES THIS PŪLAMA LENT EACH FACE, by custody id, since that face last locked: each named life a session's lend covered. */
-  const lentLives = new Map<string, Set<LifeName>>();
+  /**
+   * THE LIVES THIS PŪLAMA LENT EACH FACE, by ordinal, since that face last locked: each named life a session's lend covered, with
+   * the custody id that lend named where it named one. Keyed by the ordinal a lend names, so a face lent before it stood (no
+   * custody id at the hello) or one whose custody id the index names anew still finds its lives; a lend that named ANOTHER custody
+   * id at the ordinal never served this face's rows and holds nothing of it.
+   */
+  const lentLives = new Map<number, Array<{ readonly life: LifeName; readonly fcid?: string }>>();
+  /** The named lives lent the face at `ordinal` whose lend could serve custody id `fcid`. */
+  const livesLent = (ordinal: number, fcid: string): LifeName[] =>
+    [...new Set((lentLives.get(ordinal) ?? []).filter((l) => l.fcid === undefined || l.fcid === fcid).map((l) => l.life))];
+  /** Record the named lives a session's lend covers, each with the custody id the lend names at that ordinal. */
+  const recordLend = (s: Session): void => {
+    if (s.life === null) return;
+    for (const face of s.scope.faces) {
+      const lives = lentLives.get(face.ordinal) ?? [];
+      if (!lives.some((l) => l.life === s.life && l.fcid === face.fcid)) lives.push({ life: s.life, ...(face.fcid !== undefined ? { fcid: face.fcid } : {}) });
+      lentLives.set(face.ordinal, lives);
+    }
+  };
   /** The life the hearth names as holding the store now, or null where it names none (absent or torn). */
   const hearthLife = (): LifeName | null => { try { return readVesselLife(holder.homes.storage); } catch { return null; } };
   /** Whether a named life has ended: the hearth reads, and names another life. An unreadable hearth proves nothing. */
@@ -441,8 +458,8 @@ export function servePulama(a: {
       }
       if (closings.get(fcid) === held) closings.delete(fcid);
       // The key locked, so a life lent the face before holds nothing of it now; the lives still lending it start the count over.
-      const lending = new Set([...live].filter((s) => s.life !== null && lends(s, { ordinal: held.ordinal, fcid })).map((s) => s.life!));
-      if (lending.size > 0) lentLives.set(fcid, lending); else lentLives.delete(fcid);
+      lentLives.delete(held.ordinal);
+      for (const s of live) recordLend(s);
       // The close ends with the lock: every session's standing drops it from the closing set.
       for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived }));
       log(`face h${held.ordinal} closed and locked`);
@@ -501,17 +518,7 @@ export function servePulama(a: {
           const s: Session = { channel, scope: { ...admitted.scope, faces: lent.faces }, claims: new Map(), open: true, life };
           session = s;
           live.add(s);
-          if (life !== null) {
-            const index = readFaceIndexSync(holder.homes.identity).faces;
-            for (const face of s.scope.faces) {
-              const at = index[face.ordinal];
-              const fcid = at !== undefined && "fcid" in at ? at.fcid : null;
-              if (fcid === null || !lends(s, { ordinal: face.ordinal, fcid })) continue;
-              const lives = lentLives.get(fcid) ?? new Set<LifeName>();
-              lives.add(life);
-              lentLives.set(fcid, lives);
-            }
-          }
+          recordLend(s);
           withDerived((derived) => channel.send({ t: "session", scope: { faces: lentFacesWire(s.scope.faces), ...(s.scope.unlent?.length ? { unlent: s.scope.unlent } : {}) }, standing: standing(s), derived }));
           log(`session opened: lends ${renderLentFaces(s.scope.faces)}${s.scope.unlent?.length ? `; ${s.scope.unlent.map((u) => `h${u.ordinal} waits (${u.reading})`).join(", ")}` : ""}`);
         }, () => refuse("pulama-gate-faulted"));
@@ -567,7 +574,7 @@ export function servePulama(a: {
         // A LIFE LENT THE FACE AND ENDED BEFORE THIS CLOSE, while the hearth still names it (or reads nothing), may hold a save it
         // never sealed: the close holds on it as on a drop, and clears by the same line.
         const now = hearthLife();
-        const before = [...(lentLives.get(fcid) ?? [])].filter((life) => !lifeEnded(life, now));
+        const before = livesLent(ordinal, fcid).filter((life) => !lifeEnded(life, now));
         if (before.length > 0) {
           closings.set(fcid, { ordinal, opening, awaiting: new Set(), dropped: before.map((life) => ({ life, told: false })), locking: null });
           for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived }));

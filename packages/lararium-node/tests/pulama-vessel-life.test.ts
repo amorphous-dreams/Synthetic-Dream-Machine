@@ -155,6 +155,32 @@ describe("a first close reads the lives this pūlama lent the face", () => {
     await vi.waitFor(() => expect(f.kept.unlockedFaces()).not.toContain(a.fcid));
   });
 
+  test("LENT BEFORE IT FOUNDED: a life lent the face by ordinal before the face stood (no custody id at its hello) and ended; the first close still holds on it", async () => {
+    fx = await standPulama("life-before-founded", () => openGate({ faces: lend(0), coldReads: [] }));
+    hearth(fx, 3);
+    const early = fx.vessel({}, { id: L(3) });
+    await early.unlock([]);
+    await early.lock();
+    await vi.waitFor(() => expect(fx!.server.sessions()).toBe(0));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    expect(await fx.server.closeFace(0)).toMatchObject({ reading: "closing", face: 0, unanswered: 0 });
+    expect(fx.kept.unlockedFaces()).toContain(a.fcid);
+    hearth(fx, 4);
+    expect(await fx.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
+  });
+
+  test("A LEND OF ANOTHER FACE AT THE ORDINAL: a life whose lend named another custody id at that ordinal never served this face, and holds no first close", async () => {
+    fx = await standPulama("life-other-fcid", () => openGate({ faces: lend({ fcid: "fcid-of-another-face", ordinal: 0 }), coldReads: [] }));
+    hearth(fx, 3);
+    const other = fx.vessel({}, { id: L(3) });
+    await other.unlock([]);
+    await other.lock();
+    await vi.waitFor(() => expect(fx!.server.sessions()).toBe(0));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    expect(await fx.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
+    expect(fx.kept.unlockedFaces()).not.toContain(a.fcid);
+  });
+
   test("DEAD BEFORE THE CLOSE, OR NO LIFE: a life the hearth no longer names, or a session that named none, holds no first close", async () => {
     const { f, a } = await standOne("life-before-dead", 3);
     const dead = f.vessel({}, { id: L(3) });

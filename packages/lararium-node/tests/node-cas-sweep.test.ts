@@ -19,7 +19,7 @@
  *     clock moves neither verdict.
  */
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, ENGINE_CORE_ID, type CasReferenceEntry, type GenesisCasManifest, type LarDoc } from "@lararium/mesh";
@@ -221,6 +221,23 @@ describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", ()
       expect(pins[0]!.cid).toBe(held.cid);
       expect(pins[0]!.life).toBeUndefined();   // the torn life read as ABSENT, never dropped
     }
+  });
+
+  test("RED: a sidecar record that carries a `fence` (a pin stamped under the retired boot count) and no `life` reads as a pin of an ended life: released, never a refusal; the next write rests the sidecar clean", () => {
+    const kept = "c".repeat(64), ended = "d".repeat(64), both = "e".repeat(64);
+    writeFileSync(join(casDir, ".pins.json"), JSON.stringify([
+      { cid: kept, tier: "veil", holder: "operator" },
+      { cid: ended, tier: "veil", holder: "import-job", fence: 3 },
+      { cid: both, tier: "veil", holder: "import-job", fence: 3, life: LIFE },
+    ]));
+    expect(readCasPins(casDir)).toEqual([
+      { cid: kept, tier: "veil", holder: "operator" },
+      { cid: both, tier: "veil", holder: "import-job", life: LIFE },
+    ]);
+    pinCas(casDir, { cid: "f".repeat(64), tier: "veil", holder: "operator" });
+    const rested = JSON.parse(readFileSync(join(casDir, ".pins.json"), "utf8")) as Array<Record<string, unknown>>;
+    expect(rested.map((p) => p["cid"])).toEqual([kept, both, "f".repeat(64)]);
+    expect(rested.some((p) => "fence" in p), "the rewrite carries no fence").toBe(false);
   });
 
   test("a record missing holder/tier still holds by cid alone", () => {
@@ -664,6 +681,15 @@ describe("owned-store — a VESSEL claim mints a fresh life", () => {
       writeFileSync(vesselLifePath(storeDir), torn);
       expect(readVesselLife(storeDir), JSON.stringify(torn)).toBeNull();
     }
+  });
+
+  test("RED: a mint that throws releases the claim it bound, so the next claim stands", async () => {
+    const dir = join(storeDir, "life-unwritable");
+    mkdirSync(join(dir, ".life"), { recursive: true });   // a directory where the life file rests: the atomic rename refuses
+    await expect(claimStore(dir, { holder: "vessel" })).rejects.toThrow();
+    rmSync(join(dir, ".life"), { recursive: true, force: true });
+    const next = await claimStore(dir, { holder: "vessel" });
+    try { expect(readVesselLife(dir)).toBe(next.life); } finally { await next.release(); }
   });
 
   test("RED: a life record restored or reused from an earlier life never revives it — the next claim mints past it", async () => {

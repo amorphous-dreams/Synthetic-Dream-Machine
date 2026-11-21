@@ -337,7 +337,7 @@ const PINS_FILE = ".pins.json";
 /** `PinCap`'s own fields (`cas-caps.ts`) — the only keys a record may ever carry. Any other key reads the
  *  WHOLE sidecar as malformed (gp25): a record shape this reader does not recognize might carry a
  *  clock-driven verdict, and a pin carries no clock, so it refuses rather than read a shape it never named. */
-const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "life"]);
+const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "life", "fence"]);
 
 /** The pins a CAS dir holds — an ABSENT sidecar reads as no pins (a vessel that never pinned anything is
  *  not corrupt); a sidecar that EXISTS but fails to parse (torn JSON, not an array) THROWS rather than
@@ -380,8 +380,12 @@ export function readCasPins(casDir: string): PinCap[] {
   // A missing/mistyped `holder`/`tier` or `life` (a counter where a life name stands, say) never drops the
   // WHOLE record — that would un-pin a blob over a cosmetic field, exactly the "fails open toward deletion"
   // fault this closes. A mistyped `life` reads as ABSENT (presence-only — holds forever), never as dropped.
+  // A RECORD STAMPED UNDER THE RETIRED BOOT COUNT (`fence`, no `life`) names a held pin of an earlier vessel life, and a held
+  // pin ends with its life: it reads released, the same verdict that count gave at the next boot, and the next write rests
+  // the sidecar without it. A record carrying a `life` beside a `fence` reads by its life alone.
   return parsed
     .filter((p): p is Record<string, unknown> => !!p && typeof p === "object" && typeof (p as Record<string, unknown>)["cid"] === "string")
+    .filter((p) => !("fence" in p) || (typeof p["life"] === "string" && p["life"] !== ""))
     .map((p) => {
       const cid    = p["cid"] as string;
       const holder = typeof p["holder"] === "string" ? (p["holder"] as string) : "unknown";

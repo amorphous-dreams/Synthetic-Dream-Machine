@@ -171,7 +171,13 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
       // A VESSEL LIFE BEGINS HERE, AND ONLY FOR A VESSEL: its claim mints the life's id, inside the claim it already
       // holds. A "direct" one-shot CLI act claims this same name for one command and releases it moments later, and
       // begins no life, so a `--held` pin outlives every unrelated `lares` invocation.
-      if (holder === "vessel") return { ...claim, holder: "vessel", life: mintVesselLife(storageDir) };
+      if (holder === "vessel") {
+        // A MINT THAT THROWS BEGINS NO LIFE: the claim it bound releases before the fault rises, so the next claim stands.
+        let life: string;
+        try { life = mintVesselLife(storageDir); }
+        catch (error) { await claim.release().catch(() => { /* the mint's fault names the cause */ }); throw error; }
+        return { ...claim, holder: "vessel", life };
+      }
       return { ...claim, holder: "direct" };
     }
     catch (err) {
