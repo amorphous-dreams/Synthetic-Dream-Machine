@@ -1,11 +1,11 @@
 /**
  * `lares law list | pin <uri> | unpin <uri>` — the law index, offered where an agent wakes, and the verb that orders it.
  *
- * THE INDEX DERIVES FROM CANON. The worn face's daemon wiki holds two config tiddlers (`@lararium/tw5`'s
- * `daemon-law-tiddlers`, seeded as shadows): the law, a filter over every root meme under a bag's `api/` tree, and the pin
- * set, a filter whose titles head the index (the boot seed, then the Mu family). `list` runs `LAW_INDEX_FILTER` through the
- * tiddler door's `wiki-filter`, so the wiki's own engine answers and no list stands here. Each row reads its title and one
- * line: the meme's `description`, else its `role`.
+ * THE INDEX DERIVES FROM CANON. `@lararium/tw5`'s `daemon-law-tiddlers` names the law (every root meme under a bag's `api/`
+ * tree) and seeds the pin set into the worn face's daemon wiki (a filter whose titles head the index: the boot seed, then
+ * the Mu family). `list` runs `LAW_INDEX_FILTER` through the tiddler door's `wiki-filter`, so the wiki's own engine answers
+ * and no list stands here; its canon guard keeps every row to a record a canon layer answers, so nothing a face writes
+ * prints as law. Each row reads its title and one line: the meme's `description`, else its `role`.
  *
  * A PIN IS A WIKI CONFIG WRITE in the face's own working layer: `pin` and `unpin` read the pin set (`tiddler-get`), edit
  * its text by one run (`[[uri]]` to pin, `-[[uri]]` to drop a title a broader run names), let the engine say whether the
@@ -18,7 +18,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers
  */
 
-import { LAW_FILTER_TITLE, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE } from "@lararium/tw5";
+import { LAW_CANON_GUARD, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE } from "@lararium/tw5";
 import { emit, exitFor, proseFirst } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, countOf, guardDoor, runDoor, wordOf } from "./door-call.js";
@@ -40,13 +40,28 @@ export function lawUriOf(raw: string | undefined): string {
   return uri;
 }
 
-/** The text with every whitespace-delimited run equal to `run` taken out, its spacing collapsed. */
+/**
+ * The text with every whitespace-delimited run equal to `run` taken out, each with the whitespace before it (the whitespace
+ * after it, where it leads the text); every other byte of the operator's layout stands.
+ */
 export function withoutRun(text: string, run: string): string {
-  return text.split(/\s+/).filter((token) => token !== "" && token !== run).join(" ");
+  const parts = text.split(/(\s+)/);
+  const out: string[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i] as string;
+    if (i % 2 === 1 || part !== run) { out.push(part); continue; }
+    if (out.length > 0) out.pop();
+    else if (i + 1 < parts.length) i++;
+  }
+  return out.join("");
 }
 
-/** The text with `run` appended as its last run. */
-export const withRun = (text: string, run: string): string => (text.trim() === "" ? run : `${text.trim()} ${run}`);
+/** The text with `run` appended after its last run, ahead of any trailing whitespace (a closing newline stands). */
+export function withRun(text: string, run: string): string {
+  const tail = /\s*$/.exec(text)?.[0] ?? "";
+  const body = text.slice(0, text.length - tail.length);
+  return body === "" ? `${run}${tail}` : `${body} ${run}${tail}`;
+}
 
 /**
  * The pin set's next text, given whether the engine selects the title from a candidate. `null` where the title already
@@ -112,7 +127,7 @@ async function lawList(args: ParsedArgs): Promise<number> {
   }
   const total = typeof last["total"] === "number" ? last["total"] : rows.length;
   const next = typeof last["next"] === "string" && last["next"] !== "" ? last["next"] : null;
-  const data = { filter: LAW_INDEX_FILTER, pinsTitle: LAW_PINS_TITLE, lawTitle: LAW_FILTER_TITLE, pins: pins.titles, rows, total, next };
+  const data = { filter: LAW_INDEX_FILTER, pinsTitle: LAW_PINS_TITLE, pins: pins.titles, rows, total, next };
   emit(proseFirst(args), {
     ok: true, requestId, data,
     human: () => {
@@ -130,10 +145,10 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
   const label = `law ${mode}`;
   const uri = lawUriOf(args.positional[1]);
   if (mode === "pin") {
-    const stands = await filterAll(args, label, `[[${uri}]is[tiddler]]`);
+    const stands = await filterAll(args, label, `[[${uri}]] ${LAW_CANON_GUARD}`);
     if (!stands.ok) return stands.exit;
     if (stands.titles.length === 0) {
-      const message = `law-pin-absent: no tiddler stands at ${uri} in the worn face's daemon wiki; nothing moved`;
+      const message = `law-pin-absent: no canon law stands at ${uri} in the worn face's daemon wiki (a pin orders canon law and adds none); nothing moved`;
       emit(args, { ok: false, error: { code: "not-found", message }, human: () => console.error(`lares ${label}: ${message}`) });
       return exitFor("not-found");
     }

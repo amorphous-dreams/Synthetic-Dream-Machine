@@ -97,12 +97,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares law list [--limit N] [--after <cursor>] [--all]  |  lares law pin <uri>  |  lares law unpin <uri>",
     synopsis:
       "Read the house's law, pinned law first, from the worn face's daemon wiki. The index derives from canon by filter and no list stands " +
-      "in code: $:/config/lares/law/filter names the law (every root meme under a bag's api/ tree, by title) and $:/config/lares/law/pins " +
-      "the pin set (the boot seed, then the Mu family), both TiddlyWiki filters the wiki's own engine runs. A pin edits the pin set by one " +
-      "run and lands it in the face's working layer, never in house canon.",
+      "in code: the law reads every root meme under a bag's api/ tree, by title, and $:/config/lares/law/pins holds the pin set (the boot " +
+      "seed, then the Mu family), a TiddlyWiki filter the wiki's own engine runs. Only canon prints: a row stands where a canon layer " +
+      "answers its record, so nothing a face writes reads as law. A pin edits the pin set by one run, keeping its layout, and lands it in " +
+      "the face's working layer, never in house canon; a pin orders canon law and adds none.",
     details: [
       "  lares law list            the pinned titles (marked 📌), then the law they leave out, each with its description or role",
-      "  lares law pin <uri>       add a law meme to the pin set (a `[[uri]]` run); a title absent from the wiki refuses law-pin-absent",
+      "  lares law pin <uri>       add a law meme to the pin set (a `[[uri]]` run); a title no canon law holds refuses law-pin-absent",
       "  lares law unpin <uri>     take it out (its `[[uri]]` run leaves; a title a broader run names takes a `-[[uri]]` run)",
     ],
     examples: [
@@ -115,7 +116,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--limit N        rows per page (the door's ceiling holds)",
       "--after <c>      the page behind a cursor `list` named",
       "--all            follow every cursor to the end",
-      "--json           emit the answer: list {filter, pinsTitle, lawTitle, pins, rows, total, next}; pin {title, uri, decision, pinned, text, hash}",
+      "--json           emit the answer: list {filter, pinsTitle, pins, rows, total, next}; pin {title, uri, decision, pinned, text, hash}",
     ],
     next: ["lares meme get <uri> --recipe default      # read one law meme whole"],
     meme: "lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers",

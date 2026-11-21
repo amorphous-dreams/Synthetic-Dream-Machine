@@ -18,8 +18,8 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import (LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_VERBS, SEAT_INSTRUCTIONS, DaemonCoordinator,
-                       build_mcp, seat_of)
+from lares_mcp import (LAW_CANON_GUARD, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_VERBS, SEAT_INSTRUCTIONS,
+                       DaemonCoordinator, build_mcp, seat_of)
 
 API = "lar:///ha.ka.ba/lares/api"
 BOOT = f"{API}/noosphere-boot"
@@ -80,7 +80,7 @@ class _PinDaemon:
             rows = [{"title": t, "fields": {} if t == BOOT else {"role": f"the  role\nof {t.rsplit('/', 1)[-1]}"}}
                     for t in pins + [t for t in LAW if t not in pins]]
             return {"rows": rows, "total": len(rows), "next": None}
-        m = re.fullmatch(r"\[\[(.+)\]is\[tiddler\]\]", f)
+        m = re.match(r"\[\[(.+?)\]\] ", f) if f.endswith(" " + LAW_CANON_GUARD) else None
         if m:
             return {"titles": [m.group(1)] if m.group(1) in STANDING else [], "total": 0, "next": None}
         return {"titles": evaluate(f), "total": 0, "next": None}
@@ -145,9 +145,17 @@ def test_the_seat_tells_a_client_to_read_the_law_first():
     assert "law_index" in SEAT_INSTRUCTIONS and "pinned law first" in SEAT_INSTRUCTIONS
 
 
-def test_the_filters_name_the_wiki_law_config():
-    assert LAW_PINS_FILTER == "[subfilter{$:/config/lares/law/pins}is[tiddler]]"
-    assert LAW_INDEX_FILTER == "[subfilter{$:/config/lares/law/pins}is[tiddler]] =[subfilter{$:/config/lares/law/filter}] +[unique[]]"
+# The same strings `@lararium/tw5`'s `daemon-law-tiddlers` exports and the wake hook runs (lares-cli's law-door suite welds those two).
+GUARD = (r":filter[regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]] "
+         r":filter[get[$origin-bag]regexp[^lar:///ha\.ka\.ba/bags/(oracle|lares|lararium)$]] :filter[regexp[^lar:///\S+$]]")
+
+
+def test_the_filters_read_the_pin_set_and_end_on_the_canon_guard():
+    assert LAW_CANON_GUARD == GUARD
+    assert LAW_PINS_FILTER == "[subfilter{$:/config/lares/law/pins}] " + GUARD
+    assert LAW_INDEX_FILTER == ("[subfilter{$:/config/lares/law/pins}] =[prefix[lar:///ha.ka.ba/]regexp[^lar:///ha\\.ka\\.ba/(\\w|-)+/api/]"
+                                "!regexp[#]sort[title]] +[unique[]] " + GUARD)
+    assert "law/filter" not in LAW_INDEX_FILTER
 
 
 def test_law_index_answers_pins_first_marked_then_the_law_by_title(daemon):
@@ -187,6 +195,21 @@ def test_a_title_standing_as_asked_moves_nothing_and_an_absent_title_refuses_by_
     with pytest.raises(uds.LaresVerbError, match="^law-pin-absent:"):
         t["law_pin"](uri=f"{API}/pono/absent")
     assert daemon.puts() == []
+
+
+def test_a_pin_keeps_the_operators_layout_and_the_unpin_returns_it_byte_for_byte(daemon):
+    laid = f"[[{BOOT}]]\n[[{MU_ROOT}]]\n[prefix[{MU_ROOT}/]!regexp[#]sort[title]]\n"
+    daemon.pins = laid
+    t = _tools()
+    t["law_pin"](uri=LAW[1])
+    assert daemon.pins == f"[[{BOOT}]]\n[[{MU_ROOT}]]\n[prefix[{MU_ROOT}/]!regexp[#]sort[title]] [[{LAW[1]}]]\n"
+    t["law_unpin"](uri=LAW[1])
+    assert daemon.pins == laid
+
+
+def test_the_pins_standing_check_asks_the_canon_guard(daemon):
+    _tools()["law_pin"](uri=LAW[0])
+    assert any(ln["args"].get("filter") == f"[[{LAW[0]}]] {LAW_CANON_GUARD}" for ln in daemon.lines)
 
 
 def test_a_moved_pin_set_refuses_and_a_bad_uri_refuses_before_the_wire(daemon):
