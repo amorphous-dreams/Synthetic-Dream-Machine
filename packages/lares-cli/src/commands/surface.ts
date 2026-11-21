@@ -669,6 +669,20 @@ export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAN
     if (agreement.uri !== null) carriers.add(agreement.uri);
     else if (content === rel) removed.push(rel);
   }
+  // A removal the index already holds (`git rm`, a plain delete staged by hand) leaves a path neither on disk nor in
+  // the index: `git add` and a pathspec commit both refuse it. Re-open it from HEAD so `add -A` stages the removal
+  // again; a path HEAD never held has nothing to commit and leaves the sitting.
+  const vanished = staged.filter((rel) => !existsSync(fileOf(rel)));
+  if (vanished.length > 0) {
+    const indexed = new Set(surfaceGit(root, ["--literal-pathspecs", "ls-files", "-z", "--", ...vanished]).out.split("\0").filter(Boolean));
+    const open = vanished.filter((rel) => !indexed.has(rel));
+    const held = open.filter((rel) => surfaceGit(root, ["cat-file", "-e", `HEAD:${rel}`]).code === 0);
+    if (held.length > 0) surfaceGit(root, ["--literal-pathspecs", "reset", "-q", "--", ...held]);
+    const dropped = new Set(open.filter((rel) => !held.includes(rel)));
+    if (dropped.size > 0) {
+      for (const rel of dropped) { staged.splice(staged.indexOf(rel), 1); const at = removed.indexOf(rel); if (at !== -1) removed.splice(at, 1); }
+    }
+  }
   if (staged.length === 0) return { staged, carriers: [], kapae: [], removed, apart, commit: null, subject: null };
   const add = surfaceGit(root, ["--literal-pathspecs", "add", "-A", "--", ...staged]);
   if (add.code !== 0) throw new SurfaceRefused("surface-git-add-failed", `git add in ${root} answered ${add.code}: ${add.err.trim()}`);

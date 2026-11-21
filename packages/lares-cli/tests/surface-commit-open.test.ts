@@ -95,6 +95,18 @@ describe("lares surface commit", () => {
     expect(rig.said()).toMatch(/nothing/);
   });
 
+  test("a removal already staged in the index (plain delete) commits clean, never a pathspec refusal", async () => {
+    const gone = carrier("wiki/Gone.tid", "Gone", "title: Gone\n\ng\n");
+    const stays = carrier("wiki/Stays.tid", "Stays", "title: Stays\n\ns\n");
+    expect(await commit()).toBe(0);
+    expect(git(heron, "rm", "-q", "--", "wiki/Gone.tid").code).toBe(0);   // the index already holds the removal
+    rig.tree.deleteAt(syncedTreeKey(BAG, "Gone"), resolve(gone));
+    expect(existsSync(stays)).toBe(true);
+    expect(await commit(["-m", "after-delete"])).toBe(0);
+    expect(git(heron, "show", "--name-status", "--format=", "HEAD").out.trim()).toBe("D\twiki/Gone.tid");
+    expect(git(heron, "status", "--porcelain").out.trim()).toBe("");
+  });
+
   test("a removal the house already made stages; a file vanished where a base still stands stays apart", async () => {
     const kept = carrier("wiki/Kept.tid", "Kept", "title: Kept\n\nk\n");
     const left = carrier("wiki/Left.tid", "Left", "title: Left\n\nl\n");

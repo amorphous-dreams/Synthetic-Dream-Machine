@@ -9,7 +9,7 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { parseArgs, ArgsError, BOOLEAN_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
+import { parseArgs, ArgsError, BOOLEAN_FLAGS, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
 import { dispatch, unknownFlags, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -70,6 +70,18 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
     expect(a.options).toEqual({ root: "/r" });
     expect(a.positional).toEqual(["pos"]);
   });
+  test("★ a value flag takes the next token whatever it starts with: front matter binds as the body ★", () => {
+    const body = "---\nfront: matter\n---\nbody";
+    expect(parseArgs(["tiddler", "put", "T", "--text", body]).options).toEqual({ text: body });
+    expect(parseArgs(["tiddler", "put", "T", "--text", "--literal"]).options).toEqual({ text: "--literal" });
+    expect(parseArgs(["tiddler", "put", "T", `--text=${body}`]).options).toEqual({ text: body });
+    expect(parseArgs(["tiddler", "put", "T", "--text", body]).positional).toEqual(["put", "T"]);
+  });
+  test("CONTROL: any other valued name still peeks, so `--key --other` leaves the first bare and an unknown flag stays a flag", () => {
+    const a = parseArgs(["x", "--root", "--mystery"]);
+    expect(a.flags).toEqual({ root: true, mystery: true });
+    expect(a.positional).toEqual([]);
+  });
   test("the declaration cannot drift from the handlers: flag reads are declared, option reads are not", () => {
     const files: string[] = [];
     const walk = (d: string): void => {
@@ -87,6 +99,7 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
     }
     expect([...flagReads].filter((n) => !BOOLEAN_FLAGS.has(n) && !VALUE_OR_FLAG.has(n)), "read as a flag, never declared").toEqual([]);
     expect([...BOOLEAN_FLAGS].filter((n) => optionReads.has(n)), "declared boolean, read as an option").toEqual([]);
+    expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
     expect([...VALUE_OR_FLAG].filter((n) => !optionReads.has(n) || !flagReads.has(n)), "listed as dual, read one way only").toEqual([]);
   });
 });
