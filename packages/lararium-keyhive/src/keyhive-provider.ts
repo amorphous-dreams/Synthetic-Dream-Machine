@@ -382,6 +382,21 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
+   * FORGET a bag's Document mapping (`lares wiki retire`): this provider names no Document for `bagUrl` until a later
+   * `registerBag` or `adoptBag`. The Document's capability events stay where they rest (Keyhive keeps no delete); only this
+   * stand's binding and the ciphertext it cached for the bag leave. Returns the Document id it named, or null.
+   */
+  async forgetBag(bagUrl: string): Promise<string | null> {
+    const prior = this.bagToDocId.get(bagUrl);
+    if (!prior) return null;
+    this.bagToDocId.delete(bagUrl);
+    this.docIdToBag.delete(prior);
+    this.bagChunks.delete(bagUrl);
+    if (this.chunkRest) await this.chunkRest.drop(await this.chunkShelf(bagUrl, prior));
+    return prior;
+  }
+
+  /**
    * Adopt a bag's document minted by a PEER — the joinee records the founder's `docId` for a shared bag URL
    * instead of generating its own (`registerBag` mints a NEW doc, which would never match). The founder ships
    * the docId; after the joinee ingests the membership events, `requireDoc` resolves it and content decrypts.

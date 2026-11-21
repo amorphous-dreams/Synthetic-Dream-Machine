@@ -30,6 +30,7 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { randomBytes } from "node:crypto";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { faceSegmentRefusal, isPrivateProjectionSlug, realmRoot, REALM_PLANES, REALMS_PROJECTION_DIR } from "./bag-paths.js";
 import { commitRealmMove, retagRealmAuthor } from "./pool-tree.js";
@@ -235,7 +236,14 @@ export interface RealmEnsured { readonly label: RealmLabel; readonly minted: boo
 export function ensureRealmLabel(projections: string, slug: string, id: string | null): RealmEnsured {
   const labels = readRealmLabels(projections);
   const holder = labels.find((l) => l.realms.some((r) => r.slug === slug) || l.bags.includes(slug));
-  if (holder !== undefined) return { label: holder, minted: false };
+  if (holder !== undefined) {
+    // A row a retire released (`releaseRealmId`) reads null: the mint that follows records the realm that stands now.
+    const fill = id !== null && REALM_ID.test(id) && holder.realms.some((r) => r.slug === slug && r.id === null);
+    if (!fill) return { label: holder, minted: false };
+    const filled: RealmLabel = { ...holder, realms: holder.realms.map((r) => (r.slug === slug ? { slug, id } : r)) };
+    writeRealmLabel(projections, filled);
+    return { label: filled, minted: false };
+  }
   if (!SLUG.test(slug)) throw new RealmRefused("realm-slug-malformed", `a wiki slug reads a-z, 0-9, '.', '_', '-', never ${JSON.stringify(slug)}`);
   if (isPrivateProjectionSlug(slug)) throw new RealmRefused("realm-slug-private", `"${slug}" holds one face's memory, which rests in that face's root (faces/<pet name>/): it joins no realm`);
   const taken = new Set(labels.map((l) => fold(l.petName)));
@@ -254,6 +262,41 @@ export function ensureRealmLabel(projections: string, slug: string, id: string |
     ? `${slug}: the realm takes its default pet name "${petName}" (its folder: realms/${petName}/); \`lares realm rename ${petName} --to <pet>\` renames it`
     : `${slug}: the default pet name "${slug}" names another realm already, so this realm takes "${petName}" (the slug plus the shortest ${realmId !== null ? "prefix of its realm id" : "counter"} that names it apart; its folder: realms/${petName}/); \`lares realm rename ${petName} --to <pet>\` renames it`;
   return { label, minted: true, line };
+}
+
+/**
+ * A RETIRE RELEASES THE SLUG'S REALM ID (`lares wiki retire`): the canon realm id a label recorded for `slug` reads null again,
+ * since the workbench it named left the vessel's ledger; the next mint's door records the realm that stands then
+ * (`ensureRealmLabel`). The label, its pet name, its bags and its folders on disk stay. Returns the label as it now reads, or
+ * null where no label holds the slug.
+ */
+export function releaseRealmId(projections: string, slug: string): RealmLabel | null {
+  const holder = readRealmLabels(projections).find((l) => l.realms.some((r) => r.slug === slug));
+  if (holder === undefined) return null;
+  if (!holder.realms.some((r) => r.slug === slug && r.id !== null)) return holder;
+  const released: RealmLabel = { ...holder, realms: holder.realms.map((r) => (r.slug === slug ? { slug, id: null } : r)) };
+  writeRealmLabel(projections, released);
+  return released;
+}
+
+/**
+ * A RETIRED WIKI'S FOLDER STEPS ASIDE (`lares wiki retire`): the workbench mirror folder the realm labels place for `slug`
+ * (`<projections>/realms/<pet>/wikis/<slug>/`) moves BY RENAME to `<slug>.retired-<hex>` beside it, never deleted, so the next
+ * owner's workbench lays into a fresh folder and its catch-up ingests none of the retired shell's files. A folder that holds
+ * nothing, or none at all, stays as it is (null). A folder beside a canon source (a checkout-sourced slug's) never rests under
+ * the realms and never moves here.
+ */
+export function setAsideRetiredWiki(projections: string, slug: string, tag: string = randomBytes(4).toString("hex")): { readonly from: string; readonly to: string } | null {
+  if (!SLUG.test(slug)) return null;
+  const base = realmPlacement(projections).wikisBase(slug);
+  if (base === null) return null;
+  const from = join(base, slug);
+  let entries: string[];
+  try { entries = readdirSync(from); } catch { return null; }
+  if (entries.length === 0) return null;
+  const to = `${from}.retired-${tag}`;
+  renameSync(from, to);
+  return { from, to };
 }
 
 /** Where a slug's folders rest by the labels and the disk, read once: the base its workbench and its canon bag lay under. */
