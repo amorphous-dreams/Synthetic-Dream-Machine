@@ -17,7 +17,7 @@ import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, syncCheckout } from "../src/commands/rite.js";
-import { kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
+import { KUKULU_LEI_RETURNS, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
 
@@ -331,6 +331,42 @@ describe("a spent lei offers its refill inline", () => {
     expect([asks, ran]).toEqual([[], []]);
     const no = hostRefill(async () => false, async () => 0, () => true, async () => 6);
     expect((await no(req)).strung).toBe(false);
+  });
+});
+
+describe("kukulu reads its lei first", () => {
+  it("RED: no kukulu lei on the line reads FIRST, before the fetch, the image step and the seed, and the offer strings one on a yes; the begin then runs", async () => {
+    const f = fakes();
+    const refilled: unknown[] = [];
+    const ports: RitePorts = {
+      ...f.ports,
+      sync: async () => { f.calls.push("sync"); return { ok: true, line: "main stands at origin/main" }; },
+      seedOffer: async () => { f.calls.push("seed"); return null; },
+      leiStands: async (branch) => { f.calls.push(`lei ${branch}`); return false; },
+      refill: async (req) => { f.calls.push("string"); refilled.push(req); return { strung: true, remedy: "x" }; },
+    };
+    expect((await riteKukulu(ports, {})).code).toBe(0);
+    expect(f.calls.slice(0, 6)).toEqual(["checkout", "lei main", "string", "sync", "checkout", STAGE]);
+    expect(refilled).toEqual([{ rite: "kukulu", branch: "main", absent: true, returns: KUKULU_LEI_RETURNS, all: true }]);
+    expect(f.calls).toContain(BEGIN);
+  });
+
+  it("a lei that stands asks nothing; a declined offer names the plain line up front and the restand goes on as before", async () => {
+    const f = fakes();
+    await riteKukulu({ ...f.ports, leiStands: async () => true, refill: async () => { f.calls.push("string"); return { strung: true, remedy: "x" }; } }, {});
+    expect(f.calls).not.toContain("string");
+    const g = fakes();
+    await riteKukulu({ ...g.ports, leiStands: async () => false, refill: async () => ({ strung: false, remedy: "lares lei kui --rite kukulu --branch main --returns 6 --all" }) }, {});
+    expect(g.said[0]).toMatch(/no kukulu lei stands on main/);
+    expect(g.said[0]).toContain("lares lei kui --rite kukulu --branch main --returns 6 --all");
+  });
+
+  it("the live offer for an absent lei asks a real terminal to string one under this passphrase, per lent face, and runs `lei kui --all`", async () => {
+    const asks: string[] = [], ran: string[][] = [];
+    const tty = hostRefill(async (q) => { asks.push(q); return true; }, async (argv) => { ran.push([...argv]); return 0; }, () => true, async () => null);
+    expect((await tty({ rite: "kukulu", branch: "main", absent: true, returns: 6, all: true })).strung).toBe(true);
+    expect(asks).toEqual(["no kukulu lei stands on main; string a kukulu lei (6 returns per lent face) under this passphrase?"]);
+    expect(ran).toEqual([["lei", "kui", "--rite", "kukulu", "--branch", "main", "--returns", "6", "--all"]]);
   });
 });
 

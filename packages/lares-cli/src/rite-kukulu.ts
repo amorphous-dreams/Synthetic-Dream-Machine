@@ -5,6 +5,8 @@
  * It reads where the house stands on every run and walks only what remains, so a run that stopped picks up wherever the
  * house stands; no file remembers a half-done run. The rite runs on the host, behind its ports, in one order:
  *
+ *   0. lei          the kukulu lei on the line reads FIRST; where none stands a real terminal is offered one on the spot
+ *                   (`KUKULU_LEI_RETURNS` per lent face, under one passphrase), and a no names the plain line before anything slow
  *   1. sync         (forward only) fetch, then fast-forward the checkout's own branch where the tree stands clean and behind
  *                   its upstream; a dirty tree behind it, a branch diverged from it, or a detached head stops with one line.
  *                   It never switches a branch, never stashes, and never merges anything but a fast-forward. After a
@@ -46,8 +48,14 @@ export const RETURNS_SPENT = "swarm-lei-returns-spent";
 /** The refusal a begin answers where no kukulu lei stands on the line: the restand goes on with no rite. */
 export const LEI_ABSENT = "swarm-lei-absent";
 
-/** A spent line's refill: the rite, the branch, the face (or every open face), and the returns the spent lei carried where known. */
-export interface RefillReq { readonly rite: "keep" | "kukulu"; readonly branch: string; readonly face?: number; readonly all?: boolean; readonly returns?: number }
+/** The returns per lent face a kūkulu lei strung on the spot carries, where the rite finds none standing. */
+export const KUKULU_LEI_RETURNS = 6;
+
+/**
+ * A spent line's refill: the rite, the branch, the face (or every open face), and the returns the spent lei carried where known.
+ * `absent`: no lei stands on the line at all, so the offer strings a first one rather than refills a spent one.
+ */
+export interface RefillReq { readonly rite: "keep" | "kukulu"; readonly branch: string; readonly face?: number; readonly all?: boolean; readonly returns?: number; readonly absent?: true }
 /** `strung`: the hand strung the refill on a terminal; `remedy`: the plain line that does it by hand (it names no cid, a kui follows the tip itself). */
 export interface RefillAnswer { readonly strung: boolean; readonly remedy: string }
 /** The offer a real terminal gets: ask, then string the refill through the hand door; a pipe or an AI seat only reads the remedy. */
@@ -87,8 +95,13 @@ export interface RitePorts {
   tty?(): boolean;
   /** One store row, answered by the vessel that stands. */
   row(verb: "rite-begin" | "rite-land" | "rite-offer", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
-  /** Where a spent kūkulu lei is offered its refill inline; absent, the rite refuses as it did. */
+  /** Where a spent kūkulu lei is offered its refill inline (and an absent one its first stringing); absent, the rite refuses as it did. */
   refill?: RefillPort;
+  /**
+   * Whether a kukulu lei stands on the line with a return left (for `face`, else any lent face); null where the line reads no
+   * answer. Read FIRST, before the fetch, the image step and the seed, so a missing lei never costs the slow reads.
+   */
+  leiStands?(branch: string, face?: number): Promise<boolean | null>;
   /**
    * The image the vessel stands from when the rite begins (its revision label and the tag the shim keeps it under as the
    * outgoing image); null where the host reads none. Absent, the answer names no prior.
@@ -167,6 +180,18 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  */
 export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
   const forward = opts.rollback === undefined;
+  // THE LEI READS FIRST, before the fetch, the image step, the tag and the seed: where none stands the rite offers to string one
+  // on the spot (as the unlock offers the keep lei), and a no names the plain line before anything slow runs.
+  let absentSaid = false;
+  if (ports.leiStands) {
+    const line = opts.branch ?? (await ports.checkout()).branch;
+    const stands = await ports.leiStands(line, opts.face).catch(() => null);
+    if (stands === false) {
+      const offer = ports.refill ? await ports.refill({ rite: "kukulu", branch: line, absent: true, returns: KUKULU_LEI_RETURNS, ...(opts.face === undefined ? { all: true } : { face: opts.face }) }) : null;
+      if (offer?.strung === true) ports.say(`kūkulu: a kukulu lei of ${KUKULU_LEI_RETURNS} returns per lent face stands on ${line}; the rite goes on`);
+      else { absentSaid = true; ports.say(`kūkulu: no kukulu lei stands on ${line}, so the restand goes on with no rite${offer ? `; string one by hand first: ${offer.remedy}` : ""}`); }
+    }
+  }
   if (forward && ports.sync) {
     const synced = await ports.sync();
     ports.say(`kūkulu: ${synced.line}`);
@@ -232,7 +257,7 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       if (again.strung) begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asFace });
       else remedy = `; string more by hand: ${again.remedy}`;
     }
-    if (!begun.ok && begun.code === LEI_ABSENT) ports.say(`kūkulu: no kukulu lei stands on ${branch}, so the restand goes on with no rite`);
+    if (!begun.ok && begun.code === LEI_ABSENT) { if (!absentSaid) ports.say(`kūkulu: no kukulu lei stands on ${branch}, so the restand goes on with no rite`); }
     else if (!begun.ok) {
       ports.say(`kūkulu: the rite begins nothing: ${begun.message}${remedy}`);
       return { code: 1, data: { ...base, ...spent, begun: false, refusal: begun.code } };

@@ -336,6 +336,19 @@ async function spentReturns(req: RefillReq): Promise<number | null> {
 }
 
 /**
+ * Whether a kukulu lei stands on the line with a return left, read off `lei show` (one face's `lei`, or any lent face's); null
+ * where the line reads no answer (no vessel stands, or the door refused), so the rite goes on as it did.
+ */
+async function hostLeiStands(branch: string, face?: number): Promise<boolean | null> {
+  const shown = await cliVerb(["lei", "show", "--rite", "kukulu", "--branch", branch, ...(face !== undefined ? ["--face", String(face)] : [])]);
+  if (!shown.ok) return null;
+  const lines = Array.isArray(shown.output["faces"]) ? (shown.output["faces"] as Array<{ lei?: unknown }>).map((f) => f.lei) : [shown.output["lei"]];
+  const read = lines.filter((l): l is { standing?: unknown; returnsLeft?: unknown } => typeof l === "object" && l !== null);
+  if (read.length === 0) return null;
+  return read.some((l) => l.standing === true && Number(l.returnsLeft ?? 0) > 0);
+}
+
+/**
  * THE INLINE REFILL: a rite stopped on a spent lei asks the person at a real terminal (stdin and stdout both) whether to string the
  * same returns again under their route, then runs the checkout shim's own `lei kui` (the hand door, under a pūlama or none). A pipe or
  * an AI seat is asked nothing and reads the plain line.
@@ -346,7 +359,10 @@ export function hostRefill(ask: (q: string) => Promise<boolean>, run: (argv: rea
     const argv = refillArgs(req, returns);
     const remedy = `lares ${argv.join(" ")}`;
     if (returns === null || !tty()) return { strung: false, remedy };
-    if (!(await ask(`the ${req.rite} lei for ${req.branch} is spent; string ${returns} more under your route?`))) return { strung: false, remedy };
+    const question = req.absent === true
+      ? `no ${req.rite} lei stands on ${req.branch}; string a ${req.rite} lei (${returns} returns ${req.all === true ? "per lent face" : `as h${String(req.face)}`}) under this passphrase?`
+      : `the ${req.rite} lei for ${req.branch} is spent; string ${returns} more under your route?`;
+    if (!(await ask(question))) return { strung: false, remedy };
     return { strung: (await run(argv)) === 0, remedy };
   };
 }
@@ -374,6 +390,7 @@ const readPriorImage = (): Promise<PriorImage | null> => new Promise((resolve) =
 function hostPorts(shim: string, say: (line: string) => void): RitePorts {
   return {
     refill: liveRefill,
+    leiStands: hostLeiStands,
     prior: readPriorImage,
     seedOffer: (head) => hostSeedOffer(head).catch(() => null),   // a read-only line never stops the rite
     sync: () => syncCheckout(CHECKOUT),
