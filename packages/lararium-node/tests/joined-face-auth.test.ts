@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh";
+import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri, selvesRecordOf } from "@lararium/mesh";
 import { joinedFaceAuth, unlitServedFaces, siblingFaceWork, litSiblingOrdinals, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
 
 const edge = { deviceVerifyingKey: "ab" } as NonNullable<NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchors"]>>>["deviceEdge"]>;
@@ -29,7 +29,7 @@ describe("joined face authentication", () => {
     expect(seeds.every((s) => s.every((b) => b === 0))).toBe(true);
     expect(entries[0]).toEqual({ atom: { seed: "09", key: "ab" }, personaGroupId: "group-1", faceAnchor: anchor, handleIndex: 1,
       personaKel: { prefix: "prefix-1", chain }, deviceEdge: edge, signerDid: "did-1", meshCabalDocIdHex: "cabal-1",
-      faceAddressSecret: "0a", veilArchiveBytes: new Uint8Array([11]), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(null) }) });
+      faceAddressSecret: "0a", veilArchiveBytes: new Uint8Array([11]), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(null, "group-1") }) });
     expect(entries[0]!.registerBags).not.toContain("lar:///ha.ka.ba/wikis/mounted/working");
   });
   test("THE LIT SET: a sibling names its handle index and relation, and its hive registers the bags it owns (daemon slots, its canon, its catalog), never a user wiki", async () => {
@@ -40,6 +40,14 @@ describe("joined face authentication", () => {
     expect(one!.faceRelation).toBe(relation);
     expect(one!.registerBags).toEqual(expect.arrayContaining([wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "personal"), daemonFaceCanonBag(relation)]));
     expect(one!.registerBags.some((b) => /\/wikis\/(?!daemon\/)/.test(b))).toBe(false);
+  });
+  test("RED: a lit sibling's hive registers its OWN selves record's bag, so the record the bag map files under that face seals under that face's own session; CONTROL: never another face's record", async () => {
+    const { ports } = fixture();
+    const [one, four] = await joinedFaceAuth(ports);
+    expect(one!.registerBags, "h1's selves record seals under h1's own hive").toContain(selvesRecordOf("group-1").bagId);
+    expect(one!.registerBags, "h1's hive never registers h4's record").not.toContain(selvesRecordOf("group-4").bagId);
+    expect(one!.registerBags, "nor the worn face's").not.toContain(selvesRecordOf("group-0").bagId);
+    expect(four!.registerBags).toContain(selvesRecordOf("group-4").bagId);
   });
   test("an atom differing from its edge contributes nothing and names the sibling", async () => {
     const { ports, logs } = fixture();

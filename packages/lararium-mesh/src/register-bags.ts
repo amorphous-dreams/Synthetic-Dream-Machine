@@ -190,11 +190,16 @@ export function standingDaemonCanonBag(input: { readonly lit: boolean; readonly 
 
 /**
  * THE LIT SET: the bags a face OWNS while it stands lit, worn or beside the worn face: the daemon wiki's device slots, its daemon
- * canon (where its relation stands known), and its own catalog half. A sibling face's hive registers these and never a user
- * wiki's bags, which belong to the worn face's mount.
+ * canon (where its relation stands known), its own catalog half, and its own selves record (`personaSelvesBagIdFor`, where its
+ * group stands known). A sibling face's hive registers these and never a user wiki's bags, which belong to the worn face's mount.
+ *
+ * THE SELVES RECORD SEALS UNDER ITS OWN FACE'S HIVE. The vessel's bag map files a lit face's record under that face's subject
+ * (`selvesRecordBagOf`), so its save books that face's own session; a hive that left the bag out read the writer
+ * `writer-not-capable` and the bag `bag-unfounded`, and the save waited in memory under a face that stood lit and open.
  */
-export function litFaceOwnBags(faceRelation: string | null | undefined): string[] {
-  return [...DAEMON_WIKI_SLOT_BAGS, ...(faceRelation ? [daemonFaceCanonBag(faceRelation)] : []), FACE_CATALOG_BAG_ID];
+export function litFaceOwnBags(faceRelation: string | null | undefined, personaGroupId?: string | null): string[] {
+  return [...DAEMON_WIKI_SLOT_BAGS, ...(faceRelation ? [daemonFaceCanonBag(faceRelation)] : []), FACE_CATALOG_BAG_ID,
+    ...(personaGroupId ? [personaSelvesBagIdFor(personaGroupId)] : [])];
 }
 
 /**

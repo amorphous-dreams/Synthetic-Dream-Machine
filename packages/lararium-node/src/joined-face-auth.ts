@@ -32,7 +32,7 @@ export function unlitServedFaces(served: readonly number[], mount: number | null
 }
 
 /** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground and the bags it OWNS while lit
- *  (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half), so its own memory seals
+ *  (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half, its selves record), so its own memory seals
  *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the house canon belong to
  *  the mounted face. Each entry names its handle index and relation, so a face-named wave finds it. */
 export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<JoinedFaceAuth[]> {
@@ -68,7 +68,7 @@ export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<Joined
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
         ...(pins.meshCabalDocIdHex ? { meshCabalDocIdHex: pins.meshCabalDocIdHex } : {}),
         ...(secret ? { faceAddressSecret: Buffer.from(secret).toString("hex") } : {}),
-        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation) }) });
+        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation, group) }) });
     } catch (e) {
       ports.log(`joined face h${ordinal} skipped: ${e instanceof Error ? e.message : String(e)}`);
     } finally { seed?.fill(0); secret?.fill(0); }
