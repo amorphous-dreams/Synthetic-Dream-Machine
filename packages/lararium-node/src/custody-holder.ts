@@ -152,6 +152,11 @@ export type FaceUnlock =
   /** The floor index routed to a tree whose own D `face-owner` row names another face (or none): nothing seats. */
   | { readonly reading: "index-mismatch"; readonly fcid: string; readonly why: string };
 
+/** A face's key opened for one act (`openFaceForAct`), bound to the custody id and group digest its checks read; or the refusal. */
+export type FaceActOpening =
+  | { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly groupDigest: string | null; readonly fck: FaceCustodyKey }
+  | Exclude<FaceUnlock, { readonly reading: "opens" }>;
+
 /** The D row a face's directory keeps to authenticate the floor index entry that routed to it. */
 export interface FaceOwnerRecord { readonly fcid: string; readonly group: string | null }
 
@@ -247,6 +252,13 @@ export interface CustodyHolder {
   bindFace(fcid: string, groupDigest: string): Promise<void>;
   /** Open one face with the presented credentials. Spends one of the boot's attempts for that face on a miss. */
   unlockFace(face: FaceRef, credentials: readonly Credential[]): Promise<FaceUnlock>;
+  /**
+   * Open one SHUT face's key for ONE act, without seating it: the same per-face attempt budget, the same `face-owner` and anchors
+   * checks against the floor index as `unlockFace`, and no open event, so no composition hears the face open. The key and its
+   * custody id come back bound together; the caller zero-fills the key when its act settles. A face already open answers
+   * `already-unlocked` and hands no key. Absent on a holder that serves its custody from elsewhere (a pūlama).
+   */
+  openFaceForAct?(face: FaceRef, credentials: readonly Credential[]): Promise<FaceActOpening>;
   /** Try the credentials against every face's tree and open each one they fit; a face they do not fit stays shut and spends nothing. */
   unlockFaces(credentials: readonly Credential[]): Promise<readonly FaceUnlock[]>;
   /** A reserved face takes the founding ask whose digest could not stand before its first row. */
@@ -560,6 +572,17 @@ export function makeCustodyHolder(a: {
     });
   };
   const doUnlockFace = async (by: FaceRef, credentials: readonly Credential[]): Promise<FaceUnlock> => {
+    const opened = await doOpenVerified(by, credentials);
+    if (opened.reading !== "opens") return opened;
+    faces.set(opened.fcid, { fck: opened.fck, slot: opened.slot, ordinal: opened.ordinal, opening: ++openings });
+    keyOpened();
+    return { reading: "opens", fcid: opened.fcid, ordinal: opened.ordinal, slot: opened.slot };
+  };
+  /** One face's key opened and checked (budget, `face-owner`, anchors), never seated: unlock seats it, an act holds it alone. */
+  const doOpenVerified = async (by: FaceRef, credentials: readonly Credential[], opts: { readonly requireAnchors?: boolean } = {}): Promise<
+    { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string; readonly group: string | null; readonly fck: FaceCustodyKey }
+    | Exclude<FaceUnlock, { readonly reading: "opens" }>
+  > => {
     const found = await resolveFace(by);
     if (!found) return { reading: "face-absent" };
     const { fcid, ordinal } = found;
@@ -577,7 +600,7 @@ export function makeCustodyHolder(a: {
     if (opened.reading === "tree-unreadable") return { reading: "tree-unreadable", fcid, why: opened.why };
     // THE INDEX ROUTES AND NEVER DECIDES: the face's own D row must name the custody id and the group the index entry names.
     const owner = await openFaceCarrier({ io: a.io, key: opened.fck, carrier: ownerCarrier(fcid) });
-    const refuse = (why: string): FaceUnlock => { opened.fck.fill(0); return { reading: "index-mismatch", fcid, why }; };
+    const refuse = (why: string): Exclude<FaceUnlock, { readonly reading: "opens" }> => { opened.fck.fill(0); return { reading: "index-mismatch", fcid, why }; };
     if (owner.reading !== "opens") return refuse(`the face-owner row reads ${owner.reading}`);
     const named = decodeOwner(owner.plaintext);
     owner.plaintext.fill(0);
@@ -598,11 +621,14 @@ export function makeCustodyHolder(a: {
         }
       } else if (anchored.reading !== "absent") {
         return refuse(`the anchors row reads ${anchored.reading}`);
+      } else if (opts.requireAnchors === true) {
+        // AN ACT ON ONE FACE'S ROWS PROVES ITS ORDINAL: the anchors row at the handle the index routed by must stand and agree.
+        return refuse(`the anchors row at h${ordinal} stands absent, so nothing proves the handle names this face`);
       }
+    } else if (opts.requireAnchors === true) {
+      return refuse("no anchors row stands in the carrier table to prove the handle");
     }
-    faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal, opening: ++openings });
-    keyOpened();
-    return { reading: "opens", fcid, ordinal, slot: opened.slot };
+    return { reading: "opens", fcid, ordinal, slot: opened.slot, group: found.group, fck: opened.fck };
   };
   const doUnlockFaces = async (credentials: readonly Credential[]): Promise<FaceUnlock[]> => {
     const index = await readFaceIndex(a.io, a.homes.identity);
@@ -886,6 +912,11 @@ export function makeCustodyHolder(a: {
       const run = unlockChain.then(() => doBindFace(fcid, groupDigest), () => doBindFace(fcid, groupDigest));
       unlockChain = run.catch(() => undefined);
       return run;
+    },
+    openFaceForAct(face, credentials) {
+      const run = unlockChain.then(() => doOpenVerified(face, credentials, { requireAnchors: true }), () => doOpenVerified(face, credentials, { requireAnchors: true }));
+      unlockChain = run.catch(() => undefined);
+      return run.then((o): FaceActOpening => (o.reading === "opens" ? { reading: "opens", fcid: o.fcid, ordinal: o.ordinal, groupDigest: o.group, fck: o.fck } : o));
     },
     unlockFace(face, credentials) {
       const run = unlockChain.then(() => doUnlockFace(face, credentials), () => doUnlockFace(face, credentials));

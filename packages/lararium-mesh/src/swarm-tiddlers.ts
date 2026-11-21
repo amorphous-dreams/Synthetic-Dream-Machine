@@ -144,15 +144,21 @@ export type SwarmLeiTerms = { readonly reach: "wide"; readonly returns: number }
  *  cid), or null for the first there: one issue, one lei. */
 export type SwarmLeiBody = { readonly act: "lei"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly after: string | null; readonly scope?: ExecLeiScope } & SwarmLeiTerms;
 /** One return: the lei, its count `n`, and the head and tree the vessel returned it at (the vessel testifies that the tree belongs to the head). */
-export interface SwarmLeiReturnedBody { readonly act: "lei-returned"; readonly group: string; readonly branch: string; readonly head: string; readonly tree: string; readonly lei: string; readonly n: number }
+export interface SwarmLeiReturnedBody { readonly act: "lei-returned"; readonly group: string; readonly branch: string; readonly head: string; readonly tree: string; readonly lei: string; readonly n: number;
+  /** The image the return paid to raise, where the spend names one (a kūkulu): a begin reuses an orphan return only over the same image. */
+  readonly image?: string }
 export interface SwarmLaneStateBody { readonly act: "lane-state"; readonly group: string; readonly lane: string; readonly seat: string; readonly state: Readonly<Record<string, string | number | boolean | null>> }
 export interface SwarmRosterBody { readonly act: "roster"; readonly group: string; readonly seat: string; readonly model: string; readonly mode: string; readonly reading: number; readonly ceiling: number; readonly outcome: string }
 /** The hand unstrung a lei: the lei, and the rite and branch whose line it rests on. */
 export interface SwarmLeiUnstrungBody { readonly act: "lei-unstrung"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly lei: string }
 /** The guest half: the rite began. `lei` and `n` name the return that paid for it; `head` and `tree` name what the rite runs at. */
-export interface SwarmRiteBegunBody { readonly act: "rite-begun"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly head: string; readonly tree: string; readonly lei: string; readonly n: number; readonly tessera: string }
+export interface SwarmRiteBegunBody { readonly act: "rite-begun"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly head: string; readonly tree: string; readonly lei: string; readonly n: number; readonly tessera: string;
+  /** The image the rite raises, by its digest, where the begin names one (a kūkulu): the landing reads par only over the same image. */
+  readonly image?: string }
 /** The host half: the vessel stood again. `begun` names the guest half by its cid; `head` names the head the vessel stands at. */
-export interface SwarmRiteLandedBody { readonly act: "rite-landed"; readonly group: string; readonly rite: SwarmLeiRite; readonly tessera: string; readonly begun: string; readonly head: string }
+export interface SwarmRiteLandedBody { readonly act: "rite-landed"; readonly group: string; readonly rite: SwarmLeiRite; readonly tessera: string; readonly begun: string; readonly head: string;
+  /** The image the vessel stands from, where the landing names one. */
+  readonly image?: string }
 export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiUnstrungBody | SwarmRiteBegunBody | SwarmRiteLandedBody | SwarmLaneStateBody | SwarmRosterBody;
 export type SwarmBody = SwarmBodyParts & { readonly kind: typeof SWARM_ACT_DOMAIN };
 export interface SignedSwarmAct { readonly body: SwarmBody; readonly signer: string; readonly sig: string }
@@ -164,6 +170,9 @@ const count = (x: unknown): x is number => typeof x === "number" && Number.isSaf
 function positive(x: unknown): x is number { return typeof x === "number" && Number.isSafeInteger(x) && x >= 1; }
 const hex = (x: unknown, n: number): boolean => typeof x === "string" && new RegExp(`^[0-9a-f]{${n}}$`).test(x);
 
+/** A tessera half's image, where it names one: a digest, `<algorithm>:<hex>`. */
+const imageOrNone = (b: Record<string, unknown>): boolean => !("image" in b) || (typeof b["image"] === "string" && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(b["image"]));
+
 function shape(b: Record<string, unknown>): boolean {
   if (!str(b["group"])) return false;
   switch (b["act"]) {
@@ -172,10 +181,10 @@ function shape(b: Record<string, unknown>): boolean {
       && (b["reach"] === "wide" ? positive(b["returns"]) && !("head" in b) : b["reach"] === "head" ? str(b["head"]) && !("returns" in b) : false)
       // An exec lei carries its scope and rests at its wiki's branch; every other rite carries none.
       && (b["rite"] === "exec" ? execLeiScopeRefusal(b["scope"]) === null && b["branch"] === execLeiBranch((b["scope"] as ExecLeiScope).wiki) : !("scope" in b));
-    case "lei-returned": return str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]);
+    case "lei-returned": return str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]) && imageOrNone(b);
     case "lei-unstrung": return hex(b["lei"], 64) && isSwarmLeiRite(b["rite"]) && str(b["branch"]);
-    case "rite-begun": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]) && hex(b["tessera"], 64);
-    case "rite-landed": return isSwarmLeiRite(b["rite"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && str(b["head"]);
+    case "rite-begun": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]) && hex(b["tessera"], 64) && imageOrNone(b);
+    case "rite-landed": return isSwarmLeiRite(b["rite"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && str(b["head"]) && imageOrNone(b);
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
     default: return false;
@@ -290,7 +299,9 @@ export async function readLeiChain(wiki: SwarmWikiPort, line: SwarmLeiLine, trus
  * line. Two tips read as a fork (`forked`) and neither stands until a fresh lei names one.
  * On a face of two devices a lei the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
-export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head?: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
+export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head?: string }, trust: SwarmTrust, group: string, ward: WardActWitness,
+  /** `spent`: a lei whose returns all went still reads, with no return left, so a begin can find the orphan its last claim left. */
+  opts: { readonly spent?: true } = {}):
   Promise<{ ok: true; act: SignedSwarmAct; cid: string; reach: SwarmLeiReach; returnsLeft: number; head?: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "unstrung" | "returned" | "returns-spent" | "forked" }> {
   const chain = await readLeiChain(wiki, at, trust, group, ward);
   if (chain.tips.length > 1) return { ok: false, refusal: "forked" };
@@ -304,8 +315,8 @@ export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly
   // Every row under the spend prefix counts, signed or not: a forged spend fails closed.
   const returns = body.reach === "wide" ? body.returns : 1;
   const taken = (await wiki.list(swarmLeiReturnedPrefix(tip.cid))).length;
-  if (taken >= returns) return { ok: false, refusal: body.reach === "wide" ? "returns-spent" : "returned" };
-  return { ok: true, act: tip.act, cid: tip.cid, reach: body.reach, returnsLeft: returns - taken, ...(body.reach === "head" ? { head: body.head } : {}) };
+  if (taken >= returns && opts.spent !== true) return { ok: false, refusal: body.reach === "wide" ? "returns-spent" : "returned" };
+  return { ok: true, act: tip.act, cid: tip.cid, reach: body.reach, returnsLeft: Math.max(0, returns - taken), ...(body.reach === "head" ? { head: body.head } : {}) };
 }
 
 /**
@@ -328,10 +339,36 @@ export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
 
 /** A return a spend may claim: the standing lei, the line and head it spends at, and the vessel that spends it. */
 export interface SwarmReturnable {
-  readonly at: SwarmLeiLine & { readonly head: string; readonly tree: string };
+  readonly at: SwarmLeiLine & { readonly head: string; readonly tree: string; readonly image?: string };
   readonly lei: { readonly act: SignedSwarmAct; readonly cid: string; readonly reach: SwarmLeiReach; readonly returnsLeft: number };
   readonly group: string;
   readonly spender: SwarmSignerPort;
+  /** A return this spender claimed at this line, head, tree and image whose guest half never rested: the begin reuses it. */
+  readonly orphan?: number;
+}
+
+/**
+ * THE ORPHAN RETURN: one this spender claimed on the lei at the same branch, head, tree and image (none where the spend names
+ * none) whose guest half never rested (a crash between the two writes). Null where none stands. It reads before the lei's count
+ * refuses, so a crash after the LAST claim still finds it.
+ */
+async function orphanReturn(wiki: SwarmWikiPort, r: Omit<SwarmReturnable, "orphan">): Promise<number | null> {
+  const { at, lei, group, spender } = r;
+  const returns = lei.reach === "wide" ? (lei.act.body as Extract<SwarmLeiBody, { reach: "wide" }>).returns : 1;
+  const own = spender.key.toLowerCase();
+  const trust: SwarmTrust = { hand: () => false, vessel: (key) => key.toLowerCase() === own, lead: () => false };
+  for (let n = 1; n <= returns; n++) {
+    const title = swarmLeiReturnedTitle(lei.cid, n);
+    const text = await wiki.read(title);
+    if (text === null) continue;
+    const tessera = sha256HexBytesSync(canonicalJsonBytes({ lei: lei.cid, n }));
+    if ((await wiki.read(swarmTesseraTitle(tessera, "guest"))) !== null) continue;
+    const read = verifySwarmRecord(text, title, trust, group);
+    if (!read.ok || read.act.body.act !== "lei-returned") continue;
+    const b = read.act.body;
+    if (b.branch === at.branch && b.head === at.head && b.tree === at.tree && b.image === at.image) return n;
+  }
+  return null;
 }
 
 /**
@@ -339,23 +376,31 @@ export interface SwarmReturnable {
  * scope check. Each refusal reads as `returnLei` names it. A spend over many lines (a kūkulu's lent faces) checks every line first
  * and claims (`claimReturn`) only once every check answers.
  */
-export async function checkReturn(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness,
-  admits?: (lei: SwarmLeiBody) => SwarmRefused | null): Promise<SwarmReturnable> {
-  const lei = await readLei(wiki, at, trust, group, ward);
+export async function checkReturn(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string; readonly tree: string; readonly image?: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness,
+  admits?: (lei: SwarmLeiBody) => SwarmRefused | null,
+  /** `orphan`: a BEGIN's check (one that rests a guest half per return), which reuses the orphan return its spender left. */
+  opts: { readonly orphan?: true } = {}): Promise<SwarmReturnable> {
+  const lei = await readLei(wiki, at, trust, group, ward, { spent: true });
   if (!lei.ok) throw new SwarmRefused(`swarm-lei-${lei.refusal}`, `the ${at.rite} lei for "${at.branch}" at ${at.head} does not stand (${lei.refusal})`);
   if (!trust.vessel(spender.key.toLowerCase())) throw new SwarmRefused("swarm-return-role", "the vessel alone spends a lei");
   // An exec lei spends only through its scope check; a restart rite's road (which names no scope) never takes it.
   if (at.rite === "exec" && admits === undefined) throw new SwarmRefused("swarm-lei-exec-unscoped", "an exec lei spends only through its scope check (spendExecLei)");
+  const checked = { at, lei: { act: lei.act, cid: lei.cid, reach: lei.reach, returnsLeft: lei.returnsLeft }, group, spender };
+  const orphan = opts.orphan === true ? await orphanReturn(wiki, checked) : null;
+  if (lei.returnsLeft === 0 && orphan === null) {
+    const refusal = lei.reach === "wide" ? "returns-spent" : "returned";
+    throw new SwarmRefused(`swarm-lei-${refusal}`, `the ${at.rite} lei for "${at.branch}" at ${at.head} does not stand (${refusal})`);
+  }
   const outside = admits?.(lei.act.body as SwarmLeiBody) ?? null;
   if (outside) throw outside;
-  return { at, lei: { act: lei.act, cid: lei.cid, reach: lei.reach, returnsLeft: lei.returnsLeft }, group, spender };
+  return { ...checked, ...(orphan === null ? {} : { orphan }) };
 }
 
 /** Claim the lowest free return row of a checked lei, atomically; past its count it refuses spent. */
 export async function claimReturn(wiki: SwarmWikiPort, { at, lei, group, spender }: SwarmReturnable): Promise<{ lei: string; reach: SwarmLeiReach; n: number }> {
   const returns = lei.reach === "wide" ? (lei.act.body as Extract<SwarmLeiBody, { reach: "wide" }>).returns : 1;
   for (let n = 1; n <= returns; n++) {
-    const spent = await signSwarmAct({ act: "lei-returned", group, branch: at.branch, head: at.head, tree: at.tree, lei: lei.cid, n }, spender);
+    const spent = await signSwarmAct({ act: "lei-returned", group, branch: at.branch, head: at.head, tree: at.tree, lei: lei.cid, n, ...(at.image === undefined ? {} : { image: at.image }) }, spender);
     if (await wiki.writeNew(swarmLeiReturnedTitle(lei.cid, n), JSON.stringify(spent))) return { lei: lei.cid, reach: lei.reach, n };
   }
   throw lei.reach === "wide"

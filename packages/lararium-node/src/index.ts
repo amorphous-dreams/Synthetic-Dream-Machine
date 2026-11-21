@@ -190,6 +190,7 @@ export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
 export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
+export { rehiveLines, type RehiveSeat, type RehiveAnswerReading } from "./face-rehive-lines.js";
 
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
@@ -229,7 +230,7 @@ export {
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
-export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
+export { runInit, runFoundTheFace, faceStands, compartmentStands, armRecoveryAtFounding } from "./commands/init.js";
 export { recoveryContactOffer } from "./recovery-contact-enrolment.js";
 // THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
 export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";
