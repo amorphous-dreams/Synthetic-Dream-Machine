@@ -26,7 +26,7 @@ import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-re
 import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { cmdShare } from "./share-cmd.js";
-import { ensureWikiRealm, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
+import { ensureWikiRealm, labelRealmOf, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { RealmRefused } from "@lararium/node";
 import { containerArgs } from "../container-target.js";
@@ -240,17 +240,17 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
   if (r.status === "error") {
     const msg = (r.errorMessage ?? "unknown").replace(/^\[daemon\] /, "");
     const code = RETIRE_REFUSAL.exec(msg)?.[1] ?? (typeof r.refusal?.reason === "string" && RETIRE_REFUSAL.test(r.refusal.reason) ? r.refusal.reason : undefined);
-    // A RUN THAT DIED AFTER THE VESSEL'S HALF: the vessel names no shell now; where its ledger binds the slug nowhere, the local
-    // half finishes (the label's id, the folder), and the run says so.
-    if (code === "no-such-wiki" && !dryRun) {
+    // A RUN THAT DIED AFTER THE VESSEL'S HALF: the vessel names no shell now. The local half finishes ONLY where this retire chain
+    // left it standing: the ledger binds the slug nowhere, and the slug's local label still names THIS face's own realm (the id
+    // the refusal carries). A slug this face never held names another realm or none, and its refusal stands: no hold drops.
+    const ownRealm = /\(own realm ([0-9a-f]{64})\)/.exec(msg)?.[1];
+    if (code === "no-such-wiki" && !dryRun && ownRealm !== undefined && labelRealmOf(realmDoors, slug) === ownRealm) {
       const seat = await realmDoors.seat(slug);
       if (seat.answered && seat.realms.length === 0) {
         const done = await localHalf(true);
-        if (done.folder !== null || done.label?.realms.some((x) => x.slug === slug && x.id === null)) {
-          emit(args, { ok: true, requestId: r.requestId, data: { slug, status: "already-retired", ...done.folder ? { folderSetAside: done.folder.to } : {} },
-            human: () => console.log(`wiki: ${slug}  status: already-retired (the vessel holds no shell of it; the local half finished${done.folder ? `, its folder set aside at ${done.folder.to}` : ""})`) });
-          return 0;
-        }
+        emit(args, { ok: true, requestId: r.requestId, data: { slug, status: "already-retired", ...done.folder ? { folderSetAside: done.folder.to } : {} },
+          human: () => console.log(`wiki: ${slug}  status: already-retired (the vessel holds no shell of it; this face's local half finished${done.folder ? `, its folder set aside at ${done.folder.to}` : ""})`) });
+        return 0;
       }
     }
     emit(args, { ok: false, requestId: r.requestId, error: code ? { code, message: msg } : msg, human: () => console.error(`retire refused: ${msg}`) });
@@ -274,7 +274,7 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
     ok: true, requestId: r.requestId,
     data: { ...result, ...(done.label ? { realm: done.label.petName } : {}), holdReleased: done.holdReleased, ...(done.folder ? { folderSetAside: done.folder.to } : {}) },
     human: () => {
-      const kept = (result["kept"] ?? {}) as { canonBag?: string };
+      const kept = (result["kept"] ?? {}) as { canonBag?: string; canonDoc?: string | null };
       console.log("");
       console.log(`wiki: ${slug}  status: ${result["status"]}${result["forced"] === true ? " (forced)" : ""}`);
       console.log(`  catalog rows removed:  ${list(result["catalogRows"]).length}${list(result["catalogRows"]).map((t) => `\n    ${t}`).join("")}`);
@@ -283,6 +283,7 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
       console.log(`  keyhive bindings:      ${list(result["keyhiveBindings"]).length}${list(result["keyhiveBindings"]).map((t) => `\n    ${t}`).join("")}`);
       console.log(`  records destroyed:     ${result["forced"] === true ? counted : "none"}`);
       console.log(`  kept:                  ${kept.canonBag ?? `bags/${slug}`} (its document and files untouched)`);
+      if (kept.canonDoc) console.log(`  canon doc kept:        ${kept.canonDoc} (a re-mint that finds a floor canon row reuses it; one that finds none mints a fresh one and leaves this one orphaned)`);
       if (done.folder) console.log(`  folder set aside:      ${done.folder.to} (renamed, never deleted)`);
       if (done.label) console.log(`  realm label:           ${done.label.petName} keeps its pet name; its realm id reads unset until the next mint`);
       console.log(`  next: wear the face that should hold it, then \`lares wiki init ${slug}\``);

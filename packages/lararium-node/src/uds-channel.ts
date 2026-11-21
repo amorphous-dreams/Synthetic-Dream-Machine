@@ -1074,8 +1074,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return sessionRefuse(sock, "malformed-message", requestId);
       }
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
-      // THE PEER BINDS THE HAND (`uds-peer`): a `cli` session opened from a harness's branch wears the seat's hand and profile.
-      if (frame["hand"] === "cli" && await peerSeatOf(sock) === "ai") frame["hand"] = "seat";
+      // THE PEER BINDS THE HAND (`uds-peer`): ANY session opened from a harness's branch (`cli`, `tab`, `watcher` alike) wears
+      // the seat's hand and profile, so no hand a client names lifts a harness's line past the seat's gates.
+      if (frame["hand"] !== "seat" && await peerSeatOf(sock) === "ai") frame["hand"] = "seat";
       if (closing || sock.destroyed) return;
       // THE AI SEAT OPENS A FACE INSIDE THE LENT SET: a `seat` hand (or a frame marked `seat: "ai"`) naming a face outside it refuses.
       // The set reads only where a seat names a face, so no other opening touches custody.

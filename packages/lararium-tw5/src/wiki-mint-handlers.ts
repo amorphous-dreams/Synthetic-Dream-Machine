@@ -147,8 +147,9 @@ const sameCounts = (a: WikiShellCounts, b: WikiShellCounts): boolean => a.workin
  * RETIRE A WIKI SHELL (`lares wiki retire <slug>`, the owner face's hand, never the AI seat): unmint what one face's
  * `init-wiki` laid over a slug, so the slug mints again cleanly under the face that should hold it.
  *
- * A HAND ACT. Only an ask a person's hand placed (the vessel's door booked the asker `cli` or `tab`) runs it; a seat, a
- * watcher and an ask no door read (a synced summons) refuse `retire-needs-hand`.
+ * A HAND ACT ON THE CLI SURFACE. Only an ask the operator's terminal placed (the vessel's door booked the asker `cli`, a
+ * reading the peer binding turns to `seat` on a harness's branch) runs it; a seat, a tab, a watcher and an ask no door read
+ * (a synced summons) refuse `retire-needs-hand`.
  *
  * THE OWNER RETIRES. The worn face owns the shell where every realm the vessel's ledger binds the slug's workbench under reads
  * as that face's own cabal of one (none, or that one), and the face's catalog half or that ledger names the shell. A realm of
@@ -171,7 +172,7 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
   return async (args, ctx) => {
     const slug = stringArg(args, "slug");
     if (!slug) throw new Error("args.slug is required (the wiki name)");
-    if (ctx?.asker !== "cli" && ctx?.asker !== "tab") {
+    if (ctx?.asker !== "cli") {
       throw new WikiRetireRefusal("retire-needs-hand", `retiring "${slug}" runs on a person's hand alone; this ask came from ${ctx?.asker ?? "no hand a door read"}`);
     }
     const canonBag = wikiBagUri(slug);
@@ -192,7 +193,8 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
     }
     if (bound.length === 0 && rows.length === 0) {
       if (handle.doc()?.tiddlers?.[canonBag]) throw new WikiRetireRefusal("not-the-owner", `"${slug}" rests on another half of the catalog (the floor's), not this face's; this face minted no shell of it`);
-      throw new WikiRetireRefusal("no-such-wiki", `this face holds no shell of "${slug}": no catalog row and no workbench`);
+      // The face's own realm id rides the refusal, so a CLI that died after this face's retire finishes only its own local half.
+      throw new WikiRetireRefusal("no-such-wiki", `this face holds no shell of "${slug}": no catalog row and no workbench (own realm ${ownRealm})`);
     }
     const { seats, shares } = await opts.shell.shared(slug);
     if (seats.length > 0 || shares.length > 0) {

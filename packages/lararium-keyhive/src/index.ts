@@ -109,7 +109,7 @@ export {
   landWorkbench, projectWorkbenchRoster, retireWorkbench, workbenchOwnership,
 } from "./workbench-realm.js";
 export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench, WorkbenchOwnership } from "./workbench-realm.js";
-export { wikiShellPorts, liveRecordCount } from "./wiki-shell-ports.js";
+export { wikiShellPorts, liveRecordCount, faceOwnSlot } from "./wiki-shell-ports.js";
 export type { WikiShellPortsArgs } from "./wiki-shell-ports.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
 // THE FLEET-JOIN ANSWER'S ADMIT: the one shape the node's `runInit` and the browser's admit boot found a face by.

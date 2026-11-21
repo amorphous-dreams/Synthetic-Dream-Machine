@@ -19,19 +19,21 @@
  *    `wiki-shared`, and every seat stays.
  * R6 (red, H2) a layer lookup that faults fails the retire closed: nothing leaves, no zero stands in for the fault.
  * R7 (red, M1) only a person's hand retires: a seat asker, a watcher and an ask no door read refuse `retire-needs-hand`.
+ * R9 (red, F1/F2) a `tab` asker refuses; a slot the resolver answered off the floor's row (the face holds none of its own)
+ *    is neither counted nor cleared.
  * R8 (red, M2/M3) a count that moves between the two readings refuses with nothing written; a fault midway leaves the catalog
  *    rows, and the same retire run again finishes.
  */
 import { describe, test, expect } from "vitest";
 import {
-  emptyLarDoc, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, materializeSharedLarDoc, noteWorkbench, noteWorkbenchSeat,
+  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, emptyLarDoc, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, materializeSharedLarDoc, noteWorkbench, noteWorkbenchSeat,
   privateCabalRealmId, realmWorkbenchDocUrl, recipeUri, wikiBagUri, wikiSlotUri, workbenchSeats,
   type DocHandle, type LarDoc, type Repo,
 } from "@lararium/mesh";
 import { makeCatalogAccessorOver, makeInitWikiReactor, makeRetireWikiReactor, type VerbContext, type WikiShellPorts } from "@lararium/tw5";
 import { InMemoryEventStore, KeyhiveProvider } from "../src/index.js";
 import { standWorkbench, type LedgerDoc } from "../src/workbench-realm.js";
-import { wikiShellPorts, type ShellLayerDoc } from "../src/wiki-shell-ports.js";
+import { faceOwnSlot, wikiShellPorts, type ShellLayerDoc } from "../src/wiki-shell-ports.js";
 
 const SLUG = "elyncia-referee";
 const ENGINEER = "0x" + "e1".repeat(32);
@@ -289,5 +291,50 @@ describe("R8 (M2/M3) — the count holds across the act, and a fault midway fini
     expect(await engineer.retire()).toMatchObject({ status: "retired", realmId: privateCabalRealmId(ENGINEER, SLUG) });
     expect(engineer.rows()).toEqual([]);
     expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([]);
+  });
+});
+
+describe("R9 (F1/F2) — the CLI hand alone, and the face's own slots alone", () => {
+  test("RED (F1) a `tab` asker refuses `retire-needs-hand`: the verb rides the CLI surface alone", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xd1);
+    await engineer.init();
+    await expect(engineer.retire({}, { asker: "tab" } as unknown as VerbContext)).rejects.toThrow(/^retire-needs-hand:/);
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+  });
+
+  test("UNIT (F2) a slot the resolver answered off the floor's row reads null; a row under the face's own group keeps it", async () => {
+    const rows = new Map<string, string>([[`${DRAFT_BINDINGS_PREFIX}/fp1`, "automerge:floor-draft"]]);
+    const store = { listVisible: async () => [...rows.keys()], get: async (t: string) => (rows.has(t) ? { tiddler: { text: rows.get(t) } } : null) };
+    expect(await faceOwnSlot(store, DRAFT_BINDINGS_PREFIX, ENGINEER, "automerge:floor-draft")).toBeNull();
+    expect(await faceOwnSlot(store, DRAFT_BINDINGS_PREFIX, ENGINEER, null)).toBeNull();
+    const own = `${DRAFT_BINDINGS_PREFIX}/${encodeURIComponent(ENGINEER)}/fp1`;
+    rows.set(own, "automerge:own-draft");
+    expect(await faceOwnSlot(store, DRAFT_BINDINGS_PREFIX, ENGINEER, "automerge:own-draft")).toEqual({ url: "automerge:own-draft", titles: [own] });
+    // Another face's row never counts as this face's.
+    expect(await faceOwnSlot(store, DRAFT_BINDINGS_PREFIX, REFEREE, "automerge:own-draft")).toBeNull();
+  });
+
+  test("RED (F2) a face holding no draft or personal row of its own neither counts nor clears the floor's documents", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xd2);
+    await engineer.init();
+    await engineer.stand();
+    // The floor's vessel-only documents, named by floor rows alone (no row under the engineer's group).
+    const floorDraft = v.repo.create<LarDoc>(emptyLarDoc()) as DocHandle<LarDoc>;
+    const floorPersonal = v.repo.create<LarDoc>(emptyLarDoc()) as DocHandle<LarDoc>;
+    seed(floorDraft, 2, "floor draft"); seed(floorPersonal, 1, "floor mine");
+    const rows = new Map<string, string>([[`${DRAFT_BINDINGS_PREFIX}/fp`, floorDraft.url], [`${PERSONAL_BINDINGS_PREFIX}/fp`, floorPersonal.url]]);
+    const store = { listVisible: async () => [...rows.keys()], get: async (t: string) => (rows.has(t) ? { tiddler: { text: rows.get(t) } } : null) };
+    const byUrl = new Map<string, DocHandle<LarDoc>>([[floorDraft.url, floorDraft], [floorPersonal.url, floorPersonal]]);
+    const own = async (prefix: string, url: string) => { const s = await faceOwnSlot(store, prefix, ENGINEER, url); return s ? byUrl.get(s.url)! : null; };
+    const shell = wikiShellPorts({
+      provider: () => engineer.provider, face: ENGINEER, ledger: async () => v.ledger, shares: async () => [], unbindSlots: async () => [],
+      // The resolver's fallback hands the floor's urls; the port keeps only the face's own.
+      layers: async () => ({ working: await engineer.working(), draft: await own(DRAFT_BINDINGS_PREFIX, floorDraft.url), personal: await own(PERSONAL_BINDINGS_PREFIX, floorPersonal.url) }),
+    });
+    expect(await makeRetireWikiReactor({ catalog: engineer.catalog, shell })({ slug: SLUG, "dry-run": true }, HAND)).toMatchObject({ total: 0 });
+    expect(await makeRetireWikiReactor({ catalog: engineer.catalog, shell })({ slug: SLUG }, HAND)).toMatchObject({ status: "retired", forced: false });
+    expect([live(floorDraft), live(floorPersonal)]).toEqual([2, 1]);
   });
 });

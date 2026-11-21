@@ -26,6 +26,30 @@ export function liveRecordCount(doc: LarDoc | undefined | null): number {
   return Object.values(doc?.tiddlers ?? {}).filter((r) => !storedDeleted(r as never)).length;
 }
 
+/** The binding rows a face's draft or personal slot reads (the daemon document's store), as the shell ports scan them. */
+export interface BindingRows {
+  listVisible(): Promise<readonly string[]>;
+  get(title: string): Promise<{ readonly tiddler: { readonly text?: unknown } } | null | undefined>;
+}
+
+/**
+ * THE FACE'S OWN SLOT, NEVER THE FLOOR'S: the url a slot resolves to (`slotDoc` with no mint), kept only where a binding row
+ * under the face's own group (`slotBindingKey(prefix, fingerprint, group)`) names it, with the titles of those rows. A slot
+ * the resolver answered off the faceless floor's row (the face holds none of its own) reads null: a retire neither counts
+ * nor clears content the face never owned.
+ */
+export async function faceOwnSlot(rows: BindingRows | null, prefix: string, group: string, url: string | null): Promise<{ readonly url: string; readonly titles: readonly string[] } | null> {
+  if (url === null || rows === null) return null;
+  const under = `${prefix}/${encodeURIComponent(group)}/`;
+  const titles: string[] = [];
+  for (const title of await rows.listVisible()) {
+    if (!title.startsWith(under)) continue;
+    const text = (await rows.get(title))?.tiddler?.text;
+    if (text === url) titles.push(title);
+  }
+  return titles.length > 0 ? { url, titles: titles.sort() } : null;
+}
+
 /** A layer document as the shell ports read and clear it. */
 export interface ShellLayerDoc { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }
 

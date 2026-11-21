@@ -86,17 +86,37 @@ test("a refusal names its code and exits 1; nothing local runs", async () => {
   expect(text).toContain("wiki-shared");
 });
 
-test("RED (L2) a run that died after the vessel's half finishes: `no-such-wiki` with the ledger binding nothing runs the local half", async () => {
-  answer = { status: "error", errorMessage: "no-such-wiki: this face holds no shell" };
+test("RED (L2) a run that died after this face's retire finishes: `no-such-wiki` naming the label's own realm, with the ledger binding nothing, runs the local half", async () => {
+  answer = { status: "error", errorMessage: `no-such-wiki: this face holds no shell of "${SLUG}": no catalog row and no workbench (own realm ${ID})` };
   expect(await run()).toBe(0);
+  expect(sent.map((s) => s.name)).toEqual(["wiki-release"]);
   expect(existsSync(folder())).toBe(false);
   expect(readRealmLabels(projections)[0]!.realms).toEqual([{ slug: SLUG, id: null }]);
   expect(text).toContain("already-retired");
-  // CONTROL: where the ledger still binds the slug (another face's shell), the refusal stands and nothing local moves.
-  rmSync(projections, { recursive: true, force: true }); mkdirSync(projections); ensureRealmLabel(projections, SLUG, ID); mkdirSync(folder(), { recursive: true }); writeFileSync(join(folder(), "x.tid"), "x");
+});
+
+test("RED (F4) `no-such-wiki` for a slug this face never held (its label names another realm, or none) refuses, drops no hold and moves nothing", async () => {
+  for (const own of ["f".repeat(64), null]) {
+    sent.length = 0;
+    answer = { status: "error", errorMessage: `no-such-wiki: this face holds no shell of "${SLUG}"${own ? ` (own realm ${own})` : ""}` };
+    expect(await run()).toBe(1);
+    expect(sent).toEqual([]);
+    expect(existsSync(folder())).toBe(true);
+    expect(readRealmLabels(projections)[0]!.realms).toEqual([{ slug: SLUG, id: ID }]);
+  }
+  // CONTROL: the label names this face's realm, but the ledger still binds the slug (a shell another face stood): it refuses.
   bound = ["e".repeat(64)];
+  answer = { status: "error", errorMessage: `no-such-wiki: this face holds no shell of "${SLUG}" (own realm ${ID})` };
   expect(await run()).toBe(1);
+  expect(sent).toEqual([]);
   expect(existsSync(folder())).toBe(true);
+});
+
+test("F3: a landed retire names the canon document it kept", async () => {
+  answer = retired(ID);
+  (answer.output!["kept"] as Record<string, unknown>)["canonDoc"] = "automerge:kept-canon";
+  expect(await run()).toBe(0);
+  expect(text).toContain("canon doc kept:        automerge:kept-canon");
 });
 
 test("--force --count rides as the typed confirmation; --count without --force and --dry-run with --force refuse at the door; --dry-run moves nothing locally", async () => {
