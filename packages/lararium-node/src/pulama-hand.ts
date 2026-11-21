@@ -72,6 +72,11 @@ export interface PulamaLeiHand {
   /** The face root's signer for ONE act, opened fresh under the operator's route (a ward act); a route that opens no slot of the
    *  face's ward throws the ward's refusal by its reading. */
   signer(ordinal: number, credentials: readonly Credential[]): Promise<SwarmSignerPort>;
+  /**
+   * THE PŪLAMA'S OWN CENSUS for a retire: every face its custody names, beside the root its own records read for it (null where none
+   * reads). A vessel writes none of it. Absent, a retire refuses `retire-census-unavailable`.
+   */
+  census?(): Promise<ReadonlyArray<{ readonly ordinal: number; readonly key: string | null }>>;
 }
 
 type LeiAct = "kui" | "restring" | "unstring";
@@ -226,6 +231,13 @@ export function pulamaHandDoor(a: {
             // SEAT ZERO'S RETIRE: one mark, face 0's root, under the operator's route.
             const retire = retirePartsOf({ ...src, face }, branch);
             if ("reading" in retire) return { op: "lei", act, ...retire, face };
+            // THE PŪLAMA'S OWN CENSUS, before the route: every face read, none holding the root the mark retires.
+            if (!a.lei.census) return { op: "lei", act, reading: "retire-census-unavailable", face, detail: "this pūlama runs no census of its faces' roots, so no retire signs here" };
+            const census = await a.lei.census().catch(() => null);
+            const gone = (retire.parts as { root: string }).root.toLowerCase();
+            if (census === null || census.some((c) => c.key === null)) return { op: "lei", act, reading: "retire-census-unknown", face, detail: `the census reads ${census === null ? "no face" : census.filter((c) => c.key === null).map((c) => `h${c.ordinal}`).join(", ")}, so whether the root still stands reads unknown` };
+            const holder = census.find((c) => c.key !== null && c.key.toLowerCase() === gone);
+            if (holder !== undefined) return { op: "lei", act, reading: "retire-root-stands", face, detail: `the root this retire names still stands at h${holder.ordinal}` };
             const credentials = credentialsOf(f["credentials"]);
             if (credentials === null) return { op: "lei", act, reading: "malformed" };
             try {

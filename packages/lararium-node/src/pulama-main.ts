@@ -45,7 +45,7 @@ import { FsCustodyIo } from "./custody-io.js";
 import { PULAMA_SESSION_DERIVES, kukuluGate } from "./kukulu-gate.js";
 import { kukuluRiteOver } from "./kukulu-lei-seat.js";
 import { seatCustody } from "./custody-seat.js";
-import { loadIdentityAnchors } from "./identity-anchors.js";
+import { listFaceOrdinals, loadIdentityAnchors } from "./identity-anchors.js";
 import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { pulamaAdmissions } from "./pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "./pulama-hand.js";
@@ -85,6 +85,8 @@ async function serve(): Promise<void> {
   const lei = {
     group: async (ordinal: number) => (await loadIdentityAnchors(ordinal).catch(() => null))?.personaGroupId ?? null,
     signer: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSigner(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for a lei at the pūlama's hand door`),
+    // THE PŪLAMA'S OWN CENSUS for a retire: every face its floor index names, beside the root its own roster reads (null where none).
+    census: async () => Promise.all(listFaceOrdinals().map(async (ordinal) => ({ ordinal, key: (await loadPersonaGroupRootVerifyingKey(ordinal).catch(() => undefined)) ?? null }))),
   };
   const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, onLog: log });
 

@@ -326,17 +326,26 @@ test("RED: seat zero retires a half whose root no face of the house holds: the t
   const begun = await beginChecked(wiki, await checkReturn(wiki, { rite: "kukulu", branch: "main", head: "a".repeat(40), tree: "b".repeat(40) }, trust, "old-g1", atom, { accepts: () => true }));
   const HOUSE = "E" + "h".repeat(43);
   const statement = "h1's device and its root are lost; set its half aside";
-  const roots = [{ ordinal: 0, key: seatZero.key }, { ordinal: 1, key: "cd".repeat(32) }];
+  // THE CENSUS: each face of the house by its own signed log (whether it holds a key); a face that reads no log reads unknown.
+  const roots = [{ ordinal: 0, holds: (k: string) => k === seatZero.key }, { ordinal: 1, holds: (k: string) => k === "cd".repeat(32) }];
   const terms = await retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement, house: HOUSE, roots });
   expect(terms).toEqual({ face: 0, rite: "kukulu", branch: "main", retire: { tessera: begun.tessera, group: "old-g1", branch: "main", begun: begun.begun, house: HOUSE, root: lost.key, statement } });
-  await expect(retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement, house: HOUSE, roots: [...roots, { ordinal: 2, key: lost.key }] })).rejects.toMatchObject({ code: "rite-retire-root-stands", message: expect.stringContaining("h2") });
+  await expect(retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement, house: HOUSE, roots: [...roots, { ordinal: 2, holds: (k: string) => k === lost.key }] })).rejects.toMatchObject({ code: "rite-retire-root-stands", message: expect.stringContaining("h2") });
+  // RED (the retire's first read): a face whose log reads nowhere (an unlent face under a pūlama) reads UNKNOWN, never gone.
+  await expect(retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement, house: HOUSE, roots: [...roots, { ordinal: 2, holds: null }] })).rejects.toMatchObject({ code: "rite-retire-census-unknown", message: expect.stringContaining("h2") });
   await expect(retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement: " ", house: HOUSE, roots })).rejects.toMatchObject({ code: "rite-retire-statement" });
   await expect(retireTerms(wiki, { branch: "main", tessera: "9".repeat(64), statement, house: HOUSE, roots })).rejects.toMatchObject({ code: "rite-retire-not-pending" });
   const mark = (signer: typeof seatZero) => signSwarmAct({ act: "rite-retired", rite: "kukulu", ...terms.retire } as never, signer);
-  const ctx = { seatZero: seatZero.key, house: HOUSE, roots };
-  await expect(acceptRetire(wiki, "main", await mark(atom), ctx)).rejects.toMatchObject({ code: "rite-retire-unsigned" });
-  expect(await acceptRetire(wiki, "main", await mark(seatZero), ctx)).toEqual({ tessera: begun.tessera });
-  expect(await pendingBegins(wiki, "kukulu", "main", { seatZero: seatZero.key, house: HOUSE })).toEqual([]);
+  const ctx = { seatZero: (k: string) => k === seatZero.key, house: HOUSE, roots };
+  const want = { tessera: begun.tessera, statement };
+  await expect(acceptRetire(wiki, "main", [await mark(atom)], ctx, want)).rejects.toMatchObject({ code: "rite-retire-unsigned" });
+  // RED (the retire's first read): exactly one mark, its tessera and statement those the operator asked.
+  await expect(acceptRetire(wiki, "main", [], ctx, want)).rejects.toMatchObject({ code: "rite-retire-terms-differ" });
+  await expect(acceptRetire(wiki, "main", [await mark(seatZero), await mark(seatZero)], ctx, want)).rejects.toMatchObject({ code: "rite-retire-terms-differ" });
+  await expect(acceptRetire(wiki, "main", [await mark(seatZero)], ctx, { ...want, statement: "another reason" })).rejects.toMatchObject({ code: "rite-retire-terms-differ" });
+  await expect(acceptRetire(wiki, "main", [await mark(seatZero)], { ...ctx, roots: [...roots, { ordinal: 2, holds: null }] }, want)).rejects.toMatchObject({ code: "rite-retire-census-unknown" });
+  expect(await acceptRetire(wiki, "main", [await mark(seatZero)], ctx, want)).toEqual({ tessera: begun.tessera });
+  expect(await pendingBegins(wiki, "kukulu", "main", { seatZero: (k) => k === seatZero.key, house: HOUSE })).toEqual([]);
   expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main", retire: begun.tessera, statement })).toBe(true);
 });
 

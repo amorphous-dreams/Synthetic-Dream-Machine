@@ -123,8 +123,30 @@ export async function abandonMarkVerifies(wiki: SwarmWikiPort, tessera: string, 
   return mark.ok && mark.act.body.act === "rite-abandoned" && mark.act.body.tessera === tessera && mark.act.body.begun === guestCid;
 }
 
-/** What a reader names to honour seat zero's retire marks: seat zero's root key, and the house the marks must bind. */
-export interface RetireContext { readonly seatZero: string; readonly house: string }
+/**
+ * What a reader names to honour seat zero's retire marks: whether a key signs as seat zero (the reader anchors it in h0's own
+ * signed face log, never a roster line a lent vessel can write), and the house the marks must bind.
+ */
+export interface RetireContext { readonly seatZero: (key: string) => boolean; readonly house: string }
+
+/**
+ * THE ROOT THAT STRUNG A HALF'S LEI, VERIFIED: the lei record at its own title verifies under its own signer as the hand, in the
+ * half's group, and its cid is the one the half names. A row whose `signer` was rewritten, or a lei of another cid, names none.
+ */
+export async function verifiedLeiRoot(wiki: SwarmWikiPort, tessera: string): Promise<string | null> {
+  let guest: { body?: Record<string, unknown> } | null;
+  try { guest = JSON.parse((await wiki.read(swarmTesseraTitle(tessera, "guest"))) ?? "null"); } catch { return null; }
+  const g = guest?.body;
+  if (!g || g["act"] !== "rite-begun" || typeof g["lei"] !== "string" || typeof g["group"] !== "string" || typeof g["branch"] !== "string") return null;
+  if (g["rite"] !== "kukulu" && g["rite"] !== "push" && g["rite"] !== "keep" && g["rite"] !== "exec") return null;
+  const leiTitle = swarmLeiRecordTitle(g["rite"] as SwarmLeiRite, g["branch"], g["lei"]);
+  const leiText = await wiki.read(leiTitle);
+  let signer: string;
+  try { signer = String((JSON.parse(leiText ?? "null") as { signer?: unknown }).signer ?? "").toLowerCase(); } catch { return null; }
+  if (signer === "") return null;
+  const lei = verifySwarmRecord(leiText, leiTitle, { hand: (key) => key.toLowerCase() === signer, vessel: () => false, lead: () => false }, g["group"]);
+  return lei.ok && lei.cid === g["lei"] ? signer : null;
+}
 
 /**
  * WHETHER SEAT ZERO'S RETIRE MARK ENDS A HALF: the mark's text verifies as a `rite-retired` record signed by seat zero's root (the
@@ -138,13 +160,13 @@ export async function retireMarkVerifies(wiki: SwarmWikiPort, tessera: string, m
   const g = guest?.body;
   if (!g || g["act"] !== "rite-begun" || typeof g["lei"] !== "string" || typeof g["group"] !== "string" || typeof g["branch"] !== "string" || typeof guest!.signer !== "string") return false;
   if (g["rite"] !== "kukulu" && g["rite"] !== "push" && g["rite"] !== "keep" && g["rite"] !== "exec") return false;
-  let leiRoot: string;
-  try { leiRoot = String((JSON.parse((await wiki.read(swarmLeiRecordTitle(g["rite"] as SwarmLeiRite, g["branch"], g["lei"]))) ?? "null") as { signer?: unknown }).signer ?? "").toLowerCase(); } catch { return false; }
-  const seat = ctx.seatZero.toLowerCase();
-  const read = verifySwarmRecord(markText, swarmTesseraTitle(tessera, "retired"), { hand: (key) => key.toLowerCase() === seat, vessel: () => false, lead: () => false }, g["group"]);
+  // The gone root reads off the lei record VERIFIED (its signature and cid), never its `signer` field alone.
+  const leiRoot = await verifiedLeiRoot(wiki, tessera);
+  if (leiRoot === null) return false;
+  const read = verifySwarmRecord(markText, swarmTesseraTitle(tessera, "retired"), { hand: (key) => ctx.seatZero(key) || ctx.seatZero(key.toLowerCase()), vessel: () => false, lead: () => false }, g["group"]);
   if (!read.ok || read.act.body.act !== "rite-retired") return false;
   const b = read.act.body;
-  return b.tessera === tessera && b.begun === swarmActCid(guest as unknown as Parameters<typeof swarmActCid>[0]) && b.branch === g["branch"] && b.house === ctx.house && b.root.toLowerCase() === leiRoot && leiRoot !== "";
+  return b.tessera === tessera && b.begun === swarmActCid(guest as unknown as Parameters<typeof swarmActCid>[0]) && b.branch === g["branch"] && b.house === ctx.house && b.root.toLowerCase() === leiRoot;
 }
 
 /** Whether seat zero's retire mark resting beside a half verifies for this reader (`retireMarkVerifies`). */

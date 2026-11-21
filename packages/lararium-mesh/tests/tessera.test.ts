@@ -279,7 +279,8 @@ describe("a-verified-mark-takes-the-slot-and-seat-zero-retires-a-lost-root", () 
     const cid = await f.kui("kukulu", { reach: "wide", returns: 2 });
     const one = await f.begin();
     const seatZero = await keyed(9);
-    const ctx = { seatZero: seatZero.key, house: HOUSE };
+    // THE ANCHOR: seat zero's key reads off h0's own signed face log (a predicate over its current signer), never its roster line.
+    const ctx = { seatZero: (k: string) => k === seatZero.key, house: HOUSE };
     const body = (over: Record<string, unknown> = {}) => ({ act: "rite-retired", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: one.tessera, begun: one.begun, house: HOUSE, root: f.hand.key, statement: "the face's root is lost with its device; set its half aside", ...over }) as never;
     const title = swarmTesseraTitle(one.tessera, "retired");
     f.rows.set(title, JSON.stringify(await signSwarmAct(body(), seatZero)));
@@ -296,5 +297,14 @@ describe("a-verified-mark-takes-the-slot-and-seat-zero-retires-a-lost-root", () 
       expect(await retireMarkStands(f.wiki, one.tessera, ctx)).toBe(false);
     }
     await expect(signSwarmAct(body({ statement: "" }), seatZero)).rejects.toMatchObject({ code: "swarm-shape" });
+    // RED (the retire's first read): a lei row whose `signer` was rewritten (its signature and cid no longer verify) names no root,
+    // so a retire naming that forged root ends nothing.
+    f.rows.set(title, JSON.stringify(await signSwarmAct(body(), seatZero)));
+    expect(await retireMarkStands(f.wiki, one.tessera, ctx)).toBe(true);
+    const leiTitle = swarmLeiRecordTitle("kukulu", BRANCH, cid);
+    const lei = JSON.parse(f.rows.get(leiTitle)!);
+    f.rows.set(leiTitle, JSON.stringify({ ...lei, signer: f.outsider.key }));
+    f.rows.set(title, JSON.stringify(await signSwarmAct(body({ root: f.outsider.key }), seatZero)));
+    expect(await retireMarkStands(f.wiki, one.tessera, ctx)).toBe(false);
   });
 });
