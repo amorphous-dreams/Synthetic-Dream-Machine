@@ -46,6 +46,8 @@ export type RiteVerbAnswer =
 /** The refusal a rite stops on where its lei spent every return. */
 export const RETURNS_SPENT = "swarm-lei-returns-spent";
 /** The refusal a begin answers where no kukulu lei stands on the line: the restand goes on with no rite. */
+/** The refusal `lei show` reads of a lei whose returns all lie spent (the begin's refill prompt owns it). */
+const RETURNS_SPENT_REFUSAL = "returns-spent";
 export const LEI_ABSENT = "swarm-lei-absent";
 
 /** The returns per lent face a kūkulu lei strung on the spot carries, where the rite finds none standing. */
@@ -98,10 +100,12 @@ export interface RitePorts {
   /** Where a spent kūkulu lei is offered its refill inline (and an absent one its first stringing); absent, the rite refuses as it did. */
   refill?: RefillPort;
   /**
-   * Whether a kukulu lei stands on the line with a return left (for `face`, else any lent face); null where the line reads no
-   * answer. Read FIRST, before the fetch, the image step and the seed, so a missing lei never costs the slow reads.
+   * Whether a kukulu lei stands on the line with a return left (for `face`, else any lent face): true where one stands, false or
+   * "absent" where none was ever strung, any other string the refusal code the line reads instead (`returns-spent`, `forked`,
+   * `unstrung`, a ward refusal); null where the line reads no answer. Read FIRST, before the fetch, the image step and the seed,
+   * so a missing lei never costs the slow reads. Only an absent lei earns the offer to string one.
    */
-  leiStands?(branch: string, face?: number): Promise<boolean | null>;
+  leiStands?(branch: string, face?: number): Promise<boolean | string | null>;
   /**
    * The image the vessel stands from when the rite begins (its revision label and the tag the shim keeps it under as the
    * outgoing image); null where the host reads none. Absent, the answer names no prior.
@@ -170,6 +174,15 @@ export function syncPlan(s: { readonly branch: string; readonly upstream: string
   return { act: "fast-forward" };
 }
 
+/** The line that clears a lei the line reads as standing not, by the refusal it read. */
+export function leiClearing(refusal: string, branch: string, face?: number): string {
+  const fresh = `lares lei kui --rite kukulu --branch ${branch} --returns ${KUKULU_LEI_RETURNS} ${face === undefined ? "--all" : `--face ${face}`}`;
+  const show = `lares lei show --rite kukulu --branch ${branch}${face === undefined ? "" : ` --face ${face}`}`;
+  if (refusal === "forked") return `two lei tips stand on the line and neither holds; string one fresh lei that names the tip you keep: ${fresh}`;
+  if (refusal === "unstrung" || refusal === "returned" || refusal === "narrowed" || refusal === "head-mismatch") return `a fresh lei restrings the line: ${fresh}`;
+  return `read the refusal with \`${show}\` and clear what it names before the rite runs`;
+}
+
 /** Whether the day owes the pūlama a light: none runs, its code moved, or it stands unlit. */
 export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || r.pulama === "moved" || r.lit === false;
 
@@ -186,10 +199,14 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   if (ports.leiStands) {
     const line = opts.branch ?? (await ports.checkout()).branch;
     const stands = await ports.leiStands(line, opts.face).catch(() => null);
-    if (stands === false) {
+    if (stands === false || stands === "absent") {
       const offer = ports.refill ? await ports.refill({ rite: "kukulu", branch: line, absent: true, returns: KUKULU_LEI_RETURNS, ...(opts.face === undefined ? { all: true } : { face: opts.face }) }) : null;
       if (offer?.strung === true) ports.say(`kūkulu: a kukulu lei of ${KUKULU_LEI_RETURNS} returns per lent face stands on ${line}; the rite goes on`);
       else { absentSaid = true; ports.say(`kūkulu: no kukulu lei stands on ${line}, so the restand goes on with no rite${offer ? `; string one by hand first: ${offer.remedy}` : ""}`); }
+    } else if (typeof stands === "string" && stands !== RETURNS_SPENT_REFUSAL) {
+      // A LEI THAT STANDS NOT FOR ANOTHER CAUSE names its own clearing line and asks nothing: stringing over a fork or a ward
+      // refusal would answer a question nobody asked. A spent lei waits for the begin's own refill prompt, so the person hears it once.
+      ports.say(`kūkulu: the kukulu lei on ${line} stands not (${stands}); ${leiClearing(stands, line, opts.face)}`);
     }
   }
   if (forward && ports.sync) {

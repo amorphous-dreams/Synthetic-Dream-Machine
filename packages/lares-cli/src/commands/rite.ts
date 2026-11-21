@@ -339,13 +339,22 @@ async function spentReturns(req: RefillReq): Promise<number | null> {
  * Whether a kukulu lei stands on the line with a return left, read off `lei show` (one face's `lei`, or any lent face's); null
  * where the line reads no answer (no vessel stands, or the door refused), so the rite goes on as it did.
  */
-async function hostLeiStands(branch: string, face?: number): Promise<boolean | null> {
+async function hostLeiStands(branch: string, face?: number): Promise<boolean | string | null> {
   const shown = await cliVerb(["lei", "show", "--rite", "kukulu", "--branch", branch, ...(face !== undefined ? ["--face", String(face)] : [])]);
-  if (!shown.ok) return null;
-  const lines = Array.isArray(shown.output["faces"]) ? (shown.output["faces"] as Array<{ lei?: unknown }>).map((f) => f.lei) : [shown.output["lei"]];
-  const read = lines.filter((l): l is { standing?: unknown; returnsLeft?: unknown } => typeof l === "object" && l !== null);
+  return shown.ok ? leiReading(shown.output) : null;
+}
+
+/** One `lei show` answer read into what the rite needs: see `hostLeiStands`. */
+export function leiReading(output: Record<string, unknown>): boolean | string | null {
+  const lines = Array.isArray(output["faces"]) ? (output["faces"] as Array<{ lei?: unknown }>).map((f) => f.lei) : [output["lei"]];
+  const read = lines.filter((l): l is { standing?: unknown; returnsLeft?: unknown; refusal?: unknown } => typeof l === "object" && l !== null);
   if (read.length === 0) return null;
-  return read.some((l) => l.standing === true && Number(l.returnsLeft ?? 0) > 0);
+  if (read.some((l) => l.standing === true && Number(l.returnsLeft ?? 0) > 0)) return true;
+  // None stands with a return left: carry the refusal code through. Only where every face reads `absent` does the line read absent;
+  // else the first cause that is not absence names the line (a spent or forked line is not an unstrung one).
+  const causes = read.map((l) => (l.standing === true ? "returns-spent" : typeof l.refusal === "string" ? l.refusal : null));
+  if (causes.every((c) => c === null)) return null;
+  return causes.find((c) => c !== null && c !== "absent") ?? "absent";
 }
 
 /**

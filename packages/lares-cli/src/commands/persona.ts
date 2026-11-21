@@ -369,7 +369,10 @@ export async function routeForPersonaNew(index: number, standing: VesselStanding
     if (faces.shut.includes(index)) {
       throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — no route was asked`);
     }
-    const group = (await readPersonaRoots()).roots.find((r) => r.handleIndex === index)?.group ?? null;
+    // A ROSTER THAT CANNOT BE READ SETTLES NOTHING: the face's group reads unknown, so the existing route gets asked once (a ward
+    // act under the route the face already binds), never a new one bound on an uncertain read.
+    let group: string | null = null;
+    try { group = (await readPersonaRoots()).roots.find((r) => r.handleIndex === index)?.group ?? null; } catch { group = null; }
     if (group !== null && compartmentStands(group)) return undefined;
     return await handExistingFaceRouteToVessel(index, "persona-new", { handleIndex: index });
   }

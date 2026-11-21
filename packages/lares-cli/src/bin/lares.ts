@@ -20,8 +20,7 @@
  *     intent (capability-bearing verb-summons), never a session or login.
  */
 
-import { seatWardGatherer, wardGathererSeated } from "@lararium/node";
-import { ttyWardRoute } from "../ward-door.js";
+import { seatTtyWardGatherer } from "../ward-door.js";
 import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
@@ -404,7 +403,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   seatOfflineCustody();
   seatNewFaceRoute();
   // An act this process runs itself with no ward route asks the person at this terminal, once per act (seat-harness#/the-ward).
-  if (!wardGathererSeated()) seatWardGatherer((what) => ttyWardRoute(what));
+  seatTtyWardGatherer();
   try {
     return await cmd.handler(args);
   } catch (err) {

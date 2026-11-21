@@ -18,10 +18,11 @@ vi.mock("../src/custody-door.js", async (real) => ({
   sendCustodyFrame: async (frame: Record<string, unknown>) => { frames.push(frame); return { op: frame["op"], ref: "route-ref" }; },
   houseFaces: async () => census,
 }));
+let rosterThrows = false;
 let roots: Array<{ handleIndex: number; verifyingKey: string; group: string | null }> = [];
 vi.mock("../src/sealed-records.js", async (real) => ({
   ...(await real<typeof import("../src/sealed-records.js")>()),
-  readPersonaRoots: async () => ({ roots, orphans: [] }),
+  readPersonaRoots: async () => { if (rosterThrows) throw new Error("roster read failed"); return { roots, orphans: [] }; },
 }));
 let ordinals: number[] = [];
 let entryStands = true;
@@ -44,13 +45,24 @@ beforeAll(async () => {
 
 const vessel = { reading: "vessel", unlocked: true, composing: false } as const;
 beforeEach(() => {
-  prompts = []; frames.length = 0;
+  prompts = []; frames.length = 0; rosterThrows = false;
   census = { open: [0, 1], shut: [] };
   roots = [{ handleIndex: 0, verifyingKey: "k0", group: "g0" }, { handleIndex: 1, verifyingKey: "k1", group: "g1" }];
   ordinals = [0, 1]; entryStands = true;
   vi.spyOn(process.stdout, "write").mockImplementation(() => true);
   node.seatFaceRoute(null);
   seatNewFaceRoute();
+});
+
+describe("RED a roster that fails to read stops nothing", () => {
+  it("★ a failed roster read asks the face's EXISTING route once and never binds a new one ★", async () => {
+    rosterThrows = true;
+    expect(await routeForPersonaNew(1, vessel)).toBe("route-ref");
+    expect(prompts).toHaveLength(1);
+    expect(prompts.join("\n")).not.toMatch(/bind/);
+    expect(frames).toHaveLength(1);
+    expect(frames[0]).toMatchObject({ op: "face-route", purpose: "persona-new" });
+  });
 });
 
 describe("RED persona new on a standing face asks for no route", () => {

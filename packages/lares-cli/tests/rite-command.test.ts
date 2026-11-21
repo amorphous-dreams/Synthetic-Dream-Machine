@@ -16,7 +16,7 @@ import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisD
 import { genesisSeedCid } from "@lararium/node";
 import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, hostRefill, hostRowLine, ritePlan, rollbackOf, syncCheckout } from "../src/commands/rite.js";
+import { RiteUsage, hostRefill, leiReading, hostRowLine, ritePlan, rollbackOf, syncCheckout } from "../src/commands/rite.js";
 import { KUKULU_LEI_RETURNS, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
@@ -359,6 +359,40 @@ describe("kukulu reads its lei first", () => {
     await riteKukulu({ ...g.ports, leiStands: async () => false, refill: async () => ({ strung: false, remedy: "lares lei kui --rite kukulu --branch main --returns 6 --all" }) }, {});
     expect(g.said[0]).toMatch(/no kukulu lei stands on main/);
     expect(g.said[0]).toContain("lares lei kui --rite kukulu --branch main --returns 6 --all");
+  });
+
+  it("RED: only an absent lei offers a stringing; a spent lei waits for the begin's refill, and a fork or ward refusal names its own clearing line", async () => {
+    const run = async (reading: boolean | string | null) => {
+      const f = fakes();
+      const offered: unknown[] = [];
+      await riteKukulu({ ...f.ports, leiStands: async () => reading, refill: async (req) => { if (req.absent === true) offered.push(req); return { strung: false, remedy: "r" }; } }, {});
+      return { f, offered: offered.length };
+    };
+    expect((await run("absent")).offered).toBe(1);
+    const spent = await run("returns-spent");
+    expect(spent.offered).toBe(0);
+    expect(spent.f.said.filter((l) => /stands not/.test(l))).toEqual([]);
+    const forked = await run("forked");
+    expect(forked.offered).toBe(0);
+    expect(forked.f.said[0]).toMatch(/stands not \(forked\).*lares lei kui --rite kukulu --branch main --returns \d+ --all/);
+    const ward = await run("ward-act-uncosigned");
+    expect(ward.offered).toBe(0);
+    expect(ward.f.said[0]).toMatch(/stands not \(ward-act-uncosigned\).*lares lei show --rite kukulu --branch main/);
+    for (const r of ["unstrung", "returned", "head-mismatch"]) expect((await run(r)).f.said[0]).toContain("a fresh lei restrings the line");
+  });
+
+  it("the host reads `lei show` into the refusal code it carries: absent only where every face reads absent, a standing lei with no return left as spent", () => {
+    expect(leiReading({ lei: { standing: true, returnsLeft: 2 } })).toBe(true);
+    expect(leiReading({ lei: { standing: false, refusal: "absent" } })).toBe("absent");
+    expect(leiReading({ lei: { standing: false, refusal: "returns-spent" } })).toBe("returns-spent");
+    expect(leiReading({ lei: { standing: true, returnsLeft: 0 } })).toBe("returns-spent");
+    expect(leiReading({ lei: { standing: false, refusal: "forked" } })).toBe("forked");
+    expect(leiReading({ lei: { standing: false, refusal: "ward-act-uncosigned" } })).toBe("ward-act-uncosigned");
+    expect(leiReading({ faces: [{ lei: { standing: false, refusal: "absent" } }, { lei: { standing: false, refusal: "absent" } }] })).toBe("absent");
+    expect(leiReading({ faces: [{ lei: { standing: false, refusal: "absent" } }, { lei: { standing: false, refusal: "forked" } }] })).toBe("forked");
+    expect(leiReading({ faces: [{ lei: { standing: false, refusal: "absent" } }, { lei: { standing: true, returnsLeft: 1 } }] })).toBe(true);
+    expect(leiReading({ lei: { standing: false } })).toBeNull();
+    expect(leiReading({})).toBeNull();
   });
 
   it("the live offer for an absent lei asks a real terminal to string one under this passphrase, per lent face, and runs `lei kui --all`", async () => {
