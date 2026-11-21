@@ -63,10 +63,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares ddate 5 1 2024                              # a named day: Setting Orange, Chaos 5, 3190 YOLD",
       "lares ddate '+%{%A, the %e of %B%}, %Y. %N%nCelebrate %H' 19 2 2025",
       "lares ddate +%X 20 11 2026                        # days until X-Day",
-      "lares ddate --no-json '+%. %E'                    # an exclamation and the first ddate's ordinal",
+      "lares ddate '+%. %E'                              # an exclamation and the first ddate's ordinal",
     ],
     flags: [
-      "--json       emit {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}; `entropy` names the door a `%.` drew from",
+      "--json       emit the envelope instead of the bare line: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}; `entropy` names the door a `%.` drew from",
     ],
   },
   herm: {
