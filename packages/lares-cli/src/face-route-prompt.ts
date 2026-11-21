@@ -10,6 +10,7 @@ import type { SlotSpec } from "@lararium/mesh";
 import { faceRouteBindDigest, faceRouteSeated, gatherFaceRoute, seatFaceRoute } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { askYesNo, gatherFoundingRoute, requireTty } from "./custody-prompt.js";
+import { gatherWardRoute } from "./ward-door.js";
 
 /**
  * The node route a founding just gathered, held for the ONE question persona zero's face founding asks next. A face founded any
@@ -64,5 +65,19 @@ export async function handFaceRouteToVessel(label: string, purpose: "persona-new
   if (answer === null || typeof answer["ref"] !== "string") {
     throw new Error("the standing vessel did not take the new face's route; nothing was founded");
   }
+  return answer["ref"] as string;
+}
+
+/**
+ * Hand a face's EXISTING route to the standing vessel, for a founding that stopped midway (its custody and anchors stand, its
+ * plane entry does not): the act runs again under the route that face already binds, so the ward door asks it ONCE, hidden, and
+ * nothing binds a new one (`persona-route-rebind`). The route rides the custody frame alone, as a new face's does.
+ */
+export async function handExistingFaceRouteToVessel(face: number, purpose: "persona-new", args: Readonly<Record<string, unknown>>): Promise<string> {
+  const route = await gatherWardRoute(`lares persona new ${face} (completing h${face}'s founding)`, face);
+  const slots: SlotSpec[] = route.flatMap((c) => (c.kind === "passphrase" ? [{ t: 1, pins: [{ kind: "passphrase" as const, passphrase: c.passphrase }] }] : []));
+  if (slots.length === 0) throw new Error(STANDING_VESSEL_PASSPHRASE_ONLY);
+  const answer = await sendCustodyFrame({ op: "face-route", slots, purpose, argsDigest: faceRouteBindDigest(purpose, args) });
+  if (answer === null || typeof answer["ref"] !== "string") throw new Error(`the standing vessel did not take h${face}'s route; nothing was founded`);
   return answer["ref"] as string;
 }

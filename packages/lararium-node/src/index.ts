@@ -229,7 +229,7 @@ export {
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
-export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
+export { runInit, runFoundTheFace, faceStands, compartmentStands, armRecoveryAtFounding } from "./commands/init.js";
 export { recoveryContactOffer } from "./recovery-contact-enrolment.js";
 // THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
 export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";

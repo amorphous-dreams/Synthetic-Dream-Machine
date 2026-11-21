@@ -12,7 +12,7 @@
  *                                      publish — only an announce binds a persona to a glamour)
  *              [--seat [--chair <label>]] stand this persona for a Kahu chair on THIS node
  *              [--split-root]          arm its 2-of-3 recovery split
- *   list                               the private multitude-view — held indices, labels, Handles
+ *   list                               the private multitude-view — held indices, labels, Handles, each open face's PersonaGroup
  *
  * The pet-name stays PRIVATE (persona-petname: rests sealed, fleet-syncs among the human's own vessels over a
  * persona plane whose rest seals, never PUBLICLY federates); minting a persona announces no public glamour, because only a publicly announced Handle binds
@@ -28,7 +28,7 @@
 import { gatherWard, gatherWardRoute } from "../ward-door.js";
 import { faceOption } from "../face-option.js";
 import {
-  faceStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
+  faceStands, compartmentStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING, RECOVERY_CONTACT_THRESHOLD,
@@ -36,12 +36,12 @@ import {
   refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
 import { requireTty } from "../custody-prompt.js";
-import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
+import { handExistingFaceRouteToVessel, handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";
 import { labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { storeVerb, storeFailure, standingRefusal } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
-import { vesselStanding } from "../custody-door.js";
+import { houseFaces, vesselStanding, type VesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
 import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-records.js";
 import {
@@ -353,6 +353,29 @@ let readRecoveryContactCard: () => Promise<string> = async () => {
 };
 export function setRecoveryContactCardPrompt(read: () => Promise<string>): void { readRecoveryContactCard = read; }
 
+/**
+ * THE ROUTE A `persona new N` HANDS THE STANDING VESSEL, read before any prompt (`persona-route-rebind`). A face that already
+ * stands takes NO route: its founding answers `alreadyStood` before any route is read, so a route asked there gets parked and
+ * thrown away (a Handle re-declare or a rename touches no route; `vault bind` and `vault unbind --rotate` rebind on purpose). A
+ * face shut under its own route refuses, naming the unlock. A founding that stopped midway (custody and anchors stand, no plane
+ * entry) completes under the route the face ALREADY binds, asked once through the ward door. Only a face not yet founded binds a
+ * new route. Undefined where no vessel stands (the founding asks in this process) or no route rides.
+ */
+export async function routeForPersonaNew(index: number, standing: VesselStanding): Promise<string | undefined> {
+  if (standing.reading !== "vessel") return undefined;
+  if (index === 0 && faceStands()) return undefined;
+  if (index !== 0 && listFaceOrdinals().includes(index)) {
+    const faces = await houseFaces();
+    if (faces.shut.includes(index)) {
+      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — no route was asked`);
+    }
+    const group = (await readPersonaRoots()).roots.find((r) => r.handleIndex === index)?.group ?? null;
+    if (group !== null && compartmentStands(group)) return undefined;
+    return await handExistingFaceRouteToVessel(index, "persona-new", { handleIndex: index });
+  }
+  return await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index });
+}
+
 async function personaNew(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
   const index = parseIndex(args.positional[1]);
@@ -402,7 +425,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     throw new UsageError("no face stands on this place yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
   }
   // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
-  const faceRouteRef = !(index === 0 && faceStands()) && standing.reading === "vessel" ? await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index }) : undefined;
+  const faceRouteRef = await routeForPersonaNew(index, standing);
   // THE EARLY READING GOES STALE ACROSS THE PROMPT above: the door probes AGAIN, so an unlock or lock started in another
   // shell meanwhile refuses by name instead of parking.
   const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult & { readonly lit?: boolean; readonly lightRefused?: string };
@@ -491,6 +514,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
     roster = { roots: [], orphans: [] };
   }
   const held = roster.roots.map(({ handleIndex }) => handleIndex);
+  const groupOf = new Map(roster.roots.map((r) => [r.handleIndex, r.group ?? null]));
   const lockedFaces = listFaceOrdinals().filter((i) => !held.includes(i));
   const orphans = roster.orphans;
   const { petnames, declarations } = fleetStores();
@@ -498,6 +522,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
   const rows = await Promise.all(
     held.map(async (handleIndex) => ({
       handleIndex,
+      group: groupOf.get(handleIndex) ?? null,
       petname: (await ownPersonaPetname(petnames, handleIndex)) ?? null,
       handle: (await declarations.get(handleIndex))?.handle ?? null,
       seat: (await declarations.get(handleIndex))?.seat === true,
@@ -523,7 +548,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
       console.log("personas (the private multitude — private label -> declared Handle):");
       for (const r of rows) {
         const declares = `${r.handle ? `  ->  "${r.handle}"` : ""}${r.seat ? ` [stands for a Kahu seat as "${r.chair}"]` : ""}`;
-        console.log(`  h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
+        console.log(`  h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}${r.group ? `  group ${r.group}` : ""}`);
       }
     },
   });

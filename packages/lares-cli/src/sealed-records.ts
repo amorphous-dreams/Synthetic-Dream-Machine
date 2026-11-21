@@ -16,7 +16,8 @@ import { sealedAct } from "./sealed-act-door.js";
 
 /** The roster as one read: each held root's index and public key, and every orphan root. */
 export interface PersonaRoots {
-  readonly roots:   ReadonlyArray<{ readonly handleIndex: number; readonly verifyingKey: string }>;
+  /** `group`: the face's PersonaGroup id where its face stands open, else null (a shut face's anchors stay sealed). */
+  readonly roots:   ReadonlyArray<{ readonly handleIndex: number; readonly verifyingKey: string; readonly group?: string | null }>;
   readonly orphans: readonly number[];
 }
 
