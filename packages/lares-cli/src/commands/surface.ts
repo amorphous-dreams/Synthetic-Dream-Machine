@@ -12,7 +12,7 @@
  *     root with none standing (`ensurePoolTree`); `init` re-tends a standing pool's author, exclude block and hook by hand.
  *   - `check [--face N]`: the pool check over the repo standing here (or the named face's pool); exit 1 names each breach.
  *   - `open [--face N] [--launch]`: print (and run) `<editor> -n <face root> <realm pools>`; writes no workspace file. The
- *     editor reads from the house config tiddler `$:/config/lares/surface/Editor` (`<config>/surface-editor.tid`), else `code`.
+ *     editor reads from the house config tiddler `$:/config/lares/surface/Editor` (`<config>/surface-editor.tid`), else the build standing on the PATH.
  *   - `commit [--face N] [-m <seam>]`: stage only the paths whose disk bytes equal the synced base, and commit them under a
  *     `lar:` subject naming no face; a path standing off reads apart by name and stays unstaged. Never pushes.
  *   - `face [--face N]`: the face the house resolves and the pet name it wears (the host asks the vessel this alone).
@@ -42,7 +42,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { dirname, join, posix, relative, resolve, sep } from "node:path";
+import { delimiter, dirname, join, posix, relative, resolve, sep } from "node:path";
 import {
   poolGit, POOL_PRE_COMMIT, faceEmailSlug, REALM_EMAIL_DOMAIN, initFacePool, initRealmPool, initWorkspacePool, liftNestedTrees, PoolTreeRefused, type PoolInitResult, type LiftedTree,
   faceRoot, faceSegmentRefusal, KAPAE_EXT, FACES_PROJECTION_DIR, FACE_LABELS_DIR, FACE_PLANES, SyncedTree, type SyncedBase,
@@ -87,6 +87,10 @@ export interface SurfaceDoors {
   basePath(file: string): string;
   /** The directory a workspace name binds on this machine, or null where it binds none. */
   workspace(name: string): string | null;
+  /** Whether a binary by this name stands on this machine's PATH. */
+  onPath(name: string): boolean;
+  /** The PATH this shell runs under (a VS Code remote shell carries its server's `remote-cli` folder in it). */
+  shellPath(): string;
 }
 
 /** A directory standing at `dir`, else null. */
@@ -112,6 +116,8 @@ export const LIVE_SURFACE_DOORS: SurfaceDoors = {
   },
   basePath: (file) => resolve(file),
   workspace: (name) => dirOrNull(join(larWorkspacesHome(), name)),
+  onPath: (name) => (process.env["PATH"] ?? "").split(delimiter).some((d) => d !== "" && existsSync(join(d, name))),
+  shellPath: () => process.env["PATH"] ?? "",
 };
 
 // ── the house, where the door runs ───────────────────────────────────────────────────────────────────────
@@ -228,6 +234,8 @@ export function hostSurfaceDoors(house: string, ask: VesselAsk = SHIM_ASK, env: 
       return vesselSpelling(house, file);
     },
     workspace: (name) => { const dir = workspaces.get(name); return dir === undefined ? null : dirOrNull(dir); },
+    onPath: LIVE_SURFACE_DOORS.onPath,
+    shellPath: LIVE_SURFACE_DOORS.shellPath,
   };
 }
 
@@ -236,7 +244,7 @@ export function liveSurfaceDoors(env: Readonly<Record<string, string | undefined
   let house: SurfaceHouse;
   try { house = surfaceHouse(env); } catch (err) {
     const refuse = (): never => { throw err; };
-    return { face: async () => refuse(), projections: refuse, config: refuse, tree: refuse, cwd: () => process.cwd(), launch: LIVE_SURFACE_DOORS.launch, basePath: refuse, workspace: refuse };
+    return { face: async () => refuse(), projections: refuse, config: refuse, tree: refuse, cwd: () => process.cwd(), launch: LIVE_SURFACE_DOORS.launch, basePath: refuse, workspace: refuse, onPath: LIVE_SURFACE_DOORS.onPath, shellPath: LIVE_SURFACE_DOORS.shellPath };
   }
   return house.kind === "root" ? LIVE_SURFACE_DOORS : hostSurfaceDoors(house.house, ask, env);
 }
@@ -448,10 +456,12 @@ export function surfaceCheckRealm(top: string, name: string, projections: string
 // ── open ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * THE REALM ROOTS A FACE BELONGS TO, as its own root reads them: each wiki slug it keeps a personal layer or a recovery folder for
- * (`personal/<slug>/`, `recovery/<slug>/`), mapped to the realm root that holds that wiki's workbench
- * (`projections/realms/<realm pet name>/`, the realm's one git tree) where the workbench stands. A realm holding several of the
- * face's wikis names its root once; a slug whose workbench stands nowhere names no root.
+ * THE REALM ROOTS A FACE REACHES, each named once. A realm root (`projections/realms/<realm pet name>/`, the realm's one git tree)
+ * counts where its workbench holds a wiki a realm label groups, where the face keeps a personal layer or a recovery folder for a
+ * wiki whose workbench stands (`personal/<slug>/`, `recovery/<slug>/`, empty or not), or where the root holds its own `.git`
+ * (a tree the editor's Source Control shows even before a label groups a wiki). A slug whose workbench stands nowhere names no
+ * root. Workspace roots stay out: a share row binds one only where the machine names it, so `surface open` leaves them to the
+ * realm commands (`commit --realm`) and shows the realm trees every face reaches.
  */
 export function realmPools(projections: string, root: string): string[] {
   const slugs = new Set<string>();
@@ -461,20 +471,22 @@ export function realmPools(projections: string, root: string): string[] {
     for (const n of names) { try { if (statSync(join(root, plane, n)).isDirectory()) slugs.add(n); } catch { /* left since the listing */ } }
   }
   const at = realmPlacement(projections);
+  for (const realm of at.realms()) for (const w of realm.wikis) slugs.add(w.slug);
   const roots = new Set<string>();
   for (const s of [...slugs].sort()) {
     const base = at.wikisBase(s);
     if (base === null || dirOrNull(join(base, s)) === null) continue;
     roots.add(dirname(base));
   }
-  return [...roots];
+  for (const r of houseRealmRoots(projections).sort()) if (existsSync(join(r, ".git"))) roots.add(r);
+  return [...roots].sort();
 }
 
 /**
  * THE EDITOR `surface open` RUNS, a house setting the operator keeps: the config tiddler `$:/config/lares/surface/Editor`, whose
  * text names the command (`code-insiders`, or several words, as `flatpak run com.visualstudio.code`). It rests in the house's
  * config home beside the share rows (`<config>/surface-editor.tid`, a .tid a person edits by hand), which the host reads with the
- * vessel down and a re-founding keeps. A file that holds no such tiddler, or names no command, reads the default `code`.
+ * vessel down and a re-founding keeps. A file that holds no such tiddler, or names no command, reads what the PATH stands (`surfaceEditorOnPath`).
  */
 export const SURFACE_EDITOR_TITLE = "$:/config/lares/surface/Editor";
 export const SURFACE_EDITOR_FILE = "surface-editor.tid";
@@ -482,15 +494,30 @@ export const SURFACE_EDITOR_DEFAULT = "code";
 /** The exit a launch answers where this machine holds no binary by the editor's name (the shell's own "command not found"). */
 export const EDITOR_ABSENT_EXIT = 127;
 
-/** The editor command's words, off the house config tiddler, else the default. */
-export function surfaceEditor(config: string): string[] {
+/** The Insiders build's command, which a VS Code Insiders remote shell carries instead of `code`. */
+export const SURFACE_EDITOR_INSIDERS = "code-insiders";
+
+/**
+ * THE EDITOR THIS MACHINE STANDS, read off its PATH where the house config names none. Only `code` stands: `code`. Only
+ * `code-insiders` stands: `code-insiders`. Both stand: the build whose server the shell belongs to (a PATH carrying a
+ * `.vscode-server-insiders` folder reads Insiders), else `code`. Neither stands: `code`, which a launch then refuses by name.
+ */
+export function surfaceEditorOnPath(onPath: (name: string) => boolean, shellPath: string): string {
+  const code = onPath(SURFACE_EDITOR_DEFAULT), insiders = onPath(SURFACE_EDITOR_INSIDERS);
+  if (insiders && !code) return SURFACE_EDITOR_INSIDERS;
+  if (insiders && code && shellPath.includes(".vscode-server-insiders")) return SURFACE_EDITOR_INSIDERS;
+  return SURFACE_EDITOR_DEFAULT;
+}
+
+/** The editor command's words, off the house config tiddler, else the one the PATH stands (`fallback`, `code` by default). */
+export function surfaceEditor(config: string, fallback: string = SURFACE_EDITOR_DEFAULT): string[] {
   let text: string;
-  try { text = readFileSync(join(config, SURFACE_EDITOR_FILE), "utf8"); } catch { return [SURFACE_EDITOR_DEFAULT]; }
+  try { text = readFileSync(join(config, SURFACE_EDITOR_FILE), "utf8"); } catch { return [fallback]; }
   const at = text.replace(/\r\n/g, "\n").indexOf("\n\n");
   const head = at < 0 ? text : text.slice(0, at), body = at < 0 ? "" : text.slice(at + 2);
   const title = /^title:\s*(.*)$/m.exec(head)?.[1]?.trim();
   const words = (body.split("\n").find((l) => l.trim() !== "") ?? "").trim().split(/\s+/).filter((w) => w !== "");
-  return title === SURFACE_EDITOR_TITLE && words.length > 0 ? words : [SURFACE_EDITOR_DEFAULT];
+  return title === SURFACE_EDITOR_TITLE && words.length > 0 ? words : [fallback];
 }
 
 /** The one window line: the editor's words and `-n` over the face's root, then its realm pools. */
@@ -670,12 +697,13 @@ async function cmdOpen(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
   const projections = doors.projections();
   const root = faceRoot(projections, face.petname);
   if (!existsSync(root)) throw new SurfaceRefused("surface-no-pool", `the face "${face.petname}" holds no root at ${root} yet: run \`lares surface init\``);
-  const editor = surfaceEditor(doors.config());
+  const editor = surfaceEditor(doors.config(), surfaceEditorOnPath((n) => doors.onPath(n), doors.shellPath()));
   const argv = surfaceOpenArgv(root, realmPools(projections, root), editor);
   const line = argv.map(shellWord).join(" ");
   const launch = args.flags["launch"] === true;
   const code = launch ? doors.launch(argv) : 0;
   const settingAt = join(doors.config(), SURFACE_EDITOR_FILE);
+  const neitherStands = !doors.onPath(SURFACE_EDITOR_DEFAULT) && !doors.onPath(SURFACE_EDITOR_INSIDERS);
   const error = code === 0 ? null : code === EDITOR_ABSENT_EXIT
     ? { code: "surface-editor-absent", message: `this machine holds no \`${editor[0]}\` to run: name the editor in the house config tiddler ${SURFACE_EDITOR_TITLE} (${settingAt}: a \`title: ${SURFACE_EDITOR_TITLE}\` line, a blank line, then the command, as \`code-insiders\`)` }
     : { code: "surface-launch-failed", message: `${line} answered ${code}` };
@@ -683,7 +711,10 @@ async function cmdOpen(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
     ok: code === 0,
     data: { face: face.index, argv, editor, launched: launch, ...(launch ? { exit: code } : {}) },
     ...(error === null ? {} : { error }),
-    human: () => { console.log(line); if (error !== null) console.error(`lares surface open: ${error.message}`); },
+    human: () => {
+      console.log(line);
+      if (neitherStands && !launch) console.error(`lares surface open: neither \`${SURFACE_EDITOR_DEFAULT}\` nor \`${SURFACE_EDITOR_INSIDERS}\` stands on this PATH, so the line names \`${editor[0]}\`: run the editor you hold, or name it in ${SURFACE_EDITOR_TITLE}`);
+      if (error !== null) console.error(`lares surface open: ${error.message}`); },
   });
   return code === 0 ? 0 : 1;
 }
