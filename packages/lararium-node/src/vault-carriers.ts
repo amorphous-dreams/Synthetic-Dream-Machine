@@ -83,7 +83,7 @@ import {
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
-import { VEIL_ARCHIVE_FILE, VEIL_ARCHIVE_PREV_FILE } from "./identity-anchors.js";
+import { VEIL_ARCHIVE_ASIDE_FILE, VEIL_ARCHIVE_FILE, VEIL_ARCHIVE_PREV_FILE } from "./identity-anchors.js";
 import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
 import { VEIL_LIFT_GROUP_FILE } from "./node-veil-lift.js";
 import { FACES_DIR, FACE_INDEX_FILE, WARD_TREE_FILE } from "./face-index.js";
@@ -381,6 +381,10 @@ function buildTable(): readonly CarrierRow[] {
     // on this vessel, as the live row does: no bundle carries a seat's own key state.
     faceRecordOf({ row: "veil-archive-prev", target: tgt(["D"]), inner: VEIL_ARCHIVE_PREV_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-prev-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    // A veil-archive row that held another identity's Archive, moved aside by `lares face rehive` and never deleted: evidence
+    // the operator may read, under the face's own key, on this vessel alone.
+    faceRecordOf({ row: "veil-archive-aside", target: tgt(["D"]), inner: VEIL_ARCHIVE_ASIDE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "face-rehive (lares face rehive)", name: (m) => `veil-archive-aside-g${m[1]}-${m[2]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
     // A face's private veil-lift link (`node-veil-lift`): the vessel's key signed {veil, face, atom}, so it names THIS vessel's veil and
     // stays on it; it rests under its face alone and leaves with that face's tree.
     faceRecordOf({ row: "veil-lift", target: tgt(["D"]), inner: VEIL_LIFT_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: null,

@@ -125,6 +125,8 @@ export function listFaceCustodyIds(): Array<{ readonly ordinal: number; readonly
 export const VEIL_ARCHIVE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin$/;
 /** One generation back: the row a face's last overwrite replaced, so a write can be reversed. Never more than one. */
 export const VEIL_ARCHIVE_PREV_FILE = /^veil-archive-g([0-9a-f]{64})\.bin\.prev$/;
+/** A row moved aside because it held another identity's Archive (`face-rehive`), named by its own digest; never deleted. */
+export const VEIL_ARCHIVE_ASIDE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin\.mismatch-([0-9a-f]{16})$/;
 
 /** One face's veil archive filename. */
 export function veilArchiveFile(personaGroup: string): string {

@@ -20,6 +20,7 @@ import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
 import { confirmLockByCensus } from "../lock-receipt.js";
+import { RehiveUsage, vaultRehive } from "../vault-rehive.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
@@ -77,6 +78,7 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
       case "reseat":     return await vaultReseat(args, daemonUp);
+      case "rehive":     return await vaultRehive(args);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -90,7 +92,7 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
       emit(args, { ok: false, error: { code: err.name, message: named }, human: () => console.error(`lares vault ${sub}: ${named}`) });
       return 1;
     }
-    const code = err instanceof UsageError ? "usage" : "error";
+    const code = err instanceof UsageError || err instanceof RehiveUsage ? "usage" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares vault ${sub}: ${msg}`) });
     return exitFor(code);
   }
