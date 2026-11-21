@@ -231,7 +231,7 @@ carries named parameters and `#/anchor` a fragment.
 
 ''The live parser already guards a colon.'' `parseMacroParameterAsAttribute` refuses a named parameter whose name fails `/^[A-Za-z0-9\-_]+$/` (`parseutils.js:341`), with the reason stated in the source: to avoid mis-parsing values like `$:/foo`. A named slot places its `=` ahead of a scheme's colon, so a `lar:` URI in a backtick value never meets the guard.
 
-''The sigils ride as the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for
+''The sigils ride as the RUBRIC.'' A missal writes the words a celebrant speaks in black and the instructions for
 performing them in red — //rubrica//, red ochre, the practice standing in liturgical manuscripts from the
 13th century and earlier, and rubrication ran as its own production stage: the black text printed first,
 blank space left for a rubricator's hand. The page kept two inks; the celebrant's voice braided them, and
@@ -753,6 +753,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qx8pt9HAaiEPiSZZmEzyYt4irWY-BajN2CR-3Wyrxq8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QBezlvs2Lk7Vf9jjzA8lV_Usl2HemYdUABLxyMGzhY8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

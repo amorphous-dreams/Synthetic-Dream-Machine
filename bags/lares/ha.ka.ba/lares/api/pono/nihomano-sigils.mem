@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/nihomano-sigils"
 
 ! Nihomano Sigils
 
-''The sigils form the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black weighs toward SAYING, the red toward DOING, and every span does both (Austin) — a weighting, never a split: in a stream the red steers, in a wiki it calls; felicity tests the red (did the act land), contact tests the black (does the claim hold).
+''The sigils form the RUBRIC.'' A missal writes the words a celebrant speaks in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black weighs toward SAYING, the red toward DOING, and every span does both (Austin) — a weighting, never a split: in a stream the red steers, in a wiki it calls; felicity tests the red (did the act land), contact tests the black (does the claim hold).
 
 //niho// — Hawaiian: tooth, teeth; edge, serration. Used in //lei niho palaoa// (whale-tooth
 necklace of the aliʻi) and //niho mano// (shark tooth — the attested two-word form).
@@ -309,6 +309,6 @@ derive from those tiddlers, held to them by `tools/sigil-parity-witness.sh`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6C5_fpRf1MzRzn97ctuwtYsUvuINv26BTIkU34YzDs4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bOWmbx39DdqHxGyM6WXdewDfM0NlXbKJG0IQEMeZCrQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
