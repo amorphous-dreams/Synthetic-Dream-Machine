@@ -129,10 +129,10 @@ is shared, not duplicated (Sprint 6 parity).
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2ywfeTnsfQrZQEKWGW43Bo1NWVAh7OSJuUczTnBWXtM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HHjvUbZwIIuNtmmJGdou93Lc5QrJvnr22MLkMhlSIp0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

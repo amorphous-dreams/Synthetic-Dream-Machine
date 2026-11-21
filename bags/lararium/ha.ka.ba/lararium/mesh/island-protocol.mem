@@ -115,10 +115,10 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ea`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VjO1fN94NLabExTbqNnHxOSakMaEEtA8M83soUwCFlA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eHcayRRSNiO9InOVG9ksE-8QojMqmfHNFPWrIuPz3UE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

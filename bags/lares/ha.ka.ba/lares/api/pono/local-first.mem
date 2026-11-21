@@ -124,7 +124,7 @@ formats (`packages/lararium-node/src/disk-projector.ts`).
 text; a pointer carrier holds a content reference in place of `text`. The `cid/` blob tier
 carries binary and pointer-kind bodies; a utf8 body rides inline unless an operator flags it
 out on purpose
-(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>).
 
 ---
 
@@ -309,6 +309,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zkcUkHpYECLgHtamaC5FkNB0dFy2ulhH_PxDuF_ho0I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xy-XhuuKP1GfaJFnmm7-QsHDoD-YcVxVXp33529yD90`>>
 
 <<^ code=`&#x0004;` to=`?`>>

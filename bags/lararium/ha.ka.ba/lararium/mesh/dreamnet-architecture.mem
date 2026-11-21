@@ -716,7 +716,7 @@ The carriage-client fetch item stays OWED (measured 2026-10-22). The vessel-side
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/grammar-invariants`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — defines floor projection and scoped answer
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> — separates bulb delivery from porch carriage
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer`>> — names seed bytes and the floor CID
@@ -724,6 +724,6 @@ The carriage-client fetch item stays OWED (measured 2026-10-22). The vessel-side
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Ao8uMBHly6ywr6JEieCTn8LLqi5FaUecvlvf3e4Mcc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;R6MyZGXqCmfmQMhKZvf0Bj0nYTAz2e7VCMI-q3qxNWI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -687,7 +687,7 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/capability`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/keyhive-provider`>>
@@ -699,6 +699,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7xm4n5uv4UvtseXyvdJOYAj08sxoTP7dfRceObhTCNY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pb4j1wBUomNmA6dmPJ3pKS0XtlYcX7cUbekqjsSWS4U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

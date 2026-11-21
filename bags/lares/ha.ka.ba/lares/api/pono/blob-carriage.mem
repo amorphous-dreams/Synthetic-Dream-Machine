@@ -1,0 +1,88 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+hydrate   = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "blob-carriage — THE BLOB LAW: a tiddler's `type` decides its carriage (a base64-registered type rides a POINTER tiddler, a utf8 type rides INLINE) and size decides only the utf8 fault wall; the pointer's spelling, the raw-bytes CID, the whole-file projection beside a `.meta`, stock-server parity, residency moves between store styles, and GC by reference or PIN; the scout, the field and the rhymes rest at docs/pono/blob-carriage"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/blob-carriage"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/blob-carriage"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! Blob carriage ~ the Blob Law
+
+''A tiddler's `type` DECIDES its carriage; size DECIDES only the fault line.'' A tiddler stands as a CRDT record and syncs; a CID names bytes, and readers fetch them, never sync them. Every tiddler carry flows through the CRDTs into the federated mesh — private or public, "it's all tiddlers" — unless its CID or CAD stands outside the CRDT.
+
+Three shapes stand: the ''TYPED TIDDLER'' (the bytes ride `text`, the `type` field says how to read them), the ''POINTER TIDDLER'' (the tiddler carries a reference, the bytes rest on a plane the reference names), and the ''SOURCE TIDDLER'' (a pointer whose referent never rests as bytes — a live stream, an expiring gallery lease). The scout, the house as built, the field and the rhymes rest in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/proposed-law`>>
+
+!! The Blob Law ~ eight clauses
+
+Clauses 1-6 stand in code, each with its witness. Clause 7 stands in part: a cleartext pointer MOVE stands built and witnessed; a move into an `@cad` tier stays unbuilt. Clause 8 stands in part: the sweep and PIN stand built; pack-PIN recursion, per-tier grace in the production sweep and a production caller of `assertBodyIndexTier` stay unbuilt.
+
+# ''KIND, not size, picks the shape.'' A tiddler whose `type` registers `encoding: "base64"` in `$tw.config.contentTypeInfo` (TW5's own declaration, `registerFileType` in `boot.js`; the core's `isBinaryTiddler`) MUST ride as a POINTER TIDDLER; a tiddler whose type registers `utf8` MUST ride INLINE. One axis, read from the declaration. `image/svg+xml` rides the IMAGE family (the registry's `image` flag); an author who wants an inline editable SVG declares `text/xml`. Size never elects a pointer; `_lar_cas: yes` stands as the ONE operator override (a utf8 body pushed to the `cid/` tier on purpose). ''Stands:'' `content-handle.ts` `ridesAsPointer` + `TW5_FILE_TYPES`; ''witness:'' `packages/lararium-mesh/tests/content-handle-blob-law.test.ts`, `packages/lares-cli/tests/cas-stage.test.ts`.
+# ''Size stays a WALL, never a switch.'' A utf8 body past `SKINNY_CARRIER_THRESHOLD` (1 MiB) MUST fault unless flagged; a binary never reads it. The ~16 KiB Iroh north and the 256 KiB / 1 MiB IPFS band govern `@cad` CHUNKING, never the tiddler shape. ''Witness:'' `cas-stage.test.ts` (a 1 MiB + 1 utf8 body stages `skinny: false` and the island faults; the same body flagged rides a pointer).
+# ''The pointer spelling — ONE tiddler carries both faces.'' A pointer tiddler MUST carry TW5's `type`, `size`, and `_integrity` (ni:// over the RAW bytes); it MUST carry `textCid` as the CAS key; it MUST carry `_is_skinny` so `getTiddlerText` lazy-loads. It carries `_canonical_uri` ONLY when that URI resolves on the reader's plane: a `text/*` pointer carries the `lar:///…/cid/` name the lazy path reads; a base64-family pointer's persisted record carries NO `lar:` `_canonical_uri` (TW5's image widget emits it as a dead `src`; the filesystem routes any `_canonical_uri` tiddler to a bodyless `.tid`; the spec loader blanks its text). The browser island mints a per-session `blob:` object-URL into the VM copy's `_canonical_uri` at lazy-resolve time, never persisted to the CRDT or the disk; on node the base64 `text` suffices. A SOURCE tiddler carries `_canonical_uri` = the source and NO `textCid` or `_integrity`. ''Identity:'' the wiki-side identity stays the TITLE; the bytes' identity stays the CID; `_source_uri` carries provenance and never resolves. ''Stands:'' `skinnyHandleTiddler`; `lazy-resolver.ts`. ''Witness:'' `skinny-image-src.test.ts`, `lazy-resolver.test.ts`.
+# ''The CID hashes the RAW bytes.'' `stageBodyToCas` decodes a pointer-kind `binary: true` carrier from base64 before hashing and storing; `resolveByCid` returns raw bytes; the lazy resolver re-encodes base64 for the VM's `text` where the type registers base64. `_integrity` verifies `photo.png` on disk, and the bulb's verify law holds for every blob. ''Witness:'' `cas-stage.test.ts`, `tests/e2e/nonmeme-parity.test.ts` (`textCid == sha256(readFileSync("photo.png"))`).
+# ''The disk projection writes the WHOLE FILE beside a `.meta`.'' For a pointer whose bytes the local `cid/` holds, the projector writes `photo.png` (raw bytes, verified `sha256 == cid`) + `photo.png.meta` (the fields, `text` excluded, `_is_skinny`/`textCid`/`_integrity` included as ordinary fields) — the stock server's own shape — and never `photo.tid`. Where `cid/` lacks the bytes, the projector writes the `.meta` alone and never sweeps a `.png` it did not write. The ingest side reads `photo.png` + `.meta`, hashes the raw bytes, and lands the pointer with the sidecar's fields under it. A `.png` under `bags/` with its `.meta` reads as CANON, bytes on disk and the CRDT holding the pointer (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/granularity`>>). ''Stands:'' `meme-write.ts` (`pointerCid`), `disk-projector.ts`, `island-behaviors.ts`. ''Witness:'' `packages/lararium-node/tests/binary-projection.test.ts`, `nonmeme-parity`.
+# ''Parity with a stock server.'' A stock `tiddlywiki --listen` with the plugin reads the island's `photo.png` + `photo.png.meta` as a base64 TYPED tiddler, and `--savewikifolder` writes both files back byte-identical; `_is_skinny`/`textCid`/`_integrity` ride through it inert. The same two files stand on both doors; the doors differ only in where the bytes rest at runtime. ''Witness:'' `nonmeme-parity`.
+# ''Residency moves a binary between store styles.'' `act MOVE`/`COPY` of a pointer carries it WHOLE — the CID, `_integrity` and the bytes in `cid/` stay — and the destination mirror projects the file while the source unlinks. The pointer keeps naming the plaintext digest in every tier; a move into an `@cad` bag seals the bytes afresh under the destination bag's content key, and that bag's manifest maps the digest to the new sealed address (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records`>>) — that leg stays unbuilt. ''Witness:'' `tests/e2e/meme-live-contact.test.ts`.
+# ''GC and PIN ride the residency verbs and the cap-tier.'' A blob stays retained while a locally-held bag references its CID or a PIN names it; an unreferenced, unpinned blob MAY sweep once it outlasts a grace counted in the realm's own rolls, never a wall clock. `DROP <bag>` releases that bag's references. `lares bag cas --pin` (with `--held` to stamp a fence) and `--release` stand built; a fence-bearing pin yields only by causal supersession at the verified fence, and quiet never means lapse. A blob's tier follows the bag holding its pointer (map-tier = body-tier, `content-handle.ts` `assertBodyIndexTier`); the production sweep floors every blob at the longest tier's grace (`installCasSweep`); a declared tier only tightens (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/the-keystone`>>).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/held-cases`>>
+
+!! Held cases ~ the law the scout's three cases carry
+
+* ''A stream URL that carries a bearer token'' (a signed HLS URL) counts as a CREDENTIAL and rides the reach plane at ≤ CONTRACT, never a bag (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane#/the-truncated-chain`>>).
+* ''A pack imports by ONE `LOAD` under one `changeId`;'' the descriptor carries the license; the members stay skinny; a whole-pack PIN counts as one cap.
+* ''A token NEVER rides a tiddler in any content bag;'' a gallery bridge sits BEHIND the island boundary, and a gallery item, once fetched, becomes a blob the house owns (CID identity) with a provenance field, so an expired URL costs a re-fetch, never an identity.
+
+The shapes, the field and what the house holds and lacks for each case read at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage#/held-cases`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator ruling 2026-09-11: "All 'tiddler carries' flow through CRDTs into the magical federated mesh (private operator/user or public data, 'it's all tiddlers' unless its CID/CAD NOT in CRDT)."
+# Operator ruling 2026-09-11: "a .png under bags/ with a .meta reads canon (but we should have the path to residency move it to the other store styles)."
+# Operator rulings 2026-09-11: 1 MiB stays as the utf8 fault wall alone; KIND wins for SVG and vector packs; the 64 KiB floor leaves the decision and `_lar_cas` stays the one override; stock-server parity stands a goal. Each ruling and its ground: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage#/questions`>>.
+# Operator ruling 2026-11-21 (the ever-speaking present): the law lifts from the docs record to this api meme (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>> the scout: the house as built, the field, golden principles, rhymes, held cases, open questions
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5PrTERM1rj-5oqjm2xAAilyTqV0fBQfJJRiw-rW5PNQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

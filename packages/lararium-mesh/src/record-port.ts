@@ -4,13 +4,13 @@
  * The port carries RECORDS across the engine↔projection waist: a projection opens a port at a width, receives a
  * chunked snapshot at a stable base cursor, then changes after it, writes under a `txId`, asks the engine for
  * filters (each answer one bounded page under a cursor), renders, loads and invokes, and shares presence. The contract stands at
- * lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract; every reader below keeps its bounds, so a malformed
+ * lar:///ha.ka.ba/lares/api/pono/dreamdom-port-contract; every reader below keeps its bounds, so a malformed
  * port message vanishes at the door before any handler sees it.
  *
  * Cursors read `<bootNonce>.<shapeId>.<seq>` and stay opaque to a projection; they never reuse the camera's
  * frame `rev` or `mountEpoch`.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract
+ * Meme: lar:///ha.ka.ba/lares/api/pono/dreamdom-port-contract
  */
 import type { CapTier } from "./cap-tier.js";
 import type { KahuReachFacts } from "./kahu-canon-reach.js";

@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/w26-floor-lane"
 
 ! The W26 floor lane ~ one owner per registry, the floor by CID
 
-Road item `W26` carries the build of two operator rulings: //the system wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings. Items `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
+Road item `W26` carries the build of two operator rulings: //the system wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings. Items `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
 
 <<~/ahu>>
 
@@ -190,8 +190,8 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
@@ -202,6 +202,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rgnQQrSzUwl64IGNag9Vt7I6_-dEYIuNfls3fzAASXQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8ZM1bshCkzgshA2GwfjR2nyJoNbZGC6jvm1qz-9KcOo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

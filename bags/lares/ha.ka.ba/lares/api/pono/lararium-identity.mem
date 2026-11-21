@@ -560,7 +560,7 @@ The scouts, syntheses and owed work behind these rulings: <<~ loulou uri=`lar://
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing`>>
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>> — derives board address and scopes steward answer
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>> — projects seed records without oracle document history
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> — carries porch answer through an unsigned herm
@@ -568,6 +568,6 @@ The scouts, syntheses and owed work behind these rulings: <<~ loulou uri=`lar://
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6dZukdD_UqxNpRkn0TYSGq7Hho3fcOAHPmohr2tqDQk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5naUeE0RC7h6Ov_eFpKqVFHQxgyDrxWvk6nh-Dc_0iU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

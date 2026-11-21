@@ -260,11 +260,11 @@ the FORMAL register of the living grammar ([[living-grammar-palace|lar:///ha.ka.
 between casual chat-use and the defined parser core.
 
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — defines floor projection and registry scopes
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/oracle-planes`>> — defines floor projection and registry scopes
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>> — separates system floor from recipe libraries
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ftuyZWSmw0dDjjyk5JPvy5PTD4lEv9917awlp71jzvI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5WdPNNjj0Th8BUjH6XQOGYANruSarOD61Bv-PgESGiE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

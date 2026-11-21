@@ -44,7 +44,7 @@ The daemon wiki shows the intent plane through a read-only view: the pane where 
 !! The plane ~ one face-owned, append-only log
 
 * ''A fifth face plane'', `@intents-<tag>`, beside `@persona`, `@circles`, `@identities` and `@sessions` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga`>>). It derives from the PersonaGroup's tag like its siblings, so every device that joins the face derives its name and syncs it with no extra provisioning; two faces on one device share no entry; nothing stands above it. The PersonaGroup mints it and delegates append to each device edge; the mint order binds as for every face plane.
-* ''Never mirrored'': the plane carries the control plane, so it never projects to the tracked tree (the daemon bag's own law, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>).
+* ''Never mirrored'': the plane carries the control plane, so it never projects to the tracked tree (the daemon bag's own law, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>).
 * ''Entries append, never edit'', each signed by the atom of the device that writes it (a far agent's by its own key, #/the-far-agent). Kinds:
 ** `intent`: an invocation naming its verb, its arguments, its audience and its causal bound (#/no-clock). Its id is the content hash of issuer, verb, arguments and nonce, so every device derives it offline and a replayed copy carries the same id. An idempotent verb takes the empty nonce.
 ** `outcome`: a receipt whose `cause` names the intent's id and whose signer names the device that acted.
@@ -161,6 +161,6 @@ Road item `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-roa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6SX6QOG8GfC1JZasU3ojsm7KJ65zdBt-tcXWcuvJnqo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_hrCUiy0o8tq--WED1Q4vsd6s54RINJW2A62pmW0i70`>>
 
 <<^ code=`&#x0004;` to=`?`>>

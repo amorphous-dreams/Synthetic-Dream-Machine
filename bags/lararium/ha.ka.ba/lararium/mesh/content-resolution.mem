@@ -169,7 +169,7 @@ differing ''only in the extraction boundary'':
   a CAS member. Blob-worthiness reads off the KIND the declared `type` names (TW5's own
   `encoding: "base64"` registry, the image·audio·video·font families) — never a size; the `_lar_cas`
   flag pushes a text ahu out on purpose (the `#source-text` case), and 1 MiB stands as the utf8
-  FAULT wall alone (the blob law: lar:///ha.ka.ba/lares/docs/pono/blob-carriage#/proposed-law).
+  FAULT wall alone (the blob law: lar:///ha.ka.ba/lares/api/pono/blob-carriage#/proposed-law).
 * ''B — a raw other-data shard.'' Raw bytes, no memetic-wikitext wrapper (image, audio,
   binary, data). ''Whole-carrier:'' the entire shard rests as a `cid/` CAS blob, referenced
   by a skinny handle (the TW5 External Image/Audio/Text pattern).
@@ -303,6 +303,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_p7bynyo7xjOITDidIsLQfAvmop74CM3Ycvulluk484`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p3ix-RE4pBQpFc3mNwxxiaQwGG6vkVP5vW2fVFmwt6M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

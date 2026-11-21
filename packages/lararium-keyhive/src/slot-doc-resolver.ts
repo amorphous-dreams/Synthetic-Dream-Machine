@@ -27,7 +27,7 @@
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
  *
- * Canon: lar:///ha.ka.ba/lararium/api/personal-slot · lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model
+ * Canon: lar:///ha.ka.ba/lararium/api/personal-slot · lar:///ha.ka.ba/lares/api/pono/recipe-layer-model
  */
 
 import {
