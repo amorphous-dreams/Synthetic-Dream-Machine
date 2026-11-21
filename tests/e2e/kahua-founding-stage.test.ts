@@ -105,8 +105,8 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     } }, { budgetMs: 60_000 });
     expect(existsSync(join(daemonWikiDir(hearth!.root), "ha.ka.ba/kahua/memory/kahua-founding-stage-row.mem"))).toBe(true);
     expect(existsSync(kahuaStageDir(hearth!.root))).toBe(true);
-    // CONTROL (placement over patterns): the daemon wiki's mirrors stand in the worn face's root alone, `faces/<pet name>/wiki`
-    // and `faces/<pet name>/canon`; the daemon document and the control document name no mirror, so neither the tracked-shape
+    // CONTROL (placement over patterns): the daemon wiki's mirrors stand in the worn face's root alone, `faces/<pet name>/wikis/daemon`
+    // and `faces/<pet name>/bags/daemon`; the daemon document and the control document name no mirror, so neither the tracked-shape
     // bags/ beside the root nor <projections>/bags/daemon holds anything, and no projected file names a private home.
     expect(faceDaemonMirrors(hearth!.root).working).toBe(daemonWikiDir(hearth!.root));
     expect(existsSync(join(hearth!.root, "bags", "daemon"))).toBe(false);
