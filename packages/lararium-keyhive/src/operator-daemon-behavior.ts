@@ -1553,6 +1553,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           rootDir:     "",
           vesselDid: async () => didFromVerifyingKey(faceAtom().key),
           registerBag: registerBagCap,
+          // AN INIT COMPLETES WHAT A PARTIAL LEFT (idempotent by intent): it registers the bags this face's hive does not
+          // hold yet, and stands the face's workbench in the same act (the realm seating its hive, else its own cabal of one).
+          bagRegistered: async (bag: string) => !!kh && kh.docIdOfBag(bag) !== null,
+          ...(daemonAuth.personaGroupId ? {
+            workbench: async (slug: string) => {
+              const before = ledgerWorkbenchRealms((await workbenchLedgerOf(ctx)).doc(), slug);
+              const realmId = await faceWorkbench(ctx, () => kh, daemonAuth.personaGroupId!)(slug, true);
+              return { realmId, founded: realmId !== null && !before.includes(realmId) };
+            },
+          } : {}),
           resolveDraftDoc: (slug: string) => slotDocsOf(ctx).draft(slug),
         };
         // The wiki-minting and composing verbs write under the face's reach, so a floor refuses them by
@@ -1570,7 +1580,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const veilMintOpts = {
           ...wikiMintOpts,
           vesselDid: async () => didFromVerifyingKey(daemonAuth.placeVerifyingKey),
+          // The veil registers no Keyhive bag: none reads as missing, so its answer names none registered.
           registerBag: async () => {},
+          bagRegistered: async () => true,
           veilFloor: {
             mintedBy: daemonAuth.placeVerifyingKey,
             nameCanon: async (slug: string, documentId: string, url: string) => {

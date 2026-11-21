@@ -67,6 +67,11 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
 
     const existingWikiUrl = await opts.catalog.urlOf(canonBag);
     const existingRecipeRec = await opts.catalog.recordOf(recipeTitle);
+    // WHERE A STANDING CANON ROW RESTS: the face's own catalog half, or the floor's beneath it (a veil mint, or a partial init
+    // the vessel left before any face stood). A catalog with no face half laid over it reads its rows as its own.
+    const half = existingWikiUrl ? catalogViewOf(await opts.catalog.handle())?.faceHandle() ?? null : null;
+    const canonReused: "own" | "floor" | null = !existingWikiUrl ? null
+      : half && !Object.hasOwn(half.doc()?.tiddlers ?? {}, canonBag) ? "floor" : "own";
 
     const wikiHandle = existingWikiUrl
       ? await opts.repo.find(existingWikiUrl as AutomergeUrl)
@@ -106,15 +111,37 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     // draft bags hold their cap immediately — no cap-denied window (the elyncia-bag
     // friction's sibling for wiki init). Key on the lar: bag URLs — the strings the
     // cap-gate verifies against; an automerge handle.url names a CONTENT doc, a different object.
-    if (!existingWikiUrl) {
-      await opts.registerBag?.(canonBag);
-      await opts.registerBag?.(workingBagId);
-      await opts.registerBag?.(draftBagId);
+    //
+    // IDEMPOTENT BY INTENT: an init over rows a partial init left (another face's, or the floor's) registers each bag this
+    // face's hive does not hold yet, and only those, so the same init run twice registers nothing the second time. Where no
+    // reader of the hive stands, only a fresh mint registers (each bag is new then).
+    const bags = [canonBag, workingBagId, draftBagId];
+    const bagsRegistered: string[] = [];
+    for (const bag of bags) {
+      const missing = opts.bagRegistered ? !(await opts.bagRegistered(bag)) : !existingWikiUrl;
+      if (!missing || !opts.registerBag) continue;
+      await opts.registerBag(bag);
+      bagsRegistered.push(bag);
     }
 
+    // THE WORKBENCH STANDS IN THE SAME ACT (where the daemon supplies the port): the realm that seats this face's hive, else its
+    // own private cabal of one, founded once. A workbench another face's realm holds names its refusal here; the rows and the
+    // bags this init laid still stand, and the answer says what did not.
+    let workbench: { realmId: string | null; founded: boolean } | { refused: string } | undefined;
+    if (opts.workbench && !isFacePrivateSlug(slug)) {
+      try { workbench = await opts.workbench(slug); }
+      catch (err) { workbench = { refused: err instanceof Error ? err.message : String(err) }; }
+    }
+
+    const completed = !existingWikiUrl ? false
+      : !existingRecipeRec || bagsRegistered.length > 0 || (workbench !== undefined && "founded" in workbench && workbench.founded);
     return {
       slug,
-      status: existingWikiUrl && existingRecipeRec ? "already-exists" : existingWikiUrl ? "completed-partial" : "minted",
+      status: !existingWikiUrl ? "minted" : completed ? "completed" : "already-exists",
+      ...(canonReused ? { canonReused } : {}),
+      ...(existingWikiUrl && !existingRecipeRec ? { recipeWritten: true } : {}),
+      bagsRegistered,
+      ...(workbench ? { workbench } : {}),
       wikiUri: stackUri,
       canonBag,
       wikiDocUrl: wikiHandle.url,
@@ -141,7 +168,7 @@ export class WikiRetireRefusal extends Error {
 }
 
 const totalOf = (c: WikiShellCounts): number => c.working + c.draft + c.personal;
-const sameCounts = (a: WikiShellCounts, b: WikiShellCounts): boolean => a.working === b.working && a.draft === b.draft && a.personal === b.personal;
+const sameCounts = (a: WikiShellCounts, b: WikiShellCounts): boolean => a.working === b.working && a.draft === b.draft && a.personal === b.personal && a.effects === b.effects;
 
 /**
  * RETIRE A WIKI SHELL (`lares wiki retire <slug>`, the owner face's hand, never the AI seat): unmint what one face's
@@ -156,7 +183,9 @@ const sameCounts = (a: WikiShellCounts, b: WikiShellCounts): boolean => a.workin
  * another face refuses `not-the-owner` (the same reading `retireWorkbench` keeps). A shell another face reaches (a seat the
  * ledger notes for a face other than the worn one, or a share row naming the slug) refuses `wiki-shared`: the shares leave first.
  *
- * NOTHING DESTROYS CONTENT BY DEFAULT. A working, draft or personal layer holding a live record refuses `wiki-not-empty`
+ * NOTHING AUTHORED LEAVES BY DEFAULT. The counts name AUTHORED records apart from the house's EFFECT records (a gated ingest's
+ * residency row, minted by the vessel, never by a hand): a shell holding effect records alone retires unforced and drops them
+ * with the shell. A working, draft or personal layer holding a live authored record refuses `wiki-not-empty`
  * (naming no count: `dry-run` reads the counts, and the refusal never carries the forcing line). `force` with no `count`
  * refuses `retire-count-missing`; a `count` other than the total refuses `retire-count-moved`; the very total retires and
  * clears those layers' documents, so a later mint at the same deterministic address opens empty. The counts read twice, the
@@ -223,6 +252,7 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
 
     const canonDoc = tiddlerText(ownEntry(handle.doc()?.tiddlers, canonBag)) ?? null;
     if (total > 0) await opts.shell.clear(slug);
+    else if (counts.effects > 0) await opts.shell.clear(slug, "effects");
     const keyhiveBindings = await opts.shell.forget([wikiSlotUri(slug, "working"), wikiSlotUri(slug, "draft"), wikiSlotUri(slug, "personal")]);
     const slotBindings = await opts.shell.unbindSlots(slug);
     const { realmId, ledgerRows } = await opts.shell.unbind(slug);

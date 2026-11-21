@@ -1,8 +1,12 @@
 /**
  * `lares bag share` · `lares wiki share` — THE SHARE CONFIG's one door (sealed-store#/the-share-config).
  *
- *   lares bag share <bag> --read <names> [--write <names>] [--note <why>] [--face N]
- *   lares wiki share <wiki> --read <names> [--write <names>] [--note <why>] [--workspace <name>]
+ *   lares bag share <bag> [--read <names>] [--write <names>] [--read-remove <names>] [--write-remove <names>] [--note <why>] [--face N]
+ *   lares wiki share <wiki> [--read <names>] [--write <names>] [--read-remove <names>] [--write-remove <names>] [--note <why>] [--workspace <name>]
+ *
+ * A LINE NAMES ITS DELTA: `--read`/`--write` add names beside the row's standing ones, `--read-remove`/`--write-remove` take
+ * names out, and what the line leaves unnamed (the other list, the note, the workspace, the owner) stands. The same line run
+ * twice writes the same row; the echo prints the resolved row.
  *   lares bag share --list        every row, and the one resolver's answer per bag: who reads, who writes, who waits
  *   lares bag share --list --json each row AS WRITTEN (its read and write title lists, `*` kept, its note, workspace and
  *                                 owner), beside the resolver's answer (`resolved`): a re-grant reads the row's own policy here
@@ -42,8 +46,23 @@ export function petnamesOf(filter: string, faces: readonly ShareFace[]): string 
     if (!face?.petname) throw new ShareConfigRefusal("share-filter-unsupported", `${n} names no face carrying a pet-name here`);
     return face.petname;
   });
-  const quoted = names.map((n) => (/\s/.test(n) ? `[[${n}]]` : n));
-  return [...(parsed.all ? ["*"] : []), ...quoted].join(" ");
+  return filterOf(parsed.all, names);
+}
+
+/** A title list from its parts: `*` first, each name once (a name given by pet-name and by `hN` reads once), bracketed where it holds a space. */
+function filterOf(all: boolean, names: readonly string[]): string {
+  const quoted = [...new Set(names)].map((n) => (/\s/.test(n) ? `[[${n}]]` : n));
+  return [...(all ? ["*"] : []), ...quoted].join(" ");
+}
+
+/**
+ * THE DELTA A SHARE LINE NAMES, laid over the standing filter: `add` joins its names (and `*`), `drop` takes its names (and `*`)
+ * out, and every name the line leaves unnamed stands. The same line over its own result changes nothing.
+ */
+export function shareDelta(standing: string, add: string, drop: string): string {
+  const s = parseShareFilter(standing), a = parseShareFilter(add), d = parseShareFilter(drop);
+  const gone = new Set(d.names);
+  return filterOf((s.all || a.all) && !d.all, [...s.names, ...a.names].filter((n) => !gone.has(n)));
 }
 
 /**
@@ -60,13 +79,19 @@ export function shareListJson(rows: readonly ShareEntry[], faces: readonly Share
 }
 
 /** The lines `--list` prints: each row and the one resolver's answer. */
+/** The resolver's answer for one row, each face by pet-name and handle (`the referee (h2)`). */
+function resolvedOf(row: ShareEntry, rows: readonly ShareEntry[], faces: readonly ShareFace[]): { read: string; write: string; waiting: readonly string[] } {
+  const label = (i: number): string => { const f = faces.find((x) => x.handleIndex === i); return f?.petname ? `${f.petname} (h${i})` : `h${i}`; };
+  const a = resolveShare({ bag: shareEntryBag(row), rows, faces });
+  return { read: a.read.map(label).join(", ") || "(none named)", write: a.write.map(label).join(", ") || "(none named)", waiting: a.waiting };
+}
+
 export function shareListLines(rows: readonly ShareEntry[], faces: readonly ShareFace[]): string[] {
   if (rows.length === 0) return ["share: no row stands; house canon reads the floor for every face, and every other bag stays its owner's"];
-  const label = (i: number): string => { const f = faces.find((x) => x.handleIndex === i); return f?.petname ? `${f.petname} (h${i})` : `h${i}`; };
   const out: string[] = [];
   for (const row of rows) {
-    const a = resolveShare({ bag: shareEntryBag(row), rows, faces });
-    out.push(`${row.kind} ${row.slug}: read ${a.read.map(label).join(", ") || "(none named)"} · write ${a.write.map(label).join(", ") || "(none named)"}${row.note ? ` · ${row.note}` : ""}`);
+    const a = resolvedOf(row, rows, faces);
+    out.push(`${row.kind} ${row.slug}: read ${a.read} · write ${a.write}${row.note ? ` · ${row.note}` : ""}`);
     for (const w of a.waiting) out.push(`  waits: "${w}" names no face here; it lands when a face carries that pet-name`);
   }
   return out;
@@ -109,22 +134,31 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
       return 0;
     }
     try { assertShareKindFree(slug, kind, standing?.kind); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
+    // A SHARE NAMES ITS DELTA (idempotent and isomorphic by intent): `--read`/`--write` add names beside the standing ones,
+    // `--read-remove`/`--write-remove` take names out, and every part the line leaves unnamed (the other list, the note, the
+    // workspace, the owner) stands as the row held it. The same line run again writes the same row.
+    const prior = rows.find((r) => r.slug === slug && r.kind === kind);
+    const removing = args.options["read-remove"] !== undefined || args.options["write-remove"] !== undefined;
+    if (removing && !prior) { doors.err(`lares ${kind} share: no row stands for ${slug}; --read-remove and --write-remove take names out of a standing row`); return 2; }
     let read: string, write: string;
     try {
       const faceOpt = args.options["face"];
       const sugar = faceOpt !== undefined ? ` h${Number(faceOpt)}` : "";
-      read = petnamesOf(`${args.options["read"] ?? ""}${sugar}`, faces);
-      write = petnamesOf(args.options["write"] ?? "", faces);
+      read = shareDelta(prior?.read ?? "", petnamesOf(`${args.options["read"] ?? ""}${sugar}`, faces), petnamesOf(args.options["read-remove"] ?? "", faces));
+      write = shareDelta(prior?.write ?? "", petnamesOf(args.options["write"] ?? "", faces), petnamesOf(args.options["write-remove"] ?? "", faces));
     } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
-    const note = args.options["note"];
-    const workspace = kind === "wiki" ? args.options["workspace"] : undefined;
+    const note = args.options["note"] ?? prior?.note;
+    const workspace = kind === "wiki" ? args.options["workspace"] ?? prior?.workspace : undefined;
     if (kind === "bag" && args.options["workspace"] !== undefined) { doors.err("lares bag share: --workspace names where a WIKI's workbench rests; a bag takes none"); return 2; }
-    const prior = rows.find((r) => r.slug === slug && r.kind === kind);
     const row: ShareEntry = { slug, kind, read, write, ...(workspace ? { workspace } : {}), ...(prior?.owner ? { owner: prior.owner } : {}), ...(note ? { note } : {}) };
-    const next = [...rows.filter((r) => r.slug !== slug), row];
+    // The row keeps its place in the file, so a line that changes nothing writes the very bytes it read.
+    const next = prior ? rows.map((r) => (r === prior ? row : r)) : [...rows.filter((r) => r.slug !== slug), row];
     try { serializeShareFile(next); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
+    const unchanged = prior !== undefined && serializeShareFile([prior]) === serializeShareFile([row]);
     doors.file.write(serializeShareFile(next));
-    doors.out(`share: ${kind} ${slug} reads for ${read || "(none named)"}, writes for ${write || "(none named)"}; written to config/${SHARE_CONFIG_FILE}`);
+    // THE ECHO READS THE RESOLVED ROW, each face once (the answer `--list` gives).
+    const resolved = resolvedOf(row, next, faces);
+    doors.out(`share: ${kind} ${slug} reads for ${resolved.read}, writes for ${resolved.write}; ${unchanged ? "unchanged in" : "written to"} config/${SHARE_CONFIG_FILE}`);
     const set = await doors.verb("share-set", shareSetArgs(row));
     if (set === null) { doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning"); return 0; }
     // THE OPERATOR'S HAND LANDS IT: each lit grantee takes the row by reference and a delegation from the owner's hive.
