@@ -22,7 +22,7 @@ import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarOpenPhase } from "./lararium-vessel.js";
 import { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
-import { AutomergeDocStore } from "./automerge-doc-store.js";
+import { AutomergeDocStore, markStandIn } from "./automerge-doc-store.js";
 import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
@@ -165,6 +165,8 @@ function documentIdFromUrl(url: string): string {
 }
 
 const blankDoc = (repo: Repo): DocHandle<LarDoc> => repo.create<LarDoc>(emptyLarDoc());
+/** A degraded or pending doc's read-only blank: it reads empty and stands in, unread, so a delete above it raises a kāpae. */
+const standIn = (repo: Repo): DocHandle<LarDoc> => { const handle = blankDoc(repo); markStandIn(handle); return handle; };
 
 /** Canon layer (the lararium and lares bags): writable, defaultWritable:false. */
 function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo: Repo): void {
@@ -260,7 +262,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         // Read-only blank stands in — the plane reads empty until L4 rematerializes it,
         // and no write forks a placeholder the real doc will later reconcile against.
-        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId, wearOf(repo)), writable: false });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
         return;
       }
       if (isUnresolved(verdict)) {
@@ -270,7 +272,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // later reconcile against) — a read-only blank, named `pending`, until a later
         // re-probe (doctor, or an operator receipt) actually decides.
         entries.push({ bagId, documentId, status: "pending", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
-        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId, wearOf(repo)), writable: false });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
         return;
       }
     }

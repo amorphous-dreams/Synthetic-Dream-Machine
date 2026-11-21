@@ -90,7 +90,7 @@ describe("lares surface init --realm", () => {
     expect(existsSync(join(ws, ".git", "HEAD")), "a workspace holds its own tree").toBe(true);
     expect(existsSync(join(realmRoot(rig.projections, "Garden"), ".git", "HEAD"))).toBe(true);
     expect(existsSync(works)).toBe(false);
-    expect(git(ws, "config", "--local", "user.email").out.trim()).toBe("works@realm.invalid");
+    expect(git(ws, "config", "--local", "user.email").out.trim()).toBe("works@workspace.invalid");
   });
 
   test("refuses a realm no label names, and one whose wikis all stand nowhere, by name, making nothing", async () => {

@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "canonical: Verse type lattice — any/false/void/comparable hierarchy; persistable constraint universe; effects bit-vector (6 families); edge-label semantics for pranala type annotations"
-status-date = "2026-05-15"
-title       = "lar:///ha.ka.ba/lares/api/pono/verse-type-lattice"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/verse-type-lattice"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "canonical: Verse type lattice — any/false/void/comparable hierarchy; persistable constraint universe; effects bit-vector (6 families); edge-label semantics for pranala type annotations"
+title     = "lar:///ha.ka.ba/lares/api/pono/verse-type-lattice"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/verse-type-lattice"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -187,6 +186,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nwzC5hLcmgTZzvupZ7VhN93-wKuQ32IrvYpcV2c-uZU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_H5huJRrUaLaUI_qlsLwTSFy33wMmgoi1uwbQx8ssgk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

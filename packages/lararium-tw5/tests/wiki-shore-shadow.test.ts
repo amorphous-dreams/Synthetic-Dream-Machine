@@ -9,6 +9,7 @@ import { CompositeStore, emptyLarDoc, type LarDoc, wikiBagUri } from "@lararium/
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
+import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import {
   Repo, afterDispatch, canonBag, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence,
@@ -156,7 +157,7 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("control: a working-layer title tombstones in the working layer at its landed base, and a draft in the draft layer", async () => {
+  test("control: a working-layer title with nothing beneath retracts from the working layer at its landed base, and a draft from the draft layer", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const own = "lar:///t/shadow/own";
@@ -171,8 +172,9 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await afterDispatch();
     boundary.fire();
     await turns(32);
-    const calls = r.calls.slice(mark).filter((c) => c.deletes.includes(own));
+    const calls = r.calls.slice(mark).filter((c) => c.retracts?.includes(own));
     expect(calls).toHaveLength(1);
+    expect(r.calls.slice(mark).filter((c) => c.deletes.includes(own)), "no tombstone rises over nothing").toEqual([]);
     expect(calls[0]!.bag).toBe(workingBag);
     expect(calls[0]!.base).toEqual(ownHeads);
     const d = openDraft(r, target, "typing");
@@ -185,6 +187,32 @@ describe.skipIf(wikiSkip)(`wiki shore shadowing${skipNote}`, () => {
     await afterDispatch();
     await turns(32);
     expect(r.calls.slice(markDraft).filter((c) => c.deletes.includes(d)).map((c) => [c.bag, c.base])).toEqual([[draftBag, draftBase]]);
+    await r.stop();
+  }, 120_000);
+
+  test("★ a shared workbench [working, realm canon R, canon]: face A reaches no R and deletes T in the UI; the working layer takes a kāpae, so face B, which reaches R's T, never sees it surface ★", async () => {
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
+    const realm = "lar:///ha.ka.ba/bags/realm-r";
+    r.composite.markUnreached([draftBag, workingBag, realm, canonBag], [realm]);
+    const t = "lar:///t/shadow/shared-workbench";
+    await r.working.put({ tiddler: { title: t, text: "working copy" } }, remote);
+    await turns();
+    await r.adaptor.armSeedCheckpoint();
+    const mark = r.calls.length;
+    r.wiki.deleteTiddler(t);
+    await afterDispatch();
+    boundary.fire();
+    await turns(32);
+    expect(r.calls.slice(mark).filter((c) => c.deletes.includes(t)).map((c) => c.bag), "one kāpae, in the working layer").toEqual([workingBag]);
+    expect(r.calls.slice(mark).filter((c) => c.retracts?.includes(t)), "no plain retract over the unread layer").toEqual([]);
+    // Face B composes the same working document over R, which holds T.
+    const realmStore = new MemoryTiddlerStore();
+    await realmStore.put({ tiddler: { title: t, text: "realm canon" } }, remote);
+    const faceB = new CompositeStore();
+    faceB.addLayer({ bagId: realm, store: realmStore, writable: false });
+    faceB.addLayer({ bagId: workingBag, store: r.working, writable: true });
+    expect(await faceB.getLive(t), "R's T stays hidden under A's delete").toBeNull();
     await r.stop();
   }, 120_000);
 

@@ -9,7 +9,8 @@
 //       into a file and take it down (the rite's order: the two houses never stand at once), found a brand-new scratch house
 //       under the same pet-names, `lares import --apply`, and the witness reads par of the snapshot against the new house's
 //       real read doors. Then on the new house delete one meme, change another and drop one share: the witness reads red,
-//       exits non-zero, and names all three (beside the kāpae shadow the delete itself raises, and nothing else).
+//       exits non-zero, and names all three and nothing else (the meme rests in the working layer alone, so its delete leaves
+//       plainly and raises no kāpae shadow).
 //
 // Each house stands under its own marked scratch LAR_ROOT through the test custody doors; no LAR_BAGS, no docker.
 import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
@@ -394,9 +395,10 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     assert.ok(said.includes(`memes missing default ${POND}`), said.join("\n"));
     assert.ok(said.includes(`memes changed default ${KITE}`), said.join("\n"));
     assert.ok(said.includes("shares missing wiki notes"), said.join("\n"));
-    // The delete raises a kāpae over the meme in the steward's working layer, and its shadow reads as the delete's own mark.
-    assert.ok(said.includes(`kapae extra faces/steward/wikis/daemon ${POND}`), said.join("\n"));
-    assert.equal(said.length, 4, `the three planted faults and the delete's kāpae read red, and nothing else:\n${said.join("\n")}`);
+    // The meme rests in the steward's working layer alone, so its delete leaves plainly (recipe-layer-model#/delete-reveals-or-shadows):
+    // no kāpae rises and no shadow reads as an extra row. The missing meme still reads red by name above.
+    assert.ok(!said.some((row) => row.startsWith("kapae ")), `a plain delete raises no kāpae:\n${said.join("\n")}`);
+    assert.equal(said.length, 3, `the three planted faults read red, and nothing else:\n${said.join("\n")}`);
   } finally {
     for (const h of houses) await h.stop();
     for (const h of houses) rmSync(h.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });

@@ -109,7 +109,8 @@ describe("the sealed-act table", () => {
     await vessel("acts-t3");
     const root = await generateOrLoadPersonaGroupRoot(0);
     const roots = await runSealedAct("persona.roots", {}, ctx);
-    expect(roots).toEqual({ roots: [{ handleIndex: 0, verifyingKey: root.verifyingKey }], orphans: [] });
+    // A root whose face holds no anchors row names no PersonaGroup: `group` reads null, never a guess.
+    expect(roots).toEqual({ roots: [{ handleIndex: 0, verifyingKey: root.verifyingKey, group: null }], orphans: [] });
     const [seat] = (await seatChairs([0])).keys as [string];
     const sign = (args: Record<string, unknown>) => runSealedAct("seal.sign", { seat, ...args }, ctx) as Promise<{ signer: string; sig: string }>;
     // A WELL-FORMED ROLL SIGNS ONLY UNDER A CHARTER THAT LICENSES IT (`seal-ceremony.test.ts` walks the license).

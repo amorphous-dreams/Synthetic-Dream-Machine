@@ -4,6 +4,8 @@ import type { CapabilityProvider } from "./capability-provider.js";
 export interface BagDocLedger {
   get(bag: string): Promise<string | null>;
   put(bag: string, docId: string): Promise<void>;
+  /** Drop a bag's record (`lares wiki retire`): the face's next mint of that bag registers a fresh Document. True where one stood. */
+  drop?(bag: string): Promise<boolean>;
 }
 
 export async function registerBagsDurably({ provider, bags, ledger }: {
@@ -54,6 +56,13 @@ export function planeBagDocLedger(store: LarTiddlerStore): BagDocLedger {
     },
     async put(bag, docId) {
       await store.put(mutableLarRecord(await titleFor(bag, false), { text: docId, bag }, "lares-keyhive"), origin);
+    },
+    async drop(bag) {
+      const title = await titleFor(bag, false);
+      const record = await store.get(title);
+      if (!record || record.meta?.deleted || record.tiddler?.bag !== bag) return false;
+      await store.remove(title, origin);
+      return true;
     },
   };
 }

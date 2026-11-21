@@ -57,6 +57,8 @@ export interface StoreCall {
   readonly bag: string | undefined;
   readonly puts: readonly string[];
   readonly deletes: readonly string[];
+  /** The titles the call retracted to absent in the same change (a plain delete: no kāpae rises). */
+  readonly retracts?: readonly string[];
   readonly base: readonly string[] | undefined;
 }
 
@@ -123,10 +125,12 @@ export async function shoreRig(opts: RigOptions = {}) {
   vi.spyOn(composite, "writeFamily").mockImplementation((puts, deletes, origin, options) => {
     const destination = options?.bag ?? composite.defaultWritableBagId() ?? undefined;
     if (destination && !ownSlots.has(destination) && origin.kind === "tw-local") outsideSlots.push(`family ${destination}`);
-    calls.push({ kind: "family", bag: destination, puts: puts.map((p) => p.tiddler.title), deletes: [...deletes], base: options?.base });
+    calls.push({ kind: "family", bag: destination, puts: puts.map((p) => p.tiddler.title), deletes: [...deletes], ...(options?.retracts?.length ? { retracts: [...options.retracts] } : {}), base: options?.base });
     if (failures.holdDelete && deletes.includes(failures.holdDelete.title)) return failures.holdDelete.until.then(() => writeFamily(puts, deletes, origin, options));
     if (failures.hold && options?.bag === draftBag) { const held = failures.hold; return held.then(() => writeFamily(puts, deletes, origin, options)); }
     if (failures.deleteTitle && deletes.includes(failures.deleteTitle)) return Promise.reject(new Error("source removal refused"));
+    // A refused plain delete (a retract) fails as a refused tombstone does: the title stays owed.
+    if (failures.tombstone && options?.retracts?.length) return Promise.reject(failures.tombstone);
     if (failures.family) { const fault = failures.family; return (failures.gate ?? Promise.resolve()).then(() => { throw fault; }); }
     return writeFamily(puts, deletes, origin, options);
   });
@@ -239,5 +243,9 @@ export function storeText(r: Rig, bag: string, title: string): string | undefine
 }
 export function storeDeleted(r: Rig, bag: string, title: string): boolean {
   return r.doc(bag).tiddlers[title]?.meta?.deleted === true;
+}
+/** Whether a bag's document holds no entry for the title at all: a plain delete leaves neither record nor kāpae. */
+export function storeAbsent(r: Rig, bag: string, title: string): boolean {
+  return r.doc(bag).tiddlers[title] === undefined;
 }
 export type { TW5Engine };

@@ -35,7 +35,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/first-three-wave-map"
 
 !! The wikis in scope ~ the recipe true-up
 
-Each row reads its layers top to bottom in the order `expandRecipe` lays them (`packages/lararium-mesh/src/wiki-recipe.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/daemon-and-domain`>>). "Mirror" names the folder the working layer projects to and whether git tracks it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/two-workspaces`>>). The faces carry the rite's names: face 0 the steward (the Kahu chair), face 1 the engineer, face 2 the referee (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/the-three-face-rite`>>).
+Each row reads its layers top to bottom in the order `expandRecipe` lays them (`packages/lararium-mesh/src/wiki-recipe.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model#/daemon-and-domain`>>). "Mirror" names the folder the working layer projects to and whether git tracks it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/two-workspaces`>>). The faces carry the rite's names: face 0 the steward (the Kahu chair), face 1 the engineer, face 2 the referee (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/the-three-face-rite`>>).
 
 |! slug |! class |! recipe (top first) |! owner · seats |! mirror · git |! holds |
 | `daemon` (one per face, `daemon-<F>`) | daemon | temp · working (the face's device slot) · `bags/daemon-<F>` (local canon, unsigned) · `bags/kahua-<F>` (the signed stage, lift-only) · the vessel's library bags · `bags/crossroads` · `bags/daemon` · `bags/oracle` | one face; refuses every share (`share-face-private`) | `<projections>/wikis/daemon-<F>` under the house root; no git | the face's memory memes (`lar:///ha.ka.ba/kahua/memory/<class>/<slug>`); in the steward's, the house laws (#/the-handoff-walk) and, until `works` opens, the wave's lane cards and handbacks (#/thing-two-the-work-as-tiddlers) |
@@ -65,7 +65,7 @@ The operator leans the `lararium` bag. ''Weighed'' (measured): `bags/lararium/me
 
 !!! The new classes, defined, with the true-up owed to `recipe-layer-model`
 
-''THE DERIVED LIBRARY'' (proposed text for <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/daemon-and-domain`>>; a later scribe applies it, this carrier edits nothing there):
+''THE DERIVED LIBRARY'' (proposed text for <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model#/daemon-and-domain`>>; a later scribe applies it, this carrier edits nothing there):
 
 * A derived library holds records ONE named tool writes as a pure function of ONE named commit of a tracked tree. Its bag's `meta.mem` declares `cap-tier = "public"`, `home = "hearth"` and a new key `derived = "<tool>"`; each record carries the commit it derives from (`head`).
 * It composes only as a library, beneath the host wiki's canon (the `libraries` row), and takes no write from any hand door: `meme put`, `tiddler put`, a residency `MOVE` or `COPY` naming it, a kāpae and a lift each refuse `derived-library-read-only`.
@@ -390,6 +390,6 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 * ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IhSDfAtJDsHz5Ar0GE4oyLgpyrg3LV9jm9ggyj5_nAA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KkIKLeLhMnTP-9u8wQ8vw2_HrMJlFSOqZCFeRWgRTA8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

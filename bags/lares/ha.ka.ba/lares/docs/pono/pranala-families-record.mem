@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/pranala-families-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind api/pono/pranala-families: the dead source pointer the canvas palette carried and the measurement that found it, kept as testimony; the taxonomy speaks in the api meme"
+tags        = ["api/pono/meme", "api/pono/pranala-families"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/pranala-families-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/pranala-families-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Pranala Families ~ the record
+
+The taxonomy speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>; its ruling stands in that meme's `#/rulings`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canvas-pointer`>>
+
+!! The canvas palette's pointer
+
+Verbatim:
+
+> ⚠ ''NO SOURCE OF TRUTH STANDS.'' This named `packages/lararium-tldraw/src/tldraw-shapes.ts`, and ''that package does not exist'' — no tldraw dependency stands in any manifest, no submodule, nothing installed (measured 2026-09-02). The palette below is the record; the code that would consume it is unbuilt. When the DreamDOM canvas camera lands, it takes this table and this table is the source.
+
+The role line counted ''eight families'' beside a schema of nine.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oMFeZaEl84kjYqbTCYlZrVxMN4o8XvEBEUj3Ce4Yoa4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

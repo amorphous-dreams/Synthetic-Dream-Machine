@@ -35,7 +35,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
 import {
-  ledgerWorkbenchRealms, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
+  dropWorkbench, ledgerWorkbenchRealms, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
   wikiSlotUri, noteWorkbenchSeat, dropWorkbenchSeat, workbenchKeyDocs, workbenchSeats, WorkbenchRefusal,
   type AutomergeUrl, type CabalRealm, type LarDoc,
 } from "@lararium/mesh";
@@ -176,6 +176,35 @@ export async function standWorkbench(provider: KeyhiveProvider, ledger: LedgerDo
     noteWorkbenchSeat(d, realmId, slug, face, founder);
   });
   return { realmId, founded: !noted, keyDoc: f.keyDoc };
+}
+
+/** Who stands a slug's workbench on this vessel, read for one face: every realm the ledger binds it under, and the face's own. */
+export interface WorkbenchOwnership {
+  readonly bound: readonly string[];
+  /** The face's own derived cabal of one for the slug (`privateCabalRealmId`). */
+  readonly own: string;
+}
+
+/** Read who stands a slug's workbench for `face`: it reads alone and founds nothing. */
+export function workbenchOwnership(ledger: LarDoc | undefined | null, slug: string, face: string): WorkbenchOwnership {
+  return { bound: ledgerWorkbenchRealms(ledger, slug), own: privateCabalRealmId(face, slug) };
+}
+
+/**
+ * RETIRE a face's workbench of `slug` (`lares wiki retire`, the owner face's hand): the ledger's rows binding the slug to the
+ * face's OWN cabal (the binding, its key Documents, its seats) leave, so a later stand by any face founds afresh and none meets
+ * `workbench-slug-bound` (the face's hive forgets the working slot's Document through `wikiShellPorts`' `forget`). A slug the ledger binds under another face's
+ * realm refuses `workbench-slug-bound` and drops nothing: only the owner retires its workbench. The key Document's capability
+ * events stay where they rest; nothing here revokes or deletes one.
+ */
+export function retireWorkbench(ledger: LedgerDoc, slug: string, face: string): { readonly realmId: string | null; readonly dropped: readonly string[] } {
+  const { bound, own } = workbenchOwnership(ledger.doc(), slug, face);
+  if (bound.some((realmId) => realmId !== own)) {
+    throw new WorkbenchRefusal("workbench-slug-bound", `the workbench of "${slug}" stands on this vessel under another face's realm; that face retires it`);
+  }
+  let dropped: string[] = [];
+  if (bound.includes(own)) ledger.change((d) => { dropped = dropWorkbench(d, own, slug); });
+  return { realmId: bound.includes(own) ? own : null, dropped };
 }
 
 /**

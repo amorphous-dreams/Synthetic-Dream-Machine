@@ -13,7 +13,6 @@ tags       = ["api/pono/meme", "api/pono/causal-islands", "api/pono/orichalcum-c
 title      = "lar:///ha.ka.ba/lares/api/pono/convergent-mesh"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/convergent-mesh"
-written    = "2026-06-24"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -133,6 +132,6 @@ The Scope-1 CAD-blob pipe carries a ''concrete design'' (`content-resolution`, d
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;sfQPjcxnYhM2Hp4yLq9JNGqAsFXaPb8Tm5MMJ2lun7Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bhuc7HLFiNbCvrd9GwFudo9s6jk9xEA2emPdenwOgXk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

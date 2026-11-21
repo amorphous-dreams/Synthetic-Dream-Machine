@@ -4,15 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "invariant doctrine: 7 local-first ideals (Ink & Switch), each graded against what the house stands built; the Keyhive/Beelay target stack named as design; server-as-peer law; Fuller non-simultaneous Universe = causal island"
-status-date = "2026-10-12"
-tags        = ["api/pono/meme"]
-title       = "lar:///ha.ka.ba/lares/api/pono/local-first"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/local-first"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "invariant doctrine: 7 local-first ideals (Ink & Switch), each graded against what the house stands built; the Keyhive/Beelay target stack named as design; server-as-peer law; Fuller non-simultaneous Universe = causal island"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/local-first"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/local-first"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -125,7 +124,7 @@ formats (`packages/lararium-node/src/disk-projector.ts`).
 text; a pointer carrier holds a content reference in place of `text`. The `cid/` blob tier
 carries binary and pointer-kind bodies; a utf8 body rides inline unless an operator flags it
 out on purpose
-(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>).
 
 ---
 
@@ -310,6 +309,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wo_xGWGxa_w6Tbr1t8IE40TjjsBGyTRmW1gT3SbEj3w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xy-XhuuKP1GfaJFnmm7-QsHDoD-YcVxVXp33529yD90`>>
 
 <<^ code=`&#x0004;` to=`?`>>

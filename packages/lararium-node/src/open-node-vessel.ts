@@ -613,7 +613,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
    * Close every face through its actor (a whole lock, ahead of the custody door's line; a stand-down): resolves once each closed or
    * faulted. Under `strict` (a whole lock) a face that did not close whole rejects, naming it, so the key stays open.
    */
-  closeFaces: (reason: string, options?: { readonly strict?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
   /** Lift the hold a lock's close set on a face (`dropFace`), once its key locked or the lock let it be: a mount that went dark
    *  while its key still stands open reads lit again. */
   releaseFace: (ordinal: number) => void;
@@ -824,7 +824,7 @@ interface NodeBootPrep {
   mountOrdinal: () => number | null;
   litOrdinals: () => readonly number[];
   faceLife: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
-  closeFaces: (reason: string, options?: { readonly strict?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
   releaseFace: (ordinal: number) => void;
   releaseFaces: () => void;
   holdFace: (ordinal: number) => boolean;
@@ -5209,7 +5209,7 @@ async function prepareNodeBootOn(
     faceLife,
     // Every face closes held: none lights again on this composition, whose key drops or which stands down next. A whole lock
     // closes strict: a face whose saves did not seal rejects, and its key stays open.
-    closeFaces: async (reason, options) => { await faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}) }); },
+    closeFaces: async (reason, options) => { await faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }); },
     releaseFace,
     releaseFaces: () => { for (const ordinal of faceLife.ordinals()) releaseFace(ordinal); },
     holdFace: (ordinal) => faceLife.hold(ordinal),
@@ -5380,7 +5380,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     teardown: (closeSessions) => (down ??= (async () => {
       // EVERY FACE CLOSES THROUGH ITS ACTOR FIRST (a stop, a slide, a wear change): its visits refuse, its work settles and its
       // saves drain before anything below flushes or tears down, and before any next composition lights a face.
-      await p.closeFaces("the composition stands down");
+      await p.closeFaces("the composition stands down", { stop: true });
       if (closeSessions) p.onShutdown({ what: "the external sessions", phase: "flush", down: closeSessions });
       await p.teardown();
     })()),

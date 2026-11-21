@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/scale-architecture-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = false
+l-space   = "stable"
+role      = "docs record for the scale architecture — the commit lineage that brought the numerical minimalist-path into code, moved out of the api meme under the ever-speaking present"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/scale-architecture-record"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/scale-architecture-record"
+```
+
+<<~ ahu slot=`#/meme-header`>>
+
+! Scale Architecture — Record
+
+This docs record keeps the history behind <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/scale-architecture`>>. The api meme states what holds; this record tells how it arrived. It does not outrank the law.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/numerical-lineage`>>
+
+!! The numerical path's lineage
+
+The text the api meme's #/the-numerical-path carried before the ever-speaking-present cure, kept verbatim:
+
+> ''This path stands partly ENACTED, not only designed.'' The sensorium's `settlePrecision` already carries the closed-form settle and the complementary-form guard against the large-ε̄² divergence (commit lineage `f50a35b8` //sensorium.numerics.harden — signal-fraction confidence · closed-form settle · complementary π→conf//; the QA hardening in `ab85fc2b` caught the large-ε̄² divergence and the false-critical / EWS-guard leaks). That enactment lives ''py/R'' — the full sensorium model's home, instanced per-stream — while TS keeps the pure-functor math floor these identities also seed. The record honors the enacted-vs-aimed cut: the numerical path stands in code py/R-side, where the sensorium reads; the fusion escape and the structure descent stand as design grounded in established algorithms not yet all wired.
+
+The grounds line carried the same lineage: "ENACTED py/R-side in the sensorium `settlePrecision` (commits `f50a35b8`, `ab85fc2b`, `f9d07e49`) — signal-fraction confidence, closed-form settle, complementary π→conf guard; TS keeps the pure-functor math floor these identities seed."
+
+At the cure, `settlePrecision` reads in TypeScript at `packages/lararium-mesh/src/sensorium-pc.ts`; the py/R home the old text named no longer carries it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gYVav_HVU3oCpNdsJDVIOWcwbxwAeddKKacojCQ2xr0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

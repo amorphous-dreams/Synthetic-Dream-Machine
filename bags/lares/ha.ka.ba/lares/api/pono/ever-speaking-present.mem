@@ -1,0 +1,113 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+hydrate   = true
+l-space   = "stable"
+role      = "the ever-speaking present — the tense law of living text: canon speaks in the present of every reader and points to its history instead of telling it; history rests in git, changelogs and ruling records; the prophetic perfect names the release-day vantage as a figure, never the law's tense"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/ever-speaking-present"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/ever-speaking-present"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! The ever-speaking present
+
+''Living text speaks in the present of every reader, and points to its history instead of narrating it.''
+
+A sentence in canon (a meme under a bag's `api/`, `mesh/` or `browser/` tree), in code, in a comment, in help text or in a test name MUST state what holds at every reading of the revision that carries it. It MUST NOT tell how the shape arrived, what stood before it, which lane, wave or sprint built it, or on which day anyone measured it. Git keeps every revision, the changelog keeps what changed between releases, and ruling records keep why; the living sentence keeps none of it and loses none of it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gloss`>>
+
+!! Gloss ~ two grammars braided
+
+''The gnomic present (the grammar).'' English and Greek both state a general truth in a present that carries no clock: //water boils at 100 °C//, //a group holds a set and an operation//. Canon writes in that tense. A sentence reads true on the day it lands and on every later day its revision stands, because nothing in it names a day.
+
+''The always-speaking statute (the reader).'' Commonwealth courts read a statute as speaking continuously in the present, so its words reach each reader's own circumstances, while the enactment history rests elsewhere (the debates, the amending Acts, the case law). The house borrows the reader's half and adds the writer's discipline: the writer drops the past from the sentence, so every reader meets the same present.
+
+''The trade name.'' Documentation practice calls the same discipline //evergreen// or //timeless// documentation: present tense for general behaviour, no //now//, //new// or //old//, change history in the release notes. The house's evergreen witness counts the breaches (#/witness).
+
+''What the law never licenses.'' The present claims only what stands. A sentence MUST NOT describe unbuilt work as built, however certain its arrival; work still owed rests on the road, in the realm workbench, until it lands. Evergreen form keeps text readable; only a witness keeps it true, so a law that matters carries its witness beside it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-pointer`>>
+
+!! The pointer ~ the companion rule
+
+''A present-tense sentence claims only what stands; where its why matters, it carries a pointer to its ruling.''
+
+Git keeps a palimpsest, never a memory hole: the scraped text survives under the new. The cost falls on findability. A rule stripped of its reason invites the next hand to tear it down (Chesterton's fence), and a fact buried in history costs a long search. So a law whose reason a future hand needs SHOULD carry one pointer at the joint where the reason bites:
+
+* a `#/rulings` slot in the same meme, holding the dated operator rulings the law rests on, each a short line with its source;
+* a hoike, when the ruling settled with live dissent (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>);
+* a docs record or a research meme, when the reason took a collision or a scout to find.
+
+The pointer names; it never retells. A ruling line MAY carry its date, since a dated decision reads as provenance, and the evergreen witness reads a date beside a ruling marker as lawful. A dated line without that marker, and a quoted ruling woven through the law's own sentences, both tell the story the pointer exists to replace.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-release-figure`>>
+
+!! The release figure ~ the prophetic perfect, held as a figure
+
+At the first release the code, canon and docs read as if the house had always stood in one shape. Biblical Hebrew names a kindred move the //prophetic perfect// (Gesenius's //perfect of confidence//), and Biblical Greek the //proleptic aorist//: an event still unfolding, told whole from the vantage of its completion.
+
+The figure fits ''the release moment alone''. A pre-release house writes its carriers in a present that the release makes true, and burns the bridges that brought it there (shims, compatibility branches, refusals of its own earlier spellings) before the tag. The figure MUST NOT stand as the tense of the law: read literally, it would license present-tense claims for work not yet built, which #/gloss forbids. Day to day, canon speaks the gnomic present; on release day, the house speaks from the vantage the release completes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/scope`>>
+
+!! Scope ~ which text speaks, which text records
+
+* ''Speaks (the law binds):'' memes under a bag's `api/`, `mesh/` and `browser/` trees; the `cli/` surface memes; source, comments, logs, help text and test names under `packages/` and `tools/`.
+* ''Records (the law leaves free):'' memes under `docs/` (research, scouts, verbatim hand-backs, history arcs, worked examples), the `#/rulings` slot of any meme, hoike records, the changelog, commit messages, and the house's memory and research memes. Records MAY date and narrate.
+* ''Neither:'' a plan, a lane kit, a road rank or a session ledger serves the work, not a reader of law. It rests in the realm workbench or a face's daemon wiki while the work runs, and burns when the work lands.
+
+The split test for a meme: strip every date and every past-tense verb from it. If its purpose stands, it belongs under `api/`; if its purpose leaves with them, under `docs/`; if its purpose expires when the work lands, in a workbench.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/witness`>>
+
+!! Witness ~ where the law gets counted
+
+* `tools/evergreen-boundary.mjs` (run by `tools/evergreen-boundary-witness.sh`) holds the mechanical floor over code, tools and live canon: the `narration` and `old-shape` classes over source comments and literals, a test-title class over test names that cite a shape the code leaves behind, `canon-history` over history words in live canon, `canon-dated-history` over a history verb within 40 characters of a date that carries no ruling marker, and `canon-dated-meta` over an authored date key (`written`, `status-date`, a `-on` key) in a live canon meta. Each class stands against a ceiling that only comes down; a named exception states its own reason in the present tense.
+* The witness reads lines, never meaning, so a sentence can pass it and still narrate (a dated scout, a sprint name, a measurement stamped with its day). A hand that writes canon reads this meme, not only the witness's verdict.
+* The working agreement that binds every spirit to the same discipline in code reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/working-agreements`>>; its L-Prime companion, the verb-forward register canon keeps, reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator ruling 2026-11-21: "the ever-speaking present" names the design the lares bag's api/docs split rests on. Ground: lar:///ha.ka.ba/kahua/memory/research/evergreen-tense, lar:///ha.ka.ba/kahua/memory/research/evergreen-tense-skeptic, and the tense-collision fold of lar:///ha.ka.ba/kahua/memory/wave/first-release. The survey that sorts the tree under it: lar:///ha.ka.ba/kahua/memory/research/lares-tree-survey.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/README#/infrastructure-map`>> the api/docs split this law names
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> the evergreen working agreement
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>> the verb-forward register
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>> kept rulings with their dissent
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2sQhphWBFv9qDkk_mzjr0LfNc5y_iSVxkPsJSrDnyUw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

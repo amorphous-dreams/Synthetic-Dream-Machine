@@ -20,11 +20,13 @@ import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
 import { confirmLockByCensus } from "../lock-receipt.js";
+import { RehiveUsage, vaultRehive } from "../vault-rehive.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
 import { houseFaces, sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
+import { wearOpenFace } from "./wear.js";
 import { pulamaStands } from "../house-config.js";
 import { emit, exitFor, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -77,6 +79,7 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
       case "reseat":     return await vaultReseat(args, daemonUp);
+      case "rehive":     return await vaultRehive(args);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -90,7 +93,7 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
       emit(args, { ok: false, error: { code: err.name, message: named }, human: () => console.error(`lares vault ${sub}: ${named}`) });
       return 1;
     }
-    const code = err instanceof UsageError ? "usage" : "error";
+    const code = err instanceof UsageError || err instanceof RehiveUsage ? "usage" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares vault ${sub}: ${msg}`) });
     return exitFor(code);
   }
@@ -353,6 +356,19 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
       emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. No route was asked; to wear another face standing open, run \`lares wear N\`.`) });
       return 0;
+    }
+    // `--face N` ON A HELD KEY READS THE CENSUS BEFORE ANY PROMPT: N standing open takes the wear (no route), a face standing
+    // nowhere refuses by name, and only a face shut under its own route still asks for that route.
+    if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] !== undefined) {
+      const face = faceOption(args)!;
+      const faces = await houseFaces();
+      if (faces.open.includes(face)) return await wearOpenFace(args, face, "vault unlock");
+      if (!faces.shut.includes(face) && faces.open.length + faces.shut.length > 0) {
+        const named = [...faces.open, ...faces.shut].sort((x, y) => x - y).map((f) => `h${f}`).join(", ");
+        const line = `no face h${face} stands on this vessel (it holds ${named}) — nothing was asked; name a face it holds (\`lares persona list\`).`;
+        emit(args, { ok: false, error: { code: "face-not-standing", message: line }, human: () => console.error(`lares vault unlock: ${line}`) });
+        return 1;
+      }
     }
   } else if (pulamaStands()) {
     // NO VESSEL STANDS AND A PŪLAMA KEEPS THIS HOUSE: a route proved here would open the slot tree around the pūlama, so

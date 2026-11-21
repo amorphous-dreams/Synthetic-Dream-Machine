@@ -394,8 +394,8 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu`>>
@@ -405,6 +405,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;78LT1hdtkKpiPAMPlY7kEA_hgtQrVoPwJy_xACIGJaw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ap_4XXKGOyojZIfDhWTGp2Hmdvk2ntjdlq4lcA1rMqs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

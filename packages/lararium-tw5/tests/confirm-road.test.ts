@@ -23,7 +23,7 @@ import { dispatchLarControlEvent } from "../src/tw5-projection.js";
 import { htmlOf, mountSurface, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";
 import {
-  afterDispatch, draftBag, draftTitleOf, ManualBoundary, peerWrite, remote, shoreRig, storeDeleted, storeText, tempBag,
+  afterDispatch, draftBag, draftTitleOf, ManualBoundary, peerWrite, remote, shoreRig, storeAbsent, storeDeleted, storeText, tempBag,
   turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -174,7 +174,7 @@ describe.skipIf(wikiSkip)(`the confirm road over the shore${skipNote}`, () => {
     boundary.fire();
     await turns(24);
     expect(r.wiki.getTiddler(x)).toBeUndefined();
-    expect(storeDeleted(r, workingBag, x)).toBe(true);
+    expect(storeAbsent(r, workingBag, x), "the delete retracts plainly; no kāpae rises over nothing").toBe(true);
     expect(questions(r)).toEqual([]);
     expect(namesAny(r, mark, "$:/temp/confirm/"), "no store call ever named a question").toBe(false);
 

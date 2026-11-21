@@ -23,7 +23,8 @@
  * ── THE LEI STANDS AS THE CONSENT ───────────────────────────────────────────────────────────────
  * A `kukulu` return rests on the hand's signed lei alone: no receipt weighs
  * the tree, for no rite carries one. The pūlama verified the vouch before it began, and the restand's tessera par stays the verdict after the fact.
- * Rites still begin one at a time here.
+ * Rites still begin one at a time here, and a begin over an offer that already began (a refused composition, then the retry)
+ * answers the half it rests, never a second return.
  *
  * ONE LEI PER LENT FACE: the gate begins one rite per face it lends, each under that face's group and hand. Every face's lei
  * rests on the branch's one line here, and a face that finds only other faces' rows there reads `swarm-lei-absent`.
@@ -32,7 +33,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import {
-  SwarmRefused, beginRite, landRite, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle, verifySwarmRecord,
+  SwarmRefused, beginRite, landRite, pendingBegins, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle, verifySwarmRecord,
   type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
 } from "@lararium/mesh";
 import type { KukuluRiteAt, KukuluRitePort } from "./kukulu-gate.js";
@@ -66,8 +67,14 @@ export function kukuluRiteOver(records: SwarmWikiPort): KukuluRitePort {
     begin: (offer, at) => inTurn(async () => {
       const trust = trustOf(at);
       for (const raw of [...offer.lei.slice(0, 64), ...offer.unstrung.slice(0, 64)]) await landOffered(records, raw, trust, at);
+      // ONE BEGIN PER OFFER: a guest half this pūlama rests unlanded for this face, line, head AND IMAGE (a composition refused
+      // after the claim, and the vessel dials again with the same offer) answers the retry, so it spends no second return; a
+      // retry over another image begins its own. A lei the hand unstrung since (the pūlama's own records hold every unstring its
+      // hand door signs, whatever offer a vessel carries) serves no retry: the begin below refuses by the lei's own reading.
+      const standing = (await pendingBegins(records, "kukulu", at.branch)).find((p) => p.group === at.group && p.head === at.head && p.image === at.image);
+      if (standing !== undefined && (await records.read(swarmLeiUnstrungTitle(standing.lei))) === null) return { ok: true as const, tessera: standing.tessera, lei: standing.lei, n: standing.n };
       try {
-        const begun = await beginRite(records, { rite: "kukulu", branch: at.branch, head: at.head, tree: at.tree }, trust, at.group, at.by, NO_COSIGN);
+        const begun = await beginRite(records, { rite: "kukulu", branch: at.branch, head: at.head, tree: at.tree, ...(at.image === undefined ? {} : { image: at.image }) }, trust, at.group, at.by, NO_COSIGN);
         return { ok: true as const, tessera: begun.tessera, lei: begun.lei, n: begun.n };
       } catch (err) {
         // ONE LINE, EVERY LENT FACE'S LEI: the pūlama's store rests each face's kukulu lei under the branch's one line, so a
@@ -77,7 +84,7 @@ export function kukuluRiteOver(records: SwarmWikiPort): KukuluRitePort {
       }
     }),
     async land(tessera, at) {
-      const landed = await landRite(records, { tessera, head: at.head }, trustOf(at), at.group, at.by);
+      const landed = await landRite(records, { tessera, head: at.head, ...(at.image === undefined ? {} : { image: at.image }) }, trustOf(at), at.group, at.by);
       return { par: landed.par };
     },
   };

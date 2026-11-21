@@ -10,7 +10,7 @@
  * nor a bare `type` line, so this file never enters `carrierFiles` and then fails a corpus law
  * on a fixture nobody poured. The CONTROL at the foot of the suite proves it.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/otakiage
+ * Meme: lar:///ha.ka.ba/lares/api/pono/otakiage
  */
 
 import { describe, expect, test } from "vitest";

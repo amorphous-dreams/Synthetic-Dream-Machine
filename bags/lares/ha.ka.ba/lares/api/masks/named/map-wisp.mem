@@ -7,7 +7,6 @@
 aside             = false
 cacheable         = false
 corpus            = "[STUB — pending-talk-story]"
-created           = "Invalid Date"
 encroach          = false
 foreground-voices = ["Scryer", "Gatekeeper", "Council", "Liminal", "Stranger"]
 fourth-wall       = false
@@ -158,11 +157,11 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;N3QcAtoxcb7iuzfIUgj3kH9cyAorO1N6P8VCQskHSK8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T0kU4dqiysteG8eiJKCQa0OUXsz2V19Pjlv0Cu6taes`>>
 
 <<^ code=`&#x0004;` to=`?`>>

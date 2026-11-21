@@ -16,6 +16,12 @@
  *            ended under a signed tombstone naming its tessera (`pulama-admit`); the gate then reads it unadmitted. An unlit
  *            pūlama refuses `pulama-locked` before the route reads; a digest no admission stands for answers
  *            `image-not-admitted` once the route proves.
+ *   rehive   THE HAND REHIVES A SHUT FACE (`face-rehive`): a face whose veil-archive row holds another identity's Archive stands
+ *            its hive again from its own seed. The face must stand SHUT here (a lit face refuses `face-open`: `lock` shuts every
+ *            face first); the face's own route opens its key for this act alone through the holder's attempt budget and checks
+ *            (`openFaceForAct`), the foreign bytes rest aside and one compare-and-replace seals the row's next bytes, and nothing
+ *            lights. It rides this door's one chain, so `light` never opens the face mid-act. The answer names what moved, what
+ *            was lost and the pūlama-path acts that come next.
  *   lock     every session drops and every key zero-fills.
  *   close    ONE FACE CLOSES IN TWO PHASES (`face`, by its whole ordinal): the pūlama tells every vessel that lends it, keeps
  *            the key while each drains, and locks it once each answered; one no vessel lends locks at once. It answers
@@ -32,7 +38,8 @@
  *   lei      THE HAND STRINGS, RESTRINGS OR UNSTRINGS A LEI (`act`: `kui` · `restring` · `unstring`), SIGN-ONLY. The vessel under
  *            a pūlama holds no face root, so the hand's lei acts come here, where the root rests: the face's root opens fresh
  *            under the operator's route (a ward act; a miss spends the face's own ward attempts), signs ONE record (a lei, or
- *            an unstring) for the face's own group, and zeroes. The act writes nothing: the vessel lands the record
+ *            an unstring) for the face's own group, and zeroes. An UNSTRING also rests in the pūlama's own records, so its own
+ *            reuse of a begun half sees the revocation whatever offer a vessel carries; otherwise the act writes nothing: the vessel lands the record
  *            (`lares lei land`), where the chain's tip, the returns left and the push co-sign gate judge it. A restring rides
  *            kui: it names the line's tip it follows (`after`, as `lares lei show` reads it), and signs a lei after that tip.
  *            An unlit pūlama, an unopened face, a face whose anchors name no group, malformed terms, a count above twelve
@@ -43,7 +50,7 @@
  */
 import type { ExecLeiScope } from "@lararium/mesh";
 import {
-  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmTesseraPrefix,
+  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix,
   type Credential, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
@@ -52,6 +59,8 @@ import type { CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaServer } from "./pulama-server.js";
+import type { RehiveOutcome } from "./face-rehive.js";
+import { rehiveLines } from "./face-rehive-lines.js";
 
 export type PulamaHandAnswer = Readonly<Record<string, unknown>> & { readonly op: string };
 
@@ -119,6 +128,8 @@ export function pulamaHandDoor(a: {
   readonly admissions?: PulamaAdmissions;
   /** The face root the `lei` act signs under. Absent, `lei` refuses `lei-unavailable`. */
   readonly lei?: PulamaLeiHand;
+  /** The rehive of one SHUT face under its own route (`rehiveShutFace` over this pūlama's holder). Absent, `rehive` refuses `rehive-unavailable`. */
+  readonly rehive?: (ordinal: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
   readonly onLog?: (line: string) => void;
 }): (frame: unknown) => Promise<PulamaHandAnswer> {
   const { holder, server } = a;
@@ -225,6 +236,8 @@ export function pulamaHandDoor(a: {
           log(`lei ${act}: ${reading}`);
           return { op: "lei", act, reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
         }
+        // AN UNSTRING RESTS HERE TOO: the pūlama's own reuse of a begun half reads its records, never an offer that may omit it.
+        if (terms.parts.act === "lei-unstrung") await a.records.writeNew(swarmLeiUnstrungTitle(terms.parts.lei), JSON.stringify(record));
         log(`signed by hand: a ${terms.parts.act === "lei-unstrung" ? "lei's unstring" : "lei"} for h${face}; the vessel lands it`);
         return { op: "lei", act, reading: "signed", face, record, cid: swarmActCid(record), ...(act === "restring" ? { restrung: terms.after } : {}) };
       }
@@ -247,6 +260,26 @@ export function pulamaHandDoor(a: {
         mint.signingSeed.fill(0);
         log("keep-seat: a fresh keep pair seated under the proved route; the verb writes the house's seat");
         return { op: "keep-seat", reading: "seated", seat: encodeKeepSeat(mint.seat), signingSeed, publicKey: Buffer.from(mint.seat.publicKey).toString("hex") };
+      }
+      case "rehive": {
+        if (!a.rehive) return { op: "rehive", reading: "rehive-unavailable" };
+        const face = f["face"];
+        const credentials = credentialsOf(f["credentials"]);
+        if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || credentials === null) return { op: "rehive", reading: "malformed", detail: "a rehive names the face by its whole ordinal and carries the face's own route" };
+        // THE FACE STANDS SHUT HERE, read before the route: a lit face's rows serve a vessel now.
+        const at = await holder.faceStanding({ ordinal: face });
+        if (at === null) return { op: "rehive", reading: "face-not-standing", face };
+        if (at.unlocked) return { op: "rehive", reading: "face-open", face, detail: `face h${face} stands lit at the pūlama: shut it first (tools/lares-container.sh pulama lock, which shuts every face and leaves the vessel at its floor), then rehive; nothing moved`, ...status() };
+        try {
+          const out = await a.rehive(face, credentials);
+          log(`rehived by hand: h${face} ${out.outcome}`);
+          return { op: "rehive", reading: "rehived", face, ...out, lines: rehiveLines({ face, ...out }, "pulama") };
+        } catch (err) {
+          const e = err as { reason?: unknown; message?: unknown };
+          const reading = typeof e.reason === "string" ? e.reason : "rehive-failed";
+          log(`rehive h${face}: ${reading}`);
+          return { op: "rehive", reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
+        }
       }
       case "lock": await server.lock(); return { op: "lock", ...status() };
       case "close": {

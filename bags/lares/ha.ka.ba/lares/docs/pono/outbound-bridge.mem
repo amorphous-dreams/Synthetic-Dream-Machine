@@ -46,7 +46,7 @@ Both of TiddlyWiki's edit roads meet this one act. The draft road (`tm-edit-tidd
 # ''The draft carries its target's base from the moment it opened.'' The base persists on the draft's STORE record as `lar-draft-base-bag` and `lar-draft-base-heads`, so it follows the draft to another device and answers inside the dispatch that deletes the draft; a draft whose target no route can land persists with no base, and the target's refusal stands on the alert rail. The wiki's draft never holds the two fields, so an untouched draft reads unmodified and Cancel asks nothing. A target that moved between open and save merges at field grain: a field the draft left alone keeps the newer value, a field both hands changed surfaces both values, and nothing overwrites.
 # ''A wave meets a hand at the landing.'' Before a queued change lands over a title that holds an unsent hand, the hand leaves first. When the store takes that write, the queued change yields to the write's own returning wave; when the hand owed nothing, the change lands. A plugin's shadow carries no hand: an unmarked shadow meets a wave as an empty title does, so a peer's record for a shadowed title lands over it.
 # ''The wiki shows what the composition resolves.'' A bagged wave lands the topmost layer's record for its title, a tombstone included, with that layer's bag and heads. A lower layer's record never lands over a higher layer's, and a change beneath a working tombstone or copy-up never shows through.
-# ''A hand lands at or above the working layer.'' The cascade names a layer and the composition's own order decides: a save lands in the layer the cascade names when the composition mounts it at or above the working layer, or in the higher layer where the title already lives. A delete of a title that landed beneath the working layer writes nothing there: its tombstone lands where a save of the title would (the temp layer for session state, the personal layer for a person's view state), else in the working layer. The write-layer pointer steers nothing into canon; a bag changes only by a residency move. The layer law in full: `lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`.
+# ''A hand lands at or above the working layer.'' The cascade names a layer and the composition's own order decides: a save lands in the layer the cascade names when the composition mounts it at or above the working layer, or in the higher layer where the title already lives. A delete of a title that landed beneath the working layer writes nothing there: its tombstone lands where a save of the title would (the temp layer for session state, the personal layer for a person's view state), else in the working layer. The write-layer pointer steers nothing into canon; a bag changes only by a residency move. The layer law in full: `lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`.
 # ''A refusal raises a named alert and the hand stays owed.'' A save the composition cannot land raises `$:/temp/lares/alert/unrouted-save/<pointer>`; a store write refused raises `$:/temp/lares/alert/unsaved/<title>`; a resident landing that fails twice raises `$:/temp/lares/alert/landing-failed/<title>` and retries on a later wave, while a seed landing that fails twice rejects the seed checkpoint; a parallel draft no draft layer could keep raises `$:/temp/lares/alert/parallel-draft/<draft>`. A refused hand write stays owed for the next change to the title, the next wave or teardown. The `landing-failed` and `unsaved` alerts clear on recovery; the `unrouted-save` alert stays on the rail.
 # ''Two planes never persist.'' The volatile VM plane (`lar:///lararium.local.vm/…`) and the alert rail (`$:/temp/lares/alert/…`) take no store call, ahead of any cascade rule.
 # ''One shore per engine.'' The shore installs the landing queue's door at `$tw.lares.enqueueNalu` and removes it at teardown; a second shore on one engine refuses by `LandingDoorOccupiedError`.
@@ -184,8 +184,8 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 !! Edges
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
@@ -198,6 +198,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XXG7E-LvGQA0MgSzHEm4nz7YjdcIXKpkGkiP0C-dsoM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2jSZUwgR8s1y9hehLCOj7bPaS5z-UFoHLPdBYvMFR48`>>
 
 <<^ code=`&#x0004;` to=`?`>>

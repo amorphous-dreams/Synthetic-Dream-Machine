@@ -136,10 +136,40 @@ export class CompositeStore implements LarTiddlerStore {
     return this.layers.findIndex((l) => l.bagId === bagId);
   }
 
+  /** The recipe slots this composition names but could not mount (`markUnreached`), and the recipe order they sit in. */
+  private unreached: { readonly order: readonly string[]; readonly slots: Set<string> } | null = null;
+
+  /**
+   * THE SLOTS THE COMPOSER COULD NOT REACH. A composer that walks a recipe and skips a slot (no reach into that bag, a library
+   * the island does not hold) names it here with the recipe's top-first order, so a delete above it knows a layer stands there
+   * unread. A slot that mounts later (`addLayer`) leaves the list. Calling again replaces the list.
+   */
+  markUnreached(order: readonly string[], slots: readonly string[]): void {
+    const live = slots.filter((slot) => !this.hasBag(slot));
+    this.unreached = live.length > 0 ? { order: [...order], slots: new Set(live) } : null;
+  }
+
+  /**
+   * WHETHER A LAYER BENEATH `bagId` STANDS UNREAD: a recipe slot beneath it this composition could not mount
+   * (`markUnreached`), or a mounted layer whose store stands in for a document it has not read (`LarTiddlerStore.unknown`).
+   * Either may hold any title, so a delete in `bagId` counts it as holding one (a kāpae, never a plain retract).
+   */
+  unknownBeneath(bagId: string): boolean {
+    const at = this.layerIndexOf(bagId);
+    if (at > 0 && this.layers.slice(0, at).some((layer) => layer.store.unknown?.() === true)) return true;
+    if (this.unreached) {
+      const { order, slots } = this.unreached;
+      const pos = order.indexOf(bagId);
+      if (pos >= 0 && [...slots].some((slot) => order.indexOf(slot) > pos)) return true;
+    }
+    return false;
+  }
+
   /** `at` splices the layer into the cascade at that priority index (live
    *  recipe reconcile); omitted = push to top (boot-time bottom-up order). */
   addLayer(layer: CompositeLayer, at?: number): void {
     if (this.hasBag(layer.bagId)) throw new Error(`CompositeStore: bag "${layer.bagId}" already registered`);
+    if (this.unreached?.slots.delete(layer.bagId) && this.unreached.slots.size === 0) this.unreached = null;
     if (at !== undefined && at >= 0 && at < this.layers.length) this.layers.splice(at, 0, layer);
     else this.layers.push(layer);
     // defaultWritable defaults to true. Set false for layers that accept

@@ -65,6 +65,7 @@ import {
   sealCrossing, signCrossing, signLicensedInception, signLicensedSealRoll, witnessCrossing,
 } from "./seal-ceremony.js";
 import { larSealHome } from "./vessel-paths.js";
+import { loadIdentityAnchors } from "./identity-anchors.js";
 
 /** What an act reads from the composition it runs beside. */
 export interface SealedActContext {
@@ -436,8 +437,12 @@ export const SESSION_ACTS: ReadonlySet<string> = new Set([
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {
     const lines = await listPersonaRosterLines();
+    // EACH ROOT NAMES ITS PERSONAGROUP where its face stands open (its anchors row reads); a shut face names none, so a rite
+    // reads a group off `persona list --json` and never off a projection.
+    const groupOf = async (handleIndex: number): Promise<string | null> =>
+      (await loadIdentityAnchors(handleIndex).catch(() => null))?.personaGroupId ?? null;
     return {
-      roots: lines.map((l) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey })),
+      roots: await Promise.all(lines.map(async (l) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey, group: await groupOf(l.handleIndex) }))),
       orphans: await orphanPersonaRoots(),
     };
   }),

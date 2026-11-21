@@ -93,6 +93,34 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--json        emit {decision, created, title, cast, text, readings, note}",
     ],
   },
+  law: {
+    usage: "usage: lares law list [--limit N] [--after <cursor>] [--all]  |  lares law pin <uri>  |  lares law unpin <uri>",
+    synopsis:
+      "Read the house's law, pinned law first, from the worn face's daemon wiki. The index derives from canon by filter and no list stands " +
+      "in code: the law reads every root meme under a bag's api/ tree, by title, and $:/config/lares/law/pins holds the pin set (the boot " +
+      "seed, then the Mu family), a TiddlyWiki filter the wiki's own engine runs. Only canon prints: a row stands where a canon layer " +
+      "answers its record, so nothing a face writes reads as law. A pin edits the pin set by one run, keeping its layout, and lands it in " +
+      "the face's working layer, never in house canon; a pin orders canon law and adds none.",
+    details: [
+      "  lares law list            the pinned titles (marked 📌), then the law they leave out, each with its description or role",
+      "  lares law pin <uri>       add a law meme to the pin set (a `[[uri]]` run); a title no canon law holds refuses law-pin-absent",
+      "  lares law unpin <uri>     take it out (its `[[uri]]` run leaves; a title a broader run names takes a `-[[uri]]` run)",
+    ],
+    examples: [
+      "lares law list                                              # the first page: pins, then law by title",
+      "lares law list --all --json                                 # every row: {filter, pins, rows, total, next}",
+      "lares law pin lar:///ha.ka.ba/lares/api/pono/lar-uri        # read the address law right after the Mu family",
+      "lares law unpin lar:///ha.ka.ba/lares/api/mu/chao           # drop one Mu member from the pins",
+    ],
+    flags: [
+      "--limit N        rows per page (the door's ceiling holds)",
+      "--after <c>      the page behind a cursor `list` named",
+      "--all            follow every cursor to the end",
+      "--json           emit the answer: list {filter, pinsTitle, pins, rows, total, next}; pin {title, uri, decision, pinned, text, hash}",
+    ],
+    next: ["lares meme get <uri> --recipe default      # read one law meme whole"],
+    meme: "lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers",
+  },
   herm: {
     usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
     synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",
@@ -137,7 +165,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> [--image <digest>] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
       "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
       "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
@@ -147,7 +175,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "terminal in the same run; an image no admission and no lei carries asks the pūlama's admit there too. With no terminal, a day " +
       "that owes either route stops before anything moves and names the hand act (`lares rite kukulu` on a terminal); every other " +
       "day flows. --rollback stands the image that ran before (--rollback <rev>: an older revision's kept image, or a build from " +
-      "that commit), with no checkout move. " +
+      "that commit), with no checkout move. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
+      "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
+      "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
+      "shut or rehived since) refuses by name with the line that clears it: each half a lent face lands, landed by hand where the " +
+      "vessel stands (`lares rite land --tessera <id> --head <the head the vessel runs>`; conferre reads it red). " +
       "keep lays the house's authored memory, cut as a cleartext house bundle a new house imports, into a workspace the operator " +
       "bound, and keeps it in the operator's repo: on the host it guards the workspace clone (only <into> changes; a committed `* -text` " +
       ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
@@ -166,13 +198,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
+      "lares rite receipts --rite kukulu --branch main --json  # data.standing: each lent face's begun half resting unlanded",
     ],
-    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
+    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite; (receipts) kukulu reads every lent face's unlanded begin", "--head <commit>   (begin, offer, land) the head",
       "--staging <path>   (begin, a keep) the bundle the keep staged inside its workspace; the vessel derives the id from it",
       "--workspace <name>   (keep, keep-cut) the bound workspace the bundle rests in", "--into <path>   (keep, keep-cut) the place inside it (house where absent)",
       "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled",
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
-      "--image <digest>   (offer) the digest of the image the host built",
+      "--image <digest>   (offer, begin, land) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },
   kapae: {
@@ -637,7 +670,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "wiki folder inside rides that tree, never a tree of its own): the same block plus each wiki folder's recovery/ and temp/, author " +
       "<pet name> <folded>@realm.invalid (the realm's identity, never a face's), the same hook; a tree nested below the root lifts into it with " +
       "its history kept (its git dir rests in .git/lifted/). A workspace a share row names for one of its wikis takes its own pool, author " +
-      "<slug> <slug>@realm.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
+      "<slug> <slug>@workspace.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
       "workspaces all stand nowhere, refuses by name. " +
       "--workspace <name> makes the operator's bound workspace (seen at /lar/workspaces/<name>) one pool by the same init, on the operator's ask: " +
       "the house never founds a workspace's tree by itself (the wake offers this where a bound workspace holds no tree); a workspace binding no " +
@@ -974,7 +1007,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>]> [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>] | rehive --face <N>> [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
@@ -1004,11 +1037,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
       "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked on the face)",
       "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
+      "lares vault rehive --face <N>          # a SHUT face whose veil-archive row holds another identity's Archive stands from its own seed; the answer names the next acts",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
       "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
-      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open",
+      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open; (rehive) the SHUT face to rehive",
       "--out <file>       (backup) the bundle file to write; a file already standing there refuses",
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
@@ -1016,7 +1050,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--verbose          (status) one reading of each standing file the carrier table names, beside the summary",
       "--json             (status) the whole custody object (the slot tree, every row, the files outside the table, the door); (unlock) the door's answer as one object; the form a caller parses, since a pipe reads prose",
       "--face <key|pfx>   (restore --cards) the face the cards should rebuild: its root's public key or its prefix",
-      "unlock | bind | unbind | reseat | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
+      "unlock | bind | unbind | reseat | backup | restore | rehive read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
     next: ["lares vault status", "lares vault unlock"],
   },
@@ -1039,6 +1073,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],
     meme: "lar:///ha.ka.ba/lares/docs/pono/the-worn-house",
   },
+
 
   cabal: {
     usage: "usage: lares cabal <face | vouch | join | feed | clock>",

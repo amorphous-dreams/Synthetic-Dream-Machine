@@ -71,8 +71,9 @@ describe("the hand strings, restrings and unstrings a lei at the pūlama's hand 
     expect(restring).toMatchObject({ reading: "signed", restrung: cid, record: { body: { act: "lei", after: cid, reach: "head", head: "a".repeat(40) } } });
     const unstring = await s.door({ op: "lei", act: "unstring", face: 0, rite: "kukulu", branch: BRANCH, lei: cid, credentials: route });
     expect(s.verify(unstring["record"], swarmLeiUnstrungTitle(cid))).toMatchObject({ ok: true, act: { body: { act: "lei-unstrung", lei: cid } } });
-    // SIGN-ONLY: the pūlama's own store holds no lei; the vessel lands each record.
-    expect(await s.records.list("$:/")).toEqual([]);
+    // SIGN-ONLY for a lei: the vessel lands each record. AN UNSTRING the pūlama signed also rests in its own records, so its own
+    // reuse of a begun half sees the revocation whatever offer a vessel carries.
+    expect(await s.records.list("$:/")).toEqual([swarmLeiUnstrungTitle(cid)]);
     expect(JSON.stringify([kui, restring, unstring, s.lines])).not.toContain(FIXTURE_PASSPHRASE);
     expect(s.opened).toEqual([0, 0, 0]);
   });

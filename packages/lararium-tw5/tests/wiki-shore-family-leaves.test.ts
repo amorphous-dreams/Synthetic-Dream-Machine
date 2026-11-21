@@ -12,7 +12,7 @@
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, canonBag, ManualBoundary, openDraft, remote, saveSequence, shoreRig, storeDeleted, storeText, turns, typeInto, workingBag, type Rig,
+  afterDispatch, canonBag, ManualBoundary, openDraft, remote, saveSequence, shoreRig, storeAbsent, storeDeleted, storeText, turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 import { removeMeme, renameFamilyInWiki, wikiMemeSink } from "../src/place-meme.js";
 
@@ -53,11 +53,13 @@ describe.skipIf(wikiSkip)(`the family leaves as one change${skipNote}`, () => {
     r.wiki.deleteTiddler(root);
     await hand(r, boundary);
 
-    const issued = r.calls.slice(mark).filter((c) => c.deletes.length > 0);
-    expect(issued.map((c) => [...c.deletes].sort()), "one store call carries the whole family").toEqual([titlesOf(root)]);
+    // Nothing lies beneath the family, so it retracts plainly: no kāpae rises over any member.
+    const issued = r.calls.slice(mark).filter((c) => (c.retracts?.length ?? 0) > 0 || c.deletes.length > 0);
+    expect(issued.map((c) => [...(c.retracts ?? [])].sort()), "one store call carries the whole family").toEqual([titlesOf(root)]);
+    expect(issued.flatMap((c) => c.deletes), "no tombstone rises").toEqual([]);
     expect(r.changes(workingBag) - changesBefore, "one change of the working document").toBe(1);
     for (const title of titlesOf(root)) {
-      expect(storeDeleted(r, workingBag, title), title).toBe(true);
+      expect(storeAbsent(r, workingBag, title), title).toBe(true);
       expect(r.wiki.getTiddler(title), title).toBeUndefined();
     }
     expect(r.wiki.getTiddler(pathChild), "a path child stands as its own meme").toBeDefined();
@@ -65,7 +67,7 @@ describe.skipIf(wikiSkip)(`the family leaves as one change${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("control: a plain tiddler's delete lands one tombstone", async () => {
+  test("control: a plain tiddler's delete lands one plain retract and no tombstone", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     const plain = "lar:///t/family/plain-note";
@@ -76,7 +78,7 @@ describe.skipIf(wikiSkip)(`the family leaves as one change${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.deleteTiddler(plain);
     await hand(r, boundary);
-    expect(r.calls.slice(mark).map((c) => ({ kind: c.kind, deletes: c.deletes }))).toEqual([{ kind: "tombstone", deletes: [plain] }]);
+    expect(r.calls.slice(mark).map((c) => ({ kind: c.kind, deletes: c.deletes, ...(c.retracts ? { retracts: c.retracts } : {}) }))).toEqual([{ kind: "family", deletes: [], retracts: [plain] }]);
     await r.stop();
   }, 120_000);
 
@@ -90,7 +92,7 @@ describe.skipIf(wikiSkip)(`the family leaves as one change${skipNote}`, () => {
     await hand(r, boundary);
     expect([...receipt.tombstoned].sort()).toEqual(titlesOf(root));
     expect(r.changes(workingBag) - changesBefore).toBe(1);
-    for (const title of titlesOf(root)) expect(storeDeleted(r, workingBag, title), title).toBe(true);
+    for (const title of titlesOf(root)) expect(storeAbsent(r, workingBag, title), title).toBe(true);
     await r.stop();
   }, 120_000);
 
@@ -120,7 +122,7 @@ describe.skipIf(wikiSkip)(`the family leaves as one change${skipNote}`, () => {
     expect(read.refusals).toEqual([]);
     for (const title of titlesOf(root)) {
       expect(r.wiki.getTiddler(title), `${title} left the wiki`).toBeUndefined();
-      expect(storeDeleted(r, workingBag, title), `${title} left the store`).toBe(true);
+      expect(storeAbsent(r, workingBag, title), `${title} left the store`).toBe(true);
     }
     expect(storeText(r, workingBag, `${to}#/a/deep`)).toBe("deep body");
     expect(storeText(r, workingBag, `${to}#/b`)).toBe("b body");
@@ -146,7 +148,7 @@ describe.skipIf(wikiSkip)(`the family leaves as one change${skipNote}`, () => {
     await hand(r, boundary);
     expect(r.wiki.getTiddler(root), "the source left").toBeUndefined();
     expect(r.wiki.getTiddler(`${root}#/a`), "the old slot title left the wiki").toBeUndefined();
-    expect(storeDeleted(r, workingBag, `${root}#/a`), "the old slot title left the store").toBe(true);
+    expect(storeAbsent(r, workingBag, `${root}#/a`), "the old slot title left the store").toBe(true);
     expect(r.wiki.getTiddler(`${to}#/a/deep`)?.fields["text"], "the slot body stands under the new address").toBe("deep body");
     expect(r.wiki.getTiddler(`${to}#/a/deep`)?.fields["$fragment-parent"]).toBe(`${to}#/a`);
     expect(storeText(r, workingBag, `${to}#/a/deep`)).toBe("deep body");

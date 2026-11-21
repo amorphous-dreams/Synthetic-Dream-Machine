@@ -1139,8 +1139,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return sessionRefuse(sock, "malformed-message", requestId);
       }
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
-      // THE PEER BINDS THE HAND (`uds-peer`): a `cli` session opened from a harness's branch wears the seat's hand and profile.
-      if (frame["hand"] === "cli" && await peerSeatOf(sock) === "ai") frame["hand"] = "seat";
+      // THE PEER BINDS THE HAND (`uds-peer`): ANY session opened from a harness's branch (`cli`, `tab`, `watcher` alike) wears
+      // the seat's hand and profile, so no hand a client names lifts a harness's line past the seat's gates.
+      if (frame["hand"] !== "seat" && await peerSeatOf(sock) === "ai") frame["hand"] = "seat";
       if (closing || sock.destroyed) return;
       // THE AI SEAT OPENS A FACE INSIDE THE LENT SET: a `seat` hand (or a frame marked `seat: "ai"`) naming a face outside it refuses.
       // The set reads only where a seat names a face, so no other opening touches custody.
@@ -1215,6 +1216,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
     // outcome body rests in the vessel's control document beside the session's face, so neither rides one.
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
+    // A SPIRIT'S HAND PROPOSES on a call too: a hand-only island verb (`retire-wiki`) refuses a seat session by its code.
+    if (state.supply.profile === "seat" && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, opts.handOnlyCodes?.get(frame["verb"]) ?? "beyond-profile", requestId);
     // NO SILENT STEWARD (`chore-face`): the daemon runs a chore on its mount's authority, so the session's face meets
     // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
     const mount = mountOf();

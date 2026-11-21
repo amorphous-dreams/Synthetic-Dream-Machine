@@ -6,7 +6,6 @@
 ```toml meta
 cacheable     = true
 l-space       = "lararium"
-revised-on    = "2026-06-12"
 revision-note = "ea-breath law lands: breath message (phase + monotonic progress) added island→vessel; watchdogs re-arm on breath, judge frozen evidence by stall budget, silence alone times out; mkBreath factory"
 role          = "island message envelope schema: all vessel ↔ causal-island message types, the nine-clause Island Sovereignty Law, IslandGrants (typed ocap manifest capabilities), and envelope factories"
 source-file   = "packages/lararium-mesh/src/island-protocol.ts"
@@ -116,10 +115,10 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ea`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;K5MG6lsVhcR3MzHF_8PlYeP9E18xpUTvL2JVMAAluEQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eHcayRRSNiO9InOVG9ksE-8QojMqmfHNFPWrIuPz3UE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
