@@ -8,6 +8,9 @@
  *   R2  a row that restores the face's own identity refuses `row-is-own`, and nothing moves; a route that opens no slot of
  *       the face refuses `face-refused`, and nothing moves.
  *   R3  a row of another identity beside a `.prev` of the face's own: the rehive restores that generation (`restored-prev`).
+ *   R4  NOTHING HALF-DONE: a run stopped after the copy aside and before the row's replace leaves the foreign row whole beside
+ *       its copy, and a retry finishes it; a write that lands between the read and the replace refuses `row-moved`, and the row
+ *       keeps that write; a retry over the marker answers the rehive done (R1).
  *
  * Scratch roots, synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody
  */
@@ -22,7 +25,7 @@ import { runFoundTheFace } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
-import { rehiveShutFace, RehiveRefused } from "../src/face-rehive.js";
+import { faceRowPortOf, rehiveFaceRows, rehiveShutFace, RehiveRefused, type FaceRowPort } from "../src/face-rehive.js";
 import { loadIdentityAnchors, loadVeilArchive, loadVeilArchivePrev, veilArchiveFile, veilArchivePrevFile } from "../src/identity-anchors.js";
 import { ownedStore } from "../src/owned-store.js";
 import { vesselCustodyHomes } from "../src/vault-carriers.js";
@@ -68,7 +71,17 @@ afterEach(async () => {
 async function misroute(bytes: Uint8Array, group: string): Promise<void> {
   await seatedCustody()!.writeRecord("identity", veilArchiveFile(group), bytes);
 }
-const rehive = (ordinal: number, credentials = ROUTE) => rehiveShutFace({ io: new FsCustodyIo(vesselCustodyHomes()), homes: vesselCustodyHomes(), ordinal, credentials });
+/** The door's act over the seated holder: the face shuts first (a rehive runs only on a shut face), as the operator locks it. */
+async function rehive(ordinal: number, credentials = ROUTE) {
+  const holder = seatedCustody()!;
+  const at = await holder.faceStanding({ ordinal });
+  if (at?.unlocked) await holder.lockFace(at.fcid);
+  return rehiveShutFace({ holder, io: new FsCustodyIo(vesselCustodyHomes()), ordinal, credentials });
+}
+/** Open face `ordinal` again in the seated holder, as the next wear does, so a reader reads its rows. */
+async function reopen(ordinal: number): Promise<void> {
+  await seatedCustody()!.unlockFace({ ordinal }, ROUTE);
+}
 const reasonOf = (e: unknown): string | null => (e instanceof RehiveRefused ? e.reason : null);
 
 test("R1 h1's shape: a foreign row and no .prev moves aside, the next boot stands the face from its seed, and the face answers", async () => {
@@ -83,10 +96,16 @@ test("R1 h1's shape: a foreign row and no .prev moves aside, the next boot stand
   expect(refused).toBeInstanceOf(ArchiveIdentityMismatch);
 
   const out = await rehive(1);
+  await reopen(1);
   expect(out.outcome).toBe("stood-from-seed");
   expect(out.aside).toMatch(new RegExp(`^${veilArchiveFile(g1).replace(/\./g, "\\.")}\\.mismatch-[0-9a-f]{16}$`));
   expect(out.foreignIdentity).not.toBe(out.ownIdentity);
-  expect(await loadVeilArchive(g1), "the row left").toBeNull();
+  expect(await loadVeilArchive(g1), "the row reads as no Archive: the marker stands in its place").toBeNull();
+  expect(await loadVeilArchivePrev(g1), "a marker never rotates into .prev").toBeNull();
+  // A RETRY OVER THE MARKER reads the rehive as done and answers it again; nothing moves.
+  const again = await rehive(1);
+  await reopen(1);
+  expect(again).toMatchObject({ outcome: "stood-from-seed", aside: out.aside, foreignIdentity: out.foreignIdentity, resumed: true });
   // THE ROW MOVED ASIDE, NEVER DELETED: the foreign bytes stand whole under the face's key.
   const kept = await seatedCustody()!.readRecord("identity", out.aside);
   expect(kept.reading).toBe("opens");
@@ -112,10 +131,15 @@ test("R2 an own row refuses row-is-own and a wrong route refuses face-refused; n
   const { g0, g1 } = await twoFaces("own");
   const own = (await loadVeilArchive(g1))!;
   expect(reasonOf(await rehive(1).catch((e: unknown) => e))).toBe("row-is-own");
+  await reopen(1);
   expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from(own))).toBe(true);
   await misroute((await loadVeilArchive(g0))!, g1);
-  expect(reasonOf(await rehive(1, [{ kind: "passphrase", passphrase: "not-this-face's-route" }]).catch((e: unknown) => e))).toBe("face-refused");
-  expect(await loadVeilArchive(g1), "a refused route moved nothing").not.toBeNull();
+  // A wrong route spends the face's own attempt budget, as an unlock's does, and moves nothing.
+  const wrong = await rehive(1, [{ kind: "passphrase", passphrase: "not-this-face's-route" }]).catch((e: unknown) => e);
+  expect(reasonOf(wrong)).toBe("face-refused");
+  expect(String((wrong as Error).message)).toMatch(/attempt\(s\) left this boot for this face/);
+  await reopen(1);
+  expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from((await loadVeilArchive(g0))!)), "a refused route moved nothing").toBe(true);
   expect(reasonOf(await rehive(7).catch((e: unknown) => e))).toBe("face-not-standing");
 });
 
@@ -125,6 +149,45 @@ test("R3 a foreign row beside an own .prev restores that generation", async () =
   await seatedCustody()!.writeRecord("identity", veilArchivePrevFile(g1), own);
   await misroute((await loadVeilArchive(g0))!, g1);
   const out = await rehive(1);
+  await reopen(1);
   expect(out.outcome).toBe("restored-prev");
   expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from(own))).toBe(true);
 });
+
+/** The rehive over face `ordinal`'s rows through a port `wrap` may stop or race, under a key opened for the act alone. */
+async function rehiveThrough(ordinal: number, wrap: (port: FaceRowPort) => FaceRowPort) {
+  const holder = seatedCustody()!;
+  const at = await holder.faceStanding({ ordinal });
+  if (at?.unlocked) await holder.lockFace(at.fcid);
+  const opened = await holder.openFaceForAct!({ ordinal }, ROUTE);
+  if (opened.reading !== "opens") throw new Error(`the face did not open: ${opened.reading}`);
+  try { return await rehiveFaceRows(wrap(faceRowPortOf({ io: new FsCustodyIo(vesselCustodyHomes()), homes: holder.homes, fcid: opened.fcid, fck: opened.fck })), opened.groupDigest!); }
+  finally { opened.fck.fill(0); }
+}
+
+test("R4 nothing half-done: a stop before the replace leaves the foreign row whole, a retry finishes; a racing write refuses row-moved", async () => {
+  const { g0, g1 } = await twoFaces("half");
+  const foreign = (await loadVeilArchive(g0))!;
+  await misroute(foreign, g1);
+  // THE STOP: the copy aside lands, and the run stops before the row's replace.
+  const stopped = await rehiveThrough(1, (port) => ({ ...port, replace: async () => { throw new Error("the vessel stopped here"); } })).catch((e: unknown) => e);
+  expect(String(stopped)).toContain("the vessel stopped here");
+  await reopen(1);
+  expect(Buffer.from((await loadVeilArchive(g1))!).equals(Buffer.from(foreign)), "the row never stands absent mid-act").toBe(true);
+  // THE RETRY finishes it over the copy the stopped run left.
+  const done = await rehive(1);
+  await reopen(1);
+  expect(done).toMatchObject({ outcome: "stood-from-seed", resumed: true });
+  expect(await loadVeilArchive(g1)).toBeNull();
+
+  // THE RACE: a write lands between the read and the replace; the replace refuses and the row keeps that write.
+  const { g0: h0, g1: h1 } = await twoFaces("race");
+  const foreign2 = (await loadVeilArchive(h0))!;
+  const own2 = (await loadVeilArchive(h1))!;
+  await misroute(foreign2, h1);
+  const raced = await rehiveThrough(1, (port) => ({ ...port, replace: async (file, expected, next) => { await port.write(file, own2); return port.replace(file, expected, next); } })).catch((e: unknown) => e);
+  expect(reasonOf(raced)).toBe("row-moved");
+  await reopen(1);
+  expect(Buffer.from((await loadVeilArchive(h1))!).equals(Buffer.from(own2)), "the racing write stands").toBe(true);
+});
+

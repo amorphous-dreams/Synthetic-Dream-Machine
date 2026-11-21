@@ -25,7 +25,9 @@ describe("the rehive's answer", () => {
     expect(share).toBeGreaterThan(wear);
     expect(kahu).toBeGreaterThan(share);
     expect(text).toContain("lares kahua list --face 1");
-    expect(text).toContain("lares kahua carry --face 1");
+    expect(text).toContain("lares kahua carry --all --face 1");
+    expect(text).toContain("lares bag share --list --json > shares-before.json");
+    expect(text).toContain("--note <its note>");
   });
   test("V2 a restored generation names only the last overwrite lost", () => {
     const text = rehiveLines({ ...ANSWER, outcome: "restored-prev" }).join("\n");

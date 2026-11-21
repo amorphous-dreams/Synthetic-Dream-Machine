@@ -57,6 +57,7 @@ import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type Holde
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
+import { handActRefusal } from "./hand-act-gate.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
@@ -161,6 +162,8 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
   /** Rehive one SHUT face under its own route (`rehiveShutFace`). Absent, every `rehive` frame refuses `rehive-unavailable`. */
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
+  /** Who sent a hand act's frame (`hand-act-gate`); the test seam alone replaces it. */
+  readonly peerOf?: (sock: Socket) => Promise<"ai" | null>;
 }
 
 const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "act", "backup", "face-route", "ward", "prove", "rehive"]);
@@ -544,12 +547,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * One rehive, run on the door's one chain. THE FACE STANDS SHUT: worn or lit (its key open in the holder) refuses
    * `face-open`, so no composition reads a row this act moves. The face's own route opens its key for this act alone.
    */
-  const runRehive = (credentials: readonly Credential[], face: number) => async (): Promise<CustodyAnswer> => {
+  const runRehive = (credentials: readonly Credential[], face: number, sock: Socket) => async (): Promise<CustodyAnswer> => {
     const refuse = (reason: string, errorMessage: string): CustodyAnswer => {
       deps.onLog(`rehive h${face}: refused (${reason})`);
       return { op: "rehive", status: "error", errorMessage, refusal: { reason } };
     };
+    // A HAND ACT: the peer reads first, before any credential the frame carries reaches the holder.
+    const notHand = await handActRefusal(sock, deps.peerOf);
+    if (notHand !== null) return refuse(notHand, "a rehive is a person's own act at their terminal: an AI seat's peer never runs it; nothing moved");
     if (!deps.rehive) return refuse("rehive-unavailable", "this vessel's custody door rehives no face");
+    // UNDER A PŪLAMA the face's custody rests with the pūlama, which lights faces on its own hand: the rehive runs where it rests.
+    if (deps.pulama) return refuse("rehive-under-pulama", "this vessel's custody rests with its pūlama, which may light the face at any moment: rehive the face on a vessel holding its own custody; nothing moved");
     if (!holder.isUnlocked()) return refuse("custody-locked", "this vessel holds no key: open it first (`lares vault unlock`), leaving the face to rehive shut");
     const at = await holder.faceStanding({ ordinal: face });
     if (at === null) return refuse("face-not-standing", `no face h${face} stands on this vessel; nothing moved`);
@@ -580,7 +588,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
         answer(sock, { op, status: "error", errorMessage: "a rehive frame carries `op`, the face's own `credentials` and the `face` (a handle-index), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
-      act = runRehive(credentials, face as number);
+      act = runRehive(credentials, face as number, sock);
     } else if (op === "backup") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !BACKUP_FRAME_KEYS.has(k));

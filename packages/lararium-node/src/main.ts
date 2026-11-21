@@ -494,7 +494,7 @@ async function main(): Promise<void> {
     backup: (face, bundleKey, ward) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null, ward }),
     // A REHIVE RUNS HERE TOO, over the custody files themselves: the door read the face shut, and the face's own route opens
     // its key for the act alone, outside the seated holder (`face-rehive`).
-    rehive: (face, credentials) => rehiveShutFace({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes, ordinal: face, credentials }),
+    rehive: (face, credentials) => rehiveShutFace({ holder, io: new FsCustodyIo(custodyHomes), ordinal: face, credentials }),
     standing: () => composition?.standing ?? "recomposing",
     wikiAwaits: () => composition?.wikiAwaits ?? null,
     // THE CENSUS of saves held in memory: null while no composition sits, so a stop never reads "none held" from a gap.

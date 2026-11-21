@@ -6,6 +6,9 @@
  *   E3  a locked vessel refuses `custody-locked`; a face that stands nowhere refuses `face-not-standing`; nothing runs.
  *   E4  a frame beside its three keys, or with no usable route, refuses whole before anything runs.
  *   E5  a rehive that refuses answers its own reason; a door with no rehive wired refuses `rehive-unavailable`.
+ *   E6  A HAND ACT: a frame whose peer reads as an AI seat refuses `hand-act-only` before any route reaches the holder.
+ *   E7  under a pūlama (the face's custody rests with it, and it lights faces on its own hand) the rehive refuses
+ *       `rehive-under-pulama`, and nothing runs.
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
@@ -21,7 +24,7 @@ const OUTCOME: RehiveOutcome = { outcome: "stood-from-seed", foreignIdentity: "4
 const priorMount = mountedFaceOrdinal();
 afterEach(() => { setMountedFace(priorMount); });
 
-function door(opts: { unlocked?: boolean; faces?: Record<number, { unlocked: boolean }>; rehive?: ((face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>) | null } = {}) {
+function door(opts: { unlocked?: boolean; faces?: Record<number, { unlocked: boolean }>; rehive?: ((face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>) | null; peer?: "ai" | null; pulama?: boolean } = {}) {
   const asked: Array<{ face: number; credentials: readonly Credential[] }> = [];
   const logs: string[] = [];
   const holder = {
@@ -35,6 +38,8 @@ function door(opts: { unlocked?: boolean; faces?: Record<number, { unlocked: boo
   const handle = custodyFrameHandler({
     holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: (l) => logs.push(l),
     ...(rehive ? { rehive } : {}),
+    peerOf: async () => opts.peer ?? null,
+    ...(opts.pulama ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [0, 1], tellWorn: async () => {} } } : {}),
   });
   const send = (frame: unknown): Promise<Record<string, unknown>> => new Promise((resolve) => {
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line) as Record<string, unknown>) }) as unknown as Socket;
@@ -87,5 +92,19 @@ describe("the custody door's rehive frame", () => {
     const refusing = door({ rehive: async () => { throw new RehiveRefused("row-is-own", "nothing to rehive"); } });
     expect(await refusing.send(frame(1))).toMatchObject({ refusal: { reason: "row-is-own" }, errorMessage: "nothing to rehive" });
     expect(await door({ rehive: null }).send(frame(1))).toMatchObject({ refusal: { reason: "rehive-unavailable" } });
+  });
+
+  test("E6 an AI seat's peer refuses hand-act-only, and no route reaches the rehive", async () => {
+    setMountedFace(0);
+    const d = door({ peer: "ai" });
+    expect(await d.send(frame(1))).toMatchObject({ op: "rehive", status: "error", refusal: { reason: "hand-act-only" } });
+    expect(d.asked).toEqual([]);
+  });
+
+  test("E7 under a pūlama the rehive refuses rehive-under-pulama, and nothing runs", async () => {
+    setMountedFace(0);
+    const d = door({ pulama: true });
+    expect(await d.send(frame(1))).toMatchObject({ refusal: { reason: "rehive-under-pulama" } });
+    expect(d.asked).toEqual([]);
   });
 });

@@ -30,7 +30,7 @@ export function rehiveLines(a: CustodyDoorAnswer): string[] {
       "",
       "next:",
       `  1. wear the face: lares vault unlock --all --face ${face}`,
-      `  2. read its reach: lares wiki status --recipe default --face ${face}. Where a shared bag or the kahua stage refuses to open, land that reach again (step 3 of a rehive from the seed below).`,
+      `  2. read its reach: lares wiki status --recipe default --face ${face}. Where a shared bag or the kahua stage refuses to open, land that reach again as a rehive from the seed does (lares bag share --list --json first, then each row again with the same policy; lares kahua carry --all --face ${face}).`,
     );
     return lines;
   }
@@ -39,10 +39,10 @@ export function rehiveLines(a: CustodyDoorAnswer): string[] {
     "LOST with the old Archive: the prekey secrets and the card the face last presented, and its key-agreement (CGKA) and membership state. Content keys sealed to those prekeys (shares this face received, lockboxes it wrapped) may not open again until their reach lands again.",
     "",
     "next, in order:",
-    `  1. wear the face: lares vault unlock --all --face ${face}. Its first boot stands the hive from the seed, and the archive floor writes the face's own new Archive.`,
-    `  2. land its reach again: lares bag share --list names each row that names h${face}; for each one, lares bag share <bag> --remove, then lares bag share <bag> --read <the same names> [--write <the same names>]. A wiki share lands again the same way through lares wiki share.`,
+    `  1. wear the face: lares vault unlock --all --face ${face}. Its first boot stands the hive from the seed, and the archive floor writes the face's own new Archive. (A rehive runs only on a vessel holding its own custody, so this unlock reads both selectors.)`,
+    `  2. land its reach again, keeping each share's own policy: first keep the rows, lares bag share --list --json > shares-before.json. For each row that names h${face}, land it again with exactly the readers, writers and note that row names: lares bag share <bag> --remove, then lares bag share <bag> --read <its readers> [--write <its writers>] [--note <its note>]. A wiki share lands again the same way through lares wiki share <wiki> … [--workspace <its workspace>].`,
     `  3. the kahu share: lares nexus cabal standing ${group} reads whether the face's PersonaGroup still stands in the Kahu cabal. The group did not change, so its admission stands unless that reading says otherwise.`,
-    `     Then lares kahua list --face ${face}: items that read mean the kahu share holds and nothing more is owed. Items that refuse to open (a key the face no longer holds) mean the kahu share needs granting again: lares kahua carry --face ${face} stands the earlier items again under the face's root, and a Kahu chair re-admits the group where the standing reads it out (lares nexus cabal admit ${group}).`,
+    `     Then lares kahua list --face ${face}: items that read mean the kahu share holds and nothing more is owed. Items that refuse to open (a key the face no longer holds) mean the kahu share needs granting again: lares kahua carry --all --face ${face} stands every earlier item again under the face's root (or name the revision cids instead of --all; carry is a person's hand at the face's kahua stage and needs its stage access), and a Kahu chair re-admits the group where the standing reads it out (lares nexus cabal admit ${group}).`,
   );
   return lines;
 }

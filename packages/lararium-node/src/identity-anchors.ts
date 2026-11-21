@@ -211,9 +211,28 @@ export function loadVeilArchivePrev(personaGroup: string): Promise<Uint8Array | 
   return readCustodyRecord("identity", veilArchivePrevFile(personaGroup));
 }
 
-/** ONE face's veil archive, or null when none stands. */
-export function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null> {
-  return readCustodyRecord("identity", veilArchiveFile(personaGroup));
+/** ONE face's veil archive, or null when none stands: a row a rehive left standing as its marker reads as none. */
+export async function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null> {
+  const bytes = await readCustodyRecord("identity", veilArchiveFile(personaGroup));
+  return bytes !== null && rehiveMarkerAside(bytes) !== null ? null : bytes;
+}
+
+/**
+ * THE REHIVE'S MARKER: the bytes a rehive seals over a face's veil-archive row in ONE write, in place of another identity's
+ * Archive, naming where that Archive rests aside. Every reader takes it for no Archive, so the face's next boot stands from its
+ * seed; the seal never rotates it into `.prev` (no seed proves it); a retry over it reads the rehive as done.
+ */
+const REHIVE_MARKER = "lares-rehive-marker\n";
+export function rehiveMarker(aside: string): Uint8Array {
+  return new TextEncoder().encode(`${REHIVE_MARKER}${aside}`);
+}
+/** The aside row a rehive marker names, or null where the bytes hold no marker. */
+export function rehiveMarkerAside(bytes: Uint8Array): string | null {
+  if (bytes.length > 512) return null;
+  const text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  if (!text.startsWith(REHIVE_MARKER)) return null;
+  const aside = text.slice(REHIVE_MARKER.length);
+  return VEIL_ARCHIVE_ASIDE_FILE.test(aside) ? aside : null;
 }
 
 /** The node AnchorStore: the shore the PersonaVault carries. `save` writes the face's own anchors row;
