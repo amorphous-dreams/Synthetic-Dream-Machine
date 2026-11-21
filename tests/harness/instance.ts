@@ -30,7 +30,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { faceRoot, realmRoot, REALM_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
+import { FACE_PLANES, faceRoot, realmRoot, REALM_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
 import { realmPlacement } from "../../packages/lararium-node/src/realm-labels.js";
 
 /**
@@ -319,9 +319,9 @@ export function stagedFaceRoot(root: string): string {
 }
 
 /** Where a staged hearth's daemon wiki (the kahua wiki's working top, bag `wikis/daemon/working`) projects on disk: the face
- *  root's `wiki/`, `<root>/projections/faces/<pet name>/wiki`. */
+ *  root's `wikis/daemon/`, `<root>/projections/faces/<pet name>/wikis/daemon`. */
 export function daemonWikiDir(root: string): string {
-  return join(stagedFaceRoot(root), "wiki");
+  return join(stagedFaceRoot(root), FACE_PLANES.wiki);
 }
 
 /**
@@ -341,9 +341,9 @@ export function wikiCanonBagDir(root: string, slug: string): string {
   return join(realmPlacement(projections).bagsBase(slug) ?? join(realmRoot(projections, slug), REALM_PLANES.bags), slug);
 }
 
-/** The face's kahua stage on a staged hearth: `<root>/projections/faces/<pet name>/stage`. */
+/** The face's kahua stage on a staged hearth: `<root>/projections/faces/<pet name>/bags/kahua`. */
 export function kahuaStageDir(root: string): string {
-  return join(stagedFaceRoot(root), "stage");
+  return join(stagedFaceRoot(root), FACE_PLANES.stage);
 }
 
 /**
