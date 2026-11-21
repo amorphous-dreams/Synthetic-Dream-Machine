@@ -162,6 +162,8 @@ keep_before_down() {
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
   else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
+  # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
+  printf '%s\n' 'lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop' >&2
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
   # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
   if kb_out=$("$@" rite keep --if-due --json); then

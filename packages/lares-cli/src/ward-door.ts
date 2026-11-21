@@ -10,13 +10,13 @@
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
 import type { Credential } from "@lararium/mesh";
-import { gatherSeatedWardRoute, parkWardTicket, wardBindDigest, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
+import { seatWardGatherer, gatherSeatedWardRoute, parkWardTicket, wardBindDigest, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
 import { readWardPassphrase } from "./prompt-secret.js";
 import { RoutedVerbRefused } from "./store-door.js";
 
 /** One ward act's route, as this process asks it: the gatherer the process seated (the binary seats `ttyWardRoute`). */
 export async function gatherWardRoute(verb: string, face?: number): Promise<Credential[]> {
-  return wardGathererSeated() ? [...await gatherSeatedWardRoute(verb)] : ttyWardRoute(verb, face);
+  return wardGathererSeated() ? [...await gatherSeatedWardRoute(verb, face)] : ttyWardRoute(verb, face);
 }
 
 /**
@@ -26,6 +26,9 @@ export async function gatherWardRoute(verb: string, face?: number): Promise<Cred
 export async function ttyWardRoute(verb: string, face?: number): Promise<Credential[]> {
   return [{ kind: "passphrase", passphrase: await readWardPassphrase(verb, face !== undefined ? { face } : {}) }];
 }
+
+/** Seat the terminal gatherer, carrying the face a ward act names through, so the prompt names that face's passphrase. */
+export function seatTtyWardGatherer(): void { if (!wardGathererSeated()) seatWardGatherer((what, face) => ttyWardRoute(what, face)); }
 
 /** The token an in-process act takes (a direct row, the recovery split). */
 export async function gatherWard(verb: string, face?: number): Promise<WardCredential> {

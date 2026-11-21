@@ -431,6 +431,8 @@ function KeepBeforeDown {
   if ($hostCli) { $cmd = $hostCli; $pre = @() }
   elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
   else { $script:KeepSaid = 'no host node answered, so nothing kept'; [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
+  # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
+  [Console]::Error.WriteLine('lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop')
   # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
   $kbLines = @(& $cmd @pre rite keep --if-due --json)
   $kbRc = $LASTEXITCODE
