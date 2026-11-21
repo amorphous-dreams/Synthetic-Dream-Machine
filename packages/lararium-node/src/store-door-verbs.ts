@@ -218,7 +218,7 @@ export const STORE_DOOR_VERBS = [
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
+  "rite-begin", "rite-land", "rite-receipts", "rite-offer", "rite-abandon",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -240,7 +240,7 @@ export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDo
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
+  "rite-begin", "rite-land", "rite-receipts", "rite-offer", "rite-abandon",
 ]);
 
 /**
@@ -261,8 +261,11 @@ export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entr
 /** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
 export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
 
-/** The socket's one hand-only table: every code a seat session refuses, promote, swarm and floor together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES]);
+/** The rite row only a hand runs: the abandon ends a pending begin by name, and a seat never ends one. */
+export const RITE_HAND_CODES: ReadonlyMap<string, string> = new Map([["rite-abandon", "rite-abandon-needs-hand"]]);
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor and rite together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...RITE_HAND_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
 export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_VERBS, ...STORE_DOOR_HAND_CODES.keys()]);
 
@@ -397,6 +400,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "rite-land": (args) => answer("rite-land", () => riteVerb("land", args)),
     "rite-receipts": (args) => answer("rite-receipts", () => riteVerb("receipts", args)),
     "rite-offer": (args) => answer("rite-offer", () => riteVerb("offer", args)),
+    "rite-abandon": (args) => answer("rite-abandon", () => riteVerb("abandon", args)),
     "swarm-show": (args) => answer("swarm-show", () => swarmVerb("show", args)),
     "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmVerb("cap-set", args)),
     "swarm-share-set": (args) => answer("swarm-share-set", () => swarmVerb("share-set", args)),

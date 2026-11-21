@@ -24,7 +24,10 @@
 #                                                or it stands unlit, up, its admit where owed, the last face worn. It reads
 #                                                where the house stands each run, so a stopped run picks up from there; with
 #                                                no terminal, a light or admit owed stops it before anything moves.
-#                                                `--image` stops after the image and prints the reading as one JSON line
+#                                                `--image` stops after the image and prints the reading as one JSON line; `--keep-after-landing` (the rite's) leaves a keep a down
+#                                                left owed to `keep-owed`, which the rite runs once it lands its halves
+#   lares-container.sh keep-owed                 run the keep a down left owed (`run/keep-owed`) once the census reads
+#                                                clean, or name its deferral; with none owed it runs nothing
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing.
 #                                                Every stand and restart this shim performs (`up` too) warns when the
@@ -147,17 +150,19 @@ done
 
 # THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
 # still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
-# host's lares door, else the checkout's own bin under the host's node.
-KEEP_SAID=""; KEEP_OWED=""
+# host's lares door, else the checkout's own bin under the host's node. A keep that refuses leaves the house's
+# `run/keep-owed` mark, which outlives this invocation (a Ctrl+C, a later run), and a keep that keeps clears it.
+KEEP_SAID=""
+keep_owed_mark() { printf '%s' "$HOUSE/run/keep-owed"; }
 keep_before_down() {
-  KEEP_SAID="no keep workspace named"; KEEP_OWED=""
-  [ -n "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ] || return 0
+  KEEP_SAID="no keep workspace named"
+  if [ -z "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ]; then rm -f -- "$(keep_owed_mark)"; return 0; fi
   host_cli=$(value_of LARES_HOST_CLI)
   if [ -n "$host_cli" ]; then set -- "$host_cli"
   elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
   else KEEP_SAID="no host node answered, so nothing kept"; printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
-  if "$@" rite keep --if-due --no-json; then KEEP_SAID="kept (rite keep --if-due)"
-  else KEEP_SAID="the keep did not complete"; KEEP_OWED=yes; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
+  if "$@" rite keep --if-due --no-json; then KEEP_SAID="kept (rite keep --if-due)"; rm -f -- "$(keep_owed_mark)"
+  else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
 # Make every bound class as the operator, so the engine never makes one owned by root.
@@ -1022,7 +1027,8 @@ pulama_status_read() { # $1 = the image digest
 }
 # A kūkulu offer the standing vessel rested (config/kukulu-offer.json) whose vouch names the image: the next vessel offers
 # it once, and the pūlama lends on it with no admit.
-offer_carries() { [ -n "$1" ] && [ -f "$HOUSE/config/kukulu-offer.json" ] && grep -qF -- "$1" "$HOUSE/config/kukulu-offer.json"; }
+# It reads the vouch's own `image` field, never a digest that merely begins another.
+offer_carries() { [ -n "$1" ] && [ -f "$HOUSE/config/kukulu-offer.json" ] && grep -qF -- "\"image\":\"$1\"" "$HOUSE/config/kukulu-offer.json"; }
 # Does a vessel run the image the tag names? vo_running reads yes wherever a vessel runs at all.
 vo_running=""
 vessel_on_image() {
@@ -1059,10 +1065,12 @@ print_reading() {
     "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_at"
 }
 HAND_LINE='your hand: lares rite kukulu on a terminal'
-# THE KEEP AFTER THE RAISE: a keep that refused before the down (its census named what rests nowhere yet) runs again once the
-# new vessel's census reads clean, so a restand never skips the keep silently; a census that still names items defers it by name.
+# THE KEEP AFTER THE RAISE: a keep a down left owed (`run/keep-owed`, this run's or an earlier one's) runs again once the new
+# vessel's census reads clean, so a restand never skips the keep silently; a census that still names items defers it by name.
+# Under the rite (`rebuild --keep-after-landing`) the raise names it owed, and the rite runs `keep-owed` after its landing.
+R_KEEP_LATER=""
 keep_after_raise() {
-  [ -n "$KEEP_OWED" ] || return 0
+  [ -e "$(keep_owed_mark)" ] || return 0
   if run_census && printf '%s\n' "$census_out" | grep -q '^census: clean'; then
     printf '%s\n' "lares-container: the keep before the down did not complete; the new vessel's census reads clean, so the keep runs now" >&2
     keep_before_down
@@ -1127,7 +1135,8 @@ stand_house() {
       if none_worn; then wear_last_face; fi
     fi
   elif [ -n "$s_stays" ]; then unlock_or_name; fi
-  keep_after_raise
+  if [ -n "$R_KEEP_LATER" ] && [ -e "$(keep_owed_mark)" ]; then KEEP_SAID="owed; it runs after the rite lands its halves"
+  else keep_after_raise; fi
   r_worn=${WORE#h}; [ -n "$r_worn" ] || r_worn=$(worn_now)
   r_rev=$(label_of "$IMAGE_REF" | cut -c1-12)
   if [ -n "$r_worn" ]; then r_wearing="wearing h$r_worn"; else r_wearing="no face worn (wear one: \`tools/lares-container.sh wear N\`)"; fi
@@ -1140,7 +1149,8 @@ rebuild_verb() {
       --at) [ "$#" -ge 2 ] || die "rebuild --at wants a revision"; r_at=$2; r_at_given=yes; shift 2 ;;
       --prior) r_prior=yes; shift ;;
       --image) r_image=yes; shift ;;
-      *) die "rebuild takes --at <rev>, --prior and --image, and \"$1\" names none of them" ;;
+      --keep-after-landing) R_KEEP_LATER=yes; shift ;;
+      *) die "rebuild takes --at <rev>, --prior, --image and --keep-after-landing, and \"$1\" names none of them" ;;
     esac
   done
   [ -z "$r_prior" ] || [ -z "$r_at_given" ] || die "rebuild takes --at <rev> or --prior, never both"
@@ -1151,9 +1161,19 @@ rebuild_verb() {
   stand_house
 }
 
+# THE KEEP THE RITE RUNS AFTER ITS LANDING (`keep-owed`): the keep a down left owed, once the census reads clean, or its
+# deferral by name; with no keep owed it runs nothing.
+keep_owed_verb() {
+  [ "$#" -eq 0 ] || die "keep-owed takes no argument"
+  if [ ! -e "$(keep_owed_mark)" ]; then printf '%s\n' 'lares-container: keep: none owed' >&2; return 0; fi
+  keep_after_raise
+  printf 'lares-container: keep: %s\n' "$KEEP_SAID" >&2
+}
+
 case "$verb" in
   up) up_verb "$@" ;;
   rebuild) rebuild_verb "$@" ;;
+  keep-owed) keep_owed_verb "$@" ;;
   down) down_vessel "$@" ;;
   pulama)
     [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"

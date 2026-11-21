@@ -7,9 +7,9 @@
  */
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
-import { beginRite, conferre, landRite, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
+import { abandonRites, beginRite, conferre, landRite, pendingBegins, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
 import {
-  putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmTesseraTitle,
+  checkReturn, claimReturn, putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmTesseraTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 
@@ -128,5 +128,57 @@ describe("wake-reads-unmatched-half-red", () => {
     const read = await conferre(f.wiki, f.trust, GROUP);
     expect(read.par).toEqual([]);
     expect(Object.fromEntries(read.red.map((r) => [r.tessera, r.red]))).toEqual({ [forged.tessera]: "landed-refused", [crossed.tessera]: "landed-names-another", [lone]: "begun-absent" });
+  });
+});
+
+/**
+ * KŪKULU SURVIVES A CTRL+C (gate 2, the second read): a begin binds the image it raises, so a landing over another image never
+ * reads par; a return claimed and never rested as a guest half is reused by the next begin at the same head and tree, never a
+ * second return; and a pending half reads by its raw rows (a shut or rehived face's too), abandoned only by name.
+ */
+describe("kukulu-binds-its-image-and-spends-once", () => {
+  const D1 = "sha256:" + "d1".repeat(32), D2 = "sha256:" + "d2".repeat(32);
+
+  test("RED: a begin names its image in the guest half; a landing over another image at the same head reads off par and conferre reads it red `image-differs`; CONTROL: the same image reads par", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const one = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
+    const guest = await readSwarmRecord(f.wiki, swarmTesseraTitle(one.tessera, "guest"), f.trust, GROUP);
+    expect(guest).toMatchObject({ ok: true, act: { body: { image: D1 } } });
+    const off = await landRite(f.wiki, { tessera: one.tessera, head: HEAD, image: D2 }, f.trust, GROUP, f.vessel);
+    expect(off.par).toBe(false);
+    expect((await conferre(f.wiki, f.trust, GROUP)).red).toEqual([expect.objectContaining({ tessera: one.tessera, red: "image-differs", image: D1 })]);
+    const two = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
+    expect((await landRite(f.wiki, { tessera: two.tessera, head: HEAD, image: D1 }, f.trust, GROUP, f.vessel)).par).toBe(true);
+  });
+
+  test("RED: a return claimed and never rested as a guest half (a crash between) is reused by the next begin at the same head and tree, so no second return spends; CONTROL: an orphan return at another head stays spent and the begin claims the next", async () => {
+    const f = await fixture();
+    const cid = await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const at = { rite: "kukulu" as const, branch: BRANCH, head: HEAD, tree: TREE };
+    await claimReturn(f.wiki, await checkReturn(f.wiki, at, f.trust, GROUP, f.vessel, ONE_DEVICE));
+    const begun = await f.begin();
+    expect([begun.n, begun.tessera]).toEqual([1, tesseraOf({ lei: cid, n: 1 })]);
+    expect(f.rows.has(swarmLeiReturnedTitle(cid, 2))).toBe(false);
+    await claimReturn(f.wiki, await checkReturn(f.wiki, { ...at, head: HEAD2 }, f.trust, GROUP, f.vessel, ONE_DEVICE));
+    expect((await f.begin()).n).toBe(3);
+  });
+
+  test("RED: a pending half reads by its raw rows, even where its face's trust no longer verifies it (a shut or rehived face); an abandon rests by name, ends its debt, conferre reads it red `abandoned`, and no landing takes it; CONTROL: a landed half is never pending", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const open = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
+    const done = await f.begin(HEAD2);
+    await f.land(done.tessera, HEAD2);
+    const pending = await pendingBegins(f.wiki, "kukulu", BRANCH);
+    expect(pending).toEqual([{ tessera: open.tessera, group: GROUP, branch: BRANCH, head: HEAD, image: D1, lei: open.lei, n: open.n }]);
+    // A rehived face's trust verifies nothing of the old half, and the raw read still names it.
+    const rehived = { hand: () => false, vessel: () => false, lead: () => false };
+    expect((await conferre(f.wiki, rehived, "face-group-rehived")).red.filter((r) => r.red === "landed-absent")).toEqual([]);
+    expect(await pendingBegins(f.wiki, "kukulu", "other")).toEqual([]);
+    expect(await abandonRites(f.wiki, pending, f.vessel)).toEqual([open.tessera]);
+    expect(await pendingBegins(f.wiki, "kukulu", BRANCH)).toEqual([]);
+    expect((await conferre(f.wiki, f.trust, GROUP)).red).toEqual([expect.objectContaining({ tessera: open.tessera, red: "abandoned" })]);
+    await expect(f.land(open.tessera)).rejects.toMatchObject({ code: "rite-abandoned" });
   });
 });

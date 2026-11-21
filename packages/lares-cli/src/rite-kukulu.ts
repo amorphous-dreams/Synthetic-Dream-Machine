@@ -87,12 +87,24 @@ export interface StandReading {
  * A kūkulu begun and never landed, as the standing vessel reads it: the face (its ordinal where the vessel names one), the
  * tessera, and the head it began at.
  */
-export interface StandingBegin { readonly face: string; readonly ordinal?: number; readonly tessera: string; readonly head: string }
-/** The standing read: every begin resting unlanded on the line, or the vessel's refusal. */
-export type StandingAnswer = { readonly ok: true; readonly begins: readonly StandingBegin[] } | { readonly ok: false; readonly code: string; readonly message: string };
+export interface StandingBegin { readonly face: string; readonly ordinal?: number; readonly tessera: string; readonly head: string; readonly image?: string }
+/** One half of the raw debt: every kūkulu half resting unlanded on the line, whatever face still verifies it (a shut or rehived face's too). */
+export interface PendingBegin { readonly tessera: string; readonly group: string; readonly head: string; readonly image?: string; readonly face?: string }
+/** One vouch the resting offer carries, named by the lent face whose group it names. */
+export interface OfferVouch { readonly face?: string; readonly group: string; readonly branch: string; readonly head: string; readonly image: string }
+/**
+ * The standing read: the halves a lent face lands (`begins`), the raw debt (`pending`), and the resting offer's vouches (`offer`,
+ * null where none rests), or the vessel's refusal. A vessel of an older image names no `pending`; the rite then reads its
+ * `begins` alone.
+ */
+export type StandingAnswer =
+  | { readonly ok: true; readonly begins: readonly StandingBegin[]; readonly pending?: readonly PendingBegin[]; readonly offer?: readonly OfferVouch[] | null }
+  | { readonly ok: false; readonly code: string; readonly message: string };
 
 /** The refusal a run answers where a begin stands unlanded at another head than the one it raises. */
 export const BEGUN_STALE = "kukulu-begun-stale";
+/** The refusal a run answers where a begin stands unlanded at this head that it cannot resume: another image, or a face no lent face lands. */
+export const BEGUN_UNMATCHED = "kukulu-begun-unmatched";
 /** The exit a shim answers when a Ctrl+C ended it (128 + SIGINT). */
 export const INTERRUPTED = 130;
 
@@ -110,10 +122,14 @@ export interface RitePorts {
   /** One store row, answered by the vessel that stands. */
   row(verb: "rite-begin" | "rite-land" | "rite-offer", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
   /**
-   * Every kūkulu begin resting unlanded on the branch's line, read by the vessel that stands (`rite receipts --rite kukulu`).
-   * Absent, the rite reads none and begins as it did.
+   * The debt on the branch's line, read by the vessel that stands (`rite receipts --rite kukulu`), as the face `face` names
+   * where the operator names one (the worn face otherwise). Absent, the rite reads none and begins as it did.
    */
-  standing?(branch: string): Promise<StandingAnswer>;
+  standing?(branch: string, face?: number): Promise<StandingAnswer>;
+  /** The hand's abandon of every half resting unlanded on the line (`rite abandon --rite kukulu`): it answers each half it ended. */
+  abandon?(branch: string, face?: number): Promise<RiteVerbAnswer>;
+  /** The keep a down left owed, run after the landing (`keep-owed`); absent, the raise runs it itself. */
+  keepOwed?(): Promise<number>;
   /** Where a spent kūkulu lei is offered its refill inline; absent, the rite refuses as it did. */
   refill?: RefillPort;
   /**
@@ -191,8 +207,10 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  * `face` names the face the begin's and the offer's sessions act as where several faces stand open; each row still gathers
  * every lent face, one lei and one vouch apiece. Naming none, the rows name none, and their sessions ride the face the operator
  * wears. `rollback` stands the image that ran before (`true`) or the image of an older revision, with no checkout move.
+ * `abandon` ends every kūkulu half resting unlanded on the line, by name, on a terminal alone, and raises nothing.
  */
-export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
+export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string; readonly abandon?: true }): Promise<{ code: number; data: Record<string, unknown> }> {
+  if (opts.abandon === true) return abandonKukulu(ports, opts);
   const forward = opts.rollback === undefined;
   if (forward && ports.sync) {
     const synced = await ports.sync();
@@ -212,6 +230,8 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   const r = staged.reading, head = r.revision, short = head.slice(0, 12);
   const base = { rite: RITE_KUKULU, branch, head, ...(forward ? {} : { rollback: true }) };
   const asFace = opts.face === undefined ? {} : { face: opts.face };
+  // THE IMAGE BINDS THE BEGIN: the begin and each landing name the digest the host made, so a landing over another reads no par.
+  const asImage = r.image === "" ? {} : { image: r.image };
   const tty = ports.tty ? ports.tty() : true;
   const pulama = r.pulama !== "off";
   if (r.pulama === "unread" || (pulama && r.pulama !== "absent" && r.pulama !== "moved" && r.lit === null)) {
@@ -227,34 +247,57 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     const why = r.pulama === "moved" ? "the pūlama's code closure moved" : r.pulama === "absent" ? "no pūlama runs" : "the pūlama stands unlit";
     return awaitsHand(`${why}, and its light reads your route on a terminal, which this seat holds none of`);
   }
-  // THE BEGIN THAT STANDS, read before anything spends. A run that stopped after its begin (a Ctrl+C at the census, the light or
-  // the admit; a restand that refused) left each lent face's guest half resting unlanded. At this head the rite RESUMES it: no
-  // second return, no new tessera. At another head (the operator pulled meanwhile) it refuses by name with the one line that
-  // clears it, and never stacks a second begin.
-  let resume: readonly StandingBegin[] = [];
-  if (r.vessel === "standing" && ports.standing) {
-    const read = await ports.standing(branch);
-    if (!read.ok) {
-      ports.say(`kūkulu: the standing vessel reads no begun halves (${read.message}); nothing spent, nothing moved`);
-      return { code: 1, data: { ...base, begun: false, stopped: "standing", refusal: read.code } };
-    }
-    const stale = read.begins.filter((b) => b.head !== head);
-    if (stale.length > 0) {
-      ports.say(`kūkulu: ${staleLine(stale, short)}; nothing spent, nothing moved`);
-      return { code: 1, data: { ...base, begun: false, stopped: "begun-stale", refusal: BEGUN_STALE, stale: stale.map((b) => ({ face: b.face, tessera: b.tessera, head: b.head })) } };
-    }
-    resume = read.begins;
-  }
   const tesseraeOf = (faces: readonly StandingBegin[]) => faces.map((f) => ({ face: f.face, tessera: f.tessera }));
   const resumeLine = (faces: readonly StandingBegin[]): string =>
     `kūkulu: resuming the begin ${r.offer && r.offerAt ? `of ${r.offerAt}` : `at ${short}`}; no lei spent (${faces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`;
   const landCallOf = (faces: readonly StandingBegin[]): string =>
-    faces.map((f) => `lares rite land --tessera ${f.tessera} --head ${head}${f.ordinal === undefined ? "" : ` --face ${f.ordinal}`}`).join("; ");
+    faces.map((f) => `lares rite land --tessera ${f.tessera} --head ${head}${r.image === "" ? "" : ` --image ${r.image}`}${f.ordinal === undefined ? "" : ` --face ${f.ordinal}`}`).join("; ");
+  /** The debt this run reads: what it resumes, or the refusal that names what it cannot (and the one line that clears it). */
+  const judge = (read: Extract<StandingAnswer, { ok: true }>): { resume: readonly StandingBegin[]; offerMatches: boolean } | { refusal: string; stale: readonly PendingBegin[]; line: string } => {
+    const legacy = read.pending === undefined;
+    const pending: readonly PendingBegin[] = read.pending ?? read.begins.map((b) => ({ tessera: b.tessera, group: b.face, head: b.head, face: b.face, ...(b.image === undefined ? {} : { image: b.image }) }));
+    const landable = new Map(read.begins.map((b) => [b.tessera, b]));
+    const why = (p: PendingBegin): string | null =>
+      p.head !== head ? `another head than this run raises, ${short}`
+      : !landable.has(p.tessera) ? "its face stands shut or rehived, so no lent face lands it"
+      : !legacy && (p.image ?? "") !== r.image ? `another image than this run raises, ${r.image === "" ? "no digest" : r.image}`
+      : null;
+    const off = pending.flatMap((p) => { const w = why(p); return w === null ? [] : [{ p, w }]; });
+    if (off.length === 0) {
+      const resume = pending.map((p) => landable.get(p.tessera)!);
+      const vouches = read.offer ?? [];
+      const offerMatches = !legacy && resume.length > 0 && pending.every((p) => vouches.some((v) => v.group === p.group && v.branch === branch && v.head === head && v.image === r.image));
+      return { resume, offerMatches };
+    }
+    const heads = [...new Set(off.map(({ p }) => p.head))];
+    const allStale = off.every(({ p }) => p.head !== head);
+    const halves = off.map(({ p, w }) => `${p.face ?? p.group} tessera ${p.tessera} (begun at ${p.head.slice(0, 12)}${p.image === undefined ? "" : ` over ${p.image}`}: ${w})`).join(", ");
+    // THE CLEARING LINE: the abandon ends each half by name. A read that names no raw debt names no abandon door either, so it names the landing by hand.
+    const clear = legacy
+      ? off.map(({ p }) => `lares rite land --tessera ${p.tessera} --head ${p.head}`).join("; ")
+      : `lares rite kukulu --abandon --branch ${branch} (it ends each half by name; their returns stay spent)`;
+    // ONE OTHER HEAD, every half landable there: the rite rolled back to it lands them at their own head instead.
+    const back = allStale && heads.length === 1 && off.every(({ p }) => landable.has(p.tessera)) ? `; or land it at its own head: lares rite kukulu --rollback ${heads[0]!.slice(0, 12)} --branch ${branch}` : "";
+    return {
+      refusal: allStale ? BEGUN_STALE : BEGUN_UNMATCHED,
+      stale: off.map(({ p }) => p),
+      line: `a kūkulu begun and never landed stands on ${branch}, and this run cannot resume it: ${halves}; it never stacks a second begin. clear it with: ${clear}${back}`,
+    };
+  };
+  const refuseDebt = (j: { refusal: string; stale: readonly PendingBegin[]; line: string }, extra: Record<string, unknown> = {}) => {
+    ports.say(`kūkulu: ${j.line}; nothing spent, nothing moved`);
+    return { code: 1, data: { ...base, ...extra, begun: false, stopped: j.refusal === BEGUN_STALE ? "begun-stale" : "begun-unmatched", refusal: j.refusal, stale: j.stale.map((p) => ({ face: p.face ?? p.group, tessera: p.tessera, head: p.head })) } };
+  };
+  /** After a clean raise and landing, the keep the down left owed runs (the raise deferred it to here). */
+  const kept = async <T extends { code: number; data: Record<string, unknown> }>(out: T): Promise<T> => {
+    if (out.code === 0 && out.data["awaits"] === undefined && ports.keepOwed) await ports.keepOwed();
+    return out;
+  };
   /** Land each begun face in the vessel that stands now; the rite reads par only where every pair reads par. */
   const landAll = async (faces: readonly StandingBegin[], data: Record<string, unknown>): Promise<{ code: number; data: Record<string, unknown> }> => {
     let par = true;
     for (const f of faces) {
-      const landed = await ports.row("rite-land", { tessera: f.tessera, head, ...(f.ordinal === undefined ? {} : { face: f.ordinal }) });
+      const landed = await ports.row("rite-land", { tessera: f.tessera, head, ...asImage, ...(f.ordinal === undefined ? {} : { face: f.ordinal }) });
       if (landed.ok) { par = landed.output["par"] === true && par; continue; }
       if (landed.code === "vessel-locked") {
         ports.say(`kūkulu: the new vessel stands locked, so the host halves wait. Open it with \`lares vault unlock\`, then land the rite: ${landCallOf(faces)}`);
@@ -263,19 +306,64 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       ports.say(`kūkulu: the landing of ${f.face} refused: ${landed.message}`);
       return { code: 1, data: { ...data, begun: true, landed: false, refusal: landed.code } };
     }
-    ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head than the rite began at; conferre reads a tessera red");
-    if (par || prior === null) return { code: par ? 0 : 1, data: { ...data, begun: true, landed: true, par } };
+    ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head or image than the rite began at; conferre reads a tessera red");
+    if (par || prior === null) return kept({ code: par ? 0 : 1, data: { ...data, begun: true, landed: true, par } });
     // OFF PAR, the way back: the rite rolled back to the replaced image's revision (its kept tag, no rebuild).
     const wayBack = wayBackCommand(prior);
     ports.say(`kūkulu: to raise the replaced image ${prior.tag} again, run: ${wayBack}`);
     return { code: 1, data: { ...data, begun: true, landed: true, par, wayBack } };
   };
-  // A QUIET DAY: the vessel already runs the image under a pūlama that owes no light; nothing to raise, nothing to spend. A begin
-  // standing at this head lands after the top-up: the vessel runs the image of the head it began at.
+  /**
+   * AFTER THE RAISE, where the debt read nowhere before it (a vessel down at the start, or one standing locked at the floor): the
+   * vessel the raise stood reads it now. A matched debt lands; a debt that does not match exits non-zero by name.
+   */
+  const landWhatStands = async (data: Record<string, unknown>): Promise<{ code: number; data: Record<string, unknown> }> => {
+    if (!ports.standing) return kept({ code: 0, data });
+    const read = await ports.standing(branch, opts.face);
+    if (!read.ok) {
+      ports.say(`kūkulu: the new vessel reads no begun halves (${read.message}); once it opens, \`${HAND_ACT}\` lands any that rest and spends no lei`);
+      return { code: 0, data: { ...data, ...(read.code === "vessel-locked" ? { awaits: "unlock" } : {}) } };
+    }
+    const j = judge(read);
+    if ("refusal" in j) {
+      ports.say(`kūkulu: ${j.line}`);
+      return { code: 1, data: { ...data, refusal: j.refusal, stale: j.stale.map((p) => ({ face: p.face ?? p.group, tessera: p.tessera, head: p.head })) } };
+    }
+    if (j.resume.length === 0) return kept({ code: 0, data });
+    ports.say(resumeLine(j.resume));
+    return landAll(j.resume, { ...data, tesserae: tesseraeOf(j.resume), resumed: true });
+  };
+  // THE DEBT THAT STANDS, read before anything spends. A run that stopped after its begin (a Ctrl+C at the census, the light or
+  // the admit; a restand that refused) left each lent face's guest half resting unlanded. A debt that matches this run (its head,
+  // the image the host made, every half landable) RESUMES: no second return, no new tessera. Any other debt refuses by name with
+  // the one line that clears it, and never stacks a second begin. A vessel standing LOCKED AT THE FLOOR on this image (a Ctrl+C at
+  // the admit) reads nothing yet: the restand opens it (its re-admit), and the rite reads the debt after.
+  let resume: readonly StandingBegin[] = [];
+  let offerMatches = false;
+  let readAfter = r.vessel === "down";
+  if (r.vessel === "standing" && ports.standing) {
+    const read = await ports.standing(branch, opts.face);
+    if (!read.ok && read.code === "vessel-locked" && r.current) {
+      readAfter = true;
+      ports.say("kūkulu: the standing vessel stands locked at the floor, so its begun halves read nowhere yet; the restand opens it (its admit where owed), and the rite lands what it reads then");
+    } else if (!read.ok) {
+      ports.say(`kūkulu: the standing vessel reads no begun halves (${read.message}); nothing spent, nothing moved`);
+      return { code: 1, data: { ...base, begun: false, stopped: "standing", refusal: read.code } };
+    } else {
+      const j = judge(read);
+      if ("refusal" in j) return refuseDebt(j);
+      resume = j.resume;
+      offerMatches = j.offerMatches;
+    }
+  }
+  // A QUIET DAY: the vessel already runs the image under a pūlama that owes no light; nothing to raise, nothing to spend. A debt
+  // matched at this head lands after the top-up: the vessel runs the image of the head it began at.
   if (r.current && !light) {
-    ports.say(resume.length > 0 ? resumeLine(resume) : `kūkulu: the vessel already runs the image of ${short}; no rite spends a return`);
+    ports.say(resume.length > 0 ? resumeLine(resume) : readAfter ? `kūkulu: the vessel already runs the image of ${short}; the restand opens it` : `kūkulu: the vessel already runs the image of ${short}; no rite spends a return`);
     const code = await ports.raise(head);
-    if (code !== 0 || resume.length === 0) return { code: code === 0 ? 0 : 1, data: { ...base, begun: false, quiet: true, ...(code === 0 ? {} : { stopped: "raise", ...(code === INTERRUPTED ? { interrupted: true } : {}) }) } };
+    if (code !== 0) return { code: 1, data: { ...base, begun: false, quiet: true, stopped: "raise", ...(code === INTERRUPTED ? { interrupted: true } : {}) } };
+    if (readAfter) return landWhatStands({ ...base, begun: false, quiet: true });
+    if (resume.length === 0) return kept({ code: 0, data: { ...base, begun: false, quiet: true } });
     return landAll(resume, { ...base, tesserae: tesseraeOf(resume), quiet: true, resumed: true });
   }
   const spent: Record<string, unknown> = {};
@@ -293,21 +381,21 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       spent["seed"] = { cid: offer.seed.cid, ratchets: ratchetWords(compareGenesisDigests(offer.record, offer.seed.digests)) };
     }
   }
-  // THE RITE, where a vessel stands to begin it: a kukulu lei standing grants the restand with no prompt. A begin already
-  // standing at this head is resumed instead: it spent its returns once, and spends none again.
+  // THE RITE, where a vessel stands to begin it: a kukulu lei standing grants the restand with no prompt. A matched debt is
+  // resumed instead: it spent its returns once, and spends none again.
   let begunFaces: readonly StandingBegin[] = [];
   if (resume.length > 0) {
     begunFaces = resume;
     spent["tesserae"] = tesseraeOf(resume);
     spent["resumed"] = true;
     ports.say(resumeLine(resume));
-  } else if (r.vessel === "standing") {
-    let begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asFace });
+  } else if (r.vessel === "standing" && !readAfter) {
+    let begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace });
     let remedy = "";
     if (!begun.ok && begun.code === RETURNS_SPENT && ports.refill) {
       // A SPENT LEI OFFERS ITS OWN REFILL on a terminal, then the rite goes on; elsewhere the refusal names the plain line.
       const again = await ports.refill({ rite: "kukulu", branch, ...(opts.face === undefined ? { all: true } : { face: opts.face }) });
-      if (again.strung) begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asFace });
+      if (again.strung) begun = await ports.row("rite-begin", { rite: RITE_KUKULU, branch, head, ...asImage, ...asFace });
       else remedy = `; string more by hand: ${again.remedy}`;
     }
     if (!begun.ok && begun.code === LEI_ABSENT) ports.say(`kūkulu: no kukulu lei stands on ${branch}, so the restand goes on with no rite`);
@@ -316,14 +404,15 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       return { code: 1, data: { ...base, ...spent, begun: false, refusal: begun.code } };
     } else {
       begunFaces = (Array.isArray(begun.output["faces"]) ? begun.output["faces"] as Array<Record<string, unknown>> : [])
-        .map((f) => ({ face: String(f["face"]), ordinal: Number(f["ordinal"]), tessera: String(f["tessera"]), head }));
+        .map((f) => ({ face: String(f["face"]), ordinal: Number(f["ordinal"]), tessera: String(f["tessera"]), head, ...asImage }));
       const waits = Array.isArray(begun.output["waits"]) ? (begun.output["waits"] as unknown[]).map(String) : [];
       spent["tesserae"] = tesseraeOf(begunFaces);
       if (waits.length > 0) spent["waits"] = waits;
       ports.say(`kūkulu: begun; each lent face's lei returned and its guest half rests (${begunFaces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`);
       for (const face of waits) ports.say(`kūkulu: ${face} carries no kukulu lei on this line and waits; the other faces' rite goes on`);
     }
-  } else ports.say("kūkulu: no vessel stands, so no rite begins; the raise reads the offer that rests, the admitted set, or your admit");
+  } else if (r.vessel === "standing") ports.say("kūkulu: the vessel stands locked, so no rite begins; the raise opens it, and the rite lands what it reads then");
+  else ports.say("kūkulu: no vessel stands, so no rite begins; the raise reads the offer that rests, the admitted set, or your admit");
   const begun = begunFaces.length > 0;
   // THE ADMIT GATE: a new vessel under a pūlama enters on an admission, a kukulu offer, or the hand's admit (a route).
   const raisesNew = !r.current || r.pulama === "absent" || r.pulama === "moved";
@@ -334,11 +423,11 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   let offered = false;
   if (begun) {
     // BEFORE THE LOWERING, the standing vessel writes what the next one carries to the pūlama, over the image the host made. A
-    // resumed begin whose offer still rests for this image reuses it: the offer carries signed lei and vouches, and writing it
-    // again spends nothing but would read the line anew.
-    if (spent["resumed"] === true && r.offer) {
+    // resumed begin reuses the resting offer only where its vouches match every pending half (group, line, head, image); any
+    // other offer is written afresh over the image this begin binds, which spends nothing.
+    if (offerMatches) {
       offered = true;
-      ports.say(`kūkulu: the offer the begin rested still stands for the next vessel over ${r.image}; reused, none written`);
+      ports.say(`kūkulu: the offer the begin rested still vouches for each pending face over ${r.image}; reused, none written`);
     } else if (r.image === "") ports.say("kūkulu: the host names no digest for the image, so no offer rests for a pūlama; the rite goes on, and a vessel standing by a pūlama will wake at the floor.");
     else {
       const offer = await ports.row("rite-offer", { branch, head, image: r.image, ...asFace });
@@ -364,32 +453,31 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     ports.say(`kūkulu: the shim's restand answered ${raised}; the lines above name where it stopped, and \`${HAND_ACT}\` picks up from where the house stands${begun ? `; the lei's return stays spent, and the begun half waits for its landing: the next run resumes it and spends no lei (or land it by hand at ${head}: ${landCall})` : ""}.`);
     return { code: 1, data: { ...base, ...spent, begun, landed: false, stopped: "raise" } };
   }
-  if (!begun) {
-    // A VESSEL THAT STOOD DOWN at the start (a Ctrl+C at the light left it so) held its begun halves out of reach; the vessel the
-    // raise stood reads them now, and the rite lands each one that began at this head.
-    if (r.vessel === "down" && ports.standing) {
-      const read = await ports.standing(branch);
-      if (!read.ok) {
-        ports.say(`kūkulu: the new vessel reads no begun halves (${read.message}); once it opens, \`${HAND_ACT}\` lands any that rest and spends no lei`);
-        return { code: 0, data: { ...base, ...spent, begun: false, raised: true, ...(read.code === "vessel-locked" ? { awaits: "unlock" } : {}) } };
-      }
-      const here = read.begins.filter((b) => b.head === head), stale = read.begins.filter((b) => b.head !== head);
-      if (stale.length > 0) ports.say(`kūkulu: ${staleLine(stale, short)}`);
-      if (here.length > 0) {
-        ports.say(resumeLine(here));
-        return landAll(here, { ...base, ...spent, tesserae: tesseraeOf(here), resumed: true });
-      }
-    }
-    return { code: 0, data: { ...base, ...spent, begun: false, raised: true } };
-  }
+  if (!begun) return readAfter ? landWhatStands({ ...base, ...spent, begun: false, raised: true }) : kept({ code: 0, data: { ...base, ...spent, begun: false, raised: true } });
   return landAll(begunFaces, { ...base, ...spent });
 }
 
 /**
- * A begin standing at another head than the run raises: it names the halves and the one line that clears it (the rite rolled
- * back to that head resumes and lands it there, spending no lei), and the rite stacks no second begin.
+ * THE HAND'S ABANDON (`lares rite kukulu --abandon`): every kūkulu half resting unlanded on the line ends by name, its return
+ * spent, conferre reading it red `abandoned`. A terminal alone runs it (the store door refuses a seat's session too); it syncs,
+ * builds and raises nothing.
  */
-function staleLine(stale: readonly StandingBegin[], short: string): string {
-  const heads = [...new Set(stale.map((b) => b.head.slice(0, 12)))];
-  return `a kūkulu begun at ${heads.join(", ")} stands unlanded (${stale.map((b) => `${b.face} tessera ${b.tessera}`).join(", ")}), and this run raises ${short}; it never stacks a second begin. clear it with: ${heads.map((h) => `lares rite kukulu --rollback ${h}`).join("; then ")} (it lands that begin at its own head and spends no lei), then run ${HAND_ACT} again`;
+async function abandonKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number }): Promise<{ code: number; data: Record<string, unknown> }> {
+  const checkout = await ports.checkout();
+  const branch = opts.branch ?? checkout.branch;
+  const base = { rite: RITE_KUKULU, branch };
+  if (!(ports.tty ? ports.tty() : true) || !ports.abandon) {
+    ports.say(`kūkulu: an abandon ends a pending begin on the operator's hand, and this seat holds no terminal; run \`${HAND_ACT} --abandon --branch ${branch}\` on a terminal; nothing abandoned`);
+    return { code: 1, data: { ...base, refusal: "kukulu-abandon-needs-hand" } };
+  }
+  const out = await ports.abandon(branch, opts.face);
+  if (!out.ok) {
+    ports.say(`kūkulu: the abandon refused: ${out.message}; nothing abandoned`);
+    return { code: 1, data: { ...base, refusal: out.code } };
+  }
+  const rows = Array.isArray(out.output["abandoned"]) ? (out.output["abandoned"] as Array<Record<string, unknown>>) : [];
+  const abandoned = rows.map((a) => ({ tessera: String(a["tessera"]), ...(typeof a["face"] === "string" ? { face: a["face"] } : {}), group: String(a["group"]), head: String(a["head"]) }));
+  if (abandoned.length === 0) ports.say(`kūkulu: no begun half stands unlanded on ${branch}; nothing abandoned`);
+  for (const a of abandoned) ports.say(`kūkulu: abandoned ${a.face ?? a.group} tessera ${a.tessera} (begun at ${a.head.slice(0, 12)}); its lei's return stays spent, and conferre reads it red \`abandoned\``);
+  return { code: 0, data: { ...base, abandoned } };
 }

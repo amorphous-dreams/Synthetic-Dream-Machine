@@ -320,7 +320,15 @@ const KEY_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([...STORE_D
  * THE ROWS WHOSE SESSION ONLY SEATS THE ACT: the kūkulu's begin and offer gather every lent face (one lei, one vouch apiece), so
  * naming no face they ride the face the operator WEARS (`face.resolve` worn, the mounted face), never a refusal for several open.
  */
-const WORN_SESSION_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["rite-begin", "rite-offer"]);
+const WORN_SESSION_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["rite-begin", "rite-offer", "rite-abandon"]);
+
+/**
+ * Whether a row naming no face rides the worn face's session: the kūkulu's begin, offer and abandon, and its standing read
+ * (`rite-receipts` with `rite: kukulu`), each gathering every lent face, so several faces open (the house lights h0, h1 and h2)
+ * never refuse it. A plain receipts read still resolves its one face.
+ */
+export const storeVerbRidesWorn = (verb: StoreDoorVerb, args: Readonly<Record<string, unknown>>): boolean =>
+  WORN_SESSION_VERBS.has(verb) || (verb === "rite-receipts" && args["rite"] === "kukulu");
 
 /**
  * Run one row of the store's door table: through the standing vessel when one stands, or here, holding the
@@ -351,7 +359,7 @@ export async function storeVerb(
   // THE FACE RESOLVES ONCE, here: the session opens on it and the row carries it, so the row never resolves again.
   const named = STORE_DOOR_FACE_VERBS.has(verb) ? storeVerbFace(args) : undefined;
   const face = daemonUp && STORE_DOOR_FACE_VERBS.has(verb)
-    ? named ?? (await sealedAct<{ face: number }>("face.resolve", WORN_SESSION_VERBS.has(verb) ? { worn: true } : {})).face
+    ? named ?? (await sealedAct<{ face: number }>("face.resolve", storeVerbRidesWorn(verb, args) ? { worn: true } : {})).face
     : undefined;
   // A WARD ACT names a one-use ref for the route a person typed at this terminal, bound to the act as the row will read it (the
   // face included); the route itself rides no verb argument. An act a co-sign gate holds runs first with no route: the route gets

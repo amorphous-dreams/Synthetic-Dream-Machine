@@ -151,7 +151,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
     let cacheLeft = null; try { cacheLeft = await readdir(join(house, "cache")); } catch {}
     let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
-    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, house };
+    let keepOwed = false; try { await stat(join(house, "run", "keep-owed")); keepOwed = true; } catch {}
+    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -1110,6 +1111,48 @@ for (const [name, shim] of shims) {
     const reading = JSON.parse(r.stdout.trim().split("\n").at(-1));
     assert.equal(reading.offer, true);
     assert.match(reading.offerAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+  });
+  // THE SECOND READ (gate 2): an offer carries an image only by its vouch's own `image` field, never a digest that merely
+  // begins another; the keep a down left owed persists across invocations; and under the rite the keep waits for the landing.
+  test(`${name}: offer-carries-the-image-by-its-field: an offer naming a longer digest that begins with the image's carries none of it`, async () => {
+    const r = await run(shim, ["rebuild", "--image"], { checkout: "clean", houseFiles: { "config/kukulu-offer.json": '{"vouch":[{"body":{"image":"sha256:newer"}}]}\n' }, env: { ...STANDING, FAKE_IMAGE_ID: "sha256:new", FAKE_VESSEL_IMAGE: "sha256:old" } });
+    assert.equal(r.status, 0, r.stderr);
+    const reading = JSON.parse(r.stdout.trim().split("\n").at(-1));
+    assert.equal(reading.offer, false);
+    assert.equal("offerAt" in reading, false);
+  });
+  test(`${name}: keep-owed-persists: a down whose keep refused leaves run/keep-owed; the next raise from a down vessel (a Ctrl+C at the light stopped the last) keeps once the census reads clean and clears the mark; CONTROL: a keep that kept leaves no mark`, async () => {
+    const owed = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(1, 1) } });
+    assert.equal(owed.status, 0, owed.stderr);
+    assert.equal(owed.keepOwed, true);
+    const later = await run(shim, ["rebuild"], { checkout: "clean", houseFiles: { "run/keep-owed": "" }, env: { ...MOUNTS, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(later.status, 0, later.stderr);
+    assert.match(later.calls, /HOSTCLI rite keep --if-due/);
+    assert.match(later.stderr, /keep: kept after the raise \(rite keep --if-due\)/);
+    assert.equal(later.keepOwed, false);
+    const kept = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(kept.keepOwed, false);
+  });
+  test(`${name}: keep-after-landing: under the rite (rebuild --keep-after-landing) the raise keeps nothing after the up and names the keep owed; the keep-owed verb then keeps once the census reads clean and clears the mark, or names the deferral and keeps the mark`, async () => {
+    const env = { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CUSTODY_OUTPUT: HELD, FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", LARES_KEEP_WORKSPACE: "house-backup" };
+    const r = await run(shim, ["rebuild", "--keep-after-landing"], { checkout: "clean", env: { ...env, LARES_HOST_CLI: await keepTwice(1, 0) } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.calls.split("\n").filter((l) => /HOSTCLI rite keep/.test(l)).length, 1, r.calls);
+    assert.match(r.stderr, /keep: owed; it runs after the rite lands its halves/);
+    assert.equal(r.keepOwed, true);
+    const after = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(after.status, 0, after.stderr);
+    assert.match(after.calls, /HOSTCLI rite keep --if-due/);
+    assert.match(after.stderr, /keep: kept after the raise \(rite keep --if-due\)/);
+    assert.equal(after.keepOwed, false);
+    const deferred = await run(shim, ["keep-owed"], { houseFiles: { "run/keep-owed": "" }, env: { ...env, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3", LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(deferred.status, 0, deferred.stderr);
+    assert.doesNotMatch(deferred.calls, /HOSTCLI/);
+    assert.match(deferred.stderr, /keep: deferred: the census after the raise still names what rests nowhere yet/);
+    assert.equal(deferred.keepOwed, true);
+    const none = await run(shim, ["keep-owed"], { env: { ...env, LARES_HOST_CLI: await keepTwice(0, 0) } });
+    assert.equal(none.status, 0, none.stderr);
+    assert.doesNotMatch(none.calls, /HOSTCLI|vessel census/);
   });
   test(`${name}: rebuild-takes-at-or-prior: --at <rev> builds that commit; --resume, --prior beside --at, or a stray word, refuses before anything moves`, async () => {
     const at = await run(shim, ["rebuild", "--at", "HEAD"], { checkout: "clean", env: { ...MOUNTS, FAKE_CUSTODY_OUTPUT: HELD } });

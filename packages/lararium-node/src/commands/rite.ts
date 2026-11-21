@@ -19,10 +19,10 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { lstatSync, realpathSync } from "node:fs";
+import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
 import {
-  WORKSPACE_NAME_RE, SwarmRefused, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, riteReceipts,
+  WORKSPACE_NAME_RE, SwarmRefused, abandonRites, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, pendingBegins, riteReceipts,
   type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort, type TesseraReading,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
@@ -32,7 +32,7 @@ import { kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kuku
 import { larWorkspacesHome } from "../vessel-paths.js";
 import { BundleVerifyRefused, unsafeRelPath, verifyBundle } from "../bundle-manifest.js";
 
-export type RiteAction = "begin" | "land" | "receipts" | "offer";
+export type RiteAction = "begin" | "land" | "receipts" | "offer" | "abandon";
 
 /** Where the vessel looks for the checkout a rite's head belongs to: its own working directory, then the house's workspace mount. */
 export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
@@ -139,7 +139,7 @@ export async function beginLentFaces<C>(
 }
 
 /** One kūkulu guest half that rests with no host half: the face, its ordinal, its tessera, and the line and head it began at. */
-export interface StandingBegin { readonly face: string; readonly ordinal: number; readonly tessera: string; readonly branch: string; readonly head: string }
+export interface StandingBegin { readonly face: string; readonly ordinal: number; readonly tessera: string; readonly branch: string; readonly head: string; readonly image?: string }
 
 /**
  * THE BEGIN THAT STANDS. A kūkulu whose raise never landed (a Ctrl+C at the census, the light or the admit; a restand that
@@ -153,7 +153,7 @@ export async function standingKukuluBegins(lent: readonly number[], red: (ordina
     for (const t of await red(ordinal)) {
       if (t.red !== "landed-absent" || t.rite !== "kukulu" || t.branch === undefined || t.head === undefined) continue;
       if (branch !== undefined && t.branch !== branch) continue;
-      out.push({ face: `h${ordinal}`, ordinal, tessera: t.tessera, branch: t.branch, head: t.head });
+      out.push({ face: `h${ordinal}`, ordinal, tessera: t.tessera, branch: t.branch, head: t.head, ...(t.image === undefined ? {} : { image: t.image }) });
     }
   }
   return out;
@@ -161,13 +161,39 @@ export async function standingKukuluBegins(lent: readonly number[], red: (ordina
 
 /**
  * ONE BEGIN PER RAISE. A kūkulu begun on this line and never landed already spent each face's return; a second begin would
- * spend another and mint new tesserae beside the first. So the begin refuses `rite-begun-stands`, naming the halves, and
- * `lares rite kukulu` resumes them (at their head) or names the one line that clears them (at another head).
+ * spend another and mint new tesserae beside the first. So the begin refuses `rite-begun-stands` over the raw debt (a half whose
+ * face stands shut or was rehived counts too), naming each half by its face or its group, and `lares rite kukulu` resumes it
+ * (where it matches the run) or `lares rite kukulu --abandon` ends it by name.
  */
-export function refuseStandingBegin(standing: readonly StandingBegin[]): void {
+export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: string; readonly branch: string; readonly head: string; readonly face?: string; readonly group?: string }>): void {
   if (standing.length === 0) return;
   const heads = [...new Set(standing.map((s) => s.head.slice(0, 12)))].join(", ");
-  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${standing[0]!.branch}" stands unlanded (${standing.map((s) => `${s.face} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return`);
+  const branch = standing[0]!.branch;
+  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, or \`lares rite kukulu --abandon --branch ${branch}\` ends it by name`);
+}
+
+/** One vouch the resting offer carries: the face whose group it names (where a lent face carries it), and its line, head and image. */
+export interface OfferVouch { readonly face?: string; readonly group: string; readonly branch: string; readonly head: string; readonly image: string }
+
+/**
+ * THE RESTING OFFER, READ BACK: each vouch in the offer file's text, named by the lent face whose group it carries, so the host
+ * reuses the offer only where its vouches match the pending halves (group, line, head and image). A text that reads as no offer
+ * (absent, or no JSON) reads null; a vouch that names no group, line, head and image is skipped.
+ */
+export function offerVouchesOf(text: string | null, faceOfGroup: ReadonlyMap<string, string>): OfferVouch[] | null {
+  if (text === null) return null;
+  let parsed: unknown;
+  try { parsed = JSON.parse(text); } catch { return null; }
+  const vouch = typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>)["vouch"] : undefined;
+  if (!Array.isArray(vouch)) return null;
+  const out: OfferVouch[] = [];
+  for (const v of vouch) {
+    const b = typeof v === "object" && v !== null ? (v as Record<string, unknown>)["body"] as Record<string, unknown> | undefined : undefined;
+    if (!b || typeof b["group"] !== "string" || typeof b["branch"] !== "string" || typeof b["head"] !== "string" || typeof b["image"] !== "string") continue;
+    const face = faceOfGroup.get(b["group"]);
+    out.push({ ...(face === undefined ? {} : { face }), group: b["group"], branch: b["branch"], head: b["head"], image: b["image"] });
+  }
+  return out;
 }
 
 /** One lent face as a kūkulu row reads it: the offer's parts beside the device atom that signs its rite's halves. */
@@ -217,17 +243,48 @@ export async function runRiteVerb(opts: {
     const face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal);
     return (await conferre(wiki, face.trust, face.group)).red;
   };
+  /** Each lent face's group, named by its face, so a raw row (a pending half, a vouch) names the face that carries it. */
+  const facesOfGroups = async (lent: readonly number[]): Promise<Map<string, string>> => {
+    const out = new Map<string, string>();
+    for (const ordinal of lent) out.set((await riteFaceOf(opts.repo, opts.catalogUrl, ordinal)).group, `h${ordinal}`);
+    return out;
+  };
+  const branchOrAll = str("branch") || undefined;
   if (opts.action === "receipts" && opts.args["rite"] === "kukulu") {
-    // THE KŪKULU'S STANDING READ: every lent face's guest half resting unlanded on the line, so the host resumes, never re-begins.
-    return { rite: "kukulu", standing: await standingKukuluBegins(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), redOf, str("branch") || undefined) };
+    // THE KŪKULU'S STANDING READ: the raw debt (every half resting unlanded on the line, whatever face still verifies it), the
+    // halves a lent face lands, and the resting offer's vouches, so the host resumes only what matches, and never re-begins.
+    const lent = await (opts.lentOrdinals ?? unlockedFaceOrdinals)();
+    const faceOf = await facesOfGroups(lent);
+    const pending = (await pendingBegins(wiki, "kukulu", branchOrAll)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) }));
+    let offerText: string | null = null;
+    try { offerText = readFileSync(opts.offerPath ?? kukuluOfferPath(), "utf8"); } catch { offerText = null; }
+    return { rite: "kukulu", standing: await standingKukuluBegins(lent, redOf, branchOrAll), pending, offer: offerVouchesOf(offerText, faceOf) };
+  }
+  if (opts.action === "abandon") {
+    // THE HAND'S ABANDON: every kūkulu half resting unlanded on the line gets its `rite-abandoned` mark, by name, signed by this
+    // vessel's atom in the face that carries it (any lent face's where the half's face stands shut or was rehived). The returns
+    // stay spent; the store door runs this row on a hand alone.
+    if (opts.args["rite"] !== "kukulu" || !str("branch")) throw new SwarmRefused("rite-malformed", "an abandon names its rite (kukulu) and its branch");
+    const lent = await (opts.lentOrdinals ?? unlockedFaceOrdinals)();
+    if (lent.length === 0) throw new SwarmRefused("lent-faces-empty", "an abandon signs as this vessel in a lent face, and this vessel serves no face");
+    const faces = await Promise.all(lent.map(async (ordinal) => ({ ordinal, face: await riteFaceOf(opts.repo, opts.catalogUrl, ordinal) })));
+    const abandoned: Array<Record<string, unknown>> = [];
+    for (const p of await pendingBegins(wiki, "kukulu", str("branch"))) {
+      const own = faces.find((f) => f.face.group === p.group);
+      const marked = await abandonRites(wiki, [p], (own ?? faces[0]!).face.vessel);
+      if (marked.length > 0) abandoned.push({ tessera: p.tessera, group: p.group, ...(own ? { face: `h${own.ordinal}` } : {}), head: p.head, ...(p.image === undefined ? {} : { image: p.image }) });
+    }
+    return { rite: "kukulu", branch: str("branch"), abandoned };
   }
   if (opts.action === "begin" && opts.args["rite"] === "kukulu") {
     // A KŪKULU BEGINS FOR EVERY LENT FACE OR FOR NONE: every face's return checks first, then each claims and rests its guest half.
     if (!str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");
-    const at = { rite: "kukulu" as const, branch: str("branch"), head: str("head"), tree: await (opts.treeOf ?? gitTreeOf)(str("head")) };
+    const at = { rite: "kukulu" as const, branch: str("branch"), head: str("head"), tree: await (opts.treeOf ?? gitTreeOf)(str("head")), ...(str("image") === "" ? {} : { image: str("image") }) };
     const lent = await (opts.lentOrdinals ?? unlockedFaceOrdinals)();
-    // A BEGIN ALREADY STANDING ON THE LINE spends nothing more: it refuses by name before any face's return is checked.
-    refuseStandingBegin(await standingKukuluBegins(lent, redOf, at.branch));
+    // A BEGIN ALREADY STANDING ON THE LINE spends nothing more: it refuses by name over the raw debt before any face's return is
+    // checked, a shut or rehived face's half included.
+    const faceOf = await facesOfGroups(lent).catch(() => new Map<string, string>());
+    refuseStandingBegin((await pendingBegins(wiki, "kukulu", at.branch)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) })));
     return { ...await beginLentFaces(lent, async (ordinal) => {
       let face: RiteFace;
       try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal); }
@@ -245,7 +302,7 @@ export async function runRiteVerb(opts: {
   if (opts.action === "receipts") return { receipts: await riteReceipts(opts.wiki, trust, group), conferre: await conferre(opts.wiki, trust, group) };
   if (opts.action === "land") {
     if (!/^[0-9a-f]{64}$/.test(str("tessera")) || !str("head")) throw new SwarmRefused("rite-malformed", "a landing names its tessera and the head the vessel stands at");
-    return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head") }, trust, group, vessel) };
+    return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head"), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel) };
   }
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");

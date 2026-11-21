@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { INTERRUPTED, priorImageRef, riteKukulu, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
+import { INTERRUPTED, priorImageRef, riteKukulu, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -49,7 +49,7 @@ import { vesselDid } from "../env.js";
 
 export class RiteUsage extends Error {}
 
-export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offer";
+export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offer" | "rite-abandon";
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
@@ -64,6 +64,15 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
   const face = faceWord === undefined ? {} : { face: Number(faceWord) };
   const head = word(args.options["head"]);
+  // A kūkulu's begin and landing name the image the host made, so a landing over another image never reads par.
+  const imageWord = word(args.options["image"]);
+  const image = imageWord === undefined ? {} : { image: imageWord };
+  if (act === "abandon") {
+    // THE HAND'S ABANDON of every kūkulu half resting unlanded on the line, by name; the store door runs it on a hand alone.
+    const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
+    if (rite === undefined || branch === undefined) throw new RiteUsage("abandon names its rite and its branch: --rite kukulu --branch <name>");
+    return { verb: "rite-abandon", args: { rite, branch, ...face } };
+  }
   if (act === "receipts") {
     // `--rite kukulu` reads every lent face's begun halves resting unlanded (`--branch` narrows them to its line).
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
@@ -73,7 +82,7 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
     if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit> (a keep adds --staging <path>, the bundle it staged inside its workspace)");
     const staged = word(args.options["staging"]);
-    return { verb: "rite-begin", args: { rite, branch, head, ...(staged === undefined ? {} : { staged }), ...face } };
+    return { verb: "rite-begin", args: { rite, branch, head, ...(staged === undefined ? {} : { staged }), ...image, ...face } };
   }
   if (act === "offer") {
     const branch = word(args.options["branch"]), image = word(args.options["image"]);
@@ -83,9 +92,9 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
-    return { verb: "rite-land", args: { tessera, head, ...face } };
+    return { verb: "rite-land", args: { tessera, head, ...image, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : "name a sub-verb: kukulu, keep, keep-cut, begin, offer, land, receipts or receipt");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : "name a sub-verb: kukulu, keep, keep-cut, begin, offer, land, receipts, abandon or receipt");
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */
@@ -315,8 +324,8 @@ async function keepPins(dir: string): Promise<{ readonly ok: boolean; readonly l
  * One vessel row as the host's CLI line. The begin and the offer gather every lent face in the vessel, so they name none;
  * each landing names the face its tessera began under in its own arguments.
  */
-export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
-  ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : verb === "rite-receipts" ? "receipts" : "land", ...flagsOf(rowArgs)];
+export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "rite-receipts" | "rite-abandon", rowArgs: Record<string, unknown>): string[] =>
+  ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
 
 /**
  * THE BEGIN THAT STANDS, from the vessel's `rite receipts --rite kukulu` answer: its `standing` rows, each naming its face and
@@ -324,15 +333,20 @@ export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "r
  * kūkulu halves resting unlanded on the line (each lands under the worn face): the vessel standing during the very next run
  * is the one that stopped, and it never begins over a half it already rests.
  */
-export function standingOf(output: Record<string, unknown>, branch: string): StandingBegin[] {
+export function standingOf(output: Record<string, unknown>, branch: string): { begins: StandingBegin[]; pending?: PendingBegin[]; offer?: OfferVouch[] | null } {
   const rows = (v: unknown): Array<Record<string, unknown>> => (Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => typeof x === "object" && x !== null) : []);
+  const image = (r: Record<string, unknown>): { image?: string } => (typeof r["image"] === "string" ? { image: r["image"] } : {});
   if (Array.isArray(output["standing"])) {
-    return rows(output["standing"]).map((s) => ({ face: String(s["face"]), ...(Number.isSafeInteger(s["ordinal"]) ? { ordinal: s["ordinal"] as number } : {}), tessera: String(s["tessera"]), head: String(s["head"]) }));
+    const begins = rows(output["standing"]).map((s) => ({ face: String(s["face"]), ...(Number.isSafeInteger(s["ordinal"]) ? { ordinal: s["ordinal"] as number } : {}), tessera: String(s["tessera"]), head: String(s["head"]), ...image(s) }));
+    const pending = rows(output["pending"]).map((p) => ({ tessera: String(p["tessera"]), group: String(p["group"]), head: String(p["head"]), ...image(p), ...(typeof p["face"] === "string" ? { face: p["face"] } : {}) }));
+    const offer = Array.isArray(output["offer"]) ? rows(output["offer"]).map((v) => ({ ...(typeof v["face"] === "string" ? { face: v["face"] } : {}), group: String(v["group"]), branch: String(v["branch"]), head: String(v["head"]), image: String(v["image"]) })) : null;
+    return { begins, pending, offer };
   }
+  // AN ANSWER THAT NAMES NO `standing` ROWS carries its worn face's receipts and conferre: its unlanded kūkulu halves on the line, with no raw debt read.
   const conf = output["conferre"];
   const red = typeof conf === "object" && conf !== null ? rows((conf as Record<string, unknown>)["red"]) : [];
-  return red.filter((t) => t["red"] === "landed-absent" && t["rite"] === "kukulu" && t["branch"] === branch && typeof t["head"] === "string")
-    .map((t) => ({ face: "the worn face", tessera: String(t["tessera"]), head: String(t["head"]) }));
+  return { begins: red.filter((t) => t["red"] === "landed-absent" && t["rite"] === "kukulu" && t["branch"] === branch && typeof t["head"] === "string")
+    .map((t) => ({ face: "the worn face", tessera: String(t["tessera"]), head: String(t["head"]) })) };
 }
 
 /**
@@ -411,13 +425,16 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     sync: () => syncCheckout(CHECKOUT),
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     stage: (target) => stageShim(shim, target),
-    raise: (revision) => runShim(shim, ["rebuild", "--at", revision]),
+    raise: (revision) => runShim(shim, ["rebuild", "--at", revision, "--keep-after-landing"]),
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
-    standing: async (branch) => {
-      const read = await cliVerb(hostRowLine("rite-receipts", { rite: "kukulu", branch }));
-      return read.ok ? { ok: true, begins: standingOf(read.output, branch) } : read;
+    standing: async (branch, face) => {
+      const read = await cliVerb(hostRowLine("rite-receipts", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) }));
+      return read.ok ? { ok: true, ...standingOf(read.output, branch) } : read;
     },
+    abandon: (branch, face) => cliVerb(hostRowLine("rite-abandon", { rite: "kukulu", branch, ...(face === undefined ? {} : { face }) })),
+    // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
+    keepOwed: () => runShim(shim, ["keep-owed"]),
     say,
   };
 }
@@ -509,7 +526,7 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
     const faceWord = typeof args.options["face"] === "string" ? args.options["face"].trim() : undefined;
     if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
-    const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args) });
+    const out = await riteKukulu(hostPorts(shim, (line) => console.error(line)), { ...(branch === undefined ? {} : { branch }), ...(faceWord === undefined ? {} : { face: Number(faceWord) }), ...rollbackOf(args), ...(args.flags["abandon"] === true ? { abandon: true as const } : {}) });
     const kukuluMessage = "the kūkulu rite did not complete; the lines above name where it stopped";
     const settled = out.data["awaits"] === "hand" ? `lares rite kukulu: the house waits on your hand: ${String(out.data["hand"])} on a terminal` : out.data["awaits"] === "unlock" ? "lares rite kukulu: the house stands; the landing waits on the unlock" : "lares rite kukulu: the house stands";
     emitAnswer(args, out.code === 0
