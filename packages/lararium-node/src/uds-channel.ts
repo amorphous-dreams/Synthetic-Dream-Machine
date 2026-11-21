@@ -902,6 +902,21 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     });
   };
 
+  /**
+   * The verb behind `requestId` SETTLED: its outcome landed in the control document. No timer: a caller's own wait may give up
+   * while the verb runs on, and the face's close waits on the verb, never on that caller. An island restart ends the verb, and
+   * the face actor's supervisor frees its work there.
+   */
+  const outcomeLanded = (requestId: string): Promise<void> => new Promise<void>((resolve) => {
+    let landed = false;
+    const check = () => { void readOutcomeFor(requestId).then((r) => { if (r && !landed) { landed = true; cleanup(); resolve(); } }, () => {}); };
+    const onChange = () => check();
+    const unsubscribe = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
+    controlHandle.on("change", onChange);
+    const cleanup = () => { controlHandle.off("change", onChange); unsubscribe(); };
+    check();
+  });
+
   // Hand the invocation (verb + args CONTENT) to the daemon worker over the DIRECT
   // MessageChannel (placeVerb → the worker's volatile invocation), then await the
   // durable outcome via the control store's change events. The carriers NEVER enter
@@ -1418,8 +1433,22 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     };
     const refusedVisit = (reason: string): Record<string, unknown> =>
       ({ kind: "session:result", status: "error", requestId: sessionRequestId, errorMessage: reason, refusal: { reason: "face-not-open" } });
+    /** EVERY ANSWER OF A VISIT RIDES THE ACTOR'S ONE DELIVERY TURN (its reply, its failure, a fault): exactly one reaches the asker. */
+    const answerLine = (payload: Record<string, unknown>): void => {
+      if (visit !== null) visit.deliver(() => writeLine(payload), (reason) => writeLine(refusedVisit(reason)));
+      else writeLine(payload);
+    };
+    /** A session refusal by its code, through the visit's delivery turn where the call visits. */
+    const refuseSession = (refusal: string): void => {
+      if (visit !== null) answerLine({ kind: "session:refused", requestId: sessionRequestId, refusal });
+      else sessionRefuse(sock, refusal, sessionRequestId);
+    };
     /** The admitted work's release: the face's close waits out every admitted dispatch until it settles. */
     let settled = (): void => {};
+    /** Release the work when the verb itself settles: a caller's wait that gave up (`VesselWaitExpired`) waits on the outcome. */
+    const releaseWhenSettled = (run: Promise<unknown>, requestId: string): void => {
+      run.then(() => settled(), (err: unknown) => { if (err instanceof VesselWaitExpired) void outcomeLanded(requestId).then(() => settled()); else settled(); });
+    };
     /**
      * THE CALL ADMITS ON THE FACE'S ACTOR before its arbitration, with no await between the actor's yes and the ledger's turn: a
      * refusal answers and nothing commits or runs. Admitted work holds the face's close (its drain waits) until it settles, so no
@@ -1447,11 +1476,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),
         };
         // THE CHECK AND THE WRITE IN ONE TURN: past every await, the target's actor reads its opening and writes, or refuses.
-        if (visit !== null) visit.deliver(() => writeLine(payload), (reason) => writeLine(refusedVisit(reason)));
-        else writeLine(payload);
+        answerLine(payload);
       })().catch((error) => {
         log(`session reply failed: ${error instanceof Error ? error.message : String(error)}`);
-        sessionRefuse(sock, "session-fault", sessionRequestId);
+        refuseSession("session-fault");
       })
         .finally(() => onSessionReply?.());
     };
@@ -1612,7 +1640,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // hears a fixed code under its own requestId; the detail stays in this vessel's log.
           log(`receipt-fact ledger failed for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
           const named = error instanceof ControlHomeUnavailable ? error.refusal : null;
-          if (sessionRequestId !== undefined) { sessionRefuse(sock, named ?? "session-fault", sessionRequestId); onSessionReply?.(); }
+          if (sessionRequestId !== undefined) { refuseSession(named ?? "session-fault"); onSessionReply?.(); }
           else fail(named ? (error as Error).message : "this vessel could not record the request durably; nothing ran", named ?? "ledger-unwritten");
           return;
         }
@@ -1620,7 +1648,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // A genuine concurrent re-read of an id THIS process already dispatched OR a same-digest
           // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,
           // across a restart) — answer the existing outcome, never a second `placeVerb`.
-          awaitOutcome(inv.verb, requestId, inv.timeoutMs).finally(settled).then(
+          const awaited = awaitOutcome(inv.verb, requestId, inv.timeoutMs);
+          releaseWhenSettled(awaited, requestId);
+          awaited.then(
             (outcome) => { respond(outcome); },
             (err)     => { if (err instanceof VesselWaitExpired) return answerUnknown(requestId); fail(err instanceof Error ? err.message : String(err)); },
           );
@@ -1639,7 +1669,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           settled();
           return fail(why, verdict.reason);
         }
-        runVerb(inv, requestId).finally(settled).then(
+        // The work releases when the verb itself settles, never when this caller's wait gives up.
+        const running = runVerb(inv, requestId);
+        releaseWhenSettled(running, requestId);
+        running.then(
           (outcome) => { respond(outcome); },
           (err) => {
             if (err instanceof VesselWaitExpired) return answerUnknown(requestId); // M2: never told as {status:"error"}
@@ -1650,7 +1683,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // A fault before the arbitrate (the digest, or an abandonment's own record) dispatched nothing either; the
         // caller hears a fixed code under its own requestId, and the detail stays in this vessel's log.
         log(`invocation ${requestId} faulted before dispatch: ${error instanceof Error ? error.message : String(error)}`);
-        if (sessionRequestId !== undefined) { sessionRefuse(sock, "session-fault", sessionRequestId); onSessionReply?.(); }
+        settled();
+        if (sessionRequestId !== undefined) { refuseSession("session-fault"); onSessionReply?.(); }
         else fail("this vessel faulted before dispatch; nothing ran", "ledger-unwritten");
       }).finally(() => { arbitrating -= 1; if (idle()) drained?.(); }); }));
   };

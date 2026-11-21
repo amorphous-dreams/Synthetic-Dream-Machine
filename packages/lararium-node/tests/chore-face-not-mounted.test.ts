@@ -20,6 +20,9 @@ import { claimStore } from "../src/owned-store.js";
 import { SessionSignBook, type BookedSession } from "@lararium/mesh";
 import { faceLives, type FaceLives } from "../src/face-lifecycle.js";
 
+// A caller's wait reads the seat's own floor alone here (no learned servo), so a test can let one give up in a breath.
+vi.mock("@lararium/mempalace", async (actual) => ({ ...(await actual<typeof import("@lararium/mempalace")>()), adaptiveTimeoutMs: () => 0 }));
+
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`, causalRevision: `revision-${name}`,
   planes: { persona: `persona-${name}`, circles: `circles-${name}`, identities: `identities-${name}`, sessions: `sessions-${name}`, intents: `intents-${name}` },
@@ -56,7 +59,7 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly faceLife?: FaceLives; readonly visitVerbs?: ReadonlySet<string>; readonly hold?: ReadonlySet<string> } = {}) {
+async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly faceLife?: FaceLives; readonly visitVerbs?: ReadonlySet<string>; readonly hold?: ReadonlySet<string>; readonly timeoutMs?: number } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -79,6 +82,7 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
     ...(lane.signers ? { signers: lane.signers } : {}),
     ...(lane.faceLife ? { faceLife: lane.faceLife } : {}),
     ...(lane.visitVerbs ? { visitVerbs: lane.visitVerbs } : {}),
+    ...(lane.timeoutMs !== undefined ? { timeoutMs: lane.timeoutMs } : {}),
     placeVerb: (o) => {
       placed.push(o);
       // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
@@ -322,4 +326,34 @@ test("a visit to a face its actor holds shut refuses face-not-open at the door, 
   expect(await v.peer.ask({ op: "session:call", ...env, requestId: "visit-shut", verb: "tiddler-get", args: { title: "x", target: 2 } }))
     .toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
   expect(v.placed).toEqual([]);
+});
+
+test("SOL R7 (a caller timeout releases the work ticket): the caller's wait gives up while the verb runs on, and the face's drain waits for the verb itself", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ faceLife: lives, hold: new Set(["meme-put"]), timeoutMs: 300 });
+  const env = await v.open("h0");
+  v.peer.send({ op: "session:call", ...env, requestId: "put-slow", verb: "meme-put", args: MEME });
+  await vi.waitFor(() => expect(replyTo(v.peer, "put-slow")[0]).toMatchObject({ status: "unknown" }), { timeout: 5000 });
+  const closed = lives.close(0, "lock");
+  await new Promise((r) => setTimeout(r, 300));
+  expect(drains, "the verb still runs, so no drain begins").toHaveLength(0);
+  v.release();
+  await vi.waitFor(() => expect(drains).toHaveLength(1));
+  drains[0]!(); await closed;
+});
+
+test("SOL R7 (a second response after a close refusal): a visit refused at the close answers nothing more when its caller's wait gives up", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISIT, hold: new Set(["tiddler-get"]), timeoutMs: 300 });
+  const env = await v.open("h0");
+  v.peer.send({ op: "session:call", ...env, requestId: "visit-once", verb: "tiddler-get", args: { title: "x", target: 1 } });
+  await vi.waitFor(() => expect(v.placed.map((p) => p.verb)).toEqual(["tiddler-get"]));
+  const closed = lives.close(1, "pulama closing");
+  await vi.waitFor(() => expect(replyTo(v.peer, "visit-once")).toHaveLength(1));
+  await new Promise((r) => setTimeout(r, 800));
+  v.release();
+  await new Promise((r) => setTimeout(r, 200));
+  expect(replyTo(v.peer, "visit-once"), "one answer, the close's refusal").toHaveLength(1);
+  expect(replyTo(v.peer, "visit-once")[0]).toMatchObject({ refusal: { reason: "face-not-open" } });
+  drains[0]!(); await closed;
 });
