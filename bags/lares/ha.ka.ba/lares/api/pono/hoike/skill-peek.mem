@@ -73,7 +73,7 @@ Law lives at canon, not here: <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoi
 
 ## Worked Examples — show, don't tell
 
-*Examples 1–2 come from the live ledger (2026-06-10); example 3 composes the spirit-deposition flow.*
+*Examples 1–2 come from the live ledger; example 3 composes the spirit-deposition flow.*
 
 **1 — Voice against Voice** (the layer's first record, abridged):
 
@@ -260,6 +260,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;x4Cg5g8tOpw-JpMKYgVifQ0tmxLnYNkcYRDQ6vfqrc4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jvH14nwcOSZwQbL5FsUQmEeX628uqAS3jbNn8-Z1gPE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

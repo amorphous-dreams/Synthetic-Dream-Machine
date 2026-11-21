@@ -7,8 +7,8 @@
 cacheable  = true
 l-space    = "lares"
 namespace  = "&#x2299;"
-role       = "The vessel door carries four primitives and one read inside LAR_ROOT, the rotate and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
-status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding and contract witnesses and the founding rehearsal harness"
+role       = "The vessel door carries four primitives and one read inside LAR_ROOT, the rotate and rite sub-doors, the founding · refresh · rebuild rites, one spelling per motion with every unknown name refusing, and the witnesses that verify the surface."
+status-why = "the door stands, the compositions ride it as rites, every caller names the door and every unknown name refuses as an unknown command; walked by the founding and contract witnesses and the founding rehearsal harness"
 tags       = ["api/pono/meme", "lararium/api/lares-lararium-binding", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/cli/vessel-door"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lares/cli/vessel-door"
 
 !! The record laws ~ what a command IS, and where a name lives
 
-Two laws the door has always obeyed and no carrier has stated.
+Two laws the door obeys; their source reads at #/rulings.
 
 !!! Records, not RPC
 
@@ -52,9 +52,6 @@ and the layer, never to the count of slashes: a captured session turn promoted i
 hostful name onward and outlives every node that ever held it. A caller that gates, routes, or ranks on
 the address form reads a content property as a layer property — the failure this law names.
 
-''Provenance:'' harvested verbatim from `lar:///lares_research/research-streams/lararium/LARES-CLI-DAEMON-SPRINT-PLAN`,
-where both laws stood settled with no live carrier holding either.
-
 <<~/ahu>>
 
 <<~ ahu slot=`#/the-law`>>
@@ -62,7 +59,7 @@ where both laws stood settled with no live carrier holding either.
 ! The Vessel Door ~ one namespace over the vessel's island
 
 ''ONE NAMESPACE PER CAUSAL ISLAND; THE PLANE RIDES AS A PARAMETER, NEVER A NEW VERB.'' That law governs
-this CLI: the sensorium surface answers at two doors — one sovereign, one guest — and no legacy alias
+this CLI: the sensorium surface answers at two doors — one sovereign, one guest — and no second spelling
 answers anywhere.
 
 ''The vessel is a causal island and speaks through ONE name.'' Its store, its genesis artifact, its
@@ -93,7 +90,7 @@ presence, storage size, port, seal state, personas, quorum).
 `build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
 `stand` carries `--foreground`, `--with-web`, `--restart`, `--observe` and `--init` postures; `--init` founds where the root holds none. The sub-doors `rotate` and `rite` rotate the place's online signer by its founding card (it reads the old card and reads the replacement card back, and refuses beside a standing vessel), and run the named compositions. A faceless vessel presents its public place floor card and pin; each face holds its own Keyhive identity by atom. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
 
-''A hearth stood on a desk declares its origins and its shore.'' The compose files declare them for a container; a bare `lares vessel stand` after `vessel found --hearth` declares nothing, and the boot refuses with its cure in the line: `LAR_SAME_ORIGIN=true` (`origins.sameOrigin`) when every surface shares the relay face, else `LAR_WEB_ORIGIN` (`origins.web`) and `LAR_FLOW_ORIGIN` (`origins.flow`). A lararium whose shore stands undeclared stands and says so at boot: its Web origin answers no page until `LAR_PRONAOS_WEB_ROOT` and `LAR_PRONAOS_ARTIFACT_RECORD` name the built page and its record (the Founding Walk, W2 and W4, 2026-10-29).
+''A hearth stood on a desk declares its origins and its shore.'' The compose files declare them for a container; a bare `lares vessel stand` after `vessel found --hearth` declares nothing, and the boot refuses with its cure in the line: `LAR_SAME_ORIGIN=true` (`origins.sameOrigin`) when every surface shares the relay face, else `LAR_WEB_ORIGIN` (`origins.web`) and `LAR_FLOW_ORIGIN` (`origins.flow`). A lararium whose shore stands undeclared stands and says so at boot: its Web origin answers no page until `LAR_PRONAOS_WEB_ROOT` and `LAR_PRONAOS_ARTIFACT_RECORD` name the built page and its record (#/rulings, the Founding Walk).
 
 ''What a stand's `ok` answers.'' `ok` reads true where the vessel stands and no organ a hand installed stands broken. The memory library keeps its own door (`lares mempalace install`) and never rides a founding, so a machine that holds none of it reads `mempalace: absent` beside a true `ok`: an absent optional organ never reads as a failed stand. A half-installed library reads `incomplete` and fails the reading (one half of the library standing without the other, or a source directory that holds files and lacks its entry), and a node that fails to answer fails the stand whatever the library says (`packages/lares-cli/src/integration-check.ts`, `mempalaceStanding`, `standOk`; `packages/lares-cli/tests/stand-ok-reads-the-vessel.test.ts`).
 
@@ -107,32 +104,30 @@ separately as `@cad` caps rather than folding into the grammar ratchet.
 
 <<~ ahu slot=`#/the-collapse`>>
 
-!! The collapse, verb by verb
+!! One spelling per motion
 
-Each row names a RETIRED TOP-LEVEL spelling (`lares <name>`) and the vessel door or rite that carries its motion. ''No aliases survive'' — a name
-that still answers teaches that both spellings stand, and the surface regrows from there. Every spelling
-below refuses with `unknown command`, flags included: routing an unknown name to the global help would
-return 0 and print a full page, which reads exactly like a door that opened.
+Each row names a motion and the vessel door or rite that carries it. ''No alias answers'' — a name that
+answers beside the door teaches that both spellings stand, and the surface regrows from there. Every name no
+door carries refuses with `unknown command`, flags included: routing an unknown name to the global help would
+return 0 and print a full page, which reads exactly like a door that opened
+(`packages/lares-cli/src/bin/lares.ts`; `packages/lares-cli/tests/help-flags.test.ts`).
 
-''NO DOOR WIPES.'' Three retired spellings named a wipe of the vessel store, and no door or rite answers one
-(operator-ruled): a fresh start runs by hand, moving the old homes aside
-(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>).
+''NO DOOR WIPES.'' No door or rite wipes the vessel store (operator-ruled): a fresh start runs by hand,
+moving the old homes aside (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>).
 
-|! retired |! composes |! answers at |
-| `init` | found | `vessel found` |
-| `wake` | found? · stand · read | `vessel stand` (the entry point; keeps its report) |
-| `serve` | stand (foreground) | `vessel stand --foreground` |
-| `dev` | stand · vite | `vessel stand --with-web` |
-| `stop` | stop | `vessel stop` |
-| `reset` | wipe · found | no door — a fresh start runs by hand |
-| `fresh` | wipe · stand | no door — a fresh start runs by hand |
-| `reconcile` | stop · stand | `vessel stand --restart` |
-| `refresh` | build · stop · stand | `vessel rite refresh` |
-| `rebuild` | re-derive · stand | `vessel rite rebuild` |
-| `build-genesis` · `bake` | the internal re-derive, or the mesh overturn | internal step: `vessel rite rebuild` · `nexus kahuli` |
-| `regenesis` | stop · wipe · re-derive · stand · lay | no door — a fresh start runs by hand |
-| `seed` | lay | `vessel lay` |
-| `status` · `node status` | read | `vessel read` |
+|! composes |! answers at |
+| found | `vessel found` |
+| found? · stand · read | `vessel stand` (the entry point; keeps its report) |
+| stand (foreground) | `vessel stand --foreground` |
+| stand · vite | `vessel stand --with-web` |
+| stop | `vessel stop` |
+| stop · stand | `vessel stand --restart` |
+| build · stop · stand | `vessel rite refresh` |
+| re-derive · stand | `vessel rite rebuild` |
+| the internal re-derive, or the mesh overturn | internal step: `vessel rite rebuild` · `nexus kahuli` |
+| lay | `vessel lay` |
+| read | `vessel read` |
+| a wipe, in any composition | no door — a fresh start runs by hand |
 
 ''THE COMPOSITIONS RIDE AS RITES, NEVER VERBS.'' The rite door carries `founding`, `refresh`, and
 `rebuild` as named compositions over the primitives. A composition earns a pet-name; it gains no top-level name.
@@ -161,7 +156,7 @@ The founding rite restarts nothing, so no second unlock stands between its movem
 
 !! Every caller that closes with the door
 
-''A door that leaves callers on old names has collapsed nothing.'' These surfaces name substrate verbs
+''A door that leaves a caller naming another spelling has moved nothing.'' These surfaces name substrate verbs
 directly, so each moves in the same act as any change to the door — and each row below names what keeps it
 moved.
 
@@ -182,8 +177,8 @@ moved.
 # ''THE SESSION-START HOOK.'' It calls the entry point with the observe capability. The capability must
   survive the rename intact — a hook that gains the standing capability by accident turns looking into
   acting.
-# ''EVERY HANDLER'S OWN HEADER.'' A handler whose docstring self-names a retired spelling carries cosmetic
-  residue; sweep it in the same pass as the name.
+# ''EVERY HANDLER'S OWN HEADER.'' A handler's docstring names the door that dispatches it; a rename sweeps
+  each header in the same pass as the name.
 
 <<~/ahu>>
 
@@ -215,8 +210,8 @@ tracing installs a global dispatcher, so it stands off unless this name asks for
 (`packages/lararium-keyhive/src/keyhive-provider.ts` `KEYHIVE_TRACE_ENV`).
 
 ''NOT the content verbs.'' `bag`, `wiki`, `ingest`, `act`, `edge`, `draft`, `normalize`, `repack` name the
-corpus island rather than the vessel island. They may want their own door one day; that is a separate
-reading and it does not belong in this act.
+corpus island rather than the vessel island. Whether they earn a door of their own stands as a separate
+reading, outside this door's law.
 
 ''NOT the identity verbs.'' `fleet join` and `raise` name ceremonies between vessels, not motions of
 one vessel's substrate. ''An OWED capability carries no door at all'' — the Nexus invite ceremony rides
@@ -241,9 +236,9 @@ because a verification an operator has to remember to run is a verification that
   isomorphism fixture goes stale by NOT being regenerated, and the checks standing around it cannot see
   that: the three-way guard asserts the fixture's own internal coherence (which staleness satisfies), and
   the projection test compares live to live. ''Nothing else welds the fixture to the table.''
-# ''No old name answers.'' Every retired top-level spelling MUST fail as an unknown command, ''with or without `--help`''.
-  A surviving alias names the failure mode this door exists to prevent, and it hides perfectly behind a
-  passing suite.
+# ''An unknown name refuses.'' Every name no door carries MUST fail as an unknown command, ''with or without
+  `--help`'' (`packages/lares-cli/tests/help-flags.test.ts`). An alias names the failure mode this door exists
+  to prevent, and it hides perfectly behind a passing suite.
 # ''The surface gets measured at the VERB, never at the door.'' A door count reports a collapse the
   operator cannot feel: the fan-out lives one level below the number, so a surface that reads halved by
   doors may not have moved at all. Both figures DERIVE, printed on every rite-commands run — ''the pair is
@@ -254,6 +249,16 @@ because a verification an operator has to remember to run is a verification that
   substring test reads the vocabulary of a file rather than its dispatch, and passes on the very line that
   disproves it — `case "contract": … cmdContract(args, "admit")` waved a rite instructing `nexus admit`
   straight through. A rite amended by many hands drifts fastest at exactly the commands nobody re-typed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Source of #/the-record-laws (records, not RPC; the `lar:` locality law): `lar:///lares_research/research-streams/lararium/LARES-CLI-DAEMON-SPRINT-PLAN`, harvested verbatim; the harvest reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/consume-archive`>>.
+# The undeclared-shore refusals of #/the-primitives rest on the Founding Walk of 2026-10-29, steps W2 and W4 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>).
+# NO DOOR WIPES: an operator ruling; the fresh start by hand reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start`>>.
 
 <<~/ahu>>
 
@@ -268,6 +273,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HU0R9TmmzMZLCa30y_-EPxqhnI_JVzj-ojqhjHNRptc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l1ULVDcMhn9A864aA1hFdBL4eYW4ZtpAkEoo8iogzTg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
