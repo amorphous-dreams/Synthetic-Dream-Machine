@@ -637,7 +637,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "wiki folder inside rides that tree, never a tree of its own): the same block plus each wiki folder's recovery/ and temp/, author " +
       "<pet name> <folded>@realm.invalid (the realm's identity, never a face's), the same hook; a tree nested below the root lifts into it with " +
       "its history kept (its git dir rests in .git/lifted/). A workspace a share row names for one of its wikis takes its own pool, author " +
-      "<slug> <slug>@realm.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
+      "<slug> <slug>@workspace.invalid. A wiki folder standing nowhere yet is named and left; a realm no label names, or whose root and " +
       "workspaces all stand nowhere, refuses by name. " +
       "--workspace <name> makes the operator's bound workspace (seen at /lar/workspaces/<name>) one pool by the same init, on the operator's ask: " +
       "the house never founds a workspace's tree by itself (the wake offers this where a bound workspace holds no tree); a workspace binding no " +
