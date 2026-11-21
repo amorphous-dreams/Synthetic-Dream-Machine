@@ -23,6 +23,7 @@ import {
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
+  makeOracleCastReactor,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
@@ -1052,6 +1053,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-status", engineVerb("wiki-status", makeWikiStatusReactor), { summary: "Name each layer the wiki composes (the daemon wiki, or any wiki this face reaches) and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      // THE ORACLE CAST (state/decisions "the oracle designs"): one I Ching cast, an ACT that lands its result as one tiddler
+      // under `casts/` through the tiddler door's own put, in the engine of the face whose session placed it. The coins draw
+      // through the platform's entropy door, or the caller types the operator's six; the caller names the time.
+      registry.register("oracle-cast", engineVerb("oracle-cast", makeOracleCastReactor), { summary: "Cast the I Ching by three coins a line and write the cast as one tiddler under `lar:///ha.ka.ba/lares/oracle/casts/` (fields: method, entropy, lines, changing, primary, relating, caster, cast-at, readings): `at` (the time of the cast; the verb reads no clock) required, `caster`, and `coins` (six line values of 6 to 9, bottom first: the operator's own throw, named `operator:three-coins`); with no coins the coins draw through the platform's entropy door (`platform:crypto.getRandomValues`). `create` semantics: a standing cast answers `exists`. Answers {decision, created, title, cast, text, readings, note}; the readings come from the wiki's oracle library. The oracle widens attention and never decides.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher

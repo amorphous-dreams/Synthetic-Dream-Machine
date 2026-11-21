@@ -43,7 +43,7 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
  * through that face's own engine in its own working document. Every other chore still spends the mount's authority alone and
  * refuses from a sibling's session.
  */
-export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["meme-put", "meme-delete", "tiddler-put", "tiddler-delete"]);
+export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["meme-put", "meme-delete", "tiddler-put", "tiddler-delete", "oracle-cast"]);
 
 /** True for a verb that writes or signs under the daemon mount's authority. */
 export function isChore(verb: string): boolean {

@@ -223,6 +223,8 @@ export {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
 } from "./tiddler-verbs.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
+// The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
+export { makeOracleCastReactor } from "./oracle-cast-verb.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
 export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiResolver, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
 export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
