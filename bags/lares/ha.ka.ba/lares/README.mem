@@ -98,6 +98,8 @@ bags/lares/ha.ka.ba/lares/
 as a specification; a carrier under `docs/` explains, records, or researches. A section that states
 conformance belongs in one; a section that tells how the design arrived belongs in the other.
 
+''The split follows the ever-speaking present'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>): `api/` speaks in every reader's present and points to its ruling, `docs/` records and may narrate, and a plan or lane kit rests in a workbench until it lands.
+
 ''Boot chain:'' a surface's seed → `noosphere-boot` (the constitution) → `pono/config` (the session
 dials). One seed per surface, all of them on disk — a CLI agent takes a pointer from its instructions
 file, a browser agent takes the carrier pasted in.
@@ -133,6 +135,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GLpABkrhA9nik9h0h9DZfZaneGlU8n-t5DwHFbOLajw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L4rSx5RuAaQr1sJn655JnivJwlaoCx11bNebmtI2N6M`>>
 
 <<^ code=`&#x0004;` to=`?`>>
