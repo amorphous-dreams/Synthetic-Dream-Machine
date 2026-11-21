@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { faceLives, type FaceLifeEffects } from "../src/face-lifecycle.js";
-import { faceLend, openingNewer, type FaceLendPorts } from "../src/face-lend.js";
+import { adoptFirstLit, faceLend, openingNewer, type FaceLendPorts } from "../src/face-lend.js";
 
 const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
@@ -175,5 +175,19 @@ describe("the lend watch and the mount's one life", () => {
     answer({ ordinal: 0, fcid: "f0", unlocked: true });
     await released;
     expect(v.lives.state(0)).toEqual({ kind: "dark", held: true });
+  });
+  test("F3: the island's first open adopts a sibling before its custody read lands, so a pūlama's close in that gap closes it", async () => {
+    const v = vessel();
+    let custody!: (c: string | null) => void;
+    const adopting = adoptFirstLit(v.lives, 1, "k1", () => new Promise((r) => { custody = r; }));
+    expect(v.lives.state(1).kind, "lit before the read answers").toBe("lit");
+    const closing = v.lend.closing("f1", "p:1");
+    await settle();
+    expect(v.events).toContain("drain h1");
+    custody("p:1");
+    await adopting;
+    v.drains.get(1)!.resolve();
+    await closing;
+    expect(v.faceClosed).toHaveBeenCalledWith("f1", "p:1");
   });
 });

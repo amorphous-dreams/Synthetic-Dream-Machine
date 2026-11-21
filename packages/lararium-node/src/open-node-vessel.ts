@@ -178,7 +178,7 @@ import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { drainPlans, faceLives, type FaceLives, type FaceLit } from "./face-lifecycle.js";
-import { faceLend } from "./face-lend.js";
+import { adoptFirstLit, faceLend } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -3862,9 +3862,7 @@ async function prepareNodeBootOn(
         const ordinal = face.handleIndex!;
         if (first) {
           faceEntries.set(ordinal, face);
-          // THE ADOPTION LANDS BEFORE ANY AWAIT: a pūlama's close in the custody read's gap finds the actor; its opening lands after.
-          faceLife.adopt(ordinal, { atomKey: face.atom.key, custody: null });
-          faceLife.noteCustody(ordinal, await noteCustody(ordinal));
+          await adoptFirstLit(faceLife, ordinal, face.atom.key, noteCustody);
         }
         const opening = faceLife.opening(ordinal);
         if (opening === null) return;

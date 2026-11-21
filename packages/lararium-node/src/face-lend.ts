@@ -45,6 +45,15 @@ export interface FaceLendPorts {
   readonly log: (line: string) => void;
 }
 
+/**
+ * THE ISLAND'S FIRST OPEN ADOPTS A FACE IT LIT before any await: a pūlama's close landing in the custody read's gap finds the
+ * actor (and closes it); the custody opening lands as its read does.
+ */
+export async function adoptFirstLit(faceLife: Pick<FaceLives, "adopt" | "noteCustody">, ordinal: number, atomKey: string | null, noteCustody: (ordinal: number) => Promise<string | null>): Promise<void> {
+  faceLife.adopt(ordinal, { atomKey, custody: null });
+  faceLife.noteCustody(ordinal, await noteCustody(ordinal));
+}
+
 export interface FaceLend {
   /** Read the served set once and send each face its message. */
   sweep(): Promise<void>;
@@ -114,7 +123,7 @@ export function faceLend(ports: FaceLendPorts): FaceLend {
         // A LIFE UNDER A LATER OPENING answers nothing: the close names a life other than the one this vessel holds, and its answer could
         // lock the key under the life it does. A life under the named opening, an earlier one or one unread closes whole.
         const lives = faceLife.custodyOf(ordinal);
-        if (lives !== null && opening !== null && lives !== opening && openingNewer(lives, opening)) {
+        if (lives !== null && opening !== null && openingNewer(lives, opening)) {
           ports.log(`[lit-set] the pūlama's close of h${ordinal} names an opening before the one it lives under; no face.closed answers`);
           return;
         }

@@ -41,8 +41,9 @@
  * stopped admitting, refused its undelivered visits, drained its saves and told its island. Only then does the key lock. A
  * face no session lends locks at once. A vessel that never answers leaves the face closing with no clock: `closing()` names it
  * ("the vessel has not answered its close") with its clearing line: a close asked again tells each unanswered session again (a
- * vessel whose drain faulted drains again); a session that ends leaves the unanswered set, and a close no live session still owes
- * locks at the next ask; and the operator's hand confirms a forced lock (`closeFace(face, {force})`). The
+ * vessel whose drain faulted drains again) and every live session that lends the face, a late one included; a session that ends
+ * unanswered counts dropped, and a close any session dropped locks only by the operator's hand; and the operator's hand confirms a
+ * forced lock (`closeFace(face, {force})`). The
  * forced lock's window runs from the `closing` to the moment that vessel hears it: the causal-islands residue, named in
  * sealed-store#/the-lit-set. A whole-holder `lock` drops every session at once, and acts as the operator's hand.
  *
@@ -140,8 +141,12 @@ export function servePulama(a: {
   let nextClaim = 1;
   /** The face a vessel's wear door last wore, by ordinal: memory alone, forgotten at the lock. */
   let worn: number | undefined;
-  /** THE FACES CLOSING, by custody id: the opening the close names and the sessions still to answer it. */
-  const closings = new Map<string, { readonly ordinal: number; readonly opening: string | null; readonly awaiting: Set<Session> }>();
+  /**
+   * THE FACES CLOSING, by custody id: the opening the close names, the sessions still to answer it, and how many told sessions
+   * ended unanswered (`dropped`). A dropped session's vessel may still hold a save it never sealed, and no later session proves
+   * it the same vessel, so a close any session dropped locks only by the operator's hand (`force`), never by the others' answers.
+   */
+  const closings = new Map<string, { readonly ordinal: number; readonly opening: string | null; awaiting: Set<Session>; dropped: number }>();
 
   /** Whether the session's lend names this face: its ordinal in the set, and its custody id where the set names one. */
   /** Whether a face closes and `s` stands outside the sessions its close told: such a session reads the face shut. */
@@ -182,9 +187,9 @@ export function servePulama(a: {
     live.delete(s);
     for (const claim of s.claims.values()) claim.end();
     s.claims.clear();
-    // A SESSION THAT ENDS ANSWERS NO CLOSE: it leaves each close's unanswered set, and the close it held waits on the rest (or,
-    // with none left, on the operator's next close, which locks a face no session holds).
-    for (const held of closings.values()) held.awaiting.delete(s);
+    // A SESSION THAT ENDS ANSWERS NO CLOSE: it leaves each close's unanswered set and counts dropped there, so the others'
+    // answers never lock the key over a save its vessel may still hold; that close waits on the operator's hand.
+    for (const held of closings.values()) if (held.awaiting.delete(s)) held.dropped += 1;
     try { s.channel.close(); } catch { /* already gone */ }
     log("session dropped");
   };
@@ -323,7 +328,7 @@ export function servePulama(a: {
         // NOTHING NAMED BACK: a face not closing, outside this session's lend, or under another opening answers null alike.
         if (held === undefined || !held.awaiting.has(s) || held.opening !== args["opening"]) return null;
         held.awaiting.delete(s);
-        if (held.awaiting.size === 0) await lockClosed(args["fcid"]);
+        if (held.awaiting.size === 0 && held.dropped === 0) await lockClosed(args["fcid"]);
         return null;
       }
       case "face.ward-key": {
@@ -438,23 +443,26 @@ export function servePulama(a: {
       if (!holder.unlockedFaces().includes(fcid)) return { reading: "face-locked", face: ordinal };
       if (options?.force === true) {
         // THE OPERATOR'S HAND: the lock lands now, whoever has not answered.
-        if (!closings.has(fcid)) closings.set(fcid, { ordinal, opening: null, awaiting: new Set() });
+        if (!closings.has(fcid)) closings.set(fcid, { ordinal, opening: null, awaiting: new Set(), dropped: 0 });
         await lockClosed(fcid);
         log(`face h${ordinal}: a forced lock by the operator's hand`);
         return { reading: "locked", face: ordinal, forced: true };
       }
       const already = closings.get(fcid);
       if (already !== undefined) {
-        // THE CLOSE ASKED AGAIN: each told session that has not answered hears it again (a vessel whose drain faulted drains
-        // again), and a close no live session still owes locks now, as a face no session lends does.
-        const owed = [...already.awaiting].filter((s) => s.open);
-        if (owed.length === 0) {
+        // THE CLOSE ASKED AGAIN tells every live session that lends the face, a late one included (a vessel that came back under a
+        // new session): each joins the close's answer set, its rows open to its drain, and a vessel whose drain faulted drains
+        // again. With no live lender it locks only where no told session dropped; a dropped one waits on the operator's hand.
+        const owed = [...live].filter((s) => lends(s, { ordinal, fcid }));
+        if (owed.length === 0 && already.dropped === 0) {
           await lockClosed(fcid);
-          log(`face h${ordinal} locked: no session it told still owes its close`);
+          log(`face h${ordinal} locked: no session lends it, and none dropped its close`);
           return { reading: "locked", face: ordinal };
         }
+        already.awaiting = new Set(owed);
         for (const s of owed) s.channel.send({ t: "closing", fcid, opening: already.opening });
-        log(`face h${ordinal} closing again: ${owed.length} session(s) told again`);
+        for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived }));
+        log(`face h${ordinal} closing again: ${owed.length} session(s) told${already.dropped > 0 ? `; ${already.dropped} dropped unanswered, so only a forced lock locks it` : ""}`);
         return { reading: "closing", face: ordinal, unanswered: owed.length };
       }
       const told = [...live].filter((s) => lends(s, { ordinal, fcid }));
@@ -464,17 +472,22 @@ export function servePulama(a: {
         return { reading: "locked", face: ordinal };
       }
       const opening = holder.faceOpening?.(fcid) ?? null;
-      closings.set(fcid, { ordinal, opening, awaiting: new Set(told) });
+      // A vessel whose session ended BEFORE this close stands outside it: no session names that vessel here, so the close tells the
+      // live lenders alone (and, with none, locks). Its unsealed saves, if any, wait in its own memory for a session to seal them.
+      closings.set(fcid, { ordinal, opening, awaiting: new Set(told), dropped: 0 });
       for (const s of told) s.channel.send({ t: "closing", fcid, opening });
       for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived }));
       log(`face h${ordinal} closing: ${told.length} session(s) to answer`);
       return { reading: "closing", face: ordinal, unanswered: told.length };
     },
-    // THE CLEARING LINE, NAMED: close the face again (the hand's `close`) to tell each unanswered session again, or to lock it once
-    // none still owes the close; or force it by hand (`close` with `force`).
-    closing: () => [...closings.values()].map((c) => ({ face: c.ordinal, unanswered: c.awaiting.size, note: c.awaiting.size > 0
-      ? `face h${c.ordinal}: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand`
-      : `face h${c.ordinal}: no session it told still owes its close; close it again to lock it, or force it by hand` })),
+    // THE CLEARING LINE, NAMED: close the face again (the hand's `close`) to tell every live lender again, or to lock it once no
+    // session lends it and none dropped; a close a session dropped locks by the operator's hand alone (`close` with `force`).
+    closing: () => [...closings.values()].map((c) => ({ face: c.ordinal, unanswered: c.awaiting.size, ...(c.dropped > 0 ? { dropped: c.dropped } : {}),
+      note: c.dropped > 0
+        ? `face h${c.ordinal}: ${c.dropped} session(s) it told ended unanswered, and their vessel may still hold an unsealed save; close it again to tell every live vessel, and only a forced lock by hand locks it`
+        : c.awaiting.size > 0
+          ? `face h${c.ordinal}: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand`
+          : `face h${c.ordinal}: no session still owes its close; close it again to lock it, or force it by hand` })),
     sessions: () => live.size,
   };
 }
