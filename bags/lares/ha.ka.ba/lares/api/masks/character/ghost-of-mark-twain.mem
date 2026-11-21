@@ -31,7 +31,7 @@ voice-character   = "savvy well-traveled riverboat-culture author; vernacular pr
 
 //Character mask. Historical persona. Vernacular precision and deadpan moral wit.//
 
-Canonical home extracted from `lar:///ha.ka.ba/lares/docs/voices/masks#/founding-examples`.
+Its mask grammar reads at `lar:///ha.ka.ba/lares/api/voices#/mask-layer`; its parent index at `lar:///ha.ka.ba/lares/api/masks`.
 
 <<~/ahu>>
 
@@ -150,10 +150,10 @@ Remaining Voices — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, Diplom
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XQpJpoLQs1y4tOhkYBRv6MgwdI7aERIqyIMM90ZLpcg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ED9stbtP0hdCg_S8My-kGSeyJzFtyJSUTExJx9Lkca8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

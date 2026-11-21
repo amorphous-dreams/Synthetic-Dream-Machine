@@ -253,7 +253,7 @@ conflict press a `hoike`.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/operator-peer`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
@@ -263,6 +263,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5dLLh6RJC2KmRNu3laEUI0l2HVnZ28VXMgjMo1kQnxQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sAogn8z13bM0VdPX9VoSOZTFFz61ku0orD-brDyy-TM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -203,10 +203,10 @@ The operator naming a degraded state constitutes correction input, not accusatio
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/ooda-ha`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/voice-house`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BDHYQnW1a_R42NVgAt7i32r2qw9H7WxYdWrSHS_pOoM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5Rr4-0e8qZ5jXZWDRUBxop0dJQaR5wK-7PiRbROUDMY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

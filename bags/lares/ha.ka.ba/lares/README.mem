@@ -120,7 +120,7 @@ file, a browser agent takes the carrier pasted in.
 
 * `lar:///ha.ka.ba/lares/api/mu` — null-oracle core, five-season loop
 * `lar:///ha.ka.ba/lares/api/lararium` — canonical seat and hydration bridge
-* `lar:///ha.ka.ba/lares/docs/voices` — the Voice house (the Thirteen), worker swarm, mask layer
+* `lar:///ha.ka.ba/lares/api/voices` — the Voice house (the Thirteen), worker swarm, mask layer
 * `lar:///ha.ka.ba/lararium/docs/degraded-states` — named failure modes and correction handles
 * `lar:///ha.ka.ba/lares/docs/history/period-forms` — how an early carrier's HUD reads, and what MUST NOT be modernized in place
 * `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext` — the grammar, its frame, and the block check
@@ -139,6 +139,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;j7mfsMwtS3EkDr0aWwbGhMYQlP0A42H2-AUk0Zf7Fe0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DMcRbXu9AIVBz7IHmzWUL70qERcTG7BOB3mFBsW7PlY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

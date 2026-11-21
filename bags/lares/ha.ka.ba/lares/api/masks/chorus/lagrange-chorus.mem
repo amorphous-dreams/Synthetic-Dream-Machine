@@ -151,10 +151,10 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;j2Hpmlj8jz5avcgQGm3nanjUZ9t2jJjQ7neA1ngJqGU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vZnyNzioNwDUHteMOWMUNuyuz1X861Zc5e8MKpNxpxM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

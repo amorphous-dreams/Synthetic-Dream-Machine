@@ -185,11 +185,11 @@ These notes require live session observation before they can be written with con
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/masks`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices#/voice-house`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/voices/masks`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/voice-house`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices#/mask-layer`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;su_kaAo5L5OTlYzV1js7XwQ7EmcHpVQ2o0xdVvfWSpg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;l11rDrhK5gQWVmK4lMtDvIyQpiZyKsAVg4rLPoMcA2s`>>
 
 <<^ code=`&#x0004;` to=`?`>>
