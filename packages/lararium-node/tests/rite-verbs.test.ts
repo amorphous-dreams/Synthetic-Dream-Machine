@@ -7,7 +7,8 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { acceptAbandons, beginLentFaces, lentOfferFaces, offerVouchesOf, ownAbandonParts, refuseStandingBegin, signedMatchesTerms, standingKukuluBegins } from "../src/commands/rite.js";
+import { acceptAbandons, acceptRetire, beginLentFaces, lentOfferFaces, offerVouchesOf, ownAbandonParts, refuseStandingBegin, retireTerms, signedMatchesTerms, standingKukuluBegins } from "../src/commands/rite.js";
+import { retirePartsOf } from "../src/pulama-hand.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import { runHandVerb } from "../src/pulama-verbs.js";
 import {
@@ -287,7 +288,7 @@ test("RED: the abandon's face reads by name: an unlent `--face` refuses `face-no
   expect(() => ownAbandonParts({ pending: [], faces, named: 0, branch: "main" })).toThrow(expect.objectContaining({ code: "rite-abandon-nothing-pending" }));
   expect(() => ownAbandonParts({ pending: [half("c".repeat(64), "g1"), half("d".repeat(64), "gone")], faces, named: 0, branch: "main" })).toThrow(expect.objectContaining({
     code: "rite-abandon-no-own-halves",
-    message: expect.stringMatching(/h1 tessera c+ waits for its own face's hand: lares rite kukulu --abandon --face 1 --branch main[\s\S]*gone tessera d+ waits: no lent face's hand carries its group, so it ends once that face stands again/),
+    message: expect.stringMatching(/h1 tessera c+ waits for its own face's hand: lares rite kukulu --abandon --face 1 --branch main[\s\S]*gone tessera d+ waits: no lent face's hand carries its group[\s\S]*--retire d+ --statement/),
   }));
   const own = ownAbandonParts({ pending: [half("c".repeat(64), "g1"), half("e".repeat(64), "g0")], faces, named: 0, branch: "main" });
   expect([own.signer, own.mine.map((p) => p.tessera), own.others.map((o) => o["tessera"])]).toEqual([0, ["e".repeat(64)], ["c".repeat(64)]]);
@@ -311,4 +312,38 @@ test("RED (the sixth read): a signed landing matches the operator's request: the
   expect(() => signedMatchesTerms([rec("c".repeat(64)), rec("d".repeat(64), "g1")], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
   expect(() => signedMatchesTerms([rec("c".repeat(64)), rec("c".repeat(64)), rec("d".repeat(64))], mine)).toThrow(expect.objectContaining({ code: "rite-abandon-terms-differ" }));
   expect(() => signedMatchesTerms([rec("d".repeat(64)), rec("c".repeat(64))], mine)).not.toThrow();
+});
+
+test("RED: seat zero retires a half whose root no face of the house holds: the terms bind the house, group, branch, tessera, guest cid and the gone root beside the operator's statement; acceptance takes only seat zero's mark; CONTROL: a root a face still holds, an empty statement, or a half not pending refuses by name", async () => {
+  const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+  const rows = new Map<string, string>();
+  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
+    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
+  const lost = await keyed(90), atom = await keyed(91), seatZero = await keyed(92);
+  const trust: SwarmTrust = { hand: (k) => k === lost.key, vessel: (k) => k === atom.key, lead: () => false };
+  const lei = await signSwarmAct({ act: "lei", group: "old-g1", rite: "kukulu", branch: "main", after: null, reach: "wide", returns: 2 }, lost);
+  await wiki.write(swarmLeiRecordTitle("kukulu", "main", swarmActCid(lei)), JSON.stringify(lei));
+  const begun = await beginChecked(wiki, await checkReturn(wiki, { rite: "kukulu", branch: "main", head: "a".repeat(40), tree: "b".repeat(40) }, trust, "old-g1", atom, { accepts: () => true }));
+  const HOUSE = "E" + "h".repeat(43);
+  const statement = "h1's device and its root are lost; set its half aside";
+  const roots = [{ ordinal: 0, key: seatZero.key }, { ordinal: 1, key: "cd".repeat(32) }];
+  const terms = await retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement, house: HOUSE, roots });
+  expect(terms).toEqual({ face: 0, rite: "kukulu", branch: "main", retire: { tessera: begun.tessera, group: "old-g1", branch: "main", begun: begun.begun, house: HOUSE, root: lost.key, statement } });
+  await expect(retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement, house: HOUSE, roots: [...roots, { ordinal: 2, key: lost.key }] })).rejects.toMatchObject({ code: "rite-retire-root-stands", message: expect.stringContaining("h2") });
+  await expect(retireTerms(wiki, { branch: "main", tessera: begun.tessera, statement: " ", house: HOUSE, roots })).rejects.toMatchObject({ code: "rite-retire-statement" });
+  await expect(retireTerms(wiki, { branch: "main", tessera: "9".repeat(64), statement, house: HOUSE, roots })).rejects.toMatchObject({ code: "rite-retire-not-pending" });
+  const mark = (signer: typeof seatZero) => signSwarmAct({ act: "rite-retired", rite: "kukulu", ...terms.retire } as never, signer);
+  const ctx = { seatZero: seatZero.key, house: HOUSE, roots };
+  await expect(acceptRetire(wiki, "main", await mark(atom), ctx)).rejects.toMatchObject({ code: "rite-retire-unsigned" });
+  expect(await acceptRetire(wiki, "main", await mark(seatZero), ctx)).toEqual({ tessera: begun.tessera });
+  expect(await pendingBegins(wiki, "kukulu", "main", { seatZero: seatZero.key, house: HOUSE })).toEqual([]);
+  expect(storeVerbNeedsWard("rite-abandon", { rite: "kukulu", branch: "main", retire: begun.tessera, statement })).toBe(true);
+});
+
+test("RED: the pūlama's hand door signs a retire as SEAT ZERO alone, binding the terms and the statement; CONTROL: another face refuses `retire-needs-seat-zero` before the route", async () => {
+  // The hand door's own checks, read without a pūlama: the parts it signs and the face it signs as.
+  expect(retirePartsOf({ face: 1, retire: { tessera: "c".repeat(64), group: "g", branch: "main", begun: "d".repeat(64), house: "Eh", root: "ab".repeat(32), statement: "gone" } }, "main")).toMatchObject({ reading: "retire-needs-seat-zero" });
+  expect(retirePartsOf({ face: 0, retire: { tessera: "c".repeat(64), group: "g", branch: "main", begun: "d".repeat(64), house: "Eh", root: "ab".repeat(32), statement: "" } }, "main")).toMatchObject({ reading: "lei-malformed" });
+  expect(retirePartsOf({ face: 0, retire: { tessera: "c".repeat(64), group: "g", branch: "main", begun: "d".repeat(64), house: "Eh", root: "ab".repeat(32), statement: "gone" } }, "main"))
+    .toEqual({ parts: { act: "rite-retired", group: "g", rite: "kukulu", branch: "main", tessera: "c".repeat(64), begun: "d".repeat(64), house: "Eh", root: "ab".repeat(32), statement: "gone" } });
 });
