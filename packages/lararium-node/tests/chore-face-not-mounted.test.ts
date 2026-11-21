@@ -213,12 +213,12 @@ test("EACH HAT REACHED BY NAME: a session wearing LIT h1 asking a tiddler write 
   const signers = new SessionSignBook({ onHold: (session: BookedSession, verb: string) => { held.push({ verb, ...(session.face !== undefined ? { face: session.face } : {}) }); } });
   const v = await stand({ lit: [1], signers });
   const env = await v.open("h1");
-  for (const verb of ["tiddler-put", "tiddler-delete"]) {
+  for (const verb of ["tiddler-put", "tiddler-delete", "oracle-cast"]) {
     const reply = await v.peer.ask({ op: "session:call", ...env, requestId: `engine-${verb}`, verb, args: { recipe: "default", title: "T" } });
     expect(reply, verb).toMatchObject({ kind: "session:result", status: "done", chore: { acting: 1, asker: "cli", session: env.sessionId } });
   }
-  expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["tiddler-put", 1], ["tiddler-delete", 1]]);
-  expect(held.filter((h) => h.verb !== "session:seat")).toEqual([{ verb: "tiddler-put", face: "atom-h1" }, { verb: "tiddler-delete", face: "atom-h1" }]);
+  expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["tiddler-put", 1], ["tiddler-delete", 1], ["oracle-cast", 1]]);
+  expect(held.filter((h) => h.verb !== "session:seat")).toEqual([{ verb: "tiddler-put", face: "atom-h1" }, { verb: "tiddler-delete", face: "atom-h1" }, { verb: "oracle-cast", face: "atom-h1" }]);
 });
 
 test("EACH HAT REACHED BY NAME, CONTROL: the lane carries its own writes alone; a lit h1's sweep still refuses chore-face-not-mounted, and h0's session books no face key", async () => {

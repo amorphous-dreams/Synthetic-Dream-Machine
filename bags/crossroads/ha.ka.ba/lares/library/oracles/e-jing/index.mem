@@ -1,0 +1,56 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "archive"
+rating    = "meme"
+role      = "handle for the E-Jing-A-Ling Thing's sixty-five readings: the page's provenance, its license, and the rule its quoted snippets ride under"
+title     = "lar:///ha.ka.ba/lares/library/oracles/e-jing/index"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/library/oracles/e-jing/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The E-Jing-A-Ling Thing ~ readings handle
+
+''Sixty-four hexagrams and `000pi`, one reading each.'' The 23ae.com page took the I Ching and
+"created Discordian answers that had some similarity to the Chinese meanings"; its authors name
+themselves only as "we". Each reading rests as its own tiddler beside this handle
+(`hexagram-01` through `hexagram-64`, and `hexagram-pi` for a coin that lands on its edge), with
+its `source`, `source-sha256`, `license` and `attribution` fields, and the figure bottom line first
+in `lines` (1 for yang). The page draws hexagrams 23, 36 and 37 with the figures of 29, 35 and 36; those
+three readings keep the page's drawing in `page-lines` beside the King Wen figure. The DOA readings (oracles/doa) carry the same prose under the AppleKatation's
+own Kopyleft.
+
+A house cast (`lares oracle cast`) names the readings of the hexagrams it lands on. The oracle widens
+attention and never decides.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/provenance`>>
+
+!! Provenance & License
+
+* ''Source:'' "E-Jing-A-Ling Thing Hexagrams", 23ae.com, as the Wayback Machine captured it on
+  2006-02-18; the oracle scout carried the page in once (111,063 bytes, sha256
+  `d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e`), and the import read those
+  bytes. No reader fetches the web2 page again.
+* ''License, the page's own prose:'' "(K)opyLeft: Copyright Is Reversed. Reprint What You Like."
+  (hexagram 14).
+* ''The quoted snippets:'' the page quotes others inside its readings (the Principia Discordia, Joyce,
+  a sutta, Bierce, a book review, a Usenet thread, and more). They ride under fair use by the
+  operator's ruling of 2026-11-20 ("Combined with discordian i-ching readings enacts the transformative
+  gate"), each quote sitting inside its reading with the attribution the page gives it.
+* ''The method the page teaches:'' think of a question and flip a coin six times, heads for yang and
+  tails for yin, reading the figure from the bottom up. The house's own cast throws three coins a line
+  (6, 7, 8, 9), so a line can change.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;s2BOIsLY-WF2TS3c5YGSWqjkkGQ6NdwSlNkklDA8oLo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

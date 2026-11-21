@@ -69,6 +69,30 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--json       emit the envelope instead of the bare line: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}; `entropy` names the door a `%.` drew from",
     ],
   },
+  oracle: {
+    usage: "usage: lares oracle cast --recipe <slug> [--coins <six values>] [--caster <name>]",
+    synopsis:
+      "Cast the I Ching by three coins a line and let the vessel write the cast as one tiddler under lar:///ha.ka.ba/lares/oracle/casts/. " +
+      "A line sums three coins, heads three and tails two: 6 (old yin) and 9 (old yang) change, 7 and 8 hold. The six lines, bottom first, " +
+      "name the primary hexagram by its King Wen number; the changing lines turned over name the relating one. With no --coins the coins draw " +
+      "through the platform's entropy door (crypto.getRandomValues); --coins hands in the operator's own throw with real coins, named " +
+      "operator:three-coins. A cast stands as an act: the tiddler holds the throw, and reading it again never casts again; " +
+      "the oracle widens attention and never decides.",
+    details: [
+      "  The reading names the house's imported texts for each hexagram: the DOA (Kopyleft 2022, Steal and Share Alike) and the",
+      "  e-jing ((K)opyLeft, its quoted snippets under fair use), each with its attribution and license.",
+    ],
+    examples: [
+      "lares oracle cast --recipe default                       # a house cast through the platform's entropy door",
+      "lares oracle cast --recipe default --coins 7,8,9,6,7,7   # the six lines you threw with real coins, bottom first",
+      "lares oracle cast --recipe default --json                # the verb's answer: cast, readings, the tiddler's title",
+    ],
+    flags: [
+      "--coins <v>   six line values of 6, 7, 8 or 9, bottom line first (7,8,9,6,7,7 or 789677): the operator's own throw",
+      "--caster <n>  who cast (default: operator)",
+      "--json        emit {decision, created, title, cast, text, readings, note}",
+    ],
+  },
   herm: {
     usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
     synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",

@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-57`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "57. Synchronicity"
+hexagram      = "57"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "011011"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-57"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-57"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷸ 57. Synchronicity
+
+<<<
+The coincidental occurrence of events and especially psychic events (as similar thoughts in widely separated persons or a mental image of an unexpected event before it happens) that seem related but are not explained by conventional mechanisms of causality -- used especially in the psychology of C. G. Jung
+<<<
+
+This hexagram represents gentle but penetrating forces (like wind). It implies a series of small successes, and suggests that you find a great, wise man to discuss the situation with.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wETR7aI0o6_M32UeSrgkPAY7KEaTuIXn9sLo4L4bLo4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,47 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-29`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "29. Sink"
+hexagram    = "29"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "010010"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-29"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-29"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷜ 29. Sink
+
+<<<
+"""
+A GAME
+By Ala Hera, E.L., N.S.; RAYVILLE APPLE PANTHERS
+SINK is played by Discordians and people of much ilk.
+PURPOSE: To sink object or an object or a thing- in water or mud or anything you; can sink something in.
+RULES: Sinking is allowd in any manner. To date, ten pound chunks of mud were used to sink a tobacco can. It is preferable to have a pit of water or a hole to drop things in. But rivers - bays - gulfs - I dare say even oceans can be used.
+TURNS are taken thusly: who somever gets the junk up in the air first.
+DUTY: It shall be the duty of all persons playing "SINK" to help find more objects to sink, once; one object is sunk.
+UPON SINKING: The sinked shall yell "I sank it!" or something equally as thoughtful.
+NAMING OF OBJECTS is some times desirable. The object is named by the finder of such object and whoever sinks it can say for instance, "I sunk Columbus, Ohio."
+"""
+<<<
+
+This hexagram represents water and life, and signifies possible danger. Obviously, the danger it is referring to is the danger that the items which are sunk find themselves in. Make sure you are the one playing sink and you are not the thing to be sunk.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d1V6AHR-LVcBww9MgVPa9dSa0dvHEPHagBE6U5xvmJ4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

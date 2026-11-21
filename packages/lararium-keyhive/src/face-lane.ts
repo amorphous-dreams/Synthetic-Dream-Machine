@@ -25,7 +25,7 @@ import { VerbRefusal, type LarTiddlerStore } from "@lararium/mesh";
 import type { FaceEngine, VerbContext, VerbReactor } from "@lararium/tw5";
 
 /** The tiddler door's verbs a lit sibling reaches in its own engine (`faceEngineReactor`). */
-export const FACE_ENGINE_VERBS: ReadonlySet<string> = new Set(["tiddler-get", "tiddler-put", "tiddler-delete", "wiki-filter", "wiki-render", "wiki-status"]);
+export const FACE_ENGINE_VERBS: ReadonlySet<string> = new Set(["tiddler-get", "tiddler-put", "tiddler-delete", "wiki-filter", "wiki-render", "wiki-status", "oracle-cast"]);
 /** The verbs a lit sibling reaches on its own lane: the meme verbs on its own document, the engine verbs in its own engine. */
 export const FACE_LANE_VERBS: ReadonlySet<string> = new Set(["meme-put", "meme-get", "meme-list", "meme-delete", ...FACE_ENGINE_VERBS]);
 

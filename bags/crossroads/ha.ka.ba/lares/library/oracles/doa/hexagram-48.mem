@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-48`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "48. Bureaucracy"
+hexagram    = "48"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "011010"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-48"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-48"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷯ 48. Bureaucracy
+
+<<<
+An Age of Bureaucracy is an Imperial Age in which Things Mature, in which Confusion becomes entrenched and during which Balanced Balance, or Stagnation, is attained.
+<<<
+
+This hexagram represents the inexhaustible and the unchanging. It can mean stagnation, but also a comforting routine, depending upon how you look at it. Since this IS the DISCORDIAN E-Jing-A-Ling Thing, the implication is that you are stuck in a rut and you need to do something to get out of it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eEGRpnmk5CdlOwBrZMg0aBY_jgQYSq1xoQexAnTTj6w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

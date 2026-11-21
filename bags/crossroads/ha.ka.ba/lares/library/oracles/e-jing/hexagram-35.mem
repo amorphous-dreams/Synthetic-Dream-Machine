@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-35`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "35. The Grand Unified Conspiracy Theory"
+hexagram      = "35"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "000101"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-35"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-35"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷢ 35. The Grand Unified Conspiracy Theory
+
+<<<
+"...and Hallmark has three of the same people on its board as the Snapple Corporation, whose VP of Marketing was a former CIA agent who just happened to be in Dealy Plaza...
+<<<
+
+This hexagram represents a coming together and suggests that feeling you get when there are only a few more pieces left to a 5000 piece puzzle. Everything seems to suddenly fit and, if you remain calm and cheerful, great progress will be made.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Vk_Xq2ljMMPUTHzASyyYHkH39aDmc8ZCUzsL5s3J7k`>>
+
+<<^ code=`&#x0004;` to=`?`>>

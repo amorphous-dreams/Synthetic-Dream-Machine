@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-14`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "14. (K)opyLeft"
+hexagram    = "14"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "111101"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-14"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-14"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷍ 14. (K)opyLeft
+
+<<<
+Copyright Is Reversed. Reprint What You Like.
+<<<
+
+This hexagram stands for possession on a grand scale through unselfish modesty, and is therefore represented perfectly by the Discordian tendency to reverse the copyright on their creations. The hexagram represents private property becoming public property, and I'm afraid that means we are damn communists. Or socialists. Or at least Marxists. Of course, it could mean that we are not any of those things, we're just not greedy capitalists, either. Anyway, the hexagram seems to be telling you to be unselfish and share.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X25Q4NjIzCISgKbHuhnZNfPYQaPyJP8uIDtIxMOYetw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

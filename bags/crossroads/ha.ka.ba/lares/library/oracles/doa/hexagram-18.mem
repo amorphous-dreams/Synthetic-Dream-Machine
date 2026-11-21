@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-18`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "18. Yog Sothoth"
+hexagram    = "18"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "011001"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-18"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-18"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷑ 18. Yog Sothoth
+
+<<<
+For Yog-Sothoth is the Gate. He knoweth where the Old Ones came forth in times past and where they came forth again when the cycle returneth.
+<<<
+
+This hexagram represents vile decay and rot. It can also represent corruption. Needless to say, this is not a very good sign. The E-Jing-A-Ling Thing suggests that you stay upbeat during this nasty time and foster a "Fuck it" attitude until Fortuna's wheel spins again. Cheerily wave to the rotting corpses and laugh with excessive mirth at the babies brains being eaten by worms. Cheerio-ho!
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tsb1PtooZARrLQ61KbsAdBN7DYV1BjJYPs5FZHDUEx8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

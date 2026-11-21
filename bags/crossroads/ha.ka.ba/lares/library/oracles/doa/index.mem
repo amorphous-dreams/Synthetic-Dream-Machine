@@ -42,6 +42,14 @@ opening the DOA.html blob in any browser, offline, forever.
 | ''DOAdownload.htm'' — the original download page, Wayback capture 2003-08-06 | `8a4d7b75513de4785e4d84f33951c657b454403c877cbc399e2883493ce34be0` | 2,988 |
 | ''pentatorah.htm'' — the Pentatorah-Zerostore, Wayback capture 2003-08-06 | `ace791cdadd7486c9dcc5647b98e81960752003a3517251a6a043271a016d030` | 15,901 |
 
+''The readings, imported once.'' DOA.html's sixty-five readings rest beside this handle as their own
+tiddlers (`hexagram-01` through `hexagram-64`, and `hexagram-pi`), read from the bytes at the cid above,
+each carrying `source`, `source-cid`, `license` (the page's Kopyleft; its quoted snippets ride under fair
+use, each kept as the page gives it) and `attribution`, with the figure bottom line first in `lines`
+(1 for yang); where the page draws another figure (hexagrams 23, 36 and 37 carry the figures of 29, 35
+and 36, and `000pi` draws one of its own) `page-lines` keeps the page's drawing. A house cast (`lares oracle cast`) names the readings of the hexagrams it lands on; the
+oracle widens attention and never decides.
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/provenance`>>
@@ -68,6 +76,6 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VDy7FdXlRYr5DXquwl0G9cjA2vDV7-aWJ1ohkn8MRjg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KA7-kVk0VwK7DMNjtNw1-zh-Cj0rkQ01ab8oBtgQvQ0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

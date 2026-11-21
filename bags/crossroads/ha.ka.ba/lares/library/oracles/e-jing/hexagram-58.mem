@@ -1,0 +1,55 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-58`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "58. The Buddha"
+hexagram      = "58"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "110110"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-58"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-58"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷹ 58. The Buddha
+
+<<<
+"""
+This is what should be done
+By one who is skilled in goodness,
+And who knows the path to peace:
+Let them be able and upright,
+Straightforward and gentle in speech,
+Humble and not conceited,
+Contented and easily satisfied.
+Unburdened with duties, and frugal in their ways.
+Peaceful and calm, wise and skillful,
+Not proud and demanding in nature.
+Let them not do the slightest thing
+That the wise would later reprove....
+...By not holding to fixed views,
+The pure-hearted one, having clarity of vision,
+Being freed from all sense desires,
+Is not born again into this world."
+- Karaniya Metta Sutta (the sutta on loving kindness)
+"""
+<<<
+
+This hexagram represents joyousness, and a gentleness that rests on firmness and strength. It suggests contentment. If this is directly opposite from how you feel now, try to foster the gentleness described above.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fnvSqn4eS3eRI6wryIxlvrUKIE7HRqBr9IwskMz-Nro`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -30,7 +30,7 @@ function rig() {
 
 describe("each hat reached by name: the island's per-face lane", () => {
   it("the lane carries the meme verbs and the tiddler door's engine verbs", () => {
-    expect([...FACE_ENGINE_VERBS].sort()).toEqual(["tiddler-delete", "tiddler-get", "tiddler-put", "wiki-filter", "wiki-render", "wiki-status"]);
+    expect([...FACE_ENGINE_VERBS].sort()).toEqual(["oracle-cast", "tiddler-delete", "tiddler-get", "tiddler-put", "wiki-filter", "wiki-render", "wiki-status"]);
     expect([...FACE_LANE_VERBS].sort()).toEqual(["meme-delete", "meme-get", "meme-list", "meme-put", ...FACE_ENGINE_VERBS].sort());
   });
 

@@ -87,6 +87,9 @@ const CLI_FORMS = {
   // The DISCORDIAN CALENDAR — the MCP `ddate` tool mirrors the host verb `lares ddate`, a real top-level CLI command that runs
   // with no vessel; the tool rides the daemon verb every vessel answers, so a seat reads the day through the same core.
   ddate:          "ddate",
+  // THE ORACLE CAST — the MCP `oracle_cast` tool mirrors `lares oracle cast`, a vessel verb: the vessel casts and writes
+  // the cast as one tiddler, so the draw lives in the tool and never in the prompt.
+  oracle_cast:    "oracle cast",
   // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
   // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
   // holds no MCP tool, the way `kahua lift` holds none.
