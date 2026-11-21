@@ -327,6 +327,8 @@ export function makePulamaHolder(a: {
     unlockedFaces: () => session?.standing.faces ?? [],
     // THE OPENING COMES FROM ITS SOURCE: the pūlama's own number, verbatim; a face it names no opening for reads none (fail closed).
     faceOpening: (fcid) => (session?.standing.faces.includes(fcid) ? session.standing.openings[fcid] ?? null : null),
+    // THE PŪLAMA ANSWERS, NOT THE LAST EVENT HEARD (Sol 407f): one round trip asks its own holder for the face's opening now.
+    confirmOpening: async (fcid, opening) => (await call("face.opening", { fcid })) === opening,
     withWardKey: () => needsHuman("a ward act"),
     async wardPublicKey(face) { return await call("face.ward-key", { face }) as string | null; },
     watchWardKeys() { /* this side opens no ward key */ },

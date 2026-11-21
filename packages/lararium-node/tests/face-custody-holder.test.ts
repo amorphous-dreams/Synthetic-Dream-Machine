@@ -128,6 +128,17 @@ describe("each opening of a face takes its own number", () => {
     expect(faceOpeningFrom(() => null, () => a.fcid)(0), "no holder standing reads shut").toBeNull();
   });
 
+  test("RED (Sol 407f): the holder confirms an opening against its own standing: the opening it names now, yes; a shut or re-lit face, no", async () => {
+    const { holder, a } = await twoLockedFaces();
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    const admitted = holder.faceOpening?.(a.fcid)!;
+    expect(await holder.confirmOpening!(a.fcid, admitted)).toBe(true);
+    await holder.lockFace(a.fcid);
+    expect(await holder.confirmOpening!(a.fcid, admitted)).toBe(false);
+    await holder.unlockFace({ fcid: a.fcid }, cred("route-a"));
+    expect(await holder.confirmOpening!(a.fcid, admitted)).toBe(false);
+  });
+
   test("RED restart: a fresh holder over the same home counts its opens from one again, and still never repeats an earlier boot's opening", async () => {
     const { a } = await twoLockedFaces();
     const booted = makeCustodyHolder({ io: new FsCustodyIo(seat!.homes), homes: seat!.homes });

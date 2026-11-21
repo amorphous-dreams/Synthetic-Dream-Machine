@@ -51,7 +51,8 @@ afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c();
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
 async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly output?: (o: { verb: string; args: Record<string, unknown> }) => Record<string, unknown>;
-  readonly opening?: (face: number) => string | null; readonly onFlush?: () => void } = {}) {
+  readonly opening?: (face: number) => string | null; readonly onFlush?: () => void;
+  readonly confirm?: (face: number, opening: string) => Promise<boolean>; readonly closing?: (face: number) => boolean } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -70,6 +71,8 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
     mountOrdinal: () => 0,
     lentOrdinals: async () => [0, 1],
     ...(lane.opening ? { faceOpening: lane.opening } : {}),
+    ...(lane.confirm ? { confirmOpening: lane.confirm } : {}),
+    ...(lane.closing ? { faceClosing: lane.closing } : {}),
     ...(lane.lit ? { litOrdinals: () => lane.lit!, siblingFaceOf: (presenter: string) => presenter === "verified-h1" && lane.lit!.includes(1) ? "atom-h1" : undefined } : {}),
     ...(lane.signers ? { signers: lane.signers } : {}),
     placeVerb: (o) => {
@@ -319,4 +322,31 @@ test("RED XV7 (Sol 407e): a verb outside the visit reads, carrying a numeric `ta
   const reply = await v.oneShot({ verb: "floor-pin", args: { target: 7 }, requestedBy: "0xplace", requestId: "pin-target" });
   expect(reply).not.toMatchObject({ refusal: { reason: "face-not-open" } });
   expect(v.placed.map((p) => [p.verb, p.args["target"]])).toEqual([["floor-pin", 7]]);
+});
+
+test("RED XV8 (Sol 407f): the door asks the custody source at delivery whether the opening still stands: a remote lock its local reading has not heard refuses the body, and so does a source that cannot answer", async () => {
+  const opening = (face: number) => (face === 1 ? "h1:1" : "mount");
+  const remote = await stand({ lit: [1], opening, output: visitOut, confirm: async () => false });
+  const env = await remote.open("h0");
+  const locked = await remote.peer.ask({ op: "session:call", ...env, requestId: "s-remote-lock", verb: "tiddler-get", args: { ...VISIT, target: 1 } });
+  expect(JSON.stringify(locked)).not.toContain("the visited word");
+  expect(locked).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  const silent = await stand({ lit: [1], opening, output: visitOut, confirm: () => Promise.reject(new Error("the pūlama session dropped")) });
+  const reply = await silent.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "unanswered" });
+  expect(JSON.stringify(reply)).not.toContain("the visited word");
+  expect(reply).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  // CONTROL: a yes at delivery sends the body.
+  const yes = await stand({ lit: [1], opening, output: visitOut, confirm: async (face, o) => face === 1 && o === "h1:1" });
+  expect(JSON.stringify(await yes.oneShot({ verb: "tiddler-get", args: { ...VISIT, target: 1 }, requestedBy: "0xplace", requestId: "confirmed" }))).toContain("the visited word");
+});
+
+test("RED XV9 (Sol 407f): a face closing refuses every new verb its own sessions send, by name; another face's session runs on", async () => {
+  const v = await stand({ lit: [1], closing: (face) => face === 1 });
+  const sib = await v.open("h1");
+  const put = await v.peer.ask({ op: "session:call", ...sib, requestId: "late-put", verb: "tiddler-put", args: { recipe: "default", title: "T", text: "x" } });
+  expect(put).toMatchObject({ kind: "session:refused", refusal: "face-closing" });
+  expect(v.placed).toEqual([]);
+  const other = await v.connect();
+  const worn = await v.open("h0", other);
+  expect(await other.ask({ op: "session:call", ...worn, requestId: "worn-get", verb: "tiddler-get", args: VISIT })).toMatchObject({ kind: "session:result", status: "done" });
 });

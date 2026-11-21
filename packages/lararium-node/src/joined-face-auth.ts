@@ -49,8 +49,10 @@ export interface SiblingDropOrder {
   readonly groups: readonly string[];
   /** The daemon island drops the face (its provider, engine, view and opening), draining its in-flight verbs first. */
   readonly dropWorker: (atomKey: string) => Promise<void>;
-  /** The island acknowledged the drop of `atomKey`: only now does the vessel let its retry key go. */
+  /** The island acknowledged the drop of `atomKey` (or a recompose stood without the face): only now does the key go. */
   readonly acknowledged: (atomKey: string) => void;
+  /** The island refused the drop of `atomKey`: tear that island down and compose it again without the face. */
+  readonly recompose: (atomKey: string) => Promise<void>;
   /** The face's queued saves flush and land sealed under its own session before that session drops. */
   readonly flushSaves: (group: string) => Promise<void>;
   /** The host side drops: what still waits unsaved, the cache, the face's session and its keepers. */
@@ -59,24 +61,43 @@ export interface SiblingDropOrder {
 }
 
 /**
- * A FACE THAT LEAVES (Sol 407d, 407e): the face stands closed to new reads before this runs (the visit gate reads the custody
- * holder, and the door's lit set leaves it out). Its queued saves seal first, while its sealing seat in the daemon island and
- * its document ownership still stand; then the island hears the drop from the key held in memory (never from a read a lock
- * could have sealed) and acknowledges it, and only then does the vessel let that retry key go; then the host side drops. A
- * failed flush logs by name and the drop goes on; a worker drop that fails keeps its key and still tears the host side down;
- * a host teardown that fails leaves the worker dropped. Each failure answers after the order ran.
+ * A FACE THAT LEAVES (Sol 407d-f): the face stands closed to new reads and new verbs before this runs (the visit gate reads the
+ * custody source, and the door refuses its sessions). Its queued saves seal first, while its sealing seat in the daemon island
+ * and its document ownership still stand. Then the island HEARS the drop, from the key held in memory (never from a read a lock
+ * could have sealed), and the host side drops at once, never waiting on the island's answer, so a silent island holds nothing
+ * here. The answer then lets the key go; an island that refuses the drop is torn down and composed again without the face,
+ * by name, and only that recompose lets the key go. A failed flush logs by name and the drop goes on; a failed host teardown
+ * leaves the island told and answered; each fault answers after the order ran.
  */
 export async function dropSiblingInOrder(order: SiblingDropOrder): Promise<void> {
   for (const group of order.groups) {
     try { await order.flushSaves(group); }
     catch (error) { order.log(`[lit-set] face ${group}'s queued saves did not flush before it dropped: ${error instanceof Error ? error.message : String(error)}`); }
   }
-  let workerFault: unknown = null;
-  for (const atomKey of new Set(order.workers)) {
-    try { await order.dropWorker(atomKey); order.acknowledged(atomKey); } catch (error) { workerFault ??= error; }
+  const told = [...new Set(order.workers)].map((atomKey) => ({ atomKey, answer: order.dropWorker(atomKey).then(() => null, (error: unknown) => error) }));
+  let hostFault: unknown = null;
+  for (const group of order.groups) {
+    try { order.teardownHost(group); } catch (error) { hostFault ??= error; }
   }
-  for (const group of order.groups) order.teardownHost(group);
-  if (workerFault !== null) throw workerFault;
+  let recomposeFault: unknown = null;
+  for (const { atomKey, answer } of told) {
+    const refused = await answer;
+    if (refused === null) { order.acknowledged(atomKey); continue; }
+    order.log(`[lit-set] the daemon island refused the drop of ${atomKey}: ${refused instanceof Error ? refused.message : String(refused)}; it composes again without the face`);
+    try { await order.recompose(atomKey); order.acknowledged(atomKey); } catch (error) { recomposeFault ??= error; }
+  }
+  if (hostFault !== null) throw hostFault;
+  if (recomposeFault !== null) throw recomposeFault;
+}
+
+/**
+ * The lit faces that stand to drop: every face lit beside the mount that the served set leaves out, and every one whose custody
+ * opening moved since it lit (a remote lock and re-light both narrowing sweeps sampled as served), in ordinal order. A face whose
+ * opening at its light reads unknown drops only where the lend leaves it out. The mount never drops here.
+ */
+export function staleLitFaces(served: readonly number[], mount: number | null, lit: ReadonlyMap<number, string | null>, openingNow: (ordinal: number) => string | null): number[] {
+  const serving = new Set(served);
+  return [...lit].filter(([o, at]) => o !== mount && (!serving.has(o) || (at !== null && openingNow(o) !== at))).map(([o]) => o).sort((a, b) => a - b);
 }
 
 /** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground and the bags it OWNS while lit

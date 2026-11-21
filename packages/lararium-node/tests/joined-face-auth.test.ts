@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri, selvesRecordOf } from "@lararium/mesh";
-import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, siblingFaceWork, litSiblingOrdinals, dropSiblingInOrder, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, staleLitFaces, siblingFaceWork, litSiblingOrdinals, dropSiblingInOrder, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
 
 const edge = { deviceVerifyingKey: "ab" } as NonNullable<NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchors"]>>>["deviceEdge"]>;
 const anchor = {} as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchor"]>>>;
@@ -178,13 +178,18 @@ describe("sibling generation ownership", () => {
   });
 });
 
-describe("a face that leaves: its saves seal first, the worker drops, the host side last (Sol 407d, 407e)", () => {
-  const rig = (fail: { worker?: boolean; flush?: boolean; host?: boolean } = {}) => {
+describe("a face that leaves: its saves seal, the worker hears the drop, the host side drops, and a worker that refuses is recomposed without it (Sol 407d-f)", () => {
+  const rig = (fail: { worker?: "refuse" | "silent"; flush?: boolean; host?: boolean; recompose?: boolean } = {}) => {
     const steps: string[] = [];
     const run = () => dropSiblingInOrder({
       workers: ["atom-1", "atom-1"], groups: ["group-1"],
       flushSaves: async (group) => { steps.push(`flush:${group}`); if (fail.flush) throw new Error("flush failed"); },
-      dropWorker: async (key) => { steps.push(`worker:${key}`); if (fail.worker) throw new Error("worker drop failed"); },
+      dropWorker: (key) => {
+        steps.push(`worker:${key}`);
+        if (fail.worker === "silent") return new Promise<void>(() => {});
+        return fail.worker === "refuse" ? Promise.reject(new Error("worker drop failed")) : Promise.resolve();
+      },
+      recompose: async (key) => { steps.push(`recompose:${key}`); if (fail.recompose) throw new Error("recompose failed"); },
       acknowledged: (key) => steps.push(`ack:${key}`),
       teardownHost: (group) => { steps.push(`host:${group}`); if (fail.host) throw new Error("host teardown failed"); },
       log: (line) => steps.push(`log:${line.split(":")[0]}`),
@@ -192,21 +197,42 @@ describe("a face that leaves: its saves seal first, the worker drops, the host s
     return { steps, run };
   };
 
-  test("RED (407e): the face's queued saves seal while its seat and ownership still stand, then the worker drops (from memory) and acknowledges, then the host side drops", async () => {
+  test("RED (407f): the saves seal, the worker hears the drop, the host side drops without waiting on the worker's answer, then the answer lets the key go", async () => {
     const r = rig();
     await r.run();
-    expect(r.steps).toEqual(["flush:group-1", "worker:atom-1", "ack:atom-1", "host:group-1"]);
+    expect(r.steps).toEqual(["flush:group-1", "worker:atom-1", "host:group-1", "ack:atom-1"]);
   });
 
-  test("RED (407e): a worker drop that fails keeps its retry key (no acknowledgement) and still tears the host side down; a failed host teardown leaves the worker dropped; a failed flush logs and the drop goes on", async () => {
-    const worker = rig({ worker: true });
-    await expect(worker.run()).rejects.toThrow("worker drop failed");
-    expect(worker.steps).toEqual(["flush:group-1", "worker:atom-1", "host:group-1"]);
+  test("RED (407f): a silent worker never holds the host side: its teardown runs while the drop waits", async () => {
+    const r = rig({ worker: "silent" });
+    void r.run();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(r.steps).toEqual(["flush:group-1", "worker:atom-1", "host:group-1"]);
+  });
+
+  test("RED (407f): a worker that refuses the drop is recomposed without the face, by name, and then its key goes; a recompose that fails keeps the key and answers its fault", async () => {
+    const refused = rig({ worker: "refuse" });
+    await refused.run();
+    expect(refused.steps).toEqual(["flush:group-1", "worker:atom-1", "host:group-1", "log:[lit-set] the daemon island refused the drop of atom-1", "recompose:atom-1", "ack:atom-1"]);
+    const stuck = rig({ worker: "refuse", recompose: true });
+    await expect(stuck.run()).rejects.toThrow("recompose failed");
+    expect(stuck.steps).not.toContain("ack:atom-1");
+    // A failed host teardown still leaves the worker told and answered; a failed flush logs and the drop goes on.
     const host = rig({ host: true });
     await expect(host.run()).rejects.toThrow("host teardown failed");
-    expect(host.steps).toEqual(["flush:group-1", "worker:atom-1", "ack:atom-1", "host:group-1"]);
+    expect(host.steps).toEqual(["flush:group-1", "worker:atom-1", "host:group-1", "ack:atom-1"]);
     const flush = rig({ flush: true });
     await flush.run();
-    expect(flush.steps).toEqual(["flush:group-1", "log:[lit-set] face group-1's queued saves did not flush before it dropped", "worker:atom-1", "ack:atom-1", "host:group-1"]);
+    expect(flush.steps).toEqual(["flush:group-1", "log:[lit-set] face group-1's queued saves did not flush before it dropped", "worker:atom-1", "host:group-1", "ack:atom-1"]);
+  });
+});
+
+describe("a lit face whose custody opening moved stands to drop (Sol 407f)", () => {
+  test("RED: a face lit under one opening and served under another (a remote lock and re-light both sweeps missed) drops, as does an unserved one; the mount never drops here", () => {
+    const lit = new Map<number, string | null>([[1, "h1:1"], [2, "h2:1"], [3, null]]);
+    const now = (o: number) => ({ 1: "h1:2", 2: "h2:1", 3: "h3:9" } as Record<number, string>)[o] ?? null;
+    expect(staleLitFaces([0, 1, 2, 3], 0, lit, now)).toEqual([1]);
+    expect(staleLitFaces([0, 2], 0, lit, now)).toEqual([1, 3]);
+    expect(staleLitFaces([0], 0, new Map([[0, "mount"]]), () => "other")).toEqual([]);
   });
 });

@@ -139,8 +139,8 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     expect(source).toMatch(/onClosed\?\.\(\(\) => void lightServedFaces\(/);
     const light = source.slice(source.indexOf("const lightServedFaces"));
     const tend = light.slice(0, light.indexOf("stood.push"));
-    expect(tend.indexOf("unservedLitFaces(")).toBeGreaterThan(-1);
-    expect(tend.indexOf("unservedLitFaces(")).toBeLessThan(tend.indexOf("dropFace("));
+    expect(tend.indexOf("staleLitFaces(")).toBeGreaterThan(-1);
+    expect(tend.indexOf("staleLitFaces(")).toBeLessThan(tend.indexOf("dropFace("));
   });
 
   test("RED WELD (Sol 407d): a face's drop never reads its sealed anchors before the worker hears it: the worker drops from the key held in memory, ahead of the host side", () => {
@@ -155,7 +155,9 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     const light = source.slice(source.indexOf("const lightServedFaces"));
     const tend = light.slice(0, light.indexOf("stood.push"));
-    expect(tend).toMatch(/unservedLitFaces\(served, mountedFace, new Set\(\[\.\.\.litSiblingOrdinals\(siblingFaces\.values\(\)\), \.\.\.workerLit\.keys\(\)\]\)\)/);
+    expect(tend).toMatch(/staleLitFaces\(served, mountedFace, litOpenings, gateOpening\)/);
+    expect(tend, "the watcher never waits on one face's drop").toMatch(/void dropFace\(ordinal\)/);
+    expect(tend).not.toMatch(/await dropFace\(/);
     expect(source).toMatch(/const gateOpening = faceOpeningFrom\(standingCustody, /);
     expect(source).toMatch(/faceOpening: \(ordinal\) => \(closingOrdinals\.has\(ordinal\) \? null : gateOpening\(ordinal\)\)/);
   });

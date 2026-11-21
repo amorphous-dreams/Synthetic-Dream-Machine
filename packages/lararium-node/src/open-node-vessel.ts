@@ -174,7 +174,7 @@ import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from 
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened, faceOpeningFrom } from "./custody-seat.js";
-import { joinedFaceAuth, unlitServedFaces, unservedLitFaces, siblingFaceWork, litSiblingOrdinals, dropSiblingInOrder, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, staleLitFaces, siblingFaceWork, litSiblingOrdinals, dropSiblingInOrder, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -605,6 +605,10 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   litOrdinals: () => readonly number[];
   /** The opening a lit face stands under (the mount's, or a sibling's light), or null where it stands shut (a visit binds to it). */
   faceOpening: (ordinal: number) => string | null;
+  /** Whether a face stands open under an opening NOW, by the custody source (a pūlama answers in one round trip). */
+  confirmOpening: (ordinal: number, opening: string) => Promise<boolean>;
+  /** Whether a face is closing on this vessel (its sessions take no new verb). */
+  faceClosing: (ordinal: number) => boolean;
   /** The bare atom key of the lit sibling a verified presenter names (its place session stands), or undefined. */
   siblingFaceOf: (presenter: string) => string | undefined;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
@@ -804,6 +808,8 @@ interface NodeBootPrep {
   mountOrdinal: () => number | null;
   litOrdinals: () => readonly number[];
   faceOpening: (ordinal: number) => string | null;
+  confirmOpening: (ordinal: number, opening: string) => Promise<boolean>;
+  faceClosing: (ordinal: number) => boolean;
   siblingFaceOf: (presenter: string) => string | undefined;
   daemonVm:         () => DaemonVmCore;
   /** The host working layer's mount (slice 5b, red 3): the composition awaits it before it returns, so no caller mounts. */
@@ -998,13 +1004,22 @@ async function prepareNodeBootOn(
   /** The atom key the daemon island lit each sibling ordinal under, held in memory from its light to its drop: a drop tells the
    *  island from here, never from a read a lock could have sealed. */
   const workerLit = new Map<number, string>();
+  /** The custody opening each face the worker holds lit stood under at its light (null until read): a face whose opening moved
+   *  since (a remote lock and re-light) stands to drop, so no worker entry outlives the opening it lit under. */
+  const litOpenings = new Map<number, string | null>();
+  const workerLights = (ordinal: number, atomKey: string): void => { workerLit.set(ordinal, atomKey); litOpenings.set(ordinal, null); noteCustodyId(ordinal); };
+  const workerLeft = (ordinal: number, atomKey: string): void => { if (workerLit.get(ordinal) === atomKey) { workerLit.delete(ordinal); litOpenings.delete(ordinal); } };
   /** Each lit face's custody id by ordinal (the mount's and each sibling's, read at its light): the visit gate reads that
    *  face's opening off the custody holder through it. An identity, never a copy of the opening. */
   const custodyIds = new Map<number, string>();
   /** The faces closing now: shut to new reads at once (the door's lit set leaves them out) while their saves still seal. */
   const closingOrdinals = new Set<number>();
   const noteCustodyId = (ordinal: number): void => {
-    void standingCustody()?.faceStanding({ ordinal }).then((standing) => { if (standing) custodyIds.set(ordinal, standing.fcid); }, () => {});
+    void standingCustody()?.faceStanding({ ordinal }).then((standing) => {
+      if (!standing) return;
+      custodyIds.set(ordinal, standing.fcid);
+      if (litOpenings.has(ordinal) && litOpenings.get(ordinal) === null) litOpenings.set(ordinal, standingCustody()?.faceOpening?.(standing.fcid) ?? null);
+    }, () => {});
   };
   const gateOpening = faceOpeningFrom(standingCustody, (ordinal) => custodyIds.get(ordinal) ?? null);
   const siblingWork = siblingFaceWork();
@@ -2487,8 +2502,13 @@ async function prepareNodeBootOn(
         await dropSiblingInOrder({
           workers, groups: leaving.map(([group]) => group),
           dropWorker: (atomKey) => daemonVm.dropFace(atomKey),
-          // The retry key leaves only once the island acknowledged its drop.
-          acknowledged: (atomKey) => { if (workerLit.get(ordinal) === atomKey) workerLit.delete(ordinal); },
+          // An island that refuses the drop tears down and composes again: its new composition lights the served faces alone.
+          recompose: async (atomKey) => {
+            const done = await daemonHolder.restart(`face h${ordinal} (${atomKey.slice(0, 12)}…) refused its drop`);
+            console.warn(`[lit-set] the daemon island composed again without face h${ordinal} (${done.restarts})`);
+          },
+          // The retry key leaves only once the island acknowledged its drop (or composed again without the face).
+          acknowledged: (atomKey) => workerLeft(ordinal, atomKey),
           flushSaves: async (group) => {
             const session = siblingSessions.get(group)?.cell.session() ?? null;
             if (session === null) return;
@@ -3732,8 +3752,7 @@ async function prepareNodeBootOn(
       if (!held) {
         held = { ordinal: entry.handleIndex, relation, face, atomKey: entry.atom.key, opening: ++siblingLights };
         siblingFaces.set(group, held);
-        workerLit.set(entry.handleIndex, entry.atom.key);
-        noteCustodyId(entry.handleIndex);
+        if (workerLit.get(entry.handleIndex) !== entry.atom.key) workerLights(entry.handleIndex, entry.atom.key);
       }
       const mine = held;
       const current = (): boolean => live() && siblingFaces.get(group) === mine;
@@ -3805,13 +3824,13 @@ async function prepareNodeBootOn(
       if (entry) {
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);
         await daemonVm.lightFace(entry);
-        workerLit.set(ordinal, entry.atom.key);
+        workerLights(ordinal, entry.atom.key);
         if (!live()) return;
         try { await litSibling(entry, live); }
         catch (error) {
           // The awaited mint refused. Release its provider too; an explicit light starts a fresh generation.
           await daemonVm.dropFace(entry.atom.key);
-          workerLit.delete(ordinal);
+          workerLeft(ordinal, entry.atom.key);
           throw error;
         }
         if (!live()) return;
@@ -3849,9 +3868,11 @@ async function prepareNodeBootOn(
         if (!siblingPorts || mountFace === null) return;
         let served: number[];
         try { served = await unlockedFaceOrdinals(); } catch { return; }
-        for (const ordinal of unservedLitFaces(served, mountedFace, new Set([...litSiblingOrdinals(siblingFaces.values()), ...workerLit.keys()]))) {
-          try { await dropFace(ordinal); }
-          catch (e) { console.warn(`[lit-set] the face h${ordinal} the lend leaves unserved did not drop: ${e instanceof Error ? e.message : String(e)}`); }
+        // Every face the worker holds lit that the lend leaves out, or whose custody opening moved since its light, drops. The
+        // watcher never waits on one face's drop (a silent island holds no other face's change): each runs on its own.
+        for (const sibling of siblingFaces.values()) if (!litOpenings.has(sibling.ordinal)) litOpenings.set(sibling.ordinal, null);
+        for (const ordinal of staleLitFaces(served, mountedFace, litOpenings, gateOpening)) {
+          void dropFace(ordinal).catch((e: unknown) => console.warn(`[lit-set] the face h${ordinal} did not drop: ${e instanceof Error ? e.message : String(e)}`));
         }
         for (const ordinal of unlitServedFaces(served, mountedFace, litSiblingOrdinals(siblingFaces.values()))) {
           if (generations.get(ordinal)?.() !== true) continue;
@@ -5122,6 +5143,12 @@ async function prepareNodeBootOn(
     // THE VISIT GATE READS THE CUSTODY HOLDER (Sol 407e): the opening a face stands under right now, synchronously, off the
     // holder's own standing; a face closing on this vessel reads shut at once.
     faceOpening: (ordinal) => (closingOrdinals.has(ordinal) ? null : gateOpening(ordinal)),
+    // At delivery the custody SOURCE confirms the opening (a pūlama in one round trip); a face with no custody id reads no.
+    confirmOpening: (ordinal, opening) => {
+      const fcid = custodyIds.get(ordinal), holder = standingCustody();
+      return fcid !== undefined && holder?.confirmOpening && !closingOrdinals.has(ordinal) ? holder.confirmOpening(fcid, opening) : Promise.resolve(false);
+    },
+    faceClosing: (ordinal) => closingOrdinals.has(ordinal),
     siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
     hostWorkingMounted: () => mountHostWorking(),
@@ -5257,7 +5284,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceOpening: p.faceOpening, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceOpening: p.faceOpening, confirmOpening: p.confirmOpening, faceClosing: p.faceClosing, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

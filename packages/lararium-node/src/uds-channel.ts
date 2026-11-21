@@ -86,6 +86,11 @@ export interface UdsChannelOptions {
   /** The opening a lit face stands under (each light names a fresh one; a lock names none, null), which a visit binds to from
    *  the door's admission to its answer's write. Absent: a face reads as its standing in the lit set alone. */
   readonly faceOpening?: (face: number) => string | null;
+  /** Whether `face` stands open under `opening` NOW, asked of the custody source at delivery (a pūlama answers in one round trip);
+   *  a source that cannot answer reads no. Absent: the local reading alone decides. */
+  readonly confirmOpening?: (face: number, opening: string) => Promise<boolean>;
+  /** Whether `face` is closing on this vessel: its sessions' new verbs refuse `face-closing` while its queued saves drain. */
+  readonly faceClosing?: (face: number) => boolean;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -1191,6 +1196,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       lit: opts.litOrdinals?.() ?? [],
       hand: state.hand ?? "cli", session: checked.session.sessionId, generation: checked.session.generation });
     if (chore !== null && !chore.ok) return sessionRefuse(sock, chore.refusal, requestId, chore.message);
+    // A FACE CLOSING TAKES NO NEW VERB (Sol 407f): its queued saves drain, and nothing fresh reaches its island meanwhile.
+    if (opts.faceClosing?.(state.supply.ordinal) === true) {
+      return sessionRefuse(sock, "face-closing", requestId, `face-closing: face h${state.supply.ordinal} is closing on this vessel; its queued saves drain and it takes no new verb`);
+    }
     // A LIT FACE RECEIVES VISITS: a read naming another lit face as its `target` keeps the face this session wears.
     const visit = await crossFaceTargetAtDoor({ verb: frame["verb"], args: frame["args"] as Record<string, unknown>, worn: state.supply.ordinal, lit: litFaces(), petnames });
     if (!visit.ok) return sessionRefuse(sock, visit.refusal, requestId, visit.message);
@@ -1246,6 +1255,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     }
     if (!opts.sessionActs) return sessionRefuse(sock, "no-session-acts", requestId);
     if (!opts.sessionActs.names.has(name)) return sessionRefuse(sock, "act-rides-the-custody-door", requestId);
+    // A FACE CLOSING TAKES NO NEW ACT (Sol 407f), as it takes no new verb.
+    if (opts.faceClosing?.(state.supply.ordinal) === true) return sessionRefuse(sock, "face-closing", requestId, `face-closing: face h${state.supply.ordinal} is closing on this vessel and takes no new act`);
     // A SPIRIT'S HAND PROPOSES: the seat profile never runs an act the operator's hand alone runs.
     if (state.supply.profile === "seat" && opts.handOnlyActs?.has(name)) return sessionRefuse(sock, opts.handOnlyCodes?.get(name) ?? "beyond-profile", requestId);
     const args = given as Record<string, unknown>;
@@ -1389,11 +1400,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // A VISIT BINDS TO ITS TARGET'S OPENING from the door's admission to its answer's write (Sol 407d): the door records the
     // opening it admitted under, and the answer leaves only where that same opening stands at the write, after every await.
     let visitOpening: { readonly face: number; readonly opening: string } | null = null;
-    const visitGate = (answer: Record<string, unknown>): Record<string, unknown> => {
+    const visitGate = async (answer: Record<string, unknown>): Promise<Record<string, unknown>> => {
       if (!isVisitOutcome(answer)) return answer;
       const output = ((answer["results"] as Record<string, unknown>)["summary"] as Record<string, unknown>)["output"] as Record<string, unknown>;
       const face = output["face"];
-      if (visitOpening !== null && face === visitOpening.face && openingOf(visitOpening.face) === visitOpening.opening) return answer;
+      const standing = (): boolean => visitOpening !== null && face === visitOpening.face && openingOf(visitOpening.face) === visitOpening.opening;
+      // The custody SOURCE answers at delivery (a pūlama in one round trip: no global now, so the vessel asks rather than
+      // trusting the last event it heard); a source that cannot answer reads no. The local reading checks again after the answer.
+      const confirmed = !standing() ? false : opts.confirmOpening ? await opts.confirmOpening(visitOpening!.face, visitOpening!.opening).catch(() => false) : true;
+      if (confirmed && standing()) return answer;
       const message = `face-not-open: the visited face${typeof face === "number" ? ` h${face}` : ""} shut, or shut and lit again, before its answer left; nothing is delivered`;
       return { status: "error", ...(answer["requestId"] !== undefined ? { requestId: answer["requestId"] } : {}), errorMessage: message, refusal: { reason: "face-not-open" } };
     };
@@ -1401,8 +1416,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       void (async () => {
         const durable = sessionRequestId !== undefined && (answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null
           ? await settleDurably() : undefined;
-        // THE LAST MOMENT: past every await, the visit gate reads the opening right before the write.
-        const gated = visitGate(answer);
+        // THE LAST MOMENT: past every await, the visit gate confirms the opening with the custody source and reads it again
+        // right before the write.
+        const gated = await visitGate(answer);
         const named = choreMark !== undefined ? { ...gated, chore: choreMark } : gated;
         const payload = sessionRequestId === undefined ? named : {
           kind: "session:result", ...named, requestId: sessionRequestId, ...(durable !== undefined ? { durable } : {}),
