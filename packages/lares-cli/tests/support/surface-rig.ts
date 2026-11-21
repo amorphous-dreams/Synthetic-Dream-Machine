@@ -19,6 +19,8 @@ export interface SurfaceRig {
   readonly config: string;
   readonly tree: SyncedTree;
   readonly launched: string[][];
+  /** The binaries standing on the scratch PATH (`code` by default) and the PATH string the shell carries. */
+  readonly path: { stands: string[]; shell: string };
   /** The doors, the worn face set by `wear`. */
   readonly doors: SurfaceDoors;
   wear(face: SurfaceFace): void;
@@ -36,6 +38,7 @@ export function openSurfaceRig(): SurfaceRig {
   mkdirSync(config, { recursive: true });
   const tree = new SyncedTree(syncedTreeDir(join(scratch.root, "hearth", "checkpoints", "projection")));
   const launched: string[][] = [];
+  const path = { stands: ["code"], shell: "/usr/bin" };
   let face: SurfaceFace = { index: 0, petname: "Heron Lantern" };
   let cwd = scratch.root;
   const out: string[] = [];
@@ -54,10 +57,12 @@ export function openSurfaceRig(): SurfaceRig {
     cwd: () => cwd,
     launch: (argv) => { launched.push([...argv]); return 0; },
     basePath: (file) => resolve(file),
+    onPath: (name) => path.stands.includes(name),
+    shellPath: () => path.shell,
     workspace: (name) => { const dir = join(scratch.root, "workspaces", name); try { return statSync(dir).isDirectory() ? dir : null; } catch { return null; } },
   };
   return {
-    scratch, projections, config, tree, launched, doors,
+    scratch, projections, config, tree, launched, path, doors,
     wear: (f) => { face = f; },
     at: (dir) => { cwd = dir; },
     said: () => out.join("\n"),

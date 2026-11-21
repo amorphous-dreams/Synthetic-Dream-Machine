@@ -661,9 +661,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares surface open [--face N] [--launch]",
     synopsis:
       "Print the one window line: `<editor> -n` over the worn face's root and the realm roots it belongs to (the entity roots: each realm whose workbench holds a wiki " +
-      "the face keeps a personal layer or a recovery folder for, once per realm). --launch runs it. It writes no workspace file. The editor " +
+      "the face keeps a personal layer or a recovery folder for, any realm a label groups a wiki whose workbench stands, and any realm root " +
+      "holding its own .git: once per realm; workspace roots stay out). --launch runs it. It writes no workspace file. The editor " +
       "reads from the house config tiddler $:/config/lares/surface/Editor (<config>/surface-editor.tid: its text names the command, as " +
-      "code-insiders), else `code`.",
+      "code-insiders), else what stands on this PATH: `code-insiders` where only it stands, and where both stand the one whose server " +
+      "this shell belongs to (a VS Code Insiders remote shell reads Insiders), else `code`; where neither stands the line names `code` " +
+      "and a note names both.",
     examples: ["lares surface open", "lares surface open --launch"],
     flags: ["--face N   face index", "--launch   run the line on this machine"],
   },

@@ -107,14 +107,15 @@ describe("the face, as the host reads it", () => {
 
 describe("lares surface open, on the host", () => {
   test("★ prints the host paths under LARES_HOUSE, and --launch runs `code` here ★", async () => {
+    const codeDoors = () => ({ ...hostDoors(), onPath: (n: string) => n === "code" });
     const root = faceRoot(join(house, "projections"), "Heron Lantern");
     mkdirSync(join(root, "personal", "lore"), { recursive: true });
     ensureRealmLabel(join(house, "projections"), "lore", null);
     mkdirSync(join(house, "projections", "realms", "lore", "wikis", "lore"), { recursive: true });
-    expect(await cmdSurface(surfaceArgs(["open"]), hostDoors())).toBe(0);
+    expect(await cmdSurface(surfaceArgs(["open"]), codeDoors())).toBe(0);
     expect(rig.said()).toContain(`code -n '${root}' ${join(house, "projections", "realms", "lore")}`);
     expect(rig.said()).not.toContain("/lar/");
-    expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), hostDoors())).toBe(0);
+    expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), codeDoors())).toBe(0);
     expect(rig.launched).toEqual([["code", "-n", root, join(house, "projections", "realms", "lore")]]);
   });
 });

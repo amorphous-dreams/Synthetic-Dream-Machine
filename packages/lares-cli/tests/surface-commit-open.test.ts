@@ -218,6 +218,34 @@ describe("lares surface open", () => {
     expect(rig.said()).toContain(`code-insiders -n '${heron}'`);
   });
 
+  test("★ RED: the editor stands off the PATH: `code-insiders` where only it stands; a both-stand PATH follows the shell's own server; neither names both ★", async () => {
+    rig.path.stands = ["code-insiders"];
+    expect(await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), rig.doors)).toBe(0);
+    expect(rig.launched.at(-1)).toEqual(["code-insiders", "-n", heron]);
+    rig.path.stands = ["code", "code-insiders"];
+    rig.path.shell = "/usr/bin";
+    await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), rig.doors);
+    expect(rig.launched.at(-1)![0]).toBe("code");
+    rig.path.shell = "/home/x/.vscode-server-insiders/bin/abc/bin/remote-cli:/usr/bin";
+    await cmdSurface(surfaceArgs(["open"], {}, { launch: true }), rig.doors);
+    expect(rig.launched.at(-1)![0]).toBe("code-insiders");
+    rig.path.stands = [];
+    await cmdSurface(surfaceArgs(["open"]), rig.doors);
+    expect(rig.said()).toMatch(/neither `code` nor `code-insiders`/);
+  });
+
+  test("★ RED: every realm root the face reaches opens once: a labelled realm whose face folder stands empty, and a realm root holding its own .git ★", async () => {
+    ensureRealmLabel(rig.projections, "notes", null);
+    plant(join(rig.projections, "realms", "notes", "wikis", "notes", "A.tid"), "title: A\n\na\n");
+    ensureRealmLabel(rig.projections, "garden", null);
+    plant(join(rig.projections, "realms", "garden", "wikis", "garden", "B.tid"), "title: B\n\nb\n");
+    plant(join(heron, "personal", "garden", ".keep"), "");
+    plant(join(rig.projections, "realms", "bare", ".git", "HEAD"), "ref: refs/heads/main\n");
+    expect(await cmdSurface(surfaceArgs(["open"]), rig.doors)).toBe(0);
+    const line = rig.said().split("\n").find((l) => l.startsWith("code -n"))!;
+    for (const r of ["notes", "garden", "bare"]) expect(line.split(join(rig.projections, "realms", r)).length - 1).toBe(1);
+  });
+
   test("RED: an editor this machine holds no binary for refuses by name, naming the tiddler to set", async () => {
     writeFileSync(join(rig.config, SURFACE_EDITOR_FILE), `title: ${SURFACE_EDITOR_TITLE}\ntype: text/plain\n\nno-such-editor-here\n`);
     const doors = { ...rig.doors, launch: LIVE_SURFACE_DOORS.launch };
