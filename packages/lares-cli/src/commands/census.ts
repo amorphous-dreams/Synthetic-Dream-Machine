@@ -42,6 +42,8 @@ export interface CensusReading {
   readonly facesLit?: readonly number[];
   /** THE WORN FACE beside the lit set (present where the lit set reads): the daemon mount, or null where none wears. */
   readonly worn?: number | null;
+  /** Each face its custody serves that stands dark here (its light refused), with its cause and clearing line. */
+  readonly facesDark?: ReadonlyArray<{ readonly face: number; readonly cause: string; readonly note: string }>;
 }
 
 /** The line a census over faces lit and none worn adds: the wear that lets the house settle, in the order a person runs it. */
@@ -118,7 +120,11 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   }
   const facesLit = Array.isArray(custody?.["facesLit"]) ? (custody!["facesLit"] as unknown[]).filter((n): n is number => Number.isSafeInteger(n)) : [];
   const worn = Number.isSafeInteger(custody?.["worn"]) ? (custody!["worn"] as number) : null;
-  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}) };
+  const facesDark = Array.isArray(custody?.["facesDark"]) ? (custody!["facesDark"] as unknown[]).flatMap((d) => {
+    const r = d as { face?: unknown; cause?: unknown; note?: unknown };
+    return Number.isSafeInteger(r.face) && typeof r.cause === "string" && typeof r.note === "string" ? [{ face: r.face as number, cause: r.cause, note: r.note }] : [];
+  }) : [];
+  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}), ...(facesDark.length > 0 ? { facesDark } : {}) };
 }
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
@@ -138,6 +144,8 @@ export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINE
     ...(code === 2 && reading.unanswered[0]?.why !== VESSEL_LOCKED_CENSUS ? { error: { code: "census-unanswered", message: reading.unanswered.map((u) => `${u.part}: ${u.why}`).join("; ") } } : {}),
     ...(code === 3 ? { error: { code: "census-items", message: `${reading.items.length} item(s) rest nowhere yet; a stop now drops them` } } : {}),
     human: () => {
+      // A SERVED FACE DARK HERE drops no save, so it never turns the census red; its line names the cause and the clearing act.
+      for (const d of reading.facesDark ?? []) console.error(`census: ${d.note}`);
       if (code === 0) { console.log("census: clean — no save waits in memory, and the disk projector owes no carrier"); return; }
       for (const item of reading.items) console.log(censusLine(item));
       for (const u of reading.unanswered) console.error(u.why === VESSEL_LOCKED_CENSUS ? `census: ${u.why}` : `census: unanswered — ${u.part}: ${u.why}`);

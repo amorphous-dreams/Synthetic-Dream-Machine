@@ -77,7 +77,7 @@ export interface FaceLifeEffects {
    * `recomposed`, naming the faces it composed with; this promise only says the restart ran.
    */
   recompose(reason: string): Promise<void>;
-  /** The face reads dark again (a close ended, a light refused, a release): the vessel replays its lend. */
+  /** The face reads dark again after a close or a release: the vessel replays its lend. A refused light tells nothing. */
   onDark?(ordinal: number): void;
   readonly log: (line: string) => void;
 }
@@ -175,6 +175,8 @@ export interface FaceLives {
   noteCustody(ordinal: number, custody: string | null): void;
   /** Every ordinal this set knows (ever lit or adopted), in order. */
   ordinals(): number[];
+  /** Each face dark here because its last light refused (not held), with the refusal's cause: the vessel names it served-but-dark. */
+  refusedLights(): Array<{ readonly ordinal: number; readonly cause: string }>;
   /** The opening a face stands lit under now, or null. */
   opening(ordinal: number): string | null;
   /** The custody opening a lit face lit under, or null. */
@@ -203,7 +205,8 @@ export interface FaceLives {
 /** The never-repeating opening for one light: this vessel's boot nonce and a count across every face. */
 const openingName = (nonce: string, n: number): string => `${nonce}:${n}`;
 
-type Actor = { life: Life; queue: Message[]; draining: boolean; held: boolean };
+/** `refused` names why the face's last light refused, while it stays dark from that refusal: the vessel names it served-but-dark. */
+type Actor = { life: Life; queue: Message[]; draining: boolean; held: boolean; refused: string | null };
 
 export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: string }): FaceLives {
   const lives = new Map<number, Actor>();
@@ -214,7 +217,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
 
   const actorOf = (ordinal: number): Actor => {
     let actor = lives.get(ordinal);
-    if (!actor) { actor = { life: { kind: "dark" }, queue: [], draining: false, held: false }; lives.set(ordinal, actor); }
+    if (!actor) { actor = { life: { kind: "dark" }, queue: [], draining: false, held: false, refused: null }; lives.set(ordinal, actor); }
     return actor;
   };
   const fresh = (): string => openingName(options.nonce, ++opened);
@@ -285,12 +288,14 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         if (life.kind === "lighting") { life.waiters.push(m.waiter); return []; }
         if (actor.held || stopped) return [() => m.waiter("refused")];
         if (life.kind === "closing") { (life.relight ??= []).push(m.waiter); return []; }
+        actor.refused = null;
         const opening = fresh();
         actor.life = { kind: "lighting", opening, waiters: [m.waiter] };
         return [startLight(ordinal, opening)];
       }
       case "adopt": {
         if (life.kind !== "dark" || actor.held) return [];
+        actor.refused = null;
         actor.life = { kind: "lit", opening: fresh(), atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set() };
         return [];
       }
@@ -301,7 +306,8 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
             // A REFUSED LIGHT REPLAYS NO LEND: the lend would light it again at once, and a light that keeps refusing (an island
             // standing down) would spin the vessel's turn forever. The next custody event or close replays the lend.
             actor.life = { kind: "dark" };
-            effects.log(`[face-life] h${ordinal} did not light: ${describe(m.error)}`);
+            actor.refused = describe(m.error);
+            effects.log(`[face-life] h${ordinal} did not light: ${actor.refused}`);
             return waiters.map((w) => () => w("refused"));
           }
           actor.life = { kind: "lit", opening: life.opening, atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set() };
@@ -492,6 +498,8 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     },
     noteCustody: (ordinal, custody) => { if (lives.has(ordinal)) send(ordinal, { t: "custody", custody }); },
     ordinals: () => [...lives.keys()].sort((a, b) => a - b),
+    refusedLights: () => [...lives].filter(([, a]) => a.life.kind === "dark" && !a.held && a.refused !== null)
+      .map(([ordinal, a]) => ({ ordinal, cause: a.refused! })).sort((x, y) => x.ordinal - y.ordinal),
     opening: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.opening : null; },
     custodyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.custody : null; },
     atomKeyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.atomKey : null; },
