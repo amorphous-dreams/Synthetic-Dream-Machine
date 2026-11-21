@@ -31,6 +31,9 @@ import {
   ORACLE_BAG,
   structuralSlots,
   wikiSlotUri,
+  wikiSlotKindOf,
+  expandRecipe,
+  recipeFromRecord,
   bagStackFromRec,
   type ChangeOrigin,
   type LarTiddlerRecord, ownEntry} from "@lararium/mesh";
@@ -158,6 +161,13 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
       await mountAt(bagId, docUrl, at);   // re-mount at the same slot; skip-safe on unresolved
       applied = true;
     }
+
+    // THE SLOTS THIS PASS LEFT UNMOUNTED STAND UNREAD: a library the catalog cannot resolve yet, or a slot an oracle move
+    // dropped when its new document would not open, may hold any title, so a delete above it raises a kāpae, never a plain
+    // retract (recipe-layer-model#/the-delete). The order reads the live record's libraries over the island's own recipe, by
+    // the one rule `buildIslandRecipe` names at boot: an unbound instance slot holds no record yet, and temp lives here alone.
+    const order = expandRecipe({ ...ctx.recipe, libraryBags: recipeFromRecord(rec, slug).libraryBags ?? [] });
+    ctx.composite.markUnreached(order, order.filter((slot) => slot !== tempBag && !ctx.composite.hasBag(slot) && wikiSlotKindOf(slug, slot) === null));
 
     // The change just applied live — the reboot-pending notice (if the daemon's
     // alert verb raced ahead of this reconcile) stands void.

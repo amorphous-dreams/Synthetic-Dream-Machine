@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/composable-keel"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/composable-keel"
-written   = "2026-06-29"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
@@ -144,6 +143,6 @@ Four domains converging on one shape reads as a real pattern integrity, not a lo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ob1563vXKHxjAhCSG1ZhBv1LoPSSwtytA5876WUIHRM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x4Kxd4M8eWJJ3z79l3eGWkl7wiC-wqvwnX_0i9JMBVY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

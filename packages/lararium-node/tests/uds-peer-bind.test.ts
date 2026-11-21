@@ -183,3 +183,23 @@ test("UNIT: stat lines with spaces and parens in comm read their parent; the soc
   expect(peerPidsIn(table, "2000")).toBeNull();
   expect(peerPidsIn(table, "3000")).toBeNull();
 });
+
+test("RED: a session opened with hand tab or watcher from a harness-launched client wears the seat's hand too; its call places with asker seat", async () => {
+  for (const hand of ["tab", "watcher"]) {
+    const v = await stand();
+    await runClient(v.socketPath, [
+      { op: "session:open", requestId: `open-${hand}`, faceRef: "h0", hand },
+      { op: "session:call", requestId: `get-${hand}`, verb: "meme-get", args: MEME },
+    ], true);
+    expect(v.placed.map(askerOf), hand).toEqual(["seat"]);
+  }
+}, 30_000);
+
+test("CONTROL: a tab session from a plain shell keeps its own hand", async () => {
+  const v = await stand();
+  await runClient(v.socketPath, [
+    { op: "session:open", requestId: "open-tab", faceRef: "h0", hand: "tab" },
+    { op: "session:call", requestId: "get-tab", verb: "meme-get", args: MEME },
+  ], false);
+  expect(v.placed.map(askerOf)).toEqual(["tab"]);
+}, 20_000);

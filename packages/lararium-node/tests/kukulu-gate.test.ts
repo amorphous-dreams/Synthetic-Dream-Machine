@@ -60,10 +60,19 @@ async function stand() {
     try { return (await fx!.vessel(offer).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
+  // A KŪKULU THAT COMPOSED lands its host half; a hello before that landing (a refused composition, then the retry) reuses the
+  // half the first began, so the count tests land each kūkulu they mean to spend.
+  const helloLanded = async (offer: unknown): Promise<string> => {
+    const v = fx!.vessel(offer);
+    let reading: string;
+    try { reading = (await v.unlock([])).reading; } catch (err) { return (err as { reading?: string }).reading ?? String(err); }
+    if (reading === "opens") await v.landRite();
+    return reading;
+  };
   const pulamaKey = (await pulamaSignerOf(fx.kept)).key;
   const trust: SwarmTrust = { hand: (k) => k === root.verifyingKey, vessel: (k) => k === pulamaKey, lead: () => false };
   const returns = async (lei: SignedSwarmAct): Promise<number> => (await records.list(swarmLeiReturnedPrefix(swarmActCid(lei)))).length;
-  return { fx, face, records, string, vouch, hello, hand, trust, pulamaKey, returns, raise: (digest: string | null) => { raised = digest; } };
+  return { fx, face, records, string, vouch, hello, helloLanded, hand, trust, pulamaKey, returns, raise: (digest: string | null) => { raised = digest; } };
 }
 
 describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
@@ -101,7 +110,7 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     await expect(vessel.landRite()).rejects.toMatchObject({ name: "SwarmRefused" });
 
     // THE COUNT: the wide lei holds two returns. A second kūkulu spends the last; a third finds none.
-    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("opens");
+    expect(await s.helloLanded({ lei: [lei], vouch: [v] })).toBe("opens");
     expect(await s.returns(lei)).toBe(2);
     expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("swarm-lei-returns-spent");
     expect(await s.returns(lei)).toBe(2);
@@ -111,7 +120,7 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
   test("a head lei serves the head its vouch names, once; a session with no rite begun lands nothing", async () => {
     const s = await stand();
     const lei = await s.string({ reach: "head", head: HEAD });
-    expect(await s.hello({ lei: [lei], vouch: [await s.vouch()] })).toBe("opens");
+    expect(await s.helloLanded({ lei: [lei], vouch: [await s.vouch()] })).toBe("opens");
     expect(await s.returns(lei)).toBe(1);
     // CONTROL: the lei pins its head. A vouch walked at another head never spends it.
     const other = await s.string({ reach: "head", head: "c".repeat(40) }, { after: swarmActCid(lei) });
@@ -171,7 +180,7 @@ describe("RED pulama-refuses-a-returned-lei", () => {
     const s = await stand();
     const lei = await s.string({ reach: "head", head: HEAD });
     const v = await s.vouch();
-    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("opens");
+    expect(await s.helloLanded({ lei: [lei], vouch: [v] })).toBe("opens");
     expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("swarm-lei-returned");
     expect(await s.hello({ lei: [lei], vouch: [await s.vouch({ tree: "d".repeat(40) })] })).toBe("swarm-lei-returned");
     expect(await s.returns(lei)).toBe(1);

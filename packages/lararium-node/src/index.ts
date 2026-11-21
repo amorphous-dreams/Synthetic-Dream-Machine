@@ -190,6 +190,7 @@ export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
 export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
+export { rehiveLines, type RehiveSeat, type RehiveAnswerReading } from "./face-rehive-lines.js";
 
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
@@ -229,7 +230,7 @@ export {
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
-export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
+export { runInit, runFoundTheFace, faceStands, compartmentStands, armRecoveryAtFounding } from "./commands/init.js";
 export { recoveryContactOffer } from "./recovery-contact-enrolment.js";
 // THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
 export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";
@@ -238,7 +239,7 @@ export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./comman
 export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
 // THE REALM LABELS: each realm's local pet name and the canon realms and bags its folder holds (`realm-labels`).
 export { REALM_LABELS_DIR, REALM_LABEL_SCHEMA, realmLabelsDir, realmLabelPath, readRealmLabels, findRealmLabel, realmPetNameRefusal,
-  nameRealm, placeInRealm, ensureRealmLabel, settleRealmMoves, realmPlacement, RealmRefused, type RealmLabel, type RealmLabelRealm, type RealmRefusalCode,
+  nameRealm, placeInRealm, ensureRealmLabel, releaseRealmId, setAsideRetiredWiki, settleRealmMoves, realmPlacement, RealmRefused, type RealmLabel, type RealmLabelRealm, type RealmRefusalCode,
   realmFoldersOnDisk, moveWikiToRealm, type RealmMove, type RealmFolder, type RealmNaming, type RealmPlacement, type RealmEnsured, type RealmSettle } from "./realm-labels.js";
 // THE FACE LABELS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-labels`).
 export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelsDir, faceLabelPath, faceBasesPath, readFaceLabel, writeFaceLabel, labelledRelations,

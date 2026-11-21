@@ -8,7 +8,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { afterDispatch, ManualBoundary, shoreRig, storeDeleted, turns, workingBag } from "./wiki-shore-rig.js";
+import { afterDispatch, ManualBoundary, shoreRig, storeAbsent, turns, workingBag } from "./wiki-shore-rig.js";
 
 describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
   test("a shadow laid after the shore stands resident writes no record to any bag", async () => {
@@ -32,7 +32,7 @@ describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
     await r.stop();
   }, 120_000);
 
-  test("a hand's delete of an override lands a tombstone, never the shadow's content", async () => {
+  test("a hand's delete of an override retracts it plainly (the engine shadow sits in no layer, so no kāpae), never saving the shadow's content", async () => {
     const boundary = new ManualBoundary();
     const r = await shoreRig({ boundary });
     await r.adaptor.armSeedCheckpoint();
@@ -52,8 +52,9 @@ describe.skipIf(wikiSkip)(`the bridge and the shadow layer${skipNote}`, () => {
     await turns(48);
     const issued = r.calls.slice(mark);
     expect(issued.filter((c) => c.puts.includes(surface)), "the shadow's content saved over the hand's delete").toEqual([]);
-    expect(issued.filter((c) => c.deletes.includes(surface)).map((c) => c.bag)).toEqual([workingBag]);
-    expect(storeDeleted(r, workingBag, surface)).toBe(true);
+    expect(issued.filter((c) => c.retracts?.includes(surface)).map((c) => c.bag)).toEqual([workingBag]);
+    expect(issued.filter((c) => c.deletes.includes(surface)), "no tombstone rises over nothing a layer holds").toEqual([]);
+    expect(storeAbsent(r, workingBag, surface)).toBe(true);
     await r.stop();
   }, 120_000);
 });

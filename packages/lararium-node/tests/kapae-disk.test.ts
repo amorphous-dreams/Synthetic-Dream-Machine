@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CompositeStore, carrierHash, wikiSlotUri, type ChangeOrigin } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
+import { storeMemeSink } from "../../lararium-tw5/src/meme-sinks.js";
 import { daemonWorkingMirror, faceRoot } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree, syncedTreeDir, syncedTreeKey } from "../src/synced-tree.js";
@@ -85,6 +86,27 @@ test("★ retracting a kāpae that shadows nothing (a plain delete of a tombston
   expect(existsSync(stem + ".mem")).toBe(false);
   expect(existsSync(stem + ".kapae")).toBe(false);
   expect(shadowWrite()).toBeNull();
+});
+
+test("★ a meme delete over nothing beneath raises no tombstone and no .kapae: the sink retracts, the carrier leaves, no shadow rises ★", async () => {
+  const { store, internal, stem } = await rig();
+  const sink = storeMemeSink(store, bag, origin, undefined, async () => false);
+  expect(await sink.beneath!(title)).toBe(false);
+  await sink.leaveFamily!([], [title]);
+  expect(await store.get(title)).toBeNull();
+  await internal.reconcile(title);
+  expect(existsSync(stem + ".mem")).toBe(false);
+  expect(existsSync(stem + ".kapae")).toBe(false);
+});
+
+test("control: a meme delete over a lower layer's title still raises the tombstone and the .kapae", async () => {
+  const { store, internal, stem } = await rig();
+  const sink = storeMemeSink(store, bag, origin, undefined, async () => true);
+  await sink.leaveFamily!([title], []);
+  expect((await store.get(title))?.meta?.deleted).toBe(true);
+  await internal.reconcile(title);
+  expect(existsSync(stem + ".mem")).toBe(false);
+  expect(JSON.parse(readFileSync(stem + ".kapae", "utf8"))).toEqual({ title, kapae: "raised" });
 });
 
 test("★ a kāpae raised before the face root stood projects its shadow into the face root at the projector's start ★", async () => {

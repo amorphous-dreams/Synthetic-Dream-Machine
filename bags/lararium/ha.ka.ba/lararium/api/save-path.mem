@@ -173,11 +173,11 @@ title on the console.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/verse-mesh`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PKgpGdIUll_wGm5WHaQpVGLbvARrBP3JDM1IaoX2m4M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ChaeJor2qCUNswQB69IKps7XTKltAunce9b7SBuWJiw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

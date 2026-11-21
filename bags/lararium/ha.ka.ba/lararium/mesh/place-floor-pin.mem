@@ -13,7 +13,6 @@ status-why  = "lane reading, W14 to W16 built: the claim, its head, its two stan
 title       = "lar:///ha.ka.ba/lararium/mesh/place-floor-pin"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/place-floor-pin"
-written     = "2026-10-26"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -113,6 +112,6 @@ counted `uncarry` that descends from it leaves the place with no arm to present.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z-axmtnNIk-rw5UUcEc00vDTTFGRz6kNVvJ6RfPHir0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;aDJ00NEJbCuD3jIsNiNfpwCm-8lmZOIiieKg5SRqV5o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

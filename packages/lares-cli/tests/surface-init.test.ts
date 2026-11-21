@@ -116,7 +116,7 @@ describe("lares surface init --workspace", () => {
     mkdirSync(ws, { recursive: true });
     expect(await cmdSurface(surfaceArgs(["init"], { workspace: "backup" }), rig.doors)).toBe(0);
     expect(statSync(join(ws, ".git")).mode & 0o777).toBe(0o700);
-    expect(git(ws, "config", "--local", "--get", "user.email").out.trim()).toBe("backup@realm.invalid");
+    expect(git(ws, "config", "--local", "--get", "user.email").out.trim()).toBe("backup@workspace.invalid");
     expect(git(ws, "config", "--local", "--get", "commit.gpgsign").out.trim()).toBe("false");
     expect(readFileSync(join(ws, ".git", "hooks", "pre-commit"), "utf8")).toBe(POOL_PRE_COMMIT);
     expect(existsSync(join(rig.projections, "faces"))).toBe(false);

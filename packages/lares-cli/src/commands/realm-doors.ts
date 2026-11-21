@@ -10,7 +10,7 @@ import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   ensureRealmLabel, FACES_PROJECTION_DIR, findRealmLabel, labelledRelations, larProjectionsHome, placeInRealm, readFaceLabel,
-  RealmRefused, type RealmEnsured, type RealmLabel,
+  RealmRefused, readRealmLabels, releaseRealmId, setAsideRetiredWiki, type RealmEnsured, type RealmLabel,
 } from "@lararium/node";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -77,6 +77,25 @@ export async function placeWikiInRealm(doors: RealmDoors, slug: string, petName:
   placeInRealm(projections, petName, { slug, id: null });
   const id = oneId(await doors.seat(slug));
   return id === null ? findRealmLabel(projections, petName)! : placeInRealm(projections, petName, { slug, id });
+}
+
+/** THE RELEASE AT RETIRE: the slug's label forgets the canon realm id the retired workbench held, keeping its pet name and folders. */
+export function releaseWikiRealm(doors: RealmDoors, slug: string): RealmLabel | null {
+  return releaseRealmId(doors.projections(), slug);
+}
+
+/** The canon realm id the slug's local label records, or null (no label holds it, or its id reads unset). */
+export function labelRealmOf(doors: RealmDoors, slug: string): string | null {
+  for (const label of readRealmLabels(doors.projections())) {
+    const row = label.realms.find((r) => r.slug === slug);
+    if (row) return row.id;
+  }
+  return null;
+}
+
+/** THE RETIRED FOLDER STEPS ASIDE: the slug's workbench mirror folder under its realm moves by rename, never deleted (null: nothing to move). */
+export function setAsideWikiFolder(doors: RealmDoors, slug: string): { readonly from: string; readonly to: string } | null {
+  return setAsideRetiredWiki(doors.projections(), slug);
 }
 
 /** THE DEFAULT AT MINT: a wiki minted with no `--realm` takes its own realm label under its slug (or the collision rule's name), with

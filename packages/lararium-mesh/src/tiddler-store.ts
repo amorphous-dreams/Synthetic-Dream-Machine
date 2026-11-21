@@ -230,6 +230,14 @@ export interface LarTiddlerStore {
   getHeads?(): Promise<readonly string[] | null>;
 
   /**
+   * True while this store stands in for a document it has not read: a blank placeholder mounted for a degraded or pending
+   * doc, or the fallback a boot took past `LOCAL_READY_MS` before the real doc merged in. Its emptiness says nothing about
+   * what the document holds, so a delete above it counts it as holding the title (a kāpae, never a plain retract).
+   * Absent reads false.
+   */
+  unknown?(): boolean;
+
+  /**
    * Optional causal-past read for CRDT-backed stores: true where the document, read as of the heads `have`,
    * holds every head in `named`. A store with no causal history omits it, and a caller reads that as false.
    */

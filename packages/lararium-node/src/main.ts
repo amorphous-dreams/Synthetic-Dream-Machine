@@ -73,6 +73,7 @@ import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
 import { custodyFrameHandler, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
+import { rehiveShutFace } from "./face-rehive.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
@@ -507,6 +508,9 @@ async function main(): Promise<void> {
     // standing composition lends it the mounted face, its own edge's shadow, the island's memory section and the
     // board's key history (custody#/the-cut).
     backup: (face, bundleKey, ward) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null, ward }),
+    // A REHIVE RUNS HERE TOO, over the custody files themselves: the door read the face shut, and the face's own route opens
+    // its key for the act alone, outside the seated holder (`face-rehive`).
+    rehive: (face, credentials) => rehiveShutFace({ holder, io: new FsCustodyIo(custodyHomes), ordinal: face, credentials }),
     standing: () => composition?.standing ?? "recomposing",
     wikiAwaits: () => composition?.wikiAwaits ?? null,
     // THE CENSUS of saves held in memory: null while no composition sits, so a stop never reads "none held" from a gap.

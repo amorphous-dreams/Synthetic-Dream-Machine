@@ -4,15 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "invariant doctrine: UEFN Verse 5.6 event type lattice — event/listenable asymmetry, suspends effect specifier, @editable boundary, using module import; unreleased: sticky_event + subscribable_event; standard for Lararium device model"
-status-date = "2026-05-15"
-tags        = ["api/pono/meme"]
-title       = "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/verse-event-lattice"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "invariant doctrine: UEFN Verse 5.6 event type lattice — event/listenable asymmetry, suspends effect specifier, @editable boundary, using module import; unreleased: sticky_event + subscribable_event; standard for Lararium device model"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/verse-event-lattice"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -363,6 +362,6 @@ via TW5's own event bus.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8p-07JVAGiINlbc-bBBd61d8PD9s2Pv4HnBQaiaHSGk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qxNZ6SYOiuqYinXwwwt-M3iAvVQ_MZ1V4fWfqzHbefQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

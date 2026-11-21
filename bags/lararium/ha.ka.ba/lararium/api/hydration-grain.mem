@@ -5,7 +5,6 @@
 
 ```toml meta
 cacheable  = true
-drafted-on = "2026-07-27"
 hydrate    = true
 l-space    = "stable"
 namespace  = "&#x0950; &#x0901;"
@@ -111,6 +110,6 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xv2U3kVRS1fbGE5NoPymfWrXYUGTdH3dvnQkL_dhXIs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2S--8RFhDSkaOUaTGdmQUB1F5vav3Xz1YTMlGDn-rlU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

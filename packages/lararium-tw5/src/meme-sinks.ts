@@ -33,7 +33,10 @@ import type { MemeSink } from "./place-meme.js";
  * wiki's WORKING layer alone, names the override base each landed record carries on its `meta` envelope (`override-base.ts`),
  * or null for none: the store skin reaches the layer around `CompositeStore.put`, so the fork stamp rides here.
  */
-export function storeMemeSink(store: LarTiddlerStore, bag: string, origin: ChangeOrigin, baseOf?: (title: string) => Promise<string | null>): MemeSink {
+export function storeMemeSink(
+  store: LarTiddlerStore, bag: string, origin: ChangeOrigin, baseOf?: (title: string) => Promise<string | null>,
+  beneath?: (title: string) => Promise<boolean>,
+): MemeSink {
   return {
     titles: () => store.listVisible(),
     read: async (title) => {
@@ -56,6 +59,15 @@ export function storeMemeSink(store: LarTiddlerStore, bag: string, origin: Chang
       if (typeof store.writeFamily === "function") { await store.writeFamily([], titles, origin, { bag }); return; }
       for (const title of titles) await store.tombstone(title, origin);
     },
+    // A SINK THAT KNOWS ITS LAYERS removes in kind: a kāpae where a lower record would surface, a plain retract elsewhere.
+    ...(beneath ? {
+      beneath,
+      leaveFamily: async (tombstones: readonly string[], retracts: readonly string[]) => {
+        if (typeof store.writeFamily === "function") { await store.writeFamily([], tombstones, origin, { bag, ...(retracts.length > 0 ? { retracts } : {}) }); return; }
+        for (const title of tombstones) await store.tombstone(title, origin);
+        for (const title of retracts) await store.remove(title, origin);
+      },
+    } : {}),
   };
 }
 
@@ -68,5 +80,10 @@ export function compositeMemeSink(composite: CompositeStore, bag: string, origin
   if (!store) {
     throw new Error(`meme: bag "${bag}" holds no writable layer in this island — a placement never shadows up to the default writable`);
   }
-  return storeMemeSink(store, bag, origin);
+  const at = composite.layerIndexOf(bag);
+  // A layer beneath the bag this composite could not read (a skipped recipe slot, a stand-in for an unread document) counts
+  // as holding the title: a kāpae, never a plain retract that would let its record surface.
+  const beneath = async (title: string): Promise<boolean> =>
+    composite.unknownBeneath(bag) || (await composite.resolveAll(title)).some((row) => composite.layerIndexOf(row.bagId) < at);
+  return storeMemeSink(store, bag, origin, undefined, beneath);
 }

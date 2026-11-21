@@ -490,6 +490,16 @@ export function faceStands(): boolean {
   return Boolean(readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text);
 }
 
+/**
+ * Whether an added compartment of `personaGroupId` STANDS: its plane entry rests in the bootstrap, the last row its founding
+ * writes. Anchors with no entry mark a founding that stopped midway (`runFoundTheFace` completes it). Opens nothing sealed.
+ */
+export function compartmentStands(personaGroupId: string): boolean {
+  const bootstrap = larBootstrapPath();
+  if (!existsSync(bootstrap)) return false;
+  return Boolean(readPackedTiddlers(bootstrap)[personaScopedBagIds(personaGroupId).identities]?.text);
+}
+
 export interface FoundFaceResult {
   readonly alreadyStood:         boolean;
   readonly personaGroupId: string;

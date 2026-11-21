@@ -14,7 +14,6 @@ tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/face-proof"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/face-proof"
-written           = "2026-10-11"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -396,6 +395,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8y2RDpwJVU-tJwVjeRHsyt0XVrIlgifIGlbOrmviPNQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MmO9YdRniBRYxszKGT3GS_nkia76VDhVFrgNkQR03uU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

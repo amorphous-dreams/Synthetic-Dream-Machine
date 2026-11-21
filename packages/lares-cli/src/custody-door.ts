@@ -28,6 +28,8 @@ export type CustodyFrame =
   | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }
   /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
+  /** Rehive one SHUT face from its own seed: the face's own route and its handle-index (`lares face rehive`). */
+  | { readonly op: "rehive"; readonly credentials: readonly Credential[]; readonly face: number }
   /** The human route the next new face this vessel founds will bind (passphrase pins; one use). */
   | { readonly op: "face-route"; readonly slots: readonly SlotSpec[]; readonly purpose: "persona-new" | "bundle.restore"; readonly argsDigest: string }
   /** One ward act's route: the vessel parks it under a one-use ticket the verb names (seat-harness#/the-ward). */

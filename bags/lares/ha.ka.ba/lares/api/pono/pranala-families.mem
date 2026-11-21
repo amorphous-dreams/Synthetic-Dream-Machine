@@ -7,9 +7,8 @@
 cacheable     = true
 l-space       = "stable"
 namespace     = "&#x2299;"
-role          = "canonical pranala edge-family taxonomy: eight families, role vocabularies, contract flags"
+role          = "canonical pranala edge-family taxonomy: nine families, role vocabularies, contract flags"
 source-symbol = "KNOWN_FAMILIES FAMILY_ROLES FAMILY_CONTRACTS"
-status-date   = "2026-06-05"
 tags          = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-control", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-relation", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-observe", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-transclusion", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-dataflow", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-message", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-constraint", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-reaction", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-family-spatial"]
 title         = "lar:///ha.ka.ba/lares/api/pono/pranala-families"
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -45,7 +44,10 @@ the edge confidence must not exceed the source node's confidence.
 
 !! Schema (machine-readable)
 
-Canonical TOML form. Source of truth for pranala family contracts.
+Canonical TOML form: the contracts the family carriers answer to. In code, the family tiddlers
+(`packages/lararium-tw5/tiddlers/sigil-family-*.tid`, `lar-kind: family`, each naming this meme in
+`lar-pono-uri`) carry the contract flags, and the grammar cache reads them (`familyFromFields` in
+`packages/lararium-tw5/src/grammar-cache.ts`).
 
 ```toml
 # Nine canonical pranala families — order is declaration order, not priority
@@ -120,7 +122,7 @@ Free-form roles; used when the relationship resists categorization.
 ''observe'' — monitoring, measurement, attention edges.
 confidence-bounded: an observer cannot claim more confidence than its source.
 
-''transclusion'' — content embedding edges (page / Story-River surface), one family split on PROPAGATION alone. `aka` (pinned/none — a pin; rendering follows the target: a citation for a reference meme, a frozen image for a content meme) and `kahea` (push-forward — a live include) carry a //content identity// into the source, not a computed value. confidence-bounded: a frozen embed can age from its source. //(English surface name retained — "transclusion" carries crisp, established semantics; operator 2026-06-06.)//
+''transclusion'' — content embedding edges (page / Story-River surface), one family split on PROPAGATION alone. `aka` (pinned/none — a pin; rendering follows the target: a citation for a reference meme, a frozen image for a content meme) and `kahea` (push-forward — a live include) carry a //content identity// into the source, not a computed value. confidence-bounded: a frozen embed can age from its source. //(English surface name — "transclusion" carries crisp, established semantics; #/rulings.)//
 
 ''dataflow'' — value-wire edges (canvas / flow surface). Typed value or geometry transport between node pins (reads/writes/streams/buffers/pipes). Carries a computed value, not content — distinct from `transclusion`.
 
@@ -143,7 +145,7 @@ Unlocks portal-as-graph-edge and multi-level room navigation.
 !! Canvas Color Map
 
 Canonical tldraw color per family.
-⚠ ''NO SOURCE OF TRUTH STANDS.'' This named `packages/lararium-tldraw/src/tldraw-shapes.ts`, and ''that package does not exist'' — no tldraw dependency stands in any manifest, no submodule, nothing installed (measured 2026-09-02). The palette below is the record; the code that would consume it is unbuilt. When the DreamDOM canvas camera lands, it takes this table and this table is the source.
+No code consumes this palette and no tldraw package stands in the workspace, so this table holds the palette's one source: a canvas camera that renders the families reads its colors here. The record keeps the measurement behind this line (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pranala-families-record`>>).
 
 ```toml
 [family-canvas-color]
@@ -160,12 +162,21 @@ spatial    = "light-blue"
 
 <<~/ahu>>
 
-<<~ ahu slot=`#/edges`>>
+<<~ ahu slot=`#/rulings`>>
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
+!! Rulings
+
+# Operator ruling 2026-06-06: the transclusion family keeps its English surface name, since "transclusion" carries crisp, established semantics.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;odtvrpxqPADbh2X1cctqh6ytkYZmnA-oq9XMngnF5Rg`>>
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pranala-families-record`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DYvA7Y1zd32vgZwjEnrKbBPjWZ-Oj-43dZEIVeIE6CU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

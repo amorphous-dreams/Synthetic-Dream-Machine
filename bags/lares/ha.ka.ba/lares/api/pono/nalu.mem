@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable   = true
-l-space     = "stable"
-namespace   = "&#x2299;"
-role        = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
-status-date = "2026-05-30"
-title       = "lar:///ha.ka.ba/lares/api/pono/nalu"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lares/api/pono/nalu"
+cacheable = true
+l-space   = "stable"
+namespace = "&#x2299;"
+role      = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
+title     = "lar:///ha.ka.ba/lares/api/pono/nalu"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/nalu"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -27,8 +26,8 @@ one consistent observed state delivered to all observers atomically. It is the
 architectural invariant below the grammar layer. Operators do not emit nalu; the
 engine delivers it.
 
-''Source authority:'' Talk Story session 2026-05-15; Book of Verse ch. 14;
-TW5 SyncAdaptor contract; Elm Architecture (Czaplicki 2012); UEFN SceneGraph Beta.
+''Source authority:'' the talk-story ruling that names the wave (#/rulings); Book of Verse ch. 14;
+TW5 SyncAdaptor contract; Elm Architecture (Czaplicki 2012); UEFN SceneGraph.
 
 <<~/ahu>>
 
@@ -100,7 +99,7 @@ physics ≠ uniformity).
 
 ''The home split:'' the ''federated in-wiki nalu'' (paced by host task, CRDT waves → the widget
 shore) and the ''CRDT⟷TW5 projection-nalu'' stay ''sovereign TS'' — a first-class TS home, where much of
-the projection tech lives. The ''capture / stream nalu-gate'' re-homes ''py-side'': the stream sensorium's
+the projection tech lives. The ''capture / stream nalu-gate'' homes ''py-side'': the stream sensorium's
 gate runs in py/R per-stream, and the TS coordinator drives it — feeding the py gate, consuming its crests.
 The wave shape holds identically across the TS/py shore — collect-then-flush on either bank, the
 substrate the water, the nalu the pattern.
@@ -135,9 +134,10 @@ The sigils in the grammar layer express //what should happen// — relationships
 concurrency shapes, reactions. The nalu is //when consistent state arrives// — the
 moment all of those relationships become observable.
 
-''The `\tick` sigil (when it lands)'' will live at the grammar layer — it will be
-a device lifecycle declaration that says "run this procedure every nalu." The nalu
-itself has no sigil; the `\tick` sigil hooks into the nalu.
+''The `\tick` sigil'' stands at the grammar layer as registered grammar — a device
+lifecycle declaration that says "run this procedure every nalu" — and no runtime executes
+it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tick`>>). The nalu itself carries no
+sigil; the `\tick` sigil hooks into the nalu.
 
 <<~/ahu>>
 
@@ -247,19 +247,20 @@ expressions, wikitext) dominates, not the delivery lookup.
 that gate on `tiddler.bag === "bagX"` are hash lookups on a tiddler field.
 Fast by default. No per-bag scoping needed in TW5's core refresh cycle.
 
-''When a TW5 core extension becomes necessary:'' If VmPool scale reaches
-100+ VMs with 1000+ widgets each, or if CRDT patch frequency exceeds 600/second
-per VM, re-evaluate. The Stranger's concern (unfiltered delivery at scale) is
-real but not yet triggered at current projected scale.
+''When a TW5 core extension becomes necessary:'' if a vessel's island pool
+reaches 100+ wiki VMs with 1000+ widgets each, or CRDT patch frequency exceeds
+600/second per VM, re-evaluate. Below those figures the Stranger's concern
+(unfiltered delivery at scale) stands as a watched threshold, never a live cost;
+the record keeps the projection the figures rest on (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/nalu-record`>>).
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/uefn-alignment`>>
 
-!! UEFN SceneGraph Alignment (Beta, June 2025)
+!! UEFN SceneGraph Alignment
 
-The SceneGraph Beta unifies editor and runtime — all scene elements are now
-Verse-addressable. `OnSimulate(StagedUpdates)<suspends>` is the canonical entry
+The SceneGraph unifies editor and runtime — every scene element answers to
+Verse. `OnSimulate(StagedUpdates)<suspends>` is the canonical entry
 point for per-tick logic across the full unified scene.
 
 ''Nalu ↔ OnSimulate mapping (confirmed):''
@@ -272,9 +273,11 @@ point for per-tick logic across the full unified scene.
 | `changedTiddlers` map | `StagedUpdates` array | changeset batch |
 | Widget `refresh()` method | Device `OnSimulate()` method | per-observer delivery |
 
-''Coordinate system note (v36.00):'' UEFN transitioned to LUF (Left, Up, Forward)
-coordinates. Any `spatial:contains`, `spatial:adjacent`, or `spatial:portal` pranala
-edges encoded with FRU orientation assumptions need migration. See `uefn-scene.md`.
+''Coordinate system note:'' UEFN reads LUF (Left, Up, Forward) coordinates. A
+`spatial:contains`, `spatial:adjacent` or `spatial:portal` pranala edge MUST encode LUF
+orientation; an edge that assumes FRU reads wrong. See
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/uefn-scene`>>; the record keeps the
+SceneGraph release this alignment read against (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/nalu-record`>>).
 
 <<~/ahu>>
 
@@ -294,7 +297,7 @@ home; every other carrier on the surface points back here.
 | the Automerge shore | `lar:///ha.ka.ba/lararium/docs/meme-provider` | the fan-out between a document and its projections |
 | the wiki shore, its law | `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge` | a tiddler replaces a tiddler; the landed ledger, the base, the drain, the discrete acts |
 | the wiki shore, its adaptor | `lar:///ha.ka.ba/lararium/api/island-adaptor` · `lar:///ha.ka.ba/lararium/api/save-path` · `lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor` | the adaptor's invariants, the outbound save path, the file's own account |
-| the layers a hand lands in | `lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model` | the composition's order, the working layer, the routing table |
+| the layers a hand lands in | `lar:///ha.ka.ba/lares/api/pono/recipe-layer-model` | the composition's order, the working layer, the routing table |
 | the disk shore | `lar:///ha.ka.ba/lararium/api/disk-projection` · `lar:///ha.ka.ba/lararium/node/disk-projector` | the projection law and the node hand that enacts it |
 | the roundtable | `lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable` | the syncer seams as talked through, kept as testimony |
 
@@ -309,13 +312,21 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/disk-projector`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tick`>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Talk-story ruling, 2026-05-15: the nalu names the changeset delivery pulse below the grammar layer; operators never emit it, the engine delivers it. The record keeps the dated readings beside it: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/nalu-record`>>.
 
 <<~/ahu>>
 
@@ -332,6 +343,6 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;shP7DtoCtsbmoy3ionoxnTLwpoo0ksN8uIbvC5mGwvs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zsoECzVklmTLbQcMy-tIReWK9RRoVqnMxNfA0Pa-kEw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

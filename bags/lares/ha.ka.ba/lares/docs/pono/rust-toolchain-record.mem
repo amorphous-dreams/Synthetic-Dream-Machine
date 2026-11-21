@@ -1,0 +1,77 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/rust-toolchain-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = false
+l-space   = "stable"
+role      = "docs record for the rust toolchain — the dated testing-architecture scout and open-loop ledger, the machine state and the fork-commit standing the api meme carried before its ever-speaking-present cure"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/rust-toolchain-record"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/rust-toolchain-record"
+```
+
+<<~ ahu slot=`#/meme-header`>>
+
+! Rust Toolchain — Record
+
+This docs record keeps the history and the deferred ledger behind <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/rust-toolchain`>>. The api meme states the toolchain law; this record keeps, verbatim, what the ever-speaking-present cure moved out of it. A loop here that still serves live work belongs on the road in the realm workbench; one whose work landed burns.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/moved-text`>>
+
+!! Moved text, verbatim
+
+<<<
+Their npm packages arrive as ''prebuilt artefacts'' — consuming them means a fix reaches us only when upstream publishes. ''`66a6632 Fixes for CGKA access (#216)` stands in our keyhive fork's main and in no published release'': it limits transitive authority to the weakest link on the best path and stops Relay access transitively granting membership in a document's CGKA tree. A version pin cannot reach that. A ''build'' can.
+<<<
+
+<<<
+''RECOMMENDED: rustup to work, nix to donate.'' The house machine carries neither (`rustc`, `cargo`, `wasm-pack`, `nix` all absent), so this section holds a standing plan rather than a description.
+<<<
+
+<<<
+This reads #213 back at us: BeeKEM replacing path ratcheting with independently sampled secrets meant alpha.6 and alpha.8 peers could not key with each other, and a locally-built keyhive carrying #216 would do exactly that against a vessel running published alpha.8
+<<<
+
+<<<
+''The house consumes Ink & Switch libraries from npm, and a library becomes a source-built workspace member ONLY when it enters the engine'' (operator ruling, 2026-10-11).
+<<<
+
+<<<
+⚠ Machine note: this stands under ''WSL2''. `rustup` works; a Nix install there wants the daemon-less single-user mode or a systemd-enabled distro, and that choice calls for its own small ceremony.
+<<<
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open-loops`>>
+
+!! Open loops ~ deferred, not dropped
+
+''Held here because the same breath that approved the toolchain deferred them.'' None waits on the toolchain; each waits on a hand.
+
+!!! The testing architecture (scouted 2026-09-02, plan in hand)
+
+# ''ONE SERIALIZATION, BOTH PLACES — CLOSED.'' Root `package.json` reads `pnpm -r --workspace-concurrency=1 test`, and CI's `test` job runs ''`pnpm test`'' — the root script itself, so the serialization travels rather than getting re-spelled. The law rides in the workflow's own comment: packages share a build tree and a rendezvous directory, so a parallel run ''measures a different repository than the one an operator measures locally'', and its flakes stay unreproducible by construction. The standing invariant: CI invokes the ROOT SCRIPT, never a hand-copied command.
+# ''ONE RUNNER STANDS UNINVOKED, and two ride CI. Measured, and here follows how to re-derive each'':
+#* ''`witness-all` RUNS in CI, under its own job.'' `.github/workflows/ci.yml` seats a `witnesses` job that calls `tools/witness-all.sh` and then ''asserts the roll call'' — it greps the log for `held out of this run` and fails if the fleet's own naming of its hold-outs goes silent. Re-derive: `grep -n "witness-all" .github/workflows/ci.yml`.
+#* ''The fleet counts 34 files and RUNS 29.'' `witness-all.sh` globs `tools/*witness*.sh` rather than keeping a hand list, so a new witness enrols by existing. `ls tools/*witness*.sh | wc -l` reads ''34''; `HELD_OUT` declares six names with a reason each, and ''five of them match the glob'' (civic · crossing · herm-mesh · browser-weld · witness-all itself) — leaving ''29 that run''. The sixth, `mesh-scenarios`, carries no `witness` in its filename and so sits outside the glob entirely; the script's second loop reports it anyway, because a hold-out that stops naming itself has become a silent skip.
+#* ''`gate:fold-ts` HAS an invoker.'' The `grammar-artifact` job runs it as its own step (//fold + parity gates (ts host)//) beside `gate:fold` for the py host, deliberately unchained so a red in one host cannot hide a red in the other. Re-derive: `grep -n "gate:fold" .github/workflows/ci.yml`.
+#* ⚠ ''The SENSORIUM python suite runs under no CI step.'' `pyproject.toml` `testpaths` names two trees; collect them and the split reads ''1016 tests'' total — `packages/tree-sitter-memetic-wikitext/host-py` contributes ''27'' and rides CI through `gate:fold` (`python -m pytest -q`), while `packages/lararium-sensorium/scripts` contributes ''989 across 96 files'' and no workflow step reaches them. Re-derive: `~/.venv/bin/python3 -m pytest --collect-only -q <path>`, once per testpath. ⚠ Expect red when lit: wire first, triage as its own stage, and ''never delete a red to make a stage green''.
+# ''THE MOVE'' — `tests/` to `packages/lararium-tests/`. The trap does NOT lie in `pnpm -r test` picking it up: `pnpm -r` recurses over ''workspace members'', and `tests` already counts as one, so the move changes its path and not its membership. ''The script name `test:e2e` makes the only fence'' — keep it, and say so on the manifest. ⚠ The REAL trap lies in `typecheck-witness.sh`, which iterates `packages/*/` and ''silently skips any directory without a tsconfig''. The harness has none, so post-move its 218 lines vanish from the witness ''at the very address the witness claims to sweep''. Land a `tsconfig.typecheck.json` with the move.
+# ''D2 — `invokeLocal` falls back to the operator's home vessel'' (`local-connector.ts`: `dataDir ?? larDataDir()`). A null dataDir reaches a live vessel. It made `herm-floor` R4 a FALSE GREEN and means ''R5's failure gives no evidence about the lift''. It should refuse, never default.
+# ''D3 — the meme projector stamps a `bag` key the corpus never carries.'' `tw5-file-info.ts` excludes `bag` from `.tid`/`.json`/`.meta`; the memetic projection does not. Only 9 corpus files carry an authored `bag =`. Operator call, and it only became visible when a stale fence label stopped masking it.
+# ''Seven socket failures'' await deriving the rendezvous path in the harness rather than hunting a filename.
+
+!!! What must NOT collapse when that work fires
+
+''The serialization'' — fix CI up to it, never the root script down. ''`lararium-node`'s two-project split and its THRASHERS list'' — one authoritative statement the roster reader imports, so the classes cannot drift between two statements. ''The four out-of-band witnesses'' — `mesh-coverage` stays permanently red BY DESIGN and reads claims never passes; three others need docker. ''Duplicate-named test files stand as WELDS, not duplicates'' — node≡browser agreement CONSTITUTES the island-isomorphism proof, and `seal-reserve`'s own weld pair (`seal-reserve-split.test.ts` against pure crypto in `lares-cli/src/seal-reserve.ts`, `seal-reserve.test.ts` against the on-disk ceremony in `lararium-node/src/seal-reserve-store.ts`) splits pure crypto from on-disk ceremony the same way. ''Source vs dist vs packed-plugin splits'' form the half-build instrument; collapsing one converts a weld into a tautology.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0xASxVcw2QXhUDPpqRQEXoLNs2RoBcrCIQkYZ7AvDmI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -23,7 +23,7 @@
  * These vectors drive the REAL TiddlyWiki filter engine over the SHIPPED cascade. A fake router is
  * exactly the instrument that would bless a rule the engine parses differently.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology
+ * Meme: lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology
  */
 
 import { describe, expect, test, beforeAll } from "vitest";
@@ -221,14 +221,15 @@ describe.skipIf(wikiSkip)(`routing totality — the adaptor persists what it rou
     }
   });
 
-  test("deleting a plain-titled tiddler tombstones it", async () => {
+  test("deleting a plain-titled tiddler retracts it plainly, with no tombstone over nothing", async () => {
     const { adaptor, store } = rig();
     await Promise.all([adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } }), adaptor.boundary()]);
     const seen: string[] = [];
     const orig = store.tombstone.bind(store);
     store.tombstone = async (t, o) => { seen.push(t); return orig(t, o); };
     await Promise.all([adaptor.deleteTiddler("Shopping List"), adaptor.boundary()]);
-    expect(seen, "the delete was dropped — the tiddler resurrects on the next boot").toContain("Shopping List");
+    expect(await store.get("Shopping List"), "the delete was dropped — the tiddler resurrects on the next boot").toBeNull();
+    expect(seen).toEqual([]);
   });
 });
 
@@ -274,17 +275,17 @@ describe.skipIf(wikiSkip)(`routing totality — a delete lands where the save la
     return { adaptor, composite, stores };
   };
 
-  const tombstoned = async (store: MemoryTiddlerStore, title: string): Promise<boolean> =>
-    (await store.get(title))?.meta?.deleted === true;
+  /** A plain delete leaves neither a record nor a kāpae: the layer holds no entry for the title. */
+  const left = async (store: MemoryTiddlerStore, title: string): Promise<boolean> => (await store.get(title)) === null;
 
-  test("★ deleting a plain-titled tiddler tombstones it in WORKING, never in temp ★", async () => {
+  test("★ deleting a plain-titled tiddler retracts it from WORKING, never from temp ★", async () => {
     const { adaptor, stores } = rig();
     await Promise.all([adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } }), adaptor.boundary()]);
     await adaptor.boundary();
     expect(await stores.working.get("Shopping List"), "the save missed working").not.toBeNull();
     await Promise.all([adaptor.deleteTiddler("Shopping List"), adaptor.boundary()]);
-    expect(await tombstoned(stores.working, "Shopping List"), "the tombstone missed the bag the save landed in — it resurrects at the next boot").toBe(true);
-    expect(await tombstoned(stores.temp, "Shopping List"), "the tombstone fell into the volatile temp store").toBe(false);
+    expect(await left(stores.working, "Shopping List"), "the delete missed the bag the save landed in — it resurrects at the next boot").toBe(true);
+    expect((await stores.temp.get("Shopping List"))?.meta?.deleted, "a tombstone fell into the volatile temp store").not.toBe(true);
   });
 
   test("CONTROL: a $:/temp/* delete still lands in temp", async () => {
@@ -293,7 +294,7 @@ describe.skipIf(wikiSkip)(`routing totality — a delete lands where the save la
     await adaptor.boundary();
     expect(await stores.temp.get("$:/temp/scratch"), "the volatile save missed temp").not.toBeNull();
     await Promise.all([adaptor.deleteTiddler("$:/temp/scratch"), adaptor.boundary()]);
-    expect(await tombstoned(stores.temp, "$:/temp/scratch")).toBe(true);
-    expect(await tombstoned(stores.working, "$:/temp/scratch")).toBe(false);
+    expect(await left(stores.temp, "$:/temp/scratch")).toBe(true);
+    expect((await stores.working.get("$:/temp/scratch"))?.meta?.deleted).not.toBe(true);
   });
 });

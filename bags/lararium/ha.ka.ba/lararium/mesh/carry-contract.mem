@@ -13,7 +13,6 @@ tags       = ["mesh/dreamnet-architecture", "mesh/oracle-governance", "mesh/sieg
 title      = "lar:///ha.ka.ba/lararium/mesh/carry-contract"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/carry-contract"
-written    = "2026-07-20"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -194,6 +193,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SQ_RS6OYzZ19lLQeqH2yNIDF1uGIXJFRfdCu9wbpnEk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6sOyBrLt3mcTxV_R-fxgTCHfjnuSBvl1CNGZgGimkgM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

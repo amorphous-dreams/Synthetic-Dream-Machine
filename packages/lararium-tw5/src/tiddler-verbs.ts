@@ -714,6 +714,12 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
       if (beneath !== undefined) {
         return refused("delete-mode-needed", `"${beneath.title}" also stands in ${beneath.reveals} beneath the record in ${beneath.bag}, so this delete must name what happens to it: \`--mode kapae\` (\`mode: "kapae"\`) raises a tombstone that keeps it hidden; \`--mode reveal\` (\`mode: "reveal"\`) removes the record in ${beneath.bag} and lets ${beneath.reveals}'s surface. Nothing moved.`);
       }
+      // AN UNREAD LAYER BENEATH COUNTS AS HOLDING THE TITLE: a recipe slot the composer could not reach, or a stand-in for a
+      // document the vessel has not read, may hold any record (recipe-layer-model#/the-delete), so the plain delete asks.
+      const unread = read.acts.find((row) => row.act === "retract" && opts.composite.unknownBeneath?.(row.bag ?? anchor.bag) === true);
+      if (unread !== undefined) {
+        return refused("delete-mode-needed", `"${unread.title}" may also stand in an unread layer beneath ${unread.bag ?? anchor.bag} (a recipe slot this composition could not reach, or a document this vessel has not read yet), so this delete must name what happens to it: \`--mode kapae\` (\`mode: "kapae"\`) raises a tombstone that keeps any such record hidden; \`--mode reveal\` (\`mode: "reveal"\`) removes the record in ${unread.bag ?? anchor.bag} and lets whatever stands beneath surface. Nothing moved.`);
+      }
     }
     if (read.refusals.length > 0) {
       const first = read.refusals[0]!;
@@ -757,7 +763,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
  * A TOMBSTONE OVER A TITLE THE WIKI READS ABSENT still answers a delete. Where the wiki reads the title absent and a layer this
  * face may write holds a raised kāpae over it, a plain delete (or a reveal) retracts that kāpae to absent: the title
  * reads as it did before the kāpae rose, and the projector lowers its shadow file. A kāpae that hides a live record
- * beneath it retracts only under `mode: "reveal"`, since the record would surface; no mode named refuses
+ * beneath it (or over an unread layer: `unknownBeneath`) retracts only under `mode: "reveal"`, since the record would surface; no mode named refuses
  * `delete-mode-needed`, and `mode: "kapae"` answers absent (the kāpae it asks for already stands). A root address takes
  * its tombstoned slots with it only under `family: true`, as a standing family does.
  */
@@ -783,7 +789,8 @@ async function retractBareKapae(
     if (top === undefined || top.state !== "kapae" || !writable.has(top.bag)) return null;
     const beneath = held[1];
     return { title: candidate, act: "retract" as const, bag: top.bag, holds: held.filter((layer) => layer.state === "live").map((layer) => layer.bag),
-      reveals: beneath !== undefined && beneath.state === "live" ? beneath.bag : null };
+      // An unread layer beneath (`unknownBeneath`) counts as holding a record the kāpae hides.
+      reveals: beneath !== undefined && beneath.state === "live" ? beneath.bag : opts.composite.unknownBeneath?.(top.bag) === true ? "an unread layer" : null };
   };
   const target = await retractOf(title);
   if (target === null) return absent;

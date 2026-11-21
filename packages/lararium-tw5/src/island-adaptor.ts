@@ -143,7 +143,7 @@ export class UnroutedSaveRefusal extends Error {
  * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
  * store that could only write to its own default would land a routed save in a bag no rule chose.
  */
-export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "resolveAll" | "defaultWritableBagId" | "layerIndexOf">;
+export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "resolveAll" | "defaultWritableBagId" | "layerIndexOf"> & Partial<Pick<CompositeStore, "unknownBeneath">>;
 
 export class LandingDoorUnavailableError extends Error {
   override readonly name = "LandingDoorUnavailableError";
@@ -1491,12 +1491,33 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /** One `writeFamily` call for one (bag, base); a base outside the document's history retries without it. */
-  private _issueGroup(bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], origin: ChangeOrigin): Promise<void> {
-    return this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri, ...(base ? { base } : {}) }).catch(async (error: unknown) => {
+  private _issueGroup(bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], origin: ChangeOrigin, retracts: readonly string[] = []): Promise<void> {
+    const named = retracts.length > 0 ? { retracts } : {};
+    return this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri, ...(base ? { base } : {}), ...named }).catch(async (error: unknown) => {
       if (!base || !(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
       console.warn(`[island-adaptor] retrying a write to ${bag} without unavailable base`);
-      await this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri });
+      await this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri, ...named });
     });
+  }
+
+  /**
+   * HOW A HAND'S DELETE LEAVES (operator ruling 2026-11-20: a kāpae is needed only where a record beneath would otherwise
+   * surface). Each member of the delete splits by its own layers: a member with a live record in a layer beneath `bag`
+   * leaves as a tombstone that keeps that record hidden (the browser's delete of a canon tiddler stays gone); any other
+   * member retracts to absent from `bag`, so no tombstone rises over nothing. A layer beneath `bag` this composition could
+   * not read (a recipe slot the composer skipped, a stand-in for an unread document: `unknownBeneath`) counts as holding
+   * every member, since another face's composition of the same recipe reads what it holds.
+   */
+  private async _leavesAs(bag: string, members: readonly string[]): Promise<{ tombstones: string[]; retracts: string[] }> {
+    if (this.store.unknownBeneath?.(bag)) return { tombstones: [...members], retracts: [] };
+    const at = this.store.layerIndexOf(bag);
+    const tombstones: string[] = [];
+    const retracts: string[] = [];
+    for (const member of members) {
+      const lower = (await this.store.resolveAll(member)).some((row) => this.store.layerIndexOf(row.bagId) < at);
+      (lower ? tombstones : retracts).push(member);
+    }
+    return { tombstones, retracts };
   }
 
   // ---------------------------------------------------------------------------
@@ -1604,14 +1625,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // no component leaves as the single tombstone it always was.
       const leaving = this._leavingWith(title, bag);
       for (const rider of leaving.riders) this.sent.set(rider.uri, null);
-      const issued = leaving.riders.length > 0
-        ? this._issueGroup(bag, base, [], [title, ...leaving.riders.map((rider) => rider.uri)], origin)
+      const issued = this._leavesAs(bag, [title, ...leaving.riders.map((rider) => rider.uri)]).then((leaves) => leaving.riders.length > 0 || leaves.retracts.length > 0
+        ? this._issueGroup(bag, base, [], leaves.tombstones, origin, leaves.retracts)
         : this.store.tombstoneInBag(bag, title, origin, base ? { base } : undefined)
           .catch(async (error: unknown) => {
             if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
             console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
             await this.store.tombstoneInBag(bag, title, origin);
-          });
+          }));
       task = issued.then(
         () => { this._settleLeaving(leaving, bag); },
         (error: unknown) => { this._returnLeaving(leaving, bag, error); throw error; },

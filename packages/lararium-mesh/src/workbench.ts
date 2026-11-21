@@ -210,6 +210,26 @@ export function workbenchSeats(ledger: LarDoc | undefined | null, realmId: strin
   return out;
 }
 
+/**
+ * UNBIND a slug's workbench from one realm (`lares wiki retire`, the owner face's hand): the binding row, every key-Document row
+ * and every seat row this vessel noted for the realm and the slug leave the ledger, so the ledger binds the slug under no realm
+ * of that face and another face's first stand founds its own. Rows of any other realm or slug stay. Call INSIDE
+ * `handle.change()`. Returns the titles it dropped (none where nothing stood).
+ */
+export function dropWorkbench(draft: LarDoc, realmId: string, slug: string): string[] {
+  const realm = realmScope(realmId);
+  const key = slugKey(slug);
+  const binding = workbenchKey(realm, slug);
+  const under = [`${EDGE_LEDGER_PREFIX}${realm}/workbench-key/${key}/`, `${EDGE_LEDGER_PREFIX}${realm}/workbench-seat/${key}/`];
+  const dropped: string[] = [];
+  for (const title of Object.keys(draft.tiddlers)) {
+    if (title !== binding && !under.some((prefix) => title.startsWith(prefix))) continue;
+    delete draft.tiddlers[title];
+    dropped.push(title);
+  }
+  return dropped.sort();
+}
+
 /** Whether a face holds a noted seat in any workbench of a realm: the wire guard's reading on a thread with no hive. */
 export function workbenchSeatHolds(ledger: LarDoc | undefined | null, realmId: string, face: string): boolean {
   const realm = realmScope(realmId);

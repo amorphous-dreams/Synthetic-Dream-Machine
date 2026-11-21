@@ -92,3 +92,25 @@ describe("the floor replays into the island", () => {
     expect(String(palette?.text)).toContain("#282828");
   });
 });
+
+describe("the composer hands the slots it skipped", () => {
+  test("★ a recipe slot the composer bound nothing for stands unread beneath the working layer (a delete there raises a kāpae); an unbound instance slot holds nothing; CONTROL: every slot bound, nothing unread ★", () => {
+    const slug = "skipped-slots";
+    const realm = "lar:///ha.ka.ba/bags/realm-r";
+    const lares = "lar:///ha.ka.ba/bags/lares";
+    const working = wikiSlotUri(slug, "working");
+    const recipe = { wikiSlug: slug, canonBag: realm, libraryBags: [lares] } as never;
+    const own = `lar:///ha.ka.ba/bags/${slug}`;
+    const skipped = new CompositeStore();
+    buildIslandRecipe({ tw5: fakeTw5(), composite: skipped, recipe,
+      ready: [{ slot: ORACLE_BAG, handle: fakeHandle() }, { slot: working, handle: fakeHandle() }, { slot: lares, handle: fakeHandle() }, { slot: own, handle: fakeHandle() }] as never });
+    expect(skipped.unknownBeneath(working), "the realm canon this face does not reach stands unread beneath").toBe(true);
+    expect(skipped.unknownBeneath(lares), "nothing unread beneath the library").toBe(false);
+
+    const whole = new CompositeStore();
+    buildIslandRecipe({ tw5: fakeTw5(), composite: whole, recipe,
+      ready: [{ slot: ORACLE_BAG, handle: fakeHandle() }, { slot: working, handle: fakeHandle() }, { slot: realm, handle: fakeHandle() },
+        { slot: lares, handle: fakeHandle() }, { slot: own, handle: fakeHandle() }] as never });
+    expect(whole.unknownBeneath(working), "every slot bound (draft and personal unminted): nothing unread").toBe(false);
+  });
+});

@@ -38,7 +38,7 @@ Named exceptions: CODEC_EXCEPTIONS.
 
 !! MIND Laws — the Automerge store functions as the mind
 
-FFZ disk projection law (2026-05-01):
+FFZ disk projection law (#/rulings, 1):
 Disk files project from the Automerge store. The store holds the mind.
 No server-rendered CRDT projections served as HTML.
 
@@ -66,7 +66,7 @@ desc  = "App shell serves from the Service Worker cache. Automerge islands hydra
 
 !! ISLAND Laws — causal island identity, boundary, and boot origin
 
-FFZ island law (2026-05-01): "Each causal island starts from its own history."
+FFZ island law (#/rulings, 2): "Each causal island starts from its own history."
 Islands: auth · catalog · engine · corpus · wiki · presence · draft · projection
 
 ```toml #ISLAND_1_OWN_HISTORY
@@ -78,7 +78,7 @@ desc  = "The wiki doc starts empty; the corpus doc carries its own seeded conten
 ```toml #ISLAND_2_GENESIS_ROOT
 id    = "ISLAND_2_GENESIS_ROOT"
 label = "Genesis artifact is the causal root of the engine island"
-desc  = "@phase: S5  First boot materializes the deterministic oracle island from immutable genesis/seed.json. The engine and plugin bytes ride only as exact genesis/cas/<cid> members named by that seed; Node, Web, and bulb shores obtain them through their own declared storage or transport caps. A missing or malformed seed, absent required byte, or CID mismatch MUST halt. No seeding shore gains authority from supplying public bytes."
+desc  = "First boot materializes the deterministic oracle island from immutable genesis/seed.json. The engine and plugin bytes ride only as exact genesis/cas/<cid> members named by that seed; Node, Web, and bulb shores obtain them through their own declared storage or transport caps. A missing or malformed seed, absent required byte, or CID mismatch MUST halt. No seeding shore gains authority from supplying public bytes."
 ```
 
 ```toml #ISLAND_3_AUTHORITY_FIRST
@@ -105,8 +105,7 @@ desc  = "Presence behaves like weather. Memory MUST survive presence loss. Durab
 
 !! AUTHORITY Laws — carrier canon, residency actions, trust ladder
 
-Sources: lares/lararium-research/PRINCIPLES.md
-         pono/l-space-trust · pono/canon-boundary
+Sources: pono/l-space-trust · pono/canon-boundary
 
 ```toml #AUTH_1_CARRIER_CANON_FIRST
 id    = "AUTH_1_CARRIER_CANON_FIRST"
@@ -147,7 +146,7 @@ desc  = "Trust order (strongest first): pattern-integrity memes → capability m
 ```toml #CODEC_1_GRAMMAR_AS_MEMES
 id    = "CODEC_1_GRAMMAR_AS_MEMES"
 label = "All grammar rules live as carrier memes"
-desc  = "Grammar rules, parse patterns, and template definitions SHALL live as carrier memes in lares/memes/api/pono/. The TypeScript parser MUST stay a thin interpreter, reading sigil semantics from the grammar memes."
+desc  = "Grammar rules, parse patterns, and template definitions SHALL live as carrier memes in the lares bag's `api/pono/`. The TypeScript parser MUST stay a thin interpreter, reading sigil semantics from the grammar memes."
 ```
 
 ```toml #CODEC_2_ROUND_TRIP
@@ -208,7 +207,7 @@ desc  = "TW5 core JS and vendored plugin bundles live in LarariumDoc.blobs (bina
 !! SYSTEM Laws — five architecture laws
 
 Named so any agent, test, or operator can import and reference by ID.
-These encode the design-time heuristics that governed the web3 refactor.
+These encode the design-time heuristics the web3 local-first design rests on.
 
 ```toml #SYS_1_WEB3_SMELL_TEST
 id    = "SYS_1_WEB3_SMELL_TEST"
@@ -246,7 +245,7 @@ desc  = "*.md carrier files are projections of parent + fragment tiddler package
 
 !! PENTADIC Laws — the Law of Fives as a structural pattern-integrity
 
-FFZ pentadic law (2026-05-06):
+FFZ pentadic law (#/rulings, 3):
 The number five recurs as the natural bounded scale in this system — not by decree but
 by convergent design. LADDER_5, OODA_HA_5, FPI-1–5, FfzClock L0–L4, five SYSTEM laws,
 five ISLAND laws, five CODEC laws. When a design produces a sixth element, treat that
@@ -303,7 +302,7 @@ desc  = "The genesis artifact stays immutable. An engine bump, a parser rebuild,
 ```toml #GEN_4_QUINE_PROPERTY
 id    = "GEN_4_QUINE_PROPERTY"
 label = "Quine property: engine inside boots the system it boots"
-desc  = "@phase: S5 — proved Sprint 5. The genesis artifact carries the TW5 engine tiddlers that deserialize it. Boot a vm from the artifact, render the engine tiddlers, and the output matches the source. This is the quine closure. A genesis that cannot regenerate itself is incomplete."
+desc  = "The genesis artifact carries the TW5 engine tiddlers that deserialize it. Boot a vm from the artifact, render the engine tiddlers, and the output matches the source. This is the quine closure. A genesis that cannot regenerate itself is incomplete."
 ```
 
 <<~/ahu>>
@@ -327,7 +326,7 @@ desc  = "The node peer writes catalog-url to disk; the browser peer does not. Th
 ```toml #PEER_3_AUTHORITY_FROM_CAPABILITY
 id    = "PEER_3_AUTHORITY_FROM_CAPABILITY"
 label = "Authority flows from capability receipts, not boot order"
-desc  = "Authority flows from a capability receipt, signature, or policy (Keyhive, future work) alone. Boot order, history depth, and writing genesis grant no authority. Until Keyhive lands, all peers operate at parity below the canon residency boundary."
+desc  = "Authority flows from a capability receipt, signature, or policy alone (the Keyhive capability layer). Boot order, history depth, and writing genesis grant no authority; peers that hold no capability receipt operate at parity below the canon residency boundary."
 ```
 
 <<~/ahu>>
@@ -346,7 +345,7 @@ breach. Every threshold the house stands carries the shape:
 | the herm | the ''floor voice'' — reports what it observed, peer-cosigned; answers the knock | the ''acting voice'' — sealed, a share; speaks only toward a quorum |
 | the vessel's keys | the ''floor key'' — the public name, signs floor acts | the ''custody root'' — sealed under the vessel KEK, derives the veil |
 | custody | ''hot'' — held while raised | ''cold'' — unwrapped per act, then wiped |
-| the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the checked body between STX and ETX (sealed once carrier signing lands) |
+| the carrier | `from="?"` / `-> to="?"` — wherever the road runs | the checked body between STX and ETX |
 | the gate | ''silence'' and one closed door to a stranger | the walker's grant, the knock, the proven peer |
 | the identity slot | the slot doc's verdict — the DID and derived actor any reader answers | the provider's own derivation — the layer the interface ships EMPTY and gates elsewhere |
 | the network edge | the weak crossing — cheap, optimistic, admitted on a probe | the per-edge anergy — the tested lease, severed when the test fails |
@@ -387,6 +386,18 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# FFZ disk projection law, ruled 2026-05-01: the Automerge store holds the mind; disk files project from it (#/mind-laws).
+# FFZ island law, ruled 2026-05-01: each causal island starts from its own history (#/island-laws).
+# FFZ pentadic law, ruled 2026-05-06: five recurs as the natural bounded scale (#/pentadic-laws).
+
+The record of what this meme carried before its ever-speaking-present cure (sprint phases, owed work, a dead source path) reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/system-pattern-integrities-record`>>.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -401,6 +412,6 @@ desc  = "A rejection confesses that something understood the question (siege-res
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GhpuM2OHt4tmmpYur7q6oWN3I_m33sAyhqW6D0VJaEQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QAHi0sl-7TtFU4vajgObD39XF80JojRhzhPZeTIGhTg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

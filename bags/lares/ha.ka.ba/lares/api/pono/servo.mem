@@ -8,12 +8,11 @@ cacheable = true
 hydrate   = true
 l-space   = "stable"
 namespace = "&#x2299;"
-role      = "THE governor pattern integrity — a bound that SELF-TUNES from an EWMA'd observed signal by clamped negative feedback, instead of holding a guessed constant. Names the control loop (observe → smooth → compute → nudge/clamp), the POLARITY law (the tuning direction follows what the bound protects: a lossless flush-gate SHRINKS its depth under load · a lossy coalesce-window GROWS under load · a kill-timeout GROWS its headroom under load — INVERTED), the two-loop completion (fast servo around a slow re-anchoring derive), the guards (deadband · clamp · cold-start default · completions-only-teach). The breathing-threshold law the nalu gates, the mine-timeout, and the future congestion-control all enact. Enacted: mesh/gate-tuning.ts (deriveGate/adaptGate/adaptWindow) composed in capture-engine.ts; mempalace/mine-timeout.ts (adaptiveTimeoutMs, the inverted polarity)."
+role      = "THE governor pattern integrity — a bound that SELF-TUNES from an EWMA'd observed signal by clamped negative feedback, instead of holding a guessed constant. Names the control loop (observe → smooth → compute → nudge/clamp), the POLARITY law (the tuning direction follows what the bound protects: a lossless flush-gate SHRINKS its depth under load · a lossy coalesce-window GROWS under load · a kill-timeout GROWS its headroom under load — INVERTED), the two-loop completion (fast servo around a slow re-anchoring derive), the guards (deadband · clamp · cold-start default · completions-only-teach). The breathing-threshold law the nalu gates and the mine-timeout enact; the network ring's congestion control holds it as unbuilt design (projection-nalu#network-ring). Enacted: mesh/gate-tuning.ts (deriveGate/adaptGate/adaptWindow) composed in capture-engine.ts; mempalace/mine-timeout.ts (adaptiveTimeoutMs, the inverted polarity)."
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/servo"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/servo"
-written   = "2026-06-29"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/servo`>>
@@ -28,10 +27,10 @@ the moment load moves off the mean it guessed for. The servo ''measures the sign
 ''protects and tunes the bound toward a set-point'', so the gate stops guessing and starts
 governing.
 
-The recognition (a 2026-06-26 survey, capture keel `capture-annotation-model#nalu-flush-hardening`):
-''every biological collect-then-fire system servos its threshold to a set-point'' — no neuron
-holds a fixed firing threshold; homeostatic plasticity tunes it. The stack's bounds breathe the
-same way.
+''Why the bound breathes:'' ''every biological collect-then-fire system servos its threshold to a''
+''set-point'' — no neuron holds a fixed firing threshold; homeostatic plasticity tunes it. The
+stack's bounds breathe the same way (capture keel `capture-annotation-model#nalu-flush-hardening`;
+the survey behind the recognition: #/rulings).
 
 ''Source authority:'' the nalu-gate hardening survey (neurophysiology homeostatic set-point ·
 Linux Net DIM · NIC interrupt coalescing · AIMD/TCP congestion control · Nagle self-clock · EWMA
@@ -95,9 +94,9 @@ Read the bound, ask what overload threatens, and the sign falls out.
   cures by frame-skip. ''role = physics ≠ uniformity'' — all bounds self-regulate, each the way its
   physics demands; for some that means holding still.
 
-!!! The two-sided completion ~ the servo breathes on both banks (2026-07-02)
+!!! The two-sided completion ~ the servo breathes on both banks
 
-Every polarity above runs ONE-SIDED — the bound self-tunes from its OWN observed signal. A rhyme-dive (credit-based flow control · ant entrance-encounter · Frank-Starling preload · HPA feedback · quorum-sensing) named the missing half: a one-sided AIMD governor without downstream visibility generates the ''BULLWHIP'' (amplified oscillation). The cure adds the receiver's voice — ''the drain advertises credits, the producer consumes them and SHEDS at zero.'' Engine: `mesh/credit-gate.ts` (`credits = maxInFlight − uncommitted`). The AIMD dial becomes the SLOW ceiling-discovery loop; credits the FAST governor tied to PROVEN drain. LAW: //upstream rate tracks a downstream signal, never the producer's guess.// This closes the `projection-nalu#network-ring` "one-sided servo" gap — the governor now hears both banks.
+Every polarity above runs ONE-SIDED — the bound self-tunes from its OWN observed signal. Credit-based flow control, the ant entrance-encounter, Frank-Starling preload, HPA feedback and quorum-sensing name the missing half (the rhyme-dive: #/rulings): a one-sided AIMD governor without downstream visibility generates the ''BULLWHIP'' (amplified oscillation). The cure adds the receiver's voice — ''the drain advertises credits, the producer consumes them and SHEDS at zero.'' Engine: `mesh/credit-gate.ts` (`credits = maxInFlight − uncommitted`). The AIMD dial serves as the SLOW ceiling-discovery loop; credits as the FAST governor tied to PROVEN drain. LAW: //upstream rate tracks a downstream signal, never the producer's guess.// So the governor hears both banks, and the `projection-nalu#network-ring` "one-sided servo" gap stands closed inside the island.
 
 <<~/ahu>>
 
@@ -171,6 +170,15 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings and provenance
+
+# The nalu-gate hardening survey, 2026-06-26 (capture keel `capture-annotation-model#nalu-flush-hardening`): every biological collect-then-fire system servos its threshold to a set-point; the recognition this meme seats (#/entry).
+# The rhyme-dive, 2026-07-02 (credit-based flow control · ant entrance-encounter · Frank-Starling preload · HPA feedback · quorum-sensing): the one-sided governor's bullwhip and the credit cure, `mesh/credit-gate.ts` (#/polarity).
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -182,6 +190,6 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VleeUh73pnYy8JFObx87eLe4OsRFFGqlF2bpPFrisv4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Rpu1fSpVkXdf8IIExIdqa0IyNT0BoJYs1QXUob2CmmU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

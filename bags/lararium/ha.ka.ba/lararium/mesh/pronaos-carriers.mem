@@ -14,7 +14,6 @@ tags       = ["mesh/pronaos", "mesh/secure-context", "mesh/reach-plane", "api/po
 title      = "lar:///ha.ka.ba/lararium/mesh/pronaos-carriers"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/pronaos-carriers"
-written    = "2026-09-22"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -469,6 +468,6 @@ deferred and does not enter this carrier meme by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5lLaj2ek3KaEqIZSVDrCE-ixSctpBQLXe1Lp8-KwCJw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0jUKI32Hu7ldPKlehzksT3WEmIOcI2dOyISMsDXHQ4E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

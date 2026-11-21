@@ -14,7 +14,6 @@ tags       = ["mesh/cap-tier", "mesh/membership-doctrine", "mesh/secure-context"
 title      = "lar:///ha.ka.ba/lararium/mesh/reach-plane"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/reach-plane"
-written    = "2026-08-08"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -307,6 +306,6 @@ A chainless face establishes `no store` through that door: no path can stand one
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8fDvmiaQnbnFulUVh_yyJp1q747wlbbYDakr0WNqXUA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BFBOg5rXKBo9s-x0P5qz3m0NYjgOb2Bh8ACA0lcdl5c`>>
 
 <<^ code=`&#x0004;` to=`?`>>
