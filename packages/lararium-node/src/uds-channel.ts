@@ -65,6 +65,7 @@ import type { SwitchActLog } from "./switch-act-log.js";
 // behind a capture pass) is never false-killed the way a fixed 30s cliff killed them.
 import { adaptiveTimeoutMs, recordMineDuration, verbBudgetMs } from "@lararium/mempalace";
 import type { StoreClaim } from "./owned-store.js";
+import type { FaceLives, VisitTicket, WorkTicket } from "./face-lifecycle.js";
 import type { SessionSignBook } from "./session-sign-door.js";
 
 export interface UdsChannelOptions {
@@ -79,6 +80,19 @@ export interface UdsChannelOptions {
   /** The bare atom key of the lit SIBLING a session's verified presenter names, or undefined (the mount, or a face not lit):
    *  the session's signer books under that key, so the island reads that face's own chain and seals through its own holder. */
   readonly siblingFaceOf?: (presenter: string) => string | undefined;
+  /**
+   * EACH FACE LIVES ONE LIFE (`face-lifecycle`): the face actors this door admits work and visits through. A session verb or act
+   * on a face the vessel knows dispatches only on its actor's yes, read in the same turn as the dispatch, after arbitration; a
+   * face closing refuses `face-closing`, a shut one `face-not-open`. A visit's reply delivers through the target's actor. Absent:
+   * no face gate (a vessel at its floor).
+   */
+  readonly faceLife?: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
+  /**
+   * The verbs that VISIT another face when a session call names it as a numeric `target` (the cross-face reads). A visit admits
+   * on the target's actor, its reply rides its own request id (the session reads its next frame meanwhile), and the actor
+   * delivers it or refuses it. Absent: no call visits.
+   */
+  readonly visitVerbs?: ReadonlySet<string>;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -250,6 +264,14 @@ function isCancelQuery(v: unknown): v is CancelQuery {
 }
 
 /** What a `{op:"receipt"}` query answers — a READ, never a dispatch. See H1 fix item 3/6. */
+/** A session call's face gate, read at its dispatch (`gateFor`): a visit's ticket or the worn face's work ticket, or a refusal. */
+interface DoorGate {
+  readonly visit: boolean;
+  admit(refuse: (reason: string) => void):
+    | { readonly ok: true; readonly work?: WorkTicket; readonly visit?: VisitTicket }
+    | { readonly ok: false; readonly refusal: string; readonly message: string };
+}
+
 export interface ReceiptAnswer {
   readonly requestId: string;
   /**
@@ -1022,6 +1044,31 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal, ...(message !== undefined && { message }) });
   /** The daemon mount's ordinal, or null where no mount reads (no reader, or the floor): the chore gate then stands aside. */
   const mountOf = (): number | null => opts.mountOrdinal?.() ?? null;
+  /** The refusal a face the actor will not admit reads: closing while its close runs, shut otherwise. */
+  const shutRefusal = (face: number, what: string): { readonly ok: false; readonly refusal: string; readonly message: string } =>
+    opts.faceLife?.state(face).kind === "closing"
+      ? { ok: false, refusal: "face-closing", message: `face-closing: face h${face} is closing on this vessel; its saves drain and it takes no new ${what}` }
+      : { ok: false, refusal: "face-not-open", message: `face-not-open: face h${face} stands shut on this vessel, and no ${what} ran` };
+  /**
+   * The gate a session call meets at its dispatch: a VISIT (a visit verb naming another face as its numeric `target`) admits on
+   * the target's actor; any other call admits as work on the face the session wears. A face the vessel never knew passes ungated.
+   */
+  const gateFor = (worn: number, verb: string, args: Record<string, unknown>): DoorGate | null => {
+    const life = opts.faceLife;
+    if (!life) return null;
+    const target = opts.visitVerbs?.has(verb) && typeof args["target"] === "number" && args["target"] !== worn ? args["target"] : null;
+    if (target !== null) {
+      return { visit: true, admit: (refuse) => {
+        const visit = life.admitVisit(target, refuse);
+        return visit !== null ? { ok: true, visit } : shutRefusal(target, "visit");
+      } };
+    }
+    if (!life.known(worn)) return null;
+    return { visit: false, admit: () => {
+      const work = life.admitWork(worn);
+      return work !== null ? { ok: true, work } : shutRefusal(worn, "verb");
+    } };
+  };
   const sessionState = (sock: Socket) => {
     let state = sessionSockets.get(sock);
     if (!state) {
@@ -1159,6 +1206,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (chore !== null && !chore.ok) return sessionRefuse(sock, chore.refusal, requestId, chore.message);
     const args = frame["args"] as Record<string, unknown>;
     const face = checked.session.face.proofSubject;
+    // EACH FACE LIVES ONE LIFE: the call admits on its face's actor at its dispatch, after arbitration (`gateFor`).
+    const gate = gateFor(state.supply.ordinal, frame["verb"], args);
     // THE SIGN DOOR'S BOOKING: the daemon island signs a sealed record through the session that placed this call, for
     // the call's life and under its verb alone; the booking drops when the call concludes or its socket goes.
     const release = opts.signers && state.signer && state.supply
@@ -1172,7 +1221,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal, asker: state.hand ?? "cli",
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
-        () => { sock.off("close", closed); resolve(); }, chore?.ok ? chore.mark : undefined);
+        () => { sock.off("close", closed); resolve(); }, chore?.ok ? chore.mark : undefined, gate ?? undefined);
     }).finally(release);
   };
   /**
@@ -1222,6 +1271,14 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const action = `act:${name}`;
     const run = opts.sessionActs.run;
     const worn = { ordinal: state.supply.ordinal, presenter: state.supply.presenter };
+    // EACH FACE LIVES ONE LIFE: the act admits as work on its face's actor before its arbitration, and holds that face's close
+    // until it settles; a face closing refuses `face-closing`, a shut one `face-not-open`.
+    const life = opts.faceLife;
+    let work: WorkTicket | null = null;
+    if (life?.known(worn.ordinal)) {
+      work = life.admitWork(worn.ordinal);
+      if (work === null) { const shut = shutRefusal(worn.ordinal, "act"); return sessionRefuse(sock, shut.refusal, requestId, shut.message); }
+    }
     arbitrating += 1;
     let ran = false;
     try {
@@ -1259,6 +1316,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       sessionReply(sock, { kind: "session:act-result", requestId, answer });
     } finally {
       if (ran) { try { opts.sessionActs?.settled?.(name, bound); } catch (error) { log(`session act ${name} settle hook failed: ${error instanceof Error ? error.message : String(error)}`); } }
+      work?.done();
       arbitrating -= 1;
       if (idle()) drained?.();
     }
@@ -1344,10 +1402,43 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const settleOne = (sock: Socket): void => {
     if (inFlight.delete(sock) && idle()) drained?.();
   };
-  const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark): void => {
+  const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
     // The receipt mark of a dispatched chore (`ChoreReceiptMark`: the acting face, the asker's hand, its session), carried on
     // its answer as `chore`; unset for a read or a refusal. A session's door hands it in; a one-shot's deferred tick reads it.
     let choreMark: ChoreReceiptMark | undefined = mark;
+    /** The visit this call admitted: its reply delivers through the target's actor, at the write. */
+    let visit: VisitTicket | null = null;
+    /** A session line written as its own frame (a refusal the actor answered first, or the reply itself). */
+    const writeLine = (payload: Record<string, unknown>): void => {
+      try {
+        const line = JSON.stringify(payload) + "\n";
+        if (sessionRequestId === undefined) sock.end(line);
+        else sock.write(line);
+      } catch { /* gone */ }
+    };
+    const refusedVisit = (reason: string): Record<string, unknown> =>
+      ({ kind: "session:result", status: "error", requestId: sessionRequestId, errorMessage: reason, refusal: { reason: "face-not-open" } });
+    /** The admitted work's release: the face's close waits out every admitted dispatch until it settles. */
+    let settled = (): void => {};
+    /**
+     * THE CALL ADMITS ON THE FACE'S ACTOR before its arbitration, with no await between the actor's yes and the ledger's turn: a
+     * refusal answers and nothing commits or runs. Admitted work holds the face's close (its drain waits) until it settles, so no
+     * write enters a drain. A visit's reply rides its own request id: the session reads its next frame at once, and a peer that
+     * leaves drops it.
+     */
+    const admit = (): boolean => {
+      if (!gate) return true;
+      const ticket = gate.admit((reason) => { if (!sock.destroyed) writeLine(refusedVisit(reason)); });
+      if (!ticket.ok) { fail(ticket.message, ticket.refusal); return false; }
+      if (ticket.visit) {
+        visit = ticket.visit;
+        const held = ticket.visit;
+        sock.once("close", () => held.drop());
+        onSessionReply?.();
+      }
+      if (ticket.work) settled = () => ticket.work!.done();
+      return true;
+    };
     const respond = (answer: Record<string, unknown>): void => {
       void (async () => {
         const named = choreMark !== undefined ? { ...answer, chore: choreMark } : answer;
@@ -1355,11 +1446,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           kind: "session:result", ...named, requestId: sessionRequestId,
           ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),
         };
-        try {
-          const line = JSON.stringify(payload) + "\n";
-          if (sessionRequestId === undefined) sock.end(line);
-          else sock.write(line);
-        } catch { /* gone */ }
+        // THE CHECK AND THE WRITE IN ONE TURN: past every await, the target's actor reads its opening and writes, or refuses.
+        if (visit !== null) visit.deliver(() => writeLine(payload), (reason) => writeLine(refusedVisit(reason)));
+        else writeLine(payload);
       })().catch((error) => {
         log(`session reply failed: ${error instanceof Error ? error.message : String(error)}`);
         sessionRefuse(sock, "session-fault", sessionRequestId);
@@ -1514,9 +1603,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // `arbitrate` itself writes the `committed` fact and FLUSHES before returning "run" — the
         // durability floor sits BEFORE `runVerb`/`placeVerb` below, never after.
         let verdict: Awaited<ReturnType<typeof ledger.arbitrate>>;
+        if (!admit()) return;
         try {
           verdict = await ledger.arbitrate(requestId, inputDigest, inv.face, inv.verb, inv.effectKey);
         } catch (error) {
+          settled();
           // THE LEDGER FAILED BEFORE ANY DISPATCH (a flush that rejects mid-arbitration): nothing ran, and the caller
           // hears a fixed code under its own requestId; the detail stays in this vessel's log.
           log(`receipt-fact ledger failed for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
@@ -1529,7 +1620,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // A genuine concurrent re-read of an id THIS process already dispatched OR a same-digest
           // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,
           // across a restart) — answer the existing outcome, never a second `placeVerb`.
-          awaitOutcome(inv.verb, requestId, inv.timeoutMs).then(
+          awaitOutcome(inv.verb, requestId, inv.timeoutMs).finally(settled).then(
             (outcome) => { respond(outcome); },
             (err)     => { if (err instanceof VesselWaitExpired) return answerUnknown(requestId); fail(err instanceof Error ? err.message : String(err)); },
           );
@@ -1545,9 +1636,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
             : verdict.reason === "receipt-fact-torn"
             ? `this vessel's receipt for request ${requestId} is unreadable — mint a fresh request id`
             : `request ${requestId} was already used with different arguments — mint a fresh request id`;
+          settled();
           return fail(why, verdict.reason);
         }
-        runVerb(inv, requestId).then(
+        runVerb(inv, requestId).finally(settled).then(
           (outcome) => { respond(outcome); },
           (err) => {
             if (err instanceof VesselWaitExpired) return answerUnknown(requestId); // M2: never told as {status:"error"}
