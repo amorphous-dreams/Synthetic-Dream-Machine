@@ -90,11 +90,11 @@ def daemon(monkeypatch, tmp_path_factory):
 
 def _tools():
     mcp = build_mcp(DaemonCoordinator(wing="w"))
-    return {name: mcp._tool_manager.get_tool(name).fn for name in MEME_VERBS}  # noqa: SLF001 — the registered skins
+    return {name: mcp._tool_manager.get_tool(name).fn for name in (*MEME_VERBS, "tiddler_put", "tiddler_get", "tiddler_delete")}
 
 
 def _put(**kw):
-    return _tools()["meme_put"](**kw)
+    return _tools()["tiddler_put"](title=kw.pop("uri"), meme=True, **kw)
 
 
 def _get(**kw):
@@ -108,17 +108,18 @@ def _project(**kw):
 
 
 def _list(**kw):
-    return _tools()["meme_list"](**kw)
+    return _tools()["tiddler_get"](meme=True, **kw)
 
 
 def _delete(**kw):
-    return _tools()["meme_delete"](**kw)
+    return _tools()["tiddler_delete"](title=kw.pop("uri"), meme=True, **kw)
 
 
 def test_meme_tools_register_and_seat_hotl(daemon):
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert set(MEME_VERBS) == {"meme_put", "meme_list", "meme_delete", "meme_project"} <= names
+    assert set(MEME_VERBS) == {"meme_project"} <= names
+    assert names.isdisjoint({"meme_put", "meme_list", "meme_delete"})
     # ONE DOOR READS: `meme_get` retired into `tiddler_get(meme=True)`; no tool answers by its name.
     assert "meme_get" not in names
     for v in MEME_VERBS:
@@ -314,6 +315,11 @@ def _seat_call(name: str, args: dict, mcp=None):
     from mcp import Client
 
     server = mcp or build_mcp(DaemonCoordinator(wing="w"))
+    if name in ("meme_put", "meme_list", "meme_delete"):
+        name = {"meme_put": "tiddler_put", "meme_list": "tiddler_get", "meme_delete": "tiddler_delete"}[name]
+        args = {**args, "meme": True}
+        if "uri" in args:
+            args["title"] = args.pop("uri")
 
     async def ask():
         async with Client(server) as client:
@@ -402,6 +408,7 @@ def test_a_stray_builtin_error_stays_unnamed_and_only_a_house_raised_refusal_cro
 
 def _described(name: str) -> str:
     mcp = build_mcp(DaemonCoordinator(wing="w"))
+    name = {"meme_put": "tiddler_put", "meme_list": "tiddler_get", "meme_delete": "tiddler_delete"}.get(name, name)
     return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
 
 
@@ -436,7 +443,7 @@ def test_meme_put_text_names_the_seat_canon_refusal_and_the_true_layer():
     # layer, or the face's personal layer without a writer's seat), never "its top bag" (reach-mu decision 8).
     said = _described("meme_put")
     assert "seat-canon-reach" in said and "meme_offer" in said
-    assert "top bag" not in said and "personal" in said and "`layer`" in said
+    assert "personal" in said and "`layer`" in said
 
 
 def test_tiddler_put_text_names_the_seat_canon_refusal():

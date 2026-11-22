@@ -93,7 +93,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     pair = await openStagedJoinee({ tag: "bag", beforeB: async (a) => {
       const f = join(a.root, "npc.mem");
       writeFileSync(f, meme(["a"]));
-      const put = await a.cli(["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
+      const put = await a.cli(["tiddler", "put", "--meme", URI, ...WIKI, "--file", f, "--json"]);
       if (put.json?.["ok"] !== true) throw new Error(`A: put refused\n${said(put)}`);
     } });
     A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
@@ -149,7 +149,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const anchorUri = "lar:///t.witness.npc/anchor";
     const f = join(A!.root, "anchor.mem");
     writeFileSync(f, meme(["a"]).replaceAll(URI, anchorUri).replace(`uri-path = "${PATH}"`, `uri-path = "t.witness.npc/anchor"`));
-    const put = await A!.cli(["meme", "put", anchorUri, "--recipe", "default", "--file", f, "--json"]);
+    const put = await A!.cli(["tiddler", "put", "--meme", anchorUri, "--recipe", "default", "--file", f, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     await new Promise((r) => setTimeout(r, 1500));
     const which = await A!.cli(["wiki", "which", anchorUri, "--no-json"]);
@@ -173,7 +173,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     }
     // CONTROL for the projection witness below: nothing sits on B's disk before the promotion.
     expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
-    const refused = await A!.cli(["meme", "put", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
+    const refused = await A!.cli(["tiddler", "put", "--meme", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
     console.error(`meme-two-vessel-bag MEASURE A: meme put --bag lares → ${said(refused).trim().slice(0, 300)}`);
     expect(refused.json?.["ok"]).toBe(false);
   });
@@ -278,7 +278,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     const deadline = Date.now() + 90_000;
     let taken = false;
     while (Date.now() < deadline) {
-      const put = await B!.cli(["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
+      const put = await B!.cli(["tiddler", "put", "--meme", URI, ...WIKI, "--file", f, "--json"]);
       console.error(`meme-two-vessel-bag MEASURE B: meme put --recipe lares (after the grant) → ${said(put).trim().slice(0, 200)}`);
       if (/grant record taken .* SEATED/.test(B!.bootLog())) { taken = true; break; }
       await new Promise((res) => setTimeout(res, 3000));

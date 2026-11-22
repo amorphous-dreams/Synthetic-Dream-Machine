@@ -117,7 +117,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
-      old.must(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
+      old.must(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", file, "--json"]);
     }
     old.must(["tiddler", "put", FREE, "--recipe", "default", "--text", "a free-titled note", "--json"]);
 

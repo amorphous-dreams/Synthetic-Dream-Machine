@@ -606,6 +606,7 @@ describe("meme-list — roots by default, the slot tree on request", () => {
     r.wiki.store.set("plain", { title: "plain", text: "prose" });
     capCalls.length = 0;
     const out = await makeMemeListReactor(r.opts)({ recipe: "default" }, ctx());
+    expect(String(out["has"])).toMatch(/^<<~ has name=`.*` params=`kind\/family-list /);
     expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: a["canonicalHash"] }]);
     expect(capCalls[0]?.access).toBe("read");
   });
@@ -820,6 +821,7 @@ describe("meme-delete — the daemon skin of removeMeme", () => {
     r.wiki.store.set("lar:///t/x-not", { title: "lar:///t/x-not", text: "a neighbour under the prefix, never a child" });
     capCalls.length = 0;
     const out = await makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI }, ctx());
+    expect(String(out["has"])).toMatch(/^<<~ has name=`.*` params=`kind\/family-delete /);
     expect(out["decision"]).toBe("removed");
     expect((out["tombstoned"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
     expect([...r.wiki.store.keys()]).toEqual(["lar:///t/x-not"]);
@@ -997,6 +999,7 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     const r = rig();
     const placed = await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: meme(["a", "b"]) }, ctx());
     expect(placed["decision"]).toBe("ingest");
+    expect(String(placed["has"])).toMatch(/^<<~ has name=`.*` params=`kind\/family-write /);
     const read = async () => (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
     return { r, read, patch: makeMemePatchReactor(r.opts) };
   };
