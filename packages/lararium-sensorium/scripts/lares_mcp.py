@@ -114,6 +114,19 @@ ANALYZE_LENSES = {
     "mismatch": "mismatch",   # do `couple` and `lead` agree over the same `rows`
 }
 ANALYZE_LENS_ALIASES = {"ki": "couple", "li": "cohere"}
+# What each lens READS, spelled as the CLI spells its flags (the fixture carries the CLI's own lists as
+# `analyze_lens_reads`, and the seat's test welds this table to it). The tool's `rows` spells the CLI's `--signal`.
+# An argument a lens does not read refuses by name, on both skins.
+ANALYZE_LENS_READS = {
+    "changes": ("spectral", "halves", "span"),
+    "rhythm": ("repour", "channel"),
+    "couple": (),
+    "cohere": (),
+    "square": (),
+    "lead": ("signal", "names"),
+    "forecast": ("signal",),
+    "mismatch": ("signal", "names"),
+}
 
 # The per-plane QUERY DOOR verb — read-only cross-plane interrogation of a 3-plane test-bed sensorium
 # (content · structure · form, one cid keying all three planes; corpus_testbed/plane_fanout land it).
@@ -970,8 +983,8 @@ def build_mcp(coordinator: LaresCoordinator):
         return _call("un_kapae", sensorium, branch, tick)
 
     @mcp.tool()
-    def analyze(lens: "str | None" = None, spectral: bool = False, halves: "str | None" = None, span: int = 6,
-                repour: bool = False, channel: str = "content", rows: "list | None" = None,
+    def analyze(lens: "str | None" = None, spectral: bool = False, halves: "str | None" = None, span: "int | None" = None,
+                repour: bool = False, channel: "str | None" = None, rows: "list | None" = None,
                 names: "list | None" = None, sensorium: "str | None" = None) -> dict:
         """READ a poured sensorium through ONE LENS — mirrors `lares sense analyze --lens <lens>`. The lens chooses
         the instrument; each keeps its own read path and @daemon verb, and the answer names the lens it applied
@@ -983,16 +996,24 @@ def build_mcp(coordinator: LaresCoordinator):
         plumbing witness) · `square` — do a child-host's lobes round-trip to one self (bare: the mesh) · `lead` — who
         leads whom across a `rows` matrix (rows=time, cols=signals; `names` labels them; the R transfer-entropy
         reference) · `forecast` — does a regime shift approach over `rows` (the R early-warning read) · `mismatch` —
-        do `couple` and `lead` agree over the same `rows`. `sensorium` names the sensorium (absent → memory)."""
+        do `couple` and `lead` agree over the same `rows`. `sensorium` names the sensorium (absent → memory). An
+        argument the lens does not read refuses by name (ANALYZE_LENS_READS, the CLI's own table)."""
         resolved = lens if lens in ANALYZE_LENSES else ANALYZE_LENS_ALIASES.get(lens or "")
         if resolved is None:
             asked = "name a lens" if not lens else f"no lens named {lens!r}"
             raise SeatArgumentRefused(f"analyze: {asked}; the lenses: {' · '.join(ANALYZE_LENSES)}")
+        given = {"spectral": spectral, "halves": halves, "span": span, "repour": repour, "channel": channel,
+                 "signal": rows, "names": names}
+        stray = [n for n, v in given.items() if v not in (None, False) and n not in ANALYZE_LENS_READS[resolved]]
+        if stray:
+            spelled = ", ".join("`rows`" if n == "signal" else f"`{n}`" for n in stray)
+            reads = ", ".join("`rows`" if n == "signal" else f"`{n}`" for n in ANALYZE_LENS_READS[resolved]) or "nothing beyond `lens`"
+            raise SeatArgumentRefused(f"analyze: lens `{resolved}` reads no {spelled} (it reads {reads})")
         verb = ANALYZE_LENSES[resolved]
         if verb == "analyze":
-            out = _call("analyze", sensorium, spectral=spectral, halves=halves, span=span)
+            out = _call("analyze", sensorium, spectral=spectral, halves=halves, span=6 if span is None else span)
         elif verb == "rejim":
-            out = _call("rejim", sensorium, repour=repour, channel=channel)
+            out = _call("rejim", sensorium, repour=repour, channel=channel or "content")
         elif verb in ("couple_r", "mismatch"):
             out = _call(verb, None, rows=rows, names=names)
         elif verb == "forecast":

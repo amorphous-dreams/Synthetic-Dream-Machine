@@ -733,11 +733,11 @@ def test_the_retired_sense_tools_leave_the_seat(monkeypatch):
 
 
 def test_analyze_lens_routes_each_lens_to_its_own_wire_verb(monkeypatch):
-    from lares_mcp import ANALYZE_LENSES
+    from lares_mcp import ANALYZE_LENSES, ANALYZE_LENS_READS
     _, tool, calls = _routed_tools(monkeypatch)
     for lens, wire in ANALYZE_LENSES.items():
         calls.clear()
-        out = tool("analyze")(lens=lens, rows=[[1.0, 2.0]])
+        out = tool("analyze")(lens=lens, **({"rows": [[1.0, 2.0]]} if "signal" in ANALYZE_LENS_READS[lens] else {}))
         assert out["lens"] == lens                                  # every answer echoes the lens it applied
         assert calls[-1][0].replace("-", "_") == wire               # the lens chooses; the wire verb stays its own
 
@@ -797,3 +797,23 @@ def test_pour_bulk_refuses_the_one_pointer_shaping(monkeypatch):
         assert named in str(refused.value)
     assert calls == []
 
+
+def test_analyze_refuses_an_argument_its_lens_never_reads(monkeypatch):
+    # The lens reads only its own arguments (the CLI refuses a stray flag by name); the seat reads the same table.
+    from lares_mcp import SeatArgumentRefused
+    _, tool, calls = _routed_tools(monkeypatch)
+    for lens, stray in (("couple", {"spectral": True}), ("changes", {"rows": [[1.0]]}),
+                        ("forecast", {"names": ["a"]}), ("rhythm", {"halves": "4,8"}), ("square", {"repour": True})):
+        with pytest.raises(SeatArgumentRefused) as refused:
+            tool("analyze")(lens=lens, **stray)
+        assert next(iter(stray)) in str(refused.value)
+    assert calls == []
+    tool("analyze")(lens="changes", spectral=True, halves="4,8", span=8)      # CONTROL: its own arguments ride
+    assert calls[-1][0] == "analyze"
+
+
+def test_analyze_lens_reads_weld_to_the_cli_table():
+    from lares_mcp import ANALYZE_LENS_READS
+    with open(_CLI_VERBS, encoding="utf-8") as f:
+        inv = json.load(f)
+    assert {k: sorted(v) for k, v in ANALYZE_LENS_READS.items()} == {k: sorted(v) for k, v in inv["analyze_lens_reads"].items()}
