@@ -391,45 +391,55 @@ route_cli() {
     for stream_arg do
       if [ -n "$stream_want" ]; then
         case "$stream_want" in
-          --file|--append) stream_n=$((stream_n + 1)); stream_kind=$stream_want; [ -n "$stream_arg" ] || stream_empty=yes ;;
+          --fields|--note|--reason|--text) stream_want=""; continue ;;
+          *) case "$stream_arg" in --*) stream_want="" ;;
+          *)
+            case "$stream_want" in
+              --file|--append) stream_n=$((stream_n + 1)); stream_kind=$stream_want; [ -n "$stream_arg" ] || stream_empty=yes ;;
+            esac
+            stream_want=""; continue ;; esac ;;
         esac
-        stream_want=""
-        continue
       fi
       case "$stream_arg" in
+        --) break ;;
         --meme) stream_meme=yes ;;
         --slot) stream_slot=yes stream_want=--slot ;;
         --slot=*) stream_slot=yes ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --text|--base|--recipe|--bag|--realm|--face|--target|--fields|--tag-add|--tag-remove|--unset) stream_want=$stream_arg ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
-    if [ -n "$stream_meme" ] && [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
-    if [ -n "$stream_meme" ] && [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
-    if [ -n "$stream_meme" ] && [ "$stream_n" -eq 1 ] && { [ "$stream_kind" = --file ] || [ -n "$stream_slot" ]; }; then
-      stream_count=$# stream_prev="" stream_skip="" stream_i=0
+    if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
+    if [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
+    if [ "$stream_n" -eq 1 ] && { [ "$stream_kind" = --file ] || { [ -n "$stream_meme" ] && [ -n "$stream_slot" ]; }; }; then
+      stream_count=$# stream_want="" stream_end="" stream_i=0
       while [ "$stream_i" -lt "$stream_count" ]; do
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
-        if [ -n "$stream_skip" ]; then
-          stream_skip=""
-        elif [ -n "$stream_prev" ]; then
-          [ "$stream_arg" = - ] || stream_file=$stream_arg
-          [ "$stream_arg" = - ] || stream_arg=-
-          stream_prev=""
-        else
+        if [ -z "$stream_end" ] && [ -n "$stream_want" ]; then
+          case "$stream_want" in
+            --fields|--note|--reason|--text) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
+            *) case "$stream_arg" in --*) stream_want="" ;;
+            *)
+              case "$stream_want" in
+                --file|--append) [ "$stream_arg" = - ] || stream_file=$stream_arg; stream_arg=- ;;
+              esac
+              stream_want=""; set -- "$@" "$stream_arg"; continue ;; esac ;;
+          esac
+        fi
+        if [ -z "$stream_end" ]; then
           case "$stream_arg" in
-            --file|--append) stream_prev=yes ;;
+            --) stream_end=yes ;;
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --slot|--text|--base|--recipe|--bag|--realm|--face|--target|--fields|--tag-add|--tag-remove|--unset) stream_skip=yes ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
       done
       if [ -n "$stream_file" ]; then
-        if [ ! -r "$stream_file" ] || [ ! -f "$stream_file" ]; then printf 'lares-container: cannot read host file %s\n' "$stream_file" >&2; return 2; fi
+        if [ "$(stat -f -c %T -- "$stream_file" 2>/dev/null || :)" = proc ] || [ ! -r "$stream_file" ] || [ ! -f "$stream_file" ]; then printf 'lares-container: cannot read host file %s\n' "$stream_file" >&2; return 2; fi
       fi
     fi
   fi

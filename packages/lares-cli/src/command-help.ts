@@ -808,7 +808,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--unset <a,b>        (put) fields to remove",
       "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]",
       "--tag-remove <list>  (put) tags to remove",
-      "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <path>  the new text from a file (`-` reads stdin)",
+      "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <host path | ->  the new text from a host file or stdin",
       "--base <hash>        (put) the hash last read; stale → conflict, nothing lands",
       "--create             (put) land only where no tiddler stands; an existing one answers `exists`",
       "--if-match <hash>    (delete) the hash last read; stale → conflict, nothing moves",
