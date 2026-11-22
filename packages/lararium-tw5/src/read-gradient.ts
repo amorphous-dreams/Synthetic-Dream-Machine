@@ -22,6 +22,7 @@
  */
 
 import { VerbRefusal } from "@lararium/mesh";
+import { findTopLevelAhuBlocks, type AhuBlock } from "./meme-ast/ahu-scan.js";
 
 /** THE ONE PAGE: the bytes a read answers whole within (the house page a filter page and a render hold too). */
 export const READ_PAGE_BYTES = 65_536;
@@ -96,80 +97,57 @@ export interface CarrierSlot {
   readonly first: string | null;
 }
 
-const SLOT_OPEN = /^<<~\s?ahu\b[^>]*\bslot=`([^`]+)`/;
-const AHU_OPEN = /<<~\s?ahu\b/g;
-const AHU_CLOSE = /<<~\/ahu>>/g;
-const FENCE = /^(`{3,}|~{3,})/;
-
 /**
- * THE CARRIER CUT AT ITS SLOT BOUNDARIES: segments whose join reads the carrier byte for byte. The first segment holds the frame
- * and meta before the first slot; each other segment opens on a top-level slot (depth zero, outside any code fence) and runs to
- * the next one. The trailer rides the last segment, so no segment ends mid-slot.
+ * THE CARRIER CUT AT ITS SLOT BOUNDARIES: segments whose join reads the carrier byte for byte. The cut reads the decomposer's own
+ * ahu scan (`scanAhu`: the fence and inline-code mask, the line law, one pairing stack), so the slots a read names ARE the slots
+ * the family stores, and a quoted opener or closer moves nothing. The first segment holds the frame and meta before the first
+ * top-level slot; each other segment opens on one and runs to the next. The trailer rides the last segment.
  */
-export function carrierSegments(text: string): { readonly segments: string[]; readonly slots: (string | null)[] } {
-  const lines = text.split(/(?<=\n)/);
+export function carrierSegments(text: string): { readonly segments: string[]; readonly slots: (string | null)[]; readonly blocks: readonly AhuBlock[] } {
+  const blocks = findTopLevelAhuBlocks(text);
   const segments: string[] = [];
   const slots: (string | null)[] = [];
-  let current = "";
+  let from = 0;
   let slot: string | null = null;
-  let depth = 0;
-  let fence: string | null = null;
-  for (const line of lines) {
-    const bare = line.replace(/\r?\n$/, "");
-    const fenceMark = FENCE.exec(bare.trimStart())?.[1] ?? null;
-    if (fence !== null) {
-      if (fenceMark !== null && fenceMark[0] === fence[0] && fenceMark.length >= fence.length && bare.trim() === fenceMark) fence = null;
-      current += line;
-      continue;
-    }
-    if (fenceMark !== null) { fence = fenceMark; current += line; continue; }
-    const opens = SLOT_OPEN.exec(bare);
-    if (opens && depth === 0) {
-      segments.push(current);
-      slots.push(slot);
-      current = "";
-      slot = opens[1]!;
-    }
-    depth += (bare.match(AHU_OPEN)?.length ?? 0) - (bare.match(AHU_CLOSE)?.length ?? 0);
-    if (depth < 0) depth = 0;
-    current += line;
+  for (const block of blocks) {
+    segments.push(text.slice(from, block.openStart));
+    slots.push(slot);
+    from = block.openStart;
+    slot = block.slot;
   }
-  segments.push(current);
+  segments.push(text.slice(from));
   slots.push(slot);
-  return { segments, slots };
+  return { segments, slots, blocks };
 }
 
 /** The first prose line of a slot's body: its heading, the `!` marks dropped. */
-function firstLineOf(segment: string): string | null {
-  for (const line of segment.split("\n").slice(1)) {
+function firstLineOf(body: string): string | null {
+  for (const line of body.split("\n")) {
     const bare = line.trim();
-    if (bare === "" || bare.startsWith("<<~/ahu") || bare.startsWith("<<^")) continue;
+    if (bare === "" || bare.startsWith("<<~") || bare.startsWith("<<^")) continue;
     return bare.replace(/^!+\s*/, "");
   }
   return null;
 }
 
+/** The span a block owns: its opener through its closer, and the line end that follows. */
+function blockSpan(text: string, block: AhuBlock): string {
+  const end = text.startsWith("\r\n", block.closeEnd) ? block.closeEnd + 2 : text[block.closeEnd] === "\n" ? block.closeEnd + 1 : block.closeEnd;
+  return text.slice(block.openStart, end);
+}
+
 /** Every top-level slot of a carrier, in order, with its bytes and first line. */
 export function carrierSlots(text: string): CarrierSlot[] {
-  const { segments, slots } = carrierSegments(text);
-  const out: CarrierSlot[] = [];
-  segments.forEach((segment, i) => {
-    const slot = slots[i];
-    if (slot) out.push({ slot, bytes: byteLength(segment), first: firstLineOf(segment) });
-  });
-  return out;
+  return findTopLevelAhuBlocks(text).map((block) => ({
+    slot: block.slot, bytes: byteLength(blockSpan(text, block)), first: firstLineOf(text.slice(block.bodyStart, block.bodyEnd)),
+  }));
 }
 
 /** One slot's own span of the carrier (its opening line through its close), or null where the carrier holds no such slot. */
 export function carrierSlotText(text: string, slot: string): string | null {
   const name = slot.startsWith("#") ? slot : `#/${slot.replace(/^\/+/, "")}`;
-  const { segments, slots } = carrierSegments(text);
-  const at = slots.indexOf(name);
-  if (at < 0) return null;
-  // A segment runs to the next slot; the last carries the trailer, which the slot's own span leaves.
-  const segment = segments[at]!;
-  const close = segment.lastIndexOf("<<~/ahu>>");
-  return close < 0 ? segment : segment.slice(0, close + "<<~/ahu>>".length) + "\n";
+  const block = findTopLevelAhuBlocks(text).find((b) => b.slot === name);
+  return block ? blockSpan(text, block) : null;
 }
 
 // ── the whole carrier, paged on slot boundaries ──────────────────────────────────────────────────────
