@@ -196,7 +196,6 @@ export function decideRoute(input: RouteInput): Route {
 const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
   act:     ["out", "source"],                       // REPACK --source <bundle> [--out <file>]; --from names a bag
   ingest:  ["source"],
-  watch:   ["source"],
   meme:    ["file", "out", "root"],
   bag:     ["dir", "root"],                         // bag repo add --root <path>; --dir <bags dir>
   vault:   ["out"],

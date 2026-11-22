@@ -247,7 +247,13 @@ export interface ActClaims { readonly houseCanon?: boolean }
 
 export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<number> {
   // `--draft <uri>` pulls a lower-bag tiddler into a writable draft: the pull rides this door, the landing rides an ACTION verb.
-  if (args.flags["draft"] === true) return await cmdDraft(args);
+  if (args.flags["draft"] === true) {
+    if (args.positional[0] !== undefined && (isActionVerb(args.positional[0]) || args.positional[0] === "REPACK")) {
+      console.error(`lares act --draft: "${args.positional[0]}" is an ACTION verb; --draft takes the tiddler to pull (lares act --draft <uri>)`);
+      return 2;
+    }
+    return await cmdDraft(args);
+  }
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);

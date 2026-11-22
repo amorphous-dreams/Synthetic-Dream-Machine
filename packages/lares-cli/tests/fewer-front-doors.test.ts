@@ -73,7 +73,7 @@ describe("fewer front doors", () => {
     expect(a.err).toContain("--yes");
     const b = await run(["ingest", "--debounce", "100", "--source", "x", "--to", "lar:///ha.ka.ba/bags/x"]);
     expect(b.code).toBe(2);
-    expect(b.err).toContain("--watch");
+    expect(b.err).toContain("unknown flag --debounce");
     const c = await run(["ingest", "--watch"]);
     expect(c.code).toBe(2);
     expect(c.out).toContain("lares ingest --watch --source");
