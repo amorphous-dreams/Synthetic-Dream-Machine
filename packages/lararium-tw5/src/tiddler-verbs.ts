@@ -212,6 +212,7 @@ async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<
   const target = readContainer(args, verb);
   if (target.recipe === null || target.recipe === "default") return null;
   const slug = target.recipe;
+  if (write && slug === "tw5-docs") throw new VerbRefusal("tw5-docs-read-only", "tw5-docs-read-only: the documentation library takes no writes");
   if (slug === DAEMON_WIKI_SLUG) throw refuseUnreached(verb, `the daemon wiki answers to \`recipe: "default"\` alone`);
   if (!opts.wikis) throw refuseUnreached(verb, `this island holds no door to a named wiki's engine, so "${slug}" answers nothing here`);
   const engine = await opts.wikis.of(slug, { write });

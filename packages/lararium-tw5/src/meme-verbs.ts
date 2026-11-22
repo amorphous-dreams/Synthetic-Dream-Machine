@@ -506,6 +506,7 @@ async function resolveRead(
 export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-put");
+    if (target.recipe === "tw5-docs") throw new VerbRefusal("tw5-docs-read-only", "tw5-docs-read-only: the documentation library takes no writes");
     refuseEffectLedgerWrite(target.uri, "meme put");
     const text = stringArg(args, "text");
     if (!text) throw new Error("meme-put: args.text is required (the whole meme, framed)");
@@ -616,6 +617,7 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
   const put = makeMemePutReactor(opts);
   return async (args, ctx) => {
     const target = readTarget(args, "meme-patch");
+    if (target.recipe === "tw5-docs") throw new VerbRefusal("tw5-docs-read-only", "tw5-docs-read-only: the documentation library takes no writes");
     refuseEffectLedgerWrite(target.uri, "meme patch");
     const slot = stringArg(args, "slot").trim();
     if (!slot) throw new Error("meme-patch: args.slot is required (`#/name`, the slot whose body moves)");
@@ -911,6 +913,7 @@ async function deleteThroughRecipe(
 export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
+    if (target.recipe === "tw5-docs") throw new VerbRefusal("tw5-docs-read-only", "tw5-docs-read-only: the documentation library takes no writes");
     refuseEffectLedgerWrite(target.uri, "meme delete");
     const base = readBase(optionalStringArg(args, "base"), "meme-delete", false, "refuse");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };

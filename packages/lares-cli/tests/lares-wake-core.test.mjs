@@ -548,3 +548,10 @@ test("menu failures and timeouts name their cause", async () => {
     assert.match(result, cause);
   }
 });
+
+test("wake-names-the-docs-library: a vessel that answers up names the read-only TiddlyWiki docs library and its read door", async () => {
+  const up = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])) }) });
+  assert.match(up, /^Library: tw5-docs \(TiddlyWiki docs, read-only\)/m);
+  const down = await wake({ run: runner({ observe: answered(JSON.stringify({ data: { node: { up: false } } })), homes: answered("h"), index: hung([], "index") }) });
+  assert.doesNotMatch(down, /Library: tw5-docs/);
+});
