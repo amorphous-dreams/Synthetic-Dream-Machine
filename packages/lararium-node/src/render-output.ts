@@ -4,6 +4,7 @@ import {
   closeSync, constants, existsSync, fstatSync, linkSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readlinkSync,
   realpathSync, renameSync, rmdirSync, unlinkSync, writeSync, type Stats,
 } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { dirname, isAbsolute, join, resolve, sep } from "node:path";
 import { HOUSE_STATE_SIBLINGS } from "./bag-paths.js";
 
@@ -40,6 +41,40 @@ export function trackedTreeRoots(canonBags: string, houseRoot: string): string[]
     if (dirname(walk) === walk) break;
   }
   return roots;
+}
+
+/**
+ * The nearest folder at or above `dir` whose `.git` marks a work tree as git's own discovery reads one: a directory holding `HEAD`,
+ * `objects/` and `refs/`, or a linked worktree's file naming its `gitdir:`. A marker that reads as neither (an empty `.git` left
+ * behind) marks nothing, and the walk climbs on, as git's does. Null where none stands.
+ */
+function gitTreeOf(dir: string): string | null {
+  for (let walk = dir; ; walk = dirname(walk)) {
+    const marker = join(walk, ".git");
+    const stat = lstatSync(marker, { throwIfNoEntry: false });
+    if (stat?.isDirectory() && ["HEAD", "objects", "refs"].every((part) => existsSync(join(marker, part)))) return walk;
+    if (stat?.isFile()) { try { if (readFileSync(marker, "utf8").startsWith("gitdir:")) return walk; } catch { return walk; } }
+    if (dirname(walk) === walk) return null;
+  }
+}
+
+/**
+ * A GIT WORK TREE TAKES DERIVED BYTES ONLY WHERE GIT ITSELF SAYS IT IGNORES THEM. Git answers from the tree's own effective
+ * excludes (`check-ignore`, a read that writes nothing; optional locks off): every path this publication would lay under
+ * rendered/ must read ignored, and the index must track nothing there. Git absent, git refusing, or any path unignored: refuse.
+ * The publisher never tends that exclude itself, since the tree is the operator's, not the house's.
+ */
+function gitIgnoresRendered(workbench: string, paths: readonly string[]): boolean {
+  // Git reads the tree the workbench stands in, never one an inherited GIT_DIR or GIT_WORK_TREE names elsewhere.
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")));
+  env["GIT_OPTIONAL_LOCKS"] = "0";
+  const asked = paths.map((p) => `rendered/${p}`);
+  const ignored = spawnSync("git", ["check-ignore", "-z", "--stdin"], { cwd: workbench, env, input: `${asked.join("\0")}\0`, encoding: "utf8" });
+  if (ignored.error || (ignored.status !== 0 && ignored.status !== 1)) return false;
+  const answered = new Set(ignored.stdout.split("\0").filter(Boolean));
+  if (!asked.every((p) => answered.has(p))) return false;
+  const tracked = spawnSync("git", ["ls-files", "-z", "--", "rendered"], { cwd: workbench, env, encoding: "utf8" });
+  return !tracked.error && tracked.status === 0 && tracked.stdout === "";
 }
 
 /**
@@ -133,6 +168,9 @@ export function publishWikiRender(opts: {
     }
     const receipt = digest(JSON.stringify({ rows: rows.map(({ name, digest }) => [name, digest]), skipped: opts.skipped, overwrite: opts.overwrite === true }));
     const manifestName = `.manifest-${receipt}.json`;
+    // A workbench inside any git work tree (a bound checkout, a linked worktree, a pool) fails closed unless git ignores the lot.
+    if (gitTreeOf(workbench) !== null && !gitIgnoresRendered(workbench, [...rows.map((row) => row.name), manifestName, ".stage-probe/probe.tmp"]))
+      throw fault("render-output-tracked-tree", "the workbench rests in a git work tree whose excludes leave rendered/ unignored; derived bytes never land there");
     const prepared = JSON.stringify(rows.map(({ name, bytes, digest }) => ({ name, bytes, digest })));
 
     // rendered/ opens once, by name under the held workbench, refusing a symlink; every later step descends from this handle.

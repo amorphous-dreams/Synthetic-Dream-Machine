@@ -27,7 +27,7 @@ import { resolveDiskMirrors, type DiskMirrorGrant } from "../../lararium-mesh/sr
 import { expandRecipe, wikiSlotUri } from "../../lararium-mesh/src/wiki-recipe.js";
 import { workspaceRootsOf, facePersonalRoot, FACES_PROJECTION_DIR, houseIgnored, houseExcludeLines, WORKSPACE_EXCLUDE_LINES, REALM_EXCLUDE_LINES } from "../src/bag-paths.js";
 import { publishWikiRender, trackedTreeRoots } from "../src/render-output.js";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { isWatchNoise, WORKSPACE_SKIP } from "../src/watch-core.js";
 
 const dirs: string[] = [];
@@ -184,6 +184,33 @@ describe("render output custody in a bound workbench", () => {
     // A house resting inside a tracked home names no checkout: only the canon source and its wikis stay closed.
     mkdirSync(join(h.root, ".git"));
     expect(trackedTreeRoots(join(h.root, "bags"), h.root)).toEqual([join(realpathSync(h.root), "bags"), join(realpathSync(h.root), "wikis")]);
+  });
+  test("a workbench inside a git work tree whose exclude leaves rendered/ unignored refuses before any byte lands; one that ignores it writes", () => {
+    const h = house();
+    const git = (cwd: string, ...args: string[]) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", ...args], { cwd, stdio: ["ignore", "pipe", "pipe"] }).toString();
+    const status = (cwd: string) => git(cwd, "status", "--porcelain", "-uall").trim();
+    // A plain clone bound as a workspace under a canon source that names no checkout (road 4j).
+    const clone = join(h.root, "..", "clone"); mkdirSync(clone); git(clone, "init", "-q"); git(clone, "commit", "-q", "--allow-empty", "-m", "seed");
+    symlinkSync(clone, join(h.workspaces, "repo"));
+    const tracked = trackedTreeRoots(join(h.root, "bags"), h.root);
+    expect(() => publishWikiRender({ workbench: join(h.workspaces, "repo"), hearth: h.hearth, tracked, files: [files[0]!], skipped: [] })).toThrow(/render-output-tracked-tree/);
+    expect(status(clone)).toBe("");
+    // A linked worktree, whose `.git` stands as a file, refuses the same way, and from a folder nested inside it.
+    const worktree = join(h.root, "..", "linked"); git(clone, "worktree", "add", "-q", worktree);
+    mkdirSync(join(worktree, "notes"));
+    for (const workbench of [worktree, join(worktree, "notes")]) {
+      expect(() => publishWikiRender({ workbench, hearth: h.hearth, tracked, files: [files[0]!], skipped: [] })).toThrow(/render-output-tracked-tree/);
+    }
+    expect(status(worktree)).toBe("");
+    // A clone whose own exclude ignores /rendered/ takes the bytes, and git sees nothing new.
+    const ignoring = join(h.root, "..", "ignoring"); mkdirSync(ignoring); git(ignoring, "init", "-q");
+    writeFileSync(join(ignoring, ".git", "info", "exclude"), "/rendered/\n");
+    expect(publishWikiRender({ workbench: ignoring, hearth: h.hearth, tracked, files, skipped: [] }).outcome).toBe("written");
+    expect(readFileSync(join(ignoring, "rendered", "nested", "b.html"), "utf8")).toBe("second");
+    expect(status(ignoring)).toBe("");
+    // An empty `.git` left behind marks no work tree, for git or for the publisher.
+    const stray = join(h.workspaces, "stray"); mkdirSync(join(stray, ".git"), { recursive: true });
+    expect(publishWikiRender({ workbench: stray, hearth: h.hearth, tracked, files: [files[0]!], skipped: [] }).outcome).toBe("written");
   });
   test("refuses config and sensoriums as it refuses the hearth, read by the house root's structure", () => {
     const h = house();
