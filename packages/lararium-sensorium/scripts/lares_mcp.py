@@ -235,6 +235,8 @@ SEAT_INSTRUCTIONS = (
     "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense harden`, `retire`, "
     "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
     "the command for the operator to run on their own terminal, since no value a seat fills approves it."
+    " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"pin\", slug=..., rotate=True, release=True)` releases a rotate hold (omit release to hold). Bag pins, ordinary wiki pins, and next boot stay outside this seat. "
+    " `wiki_status()` surveys catalog, activation and vessel residency; name `recipe` for layer write reach."
     " The `wiki` tool's `verb=\"act\"` runs one named admitted action (today `sidebar-layout`) in the wiki `recipe` names, with the `expected` and `resulting` values checked; it takes no action text, and a stale `expected` answers `conflict` and writes nothing."
 )
 
@@ -1027,26 +1029,36 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool()
     def wiki(verb: str, slug: "str | None" = None, name: "str | None" = None,
              recipe: "str | None" = None, expected: "str | None" = None,
-             resulting: "str | None" = None) -> dict:
-        """The wiki door — mirrors selected `lares wiki <verb>` operations:
-        `switch <slug>` LIVE-activates a wiki (no reboot — the true swap; wakes it cold from its
-        recipe; a browser flips its projection surface). `hold`/`release <slug>` rotate the
-        active-wiki pin (budget-enforced: @daemon always + N rotatable). `active` reports the live
-        state (running wikis + which are held). `act` runs one admitted floor-shadow action
-        with an explicit recipe and checked starting and resulting layout values.
-        Rides the @daemon cap-wire like every verb (uds), never a local store."""
-        allowed = {"switch", "hold", "release", "active", "act"}
+             resulting: "str | None" = None, bag: bool = False, rotate: bool = False,
+             release: bool = False, next_boot: bool = False) -> dict:
+        """Switch a live wiki with `verb="switch", slug=...`; hold its rotate slot with
+        `verb="pin", slug=..., rotate=True` and release it with `release=True`.
+        `act` runs an admitted action with recipe, name, expected and resulting.
+        `wiki_status` reads status. Bag pins, ordinary wiki pins and next boot stay outside this seat."""
+        allowed = {"switch", "pin", "act"}
         if verb not in allowed:
             raise SeatArgumentRefused(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
+        for flag, value in (("bag", bag), ("next_boot", next_boot)):
+            if value:
+                raise SeatArgumentRefused(f"wiki: `{flag}` refused on this seat")
         if verb == "act":
+            if rotate or release:
+                raise SeatArgumentRefused("wiki act: `rotate` and `release` refused")
             if slug is not None or not recipe or not name or not expected or not resulting:
                 raise SeatArgumentRefused("wiki act: name, recipe, expected and resulting required; slug refused")
             return _meme_wire("wiki-action", {**_wiki_container("wiki act", recipe), "name": name,
                                               "expected": expected, "resulting": resulting})
         if any(value is not None for value in (name, recipe, expected, resulting)):
             raise SeatArgumentRefused("wiki: action parameters ride `verb=act` alone")
-        args: dict = {"slug": slug} if slug else {}
-        return uds.output(f"wiki-{verb}", args)
+        if not slug:
+            raise SeatArgumentRefused("wiki: slug required")
+        if verb == "switch":
+            if rotate or release:
+                raise SeatArgumentRefused("wiki switch: `rotate` and `release` refused")
+            return uds.output("wiki-switch", {"slug": slug})
+        if not rotate:
+            raise SeatArgumentRefused("wiki pin: `rotate=True` required on this seat")
+        return uds.output("wiki-release" if release else "wiki-hold", {"slug": slug})
 
     # ── the MEME namespace — `meme_put` and its kin, the MCP skin of the one placement function (reads ride `tiddler_get`) ──
 
@@ -1337,11 +1349,16 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_READS)
     def wiki_status(recipe: "str | None" = None, target: "str | None" = None) -> dict:
-        """NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
+        """Without a recipe, survey the catalog, activation and vessel residency. With a recipe, NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
         status`. Returns {recipe, working, layers: [{bag, mounted, read, write, working?, why?}]}: `working` names the
         layer every `tiddler_put` (with or without `meme=True`) lands in (null where none stands attached); each layer reads `mounted`
         "writable", "read-only" or "promotion-only" (a canon layer: a write reaches it by action verb alone, never by a put),
         the face's own `read` and `write`, and `why` where a mounted-writable layer still refuses this face. Read it before a write to learn where the write lands. CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        if recipe is None:
+            if target is not None:
+                raise SeatArgumentRefused("wiki_status: target requires recipe")
+            return {"catalog": uds.output("list-wikis", {}), "activation": uds.output("wiki-active", {}),
+                    "residency": {"scope": "vessel", **uds.output("residency", {})}}
         return _meme_wire("wiki-status", {**_wiki_container("wiki_status", recipe), **_target(target)})
 
     @mcp.tool(annotations=_READS)

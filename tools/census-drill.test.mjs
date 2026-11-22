@@ -137,7 +137,7 @@ test("P1 RED: the census reads the face row the vessel answers `mounted`, and a 
       "const [, , ...a] = process.argv; const s = a.join(' '); const out = (x) => console.log(JSON.stringify(x));",
       "if (s.startsWith('persona list')) out({ ok: true, data: { personas: [{ petname: 'steward', handleIndex: 0 }] } });",
       "else if (s.startsWith('kahua get')) out({ [process.env.FAKE_FACE_WORD]: true, relation: 'rel-1', items: [] });",
-      "else if (s.startsWith('wiki list')) out({ ok: true, data: { wikis: [] } });",
+      "else if (s.startsWith('wiki status')) out({ ok: true, data: { catalog: { wikis: [] } } });",
       "else if (s.startsWith('tiddler get --meme')) out({ ok: true, data: { roots: [{ uri: 'lar:///ha.ka.ba/kahua/memory/state/heron', canonicalHash: 'sha256:aa' }] } });",
       "else if (s.startsWith('wiki filter')) out({ ok: true, data: { rows: [] } });",
       "else { console.error('unread door: ' + s); process.exit(9); }",
@@ -330,8 +330,8 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     await old.unlock();
     // The rite holds each workbench before the export (a cold wiki reads `document-unavailable`), and the wiki carries a page,
     // so its workbench travels and the import re-stands it (an empty wiki carries its share row alone).
-    old.must(["wiki", "hold", "notes"]);
-    old.must(["wiki", "hold", "quiet"]);
+    old.must(["wiki", "pin", "notes", "--rotate"]);
+    old.must(["wiki", "pin", "quiet", "--rotate"]);
     const page = join(scratch, "page.mem");
     writeFileSync(page, memeText(PAGE, "a page on the shared wiki", ""));
     old.must(["tiddler", "put", "--meme", PAGE, "--recipe", "notes", "--file", page, "--json"]);
@@ -361,8 +361,8 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     // The bundle carries the keep seat beside its roster: the staged root's route opens it at the import, and no file crosses.
     const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
     assert.equal(JSON.parse(imported.stdout.trim().split("\n").pop()).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
-    fresh.must(["wiki", "hold", "notes"]);
-    fresh.must(["wiki", "hold", "quiet"]);
+    fresh.must(["wiki", "pin", "notes", "--rotate"]);
+    fresh.must(["wiki", "pin", "quiet", "--rotate"]);
 
     // ── PAR over the real read doors ────────────────────────────────────────────────────────────────────────────
     const par = witness(snapshot, fresh);

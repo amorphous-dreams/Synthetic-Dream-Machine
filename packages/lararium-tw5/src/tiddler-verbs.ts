@@ -195,7 +195,7 @@ interface Anchor {
 }
 
 const refuseUnreached = (verb: string, why: string): VerbRefusal =>
-  new VerbRefusal("wiki-unreached", `wiki-unreached: ${verb} — ${why}; \`lares wiki list\` names the wikis this face reaches, and \`--recipe default\` names its daemon wiki.`);
+  new VerbRefusal("wiki-unreached", `wiki-unreached: ${verb} — ${why}; \`lares wiki status\` names the wikis this face reaches, and \`--recipe default\` names its daemon wiki.`);
 
 /**
  * THE NAMED WIKI'S OPTIONS: where the call names a registered wiki, the options its own engine answers under, or null where

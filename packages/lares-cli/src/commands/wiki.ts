@@ -21,11 +21,12 @@
  */
 
 import { vesselDid } from "../env.js";
-import { emit, exitFor } from "../render.js";
+import { emit, exitFor, wantsJson } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
 import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { cmdShare } from "./share-cmd.js";
+import { cmdPin, cmdUnpin, cmdResidency } from "./residency.js";
 import { ensureWikiRealm, labelRealmOf, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { RealmRefused, loadLaresConfig, tempConsentedSlugs } from "@lararium/node";
@@ -126,11 +127,11 @@ async function holdTheMint(slug: string, did: string): Promise<{ held: boolean; 
   const holds = Array.isArray(live?.held) ? live.held.map(String) : [];
   const budget = typeof live?.pinBudget === "number" ? live.pinBudget : null;
   if (budget !== null && holds.length >= budget && !holds.includes(slug)) {
-    return { held: false, note: `not held: the hold budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki release <slug>\` frees one, then \`lares wiki hold ${slug}\` holds this wiki` };
+    return { held: false, note: `not held: the hold budget stands full (${holds.length}/${budget}: ${holds.join(", ")}); \`lares wiki pin <slug> --rotate --release\` frees one, then \`lares wiki pin ${slug} --rotate\` holds this wiki` };
   }
   const r = await call("wiki-hold", { slug }, did, { timeoutMs: 30_000 });
   const held = r.status !== "error" && (summaryOutput(r) as { held?: unknown } | null)?.held === true;
-  return { held, note: held ? `held (rotatable pin)` : `not held: ${r.errorMessage ?? "the wiki would not activate"}; \`lares wiki hold ${slug}\` retries` };
+  return { held, note: held ? `held (rotatable pin)` : `not held: ${r.errorMessage ?? "the wiki would not activate"}; \`lares wiki pin ${slug} --rotate\` retries` };
 }
 
 /**
@@ -343,7 +344,7 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
 export async function cmdWikiOpen(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki open <slug>");
+    console.error("usage: lares wiki switch <slug> --next-boot");
     return 2;
   }
   const did    = await vesselDid();
@@ -389,6 +390,10 @@ export async function cmdWikiSync(args: ParsedArgs): Promise<number> {
 }
 
 export async function cmdWikiPin(args: ParsedArgs): Promise<number> {
+  if (args.flags["bag"] && args.flags["rotate"]) { console.error("wiki pin: --bag and --rotate cannot stand together"); return 2; }
+  if (args.flags["bag"]) return args.flags["release"] ? cmdUnpin(args) : cmdPin(args);
+  if (args.flags["rotate"]) return args.flags["release"] ? cmdWikiRelease(args) : cmdWikiHold(args);
+  if (args.flags["release"]) return cmdWikiUnpin(args);
   const slug = args.positional[0];
   if (!slug) {
     console.error("usage: lares wiki pin <slug>");
@@ -413,7 +418,7 @@ export async function cmdWikiPin(args: ParsedArgs): Promise<number> {
 export async function cmdWikiUnpin(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki unpin <slug>");
+    console.error("usage: lares wiki pin <slug> --release");
     return 2;
   }
   const did    = await vesselDid();
@@ -435,6 +440,7 @@ export async function cmdWikiUnpin(args: ParsedArgs): Promise<number> {
  *  Distinct from `open`, which sets the next-boot pointer. On the browser this also
  *  flips the #projection surface to the newly-live wiki. */
 export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
+  if (args.flags["next-boot"]) return cmdWikiOpen(args);
   const slug = args.positional[0];
   if (!slug) {
     console.error("usage: lares wiki switch <slug>");
@@ -460,12 +466,12 @@ export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
   return active ? 0 : 5;
 }
 
-/** `lares wiki hold <slug>` — pin a wiki as a rotatable active pin (budget-enforced:
+/** `lares wiki pin <slug> --rotate` — pin a wiki as a rotatable active pin (budget-enforced:
  *  The daemon bag always + N rotatable; a hold past the budget releases the least-recently-held). */
 export async function cmdWikiHold(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki hold <slug>");
+    console.error("usage: lares wiki pin <slug> --rotate");
     return 2;
   }
   const did = await vesselDid();
@@ -484,11 +490,11 @@ export async function cmdWikiHold(args: ParsedArgs): Promise<number> {
   return held ? 0 : 5;
 }
 
-/** `lares wiki release <slug>` — drop a wiki's rotatable pin (it stays live, just becomes a cooling candidate). */
+/** `lares wiki pin <slug> --rotate --release` — drop a wiki's rotatable pin (it stays live, just becomes a cooling candidate). */
 export async function cmdWikiRelease(args: ParsedArgs): Promise<number> {
   const slug = args.positional[0];
   if (!slug) {
-    console.error("usage: lares wiki release <slug>");
+    console.error("usage: lares wiki pin <slug> --rotate --release");
     return 2;
   }
   const did = await vesselDid();
@@ -506,7 +512,7 @@ export async function cmdWikiRelease(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** `lares wiki active` — the live switcher state: which wikis run now + which are held. */
+/** `lares wiki status` — the live switcher state: which wikis run now + which are held. */
 export async function cmdWikiActive(_args: ParsedArgs): Promise<number> {
   const did = await vesselDid();
   const r = await call("wiki-active", {}, did);
@@ -911,6 +917,25 @@ async function cmdWikiRender(args: ParsedArgs): Promise<number> {
 }
 
 async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
+  if (args.options["recipe"] === undefined && args.flags["recipe"] === undefined && args.options["bag"] === undefined && args.flags["bag"] === undefined && args.options["realm"] === undefined && args.flags["realm"] === undefined) {
+    if (args.options["target"] !== undefined || args.flags["target"] !== undefined) return guardDoor(args, "wiki status", async () => { throw new DoorUsage("--target requires a recipe"); });
+    if (!wantsJson(args)) {
+      for (const render of [cmdWikiList, cmdWikiActive, cmdResidency]) { const code = await render(args); if (code !== 0) return code; }
+      return 0;
+    }
+    let named: { face?: number };
+    try { named = args.options["face"] === undefined && args.flags["face"] === undefined ? {} : faceOption(args); }
+    catch (error) { console.error(String(error)); return 2; }
+    const did = await vesselDid();
+    const catalog = named.face === undefined ? await call("list-wikis", {}, did) : await runVerbAsFace("list-wikis", {}, named.face).catch((err: unknown) => ({ status: "error" as const, requestId: "", errorMessage: verbFailure(err).message }));
+    if (catalog.status === "error") { console.error(catalog.errorMessage); return 4; }
+    const active = await call("wiki-active", {}, did);
+    const residency = await call("residency", {}, did);
+    if (active.status === "error" || residency.status === "error") { console.error(active.errorMessage ?? residency.errorMessage); return 4; }
+    const data = { catalog: summaryOutput(catalog) ?? {}, activation: summaryOutput(active) ?? {}, residency: { scope: "vessel", ...(summaryOutput(residency) ?? {}) } };
+    emit(args, { ok: true, requestId: catalog.requestId, data, human: () => console.log(JSON.stringify(data, null, 2)) });
+    return 0;
+  }
   return guardDoor(args, "wiki status", async () => {
     const ran = await runDoor(args, "wiki status", wikiStatusPlan(args));
     if (!ran.ok) return ran.exit;
@@ -953,25 +978,19 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent: over a shell a partial init left it stands what is missing (the recipe row, this face's bag registrations, its workbench) and answers `completed` naming each; run again, it answers `already-exists` and changes nothing. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
   "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]`), a person's hand alone (a seat session refuses): its catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave, its workbench folder steps aside by rename, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shared shell refuses `wiki-shared` (remove the shares first); `--dry-run` reads the record counts, the authored records apart from the house's effect records (a gated ingest's residency rows, which the retire carries, verbatim, into one retirement record per slug in the face's daemon wiki working layer before the shell goes, refusing `retire-carry-unlanded` with nothing erased where that carry cannot land); a shell holding authored records refuses `wiki-not-empty` unless `--force --count` names that count." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
-  "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
-  "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },
-  "hold":    { handler: cmdWikiHold,    summary: "Pin a wiki as a rotatable active pin (the daemon bag always + N rotatable; a hold past budget releases the least-recently-held)." },
-  "release": { handler: cmdWikiRelease, summary: "Drop a wiki's rotatable pin (it stays live, becomes a cooling candidate)." },
-  "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface (the daemon always holds one slot and stands outside the list)." },
+  "switch": { handler: cmdWikiSwitch, summary: "Switch a live wiki, or set the boot pointer with --next-boot." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
-  "pin":        { handler: cmdWikiPin,       summary: "Pin every bag in the wiki's recipe (whole-recipe STOWAGE — the heat axis, never the canon one `resolve` reads)." },
-  "unpin":      { handler: cmdWikiUnpin,     summary: "Unpin every bag in the wiki's recipe." },
+  "pin":        { handler: cmdWikiPin,       summary: "Pin a recipe, --bag or --rotate; --release reverses the named pin." },
   "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },
   "remove-bag": { handler: cmdWikiRemoveBag, summary: "Remove a bag from the wiki's recipe (soft remove; F-arc adds StoryList drain)." },
   "compact":       { handler: cmdWikiCompact,         summary: "DXOS-style snapshot-restart on one of the wiki's bags. Bounds history." },
   "rotate-recipe": { handler: cmdWikiRotateRecipe,  summary: "Nix-generations: mint fresh canonical; retain old as previous-canon underlay." },
   "prune-stale":   { handler: cmdWikiPruneStale,    summary: "Surface stale draft tiddlers (no recent activity) for residency-action-or-prune." },
-  "list":       { handler: cmdWikiList,      summary: "Enumerate wikis registered in the catalog. Needs `lares vessel stand --foreground`." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
   "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
   "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The render reaches stdout. `--target <h1|pet name>` renders in another lit face's view (never its personal layer), keeping the face worn." },
-  "status":     { handler: cmdWikiStatus,    summary: "Name each layer the wiki composes and whether this face reads and writes it: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
+  "status":     { handler: cmdWikiStatus,    summary: "Survey catalog, activation and residency; --recipe names each layer and its write reach: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
   "act":        { handler: cmdWikiAction, summary: "Run one admitted native action: `wiki act sidebar-layout --recipe <wiki> --expected fixed-fluid --resulting fluid-fixed`." },
 };
 
@@ -991,6 +1010,8 @@ export async function cmdWiki(args: ParsedArgs): Promise<number> {
     printWikiHelp();
     return verb ? 0 : 2;
   }
+  const moved: Record<string, string> = { open: "wiki switch <slug> --next-boot", hold: "wiki pin <slug> --rotate", release: "wiki pin <slug> --rotate --release", unpin: "wiki pin <slug> --release", list: "wiki status", active: "wiki status" };
+  if (moved[verb]) { console.error(`lares wiki: moved to \`lares ${moved[verb]}\`.`); return 2; }
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares wiki: unknown verb "${verb}". Run \`lares wiki help\` for the list.`);

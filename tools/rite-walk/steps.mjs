@@ -332,7 +332,7 @@ const found = cli((ctx) => ["vessel", "found", "--hearth", "--name", FACES.stewa
 const up = async (ctx) => ({ ok: true, answer: await ctx.up() });
 const down = async (ctx) => ({ ok: true, answer: await ctx.down() });
 const persona = (n, name) => cli(["persona", "new", String(n), "--name", name, "--no-json"], `persona h${n} minted`);
-const hold = cli(["wiki", "hold", "notes", "--no-json"]);
+const hold = cli(["wiki", "pin", "notes", "--rotate", "--no-json"]);
 
 const FOUND = "lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'";
 const LAY = "lares vessel lay --apply --yes";
@@ -442,9 +442,9 @@ export const STEPS = Object.freeze([
 
   // Carry across a re-founding.
   { id: "hold-wear-referee", fence: "lares vault unlock --face 2", via: SC, needs: ["up-to-release"], expect: "wears 2", run: wear(2) },
-  { id: "hold-referee", fence: "lares wiki hold notes", needs: ["hold-wear-referee", "notes-share"], run: hold },
+  { id: "hold-referee", fence: "lares wiki pin notes --rotate", needs: ["hold-wear-referee", "notes-share"], run: hold },
   { id: "hold-wear-steward", fence: "lares vault unlock --face 0", nth: 1, via: SC, needs: ["up-to-release"], expect: "wears 0", run: wear(0) },
-  { id: "hold-steward", fence: "lares wiki hold notes", nth: 1, needs: ["hold-wear-steward", "notes-share"], run: hold },
+  { id: "hold-steward", fence: "lares wiki pin notes --rotate", nth: 1, needs: ["hold-wear-steward", "notes-share"], run: hold },
   { id: "export", fence: "lares export ~/.lares/config/carry-2", needs: ["hold-wear-steward"], expect: "the bundle reads back against its manifest",
     run: cli((ctx) => ["export", ctx.carry(), "--no-json"]) },
   { id: "down-to-refound", fence: "lares down", nth: 1, needs: ["up-to-release"], expect: "the vessel stops", run: down },

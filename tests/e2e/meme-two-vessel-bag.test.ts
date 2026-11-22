@@ -167,7 +167,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // (genesis-doc.ts `systemRecipe`); `wiki which` reads the working doc the ONE resolver names; the
     // daemon's `bag stats` names what each vessel holds resident.
     for (const [tag, v] of [["A", A!], ["B", B!]] as const) {
-      const stats = await v.cli(["bag", "stats", "--no-json"]);
+      const stats = await v.cli(["wiki", "status", "--no-json"]);
       const which = await v.cli(["wiki", "which", URI, "--no-json"]);
       console.error(`meme-two-vessel-bag MEASURE ${tag}: bag stats\n${stats.stdout.trim()}\nwiki which ${URI}\n${which.stdout.trim()}`);
     }

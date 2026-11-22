@@ -192,12 +192,12 @@ logs_have() {
 #
 # A HERM STANDS AS A PLACE WITH NO FACE, and a place with no face answers only its floor
 # (packages/lararium-node/src/floor-verbs.ts: the control document mints with the face): `residency`
-# (`bag stats`) refuses `control-home-unnamed` there on every poll, so the herm's probe rides
+# (`wiki status`) refuses `control-home-unnamed` there on every poll, so the herm's probe rides
 # `unbound-docs` (`vessel unbound`) instead, a read-only floor query that still crosses the socket.
 answers() {
   case "$1" in
     herm-*) $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js vessel unbound >/dev/null 2>&1 ;;
-    *)      $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js bag stats --json >/dev/null 2>&1 ;;
+    *)      $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js wiki status --json >/dev/null 2>&1 ;;
   esac
 }
 
@@ -1145,7 +1145,7 @@ run_quorum_realm() {
 #
 # THE BOOK A MINTS. System canon takes live writes from the Kahu alone, so the crossing rides a user book A
 # mints (`wiki init`), the shape `herm-reshares` walks: `tiddler put --meme --recipe <book>` lands in the book's working
-# layer, `act MOVE` promotes the carrier group into the book's canon through the island its wiki opens, and
+# layer, `act MOVE` promotes the carrier group into the book's canon through the island its wiki switch --next-boots, and
 # `nexus realm-bag <book>` registers that canon on the realm at CONTRACT. A LOAD into canon refuses
 # (`load-into-canon`), so every write lands on working first.
 #

@@ -768,7 +768,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`.kapae` shadow leaves the disk); `--mode reveal` retracts one that hides a lower record. A meme root or slot " +
       "takes a field or tag patch here; its text moves through `lares tiddler put --meme`. `--base` carries the hash last " +
       "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
-      "door: `lares wiki filter | render | status`.",
+      "door: `lares wiki filter | render | status --recipe <slug>`; bare status surveys the vessel.",
     examples: [
       "lares tiddler get \"Room 4\" --recipe default                         # the record as a .tid on stdout, the base on stderr",
       "lares tiddler get \"Room 4\" --recipe default --skinny                 # every field, the text left home",
