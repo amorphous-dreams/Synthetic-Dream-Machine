@@ -2026,7 +2026,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             && (bareKey(context.presenter) === bareKey(daemonAuth.atom.key)
               || (litSiblings.has(bareKey(context.presenter)) && (context.invocation as { face?: unknown } | undefined)?.face !== undefined))) return;
           // A LIT SIBLING WORDS AND READS ITS OWN VOTA: main's rows that issue and show a votum run as the session's face, over
-          // that face's own proven plane and under its own atom; they clear here for a sibling whose door stands (its planes mounted).
+          // that face's own proven plane and under its own atom. Where the fence reads the row (a routed row that addresses a
+          // wiki or rides off the local channel), it clears for a sibling whose door stands (its planes mounted); a row the fence
+          // never reads binds in main to the session's worn face alone (`worn.ordinal`), so it reaches no other face's plane.
           if (context.local === true && context.presenter !== undefined && FACE_INTENT_ROWS.has(verb)
             && litSiblings.has(bareKey(context.presenter)) && intentDoors.open(bareKey(context.presenter))) return;
           // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
@@ -2380,8 +2382,10 @@ export const FACE_NEUTRAL_VERBS: Readonly<Record<string, string>> = Object.freez
 
 /**
  * THE INTENT ROWS A LIT SIBLING CLEARS: main's store-door rows that word and read a votum on the session face's own plane,
- * under that face's own atom (`intent-issue`, `intent-show`). They clear for a lit sibling only while its door stands, so
- * only while its proven planes mount; every other face row still meets the fence.
+ * under that face's own atom (`intent-issue`, `intent-show`). Where the fence reads a routed row (one that addresses a wiki,
+ * or rides off the local channel: the dispatcher's `admitRouted`), these clear for a lit sibling only while its door stands,
+ * so only while its proven planes mount; every other face row still meets the fence there. A routed row the fence does not
+ * read clears on its session alone, and main binds it to the session's worn face (`worn.ordinal`), never another face.
  */
 export const FACE_INTENT_ROWS: ReadonlySet<string> = new Set(["intent-issue", "intent-show"]);
 
