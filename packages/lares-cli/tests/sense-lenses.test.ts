@@ -101,7 +101,12 @@ describe("roster reads at two grains", () => {
   });
 });
 
-describe("a fold refuses by name every flag its path does not read", () => {
+describe("a fold refuses by name every flag its path does not read — at the door, through pathAccepts", () => {
+  const atTheDoor = (r: { code: number; err: string }, flag: string): void => {
+    expect(r.code).toBe(2);
+    expect(r.err).toContain(`unknown flag ${flag} for \`lares sense\``);
+  };
+
   test.each([
     [["--lens", "couple", "--signal", "x.ndjson"], "--signal"],
     [["--lens", "changes", "--repour"], "--repour"],
@@ -109,22 +114,24 @@ describe("a fold refuses by name every flag its path does not read", () => {
     [["--lens", "forecast", "--signal", "x.ndjson", "--names", "a,b"], "--names"],
     [["--lens", "square", "--wing", "w"], "--wing"],
   ])("`sense analyze %j` refuses naming %s", async (tail, flag) => {
-    const r = await door(["sense", "analyze", ...tail, "--json"]);
-    expect(r.code).toBe(2);
-    const message = String((json(r.out)["error"] as Record<string, unknown>)["message"]);
-    expect(message).toContain(flag);
+    atTheDoor(await door(["sense", "analyze", ...tail, "--no-json"]), flag);
   });
 
-  test("pour --bulk refuses the flags only another leg reads", async () => {
-    const r = await door(["sense", "pour", "--bulk", "--writeback", "--json"]);
-    expect(r.code).toBe(2);
-    expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("--writeback");
+  test("a sensorium name leading the verb narrows the same path", async () => {
+    atTheDoor(await door(["sense", "other", "analyze", "--lens", "couple", "--spectral", "--no-json"]), "--spectral");
   });
 
-  test("roster <name> refuses a flag the roster never reads", async () => {
-    const r = await door(["sense", "roster", "memory", "--lens", "content", "--json"]);
-    expect(r.code).toBe(2);
-    expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("--lens");
+  test("pour --bulk refuses a flag no pour leg it walks reads", async () => {
+    atTheDoor(await door(["sense", "pour", "--bulk", "--dry-run", "--no-json"]), "--dry-run");
+  });
+
+  test("roster refuses a flag the roster never reads", async () => {
+    atTheDoor(await door(["sense", "roster", "memory", "--lens", "content", "--no-json"]), "--lens");
+  });
+
+  test("CONTROL: a lens's own flags pass the door", async () => {
+    const r = await door(["sense", "analyze", "--lens", "forecast", "--json"]);
+    expect(r.err).not.toContain("unknown flag");
   });
 });
 

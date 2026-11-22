@@ -28,7 +28,7 @@ import { cmdPalaceTeardown } from "./palace-teardown.js";
 import { cmdRecall } from "./recall.js";
 import { cmdRefresh } from "./refresh.js";
 import { cmdMeta } from "./meta.js";
-import { cmdSenseAnalyze } from "./sense-analyze.js";
+import { cmdSenseAnalyze, resolveLens, SENSE_LENSES } from "./sense-analyze.js";
 import { cmdPlaneRecord } from "./plane-record.js";
 import { runQuiesce, runResume, runTopology, type DoorScope } from "./mempalace.js";
 import { udsAlive } from "../local-connector.js";
@@ -117,6 +117,27 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   "un-retire": cmdSenseUnRetire,
   purge:       cmdSensePurge,
 };
+
+/**
+ * A FOLD READS ONLY ITS OWN FLAGS — the door's `pathAccepts`. The `sense` row is the union over every verb, so a path
+ * folded beneath it names the narrower list it reads and the dispatcher refuses any other flag by name before the
+ * handler runs: each `analyze --lens <lens>` its lens's reads, `pour --bulk` the sweep's (and the other legs, which
+ * the handler refuses as a second leg), `roster` none. A leading sensorium name shifts the verb one word right. Every
+ * other path, and an analyze line whose lens names nothing (its handler refuses that), reads the whole row (null).
+ */
+export function sensePathAccepts(args: ParsedArgs): readonly string[] | null {
+  const [first, second] = args.positional;
+  const verb = first !== undefined && (LIFECYCLE[first] !== undefined || VERBS.includes(first as Verb)) ? first : second;
+  if (verb === "analyze") {
+    const lens = resolveLens(args.options["lens"] ?? "");
+    return lens === undefined ? null : ["lens", "sensorium-root", ...SENSE_LENSES[lens]!.reads];
+  }
+  if (verb === "pour" && args.flags["bulk"] === true) {
+    return ["bulk", "surface", "wing", "project", "limit", "sensorium-root", "all", "writeback"];
+  }
+  if (verb === "roster") return ["sensorium-root"];
+  return null;
+}
 
 export async function cmdSense(args: ParsedArgs): Promise<number> {
   // SENSORIUM ADDRESSING — `lares sense <sensorium> <verb>`: a leading KNOWN sensorium name (resolved

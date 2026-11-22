@@ -29,9 +29,7 @@ import {
   sensoriumDir,
 } from "@lararium/node";
 import { guardHitl, MUSTIE_GROUNDS } from "@lararium/mesh";
-import { emit, exitFor, refuseUsage } from "../render.js";
-import { helpLines } from "../command-help.js";
-import { unreadFlag } from "./fold-flags.js";
+import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** Emit one lifecycle outcome uniformly (legible-intent: the verb + its result ride the payload). */
@@ -61,8 +59,6 @@ function requireApprove(args: ParsedArgs, verb: string): void {
 
 /** ONE READ AT TWO GRAINS: bare, every sensorium and its lifecycle; with a name, that one sensorium's manifest facets. */
 export function cmdSenseRoster(args: ParsedArgs): number {
-  const stray = unreadFlag(args, []);
-  if (stray !== undefined) return refuseUsage(args, "sense roster", helpLines("sense"), `roster reads no ${stray}`);
   const name = args.positional[0];
   if (!name) return landed(args, "roster", { sensoria: rosterSensoria() });
   const insp = inspectSensorium(name);

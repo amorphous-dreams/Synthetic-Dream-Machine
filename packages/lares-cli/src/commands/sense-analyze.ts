@@ -26,7 +26,6 @@
 
 import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
-import { unreadFlag } from "./fold-flags.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { cmdAnalyze } from "./analyze.js";
 import { cmdRejim } from "./rejim.js";
@@ -79,11 +78,6 @@ export async function cmdSenseAnalyze(args: ParsedArgs): Promise<number> {
   if (args.positional.length > 0) {
     return refuseUsage(args, "sense analyze", helpLines("sense"), `--lens ${lens} takes no word after it (got '${args.positional.join(" ")}')`);
   }
-  const chosen = SENSE_LENSES[lens]!;
-  const stray = unreadFlag(args, ["lens", ...chosen.reads]);
-  if (stray !== undefined) {
-    const reads = chosen.reads.length ? chosen.reads.map((r) => `--${r}`).join(" ") : "no flag beyond --lens";
-    return refuseUsage(args, "sense analyze", helpLines("sense"), `--lens ${lens} reads no ${stray} (it reads ${reads})`);
-  }
-  return await chosen.run(args);
+  // A flag the lens does not read never reaches here: the door's `pathAccepts` (sensePathAccepts) refuses it by name.
+  return await SENSE_LENSES[lens]!.run(args);
 }
