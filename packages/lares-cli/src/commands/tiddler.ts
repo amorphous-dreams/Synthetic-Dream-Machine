@@ -32,7 +32,7 @@ import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan 
 import { targetOf, targetOnWriteRefusal } from "../target-option.js";
 import { helpLines } from "../command-help.js";
 import { readCarrierShape } from "@lararium/tw5";
-import { cmdMeme } from "./meme.js";
+import { cmdFamily } from "./family.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const SUBS = ["get", "put", "delete"] as const;
@@ -295,9 +295,9 @@ export async function cmdTiddler(args: ParsedArgs): Promise<number> {
   if (args.flags["meme"] === true && (sub === "get" && !args.positional[1] || sub === "put" || sub === "delete")) {
     const familySub = sub === "get" ? "list" : sub === "put" && (args.options["slot"] !== undefined || args.options["append"] !== undefined) ? "patch" : sub;
     // A slot write names one text source: --append <file>, --text <words> or --file <path> (the slot's whole body).
-    const sources = ["append", "text", "file"].filter((key) => args.options[key] !== undefined);
+    const sources = [args.options["append"], args.options["text"], args.options["file"]].filter((value) => value !== undefined);
     const ambiguous = sub === "put" && (familySub === "patch" ? sources.length !== 1 : args.options["text"] !== undefined && args.options["file"] !== undefined);
-    const incompatible = sub === "put" && ["fields", "unset", "tag-add", "tag-remove"].some((key) => args.options[key] !== undefined)
+    const incompatible = sub === "put" && [args.options["fields"], args.options["unset"], args.options["tag-add"], args.options["tag-remove"]].some((value) => value !== undefined)
       || sub === "put" && args.flags["create"] === true
       || sub === "delete" && (args.flags["family"] === true || args.options["mode"] !== undefined);
     if (ambiguous || incompatible) {
@@ -305,11 +305,8 @@ export async function cmdTiddler(args: ParsedArgs): Promise<number> {
       emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(`lares tiddler ${sub}: ${message}`) });
       return exitFor("usage");
     }
-    // The family patch reads the slot's whole-body file as `replace` (its wire word); the public door spells it `--file`.
-    const { file: slotFile, ...rest } = args.options;
-    const options = familySub === "patch" && slotFile !== undefined ? { ...rest, replace: slotFile } : args.options;
-    const familyArgs = { ...args, options, command: "meme", positional: sub === "get" ? [familySub] : [familySub, ...args.positional.slice(1)] } as ParsedArgs;
-    return cmdMeme(familyArgs);
+    const familyArgs = { ...args, command: "meme", positional: sub === "get" ? [familySub] : [familySub, ...args.positional.slice(1)] } as ParsedArgs;
+    return cmdFamily(familyArgs);
   }
   if (!(SUBS as readonly string[]).includes(sub ?? "")) {
     if (sub) console.error(`lares tiddler: unknown sub-verb "${sub}"`);
