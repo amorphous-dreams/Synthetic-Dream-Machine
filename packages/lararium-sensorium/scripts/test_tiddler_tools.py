@@ -280,3 +280,60 @@ def test_slot_write_names_one_source_and_a_base(daemon):
         with pytest.raises(ValueError):
             t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", **kwargs)
     assert daemon.lines == []
+
+
+def test_meme_all_joins_pages_and_retains_the_first_provenance(daemon):
+    daemon.output = {"has": "<<~ has name=`first`>>", "title": "lar:///t/x", "meme": {"uri": "lar:///t/x", "text": "aloha", "canonicalHash": "hash", "bytes": 5}, "grain": {"applied": "whole"}, "next": None}
+    answer = _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
+    assert answer == daemon.output
+    assert daemon.wire()["args"]["grain"] == "whole"
+
+
+def test_meme_all_joins_utf8_pages_and_refuses_changed_pages(monkeypatch):
+    parts = ['<<^ code=`&#x0001;`>>\n', '<<~ ahu slot=`#/a`>>\né\n<<~/ahu>>\n', '<<~ ahu slot=`#/b`>>\n<<~/ahu>>\n<<^ code=`&#x0004;`>>']
+    size = len(''.join(parts).encode('utf-8'))
+    def page(i):
+        return {"has": f"<<~ has name=`page{i + 1}` params=`layer/home base/partial:p{i + 1}:hash`>>", "title": "lar:///t/x", "recipe": "default", "lens": "meme", "meme": {"uri": "lar:///t/x", "text": parts[i], "canonicalHash": f"partial:p{i + 1}:hash" if i < 2 else "hash", "bytes": size, "page": {"page": i + 1, "pages": 3}}, "grain": {"applied": "whole"}, "next": {"grain": "whole", "after": str(i + 1)} if i < 2 else None}
+    pages = [page(i) for i in range(3)]
+    calls = []
+    def call(verb, args):
+        calls.append(args)
+        return {"results": {"summary": {"ok": True, "output": pages[int(args.get("after", "0"))]}}}
+    monkeypatch.setattr(uds, "call", call)
+    get = _tools()["tiddler_get"]
+    answer = get(title="lar:///t/x", recipe="default", meme=True, all=True)
+    assert answer["meme"]["text"].encode() == ''.join(parts).encode()
+    assert answer["meme"]["canonicalHash"] == "hash"
+    assert answer["has"] == "<<~ has name=`page1` params=`layer/home base/hash`>>"
+    assert answer["next"] is None
+    assert len(calls) == 3
+    pages[1]["meme"]["canonicalHash"] = "partial:p2:other"
+    with pytest.raises(ValueError, match="read-page-mismatch"):
+        get(title="lar:///t/x", recipe="default", meme=True, all=True)
+
+
+@pytest.mark.parametrize("fault", ["cycle", "origin", "page", "missing-text", "short"])
+def test_meme_all_refuses_inconsistent_continuations(monkeypatch, fault):
+    def page(i):
+        return {"has": "<<~ has name=`x`>>", "title": "lar:///t/x", "recipe": "default", "lens": "meme", "meme": {"uri": "lar:///t/x", "text": "x", "canonicalHash": f"partial:p{i}:hash" if i < 3 else "hash", "bytes": 3, "page": {"page": i, "pages": 3}}, "next": {"grain": "whole", "after": str(i)} if i < 3 else None}
+    pages = [page(i) for i in range(1, 4)]
+    if fault == "cycle": pages[1]["next"]["after"] = "1"
+    if fault == "origin": pages[1]["recipe"] = "other"
+    if fault == "page": pages[1]["meme"]["page"]["page"] = 3
+    if fault == "missing-text": del pages[1]["meme"]["text"]
+    if fault == "short": pages[1]["next"] = None
+    def call(verb, args):
+        return {"results": {"summary": {"ok": True, "output": pages[int(args.get("after", "0"))]}}}
+    monkeypatch.setattr(uds, "call", call)
+    with pytest.raises(ValueError, match="read-page-mismatch"):
+        _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
+
+
+def test_meme_all_propagates_a_stale_cursor_without_a_prefix(monkeypatch):
+    def call(verb, args):
+        if "after" in args:
+            raise uds.LaresVerbError("read-cursor-stale")
+        return {"results": {"summary": {"ok": True, "output": {"has": "<<~ has name=`x`>>", "title": "lar:///t/x", "meme": {"text": "prefix", "uri": "lar:///t/x", "canonicalHash": "partial:p1:hash", "bytes": 12, "page": {"page": 1, "pages": 2}}, "next": {"grain": "whole", "after": "1.hash"}}}}}
+    monkeypatch.setattr(uds, "call", call)
+    with pytest.raises(uds.LaresVerbError, match="read-cursor-stale"):
+        _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
