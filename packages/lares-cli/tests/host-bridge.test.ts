@@ -319,7 +319,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("the vessel's exit code returns unchanged", () => {
     const b = bench();
     try {
-      const r = spawnSync(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_EXEC_RC: "4" }, encoding: "utf8" });
+      const r = spawnSync(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_EXEC_RC: "4" }, encoding: "utf8" });
       expect(r.status).toBe(4);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -327,7 +327,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("display and debug env ride by NAME alone; nothing else crosses", () => {
     const b = bench();
     try {
-      spawnSync(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], {
+      spawnSync(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], {
         env: { ...b.env, NO_COLOR: "1", TERM: "xterm-256color", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" }, encoding: "utf8",
       });
       const exec = execCall(b)!;
@@ -412,7 +412,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("Ctrl+C ends the host process with the child: no orphan", async () => {
     const b = bench();
     try {
-      const child = spawn(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
+      const child = spawn(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
       const pidFile = `${b.log}.pid`;
       for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
       expect(existsSync(pidFile)).toBe(true);

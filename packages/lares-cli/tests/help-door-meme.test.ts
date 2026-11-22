@@ -12,7 +12,7 @@
  *      one home and the refusal path draws from it.
  *
  * The registry stays PURE DATA: no `node:fs`, no imports, so any vessel that can hold the module can read
- * the door. The `--meme` reach rides the daemon verb rail (`lares meme get`), never a file read.
+ * the door. The `--meme` reach rides the one read door (`lares tiddler get --meme`), never a file read.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
