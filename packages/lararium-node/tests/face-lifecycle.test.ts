@@ -423,7 +423,7 @@ describe("each face lives one life: the lifecycle actor", () => {
   });
 });
 
-describe("the face's lit turn feeds its intent door (vota answer on the face's own turn)", () => {
+describe("the face gate feeds its intent door (vota answer on a pass the face admits)", () => {
   const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
   const plane = () => {
     const doc = { tiddlers: {} } as LarDoc, listeners = new Set<() => void>();
@@ -451,7 +451,7 @@ describe("the face's lit turn feeds its intent door (vota answer on the face's o
   const outcomes = (shared: ReturnType<typeof plane>, group: string) =>
     (intentEntryRecordsOfGroup(shared.doc, group) as { body: { entry: string; cause?: string } }[]).filter((r) => r.body.entry === "outcome").map((r) => r.body.cause);
 
-  test("RED: a dark face answers no votum; CONTROL: its lit turn answers one votum at a time, and a close waits out the one in flight and admits no next; POSITIVE: the relight's turn answers what waited, and nothing twice", async () => {
+  test("RED: a dark face answers no votum; CONTROL: its lit pass answers one votum at a time, and a close waits out the one in flight and admits no next; POSITIVE: the relight's pass answers what waited, and nothing twice", async () => {
     const t = island(), f = await faceOf(), shared = plane();
     const held: Deferred<Record<string, unknown>>[] = [];
     let inFlight = 0, most = 0;
@@ -467,7 +467,7 @@ describe("the face's lit turn feeds its intent door (vota answer on the face's o
     const first = await word(f, shared, 21), second = await word(f, shared, 22);
     await door.heed();
     expect(held).toHaveLength(0);
-    // THE LIT TURN: the light settles, and the face's turn heeds its door.
+    // THE LIT PASS: the light settles, and the face gate admits a pass that heeds its door.
     await lit(t, 1);
     const pass = door.heed();
     await until(() => held.length === 1);
@@ -485,7 +485,7 @@ describe("the face's lit turn feeds its intent door (vota answer on the face's o
     t.drains.get(1)!.resolve(); await closed;
     t.drops.get(1)!.resolve(); await settle();
     expect(t.lives.state(1).kind).toBe("dark");
-    // The answered votum worded again, then the relight's turn: the waiting votum answers, the answered one never twice.
+    // The answered votum worded again, then the relight's pass: the waiting votum answers, the answered one never twice.
     expect(await word(f, shared, 21)).toBe(first);
     expect(await word(f, shared, 22)).toBe(second);
     await lit(t, 1);
