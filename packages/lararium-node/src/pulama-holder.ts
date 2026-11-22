@@ -79,6 +79,12 @@ export interface PulamaHolder extends CustodyHolder {
   worn(): number | undefined;
   /** Tell the pūlama the face this vessel now wears: one ordinal, nothing beside it. Only the wear door calls it. */
   tellWorn(ordinal: number): Promise<void>;
+  /**
+   * THE CLEAN GOODBYE: the vessel drained every save and leaves. It tells the pūlama so through its session, naming the life
+   * its hello named, and the session ends. Answers whether the pūlama heard it: with no session, no life to name, or a refusal,
+   * no goodbye stands, and the leaving reads as any dropped session does. Only a vessel's clean exit calls it.
+   */
+  goodbye(): Promise<boolean>;
 }
 
 interface Session {
@@ -290,6 +296,17 @@ export function makePulamaHolder(a: {
     waits: () => (session === null ? refused : null),
     worn: () => session?.standing.worn,
     async tellWorn(ordinal) { await call("face.worn", { ordinal }); },
+    async goodbye() {
+      const s = session, life = a.life?.();
+      if (s === null) return false;
+      // THE GOODBYE IS THE SESSION'S LAST WORD: this side leaves too, heard or not. With no life to name, none is said, and the
+      // leaving reads as any dropped session does.
+      try {
+        if (life === undefined) return false;
+        await call("vessel.goodbye", { life });
+        return true;
+      } catch { return false; } finally { left += 1; if (session === s) { s.channel.close(); drop(s); } }
+    },
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
     openedSlot: () => session?.standing.slot ?? null,

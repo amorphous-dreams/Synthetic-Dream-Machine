@@ -410,6 +410,8 @@ async function main(): Promise<void> {
     askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
     reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front,
     lanSocket: () => lanSocket,
+    // THE CLEAN GOODBYE rides the stand-by, so the session it ends composes no floor after it.
+    goodbye: async () => (standBy === null ? false : standBy.goodbye()),
     // THE ACTS THAT ACT AS A FACE ride a session and run on the custody door's one chain (`session:act`).
     sessionActs: { names: SESSION_ACTS, run: async (act, args) => custodyDoor
       ? { ...(await custodyDoor.act(act, args)) }
@@ -566,6 +568,8 @@ interface BootContext {
   readonly lanSocket: () => LanDatagramSocket | null;
   /** The sealed acts that ride a session, and the custody door's chain that runs one. */
   readonly sessionActs: NonNullable<UdsChannelOptions["sessionActs"]>;
+  /** THE CLEAN GOODBYE to the pūlama, once every save drained at a clean exit: answers whether it was heard. With no pūlama, none. */
+  readonly goodbye: () => Promise<boolean>;
 }
 
 /** One composition's own reading of what it stands as, taken when it composes. */
@@ -793,7 +797,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
 async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null, ward?: WardCredential): Promise<StandingComposition> {
   const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
           reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
-          standing, faceLit, sessionActs } = ctx;
+          standing, faceLit, sessionActs, goodbye } = ctx;
 
   // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
   if (originCompositions === null) throw new Error("[lararium] a hearth stood without its composed origins");
@@ -983,6 +987,12 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       await step("main-flush", () => result.repo.flush(), (ms) =>
         console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`));
       await step("composition", () => result.teardown(() => front.close()));
+      // THE CLEAN GOODBYE (sealed-store#/the-lit-set): every face closed through its actor and its saves drained, and the
+      // composition closed durably, so this life tells its pūlama it leaves, naming itself. A goodbye unheard changes nothing.
+      await step("goodbye", async () => {
+        try { if (await goodbye()) console.log("[lararium] the pūlama heard this life's goodbye: every save drained"); }
+        catch (e) { console.log(`[lararium] goodbye unsent: ${e instanceof Error ? e.message : String(e)}`); }
+      });
       await floor.release();
       clearTimeout(pastBudget);
       console.log(`[lararium] shutdown complete — composition closed durably (${spans.join(" · ")})`);

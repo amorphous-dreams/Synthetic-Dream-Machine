@@ -76,7 +76,7 @@ export function pulamaStandBy(a: {
   readonly onLog: (line: string) => void;
   /** Remove the offer this vessel just spent; answers whether a file went. Absent, the offer stays where it rests. */
   readonly consumeOffer?: () => boolean;
-}): { dial(): Promise<PulamaStandingBy>; waits(): string | null } {
+}): { dial(): Promise<PulamaStandingBy>; waits(): string | null; goodbye(): Promise<boolean> } {
   let leaving = false;
   /** Why the last dial stood no session (`composition-refused` among the pūlama's own readings); null while a session stands. */
   let lastWaits: string | null = null;
@@ -147,7 +147,11 @@ export function pulamaStandBy(a: {
   a.onLog(`standing by the pūlama; lends ${a.holder.lends().map((o) => `h${o}`).join(", ")}${waiting.length > 0 ? ` (${waiting.map((o) => `h${o}`).join(", ")} waiting dark)` : ""} (${stood.standing})${landed}`);
   return { session: true, waits: null };
   };
-  return { dial, waits: () => (a.holder.isUnlocked() ? null : lastWaits) };
+  return {
+    dial, waits: () => (a.holder.isUnlocked() ? null : lastWaits),
+    // THE CLEAN GOODBYE: the vessel drained every save and leaves; the session the goodbye ends composes no floor after it.
+    goodbye: () => { leaving = true; return a.holder.goodbye(); },
+  };
 }
 
 /** Seat the stand-by and dial once; answers whether a session stood. */

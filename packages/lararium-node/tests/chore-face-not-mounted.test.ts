@@ -454,3 +454,40 @@ test("CONTROL XV6 (Sol 407e): a verb outside the visit reads, carrying a numeric
   expect(reply).not.toMatchObject({ refusal: { reason: "face-not-open" } });
   expect(v.placed.map((p) => [p.verb, p.args["target"]])).toEqual([["floor-pin", 7]]);
 });
+
+test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the maintenance line): a one-shot write on the mount dispatched before its close holds the drain until it settles; one sent during the drain refuses face-closing and nothing places", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ faceLife: lives, hold: new Set(["meme-put"]) });
+  const before = await v.connect();
+  before.send({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "one-before" });
+  await vi.waitFor(() => expect(v.placed.map((p) => p.requestId)).toEqual(["one-before"]));
+  const closed = lives.close(0, "lock");
+  await new Promise((r) => setImmediate(r));
+  expect(drains, "the mount's drain waits out the one-shot write already dispatched").toHaveLength(0);
+  v.release();
+  await vi.waitFor(() => expect(before.heard[0]).toMatchObject({ status: "done" }));
+  await vi.waitFor(() => expect(drains).toHaveLength(1));
+  for (const [requestId, seat] of [["one-during", {}], ["one-during-seat", { seat: "ai" }]] as const) {
+    expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId, ...seat }))
+      .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
+  }
+  expect(v.placed.map((p) => p.requestId)).toEqual(["one-before"]);
+  drains[0]!();
+  await closed;
+});
+
+test("ONE-SHOT WORK RIDES THE WORK GATE: the operator's hand naming a sibling face that closes refuses face-closing; a face no actor knows passes ungated", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ faceLife: lives });
+  const closed = lives.close(1, "lock");
+  await vi.waitFor(() => expect(drains).toHaveLength(1));
+  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 1 }, requestedBy: "0xop", requestId: "named-closing" }))
+    .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
+  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 7 }, requestedBy: "0xop", requestId: "named-unknown" }))
+    .toMatchObject({ status: "done" });
+  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "mount-lit" }))
+    .toMatchObject({ status: "done" });
+  expect(v.placed.map((p) => p.requestId)).toEqual(["named-unknown", "mount-lit"]);
+  drains[0]!();
+  await closed;
+});
