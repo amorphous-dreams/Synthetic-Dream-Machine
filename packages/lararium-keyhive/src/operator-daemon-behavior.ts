@@ -2052,6 +2052,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           const key = bareKey(msg.atomKey);
           if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);
           // THE LIT LIFE BOUNDS ITS DOOR: the votum in flight lands under the face's hive, then the door detaches, before the hive goes.
+          // The vessel's close reached CLOSED without waiting on this drop (face-lifecycle), so an outcome landing here may miss its
+          // drain; it answers again at the face's next lit turn, and a sibling's door pays idempotent declared verbs alone.
           await intentDoors.drop(key);
           const face = providers.get(key);
           if (face) {

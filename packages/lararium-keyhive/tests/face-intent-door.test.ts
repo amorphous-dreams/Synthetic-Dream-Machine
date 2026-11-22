@@ -687,6 +687,8 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
     expect(opensIntents, "the intents plane opens after the re-check").toBeGreaterThan(recheck);
     expect(block).toMatch(/if \(!recheck\.ok\) return refuse\(/);
     expect(block).toMatch(/hold: \(pending\) => holding\(provider, pending\)/);
+    // A sibling's door pays idempotent declared verbs alone (no effects map), so an outcome that misses the vessel's drain answers again whole.
+    expect(block).not.toMatch(/\beffects:/);
   });
 
   test("L4 RED: a door handed the other face's plane lands no outcome (its receipt stays owed); CONTROL: on its own plane it lands", async () => {
