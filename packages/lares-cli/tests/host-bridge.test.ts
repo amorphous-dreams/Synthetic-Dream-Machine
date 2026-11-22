@@ -15,9 +15,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   decideRoute, commandScope, CREDENTIAL_TTY_EXIT, HOUSE_ABSENT_EXIT, SHIM_ABSENT_EXIT, FORWARDED_ENV,
-  PATH_OUTSIDE_EXIT, mountsOf, translatePaths, type Mount, type RouteInput,
+  PATH_OUTSIDE_EXIT, mountsOf, translatePaths, forwardEnvFor, type Mount, type RouteInput,
 } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
+import { ownPeerKind } from "@lararium/node";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "..", "..", "..");
@@ -316,6 +317,40 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 
+  // THE HOST CHAIN CROSSES THE WALL AS THE SEAT MARK (hitl-reads-a-hand). Inside the vessel an exec'd process has no parent to
+  // walk (ppid 0), so the forwarder reads its own host ancestry before it forwards, and a harness anywhere up that chain sends the
+  // forwarded child the seat mark, a stripped mark (`env -u CLAUDECODE`) included. The shell below carries the mark; the CLI it
+  // launches does not, and `; true` keeps the shell its parent.
+  const fromHarnessShell = (b: Bench, argv: string[]) => spawnSync("sh", ["-c", `env -u CLAUDECODE "$0" "$@"; true`, process.execPath, BIN, ...argv], {
+    env: { ...b.env, CLAUDECODE: "1" }, encoding: "utf8",
+  });
+  const marks = (exec: string[]): string[] => exec.flatMap((a, i) => a === "-e" && exec[i + 1] === "CLAUDECODE" ? ["CLAUDECODE"] : []);
+
+  it("RED: a sense hand verb forwarded from a harness shell with the mark stripped carries the seat mark into the vessel", () => {
+    const b = bench();
+    try {
+      const r = fromHarnessShell(b, ["sense", "purge", "x", "--approve"]);
+      expect(r.status, r.stderr).toBe(0);
+      expect(marks(execCall(b)!)).toEqual(["CLAUDECODE"]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("RED: a socket hand verb (wiki retire) forwarded the same way carries the seat mark, so the vessel's CLI asks as the seat", () => {
+    const b = bench();
+    try {
+      const r = fromHarnessShell(b, ["wiki", "retire", "x"]);
+      expect(r.status, r.stderr).toBe(0);
+      expect(marks(execCall(b)!)).toEqual(["CLAUDECODE"]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("CONTROL: the forwarder's seat mark follows its reading of the host chain alone", () => {
+    expect(forwardEnvFor({ PATH: "/bin" }, "hand")).toEqual({ PATH: "/bin" });
+    expect(forwardEnvFor({ PATH: "/bin" }, "ai")).toEqual({ PATH: "/bin", CLAUDECODE: "1" });
+    // An unread chain never reads as a person: the child carries the seat mark, so a hand verb inside refuses.
+    expect(forwardEnvFor({ PATH: "/bin" }, "unknown")).toEqual({ PATH: "/bin", CLAUDECODE: "1" });
+  });
+
   it("the vessel's exit code returns unchanged", () => {
     const b = bench();
     try {
@@ -332,7 +367,9 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       });
       const exec = execCall(b)!;
       const named = exec.flatMap((a, i) => a === "-e" ? [exec[i + 1]] : []);
-      expect(named.sort()).toEqual(["LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"]);
+      // The seat mark crosses too wherever this suite itself runs under a harness: the forwarder reads its own host chain.
+      const seat = ownPeerKind({}) !== "hand" ? ["CLAUDECODE"] : [];
+      expect(named.sort()).toEqual([...seat, "LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"].sort());
       expect(exec.join(" ")).not.toMatch(/xterm-256color|s3cret|SOME_TOKEN/);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });

@@ -81,11 +81,7 @@
     "kahua_get",
     "roster",
     "build",
-    "reconcile",
-    "promote",
-    "retire",
-    "un_retire",
-    "purge"
+    "reconcile"
   ],
   "cli_forms": {
     "pour": "sense pour",
@@ -122,11 +118,7 @@
     "kahua_get": "kahua get",
     "roster": "sense roster",
     "build": "sense build",
-    "reconcile": "sense reconcile",
-    "promote": "sense promote",
-    "retire": "sense retire",
-    "un_retire": "sense un-retire",
-    "purge": "sense purge"
+    "reconcile": "sense reconcile"
   },
   "mirror_hosts": [
     "ddate",

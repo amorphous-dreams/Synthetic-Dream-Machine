@@ -1,24 +1,25 @@
 /**
  * `lares sense` lifecycle sub-verbs — the DURABLE sensorium lifecycle door, run DIRECT (CLI → the node
- * lifecycle-verb functions over manifest.json; no store holder, no daemon needed). One capability, one
- * seat (the reversibility×trust grid mirrored TS-side): an HITL verb (promote · retire · purge) refuses
- * without the operator's `--approve` hand at the door, exactly as the MCP surface refuses without an
- * approval cap (E5). The read (roster, at two grains) and the reversible re-settle (reconcile · un-retire)
- * run free (HOTL).
+ * lifecycle-verb functions over manifest.json; no store holder, no daemon needed).
+ *
+ * THE HAND VERBS READ A HAND (hitl-reads-a-hand). `promote`, `retire`, `un-retire` and `purge` run on a person's
+ * hand at a real terminal alone. With no socket between this command and the vessel, the command reads its own
+ * branch through the house hand gate (`readOwnHand`): a harness mark in its environment or a harness on its parent
+ * chain refuses `hand-act-only`, an unreadable chain refuses `hand-unattested`, and nothing moves. `--approve`
+ * still names the intent on promote, retire and purge; it approves nothing by itself. The read (roster, at two
+ * grains), the reversible re-settle (reconcile) and the pioneer build run for every caller.
  *
  *   lares sense roster                         list every sensorium + its lifecycle
  *   lares sense roster   <name>                one sensorium's manifest facets (the same read, one grain finer)
  *   lares sense reconcile <name> | --all       re-settle against evidence (on-demand; idempotent)
  *   lares sense build    <name> --ephemeral    mint a fresh pioneer (refuses a name-collision)
- *   lares sense promote  <name> --approve      climb a rung (in-place field-flip)   [+ --store-swap <t>, gated]
- *   lares sense retire   <name> --grounds <g> --approve   judged tombstone (NO byte-delete)
- *   lares sense un-retire <name>               move-not-delete restore of the prior state
- *   lares sense purge    <name> --approve      the irreversible byte GC (tombstone-only)
+ *   lares sense promote  <name> --approve      climb a rung (in-place field-flip)   [+ --store-swap <t>, gated]   hand
+ *   lares sense retire   <name> --grounds <g> --approve   judged tombstone (NO byte-delete)                   hand
+ *   lares sense un-retire <name>               move-not-delete restore of the prior state                        hand
+ *   lares sense purge    <name> --approve      the irreversible byte GC (tombstone-only)                         hand
  *
- * The MCP three-way mirror for these sub-verbs LANDS now: each mirrors as an @mcp.tool routing over the
- * daemon wire to the house-consistent executor in open-node-vessel.ts (the pure manifest.json reducers,
- * the ki/li/couple_r pattern). The seat gates BOTH surfaces — the CLI's `--approve` (guardHitl below) and
- * the MCP tool's guard_hitl are the SAME reversibility×trust grid, so an HITL verb refuses on either door.
+ * The daemon carries the same verbs for a terminal's session alone (its reactor reads the asker the door booked),
+ * and no MCP tool carries a hand verb: a seat names the command for the operator to run.
  *
  * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/phased-plan
  */
@@ -26,11 +27,32 @@
 import {
   rosterSensoria, inspectSensorium, reconcileSensorium, reconcileAllSensoria,
   buildEphemeralSensorium, promoteSensorium, retireSensorium, unRetireSensorium, purgeSensorium,
-  sensoriumDir,
+  sensoriumDir, readOwnHand, type HandReading,
 } from "@lararium/node";
-import { guardHitl, MUSTIE_GROUNDS } from "@lararium/mesh";
+import { guardHitl, MUSTIE_GROUNDS, type SenseHand } from "@lararium/mesh";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
+
+/** How a hand verb reads the hand behind this command: the house gate over the command's own branch. A suite names its reading. */
+export type HandRead = () => HandReading;
+const ownHand: HandRead = () => readOwnHand({ proveRoute: false });
+
+/** A hand verb's refusal: the reading's own code, and the command the operator runs on their own terminal. */
+export class HandActRefused extends Error {
+  override readonly name = "HandActRefused";
+  constructor(readonly code: "hand-act-only" | "hand-unattested", readonly verb: string, readonly line: string) {
+    super(code === "hand-act-only"
+      ? `hand-act-only: \`${verb}\` runs on a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.`
+      : `hand-unattested: \`${verb}\` runs on a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.`);
+  }
+}
+
+/** Read the hand behind a hand verb, answering the value that approves it (`guardHitl`); a refusal throws `HandActRefused`. */
+export function handFor(verb: string, line: string, hand: HandRead): SenseHand {
+  const read = hand();
+  if ("refusal" in read) throw new HandActRefused(read.refusal, verb, line);
+  return "hand";
+}
 
 /** Emit one lifecycle outcome uniformly (legible-intent: the verb + its result ride the payload). */
 function landed(args: ParsedArgs, verb: string, data: unknown): number {
@@ -42,19 +64,28 @@ function landed(args: ParsedArgs, verb: string, data: unknown): number {
   return 0;
 }
 
-/** Emit one lifecycle error uniformly. */
-function refused(args: ParsedArgs, verb: string, message: string, hint?: string): number {
+/** Emit one lifecycle error uniformly; a hand refusal carries its own code (`hand-act-only` · `hand-unattested`). */
+function refused(args: ParsedArgs, verb: string, message: string, hint?: string, code = "verb-error"): number {
   emit(args, {
     ok: false,
-    error: { code: "verb-error", message, ...(hint ? { hint } : {}) },
+    error: { code, message, ...(hint ? { hint } : {}) },
     human: () => console.error(`lares sense ${verb} — ${message}${hint ? `\n  ${hint}` : ""}`),
   });
-  return exitFor("verb-error");
+  return exitFor(code);
 }
 
-/** The operator's hand at the door — an HITL verb refuses without `--approve` (the TS mirror of the cap). */
-function requireApprove(args: ParsedArgs, verb: string): void {
-  guardHitl(verb, args.flags["approve"] === true ? "operator-hand" : undefined);
+/** Refuse a thrown error, keeping a hand refusal's own code. */
+function refusedBy(args: ParsedArgs, verb: string, e: unknown, hint?: string): number {
+  if (e instanceof HandActRefused) return refused(args, verb, e.message, undefined, e.code);
+  return refused(args, verb, e instanceof Error ? e.message : String(e), hint);
+}
+
+/** A hand verb's gate: the hand behind the command first, then `--approve` naming the intent where the verb asks one. */
+function requireHand(args: ParsedArgs, verb: string, line: string, hand: HandRead, approve = true): SenseHand {
+  const read = handFor(`lares sense ${verb}`, line, hand);
+  if (approve && args.flags["approve"] !== true) throw new Error(`${verb} names its intent with --approve: ${line}`);
+  guardHitl(verb, read);
+  return read;
 }
 
 /** ONE READ AT TWO GRAINS: bare, every sensorium and its lifecycle; with a name, that one sensorium's manifest facets. */
@@ -90,46 +121,47 @@ export function cmdSenseBuild(args: ParsedArgs): number {
   }
 }
 
-export function cmdSensePromote(args: ParsedArgs): number {
+export function cmdSensePromote(args: ParsedArgs, hand: HandRead = ownHand): number {
   const name = args.positional[0];
   if (!name) return refused(args, "promote", "promote wants a sensorium name", "lares sense promote <name> --approve");
   try {
-    requireApprove(args, "promote");
+    const read = requireHand(args, "promote", `lares sense promote ${name} --approve`, hand);
     const storeSwapTarget = args.options["store-swap"];
-    return landed(args, "promote", promoteSensorium(name, storeSwapTarget ? { storeSwapTarget } : {}));
+    return landed(args, "promote", promoteSensorium(name, read, storeSwapTarget ? { storeSwapTarget } : {}));
   } catch (e) {
-    return refused(args, "promote", e instanceof Error ? e.message : String(e));
+    return refusedBy(args, "promote", e);
   }
 }
 
-export function cmdSenseRetire(args: ParsedArgs): number {
+export function cmdSenseRetire(args: ParsedArgs, hand: HandRead = ownHand): number {
   const name = args.positional[0];
   if (!name) return refused(args, "retire", "retire wants a sensorium name", `lares sense retire <name> --grounds <${MUSTIE_GROUNDS.join("|")}> --approve`);
   try {
-    requireApprove(args, "retire");
-    return landed(args, "retire", retireSensorium(name, args.options["grounds"]));
+    const read = requireHand(args, "retire", `lares sense retire ${name} --grounds <${MUSTIE_GROUNDS.join("|")}> --approve`, hand);
+    return landed(args, "retire", retireSensorium(name, args.options["grounds"], read));
   } catch (e) {
-    return refused(args, "retire", e instanceof Error ? e.message : String(e), `grounds: ${MUSTIE_GROUNDS.join(" · ")}`);
+    return refusedBy(args, "retire", e, `grounds: ${MUSTIE_GROUNDS.join(" · ")}`);
   }
 }
 
-export function cmdSenseUnRetire(args: ParsedArgs): number {
+export function cmdSenseUnRetire(args: ParsedArgs, hand: HandRead = ownHand): number {
   const name = args.positional[0];
   if (!name) return refused(args, "un-retire", "un-retire wants a sensorium name", "lares sense un-retire <name>");
   try {
-    return landed(args, "un-retire", unRetireSensorium(name));
+    const read = requireHand(args, "un-retire", `lares sense un-retire ${name}`, hand, false);
+    return landed(args, "un-retire", unRetireSensorium(name, read));
   } catch (e) {
-    return refused(args, "un-retire", e instanceof Error ? e.message : String(e));
+    return refusedBy(args, "un-retire", e);
   }
 }
 
-export function cmdSensePurge(args: ParsedArgs): number {
+export function cmdSensePurge(args: ParsedArgs, hand: HandRead = ownHand): number {
   const name = args.positional[0];
   if (!name) return refused(args, "purge", "purge wants a sensorium name", "lares sense purge <name> --approve");
   try {
-    requireApprove(args, "purge");
-    return landed(args, "purge", purgeSensorium(name, "operator-hand"));
+    const read = requireHand(args, "purge", `lares sense purge ${name} --approve`, hand);
+    return landed(args, "purge", purgeSensorium(name, read));
   } catch (e) {
-    return refused(args, "purge", e instanceof Error ? e.message : String(e));
+    return refusedBy(args, "purge", e);
   }
 }

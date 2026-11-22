@@ -45,6 +45,21 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
  */
 export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["meme-put", "meme-delete", "tiddler-put", "tiddler-delete", "oracle-cast"]);
 
+/**
+ * The chore-free verbs that still write into a face's daemon layer, each with its reason. A chore-free verb passes the chore
+ * gate (it spends no mounted face's material), but a write into the daemon layer can still enter that face's drain, so the
+ * one-shot line's work gate takes it ({@link entersADrain}). The house lean: a write takes the gate unless proven outside every
+ * face's drain.
+ */
+export const CHORE_FREE_WRITES: Readonly<Record<string, string>> = Object.freeze({
+  "realm-feed": "rolls the presenter's lease slot and lands its receipt in the daemon layer",
+});
+
+/** True for a verb whose one-shot dispatch writes into a face's layers: every chore, and each chore-free write. */
+export function entersADrain(verb: string): boolean {
+  return isChore(verb) || Object.hasOwn(CHORE_FREE_WRITES, verb);
+}
+
 /** True for a verb that writes or signs under the daemon mount's authority. */
 export function isChore(verb: string): boolean {
   return !Object.hasOwn(CHORE_FREE_VERBS, verb);

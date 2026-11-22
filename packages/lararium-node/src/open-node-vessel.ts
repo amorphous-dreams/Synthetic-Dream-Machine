@@ -62,10 +62,10 @@ import {
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
-  coupleMesh, crystallize, guardHitl,
+  coupleMesh, crystallize,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
-  faceAtomKeyFromSeed, type FaceAtomKey,
+  faceAtomKeyFromSeed, type FaceAtomKey, siblingPlaneMounts,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
   wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
@@ -177,7 +177,7 @@ import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
-import { drainPlans, faceLives, type FaceLives, type FaceLit } from "./face-lifecycle.js";
+import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed } from "./face-lifecycle.js";
 import { adoptFirstLit, faceLend } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -613,7 +613,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
    * Close every face through its actor (a whole lock, ahead of the custody door's line; a stand-down): resolves once each closed or
    * faulted. Under `strict` (a whole lock) a face that did not close whole rejects, naming it, so the key stays open.
    */
-  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<FacesClosed>;
   /** Lift the hold a lock's close set on a face (`dropFace`), once its key locked or the lock let it be: a mount that went dark
    *  while its key still stands open reads lit again. */
   releaseFace: (ordinal: number) => void;
@@ -638,7 +638,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   stopTick:  () => void;
   /** Tear this composition down whole: every island, timer, socket and listener it stood, then its Repo. The
    *  floor it was handed keeps standing; a floor it stood itself releases. */
-  teardown: (closeSessions?: () => Promise<void>) => Promise<void>;
+  /** Answers whether every face closed whole through its actor before the rest tore down: a stand-down that met a face
+   *  holding unsealed saves still tears down, and says so here. */
+  teardown: (closeSessions?: () => Promise<void>) => Promise<FacesClosed>;
   /** The oracle's floor gates, one per Nexus this vessel stands in — the read face a host mounts takes them. */
   floorGates: FlowGateArgs["gates"];
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
@@ -828,7 +830,7 @@ interface NodeBootPrep {
   mountOrdinal: () => number | null;
   litOrdinals: () => readonly number[];
   faceLife: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
-  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<FacesClosed>;
   releaseFace: (ordinal: number) => void;
   releaseFaces: () => void;
   holdFace: (ordinal: number) => boolean;
@@ -1024,6 +1026,18 @@ async function prepareNodeBootOn(
     if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
   const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
+  /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
+   *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
+  const siblingPlanes = siblingPlaneMounts();
+  /** A sibling's plane mount leaves whole: its two documents leave the Repo's cache and any save of theirs waiting in memory
+   *  drops unwritten, so nothing of the pair stays decrypted or replicating while the face stands dark. */
+  const dropSiblingPlanes = (group: string): void => {
+    const unmounted = siblingPlanes.drop(group);
+    if (unmounted.length === 0) return;
+    sealedRest.forget(unmounted);
+    for (const id of unmounted) void repo.removeFromCache(id as never).catch(() => {});
+    sealedRest.store.mapMoved();
+  };
   /**
    * EACH FACE LIVES ONE LIFE (`face-lifecycle`): one lifecycle actor per face this composition may light, the mount's beside each
    * sibling's. The actor alone holds a face's opening, its island atom key and its custody opening; the door admits work and
@@ -1144,6 +1158,8 @@ async function prepareNodeBootOn(
     // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the browser's one order).
     const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevices(), documentId);
     if (held !== undefined) return held;
+    const mountedPlane = siblingPlanes.bagOf(documentId, litDevices());
+    if (mountedPlane !== null) return mountedPlane;
     const selves = selvesRecordBagOf(documentId, carriedSelves(), litDevices());
     if (selves !== null) return selves;
     const face = sealedCells.face();
@@ -2500,10 +2516,14 @@ async function prepareNodeBootOn(
   let lightFace: (ordinal: number) => Promise<void> = async () => {};
   /** THE LIT SET: a sibling face's relation, read off its own proved log once the boot proves the faces; null before. */
   let siblingRelationOf: (group: string) => Promise<string | null> = async () => null;
+  /** A LIT SIBLING'S PROVEN PLANES, proved at its light under its own custody opening and mounted for its lit life; null before the boot proves the faces. */
+  let siblingPlanesOf: (group: string) => Promise<{ readonly persona: string; readonly intents: string } | null> = async () => null;
   /** Remove the face's owned resources together; an obsolete failure cannot remove its replacement. */
-  const removeSibling = (group: string, expected = siblingFaces.get(group)): void => {
+  /** `keepPlanes`: the face's plane mount stays (a re-seat under a fresh entry, whose light just landed that mount). */
+  const removeSibling = (group: string, expected = siblingFaces.get(group), keepPlanes = false): void => {
     if (!expected || siblingFaces.get(group) !== expected) return;
     siblingFaces.delete(group);
+    if (!keepPlanes) dropSiblingPlanes(group);
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
     const dropped = sealedRest.forget(owned);
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
@@ -2544,6 +2564,9 @@ async function prepareNodeBootOn(
   /** A closed face's host side drops: what still waits unsaved (from memory, never to disk), its cache, session and keepers. */
   const teardownFaceHost = (ordinal: number): void => {
     for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held);
+    // THE LIT LIFE BOUNDS A SIBLING'S PLANE MOUNT: the close takes it whole, whether or not its host side ever stood.
+    const closing = faceEntries.get(ordinal);
+    if (closing) dropSiblingPlanes(closing.personaGroupId);
     // THE CUSTODY ID STAYS PAST DARK: the lend sweep the return to dark replays reads it to skip a face its pūlama names closing
     // (the next light reads it afresh).
     faceEntries.delete(ordinal);
@@ -3581,6 +3604,13 @@ async function prepareNodeBootOn(
       const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
       return plane ? (await proofOfOtherFace(plane))?.relation ?? null : null;
     };
+    siblingPlanesOf = async (group: string) => {
+      const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
+      const proved = plane ? await proofOfOtherFace(plane) : null;
+      const intents = proved?.planes?.intents ?? null;
+      if (!plane || !intents) { console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: no proof of its pair stands`); return null; }
+      return { persona: plane.url, intents };
+    };
     async function proofOfOtherFace(plane: (typeof bootstrap.personaPlanes)[number]) {
       try {
         // THE BOOTSTRAP NAMES EVERY FACE; THE VESSEL SERVES ITS LEND. A face outside what this vessel serves proves nothing here,
@@ -3769,6 +3799,12 @@ async function prepareNodeBootOn(
       atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       relation: (group: string) => siblingRelationOf(group),
+      planes: (group: string) => siblingPlanesOf(group),
+      // The proven pair mounts after the face's last standing check; a refused pair mounts nothing.
+      mountPlanes: (group: string, planes: { readonly persona: string; readonly intents: string }) => {
+        const mounted = siblingPlanes.mount(group, { ok: true, planes });
+        if (!mounted.ok) console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: ${mounted.detail}`);
+      },
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
@@ -3781,7 +3817,8 @@ async function prepareNodeBootOn(
       const face = placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never);
       let held = siblingFaces.get(group);
       if (held && (held.ordinal !== entry.handleIndex || held.relation !== relation || held.face !== face)) {
-        removeSibling(group, held);
+        // THE FRESH ENTRY KEEPS THE MOUNT ITS OWN LIGHT LANDED: the stale seat leaves, never the pair this light proved.
+        removeSibling(group, held, true);
         held = undefined;
       }
       if (!held) {
@@ -3896,9 +3933,12 @@ async function prepareNodeBootOn(
       const custody = await noteCustody(ordinal);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal], current: () => live() });
       if (!entry) throw new Error(`face h${ordinal} stands shut, or proves nothing here`);
-      if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
-      classDeviceLedgers(vesselPrivate, [entry.atom.key]);
-      await daemonVm.lightFace(entry);
+      // A LIGHT THAT REFUSES DROPS THE MOUNT ITS PROOF LANDED: a refused light reaches no close, so no teardown would.
+      try {
+        if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
+        classDeviceLedgers(vesselPrivate, [entry.atom.key]);
+        await daemonVm.lightFace(entry);
+      } catch (error) { dropSiblingPlanes(entry.personaGroupId); throw error; }
       faceEntries.set(ordinal, entry);
       const lit: FaceLit = { atomKey: entry.atom.key, custody };
       if (!live()) return lit;
@@ -3906,6 +3946,7 @@ async function prepareNodeBootOn(
       catch (error) {
         // The awaited mint refused: release its provider too, so nothing of the face stands in the island.
         await daemonVm.dropFace(entry.atom.key);
+        dropSiblingPlanes(entry.personaGroupId);
         throw error;
       }
       if (!live()) return lit;
@@ -4462,10 +4503,10 @@ async function prepareNodeBootOn(
       worldlineTrajectory: (input) => daemonVm.worldlineTrajectory(input),
       // ── the DURABLE sensorium-lifecycle executors ─────────────────────────────────────────────────
       // These route over manifest.json alone (no store holder, no captureFor) — the SAME pure verb
-      // functions the CLI-direct door drives, now reachable over the daemon wire so the MCP surface
-      // mirrors the CLI three-way. The reversibility×trust seat rides guardHitl (the mesh grid): an
-      // HITL verb (promote·retire·purge) REFUSES without an operator-approval capability — the surface
-      // twin of the CLI's `--approve`, so an irreversible verb crosses the SAME gate on both surfaces.
+      // functions the CLI-direct door drives, reachable over the daemon wire, where the reads answer the
+      // MCP seat and the hand verbs answer a terminal's ask alone: they run only where the reactor (main, over the
+      // delegate route) read the booked asker as a terminal (`cli`) and handed `hand: "hand"` on; each store
+      // function re-reads that value itself, and no caller's approval value reaches this far (hitl-reads-a-hand).
       senseRoster: async () => ({ sensoria: rosterSensoria() }),
       senseInspect: async (input) => {
         const insp = inspectSensorium(input.name);
@@ -4482,22 +4523,23 @@ async function prepareNodeBootOn(
         return reconcileSensorium(sensoriumDir(input.name)) as unknown as Record<string, unknown>;
       },
       sensePromote: async (input) => {
-        // in-loop human graduation — one-way by intent → HITL. The gate mirrors the CLI's requireApprove.
-        guardHitl("promote", input.approve);
+        // in-loop human graduation — one-way by intent → a hand verb; the store function re-reads the hand itself.
         return promoteSensorium(
-          input.name, input.storeSwap ? { storeSwapTarget: input.storeSwap } : {},
+          input.name, input.hand, input.storeSwap ? { storeSwapTarget: input.storeSwap } : {},
         ) as unknown as Record<string, unknown>;
       },
       senseRetire: async (input) => {
-        // a JUDGED deaccession (grounds required; move-not-delete) → HITL. The gate mirrors requireApprove.
-        guardHitl("retire", input.approve);
-        return retireSensorium(input.name, input.grounds) as unknown as Record<string, unknown>;
+        // a JUDGED deaccession (grounds required; move-not-delete) → a hand verb.
+        return retireSensorium(input.name, input.grounds, input.hand) as unknown as Record<string, unknown>;
       },
-      senseUnRetire: async (input) => unRetireSensorium(input.name) as unknown as Record<string, unknown>,
+      senseUnRetire: async (input) => {
+        // a restore re-lights what the house treats as live → a hand verb, as its retire.
+        return unRetireSensorium(input.name, input.hand) as unknown as Record<string, unknown>;
+      },
       sensePurge: async (input) => {
-        // the irreversible byte GC → HITL. purgeSensorium ITSELF guardHitls (defense-in-depth) and refuses
-        // a live sensorium (only a tombstone GCs), so the approval rides through as the reclaim authority.
-        return purgeSensorium(input.name, input.approve) as unknown as Record<string, unknown>;
+        // the irreversible byte GC → a hand verb. purgeSensorium ITSELF guardHitls (defense-in-depth) and refuses
+        // a live sensorium (only a tombstone GCs), so the hand rides through as the reclaim authority.
+        return purgeSensorium(input.name, input.hand) as unknown as Record<string, unknown>;
       },
     };
     const telemetryImpl: TelemetryProvider = {
@@ -5218,7 +5260,7 @@ async function prepareNodeBootOn(
     faceLife,
     // Every face closes held: none lights again on this composition, whose key drops or which stands down next. A whole lock
     // closes strict: a face whose saves did not seal rejects, and its key stays open.
-    closeFaces: async (reason, options) => { await faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }); },
+    closeFaces: (reason, options) => faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }),
     releaseFace,
     releaseFaces: () => { for (const ordinal of faceLife.ordinals()) releaseFace(ordinal); },
     holdFace: (ordinal) => faceLife.hold(ordinal),
@@ -5346,7 +5388,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   // NO EARLY READY: the composition returns standing on its working layer (red 3).
   await p.hostWorkingMounted();
   sayCapMints(p.repo, (line) => console.log(`[lararium] ${line}`));
-  let down: Promise<void> | null = null;
+  let down: Promise<FacesClosed> | null = null;
   return {
     islandCaps: p.islandCaps,
     activeWikiId: p.slotActiveWikiId(),
@@ -5391,9 +5433,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     teardown: (closeSessions) => (down ??= (async () => {
       // EVERY FACE CLOSES THROUGH ITS ACTOR FIRST (a stop, a slide, a wear change): its visits refuse, its work settles and its
       // saves drain before anything below flushes or tears down, and before any next composition lights a face.
-      await p.closeFaces("the composition stands down", { stop: true });
+      const closed = await p.closeFaces("the composition stands down", { stop: true });
       if (closeSessions) p.onShutdown({ what: "the external sessions", phase: "flush", down: closeSessions });
       await p.teardown();
+      return closed;
     })()),
     floorGates: p.floorGates,
     siblingChannel: p.siblingChannel,

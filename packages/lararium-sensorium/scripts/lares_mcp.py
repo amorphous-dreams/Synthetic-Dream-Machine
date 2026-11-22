@@ -236,29 +236,32 @@ SEAT_INSTRUCTIONS = (
     "answered. Turn what you read through the five tools: let it spark a move (🜂), weigh how it sits with the mutual "
     "frame (🜄), verify its claims whatever their layer (🜁), let its residency ground its standing without crowning it "
     "(🜃), and hold the ladder itself as catma (🜍). Working-layer notes carry the house's live thinking, your own "
-    "included. Operator and node hold the frame together."
+    "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense promote`, `retire`, "
+    "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
+    "the command for the operator to run on their own terminal, since no value a seat fills approves it."
 )
 
 # The targets `meme_project` renders — the same list `lares meme project --to` takes. The carrier itself reads through
 # `tiddler_get(meme=True, grain="whole")`.
 PROJECT_TARGETS = ("md", "html", "tid", "json")
 
-# The DURABLE sensorium LIFECYCLE sub-verbs — roster (bare: every sensorium; `name`: one's facets) · build ·
-# reconcile · promote · retire · un-retire · purge. Each mirrors `lares sense <verb>` (CLI-direct over manifest.json) three-way now: an
-# @mcp.tool routes over the @daemon wire to the house-consistent routed executor in open-node-vessel.ts
-# (the ki/li/couple_r pattern — pure manifest.json reducers, no store holder), and the CLI form rides the
-# one `sense` door. UNLIKE the HOTL LIFECYCLE_VERBS, these carry the REAL reversibility×trust seats: the
-# reads + reversible re-settle run HOTL; promote·retire·purge cross HITL (an operator-approval capability,
-# the surface twin of the CLI's `--approve`), so an irreversible verb gates the SAME on both surfaces.
-# un-retire spells `un_retire` here (a python identifier) → the CLI form `sense un-retire`, twinning the
-# un_kapae → `worldline un-kapae` shape.
-SENSE_LIFECYCLE_VERBS = ("roster", "build", "reconcile", "promote", "retire", "un_retire", "purge")
+# The DURABLE sensorium LIFECYCLE sub-verbs a seat runs — roster (bare: every sensorium; `name`: one's facets) · build ·
+# reconcile. Each mirrors
+# `lares sense <verb>` (CLI-direct over manifest.json): an @mcp.tool routes over the @daemon wire to the
+# house-consistent routed executor in open-node-vessel.ts (the ki/li/couple_r pattern — pure manifest.json
+# reducers, no store holder), and the CLI form rides the one `sense` door.
+SENSE_LIFECYCLE_VERBS = ("roster", "build", "reconcile")
+
+# THE HAND VERBS hold no tool here (hitl-reads-a-hand): `sense promote`, `retire`, `un-retire`, `purge` and
+# `teardown` run on a person's hand at a real terminal alone. The CLI reads its own branch for that hand and the
+# vessel refuses every asker but a terminal's, so a seat's approval value approves nothing and a tool that always
+# refused would only stand as surface. A seat names the command for the operator to run on their own terminal.
+SENSE_HAND_VERBS = ("promote", "retire", "un-retire", "purge", "teardown")
 
 # The reversibility×trust GRID: each verb declares (reversible, trust_crossing). The seat follows —
 # HOTL (reversible AND trusted) runs on the operator's loop, no pause; HITL (irreversible OR trust-
-# crossing) blocks for the operator's hand. One grid across both surfaces (CLI + MCP). The @daemon holds
-# the LaresCoordinator cap in its wiki-island VM worker; it reads a verb's seat and grants the operator-
-# authorized approval capability an HITL verb needs (capability-based — the @daemon is the cap-holder).
+# crossing) waits for a person's hand at a real terminal, which no tool argument stands in for, so an HITL
+# verb holds no tool here (SENSE_HAND_VERBS above; attach and release below wait for their own talk).
 VERB_SEATS = {
     "pour": (True, False),       # append-only capture, one pointer or `bulk` — reversible (an edit rides kapae), trusted
     "recall": (True, False),     # read — reversible, trusted
@@ -305,23 +308,13 @@ VERB_SEATS = {
     "kahua_stage": (True, False),       # one row in the face's local canon, unsigned and on this device alone → HOTL
     "kahua_list": (True, False),        # the stage's verified standing items — a read → HOTL
     "kahua_get": (True, False),         # one title's verified item (and its history) — a read → HOTL
-    # teardown tears a whole sensorium store DOWN — IRREVERSIBLE → HITL. It rides the CLI today, gated
-    # by --confirm (the operator's hand at the door); the grid NAMES its HITL seat so a future MCP mirror
-    # inherits the gate rather than crossing the surface ungated.
-    "teardown": (False, False),
     # 6b control verbs — the SEAT stands now; execution rides in after the HITL talk-story locks.
-    "purge": (False, False),     # HARD-delete — IRREVERSIBLE → HITL
     "attach": (True, True),      # admit a guest sensorium — TRUST-CROSSING → HITL
     "release": (False, False),   # let a guest sensorium GO (drops its handle) — IRREVERSIBLE → HITL
     "reconcile": (True, False),  # re-settle a sensorium against its source — reversible, trusted → HOTL
-    # The DURABLE sensorium-lifecycle sub-verbs (SENSE_LIFECYCLE_VERBS) — the TS twin of mesh LIFECYCLE_SEATS,
-    # so an HITL verb refuses on BOTH surfaces. Reads + reversible re-settle/restore/build run HOTL; the
-    # in-loop-human graduation (promote) and judged deaccession (retire) carry HITL, as does purge above.
+    # The DURABLE sensorium-lifecycle sub-verbs a seat runs (SENSE_LIFECYCLE_VERBS) — the read and the pioneer build.
     "roster": (True, False),     # read every sensorium's lifecycle, or one's manifest facets — reversible, trusted → HOTL
-    "build": (True, False),      # mint an ephemeral pioneer (a retire undoes it) — reversible, trusted → HOTL
-    "un_retire": (True, False),  # restore a tombstoned sensorium (move-not-delete) — reversible, trusted → HOTL
-    "promote": (False, False),   # climb a rung — a designed one-way commitment → HITL
-    "retire": (False, False),    # a judged deaccession (undoable only by un-retire) → HITL
+    "build": (True, False),      # mint an ephemeral pioneer (an operator's retire undoes it) — reversible, trusted → HOTL
 }
 
 
@@ -336,29 +329,16 @@ class SeatArgumentRefused(HouseRefusal, ValueError):
     """A tool's own argument guard: the call named something this seat cannot route (no container, a bare-slug law, ...)."""
 
 
-class SeatHitlRefused(HouseRefusal, PermissionError):
-    """The HITL guard: the verb needs the operator's hand and rode without an approval capability."""
-
-
 class SeatVerbOwed(HouseRefusal, NotImplementedError):
     """A verb or a shaping this seat never runs (TS-native, owed to the daemon, deferred): refused rather than faked."""
 
 
 # THE REFUSAL FAMILIES THIS SEAT HANDS ACROSS, each raised BY THE HOUSE in words written for a caller: the vessel's own
 # refusal and an absent daemon (`lares_uds`), and every `HouseRefusal` (an unnamed house root, a tool's argument guard,
-# the HITL guard, a verb this seat never runs, an address that walks out of its root). No bare builtin rides here: a
+# a verb this seat never runs, an address that walks out of its root). No bare builtin rides here: a
 # `PermissionError` the OS raised carries house paths and a library's `ValueError` carries its input, so a builtin's
 # TYPE alone never crosses; `build_mcp`'s seat answers those the bare line.
 REFUSALS = (uds.LaresVerbError, uds.LaresDaemonUnreachable, HouseRefusal)
-
-
-def guard_hitl(verb: str, approval=None) -> None:
-    """Gate a verb by its seat: a HOTL verb passes freely; an HITL verb needs a truthy operator-approval
-    capability (the @daemon grants it out-of-band). Raise when an HITL verb rides without one."""
-    if seat_of(verb) == "HITL" and not approval:
-        why = "irreversible" if not VERB_SEATS[verb][0] else "trust-crossing"
-        raise SeatHitlRefused(f"{verb} sits HITL ({why}) — an operator-approval capability is required; "
-                              "the @daemon grants it out-of-band. A reversible verb (e.g. kapae) needs none.")
 
 
 # The stamp-filter → metadata-key map: each recall filter narrows on the key the py CAPTURE actually
@@ -870,11 +850,9 @@ def build_mcp(coordinator: LaresCoordinator):
     """Wrap the coordinator in an MCPServer — one @tool per lifecycle verb, each a thin skin that
     routes straight to the coordinator (the isomorphism holds because both surfaces share it).
 
-    HITL-GATE PIN (6b): the six lifecycle tools below all seat HOTL, so `guard_hitl` no-ops on them.
-    When the 6b control verbs (purge/attach/release) wire in as tools here, each MUST call
-    `guard_hitl(verb, approval)` before executing — the grid SEATS them HITL, but nothing structurally
-    forces the gate until the tool calls it. The @daemon (holding this cap in its wiki-island VM worker)
-    supplies the approval capability out-of-band (ask→confirm→cap→wiki-audit)."""
+    THE HAND LAW (hitl-reads-a-hand): every tool here seats HOTL. An HITL verb (the sense hand verbs, and the 6b
+    control verbs attach/release) holds no tool: a person's hand at a real terminal approves it, and no argument a
+    seat fills stands in for that hand."""
     from mcp.server.mcpserver import MCPServer
     from mcp.server.mcpserver.exceptions import ToolError, UnexpectedToolError
     from mcp.types import ToolAnnotations
@@ -1783,10 +1761,9 @@ def build_mcp(coordinator: LaresCoordinator):
             args["history"] = True
         return uds.session_act("kahua-read", args, face=_kahua_face(face))
 
-    # ── the DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` and routes over the
-    #    @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The reads + reversible
-    #    re-settle run HOTL; promote·retire·purge gate HITL right here (guard_hitl, the surface twin of the
-    #    CLI's `--approve`) BEFORE routing, and the daemon executor re-checks the seat (E5, both surfaces). ──
+    # ── the DURABLE sensorium-lifecycle sub-verbs a seat runs — each mirrors `lares sense <verb>` and routes
+    #    over the @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The hand verbs
+    #    (promote·retire·un-retire·purge) hold no tool: the operator runs `lares sense <verb>` on a terminal. ──
 
     @mcp.tool()
     def roster(name: "str | None" = None) -> dict:
@@ -1820,39 +1797,6 @@ def build_mcp(coordinator: LaresCoordinator):
         if name:
             args["name"] = name
         return uds.output("reconcile", args)
-
-    @mcp.tool()
-    def promote(name: str, approve: bool = False, store_swap: "str | None" = None) -> dict:
-        """PROMOTE a sensorium one rung (in-place field-flip: pioneer→hardening→durable). A designed one-way
-        commitment → HITL: `approve` MUST carry the operator-approval capability, else it refuses (the surface
-        twin of `lares sense promote <name> --approve`). `store_swap` re-points an alias (gated OFF)."""
-        guard_hitl("promote", approve or None)
-        args: dict = {"name": name, "approve": approve}
-        if store_swap:
-            args["storeSwap"] = store_swap
-        return uds.output("promote", args)
-
-    @mcp.tool()
-    def retire(name: str, grounds: str, approve: bool = False) -> dict:
-        """RETIRE a sensorium — a JUDGED tombstone recording the MUSTIE `grounds` (NO byte-delete; un-retire
-        restores). → HITL: `approve` MUST carry the operator-approval capability (twin of `lares sense retire
-        <name> --grounds <g> --approve`). Refuses LOUD without a valid ground."""
-        guard_hitl("retire", approve or None)
-        return uds.output("retire", {"name": name, "grounds": grounds, "approve": approve})
-
-    @mcp.tool()
-    def un_retire(name: str) -> dict:
-        """UN-RETIRE — restore a tombstoned sensorium to the state it stood at before the retire (pure
-        move-not-delete; the bytes never left). Reversible → HOTL. Mirrors `lares sense un-retire <name>`."""
-        return uds.output("un-retire", {"name": name})
-
-    @mcp.tool()
-    def purge(name: str, approve: bool = False) -> dict:
-        """PURGE — the irreversible byte GC (tombstone-only; refuses a live sensorium — retire it first).
-        → HITL: `approve` MUST carry the operator-approval capability (twin of `lares sense purge <name>
-        --approve`). This is the one verb that removes bytes; every other lifecycle verb moves-not-deletes."""
-        guard_hitl("purge", approve or None)
-        return uds.output("purge", {"name": name, "approve": approve})
 
     return mcp
 

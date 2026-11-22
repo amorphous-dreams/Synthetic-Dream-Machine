@@ -76,7 +76,7 @@ export function pulamaStandBy(a: {
   readonly onLog: (line: string) => void;
   /** Remove the offer this vessel just spent; answers whether a file went. Absent, the offer stays where it rests. */
   readonly consumeOffer?: () => boolean;
-}): { dial(): Promise<PulamaStandingBy>; waits(): string | null } {
+}): { dial(): Promise<PulamaStandingBy>; waits(): string | null; goodbye(): Promise<boolean> } {
   let leaving = false;
   /** Why the last dial stood no session (`composition-refused` among the pūlama's own readings); null while a session stands. */
   let lastWaits: string | null = null;
@@ -147,7 +147,54 @@ export function pulamaStandBy(a: {
   a.onLog(`standing by the pūlama; lends ${a.holder.lends().map((o) => `h${o}`).join(", ")}${waiting.length > 0 ? ` (${waiting.map((o) => `h${o}`).join(", ")} waiting dark)` : ""} (${stood.standing})${landed}`);
   return { session: true, waits: null };
   };
-  return { dial, waits: () => (a.holder.isUnlocked() ? null : lastWaits) };
+  return {
+    dial, waits: () => (a.holder.isUnlocked() ? null : lastWaits),
+    // THE CLEAN GOODBYE: the vessel drained every save and leaves; the session the goodbye ends composes no floor after it.
+    goodbye: () => { leaving = true; return a.holder.goodbye(); },
+  };
+}
+
+/**
+ * THE LIFE REMEMBERS A CLOSE THAT WAS NOT WHOLE: the pūlama holder and its stand-by outlive every composition of one vessel life,
+ * so a recomposition whose teardown left a face's drain faulted still holds that face's unsealed save when a later, whole stand-down
+ * exits. Every teardown and stand-down of the life notes its answer here; one close that was not whole latches the life, and its
+ * goodbye stays unsent. An answer that names no `whole` (a composition that held no face) changes nothing.
+ */
+export function lifeCloses(): { note(closed: unknown): void; noteTeardown<T>(teardown: () => Promise<T>): Promise<T>; whole(): boolean } {
+  let whole = true;
+  const note = (closed: unknown): void => {
+    if (typeof closed === "object" && closed !== null && (closed as { whole?: unknown }).whole === false) whole = false;
+  };
+  return {
+    note,
+    // A TEARDOWN THAT THROWS COUNTS NOT WHOLE: its close may have answered not whole before a later step threw, so the life
+    // latches and the fault rises on.
+    async noteTeardown(teardown) {
+      try { const closed = await teardown(); note(closed); return closed; }
+      catch (e) { whole = false; throw e; }
+    },
+    whole: () => whole,
+  };
+}
+
+/**
+ * THE CLEAN GOODBYE ON A WHOLE CLOSE ALONE (sealed-store#/the-lit-set): a stand-down that met a face whose drain faulted still
+ * tears down, but that face may hold a save it never sealed, so the vessel says no goodbye and its leaving reads as a drop, which
+ * holds the pūlama's close. Answers whether the goodbye was heard.
+ */
+export async function cleanGoodbye(closed: { readonly whole: boolean }, goodbye: () => Promise<boolean>, log: (line: string) => void): Promise<boolean> {
+  if (!closed.whole) {
+    log("no goodbye: a face did not close whole and may hold an unsealed save, so this leaving reads as a drop");
+    return false;
+  }
+  try {
+    const heard = await goodbye();
+    log(heard ? "the pūlama heard this life's goodbye: every save drained" : "no goodbye stands: the pūlama did not hear one, so this leaving reads as a drop");
+    return heard;
+  } catch (e) {
+    log(`goodbye unsent: ${e instanceof Error ? e.message : String(e)}`);
+    return false;
+  }
 }
 
 /** Seat the stand-by and dial once; answers whether a session stood. */

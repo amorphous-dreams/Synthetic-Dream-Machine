@@ -82,7 +82,7 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
@@ -410,6 +410,13 @@ async function main(): Promise<void> {
     askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
     reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front,
     lanSocket: () => lanSocket,
+    // THE CLEAN GOODBYE rides the stand-by, so the session it ends composes no floor after it.
+    // Every teardown of this life notes its answer (`lifeClosed`), so a recomposition that left a face unsealed keeps the goodbye unsent.
+    goodbye: async (closed) => {
+      lifeClosed.note(closed);
+      if (standBy === null) return false;
+      return cleanGoodbye({ whole: lifeClosed.whole() }, () => standBy.goodbye(), (line) => console.log(`[lararium] ${line}`));
+    },
     // THE ACTS THAT ACT AS A FACE ride a session and run on the custody door's one chain (`session:act`).
     sessionActs: { names: SESSION_ACTS, run: async (act, args) => custodyDoor
       ? { ...(await custodyDoor.act(act, args)) }
@@ -473,11 +480,14 @@ async function main(): Promise<void> {
       void recompose(true).catch((err: unknown) => console.error(`[lararium] the vessel did not stand again after its mount closed: ${err instanceof Error ? err.message : String(err)}`));
     });
   };
+  /** Whether every teardown and stand-down this vessel life ran closed each face whole: the clean goodbye reads it at the exit. */
+  const lifeClosed = lifeCloses();
   const composeAgain = async (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
     await first;
     const prior = composition;
     composition = null;
-    await prior?.teardown();
+    // THE LIFE REMEMBERS: a teardown here that left a face unsealed, or threw, keeps this life's goodbye unsent at its exit.
+    if (prior !== null) await lifeClosed.noteTeardown(() => prior.teardown());
     const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
     composition = out.stood;
     standAgainOnMountClose(out.stood);
@@ -566,6 +576,8 @@ interface BootContext {
   readonly lanSocket: () => LanDatagramSocket | null;
   /** The sealed acts that ride a session, and the custody door's chain that runs one. */
   readonly sessionActs: NonNullable<UdsChannelOptions["sessionActs"]>;
+  /** THE CLEAN GOODBYE to the pūlama, once every save drained at a clean exit: answers whether it was heard. With no pūlama, none. */
+  readonly goodbye: (closed: unknown) => Promise<boolean>;
 }
 
 /** One composition's own reading of what it stands as, taken when it composes. */
@@ -591,13 +603,13 @@ interface StandingComposition {
   readonly replayLend?: () => Promise<void>;
   /** Close every face through its actor, holding each dark (a whole lock, ahead of the key); rejects where a face did not close
    *  whole. Absent at the floor. */
-  readonly closeFaces?: () => Promise<void>;
+  readonly closeFaces?: () => Promise<unknown>;
   /** Hear the mounted face close at its custody's word: the vessel stands again. Absent at the floor. */
   readonly onMountClosed?: (listener: () => void) => () => void;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
   readonly onSignal: (sig: string) => void;
   /** Tear this composition down and leave the process and its floor standing. */
-  readonly teardown: () => Promise<void>;
+  readonly teardown: () => Promise<unknown>;
   /**
    * One read of a persona KEL's head off this composition's board, for a custody act that checks a grant against
    * it. Absent where no board stands (the herm floor).
@@ -793,7 +805,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
 async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null, ward?: WardCredential): Promise<StandingComposition> {
   const { wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
           reachFaces, originCompositions, receiptRing, readinessState, readinessFace, pronaos, floor, front, lanSocket,
-          standing, faceLit, sessionActs } = ctx;
+          standing, faceLit, sessionActs, goodbye } = ctx;
 
   // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
   if (originCompositions === null) throw new Error("[lararium] a hearth stood without its composed origins");
@@ -982,7 +994,11 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       httpServer.close();
       await step("main-flush", () => result.repo.flush(), (ms) =>
         console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`));
-      await step("composition", () => result.teardown(() => front.close()));
+      const closed = await step("composition", () => result.teardown(() => front.close()));
+      // THE CLEAN GOODBYE (sealed-store#/the-lit-set): only where every face closed whole through its actor (its saves drained)
+      // and the composition closed durably does this life tell its pūlama it leaves, naming itself. A face that did not close
+      // whole says no goodbye, and a goodbye unheard changes nothing: either leaving reads as a drop.
+      await step("goodbye", () => goodbye(closed));
       await floor.release();
       clearTimeout(pastBudget);
       console.log(`[lararium] shutdown complete — composition closed durably (${spans.join(" · ")})`);

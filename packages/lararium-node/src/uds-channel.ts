@@ -39,9 +39,9 @@
  */
 
 import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
-import { peerSeatOf } from "./uds-peer.js";
+import { peerKindOf, peerSeatOf, type PeerKind } from "./uds-peer.js";
 import { HEARTH_CLOSING, HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlanes } from "./hearth-roster-read.js";
-import { choreAtDoor, isChore } from "./chore-face.js";
+import { choreAtDoor, entersADrain, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
 import { PARK_LIMIT } from "./owned-store.js";
@@ -122,6 +122,11 @@ export interface UdsChannelOptions {
    * seated the `seat` profile (a spirit's hand: an agent, the MCP surface) refuses one `beyond-profile` before it runs.
    */
   readonly handOnlyActs?: ReadonlySet<string>;
+  /**
+   * How the door reads a connection's peer (`uds-peer`'s `peerKindOf`; a suite names another). Only a peer that reads `hand`
+   * books the `cli` asker; one that reads `unknown` books none, and a hand-only act from it refuses `hand-unattested`.
+   */
+  readonly peerKind?: (sock: Socket) => Promise<PeerKind>;
   /** Per-act refusal codes for the hand-only gate; other rows use beyond-profile. */
   readonly handOnlyCodes?: ReadonlyMap<string, string>;
   /**
@@ -354,7 +359,8 @@ export class VesselWaitExpired extends Error {
  * The ring (M1) holds two bounds, and either evicts: it flips a fact to `evicted` (keeping digest, effect
  * key, terminal) and tombstones the full durable outcome. An evicted id answers `retention-gap`, never a
  * silent re-run and never a bare "unknown" that would invite one.
- *   · COUNT: past `ring` tracked requests (any state), the oldest `seq` leaves first.
+ *   · COUNT: past `ring` tracked requests (any state), the oldest `seq` leaves first. A torn record that names its
+ *     seq counts too and leaves the same way (`evictTorn`), so an unreadable fact refuses only while the ring holds it.
  *   · BYTES: every landed fact names what its kept outcome weighs, and the ledger holds their sum. Past
  *     `ringBytes`, the oldest KEPT BODY leaves first. A fact that keeps no body (in flight, abandoned,
  *     interrupted) weighs nothing and stays, and the body that just landed stays for the caller awaiting it:
@@ -368,6 +374,10 @@ export class FactLedger {
    *  absent: `get()` answers `"torn"` for these, never `null`, so a caller cannot mistake an
    *  unreadable record for a fresh id. */
   private readonly torn = new Set<string>();
+  /** The torn records the seed read with a readable `seq`, by requestId: each holds its place in the order and leaves the ring
+   *  by count like any fact, rewritten `evicted` from the fields it still reads. A torn record with no readable seq holds no
+   *  place, and stays torn. */
+  private readonly tornAt = new Map<string, { readonly seq: number; readonly fields: Readonly<Record<string, unknown>> }>();
   /** requestIds in ascending `seq` order — the eviction queue. Seeded from the store at first use,
    *  then kept current by every `record()` this process makes. */
   private readonly order: string[] = [];
@@ -456,7 +466,8 @@ export class FactLedger {
    *  advances past the HIGHEST raw `seq` field this scan reads — TORN OR NOT: a torn record still
    *  claimed that seq when some earlier process minted it, so a fresh mint here must never reuse
    *  it, even though the torn record itself never joins the cache/order (it is tracked in
-   *  {@link torn} instead, and never seeds nor plays an eviction victim). */
+   *  {@link torn} instead, and never seeds). A torn record whose `seq` reads takes its place in the eviction order all the
+   *  same: an unreadable fact never decides a request, but it still leaves the ring by count (`tornAt`). */
   private ensureSeeded(): Promise<void> {
     if (this.seeded) return this.seeded;
     this.seeded = (async () => {
@@ -476,7 +487,11 @@ export class FactLedger {
         if (!Number.isNaN(rawSeq) && rawSeq > maxRawSeq) maxRawSeq = rawSeq;
         const fact = parseReceiptFact(raw);
         if (fact) facts.push(fact);
-        else this.torn.add(title.slice(RECEIPT_FACT_URI_PREFIX.length));
+        else {
+          const requestId = title.slice(RECEIPT_FACT_URI_PREFIX.length);
+          this.torn.add(requestId);
+          if (Number.isSafeInteger(rawSeq) && rawSeq >= 0) this.tornAt.set(requestId, { seq: rawSeq, fields: { ...raw } });
+        }
       }
       facts.sort((a, b) => a.seq - b.seq);
       // SETTLE AT SEED. A `committed` fact of ANOTHER life cannot complete: its worker's invocation
@@ -498,7 +513,14 @@ export class FactLedger {
         settledAny = true;
       }
       if (settledAny) await this.repo.flush();
-      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); this.hold(fact); }
+      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.hold(fact); }
+      // ONE ORDER, BY SEQ: the readable facts and the torn records that still name their place.
+      const placed: Array<{ readonly requestId: string; readonly seq: number }> = [
+        ...facts.map((f) => ({ requestId: f.requestId, seq: f.seq })),
+        ...[...this.tornAt].map(([requestId, at]) => ({ requestId, seq: at.seq })),
+      ];
+      placed.sort((a, b) => a.seq - b.seq);
+      for (const at of placed) this.order.push(at.requestId);
       this.nextSeq = maxRawSeq + 1;
       // A boot under tighter bounds than the last brings the ledger down to them before it answers anything.
       await this.tend();
@@ -655,6 +677,7 @@ export class FactLedger {
    *  names none evicted: every fact past the ring reads `evicted`, whatever it read before. Answers whether it
    *  wrote. */
   private async evict(victimId: string): Promise<boolean> {
+    if (this.tornAt.has(victimId)) return this.evictTorn(victimId);
     const victim = this.cache.get(victimId);
     if (!victim || victim.state === "evicted") return false;
     const evicted: ReceiptFact = {
@@ -674,6 +697,38 @@ export class FactLedger {
     }
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.release(victimId);
+    this.cache.set(victimId, evicted);
+    return true;
+  }
+
+  /**
+   * A TORN FACT LEAVES THE RING BY COUNT. It never decided anything while it stood (every act under its id refused
+   * `receipt-fact-torn`), and it leaves the same way a readable fact does: its body leaves first, then the fact reads
+   * `evicted` at its own seq, keeping only what its fields still read whole (a digest, a face, an action; an effect key and a
+   * terminal beside a digest alone). It guesses no verdict and no life: an id the ring let go answers `retention-gap`, the
+   * honest gap, never a re-run. A committed fact that names a `boot-epoch` field and no `life` reads torn and leaves this way.
+   */
+  private async evictTorn(victimId: string): Promise<boolean> {
+    const at = this.tornAt.get(victimId)!;
+    const read = (key: string): string | undefined => {
+      const v = at.fields[key];
+      return typeof v === "string" && /^\S+$/.test(v) ? v : undefined;
+    };
+    const inputDigest = read("input-digest");
+    const face = read("face"), action = read("action"), effectKey = read("effect-key"), terminalRaw = read("terminal");
+    const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
+    const evicted: ReceiptFact = {
+      requestId: victimId, state: "evicted", seq: at.seq,
+      ...(face !== undefined && { face }), ...(action !== undefined && { action }),
+      ...(inputDigest !== undefined && { inputDigest, ...(effectKey !== undefined && { effectKey }), ...(terminal !== undefined && { terminal }) }),
+    };
+    const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
+    for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
+      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+    }
+    await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
+    this.tornAt.delete(victimId);
+    this.torn.delete(victimId);
     this.cache.set(victimId, evicted);
     return true;
   }
@@ -1085,7 +1140,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     opts.signers?.unseat(signer);
     signer.drop();
   };
-  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
+  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; unattested?: boolean; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
+  const kindOfPeer = opts.peerKind ?? peerKindOf;
   const sessionTurns = new Map<Socket, Promise<void>>();
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
     try { sock.write(JSON.stringify(answer) + "\n"); } catch { /* gone */ }
@@ -1128,10 +1184,19 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return visit !== null ? { ok: true, visit } : shutRefusal(target, "visit");
       } };
     }
-    if (!life.known(worn)) return null;
+    return workGate(worn);
+  };
+  /**
+   * WORK ON A FACE HOLDS ITS CLOSE, whichever door it came by: a session's verb on the face it wears, or a one-shot line's verb
+   * on the face it acts as (the face it names, or the mount). It admits on that face's actor at dispatch, so no write enters a
+   * drain; a face closing refuses `face-closing`, a shut one `face-not-open`. A face the vessel never knew passes ungated.
+   */
+  const workGate = (face: number): DoorGate | null => {
+    const life = opts.faceLife;
+    if (!life?.known(face)) return null;
     return { visit: false, admit: () => {
-      const work = life.admitWork(worn);
-      return work !== null ? { ok: true, work } : shutRefusal(worn, "verb");
+      const work = life.admitWork(face);
+      return work !== null ? { ok: true, work } : shutRefusal(face, "verb");
     } };
   };
   const sessionState = (sock: Socket) => {
@@ -1188,7 +1253,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
       // THE PEER BINDS THE HAND (`uds-peer`): ANY session opened from a harness's branch (`cli`, `tab`, `watcher` alike) wears
       // the seat's hand and profile, so no hand a client names lifts a harness's line past the seat's gates.
-      if (frame["hand"] !== "seat" && await peerSeatOf(sock) === "ai") frame["hand"] = "seat";
+      // A PEER NOTHING READS BOOKS NO HAND: the session keeps the hand it names for its profile, but a hand-only act refuses
+      // `hand-unattested` and no call it places carries an asker (hitl-reads-a-hand).
+      const peer: PeerKind = frame["hand"] !== "seat" ? await kindOfPeer(sock) : "hand";
+      if (peer === "ai") frame["hand"] = "seat";
       if (closing || sock.destroyed) return;
       // THE AI SEAT OPENS A FACE INSIDE THE LENT SET: a `seat` hand (or a frame marked `seat: "ai"`) naming a face outside it refuses.
       // The set reads only where a seat names a face, so no other opening touches custody.
@@ -1217,6 +1285,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       state.sessionId = opened.session.sessionId;
       state.hand = frame["hand"] as Hand;
+      state.unattested = peer === "unknown";
       state.anchor = supplied.supply.anchor;
       state.supply = supplied.supply;
       state.signer = minted.signer;
@@ -1265,6 +1334,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
     // A SPIRIT'S HAND PROPOSES on a call too: a hand-only island verb (`retire-wiki`) refuses a seat session by its code.
     if (state.supply.profile === "seat" && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, opts.handOnlyCodes?.get(frame["verb"]) ?? "beyond-profile", requestId);
+    if (state.unattested && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, "hand-unattested", requestId);
     // NO SILENT STEWARD (`chore-face`): the daemon runs a chore on its mount's authority, so the session's face meets
     // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
     const mount = mountOf();
@@ -1291,7 +1361,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       const closed = () => resolve();
       sock.once("close", closed);
       handle({ verb: frame["verb"], args, requestId: faceScopedId(face, requestId),
-        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal, asker: state.hand ?? "cli",
+        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal, ...(state.unattested ? {} : { asker: state.hand ?? "cli" }),
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
         () => { sock.off("close", closed); resolve(); }, chore?.ok ? chore.mark : undefined, gate ?? undefined);
@@ -1332,6 +1402,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (!opts.sessionActs.names.has(name)) return sessionRefuse(sock, "act-rides-the-custody-door", requestId);
     // A SPIRIT'S HAND PROPOSES: the seat profile never runs an act the operator's hand alone runs.
     if (state.supply.profile === "seat" && opts.handOnlyActs?.has(name)) return sessionRefuse(sock, opts.handOnlyCodes?.get(name) ?? "beyond-profile", requestId);
+    if (state.unattested && opts.handOnlyActs?.has(name)) return sessionRefuse(sock, "hand-unattested", requestId);
     const args = given as Record<string, unknown>;
     // An act names its face by `face` or by `handleIndex`; either naming another face refuses. An act that names none
     // gets the session's face as `face`, which an act keyed by `handleIndex` alone refuses `bad-args`; one that names it
@@ -1650,9 +1721,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
         // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
         // THE PEER BINDS THE SEAT (`uds-peer`): a line with no mark whose peer descends from a harness reads `seat` all the same.
-        const seat = seatKindOf(parsed) ?? (sessionRequestId === undefined ? await peerSeatOf(sock) : null);
-        // THE ASKER THE DOOR READ rides the placed ask (`ctx.asker`): the one-shot line's seat kind, `cli` without one.
-        if (sessionRequestId === undefined) inv.asker = seat !== null ? "seat" : "cli";
+        const peer: PeerKind | null = sessionRequestId === undefined && seatKindOf(parsed) === null ? await kindOfPeer(sock) : null;
+        const seat = seatKindOf(parsed) ?? (peer === "ai" ? "ai" : null);
+        // THE ASKER THE DOOR READ rides the placed ask (`ctx.asker`): the one-shot line's seat kind, `cli` where the peer reads a
+        // hand, and none where the peer reads nothing (hitl-reads-a-hand): a hand-only verb from it refuses `hand-unattested`.
+        if (sessionRequestId === undefined) {
+          if (seat !== null) inv.asker = "seat";
+          else if (peer === "unknown") {
+            delete inv.asker;
+            if (opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand, and this line's peer reads nothing to attest one`, "hand-unattested");
+          } else inv.asker = "cli";
+        }
         const named = namedFaceOf(inv.args);
         const mount = mountOf();
         // NO SILENT STEWARD (`chore-face`): a one-shot chore designates its face (the face it names, or with none named the
@@ -1674,7 +1753,14 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           const resolved = await resolveTarget(inv.verb, inv.args, mount);
           if (!resolved.ok) return fail(resolved.message, resolved.refusal);
           if (resolved.args !== undefined) inv.args = resolved.args;
-          if (mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null) gate = gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined;
+          // ONE GATE PER ONE-SHOT, decided once: a visit admits on its target's actor (`gateFor`); otherwise a write (a chore, or a
+          // chore-free write into the daemon layer such as realm-feed: `entersADrain`) admits as work on the face it acts as (the
+          // face it names, or the mount), as a session's verb does on the face it wears, so no one-shot write enters that face's
+          // drain. ONLY A WRITE ENTERS A DRAIN: a read, or a row of the place, that visits no face keeps its path.
+          const acts = named ?? mount;
+          gate = mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null ? gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined
+            : acts !== null && entersADrain(inv.verb) ? workGate(acts) ?? undefined
+            : undefined;
         }
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });

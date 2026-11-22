@@ -6,6 +6,8 @@ import { INTENT_DELEGATION_DOMAIN, INTENT_ENTRY_DOMAIN } from "./domains.js";
 import { validDelegateBody, validDelegationRevokeBody } from "./intent-delegation.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { storedLarRecord } from "./stored-record.js";
+import { identitySlug } from "./lar-uris.js";
+import { personaBagIdFor, personaSiblingBagIds } from "./persona-scope.js";
 
 export type IntentEntryKind = "intent" | "outcome" | "asks" | "answer" | "claim" | "release" | "takeover" | "supersede" | "cancel" | "delegate" | "delegate-revoke";
 export type IntentAudience = { readonly mode: "pinned"; readonly atom: string } | { readonly mode: "prefer"; readonly atoms: readonly string[] } | { readonly mode: "class"; readonly capability: string } | { readonly mode: "every" } | { readonly mode: "asks" };
@@ -86,7 +88,24 @@ export function readIntentEntry(raw: unknown, opts: { readonly group: string; re
 
 export const INTENT_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/intent-entry/";
 export function intentEntryKey(group: string, cid: string): string { return `${INTENT_ENTRY_PREFIX}${encodeURIComponent(group)}/${cid}`; }
+/** A write that lands on another face's intent plane: an entry of face A never files into the plane face B names itself for. */
+export class IntentPlaneMisfiled extends Error {
+  override readonly name = "IntentPlaneMisfiled";
+}
+const INTENTS_SLUG = /^intents-[0-9a-f]+$/;
+/** The intents bag a plane names itself for (its seed's self-pointer), or null where it names none. */
+export function intentPlaneSelf(doc: LarDoc | undefined | null): string | null {
+  for (const key of Object.keys(doc?.tiddlers ?? {})) if (INTENTS_SLUG.test(identitySlug(key) ?? "")) return key;
+  return null;
+}
+/**
+ * EVERY INTENT WRITE NAMES ITS FACE: the entry's own group derives the intents bag it files under, and a plane that names
+ * itself for another face refuses the write (`IntentPlaneMisfiled`), so a sibling's outcome never lands on the worn face's
+ * plane, nor the reverse. A plane naming no self (a fixture) takes the write under the entry's own group.
+ */
 export function writeIntentEntry(draft: LarDoc, entry: SignedIntentEntry): void {
+  const self = intentPlaneSelf(draft), own = personaSiblingBagIds(personaBagIdFor(entry.body.group))?.intents ?? null;
+  if (self !== null && self !== own) throw new IntentPlaneMisfiled(`intent-plane-misfiled: an entry of ${entry.body.group.slice(0, 12)}… names ${own ?? "no plane"}, and this plane names itself ${self}`);
   const cid = intentEntryCid(entry), key = intentEntryKey(entry.body.group, cid);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(entry) }, cid);
 }

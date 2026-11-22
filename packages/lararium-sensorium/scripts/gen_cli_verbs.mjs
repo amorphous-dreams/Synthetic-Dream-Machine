@@ -97,18 +97,13 @@ const CLI_FORMS = {
   kahua_stage:   "kahua stage",
   kahua_list:    "kahua list",
   kahua_get:     "kahua get",
-  // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
-  // routed over the @daemon wire to the pure manifest.json reducer. Reads + reversible re-settle seat HOTL;
-  // promote·retire·purge carry HITL (the operator-approval capability, the twin of the CLI's `--approve`).
-  // `un_retire` (a py identifier) spells the CLI form `sense un-retire`, twinning un_kapae's shape.
+  // The DURABLE sensorium-lifecycle sub-verbs a seat runs — each mirrors `lares sense <verb>` (the one `sense` door),
+  // routed over the @daemon wire to the pure manifest.json reducer. `sense promote|retire|un-retire|purge|teardown`
+  // stay a person's hand at a real terminal and hold no MCP tool (hitl-reads-a-hand), the way `kahua lift` holds none.
   // `roster` reads at two grains on both surfaces: bare, every sensorium; with a name, that one's facets.
   roster:    "sense roster",
   build:     "sense build",
   reconcile: "sense reconcile",
-  promote:   "sense promote",
-  retire:    "sense retire",
-  un_retire: "sense un-retire",
-  purge:     "sense purge",
 };
 // A VERB DECLARES ITS SEAT. These CLI sub-verbs run LOCAL over a file with no daemon in reach (the
 // offline re-stamp of a stale block check must keep working with no socket), so they hold NO MCP tool by

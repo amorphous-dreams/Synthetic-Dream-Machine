@@ -53,8 +53,9 @@ describe("the AI seat acts inside the lent set", () => {
 
   test("SH4 — the channel reads the mark at both doors, and main hands it the worn face", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "uds-channel.ts"), "utf8");
-    // The one-shot door reads the seat off the line, books the asker it read off that same seat, then reads the named face.
-    expect(src).toMatch(/const seat = seatKindOf\(parsed\) \?\? \(sessionRequestId === undefined \? await peerSeatOf\(sock\) : null\);\n(?:\s*\/\/[^\n]*\n)*\s+if \(sessionRequestId === undefined\) inv\.asker = seat !== null \? "seat" : "cli";\n\s+const named = namedFaceOf\(inv\.args\);/);
+    // The one-shot door reads the seat off the line (else off the peer), books the asker it read off that same seat (`cli` only
+    // where the peer reads a hand, none where it reads nothing), then reads the named face.
+    expect(src).toMatch(/const seat = seatKindOf\(parsed\) \?\? \(peer === "ai" \? "ai" : null\);\n(?:\s*\/\/[^\n]*\n)*\s+if \(sessionRequestId === undefined\) \{\n\s+if \(seat !== null\) inv\.asker = "seat";\n[\s\S]{0,400}?\} else inv\.asker = "cli";\n\s+\}\n\s+const named = namedFaceOf\(inv\.args\);/);
     expect(src).toMatch(/seatFaceRefusal\(\{ seat, named, worn: opts\.mountOrdinal\?\.\(\) \?\? null, lent \}\)/);
     expect(src).toMatch(/seatFaceRefusal\(\{ seat: frame\["hand"\] === "seat" \? "ai" : seatKindOf\(frame\), named: faceRefOrdinal\(frame\["faceRef"\]\)/);
     expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/mountOrdinal:\s+\(\) => result\.mountOrdinal\(\)/);
@@ -132,7 +133,8 @@ describe("a lit face receives visits: the door resolves a read's target", () => 
     // the same gate a session's does.
     expect(src).toMatch(/resolveTarget\(frame\["verb"\], frame\["args"\] as Record<string, unknown>, state\.supply\.ordinal\)/);
     expect(src).toMatch(/resolveTarget\(inv\.verb, inv\.args, mount\)/);
-    expect(src).toMatch(/gate = gateFor\(mount, inv\.verb, inv\.args \?\? \{\}\)/);
+    // ONE GATE PER ONE-SHOT: the visit gate leads the one decision, and the work gate stands behind it.
+    expect(src).toMatch(/gate = mount !== null && visitTargetOf\(mount, inv\.verb, inv\.args\) !== null \? gateFor\(mount, inv\.verb, inv\.args \?\? \{\}\)/);
     const main = readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8");
     expect(main).toMatch(/visitVerbs:\s+CROSS_FACE_READ_VERBS/);
     expect(main).toMatch(/petnames:\s+async \(\) => \(await makeNodePersonaPetnameStore\(\)\)\.entries\(\)/);

@@ -176,7 +176,7 @@ export { seedDaemonCircleTiddlers, makeCircleStateReactor, DAEMON_CIRCLE_TIDDLER
 export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 export { seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_PINS_TITLE, LAW_PINS_DEFAULT, LAW_FILTER, LAW_STEPS, LAW_CANON_BAG_PATTERN, LAW_TITLE_PATTERN, LAW_CANON_GUARD, LAW_PINS_FILTER, LAW_INDEX_FILTER, LAW_BOOT_SEED, LAW_MU_ROOT } from "./daemon-law-tiddlers.js";
-export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP } from "./daemon-roster-tiddlers.js";
+export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE } from "./daemon-roster-tiddlers.js";
 export { seedDaemonIntentTiddlers, DAEMON_INTENT_TIDDLERS, makeIntentViewReactor, INTENT_VIEW_CAP, INTENT_STATE_TITLE, INTENT_PANE_TITLE } from "./daemon-intent-tiddlers.js";
 export { seedShadows, DAEMON_SEED_PLUGIN_PREFIX } from "./daemon-ui-tiddlers.js";
 
@@ -228,6 +228,7 @@ export {
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
 export { makeOracleCastReactor } from "./oracle-cast-verb.js";
+export { ddateVerb } from "./ddate-verb.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
 export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiResolver, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
 export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";

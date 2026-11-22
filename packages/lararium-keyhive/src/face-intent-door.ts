@@ -1,7 +1,7 @@
 /** One face's causal effect door over its shared intent plane. */
 import type { DocHandle, LarDoc, PersonaKelEvent, FaceAnchor, IntentVerbRegistry, IntentView, IntentEntryBody, SignedIntentEntry, IntentPaneModel, IntentReadInput, IntentRelayResult } from "@lararium/mesh";
-import { buildIntent, buildOutcome, faceRosterForIntents, intentEntryRecordsOfGroup, intentId, intentPaneModel, mayAct, readFace, readIntentPlane, writeIntentEntry, intentAdmissionRecordsOfGroup, readIntentAdmission, signIntentAdmission, writeIntentAdmission, localIntentHeads, decideAdmission } from "@lararium/mesh";
-import type { IntentSigner } from "@lararium/mesh";
+import { buildIntent, buildOutcome, choreReceiptMark, choreReceiptMarkOf, faceRosterForIntents, intentEntryCid, intentEntryRecordsOfGroup, intentId, intentPaneModel, mayAct, readFace, readIntentPlane, writeIntentEntry, intentAdmissionRecordsOfGroup, readIntentAdmission, signIntentAdmission, writeIntentAdmission, localIntentHeads, decideAdmission } from "@lararium/mesh";
+import type { ChoreReceiptMark, IntentSigner } from "@lararium/mesh";
 
 type Standing = "stands" | "aside" | "unknown";
 
@@ -45,8 +45,19 @@ export interface FaceIntentDoorPorts {
   readonly heldFrontiers?: () => ReadonlySet<string>;
   readonly effects?: ReadonlyMap<string, (args: unknown, ctx: { intentId: string; intent: IntentEntryBody; pinnedAtom: string; agent: { key: string; delegation: string } | null }) => Promise<unknown>>;
   readonly runDeclaredEffect?: (verb: string, args: unknown, ctx: { intentId: string; intent: IntentEntryBody; pinnedAtom: string; agent: { key: string; delegation: string } | null }) => Promise<unknown>;
+  /**
+   * THE FACE'S TURN, its lifecycle actor's admission (`admitWork`, face-lifecycle): each answer (a votum, or the owed receipts)
+   * runs on a ticket the actor admits and settles it when that answer lands, so a close waits out the votum in flight. Null:
+   * the face stands dark, the pass answers nothing more, and the face's next lit turn heeds what waited. Absent, every answer runs.
+   */
+  readonly admitTurn?: () => { done(): void } | null;
+  /** The face this door answers as (its handle index in this house): the house-local mark beside each outcome it lands. Null marks none. */
+  readonly acting?: () => number | null;
   readonly log: (message: string) => void;
 }
+
+/** One outcome this door landed, with its house-local chore mark: the plane keeps the signed outcome, and the mark stays home. */
+export interface AnsweredVotum { readonly outcome: string; readonly chore: ChoreReceiptMark }
 
 /**
  * One authority input an async source answers, kept with its synchronous WITNESS: `version` names the heads of every document
@@ -232,16 +243,33 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
   const wake = (): void => { void heed(); };
   /** The fence-waiter sets this door joined, so its detach leaves none of them. */
   const waits = new Set<Set<() => void>>();
-  /** Receipts this door owes: effects that ran to completion whose outcome never landed. */
-  const owed = new Map<string, Record<string, unknown>>();
+  /** Receipts this door owes: effects that ran to completion whose outcome never landed, each with the verb it answered. */
+  const owed = new Map<string, { readonly verb: string; readonly fields: Record<string, unknown> }>();
+  /**
+   * THE CHORE MARK, HOUSE-LOCAL (K20): each outcome this door lands keeps, beside it and never on it, the face it answered as
+   * and the hand that asked. Every votum rides the plane under a seat's signature (a device of the face, or the relay seat
+   * that admitted a far agent's), so its asker reads `seat`, and no session of this house rode it. The signed outcome keeps
+   * its cause, its signer and its result alone: no handle index (another house numbers its faces its own way), no hand, no
+   * session crosses the plane.
+   */
+  const answered = new Map<string, AnsweredVotum>();
   /** Sign and land one outcome; a detached door lands none, before its signing or after it, and the receipt stays owed. */
-  const publish = async (id: string, fields: Record<string, unknown>): Promise<void> => {
+  const publish = async (id: string, verb: string, fields: Record<string, unknown>): Promise<void> => {
     if (detached) throw new Error("the door detached; the receipt stays owed");
     const receipt = await buildOutcome({ group: ports.group, signer: ports.atom, cause: id, result: { status: "done", ...fields } });
     if (detached) throw new Error("the door detached; the receipt stays owed");
     ports.plane.change((draft) => writeIntentEntry(draft, receipt));
+    const face = ports.acting?.() ?? null;
+    const chore = face === null ? null : choreReceiptMarkOf(choreReceiptMark({ chore: verb, face, asker: { hand: "seat", session: null, generation: null } }, face));
+    if (chore) answered.set(id, { outcome: intentEntryCid(receipt), chore });
   };
-  /** One pass; true when a standing it needed went stale under its witness, so another pass re-acquires. */
+  /** The face's turn for one answer: its actor's ticket, null while the face stands dark (no actor named: every answer takes a turn). */
+  const turn = (): { done(): void } | null => (ports.admitTurn ? ports.admitTurn() : { done: () => {} });
+  /**
+   * One pass; true when a standing it needed went stale under its witness, so another pass re-acquires. Each answer (an owed
+   * receipt batch, then each votum) runs on the face's own turn, one at a time: a face that goes dark mid-pass answers nothing
+   * more, and its next lit turn heeds what waited.
+   */
   const pass = async (): Promise<boolean> => {
     // The async-sourced answers arrive first; everything after rebuilds from the LIVE ports in one turn.
     if (detached) return false;
@@ -253,9 +281,15 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     const settled = settledRuns.get(key) ?? new Set<string>();
     settledRuns.set(key, settled);
     // An owed receipt lands before anything else runs: it settles an effect that already ran, and never runs it again.
-    for (const [id, fields] of [...owed]) {
-      if (detached) return false;
-      try { await publish(id, fields); owed.delete(id); } catch (error) { ports.log(`face intent ${id} receipt still owed: ${String(error)}`); }
+    if (owed.size > 0) {
+      const owing = turn();
+      if (owing === null) return false;
+      try {
+        for (const [id, { verb, fields }] of [...owed]) {
+          if (detached) return false;
+          try { await publish(id, verb, fields); owed.delete(id); } catch (error) { ports.log(`face intent ${id} receipt still owed: ${String(error)}`); }
+        }
+      } finally { owing.done(); }
     }
     if (detached) return false;
     let view = readIntentNow(ports).view, stale = false, again = false;
@@ -279,6 +313,8 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       const pinnedAtom = state.audience.mode === "pinned" ? state.audience.atom : state.audience.mode === "asks" && state.answer && state.answer !== "contested"
         ? (state.answer.entry.body.executor as string | undefined) : undefined;
       if (state.class === "single-effect" && !pinnedAtom) continue;
+      const answering = turn();
+      if (answering === null) return again;
       const fenced = state.class === "single-effect";
       if (fenced) flying.set(state.id, new Set());
       stale = true;
@@ -287,10 +323,11 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
         // The effect RAN: from here the id stays settled whatever its receipt does.
         if (fenced) settled.add(state.id);
         const fields = receiptFields(result);
-        try { await publish(state.id, fields); }
-        catch (error) { owed.set(state.id, fields); ports.log(`face intent ${state.id} ran; its receipt is owed: ${String(error)}`); }
+        try { await publish(state.id, state.verb, fields); }
+        catch (error) { owed.set(state.id, { verb: state.verb, fields }); ports.log(`face intent ${state.id} ran; its receipt is owed: ${String(error)}`); }
       } catch (error) { ports.log(`face intent ${state.id} faulted: ${String(error)}`); }
       finally {
+        answering.done();
         if (fenced) {
           const waiting = flying.get(state.id); flying.delete(state.id);
           for (const fencedDoor of waiting ?? []) fencedDoor();
@@ -323,7 +360,11 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
       waits.clear();
     };
   };
-  const describe = async (): Promise<{ readonly view: IntentView; readonly pane: IntentPaneModel }> => { const view = await read(); return { view, pane: intentPaneModel(view) }; };
+  /** The view, its pane, and each outcome this door landed with its house-local chore mark. */
+  const describe = async (): Promise<{ readonly view: IntentView; readonly pane: IntentPaneModel; readonly answered: ReadonlyMap<string, AnsweredVotum> }> => {
+    const view = await read();
+    return { view, pane: intentPaneModel(view), answered: new Map(answered) };
+  };
   return { heed, attach, describe };
 }
 

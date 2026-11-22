@@ -24,6 +24,7 @@ import {
   makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
   makeOracleCastReactor,
+  ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
@@ -182,6 +183,8 @@ import { verifyFaceGrantRecord } from "./face-grant-record.js";
 import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHandle } from "./face-seat.js";
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
+import { faceDoors } from "./face-doors.js";
+import { readSiblingFacePlanes, recheckSiblingPlanes, intentPlaneSelf, type FaceAnchor } from "@lararium/mesh";
 import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
@@ -310,6 +313,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   /** ONE QUEUE PER FACE, never one across faces: each face's light, bag registration and drop take their turns in order, and a
    *  face whose drop never settles holds only its own queue, so another face lights meanwhile (the vessel's face actor). */
   const faceChanges = new Map<string, Promise<void>>();
+  /** One task on a face's own queue, in turn behind its light, bag registration and drop. */
+  const onFaceQueue = (face: string, task: () => Promise<void>): Promise<void> => {
+    const change = (faceChanges.get(face) ?? Promise.resolve()).then(task);
+    const tail = change.catch(() => {});
+    faceChanges.set(face, tail);
+    void tail.then(() => { if (faceChanges.get(face) === tail) faceChanges.delete(face); });
+    return change;
+  };
   // What each lit face booted from, by its bare atom key: a later lit message for that key matches it or refuses by name.
   const litInputs = new Map<string, string>();
   /** THE LIT SET: every sibling face lit beside the mounted one, by bare atom key (each under its own hive, `providers`). */
@@ -425,6 +436,110 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let intentVerifier: CapabilityVerifier | null = null;
   let registerIntentView: (() => void) | null = null;
   let heedIntentDoor: (() => void) | null = null;
+  /**
+   * EACH LIT FACE ANSWERS ITS OWN VOTA ON ITS OWN TURN (`face-doors`): one door per face, by bare atom key. A face's light
+   * reaching this island (the vessel's face actor lights it, and its `daemon:face-lit` lands on that face's own queue) heeds
+   * that face's door; its door answers only while it stands; its close waits out the votum in flight and detaches it. The
+   * mounted face stands its door over its catalog's rows; a lit sibling stands its own over the plane pair its own signed log
+   * names, re-checked here (`sibling-plane-mount`), and never turns the worn slot.
+   */
+  const intentDoors = faceDoors((line) => console.log(`[daemon] ${line}`));
+  /**
+   * ONE DOOR SHAPE FOR EVERY FACE: the door reads live authority (the face's lineage off this island's own replica of the
+   * persona-KEL board, and each device's standing off the board fold over the island's OWN replicas of the face's fleet edge
+   * board and edge ledger, under a witness over those documents and the KEL board), answers on the face's own turn, and pays a
+   * declared votum as that face: the verb presents as the face's own atom, so a lit sibling's cast lands in its own engine.
+   */
+  const faceIntentDoorOver = async (ctx: IslandContext, face: {
+    readonly group: string; readonly atom: { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
+    readonly ownKey: string; readonly plane: DocHandle<LarDoc>; readonly personaPlane: DocHandle<LarDoc>; readonly kelBoard: DocHandle<LarDoc>;
+    readonly kelPrefix: string; readonly anchor: FaceAnchor | null; readonly fleetRoot: string; readonly ledger: DocHandle<LarDoc>;
+    readonly restLedger?: () => Promise<void>; readonly acting: number | null;
+    readonly effects?: ReadonlyMap<string, (args: unknown, at: { readonly intentId: string; readonly pinnedAtom: string }) => Promise<unknown>>;
+    readonly hold?: <T>(pending: Promise<T>) => Promise<T>;
+  }) => {
+    const chainNow = () => personaKelChainForPrefix(face.kelBoard.doc(), face.kelPrefix);
+    const fleetBoard = await materializeSharedLarDoc(ctx.repo, fleetEdgeBoardDocUrl(face.fleetRoot), "board:edge-kapae");
+    const standings = intentDoorStandings({ repo: ctx.repo, fleetRoot: face.fleetRoot, ownKey: face.ownKey, board: fleetBoard, ledger: face.ledger,
+      lineage: () => readFace(chainNow() ?? undefined)?.lineage ?? null, lineageDocs: [face.kelBoard], ...(face.restLedger ? { restLedger: face.restLedger } : {}) });
+    const key = bareKey(face.atom.key);
+    return makeFaceIntentDoor({
+      group: face.group, atom: face.atom, plane: face.plane, personaRecords: () => faceRecordsOf([face.personaPlane.doc()], face.group),
+      kelChain: () => chainNow(), anchor: face.anchor,
+      standing: standings.standing, acquisition: standings.acquisition,
+      verbs: faceIntentVerbs(), ...(face.effects ? { effects: face.effects } : {}),
+      // The face's turn stands while its door does and its hive stands here; its close or the island's stop ends it.
+      admitTurn: () => (intentDoors.open(key) && providers.has(key) ? { done: () => {} } : null),
+      acting: () => face.acting,
+      runDeclaredEffect: async (verb, args, at) => {
+        const table = intentRegistry, verifier = intentVerifier;
+        if (!table?.get(verb) || !verifier) throw new Error(`intent effect ${verb}: daemon handler or verifier absent`);
+        if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error(`intent effect ${verb}: arguments must be a record`);
+        const invocation: Verb = {
+          requestId: at.intentId, title: `lar:///lararium.local.vm/verbs/intent-${at.intentId}`,
+          action: verb, args: args as Record<string, unknown>, targets: [], batchMode: "atomic", status: "pending",
+          requestedBy: face.atom.key, requestedAt: "",
+        };
+        const run = runLocalVerb(invocation, { daemon: ctx.composite, registry: table, verifier, presenterOf: () => face.atom.key, localOf: () => true });
+        return face.hold ? face.hold(run) : run;
+      },
+      log: (message) => console.log(`[daemon] ${message}`),
+    });
+  };
+  /**
+   * A LIT SIBLING'S OWN DOOR, stood at its light: the pair its own signed log named when the vessel proved it (`facePlanes`)
+   * re-reads here against that log and the verified KEL before either plane is read for a votum; the plane must name itself
+   * for this face; the door signs with the face's own atom and pays under its own hive. A pair that does not prove, or names
+   * any other slot kind, mounts nothing, and the face stands no door.
+   */
+  const standSiblingDoor = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
+    const key = bareKey(face.atom.key), group = face.personaGroupId;
+    if (face.facePlanes === undefined) return;
+    // WHAT THIS STAND OPENS LEAVES WITH IT: the sibling's two planes, never the shared KEL board. A refusal after opening evicts
+    // them (except what the face's standing door still holds), and the door it stands evicts them at its drop.
+    const openedIds: string[] = [];
+    const evict = (ids: readonly string[]): void => { for (const id of ids) void ctx.repo.removeFromCache(id as never).catch(() => {}); };
+    const refuse = (why: string): void => {
+      intentDoors.evictUnheld(key, openedIds, evict);
+      console.log(`[daemon] face ${key.slice(0, 12)}… stands no intent door: ${why}`);
+    };
+    const read = readSiblingFacePlanes(face.facePlanes);
+    if (!read.ok) return refuse(`${read.refusal}: ${read.detail}`);
+    const board = daemonAuth.personaKel?.board;
+    if (!board) return refuse("the manifest names no persona-KEL board to read its lineage from");
+    const find = (url: string, what: string) => findOrThrow(ctx.repo, url, `${what} (h${face.handleIndex ?? "?"})`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as unknown as Promise<DocHandle<LarDoc>>;
+    const own = async (url: string, what: string): Promise<DocHandle<LarDoc>> => { const handle = await find(url, what); openedIds.push(handle.documentId); return handle; };
+    try {
+      const [personaPlane, kelBoard] = await Promise.all([own(read.planes.persona, "the sibling's persona plane"), find(board, "the persona-KEL board")]);
+      const recheck = recheckSiblingPlanes({ planes: read.planes, records: faceRecordsOf([personaPlane.doc()], group),
+        chain: personaKelChainForPrefix(kelBoard.doc(), face.personaKel.prefix), anchor: face.faceAnchor, group });
+      if (!recheck.ok) return refuse(`${recheck.refusal}: ${recheck.detail}`);
+      const plane = await own(read.planes.intents, "the sibling's intents plane");
+      const self = intentPlaneSelf(plane.doc()), ownBag = personaSiblingBagIds(personaBagIdFor(group))?.intents ?? null;
+      if (self !== null && self !== ownBag) return refuse(`intent-plane-misfiled: the plane names itself ${self}`);
+      const atom = faceAtomKeyFromSeed(meshHexToBytes(face.atom.seed), group);
+      if (atom.key !== face.atom.key) return refuse("its atom differs from its seed");
+      const provider = providers.get(key)?.provider;
+      if (!provider) return refuse("its hive no longer stands here");
+      const ledger = await materializeSharedLarDoc(ctx.repo, edgeLedgerDocUrl(atom.key), "ledger:edge");
+      const door = await faceIntentDoorOver(ctx, { group, atom: { key: atom.key, sign: atom.sign }, ownKey: atom.key, plane, personaPlane, kelBoard,
+        kelPrefix: face.personaKel.prefix, anchor: face.faceAnchor, fleetRoot: face.deviceEdge.personaRootDid, ledger,
+        acting: typeof face.handleIndex === "number" ? face.handleIndex : null, hold: (pending) => holding(provider, pending) });
+      if (!litSiblings.has(key)) return refuse("it closed while its door stood");
+      // THE LIT LIFE BOUNDS WHAT THE DOOR OPENED: at the face's drop both planes leave this island's Repo cache, so nothing of
+      // the sibling's plane pair stays decrypted here or keeps replicating while the face stands dark; a repeat light keeps
+      // what the new door holds.
+      await intentDoors.stand(key, () => ({ heed: () => door.heed(), attach: () => {
+        const wake = (): void => { void door.heed(); };
+        personaPlane.on("change", wake);
+        const detach = door.attach();
+        return () => { detach(); personaPlane.off("change", wake); };
+      } }), { opened: [...openedIds], evict });
+    } catch (error) {
+      intentDoors.evictUnheld(key, openedIds, evict);
+      throw error;
+    }
+  };
   // V3: every slot document the resolver answers reaches the vessel's bag map before any write lands in it
   // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
   // A FACE'S OWN LAYER OF A WIKI (its `personal` layer, its `draft` binding) registers on the mounted face's hive before the
@@ -1120,6 +1235,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // THE ORACLE CAST (state/decisions "the oracle designs"): one I Ching cast, an ACT that lands its result as one tiddler
       // under `casts/` through the tiddler door's own put, in the engine of the face whose session placed it. The coins draw
       // through the platform's entropy door, or the caller types the operator's six; the caller names the time.
+      // THE CALENDAR ON THE ISLAND'S OWN TABLE: a `ddate` votum pays through the intent door's declared effect here, as any face;
+      // it reads no clock (the caller names the day) and writes nothing. The CLI's own `ddate` stays on the vessel's table.
+      if (!registry.has("ddate")) registry.register("ddate", ddateVerb, {
+        summary: "Read the Discordian date through the house's own calendar for an intent votum: `format` (ddate(1) codes, its `%.` draw barred from a votum) and a date (`day`, `month`, `year`), or `today` ({year, month, day}); reads no clock and writes nothing. The CLI's own `lares ddate` rides the vessel's table.",
+        surfaces: [],
+      });
       registry.register("oracle-cast", engineVerb("oracle-cast", makeOracleCastReactor), { summary: "Cast the I Ching by three coins a line and write the cast as one tiddler under `lar:///ha.ka.ba/lares/oracle/casts/` (fields: method, entropy, lines, changing, primary, relating, caster, cast-at, readings): `at` (the time of the cast; the verb reads no clock) required, `caster`, and `coins` (six line values of 6 to 9, bottom first: the operator's own throw, named `operator:three-coins`); with no coins the coins draw through the platform's entropy door (`platform:crypto.getRandomValues`). `create` semantics: a standing cast answers `exists`. Answers {decision, created, title, cast, text, readings, note}; the readings come from the wiki's oracle library. The oracle widens attention and never decides.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
@@ -1924,6 +2045,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (context.local === true && context.presenter !== undefined && FACE_LANE_VERBS.has(verb)
             && (bareKey(context.presenter) === bareKey(daemonAuth.atom.key)
               || (litSiblings.has(bareKey(context.presenter)) && (context.invocation as { face?: unknown } | undefined)?.face !== undefined))) return;
+          // A LIT SIBLING WORDS AND READS ITS OWN VOTA: main's rows that issue and show a votum run as the session's face, over
+          // that face's own proven plane and under its own atom. Where the fence reads the row (a routed row that addresses a
+          // wiki or rides off the local channel), it clears for a sibling whose door stands (its planes mounted); a row the fence
+          // never reads binds in main to the session's worn face alone (`worn.ordinal`), so it reaches no other face's plane.
+          if (context.local === true && context.presenter !== undefined && FACE_INTENT_ROWS.has(verb)
+            && litSiblings.has(bareKey(context.presenter)) && intentDoors.open(bareKey(context.presenter))) return;
           // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
           // names the mounted atom stays a claim and refuses like any other.
           if (context.local !== true || context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
@@ -1938,11 +2065,18 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (msg.type === "daemon:face-lit") {
           try { await lightJoinedFace(msg.entry, ctx); }
           catch (error) { throw new Error(`face ${msg.entry.atom.key} refused: ${String(error)}`); }
+          try { await standSiblingDoor(msg.entry, ctx); }
+          catch (error) { console.log(`[daemon] face ${face.slice(0, 12)}… stands no intent door: ${String(error)}`); }
+          intentDoors.turn(face);
         } else if (msg.type === "daemon:face-bags") {
           await registerLateFaceBags(msg.atomKey, msg.bags, ctx);
         } else {
           const key = bareKey(msg.atomKey);
           if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);
+          // THE LIT LIFE BOUNDS ITS DOOR: the votum in flight lands under the face's hive, then the door detaches, before the hive goes.
+          // The vessel's close reached CLOSED without waiting on this drop (face-lifecycle), so an outcome landing here may miss its
+          // drain; it answers again at the face's next lit turn, and a sibling's door pays idempotent declared verbs alone.
+          await intentDoors.drop(key);
           const face = providers.get(key);
           if (face) {
             providers.delete(key);
@@ -2079,29 +2213,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const atom = faceAtom();
             const ownKey = daemonAuth.atom?.key ?? atom.key;
             const ledger = (await dyadLedger) ?? await materializeSharedLarDoc(ctx.repo, edgeLedgerDocUrl(ownKey), "ledger:edge");
-            const fleetBoard = await materializeSharedLarDoc(ctx.repo, fleetEdgeBoardDocUrl(edge.personaRootDid), "board:edge-kapae");
-            const chainNow = () => personaKelChainForPrefix(kelBoard.doc(), kel.prefix);
-            const standings = intentDoorStandings({ repo: ctx.repo, fleetRoot: edge.personaRootDid, ownKey, board: fleetBoard, ledger,
-              lineage: () => readFace(chainNow() ?? undefined)?.lineage ?? null, lineageDocs: [kelBoard], ...(restDyadLedger ? { restLedger: restDyadLedger } : {}) });
-            const door = makeFaceIntentDoor({
-              group, atom: { key: atom.key, sign: atom.sign }, plane, personaRecords: () => faceRecordsOf([personaPlane.doc()], group),
-              kelChain: () => chainNow(), anchor: daemonAuth.faceAnchor ?? null,
-              standing: standings.standing, acquisition: standings.acquisition,
-              verbs: faceIntentVerbs(), effects: new Map([["face-join", faceJoinVia]]),
-              runDeclaredEffect: async (verb, args, at) => {
-                const table = intentRegistry, verifier = intentVerifier;
-                if (!table?.get(verb) || !verifier) throw new Error(`intent effect ${verb}: daemon handler or verifier absent`);
-                if (!args || typeof args !== "object" || Array.isArray(args)) throw new Error(`intent effect ${verb}: arguments must be a record`);
-                const invocation: Verb = {
-                  requestId: at.intentId, title: `lar:///lararium.local.vm/verbs/intent-${at.intentId}`,
-                  action: verb, args: args as Record<string, unknown>, targets: [], batchMode: "atomic", status: "pending",
-                  requestedBy: atom.key, requestedAt: "",
-                };
-                return runLocalVerb(invocation, { daemon: ctx.composite, registry: table,
-                  verifier, presenterOf: () => atom.key, localOf: () => true });
-              },
-              log: (message) => console.log(`[daemon] ${message}`),
-            });
+            const door = await faceIntentDoorOver(ctx, { group, atom: { key: atom.key, sign: atom.sign }, ownKey, plane, personaPlane, kelBoard,
+              kelPrefix: kel.prefix, anchor: daemonAuth.faceAnchor ?? null, fleetRoot: edge.personaRootDid, ledger,
+              ...(restDyadLedger ? { restLedger: restDyadLedger } : {}), effects: new Map([["face-join", faceJoinVia]]),
+              acting: typeof daemonAuth.handleIndex === "number" ? daemonAuth.handleIndex : null });
             registerIntentView = () => {
               if (intentRegistry && !intentRegistry.has("intent-view"))
                 intentRegistry.register("intent-view", makeIntentViewReactor(ctx.tw5, intentsBag, async () => (await door.describe()).pane));
@@ -2145,10 +2260,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             heedIntentDoor = () => { void door.heed(); summon(); };
             const wake = (): void => { void door.heed(); summon(); };
             personaPlane.on("change", wake);
-            const stopDoor = door.attach();
+            const turnKey = bareKey(atom.key);
+            await intentDoors.stand(turnKey, () => door);
             plane.on("change", summon);
             summon();
-            doorStop = () => { stopDoor(); personaPlane.off("change", wake); plane.off("change", summon); };
+            doorStop = () => { void intentDoors.drop(turnKey); personaPlane.off("change", wake); plane.off("change", summon); };
           } catch (error) { console.log(`[daemon] the face intent door waits: ${String(error)}`); }
           finally { doorAttaching = false; }
         };
@@ -2195,7 +2311,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       litInputs.set(bareKey(daemonAuth.atom!.key), faceInputsDigest(daemonAuth));
       for (const face of daemonAuth.joinedFaces ?? []) {
         try { await lightJoinedFace(face, ctx); }
-        catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); }
+        catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); continue; }
+        // A SIBLING LIT WITH THE COMPOSITION takes its lit turn here: its door stands on its own queue, never holding the boot.
+        const key = bareKey(face.atom.key);
+        void onFaceQueue(key, async () => {
+          if (!litSiblings.has(key)) return;
+          try { await standSiblingDoor(face, ctx); }
+          catch (error) { console.log(`[daemon] face ${key.slice(0, 12)}… stands no intent door: ${String(error)}`); }
+          intentDoors.turn(key);
+        });
       }
       // The Kahu predicate stands in the verifier as well: a verb routed into a wiki island clears its cap HERE.
       const mountedKahuVerifier = withKahuReach(
@@ -2271,9 +2395,19 @@ export function makeOperatorDaemonBehavior(manifest: IslandMsg_Manifest, extra: 
  * (`content-mounted-only`); a new verb stands fenced until it joins this list with its one-line reason.
  */
 export const FACE_NEUTRAL_VERBS: Readonly<Record<string, string>> = Object.freeze({
+  "ddate": "reads the house calendar off the date its arguments name; reads no clock and closes over no face's key, provider, mint or slot document",
   "realm-clock": "reads the realm's public lease slots off the vessel's daemon layer; closes over no face's key, provider, mint or slot document",
   "realm-feed": "rolls the presenter's own leaf slot on the vessel's daemon layer, its writer bound to the presenter by the face→leaf bond; closes over no face's key, provider, mint or slot document",
 });
+
+/**
+ * THE INTENT ROWS A LIT SIBLING CLEARS: main's store-door rows that word and read a votum on the session face's own plane,
+ * under that face's own atom (`intent-issue`, `intent-show`). Where the fence reads a routed row (one that addresses a wiki,
+ * or rides off the local channel: the dispatcher's `admitRouted`), these clear for a lit sibling only while its door stands,
+ * so only while its proven planes mount; every other face row still meets the fence there. A routed row the fence does not
+ * read clears on its session alone, and main binds it to the session's worn face (`worn.ordinal`), never another face.
+ */
+export const FACE_INTENT_ROWS: ReadonlySet<string> = new Set(["intent-issue", "intent-show"]);
 
 /** The bare lowercase hex of a DID claim (`0x…` or bare). */
 const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/, "");

@@ -6,10 +6,13 @@
  *   roster · inspect          — READ (out-of-loop; agents free)               HOTL
  *   reconcile · reconcileAll  — re-settle a sensorium against its evidence     HOTL  (+ the gated cadence)
  *   build --ephemeral         — mint a fresh pioneer (agent self-service)      HOTL
- *   promote                   — climb a rung (in-place FIELD-FLIP, active)     HITL  (+ the gated store-swap)
- *   retire --grounds <MUSTIE> — judged tombstone + recorded grounds, NO delete HITL
- *   un-retire                 — move-not-delete restore of the prior state     HOTL
- *   purge                     — the irreversible byte GC (explicit-only)       HITL
+ *   promote                   — climb a rung (in-place FIELD-FLIP, active)     hand  (+ the gated store-swap)
+ *   retire --grounds <MUSTIE> — judged tombstone + recorded grounds, NO delete hand
+ *   un-retire                 — move-not-delete restore of the prior state     hand
+ *   purge                     — the irreversible byte GC (explicit-only)       hand
+ *
+ * A `hand` verb runs on a person's hand at a real terminal alone (hitl-reads-a-hand): its door reads that hand off the
+ * process behind the ask (`readOwnHand` for the CLI, the booked asker for the vessel) before it calls these.
  *
  * The graduated state rides the DURABLE manifest here (the reducer + field); the binary `ephemeral`
  * leak-record of the SCRATCH `docker run --rm` tree (sense-sensorium.ts `sensorium.json`) stays its own
@@ -23,7 +26,7 @@
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  nextLifecycle, promoteState, guardHitl,
+  nextLifecycle, promoteState, guardHitl, type SenseHand,
   isMustieGround, MUSTIE_GROUNDS, type MustieGround,
   LIFECYCLE_GATES_DEFAULT, type LifecycleGates, type LifecycleEvidence,
   type SensoriumLifecycleState, type RetirementRecord,
@@ -235,8 +238,9 @@ export interface PromoteResult {
  * FEATURE-GATED OFF: `--store-swap <target>` runs only when `LifecycleGates.storeSwapPromote` is flipped.
  */
 export function promoteSensorium(
-  name: string, opts: { storeSwapTarget?: string } = {}, gates: LifecycleGates = LIFECYCLE_GATES_DEFAULT,
+  name: string, hand: SenseHand | undefined, opts: { storeSwapTarget?: string } = {}, gates: LifecycleGates = LIFECYCLE_GATES_DEFAULT,
 ): PromoteResult {
+  guardHitl("promote", hand);
   const dir = sensoriumDir(name);
   const m = readManifest(dir);
   if (!m) throw new Error(`promote: no sensorium named '${name}'`);
@@ -274,7 +278,8 @@ export interface RetireResult {
  * retire — the dir and planes stay; only the explicit HITL `purge` GCs. Idempotent on an already-tombstoned
  * sensorium (keeps the first grounds).
  */
-export function retireSensorium(name: string, grounds: unknown): RetireResult {
+export function retireSensorium(name: string, grounds: unknown, hand: SenseHand | undefined): RetireResult {
+  guardHitl("retire", hand);
   if (!isMustieGround(grounds)) {
     throw new Error(`retire refuses without a MUSTIE ground — one of: ${MUSTIE_GROUNDS.join(" · ")} (got ${JSON.stringify(grounds)}). A retire is judged, never silent.`);
   }
@@ -303,7 +308,8 @@ export interface UnRetireResult {
  * the state it stood at before the retire (recorded in the retirement record), dropping the record. Pure
  * move-not-delete — the bytes never left. A non-tombstone sensorium is a no-op ({restored:false}).
  */
-export function unRetireSensorium(name: string): UnRetireResult {
+export function unRetireSensorium(name: string, hand: SenseHand | undefined): UnRetireResult {
+  guardHitl("un-retire", hand);
   const dir = sensoriumDir(name);
   const m = readManifest(dir);
   if (!m) throw new Error(`un-retire: no sensorium named '${name}'`);
@@ -325,13 +331,13 @@ export interface PurgeResult {
 }
 
 /**
- * PURGE — the irreversible byte GC (F3, explicit-only, NO auto-reclaim). Seated HITL: it needs an
- * operator-approval capability ({@link guardHitl}). REFUSES a live sensorium — only a TOMBSTONE GCs, so a
+ * PURGE — the irreversible byte GC (F3, explicit-only, NO auto-reclaim). A hand verb: it needs the hand a
+ * door read ({@link guardHitl}), never a caller's approval value. REFUSES a live sensorium — only a TOMBSTONE GCs, so a
  * purge always follows a judged retire (never a silent delete of standing bytes). This is the one verb
  * that removes bytes; every other lifecycle verb moves-not-deletes.
  */
-export function purgeSensorium(name: string, approval?: unknown): PurgeResult {
-  guardHitl("purge", approval);
+export function purgeSensorium(name: string, hand?: SenseHand): PurgeResult {
+  guardHitl("purge", hand);
   const dir = sensoriumDir(name);
   const m = readManifest(dir);
   if (!m) throw new Error(`purge: no sensorium named '${name}'`);

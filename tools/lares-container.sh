@@ -513,6 +513,53 @@ tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 # `-e NAME` (compose reads the value from this environment), so no value rides argv; no other name crosses, and no
 # credential. The harness marks (CLAUDECODE, CODEX_SANDBOX, CODEX_SANDBOX_NETWORK_DISABLED) make the CLI ask as an AI
 # seat (#231's seat-canon-reach); a process's ancestry cannot cross the container boundary, so the mark is its one carrier.
+# THE HOST CHAIN CROSSES AS THE MARK, AT THIS DOOR (hitl-reads-a-hand). Inside the vessel an exec'd process has parent pid 0, so
+# nothing there can see a harness on the host. Before any act this shim walks its OWN host chain (`host_chain_kind`, the
+# same reading as `branchKind` in packages/lararium-node/src/uds-peer.ts): a harness mark in a link's launch environment, or a
+# link named `claude` / `codex*`, reads `ai`; a link whose /proc stat reads nothing (or a walk past 64 links) reads `unknown`;
+# a walk that reaches pid 0 having read every link reads `hand`. Anything but `hand` exports CLAUDECODE=1, so `pass_env` hands
+# the seat mark in by name, a stripped mark (`env -u CLAUDECODE`) included. The host `lares` reads the same before it forwards
+# (host-bridge `forwardEnvFor`), and its chain runs through this walk too, so both doors meet one gate here.
+host_chain_mark() { # $1 = a key=value entry of a launch environment
+  case "$1" in
+    CLAUDECODE=1) return 0 ;;
+    CODEX_SANDBOX=?*|CODEX_SANDBOX_NETWORK_DISABLED=?*) return 0 ;;
+  esac
+  return 1
+}
+host_chain_named() { # $1 = a name (comm or argv entry): `claude`, or anything starting `codex`
+  hn_base=${1##*/}
+  case "$hn_base" in claude|codex*) return 0 ;; esac
+  return 1
+}
+host_chain_kind() {
+  hk_pid=$$ hk_n=0
+  while [ "$hk_pid" -gt 0 ]; do
+    if [ "$hk_n" -ge 64 ]; then echo unknown; return; fi
+    hk_n=$((hk_n + 1))
+    hk_stat=$(cat "/proc/$hk_pid/stat" 2>/dev/null) || hk_stat=""
+    if [ -z "$hk_stat" ]; then echo unknown; return; fi
+    if [ -r "/proc/$hk_pid/environ" ]; then
+      hk_hit=$(tr '\0' '\n' < "/proc/$hk_pid/environ" 2>/dev/null | while IFS= read -r hk_e; do if host_chain_mark "$hk_e"; then echo y; break; fi; done)
+      if [ -n "$hk_hit" ]; then echo ai; return; fi
+    fi
+    hk_comm=${hk_stat#*\(}; hk_comm=${hk_comm%\)*}
+    if host_chain_named "$hk_comm"; then echo ai; return; fi
+    if [ -r "/proc/$hk_pid/cmdline" ]; then
+      hk_hit=$(tr '\0' '\n' < "/proc/$hk_pid/cmdline" 2>/dev/null | head -n 2 | while IFS= read -r hk_a; do if [ -n "$hk_a" ] && host_chain_named "$hk_a"; then echo y; break; fi; done)
+      if [ -n "$hk_hit" ]; then echo ai; return; fi
+    fi
+    hk_rest=${hk_stat##*) }
+    # shellcheck disable=SC2086
+    set -- $hk_rest
+    hk_next=${2:-}
+    case "$hk_next" in ''|*[!0-9]*) echo unknown; return ;; esac
+    hk_pid=$hk_next
+  done
+  echo hand
+}
+if [ "$(host_chain_kind)" != hand ]; then CLAUDECODE=1; export CLAUDECODE; fi
+
 pass_env() {
   for name in NO_COLOR TERM COLORTERM LARES_DEBUG CLAUDECODE CODEX_SANDBOX CODEX_SANDBOX_NETWORK_DISABLED; do
     eval "isset=\${$name+x}"

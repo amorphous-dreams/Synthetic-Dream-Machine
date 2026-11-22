@@ -35,6 +35,8 @@ import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "./surface-env.js";
+import { ownPeerKind } from "@lararium/node";
+type PeerKind = ReturnType<typeof ownPeerKind>;
 
 export { envValue, IN_CONTAINER_ENV, surfaceEnvPath };
 
@@ -411,5 +413,16 @@ export async function bridge(argv: readonly string[], commands: readonly string[
     for (const line of translated.error.lines) console.error(line);
     return translated.error.code;
   }
-  return await forwardToShim(shim as string, translated.argv);
+  return await forwardToShim(shim as string, translated.argv, forwardEnvFor(process.env, ownPeerKind(process.env)));
+}
+
+/**
+ * THE HOST CHAIN CROSSES THE WALL AS THE SEAT MARK (hitl-reads-a-hand). Inside the vessel an exec'd process has no parent to
+ * walk (its parent pid reads 0), so neither the vessel's own CLI (`readOwnHand`) nor its socket (`peerKindOf`) can see a harness
+ * that launched the host `lares`. The forwarder reads its own host chain BEFORE it forwards any command, and anything but a
+ * person's hand (`ai`, or `unknown`: an unread chain never reads as a person) sends the forwarded child the seat mark
+ * (`CLAUDECODE=1`), which the shim hands into the vessel by name. Every hand verb inside then refuses as it refuses a seat.
+ */
+export function forwardEnvFor(env: NodeJS.ProcessEnv, kind: PeerKind): NodeJS.ProcessEnv {
+  return kind === "hand" ? env : { ...env, CLAUDECODE: "1" };
 }

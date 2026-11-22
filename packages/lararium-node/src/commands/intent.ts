@@ -7,7 +7,7 @@ import {
   buildAnswer, buildAsks, buildCancel, buildClaim, buildDelegation, buildDelegationRevoke, buildIntent, buildSupersede, buildTakeover,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceAtomKeyFromSeed, faceIntentVerbs,
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
-  readIntentEntry,
+  readIntentEntry, intentIdTakenBy, intentIdTakenAdvice,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
   WardRefused, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
@@ -315,7 +315,13 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
           }
           nonce ??= faceJoinNonce(atom.key, audience);
         } else audience = intentAudience(opts);
-        entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {}, nonce: nonce ?? randomBytes(16).toString("hex"), audience, bound, verbs });
+        // An idempotent verb names its votum by its word alone: the empty nonce, so the same word twice is one votum.
+        entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {},
+          nonce: nonce ?? (verbs.classOfVerb(opts.verb)?.class === "idempotent" ? "" : randomBytes(16).toString("hex")), audience, bound, verbs });
+        // THE SAME WORD NAMES ONE VOTUM: a body already standing under this id (the word under another audience or bound)
+        // refuses here, before a second body could void the first and orphan its outcome.
+        { const taken = intentIdTakenBy(view(), entry);
+          if (taken) throw new IntentRefused(`intent-id-taken: votum ${intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }).slice(0, 12)}… stands under another audience or bound (${taken.slice(0, 12)}…); ${intentIdTakenAdvice(verbs.classOfVerb(opts.verb))}`); }
         break;
       }
       case "ask":
