@@ -129,7 +129,7 @@ describe("the share door", () => {
     const file = serializeShareFile([{ slug: "elyncia-referee", kind: "wiki", read: "the referee", write: "", owner: "joshua-fontany" }]);
     const f = fake({ file, applied: { granted: 0, pending: 0, unowned: ["elyncia-referee"] } });
     expect(await cmdShare("wiki", f.doors)(args(["elyncia-referee"], { read: "h1" }))).toBe(0);
-    expect(f.out.join("\n")).toMatch(/h0 owns elyncia-referee; run this share worn as h0/);
+    expect(f.out.join("\n")).toMatch(/h0 owns elyncia-referee; run `lares wear 0`, then this share/);
   });
 
   test("SH5 — the row keeps its owner in the control document as in the file", async () => {
