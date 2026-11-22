@@ -1069,7 +1069,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "UNLOCK OPENS CUSTODY; WEAR CHOOSES THE FACE. The vessel's mount moves to face hN, a face already standing open " +
       "(under a pūlama, one the pūlama lends), and the vessel composes again on it. A wear asks no route and carries none, and an AI seat wears on the operator's word as the operator's own terminal does. " +
       "A vessel holding no key refuses `custody-locked` and names `lares vault unlock`; a composition that refuses wears " +
-      "the face it left, and the vessel key stays held.",
+      "the face it left, and the vessel key stays held. A wear that lands replays the share landing, as an unlock does: rows a " +
+      "grant carried for the face now worn lift into its catalog (the face already worn among them), and the wear names what still waits on a shut face.",
     examples: [
       "lares wear 1                           # move the mount to face h1, a face already standing open",
       "lares wear --face 0                    # the same move, the face named by flag",
