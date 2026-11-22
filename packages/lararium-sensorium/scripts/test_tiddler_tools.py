@@ -250,3 +250,13 @@ def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon
     with pytest.raises(ValueError, match="tiddler_get\\(bag"):
         t["wiki_status"]()
     assert len(daemon.lines) == 1
+
+
+def test_a_retired_parameter_refuses_aloud_before_the_wire(daemon):
+    # `text` retired into `grain` (the lens and the grain kept apart): a caller still naming it hears the refusal and the
+    # word that replaced it, and nothing crosses the wire; the SDK would otherwise drop it and answer a grain never asked.
+    mcp = _mcp()
+    for value in (False, True):
+        is_error, said = _call(mcp, "tiddler_get", {"title": "T", "recipe": "default", "text": value})
+        assert is_error and "param-retired: `text` retired" in said and 'grain="skinny"' in said, said
+    assert daemon.lines == []
