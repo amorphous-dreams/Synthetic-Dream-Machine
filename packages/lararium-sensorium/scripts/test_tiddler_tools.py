@@ -108,7 +108,7 @@ def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
         "tiddler_get":    (True, False, True),
         "wiki_render":    (True, False, True),
         "wiki_status":    (True, False, True),
-        "tiddler_put":    (False, False, True),
+        "tiddler_put":    (False, False, False),
         "tiddler_delete": (False, True, True),
     }
     for name, (read_only, destructive, idempotent) in want.items():

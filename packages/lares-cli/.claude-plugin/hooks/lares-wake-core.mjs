@@ -65,7 +65,7 @@ export function shimRunner(hookUrl) {
   const hookDir = dirname(fileURLToPath(hookUrl));
   const laresBin = join(hookDir, "..", "..", "bin", "lares.mjs");
   const shim = join(hookDir, "..", "..", "..", "..", "tools", "lares-container.sh");
-  return (name, argv) => (name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv));
+  return (name, argv) => (name === "menu" ? spawnRead(process.execPath, [join(hookDir, "lares-menu-read.mjs"), laresBin]) : name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv));
 }
 
 /** One page of the view: the filter door's own row ceiling, and the byte cap both the door and the render keep. */
@@ -585,6 +585,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const lawRead = optional("law", lawArgv());
   const lawPinsRead = optional("lawPins", lawPinsArgv());
   const rosterRead = optional("roster", rosterArgv());
+  const menuRead = optional("menu", []);
   const gitRead = optional("git", gitArgv());
   const halvesRead = optional("halves", halvesArgv());
   const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
@@ -592,11 +593,12 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, rosterRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, rosterRead, menuRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
   const state = stateRead && seen.up ? await budget.settle(stateRead) : null;
   const law = lawRead && seen.up ? await budget.settle(lawRead) : null;
   const lawPins = lawPinsRead && seen.up ? await budget.settle(lawPinsRead) : null;
   const roster = rosterRead && seen.up ? await budget.settle(rosterRead) : null;
+  const menu = menuRead && seen.up ? await budget.settle(menuRead) : null;
   const index = seen.up ? await budget.settle(reads.index) : null;
   const leiAnswers = {};
   const checkout = gitRead && seen.up ? checkoutOf(await budget.settle(gitRead)) : null;
@@ -617,6 +619,17 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
     ...(seen.library ? [seen.library] : []),
     `Lares homes: ${homesLine}`,
   ];
+  if (menu !== null) {
+    let digest;
+    if (menu !== BUDGET && menu.code === 0) {
+      try { digest = JSON.parse(menu.stdout).digest; } catch { /* report the malformed answer below */ }
+    }
+    if (/^[0-9a-f]{12}$/.test(digest ?? "")) lines.push(`Lares tool menu: sha256:${digest}`);
+    else {
+      const cause = readFault(menu, "read") ?? (menu.code !== 0 ? `the read exited ${menu.code}` : "the read's answer did not parse (exit 0)");
+      lines.push(`Lares tool menu: unread (${String(cause).replace(/\s+/g, " ")})`);
+    }
+  }
   if (state !== null) lines.push(stateLines(state));
   if (law !== null) lines.push(lawLines(law, lawPins));
   if (roster !== null) lines.push(rosterLines(roster));
