@@ -291,7 +291,7 @@ class CaptureSessionServer:
         fallback for a cwd-less source. Idempotent: already-landed turns skip. A per-session failure SKIPS to
         `failed` (one unreadable session never aborts the sweep); a SYSTEMIC embedder floor fails loud. Arms
         every derived cadence once at the end, so the idle beat re-derives the settled bulk. The ROUTED spine
-        the CLI (`lares sense sweep`) and the MCP (`sweep`) both reach through the @daemon. The loop itself
+        the CLI (`lares sense pour --bulk`) and the MCP (`pour` with `bulk`) both reach through the @daemon. The loop itself
         rides `session_discovery.run_bulk_sweep` — the ONE bulk-sweep spine the standalone MCP path shares,
         so daemon-UP and daemon-DOWN re-pours capture identically."""
         from session_discovery import run_bulk_sweep
