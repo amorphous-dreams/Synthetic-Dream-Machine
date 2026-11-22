@@ -128,6 +128,9 @@ test("THE CENSUS: every daemon verb is fenced unless it stands on the named neut
     expect(verbs, `neutral ${verb} registers`).toContain(verb);
     expect(why, `neutral ${verb} reason`).toMatch(/^[^\n]{12,}$/);
   }
+  // The calendar a votum pays through declares itself on this table: a summary of a sentence at least, and no surface.
+  expect(registry.spec("ddate")?.summary ?? "", "ddate spec").toMatch(/^[^\n]{24,}$/);
+  expect(registry.spec("ddate")?.surfaces ?? null).toEqual([]);
   // Each neutral verb runs WHOLE for the sibling on arguments it accepts: a refusal of any kind reads as a fence.
   // A sibling's session arrives local, so each neutral verb runs as one.
   const fed = await siblingBond("ab".repeat(32));

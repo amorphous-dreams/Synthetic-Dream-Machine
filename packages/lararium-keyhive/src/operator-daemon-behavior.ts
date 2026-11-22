@@ -1220,7 +1220,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // through the platform's entropy door, or the caller types the operator's six; the caller names the time.
       // THE CALENDAR ON THE ISLAND'S OWN TABLE: a `ddate` votum pays through the intent door's declared effect here, as any face;
       // it reads no clock (the caller names the day) and writes nothing. The CLI's own `ddate` stays on the vessel's table.
-      if (!registry.has("ddate")) registry.register("ddate", ddateVerb);
+      if (!registry.has("ddate")) registry.register("ddate", ddateVerb, {
+        summary: "Read the Discordian date through the house's own calendar for an intent votum: `format` (ddate(1) codes, its `%.` draw barred from a votum) and a date (`day`, `month`, `year`), or `today` ({year, month, day}); reads no clock and writes nothing. The CLI's own `lares ddate` rides the vessel's table.",
+        surfaces: [],
+      });
       registry.register("oracle-cast", engineVerb("oracle-cast", makeOracleCastReactor), { summary: "Cast the I Ching by three coins a line and write the cast as one tiddler under `lar:///ha.ka.ba/lares/oracle/casts/` (fields: method, entropy, lines, changing, primary, relating, caster, cast-at, readings): `at` (the time of the cast; the verb reads no clock) required, `caster`, and `coins` (six line values of 6 to 9, bottom first: the operator's own throw, named `operator:three-coins`); with no coins the coins draw through the platform's entropy door (`platform:crypto.getRandomValues`). `create` semantics: a standing cast answers `exists`. Answers {decision, created, title, cast, text, readings, note}; the readings come from the wiki's oracle library. The oracle widens attention and never decides.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
