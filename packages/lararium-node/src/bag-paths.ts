@@ -9,7 +9,7 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, extname, isAbsolute, sep } from "path";
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "fs";
-import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, KAHUA_BAG, CROSSROADS_DOC_URI, type ProjectionClass } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, namesTw5Docs, KAHUA_BAG, CROSSROADS_DOC_URI, type ProjectionClass } from "@lararium/mesh";
 import { ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 
 export interface BagMirrorConfig {
@@ -410,7 +410,8 @@ export function projectionRoots(opts: { readonly projectionRoot: string; readonl
   let held: string[] = [];
   try {
     held = readdirSync(opts.canonBags, { withFileTypes: true })
-      .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !isPrivateProjectionSlug(e.name))
+      // A dir named for the TW5 docs library stands no bag: the name rests reserved (`tw5-docs-name`), one name, one relation.
+      .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !isPrivateProjectionSlug(e.name) && !namesTw5Docs(e.name))
       .map((e) => e.name).sort();
   } catch { /* an absent canon source sources nothing */ }
   const sourced = new Set(held);

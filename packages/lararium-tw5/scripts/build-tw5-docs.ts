@@ -6,9 +6,10 @@
  * sidecars, `.multids`, `tiddlywiki.files`) from the same submodule the core blob renders from (`build-tw5-vendor.ts`), so the
  * docs and the engine read one revision. The submodule takes no write: the pack lands in this package alone.
  *
- * WHAT THE PACK LEAVES OUT. Binary media (raster images, audio, PDF: base64 bytes no text read answers) and JavaScript modules
- * (the edition's two demo modules: the docs engine runs no code the docs carry). Every other record rides, sorted by title, so
- * one revision packs one byte string on any filesystem.
+ * WHAT THE PACK LEAVES OUT. Binary media (raster images, audio, PDF: base64 bytes no text read answers), JavaScript modules
+ * (the edition's two demo modules: the docs engine runs no code the docs carry), and the edition's UI state (`$:/state/*`, the
+ * splash screen `$:/SplashScreen`: a browser page's chrome, no doc). Every other record rides, sorted by title, so one revision
+ * packs one byte string on any filesystem.
  *
  * WHERE IT RESTS. A code artifact (gitignored, beside `generated-tw5-version.ts`): never a bag, never a projection mirror, never
  * an ingest wave, never the genesis CAS. A face that never reads the docs never loads it.
@@ -27,6 +28,8 @@ const OUT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "src", "tw5-d
 
 /** A record the docs library carries no text read for: binary media and code. */
 const LEFT_OUT = /^(image\/(?!svg)|audio\/|video\/|application\/pdf|application\/javascript)/;
+/** A title that carries a browser page's UI state, never a doc. */
+const UI_STATE = (title: string): boolean => title.startsWith("$:/state/") || title === "$:/SplashScreen";
 
 const tw5Root = dirname(require.resolve("tiddlywiki/package.json"));
 const tw = require("tiddlywiki").TiddlyWiki() as {
@@ -46,7 +49,7 @@ for (const file of tw.loadTiddlersFromPath(join(tw5Root, "editions", "tw5.com", 
       const value = tiddler[name];
       if (value !== undefined && value !== null) fields[name] = String(value);
     }
-    if (fields["title"]) byTitle.set(fields["title"], fields);
+    if (fields["title"] && !UI_STATE(fields["title"])) byTitle.set(fields["title"], fields);
   }
 }
 const tiddlers = [...byTitle.keys()].sort().map((title) => byTitle.get(title)!);

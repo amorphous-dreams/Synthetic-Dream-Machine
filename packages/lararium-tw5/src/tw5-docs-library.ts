@@ -10,20 +10,22 @@
  *   · NO RESIDENCY. The records ride code: no writable bag holds them, no projection mirror renders them, no ingest wave
  *     carries them, and no genesis CAS member names them.
  *   · PUBLIC. The library carries no house record, so its bag answers every face's read without a cap ask (`isTw5DocsBag`).
- *   · NO WRITE. Every write door refuses the slug by name, `tw5-docs-read-only`, before any engine composes.
+ *   · NO WRITE. Every write door refuses the library by name, `tw5-docs-read-only`, by its slug or its bag, before any engine
+ *     composes; every door that would stand another store under the name refuses `tw5-docs-reserved` (`tw5-docs-name`).
+ *   · BOOT SHADOWS. The engine boots from the island's own boot set, so its shadow tiddlers (the core, the grammar, the stock
+ *     theme) read there as they do in every face's engine, beneath the edition's records.
  *
  * Isomorphic: no process, no disk. A dynamic import on node, a split chunk in a browser bundle.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
-import { VerbRefusal, floorReadFace, wikiBagUri, type LarTiddlerRecord, type LarTiddlerStore, type WikiRecipe } from "@lararium/mesh";
+import { TW5_DOCS_SLUG, floorReadFace, wikiBagUri, type LarTiddlerRecord, type LarTiddlerStore, type WikiRecipe } from "@lararium/mesh";
 
-/** The library's recipe slug: `--recipe tw5-docs`. */
-export const TW5_DOCS_SLUG = "tw5-docs";
+// The name and the two refusals rest in the mesh (`tw5-docs-name`), where the doors that stand a store read them too.
+export { TW5_DOCS_READ_ONLY, TW5_DOCS_RESERVED, TW5_DOCS_SLUG, namesTw5Docs, refuseTw5DocsReserved, refuseTw5DocsWrite } from "@lararium/mesh";
+
 /** The library's one layer: the wiki's canon slot, which the packed edition fills. */
 export const TW5_DOCS_BAG: string = wikiBagUri(TW5_DOCS_SLUG);
-/** The refusal every write door gives the library. */
-export const TW5_DOCS_READ_ONLY = "tw5-docs-read-only";
 
 /** The library's recipe: its canon alone, no instance slot named a write layer. */
 export const TW5_DOCS_RECIPE: WikiRecipe = { wikiSlug: TW5_DOCS_SLUG };
@@ -32,11 +34,6 @@ export const TW5_DOCS_RECIPE: WikiRecipe = { wikiSlug: TW5_DOCS_SLUG };
 export const isTw5Docs = (slug: string | null | undefined): boolean => slug === TW5_DOCS_SLUG;
 /** True for the library's bag: a read on it asks no cap. */
 export const isTw5DocsBag = (bag: string | null | undefined): boolean => bag === TW5_DOCS_BAG;
-
-/** Refuse a write that names the library, by name. */
-export function refuseTw5DocsWrite(slug: string | null | undefined, verb: string): void {
-  if (isTw5Docs(slug)) throw new VerbRefusal(TW5_DOCS_READ_ONLY, `${TW5_DOCS_READ_ONLY}: ${verb} — the TW5 docs library (\`--recipe tw5-docs\`, the vendored tw5.com edition) reads and never takes a write`);
-}
 
 let packed: Promise<Readonly<Record<string, LarTiddlerRecord>>> | null = null;
 

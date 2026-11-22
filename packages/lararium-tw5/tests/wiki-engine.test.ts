@@ -86,6 +86,18 @@ describe.skipIf(wikiSkip)(`every wiki its engine${skipNote}`, () => {
     }
   });
 
+  test("the TW5 docs library's bag refuses every --bag write door by name, by its slug and by its bag uri", async () => {
+    const opts = { composite: null as never, tw5: null as never };
+    const refusal = { reason: TW5_DOCS_READ_ONLY };
+    for (const bag of [TW5_DOCS_SLUG, `@${TW5_DOCS_SLUG}`, TW5_DOCS_BAG]) {
+      for (const make of [makeMemePutReactor, makeMemePatchReactor, makeMemeDeleteReactor]) {
+        await expect(make({} as never)({ bag, uri: "lar:///ha.ka.ba/x", text: "x", slot: "#/x" }, ctx()), bag).rejects.toMatchObject(refusal);
+      }
+      await expect(makeTiddlerPutReactor(opts)({ bag, title: "No", text: "no" }, ctx()), bag).rejects.toMatchObject(refusal);
+      await expect(makeTiddlerDeleteReactor(opts)({ bag, title: "backlinks Operator" }, ctx()), bag).rejects.toMatchObject(refusal);
+    }
+  });
+
   test("the TW5 docs library answers a face that reaches no other wiki and holds no read cap: its card leads with a has line, and its tags list the operators", async () => {
     const w = sharedWiki({ recipe: false, standing: [], canon: false, writeSlot: null });
     const engines = wikiEngines((slug, need) => composeWikiEngineSource(w.deps, slug, need)); downs.push(() => engines.dropAll());

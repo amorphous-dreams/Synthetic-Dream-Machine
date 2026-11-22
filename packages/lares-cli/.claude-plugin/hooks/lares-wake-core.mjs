@@ -192,11 +192,20 @@ export function libraryLine(frame) {
   ].join(" · ");
 }
 
+/** The shim's argv for the TW5 docs library's read: its status, which composes it where the vessel answers it. */
+export const docsArgv = () => ["wiki", "status", "--recipe", "tw5-docs", "--json"];
+
 /**
- * The TW5 docs library's line: the vendored tw5.com edition every face reads read-only (`--recipe tw5-docs`, `tw5-docs-library`),
- * named on every wake a vessel answers up, with the read that opens a page and the one that lists the operator vocabulary.
+ * The TW5 docs library's line, read off the vessel's own answer: where `wiki status --recipe tw5-docs` answers, the library
+ * (the vendored tw5.com edition every face reads read-only, `tw5-docs-library`) with the read that opens a page and the one
+ * that lists the operator vocabulary; where it refuses or stays silent (an older vessel image answers `wiki-unreached`),
+ * `Library: tw5-docs unread (<cause>)`, so the wake never names a library the vessel does not answer.
  */
-export const DOCS_LIBRARY_LINE = "Library: tw5-docs (TiddlyWiki docs, read-only) · read a page: tiddler_get(title=\"backlinks Operator\", recipe=\"tw5-docs\") · the operators: wiki_filter(filter=\"[tag[Filter Operators]]\", recipe=\"tw5-docs\")";
+export function docsLines(result) {
+  const { fault } = filterAnswer(result);
+  if (fault) return `Library: tw5-docs unread (${fault})`;
+  return "Library: tw5-docs (TiddlyWiki docs, read-only) · read a page: tiddler_get(title=\"backlinks Operator\", recipe=\"tw5-docs\") · the operators: wiki_filter(filter=\"[tag[Filter Operators]]\", recipe=\"tw5-docs\")";
+}
 
 /** The observation's line, and whether the vessel itself answered up. Each cause reads by its own name: only the vessel's own answer says "down". */
 export function observation(result) {
@@ -594,12 +603,13 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const menuRead = optional("menu", []);
   const gitRead = optional("git", gitArgv());
   const halvesRead = optional("halves", halvesArgv());
+  const docsRead = optional("docs", docsArgv());
   const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
   const budget = underBudget(budgetMs);
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, rosterRead, menuRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, rosterRead, menuRead, halvesRead, keepRead, docsRead]) { try { read?.kill(); } catch { /* the read already left */ } }
   const state = stateRead && seen.up ? await budget.settle(stateRead) : null;
   const law = lawRead && seen.up ? await budget.settle(lawRead) : null;
   const lawPins = lawPinsRead && seen.up ? await budget.settle(lawPinsRead) : null;
@@ -613,6 +623,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
     for (const [rite, read] of started) leiAnswers[rite] = await budget.settle(read);
   }
   const halves = halvesRead && seen.up ? await budget.settle(halvesRead) : null;
+  const docs = docsRead && seen.up ? await budget.settle(docsRead) : null;
   const keep = keepRead && seen.up ? await budget.settle(keepRead) : null;
   const homes = await homesRead;
   budget.close();
@@ -640,7 +651,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   if (law !== null) lines.push(lawLines(law, lawPins));
   if (roster !== null) lines.push(rosterLines(roster));
   lines.push(seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)");
-  if (seen.up) lines.push(DOCS_LIBRARY_LINE);
+  if (docs !== null) lines.push(docsLines(docs));
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
   if (halves !== null) { const line = halvesLines(halves); if (line) lines.push(line); }

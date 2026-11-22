@@ -60,8 +60,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-verbs
  */
 
-import { wearOf, refuseEffectLedgerWrite } from "@lararium/mesh";
-import { refuseTw5DocsWrite } from "./tw5-docs-library.js";
+import { wearOf, refuseEffectLedgerWrite, refuseTw5DocsWrite } from "@lararium/mesh";
 import { staysHome } from "./stay-home.js";
 import {
   AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
@@ -507,7 +506,7 @@ async function resolveRead(
 export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-put");
-    refuseTw5DocsWrite(target.recipe, "meme put");
+    refuseTw5DocsWrite(target.recipe, "meme put"); refuseTw5DocsWrite(target.bag, "meme put");
     refuseEffectLedgerWrite(target.uri, "meme put");
     const text = stringArg(args, "text");
     if (!text) throw new Error("meme-put: args.text is required (the whole meme, framed)");
@@ -618,7 +617,7 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
   const put = makeMemePutReactor(opts);
   return async (args, ctx) => {
     const target = readTarget(args, "meme-patch");
-    refuseTw5DocsWrite(target.recipe, "meme patch");
+    refuseTw5DocsWrite(target.recipe, "meme patch"); refuseTw5DocsWrite(target.bag, "meme patch");
     refuseEffectLedgerWrite(target.uri, "meme patch");
     const slot = stringArg(args, "slot").trim();
     if (!slot) throw new Error("meme-patch: args.slot is required (`#/name`, the slot whose body moves)");
@@ -914,7 +913,7 @@ async function deleteThroughRecipe(
 export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
-    refuseTw5DocsWrite(target.recipe, "meme delete");
+    refuseTw5DocsWrite(target.recipe, "meme delete"); refuseTw5DocsWrite(target.bag, "meme delete");
     refuseEffectLedgerWrite(target.uri, "meme delete");
     const base = readBase(optionalStringArg(args, "base"), "meme-delete", false, "refuse");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };

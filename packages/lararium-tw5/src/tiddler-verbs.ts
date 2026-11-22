@@ -211,9 +211,10 @@ const refuseUnreached = (verb: string, why: string): VerbRefusal =>
 async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, verb: string, write: boolean): Promise<TiddlerVerbOptions | null> {
   if (opts.wiki) return null;
   const target = readContainer(args, verb);
+  // THE TW5 DOCS LIBRARY TAKES NO WRITE, named as a wiki or as a bag (`tw5-docs-name`).
+  if (write) { refuseTw5DocsWrite(target.recipe, verb); refuseTw5DocsWrite(target.bag, verb); }
   if (target.recipe === null || target.recipe === "default") return null;
   const slug = target.recipe;
-  if (write) refuseTw5DocsWrite(slug, verb);
   if (slug === DAEMON_WIKI_SLUG) throw refuseUnreached(verb, `the daemon wiki answers to \`recipe: "default"\` alone`);
   if (!opts.wikis) throw refuseUnreached(verb, `this island holds no door to a named wiki's engine, so "${slug}" answers nothing here`);
   const engine = await opts.wikis.of(slug, { write });

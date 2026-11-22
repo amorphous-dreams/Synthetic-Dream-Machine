@@ -549,9 +549,22 @@ test("menu failures and timeouts name their cause", async () => {
   }
 });
 
-test("wake-names-the-docs-library: a vessel that answers up names the read-only TiddlyWiki docs library and its read door", async () => {
-  const up = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])) }) });
-  assert.match(up, /^Library: tw5-docs \(TiddlyWiki docs, read-only\)/m);
-  const down = await wake({ run: runner({ observe: answered(JSON.stringify({ data: { node: { up: false } } })), homes: answered("h"), index: hung([], "index") }) });
+test("wake-names-the-docs-library: the line names the library only where the vessel answers it, and a refusal reads unread by its cause", async () => {
+  const calls = {};
+  const status = JSON.stringify({ ok: true, requestId: "r", data: { recipe: "tw5-docs", layers: [{ bag: "lar:///ha.ka.ba/bags/tw5-docs" }] } });
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
+  const read = await wake({ run: runner({ ...base, docs: answered(status) }, calls) });
+  assert.match(read, /^Library: tw5-docs \(TiddlyWiki docs, read-only\)/m);
+  assert.deepEqual(calls.docs, ["wiki", "status", "--recipe", "tw5-docs", "--json"]);
+  assert.deepEqual(calls.docs, core.docsArgv());
+  const older = JSON.stringify({ ok: false, error: { code: "wiki-unreached", message: "wiki-unreached: wiki-status — no wiki \"tw5-docs\" this face reaches" } });
+  const unreached = await wake({ run: runner({ ...base, docs: answered(older, 4) }) });
+  assert.match(unreached, /^Library: tw5-docs unread \(wiki-unreached: wiki-status — no wiki "tw5-docs" this face reaches\)$/m);
+  assert.doesNotMatch(unreached, /TiddlyWiki docs, read-only/);
+  const slow = await wake({ budgetMs: 40, run: runner({ ...base, docs: hung([], "docs") }) });
+  assert.match(slow, /^Library: tw5-docs unread \(no answer inside the wake's budget\)$/m);
+  const killed = [];
+  const down = await wake({ run: runner({ observe: answered(JSON.stringify({ data: { node: { up: false } } })), homes: answered("h"), index: hung([], "index"), docs: hung(killed, "docs") }) });
   assert.doesNotMatch(down, /Library: tw5-docs/);
+  assert.ok(killed.includes("docs"), "a vessel that answers down stops the library read");
 });

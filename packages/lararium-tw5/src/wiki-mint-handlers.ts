@@ -1,6 +1,6 @@
 import type { AutomergeUrl } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
-import { catalogViewOf, houseCanonUrl, isFacePrivateSlug, ownEntry, resolveHouseCanon, tiddlerText } from "@lararium/mesh";
+import { catalogViewOf, houseCanonUrl, isFacePrivateSlug, ownEntry, refuseTw5DocsReserved, resolveHouseCanon, tiddlerText } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
 import {
   DAEMON_BAG_ID,
@@ -26,6 +26,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
   return async (args) => {
     const slug = stringArg(args, "slug");
     if (!slug) throw new Error("args.slug is required (the wiki name)");
+    refuseTw5DocsReserved(slug, "init-wiki");
     if (slug.includes("/") || slug.includes(" ")) {
       throw new Error(`invalid slug: "${slug}" (no slashes or spaces)`);
     }
