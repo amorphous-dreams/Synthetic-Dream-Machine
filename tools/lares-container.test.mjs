@@ -1970,3 +1970,27 @@ test("pulama-closure: comments, an unreached module of a reached package, an unr
     assert.notEqual(digest(), ran, "a lock change to a dependency the pūlama loads moves the label");
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
+  const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
+  const wire = ["tiddler", "put", "T", "--recipe", "default"];
+  const bytes = Buffer.from("one\r\ntwo\r\n\r\n");
+  for (const [flag, expected] of [[["--file", "@HOST_FILE@"], /--file -/], [["--file=@HOST_FILE@"], /--file=-/]]) {
+    test(`${name}: plain put carries ${flag[0]} host bytes`, { skip }, async () => {
+      const r = await run(shim, [...wire, ...flag], { env, hostInput: bytes });
+      assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, bytes); assert.match(r.calls, expected);
+    });
+  }
+  for (const [label, flags, hostInput] of [["missing file", ["--file", "@HOST_FILE@"]], ["empty file", ["--file="]], ["two files", ["--file", "@HOST_FILE@", "--file", "@HOST_FILE@"], bytes]]) {
+    test(`${name}: plain put refuses ${label} before docker`, { skip }, async () => {
+      const r = await run(shim, [...wire, ...flags], { env, hostInput });
+      assert.notEqual(r.status, 0); assert.equal(r.calls, "");
+    });
+  }
+  test(`${name}: plain put passes stdin and leaves a flag-shaped value alone`, { skip }, async () => {
+    const piped = await run(shim, [...wire, "--file", "-"], { env, input: bytes });
+    assert.deepEqual(piped.received, bytes);
+    const value = await run(shim, [...wire, "--text", "--file", "--text", "--meme"], { env });
+    assert.equal(value.status, 0, value.stderr); assert.equal(value.received, null);
+  });
+}
