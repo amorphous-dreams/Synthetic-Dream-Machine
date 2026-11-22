@@ -10,6 +10,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
+import { carrierFiles } from "../src/carrier-files.js";
 import { CompositeStore, bagUri, ORACLE_BAG, SYSTEM_CANON_SLUGS, HULLS_TS_ONLY } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeWikiFilterReactor, makeWikiRenderReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
@@ -57,7 +58,12 @@ const writer: Cap = async (access, bag) => (bag === DAEMON || access === "read" 
 const ctx = (): VerbContext => ({ daemon: {} as CompositeStore, invocation: { requestId: "r1" } as VerbContext["invocation"], cap: writer });
 
 /** The canon carrier of the house's functions, as the checkout carries it. */
-const CARRIER_TEXT = readFileSync(new URL("../../../bags/lares/ha.ka.ba/lares/api/filters.mem", import.meta.url), "utf8");
+const CARRIER_TEXT = ((): string => {
+  const repo = new URL("../../..", import.meta.url).pathname;
+  const listed = carrierFiles(repo).find((f) => f.endsWith("api/filters.mem"));
+  if (!listed) throw new Error("no carrier ends api/filters.mem");
+  return readFileSync(listed.startsWith("/") ? listed : `${repo}${listed}`, "utf8");
+})();
 
 async function rig(seed = true, carrier: boolean | string = true) {
   const engine = await bootTestWiki({ tiddlers: [{ title: WORKING_POINTER, text: DAEMON }, ...CANON_ROWS] });
