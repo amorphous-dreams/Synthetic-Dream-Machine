@@ -48,7 +48,7 @@ export interface FaceIntentDoorPorts {
   /**
    * THE FACE'S TURN, its lifecycle actor's admission (`admitWork`, face-lifecycle): each answer (a votum, or the owed receipts)
    * runs on a ticket the actor admits and settles it when that answer lands, so a close waits out the votum in flight. Null:
-   * the face stands dark, the pass answers nothing more, and the face's next lit turn heeds what waited. Absent, every answer runs.
+   * the face stands dark, the pass answers nothing more, and the face's next lit pass heeds what waited. Absent, every answer runs.
    */
   readonly admitTurn?: () => { done(): void } | null;
   /** The face this door answers as (its handle index in this house): the house-local mark beside each outcome it lands. Null marks none. */
@@ -263,12 +263,12 @@ export function makeFaceIntentDoor(ports: FaceIntentDoorPorts) {
     const chore = face === null ? null : choreReceiptMarkOf(choreReceiptMark({ chore: verb, face, asker: { hand: "seat", session: null, generation: null } }, face));
     if (chore) answered.set(id, { outcome: intentEntryCid(receipt), chore });
   };
-  /** The face's turn for one answer: its actor's ticket, null while the face stands dark (no actor named: every answer takes a turn). */
+  /** The face gate's ticket for one answer's pass: null while the face stands dark (no actor named: every answer passes). */
   const turn = (): { done(): void } | null => (ports.admitTurn ? ports.admitTurn() : { done: () => {} });
   /**
    * One pass; true when a standing it needed went stale under its witness, so another pass re-acquires. Each answer (an owed
    * receipt batch, then each votum) runs on the face's own turn, one at a time: a face that goes dark mid-pass answers nothing
-   * more, and its next lit turn heeds what waited.
+   * more, and its next lit pass heeds what waited.
    */
   const pass = async (): Promise<boolean> => {
     // The async-sourced answers arrive first; everything after rebuilds from the LIVE ports in one turn.
