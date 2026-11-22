@@ -704,7 +704,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   // an attacker holds no such vessel. One boot, one nonce, until the ask/answer verbs stand.
   if (raiseNexus) {
     const invitation = await raiseDoor.ask();
-    console.log(`[herm] raise challenge (hand to a recognised operator; they run \`lares raise sign\`):`);
+    console.log(`[herm] raise challenge (hand to a recognised operator; they run \`lares persona raise-sign\`):`);
     console.log(`[herm]   ${JSON.stringify(invitation)}`);
   } else {
     console.log(`[herm] raise door: this vessel carries no Nexus — no admit could count, so no challenge stands`);

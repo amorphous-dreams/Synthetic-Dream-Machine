@@ -25,7 +25,7 @@ This docs record keeps the history behind <<~ loulou uri=`lar:///ha.ka.ba/lares/
 
 !! The numerical path's lineage
 
-The text the api meme's #/the-numerical-path carried before the ever-speaking-present cure, kept verbatim:
+The text the api meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/scale-architecture#/the-numerical-path`>> carried before the ever-speaking-present cure, kept verbatim:
 
 > ''This path stands partly ENACTED, not only designed.'' The sensorium's `settlePrecision` already carries the closed-form settle and the complementary-form guard against the large-ε̄² divergence (commit lineage `f50a35b8` //sensorium.numerics.harden — signal-fraction confidence · closed-form settle · complementary π→conf//; the QA hardening in `ab85fc2b` caught the large-ε̄² divergence and the false-critical / EWS-guard leaks). That enactment lives ''py/R'' — the full sensorium model's home, instanced per-stream — while TS keeps the pure-functor math floor these identities also seed. The record honors the enacted-vs-aimed cut: the numerical path stands in code py/R-side, where the sensorium reads; the fusion escape and the structure descent stand as design grounded in established algorithms not yet all wired.
 
@@ -35,6 +35,6 @@ At the cure, `settlePrecision` reads in TypeScript at `packages/lararium-mesh/sr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gYVav_HVU3oCpNdsJDVIOWcwbxwAeddKKacojCQ2xr0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6SI6U7liIc1jGXuQVneLKnACITN-kDFoD5TY5-sJwlg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

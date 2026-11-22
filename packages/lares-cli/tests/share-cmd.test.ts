@@ -234,7 +234,7 @@ describe("a share verb that outruns the local wait", () => {
 
   test("a landing still running when the read-back's patience ends names the receipt door, and a vessel that abandoned it says so", async () => {
     const still = ports([{ requestId: "req-1", state: "committed" }]);
-    await expect(readBackOnExpiry("share-apply", expires, still.ports)).rejects.toThrow(/still lands after .*lares receipt req-1/);
+    await expect(readBackOnExpiry("share-apply", expires, still.ports)).rejects.toThrow(/still lands after .*lares vessel request req-1/);
     const gone = ports([{ requestId: "req-1", state: "abandoned" }]);
     await expect(readBackOnExpiry("share-apply", expires, gone.ports)).rejects.toThrow(/request-abandoned/);
   });

@@ -84,14 +84,6 @@ render = "## Agents Adapter Surface\n\n- Keep this file thin.\n- Copilot and VS 
 what = "AGENTS.md carries no seed: Copilot reads it beside CLAUDE.md"
 
 [[repo]]
-id = "copilot.seedless"
-host = "copilot"
-kind = "seedless"
-file = "copilot-instructions.md"
-render = "## Copilot Adapter Surface\n\n- Keep this file thin.\n- CLAUDE.md's import seats the boot seed for Copilot, so this file stays seedless.\n"
-what = "the root Copilot instructions carry no seed"
-
-[[repo]]
 id = "copilot.github-seedless"
 host = "copilot"
 kind = "seedless"
@@ -358,6 +350,6 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6_DItxOkLCfiXdS23m841y1MzJ3Izf4CfvEe65Qv5Vw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bOsFq_GMqxlVqsZjNdW_ul9GstrB_MRrpWnLM9tH4ZI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

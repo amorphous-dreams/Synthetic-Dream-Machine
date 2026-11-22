@@ -1,5 +1,5 @@
 /**
- * `lares raise sign <challenge-json> [--as <index>]` — the RECOGNISER's half of the raise ceremony.
+ * `lares persona raise-sign <challenge-json> [--as <index>]` — the RECOGNISER's half of the raise ceremony.
  *
  * A vessel standing at the floor emits a challenge naming a Nexus. A recognised operator signs it on their
  * OWN machine with their persona's per-Nexus LEAF — never the root — and the grant carries that leaf's
@@ -26,17 +26,12 @@ import { helpLines } from "../command-help.js";
 import { storeVerb, storeFailure } from "../store-door.js";
 
 function usage(args: ParsedArgs, detail?: string): number {
-  return refuseUsage(args, "raise", helpLines("raise"), detail);
+  return refuseUsage(args, "persona raise-sign", helpLines("persona raise-sign"), detail);
 }
 
-export async function cmdRaise(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
-  if (sub !== "sign") {
-    if (sub) console.error(`lares raise: unknown sub-verb "${sub}"`);
-    return usage(args);
-  }
-
-  const challengeText = args.positional[1];
+/** `persona raise-sign <challenge-json> [--as <index>]`: the sub-door's own name already consumed. */
+export async function cmdRaiseSign(args: ParsedArgs): Promise<number> {
+  const challengeText = args.positional[0];
   if (!challengeText) return usage(args);
 
   // WHICH COMPARTMENT ANSWERS BELONGS TO THE OPERATOR. A human holds several personas, and the one that
@@ -56,8 +51,8 @@ export async function cmdRaise(args: ParsedArgs): Promise<number> {
       data: { challenge: { ...grant.challenge }, byNym: grant.byNym, sig: grant.sig, presentedAdmit: grant.presentedAdmit, findings },
       human: () => {
         // What the presenter noticed reaches the signer, and never stops the grant.
-        for (const f of findings) console.error(`lares raise sign: the presenter noticed: ${presentationFindingLine(f)}`);
-        console.log(`raise sign — signed the challenge as persona ${handleIndex}'s leaf for that Nexus:`);
+        for (const f of findings) console.error(`lares persona raise-sign: the presenter noticed: ${presentationFindingLine(f)}`);
+        console.log(`raise-sign — signed the challenge as persona ${handleIndex}'s leaf for that Nexus:`);
         console.log(`  your leaf:  ${grant.byNym}`);
         console.log(`  admit:      carried, with ${grant.presentedAdmit.lineage.length} lineage act(s)`);
         console.log(`  for vessel: ${grant.challenge.vesselId.slice(0, 16)}…`);
@@ -72,7 +67,7 @@ export async function cmdRaise(args: ParsedArgs): Promise<number> {
     const msg = err instanceof Error ? err.message : String(err);
     // A challenge this door cannot sign keeps its own word; a store fault names itself and takes its own exit.
     const failure = err instanceof RaiseSignError ? { code: "usage", message: msg } : storeFailure(err);
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares raise sign: ${msg}`) });
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares persona raise-sign: ${msg}`) });
     return err instanceof RaiseSignError ? 1 : exitFor(failure.code);
   }
 }

@@ -8,8 +8,8 @@
  *   S1  the mirror lay reads plain-title files back under their in-band titles (`Time: dusk`, not `Time_ dusk`)
  *   S2  every skip carries its file and its reason, and `skipped + rows == files` holds over a scan
  *   S3  the lay's lines print each skip, file and reason
- *   S4  a personal-layer file under `lares watch` (`fileToUriForSource`) derives its title: a loci `.mem` and a plain one
- *   S5  `lares watch` prints its skips even when no candidate rides the wave
+ *   S4  a personal-layer file under `lares ingest --watch` (`fileToUriForSource`) derives its title: a loci `.mem` and a plain one
+ *   S5  `lares ingest --watch` prints its skips even when no candidate rides the wave
  *   S6  the mirror walk honours HOUSE_IGNORED: no `.git/`, `.vscode/`, `.shore/`, atomic temp, `.orphans/` or view-state file rides
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
@@ -84,7 +84,7 @@ describe("no silent skips", () => {
     expect(err).toContain("    skips: /m/README (carries no filetype extension)");
   });
 
-  test("S4 — a personal-layer file under `lares watch` derives its title", () => {
+  test("S4 — a personal-layer file under `lares ingest --watch` derives its title", () => {
     const personalLayer = P("faces/hearth-one/personal/notes");
     const loci = put("faces/hearth-one/personal/notes/ha.ka.ba/notes/heron.mem", "```toml meta\ntitle = \"lar:///ha.ka.ba/notes/heron\"\n```\n");
     const plain = put("faces/hearth-one/personal/notes/Personal Note.tid", tid("Personal: a note"));
@@ -93,7 +93,7 @@ describe("no silent skips", () => {
     expect(site(root, plain)).toBe("Personal: a note");
   });
 
-  test("S5 — `lares watch` prints its skips before the drain returns on a wave no candidate rides", () => {
+  test("S5 — `lares ingest --watch` prints its skips before the drain returns on a wave no candidate rides", () => {
     const src = readFileSync(new URL("../src/commands/watch.ts", import.meta.url), "utf8");
     const drain = src.slice(src.indexOf("const drain = async"), src.indexOf("// Serialize: a settle arriving mid-drain"));
     const printsSkips = drain.indexOf("skipLines(skipped)");

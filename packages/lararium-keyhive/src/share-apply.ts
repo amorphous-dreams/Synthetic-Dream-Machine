@@ -21,6 +21,12 @@
  * the face that lands the share where no face stood it yet. A house canon wiki's row seats its workbench and grants no canon:
  * every face reads house canon from the floor, and the Kahu steward alone writes it live.
  *
+ * A GRANT REACHES ITS FACE, house canon or not: a wiki row hands each face it names the wiki's RECIPE row (which the face whose
+ * catalog half stood the wiki holds) by the one carry and lift a bag row rides, so the grantee's catalog names the wiki and its
+ * daemon mount composes it. A house canon wiki's hand-over carries the recipe row alone and delegates nothing; a custom one's
+ * carries the canon's row beside it and delegates the bag. Either waits behind its flag while its grantee stands shut, a
+ * replay moves nothing, and an unshare or a retraction takes a carry its grantee never wore back out of the control document.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
@@ -177,28 +183,87 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     const named = deps.faces.filter((f) => f.petname === pet);
     return named.length === 1 ? named[0]!.handleIndex : null;
   };
-  const ownerOf = (bag: string): number | null => {
+  // The face that holds `title` (the bag's own row, or a house canon wiki's recipe row) in an open half, the row's named owner winning.
+  const ownerOf = (bag: string, title: string = bag): number | null => {
     const named = namedOwner(bag);
     for (const face of deps.faces) {
-      if (rowIn(halves.get(face.handleIndex)?.doc(), bag) === undefined) continue;
+      if (rowIn(halves.get(face.handleIndex)?.doc(), title) === undefined) continue;
       if (named !== undefined && named !== face.handleIndex) continue;
       return face.handleIndex;
     }
     return null;
   };
-  const owed = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
+  const owed = owedGrants({ rows, faces: deps.faces, ownerOf: (bag) => ownerOf(bag), houseCanon: isHouseCanonBag });
+  // A HOUSE CANON WIKI'S HAND-OVERS: no delegation (canon reads from the floor), yet each face the row names takes the wiki's
+  // recipe row from the face whose half stood the wiki, as a custom wiki's grantee does, so its catalog names the wiki.
+  const houseRecipe = (bag: string): string | null => {
+    const row = rows.find((r) => r.kind === "wiki" && shareEntryBag(r) === bag);
+    return row && isHouseCanonBag(bag) ? recipeUri("catalog", row.slug) : null;
+  };
+  /**
+   * A NAMED OWNER, while the vessel's ledger binds no workbench for the wiki: the face the row names as its owner, else the face
+   * whose open catalog half minted the canon's row (a hand-over carries the recipe row alone, so no grantee ever holds the
+   * canon's), else, where neither stands, a face the row names neither reader nor writer (the lander of a wiki no face stood).
+   * A grantee whose own wear lifted the recipe row never reads as the owner here: it hands the row nowhere and founds nothing.
+   */
+  const namedHouseOwner = (bag: string, face: number): boolean => {
+    const named = namedOwner(bag);
+    if (named !== undefined) return named === face;
+    const minter = deps.faces.find((f) => rowIn(halves.get(f.handleIndex)?.doc(), bag) !== undefined);
+    if (minter !== undefined) return minter.handleIndex === face;
+    const answer = resolveShare({ bag, rows, faces: deps.faces });
+    return !answer.read.includes(face) && !answer.write.includes(face);
+  };
+  // THE FACE THAT STOOD THE WIKI holds its recipe row: where the vessel's ledger binds the wiki's workbench under a face, that
+  // face alone hands the row on; while it binds none, only a named owner does (`namedHouseOwner`), so a grantee whose own wear
+  // lifted the row never hands it back to the owner or onward.
+  const holderOf = async (slug: string, bag: string, recipe: string): Promise<number | null> => {
+    const holder = ownerOf(bag, recipe);
+    if (holder === null) return null;
+    const seat = deps.workbenchOwner ? await deps.workbenchOwner(slug).catch(() => null) : null;
+    if (seat?.boundElsewhere) return seat.bound === holder ? holder : null;
+    return namedHouseOwner(bag, holder) ? holder : null;
+  };
+  const handOvers: OwedGrant[] = [];
+  for (const row of rows) {
+    const bag = shareEntryBag(row), recipe = houseRecipe(bag);
+    if (recipe === null || handOvers.some((h) => h.bag === bag)) continue;
+    const holder = await holderOf(row.slug, bag, recipe);
+    if (holder === null) continue;
+    const answer = resolveShare({ bag, rows, faces: deps.faces, owner: holder });
+    for (const grantee of answer.read) if (grantee !== holder) handOvers.push({ bag, owner: holder, grantee, access: answer.write.includes(grantee) ? "edit" : "read" });
+  }
+  /** The catalog rows a grant hands its grantee: a house canon wiki's recipe row alone, else the bag's row and each shared wiki's recipe row over it. */
+  const titlesOf = (bag: string): string[] => {
+    const recipe = houseRecipe(bag);
+    return recipe !== null ? [recipe] : [bag, ...rows.filter((r) => r.kind === "wiki" && shareEntryBag(r) === bag).map((r) => recipeUri("catalog", r.slug))];
+  };
+  /** A carry its grantee never wore leaves with the grant that put it, so no later wear lifts a row the share took back. */
+  const dropCarried = async (granteeGroup: string | null | undefined, bag: string): Promise<void> => {
+    if (!granteeGroup || !deps.carry) return;
+    for (const title of titlesOf(bag)) await deps.carry.clear(granteeGroup, title);
+  };
   // AN UNSHARED ROW TAKES ITS LANDED GRANTS BACK: the owner's hive revokes each reader the row named, and no delegation lands.
   const unshared = new Set((deps.unshare ?? []).map((slug) => rows.find((r) => r.slug === slug)).filter((r): r is ShareEntry => r !== undefined).map(shareEntryBag));
-  const grants = owed.filter((g) => !unshared.has(g.bag));
+  const grants = [...owed, ...handOvers].filter((g) => !unshared.has(g.bag));
   let revoked = 0;
   const standingBags = new Set<string>();
   for (const bag of unshared) {
-    if (isHouseCanonBag(bag)) continue;
+    if (isHouseCanonBag(bag)) {
+      // Nothing delegated: the hand-over's carries and flags leave; a recipe row a grantee's own wear already lifted names a
+      // wiki whose canon every face reads anyway, and the workbench's seat (the write) leaves with the row.
+      // EVERY FACE THE ROW NAMES loses its carry, the recipe's holder worn or not: nothing delegated, so the unshare always
+      // completes, and no later wear lifts a row the share took back.
+      const named = resolveShare({ bag, rows, faces: deps.faces });
+      for (const index of new Set([...named.read, ...named.write])) await dropCarried(deps.faces.find((f) => f.handleIndex === index)?.group, bag);
+      for (const h of handOvers.filter((o) => o.bag === bag)) await deps.flag.clear(sharePendingTitle(h, deps.salt));
+      continue;
+    }
     if (ownerOf(bag) === null) { standingBags.add(bag); continue; }
     for (const g of owed.filter((o) => o.bag === bag)) {
       const owner = deps.faces.find((f) => f.handleIndex === g.owner), grantee = deps.faces.find((f) => f.handleIndex === g.grantee);
       if (!owner?.group || !grantee?.group || !halves.get(g.owner) || !deps.revoke) { standingBags.add(bag); continue; }
-      try { await deps.revoke({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group }); revoked++; await deps.flag.clear(sharePendingTitle(g, deps.salt)); }
+      try { await deps.revoke({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group }); revoked++; await deps.flag.clear(sharePendingTitle(g, deps.salt)); await dropCarried(grantee.group, bag); }
       catch (e) { standingBags.add(bag); deps.log?.(`[share-apply] revoke ${g.bag} h${g.owner} -> h${g.grantee} refused: ${e instanceof Error ? e.message : String(e)}`); }
     }
   }
@@ -209,7 +274,14 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     const row = rows.find((x) => x.slug === r.slug);
     if (!row) continue;
     const bag = shareEntryBag(row);
-    if (isHouseCanonBag(bag)) continue;
+    if (isHouseCanonBag(bag)) {
+      // Nothing delegated to take back: the face's hand-over carry and flags leave, and the narrowed row lands what it still owes.
+      const recipe = houseRecipe(bag);
+      const holder = recipe === null ? null : await holderOf(row.slug, bag, recipe);
+      await dropCarried(deps.faces.find((f) => f.handleIndex === r.grantee)?.group, bag);
+      if (holder !== null) for (const access of ["read", "edit"] as const) await deps.flag.clear(sharePendingTitle({ bag, owner: holder, grantee: r.grantee, access }, deps.salt));
+      continue;
+    }
     const ownerIndex = ownerOf(bag);
     if (ownerIndex === r.grantee) continue;
     const owner = ownerIndex === null ? undefined : deps.faces.find((f) => f.handleIndex === ownerIndex);
@@ -219,6 +291,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       await deps.revoke({ bag, owner: ownerIndex, grantee: r.grantee, access: "read", ownerGroup: owner.group, granteeGroup: grantee.group });
       retracted++;
       for (const access of ["read", "edit"] as const) await deps.flag.clear(sharePendingTitle({ bag, owner: ownerIndex, grantee: r.grantee, access }, deps.salt));
+      await dropCarried(grantee.group, bag);
     } catch (e) {
       stillGranted.push({ slug: r.slug, grantee: r.grantee });
       deps.log?.(`[share-apply] retract ${bag} h${ownerIndex} -> h${r.grantee} refused: ${e instanceof Error ? e.message : String(e)}`);
@@ -237,8 +310,10 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     // grantee stands worn, and with no carry to hold its row the grant waits as a shut face's does.
     if (!owner?.group || !grantee?.group || !ownerHalf || (!granteeHalf && !deps.carry)) { await deps.flag.set(flag); pending++; continue; }
     // BY REFERENCE: the grantee's catalog half names the owner's ONE document; nothing copies its content. A WIKI row hands
-    // over the wiki's own recipe row beside its canon's, so the grantee mounts the wiki and never only holds its bag.
-    const titles = [g.bag, ...rows.filter((r) => r.kind === "wiki" && shareEntryBag(r) === g.bag).map((r) => recipeUri("catalog", r.slug))];
+    // over the wiki's own recipe row beside its canon's, so the grantee mounts the wiki and never only holds its bag; a house
+    // canon wiki's hands over its recipe row alone and delegates nothing.
+    const house = houseRecipe(g.bag) !== null;
+    const titles = titlesOf(g.bag);
     const owned = titles.map((title) => ({ title, row: plainRecordOrNull(rowIn(ownerHalf.doc(), title) as never) })).filter((t) => t.row !== null);
     let wrote = false;
     if (granteeHalf) {
@@ -246,13 +321,18 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       if (owed.length > 0) { granteeHalf.change((d) => { for (const t of owed) d.tiddlers[t.title] = storedRecord(t.row!) as never; }); wrote = true; }
     }
     try {
-      const delegated = await deps.grant({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group });
+      const delegated = house ? { fresh: false } : await deps.grant({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group });
       const fresh = !(delegated && delegated.fresh === false);
       // THE ROWS CARRY where the grantee's half stays shut to this island: its own wear lifts them (above).
-      if (!granteeHalf && owned.length > 0) { for (const t of owned) await deps.carry!.put(grantee.group, t.title, storedRecord(t.row!) as never); carried++; }
+      if (!granteeHalf && owned.length > 0) {
+        const held = new Set((await deps.carry!.list(grantee.group)).map((c) => c.bag));
+        if (owned.some((t) => !held.has(t.title))) wrote = true;
+        for (const t of owned) await deps.carry!.put(grantee.group, t.title, storedRecord(t.row!) as never);
+        carried++;
+      }
       await deps.flag.clear(flag);
       granted++;
-      // WHAT MOVED: a delegation the roster did not hold, a row this landing wrote, or a grant that had waited behind its flag.
+      // WHAT MOVED: a delegation the roster did not hold, a row this landing wrote or newly carried, or a grant that had waited behind its flag.
       if (fresh || wrote || waited) moved++;
       deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} landed in ${Math.round(performance.now() - tg)}ms`);
     } catch { await deps.flag.set(flag); pending++; deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} waits (${Math.round(performance.now() - tg)}ms)`); }
@@ -266,7 +346,14 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       // its light. Where no face stood the wiki yet, the canon's owner founds it, and a house canon wiki's lander does.
       const seat = await deps.workbenchOwner?.(row.slug) ?? null;
       if (seat?.boundElsewhere && seat.bound === null) continue;
-      const ownerIndex = seat?.bound ?? (isHouseCanonBag(bag) ? seat?.founder ?? null : ownerOf(bag));
+      // A HOUSE CANON WIKI FOUNDS ONLY UNDER A NAMED OWNER while the ledger binds none: a grantee's wear (its replay of this
+      // landing) never founds the wiki's realm under itself.
+      const founder = seat?.founder ?? null;
+      if (seat?.bound == null && isHouseCanonBag(bag) && founder !== null && !namedHouseOwner(bag, founder)) {
+        deps.log?.(`[share-apply] workbench ${row.slug} waits: h${founder} names no owner of it, so it founds nothing`);
+        continue;
+      }
+      const ownerIndex = seat?.bound ?? (isHouseCanonBag(bag) ? founder : ownerOf(bag));
       const owner = ownerIndex === null ? undefined : deps.faces.find((f) => f.handleIndex === ownerIndex);
       if (!owner?.group) continue;
       const answer = resolveShare({ bag, rows, faces: deps.faces, owner: owner.handleIndex });

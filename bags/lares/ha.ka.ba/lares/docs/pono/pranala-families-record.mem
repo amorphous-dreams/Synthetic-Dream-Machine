@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/pranala-families-record"
 
 ! Pranala Families ~ the record
 
-The taxonomy speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>; its ruling stands in that meme's `#/rulings`.
+The taxonomy speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>; its ruling stands in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families#/rulings`>>.
 
 <<~/ahu>>
 
@@ -31,6 +31,6 @@ The role line counted ''eight families'' beside a schema of nine.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oMFeZaEl84kjYqbTCYlZrVxMN4o8XvEBEUj3Ce4Yoa4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MivU8swMhoOR5LBS5wxvSXQezYu5Sp23TrSTTxbFhg0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

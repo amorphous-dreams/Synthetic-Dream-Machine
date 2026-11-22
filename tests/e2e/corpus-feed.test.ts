@@ -216,7 +216,7 @@ describe.skipIf(!stagedTarget)("corpus feed — the whole hearth in one gesture 
       // pause, so a slow landing and a never-landing read apart.
       const rid = String(r.json?.["requestId"] ?? "");
       await new Promise((res) => setTimeout(res, 30_000));
-      const rr = await lar.cli(["receipt", rid, "--json"]);
+      const rr = await lar.cli(["vessel", "request", rid, "--json"]);
       late = ` · LATE receipt code ${rr.code} ${`${rr.stdout}\n${rr.stderr}`.trim().slice(-700)} · DAEMON LOG TAIL ${lar.bootLog().slice(-3000)}`;
     }
     // NAME WHAT IT SAID: the CI report keeps no stdout, so the answer rides in the assertion message.

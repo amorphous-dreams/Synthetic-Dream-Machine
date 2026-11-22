@@ -21,10 +21,9 @@
  * cannot name the grammar must still record the turn.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { readFileSync } from "node:fs";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { grammarHeads, grammarHeadsFromPlugin } from "../src/grammar-heads.js";
-import { bootTestWiki, CORE_PATH, wikiSkip, skipNote } from "./test-wiki.js";
+import { bootTestWiki, vendoredCore, wikiSkip, skipNote } from "./test-wiki.js";
 import PLUGIN from "../plugins/lares-memetic-wikitext.json" with { type: "json" };
 
 describe.skipIf(wikiSkip)(`grammar-heads — one door, two ways in${skipNote}`, () => {
@@ -33,7 +32,7 @@ describe.skipIf(wikiSkip)(`grammar-heads — one door, two ways in${skipNote}`, 
   beforeAll(async () => {
     withGrammar = await bootTestWiki();
     bare = new TW5Engine();
-    await bare.boot(new Uint8Array(readFileSync(CORE_PATH)));
+    await bare.boot(vendoredCore());
   }, 60_000);
 
   test("CONTROL — a wiki holding the grammar finds heads", () => {

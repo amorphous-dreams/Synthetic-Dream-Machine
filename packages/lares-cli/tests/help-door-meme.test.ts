@@ -147,7 +147,7 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.map(String).join(" ")); });
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    const code = await dispatch(["raise", "--help", "--meme"]);
+    const code = await dispatch(["persona", "raise-sign", "--help", "--meme"]);
     expect(code, "naming no meme is not a failure").toBe(0);
     expect(errs.join("\n")).toMatch(/names no meme/i);
   });

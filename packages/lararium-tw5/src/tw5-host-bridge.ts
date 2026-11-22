@@ -5,13 +5,16 @@ import type { TW5Instance } from "./types/tiddlywiki.js";
 
 export interface TW5CoreBootBlob {
   bytes: Uint8Array;
-  /** Hex-encoded SHA-256 expected for these exact bytes. */
-  sha256?: string;
+  /**
+   * Hex-encoded SHA-256 expected for these exact bytes: the pin the genesis seed, the manifest's coreHash or the vendor bake
+   * (`TW5_CORE_SHA256`) carries, never a hash of the bytes in hand. A blob without one refuses to boot (`CoreBlobUnpinned`).
+   */
+  sha256: string;
   /** Human/debug provenance only; never treated as authority. */
   source?: string;
 }
 
-export type TW5CoreBootInput = Uint8Array | TW5CoreBootBlob;
+export type TW5CoreBootInput = TW5CoreBootBlob;
 
 /**
  * A projected TW5 event cannot borrow the main Window object. The engine asks its own confirm questions
@@ -70,21 +73,32 @@ const TW5_BROWSER_BOOT_BUILTINS = new Set([
   "../package.json",
 ]);
 
-export function normalizeCoreBootBlob(input?: TW5CoreBootInput): TW5CoreBootBlob | undefined {
+export function normalizeCoreBootBlob(input?: TW5CoreBootInput | Uint8Array): TW5CoreBootBlob | undefined {
   if (!input) return undefined;
-  return input instanceof Uint8Array ? { bytes: input } : input;
+  // A bare byte array carries no pin: it normalizes to a blob whose empty pin `verifyCoreBootBlob` refuses by name.
+  return input instanceof Uint8Array ? { bytes: input, sha256: "" } : input;
 }
 
-export function verifyCoreBootBlob(core: TW5CoreBootBlob): void {
-  if (!core.sha256) return;
+/** The named refusals a core blob meets before a byte of it evaluates. */
+export const CORE_BLOB_ABSENT = "CoreBlobAbsent";
+export const CORE_BLOB_UNPINNED = "CoreBlobUnpinned";
+export const CORE_BLOB_PIN_MISMATCH = "CoreBlobPinMismatch";
+
+/**
+ * Every core blob carries its pin: the bytes evaluate only once they hash to the SHA-256 the blob carries. An absent blob, a blob
+ * with no pin (or a pin that names no SHA-256) and a blob whose bytes hash elsewhere each refuse by name, before evaluation.
+ */
+export function verifyCoreBootBlob(core: TW5CoreBootBlob | undefined): asserts core is TW5CoreBootBlob {
+  const source = core?.source ? ` source=${core.source}` : "";
+  if (!core || !(core.bytes instanceof Uint8Array)) {
+    throw new Error(`${CORE_BLOB_ABSENT}: TW5Engine boots only from a core blob the LarariumDoc names`);
+  }
+  if (typeof core.sha256 !== "string" || !/^[0-9a-f]{64}$/i.test(core.sha256)) {
+    throw new Error(`${CORE_BLOB_UNPINNED}: TW5Engine refuses a core blob that carries no SHA-256 pin${source}`);
+  }
   const actual = sha256HexBytesSync(core.bytes);
-  if (actual.toLowerCase() !== core.sha256.toLowerCase()) {
-    throw new Error(
-      `TW5Engine: coreBlob sha256 mismatch` +
-      ` expected=${core.sha256}` +
-      ` actual=${actual}` +
-      (core.source ? ` source=${core.source}` : ""),
-    );
+  if (actual !== core.sha256.toLowerCase()) {
+    throw new Error(`${CORE_BLOB_PIN_MISMATCH}: TW5Engine coreBlob expected=${core.sha256} actual=${actual}${source}`);
   }
 }
 
@@ -337,9 +351,8 @@ function loadTiddlyWikiFromBlob(
   coreBlob: TW5CoreBootBlob | undefined,
   env: HeadlessBootEnv,
 ): { TiddlyWiki: () => unknown } {
-  if (!coreBlob) {
-    throw new Error("TW5Engine: headless boot requires coreBlob from LarariumDoc.");
-  }
+  // The one door every core evaluation walks through: the pin check stands here, so no caller evaluates bytes it never verified.
+  verifyCoreBootBlob(coreBlob);
 
   const moduleShim: { exports: Record<string, unknown>; filename: string } = {
     exports: {},
@@ -552,7 +565,7 @@ export async function prepareHostBootInstance(
     const instance = loadTiddlyWikiFromBlob(coreBlob, makeBrowserWorkerBootEnv()).TiddlyWiki() as unknown as TW5Instance;
     // Forge the THIRD runtime AFTER blob eval, BEFORE boot.boot(). The engine's own content-
     // address (= the coreHash the kernel's integrity gate witnesses) rides along as its version.
-    configureIslandRuntime(instance, coreBlob ? sha256HexBytesSync(coreBlob.bytes) : undefined);
+    configureIslandRuntime(instance, coreBlob?.sha256.toLowerCase());
 
     // The VM itself is the third runtime, but the outer bridge still runs in a browser Worker:
     // keep Node's require/module shims out of TW5's module evaluator.
@@ -560,7 +573,7 @@ export async function prepareHostBootInstance(
   }
 
   const instance = loadTiddlyWikiFromBlob(coreBlob, await makeNodeBootEnv()).TiddlyWiki() as unknown as TW5Instance;
-  configureIslandRuntime(instance, coreBlob ? sha256HexBytesSync(coreBlob.bytes) : undefined);
+  configureIslandRuntime(instance, coreBlob?.sha256.toLowerCase());
   return { instance, isBrowser: false };
 }
 

@@ -6,8 +6,9 @@
  * (`control-home`), which no mirror names. The working layer holds only what its own writers put there, so a mounted
  * mirror projects the ordinary title and nothing else.
  */
+import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CompositeStore, CONTROL_HOME_ID, buildReceiptFact, summon, wikiSlotUri, type LarTiddlerRecord } from "@lararium/mesh";
@@ -15,16 +16,14 @@ import { LarDiskProjector } from "../src/disk-projector.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { fileWardRefusal } from "../../lararium-tw5/src/worker-data-verbs.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
-import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
 
-const CORE = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
 const WORKING = wikiSlotUri("daemon", "working");
 let engine: TW5Engine;
 let diskRoot = "";
 
 beforeAll(async () => {
   engine = new TW5Engine();
-  await engine.boot(new Uint8Array(readFileSync(CORE)));
+  await engine.boot(vendoredCore());
 }, 60_000);
 afterEach(() => { if (diskRoot) { rmSync(diskRoot, { recursive: true, force: true }); diskRoot = ""; } });
 

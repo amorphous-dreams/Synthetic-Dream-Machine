@@ -201,7 +201,7 @@ test("RED: a session's call places with the session's own hand; CONTROL: a read 
 });
 
 // THE MARK RESTS WITH THE WRITE (T4-5): the chore mark rides the placement into the durable outcome, and a receipt read on a
-// fresh connection (a reconnect, `lares receipt <id>`) answers it, not the socket's answer alone.
+// fresh connection (a reconnect, `lares vessel request <id>`) answers it, not the socket's answer alone.
 test("RED: the seat's meme write places with its chore mark, and a later receipt read answers that mark; CONTROL: a read carries none", async () => {
   const v = await stand();
   const mark = { acting: 0, asker: "seat", session: null };

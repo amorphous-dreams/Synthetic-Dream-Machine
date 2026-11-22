@@ -234,14 +234,14 @@ export async function distModule(dist, relOrAbs, toolName, cure = "pnpm --filter
  */
 export async function bootTW5Engine(dist, toolName) {
   const { TW5Engine } = await distModule(dist, "tw5-vm.js", toolName);
-  const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await distModule(dist, "generated-tw5-version.js", toolName);
+  const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SHA256 } = await distModule(dist, "generated-tw5-version.js", toolName);
   const core = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
   if (!existsSync(core)) {
     console.error(`[${toolName}] no TW5 core blob at ${core}\n  cure: pnpm --filter @lararium/tw5 build:tw5-vendor`);
     process.exit(2);
   }
   const engine = new TW5Engine();
-  await engine.boot(new Uint8Array(readFileSync(core)));
+  await engine.boot({ bytes: new Uint8Array(readFileSync(core)), sha256: TW5_CORE_SHA256 });
   const wiki = engine.wiki ?? engine._tw?.wiki;
   return { engine, wiki };
 }

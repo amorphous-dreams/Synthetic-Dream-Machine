@@ -23,7 +23,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { LAR_KEY_STYLE, LAR_KEY_SURFACE, bootSetPluginCids, readLarFrame } from "@lararium/mesh";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { preloadsFromCasBlob } from "../src/cas-preloads.js";
+import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
 import { mountProjection, renderIdCensus } from "../src/tw5-projection.js";
 import type { IslandContext } from "../src/island-context.js";
 
@@ -36,7 +36,7 @@ interface Seed { blobs: Record<string, { id: string; sha256: string; mimeType: s
 const seed = JSON.parse(readFileSync(path.join(GENESIS, "seed.json"), "utf8")) as Seed;
 const cas = (sha: string): Uint8Array => new Uint8Array(readFileSync(path.join(GENESIS, "cas", sha)));
 const core = Object.values(seed.blobs).find((b) => b.id === "tiddlywikicore")!;
-const preloads = bootSetPluginCids(seed.blobs).flatMap((cid) => preloadsFromCasBlob(cas(cid)));
+const preloads = bootSetPluginCids(seed.blobs).flatMap((cid) => casBlobPreloads(cas(cid), cid));
 
 function* carriers(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {
@@ -50,7 +50,7 @@ const titleOf = (text: string): string | null => /^title\s*=\s*"(lar:\/\/\/[^"]+
 const row: Record<string, unknown> = { corpus: path.relative(REPO, CORPUS), edits: EDITS };
 const t0 = performance.now();
 const engine = new TW5Engine();
-await engine.boot({ bytes: cas(core.sha256), sha256: core.sha256 }, preloads);
+await engine.boot({ bytes: cas(core.sha256), sha256: core.sha256 }, preloads, undefined, { modulePins: modulePinsOf(preloads) });
 row["bootMs"] = Math.round(performance.now() - t0);
 
 const t1 = performance.now();

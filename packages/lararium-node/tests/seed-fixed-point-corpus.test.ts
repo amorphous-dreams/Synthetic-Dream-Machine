@@ -18,6 +18,7 @@
  * The run never writes into the tracked tree: every path it writes sits under one scratch directory.
  */
 
+import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
@@ -164,7 +165,7 @@ describe.skipIf(coreBlobSkip)(
       }
     }
     engine = new TW5Engine();
-    await engine.boot(new Uint8Array(readFileSync(CORE)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
+    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
     tree = new SyncedTree(path.join(scratch, "state", "synced-tree"));
 
     // THE SEED'S GESTURE, one bag at a time: scan, INGEST, record what landed.

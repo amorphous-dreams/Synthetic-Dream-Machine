@@ -155,7 +155,7 @@ export function verbFailure(err: unknown): VerbFailure {
   if (err instanceof LocalWaitExpired) {
     return {
       code: "outcome-unknown", message: err.message, requestId: err.requestId,
-      hint: `the daemon took this request but this process stopped waiting to hear back; it may have already committed. Check request ${err.requestId} with \`lares receipt ${err.requestId}\`.`,
+      hint: `the daemon took this request but this process stopped waiting to hear back; it may have already committed. Check request ${err.requestId} with \`lares vessel request ${err.requestId}\`.`,
     };
   }
   if (err instanceof DaemonUnreachable) {

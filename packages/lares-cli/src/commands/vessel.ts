@@ -43,6 +43,7 @@ import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdLay }     from "./lay.js";
 import { cmdRead, cmdStop } from "./read.js";
 import { cmdRotatePlace } from "./rotate-place.js";
+import { cmdRequest } from "./receipt-cmd.js";
 import { cmdCensus } from "./census.js";
 import { cmdDocCensus } from "./doc-census.js";
 import { fresherBagOf, fresherLines, readFresher, type FresherAsk } from "./vessel-fresher.js";
@@ -210,6 +211,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
     for (const line of fresherLines(bag, read.rows, unknown.rows)) console.log(line);
     return 0;
   } },
+  request: { summary: "read a verb request's receipt, dispatching nothing: <requestId>; --cancel withdraws it before it is read (your own hand, never a timeout's)", run: (a) => cmdRequest(under(a)) },
   rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
 };
 

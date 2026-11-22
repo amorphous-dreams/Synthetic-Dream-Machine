@@ -44,10 +44,6 @@ export async function cmdBake(args: ParsedArgs): Promise<number> {
   return runTsxScript(plan.script, [], { ...process.env, ...plan.env });
 }
 
-export async function cmdTestQuine(_args: ParsedArgs): Promise<number> {
-  return runTsxScript(join(NODE_PKG, "scripts", "test-quine.ts"));
-}
-
 /** `lares vessel stand --foreground` — boot the lararium node only (no Vite).
  *
  *  Runs the BUILT dist, never tsx-source: the sovereign island workers spawn from

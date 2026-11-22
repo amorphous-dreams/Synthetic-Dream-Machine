@@ -2,6 +2,7 @@
  * lares ingest — the disk→records gesture.
  *
  *   lares ingest --source <dir|file> --to <bagUri> [--apply] [--yes]
+ *   lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]   (the same gesture, fired per settle: ./watch.ts)
  *
  * The gesture holds the disk grant and the Synced tree (the island holds
  * neither — readiness reads local on both sides of the shore):
@@ -26,9 +27,13 @@ import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
+import { cmdWatch } from "./watch.js";
 
 function printUsage(): void {
   console.log("usage: lares ingest --source <dir|file> --to <bagUri> [--apply] [--tag-blobs] [--in-wiki] [--yes]");
+  console.log("       lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]");
+  console.log("  --watch    fires the gesture on each settled wave instead of once (preview by default;");
+  console.log("             --apply submits; --debounce sets the quiet window in ms);");
   console.log("  default    = preview (scan + two-leg diff, no submission);");
   console.log("  --tag-blobs writes the CAS opt-in flag (`.meta` sidecar / meme ahu meta) for the");
   console.log("             large un-flagged carriers that would fault during ingest; writes no records;");
@@ -53,6 +58,25 @@ export function readFresherCanon(summary: Readonly<Record<string, unknown>>): Fr
 }
 
 export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCanonReading }): Promise<number> {
+  // `--watch` fires this gesture per settle. The watcher reads none of the one-shot flags, so each refuses by name
+  // rather than riding a long-lived loop that ignores it.
+  if (args.flags["watch"] === true) {
+    const oneShot = [
+      ...(args.flags["yes"] === true ? ["yes"] : []),
+      ...(args.flags["tag-blobs"] === true ? ["tag-blobs"] : []),
+      ...(args.flags["in-wiki"] === true ? ["in-wiki"] : []),
+      ...(args.options["change-id"] !== undefined ? ["change-id"] : []),
+    ];
+    if (oneShot.length > 0) {
+      console.error(`lares ingest --watch: ${oneShot.map((f) => `--${f}`).join(", ")} ride the one-shot ingest alone`);
+      return 2;
+    }
+    return cmdWatch(args);
+  }
+  if (args.options["debounce"] !== undefined) {
+    console.error("lares ingest: --debounce sets the watcher's quiet window and rides `--watch` alone");
+    return 2;
+  }
   const source = args.options["source"];
   const toBag  = args.options["to"];
   if (!source || !toBag) { printUsage(); return 2; }

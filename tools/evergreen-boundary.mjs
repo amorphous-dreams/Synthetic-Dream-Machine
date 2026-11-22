@@ -33,7 +33,7 @@
 //                     of an ISO date: a line that dates the canon's making. A date with a ruling or correction marker
 //                     (`RULED`, `ruled`, `ruling`, `CORRECTION`, `CORRECTED`) within 40 characters carries provenance and reads nothing;
 //   canon-dated-meta — in the same corpus, a line of the `toml meta` fence that names a date key (`date`, `written`,
-//                     a `-date` or `-on` key, `created`, `updated`, `revised`, `proposed`), an authored date field:
+//                     a `-date` or `-on` key, `created`, `updated`, `revised`, `proposed`, `revision-note`) or carries an ISO date in any value, an authored date field:
 //                     git dates every revision, so an authored date in the meta drifts the way a version field drifts.
 // A class whose corpus reads no file fails the run; each class carries a planted red and a lawful control in the self-test.
 //
@@ -238,7 +238,9 @@ export function scanCanonDatedText(rel, text) {
 
 // A meta date key: a bare `date`, `written`, `created`, `updated`, `revised` or `proposed`, or any key ending `-date`
 // or `-on` (`status-date`, `revised-on`, `proposed-on`).
-const META_DATE_KEY = /^\s*(?:date|written|created|updated|revised|proposed|[a-z][\w-]*-(?:date|on))\s*=/i;
+// The `revision-note` key reads too, and an ISO date in ANY meta value reads whatever key carries it.
+const META_DATE_KEY = /^\s*(?:date|written|created|updated|revised|proposed|revision-note|[a-z][\w-]*-(?:date|on))\s*=/i;
+const META_ISO_DATE = /^\s*[\w-]+\s*=.*20\d\d-\d\d(?:-\d\d)?/;
 /** Live canon `toml meta` lines that carry an authored date field. */
 export function scanCanonMetaText(rel, text) {
   const findings = [];
@@ -246,7 +248,7 @@ export function scanCanonMetaText(rel, text) {
   text.split(/\r?\n/).forEach((raw, index) => {
     if (!inMeta) { if (/^```toml meta\s*$/.test(raw)) inMeta = true; return; }
     if (/^```\s*$/.test(raw)) { inMeta = false; return; }
-    if (META_DATE_KEY.test(raw)) findings.push({ rule: "canon-dated-meta", file: rel, line: index + 1, text: raw.trim() });
+    if (META_DATE_KEY.test(raw) || META_ISO_DATE.test(raw)) findings.push({ rule: "canon-dated-meta", file: rel, line: index + 1, text: raw.trim() });
   });
   return findings;
 }
