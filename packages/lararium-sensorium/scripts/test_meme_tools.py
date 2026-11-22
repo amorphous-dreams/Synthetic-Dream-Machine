@@ -354,16 +354,14 @@ def test_a_refused_write_reaches_the_caller_naming_decision_reason_and_live_hash
 
 
 def test_every_refusal_family_reaches_the_caller_by_name(daemon, monkeypatch):
-    # The seat's own refusal (`vessel-locked`), a tool's pre-wire refusal (`no-container`), a HITL guard, a shaping this
-    # seat never routes, and an absent daemon: each answers isError AND carries its own words.
+    # The seat's own refusal (`vessel-locked`), a tool's pre-wire refusal (`no-container`), a shaping this seat never
+    # routes, and an absent daemon: each answers isError AND carries its own words.
     daemon.error = {"errorMessage": "control-home-unavailable: vessel-locked: the vessel's key stays shut",
                     "refusal": {"reason": "vessel-locked"}}
     locked = _seat_call("meme_get", {"uri": _URI, "recipe": "default"})
     assert locked.is_error and "vessel-locked" in _said(locked) and "lares vault unlock" in _said(locked)
     bare = _seat_call("meme_list", {})
     assert bare.is_error and "no-container" in _said(bare)
-    guarded = _seat_call("purge", {"name": "x"})
-    assert guarded.is_error and "HITL" in _said(guarded)
     unshaped = _seat_call("pour", {"surface": "claude-code", "pointer": "p", "dry_run": True})
     assert unshaped.is_error and "carries no writeback/preview shaping" in _said(unshaped)
     monkeypatch.setattr(uds, "socket_path", lambda: "/nonexistent/lares.sock")
@@ -412,9 +410,8 @@ def test_a_stray_builtin_error_stays_unnamed_and_only_a_house_raised_refusal_cro
         assert crashed.is_error and _said(crashed) == f"Error executing tool {name}", _said(crashed)
         assert str(tmp_path) not in _said(crashed) and "the-private-row-text" not in _said(crashed)
     # CONTROL: the same three builtin families, raised by the house under its own refusal classes, still cross in their own
-    # words (an argument guard, the HITL guard, a shaping this seat never routes, an address that walks out of the shrine).
+    # words (an argument guard, a shaping this seat never routes, an address that walks out of the shrine).
     assert "no-container" in _said(_seat_call("meme_list", {}, mcp))
-    assert "HITL" in _said(_seat_call("purge", {"name": "x"}, mcp))
     assert "carries no writeback/preview shaping" in _said(_seat_call("pour", {"surface": "claude-code", "pointer": "p", "dry_run": True}, mcp))
     walked = _seat_call("recall", {"query": "q", "sensorium": "../abide"}, mcp)
     assert walked.is_error and "ONE path segment" in _said(walked)

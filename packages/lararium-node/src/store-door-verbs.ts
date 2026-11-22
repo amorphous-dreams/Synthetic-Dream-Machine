@@ -87,7 +87,7 @@ import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { runRiteVerb, type RiteAction } from "./commands/rite.js";
-import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
+import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, SENSE_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "@lararium/mesh";
@@ -268,8 +268,15 @@ export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-ac
  */
 export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([["retire-wiki", "retire-needs-hand"]]);
 
-/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor and wiki together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES]);
+/**
+ * The sense lifecycle's hand verbs (`promote`, `retire`, `un-retire`, `purge`): island verbs a session's `session:call` carries,
+ * so the socket refuses a seat's call by this code, and the island's own reactor refuses any asker but a terminal's
+ * (`sense-needs-hand`, hitl-reads-a-hand).
+ */
+export const SENSE_HAND_DOOR_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SENSE_HAND_CODES));
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor, wiki and sense together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES, ...SENSE_HAND_DOOR_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
 export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_VERBS, ...STORE_DOOR_HAND_CODES.keys()]);
 

@@ -62,6 +62,12 @@ const harnessName = (name: string): boolean => {
   return base === "claude" || base.startsWith("codex");
 };
 
+/** True where one environment entry carries a harness's own mark (`CLAUDECODE=1`, a non-empty Codex sandbox mark). */
+export function harnessMark(key: string, value: string | undefined): boolean {
+  if (value === undefined) return false;
+  return key === "CLAUDECODE" ? value === "1" : HARNESS_MARKS.includes(key) && value !== "";
+}
+
 /** True where one process reads as a harness: a harness mark in its launch environment, or a harness by name. */
 export function harnessProcess(pid: number, read: ProcReader = PROC): boolean {
   const environ = read.environ(pid);
@@ -69,9 +75,7 @@ export function harnessProcess(pid: number, read: ProcReader = PROC): boolean {
     for (const entry of environ.split("\0")) {
       const eq = entry.indexOf("=");
       if (eq === -1) continue;
-      const key = entry.slice(0, eq);
-      const value = entry.slice(eq + 1);
-      if (key === "CLAUDECODE" ? value === "1" : HARNESS_MARKS.includes(key) && value !== "") return true;
+      if (harnessMark(entry.slice(0, eq), entry.slice(eq + 1))) return true;
     }
   }
   const comm = statOf(read.stat(pid) ?? "")?.comm;

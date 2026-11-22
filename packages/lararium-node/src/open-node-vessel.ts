@@ -4462,10 +4462,10 @@ async function prepareNodeBootOn(
       worldlineTrajectory: (input) => daemonVm.worldlineTrajectory(input),
       // ── the DURABLE sensorium-lifecycle executors ─────────────────────────────────────────────────
       // These route over manifest.json alone (no store holder, no captureFor) — the SAME pure verb
-      // functions the CLI-direct door drives, now reachable over the daemon wire so the MCP surface
-      // mirrors the CLI three-way. The reversibility×trust seat rides guardHitl (the mesh grid): an
-      // HITL verb (promote·retire·purge) REFUSES without an operator-approval capability — the surface
-      // twin of the CLI's `--approve`, so an irreversible verb crosses the SAME gate on both surfaces.
+      // functions the CLI-direct door drives, reachable over the daemon wire, where the reads answer the
+      // MCP seat and the hand verbs answer a terminal's ask alone. The hand verbs (promote·retire·un-retire·purge) run only where the
+      // island's reactor read the asker as a terminal (`cli`) and handed `hand: "hand"` on; guardHitl
+      // re-reads that value here, and no caller's approval value reaches this far (hitl-reads-a-hand).
       senseRoster: async () => ({ sensoria: rosterSensoria() }),
       senseInspect: async (input) => {
         const insp = inspectSensorium(input.name);
@@ -4482,22 +4482,26 @@ async function prepareNodeBootOn(
         return reconcileSensorium(sensoriumDir(input.name)) as unknown as Record<string, unknown>;
       },
       sensePromote: async (input) => {
-        // in-loop human graduation — one-way by intent → HITL. The gate mirrors the CLI's requireApprove.
-        guardHitl("promote", input.approve);
+        // in-loop human graduation — one-way by intent → a hand verb.
+        guardHitl("promote", input.hand);
         return promoteSensorium(
           input.name, input.storeSwap ? { storeSwapTarget: input.storeSwap } : {},
         ) as unknown as Record<string, unknown>;
       },
       senseRetire: async (input) => {
-        // a JUDGED deaccession (grounds required; move-not-delete) → HITL. The gate mirrors requireApprove.
-        guardHitl("retire", input.approve);
+        // a JUDGED deaccession (grounds required; move-not-delete) → a hand verb.
+        guardHitl("retire", input.hand);
         return retireSensorium(input.name, input.grounds) as unknown as Record<string, unknown>;
       },
-      senseUnRetire: async (input) => unRetireSensorium(input.name) as unknown as Record<string, unknown>,
+      senseUnRetire: async (input) => {
+        // a restore re-lights what the house treats as live → a hand verb, as its retire.
+        guardHitl("un-retire", input.hand);
+        return unRetireSensorium(input.name) as unknown as Record<string, unknown>;
+      },
       sensePurge: async (input) => {
-        // the irreversible byte GC → HITL. purgeSensorium ITSELF guardHitls (defense-in-depth) and refuses
-        // a live sensorium (only a tombstone GCs), so the approval rides through as the reclaim authority.
-        return purgeSensorium(input.name, input.approve) as unknown as Record<string, unknown>;
+        // the irreversible byte GC → a hand verb. purgeSensorium ITSELF guardHitls (defense-in-depth) and refuses
+        // a live sensorium (only a tombstone GCs), so the hand rides through as the reclaim authority.
+        return purgeSensorium(input.name, input.hand) as unknown as Record<string, unknown>;
       },
     };
     const telemetryImpl: TelemetryProvider = {

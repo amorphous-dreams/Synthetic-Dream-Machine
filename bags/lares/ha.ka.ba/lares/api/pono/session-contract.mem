@@ -83,6 +83,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/session-contract"
 
 * ''One verb table serves every hand.'' A seat sees every verb, and a verb beyond its profile refuses by name. OWED (the profile-verb table, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/session-contract-record#/owed`>>): the node seat checks a session's face and anchor on `session:call` and `session:act`, never its profile, so a `watcher` or `tab` session runs a face verb or `host.roll` as its face until the profile-verb table gates both (its red: such a call refuses by profile; a seat's session runs it).
 * ''A seat never signs an act that changes who holds authority'' (an attended spirit acts as the operator, so this bound falls on a standing one alone): a vault or custody verb, an admit, a kapae, a quorum signature, a face switch, or a residency move into a bag. A seat MAY draft such an act for a person to sign.
+* ''Human-in-the-loop approval reads a hand, never a value'' (hitl-reads-a-hand). An HITL act lands only on a person's hand at a real terminal, and the door reads that hand off the process behind the ask: the vessel off the socket's peer and the hand it books (`cli`), a command with no socket off its own branch (`readOwnHand`, `packages/lararium-node/src/hand-act-gate.ts`). A harness on that branch refuses `hand-act-only`, and a branch nothing can read refuses `hand-unattested`. A flag or an argument a caller fills (`--approve`, `--confirm`, an `approve` boolean, a wiki cap tiddler) names the intent and approves nothing, so no MCP tool carries an HITL verb and an attended spirit never forges the operator's hand: it names the command for the person to run. The sense lifecycle's `promote`, `retire`, `un-retire` and `purge`, and `lares sense teardown --confirm`, stand on this law; the vessel refuses each from every asker but a terminal (`sense-needs-hand`).
 * ''Authority only narrows down a chain of spirits.'' A spirit MAY seat a sub-spirit under a profile no wider than its own, and the Mask records the chain.
 * ''A container makes the profile bind.'' A spirit that shares its operator's OS account reaches every door that operator reaches, and its declared hand stays a declaration. A spirit that runs in a container holding only its seat's socket and grant holds no other door.
 
@@ -340,6 +341,6 @@ The debts and the history behind this contract: <<~ loulou uri=`lar:///ha.ka.ba/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ogz_da8PfyEk5H81-P1-QaV_biY_EavClHFPgkd1QvE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z525Mz1qShrAJL3nkPnGhgmCFINJIUIXELtfH3c26M8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
