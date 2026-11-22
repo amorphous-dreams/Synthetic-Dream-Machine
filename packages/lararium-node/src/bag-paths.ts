@@ -500,7 +500,7 @@ export function wikisFileToUri(instanceRoot: string, filePath: string): string |
  *     across devices, so no lay reads it back, no export carries it and no pool's history takes it.
  */
 export const HOUSE_IGNORED = {
-  topDirs: [".git", ".vscode", ".shore", "rendered", TEMP_LAYER_DIR] as readonly string[],
+  topDirs: [".git", ".vscode", ".shore", TEMP_LAYER_DIR] as readonly string[],
   dirSuffixes: [ORPHAN_FOLDER_SUFFIX] as readonly string[],
   tempFile: /\.\d+(?:\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\.tmp$/,
   viewState: {
@@ -519,6 +519,7 @@ const isViewStateName = (name: string): boolean =>
 export function houseIgnored(rel: string): string | null {
   const segments = rel.split(/[\\/]/).filter((s) => s !== "" && s !== ".");
   if (segments.length === 0) return null;
+  if (segments.length > 1 && segments[0] === "rendered") return "rendered/ holds derived output";
   if (segments.length > 1 && HOUSE_IGNORED.topDirs.includes(segments[0]!)) return `${segments[0]}/ holds no record of this house's (HOUSE_IGNORED)`;
   if (segments.slice(0, -1).some((d) => HOUSE_IGNORED.dirSuffixes.some((x) => d.endsWith(x)))) return "an orphan slot's folder: its family's root carries it (HOUSE_IGNORED)";
   if (HOUSE_IGNORED.tempFile.test(segments[segments.length - 1]!)) return "an atomic writer's temp (HOUSE_IGNORED)";
@@ -552,7 +553,7 @@ export function houseExcludeLines(): string[] {
  * so the rules anchor there (`WORKSPACE_EXCLUDE_LINES`); a realm's one tree roots at `realms/<pet name>/`, so they anchor under each
  * wiki folder it holds (`REALM_EXCLUDE_LINES`).
  */
-export const WORKSPACE_EXCLUDE_LINES: readonly string[] = [`/${FACE_PLANES.recovery}/`, `/${FACE_PLANES.temp}/`];
+export const WORKSPACE_EXCLUDE_LINES: readonly string[] = [`/${FACE_PLANES.recovery}/`, `/${FACE_PLANES.temp}/`, "/rendered/"];
 export const REALM_EXCLUDE_LINES: readonly string[] = WORKSPACE_EXCLUDE_LINES.map((line) => `/${REALM_PLANES.wikis}/*${line}`);
 
 /** The exclude file with the house's block written in place (or appended), with any extra lines the pool's scale adds; the
@@ -691,7 +692,8 @@ export interface WorkspaceEntry { readonly slug: string; readonly kind: "bag" | 
  * THE WORKSPACE ROOTS a shared wiki's workbench mirror may rest in: each `kind: "wiki"` share row naming a workspace maps its
  * slug to `<root>/workspaces/<name>` (the host shim binds `/lar/workspaces/<name>`), where that directory stands. The operator
  * names each workspace, and one resting inside the repository checkout binds: the checkout counts as the cabal's working
- * surface (founding road rank 4j). A workspace that resolves inside the hearth refuses by name, and so does a slug whose source
+ * surface (founding road rank 4j). A workspace that resolves inside the house's state refuses by name (the hearth, and the
+ * `config/` and `sensoriums/` the house root holds beside it, read by that structure), and so does a slug whose source
  * stands in the canon source: its one workbench folder already rests beside that source, in the working surface, so a second
  * workspace would split one workbench across two folders. A
  * workspace with no directory standing (no bind) waits by name, and its workbench lays in the realm that holds the slug.
@@ -701,24 +703,33 @@ export function workspaceRootsOf(opts: {
   readonly workspacesHome: string;
   readonly hearth: string;
   readonly sourcedSlugs: readonly string[];
-}): { readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[] } {
+}): {
+  readonly roots: Readonly<Record<string, string>>; readonly names: Readonly<Record<string, string>>; readonly refused: readonly string[]; readonly unbound: readonly string[];
+  /** The slugs whose named workspace refused or stands unbound: no fallback folder answers them for a derived write. */
+  readonly closed: readonly string[];
+} {
   const roots: Record<string, string> = {}, names: Record<string, string> = {};
-  const refused: string[] = [], unbound: string[] = [];
+  const refused: string[] = [], unbound: string[] = [], closed: string[] = [];
   const real = (p: string): string | null => { try { return realpathSync(p); } catch { return null; } };
   const hearth = real(opts.hearth) ?? resolvePath(opts.hearth);
+  const houseState = [hearth, ...HOUSE_STATE_SIBLINGS.map((d) => { const at = joinPath(dirname(hearth), d); return real(at) ?? at; })];
   for (const row of opts.rows) {
     const name = row.workspace?.trim();
     if (row.kind !== "wiki" || !name) continue;
-    if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(name) || name === "." || name === "..") { refused.push(`${row.slug}: workspace "${name}" names no workspace`); continue; }
-    if (opts.sourcedSlugs.includes(row.slug)) { refused.push(`${row.slug}: workbench-checkout-sourced (its one workbench folder rests beside its canon source, in the working surface)`); continue; }
+    if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(name) || name === "." || name === "..") { refused.push(`${row.slug}: workspace "${name}" names no workspace`); closed.push(row.slug); continue; }
+    if (opts.sourcedSlugs.includes(row.slug)) { refused.push(`${row.slug}: workbench-checkout-sourced (its one workbench folder rests beside its canon source, in the working surface)`); closed.push(row.slug); continue; }
     const dir = real(joinPath(opts.workspacesHome, name));
-    if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); continue; }
-    if (within(dir, hearth)) { refused.push(`${row.slug}: workspace "${name}" resolves inside the hearth (${dir})`); continue; }
+    if (dir === null) { unbound.push(`${row.slug}: workspace "${name}" stands unbound (no ${joinPath(opts.workspacesHome, name)})`); closed.push(row.slug); continue; }
+    const state = houseState.find((closedRoot) => within(dir, closedRoot) || within(closedRoot, dir));
+    if (state !== undefined) { refused.push(`${row.slug}: workspace "${name}" resolves inside the ${state === hearth ? "hearth" : "house's state"} (${dir})`); closed.push(row.slug); continue; }
     roots[row.slug] = dir;
     names[row.slug] = name;
   }
-  return { roots, names, refused, unbound };
+  return { roots, names, refused, unbound, closed };
 }
+
+/** The house-state classes the house root holds beside the hearth (house-root law), closed to every workbench. */
+export const HOUSE_STATE_SIBLINGS = ["config", "sensoriums"] as const;
 
 /** One shared wiki's workbench folder the vessel watches as a pool: the slug, the folder, and the name the log gives it. */
 /** One workbench folder: the wiki's slug, its folder, the name the log gives it, and the entity root whose ONE tree holds its

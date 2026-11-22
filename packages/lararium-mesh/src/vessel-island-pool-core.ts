@@ -1155,6 +1155,12 @@ export class VesselIslandPoolCore {
     return this._mountSpecs.has(wikiId);
   }
 
+  /** The mirror bags a known grain's own recipe designates (`WikiRecipe.mirrorBags`), or null for a grain this pool never learned. */
+  mirrorBagsOf(wikiId: string): readonly string[] | null {
+    const held = this._mountSpecs.get(wikiId);
+    return held ? [...(held.spec.recipe.mirrorBags ?? [])] : null;
+  }
+
   /** TEACH the pool a grain's mount spec WITHOUT mounting it — the resolver's shore
    *  for a never-opened wiki (resolveWikiSpec). Once taught, `ensureWiki` (and so
    *  the collector's onHydrate) can activate it exactly like a reactivated grain,

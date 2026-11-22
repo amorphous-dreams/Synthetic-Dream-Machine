@@ -819,7 +819,8 @@ export const makeWikiRenderOutReactor = everyWiki("wiki-render-out-prepare", tru
   const skipped: string[] = [];
   let bytes = 0;
   for (const title of titles) {
-    const names = view.filterTiddlers(filename, engine.rootWidget, view.makeTiddlerIterator([title]));
+    // The filename filter runs as the selection does: under the house widget over the reader's view, never the engine's root.
+    const names = view.filterTiddlers(filename, undefined, view.makeTiddlerIterator([title]));
     if (names.length === 0 || names[0] === "") { skipped.push(title); continue; }
     const parser = view.parseTiddler(template ?? title);
     const widget = view.makeWidget(parser, { variables: { ...variables, currentTiddler: title, storyTiddler: title } });

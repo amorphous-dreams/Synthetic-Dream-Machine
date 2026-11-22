@@ -1083,6 +1083,17 @@ describe.skipIf(wikiSkip)(`the reader's view: a filter and a render compute over
     expect(await output({ ...ask, filter: "[[Sealed]]", template: undefined }, ctx(writing))).toMatchObject({ files: [] });
     await expect(output({ ...ask, filter: "[[Note 01]]" }, ctx(reader))).rejects.toThrow(/render-output-grant-denied/);
   });
+  test("the filename filter runs under the house widget over the reader's view: a house function resolves in it as in the selection", async () => {
+    const r = await rig();
+    const WORKING = wikiSlotUri("notes", "working");
+    r.engine.wiki.addTiddler({ title: WORKING_POINTER, text: WORKING });
+    r.engine.wiki.addTiddler({ title: "Road A", tags: "stage/road road/state/open", text: "open road" });
+    const output = makeWikiRenderOutReactor({ ...r.opts, wiki: { slug: "notes", gate: WORKING } });
+    const writing: Cap = async (access, bag) => access === "read" || (access === "admin" && bag === WORKING) ? { ok: true } : { ok: false, reason: "no-grant" };
+    const answer = await output({ recipe: "notes", output: "workbench", filter: "[[Note 01]]", filename: "[is[tiddler]addsuffix[.html]] :filter[all[tiddlers]lares.road[open]count[]!match[0]]" }, ctx(writing));
+    expect(await makeWikiFilterReactor(r.opts)({ ...A, filter: "[lares.road[open]]" }, ctx(writing)), "the selection resolves the same house function").toMatchObject({ titles: ["Road A"] });
+    expect(answer).toMatchObject({ files: [{ name: "Note 01.html", source: "Note 01" }], skipped: [] });
+  });
   test("reach-holds-inside-the-engine: a filter that reads a withheld title's text by name, or by iteration, answers none of it; CONTROL: a readable title's text answers", async () => {
     const r = await rig();
     const filter = makeWikiFilterReactor(r.opts);

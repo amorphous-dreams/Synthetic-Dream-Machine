@@ -95,7 +95,14 @@ async function stand() {
     const opened = await peer.ask({ op: "session:open", requestId: `open-${hint}-${hand}`, faceRef: hint, hand });
     return { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
   };
-  return { peer, open, placed, ran, synced, settled };
+  /** A fresh connection that writes one-shot lines (a session's socket carries session frames alone). */
+  const line = async (): Promise<Peer> => {
+    const other = createConnection(claim.socketPath);
+    await new Promise<void>((resolve, reject) => { other.once("connect", resolve); other.once("error", reject); });
+    cleanups.push(() => { other.destroy(); });
+    return new Peer(other);
+  };
+  return { peer, open, placed, ran, synced, settled, line };
 }
 
 
@@ -196,4 +203,19 @@ test("RED: a seat session's `retire-wiki` call refuses `retire-needs-hand` and p
   const cli = await w.open("hint-a", "cli");
   await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-retire", verb: "retire-wiki", args: { slug: "s" } });
   expect(w.placed.map((p) => p.verb)).toEqual(["retire-wiki"]);
+});
+
+test("RED: a seat's `wiki-render-out` refuses `render-output-needs-hand` at the socket, on a session call and a one-shot line, and places nothing; CONTROL: a cli session's call places it", async () => {
+  expect(STORE_DOOR_HAND_CODES.get("wiki-render-out")).toBe("render-output-needs-hand");
+  const v = await stand();
+  const seat = await v.open("hint-a", "seat");
+  expect(await v.peer.ask({ op: "session:call", ...seat, requestId: "seat-render", verb: "wiki-render-out", args: { recipe: "notes", output: "workbench", filter: "[all[]]" } }))
+    .toMatchObject({ kind: "session:refused", refusal: "render-output-needs-hand" });
+  const line = await (await v.line()).ask({ verb: "wiki-render-out", requestedBy: "seat-line", requestId: "seat-render-line", seat: "ai", args: { recipe: "notes", output: "workbench", filter: "[all[]]" } });
+  expect(JSON.stringify(line)).toContain("render-output-needs-hand");
+  expect(v.placed).toEqual([]);
+  const w = await stand();
+  const cli = await w.open("hint-a", "cli");
+  await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-render", verb: "wiki-render-out", args: { recipe: "notes", output: "workbench", filter: "[all[]]" } });
+  expect(w.placed.map((p) => p.verb)).toEqual(["wiki-render-out"]);
 });
