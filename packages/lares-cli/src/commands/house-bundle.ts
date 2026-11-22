@@ -435,7 +435,11 @@ const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
 // ── export ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** What an export wrote. */
-export interface HouseExportResult { readonly dest: string; readonly manifest: BundleManifest }
+export interface HouseExportResult {
+  readonly dest: string; readonly manifest: BundleManifest;
+  /** The faces (by handle index) whose standing heads stayed behind: the house's own terminal names them, the manifest never. */
+  readonly unreadFaces: readonly number[];
+}
 
 /**
  * Write a bundle at `dest`. Throws {@link BundleRefused} naming what stays unsettled, unclaimed or unkeyed; with
@@ -461,6 +465,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   if (inside(repoRoot, target)) throw new BundleRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
   if (existsSync(target)) throw new BundleRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
   const omissions: BundleOmission[] = [];
+  const unreadFaces: number[] = [];
 
   // A SETTLED PROJECTION FIRST: what the census names would leave out of the copy.
   const census = await doors.census();
@@ -504,9 +509,11 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new BundleRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
     if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new BundleRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
     if (f.kahuaRefusal !== undefined) {
-      // THE FACE BY COUNT: its handle index and the stage's own refusal text name the face, and the bundle crosses to a remote.
+      // THE FACE BY COUNT: its handle index and the stage's own refusal text name the face, and the bundle crosses to a remote, so
+      // the manifest counts and the house's own terminal names it (`unreadFaces`). Its stage files on disk still travel.
+      unreadFaces.push(f.handleIndex);
       const at = omissions.find((o) => o.kind === "face-unread");
-      if (at === undefined) omissions.push({ kind: "face-unread", detail: "a face would not read its stage, so its stage stays behind: unlock each face and export again", count: 1 });
+      if (at === undefined) omissions.push({ kind: "face-unread", detail: "a face would not read its live stage, so its standing heads stay behind (its files travel): unlock each face and export again", count: 1 });
       else omissions[omissions.indexOf(at)] = { ...at, count: (at.count ?? 1) + 1 };
     }
   }
@@ -719,7 +726,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     readBundleSeat(verified);
     const opened = rosterView(verified, redeclare);
     renameSync(staging, target);
-    return { dest: target, manifest: opened.manifest };
+    return { dest: target, manifest: opened.manifest, unreadFaces };
   } catch (e) {
     rmSync(staging, { recursive: true, force: true });
     throw e;

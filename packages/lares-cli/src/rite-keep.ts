@@ -70,7 +70,7 @@ export interface KeepPorts {
   row(verb: "swarm-show" | "rite-begin", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
   /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`houseExport`). `woken` names the cold
    *  wikis the wake held before the cut: each projected its pages, so the cut names none of them cold. */
-  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<BundleManifest>;
+  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<KeepCut>;
   /** The wiki switcher the wake walks. Absent: no wiki wakes, and the cut names every cold one. */
   readonly wikis?: KeepWikiPorts;
   /**
@@ -124,6 +124,9 @@ function keepRowRefused(r: { readonly code: string; readonly message: string }, 
     : r.message);
 }
 
+/** The cut's opened view, and beside it (in memory alone, never written) the faces whose standing heads stayed behind. */
+export type KeepCut = BundleManifest & { readonly unreadFaces?: readonly number[] };
+
 export interface KeepOptions { readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number }
 
 /** The face a keep acted as, where it named one or the mount answered one. */
@@ -131,7 +134,9 @@ export type KeepFace = { readonly face?: number; readonly faceBy?: KeepFaceBy };
 
 export type KeepResult = KeepFace & (
   | { readonly kept: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string; readonly tessera: string; readonly lei: string; readonly n: number;
-      readonly faces: readonly string[]; readonly counts: BundleManifest["counts"]; readonly omissions: BundleManifest["omissions"] }
+      readonly faces: readonly string[]; readonly counts: BundleManifest["counts"]; readonly omissions: BundleManifest["omissions"];
+      /** The faces (by handle index) whose standing heads stayed behind, for the house's own terminal. */
+      readonly unreadFaces?: readonly number[] }
   | { readonly kept: false; readonly standing: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string });
 
 const within = (child: string, parent: string): boolean => child === parent || child.startsWith(parent.endsWith(sep) ? parent : parent + sep);
@@ -245,7 +250,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     // only at a wake.
     const wake = await wakeColdWikis(ports.wikis);
     // The cut answers the opened view (its faces by pet-name, read before the seal); the bundle on disk names each by key alone.
-    let cut: BundleManifest;
+    let cut: KeepCut;
     try { cut = await ports.cut(staging,{ workspace: wsDir, acceptOmissions: opts.acceptOmissions === true, woken: wake.woken }); }
     catch (e) { await wake.giveBack().catch(() => {}); throw e; }   // the cut's own refusal names the cause
     await wake.giveBack();
@@ -269,7 +274,8 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     return {
       kept: true, workspace: name, into, dest: target, bundleId,
       tessera: String(begun.output["tessera"]), lei: String(begun.output["lei"]), n: Number(begun.output["n"]),
-      faces: cut.faces.map((f) => f.petname), counts: manifest.counts, omissions: manifest.omissions, ...acting,
+      faces: cut.faces.map((f) => f.petname), counts: manifest.counts, omissions: manifest.omissions,
+      ...((cut.unreadFaces?.length ?? 0) > 0 ? { unreadFaces: cut.unreadFaces } : {}), ...acting,
     };
   } catch (e) {
     rmSync(staging, { recursive: true, force: true });

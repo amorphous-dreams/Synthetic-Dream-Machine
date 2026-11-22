@@ -527,7 +527,7 @@ describe("the house bundle verbs", () => {
     expect(msg).toMatch(/--accept-omissions/);
   });
 
-  test("C14b — a lit, non-worn face whose stage read answers `unread` beside its proved relation claims its root; its stage stays behind by count, never the root", async () => {
+  test("C14b — a lit, non-worn face whose stage read answers `unread` beside its proved relation claims its root; its standing heads stay behind by count, never the root", async () => {
     // h1 stands lit beside the worn h0 under F2; its fold would not load here, so the vessel answered the relation it proved h1 under.
     const read = faceStageRead({ items: [], relation: F2, stage: "unread", unread: "face-not-held: h1", mount: 0, mounted: false });
     expect(read).toMatchObject({ relation: F2, kahua: null, mounted: false });
@@ -537,9 +537,22 @@ describe("the house bundle verbs", () => {
     put("projections/faces/joshua-fontany-referee/wikis/daemon/ha.ka.ba/notes/referee.tid", tid("lar:///ha.ka.ba/notes/referee", "the referee's note"));
     const doors = vessel.doors();
     const both: BundleDoors = { ...doors, faces: async () => [...(await doors.faces()), lit] };
-    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: both });
+    const { manifest, unreadFaces } = await houseExport(out, { acceptOmissions: false, doors: both });
     expect(manifest.omissions.map((o) => o.kind)).not.toContain("unclaimed-face-folders");
     expect(manifest.omissions).toContainEqual(expect.objectContaining({ kind: "face-unread", count: 1 }));
+    // Its files travel, so only its live heads stay behind; the house's own terminal names the face by handle index, the manifest never.
+    expect(manifest.omissions.find((o) => o.kind === "face-unread")?.detail).toMatch(/standing heads stay behind/);
+    expect(manifest.files.some((f) => f.path.includes("notes/referee"))).toBe(true);
+    expect(unreadFaces).toEqual([1]);
+    expect(readFileSync(join(out, MANIFEST_FILE), "utf8")).not.toMatch(/\bh1\b/);
+    const { cmdExport } = await import("../src/commands/export.js");
+    const said: string[] = [];
+    const log = console.log;
+    console.log = (...a: unknown[]) => { said.push(a.join(" ")); };
+    try { expect(await cmdExport({ command: "export", positional: [`${out}-terminal`], flags: { json: false } } as never, both)).toBe(0); }
+    finally { console.log = log; }
+    expect(said.join("\n")).toMatch(/left behind: face-unread/);
+    expect(said.join("\n")).toMatch(/standing heads left behind for h1\b/);
     // CONTROL: a whole read keeps its heads and names no refusal.
     expect(faceStageRead({ items: [], relation: F1, mount: 0, mounted: true })).toEqual({ relation: F1, kahua: [], mounted: true });
   });
