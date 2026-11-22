@@ -101,7 +101,7 @@ json_verb() {
   else printf '%s\n' "$out" >&2; exit 4; fi
 }
 
-# The wiki slug the browser mounts: BROWSER_CI_WIKI, else the node's one live wiki (`lares wiki active` lists the
+# The wiki slug the browser mounts: BROWSER_CI_WIKI, else the node's one live wiki (`lares wiki status` lists the
 # slugs it runs; a freshly founded vessel runs exactly one).
 wiki_slug() {
   if [ -n "${BROWSER_CI_WIKI:-}" ]; then printf '%s\n' "$BROWSER_CI_WIKI"; return; fi
@@ -258,7 +258,7 @@ case "$verb" in
     gate=$(compose logs --no-color lares 2>/dev/null | sed -n 's/^.*\[lararium\] gate key: \([0-9a-f]\{64\}\)[[:space:]]*$/\1/p' | tail -n 1)
     [ -n "$gate" ] || die "the node's log names no [lararium] gate key; run up first"
     bags=$(lares wiki status --json | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{const r=JSON.parse(s).data?.residency ?? {}; console.log([...(r.pinned ?? []), ...(r.wela ?? []).map(x=>x.url)].join("\n"));});')
-    # Every document the catalog and oracle plane register is data in the JSON wiki list.
+    # Every document the catalog and oracle plane register is data in the JSON wiki status.
     wikis=$(lares wiki status --json)
     # The recipe's bag stack, in order. No read-only verb names it; `wiki pin` walks it (and re-asserts the stowage of
     # those same bags, which a mounted wiki wants held anyway). A wiki without a catalog recipe yet answers no stack.

@@ -44,7 +44,7 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
  * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`);
  * each flag read only refuses the bare spelling.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target", "recipe", "realm"]);
 
 
 /**

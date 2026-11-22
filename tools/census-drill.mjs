@@ -5,7 +5,7 @@
 // and neither the exporting house nor the new house's own founding does).
 //
 // WHERE IT READS FROM: THE HOUSE'S OWN READ DOORS. Every meme, index row, plain record and kahua head comes back through the
-// `lares` CLI (`persona list`, `kahua get`, `wiki list`, `meme list`, `wiki filter`, and `tiddler get` for a record too large
+// `lares` CLI (`persona list`, `kahua get`, `wiki status`, `meme list`, `wiki filter`, and `tiddler get` for a record too large
 // for one filter page), the doors a person reads
 // with. So it reads the store through the gate every face reads through, and never parses a store format (the house
 // promises its doors, never its layout). Two classes stand behind no read door, and those it reads from the house's own files, through the house's
@@ -23,7 +23,7 @@
 //   kapae   each kāpae shadow under the projections: `<layer> <title>`, the face relation in the layer named by pet-name;
 // and house-wide:
 //   shares  each share row: `<kind> <slug>` -> owner, readers and writers by pet-name;
-//   wikis   each wiki the catalog lists (`wiki list`): slug -> kind, so a wiki that holds no page still reads, and a restore that
+//   wikis   each wiki the catalog lists (`wiki status`): slug -> kind, so a wiki that holds no page still reads, and a restore that
 //           leaves one behind reads red by name.
 //
 // WHAT MAY DIFFER, BY NAME (`MAY_DIFFER`): what a founding re-mints and a restore never carries. The census records the face

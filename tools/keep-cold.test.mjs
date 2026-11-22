@@ -80,7 +80,7 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
       h.must(["tiddler", "put", "--meme", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
     }
-    /** The rotatable pins `wiki active` marks, in its own order. */
+    /** The rotatable pins `wiki status` marks, in its own order. */
     const held = () => (h.answer(h.must(["wiki", "status", "--json"])).data.activation.held ?? []).slice().sort();
     // A minted wiki stands in its own realm under its slug, the realm's default pet name, so its workbench mirror rests at
     // `projections/realms/<slug>/wikis/<slug>`.
@@ -109,7 +109,7 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
   }
 });
 
-/** The wikis `wiki active` lists as live (the daemon stands outside the list). */
+/** The wikis `wiki status` lists as live (the daemon stands outside the list). */
 const liveWikis = (h) => {
   return (h.answer(h.must(["wiki", "status", "--json"])).data.activation.active ?? []).map((w) => typeof w === "string" ? w : w.slug).filter((w) => w !== "daemon").sort();
 };

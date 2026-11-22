@@ -21,12 +21,12 @@
  */
 
 import { vesselDid } from "../env.js";
-import { emit, exitFor } from "../render.js";
+import { emit, exitFor, wantsJson } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
 import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";
 import { cmdShare } from "./share-cmd.js";
-import { cmdPin, cmdUnpin } from "./residency.js";
+import { cmdPin, cmdUnpin, cmdResidency } from "./residency.js";
 import { ensureWikiRealm, labelRealmOf, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { RealmRefused, loadLaresConfig, tempConsentedSlugs } from "@lararium/node";
@@ -512,7 +512,7 @@ export async function cmdWikiRelease(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** `lares wiki active` — the live switcher state: which wikis run now + which are held. */
+/** `lares wiki status` — the live switcher state: which wikis run now + which are held. */
 export async function cmdWikiActive(_args: ParsedArgs): Promise<number> {
   const did = await vesselDid();
   const r = await call("wiki-active", {}, did);
@@ -917,7 +917,12 @@ async function cmdWikiRender(args: ParsedArgs): Promise<number> {
 }
 
 async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
-  if (args.options["recipe"] === undefined && args.options["bag"] === undefined && args.flags["bag"] === undefined) {
+  if (args.options["recipe"] === undefined && args.flags["recipe"] === undefined && args.options["bag"] === undefined && args.flags["bag"] === undefined && args.options["realm"] === undefined && args.flags["realm"] === undefined) {
+    if (args.options["target"] !== undefined || args.flags["target"] !== undefined) return guardDoor(args, "wiki status", async () => { throw new DoorUsage("--target requires a recipe"); });
+    if (!wantsJson(args)) {
+      for (const render of [cmdWikiList, cmdWikiActive, cmdResidency]) { const code = await render(args); if (code !== 0) return code; }
+      return 0;
+    }
     let named: { face?: number };
     try { named = args.options["face"] === undefined && args.flags["face"] === undefined ? {} : faceOption(args); }
     catch (error) { console.error(String(error)); return 2; }
