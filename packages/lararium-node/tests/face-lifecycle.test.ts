@@ -327,7 +327,7 @@ describe("each face lives one life: the lifecycle actor", () => {
     await lit(t2, 2);
     const loose = t2.lives.closeAll("the composition stands down");
     t2.drains.get(2)!.reject(new Error("seal refused"));
-    await expect(loose).resolves.toBeUndefined();
+    await expect(loose, "a stand-down carries on, and says the close was not whole").resolves.toEqual({ whole: false });
   });
 
   test("a close naming another custody opening holds nothing: the face keeps standing and a later dark lights again", async () => {

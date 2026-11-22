@@ -12,6 +12,10 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { personaGroupDigest } from "../src/persona-group-file.js";
+import { cleanGoodbye, lifeCloses, pulamaStandBy } from "../src/pulama-seat.js";
+import { faceLives } from "../src/face-lifecycle.js";
+import { makePulamaHolder } from "../src/pulama-holder.js";
+import { pulamaChannelPair } from "../src/pulama-wire.js";
 import { fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -194,5 +198,193 @@ describe("a first close reads the lives this pūlama lent the face", () => {
     expect(await f.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
     expect(f.kept.unlockedFaces()).not.toContain(a.fcid);
     await settle();
+  });
+});
+
+describe("a clean goodbye: a vessel that drained every save tells its pūlama so, naming its life", () => {
+  test("★ GOODBYE BEFORE A FIRST CLOSE: life 3 lent the face, drained, said goodbye and left; the first close locks at once, the hearth still naming life 3, no force ★", async () => {
+    const { f, a } = await standOne("goodbye-first-close", 3);
+    const vessel = f.vessel({}, { id: L(3) });
+    await vessel.unlock([]);
+    expect(await vessel.goodbye(), "the pūlama heard it").toBe(true);
+    await vi.waitFor(() => expect(f.server.sessions(), "the goodbye ends the session").toBe(0));
+    expect(vessel.isUnlocked()).toBe(false);
+    expect(await f.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
+    expect(f.kept.unlockedFaces()).not.toContain(a.fcid);
+  });
+
+  test("GOODBYE ANSWERS A TOLD CLOSE: a session told to close says goodbye in place of face.closed, and the key locks", async () => {
+    const { f, a } = await standOne("goodbye-told", 3);
+    const vessel = f.vessel({}, { id: L(3) });
+    await vessel.unlock([]);
+    expect(await f.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 1 });
+    expect(await vessel.goodbye()).toBe(true);
+    await vi.waitFor(() => expect(f.kept.unlockedFaces()).not.toContain(a.fcid));
+    expect(f.server.closing()).toEqual([]);
+  });
+
+  test("GOODBYE CLEARS ITS LIFE'S DROP: a session of life 3 dropped its close; the same life comes back and says goodbye; the key locks", async () => {
+    const { f, a } = await standOne("goodbye-drop", 3);
+    const first = f.vessel({}, { id: L(3) });
+    await first.unlock([]);
+    expect(await f.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 1 });
+    await first.lock();
+    await vi.waitFor(() => expect(f.server.closing()).toMatchObject([{ dropped: 1 }]));
+    const back = f.vessel({}, { id: L(3) });
+    await back.unlock([]);
+    expect(await back.goodbye()).toBe(true);
+    await vi.waitFor(() => expect(f.kept.unlockedFaces()).not.toContain(a.fcid));
+  });
+
+  test("AN UNSENT OR UNHEARD GOODBYE CHANGES NOTHING: no life to name, or a life the hearth does not read, and the first close holds as before", async () => {
+    for (const [label, life] of [["goodbye-no-life", undefined], ["goodbye-mismatch", { id: L(2) }]] as const) {
+      const { f, a } = await standOne(label, 3);
+      const named = f.vessel({}, { id: L(3) });
+      await named.unlock([]);
+      await named.lock();
+      const vessel = f.vessel({}, life);
+      await vessel.unlock([]);
+      expect(await vessel.goodbye(), `${label}: no goodbye stands`).toBe(false);
+      await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+      expect(await f.server.closeFace(0), `${label}: life 3's lend still holds the first close`).toMatchObject({ reading: "closing", unanswered: 0, face: 0 });
+      expect(f.kept.unlockedFaces()).toContain(a.fcid);
+      await f.drop(); fx = null;
+    }
+  });
+
+  test("A GOODBYE SPEAKS FOR ITS OWN LIFE ALONE: life 3's goodbye leaves life 5's lend holding the first close", async () => {
+    const { f, a } = await standOne("goodbye-other-life", 5);
+    const five = f.vessel({}, { id: L(5) });
+    await five.unlock([]);
+    await five.lock();
+    hearth(f, 3);
+    const three = f.vessel({}, { id: L(3) });
+    await three.unlock([]);
+    expect(await three.goodbye()).toBe(true);
+    await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+    hearth(f, 5);   // the hearth names life 5 again: its lend stands, unproven ended
+    expect(await f.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 0 });
+    expect(f.kept.unlockedFaces()).toContain(a.fcid);
+  });
+
+  test("A TEARDOWN THAT THROWS COUNTS NOT WHOLE: a recomposition whose teardown rejects (its close answered, then a shutdown step threw) rejects on, and a later whole stand-down sends no goodbye; CONTROL: a teardown that answers whole leaves the life whole", async () => {
+    const thrown = lifeCloses();
+    await expect(thrown.noteTeardown(async () => { throw new Error("a shutdown step threw"); })).rejects.toThrow(/a shutdown step threw/);
+    thrown.note({ whole: true });
+    expect(thrown.whole(), "the throw latched the life").toBe(false);
+    let said = false;
+    expect(await cleanGoodbye({ whole: thrown.whole() }, async () => { said = true; return true; }, () => {})).toBe(false);
+    expect(said, "no goodbye went out").toBe(false);
+    const clean = lifeCloses();
+    expect(await clean.noteTeardown(async () => ({ whole: true }))).toEqual({ whole: true });
+    expect(clean.whole()).toBe(true);
+  });
+
+  test("★ THE LIFE REMEMBERS A CLOSE THAT WAS NOT WHOLE: a recomposition whose teardown left a face's drain faulted, then a whole stand-down under the same life, sends no goodbye, and the first close holds; CONTROL: whole closes all the way say it ★", async () => {
+    for (const history of ["recomposed-not-whole", "all-whole"] as const) {
+      const { f, a } = await standOne(`goodbye-life-${history}`, 3);
+      const vessel = f.vessel({}, { id: L(3) });
+      const by = pulamaStandBy({ holder: vessel, onLog: () => {}, recompose: async () => ({ standing: "hearth" }) });
+      expect(await by.dial()).toEqual({ session: true, waits: null });
+      const life = lifeCloses();
+      life.note({ whole: history === "all-whole" });   // composition A's teardown, at a recomposition
+      life.note(undefined);                            // a floor composition that holds no face answers nothing
+      life.note({ whole: true });                      // composition B's stand-down, at the exit
+      expect(await cleanGoodbye({ whole: life.whole() }, () => by.goodbye(), () => {}), history).toBe(history === "all-whole");
+      await vessel.lock();
+      await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+      if (history === "recomposed-not-whole") {
+        expect(await f.server.closeFace(0), "A's unsealed save holds the first close").toMatchObject({ reading: "closing", unanswered: 0 });
+        expect(f.kept.unlockedFaces()).toContain(a.fcid);
+      } else {
+        expect(await f.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
+      }
+      await f.drop(); fx = null;
+    }
+  });
+
+  test("★ A STAND-DOWN THAT DID NOT CLOSE WHOLE SAYS NO GOODBYE: a face whose drain faults reads the close not whole, the goodbye stays unsent, and the exit reads as a drop; CONTROL: a whole close says it and the first close locks ★", async () => {
+    for (const drain of ["faults", "drains"] as const) {
+      const { f, a } = await standOne(`goodbye-drain-${drain}`, 3);
+      const vessel = f.vessel({}, { id: L(3) });
+      const by = pulamaStandBy({ holder: vessel, onLog: () => {}, recompose: async () => ({ standing: "hearth" }) });
+      expect(await by.dial()).toEqual({ session: true, waits: null });
+      const lives = faceLives({
+        light: async () => ({ atomKey: null, custody: null }),
+        drainSaves: async () => { if (drain === "faults") throw new Error("a save did not seal"); },
+        dropWorker: async () => {}, teardownHost: () => {}, recompose: async () => {}, log: () => {},
+      }, { nonce: "stand-down" });
+      lives.adopt(0, { atomKey: "k0", custody: null });
+      const closed = await lives.closeAll("the composition stands down", { hold: true, stop: true });
+      expect(closed, drain).toEqual({ whole: drain === "drains" });
+      expect(await cleanGoodbye(closed, () => by.goodbye(), () => {}), drain).toBe(drain === "drains");
+      await vessel.lock();   // the process exits
+      await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+      if (drain === "faults") {
+        expect(await f.server.closeFace(0), "the unsealed save holds the first close").toMatchObject({ reading: "closing", unanswered: 0 });
+        expect(f.kept.unlockedFaces()).toContain(a.fcid);
+      } else {
+        expect(await f.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
+      }
+      await f.drop(); fx = null;
+    }
+  });
+
+  test("A SILENT PŪLAMA HOLDS NO EXIT: a goodbye the pūlama never answers ends within its bound, unheard, and the leaving reads as a drop", async () => {
+    const { f, a } = await standOne("goodbye-silent", 3);
+    const vessel = makePulamaHolder({
+      homes: f.seat.homes, offer: () => ({}), life: () => ({ id: L(3) }), goodbyeWaitMs: 50,
+      dial: async () => {
+        const pair = pulamaChannelPair();
+        // The pūlama hears every frame but the goodbye: it never answers one.
+        f.server.accept({ ...pair.pulama, onFrame: (listener) => pair.pulama.onFrame((frame) => { if (frame.t === "req" && frame["op"] === "vessel.goodbye") return; listener(frame); }) });
+        return pair.vessel;
+      },
+    });
+    await vessel.unlock([]);
+    expect(await vessel.goodbye(), "unheard within its bound").toBe(false);
+    expect(vessel.isUnlocked()).toBe(false);
+    await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+    expect(await f.server.closeFace(0), "life 3's lend still holds the first close").toMatchObject({ reading: "closing", unanswered: 0 });
+    expect(f.kept.unlockedFaces()).toContain(a.fcid);
+  });
+
+  test("A GOODBYE WHILE A DIAL RUNS COUNTS AS LEAVING: the dial in flight seats no session after it", async () => {
+    const { f } = await standOne("goodbye-mid-dial", 3);
+    const vessel = f.vessel({}, { id: L(3) });
+    const dialing = vessel.unlock([]);
+    expect(await vessel.goodbye()).toBe(false);
+    await expect(dialing).rejects.toThrow();
+    expect(vessel.isUnlocked()).toBe(false);
+    await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+  });
+
+  test("THE STAND-BY SAYS IT: a goodbye through the stand-by ends the session and composes no floor after it; CONTROL: a plain drop composes the floor", async () => {
+    const { f } = await standOne("goodbye-standby", 3);
+    for (const leave of ["goodbye", "drop"] as const) {
+      const vessel = f.vessel({}, { id: L(3) });
+      const composed: boolean[] = [];
+      const by = pulamaStandBy({ holder: vessel, onLog: () => {}, recompose: async (sovereign) => { composed.push(sovereign); return { standing: "hearth" }; } });
+      expect(await by.dial()).toEqual({ session: true, waits: null });
+      if (leave === "goodbye") expect(await by.goodbye()).toBe(true);
+      else await vessel.lock();
+      await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+      await settle();
+      expect(composed, leave).toEqual(leave === "goodbye" ? [true] : [true, false]);
+    }
+  });
+
+  test("A LIFE THAT CAME BACK AFTER ITS GOODBYE lends again, and its next leaving holds the first close as before", async () => {
+    const { f, a } = await standOne("goodbye-back", 3);
+    const first = f.vessel({}, { id: L(3) });
+    await first.unlock([]);
+    expect(await first.goodbye()).toBe(true);
+    await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+    const back = f.vessel({}, { id: L(3) });
+    await back.unlock([]);
+    await back.lock();
+    await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+    expect(await f.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 0 });
+    expect(f.kept.unlockedFaces()).toContain(a.fcid);
   });
 });

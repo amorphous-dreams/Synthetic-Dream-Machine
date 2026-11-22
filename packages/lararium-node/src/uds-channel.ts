@@ -41,7 +41,7 @@
 import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { peerKindOf, peerSeatOf, type PeerKind } from "./uds-peer.js";
 import { HEARTH_CLOSING, HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlanes } from "./hearth-roster-read.js";
-import { choreAtDoor, isChore } from "./chore-face.js";
+import { choreAtDoor, entersADrain, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
 import { PARK_LIMIT } from "./owned-store.js";
@@ -359,7 +359,8 @@ export class VesselWaitExpired extends Error {
  * The ring (M1) holds two bounds, and either evicts: it flips a fact to `evicted` (keeping digest, effect
  * key, terminal) and tombstones the full durable outcome. An evicted id answers `retention-gap`, never a
  * silent re-run and never a bare "unknown" that would invite one.
- *   · COUNT: past `ring` tracked requests (any state), the oldest `seq` leaves first.
+ *   · COUNT: past `ring` tracked requests (any state), the oldest `seq` leaves first. A torn record that names its
+ *     seq counts too and leaves the same way (`evictTorn`), so an unreadable fact refuses only while the ring holds it.
  *   · BYTES: every landed fact names what its kept outcome weighs, and the ledger holds their sum. Past
  *     `ringBytes`, the oldest KEPT BODY leaves first. A fact that keeps no body (in flight, abandoned,
  *     interrupted) weighs nothing and stays, and the body that just landed stays for the caller awaiting it:
@@ -373,6 +374,10 @@ export class FactLedger {
    *  absent: `get()` answers `"torn"` for these, never `null`, so a caller cannot mistake an
    *  unreadable record for a fresh id. */
   private readonly torn = new Set<string>();
+  /** The torn records the seed read with a readable `seq`, by requestId: each holds its place in the order and leaves the ring
+   *  by count like any fact, rewritten `evicted` from the fields it still reads. A torn record with no readable seq holds no
+   *  place, and stays torn. */
+  private readonly tornAt = new Map<string, { readonly seq: number; readonly fields: Readonly<Record<string, unknown>> }>();
   /** requestIds in ascending `seq` order — the eviction queue. Seeded from the store at first use,
    *  then kept current by every `record()` this process makes. */
   private readonly order: string[] = [];
@@ -461,7 +466,8 @@ export class FactLedger {
    *  advances past the HIGHEST raw `seq` field this scan reads — TORN OR NOT: a torn record still
    *  claimed that seq when some earlier process minted it, so a fresh mint here must never reuse
    *  it, even though the torn record itself never joins the cache/order (it is tracked in
-   *  {@link torn} instead, and never seeds nor plays an eviction victim). */
+   *  {@link torn} instead, and never seeds). A torn record whose `seq` reads takes its place in the eviction order all the
+   *  same: an unreadable fact never decides a request, but it still leaves the ring by count (`tornAt`). */
   private ensureSeeded(): Promise<void> {
     if (this.seeded) return this.seeded;
     this.seeded = (async () => {
@@ -481,7 +487,11 @@ export class FactLedger {
         if (!Number.isNaN(rawSeq) && rawSeq > maxRawSeq) maxRawSeq = rawSeq;
         const fact = parseReceiptFact(raw);
         if (fact) facts.push(fact);
-        else this.torn.add(title.slice(RECEIPT_FACT_URI_PREFIX.length));
+        else {
+          const requestId = title.slice(RECEIPT_FACT_URI_PREFIX.length);
+          this.torn.add(requestId);
+          if (Number.isSafeInteger(rawSeq) && rawSeq >= 0) this.tornAt.set(requestId, { seq: rawSeq, fields: { ...raw } });
+        }
       }
       facts.sort((a, b) => a.seq - b.seq);
       // SETTLE AT SEED. A `committed` fact of ANOTHER life cannot complete: its worker's invocation
@@ -503,7 +513,14 @@ export class FactLedger {
         settledAny = true;
       }
       if (settledAny) await this.repo.flush();
-      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); this.hold(fact); }
+      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.hold(fact); }
+      // ONE ORDER, BY SEQ: the readable facts and the torn records that still name their place.
+      const placed: Array<{ readonly requestId: string; readonly seq: number }> = [
+        ...facts.map((f) => ({ requestId: f.requestId, seq: f.seq })),
+        ...[...this.tornAt].map(([requestId, at]) => ({ requestId, seq: at.seq })),
+      ];
+      placed.sort((a, b) => a.seq - b.seq);
+      for (const at of placed) this.order.push(at.requestId);
       this.nextSeq = maxRawSeq + 1;
       // A boot under tighter bounds than the last brings the ledger down to them before it answers anything.
       await this.tend();
@@ -660,6 +677,7 @@ export class FactLedger {
    *  names none evicted: every fact past the ring reads `evicted`, whatever it read before. Answers whether it
    *  wrote. */
   private async evict(victimId: string): Promise<boolean> {
+    if (this.tornAt.has(victimId)) return this.evictTorn(victimId);
     const victim = this.cache.get(victimId);
     if (!victim || victim.state === "evicted") return false;
     const evicted: ReceiptFact = {
@@ -679,6 +697,38 @@ export class FactLedger {
     }
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.release(victimId);
+    this.cache.set(victimId, evicted);
+    return true;
+  }
+
+  /**
+   * A TORN FACT LEAVES THE RING BY COUNT. It never decided anything while it stood (every act under its id refused
+   * `receipt-fact-torn`), and it leaves the same way a readable fact does: its body leaves first, then the fact reads
+   * `evicted` at its own seq, keeping only what its fields still read whole (a digest, a face, an action; an effect key and a
+   * terminal beside a digest alone). It guesses no verdict and no life: an id the ring let go answers `retention-gap`, the
+   * honest gap, never a re-run. A committed fact that names a `boot-epoch` field and no `life` reads torn and leaves this way.
+   */
+  private async evictTorn(victimId: string): Promise<boolean> {
+    const at = this.tornAt.get(victimId)!;
+    const read = (key: string): string | undefined => {
+      const v = at.fields[key];
+      return typeof v === "string" && /^\S+$/.test(v) ? v : undefined;
+    };
+    const inputDigest = read("input-digest");
+    const face = read("face"), action = read("action"), effectKey = read("effect-key"), terminalRaw = read("terminal");
+    const terminal = terminalRaw === "done" || terminalRaw === "error" ? terminalRaw : undefined;
+    const evicted: ReceiptFact = {
+      requestId: victimId, state: "evicted", seq: at.seq,
+      ...(face !== undefined && { face }), ...(action !== undefined && { action }),
+      ...(inputDigest !== undefined && { inputDigest, ...(effectKey !== undefined && { effectKey }), ...(terminal !== undefined && { terminal }) }),
+    };
+    const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
+    for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
+      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+    }
+    await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
+    this.tornAt.delete(victimId);
+    this.torn.delete(victimId);
     this.cache.set(victimId, evicted);
     return true;
   }
@@ -1134,10 +1184,19 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return visit !== null ? { ok: true, visit } : shutRefusal(target, "visit");
       } };
     }
-    if (!life.known(worn)) return null;
+    return workGate(worn);
+  };
+  /**
+   * WORK ON A FACE HOLDS ITS CLOSE, whichever door it came by: a session's verb on the face it wears, or a one-shot line's verb
+   * on the face it acts as (the face it names, or the mount). It admits on that face's actor at dispatch, so no write enters a
+   * drain; a face closing refuses `face-closing`, a shut one `face-not-open`. A face the vessel never knew passes ungated.
+   */
+  const workGate = (face: number): DoorGate | null => {
+    const life = opts.faceLife;
+    if (!life?.known(face)) return null;
     return { visit: false, admit: () => {
-      const work = life.admitWork(worn);
-      return work !== null ? { ok: true, work } : shutRefusal(worn, "verb");
+      const work = life.admitWork(face);
+      return work !== null ? { ok: true, work } : shutRefusal(face, "verb");
     } };
   };
   const sessionState = (sock: Socket) => {
@@ -1694,7 +1753,14 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           const resolved = await resolveTarget(inv.verb, inv.args, mount);
           if (!resolved.ok) return fail(resolved.message, resolved.refusal);
           if (resolved.args !== undefined) inv.args = resolved.args;
-          if (mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null) gate = gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined;
+          // ONE GATE PER ONE-SHOT, decided once: a visit admits on its target's actor (`gateFor`); otherwise a write (a chore, or a
+          // chore-free write into the daemon layer such as realm-feed: `entersADrain`) admits as work on the face it acts as (the
+          // face it names, or the mount), as a session's verb does on the face it wears, so no one-shot write enters that face's
+          // drain. ONLY A WRITE ENTERS A DRAIN: a read, or a row of the place, that visits no face keeps its path.
+          const acts = named ?? mount;
+          gate = mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null ? gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined
+            : acts !== null && entersADrain(inv.verb) ? workGate(acts) ?? undefined
+            : undefined;
         }
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });

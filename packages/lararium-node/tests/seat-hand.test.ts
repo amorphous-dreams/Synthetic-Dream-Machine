@@ -133,7 +133,8 @@ describe("a lit face receives visits: the door resolves a read's target", () => 
     // the same gate a session's does.
     expect(src).toMatch(/resolveTarget\(frame\["verb"\], frame\["args"\] as Record<string, unknown>, state\.supply\.ordinal\)/);
     expect(src).toMatch(/resolveTarget\(inv\.verb, inv\.args, mount\)/);
-    expect(src).toMatch(/gate = gateFor\(mount, inv\.verb, inv\.args \?\? \{\}\)/);
+    // ONE GATE PER ONE-SHOT: the visit gate leads the one decision, and the work gate stands behind it.
+    expect(src).toMatch(/gate = mount !== null && visitTargetOf\(mount, inv\.verb, inv\.args\) !== null \? gateFor\(mount, inv\.verb, inv\.args \?\? \{\}\)/);
     const main = readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8");
     expect(main).toMatch(/visitVerbs:\s+CROSS_FACE_READ_VERBS/);
     expect(main).toMatch(/petnames:\s+async \(\) => \(await makeNodePersonaPetnameStore\(\)\)\.entries\(\)/);
