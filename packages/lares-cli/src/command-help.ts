@@ -175,7 +175,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "terminal in the same run; an image no admission and no lei carries asks the pūlama's admit there too. With no terminal, a day " +
       "that owes either route stops before anything moves and names the hand act (`lares rite kukulu` on a terminal); every other " +
       "day flows. --rollback stands the image that ran before (--rollback <rev>: an older revision's kept image, or a build from " +
-      "that commit), with no checkout move. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
+      "that commit), with no checkout move. After a raise that stood, the rite reads the lag aloud: the canon bag behind the canon " +
+      "source (canon fills through promote and the floor's sealed cut, never from a raise), each wiki's workbench behind the " +
+      "checkout's wikis/<slug>, and a newer sealed floor the release carries than the vessel serves. Where the canon source stands " +
+      "in a checkout and the owner holds the terminal, it previews the workbench lay (each title a workbench the worn face mounts " +
+      "would take) and lays it (`lares vessel lay --workbench --apply`) only on an explicit yes; a workbench that does not mount is " +
+      "named and left, a no or a Ctrl+C leaves every layer as it stood, and a seat with no terminal, an AI launcher or a source in no " +
+      "checkout names the lag and lays nothing. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
       "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
       "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
       "shut or rehived since) refuses by name with the line that clears it: each half a lent face lands, landed by hand where the " +
@@ -1243,23 +1249,30 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   "vessel lay": {
-    usage: "usage: lares vessel lay [--apply] [--yes] [--verbose] [--lift-kahua <N>]",
+    usage: "usage: lares vessel lay [--apply] [--yes] [--verbose] [--lift-kahua <N>] | --workbench [--apply] | --lag",
     synopsis:
       "Lay every disk mirror back into the layer it mirrors: each disk-sourced bags/* holding into its canon through " +
       "INGEST's three-way gate, then every mirror under the projections root into its one layer, a former face's folders " +
       "adopted by pet-name. A bare run previews per holding and writes nothing; `--apply` lands; kahua lifts only on a " +
-      "typed count or `--lift-kahua N`. Idempotent: a second lay lands nothing. Seed names the genesis offer alone; the " +
-      "canon act lays.",
+      "typed count or `--lift-kahua N`. Idempotent: a second lay lands nothing. `--workbench` lays the checkout's workbench folders " +
+      "(wikis/<slug> beside the canon source) alone, into each wiki's working layer the worn face mounts and owns (a wiki a share row hands another owner waits for that " +
+      "face's wear): never canon, never a face " +
+      "root, no kahua. `--lag` reads the house's lag (each holding's titles its canon lacks, each workbench's titles new or moved and " +
+      "whether the worn face mounts it, and whether the source stands in a checkout) and writes nothing. Seed names the genesis offer alone; the canon act lays.",
     examples: [
       "lares vessel lay                           # preview every holding; writes nothing",
       "lares vessel lay --apply --yes             # lay every holding (idempotent)",
       "lares vessel lay --apply --lift-kahua 3    # also lift the 3 kahua items the preview named",
+      "lares vessel lay --workbench --apply       # the checkout's workbenches alone (the lay a kūkulu offers on the owner's yes)",
+      "lares vessel lay --lag --json              # data.lag, data.benchLag, data.checkout; writes nothing",
     ],
     flags: [
       "--apply              land what the preview names",
       "--yes                answer the canon prompt yes (kahua lifts none on --yes alone)",
       "--verbose            keep full CREATE detail",
       "--lift-kahua <N>     lift the kahua items the lay previewed when N equals their count",
+      "--workbench          the checkout's workbench folders alone, into the working layers the worn face mounts and owns",
+      "--lag                read the house's lag (canon and workbench) and write nothing",
     ],
     next: ["lares shore", "lares vessel read"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",

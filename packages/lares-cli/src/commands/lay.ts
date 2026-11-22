@@ -25,18 +25,29 @@
  *
  *   lares vessel lay [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
  *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
+ *   lares vessel lay --workbench [--apply]                  — the checkout's workbench folders alone (`<source>/../wikis/<slug>`)
+ *                                          into each wiki's working layer the worn face mounts; never canon, never a face root
+ *   lares vessel lay --lag                                  — the house's lag; writes nothing
+ *
+ * THE LAG (`readHouseLag`) reads what the kūkulu prints on every raise: each disk-sourced holding's titles its canon lacks (NEW)
+ * or holds in other bytes (CHANGED), scanned against the Synced tree the INGEST gate keeps; each checkout workbench folder's titles
+ * new or moved against its wiki's working layer, with whether the worn face mounts that workbench; and whether the canon source
+ * stands in a checkout (an SDM repo: `pnpm-workspace.yaml` beside its `bags/`), the one case where the raise offers the workbench
+ * lay on the owner's yes. Canon itself fills through promote and the floor's sealed cut: no raise lays it.
  */
 
-import { readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { houseCanonSlugs, namesTw5Docs } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { larBagsDir, vesselDid } from "../env.js";
+import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";
+import { fileToUriForSource, openSyncedTree, scanSource } from "../ingest-core.js";
+import type { HouseLag, LagHolding } from "../rite-kukulu.js";
 import { askShore, readShoreList } from "../shore-core.js";
 import { cmdIngest, type FresherCanonReading } from "./ingest.js";
 import { cmdAct } from "./act.js";
-import { LIVE_MIRROR_DOORS, type MirrorDoors } from "../seed-mirrors.js";
+import { LIVE_MIRROR_DOORS, readBenchLag, type MirrorDoors } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
 
 export interface LayHolding {
@@ -192,8 +203,56 @@ export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahua
   return runMirrors({ apply: args.flags["apply"] === true, liftKahua: args.options["lift-kahua"], json: args.flags["json"] === true, ...(opts.kahuaOnly ? { kahuaOnly: true } : {}) }, doors);
 }
 
+/** Whether a canon source dir stands in a checkout of this repo: the `pnpm-workspace.yaml` the repo root carries beside `bags/`. */
+export const canonSourceIsCheckout = (bagsDir: string): boolean => existsSync(join(dirname(bagsDir), "pnpm-workspace.yaml"));
+
+/**
+ * THE HOUSE'S LAG, read and never written: every disk-sourced holding scanned against the Synced tree (the INGEST gate's own two
+ * cheap legs, no daemon). A title the tree never synced reads NEW; one whose bytes moved (or that moved home) reads CHANGED. A
+ * holding whose canon stands off disk takes no lay, so it counts no lag. Beside it, each checkout workbench's lag and seat
+ * (`readBenchLag`).
+ */
+export async function readHouseLag(doors: MirrorDoors = LIVE_MIRROR_DOORS, bagsDir: string = larBagsDir()): Promise<HouseLag> {
+  const root = larRoot();
+  const tree = openSyncedTree();
+  const projections = larProjectionsDirOrNone();
+  const dirs = { bags: bagsDir, wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
+  const holdings: LagHolding[] = [];
+  for (const h of discoverHoldings(bagsDir)) {
+    if (!canonIsDisk(h)) continue;
+    const scan = scanSource(root, h.source, h.toBag, tree, fileToUriForSource(root, h.source, dirs, tree));
+    const rows = scan?.rows ?? [];
+    holdings.push({
+      holding: h.holding, toBag: h.toBag,
+      new: rows.filter((r) => r.status === "new").map((r) => r.uri),
+      changed: rows.filter((r) => r.status === "changed" || r.status === "renamed").map((r) => r.uri),
+    });
+  }
+  const benches = await readBenchLag(doors);
+  return {
+    source: bagsDir, checkout: canonSourceIsCheckout(bagsDir), holdings, lag: holdings.reduce((n, h) => n + h.new.length + h.changed.length, 0),
+    wikis: benches.dir, benches: benches.benches, benchLag: benches.benches.reduce((n, b) => n + b.planned.length, 0),
+  };
+}
+
 export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
   const bagsDir = larBagsDir();
+  if (args.flags["lag"]) {
+    const lag = await readHouseLag(mirrorDoors, bagsDir);
+    emit(args, {
+      ok: true,
+      data: lag as unknown as Record<string, unknown>,
+      human: () => {
+        for (const h of lag.holdings) console.log(`canon ${h.holding}: ${h.new.length} new, ${h.changed.length} changed`);
+        for (const b of lag.benches) console.log(`workbench ${b.slug}: ${b.planned.length} new or moved${b.mounts === true ? "" : ` · does not mount (${b.why ?? "unread"})`}`);
+        console.log(`lay: canon lags ${lag.source} by ${lag.lag} carrier(s)${lag.wikis === null ? "" : ` · the workbenches lag ${lag.wikis} by ${lag.benchLag}`}${lag.checkout ? "" : " · the source stands in no checkout"}`);
+      },
+    });
+    return 0;
+  }
+  // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu offers on the owner's yes): no holdings leg, no
+  // face root, no share, no kahua; each workbench lays only where the worn face holds a writer's seat.
+  if (args.flags["workbench"]) return runMirrors({ apply: args.flags["apply"] === true, json: args.flags["json"] === true, benchesOnly: true }, mirrorDoors);
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
     emit(args, {

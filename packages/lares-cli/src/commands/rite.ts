@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { INTERRUPTED, priorImageRef, riteKukulu, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
+import { INTERRUPTED, priorImageRef, riteKukulu, type HouseLag, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -46,6 +46,7 @@ import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS } from "./house-bundle.js
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
+import { ownPeerKind } from "@lararium/node";
 
 export class RiteUsage extends Error {}
 
@@ -454,6 +455,42 @@ const readPriorImage = (): Promise<PriorImage | null> => new Promise((resolve) =
   });
 });
 
+/** THE LAG as the host reads it: the vessel's `vessel lay --lag` answer, null where it answers no reading of that shape. */
+export function houseLagOf(output: Record<string, unknown>): HouseLag | null {
+  const holdings = output["holdings"], benches = output["benches"];
+  if (typeof output["source"] !== "string" || typeof output["lag"] !== "number" || !Array.isArray(holdings) || !Array.isArray(benches)) return null;
+  const titles = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+  const bench = (b: Record<string, unknown>) => ({
+    slug: String(b["slug"]), toBag: String(b["toBag"]), planned: titles(b["planned"]),
+    mounts: b["mounts"] === true ? true : b["mounts"] === false ? false : null, ...(typeof b["why"] === "string" ? { why: b["why"] } : {}),
+  });
+  const read = (benches as Array<Record<string, unknown>>).map(bench);
+  return {
+    source: output["source"], checkout: output["checkout"] === true, lag: output["lag"],
+    holdings: (holdings as Array<Record<string, unknown>>).map((h) => ({ holding: String(h["holding"]), toBag: String(h["toBag"]), new: titles(h["new"]), changed: titles(h["changed"]) })),
+    wikis: typeof output["wikis"] === "string" ? output["wikis"] : null, benches: read, benchLag: read.reduce((n, b) => n + b.planned.length, 0),
+  };
+}
+
+/** One yes-or-no on this terminal, asked on stderr; a Ctrl+C at the question reads as no. */
+const askOnTerminal = (q: string): Promise<boolean> => new Promise((resolve) => {
+  const rl = createInterface({ input: process.stdin, output: process.stderr });
+  rl.once("SIGINT", () => { rl.close(); process.stderr.write("\n"); resolve(false); });
+  rl.question(`${q} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); });
+});
+
+/**
+ * The workbench lay on this terminal, after the owner's yes: this CLI again (the bridge forwards it into the vessel), the checkout's
+ * workbench folders alone. A Ctrl+C reaches the lay, which shares this terminal; this process holds SIGINT until it ends.
+ */
+const layWorkbenchOnTerminal = (): Promise<number> => new Promise((resolve) => {
+  const hold = (): void => {};
+  process.on("SIGINT", hold);
+  const child = spawn(process.execPath, [BIN, "vessel", "lay", "--workbench", "--apply"], { stdio: "inherit" });
+  child.once("error", () => { process.off("SIGINT", hold); resolve(127); });
+  child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
+});
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(shim: string, say: (line: string) => void): RitePorts {
   return {
@@ -474,6 +511,12 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     ranImage: () => shimRead(shim, ["vessel-image"]),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
+    // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay rides the owner's yes on this terminal, never canon.
+    houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
+    ask: askOnTerminal,
+    layWorkbench: layWorkbenchOnTerminal,
+    // An AI launcher is a seat: the harness's mark, or a host chain that reads no person's hand (the bridge marks it the same way).
+    seat: () => ownPeerKind(process.env) !== "hand",
     say,
   };
 }
