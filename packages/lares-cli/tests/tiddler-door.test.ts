@@ -91,6 +91,15 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
 });
 
 describe("the argument law, no daemon", () => {
+  test("family writes and listing use the tiddler door while an unqualified empty get refuses", async () => {
+    expect((await run(argv("tiddler", ["get"], { recipe: "default" }))).exit).toBe(2);
+    h.reply = { recipe: "default", roots: [] };
+    expect((await run(argv("tiddler", ["get"], { recipe: "default" }, { meme: true }))).exit).toBe(0);
+    expect(h.calls.at(-1)).toEqual({ verb: "meme-list", args: { recipe: "default" } });
+    h.reply = { uri: "lar:///t/x", decision: "removed", tombstoned: [] };
+    expect((await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { meme: true }))).exit).toBe(0);
+    expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default" } });
+  });
   test("a tiddler verb names its container and its title before anything rides the wire", async () => {
     expect(() => tiddlerPlan("get", argv("tiddler", ["get", "T"]))).toThrow(/no-container/);
     expect(() => tiddlerPlan("get", argv("tiddler", ["get"], { recipe: "default" }))).toThrow(/title is required/);
