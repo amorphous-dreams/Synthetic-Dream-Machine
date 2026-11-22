@@ -112,7 +112,7 @@ describe.skipIf(wikiSkip)(`every wiki its engine${skipNote}`, () => {
     expect(filtered.titles).toEqual(expect.arrayContaining(["backlinks Operator", "addprefix Operator", "count Operator"]));
     expect(filtered["total"], "the whole operator vocabulary, paged").toBeGreaterThan(100);
     const status = await makeWikiStatusReactor(opts)({ recipe: TW5_DOCS_SLUG }, denied);
-    expect((status["layers"] as Array<{ bag: string }>).map((l) => l.bag)).toContain(TW5_DOCS_BAG);
+    expect(status["layers"], "the library reads freely, and its status says so").toEqual(expect.arrayContaining([expect.objectContaining({ bag: TW5_DOCS_BAG, read: true, write: false })]));
     await expect(makeTiddlerPutReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "No", text: "no" }, ctx())).rejects.toMatchObject({ reason: TW5_DOCS_READ_ONLY });
   }, 60_000);
 

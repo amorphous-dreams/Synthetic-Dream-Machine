@@ -1248,12 +1248,13 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
       // CANON TAKES NO LANE WRITE: it mounts writable so a promotion (an ACTION verb) can land in it, and `defaultWritable: false` keeps
       // every put off it (`recipe-layer-model` #/the-recipe-stack). Status names it `promotion-only`, never a writable door.
       if (isCanonLayer(opts, slug, bag) && opts.composite.hasWritableBag(bag)) {
-        const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null;
+        const read = isTw5DocsBag(bag) || (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null;
         layers.push({ bag, mounted: "promotion-only", read, write: false });
         continue;
       }
       const mounted = opts.composite.hasWritableBag(bag);
-      const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
+      // The TW5 docs library reads freely (`reachOf`), and its status says so.
+      const read = isTw5DocsBag(bag) || (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
       let write = false;
       let why: string | undefined;
       if (mounted) {

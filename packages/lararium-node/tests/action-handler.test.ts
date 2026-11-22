@@ -678,3 +678,38 @@ describe("S5.7 — verb-tiddler → runLocalVerb → handler integration", () =>
     ).rejects.toThrow(/no handler registered/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// The TW5 docs library's name holds one relation at the act verbs
+// ---------------------------------------------------------------------------
+
+describe("the act verbs leave the TW5 docs library's name reserved", () => {
+  const DOCS = "lar:///ha.ka.ba/bags/tw5-docs";
+  const reactorOf = (verb: string) => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    return async (args: Record<string, unknown>) => table.get(verb)!(args, makeContext(composite, verb as ActionVerb, args));
+  };
+
+  test("CREATE refuses tw5-docs-reserved on either plane, and REPACK finds no bag standing there", async () => {
+    for (const plane of [undefined, "oracle"]) {
+      await expect(reactorOf("CREATE")({ bag: DOCS, ...(plane ? { plane } : {}) })).rejects.toMatchObject({ reason: "tw5-docs-reserved" });
+    }
+    await expect(reactorOf("REPACK")({ bag: DOCS, "pack-path": "x.json" })).rejects.toMatchObject({ reason: "tw5-docs-reserved" });
+  });
+
+  test("every writing verb refuses tw5-docs-read-only, whether the library stands as the destination or the source", async () => {
+    const transfers = ["ADD", "COPY", "MOVE"] as const;
+    for (const verb of transfers) {
+      await expect(reactorOf(verb)({ title: "T", "from-bag": BAG_LOW, "to-bag": DOCS, "change-id": "c" }), `${verb} into`).rejects.toMatchObject({ reason: "tw5-docs-read-only" });
+      await expect(reactorOf(verb)({ title: "T", "from-bag": DOCS, "to-bag": BAG_HIGH, "change-id": "c" }), `${verb} out of`).rejects.toMatchObject({ reason: "tw5-docs-read-only" });
+    }
+    for (const verb of ["CLEAR", "DROP"]) {
+      await expect(reactorOf(verb)({ bag: DOCS, title: "T" }), verb).rejects.toMatchObject({ reason: "tw5-docs-read-only" });
+    }
+    await expect(reactorOf("LOAD")({ "source-uri": "lar:///ha.ka.ba/x", "to-bag": DOCS, "change-id": "c" })).rejects.toMatchObject({ reason: "tw5-docs-read-only" });
+    const wave = { "source-uri": "file:///bags/tw5-docs", "to-bag": DOCS, "change-id": "c", carriers: [{ uri: "lar:///ha.ka.ba/x", text: "x", diskHash: "h", syncedHash: null }] };
+    await expect(reactorOf("INGEST")(wave)).rejects.toMatchObject({ reason: "tw5-docs-read-only" });
+  });
+});

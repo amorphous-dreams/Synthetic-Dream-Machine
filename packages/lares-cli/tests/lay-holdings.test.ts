@@ -13,7 +13,7 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { discoverHoldings, cmdLay } from "../src/commands/lay.js";
+import { discoverHoldings, cmdLay, layHolding } from "../src/commands/lay.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 vi.mock("../src/commands/act.js", () => ({ cmdAct: vi.fn(async () => { console.log("CREATE block line one"); console.log("CREATE block line two"); return 0; }) }));
@@ -56,6 +56,11 @@ describe("discoverHoldings — the discovered holdings map", () => {
       if (prior.root === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior.root;
       if (prior.bags === undefined) delete process.env["LAR_BAGS"]; else process.env["LAR_BAGS"] = prior.bags;
     }
+  });
+  test("a bags/tw5-docs dir takes no road and names why: the name rests with the TW5 docs library", async () => {
+    const row = await layHolding({ command: "vessel", positional: [], options: {}, flags: { apply: true } } as unknown as ParsedArgs,
+      { holding: "tw5-docs", source: join(root, "bags", "tw5-docs"), toBag: "lar:///ha.ka.ba/bags/tw5-docs" }, true);
+    expect(row).toMatchObject({ gesture: "skip", exitCode: 0, reason: expect.stringMatching(/^tw5-docs-reserved: dir stands no bag/) });
   });
   test("maps every dir, sorted, with source path + lar bag address", () => {
     mkdirSync(join(root, "bags", "lares"), { recursive: true });

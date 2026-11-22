@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/catalog-view
  */
 
-import { CATALOG_ENTRY_TIER_FIELD, ownEntry, plainField, storedLarRecord, tiddlerText, type CapTier } from "@lararium/mesh";
+import { CATALOG_ENTRY_TIER_FIELD, ownEntry, plainField, refuseTw5DocsReserved, storedLarRecord, tiddlerText, type CapTier } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import { stringArg } from "./handler-args.js";
@@ -30,6 +30,8 @@ export function makeRestampBagTierReactor(opts: RestampBagTierOptions): VerbReac
   return async (args) => {
     const bagUrl = stringArg(args, "bagUrl");
     if (!bagUrl) throw new Error("args.bagUrl is required (the bag's lar: URI)");
+    // THE VESSEL REFUSES THE TW5 DOCS LIBRARY'S NAME ITSELF, where a caller skips the CLI's own refusal (`tw5-docs-name`).
+    refuseTw5DocsReserved(bagUrl, "bag declare");
     const handle = await opts.catalog.handle();
     const standing = ownEntry(handle.doc()?.tiddlers, bagUrl);
     const url = tiddlerText(standing);
