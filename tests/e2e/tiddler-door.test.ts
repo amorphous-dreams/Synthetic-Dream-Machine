@@ -248,11 +248,11 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(slot.fields["text"]).not.toContain("Rule 3");
     expect(slot).toMatchObject({ position: "slot", family: uriOf(3) });
     const said = await speak(entry, [
-      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", text: false } },
+      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", grain: "skinny" } },
       { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", slot: "#/why" } },
     ]);
     const [seatSkinny, seatSlot] = said.results.map(payload);
-    say("MCP tiddler_get text=false", seatSkinny);
+    say("MCP tiddler_get grain=skinny", seatSkinny);
     say("MCP tiddler_get slot", seatSlot);
     expect(seatSkinny).toEqual({ ok: true, data: dataOf(cliSkinny) });
     expect(seatSlot).toEqual({ ok: true, data: dataOf(cliSlot) });
