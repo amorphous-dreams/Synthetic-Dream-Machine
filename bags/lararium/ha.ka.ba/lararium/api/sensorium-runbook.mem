@@ -332,7 +332,9 @@ Run every check before the first deletion:
   baseline the new pour gets compared against. It costs kilobytes.
 # ''The operator's hand named the store.'' `lares sense teardown`, `purge` and `rederive.py` reach into
   `<root>/sensoriums` ''on purpose'' — a dev-time re-pour wants exactly that, and no guard belongs on
-  them. The structural protection covers the machine's rites, never the operator's own hand, so the reading
+  the operator's hand. `teardown --confirm` and `purge` read that hand at a real terminal, and an AI
+  harness on the command's branch refuses `hand-act-only` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>):
+  a seat names the command, never runs it. The structural protection covers the machine's rites, never the operator's own hand, so the reading
   the operator must not lose stands at #catastrophe ⑥: capture the machine took once and cannot take again.
 
 !!! The movement
@@ -493,6 +495,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PLBSdb97sDCbZPcDvXi41u5hyC2Mwgi_v3LglRht16Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S4l8onfygwIKUSFQYn2H2RFxiZJNJDtJQ7KTnkNzE_I`>>
 
 <<^ code=`&#x0004;` to=`?`>>

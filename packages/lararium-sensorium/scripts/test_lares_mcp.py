@@ -12,8 +12,8 @@ import pytest
 
 from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, SENSE_LIFECYCLE_VERBS,
                        MEME_VERBS, KAHUA_VERBS, OFFER_VERBS, TIDDLER_VERBS, DDATE_VERBS, ORACLE_VERBS, LAW_VERBS, HEARTH_VERBS,
-                       VERB_SEATS, DaemonCoordinator,
-                       LaresCoordinator, build_mcp, guard_hitl, seat_of)
+                       SENSE_HAND_VERBS, VERB_SEATS, DaemonCoordinator,
+                       LaresCoordinator, build_mcp, seat_of)
 from worldline_veil import veiled_root
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -170,51 +170,40 @@ def test_pour_builds_the_worldline_and_kapae_cascades_the_subtree(tmp_path):
 def test_grid_seats_the_verbs_by_reversibility_and_trust():
     for v in LIFECYCLE_VERBS:
         assert seat_of(v) == "HOTL"       # every lifecycle verb runs reversible + trusted
-    assert seat_of("teardown") == "HITL"  # tears a sensorium store down — irreversible
-    assert seat_of("purge") == "HITL"     # irreversible
     assert seat_of("attach") == "HITL"    # trust-crossing
     assert seat_of("release") == "HITL"   # irreversible — drops a guest handle for good
     assert seat_of("reconcile") == "HOTL" # reversible re-settle against source
 
 
-def test_hitl_gate_blocks_without_approval():
-    guard_hitl("recall")                  # HOTL passes freely
-    guard_hitl("kapae")                   # reversible mute passes freely
-    guard_hitl("reconcile")               # HOTL re-settle passes freely
-    with pytest.raises(PermissionError):
-        guard_hitl("purge")               # HITL (irreversible) blocks without approval
-    with pytest.raises(PermissionError):
-        guard_hitl("attach")              # HITL (trust-crossing) blocks without approval
-    with pytest.raises(PermissionError):
-        guard_hitl("release")             # HITL (irreversible) blocks without approval
-    with pytest.raises(PermissionError):
-        guard_hitl("teardown")            # HITL (irreversible store teardown) blocks without approval
-    guard_hitl("purge", approval="operator-granted-cap")   # the @daemon-granted cap unblocks it
-    guard_hitl("teardown", approval="operator-granted-cap")  # the same cap unblocks the store teardown
+def test_every_seated_tool_runs_hotl_and_no_hitl_verb_holds_a_tool(tmp_path):
+    # THE HAND LAW (hitl-reads-a-hand): a person's hand at a real terminal approves an HITL verb, and no argument a seat
+    # fills stands in for it, so every tool this seat serves seats HOTL and every HITL verb in the grid holds no tool.
+    tools = _mcp_tool_names(tmp_path)
+    for v in tools:
+        assert v in VERB_SEATS and seat_of(v) == "HOTL", f"tool {v!r} seats HITL or rides unseated"
+    for v, _seat in VERB_SEATS.items():
+        if seat_of(v) == "HITL":
+            assert v not in tools, f"HITL verb {v!r} holds a tool"
 
 
-def test_sense_lifecycle_verbs_carry_their_real_seats():
-    # the DURABLE sensorium-lifecycle sub-verbs carry the REAL reversibility×trust seats (the TS twin of
-    # mesh LIFECYCLE_SEATS), not a blanket HOTL — reads + reversible re-settle/restore/build run HOTL; the
-    # in-loop-human graduation (promote) and judged deaccession (retire) cross HITL, as does purge.
+def test_sense_hand_verbs_hold_no_tool_and_no_seat(tmp_path):
+    # RED before the cure: promote, retire and purge rode tools gated by an `approve` boolean the model fills, and
+    # un_retire rode one ungated. The cure retires each: the operator runs `lares sense <verb>` on their own terminal.
+    tools = _mcp_tool_names(tmp_path)
+    for v in SENSE_HAND_VERBS:
+        tool = v.replace("-", "_")
+        assert tool not in tools, f"hand verb {v!r} still rides an MCP tool"
+        assert tool not in VERB_SEATS and v not in VERB_SEATS, f"hand verb {v!r} still holds a seat row"
+    for tool in tools:
+        schema = {t.name: t for t in asyncio.run(build_mcp(_coord(tmp_path)).list_tools())}[tool].input_schema
+        assert "approve" not in schema.get("properties", {}), f"tool {tool!r} takes an approval value a seat fills"
+
+
+def test_sense_lifecycle_verbs_a_seat_runs_carry_their_seats():
+    # the DURABLE sensorium-lifecycle sub-verbs a seat runs — the reads and the pioneer build — seat HOTL.
     for v in SENSE_LIFECYCLE_VERBS:
         assert v in VERB_SEATS, f"sense-lifecycle verb {v!r} rides UNSEATED"
-    for v in ("roster", "build", "reconcile", "un_retire"):
-        assert seat_of(v) == "HOTL"        # reads + reversible moves run on the operator's loop
-    for v in ("promote", "retire", "purge"):
-        assert seat_of(v) == "HITL"        # graduation · deaccession · byte-GC need the operator's hand
-
-
-def test_sense_lifecycle_hitl_gate_blocks_without_approval():
-    # the surface twin of the CLI's `--approve`: an HITL sense-lifecycle verb refuses without an operator-
-    # approval capability, and the @daemon-granted cap unblocks it (E5 — the gate holds on the MCP surface).
-    guard_hitl("roster")                   # HOTL read passes freely
-    guard_hitl("build")                    # HOTL self-service build passes freely
-    guard_hitl("un_retire")                # HOTL reversible restore passes freely
-    for v in ("promote", "retire"):
-        with pytest.raises(PermissionError):
-            guard_hitl(v)                  # HITL blocks without approval
-        guard_hitl(v, approval="operator-granted-cap")   # the cap unblocks it
+        assert seat_of(v) == "HOTL"
 
 
 def _mcp_tool_names(tmp_path):

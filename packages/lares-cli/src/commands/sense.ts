@@ -107,8 +107,9 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   resume:    cmdSenseResume,
   holders:   cmdSenseHolders,
   // The DURABLE sensorium lifecycle door (E1.2·E2.*·E5) — run DIRECT over manifest.json (no store holder,
-  // no daemon). Reads + the reversible re-settle run HOTL; promote/retire/purge seat HITL (need --approve,
-  // the TS mirror of the approval cap). `roster` reads at two grains: bare, every sensorium; `roster <name>`, one.
+  // no daemon). Reads + the reversible re-settle run for every caller; promote/retire/un-retire/purge run on a
+  // person's hand at a real terminal alone (the house hand gate over the command's own branch; hitl-reads-a-hand).
+  // `roster` reads at two grains: bare, every sensorium; `roster <name>`, one.
   roster:      cmdSenseRoster,
   reconcile:   cmdSenseReconcile,
   build:       cmdSenseBuild,

@@ -5,7 +5,7 @@
  * (synced or content-written, no control event) emits `content`.
  *
  * Families: switcher and recipe (`wiki-switch`, `remove-bag`, `add-bag`), persona (`persona-wear`, `persona-mint`),
- * circle (`circle-remove`), intent (`intent-view`), roster (`roster`, `reconcile`, `promote`, `retire`, `purge`), and
+ * circle (`circle-remove`), intent (`intent-view`), roster (`roster`, `reconcile`), and
  * `custody-clear`, which the root services write after a person's confirm.
  *
  * RED today: the reaction router's verse event carries no origin at all.
@@ -14,7 +14,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import { dispatchLarControlEvent } from "../src/tw5-projection.js";
 import {
   DAEMON_UI_TIDDLERS, DAEMON_PERSONA_TIDDLERS, DAEMON_CIRCLE_TIDDLERS, DAEMON_INTENT_TIDDLERS, DAEMON_ROSTER_TIDDLERS,
-  SWITCHER_STATE_TITLE, PERSONA_STATE_TITLE, CIRCLE_STATE_TITLE, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP, INTENT_VIEW_CAP,
+  SWITCHER_STATE_TITLE, PERSONA_STATE_TITLE, CIRCLE_STATE_TITLE, ROSTER_STATE_TITLE, INTENT_VIEW_CAP,
 } from "../src/index.js";
 import { mountSurface, htmlOf, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";
@@ -60,13 +60,12 @@ const FAMILIES: ReadonlyArray<{ name: string; specs: readonly Spec[]; marker: st
   },
   {
     name: "roster", specs: DAEMON_ROSTER_TIDDLERS as readonly Spec[], marker: "lares-roster-refresh",
+    // The hand verbs (promote · retire · un-retire · purge) render no button: each runs on a terminal alone (hitl-reads-a-hand).
     state: [
       { title: ROSTER_STATE_TITLE, list: "alpha", type: "application/json", text: JSON.stringify({ alpha: { lifecycle: "active" } }) },
-      { title: LIFECYCLE_APPROVE_CAP, text: "1" },
     ],
     clicks: [
       { verb: "roster", cls: "lares-roster-refresh" }, { verb: "reconcile", cls: "lares-life-reconcile" },
-      { verb: "promote", cls: "lares-life-promote" }, { verb: "retire", cls: "lares-life-retire" }, { verb: "purge", cls: "lares-life-purge" },
     ],
   },
 ];

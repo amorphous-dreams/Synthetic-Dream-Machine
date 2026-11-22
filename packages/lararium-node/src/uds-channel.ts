@@ -39,7 +39,7 @@
  */
 
 import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
-import { peerSeatOf } from "./uds-peer.js";
+import { peerKindOf, peerSeatOf, type PeerKind } from "./uds-peer.js";
 import { HEARTH_CLOSING, HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlanes } from "./hearth-roster-read.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
@@ -122,6 +122,11 @@ export interface UdsChannelOptions {
    * seated the `seat` profile (a spirit's hand: an agent, the MCP surface) refuses one `beyond-profile` before it runs.
    */
   readonly handOnlyActs?: ReadonlySet<string>;
+  /**
+   * How the door reads a connection's peer (`uds-peer`'s `peerKindOf`; a suite names another). Only a peer that reads `hand`
+   * books the `cli` asker; one that reads `unknown` books none, and a hand-only act from it refuses `hand-unattested`.
+   */
+  readonly peerKind?: (sock: Socket) => Promise<PeerKind>;
   /** Per-act refusal codes for the hand-only gate; other rows use beyond-profile. */
   readonly handOnlyCodes?: ReadonlyMap<string, string>;
   /**
@@ -1085,7 +1090,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     opts.signers?.unseat(signer);
     signer.drop();
   };
-  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
+  const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; unattested?: boolean; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
+  const kindOfPeer = opts.peerKind ?? peerKindOf;
   const sessionTurns = new Map<Socket, Promise<void>>();
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
     try { sock.write(JSON.stringify(answer) + "\n"); } catch { /* gone */ }
@@ -1188,7 +1194,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
       // THE PEER BINDS THE HAND (`uds-peer`): ANY session opened from a harness's branch (`cli`, `tab`, `watcher` alike) wears
       // the seat's hand and profile, so no hand a client names lifts a harness's line past the seat's gates.
-      if (frame["hand"] !== "seat" && await peerSeatOf(sock) === "ai") frame["hand"] = "seat";
+      // A PEER NOTHING READS BOOKS NO HAND: the session keeps the hand it names for its profile, but a hand-only act refuses
+      // `hand-unattested` and no call it places carries an asker (hitl-reads-a-hand).
+      const peer: PeerKind = frame["hand"] !== "seat" ? await kindOfPeer(sock) : "hand";
+      if (peer === "ai") frame["hand"] = "seat";
       if (closing || sock.destroyed) return;
       // THE AI SEAT OPENS A FACE INSIDE THE LENT SET: a `seat` hand (or a frame marked `seat: "ai"`) naming a face outside it refuses.
       // The set reads only where a seat names a face, so no other opening touches custody.
@@ -1217,6 +1226,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       state.sessionId = opened.session.sessionId;
       state.hand = frame["hand"] as Hand;
+      state.unattested = peer === "unknown";
       state.anchor = supplied.supply.anchor;
       state.supply = supplied.supply;
       state.signer = minted.signer;
@@ -1265,6 +1275,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
     // A SPIRIT'S HAND PROPOSES on a call too: a hand-only island verb (`retire-wiki`) refuses a seat session by its code.
     if (state.supply.profile === "seat" && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, opts.handOnlyCodes?.get(frame["verb"]) ?? "beyond-profile", requestId);
+    if (state.unattested && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, "hand-unattested", requestId);
     // NO SILENT STEWARD (`chore-face`): the daemon runs a chore on its mount's authority, so the session's face meets
     // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
     const mount = mountOf();
@@ -1291,7 +1302,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       const closed = () => resolve();
       sock.once("close", closed);
       handle({ verb: frame["verb"], args, requestId: faceScopedId(face, requestId),
-        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal, asker: state.hand ?? "cli",
+        requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal, ...(state.unattested ? {} : { asker: state.hand ?? "cli" }),
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
         () => { sock.off("close", closed); resolve(); }, chore?.ok ? chore.mark : undefined, gate ?? undefined);
@@ -1332,6 +1343,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (!opts.sessionActs.names.has(name)) return sessionRefuse(sock, "act-rides-the-custody-door", requestId);
     // A SPIRIT'S HAND PROPOSES: the seat profile never runs an act the operator's hand alone runs.
     if (state.supply.profile === "seat" && opts.handOnlyActs?.has(name)) return sessionRefuse(sock, opts.handOnlyCodes?.get(name) ?? "beyond-profile", requestId);
+    if (state.unattested && opts.handOnlyActs?.has(name)) return sessionRefuse(sock, "hand-unattested", requestId);
     const args = given as Record<string, unknown>;
     // An act names its face by `face` or by `handleIndex`; either naming another face refuses. An act that names none
     // gets the session's face as `face`, which an act keyed by `handleIndex` alone refuses `bad-args`; one that names it
@@ -1650,9 +1662,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
         // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
         // THE PEER BINDS THE SEAT (`uds-peer`): a line with no mark whose peer descends from a harness reads `seat` all the same.
-        const seat = seatKindOf(parsed) ?? (sessionRequestId === undefined ? await peerSeatOf(sock) : null);
-        // THE ASKER THE DOOR READ rides the placed ask (`ctx.asker`): the one-shot line's seat kind, `cli` without one.
-        if (sessionRequestId === undefined) inv.asker = seat !== null ? "seat" : "cli";
+        const peer: PeerKind | null = sessionRequestId === undefined && seatKindOf(parsed) === null ? await kindOfPeer(sock) : null;
+        const seat = seatKindOf(parsed) ?? (peer === "ai" ? "ai" : null);
+        // THE ASKER THE DOOR READ rides the placed ask (`ctx.asker`): the one-shot line's seat kind, `cli` where the peer reads a
+        // hand, and none where the peer reads nothing (hitl-reads-a-hand): a hand-only verb from it refuses `hand-unattested`.
+        if (sessionRequestId === undefined) {
+          if (seat !== null) inv.asker = "seat";
+          else if (peer === "unknown") {
+            delete inv.asker;
+            if (opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand, and this line's peer reads nothing to attest one`, "hand-unattested");
+          } else inv.asker = "cli";
+        }
         const named = namedFaceOf(inv.args);
         const mount = mountOf();
         // NO SILENT STEWARD (`chore-face`): a one-shot chore designates its face (the face it names, or with none named the

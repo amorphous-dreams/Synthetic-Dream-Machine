@@ -540,6 +540,56 @@ $Tty = $script:Tty
 $NoTty = if ($Tty) { @() } else { @('-T') }
 # DISPLAY AND DEBUG RIDE BY NAME: each one the caller's environment sets crosses into the vessel as `-e NAME` (compose
 # reads the value from this environment), so no value rides argv; no other name crosses, and no credential.
+# THE HOST CHAIN CROSSES AS THE MARK, AT THIS DOOR (hitl-reads-a-hand), as lares-container.sh's `host_chain_kind` reads it.
+# Inside the vessel an exec'd process has parent pid 0, so this shim reads its OWN host chain before any act: where /proc
+# stands (pwsh on Linux or WSL) it reads every link as `branchKind` does (a harness mark in a link's launch environment or a
+# link named `claude` / `codex*` reads ai; an unreadable stat, or a walk past 64 links, reads unknown). On Windows no process
+# exposes another's environment, so it reads this shell's own marks and each link's name and command line, and the chain
+# ends where a parent no longer stands (Windows reuses no live parent pid, and a gone one ends every chain); a CIM query that
+# fails reads unknown. Anything but `hand` sets CLAUDECODE=1, which $PassEnv hands in by name, a stripped mark included.
+function IsHarnessName([string]$n) {
+  if (-not $n) { return $false }
+  $b = [IO.Path]::GetFileNameWithoutExtension(($n -split '[\\/]')[-1])
+  return ($b -eq 'claude') -or $b.StartsWith('codex')
+}
+function HostChainKind {
+  if ($env:CLAUDECODE -eq '1' -or $env:CODEX_SANDBOX -or $env:CODEX_SANDBOX_NETWORK_DISABLED) { return 'ai' }
+  if (Test-Path '/proc/self/stat') {
+    $at = $PID; $n = 0
+    while ($at -gt 0) {
+      if ($n -ge 64) { return 'unknown' }
+      $n++
+      try { $stat = [IO.File]::ReadAllText("/proc/$at/stat") } catch { return 'unknown' }
+      $envs = @(); try { $envs = [IO.File]::ReadAllText("/proc/$at/environ") -split "`0" } catch { }
+      foreach ($e in $envs) { if ($e -ceq 'CLAUDECODE=1' -or $e -cmatch '^CODEX_SANDBOX(_NETWORK_DISABLED)?=.+') { return 'ai' } }
+      $open = $stat.IndexOf('('); $close = $stat.LastIndexOf(')')
+      if ($open -lt 0 -or $close -lt $open) { return 'unknown' }
+      if (IsHarnessName $stat.Substring($open + 1, $close - $open - 1)) { return 'ai' }
+      $argv = @(); try { $argv = @(([IO.File]::ReadAllText("/proc/$at/cmdline") -split "`0") | Select-Object -First 2) } catch { }
+      foreach ($a in $argv) { if (IsHarnessName $a) { return 'ai' } }
+      $fields = $stat.Substring($close + 2).Split(' ')
+      $next = 0
+      if ($fields.Count -lt 2 -or -not [int]::TryParse($fields[1], [ref]$next)) { return 'unknown' }
+      $at = $next
+    }
+    return 'hand'
+  }
+  try {
+    $at = $PID; $n = 0
+    while ($at -gt 0) {
+      if ($n -ge 64) { return 'unknown' }
+      $n++
+      $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$at" -ErrorAction Stop
+      if (-not $proc) { return 'hand' }
+      if (IsHarnessName $proc.Name) { return 'ai' }
+      foreach ($a in @(($proc.CommandLine -split '\s+') | Where-Object { $_ } | Select-Object -First 2)) { if (IsHarnessName $a.Trim('"')) { return 'ai' } }
+      $at = [int]$proc.ParentProcessId
+    }
+    return 'hand'
+  } catch { return 'unknown' }
+}
+if ((HostChainKind) -ne 'hand') { $env:CLAUDECODE = '1' }
+
 $PassEnv = @()
 foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG', 'CLAUDECODE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED')) {
   if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }

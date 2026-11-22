@@ -1,7 +1,7 @@
 import { createConnection } from "node:net";
 import { newRequestId, type SessionReceipt } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { LocalWaitExpired, UdsUnreachable, udsSocketPath } from "./local-connector.js";
+import { harnessSeatMarked, LocalWaitExpired, UdsUnreachable, udsSocketPath } from "./local-connector.js";
 
 export class SessionRefused extends Error {
   override readonly name = "SessionRefused";
@@ -86,7 +86,11 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
   };
   const openingId = newRequestId();
   let opened: Record<string, unknown>;
-  try { opened = await send({ op: "session:open", faceRef: opts.faceRef, hand: opts.hand ?? "cli" }, openingId); }
+  // THE SEAT MARK OPENS AS THE SEAT (hitl-reads-a-hand): a run under a harness's mark (a host forward carries the host chain
+  // across the container wall as that mark) opens its session with the seat's hand, whatever hand its caller names, so a
+  // hand-only call it places refuses at the socket as a seat's does.
+  const hand: Hand = harnessSeatMarked(process.env) ? "seat" : opts.hand ?? "cli";
+  try { opened = await send({ op: "session:open", faceRef: opts.faceRef, hand }, openingId); }
   catch (error) { sock.destroy(); throw error; }
   if (opened.kind !== "session:opened" || typeof opened.ownerEpoch !== "string" ||
       typeof opened.sessionId !== "string" || typeof opened.generation !== "number" || typeof opened.faceRef !== "string") {
