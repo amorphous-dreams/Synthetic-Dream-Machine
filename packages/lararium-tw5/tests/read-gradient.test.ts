@@ -69,5 +69,5 @@ describe("the read gradient's slots are the stored family's", () => {
     }
     expect(off).toEqual([]);
     expect(checked, "the witness reads the canon, never an empty walk").toBeGreaterThan(500);
-  });
+  }, 120_000); // the walk reads every canon carrier (~988) twice over; a CI runner needs far past the default 5 s
 });
