@@ -317,6 +317,12 @@ def seat_of(verb: str) -> str:
     return "HOTL" if (reversible and not trust_crossing) else "HITL"
 
 
+# THE RETIRED PARAMETERS, by tool: the word that replaced each. The seat refuses a call naming one before any wire.
+RETIRED_PARAMS: dict = {
+    "tiddler_get": {"text": 'the grain names it: grain="skinny" leaves the text home, grain="fat" carries it'},
+}
+
+
 class SeatArgumentRefused(HouseRefusal, ValueError):
     """A tool's own argument guard: the call named something this seat cannot route (no container, a bare-slug law, ...)."""
 
@@ -857,6 +863,10 @@ def build_mcp(coordinator: LaresCoordinator):
         stays unnamed."""
 
         async def call_tool(self, name, arguments, context=None):
+            # A RETIRED PARAMETER REFUSES ALOUD: the SDK drops a name no tool declares, so a caller still sending a retired
+            # one would read an answer it never asked for. Each retired name refuses here with the word that replaced it.
+            for word in sorted(set(arguments or {}) & set(RETIRED_PARAMS.get(name, {}))):
+                raise ToolError(f"Error executing tool {name}: param-retired: `{word}` retired; {RETIRED_PARAMS[name][word]}. Nothing was read.")
             try:
                 return await super().call_tool(name, arguments, context)
             except UnexpectedToolError as crash:

@@ -14,7 +14,10 @@
  * engine. The mount's engine answers the mounted face; a LIT sibling's verb runs in THAT face's own engine (`face-engine`), the
  * anchor composition over its own daemon canon and the working, draft and personal slots its own wear named, so its read sees
  * its own wiki and its write lands in its own working document. A sibling names its own daemon wiki (`recipe: "default"`)
- * alone; any other container refuses `face-lane-holds-its-own`, and a shut face refuses `face-not-open`.
+ * alone; any other container refuses `face-lane-holds-its-own`, and a shut face refuses `face-not-open`. ONE DOOR READS A LANE
+ * TOO: the internal `meme-get` rides no lane, so a sibling's `tiddler-get` naming `bag` (no recipe, no realm) reads its OWN
+ * LANE's record (`FACE_LANE_READ_VERBS`): the lit set resolves that bag for that face, a bag it owns none of refuses
+ * `face-lane-holds-its-own`, and the read runs over that one document (`laneOf`), as `meme-get --bag` read it before the fold.
  *
  * Every answer names the face it acted as (`face`, its handle index), so a write says where it landed. No delegation stands
  * between faces: the face acts as itself, or not at all.
@@ -41,6 +44,8 @@ import type { FaceEngine, VerbContext, VerbReactor } from "@lararium/tw5";
 
 /** The tiddler door's verbs a lit sibling reaches in its own engine (`faceEngineReactor`). */
 export const FACE_ENGINE_VERBS: ReadonlySet<string> = new Set(["tiddler-get", "tiddler-put", "tiddler-delete", "wiki-filter", "wiki-render", "wiki-status", "oracle-cast"]);
+/** The engine verbs a lit sibling reaches on its OWN LANE as well, by naming its own bag: the one read door (`tiddler-get --bag`). */
+export const FACE_LANE_READ_VERBS: ReadonlySet<string> = new Set(["tiddler-get"]);
 /** The verbs a lit sibling reaches on its own lane: the meme verbs on its own document, the engine verbs in its own engine. */
 export const FACE_LANE_VERBS: ReadonlySet<string> = new Set(["meme-put", "meme-list", "meme-delete", ...FACE_ENGINE_VERBS]);
 
@@ -57,7 +62,7 @@ export interface FaceLanePorts {
 }
 
 /** The ports the engine verbs read: who the presenter names, and a lit face's own engine. */
-export interface FaceEnginePorts extends Pick<FaceLanePorts, "mountedKey" | "mountedOrdinal" | "lit"> {
+export interface FaceEnginePorts extends Pick<FaceLanePorts, "mountedKey" | "mountedOrdinal" | "lit">, Partial<Pick<FaceLanePorts, "target">> {
   /** The lit face's own engine over its own daemon documents, or null where none composes. */
   engine(face: number): Promise<Pick<FaceEngine, "tw5" | "composite"> | null>;
 }
@@ -106,13 +111,21 @@ export function faceEngineReactor(
   mounted: VerbReactor,
   engineOf: (engine: Pick<FaceEngine, "tw5" | "composite">) => VerbReactor,
   ports: FaceEnginePorts,
+  /** The read over a sibling's own lane (`FACE_LANE_READ_VERBS` naming `bag`); absent, a bag refuses as any other container. */
+  laneOf?: (lane: { readonly bag: string; readonly store: LarTiddlerStore }) => VerbReactor,
 ): VerbReactor {
   return async (args, ctx) => {
     const sibling = presenterFace(verb, ctx, ports);
     if (sibling === "mounted") return withFace(await mounted(args, ctx), ports.mountedOrdinal());
-    if (args["recipe"] !== "default" || args["bag"] !== undefined || args["realm"] !== undefined) {
-      throw new VerbRefusal("face-lane-holds-its-own", `face-lane-holds-its-own: ${verb} — face h${sibling.handleIndex} reaches its own daemon wiki alone (\`--recipe default\`, in its own engine); this container names another, and nothing moved.`);
+    const holds = (why: string): VerbRefusal =>
+      new VerbRefusal("face-lane-holds-its-own", `face-lane-holds-its-own: ${verb} — face h${sibling.handleIndex} reaches its own daemon wiki alone (\`--recipe default\`, in its own engine) or its own lane by its bag; ${why}, and nothing moved.`);
+    const bag = typeof args["bag"] === "string" ? args["bag"] : null;
+    if (bag !== null && laneOf && ports.target && FACE_LANE_READ_VERBS.has(verb) && args["recipe"] === undefined && args["realm"] === undefined) {
+      const resolved = await ports.target(sibling.handleIndex, bag);
+      if (resolved === null || resolved.owner !== sibling.handleIndex) throw holds(`${bag} names no document this face owns`);
+      return withFace(await laneOf({ bag, store: resolved.store })(args, ctx), sibling.handleIndex);
     }
+    if (args["recipe"] !== "default" || args["bag"] !== undefined || args["realm"] !== undefined) throw holds("this container names another");
     const engine = await ports.engine(sibling.handleIndex);
     if (engine === null) {
       throw new VerbRefusal("face-not-open", `face-not-open: ${verb} — face h${sibling.handleIndex} composes no engine of its own on this island; nothing ran.`);

@@ -13,7 +13,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import { describe, expect, it } from "vitest";
-import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_ENGINE_VERBS, FACE_LANE_VERBS } from "../src/face-lane.js";
+import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_ENGINE_VERBS, FACE_LANE_READ_VERBS, FACE_LANE_VERBS } from "../src/face-lane.js";
 
 const MOUNT = "a".repeat(64), SIB = "b".repeat(64), SHUT = "c".repeat(64);
 const LANE = "lar:///ha.ka.ba/bags/daemon-rel-b";
@@ -117,6 +117,62 @@ describe("each hat reached by name: a lit sibling's own engine answers the tiddl
       await expect(r.reactor({ title: "T", ...args }, r.ctx(`0x${SIB}`)), JSON.stringify(args)).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
     }
     expect(r.ran).toEqual([]);
+  });
+});
+
+describe("one door reads a lane: a lit sibling's tiddler-get naming its own bag reads its own lane", () => {
+  function laneReadRig(verb = "tiddler-get", owner: (face: number) => number = (face) => (face === 1 ? 1 : 2)) {
+    const ran: string[] = [];
+    const reactor = faceEngineReactor(verb,
+      async () => { ran.push("mounted"); return { recipe: "default" }; },
+      () => async () => { ran.push("engine"); return { recipe: "default" }; },
+      {
+        mountedKey: () => MOUNT, mountedOrdinal: () => 0,
+        lit: (key: string) => (key === SIB ? { handleIndex: 1 } : null),
+        engine: async () => ({ tw5: {}, composite: {} }) as never,
+        target: async (face: number, bag: string) => (bag === LANE ? { store: laneStore as never, owner: owner(face) } : null),
+      },
+      (lane) => async (args) => { ran.push(`lane:${lane.bag}:${(lane.store as unknown as { documentId: string }).documentId}`); return { bag: lane.bag, title: args["title"] }; });
+    const ctx = (presenter?: string) => ({ ...(presenter !== undefined ? { presenter } : {}), local: true }) as never;
+    return { reactor, ran, ctx };
+  }
+
+  it("the read door alone rides the lane by bag", () => {
+    expect([...FACE_LANE_READ_VERBS]).toEqual(["tiddler-get"]);
+  });
+
+  it("LIT SIBLING: `tiddler-get --bag <its own lane>` reads that one document and names its face (meme-get --bag's reach, folded)", async () => {
+    const r = laneReadRig();
+    expect(await r.reactor({ title: "lar:///t/x", bag: LANE, meme: true }, r.ctx(`0x${SIB}`))).toEqual({ bag: LANE, title: "lar:///t/x", face: 1 });
+    expect(r.ran).toEqual([`lane:${LANE}:doc-b`]);
+  });
+
+  it("ITS OWN LANE ALONE: a bag no document of its own answers, a bag beside a recipe or realm, or a write naming a bag refuses face-lane-holds-its-own", async () => {
+    const r = laneReadRig();
+    for (const args of [{ bag: "lar:///ha.ka.ba/bags/daemon-rel-a" }, { bag: LANE, realm: "r" }, { bag: LANE, recipe: "default" }, { bag: LANE, recipe: "garden" }]) {
+      await expect(r.reactor({ title: "T", ...args }, r.ctx(`0x${SIB}`)), JSON.stringify(args)).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
+    }
+    const put = laneReadRig("tiddler-put");
+    await expect(put.reactor({ title: "T", bag: LANE }, put.ctx(`0x${SIB}`))).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
+    expect([...r.ran, ...put.ran]).toEqual([]);
+  });
+
+  it("ANOTHER FACE'S LANE: a bag the lit set resolves to a real document face 2 owns refuses face 1's read, and nothing runs", async () => {
+    const r = laneReadRig("tiddler-get", () => 2);
+    await expect(r.reactor({ title: "lar:///t/x", bag: LANE, meme: true }, r.ctx(`0x${SIB}`))).rejects.toMatchObject({ reason: "face-lane-holds-its-own" });
+    expect(r.ran).toEqual([]);
+  });
+
+  it("SHUT: a presenter neither mounted nor lit naming a bag refuses face-not-open, and nothing runs", async () => {
+    const r = laneReadRig();
+    await expect(r.reactor({ title: "T", bag: LANE }, r.ctx(`0x${SHUT}`))).rejects.toMatchObject({ reason: "face-not-open" });
+    expect(r.ran).toEqual([]);
+  });
+
+  it("MOUNTED: a bag read by the mounted face runs as before", async () => {
+    const r = laneReadRig();
+    expect(await r.reactor({ title: "T", bag: LANE }, r.ctx(`0x${MOUNT}`))).toMatchObject({ face: 0 });
+    expect(r.ran).toEqual(["mounted"]);
   });
 });
 
