@@ -152,8 +152,10 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
   const followed = lens && args.flags["all"] === true && parts.length > 1;
   const note = typeof output["note"] === "string" ? output["note"] : null;
   // `--all` followed: the envelope carries the whole carrier the pages joined to, the first page's has line, and no next.
+  // A JOINED READ ECHOES THE JOIN, never the first page's `page 1 of N`.
+  const joinedGrain = followed && grain ? { ...grain, why: `the whole carrier, ${parts.length} pages joined on slot boundaries` } : grain;
   const data0 = followed && meme
-    ? { ...first.output, meme: (({ page: _page, ...whole }) => ({ ...whole, text: parts.join("") }))(meme), next: null }
+    ? { ...first.output, meme: (({ page: _page, ...whole }) => ({ ...whole, text: parts.join("") }))(meme), grain: joinedGrain, next: null }
     : output;
   // ── THE COMPOSITION READING, WHERE A HUMAN WAITS ON A CARRIER ─────────────────────────────────────────
   // The whole carrier the meme lens answers is the composed one: the join a root and its slot children make. That join is where
@@ -179,7 +181,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
         }
         console.error(`base: ${meme.canonicalHash}`);
         console.error(`size: ${meme.bytes} bytes`);
-        if (grain) console.error(`grain: ${grain.applied} (${grain.why})`);
+        if (joinedGrain) console.error(`grain: ${joinedGrain.applied} (${joinedGrain.why})`);
         if (typeof meme.text !== "string" && typeof meme.slotText !== "string") console.error("the carrier runs past one page: stdout carries its has-stack; --all reads the whole carrier, paged on slot boundaries");
         else if (meme.page && !followed) {
           const after = (output["next"] as GotNext | null | undefined)?.after;

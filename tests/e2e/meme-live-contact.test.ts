@@ -8,11 +8,11 @@
  *   get (absent)         → not-found, nothing lands (`--recipe lares`)
  *   put --bag lares      → refuses: a placement never shadows up (CONTROL)
  *   put (framed)         → ingest; the root and `#/a` landed
- *   get                  → the same bytes back, with the canonical hash as `base` (`--recipe lares`)
+ *   tiddler get --meme   → the same bytes back, with the canonical hash as `base` (`--recipe lares`)
  *   put --base (fresh)   → ingest; the dropped slot tombstoned
  *   put --base (stale)   → conflict; nothing moves  (the CONTROL — a door only shown saying yes is no door)
  *   project --to md      → the submission pair beside `--out`
- *   project --to mem     → the canonical carrier, byte-equal to `get`
+ *   project --to mem     → refuses (the carrier reads through `tiddler get --meme --all`, the CONTROL)
  *   project --to html    → a document, rendered from the explicit daemon wiki recipe
  *
  * THE SHARED TREE STAYS STILL. A staged boot bakes its genesis INTO ITS ROOT from the plugin that

@@ -232,6 +232,8 @@ describe("tiddler get --meme — one door reads on a gradient", () => {
     h.calls.length = 0;
     const env = await run(argv("tiddler", ["get", "lar:///t/x"], { recipe: "default" }, { meme: true, all: true }));
     expect(env.printed["data"]).toMatchObject({ has: ROOT_LINE, lens: "meme", meme: { text: "AAAABBBBBB", canonicalHash: "sha256:9" }, next: null });
+    // A joined read echoes the join, never the first page's `page 1 of N`.
+    expect((env.printed["data"] as { grain: { why: string } }).grain.why).toMatch(/2 pages joined/);
   });
 
   test("CONTROL: the record lens prints the record as a .tid reads, its has line first on stderr", async () => {

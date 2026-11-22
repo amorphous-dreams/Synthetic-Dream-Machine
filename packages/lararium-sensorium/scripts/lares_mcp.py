@@ -199,8 +199,8 @@ HEARTH_ROSTER_VERB = "hearth-roster"
 # What the seat tells a client at its first contact: read the house's law before acting.
 SEAT_INSTRUCTIONS = (
     "Read the house's law before you act: `law_index` lists the pinned law first (the boot seed, then the Mu family), "
-    "then every law meme under a bag's api/ tree, each with its one line; `tiddler_get(title=<title>, recipe=\"default\", meme=True)` "
-    "reads one whole (past one page, its has-stack first; `grain=\"whole\"` pages the carrier); `law_pin` / `law_unpin` order the pins in this face's own daemon wiki. Every read names the wiki or bag that "
+    "then every law meme under a bag's api/ tree, each with its one line; `tiddler_get(title=<title>, recipe=\"default\", meme=True, grain=\"whole\")` "
+    "reads one whole (paged on slot boundaries past one page; without the grain a long one answers its has-stack first); `law_pin` / `law_unpin` order the pins in this face's own daemon wiki. Every read names the wiki or bag that "
     "answered. Turn what you read through the five tools: let it spark a move (🜂), weigh how it sits with the mutual "
     "frame (🜄), verify its claims whatever their layer (🜁), let its residency ground its standing without crowning it "
     "(🜃), and hold the ladder itself as catma (🜍). Working-layer notes carry the house's live thinking, your own "
@@ -1118,7 +1118,7 @@ def build_mcp(coordinator: LaresCoordinator):
         `$:/tags/StartupAction` tag (or one beneath it) refuses `seat-startup-offer` and lands nothing, since a wiki's
         startup action runs in the operator's tab and rides the operator's own hand; every other record lands
         natively. `base` carries the
-        canonical hash the writer read back from `tiddler_get(meme=True)` — the merge base: stale → the receipt's
+        canonical hash the writer read back from `tiddler_get(meme=True, grain="whole")` (a has-stack's base refuses `base-from-skinny`) — the merge base: stale → the receipt's
         `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
         tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
         records already say it). A WRITE THAT NEVER LANDED RAISES: `refuse` and `conflict` answer a tool error
@@ -1139,7 +1139,7 @@ def build_mcp(coordinator: LaresCoordinator):
             if receipt.get("warnings"):
                 said.append("; ".join(str(w) for w in receipt["warnings"]))
             if receipt.get("canonicalHash"):
-                said.append(f"the records read canonicalHash {receipt['canonicalHash']}: tiddler_get(meme=True), merge, put with that base")
+                said.append(f"the records read canonicalHash {receipt['canonicalHash']}: tiddler_get(meme=True, grain=\"whole\"), merge, put with that base")
             raise uds.LaresVerbError(" · ".join(said), f"meme-put-{decision}")
         return receipt
 
@@ -1491,7 +1491,7 @@ def build_mcp(coordinator: LaresCoordinator):
         its record, so nothing a face writes reads as law. Returns {filter, pinsTitle, pins, rows: [{title, description,
         pinned}], total, next}: `description` reads the meme's description,
         else its role; one page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as
-        `after`). Read one law whole with `tiddler_get(title=<title>, recipe="default", meme=True)`; order the pins with `law_pin` /
+        `after`). Read one law whole with `tiddler_get(title=<title>, recipe="default", meme=True, grain="whole")`; order the pins with `law_pin` /
         `law_unpin`. A law row comes from canon's settled ground; turn it through the five tools."""
         pins = _law_titles(LAW_PINS_FILTER)
         args: dict = {"recipe": "default", "filter": LAW_INDEX_FILTER, "fields": list(LAW_ROW_FIELDS)}
