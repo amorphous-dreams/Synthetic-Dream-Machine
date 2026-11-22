@@ -138,6 +138,17 @@ describe("the mint fence", () => {
 
 describe("the lift and withdraw doors", () => {
   const src = [{ title: "daemon/t", revision: "r1" }];
+  test("a plane read folds only verified heads and leaves the stage document unmoved", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports());
+    expect(await door.list()).toEqual([]);
+    expect(await door.get("unknown")).toBeNull();
+    const lifted = await door.lift({ ...f.st("t", "body"), taint: [], sources: src });
+    const heads = Automerge.getHeads(f.persona.doc()!);
+    expect((await door.get("t"))?.heads[0]).toMatchObject({ cid: lifted.cid, text: "body" });
+    expect((await door.list()).map((item) => item.title)).toEqual(["t"]);
+    expect(Automerge.getHeads(f.persona.doc()!)).toEqual(heads);
+  });
   test("RED: a lift without the operator's grant refuses by name, and the atom's hand (the AI seat) never stands in for it; CONTROL: the root lifts", async () => {
     const f = await face();
     await kahuaDoor(f.ports()).mint();
