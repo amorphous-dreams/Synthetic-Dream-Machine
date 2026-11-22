@@ -549,7 +549,6 @@ test("menu failures and timeouts name their cause", async () => {
   }
 });
 
-// Attractor store coverage follows.
 test("wake names attractor stores, their absence and read failures", async () => {
   const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
   const titles = ["discordian-catmas", "pattern-integrities", "practices"].map((name) => `lar:///ha.ka.ba/kahua/memory/reference/${name}`);
@@ -560,4 +559,6 @@ test("wake names attractor stores, their absence and read failures", async () =>
   assert.match(none, /no attractor stores/);
   const unread = await wake({ run: runner({ ...base, attractors: answered("", 127) }) });
   assert.match(unread, /attractor stores: unread \(the read exited 127 with no answer\)/);
+  const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })) }) });
+  assert.match(down, /Attractor stores: unavailable \(no vessel answers\)/);
 });

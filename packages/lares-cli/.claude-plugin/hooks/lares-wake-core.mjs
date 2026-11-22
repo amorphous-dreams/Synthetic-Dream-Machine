@@ -131,6 +131,7 @@ export const indexArgv = (after) => [
   "wiki", "filter", INDEX_FILTER, "--recipe", "default", "--fields", "title,description",
   "--limit", String(INDEX_ROWS), "--max-bytes", String(INDEX_BYTES), "--json", ...(after ? ["--after", after] : []),
 ];
+export const attractorsArgv = () => ["wiki", "filter", "[lares.attractors[]]", "--recipe", "default", "--limit", "32", "--json"];
 /** The shim's argv for the rows in play, read in the worn face's daemon wiki. */
 export const stateArgv = () => [
   "wiki", "filter", STATE_FILTER, "--recipe", "default", "--fields", "title,description",
@@ -581,6 +582,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const reads = { observe: run("observe", observeArgv()), index: run("index", indexArgv()), homes: run("homes", homesArgv()) };
   // The optional reads: a runner that answers none leaves their lines out.
   const optional = (name, argv) => run(name, argv) ?? null;
+  const attractorsRead = optional("attractors", attractorsArgv());
   const stateRead = optional("state", stateArgv());
   const lawRead = optional("law", lawArgv());
   const lawPinsRead = optional("lawPins", lawPinsArgv());
@@ -593,7 +595,8 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, rosterRead, menuRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, attractorsRead, stateRead, lawRead, lawPinsRead, rosterRead, menuRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  const attractors = attractorsRead && seen.up ? await budget.settle(attractorsRead) : null;
   const state = stateRead && seen.up ? await budget.settle(stateRead) : null;
   const law = lawRead && seen.up ? await budget.settle(lawRead) : null;
   const lawPins = lawPinsRead && seen.up ? await budget.settle(lawPinsRead) : null;
@@ -629,6 +632,14 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
       const cause = readFault(menu, "read") ?? (menu.code !== 0 ? `the read exited ${menu.code}` : "the read's answer did not parse (exit 0)");
       lines.push(`Lares tool menu: unread (${String(cause).replace(/\s+/g, " ")})`);
     }
+  }
+  if (!seen.up) lines.push("Attractor stores: unavailable (no vessel answers)");
+  else if (attractors !== null) {
+    const { fault, answer } = filterAnswer(attractors);
+    const titles = answer?.data?.titles;
+    if (fault) lines.push(`attractor stores: unread (${fault.replace(/\s+/g, " ").slice(0, 240)})`);
+    else if (!Array.isArray(titles) || titles.some((title) => typeof title !== "string" || !/^lar:\/\/\/[^\s]{1,240}$/.test(title)) || answer.data.next) lines.push("attractor stores: unread (invalid or incomplete answer)");
+    else lines.push(titles.length ? `Attractor stores: ${titles.join(" · ")}` : "Attractor stores: no attractor stores");
   }
   if (state !== null) lines.push(stateLines(state));
   if (law !== null) lines.push(lawLines(law, lawPins));

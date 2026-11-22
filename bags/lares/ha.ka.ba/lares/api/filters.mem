@@ -48,6 +48,15 @@ uri-path  = "ha.ka.ba/lares/api/filters"
 [tag[stage/wave]]
 \end
 
+The attractor-store title convention holds these reference titles in wake order; add a later store on its own line. The view supplies presence.
+
+\function lares.attractors()
+[[lar:///ha.ka.ba/kahua/memory/reference/discordian-catmas]]
+[[lar:///ha.ka.ba/kahua/memory/reference/pattern-integrities]]
+[[lar:///ha.ka.ba/kahua/memory/reference/practices]]
+:filter[is[tiddler]]
+\end
+
 \function lares.stage(name)
 [prefix[lar:///ha.ka.ba/kahua/memory/]] :filter[<currentTiddler>removeprefix[lar:///ha.ka.ba/kahua/memory/]removeprefix<name>removeprefix[/]]
 \end
@@ -84,6 +93,6 @@ The daemon reads this carrier's text from the canon layers (the oracle floor and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;j_47sCqauMDcR07i7sppLN7uOvSoSs6e2sIibd4yjBE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wkgIXfHAxiSbPu2aNS2aO4iJr7wwotlsWhngzCqaO5M`>>
 
 <<^ code=`&#x0004;` to=`?`>>
