@@ -93,7 +93,8 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   worldline: cmdWorldline,
   telemetry: cmdTelemetry,
   meta:      cmdMeta,
-  // EVERY READ INSTRUMENT over a poured sensorium answers through ONE verb: `analyze --lens <lens>`
+  // EVERY READ INSTRUMENT answers through ONE verb: `analyze --lens <lens>` (five read the poured planes,
+  // three a `--signal` matrix the caller hands in)
   // (sense-analyze.ts holds the lens table — changes · rhythm · couple · cohere · square · lead · forecast ·
   // mismatch). The lens chooses the instrument; each keeps its own read path and daemon verb.
   analyze:   cmdSenseAnalyze,

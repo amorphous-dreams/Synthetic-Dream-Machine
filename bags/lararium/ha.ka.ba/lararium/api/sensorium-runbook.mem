@@ -220,10 +220,12 @@ applied, and a missing or unknown lens refuses with the list. Bare `lares sense 
 * ''GEOLOGY'' — lens `rhythm` (detected rhythm and regimes) · lens `changes` (change-point arms: where
   content changes hands). Both read the POURED corpus, so both want running after a bulk pour completes
   rather than during.
-* ''COUPLING'' — lenses `cohere` (house name `li`) · `couple` (house name `ki`) · `lead` (the R
-  transfer-entropy reference) · `mismatch` (do `couple` and `lead` agree) · `forecast` (does a regime shift
-  approach). These carry the entropy/negentropy reading the outside tooling wants, and they read ACROSS
-  planes — so each one answers only as well as its thinnest plane is fed.
+* ''COUPLING'' — lenses `cohere` (house name `li`) · `couple` (house name `ki`). These carry the
+  entropy/negentropy reading the outside tooling wants, and they read ACROSS planes — so each one answers
+  only as well as its thinnest plane is fed.
+* ''SIGNAL'' — lenses `lead` (who leads whom, the R transfer-entropy reference) · `forecast` (does a regime
+  shift approach) · `mismatch` (do `couple` and `lead` agree). These read a signal matrix the caller hands in
+  (`--signal`, the tool's `rows`) and touch no plane; their figure claims only what that matrix holds.
 * ''SELF'' — lens `square` extends the lobes to a reconciled self, restricts back, and coheres iff the
   round-trip equals the identity. A round-trip that fails names a real incoherence rather than a bug.
 * ''LINEAGE'' — `worldline` (the fork-DAG: parent → spirit spawn → handback).
@@ -491,6 +493,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;drd8XakUT1dwYxXyM8OFQle5yXqwK2PBiKvvbmfhcac`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PLBSdb97sDCbZPcDvXi41u5hyC2Mwgi_v3LglRht16Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,5 +1,7 @@
 /**
- * `lares sense analyze --lens <lens>` — ONE door for every read instrument over a poured sensorium.
+ * `lares sense analyze --lens <lens>` — ONE door for every read instrument. Five lenses read the poured sensorium
+ * (changes · rhythm · couple · cohere · square); three read a signal matrix the caller hands in with `--signal`
+ * (lead · forecast · mismatch), and touch no plane at all.
  *
  * Eight instruments once stood as eight sense verbs, each with its own help line and its own MCP tool. They
  * read different things and compute different things, so nothing here merges them: the LENS chooses which

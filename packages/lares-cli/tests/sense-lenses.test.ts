@@ -137,3 +137,17 @@ describe("pour walks one leg at a time", () => {
       for (const leg of legs) expect(said).toContain(leg);
     });
 });
+
+describe("the help says what each lens reads", () => {
+  test("lead, forecast and mismatch read a --signal the caller hands in; no line claims every lens reads a poured sensorium", async () => {
+    const { helpLines } = await import("../src/command-help.js");
+    const { COMMANDS } = await import("../src/bin/lares.js");
+    const lines = helpLines("sense");
+    for (const lens of ["lead", "forecast", "mismatch"]) {
+      const line = lines.find((l) => l.trimStart().startsWith(`${lens} `));
+      expect(line, `the ${lens} line`).toContain("--signal");
+    }
+    const summary = COMMANDS.find((c) => c.name === "sense")!.summary;
+    expect([...lines, summary].join("\n")).not.toMatch(/every (read )?instrument over a poured sensorium/i);
+  });
+});

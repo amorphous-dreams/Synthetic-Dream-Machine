@@ -98,7 +98,7 @@ from sensorium import sensorium_paths, read_stream_manifest, sensorium_dir, deri
 LIFECYCLE_VERBS = ("pour", "recall", "status", "worldline", "kapae", "un_kapae", "analyze", "flow")
 
 # THE LENSES `analyze` READS THROUGH — the CLI's `lares sense analyze --lens <lens>`, one door for every read
-# instrument over a poured sensorium. The lens CHOOSES which instrument runs; nothing merges their computations:
+# instrument: five read the poured sensorium, and lead · forecast · mismatch read the `rows` matrix a caller hands in. The lens CHOOSES which instrument runs; nothing merges their computations:
 # each lens keeps its own coordinator method and its own @daemon wire verb (the value here, in the coordinator's
 # python spelling). Plain-English names spell the lens; a house name answers only where canon pins it
 # (li-ki-integrities names the postures `li` and `ki`). `fixtures/cli-verbs.json` carries the CLI's own table
@@ -986,7 +986,8 @@ def build_mcp(coordinator: LaresCoordinator):
     def analyze(lens: "str | None" = None, spectral: bool = False, halves: "str | None" = None, span: "int | None" = None,
                 repour: bool = False, channel: "str | None" = None, rows: "list | None" = None,
                 names: "list | None" = None, sensorium: "str | None" = None) -> dict:
-        """READ a poured sensorium through ONE LENS — mirrors `lares sense analyze --lens <lens>`. The lens chooses
+        """READ through ONE LENS — mirrors `lares sense analyze --lens <lens>`. Five lenses read the poured sensorium;
+        `lead`, `forecast` and `mismatch` read the `rows` matrix the caller hands in and touch no plane. The lens chooses
         the instrument; each keeps its own read path and @daemon verb, and the answer names the lens it applied
         (`lens`). A missing or unknown lens refuses, naming every lens:
         `changes` — where the content changes hands (detect-only change-points; `spectral`, `halves` e.g. `4,8,16`,

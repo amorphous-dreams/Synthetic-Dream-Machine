@@ -573,6 +573,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "single-owner law: nothing opens a store beside the vessel's holder).",
     details: [
       "analyze --lens <lens> — the lens chooses the instrument; each keeps its own read path and daemon verb.",
+      "changes rhythm couple cohere square read the poured sensorium; lead forecast mismatch read a --signal you hand in.",
       "Every answer names the lens it applied; a missing or unknown lens refuses with this list.",
       "  changes    where the poured content changes hands (--spectral, --halves <w,w>, --span <n>)",
       "  rhythm     the landed regimes and their couples (--repour re-derives first, --channel <c>)",
