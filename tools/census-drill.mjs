@@ -296,7 +296,12 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
         let hash = `sha256:${sha256(String(row.fields?.text ?? ""))}`;
         if ((row.omitted ?? []).includes("text")) {
           const got = read(lares, ["tiddler", "get", row.title, "--recipe", recipe, "--all", "--json"]);
-          if (typeof got.tiddler?.fields?.text !== "string") throw new Error(`census: ${row.title} answered no text at the fat grain (${got.grain?.applied ?? "?"}): a text the census cannot hash`);
+          // A TRUE POINTER answers its handle at every tiddler grain: the census hashes the handle's identity (its CID, else its
+          // canonical address), never "". Any other record that answers no text at the fat grain refuses.
+          const fields = got.tiddler?.fields ?? {};
+          const handle = typeof fields.text !== "string" ? (fields.textCid ?? fields._canonical_uri ?? null) : null;
+          if (typeof fields.text !== "string" && handle === null) throw new Error(`census: ${row.title} answered no text at the fat grain (${got.grain?.applied ?? "?"}): a text the census cannot hash`);
+          if (handle !== null) { classes.plain[`${recipe} ${row.title}`] = `handle:${handle}`; continue; }
           hash = `sha256:${sha256(String(got.tiddler?.fields?.text ?? ""))}`;
         }
         classes.plain[`${recipe} ${row.title}`] = hash;

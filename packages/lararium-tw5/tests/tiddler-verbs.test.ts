@@ -358,6 +358,19 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((page["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^sha256/);
   });
 
+  test("RED fat-carries: an explicit fat or whole read of a record past the byte cap (a plugin-sized text) carries the text whole; a named --max-bytes still caps", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "lar:///ha.ka.ba/lararium/plugins/lares/big", type: "application/json", "plugin-type": "plugin", text: JSON.stringify({ tiddlers: { a: { text: "x".repeat(400_000) } } }) });
+    const get = makeTiddlerGetReactor(r.opts);
+    for (const grain of ["fat", "whole"]) {
+      const got = await get({ ...A, title: "lar:///ha.ka.ba/lararium/plugins/lares/big", grain }, ctx());
+      expect(got, grain).toMatchObject({ grain: { applied: "fat" } });
+      expect(((got["tiddler"] as { fields: Record<string, string> }).fields["text"] ?? "").length, grain).toBeGreaterThan(400_000);
+    }
+    const capped = await get({ ...A, title: "lar:///ha.ka.ba/lararium/plugins/lares/big", grain: "fat", maxBytes: 4096 }, ctx());
+    expect(capped).toMatchObject({ grain: { applied: "skinny" }, tiddler: { omitted: expect.arrayContaining(["text"]) } });
+  });
+
   test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });

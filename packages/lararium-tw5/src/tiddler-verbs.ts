@@ -477,7 +477,7 @@ function slotTitle(root: string, slot: string): string {
 }
 
 /** What a get answers of a record: the named fields, or every field less the text the grain leaves home, under the byte cap (the largest fields leave first, by name). */
-function narrowRecord(fields: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>, textHome: boolean): { shown: Record<string, string>; omitted: string[] } {
+function narrowRecord(fields: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>, textHome: boolean, carryWhole = false): { shown: Record<string, string>; omitted: string[] } {
   const names = namesArg(args["fields"]);
   const omitted: string[] = [];
   let shown: Record<string, string> = fields;
@@ -489,9 +489,11 @@ function narrowRecord(fields: Record<string, string>, title: string, args: Reado
     shown = rest;
     omitted.push("text");
   }
-  // THE BYTE CAP: the largest fields leave first, by name, and the hashes still speak for the whole record.
+  // THE BYTE CAP: the largest fields leave first, by name, and the hashes still speak for the whole record. AN EXPLICIT FAT (or
+  // whole, or resolved) READ CARRIES THE RECORD WHOLE: the gradient's default answers the card past a page, so a caller who asks
+  // for the text gets it, unless it names its own cap.
   const maxBytes = countArg(args["maxBytes"], WIKI_ANSWER_BYTES_MAX, 256, WIKI_ANSWER_BYTES_MAX);
-  if (bytesOf(shown) > maxBytes) {
+  if (!(carryWhole && args["maxBytes"] === undefined) && bytesOf(shown) > maxBytes) {
     shown = { ...shown };
     for (const name of Object.keys(shown).filter((n) => n !== "title").sort((x, y) => bytesOf(shown[y]) - bytesOf(shown[x]))) {
       if (bytesOf(shown) <= maxBytes) break;
@@ -567,7 +569,8 @@ interface RecordRead {
 async function recordRead(engine: Engine, held: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>, asked: ReadGrain | null, cas: CasPort): Promise<RecordRead> {
   const named = namesArg(args["fields"]) !== null;
   const done = (fields: Record<string, string>, applied: ReadGrain, why: string, next: RecordRead["next"]): RecordRead => {
-    const { shown, omitted } = narrowRecord(fields, title, args, applied === "skinny");
+    const carryWhole = asked === "fat" || asked === "whole" || applied === "resolved";
+    const { shown, omitted } = narrowRecord(fields, title, args, applied === "skinny", carryWhole);
     // THE ECHO NAMES WHAT RODE. At the tiddler grain, fat only where the text rode (named fields or the byte cap may leave it home);
     // a pointer's body grain (handle, resolved) stays its own word whatever the fields.
     const tiddlerGrain = applied === "fat" || applied === "skinny";
