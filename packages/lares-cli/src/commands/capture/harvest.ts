@@ -358,6 +358,15 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
   const roomGuard = guardRoom(args, "pour");
   if (roomGuard !== null) return roomGuard;
 
+  // ONE LEG PER LINE. `--all` already walks the drawers and the bearing, `--bulk` is the drawers leg and
+  // `--writeback` the bearing leg: two on one line would run one and drop the other without a word.
+  const legs = [args.flags["all"] === true && "all", args.flags["bulk"] === true && "bulk", args.flags["writeback"] === true && "writeback"]
+    .filter((leg): leg is string => typeof leg === "string");
+  if (legs.length > 1) {
+    return refuseUsage(args, "sense pour", helpLines("sense"),
+      `${legs.map((l) => `--${l}`).join(" and ")} name two legs; pour walks one (--all the whole movement, --bulk the drawers, --writeback the bearing)`);
+  }
+
   // `--all` IS THE WHOLE MOTION: the legs a sensorium needs filled — drawers, bearing, projection —
   // in the order the second's dependency on the first sets.
   if (args.flags["all"] === true) {

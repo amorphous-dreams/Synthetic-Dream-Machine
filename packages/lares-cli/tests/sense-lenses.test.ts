@@ -127,3 +127,13 @@ describe("a fold refuses by name every flag its path does not read", () => {
     expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("--lens");
   });
 });
+
+describe("pour walks one leg at a time", () => {
+  test.each([[["--all", "--bulk"]], [["--bulk", "--writeback"]], [["--all", "--writeback"]]])(
+    "`sense pour %j` refuses naming both legs", async (legs) => {
+      const r = await door(["sense", "pour", ...legs, "--json"]);
+      expect(r.code).toBe(2);
+      const said = `${r.out}\n${r.err}`;
+      for (const leg of legs) expect(said).toContain(leg);
+    });
+});
