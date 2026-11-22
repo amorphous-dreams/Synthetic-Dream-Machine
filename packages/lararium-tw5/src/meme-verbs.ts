@@ -83,7 +83,7 @@ import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
-import { grainOf, memeBase, memeGradient, readBase } from "./read-gradient.js";
+import { grainOf, memeBase, memeGradient, pageOfSlot, partialSpanOf, readBase } from "./read-gradient.js";
 import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
 import type { TiddlerFields } from "./deserializer.js";
 
@@ -566,12 +566,13 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
     const meme = await readMeme(target.uri, sink);
     if (meme === null) return { uri: target.uri, meme: null, ...(floor ? { floor: true } : {}) };
     // ON A GRADIENT BY GRAIN (read-gradient): whole within a page, the has-stack past it, the whole paged on slot boundaries.
-    const read = memeGradient(meme, { grain: grainOf(args["grain"]), after: optionalStringArg(args, "after") });
+    const slot = optionalStringArg(args, "slot");
+    const read = memeGradient(meme, { grain: grainOf(args["grain"]), after: optionalStringArg(args, "after"), slot });
     return {
       uri: target.uri,
       meme: {
         ...(read.text !== undefined ? { text: read.text } : {}),
-        canonicalHash: memeBase(meme.canonicalHash, read), bytes: read.bytes, grain: read.grain, slots: read.slots,
+        canonicalHash: memeBase(meme.canonicalHash, read, slot), bytes: read.bytes, grain: read.grain, slots: read.slots,
         ...(read.page ? { page: read.page } : {}), next: read.next,
       },
       ...(floor ? { floor: true } : {}),
@@ -610,12 +611,25 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     const append = typeof args["append"] === "string" ? args["append"] : null;
     const replace = typeof args["replace"] === "string" ? args["replace"] : null;
     if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
-    const base = readBase(optionalStringArg(args, "base"), "meme-patch", true, true);
+    const rawBase = optionalStringArg(args, "base");
+    const span = partialSpanOf(rawBase);
+    const base = readBase(rawBase, "meme-patch", true, "accept");
     if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`tiddler get --meme\` answers for ${target.uri}.`);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink } = await resolveRead(opts, target, origin, ctx.cap);
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-patch reads no pointer body.`);
+    }
+    // A PARTIAL BASE PATCHES WITHIN WHAT IT READ: a slot answer's base reaches that slot (and the slots nested in it), a page's base
+    // the slots that page carried, recomputed from the carrier the base names. A carrier that moved reads stale below.
+    if (span) {
+      const outside = (why: string): VerbRefusal => new VerbRefusal("base-outside-span", `base-outside-span: this base came from ${why}, and ${slot} lies outside it; read ${slot} (\`lares tiddler get ${target.uri} --meme --slot ${slot}\`) or the whole carrier and patch against that base. Nothing moved.`);
+      if ("slot" in span) {
+        if (slot !== span.slot && !slot.startsWith(`${span.slot}/`)) throw outside(`a read of the slot ${span.slot}`);
+      } else {
+        const standing = await readMeme(target.uri, sink);
+        if (standing && standing.canonicalHash === base && pageOfSlot(standing.text, slot) !== span.page) throw outside(`page ${span.page} of the whole carrier`);
+      }
     }
     const read = await patchSlotCarrier({ uri: target.uri, slot, mode: append !== null ? "append" : "replace", text: append ?? replace!, baseHash: base }, sink);
     const none = { uri: target.uri, slot, landed: [], tombstoned: [], diagnostics: [] };
@@ -879,7 +893,7 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
     refuseEffectLedgerWrite(target.uri, "meme delete");
-    const base = readBase(optionalStringArg(args, "base"), "meme-delete", false);
+    const base = readBase(optionalStringArg(args, "base"), "meme-delete", false, "refuse");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     if (target.recipe && target.recipe !== "default" && !opts.faceLane) return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");

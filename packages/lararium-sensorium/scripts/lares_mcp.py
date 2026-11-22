@@ -1279,7 +1279,8 @@ def build_mcp(coordinator: LaresCoordinator):
         named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). AN
         ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses
         `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A slot answer, or a
-        page short of the end, hands a partial base (`partial:…`): a slot patch takes it, a whole-carrier write refuses
+        page short of the end, hands a partial base bound to what it read (`partial:#/a:…`, `partial:p1:…`): a slot patch
+        takes it within that span (`base-outside-span` beyond it), a whole-carrier write or a meme delete refuses
         `base-from-partial`; the last page hands the bare base. A
         RENDERED TIDDLER answers whole here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`,
         or the source's `render-title`) whose `rendered-from` names the source. CONTAINER LAW: exactly one of `recipe` /

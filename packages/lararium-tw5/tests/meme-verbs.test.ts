@@ -1103,7 +1103,8 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     const pages = [first.meme.text!];
     for (let page = first; page.meme.next?.after; ) {
       page = await get(r, { grain: "whole", after: page.meme.next.after });
-      expect(page.meme.canonicalHash.replace(/^partial:/, "")).toBe(first.meme.canonicalHash.replace(/^partial:/, ""));
+      const bare = (h: string): string => h.replace(/^partial:(?:#\/[^:]+|p[0-9]+):/, "");
+      expect(bare(page.meme.canonicalHash)).toBe(bare(first.meme.canonicalHash));
       expect(page.meme.text!.startsWith("<<~ ahu slot=")).toBe(true);
       pages.push(page.meme.text!);
     }
@@ -1148,6 +1149,28 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     expect(first.meme.canonicalHash).toMatch(/^partial:/);
     await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 1]]), base: first.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
     expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: first.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+  });
+
+  test("RED span: a slot answer's partial base names its slot, and a patch of another slot refuses base-outside-span", async () => {
+    const r = await seat(carrier([["a", 40], ["b", 40]]));
+    const slot = await get(r, { slot: "#/a" });
+    expect(slot.meme.canonicalHash).toMatch(/^partial:#\/a:/);
+    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/b", append: "more", base: slot.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: slot.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+  });
+
+  test("RED span: a page's partial base names its page, and a patch of a slot on another page refuses base-outside-span", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" });
+    expect(first.meme.canonicalHash).toMatch(/^partial:p1:/);
+    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/c", append: "more", base: first.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: first.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+  });
+
+  test("RED span: meme delete, a whole-family act, refuses a partial base", async () => {
+    const r = await seat(carrier([["a", 40], ["b", 40]]));
+    const slot = await get(r, { slot: "#/a" });
+    await expect(makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: slot.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
   });
 
   test("RED M1: a stay-home title answers no read through the internal meme-get either (`tiddler-withheld`)", async () => {

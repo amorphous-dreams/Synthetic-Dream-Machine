@@ -654,7 +654,7 @@ async function memeAnswer(
   const meme = await readMeme(root, sink);
   if (meme === null) return { ...from.answered, title: root, lens: "meme", tiddler: null };
   const read = memeGradient(meme, { grain: asked, after: optionalStringArg(args, "after"), slot });
-  const base = memeBase(meme.canonicalHash, read);
+  const base = memeBase(meme.canonicalHash, read, slot);
   const measures = [param("type", CARRIER_TYPE), param("position", "root"), param("slots", read.slots.length), param("bytes", read.bytes), param("base", base)];
   const rootLine = hasLine(root, [...provenanceParams(from), ...tagTokens(rootFields["tags"]), ...measures], rootFields["description"] ?? rootFields["role"]);
   const lines = read.grain.applied === "skinny" ? [rootLine, ...slotHasLines(read.slots)] : [rootLine];

@@ -59,11 +59,44 @@ export const cardBase = (hash: string, card: boolean): string => (card ? `${CARD
 /** The mark a base carries where the answer carried PART of the carrier: one slot, or a page short of the end. */
 export const PARTIAL_BASE_PREFIX = "partial:";
 
-/** A meme answer's base: the card's where the carrier stayed home, partial where one slot or a page short of the end rode, else bare. */
-export function memeBase(hash: string, read: { readonly grain: { readonly applied: ReadGrain }; readonly next: { readonly after?: string } | null }): string {
+/**
+ * A meme answer's base: the card's where the carrier stayed home; PARTIAL, BOUND TO WHAT WAS READ, where one slot
+ * (`partial:#/a:<hash>`) or a page short of the end (`partial:p<N>:<hash>`) rode; else the bare hash.
+ */
+export function memeBase(
+  hash: string,
+  read: { readonly grain: { readonly applied: ReadGrain }; readonly next: { readonly after?: string } | null; readonly page?: { readonly page: number } },
+  slot?: string | null,
+): string {
   if (read.grain.applied === "skinny") return `${CARD_BASE_PREFIX}${hash}`;
-  if (read.grain.applied === "slot" || (read.grain.applied === "whole" && read.next?.after)) return `${PARTIAL_BASE_PREFIX}${hash}`;
+  if (read.grain.applied === "slot" && slot) return `${PARTIAL_BASE_PREFIX}${slot}:${hash}`;
+  if (read.grain.applied === "whole" && read.next?.after) return `${PARTIAL_BASE_PREFIX}p${read.page?.page ?? 1}:${hash}`;
   return hash;
+}
+
+/** The span a partial base read: one slot, or one page (1-based); null where the base carries no partial mark. */
+export type PartialSpan = { readonly slot: string } | { readonly page: number };
+export function partialSpanOf(raw: string | null): PartialSpan | null {
+  const m = raw === null ? null : /^partial:(?:(#\/[^:]+)|p([0-9]+)):/.exec(raw);
+  if (!m) return null;
+  return m[1] !== undefined ? { slot: m[1] } : { page: Number(m[2]) };
+}
+
+/** The page (1-based) of a carrier read whole, paged on slot boundaries, that holds a top-level slot; null where none does. */
+export function pageOfSlot(text: string, slot: string, pageBytes = READ_PAGE_BYTES): number | null {
+  const top = slot.split("/").slice(0, 2).join("/");
+  const { segments, slots } = carrierSegments(text);
+  let page = 1;
+  let size = 0;
+  let current = false;
+  for (let i = 0; i < segments.length; i++) {
+    const bytes = byteLength(segments[i]!);
+    if (current && size + bytes > pageBytes) { page++; size = 0; }
+    current = true;
+    size += bytes;
+    if (slots[i] === top) return page;
+  }
+  return null;
 }
 
 /**
@@ -71,14 +104,16 @@ export function memeBase(hash: string, read: { readonly grain: { readonly applie
  * so a write that moves text against it refuses `base-from-skinny` and names the read that carries the text (`--all`); a write
  * that moves no text (a field patch, a delete) reads the bare hash. Answers the hash to compare, or null where no base rides.
  */
-export function readBase(raw: string | null, verb: string, writesText: boolean, acceptsPartial = false): string | null {
+export function readBase(raw: string | null, verb: string, writesText: boolean, partial: "accept" | "refuse" = writesText ? "refuse" : "accept"): string | null {
   if (raw !== null && raw.startsWith(PARTIAL_BASE_PREFIX)) {
-    // A PARTIAL BASE (one slot, or a page short of the end) names a carrier the reader saw only in part: a slot patch takes it,
-    // since it edits the part it read; a write of the whole carrier refuses it. The last page of a paged read hands the bare base.
-    if (writesText && !acceptsPartial) {
-      throw new VerbRefusal("base-from-partial", `base-from-partial: ${verb} writes the whole carrier, and this base came from an answer that carried part of it (one slot, or a page short of the end); read it whole (\`lares tiddler get <uri> --meme --all\`, or MCP grain="whole" to the last page) and write against that base. Nothing moved.`);
+    // A PARTIAL BASE (one slot, or a page short of the end) names a carrier the reader saw only in part: a slot patch takes it
+    // within the span it read (`base-outside-span` beyond it); a write of the whole carrier, or the whole family's removal, refuses
+    // it. The last page of a paged read hands the bare base.
+    if (partial === "refuse") {
+      throw new VerbRefusal("base-from-partial", `base-from-partial: ${verb} acts on the whole carrier, and this base came from an answer that carried part of it (one slot, or a page short of the end); read it whole (\`lares tiddler get <uri> --meme --all\`, or MCP grain="whole" to the last page) and act against that base. Nothing moved.`);
     }
-    return raw.slice(PARTIAL_BASE_PREFIX.length);
+    const span = /^partial:(?:#\/[^:]+|p[0-9]+):(.+)$/.exec(raw);
+    return span ? span[1]! : raw.slice(PARTIAL_BASE_PREFIX.length);
   }
   if (raw === null || !raw.startsWith(CARD_BASE_PREFIX)) return raw;
   if (writesText) {
