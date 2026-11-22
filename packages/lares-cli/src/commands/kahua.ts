@@ -150,6 +150,7 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
         break;
       }
       case "list": throw new Error("kahua list moved to `kahua get [<title>]`");
+      case "get":
       default:
         if (!target && args.flags["history"] === true) throw new Error("get --history needs a title");
         door = "kahua-read";
