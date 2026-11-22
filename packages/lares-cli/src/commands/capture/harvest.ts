@@ -22,7 +22,9 @@ import { wingFromDir } from "../../wing-law.js";
 import { partitionEphemeral } from "../../ephemeral.js";
 import { runVerb } from "../../verb-call.js";
 import { readVerbOutcome } from "../../verb-result.js";
-import { emit, exitFor, type LaresError } from "../../render.js";
+import { emit, exitFor, refuseUsage, type LaresError } from "../../render.js";
+import { helpLines } from "../../command-help.js";
+import { unreadFlag } from "../fold-flags.js";
 import type { ParsedArgs } from "../../parse-args.js";
 
 /** The re-pave's checkpoint home — `<root>/hearth/checkpoints/harvest`. The baseline series lands here under
@@ -373,7 +375,13 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
   }
 
   // --bulk: the drawers leg alone — every transcript in one pass on the sweep spine.
-  if (args.flags["bulk"] === true) return cmdSweep(args);
+  if (args.flags["bulk"] === true) {
+    const stray = unreadFlag(args, ["bulk", "surface", "wing", "project", "limit"]);
+    if (stray !== undefined) {
+      return refuseUsage(args, "sense pour", helpLines("sense"), `--bulk reads no ${stray} (it reads --surface --wing --project --limit)`);
+    }
+    return cmdSweep(args);
+  }
 
   // --writeback: the bearing leg alone, over the mempalace DRAWERS.
   if (args.flags["writeback"] === true) {

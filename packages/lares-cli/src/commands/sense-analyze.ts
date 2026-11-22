@@ -24,6 +24,7 @@
 
 import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
+import { unreadFlag } from "./fold-flags.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { cmdAnalyze } from "./analyze.js";
 import { cmdRejim } from "./rejim.js";
@@ -34,23 +35,24 @@ import { cmdCoupleR } from "./couple-r.js";
 import { cmdForecast } from "./forecast.js";
 import { cmdMismatch } from "./mismatch.js";
 
-/** One lens: what it reads, the daemon verb it rides (null: read TS-native in this process), and its handler. */
+/** One lens: what it reads, the daemon verb it rides (null: read TS-native in this process), the flags it reads, and its handler. */
 export interface SenseLens {
   readonly brief: string;
   readonly wire: string | null;
+  readonly reads: readonly string[];
   readonly run: (a: ParsedArgs) => Promise<number> | number;
 }
 
 /** The lenses, in the order the help lists them. Each name reads as plain English; the wire keeps the old verb. */
 export const SENSE_LENSES: Readonly<Record<string, SenseLens>> = {
-  changes:  { brief: "where the poured content changes hands (change-points; --spectral, --halves, --span)", wire: "analyze", run: cmdAnalyze },
-  rhythm:   { brief: "the landed regimes and their couples (--repour re-derives first; --channel)", wire: "rejim", run: cmdRejim },
-  couple:   { brief: "do the sensorium's coupled peers reconcile (the H¹ coupling gate)", wire: "ki", run: cmdKi },
-  cohere:   { brief: "do the sensorium's planes glue into one section (li-radius + the H¹ gate)", wire: "li", run: cmdLi },
-  square:   { brief: "do a child-host's lobes round-trip to one self (default: the mesh)", wire: "jing", run: cmdJing },
-  lead:     { brief: "who leads whom across signals (the R transfer-entropy reference; --signal, --names)", wire: "couple-r", run: cmdCoupleR },
-  forecast: { brief: "does a regime shift approach (the R early-warning read; --signal)", wire: "forecast", run: cmdForecast },
-  mismatch: { brief: "do `couple` and `lead` agree over the same signals (--signal, --names)", wire: "mismatch", run: cmdMismatch },
+  changes:  { brief: "where the poured content changes hands (change-points; --spectral, --halves, --span)", wire: "analyze", reads: ["spectral", "halves", "span"], run: cmdAnalyze },
+  rhythm:   { brief: "the landed regimes and their couples (--repour re-derives first; --channel)", wire: "rejim", reads: ["repour", "channel"], run: cmdRejim },
+  couple:   { brief: "do the sensorium's coupled peers reconcile (the H¹ coupling gate)", wire: "ki", reads: [], run: cmdKi },
+  cohere:   { brief: "do the sensorium's planes glue into one section (li-radius + the H¹ gate)", wire: "li", reads: [], run: cmdLi },
+  square:   { brief: "do a child-host's lobes round-trip to one self (default: the mesh)", wire: "jing", reads: [], run: cmdJing },
+  lead:     { brief: "who leads whom across signals (the R transfer-entropy reference; --signal, --names)", wire: "couple-r", reads: ["signal", "names"], run: cmdCoupleR },
+  forecast: { brief: "does a regime shift approach (the R early-warning read; --signal)", wire: "forecast", reads: ["signal"], run: cmdForecast },
+  mismatch: { brief: "do `couple` and `lead` agree over the same signals (--signal, --names)", wire: "mismatch", reads: ["signal", "names"], run: cmdMismatch },
 };
 
 /** House names canon pins (li-ki-integrities: the two postures `li` and `ki`), each flowing to its plain lens. */
@@ -75,5 +77,11 @@ export async function cmdSenseAnalyze(args: ParsedArgs): Promise<number> {
   if (args.positional.length > 0) {
     return refuseUsage(args, "sense analyze", helpLines("sense"), `--lens ${lens} takes no word after it (got '${args.positional.join(" ")}')`);
   }
-  return await SENSE_LENSES[lens]!.run(args);
+  const chosen = SENSE_LENSES[lens]!;
+  const stray = unreadFlag(args, ["lens", ...chosen.reads]);
+  if (stray !== undefined) {
+    const reads = chosen.reads.length ? chosen.reads.map((r) => `--${r}`).join(" ") : "no flag beyond --lens";
+    return refuseUsage(args, "sense analyze", helpLines("sense"), `--lens ${lens} reads no ${stray} (it reads ${reads})`);
+  }
+  return await chosen.run(args);
 }

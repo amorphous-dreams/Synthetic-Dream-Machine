@@ -100,3 +100,30 @@ describe("roster reads at two grains", () => {
     expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("zz-no-such-sensorium");
   });
 });
+
+describe("a fold refuses by name every flag its path does not read", () => {
+  test.each([
+    [["--lens", "couple", "--signal", "x.ndjson"], "--signal"],
+    [["--lens", "changes", "--repour"], "--repour"],
+    [["--lens", "rhythm", "--spectral"], "--spectral"],
+    [["--lens", "forecast", "--signal", "x.ndjson", "--names", "a,b"], "--names"],
+    [["--lens", "square", "--wing", "w"], "--wing"],
+  ])("`sense analyze %j` refuses naming %s", async (tail, flag) => {
+    const r = await door(["sense", "analyze", ...tail, "--json"]);
+    expect(r.code).toBe(2);
+    const message = String((json(r.out)["error"] as Record<string, unknown>)["message"]);
+    expect(message).toContain(flag);
+  });
+
+  test("pour --bulk refuses the flags only another leg reads", async () => {
+    const r = await door(["sense", "pour", "--bulk", "--writeback", "--json"]);
+    expect(r.code).toBe(2);
+    expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("--writeback");
+  });
+
+  test("roster <name> refuses a flag the roster never reads", async () => {
+    const r = await door(["sense", "roster", "memory", "--lens", "content", "--json"]);
+    expect(r.code).toBe(2);
+    expect(String((json(r.out)["error"] as Record<string, unknown>)["message"])).toContain("--lens");
+  });
+});
