@@ -595,13 +595,13 @@ interface StandingComposition {
   readonly replayLend?: () => Promise<void>;
   /** Close every face through its actor, holding each dark (a whole lock, ahead of the key); rejects where a face did not close
    *  whole. Absent at the floor. */
-  readonly closeFaces?: () => Promise<void>;
+  readonly closeFaces?: () => Promise<unknown>;
   /** Hear the mounted face close at its custody's word: the vessel stands again. Absent at the floor. */
   readonly onMountClosed?: (listener: () => void) => () => void;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
   readonly onSignal: (sig: string) => void;
   /** Tear this composition down and leave the process and its floor standing. */
-  readonly teardown: () => Promise<void>;
+  readonly teardown: () => Promise<unknown>;
   /**
    * One read of a persona KEL's head off this composition's board, for a custody act that checks a grant against
    * it. Absent where no board stands (the herm floor).
@@ -1006,9 +1006,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
     releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, replayLend: result.replayLend,
-    closeFaces: async () => { await result.closeFaces("a whole lock closes every face", { strict: true }); }, onMountClosed: result.onMountClosed,
+    closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
-    teardown: async () => { await result.teardown(() => front.detach()); },
+    teardown: () => result.teardown(() => front.detach()),
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
     walk: result.walkDial,
