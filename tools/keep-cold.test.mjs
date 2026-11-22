@@ -74,14 +74,14 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
     const minted = SLUGS.map((slug) => h.answer(h.must(["wiki", "init", slug, "--json"])).data);
     assert.deepEqual(minted.map((m) => m.held), [true, true, true, false], JSON.stringify(minted));
     await h.restart();
-    h.must(["wiki", "hold", "bravo"]);
+    h.must(["wiki", "pin", "bravo", "--rotate"]);
     for (const slug of SLUGS) {
       const file = join(scratch, `${slug}.mem`);
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
-      h.must(["meme", "put", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
+      h.must(["tiddler", "put", "--meme", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
     }
-    /** The rotatable pins `wiki active` marks, in its own order. */
-    const held = () => h.must(["wiki", "active"]).stdout.split("\n").filter((l) => l.includes("📌")).map((l) => l.replace(/.*📌\s*/, "").split(/\s+/)[0]).sort();
+    /** The rotatable pins `wiki status` marks, in its own order. */
+    const held = () => (h.answer(h.must(["wiki", "status", "--json"])).data.activation.held ?? []).slice().sort();
     // A minted wiki stands in its own realm under its slug, the realm's default pet name, so its workbench mirror rests at
     // `projections/realms/<slug>/wikis/<slug>`.
     const mirrored = (slug) => existsSync(join(h.root, "projections", "realms", slug, "wikis", slug, "ha.ka.ba", "notes", "page", `${slug}-one.mem`));
@@ -109,11 +109,9 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
   }
 });
 
-/** The wikis `wiki active` lists as live (the daemon stands outside the list). */
+/** The wikis `wiki status` lists as live (the daemon stands outside the list). */
 const liveWikis = (h) => {
-  const out = h.must(["wiki", "active"]).stdout.split("\n");
-  const from = out.findIndex((l) => l.startsWith("active wikis"));
-  return out.slice(from + 1).filter((l) => /^\s+\S/.test(l) && !/daemon|rotatable/.test(l)).map((l) => l.trim().split(/\s+/).pop()).sort();
+  return (h.answer(h.must(["wiki", "status", "--json"])).data.activation.active ?? []).map((w) => typeof w === "string" ? w : w.slug).filter((w) => w !== "daemon").sort();
 };
 /** Wait until each wiki's workbench watch has finished its catch-up and stands live (the log names its folder). */
 const watchesStand = async (h, slugs) => {
@@ -128,14 +126,14 @@ test("W2 a restart over wikis that hold workbench folders wakes none of them; an
   try {
     for (const slug of SLUGS) h.must(["wiki", "init", slug, "--json"]);
     await h.restart();
-    h.must(["wiki", "hold", "bravo"]);
+    h.must(["wiki", "pin", "bravo", "--rotate"]);
     // What a restart holds live with no folder in the way (the home wiki, the held pin): the baseline no cold wiki joins.
     const stands = liveWikis(h);
     const joined = () => liveWikis(h).filter((s) => !stands.includes(s));
     for (const slug of SLUGS) {
       const file = join(scratch, `${slug}.mem`);
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
-      h.must(["meme", "put", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
+      h.must(["tiddler", "put", "--meme", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
     }
     // The keep wakes each cold wiki, and a woken wiki projects its workbench: every wiki now holds a folder on disk.
     mkdirSync(join(h.root, "workspaces", "backup", ".git"), { recursive: true });

@@ -332,7 +332,7 @@ const found = cli((ctx) => ["vessel", "found", "--hearth", "--name", FACES.stewa
 const up = async (ctx) => ({ ok: true, answer: await ctx.up() });
 const down = async (ctx) => ({ ok: true, answer: await ctx.down() });
 const persona = (n, name) => cli(["persona", "new", String(n), "--name", name, "--no-json"], `persona h${n} minted`);
-const hold = cli(["wiki", "hold", "notes", "--no-json"]);
+const hold = cli(["wiki", "pin", "notes", "--rotate", "--no-json"]);
 
 const FOUND = "lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'";
 const LAY = "lares vessel lay --apply --yes";
@@ -398,7 +398,7 @@ export const STEPS = Object.freeze([
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
         const file = ctx.file(`note-${name}.mem`, memeText(NOTE(name), `the ${name} wrote this page`));
-        const put = await ctx.cli(["meme", "put", NOTE(name), "--recipe", "notes", "--file", file, "--json"]);
+        const put = await ctx.cli(["tiddler", "put", "--meme", NOTE(name), "--recipe", "notes", "--file", file, "--json"]);
         said.push(`${name}: ${put.code === 0 ? landing(put) : refusalOf(put)}`);
         if (put.code !== 0 || !landing(put).startsWith(layer)) return { ok: false, answer: said.join(" · ") };
       }
@@ -412,7 +412,7 @@ export const STEPS = Object.freeze([
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
       const file = ctx.file("offered.mem", memeText(OFFERED, "the engineer offers this record to house canon"));
-      const put = await ctx.cli(["meme", "put", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
+      const put = await ctx.cli(["tiddler", "put", "--meme", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
       if (put.code !== 0 || !landing(put).startsWith("layer: personal")) return { ok: false, answer: `meme put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
       const offer = await ctx.cli(["meme", "offer", OFFERED, "--bag", "lares", "--no-json"]);
       return { ok: offer.code === 0, answer: `${landing(put)} · ${offer.code === 0 ? lineOf(`${offer.stdout}\n${offer.stderr}`, "offer") : refusalOf(offer)}` };
@@ -430,9 +430,9 @@ export const STEPS = Object.freeze([
   { id: "release-cut", fence: "lares nexus release floor.json --cut", needs: ["lay", "wear-steward"], expect: "the manifest cuts from live canon",
     run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "--cut", "--no-json"]) },
   { id: "down-to-sign", fence: "lares down", needs: ["up"], expect: "the vessel stops", run: down },
-  { id: "promote-open", fence: "lares nexus promote open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json", via: SC, needs: ["release-cut", "down-to-sign"],
+  { id: "promote-open", fence: "lares nexus approve open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json", via: SC, needs: ["release-cut", "down-to-sign"],
     expect: "ok — 1 of 1 seats", quoted: ["ok — 1 of 1 seats"],
-    run: cli((ctx) => ["nexus", "promote", "open", ctx.path("floor.json"), "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", ctx.path("approval.json"), "--no-json"], "1 of 1 seats") },
+    run: cli((ctx) => ["nexus", "approve", "open", ctx.path("floor.json"), "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", ctx.path("approval.json"), "--no-json"], "1 of 1 seats") },
   { id: "up-to-release", fence: "lares up", nth: 1, via: SC, needs: ["down-to-sign"], expect: "phase → live, then the unlock", run: up },
   { id: "release-land", fence: "lares nexus release floor.json --approval approval.json", needs: ["promote-open", "up-to-release"], expect: "the release lands on the publication board",
     run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "--approval", ctx.path("approval.json"), "--no-json"]) },
@@ -442,9 +442,9 @@ export const STEPS = Object.freeze([
 
   // Carry across a re-founding.
   { id: "hold-wear-referee", fence: "lares vault unlock --face 2", via: SC, needs: ["up-to-release"], expect: "wears 2", run: wear(2) },
-  { id: "hold-referee", fence: "lares wiki hold notes", needs: ["hold-wear-referee", "notes-share"], run: hold },
+  { id: "hold-referee", fence: "lares wiki pin notes --rotate", needs: ["hold-wear-referee", "notes-share"], run: hold },
   { id: "hold-wear-steward", fence: "lares vault unlock --face 0", nth: 1, via: SC, needs: ["up-to-release"], expect: "wears 0", run: wear(0) },
-  { id: "hold-steward", fence: "lares wiki hold notes", nth: 1, needs: ["hold-wear-steward", "notes-share"], run: hold },
+  { id: "hold-steward", fence: "lares wiki pin notes --rotate", nth: 1, needs: ["hold-wear-steward", "notes-share"], run: hold },
   { id: "export", fence: "lares export ~/.lares/config/carry-2", needs: ["hold-wear-steward"], expect: "the bundle reads back against its manifest",
     run: cli((ctx) => ["export", ctx.carry(), "--no-json"]) },
   { id: "down-to-refound", fence: "lares down", nth: 1, needs: ["up-to-release"], expect: "the vessel stops", run: down },

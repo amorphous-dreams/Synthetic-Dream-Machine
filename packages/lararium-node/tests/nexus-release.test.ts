@@ -1,6 +1,6 @@
 /**
  * nexus-release.test.ts — W26 slice 4's door: a one-seat hearth publishes its floor release. The seat opens a
- * promotion approval over the manifest file's EXACT bytes (`nexus promote open`), the door seals the release body as the
+ * promotion approval over the manifest file's EXACT bytes (`nexus approve open`), the door seals the release body as the
  * steward and lands it on the Nexus's publication board, and a reader folds the chain from that board.
  *
  * Proven: a release lands and reads back as the chain's head; a second release links to the first by `prior`;

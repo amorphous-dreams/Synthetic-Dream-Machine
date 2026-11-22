@@ -158,7 +158,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
 
     const f = join(lar!.root, "seal-carrier.mem");
     writeFileSync(f, meme());
-    const put = await cli(PLAIN, ["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
+    const put = await cli(PLAIN, ["tiddler", "put", "--meme", URI, ...WIKI, "--file", f, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     carrierHash = String(dataOf(put)["canonicalHash"]);
     const got = await readCarrier();

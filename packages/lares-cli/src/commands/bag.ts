@@ -27,7 +27,7 @@
 
 import { vesselDid } from "../env.js";
 import {
-  cmdPin, cmdUnpin, cmdRegisterCold, cmdResidency,
+  cmdRegisterCold,
 } from "./residency.js";
 import {
   cmdBagList, cmdBagShow, cmdBagDeclare, cmdBagHome, cmdBagRepo, bagLifecycle,
@@ -83,9 +83,6 @@ export async function cmdBagCompact(args: ParsedArgs): Promise<number> {
 type BagSubcommand = (args: ParsedArgs) => Promise<number>;
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: string }>> = {
-  "pin":           { handler: cmdPin,          summary: "Pin a bag URL — daemon never evicts it. Needs `lares vessel stand --foreground`." },
-  "unpin":         { handler: cmdUnpin,        summary: "Unpin a bag URL — removes the cooling exemption; the bag rejoins the LRU sweep. Needs `lares vessel stand --foreground`." },
-  "stats":         { handler: cmdResidency,    summary: "Print the daemon's bag residency snapshot. Needs `lares vessel stand --foreground`." },
   "register-cold": { handler: cmdRegisterCold, summary: "Mark a bag URL as known-but-not-loaded — the oracle entry alone, no tiddlers loaded. Needs `lares vessel stand --foreground`." },
   "compact":       { handler: cmdBagCompact,     summary: "DXOS-style snapshot-restart on one bag. Bounds history; lossy by design." },
   "cas":           { handler: async (a) => cmdCas(a), summary: "The cleartext cid/ CAS tier: blobs · referenced · unreferenced · bytes (references derived from the projection; --all lists each blob). Local read, no daemon. --fetch <cid> reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). --pin <cid> [--tier <t>] [--holder <name>] holds a blob past the grace until released; --release <cid> frees it. --sweep [--dry-run] sweeps the unreferenced blobs past their grace where the composite stands (dry: names them, moves nothing)." },
@@ -113,6 +110,8 @@ export async function cmdBag(args: ParsedArgs): Promise<number> {
     printBagHelp();
     return verb ? 0 : 2;
   }
+  const moved: Record<string, string> = { pin: "wiki pin <url> --bag", unpin: "wiki pin <url> --bag --release", stats: "wiki status" };
+  if (moved[verb]) { console.error(`lares bag: moved to ` + "`lares " + moved[verb] + "`."); return 2; }
   const entry = SUBCOMMANDS[verb];
   if (verb === "list") {
     console.error("lares bag: `bag list` moved to `lares bag show [<slug>]`.");

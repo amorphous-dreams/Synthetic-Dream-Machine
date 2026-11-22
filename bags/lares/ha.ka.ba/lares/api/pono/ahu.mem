@@ -114,7 +114,7 @@ A meme rests as a ''family'' of tiddlers under one address: a root and the slot 
 
 * ''Component edges make the family.'' A record belongs to a root when its `$fragment-parent` chain climbs to that root, or when a member's text calls it by a `kahea ahu` reference. A component leaves with its root, as one change of the bag's document.
 * ''Optional references cross families.'' A `loulou` or a `pranala` edge names another meme. It never joins a family, never blocks an act and never cascades: where its target leaves, the edge dangles, and the act's consequence names it under `leaves`.
-* ''A prefix holds no authority.'' A `<root>/path` title stands as its own meme; a `<root>#…` title that carries no edge and that no member calls stands plain. `meme put` and `meme delete` spare both, and a delete's answer names each path child it left.
+* ''A prefix holds no authority.'' A `<root>/path` title stands as its own meme; a `<root>#…` title that carries no edge and that no member calls stands plain. `tiddler put --meme` and `tiddler delete --meme` spare both, and a delete's answer names each path child it left.
 * ''An orphan stays live.'' A slot record whose parent chain reaches no standing record stays in the store and the wiki, never collected, since a concurrent re-root may still rescue it. The node projects it as a plain record file (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/the-orphan-folder`>>), and node and browser each raise `$:/temp/lares/alert/meme-orphan/<root>` from their own view. A root that returns takes its slots back, and the flag clears.
 
 ''The consequence.'' Every act on a title (a delete, a put, a rename, a move or copy, a field write) reads its `consequence` before it lands: the target's position (`root`, `slot`, `field`, `plain`), its family, the `acts` it would write, what it `leaves`, the `orphans` it would make, its `refusals` by name (`slot-without-root`, `family-spans-unwritable-layer`, `rename-target-stands`, `read-only-seat`, `absent`), and the `versions` of every title it read or would write, so a later apply can bind to them. One pure function computes it (`consequence`, the same file); the design and the gradient rest in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout#/meme-aware-actions`>>.
@@ -192,6 +192,6 @@ This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AvUC3ERBesH0v4MEA1EApfBm3jCMJYdmcrAkgcbtZSM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2znhVSDt-5mFkmmw_0i45uZcyr5lUrISqKkq_ZHbUYs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

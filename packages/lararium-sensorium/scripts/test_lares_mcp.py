@@ -190,6 +190,7 @@ def test_sense_hand_verbs_hold_no_tool_and_no_seat(tmp_path):
     # RED before the cure: promote, retire and purge rode tools gated by an `approve` boolean the model fills, and
     # un_retire rode one ungated. The cure retires each: the operator runs `lares sense <verb>` on their own terminal.
     tools = _mcp_tool_names(tmp_path)
+    assert {"harden", "promote", "sense_harden", "sense_promote", "trust", "nexus_approve", "nexus_promote"}.isdisjoint(tools)
     for v in SENSE_HAND_VERBS:
         tool = v.replace("-", "_")
         assert tool not in tools, f"hand verb {v!r} still rides an MCP tool"
@@ -806,3 +807,34 @@ def test_analyze_lens_reads_weld_to_the_cli_table():
     with open(_CLI_VERBS, encoding="utf-8") as f:
         inv = json.load(f)
     assert {k: sorted(v) for k, v in ANALYZE_LENS_READS.items()} == {k: sorted(v) for k, v in inv["analyze_lens_reads"].items()}
+
+
+def test_wiki_seat_reach_stays_on_switch_rotate_and_act(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    wiki = tool("wiki")
+    monkeypatch.setattr("lares_mcp.uds.call", lambda verb, args: (calls.append((verb, args)), {"results": {"summary": {"ok": True, "output": {}}}})[1])
+    for args, expected in [
+        ({"verb": "switch", "slug": "w"}, ("wiki-switch", {"slug": "w"})),
+        ({"verb": "pin", "slug": "w", "rotate": True}, ("wiki-hold", {"slug": "w"})),
+        ({"verb": "pin", "slug": "w", "rotate": True, "release": True}, ("wiki-release", {"slug": "w"})),
+        ({"verb": "act", "name": "sidebar-layout", "recipe": "default", "expected": "a", "resulting": "b"}, ("wiki-action", {"recipe": "default", "name": "sidebar-layout", "expected": "a", "resulting": "b"})),
+    ]:
+        wiki(**args)
+        assert calls.pop() == expected
+    for args, name in [
+        ({"verb": "pin", "slug": "w"}, "rotate"),
+        ({"verb": "pin", "slug": "w", "release": True}, "rotate"),
+        ({"verb": "pin", "slug": "w", "bag": True}, "bag"),
+        ({"verb": "pin", "slug": "w", "bag": True, "release": True}, "bag"),
+        ({"verb": "pin", "slug": "w", "next_boot": True}, "next_boot"),
+        ({"verb": "switch", "slug": "w", "rotate": True}, "rotate"),
+        ({"verb": "switch", "slug": "w", "release": True}, "release"),
+        ({"verb": "hold", "slug": "w"}, "verb"),
+        ({"verb": "pin", "rotate": True}, "slug"),
+        ({"verb": "pin", "slug": "w", "rotate": True, "recipe": "default"}, "action"),
+        ({"verb": "switch", "slug": "w", "next_boot": True}, "next_boot"),
+        ({"verb": "act", "name": "a", "recipe": "default", "expected": "a", "resulting": "b", "bag": True}, "bag"),
+    ]:
+        with pytest.raises(Exception, match=name):
+            wiki(**args)
+        assert calls == []

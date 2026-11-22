@@ -50,7 +50,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
   sensorium: "commands/sensorium", vault: "commands/vault", wear: "commands/wear",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
   edge: "commands/edge", nexus: "commands/nexus",
-  handle: "commands/handle", fleet: "commands/fleet", intent: "commands/intent", "intent-relay": "commands/intent-relay", kahua: "commands/kahua", promote: "commands/promote", kapae: "commands/kapae",
+  handle: "commands/handle", fleet: "commands/fleet", intent: "commands/intent", "intent-relay": "commands/intent-relay", kahua: "commands/kahua", trust: "commands/promote", kapae: "commands/kapae",
 };
 
 /** Files whose reads are not a command's own: the renderer (json), help, and the table itself. */
@@ -154,6 +154,7 @@ const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
  * leaves in the same commit.
  */
 const READ_ELSEWHERE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  bag: { bag: "retired pin spelling names its replacement even with --bag", rotate: "retired stats spelling names its replacement even with --rotate" },
 };
 
 describe("the accepts rows track the handlers", () => {

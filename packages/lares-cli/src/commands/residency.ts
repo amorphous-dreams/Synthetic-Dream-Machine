@@ -1,14 +1,8 @@
 /**
- * `lares bag pin <url> [--reason <text>]`
- * `lares bag unpin <url>`
- * `lares bag stats`
- *
- * THE DOORS CARRY `bag` AS THEIR AXIS, and the qualifier is the whole point. `residency` names four
- * things in this tree (`one-name-one-relation#/the-words-that-carry-more-than-one-thing` ranks it first
- * of them), so the STOWAGE axis takes its name in the surface an operator types: `bag stats`, never a
- * bare `residency`. `cmdResidency` below stays an internal spelling behind that door, and `"residency"`
- * survives as the daemon's wire verb. A header naming top-level `lares pin` / `lares residency` would
- * send a reader to type three commands that resolve nowhere.
+ * `lares wiki pin <url> --bag [--reason <text>]`
+ * `lares wiki pin <url> --bag --release`
+ * `lares wiki status` surveys vessel residency.
+ * The internal `residency` wire verb carries the stowage snapshot.
  *
  * Operator-driven residency control. Pin guarantees a bag stays hot;
  * unpin demotes (the LRU may then evict if pressure rises). residency
@@ -31,7 +25,7 @@ export async function cmdPin(args: ParsedArgs): Promise<number> {
   const url    = args.positional[0];
   const reason = args.options["reason"];
   if (!url) {
-    console.error("usage: lares pin <bag-url> [--reason <text>]");
+    console.error("usage: lares wiki pin <bag-url> --bag [--reason <text>]");
     return 2;
   }
   return await runResidencyCommand("pin", { url, ...(reason && { reason }) });
@@ -40,7 +34,7 @@ export async function cmdPin(args: ParsedArgs): Promise<number> {
 export async function cmdUnpin(args: ParsedArgs): Promise<number> {
   const url = args.positional[0];
   if (!url) {
-    console.error("usage: lares unpin <bag-url>");
+    console.error("usage: lares wiki pin <bag-url> --bag --release");
     return 2;
   }
   return await runResidencyCommand("unpin", { url });

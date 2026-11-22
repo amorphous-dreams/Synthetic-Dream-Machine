@@ -153,9 +153,9 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
   test("R1-R3 — the positive control reads a clear marker at rest; the sealed marker rests as no clear byte after a stand-down at once", async () => {
     const B = pair!.B!;
     // The daemon wiki's working slot seals under the lit face (U1's D half); the daemon document beneath stays the floor's.
-    const clear = await B.cli(["meme", "put", CLEAR_URI, "--bag", "daemon", "--file", memeFile(CLEAR_URI, CLEAR_MARK), "--json"]);
+    const clear = await B.cli(["tiddler", "put", "--meme", CLEAR_URI, "--bag", "daemon", "--file", memeFile(CLEAR_URI, CLEAR_MARK), "--json"]);
     expect(clear.code, clear.stderr + clear.stdout).toBe(0);
-    const put = await B.cli(["meme", "put", SEALED_URI, "--recipe", "lares", "--file", memeFile(SEALED_URI, SEALED_MARK), "--json"]);
+    const put = await B.cli(["tiddler", "put", "--meme", SEALED_URI, "--recipe", "lares", "--file", memeFile(SEALED_URI, SEALED_MARK), "--json"]);
     expect(put.code, put.stderr + put.stdout).toBe(0);
     // THE STAND-DOWN AT ONCE: no wait past the put's own answer.
     await B.stopDaemonOnly();

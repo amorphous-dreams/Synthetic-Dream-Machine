@@ -60,6 +60,7 @@ import {
   type LarInstance,
 } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
+import { nameSeatSkip, seatLaunched } from "../harness/seat-launch.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -457,7 +458,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   test("⑧ CONTROL: a member at the read tier cannot `meme put --bag lares` — the stewards alone write", async () => {
     const file = join(rootB, "b-edit.mem");
     writeFileSync(file, meme());
-    const r = await B!.cli(["meme", "put", URI, "--bag", "ford", "--realm", realmA, "--file", file, "--json"]);
+    const r = await B!.cli(["tiddler", "put", "--meme", URI, "--bag", "ford", "--realm", realmA, "--file", file, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(false);
     expect(said(r)).toMatch(/no writable layer|cannot write|refus|holds no steward's write in realm/i);
     refusalB = said(r);
@@ -506,7 +507,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   test("⑩ CONTROL: while the ask waits, B's put still draws the SAME refusal and A's registration stands", async (ctx) => {
     if (!named) ctx.skip();
     const file = join(rootB, "b-edit.mem");
-    const r = await B!.cli(["meme", "put", URI, "--bag", "ford", "--realm", realmA, "--file", file, "--json"]);
+    const r = await B!.cli(["tiddler", "put", "--meme", URI, "--bag", "ford", "--realm", realmA, "--file", file, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(false);
     expect(errorOf(said(r))).toBe(errorOf(refusalB));
     // The ask rests under its own key: A's counted registration keeps standing, kept by A alone.
@@ -537,7 +538,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     writeFileSync(file, memeWithSlot());
     while (Date.now() < until) {
       const base = String((((await B!.cli(["tiddler", "get", URI, "--bag", "ford", "--realm", realmA, "--meme", "--all", "--json"])).json?.["data"] as Record<string, unknown> | undefined)?.["meme"] as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
-      put = await B!.cli(["meme", "put", URI, "--bag", "ford", "--realm", realmA, "--base", base, "--file", file, "--json"]);
+      put = await B!.cli(["tiddler", "put", "--meme", URI, "--bag", "ford", "--realm", realmA, "--base", base, "--file", file, "--json"]);
       if (put.json?.["ok"] === true) break;
       await new Promise((res) => setTimeout(res, 4_000));
     }
@@ -573,12 +574,12 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     if (!bPut) ctx.skip();
     const file = join(rootC, "c-edit.mem");
     writeFileSync(file, meme());
-    const c = await C!.cli(["meme", "put", URI, "--bag", "ford", "--realm", realmA, "--file", file, "--json"]);
+    const c = await C!.cli(["tiddler", "put", "--meme", URI, "--bag", "ford", "--realm", realmA, "--file", file, "--json"]);
     expect(c.json?.["ok"], said(c)).toBe(false);
 
     const stale = join(rootB, "b-stale.mem");
     writeFileSync(stale, memeWithSlot("/stale"));
-    const r = await B!.cli(["meme", "put", URI, "--bag", "ford", "--realm", realmA, "--base", "0".repeat(64), "--file", stale, "--json"]);
+    const r = await B!.cli(["tiddler", "put", "--meme", URI, "--bag", "ford", "--realm", realmA, "--base", "0".repeat(64), "--file", stale, "--json"]);
     const decision = String(((r.json?.["data"] ?? {}) as Record<string, unknown>)["decision"] ?? said(r));
     expect(decision, said(r)).toMatch(/conflict/i);
     const after = await A!.cli(["tiddler", "get", URI, "--bag", "ford", "--meme", "--all", "--json"]);
@@ -591,8 +592,9 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   // documents, read off both sides' realm view, so the ask names that very document. The same B that reads A's ford
   // through the realm (the control on the very lane) is answered that nothing reaches the record and is refused a write, for `@lares`
   // and `@lararium` both; ⑭b reads B's own store for either document by raw id once the daemons stop.
+  nameSeatSkip("meme-realm-bag", ["⑭", "⑭b"]);
   const kahuDocs: { lares: string; lararium: string } = { lares: "", lararium: "" };
-  test("⑭ A's live @lares and @lararium stand for A, and B — a contracted member — reads none of either and writes neither", async () => {
+  test.skipIf(seatLaunched)("⑭ A's live @lares and @lararium stand for A, and B — a contracted member — reads none of either and writes neither", async () => {
     expect(contracted, "the relation's doors stood (③): ⑭ walks only on a contracted member").toBe(true);
     const docOf = (r: { json: Record<string, unknown> | null }, bag: string): string =>
       String((((r.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).find((b) => b["bag"] === bag)?.["doc"] ?? "");
@@ -629,7 +631,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const file = join(B!.root, "kahu-walk-put.mem");
     writeFileSync(file, kahuMeme());
     for (const bag of ["lares", "lararium"]) {
-      const put = await B!.cli(["meme", "put", KAHU_URI, "--bag", bag, "--realm", realmA, "--file", file, "--json"]);
+      const put = await B!.cli(["tiddler", "put", "--meme", KAHU_URI, "--bag", bag, "--realm", realmA, "--file", file, "--json"]);
       console.error(`meme-realm-bag ⑭ MEASURE B: meme put --bag ${bag} → ${said(put).trim().slice(0, 200)}`);
       expect(put.json?.["ok"], `B writes no ${bag}: ${said(put)}`).not.toBe(true);
     }
@@ -788,7 +790,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const baseA = String((((before.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
     const markerFile = join(A!.root, "a-marker.mem");
     writeFileSync(markerFile, memeWithSlot("/a-marker"));
-    const aPut = await A!.cli(["meme", "put", URI, "--bag", "ford", "--base", baseA, "--file", markerFile, "--json"]);
+    const aPut = await A!.cli(["tiddler", "put", "--meme", URI, "--bag", "ford", "--base", baseA, "--file", markerFile, "--json"]);
     const after = await A!.cli(["tiddler", "get", URI, "--bag", "ford", "--meme", "--all", "--json"]);
     const afterText = String((((after.json?.["data"] as Record<string, unknown> | undefined)?.["meme"]) as Record<string, unknown> | undefined)?.["text"] ?? "");
     const readsOwnWrite = afterText.includes("#/a-marker");
@@ -865,7 +867,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
 
   // ⑭b B'S OWN STORE, BY RAW ID. With B's daemon stopped (⑬ stops it; this stops it where ⑬ skipped), B's automerge
   // storage answers for each of A's live Kahu documents: a replica B never received holds no record of A's canon.
-  test("⑭b B's own store holds neither of A's live Kahu documents, nor her daemon document or catalog (⑮)", async () => {
+  test.skipIf(seatLaunched)("⑭b B's own store holds neither of A's live Kahu documents, nor her daemon document or catalog (⑮)", async () => {
     expect(kahuDocs.lares && kahuDocs.lararium, "⑭ named both documents").toBeTruthy();
     try { await B!.stopDaemonOnly(); } catch { /* ⑬ already stopped it */ }
     const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });

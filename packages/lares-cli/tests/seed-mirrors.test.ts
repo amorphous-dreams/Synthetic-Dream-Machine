@@ -1099,7 +1099,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const cold = await houseExport(out, { acceptOmissions: false, doors: { ...old.bundleDoors(), coldWikis: async () => ["notes"] } });
     const named = cold.manifest.omissions.find((o) => o.kind === "cold-wikis");
     expect(named?.items).toEqual(["notes"]);
-    expect(named?.detail).toMatch(/lares wiki hold <slug>/);
+    expect(named?.detail).toMatch(/lares wiki pin <slug> --rotate/);
     rmSync(out, { recursive: true });
     const awake = await houseExport(out, { acceptOmissions: false, doors: { ...old.bundleDoors(), coldWikis: async () => [] } });
     expect(awake.manifest.omissions.map((o) => o.kind)).not.toContain("cold-wikis");

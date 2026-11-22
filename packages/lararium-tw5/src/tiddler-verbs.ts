@@ -44,7 +44,7 @@
  * so a record the face may not read enters no consequence. A plain tiddler leaves. A meme root or slot answers its
  * consequence and `decision: "refused"` (`refusal: "tiddler-delete-in-a-family"`) unless the call names the family act
  * (`family: true`); with it the consequence's acts land as ONE change per layer. A slot its parent
- * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `meme put`.
+ * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `tiddler put --meme`.
  *
  * A DELETE DELETES PLAINLY; ONLY A LOWER LAYER MAKES IT A CHOICE (lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). With
  * no `mode` named, each record leaves its own layer to absent (`mode: "plain"` in the answer): no tombstone rises and no
@@ -79,6 +79,7 @@ import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { staysHome } from "./stay-home.js";
+import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -199,7 +200,7 @@ interface Anchor {
 }
 
 const refuseUnreached = (verb: string, why: string): VerbRefusal =>
-  new VerbRefusal("wiki-unreached", `wiki-unreached: ${verb} — ${why}; \`lares wiki list\` names the wikis this face reaches, and \`--recipe default\` names its daemon wiki.`);
+  new VerbRefusal("wiki-unreached", `wiki-unreached: ${verb} — ${why}; \`lares wiki status\` names the wikis this face reaches, and \`--recipe default\` names its daemon wiki.`);
 
 /**
  * THE NAMED WIKI'S OPTIONS: where the call names a registered wiki, the options its own engine answers under, or null where
@@ -237,8 +238,8 @@ function wikiOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>
   if (target.recipe !== recipe) {
     const write = /^tiddler-(put|delete)$/.test(verb);
     const door = write
-      ? "A bag takes a record through the meme door: `lares meme put --bag <slug>` · `lares meme delete --bag <slug>`."
-      : "A bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record; `--meme` a meme) · `lares meme list --bag <slug>` (its roots).";
+      ? "A bag takes a record through the meme door: `lares tiddler put --meme --bag <slug>` · `lares tiddler delete --meme --bag <slug>`."
+      : "A bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record; `--meme` a meme) · `lares tiddler get --meme --bag <slug>` (its roots).";
     const named = target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`;
     throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} runs in a wiki's own engine; ${named}. ${door} To use ${verb}, name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki).`);
   }
@@ -309,7 +310,7 @@ type Visible = (title: string, tiddler: EngineTiddler | undefined) => boolean;
  * lives for one verb call. The wiki's indexes (tags, fields, backlinks) still name hidden TITLES; the verb's answer
  * gate drops those and counts them `withheld`. Writes never ride the view.
  */
-function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
+function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; document: { createElement(tag: string): unknown } } | null): EngineWiki {
   const view = Object.create(wiki) as EngineWiki & Record<string, unknown>;
   view["filterCache"] = Object.create(null);
   view["filterCacheCount"] = 0;
@@ -324,6 +325,21 @@ function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
   view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
   view.allTitles = () => wiki.allTitles().filter(shown);
   view.allShadowTitles = () => wiki.allShadowTitles().filter(shown);
+  if (house) {
+    // THE HOUSE'S FUNCTIONS COME FROM CANON ALONE: a filter run with no widget of its own runs under the widget the canon
+    // carrier's text builds (house-filters), never under the wiki's `$:/tags/Global` imports, which a working-layer record shadows.
+    let widget: unknown;
+    const run = wiki.filterTiddlers as unknown as (this: unknown, filter: string, widget?: unknown, source?: unknown) => string[];
+    view["filterTiddlers"] = (filter: string, given?: unknown, source?: unknown): string[] => {
+      refuseUnknownHouseOperators(filter);
+      if (given === undefined) {
+        // EVERY FILTER THE CALLER GIVES NO WIDGET RUNS UNDER THE HOUSE WIDGET, an indirect one (`[subfilter{$:/x}]`) included.
+        widget ??= houseWidgetOf(view as never, house.document, house.text);
+        given = widget;
+      }
+      return run.call(view, filter, given, source);
+    };
+  }
   return view;
 }
 
@@ -332,7 +348,7 @@ function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
  * each bag any record names answers the face's reach once, so the predicate itself reads no cap and stays synchronous
  * inside the engine.
  */
-async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean> }> {
+async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean>; pragmas: string }> {
   const mayRead = await reachOf(opts, anchor, cap);
   const wiki = anchor.engine.wiki;
   const bags = new Set<string>();
@@ -340,7 +356,9 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
   const visible: Visible = (title, tiddler) => !staysHome(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
-  return { view: readerView(wiki, visible), visible, mayRead };
+  const text = await canonFiltersText(opts.composite, wiki, mayRead);
+  const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
+  return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
 }
 
 /**
@@ -629,7 +647,7 @@ function recordAnswer(from: Provenance & { readonly answered: Record<string, unk
  * THE MEME LENS: the root and its slot children recomposed into one carrier, sealed by its bcc, on the gradient (`memeGradient`).
  * A title that names a slot child recomposes from its root and points at the slot. A record that holds no meme answers the record
  * with a plain line saying so (graceful, never a refusal); a pointer root answers its handle. Every answer carries `base/` (the
- * canonical hash `meme patch --base` takes); a skinny answer carries one has line per top-level slot beneath the root's.
+ * canonical hash `tiddler put --meme --slot --base` takes); a skinny answer carries one has line per top-level slot beneath the root's.
  */
 async function memeAnswer(
   engine: Engine, sink: Pick<MemeSink, "titles" | "read">, from: Provenance & { readonly answered: Record<string, unknown> }, named: string,
@@ -825,7 +843,9 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
     const outputType = RENDER_FORMS[form];
     if (!outputType) throw new Error(`wiki-render: args.form reads "text" or "html"; got "${form}"`);
     if (title !== null) refuseWithheld(title, "wiki-render");
-    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
+    const { view, mayRead, pragmas } = await viewFor(opts, anchor, ctx.cap);
+    // THE HOUSE'S FUNCTIONS RIDE AFTER THE GLOBAL IMPORT, from canon alone: a working-layer `$:/tags/Global` tiddler never shadows one.
+    const globals = pragmas === "" ? GLOBAL_IMPORT : `${GLOBAL_IMPORT}${pragmas}\n\n`;
     const wiki = anchor.engine.wiki;
     let rendered: string;
     if (title !== null) {
@@ -835,12 +855,12 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
       if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
       rendered = view.renderText(outputType, WIKITEXT,
         // The blank lines keep the wrapper in block mode, so no stray paragraph wraps the tiddler's own blocks.
-        `${GLOBAL_IMPORT}<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`,
+        `${globals}<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`,
         { variables: { "lares-render-title": title } });
     } else {
       const type = optionalStringArg(args, "type") ?? WIKITEXT;
       // The carrier type reads as a superset of wikitext, so the import pragma leads both; any other type renders as it stands.
-      rendered = view.renderText(outputType, type, type === WIKITEXT || type === CARRIER_TYPE ? `${GLOBAL_IMPORT}${span}` : span!);
+      rendered = view.renderText(outputType, type, type === WIKITEXT || type === CARRIER_TYPE ? `${globals}${span}` : span!);
     }
     // THE BYTE CAP, WITH A CURSOR: the cursor names the render it continues (an offset and the render's digest), so a
     // wiki that moved between two pages refuses by name and never splices two renders.
@@ -945,7 +965,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
     const structural = Object.keys({ ...(before ?? {}), ...next }).filter((name) => moved(name) && (name === "text" || name === "type" || name.startsWith("$")));
     const joinsFamily = !standing && (next["type"] === CARRIER_TYPE || next["$fragment-parent"] !== undefined);
     if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
-      throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
+      throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares tiddler put --meme\` lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
     }
     // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
     refuseRenderedWrite(title, before, next, "tiddler put");
@@ -1078,7 +1098,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     const retracts = retractsOf(read);
     const moves = tombstones.length + retracts.length;
     if (read.position !== "plain" && !flagOn(args["family"])) {
-      return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares meme delete ${read.family}\` (meme_delete).`);
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares tiddler delete --meme ${read.family}\`.`);
     }
     const rendered = renderedWriteFault(title, fields, null, "tiddler delete");
     if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
@@ -1112,7 +1132,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     // A slot its parent calls leaves with the call: the parent's text would move, and a family's text moves through the meme door.
     const dangling = read.acts.find((row) => row.act === "put") ?? read.leaves.find((row) => row.why === "reference-dangles:kahea");
     if (dangling) {
-      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and a family's text moves through the meme door: \`lares meme put ${read.family}\` (meme_put) with the slot's block gone.`);
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and a family's text moves through the meme door: \`lares tiddler put --meme ${read.family}\` with the slot's block gone.`);
     }
     // A record no mounted layer holds (the engine's own, or a wiki with no store beneath it) has nothing to retract.
     const unheld = named === "reveal" ? read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0) : undefined;

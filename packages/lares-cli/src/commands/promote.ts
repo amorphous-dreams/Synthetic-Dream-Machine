@@ -3,9 +3,9 @@ import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
 import { storeVerb } from "../store-door.js";
 
-export async function promotionDoor(args: ParsedArgs, command: "promote" | "kapae"): Promise<number> {
+export async function promotionDoor(args: ParsedArgs, command: "trust" | "kapae"): Promise<number> {
   const [act, digest] = args.positional;
-  const acts = command === "promote" ? ["list", "prepare", "commit", "drop", "orphan"] : ["raise", "lower", "flag"];
+  const acts = command === "trust" ? ["list", "prepare", "commit", "drop", "orphan"] : ["raise", "lower", "flag"];
   if (!act || !acts.includes(act)) return refuseUsage(args, command, helpLines(command));
   try {
     const payload: Record<string, unknown> = {};
@@ -25,7 +25,7 @@ export async function promotionDoor(args: ParsedArgs, command: "promote" | "kapa
       if (keep === drop) throw new Error("promote-decision-malformed: name --keep or --drop");
       payload.decision = keep ? "keep" : "drop";
     }
-    const { output } = await storeVerb(`${command}-${act}` as Parameters<typeof storeVerb>[0], payload);
+    const { output } = await storeVerb(`${command === "trust" ? "promote" : command}-${act}` as Parameters<typeof storeVerb>[0], payload);
     console.log(JSON.stringify(output));
     return 0;
   } catch (err) {
@@ -33,4 +33,4 @@ export async function promotionDoor(args: ParsedArgs, command: "promote" | "kapa
     throw err;
   }
 }
-export const cmdPromote = (args: ParsedArgs) => promotionDoor(args, "promote");
+export const cmdPromote = (args: ParsedArgs) => promotionDoor(args, "trust");

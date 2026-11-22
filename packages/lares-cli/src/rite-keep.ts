@@ -181,7 +181,7 @@ async function wakeColdWikis(wikis: KeepWikiPorts | undefined): Promise<{ readon
       const kept = now.filter((slug) => before.includes(slug));
       if (kept.length !== before.length || kept.some((slug, i) => slug !== before[i])) for (const slug of before) await wikis.hold(slug);
     } catch (e) {
-      throw new KeepRefused("keep-pins-unreturned", `the wake could not hand the wiki pins back (${e instanceof Error ? e.message : String(e)}); the pins that stood before the keep: ${before.join(", ") || "(none)"}. Hold each again by hand (\`lares wiki hold <slug>\`) and keep again`);
+      throw new KeepRefused("keep-pins-unreturned", `the wake could not hand the wiki pins back (${e instanceof Error ? e.message : String(e)}); the pins that stood before the keep: ${before.join(", ") || "(none)"}. Hold each again by hand (\`lares wiki pin <slug> --rotate\`) and keep again`);
     }
   };
   return { woken, giveBack };

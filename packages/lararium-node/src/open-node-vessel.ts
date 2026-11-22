@@ -3301,7 +3301,7 @@ async function prepareNodeBootOn(
               // The panel carries no ward route (its verbs ride the daemon document), so a bound commit refuses by name, toward the terminal.
               wardSigner: async () => {
                 const held = takeSummonedWard(ward);
-                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`);
+                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares trust commit <digest> --wiki ${wiki}\` at a terminal)`);
                 return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
               },
               face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false },

@@ -131,7 +131,6 @@
   "tests/e2e/carrier-roundtrip.test.ts",
   "tests/e2e/ingest-quiescence.test.ts",
   "tests/e2e/smoke.test.ts",
-  "tests/e2e/watcher-cut-c.test.ts",
   "tools/browser-weld-witness.test.mjs",
   "tools/compose-surface-root.test.mjs",
   "tools/e2e-harness-law.test.mjs",
