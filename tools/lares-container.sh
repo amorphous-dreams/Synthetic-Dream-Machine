@@ -386,18 +386,34 @@ route_cli() {
   # arguments while replacing only the consuming value, preserving every other byte of argv.
   stream_file=""
   if [ "${1:-}" = tiddler ] && [ "${2:-}" = put ]; then
-    stream_meme="" stream_patch="" stream_slot="" stream_put="" stream_count=0
+    stream_meme="" stream_slot="" stream_n=0 stream_kind="" stream_empty="" stream_want=""
+    # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
     for stream_arg do
-      case "$stream_arg" in --meme) stream_meme=yes ;; --slot|--slot=*) stream_slot=yes ;;
-        --append|--append=*) stream_patch=yes ;;
-        --file|--file=*) stream_put=yes ;;
+      if [ -n "$stream_want" ]; then
+        case "$stream_want" in
+          --file|--append) stream_n=$((stream_n + 1)); stream_kind=$stream_want; [ -n "$stream_arg" ] || stream_empty=yes ;;
+        esac
+        stream_want=""
+        continue
+      fi
+      case "$stream_arg" in
+        --meme) stream_meme=yes ;;
+        --slot) stream_slot=yes stream_want=--slot ;;
+        --slot=*) stream_slot=yes ;;
+        --file|--append) stream_want=$stream_arg ;;
+        --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
+        --text|--base|--recipe|--bag|--realm|--face|--target|--fields|--tag-add|--tag-remove|--unset) stream_want=$stream_arg ;;
       esac
     done
-    if [ -n "$stream_meme" ] && { { [ -z "$stream_patch" ] && [ -n "$stream_put" ]; } || { [ -n "$stream_patch" ] && [ -n "$stream_slot" ] && [ -z "$stream_put" ]; }; }; then
-      stream_count=$# stream_prev="" stream_i=0
+    if [ -n "$stream_meme" ] && [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
+    if [ -n "$stream_meme" ] && [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
+    if [ -n "$stream_meme" ] && [ "$stream_n" -eq 1 ] && { [ "$stream_kind" = --file ] || [ -n "$stream_slot" ]; }; then
+      stream_count=$# stream_prev="" stream_skip="" stream_i=0
       while [ "$stream_i" -lt "$stream_count" ]; do
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
-        if [ -n "$stream_prev" ]; then
+        if [ -n "$stream_skip" ]; then
+          stream_skip=""
+        elif [ -n "$stream_prev" ]; then
           [ "$stream_arg" = - ] || stream_file=$stream_arg
           [ "$stream_arg" = - ] || stream_arg=-
           stream_prev=""
@@ -407,6 +423,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
+            --slot|--text|--base|--recipe|--bag|--realm|--face|--target|--fields|--tag-add|--tag-remove|--unset) stream_skip=yes ;;
           esac
         fi
         set -- "$@" "$stream_arg"

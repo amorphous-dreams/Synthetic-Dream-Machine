@@ -110,7 +110,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // THE VESSEL'S LOG before a down removes it: stdout and stderr both, as the engine writes them.
       `case " $* " in *" logs --tail "*) printf '%s\\n' "\${FAKE_VESSEL_LOG:-}"; printf '%s\\n' "\${FAKE_VESSEL_LOG_ERR:-}" >&2; exit "\${FAKE_LOGS_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
-      `case " $* " in *" tiddler put "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
+      `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*) cat > "$CALL_LOG.stdin";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
@@ -210,6 +210,36 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
       { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" } });
     assert.notEqual(absent.status, 0);
     assert.doesNotMatch(absent.calls, / node .* tiddler put /);
+  });
+}
+for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
+  const standing = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
+  const crlf = Buffer.from("one\r\ntwo\r\n\r\n", "utf8");
+  test(`${name}: a slot write streams a named host file whole, by --file, --file= or --append`, { skip }, async () => {
+    const wire = ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
+    for (const [flag, sink] of [[["--file", "@HOST_FILE@"], /--file -/], [["--file=@HOST_FILE@"], /--file=-/], [["--append", "@HOST_FILE@"], /--append -/]]) {
+      const r = await run(shim, [...wire, ...flag], { env: standing, hostInput: crlf });
+      assert.equal(r.status, 0, `${flag.join(" ")}: ${r.stderr}`);
+      assert.deepEqual(r.received, crlf, flag.join(" "));
+      assert.match(r.calls, sink);
+    }
+  });
+  test(`${name}: a missing --append file, an empty source, a repeated source and a flag-shaped value refuse or pass as the CLI would`, { skip }, async () => {
+    const wire = ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
+    const missing = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing });
+    assert.notEqual(missing.status, 0);
+    assert.doesNotMatch(missing.calls, / node .* tiddler put /);
+    const empty = await run(shim, [...wire, "--file="], { env: standing });
+    assert.notEqual(empty.status, 0);
+    assert.doesNotMatch(empty.calls, / node .* tiddler put /);
+    const twice = await run(shim, [...wire, "--file", "@HOST_FILE@", "--append", "@HOST_FILE@"], { env: standing, hostInput: crlf });
+    assert.notEqual(twice.status, 0);
+    assert.doesNotMatch(twice.calls, / node .* tiddler put /);
+    // `--text --file` carries the words "--file" as a value: no source, nothing streamed.
+    const value = await run(shim, [...wire, "--text", "--file"], { env: standing });
+    assert.equal(value.status, 0, value.stderr);
+    assert.equal(value.received, null);
+    assert.match(value.calls, /--text --file/);
   });
 }
 test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript }, async () => {

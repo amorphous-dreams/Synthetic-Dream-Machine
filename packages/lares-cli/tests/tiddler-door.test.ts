@@ -98,7 +98,7 @@ describe("the argument law, no daemon", () => {
   test("the row refuses family flags on record paths before dispatch", () => {
     const door = COMMANDS.find((row) => row.name === "tiddler")!;
     expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", append: "x" })).map((x) => x.name)).toContain("append");
-    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", file: "x", text: "y" }, { meme: true })).map((x) => x.name)).toContain("text");
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", file: "x", fields: "{}" }, { meme: true })).map((x) => x.name)).toContain("fields");
     expect(unknownFlags(door, argv("tiddler", ["delete", "T"], { recipe: "default", mode: "reveal" }, { meme: true })).map((x) => x.name)).toContain("mode");
     expect(unknownFlags(door, argv("tiddler", ["get", "T"], { recipe: "default" }, { meme: true, tree: true })).map((x) => x.name)).toContain("tree");
   });
@@ -110,6 +110,12 @@ describe("the argument law, no daemon", () => {
     h.reply = { uri: "lar:///t/x", decision: "removed", tombstoned: [] };
     expect((await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { meme: true }))).exit).toBe(0);
     expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default" } });
+  });
+  test("family delete carries --base as the verb's base, so a stale delete answers conflict", async () => {
+    h.reply = { uri: "lar:///t/x", decision: "conflict", tombstoned: [], canonicalHash: "sha256:2" };
+    const r = await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default", base: "sha256:1" }, { meme: true }));
+    expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default", base: "sha256:1" } });
+    expect(r.exit).toBe(4);
   });
   test("family put keeps the whole input and slot patch keeps its base and replacement bytes", async () => {
     h.reply = { decision: "ingest", uri: "lar:///t/x", landed: [], tombstoned: [], warnings: [] };
@@ -123,6 +129,11 @@ describe("the argument law, no daemon", () => {
       const patch = await run(argv("tiddler", ["put", "lar:///t/x"], { bag: "b", slot: "#/a", file, base: "sha256:old" }, { meme: true }));
       expect(patch.exit).toBe(0);
       expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", bag: "b", slot: "#/a", replace: "alpha\n\n", base: "sha256:old" } });
+      const wholeText = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "inline\n" }, { meme: true }));
+      expect(wholeText.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "meme-put", args: { uri: "lar:///t/x", recipe: "default", text: "inline\n" } });
+      const twoSources = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x", file }, { meme: true }));
+      expect(twoSources.exit).toBe(2);
       const inline = await run(argv("tiddler", ["put", "lar:///t/x"], { bag: "b", slot: "#/a", text: "no newline", base: "sha256:old" }, { meme: true }));
       expect(inline.exit).toBe(0);
       expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", bag: "b", slot: "#/a", replace: "no newline", base: "sha256:old" } });
@@ -130,7 +141,7 @@ describe("the argument law, no daemon", () => {
       expect(ambiguous.exit).toBe(2);
       const both = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file, slot: "#/a", text: "x", base: "sha256:old" }, { meme: true }));
       expect(both.exit).toBe(2);
-      expect(h.calls).toHaveLength(3);
+      expect(h.calls).toHaveLength(4);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   test("a tiddler verb names its container and its title before anything rides the wire", async () => {

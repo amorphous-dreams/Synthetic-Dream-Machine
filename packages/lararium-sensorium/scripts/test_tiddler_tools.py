@@ -253,3 +253,20 @@ def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon
     with pytest.raises(ValueError, match="tiddler_get\\(bag"):
         t["wiki_status"]()
     assert len(daemon.lines) == 1
+
+
+def test_title_less_family_listing_refuses_the_flags_it_does_not_read(daemon):
+    # The listing reads container, tree and cursor; a slot, grain, fields or max_bytes beside it refuses by name, as the CLI does.
+    t = _tools()
+    for stray in ({"slot": "#/a"}, {"grain": "fat"}, {"fields": ["text"]}, {"max_bytes": 10}):
+        with pytest.raises(ValueError, match="title-less meme listing"):
+            t["tiddler_get"](meme=True, recipe="default", **stray)
+    assert daemon.lines == []
+
+
+def test_slot_write_names_one_source_and_a_base(daemon):
+    t = _tools()
+    for kwargs in ({"slot": "#/a", "base": "sha256:1"}, {"slot": "#/a", "text": "x", "append": "y", "base": "sha256:1"}, {"slot": "#/a", "text": "x"}):
+        with pytest.raises(ValueError):
+            t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", **kwargs)
+    assert daemon.lines == []

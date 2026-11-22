@@ -193,7 +193,8 @@ export function memePlan(sub: "put" | "delete", args: ParsedArgs): MemePlan {
     return { verb: "meme-put", args: out, ...face };
   }
   // The route spells the base as `If-Match`; the verb reads it as `base` — one hash, two spellings.
-  const base = typeof args.options["if-match"] === "string" ? args.options["if-match"].trim() : "";
+  const held = args.options["if-match"] ?? args.options["base"];
+  const base = typeof held === "string" ? held.trim() : "";
   if (base) out["base"] = base;
   return { verb: "meme-delete", args: out, ...face };
 }
@@ -208,6 +209,7 @@ export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readon
 
 /** The meme body: `--file`, else the whole of stdin. */
 async function readBody(args: ParsedArgs): Promise<string> {
+  if (typeof args.options["text"] === "string") return args.options["text"];
   const file = args.options["file"];
   if (typeof file === "string" && file && file !== "-") {
     try { return readFileSync(file, "utf8"); } catch { throw new UsageError(`cannot read --file ${file}`); }
