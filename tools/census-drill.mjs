@@ -289,12 +289,14 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
     {
       const recipe = "default";
       // The text rides the filter's own rows; a row too large for one page sheds it (`omitted`), and that one record reads
-      // whole through `tiddler get`.
+      // whole through `tiddler get --all` (the fat grain: past a page the door's default leaves the text home, and an empty text
+      // would hash two differing records alike).
       const plain = readFilter(lares, ["wiki", "filter", PLAIN_FILTER, "--recipe", recipe, "--all", "--fields", "text", "--max-bytes", "262144", "--json"]);
       for (const row of plain.rows ?? []) {
         let hash = `sha256:${sha256(String(row.fields?.text ?? ""))}`;
         if ((row.omitted ?? []).includes("text")) {
-          const got = read(lares, ["tiddler", "get", row.title, "--recipe", recipe, "--json"]);
+          const got = read(lares, ["tiddler", "get", row.title, "--recipe", recipe, "--all", "--json"]);
+          if (typeof got.tiddler?.fields?.text !== "string") throw new Error(`census: ${row.title} answered no text at the fat grain (${got.grain?.applied ?? "?"}): a text the census cannot hash`);
           hash = `sha256:${sha256(String(got.tiddler?.fields?.text ?? ""))}`;
         }
         classes.plain[`${recipe} ${row.title}`] = hash;
