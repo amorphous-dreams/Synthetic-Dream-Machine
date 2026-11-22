@@ -1,0 +1,87 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/hearth-roster`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable   = true
+l-space     = "lararium"
+role        = "the hearth roster as law: who is home, read where an agent wakes; the worn face per vessel and who holds the slot, the seats in two grains (here by presence, far by last signed act), the lanes a seat claims, the vota still waiting; one shape across the CLI, the MCP seat and the wake, clockless and isomorphic"
+source-file = "packages/lararium-mesh/src/hearth-roster.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/hearth-roster"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/hearth-roster"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The hearth roster ~ who is home
+
+A session wakes into a house others already work in. The roster tells it who: the face each vessel wears and who holds that slot, which seats stand here and which spoke last from afar, which work a seat has claimed, and which asks still wait on an answer or an outcome. The operator reads it first; a fresh seat reads it second. The operator's own seat stands on it as an equal row.
+
+It answers at three doors with one body: `lares vessel roster` (`--json` carries the body whole), the MCP seat's `vessel_roster`, and the wake block "Lares hearth (who is home)", which caps it and skips quietly when no vessel answers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rotations`>>
+
+!! Rotations ~ the worn slot
+
+A vessel holds one worn slot today. The roster names the face it wears (none at its floor), the faces lit beside it, the faces lent, the session seats holding the worn slot, and any seat known to act under another face.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/two-grains`>>
+
+!! Seats ~ two grains, one shape
+
+* ''Here, by presence.'' A local seat names a session bound on the vessel's own socket. The kernel holds that socket while the process on the other end holds it, so the seat stands exactly as long as its process stands; no timer decides it. Its row names its face, its hand (`cli`, `tab`, `watcher`, `seat`), whether a harness or a person holds it, and its anchor.
+* ''Far, by last signed act.'' A far seat names a signer on a worn face's intent plane. It reads by the acts it signed that none of its own later acts cite: its causal tips, never a time. No global now stands, so nobody far reads online; a far seat reads only "last heard".
+
+Both rows carry the same fields and name their grain. This vessel's own face atom reads as a far row marked as its own: the local seats sign through it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lanes`>>
+
+!! Lanes ~ the claims the house records
+
+The house records one claim a seat makes on work: an intent claim on the face intent plane (claim, takeover, release; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>). No store records a seat's claim on a leap or a road meme, and the swarm's lane-state rows wait on a lead's trust. The roster shows the intent claims alone and names that gap in its own words; it invents no store to fill it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/vota`>>
+
+!! Open vota ~ what still waits
+
+Each intent that stands open reads as one votum: waiting on an answer (an asks audience with no counted answer, or a contested one), on an outcome (owed by its claimant, its approved executor or its pinned device, else unclaimed), or on a frontier the vessel does not hold. A denied ask and an answered intent leave the list. A votum's turn count rests on the road, so the roster names no votum stuck.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/guards`>>
+
+!! Guards ~ provenance, weight and what prints
+
+The roster frames its rows by provenance and weight (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust#/read-doors`>>): a seat here by the kernel's hold on its socket, a far seat by its signature, each turned through the five tools.
+
+* ''What prints.'' A far device signs what it writes, so a verb prints only as a short token, an atom or a cid only as hex. A plane's fault prints only as its code: the kebab code its message leads with, else its error class (a locked custody reads `custody-locked`). The echoed request id stays a short token, and any other id the caller sent is replaced.
+* ''What it keeps.'' Each face keeps eight rows per list (seats here, seats far, lanes, vota, and a far seat's tips). The body counts every row in `counts` and the rows it left out in `more`. The bound is a count of rows, never a clock.
+* ''What it writes.'' The verb channel answers the read itself and never places it, so the read writes no fact. Every list sorts by what it holds, so the same house reads the same roster.
+* ''The drain.'' A read never holds the vessel's close: the roster's socket counts in no arbitration and in none of the frames a closing seat waits out. The close interrupts the plane reads still open, as an event and never a timer; each face it ends reads unread as `vessel-closing`, and the faces already read stand.
+* ''A seat's short id.'' A local seat prints as `s-` and the first eight hex characters of its session id: 32 of that id's 122 random bits. The whole id opens nothing either: a session frame binds to the socket that opened it (`SessionTable.checkBound`), so another socket that names the session, even by its whole envelope, refuses `unbound-session`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/who-reads`>>
+
+!! Who reads ~ the house to any seat that shares its uid
+
+''Decision (2026-11-21).'' The roster shows the whole house to any socket peer under the vessel's own uid, an AI seat with a narrower lent set included: every worn face's seats, lanes and vota, not only the faces the asker may act as. This keeps the operator's ruling of 2026-11-21: seats stand as equals, and trust rides the binding (each act still meets its own gate: the lent set, the seat's profile, the face's cap). The roster reads presence the kernel holds and plane content the signers signed, filtered to tokens and hex. It carries no secret, no key and no record body, and it acts on nothing.
+
+''Reads outside the face's turn.'' The roster reads each plane outside the face actor's turn. A read that lands during a face's drain can come back stale (the plane as it stood when the read began) or unread by its code; the next read answers afresh.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_8waMlodrlhcbmeSySKH7TOMgpYAeX26VO7z6Wv60hA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

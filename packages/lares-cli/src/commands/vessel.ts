@@ -52,6 +52,7 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 
 import { cmdFloor } from "./floor.js";
+import { cmdHearthRoster } from "./hearth-roster.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
 
@@ -184,6 +185,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   lay:   { summary: "lay every bags/* holding back into its doc, kind-routed and diff-gated",           run: (a) => cmdLay(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
   floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin · `seed [--genesis <dir>]` the seed a genesis dir offers beside the founding record — [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },
+  roster: { summary: "who is home: the worn face and who holds it, the seats here (by presence) and far (by last signed act), the lanes and the open vota — [--json]", run: (a) => cmdHearthRoster(under(a)) },
   census: { summary: "name what a stop would drop: saves held in memory, carriers the projector owes — [--json]; --docs: every stored document, its class and who names it", run: (a) => (VESSEL_CENSUS_ROUTE(a) === "docs" ? cmdDocCensus(under(a)) : cmdCensus(under(a))) },
   fresher: { summary: "each working copy over a canon bag that shadows fresher canon: its base hash beside canon's; then each copy with no base that differs from canon (base unknown) — --bag <slug>", run: async (a) => {
     const named = a.options["bag"];

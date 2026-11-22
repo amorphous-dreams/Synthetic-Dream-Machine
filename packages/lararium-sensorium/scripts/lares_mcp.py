@@ -187,6 +187,14 @@ LAW_PINS_FILTER = "[subfilter{" + LAW_PINS_TITLE + "}] " + LAW_CANON_GUARD
 LAW_INDEX_FILTER = "[subfilter{" + LAW_PINS_TITLE + "}] =" + _LAW_FILTER + " +[unique[]] " + LAW_CANON_GUARD
 LAW_ROW_FIELDS = ("description", "role")
 
+# THE HEARTH ROSTER — who is home, offered beside the law: `vessel_roster` reads the worn face and who holds that slot, the
+# seats in two grains (here by presence on the vessel's socket, far by last signed act on the face intent plane), the lanes a
+# seat claims and the vota still waiting. It mirrors `lares vessel roster --json`: both ride the one `hearth-roster` verb the
+# vessel's channel answers itself (`@lararium/node`'s `hearth-roster-read`), so the body this seat returns stands byte for
+# byte the body the CLI's `data` carries. A read: it places nothing and writes no fact.
+HEARTH_VERBS = ("vessel_roster",)
+HEARTH_ROSTER_VERB = "hearth-roster"
+
 # What the seat tells a client at its first contact: read the house's law before acting.
 SEAT_INSTRUCTIONS = (
     "Read the house's law before you act: `law_index` lists the pinned law first (the boot seed, then the Mu family), "
@@ -257,6 +265,7 @@ VERB_SEATS = {
     "law_index": (True, False),         # the pinned law, then the law the pins leave out — a read → HOTL
     "law_pin": (True, False),           # add one `[[uri]]` run to the face's pin set — reversible, trusted → HOTL
     "law_unpin": (True, False),         # take a title out of the pin set — reversible, trusted → HOTL
+    "vessel_roster": (True, False),     # who is home: the vessel's own reading of its seats, lanes and vota — a read → HOTL
     "oracle_cast": (True, False),       # one cast written as one new tiddler in the working layer — reversible, trusted → HOTL
     "tiddler_put": (True, False),       # patch fields, tags, or named text in the working layer — reversible, trusted → HOTL
     "tiddler_delete": (True, False),    # remove one plain tiddler plainly, or a meme family where `family=True` names the act; a lower layer asks `mode` → HOTL
@@ -1505,6 +1514,27 @@ def build_mcp(coordinator: LaresCoordinator):
         `decision: "noop"`; a pin set that moved under the read refuses `law-pins-moved`. Returns {title, uri, decision,
         pinned, text, hash, bag}."""
         return _law_move("law_unpin", _law_uri("law_unpin", uri), "unpin")
+
+    # ── THE HEARTH ROSTER — who is home, the vessel's own reading ──
+
+    @mcp.tool(annotations=_READS)
+    def vessel_roster() -> dict:
+        """READ WHO IS HOME — mirrors `lares vessel roster --json`. The vessel answers from what it holds now and places
+        nothing. Returns {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts, more}: `rotation` names the face
+        this vessel wears, the session seats holding that slot (`holders`) and any seat acting under another face
+        (`underOther`); `seats` carries one row shape in two grains: `local` (a session bound on the vessel's socket, standing
+        while its process holds the socket; `kind` `ai` for a harness's seat, `hand` for a person's hand, the operator's
+        among them as an equal) and `far` (a signer on a worn face's intent plane, read only by `lastHeard`, the acts none of
+        its own later acts cite: no global now, so nobody far reads online); `lanes` reads the intent claims standing, and
+        `lanesGap` names what the house records no claim for (a leap or a road meme); `vota` lists each intent still waiting
+        on an answer, an outcome (`owedBy` the atom that owes it, else unclaimed) or a frontier; `unread` names each face
+        whose plane did not read, by its code; each face keeps eight rows per list, `counts` counts every row and `more` the rows
+        left out. The rows come from the vessel's live reading: a seat here by the kernel's hold
+        on its socket, a far seat by its signature; turn them through the five tools."""
+        out = _meme_wire(HEARTH_ROSTER_VERB, {})
+        if not isinstance(out, dict):
+            raise uds.LaresVerbError(f"{HEARTH_ROSTER_VERB}: the vessel answered no roster")
+        return out
 
     @mcp.tool(annotations=_PATCHES)
     def tiddler_put(title: str, recipe: "str | None" = None, bag: "str | None" = None, fields: "dict | None" = None,
