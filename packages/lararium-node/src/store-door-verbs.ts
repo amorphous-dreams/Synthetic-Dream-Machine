@@ -92,7 +92,7 @@ import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-rou
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
-import type { VerbReactor } from "@lararium/tw5";
+import { hasLine, pagePlaneRows, param, type VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
@@ -468,7 +468,18 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       // THE DAEMON MOUNT, named as such: the read answers the face it names, and beside it the one face the daemon island
       // mounts (`mount`) and whether this face stands as it (`mounted`); the daemon's working layer holds the mount's document.
       const mount = deps.mountFace?.() ?? null;
-      return deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+      const sight = deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+      if (args["action"] === "staged") return sight;
+      if (args["action"] === "get") {
+        const title = String(args["title"]);
+        return { has: hasLine(title, [param("source", "kahua-stage"), param("grain", "item"), param("verified", true)]), ...sight,
+          source: "kahua-stage", grain: "item",
+          ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} --history` } : {}) };
+      }
+      const items = Array.isArray(read["items"]) ? read["items"] : [];
+      const page = pagePlaneRows(items, str(args["after"]), int(args["limit"]));
+      return { has: hasLine("kahua", [param("source", "kahua-stage"), param("grain", "list"), param("count", page.count)]), ...sight,
+        items: page.rows, source: "kahua-stage", grain: "list", count: page.count, next: page.next };
     }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),

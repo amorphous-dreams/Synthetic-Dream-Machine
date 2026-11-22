@@ -5,7 +5,7 @@
  * LEAD RUNS: found, boot, unlock, restart, and write both kahua layers of a staged vessel.
  * SECURITY CLASS (signed founding acts). The walk, through the test door (scratch marker, test custody, `vessel found
  * --hearth --skip-build`, boot, unlock):
- *   RED      the unlocked hearth reads its stage: `lares kahua list` answers an empty stage (an unpinned face refuses
+ *   RED      the unlocked hearth reads its stage: `lares kahua get` answers an empty stage (an unpinned face refuses
  *            `kahua-unpinned`), and the boot names the stage it adopted at the face's derived address.
  *            A mint on the founding device answers the pin already standing (`minted: false`); the boot adopts, never pins.
  *   CONTROL  a mint stands the face's derived url, and after a restart of the same hearth a mint answers that pin and the
@@ -56,7 +56,7 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
   });
 
   test("RED: the unlocked founding device reads an empty stage, names the stage it adopted at the face's derived address, and a mint finds the pin standing", async () => {
-    const listed = await hearth!.cli(["kahua", "list"]);
+    const listed = await hearth!.cli(["kahua", "get"]);
     expect(listed.code, said(listed)).toBe(0);
     // The list names the face's relation beside its items: the folder name its private projections carry.
     expect(answer(listed)["items"]).toEqual([]);

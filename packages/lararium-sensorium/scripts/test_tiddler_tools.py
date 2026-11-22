@@ -23,7 +23,7 @@ from lares_mcp import TIDDLER_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, s
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(_HERE, "fixtures", "tiddler-door-answers.json"), encoding="utf-8") as _f:
-    _ROWS = json.load(_f)["rows"]
+    _ROWS = [r for r in json.load(_f)["rows"] if r["tool"] in TIDDLER_VERBS or r["tool"] == "wiki"]
 
 
 class _FakeDaemon:

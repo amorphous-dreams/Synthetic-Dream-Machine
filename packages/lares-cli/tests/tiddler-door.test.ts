@@ -32,6 +32,10 @@ vi.mock("../src/verb-call.js", () => ({
     return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } } };
   },
 }));
+vi.mock("../src/store-door.js", () => ({
+  storeVerb: async (verb: string, args: Record<string, unknown>) => { h.calls.push({ verb, args }); return { output: h.reply }; },
+  StoreDoorRefusal: class extends Error {},
+}));
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),
   vesselDid: async () => "0x" + "ab".repeat(32),
@@ -40,12 +44,14 @@ vi.mock("../src/env.js", async (orig) => ({
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
 import { cmdWiki, wikiFilterPlan, wikiRenderPlan } from "../src/commands/wiki.js";
+import { cmdKahua } from "../src/commands/kahua.js";
+import { cmdMeme } from "../src/commands/meme.js";
 import { COMMANDS, unknownFlags } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 interface Row {
   tool: string;
-  cli: { command: "tiddler" | "wiki"; positional: string[]; options: Record<string, string>; flags: Record<string, boolean> };
+  cli: { command: "tiddler" | "wiki" | "kahua" | "meme"; positional: string[]; options: Record<string, string>; flags: Record<string, boolean> };
   wire: { verb: string; args: Record<string, unknown> };
   output: Record<string, unknown>;
 }
@@ -61,8 +67,10 @@ async function run(args: ParsedArgs): Promise<{ exit: number; printed: Record<st
   const log = vi.spyOn(console, "log").mockImplementation((...parts: unknown[]) => { chunks.push(parts.join(" ") + "\n"); });
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   try {
-    const exit = args.command === "wiki" ? await cmdWiki(args) : await cmdTiddler(args);
-    return { exit, printed: JSON.parse(chunks.join("")) as Record<string, unknown> };
+    const exit = args.command === "wiki" ? await cmdWiki(args) : args.command === "kahua" ? await cmdKahua(args, null)
+      : args.command === "meme" ? await cmdMeme(args) : await cmdTiddler(args);
+    const printed = JSON.parse(chunks.join("").trim().split("\n").at(-1)!) as Record<string, unknown>;
+    return { exit, printed: args.command === "kahua" ? { ok: true, data: printed } : printed };
   } finally { spy.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
 
@@ -70,7 +78,7 @@ afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply 
 
 describe("verb-table-parity — the CLI half of the tiddler door's one table", () => {
   test("the table names all six verbs, and every door it names stands in the command table", () => {
-    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki", "wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status"]));
+    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki", "wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status", "kahua_get", "meme_offer_show"]));
     const names = new Set(COMMANDS.map((c) => c.name));
     for (const row of TABLE.rows) expect(names.has(row.cli.command)).toBe(true);
   });

@@ -15,7 +15,7 @@
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
  *   promote <docs/…/x.mem> [--face N] [--dest-bag <lar:uri>] [--corpus <glob>]
  *   offer <lar:uri ...> --bag <slug>              — offer working records toward a house-canon bag (offering#/the-canon-offer)
- *   offer list [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
+ *   offer show [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
  *   offer show <cid>                              — one offer's field diff against canon now
  *   offer promote <cid> [--over-fresher]          — the Kahu steward lands it in canon and retires it
  *
@@ -1006,7 +1006,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 /**
  * THE OFFERING DOOR (offering#/the-canon-offer), four acts over the daemon's offer verbs:
  *   offer <lar:uri ...> --bag <slug>      `offer-make`: the lit face offers records from its working layer toward a house-canon bag;
- *   offer list [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
+ *   offer show [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
  *   offer show <cid>                      `offer-show`: one offer's field diff against canon now;
  *   offer promote <cid> [--over-fresher]  `offer-promote`: the Kahu steward, on a vessel holding a charter seat, writes the offered bytes into canon and retires the offer.
  * A moved base WARNS ("canon is fresher") in every listing; only a promotion over it takes the explicit `--over-fresher`. A release
@@ -1015,14 +1015,16 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "offer-list" | "offer-show" | "offer-promote"; readonly args: Record<string, unknown> } {
   const act = args.positional[1];
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"] : undefined;
-  if (act === "list") return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}) } };
+  if (act === "list") throw new UsageError("offer list moved to `offer show [<cid>]`");
   if (act === "show" || act === "promote") {
     const cid = args.positional[2];
+    if (act === "show" && !cid) return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}), ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) } };
+    if (act === "show" && (bag !== undefined || args.flags["all"] === true)) throw new UsageError("offer show <cid> refuses list filters --bag and --all");
     if (!cid || !/^[0-9a-f]{64}$/.test(cid)) throw new UsageError(`offer ${act} names one offer CID (64 hex)`);
     return act === "show" ? { verb: "offer-show", args: { cid } } : { verb: "offer-promote", args: { cid, ...(args.flags["over-fresher"] === true ? { overFresher: true } : {}) } };
   }
   const titles = args.positional.slice(1);
-  if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of list · show <cid> · promote <cid>");
+  if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of show [<cid>] · promote <cid>");
   if (bag === undefined) throw new UsageError("offer names the house-canon bag it offers toward (--bag <slug>)");
   return { verb: "offer-make", args: { bag, titles } };
 }
@@ -1110,15 +1112,16 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true, requestId: result.requestId, data: retire !== null ? { ...out, retire } : out,
     human: () => {
+      if ((plan.verb === "offer-list" || plan.verb === "offer-show") && typeof out["has"] === "string") console.log(out["has"]);
       if (plan.verb === "offer-make") {
         console.log(`offer → ${out["landed"] ? "OFFERED" : "HELD (the same offer already stands)"} ${out["cid"]}`);
         for (const r of (out["records"] as Array<{ title: string; base: string | null }>) ?? []) console.log(`  ${r.title}  ${r.base ? `base ${short(r.base)}` : "(a new title)"}`);
-        console.log("  canon stays unmoved; the Kahu steward reviews it (lares meme offer list) and promotes it");
+        console.log("  canon stays unmoved; the Kahu steward reviews it (lares meme offer show) and promotes it");
         return;
       }
       if (plan.verb === "offer-list") {
         const offers = (out["offers"] as OfferRow[]) ?? [];
-        if (offers.length === 0) console.log("offer list: no open offer on this Nexus's table");
+        if (offers.length === 0) console.log("offer show: no open offer on this Nexus's table");
         for (const o of offers) {
           console.log(`${o.cid}  ${o.bag}  offerer ${short(o.offerer)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}${o.refusedRetires?.length ? `  (${o.refusedRetires.length} retire-unauthorised ignored)` : ""}`);
           for (const r of o.records) console.log(`  ${r.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : r.freshness}  ${r.title}`);

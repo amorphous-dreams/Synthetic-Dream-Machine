@@ -136,7 +136,7 @@ test("P1 RED: the census reads the face row the vessel answers `mounted`, and a 
     writeFileSync(fake, [
       "const [, , ...a] = process.argv; const s = a.join(' '); const out = (x) => console.log(JSON.stringify(x));",
       "if (s.startsWith('persona list')) out({ ok: true, data: { personas: [{ petname: 'steward', handleIndex: 0 }] } });",
-      "else if (s.startsWith('kahua list')) out({ [process.env.FAKE_FACE_WORD]: true, relation: 'rel-1', items: [] });",
+      "else if (s.startsWith('kahua get')) out({ [process.env.FAKE_FACE_WORD]: true, relation: 'rel-1', items: [] });",
       "else if (s.startsWith('wiki list')) out({ ok: true, data: { wikis: [] } });",
       "else if (s.startsWith('tiddler get --meme')) out({ ok: true, data: { roots: [{ uri: 'lar:///ha.ka.ba/kahua/memory/state/heron', canonicalHash: 'sha256:aa' }] } });",
       "else if (s.startsWith('wiki filter')) out({ ok: true, data: { rows: [] } });",
@@ -302,7 +302,7 @@ test("a-face-born-after-the-stand-exports: a face `persona new` founds on a stan
     house = await standHouse("late", "steward");
     house.must(["persona", "new", "1", "--name", "engineer"]);
     await house.unlock();
-    const stage = house.lares(["kahua", "list", "--face", "1"]);
+    const stage = house.lares(["kahua", "get", "--face", "1"]);
     assert.equal(stage.status, 0, `the late face's stage reads: ${stage.stdout}${stage.stderr}`);
     const exported = JSON.parse(house.must(["export", join(scratch, "bundle"), "--json"]).stdout.trim().split("\n").pop());
     assert.deepEqual(exported.data.faces, ["steward", "engineer"]);
