@@ -71,9 +71,8 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 \end
 
 \function lares.attractors()
-[[lar:///ha.ka.ba/kahua/memory/reference/discordian-catmas]]
-[[lar:///ha.ka.ba/kahua/memory/reference/pattern-integrities]]
-[[lar:///ha.ka.ba/kahua/memory/reference/practices]]
+[[discordian-catmas]] [[pattern-integrities]] [[practices]]
++[addprefix[lar:///ha.ka.ba/kahua/memory/reference/]]
 :filter[is[tiddler]]
 \end
 
