@@ -94,9 +94,11 @@ describe.skipIf(wikiSkip)(`every wiki its engine${skipNote}`, () => {
     const got = await makeTiddlerGetReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator" }, denied);
     expect(got).toMatchObject({ recipe: TW5_DOCS_SLUG, tiddler: { fields: { title: "backlinks Operator", caption: "backlinks" }, bag: TW5_DOCS_BAG } });
     expect(String(got["has"])).toMatch(/^<<~ has /);
+    const whole = await makeTiddlerGetReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator", grain: "whole" }, denied);
+    expect((whole["tiddler"] as { fields: Record<string, string> }).fields["text"], "`--all` reads the whole page").toMatch(/list of backlinks/);
     const filtered = await makeWikiFilterReactor(opts)({ recipe: TW5_DOCS_SLUG, filter: "[tag[Filter Operators]]" }, denied);
-    expect(filtered.titles).toEqual(expect.arrayContaining(["backlinks Operator", "tag Operator", "field Operator"]));
-    expect((filtered.titles as string[]).length).toBeGreaterThan(100);
+    expect(filtered.titles).toEqual(expect.arrayContaining(["backlinks Operator", "addprefix Operator", "count Operator"]));
+    expect(filtered["total"], "the whole operator vocabulary, paged").toBeGreaterThan(100);
     const status = await makeWikiStatusReactor(opts)({ recipe: TW5_DOCS_SLUG }, denied);
     expect((status["layers"] as Array<{ bag: string }>).map((l) => l.bag)).toContain(TW5_DOCS_BAG);
     await expect(makeTiddlerPutReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "No", text: "no" }, ctx())).rejects.toMatchObject({ reason: TW5_DOCS_READ_ONLY });

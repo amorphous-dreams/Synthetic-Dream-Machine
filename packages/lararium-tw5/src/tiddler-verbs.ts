@@ -85,6 +85,7 @@ import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
 import { wikiWearsNext } from "./island-recipe.js";
+import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 export interface TiddlerVerbOptions extends Partial<Pick<MemeVerbOptions, "reach" | "slotStore" | "realmWritable" | "recipeOf" | "writeSlot" | "faceLane">> {
@@ -212,7 +213,7 @@ async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<
   const target = readContainer(args, verb);
   if (target.recipe === null || target.recipe === "default") return null;
   const slug = target.recipe;
-  if (write && slug === "tw5-docs") throw new VerbRefusal("tw5-docs-read-only", "tw5-docs-read-only: the documentation library takes no writes");
+  if (write) refuseTw5DocsWrite(slug, verb);
   if (slug === DAEMON_WIKI_SLUG) throw refuseUnreached(verb, `the daemon wiki answers to \`recipe: "default"\` alone`);
   if (!opts.wikis) throw refuseUnreached(verb, `this island holds no door to a named wiki's engine, so "${slug}" answers nothing here`);
   const engine = await opts.wikis.of(slug, { write });
@@ -284,7 +285,8 @@ function refuseWithheld(title: string, verb: string): void {
  * A record with no stamp belongs to the engine itself (a shadow, a boot tiddler). One ask per bag per verb.
  */
 async function reachOf(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<(bag: string | null) => Promise<boolean>> {
-  const proof = await cap("read", anchor.bag);
+  // The TW5 docs library rests public: its bag carries no house record, so every face reads it without a cap ask.
+  const proof = isTw5DocsBag(anchor.bag) ? { ok: true as const } : await cap("read", anchor.bag);
   if (!proof.ok) throw new Error(`cap-denied: read on ${anchor.bag} required (${proof.reason ?? "no reason"})`);
   const memo = new Map<string, Promise<boolean>>([[anchor.bag, Promise.resolve(true)]]);
   return (bag) => {

@@ -100,7 +100,7 @@ import {
   composeVerbPlane,
   mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
   recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
-  makeCatalogAccessorOver, liveKahuaFace, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON,
+  makeCatalogAccessorOver, liveKahuaFace, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON, refuseTw5DocsWrite,
 } from "@lararium/tw5";
 import type {
   VesselWikiSlot, DaemonVmCore, DaemonVmHolder, VesselDaemonVm, VesselOrchestration,
@@ -4602,6 +4602,7 @@ async function prepareNodeBootOn(
         ? wikiSlugOfBag(source) : null;
       const target = typeof args["wiki"] === "string" && args["wiki"]
         ? args["wiki"] : sourceWiki ?? destinationWiki ?? slotActiveWikiId;
+      refuseTw5DocsWrite(target, "wiki-act");
       const activation = await wikiActivation.ensureActive(target);
       if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
       return vmManager.placeWikiVerb(target, {

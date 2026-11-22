@@ -192,6 +192,12 @@ export function libraryLine(frame) {
   ].join(" · ");
 }
 
+/**
+ * The TW5 docs library's line: the vendored tw5.com edition every face reads read-only (`--recipe tw5-docs`, `tw5-docs-library`),
+ * named on every wake a vessel answers up, with the read that opens a page and the one that lists the operator vocabulary.
+ */
+export const DOCS_LIBRARY_LINE = "Library: tw5-docs (TiddlyWiki docs, read-only) · read a page: tiddler_get(title=\"backlinks Operator\", recipe=\"tw5-docs\") · the operators: wiki_filter(filter=\"[tag[Filter Operators]]\", recipe=\"tw5-docs\")";
+
 /** The observation's line, and whether the vessel itself answered up. Each cause reads by its own name: only the vessel's own answer says "down". */
 export function observation(result) {
   const unobserved = (why) => `vessel unobserved: ${why}; read it with tools/lares-container.sh vessel stand --observe --json, or ${CURE}`;
@@ -634,6 +640,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   if (law !== null) lines.push(lawLines(law, lawPins));
   if (roster !== null) lines.push(rosterLines(roster));
   lines.push(seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)");
+  if (seen.up) lines.push(DOCS_LIBRARY_LINE);
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
   if (halves !== null) { const line = halvesLines(halves); if (line) lines.push(line); }
