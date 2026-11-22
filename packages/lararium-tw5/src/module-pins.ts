@@ -76,7 +76,7 @@ const GATED = Symbol.for("lararium.tw5.module-pin-gate");
  * `pins` stays the caller's live set, so a pin the trusted-module gate adds after boot admits that module alone.
  */
 export function armModulePinGate(
-  tw: { modules: ModuleTable },
+  tw: { modules: ModuleTable; wiki?: { getTiddler?(title: string): { fields: Record<string, unknown> } | undefined } },
   pins: Set<string>,
   onRefuse: (title: string, digest: string) => void,
 ): void {
@@ -89,6 +89,17 @@ export function armModulePinGate(
     if (typeof definition === "string" && !pins.has(modulePin(name, moduleType, definition))) {
       onRefuse(name, moduleDigest(definition));
       return undefined;
+    }
+    // TW5's own boot hands an OBJECT parsed from a record's text for a JSON or dictionary module (`defineTiddlerModules`), and
+    // load-modules applies a `config` one to `$tw.config` and a `global` one to `$tw`. So an object whose title names a module
+    // record answers to that record's text, pinned like code; an object no record stands behind comes from code already running.
+    if (typeof definition !== "string") {
+      const record = tw.wiki?.getTiddler?.(name)?.fields;
+      const text = record?.["text"];
+      if (record?.["module-type"] !== undefined && typeof text === "string" && !pins.has(modulePin(name, moduleType, text))) {
+        onRefuse(name, moduleDigest(text));
+        return undefined;
+      }
     }
     return define(name, moduleType, definition);
   };

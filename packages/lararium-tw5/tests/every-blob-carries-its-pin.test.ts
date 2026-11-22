@@ -123,6 +123,21 @@ describe.skipIf(genesisSkip)(`the island evaluates only pinned modules${genesisN
     expect(tw.modules.execute(library.title)["answer"], "CONTROL: the pinned title runs").toBe(42);
   }, 120_000);
 
+  for (const [kind, type, text] of [["json", "application/json", '{"htmlUnsafeElements":[]}'], ["dictionary", "application/x-tiddler-dictionary", "htmlUnsafeElements: "]] as const) {
+    test(`a record-sourced ${kind} module carries its pin like code: unpinned, the script guard stands; CONTROL: pinned, it applies`, async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const config = { title: `$:/plugins/lar/pin-probe/config-${kind}`, type, "module-type": "config", text };
+      const unpinned = await bootGenesisWiki({ path: "node", preloads: [config] });
+      engines.push(unpinned);
+      const tw = (e: TW5Engine) => e.$tw as unknown as { config: { htmlUnsafeElements: unknown } };
+      expect(tw(unpinned).config.htmlUnsafeElements, "an unpinned config record cleared the script guard").toEqual(["script"]);
+      expect(unpinned.refusedModules.map((r) => r.title)).toContain(config.title);
+      const pinned = await bootGenesisWiki({ path: "node", preloads: [config], modulePins: modulePinsOf([config]) });
+      engines.push(pinned);
+      expect(tw(pinned).config.htmlUnsafeElements, "CONTROL: the pinned config record applies").not.toEqual(["script"]);
+    }, 120_000);
+  }
+
   test("a module defined after boot meets the same gate; CONTROL: a pinned one defines", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const engine = new TW5Engine();
