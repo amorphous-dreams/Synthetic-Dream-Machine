@@ -281,8 +281,14 @@ export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([["retire-wi
  */
 export const SENSE_HAND_DOOR_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SENSE_HAND_CODES));
 
-/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor, wiki and sense together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES, ...SENSE_HAND_DOOR_CODES]);
+/**
+ * The vessel verbs that write the operator's disk a person's hand alone runs: `wiki-render-out` lands derived bytes in a bound
+ * workbench (a disk write grant), so the socket refuses a seat's ask by this code, on a session and on a one-shot line alike.
+ */
+export const DISK_WRITE_HAND_CODES: ReadonlyMap<string, string> = new Map([["wiki-render-out", "render-output-needs-hand"]]);
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor, wiki, sense and disk writes together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES, ...SENSE_HAND_DOOR_CODES, ...DISK_WRITE_HAND_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
 export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_VERBS, ...STORE_DOOR_HAND_CODES.keys()]);
 

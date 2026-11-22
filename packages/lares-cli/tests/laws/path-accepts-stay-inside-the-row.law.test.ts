@@ -15,7 +15,7 @@ import { SENSE_LENSES, SENSE_LENS_ALIASES } from "../../src/commands/sense-analy
 import type { ParsedArgs } from "../../src/parse-args.js";
 
 /** The first words a narrowing row branches on, the sense fold's verbs, and a sensorium name leading them. */
-const HEADS = [undefined, "request", "raise-sign", "list", "analyze", "pour", "roster", "holders", "search", "other"];
+const HEADS = [undefined, "request", "raise-sign", "list", "analyze", "pour", "roster", "holders", "search", "render", "filter", "status", "act", "other"];
 const LENSES = [undefined, "zz-no-such-lens", ...Object.keys(SENSE_LENSES), ...Object.keys(SENSE_LENS_ALIASES)];
 
 function probes(cmd: Command): ParsedArgs[] {

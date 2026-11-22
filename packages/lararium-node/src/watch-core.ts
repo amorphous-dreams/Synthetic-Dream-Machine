@@ -363,7 +363,7 @@ export function armFacePoolWatch(o: FacePoolWatchOptions): FacePoolWatch {
  */
 
 /** The top folders a workbench holds that ride no wave and no commit: its recovery drafts, the temp layer. */
-export const WORKSPACE_SKIP: readonly string[] = ["recovery", TEMP_LAYER_DIR];
+export const WORKSPACE_SKIP: readonly string[] = ["recovery", "rendered", TEMP_LAYER_DIR];
 
 /** The subject a workbench's sitting closes under: a `lar:` subject that names the close and never a face. */
 export const WORKSPACE_CLOSE_PREFIX = "lar:///workspace.closes.the-sitting/";
