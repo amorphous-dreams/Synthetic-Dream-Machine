@@ -17,6 +17,7 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
  * The node vessel holds no semantic privilege. It carries roads, docks, and sync; live VM state lives
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
+import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
 import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh";
@@ -4641,11 +4642,11 @@ async function prepareNodeBootOn(
       mountFace: () => mountFace,
       // The relation each lit face stands proved under (the worn face's and every lit sibling's): a stage read names it, so a
       // lit face whose stage will not read here still names the relation its root carries.
-      litRelation: (ordinal: number) => {
-        if (ordinal === mountFace && wornDeviceRelation !== null) return wornDeviceRelation;
-        for (const held of siblingFaces.values()) if (held.ordinal === ordinal && held.relation !== null) return held.relation;
-        return null;
-      },
+      // It reads the lit set's own test (`litOrdinals`): the actor reads lit, and a sibling's own place session stands.
+      litRelation: (ordinal: number) => provedLitRelation(ordinal, {
+        mount: mountFace, wornRelation: wornDeviceRelation, lit: (o) => faceLife.state(o).kind === "lit",
+        siblings: [...siblingFaces].map(([group, f]) => ({ ordinal: f.ordinal, relation: f.relation, session: siblingSessions.get(group)?.cell.session() != null })),
+      }),
       // A face's local canon `bags/daemon-<F>`, named by the control document: a kahua lift reads its staged row there.
       faceCanon: faceCanonThroughControl(repo, readControlDoc),
       // A face founded on this standing composition lights beside the worn one at its birth.
