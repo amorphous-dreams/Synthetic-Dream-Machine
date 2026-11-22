@@ -94,7 +94,7 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
-import { homedInTheKahuWorkbench, readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
+import { homedInTheKahuWorkbench, readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict, hasLine, param } from "@lararium/tw5";
 import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId } from "@lararium/mesh";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
@@ -186,14 +186,10 @@ export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemeP
     if (base) out["base"] = base;
     return { verb: "meme-delete", args: out, ...face };
   }
-  // THE PAGE WORDS (`meme get` answers a bounded page): `--max-bytes <N>` caps the text, `--after <cursor>` continues a cut answer.
-  const maxBytes = typeof args.options["max-bytes"] === "string" ? args.options["max-bytes"].trim() : "";
-  if (maxBytes) {
-    if (!/^[0-9]+$/.test(maxBytes) || Number(maxBytes) < 1) throw new UsageError(`--max-bytes takes a count of at least 1 (got "${maxBytes}")`);
-    out["maxBytes"] = maxBytes;
-  }
+  // THE GRADIENT (`meme get` answers by grain): `--all` reads the whole carrier, paged on slot boundaries; `--after <cursor>` one page of it.
+  if (args.flags["all"] === true) out["grain"] = "whole";
   const after = typeof args.options["after"] === "string" ? args.options["after"].trim() : "";
-  if (after) out["after"] = after;
+  if (after) { out["grain"] = "whole"; out["after"] = after; }
   return { verb: "meme-get", args: out, ...face };
 }
 
@@ -347,13 +343,19 @@ async function memePut(args: ParsedArgs): Promise<number> {
   return exitFor(code);
 }
 
-interface GotMeme { text: string; canonicalHash: string; bytes?: number; truncated?: boolean; next?: string | null }
+interface GotMeme {
+  text?: string; canonicalHash: string; bytes?: number;
+  grain?: { asked: string | null; applied: string; why: string };
+  slots?: Array<{ slot: string; bytes: number; first: string | null }>;
+  page?: { page: number; pages: number };
+  next?: { grain: string; after?: string } | null;
+}
 
 /**
- * `meme get` ANSWERS ONE BOUNDED PAGE. A meme within the cap (the daemon's default, 64 KiB) answers whole, as it always did; a
- * longer one answers its first page and says so on stderr (`truncated`, the size and the cursor). `--after <cursor>` reads the page
- * behind, `--max-bytes <N>` moves the cap, and `--all` follows the cursor to the end and prints the whole text. The size line
- * (`size: N bytes`) rides stderr beside the base, so a pipe that carries the carrier on stdout still hears the size.
+ * `meme get` ANSWERS ON A GRADIENT, BY GRAIN. A carrier within one page (64 KiB) answers whole, byte for byte; a longer one answers
+ * its has-stack (one `has` line per slot) on stdout and says on stderr how to read it whole, so no script meets a carrier cut
+ * mid-slot. `--all` reads the whole carrier, following its pages (each cut on a slot boundary) to the end; `--after <cursor>`
+ * reads one page. The size line (`size: N bytes`) and the grain ride stderr beside the base.
  */
 async function memeGet(args: ParsedArgs): Promise<number> {
   const plan = memePlan("get", args);
@@ -362,8 +364,7 @@ async function memeGet(args: ParsedArgs): Promise<number> {
   let last: GotMeme | null = null;
   let requestId = "";
   let fromFloor = false;
-  for (let after: string | null = typeof plan.args["after"] === "string" ? plan.args["after"] : null; ;) {
-    const wire = after === null ? plan.args : { ...plan.args, after };
+  for (let wire: Record<string, string> = plan.args; ;) {
     const result = await dispatch(plan, wire, did);
     const outcome = readVerbOutcome(result);
     if (!outcome.ok) {
@@ -378,37 +379,42 @@ async function memeGet(args: ParsedArgs): Promise<number> {
       emit(args, { ok: false, requestId, error: { code: "not-found", message: `no meme at ${plan.args["uri"]}` }, human: () => console.error(`lares meme get: no meme at ${plan.args["uri"]}`) });
       return exitFor("not-found");
     }
-    parts.push(meme.text);
+    if (typeof meme.text === "string") parts.push(meme.text);
     last = meme;
-    const next = typeof meme.next === "string" && meme.next !== "" ? meme.next : null;
-    if (args.flags["all"] !== true || next === null) break;
-    if (next === after) {
-      const message = `the meme's cursor stood still at ${next}`;
+    const after = meme.next?.after ?? null;
+    if (args.flags["all"] !== true || after === null) break;
+    if (after === wire["after"]) {
+      const message = `the meme's cursor stood still at ${after}`;
       emit(args, { ok: false, requestId, error: { code: "verb-error", message }, human: () => console.error(`lares meme get: ${message}`) });
       return 4;
     }
-    after = next;
+    wire = { ...plan.args, grain: "whole", after };
   }
-  const text = parts.join("");
   const got = last!;
-  const cut = got.truncated === true;
+  const text = parts.join("");
+  const carried = typeof got.text === "string";
+  const stack = (got.slots ?? []).map((s) => hasLine(s.slot, [param("bytes", s.bytes)], s.first)).join("\n");
+  const followed = args.flags["all"] === true && carried;
   emit(args, {
     ok: true,
     requestId,
     // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
-    // `bytes` names the whole meme's size; `truncated` and `next` name a cut page and the cursor of the one behind it.
+    // `grain` names what the read applied and why; `next` the unfold behind it (the whole, or the cursor of the page behind).
     data: {
-      uri: plan.args["uri"], text, canonicalHash: got.canonicalHash,
-      ...(typeof got.bytes === "number" ? { bytes: got.bytes, truncated: cut, next: cut ? got.next ?? null : null } : {}),
+      uri: plan.args["uri"], ...(carried ? { text } : {}), canonicalHash: got.canonicalHash,
+      ...(got.grain ? { bytes: got.bytes, grain: got.grain, slots: got.slots, next: followed ? null : got.next ?? null } : {}),
+      ...(got.page && !followed ? { page: got.page } : {}),
       ...(fromFloor ? { floor: true } : {}),
     },
-    // The text alone reaches stdout, a terminal or a redirect alike (`carrierFirst`), so `lares meme get <uri> --recipe <slug>
-    // > file` carries the meme. The base rides stderr as one line, `base: sha256:…`, for the writer's `--base`, and the size line beside it.
+    // The carrier alone reaches stdout, a terminal or a redirect alike (`carrierFirst`), so `lares meme get <uri> --recipe <slug>
+    // > file` carries the meme; past a page the has-stack reaches stdout in its place and stderr says how to read the whole.
     human: () => {
-      stdout.write(text);
+      stdout.write(carried ? text : `${stack}\n`);
       console.error(`base: ${got.canonicalHash}`);
       if (typeof got.bytes === "number") console.error(`size: ${got.bytes} bytes`);
-      if (cut) console.error(`truncated: this page ends at the byte cap; read the rest with --after ${got.next} (or --all for the whole text; --max-bytes <N> moves the cap)`);
+      if (got.grain) console.error(`grain: ${got.grain.applied} (${got.grain.why})`);
+      if (!carried) console.error("the carrier runs past one page: stdout carries its has-stack; --all reads the whole carrier, paged on slot boundaries");
+      else if (got.page && !followed && got.next?.after) console.error(`page ${got.page.page} of ${got.page.pages}: read the next with --after ${got.next.after} (or --all for the whole carrier)`);
       if (fromFloor) console.error(FLOOR_READ_NOTE);
     },
   });

@@ -464,15 +464,13 @@ def test_tiddler_put_text_names_the_seat_canon_refusal():
     assert "seat-canon-reach" in said
 
 
-def test_meme_get_pages_by_bytes_and_cursor(daemon):
-    # THE ANSWER IS BOUNDED: `max_bytes` rides as `maxBytes` and the cursor rides back as `after`; the daemon's size line
-    # (`bytes`, `truncated`, `next`) crosses the seat on the meme untouched.
-    page = {**_GET_MEME, "bytes": 90000, "truncated": True, "next": "65536.0123456789abcdef"}
-    daemon.output = {"uri": _URI, "meme": page}
-    assert _get(uri=_URI, recipe="default", max_bytes=4096) == page
-    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI, "maxBytes": 4096}}
-    _get(uri=_URI, recipe="default", after="65536.0123456789abcdef")
-    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI, "after": "65536.0123456789abcdef"}}
-    # CONTROL: a plain read names neither word on the wire.
-    _get(uri=_URI, recipe="default")
+def test_meme_get_reads_on_a_gradient_by_grain(daemon):
+    # THE GRADIENT: `grain` and the cursor ride the wire as the verb's own words; the daemon's grain echo, slots and next cross
+    # the seat on the meme untouched. A has-stack answer carries no text.
+    stack = {"canonicalHash": _GET_MEME["canonicalHash"], "bytes": 90000, "grain": {"asked": None, "applied": "skinny", "why": "runs past one page"},
+             "slots": [{"slot": "#/a", "bytes": 45000, "first": "a"}], "next": {"grain": "whole"}}
+    daemon.output = {"uri": _URI, "meme": stack}
+    assert _get(uri=_URI, recipe="default") == stack
     assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI}}
+    _get(uri=_URI, recipe="default", grain="whole", after="1.0123456789abcdef")
+    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI, "grain": "whole", "after": "1.0123456789abcdef"}}

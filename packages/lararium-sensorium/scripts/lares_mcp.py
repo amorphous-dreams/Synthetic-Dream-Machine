@@ -1144,22 +1144,21 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool()
     def meme_get(uri: str, recipe: "str | None" = None, bag: "str | None" = None,
-                 max_bytes: "int | None" = None, after: "str | None" = None) -> "dict | None":
-        """READ a meme's text + canonical hash at its `lar:` `uri` — mirrors `lares meme get`. CONTAINER
+                 grain: "str | None" = None, after: "str | None" = None) -> "dict | None":
+        """READ a meme at its `lar:` `uri` ON A GRADIENT, BY GRAIN — mirrors `lares meme get`. CONTAINER
         LAW: exactly one of `recipe` / `bag` names where to read (`recipe="default"` names the @daemon's
-        own wiki); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash, bytes, truncated, next} — carry the
-        `canonicalHash` into `meme_put`'s `base` to write against what you read — or null when the meme
-        stands absent. THE FLOOR WORD: a face outside the Kahu cabal holds no read on a live house canon document
-        (`lares`, `lararium`), so the bag's floor snapshot answers it, and the answer says so: {text, canonicalHash, floor}
-        with `floor: true`. A live read carries no `floor`. A floor read may trail the live canon, and a write to
-        that bag from the same face refuses. THE ANSWER IS BOUNDED: it always names the meme's whole size as `bytes`, and
-        carries at most `max_bytes` (default 65536, at most 262144) of `text`, never cutting a character. A meme within
-        the cap answers whole (`truncated` false, `next` null); a longer one answers its first page with `truncated`
-        true and `next`, a cursor: hand it back as `after` for the page behind (the pages join to the whole text; a meme
-        that moved between pages refuses `meme-cursor-stale`, so read again from the first page). Rides the @daemon wire, never a store."""
+        own wiki); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). Returns {text?, canonicalHash,
+        bytes, grain, slots, next} — carry the `canonicalHash` into `meme_put`'s `base` to write against what you read — or null
+        when the meme stands absent. THE GRADIENT: a carrier within one page (65536 bytes) answers whole; a longer one answers its
+        has-stack (`slots`, each with its bytes and first line, no `text`) and `next` names the whole. `grain="whole"` reads the whole
+        carrier one page at a time, each page cut on a slot boundary (never mid-slot); hand `next.after` back as `after` for the page
+        behind (a carrier that moved refuses `read-cursor-stale`). `grain` names one of skinny · slot · whole here; an unknown grain
+        refuses `grain-unknown`. THE FLOOR WORD: a face outside the Kahu cabal holds no read on a live house canon document
+        (`lares`, `lararium`), so the bag's floor snapshot answers it, and the answer says so: {text, canonicalHash, floor} with `floor: true`. A live read
+        carries no `floor`. Rides the @daemon wire, never a store."""
         args: dict = {**_meme_container("meme_get", recipe, bag), "uri": uri}
-        if max_bytes is not None:
-            args["maxBytes"] = max_bytes
+        if grain:
+            args["grain"] = grain
         if after:
             args["after"] = after
         # A reactor outcome never rides bare null, so the daemon answers `{uri, meme}`; the tool hands

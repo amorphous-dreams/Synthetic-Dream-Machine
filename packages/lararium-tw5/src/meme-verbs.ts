@@ -82,6 +82,7 @@ import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
+import { grainOf, memeGradient } from "./read-gradient.js";
 import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
 import type { TiddlerFields } from "./deserializer.js";
 
@@ -551,45 +552,18 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-get reads no pointer body.`);
     }
     const meme = await readMeme(target.uri, sink);
-    return { uri: target.uri, meme: meme === null ? null : pageMeme(meme, args), ...(floor ? { floor: true } : {}) };
-  };
-}
-
-/** THE BYTES ONE `meme-get` ANSWERS BY DEFAULT: the one house page size (a filter page and a render hold the same). A meme within it answers whole. */
-export const MEME_GET_BYTES = 65_536;
-/** The most a caller may ask one `meme-get` page to carry. */
-export const MEME_GET_BYTES_MAX = 262_144;
-
-/**
- * ONE PAGE OF A MEME'S TEXT, BY BYTES. The answer always names the whole size (`bytes`); a meme past the cap answers its first
- * `maxBytes` (never cutting a character) with `truncated: true` and `next`, a cursor `<byte offset>.<tail of the canonical hash>`
- * that hands back as `after` for the page behind it. The cursor names the meme it continues: a meme that moved refuses
- * `meme-cursor-stale` and the caller reads again from the first page.
- */
-function pageMeme(meme: { text: string; canonicalHash: string }, args: Readonly<Record<string, unknown>>): Record<string, unknown> {
-  const bytes = Buffer.from(meme.text, "utf8");
-  const tail = meme.canonicalHash.slice(-16);
-  const rawMax = args["maxBytes"];
-  const asked = typeof rawMax === "number" ? rawMax : typeof rawMax === "string" && /^[0-9]+$/.test(rawMax.trim()) ? Number(rawMax.trim()) : NaN;
-  const maxBytes = Number.isInteger(asked) && asked >= 1 ? Math.max(256, Math.min(asked, MEME_GET_BYTES_MAX)) : MEME_GET_BYTES;
-  const after = optionalStringArg(args, "after");
-  let offset = 0;
-  if (after) {
-    const cursor = /^([0-9]{1,9})\.(.{1,16})$/.exec(after);
-    if (!cursor) throw new VerbRefusal("meme-cursor-malformed", `meme-cursor-malformed: "${after}" reads as no cursor; hand back a page's own \`next\`, or drop \`after\` to read from the first page.`);
-    if (cursor[2] !== tail) throw new VerbRefusal("meme-cursor-stale", "meme-cursor-stale: the meme moved and reads another text now; drop `after` and read again from the first page.");
-    offset = Math.min(Number(cursor[1]), bytes.length);
-  }
-  let end = Math.min(offset + maxBytes, bytes.length);
-  // Back off to a character boundary: a UTF-8 continuation byte (10xxxxxx) never starts a page.
-  while (end < bytes.length && end > offset && (bytes[end]! & 0xc0) === 0x80) end--;
-  const whole = offset === 0 && end === bytes.length;
-  return {
-    text: whole ? meme.text : bytes.subarray(offset, end).toString("utf8"),
-    canonicalHash: meme.canonicalHash,
-    bytes: bytes.length,
-    truncated: end < bytes.length,
-    next: end < bytes.length ? `${end}.${tail}` : null,
+    if (meme === null) return { uri: target.uri, meme: null, ...(floor ? { floor: true } : {}) };
+    // ON A GRADIENT BY GRAIN (read-gradient): whole within a page, the has-stack past it, the whole paged on slot boundaries.
+    const read = memeGradient(meme, { grain: grainOf(args["grain"]), after: optionalStringArg(args, "after") });
+    return {
+      uri: target.uri,
+      meme: {
+        ...(read.text !== undefined ? { text: read.text } : {}),
+        canonicalHash: meme.canonicalHash, bytes: read.bytes, grain: read.grain, slots: read.slots,
+        ...(read.page ? { page: read.page } : {}), next: read.next,
+      },
+      ...(floor ? { floor: true } : {}),
+    };
   };
 }
 
