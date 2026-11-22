@@ -1,10 +1,10 @@
 /**
  * daemon-roster-tiddlers — the SENSORIUM ROSTER daemon surface (E4, the co-use UX).
  *
- * ONE capability rendered two ways (UI ≡ API): every lifecycle button here fires the RESIDENT verb-summon
- * pattern — `$button` → `$action-setfield` on `…/verb/<verb>` carrying `verb`, the `lares-dispatch` marker,
- * and its `arg-*` fields — the SAME verb-summon a CLI `lares sense <verb>` drives through the daemon. A
- * human clicks; an agent writes the same summons; both land on ONE store. No divergent view.
+ * The roster's buttons (refresh, reconcile) fire the RESIDENT verb-summon pattern — `$button` →
+ * `$action-setfield` on `…/verb/<verb>` carrying `verb`, the `lares-dispatch` marker, and its `arg-*`
+ * fields. Those verbs answer any asker, so a click and an agent's written summons land alike; no button
+ * here runs a hand verb.
  *
  * THE HAND VERBS RENDER NO BUTTON (hitl-reads-a-hand): the reconcile button renders for everyone, and
  * promote · retire · un-retire · purge render as a note naming the command, since each runs on a person's

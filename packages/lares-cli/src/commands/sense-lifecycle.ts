@@ -125,9 +125,9 @@ export function cmdSensePromote(args: ParsedArgs, hand: HandRead = ownHand): num
   const name = args.positional[0];
   if (!name) return refused(args, "promote", "promote wants a sensorium name", "lares sense promote <name> --approve");
   try {
-    requireHand(args, "promote", `lares sense promote ${name} --approve`, hand);
+    const read = requireHand(args, "promote", `lares sense promote ${name} --approve`, hand);
     const storeSwapTarget = args.options["store-swap"];
-    return landed(args, "promote", promoteSensorium(name, storeSwapTarget ? { storeSwapTarget } : {}));
+    return landed(args, "promote", promoteSensorium(name, read, storeSwapTarget ? { storeSwapTarget } : {}));
   } catch (e) {
     return refusedBy(args, "promote", e);
   }
@@ -137,8 +137,8 @@ export function cmdSenseRetire(args: ParsedArgs, hand: HandRead = ownHand): numb
   const name = args.positional[0];
   if (!name) return refused(args, "retire", "retire wants a sensorium name", `lares sense retire <name> --grounds <${MUSTIE_GROUNDS.join("|")}> --approve`);
   try {
-    requireHand(args, "retire", `lares sense retire ${name} --grounds <${MUSTIE_GROUNDS.join("|")}> --approve`, hand);
-    return landed(args, "retire", retireSensorium(name, args.options["grounds"]));
+    const read = requireHand(args, "retire", `lares sense retire ${name} --grounds <${MUSTIE_GROUNDS.join("|")}> --approve`, hand);
+    return landed(args, "retire", retireSensorium(name, args.options["grounds"], read));
   } catch (e) {
     return refusedBy(args, "retire", e, `grounds: ${MUSTIE_GROUNDS.join(" · ")}`);
   }
@@ -148,8 +148,8 @@ export function cmdSenseUnRetire(args: ParsedArgs, hand: HandRead = ownHand): nu
   const name = args.positional[0];
   if (!name) return refused(args, "un-retire", "un-retire wants a sensorium name", "lares sense un-retire <name>");
   try {
-    requireHand(args, "un-retire", `lares sense un-retire ${name}`, hand, false);
-    return landed(args, "un-retire", unRetireSensorium(name));
+    const read = requireHand(args, "un-retire", `lares sense un-retire ${name}`, hand, false);
+    return landed(args, "un-retire", unRetireSensorium(name, read));
   } catch (e) {
     return refusedBy(args, "un-retire", e);
   }

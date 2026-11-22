@@ -62,7 +62,7 @@ import {
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
-  coupleMesh, crystallize, guardHitl,
+  coupleMesh, crystallize,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
   faceAtomKeyFromSeed, type FaceAtomKey,
@@ -4463,9 +4463,9 @@ async function prepareNodeBootOn(
       // ── the DURABLE sensorium-lifecycle executors ─────────────────────────────────────────────────
       // These route over manifest.json alone (no store holder, no captureFor) — the SAME pure verb
       // functions the CLI-direct door drives, reachable over the daemon wire, where the reads answer the
-      // MCP seat and the hand verbs answer a terminal's ask alone. The hand verbs (promote·retire·un-retire·purge) run only where the
-      // island's reactor read the asker as a terminal (`cli`) and handed `hand: "hand"` on; guardHitl
-      // re-reads that value here, and no caller's approval value reaches this far (hitl-reads-a-hand).
+      // MCP seat and the hand verbs answer a terminal's ask alone: they run only where the reactor (main, over the
+      // delegate route) read the booked asker as a terminal (`cli`) and handed `hand: "hand"` on; each store
+      // function re-reads that value itself, and no caller's approval value reaches this far (hitl-reads-a-hand).
       senseRoster: async () => ({ sensoria: rosterSensoria() }),
       senseInspect: async (input) => {
         const insp = inspectSensorium(input.name);
@@ -4482,21 +4482,18 @@ async function prepareNodeBootOn(
         return reconcileSensorium(sensoriumDir(input.name)) as unknown as Record<string, unknown>;
       },
       sensePromote: async (input) => {
-        // in-loop human graduation — one-way by intent → a hand verb.
-        guardHitl("promote", input.hand);
+        // in-loop human graduation — one-way by intent → a hand verb; the store function re-reads the hand itself.
         return promoteSensorium(
-          input.name, input.storeSwap ? { storeSwapTarget: input.storeSwap } : {},
+          input.name, input.hand, input.storeSwap ? { storeSwapTarget: input.storeSwap } : {},
         ) as unknown as Record<string, unknown>;
       },
       senseRetire: async (input) => {
         // a JUDGED deaccession (grounds required; move-not-delete) → a hand verb.
-        guardHitl("retire", input.hand);
-        return retireSensorium(input.name, input.grounds) as unknown as Record<string, unknown>;
+        return retireSensorium(input.name, input.grounds, input.hand) as unknown as Record<string, unknown>;
       },
       senseUnRetire: async (input) => {
         // a restore re-lights what the house treats as live → a hand verb, as its retire.
-        guardHitl("un-retire", input.hand);
-        return unRetireSensorium(input.name) as unknown as Record<string, unknown>;
+        return unRetireSensorium(input.name, input.hand) as unknown as Record<string, unknown>;
       },
       sensePurge: async (input) => {
         // the irreversible byte GC → a hand verb. purgeSensorium ITSELF guardHitls (defense-in-depth) and refuses

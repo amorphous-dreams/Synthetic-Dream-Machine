@@ -238,8 +238,9 @@ export interface PromoteResult {
  * FEATURE-GATED OFF: `--store-swap <target>` runs only when `LifecycleGates.storeSwapPromote` is flipped.
  */
 export function promoteSensorium(
-  name: string, opts: { storeSwapTarget?: string } = {}, gates: LifecycleGates = LIFECYCLE_GATES_DEFAULT,
+  name: string, hand: SenseHand | undefined, opts: { storeSwapTarget?: string } = {}, gates: LifecycleGates = LIFECYCLE_GATES_DEFAULT,
 ): PromoteResult {
+  guardHitl("promote", hand);
   const dir = sensoriumDir(name);
   const m = readManifest(dir);
   if (!m) throw new Error(`promote: no sensorium named '${name}'`);
@@ -277,7 +278,8 @@ export interface RetireResult {
  * retire — the dir and planes stay; only the explicit HITL `purge` GCs. Idempotent on an already-tombstoned
  * sensorium (keeps the first grounds).
  */
-export function retireSensorium(name: string, grounds: unknown): RetireResult {
+export function retireSensorium(name: string, grounds: unknown, hand: SenseHand | undefined): RetireResult {
+  guardHitl("retire", hand);
   if (!isMustieGround(grounds)) {
     throw new Error(`retire refuses without a MUSTIE ground — one of: ${MUSTIE_GROUNDS.join(" · ")} (got ${JSON.stringify(grounds)}). A retire is judged, never silent.`);
   }
@@ -306,7 +308,8 @@ export interface UnRetireResult {
  * the state it stood at before the retire (recorded in the retirement record), dropping the record. Pure
  * move-not-delete — the bytes never left. A non-tombstone sensorium is a no-op ({restored:false}).
  */
-export function unRetireSensorium(name: string): UnRetireResult {
+export function unRetireSensorium(name: string, hand: SenseHand | undefined): UnRetireResult {
+  guardHitl("un-retire", hand);
   const dir = sensoriumDir(name);
   const m = readManifest(dir);
   if (!m) throw new Error(`un-retire: no sensorium named '${name}'`);
