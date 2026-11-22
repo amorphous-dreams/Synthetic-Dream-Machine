@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri, selvesRecordOf } from "@lararium/mesh";
+import { deriveRegisterBags, litFaceOwnBags, personaScopedBagIds, daemonFaceCanonBag, wikiSlotUri, selvesRecordOf } from "@lararium/mesh";
 import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
 import { faceLives } from "../src/face-lifecycle.js";
 
@@ -41,6 +41,35 @@ describe("joined face authentication", () => {
     expect(one!.faceRelation).toBe(relation);
     expect(one!.registerBags).toEqual(expect.arrayContaining([wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "personal"), daemonFaceCanonBag(relation)]));
     expect(one!.registerBags.some((b) => /\/wikis\/(?!daemon\/)/.test(b))).toBe(false);
+  });
+  test("L2 RED: a sibling with no proven pair carries no planes and registers neither plane bag; CONTROL: a proven pair rides the entry and its two bags, and no other plane kind", async () => {
+    const { ports } = fixture();
+    const pair = { persona: "automerge:p1", intents: "automerge:t1" };
+    const [one, four] = await joinedFaceAuth({ ...ports, planes: async (g) => (g === "group-1" ? pair : null) });
+    const ids = personaScopedBagIds("group-1");
+    expect(one!.facePlanes).toEqual(pair);
+    expect(one!.registerBags).toEqual(expect.arrayContaining([ids.persona, ids.intents]));
+    for (const other of [ids.circles, ids.identities, ids.sessions]) expect(one!.registerBags).not.toContain(other);
+    expect(four!.facePlanes).toBeUndefined();
+    expect(four!.registerBags).not.toContain(personaScopedBagIds("group-4").intents);
+    expect(four!.registerBags).not.toContain(personaScopedBagIds("group-4").persona);
+  });
+  test("L3 RED: a face that closes while its planes prove carries nothing and mounts nothing; CONTROL: a face still lit mounts its pair once, after its last check", async () => {
+    const { ports } = fixture();
+    const pair = { persona: "automerge:p1", intents: "automerge:t1" };
+    let open = true;
+    const mounted: string[] = [];
+    // The proof answers after the face closed: the mount, which the port names apart from the proof, never lands.
+    const entries = await joinedFaceAuth({ ...ports, ordinals: () => [1], current: () => open,
+      planes: async () => { open = false; return pair; }, mountPlanes: (group) => { mounted.push(group); } });
+    expect(entries).toEqual([]);
+    expect(mounted, "a closed face's proof mounts nothing").toEqual([]);
+    // Lit through its last check, the face mounts its proven pair once, and the mount reads the face lit at that moment.
+    let checks = 0;
+    const lit = await joinedFaceAuth({ ...ports, ordinals: () => [1], current: () => { checks++; return true; },
+      planes: async () => pair, mountPlanes: (group, planes) => { mounted.push(`${group} ${planes.intents} after ${checks} checks`); } });
+    expect(lit).toHaveLength(1);
+    expect(mounted).toEqual([`group-1 automerge:t1 after ${checks} checks`]);
   });
   test("RED: a lit sibling's hive registers its OWN selves record's bag, so the record the bag map files under that face seals under that face's own session; CONTROL: never another face's record", async () => {
     const { ports } = fixture();

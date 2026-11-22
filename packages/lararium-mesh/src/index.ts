@@ -116,6 +116,7 @@ export * from "./lease-advance.js";
 export * from "./charter-hand-lineage.js";
 export * from "./quorum-lease.js";
 export * from "./face-boot-proof.js";
+export * from "./sibling-plane-mount.js";
 export * from "./face-reading.js";
 export * from "./join-face-documents.js";
 export * from "./edge-frontier-board.js";
