@@ -46,7 +46,7 @@ import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
 import { cmdWiki, wikiFilterPlan, wikiRenderPlan } from "../src/commands/wiki.js";
 import { cmdKahua } from "../src/commands/kahua.js";
 import { cmdMeme } from "../src/commands/meme.js";
-import { COMMANDS, unknownFlags } from "../src/bin/lares.js";
+import { COMMANDS, dispatch, unknownFlags } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 interface Row {
@@ -103,6 +103,42 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
 });
 
 describe("the argument law, no daemon", () => {
+  test("wiki render output takes a distinct effectful route", () => {
+    const plan = wikiRenderPlan(argv("wiki", ["[tag[export]]"], {
+      recipe: "default", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html",
+    }));
+    expect(plan).toMatchObject({ verb: "wiki-render-out", args: {
+      recipe: "default", filter: "[tag[export]]", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html",
+    } });
+  });
+  test("wiki render output flags reach only the output path", () => {
+    const row = COMMANDS.find((c) => c.name === "wiki")!;
+    const output = argv("wiki", ["render", "[tag[export]]"], { recipe: "default", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html" });
+    expect(unknownFlags(row, output)).toEqual([]);
+    for (const sub of ["filter", "status", "act"]) {
+      expect(unknownFlags(row, argv("wiki", [sub], { output: "workbench" })).map((x) => x.name)).toEqual(["output"]);
+    }
+  });
+  test("the normal CLI entry refuses output on a read path before dispatch", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await dispatch(["wiki", "filter", "[tag[x]]", "--recipe", "default", "--output", "workbench"])).toBe(2);
+      expect(error.mock.calls.flat().join(" ")).toContain("unknown flag --output");
+      expect(h.calls).toEqual([]);
+    } finally { error.mockRestore(); }
+  });
+  test("wiki render output carries the node manifest and refuses a cross-face visit before dispatch", async () => {
+    h.reply = { has: "<<~ has name=`wiki-render-out` params=`outcome/written files/1`>>", outcome: "written", files: [{ name: "a.html", bytes: 1, digest: "sha256-x" }], skipped: [] };
+    const output = await run(argv("wiki", ["render", "[tag[export]]"], { recipe: "notes", output: "workbench", filename: "[is[tiddler]addsuffix[.html]]", variables: '{"label":"sent"}' }));
+    expect(output).toMatchObject({ exit: 0, printed: { data: { outcome: "written", files: [{ name: "a.html" }] } } });
+    expect(h.calls).toEqual([{ verb: "wiki-render-out", args: { recipe: "notes", filter: "[tag[export]]", output: "workbench", filename: "[is[tiddler]addsuffix[.html]]", variables: { label: "sent" } } }]);
+    h.reply = { has: "<<~ has name=`wiki-render-out` params=`outcome/partial files/1`>>", outcome: "partial", files: [{ name: "a.html", bytes: 1, digest: "sha256-x" }], skipped: [], refusal: "interrupted" };
+    const partial = await run(argv("wiki", ["render", "[tag[export]]"], { recipe: "notes", output: "workbench" }));
+    expect(partial).toMatchObject({ exit: 4, printed: { ok: false, data: { outcome: "partial", files: [{ name: "a.html" }] }, error: { code: "render-partial" } } });
+    h.calls.length = 0;
+    expect((await run(argv("wiki", ["render", "[tag[export]]"], { recipe: "notes", output: "workbench", target: "h1" }))).exit).toBe(2);
+    expect(h.calls).toEqual([]);
+  });
   test("the row refuses family flags on record paths before dispatch", () => {
     const door = COMMANDS.find((row) => row.name === "tiddler")!;
     expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", append: "x" })).map((x) => x.name)).toContain("append");

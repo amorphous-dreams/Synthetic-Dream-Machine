@@ -809,6 +809,22 @@ export function wikiFilterPlan(args: ParsedArgs): DoorPlan {
 export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
   const title = args.positional[0];
   const span = typeof args.options["text"] === "string" ? args.options["text"] : "";
+  if (args.options["output"] !== undefined) {
+    if (args.options["output"] !== "workbench") throw new DoorUsage("--output names workbench alone");
+    if (!title || span || args.options["target"] !== undefined || args.options["after"] !== undefined || args.options["form"] !== undefined) throw new DoorUsage("wiki render --output workbench needs one source filter and takes no span, visit, cursor or form");
+    const out: Record<string, unknown> = { ...engineContainerArgs(args, "wiki render"), filter: title, output: "workbench" };
+    if (args.options["filename"] !== undefined) out["filename"] = args.options["filename"];
+    if (args.options["type"] !== undefined) out["type"] = args.options["type"];
+    if (args.options["template"] !== undefined) out["template"] = args.options["template"];
+    if (args.flags["overwrite"] === true) out["overwrite"] = true;
+    if (args.options["variables"] !== undefined) {
+      let variables: unknown;
+      try { variables = JSON.parse(args.options["variables"]!); } catch { throw new DoorUsage("--variables reads a JSON object of paired names and values"); }
+      if (!variables || typeof variables !== "object" || Array.isArray(variables) || Object.values(variables).some((v) => typeof v !== "string")) throw new DoorUsage("--variables reads a JSON object of paired names and values");
+      out["variables"] = variables;
+    }
+    return { verb: "wiki-render-out", args: out };
+  }
   if (Boolean(title) === Boolean(span)) throw new DoorUsage("name one source: a title (`lares wiki render \"My Note\" --recipe default`) or a span (`--text \"''bold'' {{My Note}}\"`)");
   const out: Record<string, unknown> = { ...engineContainerArgs(args, "wiki render"), ...(title ? { title } : { text: span }), ...targetOf(args) };
   const form = wordOf(args.options["form"]);
@@ -901,13 +917,21 @@ async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
 
 async function cmdWikiRender(args: ParsedArgs): Promise<number> {
   return guardDoor(args, "wiki render", async () => {
-    const ran = await runDoor(args, "wiki render", wikiRenderPlan(args));
+    const plan = wikiRenderPlan(args);
+    const ran = await runDoor(args, "wiki render", plan);
     if (!ran.ok) return ran.exit;
     const out = ran.output;
+    if (plan.verb === "wiki-render-out" && out["outcome"] === "partial") {
+      emit(args, { ok: false, requestId: ran.requestId, data: out,
+        error: { code: "render-partial", message: String(out["refusal"] ?? "render output stopped after some files landed") },
+        human: () => { console.error(String(out["has"] ?? "")); console.error(String(out["refusal"] ?? "render output stopped")); } });
+      return 4;
+    }
     emit(args, {
       ok: true, requestId: ran.requestId, data: out,
       // The render alone reaches stdout, so a pipe carries it; the reading rides stderr.
       human: () => {
+        if (plan.verb === "wiki-render-out") { console.log(String(out["has"] ?? "")); for (const file of (out["files"] as Array<{ name: string; bytes: number }> ?? [])) console.log(`${file.name}\t${file.bytes}`); return; }
         stdout.write(String(out["text"] ?? ""));
         if (out["truncated"] === true) console.error(`\ntruncated at the byte cap (${out["bytes"]} bytes whole) · next: --after ${out["next"]}`);
       },
@@ -989,7 +1013,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
   "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
-  "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The render reaches stdout. `--target <h1|pet name>` renders in another lit face's view (never its personal layer), keeping the face worn." },
+  "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The read reaches stdout; `--target` visits another lit face's read view. `render '<source-filter>' --recipe <slug> --output workbench [--filename <filter>] [--type <mime>] [--template <title>] [--variables <json>] [--overwrite]` writes under rendered/ in that wiki's bound workbench, then answers a manifest. A writer's seat must hold the workbench; existing files refuse without --overwrite." },
   "status":     { handler: cmdWikiStatus,    summary: "Survey catalog, activation and residency; --recipe names each layer and its write reach: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
   "act":        { handler: cmdWikiAction, summary: "Run one admitted native action: `wiki act sidebar-layout --recipe <wiki> --expected fixed-fluid --resulting fluid-fixed`." },
 };
