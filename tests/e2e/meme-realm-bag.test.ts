@@ -60,6 +60,7 @@ import {
   type LarInstance,
 } from "../harness/instance.js";
 import { seedUserBag } from "../harness/promote.js";
+import { nameSeatSkip, seatLaunched } from "../harness/seat-launch.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -591,8 +592,9 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   // documents, read off both sides' realm view, so the ask names that very document. The same B that reads A's ford
   // through the realm (the control on the very lane) is answered that nothing reaches the record and is refused a write, for `@lares`
   // and `@lararium` both; ⑭b reads B's own store for either document by raw id once the daemons stop.
+  nameSeatSkip("meme-realm-bag", ["⑭", "⑭b"]);
   const kahuDocs: { lares: string; lararium: string } = { lares: "", lararium: "" };
-  test("⑭ A's live @lares and @lararium stand for A, and B — a contracted member — reads none of either and writes neither", async () => {
+  test.skipIf(seatLaunched)("⑭ A's live @lares and @lararium stand for A, and B — a contracted member — reads none of either and writes neither", async () => {
     expect(contracted, "the relation's doors stood (③): ⑭ walks only on a contracted member").toBe(true);
     const docOf = (r: { json: Record<string, unknown> | null }, bag: string): string =>
       String((((r.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>).find((b) => b["bag"] === bag)?.["doc"] ?? "");
@@ -865,7 +867,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
 
   // ⑭b B'S OWN STORE, BY RAW ID. With B's daemon stopped (⑬ stops it; this stops it where ⑬ skipped), B's automerge
   // storage answers for each of A's live Kahu documents: a replica B never received holds no record of A's canon.
-  test("⑭b B's own store holds neither of A's live Kahu documents, nor her daemon document or catalog (⑮)", async () => {
+  test.skipIf(seatLaunched)("⑭b B's own store holds neither of A's live Kahu documents, nor her daemon document or catalog (⑮)", async () => {
     expect(kahuDocs.lares && kahuDocs.lararium, "⑭ named both documents").toBeTruthy();
     try { await B!.stopDaemonOnly(); } catch { /* ⑬ already stopped it */ }
     const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });

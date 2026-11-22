@@ -26,7 +26,9 @@ import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
-import { operatorHandEnv } from "../harness/operator-hand.js";
+import { nameSeatSkip, seatLaunched } from "../harness/seat-launch.js";
+
+nameSeatSkip("watcher-cut-c", ["the whole file (its setup ingest and its watch are hand acts)"]);
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -119,8 +121,7 @@ function spawnWatch(): WatchProc {
       "--source", SRC, "--to", LARES_URI, "--apply",
       "--debounce", "150",
     ],
-    // A clean hand of its own, whatever seat launched the suite: the watcher is an operator-hand act (`seat-canon-reach` reads its marks).
-    { cwd: REPO_ROOT, env: operatorHandEnv({ ...process.env, LAR_ROOT: lar.root, LAR_PORT: String(lar.port) }) },
+    { cwd: REPO_ROOT, env: { ...process.env, LAR_ROOT: lar.root, LAR_PORT: String(lar.port) } },
   );
   child.stdout?.on("data", (d) => { log += String(d); });
   child.stderr?.on("data", (d) => { log += String(d); });
@@ -150,7 +151,7 @@ const SLUGS = ["cutc-edit", "cutc-trans", "cutc-ren", "cutc-del", "cutc-brake-1"
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (!stagedTarget) return;
+  if (!stagedTarget || seatLaunched) return;   // the setup ingest is a hand act: a seat-launched run skips the whole file, named below
   SRC = join(lar.root, "projections/bags/lares");
 
   // Write all test carriers, then land them in ONE ingest wave.
@@ -175,7 +176,7 @@ beforeAll(async () => {
 
 afterAll(async () => { await lar.stop(); });
 
-describe.skipIf(!stagedTarget)("watcher Cut C — the disk peer witnessed end-to-end", () => {
+describe.skipIf(!stagedTarget || seatLaunched)("watcher Cut C — the disk peer witnessed end-to-end", () => {
   test("live + coalesce — backend self-test fires; rapid edits drain to ONE wave", async () => {
     const w = spawnWatch();
     try {
