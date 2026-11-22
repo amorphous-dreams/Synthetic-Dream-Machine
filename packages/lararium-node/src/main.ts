@@ -80,7 +80,8 @@ import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
-import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
+import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
 import { KUKULU_OFFER_ENV, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
@@ -894,6 +895,10 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     litOrdinals:  () => result.litOrdinals(),
     // EACH FACE LIVES ONE LIFE: each session verb and act admits on its face's actor, so a face closing takes no new work.
     faceLife:     result.faceLife,
+    // A LIT FACE RECEIVES VISITS (`seat-hand`): a read naming another face as its `target` (by ordinal, or by the pet name this
+    // vessel holds) admits on that face's actor and delivers through its mailbox; the face the call wears stays worn.
+    visitVerbs:   CROSS_FACE_READ_VERBS,
+    petnames:     async () => (await makeNodePersonaPetnameStore()).entries(),
     siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),

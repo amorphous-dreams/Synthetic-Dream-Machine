@@ -145,6 +145,16 @@ export function removeVerb(tw5: TW5Engine, title: string): void {
   tw5.$tw.wiki.deleteTiddler(title);
 }
 
+/**
+ * A VISIT'S ANSWER (a read of another lit face, `crossFaceReactor`): its output carries `visit: true`. A visit never replays: its
+ * outcome indexes no effect, and no effect copy answers from one, so every visit admits on its target's face actor anew and runs
+ * its reactor afresh (Sol 407c H2).
+ */
+export function isVisitResults(results: unknown): boolean {
+  const output = ((results as Record<string, unknown> | null | undefined)?.[VERB_RESULT_KEY] as Record<string, unknown> | undefined)?.["output"];
+  return output !== null && typeof output === "object" && (output as Record<string, unknown>)["visit"] === true;
+}
+
 export async function writeOutcome(
   control: CompositeStore,
   opts: {
@@ -195,7 +205,7 @@ export async function writeOutcome(
   // Effect index — single writer (the daemon worker). Only a `done` outcome with an
   // effect key indexes; an `error` outcome indexes nothing, so a failed effect may be
   // retried under a fresh requestId without the dedup path ever shadowing it.
-  if (opts.status === "done" && opts.invocation.effectKey !== undefined) {
+  if (opts.status === "done" && opts.invocation.effectKey !== undefined && opts.result?.["visit"] !== true) {
     await control.put({
       tiddler: {
         title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,

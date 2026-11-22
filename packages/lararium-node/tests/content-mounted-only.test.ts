@@ -29,9 +29,10 @@ async function standTwoFaces() {
   teardown.push(() => { void kh.dispose?.(); });
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, a.ctx);
-  const ctxOf = (presenter?: string, local = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
-  const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false) =>
-    Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local))).then(() => null, (e: { reason?: string }) => e);
+  // `bound` names a session's proof subject on the invocation, as the vessel's session door books it; a one-shot carries none.
+  const ctxOf = (presenter?: string, local = false, bound = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {}, ...(bound ? { face: "proof-session" } : {}) } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
+  const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false, bound = false) =>
+    Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local, bound))).then(() => null, (e: { reason?: string }) => e);
   // Each face's bond for its leaf at a realm: its atom signs from the fixture's own seed, a fresh leaf signs beside it.
   const bondOf = async (auth: any, realm: string) => {
     const leafSeed = ed25519.utils.randomSecretKey();
@@ -92,7 +93,10 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
     // A sibling's DID on the vessel's own channel refuses too; the channel lends no face. EACH HAT REACHED BY NAME: a lane verb
     // (`FACE_LANE_VERBS`) answers by face instead, and this sibling stands joined but never lit, so it refuses `face-not-open`
     // (a lit sibling's own lane: keyhive `face-lane`).
-    expect(await call(verb, sibling, a2, true), `${verb} local sibling`).toMatchObject({ reason: FACE_LANE_VERBS.has(verb) ? "face-not-open" : "content-mounted-only" });
+    // A ONE-SHOT NEVER PRESENTS A SIBLING (Sol 407c H4): with no bound session, a sibling's DID refuses at the fence for every
+    // verb; only a session bound to that face reaches its lane (here, joined but never lit, so `face-not-open`).
+    expect(await call(verb, sibling, a2, true), `${verb} local sibling, no session`).toMatchObject({ reason: "content-mounted-only" });
+    expect(await call(verb, sibling, a2, true, true), `${verb} local sibling, bound session`).toMatchObject({ reason: FACE_LANE_VERBS.has(verb) ? "face-not-open" : "content-mounted-only" });
   }
 });
 

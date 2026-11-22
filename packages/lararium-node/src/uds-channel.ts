@@ -38,7 +38,7 @@
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.
  */
 
-import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
+import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { peerSeatOf } from "./uds-peer.js";
 import { HEARTH_CLOSING, HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlanes } from "./hearth-roster-read.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
@@ -98,6 +98,9 @@ export interface UdsChannelOptions {
    * delivers it or refuses it. Absent: no call visits.
    */
   readonly visitVerbs?: ReadonlySet<string>;
+  /** A LIT FACE RECEIVES VISITS (`seat-hand` `crossFaceTargetAtDoor`): the pet names this vessel holds for its faces, read when a
+   *  call names its `target` face by name. Absent: a target names a face by its handle index alone. */
+  readonly petnames?: () => Promise<ReadonlyArray<readonly [number, string]>>;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -300,6 +303,25 @@ export interface ReceiptAnswer {
   /** The chore's receipt mark the outcome carries (the acting face, the asker's hand, its session), where the act was a
    *  chore the door marked; read back through `choreReceiptMarkOf`, so a malformed mark reads as none. */
   readonly chore?: ChoreReceiptMark;
+  /** A VISIT's outcome (a read of another lit face, `seat-hand`): its body answered its caller once, and a receipt withholds it. */
+  readonly visit?: { readonly withheld: true };
+}
+
+/** True where an outcome answers a VISIT: its output carries `visit: true` (keyhive `crossFaceReactor`). */
+function isVisitOutcome(outcome: Record<string, unknown>): boolean {
+  const output = ((outcome["results"] as Record<string, unknown> | undefined)?.["summary"] as Record<string, unknown> | undefined)?.["output"];
+  return output !== null && typeof output === "object" && (output as Record<string, unknown>)["visit"] === true;
+}
+
+/**
+ * A VISIT'S BODY ANSWERS ITS CALLER ONCE, through the target's actor (`VisitTicket.deliver`). Every later retrieval (a receipt, a
+ * re-ask under the same id, a session receipt, the floor's readbacks) reads the outcome through here, which keeps the status and
+ * withholds the body: the visited face's records never answer a read its actor did not deliver.
+ */
+function withheldVisit<O extends Record<string, unknown>>(outcome: O): O {
+  if (!isVisitOutcome(outcome)) return outcome;
+  const { results: _body, ...rest } = outcome;
+  return { ...rest, results: { summary: { ok: true, output: { visit: { withheld: true } } } }, visit: { withheld: true } } as unknown as O;
 }
 
 /**
@@ -952,6 +974,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
    *  the durable outcome doc; NEVER calls `placeVerb`. The outcome doc wins over a bare `committed`
    *  fact (still running, or an outcome this fact hasn't yet observed) and over an `abandoned` one
    *  (a record that landed on another road) — never over `evicted`, whose record the ring dropped. */
+  /** An outcome read back on any road but the live answer: a visit's body withheld (`withheldVisit`). */
+  const retrievedOutcome = async (requestId: string): Promise<Record<string, unknown> | null> => {
+    const outcome = await readOutcomeFor(requestId);
+    return outcome === null ? null : withheldVisit(outcome);
+  };
   const answerReceipt = async (requestId: string): Promise<ReceiptAnswer> => {
     const fact = await ledger.get(requestId);
     if (fact === "torn") {
@@ -964,11 +991,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (fact && fact.state === "evicted") return { requestId, state: "evicted" };
     // AN OUTCOME THAT STANDS ANSWERS, even under an `abandoned` fact: a summons under an id this channel refused
     // may have run on its own road, and a record that landed says so whether or not the fact caught up with it.
-    const outcome = await readOutcomeFor(requestId);
+    const outcome = await retrievedOutcome(requestId);
     if (outcome) {
       const status = outcome["status"] as "done" | "error";
       return {
         requestId, state: status,
+        ...(outcome["visit"] !== undefined ? { visit: { withheld: true as const } } : {}),
         ...(outcome["results"] !== undefined ? { results: outcome["results"] as Record<string, unknown> } : {}),
         ...(outcome["errorMessage"] !== undefined ? { errorMessage: outcome["errorMessage"] as string } : {}),
         ...(outcome["refusal"] !== undefined ? { refusal: outcome["refusal"] as { reason: string } } : {}),
@@ -1006,7 +1034,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const fact = found === "torn" || found?.face !== face ? null : found;
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${scoped}`);
     const fields = event && !event.meta?.deleted ? event.tiddler as Record<string, unknown> : null;
-    const outcome = fields?.["face"] === face ? await readOutcomeFor(scoped) : null;
+    const outcome = fields?.["face"] === face ? await retrievedOutcome(scoped) : null;
     const status = outcome?.["status"] === "done" || outcome?.["status"] === "error" ? outcome["status"] : undefined;
     const ran = unrecorded.get(scoped)?.status;
     const state = fact?.state === "evicted" ? "evicted" : status ?? (fact?.state === "committed" ? ran ?? "pending" : fact?.state ?? ran ?? "unknown");
@@ -1076,6 +1104,16 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     opts.faceLife?.state(face).kind === "closing"
       ? { ok: false, refusal: "face-closing", message: `face-closing: face h${face} is closing on this vessel; its saves drain and it takes no new ${what}` }
       : { ok: false, refusal: "face-not-open", message: `face-not-open: face h${face} stands shut on this vessel, and no ${what} ran` };
+  /** The face a call VISITS: a visit verb naming, as its numeric `target`, a face other than the one it wears; else null. */
+  const visitTargetOf = (worn: number | null, verb: string, args: Record<string, unknown> | undefined): number | null =>
+    opts.visitVerbs?.has(verb) && typeof args?.["target"] === "number" && args["target"] !== worn ? args["target"] : null;
+  /**
+   * A LIT FACE RECEIVES VISITS (`crossFaceTargetAtDoor`): a target named by ordinal or pet name resolves to its ordinal, a private
+   * bag refuses first, a target naming the worn face leaves the args, and a write naming another face refuses, all before the
+   * gate; whether the target stands lit its own actor answers (`gateFor`). Answers the args the call carries on, or a refusal.
+   */
+  const resolveTarget = (verb: string, args: Record<string, unknown> | undefined, worn: number | null) =>
+    crossFaceTargetAtDoor({ verb, args, worn, ...(opts.petnames ? { petnames: opts.petnames } : {}) });
   /**
    * The gate a session call meets at its dispatch: a VISIT (a visit verb naming another face as its numeric `target`) admits on
    * the target's actor; any other call admits as work on the face the session wears. A face the vessel never knew passes ungated.
@@ -1083,7 +1121,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const gateFor = (worn: number, verb: string, args: Record<string, unknown>): DoorGate | null => {
     const life = opts.faceLife;
     if (!life) return null;
-    const target = opts.visitVerbs?.has(verb) && typeof args["target"] === "number" && args["target"] !== worn ? args["target"] : null;
+    const target = visitTargetOf(worn, verb, args);
     if (target !== null) {
       return { visit: true, admit: (refuse) => {
         const visit = life.admitVisit(target, refuse);
@@ -1234,9 +1272,14 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       lit: opts.litOrdinals?.() ?? [],
       hand: state.hand ?? "cli", session: checked.session.sessionId, generation: checked.session.generation });
     if (chore !== null && !chore.ok) return sessionRefuse(sock, chore.refusal, requestId, chore.message);
-    const args = frame["args"] as Record<string, unknown>;
+    // A LIT FACE RECEIVES VISITS: a read naming another face as its `target` keeps the face this SESSION wears (never the mount).
+    const resolved = await resolveTarget(frame["verb"], frame["args"] as Record<string, unknown>, state.supply.ordinal);
+    if (!resolved.ok) return sessionRefuse(sock, resolved.refusal, requestId, resolved.message);
+    if (closing || sock.destroyed || !state.supply) return;
+    const args = resolved.args ?? {};
     const face = checked.session.face.proofSubject;
-    // EACH FACE LIVES ONE LIFE: the call admits on its face's actor at its dispatch, after arbitration (`gateFor`).
+    // EACH FACE LIVES ONE LIFE: the call admits on its face's actor at its dispatch, after arbitration (`gateFor`); a visit admits
+    // on its target's actor, and its answer delivers through that actor's mailbox.
     const gate = gateFor(state.supply.ordinal, frame["verb"], args);
     // THE SIGN DOOR'S BOOKING: the daemon island signs a sealed record through the session that placed this call, for
     // the call's life and under its verb alone; the booking drops when the call concludes or its socket goes.
@@ -1446,8 +1489,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         else sock.write(line);
       } catch { /* gone */ }
     };
-    const refusedVisit = (reason: string): Record<string, unknown> =>
-      ({ kind: "session:result", status: "error", requestId: sessionRequestId, errorMessage: reason, refusal: { reason: "face-not-open" } });
+    const refusedVisit = (reason: string): Record<string, unknown> => ({
+      ...(sessionRequestId !== undefined ? { kind: "session:result", requestId: sessionRequestId } : {}),
+      status: "error", errorMessage: reason, refusal: { reason: "face-not-open" } });
     /** EVERY ANSWER OF A VISIT RIDES THE ACTOR'S ONE DELIVERY TURN (its reply, its failure, a fault): exactly one reaches the asker. */
     const answerLine = (payload: Record<string, unknown>): void => {
       if (visit !== null) visit.deliver(() => writeLine(payload), (reason) => writeLine(refusedVisit(reason)));
@@ -1541,7 +1585,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (controlRefused && (sessionRequestId !== undefined || isCancelQuery(parsed))) return fail(controlRefused.message, controlRefused.refusal);
       if (controlRefused && isReceiptQuery(parsed)) {
         // The floor keeps no receipt fact: an answer its memory still holds reads back; any other refuses by name.
-        void readOutcomeFor(parsed.requestId).then((held) => held
+        void retrievedOutcome(parsed.requestId).then((held) => held
           ? respond({ requestId: parsed.requestId, state: held["status"], ...(held["results"] !== undefined ? { results: held["results"] } : {}),
             ...(held["errorMessage"] !== undefined ? { errorMessage: held["errorMessage"] } : {}), ...(held["refusal"] !== undefined ? { refusal: held["refusal"] } : {}) })
           : fail(controlRefused.message, controlRefused.refusal), (err) => fail(err instanceof Error ? err.message : String(err)));
@@ -1619,6 +1663,19 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         const lent = (seat !== null && named !== null) || oneShotChore ? await lentOf() : null;
         const seatRefused = seat === null || named === null ? null : seatFaceRefusal({ seat, named, worn: opts.mountOrdinal?.() ?? null, lent });
         if (seatRefused !== null) return fail(seatRefused, seatRefusalClass(seatRefused));
+        if (sessionRequestId === undefined) {
+          // THE ONE-SHOT LINE PRESENTS THE WORN FACE ALONE: a line whose `requestedBy` names a lit sibling would present as that
+          // face and reach its own lane; a lit sibling acts through a session of its own, which the door binds under this life.
+          if (opts.siblingFaceOf?.(inv.requestedBy) !== undefined) {
+            return fail("presenter-rides-a-session: this one-shot line names a lit sibling face as its presenter; the line presents the worn face alone, and a sibling acts on a session of its own (`--face N`)", "presenter-rides-a-session");
+          }
+          // A LIT FACE RECEIVES VISITS on the one-shot line too: the face it wears is the mount, and a visit admits on the
+          // target's actor (`gateFor`) exactly as a session's does, its answer delivered through that actor's mailbox.
+          const resolved = await resolveTarget(inv.verb, inv.args, mount);
+          if (!resolved.ok) return fail(resolved.message, resolved.refusal);
+          if (resolved.args !== undefined) inv.args = resolved.args;
+          if (mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null) gate = gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined;
+        }
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });
           if (chore !== null && !chore.ok) return fail(chore.message, chore.refusal);
@@ -1637,7 +1694,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
             log(`dropped a hung-up "${inv.verb}" floor invocation (request ${requestId}): its caller's socket ended before this vessel read it, so it never ran`);
             return;
           }
-          const held = await readOutcomeFor(requestId);
+          const held = await retrievedOutcome(requestId);
           if (held) return respond(held);
           runVerb(inv, requestId).then(
             (outcome) => { respond(outcome); },
@@ -1686,8 +1743,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // across a restart) — answer the existing outcome, never a second `placeVerb`.
           const awaited = awaitOutcome(inv.verb, requestId, inv.timeoutMs);
           releaseWhenSettled(awaited, requestId);
+          // A RE-ASK READS BACK, never the live answer: a visit's body stays withheld under a reused id.
           awaited.then(
-            (outcome) => { respond(outcome); },
+            (outcome) => { respond(withheldVisit(outcome)); },
             (err)     => { if (err instanceof VesselWaitExpired) return answerUnknown(requestId); fail(err instanceof Error ? err.message : String(err)); },
           );
           return;
