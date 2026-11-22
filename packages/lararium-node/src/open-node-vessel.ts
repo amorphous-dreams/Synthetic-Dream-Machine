@@ -2517,10 +2517,11 @@ async function prepareNodeBootOn(
   /** A LIT SIBLING'S PROVEN PLANES, proved at its light under its own custody opening and mounted for its lit life; null before the boot proves the faces. */
   let siblingPlanesOf: (group: string) => Promise<{ readonly persona: string; readonly intents: string } | null> = async () => null;
   /** Remove the face's owned resources together; an obsolete failure cannot remove its replacement. */
-  const removeSibling = (group: string, expected = siblingFaces.get(group)): void => {
+  /** `keepPlanes`: the face's plane mount stays (a re-seat under a fresh entry, whose light just landed that mount). */
+  const removeSibling = (group: string, expected = siblingFaces.get(group), keepPlanes = false): void => {
     if (!expected || siblingFaces.get(group) !== expected) return;
     siblingFaces.delete(group);
-    dropSiblingPlanes(group);
+    if (!keepPlanes) dropSiblingPlanes(group);
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
     const dropped = sealedRest.forget(owned);
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
@@ -3814,7 +3815,8 @@ async function prepareNodeBootOn(
       const face = placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never);
       let held = siblingFaces.get(group);
       if (held && (held.ordinal !== entry.handleIndex || held.relation !== relation || held.face !== face)) {
-        removeSibling(group, held);
+        // THE FRESH ENTRY KEEPS THE MOUNT ITS OWN LIGHT LANDED: the stale seat leaves, never the pair this light proved.
+        removeSibling(group, held, true);
         held = undefined;
       }
       if (!held) {
