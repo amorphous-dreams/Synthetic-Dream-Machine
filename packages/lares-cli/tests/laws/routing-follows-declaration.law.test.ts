@@ -32,7 +32,8 @@ vi.mock("../../src/env.js", async (orig) => ({
 
 import { ACTION_VERBS } from "@lararium/mesh";
 import { cmdAct } from "../../src/commands/act.js";
-import { listPlan, memePlan, projectPlan, PROJECT_TARGETS } from "../../src/commands/meme.js";
+import { projectPlan, PROJECT_TARGETS } from "../../src/commands/meme.js";
+import { listPlan, memePlan } from "../../src/commands/family.js";
 import type { ParsedArgs } from "../../src/parse-args.js";
 
 const ROOT = "lar:///ha.ka.ba";

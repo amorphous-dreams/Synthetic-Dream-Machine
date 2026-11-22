@@ -39,7 +39,7 @@ describe.skipIf(!stagedTarget)("a minted book takes a put and promotes it", () =
 
     const file = join(lar.root, "npc.mem");
     writeFileSync(file, MEME);
-    const put = await lar.cli(["meme", "put", URI, "--recipe", BOOK, "--file", file, "--json"]);
+    const put = await lar.cli(["tiddler", "put", "--meme", URI, "--recipe", BOOK, "--file", file, "--json"]);
     expect(put.json?.["ok"], `put refused: ${JSON.stringify(put.json)}`).toBe(true);
     const putData = put.json?.["data"] as { bag?: string; canonicalHash?: string } | undefined;
     expect(putData?.bag, `the put names its layer: ${JSON.stringify(put.json)}`).toBe(WORKING);

@@ -83,7 +83,17 @@ import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
-import { grainOf, memeBase, memeGradient, pageOfSlot, partialSpanOf, readBase } from "./read-gradient.js";
+import { grainOf, hasLine, param, memeBase, memeGradient, pageOfSlot, partialSpanOf, readBase } from "./read-gradient.js";
+
+/** Name the family source at the reactor that answered it. */
+function familyHas(name: string, source: Record<string, unknown>, kind: string): string {
+  const parts = [param("kind", kind)];
+  for (const key of ["recipe", "bag", "floor", "canonicalHash"]) {
+    const value = source[key];
+    if (typeof value === "string" || typeof value === "boolean") parts.push(param(key === "canonicalHash" ? "base" : key, value));
+  }
+  return hasLine(name, parts);
+}
 import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
 import type { TiddlerFields } from "./deserializer.js";
 
@@ -539,7 +549,8 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     // where the face holds no writer's seat in the wiki's workbench).
     const layer = target.recipe && target.recipe !== "default" ? wikiSlotKindOf(target.recipe, bag) : null;
     const landedIn = { bag, ...(layer ? { layer } : {}) };
-    return shown !== null && receipt.decision === "conflict" ? { ...receipt, ...landedIn, canonicalHash: shown } : { ...receipt, ...landedIn };
+    const answer = shown !== null && receipt.decision === "conflict" ? { ...receipt, ...landedIn, canonicalHash: shown } : { ...receipt, ...landedIn };
+    return { has: familyHas(target.uri, { ...target, ...answer }, "family-write"), ...answer };
   };
 }
 
@@ -633,14 +644,14 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     }
     const read = await patchSlotCarrier({ uri: target.uri, slot, mode: append !== null ? "append" : "replace", text: append ?? replace!, baseHash: base }, sink);
     const none = { uri: target.uri, slot, landed: [], tombstoned: [], diagnostics: [] };
-    if (read.kind === "absent") return { ...none, decision: "absent", warnings: [] };
+    if (read.kind === "absent") return { has: familyHas(target.uri, { ...target }, "family-patch"), ...none, decision: "absent", warnings: [] };
     if (read.kind === "stale") {
-      return { ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
+      return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
         warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`tiddler get --meme --all\`) and patch against that base.`] };
     }
     if (read.kind === "slot-missing") {
-      const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`meme list --tree\` names the slots it holds.`;
-      return { ...none, decision: "refuse", grade: "error", canonicalHash: read.canonicalHash, warnings: [message],
+      const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`tiddler get --meme --tree\` names the slots it holds.`;
+      return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "refuse", grade: "error", canonicalHash: read.canonicalHash, warnings: [message],
         diagnostics: [{ from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: SLOT_MISSING_CODE, message }] };
     }
     const container: Record<string, string> = {};
@@ -734,9 +745,13 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
     const tree = args["tree"] === true || args["tree"] === "1" || args["tree"] === "true";
     const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
-    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) {
+      const answer = await listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
+      return { has: familyHas(target.recipe, answer, "family-list"), ...answer };
+    }
     const { bag, sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
-    return { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
+    const answer = { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
+    return { has: familyHas(bag, answer, "family-list"), ...answer };
   };
 }
 
@@ -895,13 +910,17 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
     refuseEffectLedgerWrite(target.uri, "meme delete");
     const base = readBase(optionalStringArg(args, "base"), "meme-delete", false, "refuse");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
-    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) {
+      const answer = await deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
+      return { has: familyHas(target.uri, { ...target, ...answer }, "family-delete"), ...answer };
+    }
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
     await requireKahuReach(bag, opts.kahuReach, "meme delete", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await removeMeme({ uri: target.uri, baseHash: base }, sink);
-    return { uri: target.uri, ...receipt };
+    const answer = { uri: target.uri, ...receipt };
+    return { has: familyHas(target.uri, { ...target, bag, ...answer }, "family-delete"), ...answer };
   };
 }
 

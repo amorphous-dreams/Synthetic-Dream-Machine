@@ -72,7 +72,7 @@ Lararia stabilize through use. Offerings, repeated gestures, negotiated rites, a
 
 !! Infrastructure Map
 
-The `lares` bag holds the node's own law and its working shelves. The map names shelves and carries no counts, since a count in prose ages with every carrier that lands or leaves (`lares meme list --bag lares` counts the tree). ''Every file here carries the `.mem`
+The `lares` bag holds the node's own law and its working shelves. The map names shelves and carries no counts, since a count in prose ages with every carrier that lands or leaves (`lares tiddler get --meme --bag lares` counts the tree). ''Every file here carries the `.mem`
 extension and declares its own address''; the directory only says where the bytes rest, and a carrier's
 `uri-path` says what it IS.
 
@@ -139,6 +139,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DMcRbXu9AIVBz7IHmzWUL70qERcTG7BOB3mFBsW7PlY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Os58HhbJ9QatEMVzUMUwtgxE2AmIXxVtOudhFMBaF68`>>
 
 <<^ code=`&#x0004;` to=`?`>>

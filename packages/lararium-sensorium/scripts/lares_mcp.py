@@ -144,14 +144,14 @@ PLANE_VERBS = ("plane_record",)
 # uniformly low-trust · reversible · LOCAL residency ops (one conservative VERB_SEATS seat covers them).
 WIKI_VERBS = ("wiki",)
 
-# The MEME namespace — the MCP skin of the meme family's DAEMON-seated verbs: `meme_put` lands a meme's
-# text at a `lar:` uri through the island's Confluence gate (the ONE placement function); `meme_list` names every
-# ROOT a seat holds with its canonical hash (`tree` nests the slot tree); `meme_delete` removes the whole group through
+# The MEME namespace — the MCP skin of the meme family's DAEMON-seated verbs: `tiddler_put(meme=True)` lands a meme's
+# text at a `lar:` uri through the island's Confluence gate (the ONE placement function); title-less `tiddler_get(meme=True)` names every
+# ROOT a seat holds with its canonical hash (`tree` nests the slot tree); `tiddler_delete(meme=True)` removes the whole group through
 # the one removal law (a stale `base` reads `conflict` and moves nothing); `meme_project` renders the meme the island
 # holds to a target (`md` · `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb. A
 # meme READS through the one door, `tiddler_get(meme=True)` (whole within a page, its has-stack past it, the whole
 # paged on slot boundaries), which carries the text and the canonical hash a write hands back as `base`.
-# Each mirrors `lares meme put|get|list|delete|project` (the host `meme` is a real top-level command, so `mirrored`/
+# Each mirrors `lares tiddler put|get|delete --meme` and `lares meme project` (the host `meme` is a real top-level command, so `mirrored`/
 # `cli_forms` carry it). A VERB DECLARES ITS SEAT: the CLI's `meme normalize` and `meme check` run LOCAL
 # over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
 # the fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names
@@ -160,7 +160,7 @@ WIKI_VERBS = ("wiki",)
 # `personal` layer of it without a writer's seat); `bag: <slug>` = a residency placement (fails loud if the island cannot
 # write it; a house canon bag from this seat refuses `seat-canon-reach`). Slugs ride BARE (`sdm`, `lares`), carried
 # as written. All three ride `lares_uds.call` to the @daemon — never a store (the single-writer law).
-MEME_VERBS = ("meme_put", "meme_list", "meme_delete", "meme_project")
+MEME_VERBS = ("meme_project",)
 
 # THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1) — the MCP skin of the daemon's `tiddler-*` and `wiki-*` verbs:
 # every TiddlyWiki act over ONE record with its fields (`tiddler_get` · `tiddler_put` · `tiddler_delete`) or over a wiki's
@@ -272,9 +272,6 @@ VERB_SEATS = {
     "wiki": (True, False),              # switcher and admitted action — reversible gated wiki write → HOTL
     # The meme placement pair — a put lands through the gate (a re-put restores; tombstones move, never
     # delete) and a get reads; both stay on the operator's own island → HOTL.
-    "meme_put": (True, False),          # place a meme's text at a lar: uri through the Confluence gate — reversible, trusted → HOTL
-    "meme_list": (True, False),         # list the roots a seat holds + their canonical hashes — a read → HOTL
-    "meme_delete": (True, False),       # remove a meme's group — a kāpae tombstone a re-put restores; stale base → conflict → HOTL
     "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
     # The tiddler door — the reads run the wiki's own engine and move nothing; a put patches one record in the working
     # layer against a base (a re-put restores) and a delete lands a kāpae tombstone a re-put restores; all stay on the
@@ -1083,11 +1080,11 @@ def build_mcp(coordinator: LaresCoordinator):
     def _wiki_container(verb: str, recipe: "str | None") -> dict:
         """THE ENGINE VERBS' CONTAINER: a wiki. These verbs run in a wiki's own engine (a filter, a render, a status, a
         patch, a removal), so they name `recipe` alone; a bag names one store and no wiki, and its reads ride `tiddler_get`
-        (one record; `meme=True` a meme) and `meme_list` (its roots), its writes `meme_put` and `meme_delete`."""
+        (one record; `meme=True` a meme, title-less its roots), its writes `tiddler_put(meme=True)` and `tiddler_delete(meme=True)`."""
         if recipe is None:
             raise SeatArgumentRefused(f"{verb}: no-container — name the wiki: `recipe` (e.g. \"lares\"; the daemon's own wiki "
                                       "answers to \"default\"). A bag names no wiki: read one with `tiddler_get(bag=...)`, "
-                                      "`tiddler_get(bag=..., meme=True)` or `meme_list(bag=...)`. No default wiki exists.")
+                                      "`tiddler_get(bag=..., meme=True)` (title-less lists its roots). No default wiki exists.")
         if not recipe:
             raise SeatArgumentRefused(f"{verb}: `recipe` names no slug — pass one (`sdm`, `lares`)")
         return {"recipe": recipe}
@@ -1101,7 +1098,6 @@ def build_mcp(coordinator: LaresCoordinator):
             raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
         return summary.get("output")
 
-    @mcp.tool()
     def meme_put(uri: str, text: str, recipe: "str | None" = None, bag: "str | None" = None,
                  base: "str | None" = None) -> dict:
         """PLACE a meme's `text` at its `lar:` `uri` through the island's Confluence gate — mirrors
@@ -1141,7 +1137,6 @@ def build_mcp(coordinator: LaresCoordinator):
             raise uds.LaresVerbError(" · ".join(said), f"meme-put-{decision}")
         return receipt
 
-    @mcp.tool()
     def meme_list(recipe: "str | None" = None, bag: "str | None" = None, tree: bool = False,
                   after: "str | None" = None, target: "str | None" = None) -> dict:
         """LIST every meme ROOT a seat holds, each with the canonical hash a writer hands back as `base` —
@@ -1167,7 +1162,6 @@ def build_mcp(coordinator: LaresCoordinator):
             args["after"] = after
         return _meme_wire("meme-list", args)
 
-    @mcp.tool()
     def meme_delete(uri: str, recipe: "str | None" = None, bag: "str | None" = None,
                     base: "str | None" = None) -> dict:
         """REMOVE the whole meme at its `lar:` `uri` — the root, its `#slot` fragments, its `/path`
@@ -1234,7 +1228,7 @@ def build_mcp(coordinator: LaresCoordinator):
         A RENDERED TIDDLER's slice: where one read of the whole render (`tiddler_get` on the title carrying
         `rendered-from`) answers more than you need, filter its sources for the slice, e.g.
         `[tag[road/rank]sort[order]]` with `fields=["text"]`. CONTAINER: `recipe` names
-        the wiki (a bag names no wiki and takes no filter; read a bag with `tiddler_get(bag=...)` or `meme_list(bag=...)`): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A
+        the wiki (a bag names no wiki and takes no filter; read a bag with `tiddler_get(bag=...)`, or `tiddler_get(bag=..., meme=True)` for its roots): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A
         filter result carries the named wiki's words; turn it through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
         args: dict = {**_wiki_container("wiki_filter", recipe), "filter": filter, **_target(target)}
         names = _names("wiki_filter", "fields", fields)
@@ -1249,10 +1243,12 @@ def build_mcp(coordinator: LaresCoordinator):
         return _meme_wire("wiki-filter", args)
 
     @mcp.tool(annotations=_READS)
-    def tiddler_get(title: str, recipe: "str | None" = None, bag: "str | None" = None, meme: bool = False,
+    def tiddler_get(title: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, meme: bool = False,
                     grain: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
-                    fields: "list | None" = None, max_bytes: "int | None" = None, target: "str | None" = None) -> dict:
-        """READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. EVERY ANSWER LEADS WITH `has`,
+                    fields: "list | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
+                    tree: bool = False) -> dict:
+        """READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. With no title and `meme=True`, list families: `tree=True` nests their slots, `after` names the next page. A bag listing returns {bag, roots, next}; a named recipe returns {recipe, bags, roots, next}; under `recipe="default"` no row names a `bag`. A floor read returns {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.
+        EVERY ANSWER LEADS WITH `has`,
         a `<<~ has name=`…` params=`…`>>` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own
         tags, the measure keys (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/
         _integrity/ size/` verbatim), then `~` and the description or role; a meme's has-stack adds one `#/slot` line per
@@ -1282,6 +1278,15 @@ def build_mcp(coordinator: LaresCoordinator):
         own records through the meme door's reach and read gate (no engine runs): the answer names the `bag`, and carries
         `floor: true` where the bag's floor snapshot answered. A record's text carries the layer `bag` names; turn it
         through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        if title is None:
+            if not meme:
+                raise SeatArgumentRefused("tiddler_get: a title is required unless meme=True lists families")
+            stray = [name for name, value in (("slot", slot), ("grain", grain), ("fields", fields), ("max_bytes", max_bytes)) if value is not None]
+            if stray:
+                raise SeatArgumentRefused(f"tiddler_get: a title-less meme listing reads no {', '.join(stray)}")
+            return meme_list(recipe=recipe, bag=bag, tree=tree, after=after, target=target)
+        if tree:
+            raise SeatArgumentRefused("tiddler_get: tree belongs to a title-less meme listing")
         args: dict = {**_meme_container("tiddler_get", recipe, bag), "title": title, **_target(target)}
         if meme:
             args["meme"] = True
@@ -1334,7 +1339,7 @@ def build_mcp(coordinator: LaresCoordinator):
     def wiki_status(recipe: "str | None" = None, target: "str | None" = None) -> dict:
         """NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
         status`. Returns {recipe, working, layers: [{bag, mounted, read, write, working?, why?}]}: `working` names the
-        layer every `tiddler_put` and `meme_put` lands in (null where none stands attached); each layer reads `mounted`
+        layer every `tiddler_put` (with or without `meme=True`) lands in (null where none stands attached); each layer reads `mounted`
         "writable", "read-only" or "promotion-only" (a canon layer: a write reaches it by action verb alone, never by a put),
         the face's own `read` and `write`, and `why` where a mounted-writable layer still refuses this face. Read it before a write to learn where the write lands. CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
         return _meme_wire("wiki-status", {**_wiki_container("wiki_status", recipe), **_target(target)})
@@ -1552,19 +1557,22 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_PATCHES)
     def tiddler_put(title: str, recipe: "str | None" = None, fields: "dict | None" = None,
                     text: "str | None" = None, unset: "list | None" = None, tags_add: "str | list | None" = None,
-                    tags_remove: "str | list | None" = None, base: "str | None" = None, create: bool = False) -> dict:
-        """PATCH ONE TIDDLER — set fields, unset fields, add and remove tags, and move the text ONLY where `text` names
+                    tags_remove: "str | list | None" = None, base: "str | None" = None, create: bool = False,
+                    meme: bool = False, bag: "str | None" = None, slot: "str | None" = None,
+                    append: "str | None" = None) -> dict:
+        """PATCH ONE TIDDLER — `meme=True` places a whole carrier from `text`, or writes `slot` against `base` through exactly one of `text` (the slot's whole body) and `append` (a paragraph at its end); a bag or a recipe names the family seat. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`. House canon bags refuse `seat-canon-reach`; offer through `meme_offer` after a recipe copy-up. The receipt's `layer` names a personal placement where this face holds no writer's seat.
+        Set fields, unset fields, add and remove tags, and move the text ONLY where `text` names
         it — mirrors `lares tiddler put <title>`. `fields` maps field names to STRING values (a list rides as TiddlyWiki
         writes it: "one [[two words]]"); `unset` names fields to remove; `tags_add` / `tags_remove` take a list of tags
         (or one TiddlyWiki list string); every field the patch leaves unnamed stays as it stood, so a field or tag patch
         never touches the text and a text put keeps the fields. `base` carries the `hash` read from `tiddler_get`: a
         record that moved past it lands nothing. `create=True` lands only where no tiddler stands. The write lands in the
         wiki's WORKING layer (`wiki_status` names it), never canon: a write this seat aims at a house canon bag refuses
-        `seat-canon-reach` (the seat edits canon through `meme_put(recipe=...)` and `meme_offer`). Returns {recipe, title, decision, bag, created,
+        `seat-canon-reach` (the seat edits canon through `tiddler_put(meme=True, recipe=...)` and `meme_offer`). Returns {recipe, title, decision, bag, created,
         changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it.
         A WRITE THAT NEVER LANDED RAISES: `conflict` (a stale `base`; the error names the live hash) and `exists`.
         THE FENCES, each refused by name: a meme root or slot takes a field or tag patch here, and its text, type or
-        carriage fields refuse `tiddler-put-in-a-family` (use `meme_put`); a record carrying a `$:/tags/StartupAction`
+        carriage fields refuse `tiddler-put-in-a-family` (use `tiddler_put(meme=True)`); a record carrying a `$:/tags/StartupAction`
         tag (or one beneath it) refuses `seat-startup-offer`, since a wiki's startup action runs in the operator's tab
         and rides the operator's own hand (land it untagged, as data); every other shape lands natively, a `$:/` title
         or tag, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a
@@ -1572,6 +1580,23 @@ def build_mcp(coordinator: LaresCoordinator):
         put over a rendered tiddler, or one carrying `rendered-from`, refuses `rendered-derives` (only the renderer
         writes it: edit the source tiddlers). CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; a put lands in that wiki's working layer (this face's personal layer of it where
         it holds no writer's seat)."""
+        if meme:
+            if any(value is not None for value in (fields, unset, tags_add, tags_remove)) or create:
+                raise SeatArgumentRefused("tiddler_put: family text takes no record field or tag patch")
+            if slot is not None or append is not None:
+                if not slot or (text is None) == (append is None) or not base:
+                    raise SeatArgumentRefused("tiddler_put: a slot write names slot, base and exactly one of text (the slot's whole body) or append")
+                args: dict = {**_meme_container("tiddler_put", recipe, bag), "uri": title,
+                              "slot": slot, "base": base, "append" if append is not None else "replace": append if append is not None else text}
+                receipt = _meme_wire("meme-patch", args) or {}
+                if receipt.get("decision") in ("refuse", "conflict", "absent"):
+                    raise uds.LaresVerbError(f"meme-patch {receipt.get('decision')}: {receipt.get('warnings') or receipt.get('reason') or title}")
+                return receipt
+            if text is None:
+                raise SeatArgumentRefused("tiddler_put: meme=True requires text")
+            return meme_put(uri=title, text=text, recipe=recipe, bag=bag, base=base)
+        if bag is not None or slot is not None or append is not None:
+            raise SeatArgumentRefused("tiddler_put: bag and slot editing require meme=True")
         args: dict = {**_wiki_container("tiddler_put", recipe), "title": title}
         if fields is not None:
             if not isinstance(fields, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items()):
@@ -1604,7 +1629,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_REMOVES)
     def tiddler_delete(title: str, recipe: "str | None" = None,
-                       base: "str | None" = None, family: bool = False, mode: "str | None" = None) -> dict:
+                       base: "str | None" = None, family: bool = False, mode: "str | None" = None,
+                       meme: bool = False, bag: "str | None" = None) -> dict:
         """REMOVE ONE TIDDLER, BY THE FAMILY LAW — mirrors `lares tiddler delete <title> [--family] [--mode kapae|reveal]`.
         A DELETE DELETES PLAINLY: with no `mode`, each record leaves its own layer to absent and no tombstone rises (the
         receipt reads `mode: "plain"` and names each title under `retracted`). `base` carries the `hash` read from
@@ -1615,7 +1641,7 @@ def build_mcp(coordinator: LaresCoordinator):
         SLOT moves nothing and the call raises `tiddler-delete-in-a-family`, quoting the consequence the delete would
         land (every title it would move, what it would leave); pass `family=True` to name the family act, and the root
         leaves with its slots as ONE change. A slot its parent's text calls refuses even then: it leaves through a
-        `meme_put` of its root's text. A `$:/` title refuses too. ONLY A LOWER LAYER MAKES A DELETE A CHOICE: a wiki
+        `tiddler_put(meme=True)` of its root's text. A `$:/` title refuses too. ONLY A LOWER LAYER MAKES A DELETE A CHOICE: a wiki
         composes layers (canon under working under personal), and one title may stand in several. Where a lower layer
         holds the title too, or the record rests in a layer this face cannot remove it from, a delete with no `mode`
         raises `delete-mode-needed` naming both meanings: `mode="kapae"` raises a tombstone in a writable layer that
@@ -1627,6 +1653,12 @@ def build_mcp(coordinator: LaresCoordinator):
         holding the title) and what the wiki reads afterward: `shadowed: [bags]` or `reveals: bag | null`. A rendered
         tiddler (one carrying `rendered-from`) refuses `rendered-derives`: only the renderer writes it, and it leaves when
         its source drops `projection: rendered`. CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`."""
+        if meme:
+            if family or mode is not None:
+                raise SeatArgumentRefused("tiddler_delete: meme family removal takes neither family nor mode")
+            return meme_delete(uri=title, recipe=recipe, bag=bag, base=base)
+        if bag is not None:
+            raise SeatArgumentRefused("tiddler_delete: a record delete requires recipe; bag removal takes meme=True")
         args: dict = {**_wiki_container("tiddler_delete", recipe), "title": title}
         if base is not None:
             args["base"] = base

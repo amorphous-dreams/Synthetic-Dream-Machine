@@ -787,7 +787,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const del = makeTiddlerDeleteReactor(r.opts);
     const called = await del({ ...A, title: `${MEME}#/a`, family: true }, ctx());
     expect(called).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [] });
-    expect(String(called["why"])).toContain("meme put");
+    expect(String(called["why"])).toContain("tiddler put --meme");
     expect(wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
     expect(await del({ ...A, title: "lar:///t/gone#/a", family: true }, ctx())).toMatchObject({ decision: "removed", retracted: ["lar:///t/gone#/a", "lar:///t/gone#/a/b"] });
     await r.landed();
@@ -1157,12 +1157,12 @@ describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () =
     await expect(get({ bag: "lares", title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
   });
 
-  test("the engine verbs and the writes name the right door where a bag stands: a refusal that points at `tiddler get --bag`, `meme list --bag` and `meme put --bag`", async () => {
+  test("the engine verbs and the writes name the right door where a bag stands: a refusal that points at `tiddler get --bag`, `tiddler get --meme --bag` and `tiddler put --meme --bag`", async () => {
     const r = await rig();
-    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*meme list --bag.*--recipe/s) });
+    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*tiddler get --meme --bag.*--recipe/s) });
     await expect(makeWikiRenderReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
     await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
-    await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/meme put --bag/) });
-    await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/meme delete --bag/) });
+    await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler put --meme --bag/) });
+    await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler delete --meme --bag/) });
   });
 });

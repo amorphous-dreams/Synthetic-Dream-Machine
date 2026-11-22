@@ -274,7 +274,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     const file = join(scratch, "cli.txt");
     writeFileSync(file, "hello from the CLI\n");
     const repoBefore = filesUnder(join(REPO, "wikis")).length;
-    const put = await hearth!.cli(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
+    const put = await hearth!.cli(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", file, "--json"]);
     expect(put.code, `${put.stdout.slice(-400)}\n${put.stderr.slice(-400)}`).toBe(0);
     const carrier = draftPath("t.stage.walk/cli-put", ".txt");
     const deadline = performance.now() + 30_000;
