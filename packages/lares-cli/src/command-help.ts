@@ -1251,7 +1251,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "INGEST's three-way gate, then every mirror under the projections root into its one layer, a former face's folders " +
       "adopted by pet-name. A bare run previews per holding and writes nothing; `--apply` lands; kahua lifts only on a " +
       "typed count or `--lift-kahua N`. Idempotent: a second lay lands nothing. `--workbench` lays the checkout's workbench folders " +
-      "(wikis/<slug> beside the canon source) alone, into each wiki's working layer the worn face mounts: never canon, never a face " +
+      "(wikis/<slug> beside the canon source) alone, into each wiki's working layer the worn face mounts and owns (a wiki a share row hands another owner waits for that " +
+      "face's wear): never canon, never a face " +
       "root, no kahua. `--lag` reads the house's lag (each holding's titles its canon lacks, each workbench's titles new or moved and " +
       "whether the worn face mounts it, and whether the source stands in a checkout) and writes nothing. Seed names the genesis offer alone; the canon act lays.",
     examples: [
@@ -1266,7 +1267,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--yes                answer the canon prompt yes (kahua lifts none on --yes alone)",
       "--verbose            keep full CREATE detail",
       "--lift-kahua <N>     lift the kahua items the lay previewed when N equals their count",
-      "--workbench          the checkout's workbench folders alone, into the working layers the worn face mounts",
+      "--workbench          the checkout's workbench folders alone, into the working layers the worn face mounts and owns",
       "--lag                read the house's lag (canon and workbench) and write nothing",
     ],
     next: ["lares shore", "lares vessel read"],

@@ -150,6 +150,14 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     expect(f.said.join("\n")).toMatch(/the workbench lay answered 1/);
   });
 
+  it("RED: a Ctrl+C during the workbench lay (exit 130) reads as interrupted, never failed", async () => {
+    const f = fakes({ yes: true, lay: 130 });
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true } } });
+    expect(out.data).not.toHaveProperty("refusal");
+    expect(f.said.join("\n")).toMatch(/the workbench lay was interrupted; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
+  });
+
   it("CONTROL: a raise that fails reads no lag; ports with no lag read leave the answer as it stood", async () => {
     const f = fakes({ raise: 9, yes: true });
     await riteKukulu(f.ports, {});
@@ -197,6 +205,28 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
       shareRows: () => [{ kind: "wiki", slug: "shared", owner: "someone" } as never],
     };
   }
+
+  it("RED (owner gate): worn face \"me\", sourced notes unbound, a share row naming another owner: the workbench lay waits it by name, and the lag never offers it", async () => {
+    const { cmdLay, readHouseLag } = await import("../src/commands/lay.js");
+    corpus(true);
+    const waves: MirrorWave[] = [];
+    const base = await doors({ writeSlot: null, bound: false }, waves);
+    const owned: MirrorDoors = {
+      ...base,
+      faces: async () => [{ handleIndex: 1, petname: "me", relation: "f".repeat(64), handle: null, seat: false, chair: null, kahua: [], mounted: true }],
+      shareRows: () => [{ kind: "wiki", slug: "notes", owner: "someone-else" } as never],
+    };
+    const out: string[] = [];
+    const log = console.log;
+    console.log = (...a: unknown[]) => { out.push(a.map(String).join(" ")); };
+    try {
+      expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { workbench: true, apply: true } } as unknown as ParsedArgs, owned)).toBe(0);
+    } finally { console.log = log; }
+    expect(waves).toEqual([]);
+    expect(out.join("\n")).toMatch(/the wiki notes re-stands at its owner's wear: wear someone-else/);
+    const lag = await readHouseLag(owned);
+    expect(lag.benches[0]).toMatchObject({ slug: "notes", mounts: false, why: expect.stringMatching(/someone-else/) });
+  });
 
   it("RED: the lag reads canon behind the source, the workbench behind wikis/, and whether the worn face mounts it; CONTROL: no checkout reads checkout false", async () => {
     const { readHouseLag } = await import("../src/commands/lay.js");

@@ -275,7 +275,7 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  */
 export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
   const out = await raiseHouse(ports, opts);
-  // THE CANON LAY rides only a raise that stood: a run that stopped, or one that waits on the hand before any raise, reads no lag.
+  // THE LAG AND THE WORKBENCH LAY ride only a raise that stood: a run that stopped, or one that waits on the hand before any raise, reads no lag.
   if (out.code !== 0 || out.data["awaits"] === "hand") return out;
   return lagAfterRaise(ports, out);
 }
@@ -347,6 +347,10 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
     return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false } } };
   }
   const code = await ports.layWorkbench!();
+  if (code === INTERRUPTED) {
+    ports.say(`kūkulu: the workbench lay was interrupted; the house stands, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} picks it up`);
+    return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false, interrupted: true } } };
+  }
   if (code !== 0) {
     ports.say(`kūkulu: the workbench lay answered ${code}; the house stands, the lines above name what the lay refused, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} runs again safely`);
     return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false }, refusal: "kukulu-workbench-lay-failed" } };

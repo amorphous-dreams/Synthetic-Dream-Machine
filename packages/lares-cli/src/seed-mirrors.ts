@@ -424,7 +424,8 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // THE OWNER GATE: a share row names a shared wiki's owner by pet-name. Where no face stood the wiki on this founding yet,
     // it mints and lays at THAT face's wear alone, so a re-founding never hands a wiki to whichever face lays first.
     const mountFace = mountFaceOf(faces);
-    const shareRows = opts.benchesOnly ? [] : doors.shareRows?.() ?? [];
+    // THE OWNER GATE READS EVERY SHARE ROW, a workbench-only lay too: a sourced wiki another face owns waits for that face's wear.
+    const shareRows = doors.shareRows?.() ?? [];
     const ownerOf = (slug: string): string | null => shareRows.find((r) => r.kind === "wiki" && r.slug === slug)?.owner ?? null;
     const seatOf = async (slug: string): Promise<{ writeSlot: "working" | "personal" | null; bound: boolean }> =>
       litRelation === null || doors.benchSeat === undefined ? { writeSlot: "working", bound: true } : doors.benchSeat(slug);
@@ -443,7 +444,8 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     const gateOf = async (slug: string) => { if (!gates.has(slug)) gates.set(slug, await benchGate(slug)); return gates.get(slug)!; };
     // A SHARED WIKI MINTS FROM ITS SHARE ROW, at its owner's wear, even where no page of it reached a mirror (a face's put into
     // a wiki it never woke projects nowhere until the wake): the row names the wiki, so the wiki stands again for its faces.
-    const sharedWikis = shareRows.filter((r) => r.kind === "wiki" && !isPrivateProjectionSlug(r.slug) && !doors.sourced(r.slug)).map((r) => r.slug);
+    // A workbench-only lay mints nothing from a share row and lands no share (below): it lays the checkout's workbench folders alone.
+    const sharedWikis = opts.benchesOnly ? [] : shareRows.filter((r) => r.kind === "wiki" && !isPrivateProjectionSlug(r.slug) && !doors.sourced(r.slug)).map((r) => r.slug);
     const mintable = [...new Set([...houseBags, ...houseWikis, ...sharedWikis])].sort();
     const held = mintable.length > 0 ? await doors.heldSlugs() : new Set<string>();
     /** The slugs this lay minted (or would mint, in a preview): each stands for the waves after it. */
@@ -492,7 +494,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // THE SHARES LAND AGAIN, before any face's personal layer lays: each shared wiki's seats come back by pet-name once its
     // owner's wear stood it, and the landing lifts each row carried for the worn face into its own catalog half, so a reader's
     // own wear mounts the wiki its page lays into.
-    if (apply && doors.landShares !== undefined && shareRows.length > 0) {
+    if (apply && !opts.benchesOnly && doors.landShares !== undefined && shareRows.length > 0) {
       const applied = await doors.landShares().catch(() => null);
       if (applied !== null) {
         const benches = Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : [];
@@ -580,13 +582,24 @@ export async function readBenchLag(doors: MirrorDoors): Promise<{ readonly dir: 
   const { dir, slugs } = sourcedBenchFolders(doors);
   if (dir === null) return { dir: null, benches: [] };
   const benches: Array<{ slug: string; toBag: string; planned: string[]; mounts: boolean | null; why?: string }> = [];
+  // THE OWNER GATE, as the lay reads it (`benchGate`): an unbound workbench whose share row names another face as owner waits for
+  // that face's wear. The worn face reads off the faces door; one that reads nowhere leaves an owned workbench unread.
+  const shareRows = doors.shareRows?.() ?? [];
+  const ownerOf = (slug: string): string | null => shareRows.find((r) => r.kind === "wiki" && r.slug === slug)?.owner ?? null;
+  let worn: { readonly lit: boolean; readonly petname: string | null } | null = null;
+  try { const m = mountFaceOf(await doors.faces()); worn = { lit: m !== null, petname: m?.petname ?? null }; } catch { worn = null; }
   for (const slug of slugs) {
     const toBag = wikiSlotUri(slug, "working");
     const read = await doors.lay({ source: join(dir, slug), uriDir: dir, toBag, wiki: slug, skipTop: ["recovery", TEMP_LAYER_DIR] }, false);
     let seat: { writeSlot: "working" | "personal" | null; bound: boolean } | null;
     try { seat = doors.benchSeat === undefined ? { writeSlot: "working", bound: true } : await doors.benchSeat(slug); } catch { seat = null; }
-    const mounts = seat === null ? null : !seat.bound || seat.writeSlot === "working";
+    const owner = ownerOf(slug);
+    const ownerWaits = seat !== null && !seat.bound && owner !== null && worn?.lit === true && worn.petname !== owner;
+    const ownerUnread = seat !== null && !seat.bound && owner !== null && worn === null;
+    const mounts = seat === null || ownerUnread ? null : ownerWaits ? false : !seat.bound || seat.writeSlot === "working";
     const why = seat === null ? "its seat read nowhere"
+      : ownerUnread ? `its share row names ${owner} as owner, and the worn face read nowhere`
+      : ownerWaits ? `its share row names ${owner} as owner; the wiki re-stands at ${owner}'s wear`
       : mounts ? undefined
       : seat.writeSlot === "personal" ? "the worn face holds no writer's seat there; its own page of the wiki rides its personal layer"
       : "the worn face holds no writer's seat there (a workbench sealed under another face waits for that face's wear)";
