@@ -565,12 +565,24 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +
-      "needs no new verb. ANALYZE through one verb, the lens choosing the instrument (`lares sense analyze " +
-      "--help` lists the lenses). TEND the planes with the lifecycle verbs (recall · capture (incl. sub-agent " +
+      "needs no new verb. ANALYZE through one verb, the lens choosing the instrument (the lenses below). " +
+      "TEND the planes with the lifecycle verbs (recall · capture (incl. sub-agent " +
       "transcripts) · pour · teardown · worldline · telemetry · holders · roster). `pour --all` walks the whole tending movement — " +
       "quiesce · baseline · drawers · bearing · projection · verify · resume — never the guest miner; `pour --bulk` " +
       "runs the drawers leg alone. Every verb rides the daemon's composed caps (the " +
       "single-owner law: nothing opens a store beside the vessel's holder).",
+    details: [
+      "analyze --lens <lens> — the lens chooses the instrument; each keeps its own read path and daemon verb.",
+      "Every answer names the lens it applied; a missing or unknown lens refuses with this list.",
+      "  changes    where the poured content changes hands (--spectral, --halves <w,w>, --span <n>)",
+      "  rhythm     the landed regimes and their couples (--repour re-derives first, --channel <c>)",
+      "  couple     do the sensorium's coupled peers reconcile (the H¹ gate); also ki",
+      "  cohere     do the sensorium's planes glue into one section; also li",
+      "  square     do a child-host's lobes round-trip to one self (bare: the mesh)",
+      "  lead       who leads whom across signals, the R reference (--signal <ndjson>, --names <a,b>)",
+      "  forecast   does a regime shift approach, the R early-warning read (--signal <ndjson>)",
+      "  mismatch   do couple and lead agree over the same signals (--signal <ndjson>, --names <a,b>)",
+    ],
     examples: [
       "lares sense search \"entrance block\" --lens structure   # hybrid recall over a plane",
       "lares sense status --lens content                       # wings · rooms · entities · total",
@@ -595,40 +607,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--source-key/--revision <value>  trial search postfilters (bounded candidate window)",
       "--confirm/--drain/--force   (teardown) remove / quiesce-first / override live holders",
     ],
-    next: ["lares sense status --lens content", "lares sense analyze --help   # the lenses", "lares mempalace status   # the guest comparator door"],
-  },
-
-  "sense analyze": {
-    usage: "usage: lares sense [<sensorium>] analyze --lens <lens> [flags]",
-    synopsis:
-      "Read a poured sensorium through one lens. The lens chooses the instrument; each keeps its own read path and " +
-      "daemon verb, so nothing merges. Every answer names the lens it applied, and a missing or unknown lens refuses " +
-      "with this list.",
-    details: [
-      "Lenses:",
-      "  changes    where the poured content changes hands (change-points)",
-      "  rhythm     the landed regimes and their couples; --repour re-derives first",
-      "  couple     do the sensorium's coupled peers reconcile (the H¹ gate); also ki",
-      "  cohere     do the sensorium's planes glue into one section; also li",
-      "  square     do a child-host's lobes round-trip to one self (bare: the mesh)",
-      "  lead       who leads whom across signals (the R transfer-entropy reference)",
-      "  forecast   does a regime shift approach (the R early-warning read)",
-      "  mismatch   do couple and lead agree over the same signals",
-    ],
-    examples: [
-      "lares sense analyze --lens changes --halves 4,8,16",
-      "lares sense analyze --lens rhythm --repour",
-      "lares sense memetic-wikitext analyze --lens couple",
-      "lares sense analyze --lens forecast --signal series.ndjson",
-      "lares sense analyze --lens mismatch --signal flow.ndjson --names who,authority,flow",
-    ],
-    flags: [
-      "--lens <lens>        the instrument (required)",
-      "--spectral --halves <w,w> --span <n>   (changes) the embedding surface, Foote widths, context words",
-      "--repour --channel <c>                 (rhythm) re-derive first, from that stream channel",
-      "--signal <ndjson> --names <a,b>        (lead, forecast, mismatch) rows=time, cols=signals",
-    ],
-    meme: "lar:///ha.ka.ba/lararium/sensorium/sense-analyze",
+    next: ["lares sense status --lens content", "lares mempalace status   # the guest comparator door"],
   },
 
   realm: {
