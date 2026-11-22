@@ -725,10 +725,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   tiddler: {
-    usage: "usage: lares tiddler <get | put | delete> <title> --recipe <slug>   (default: the daemon wiki; any slug: a wiki this face reaches)",
+    usage: "usage: lares tiddler <get | put | delete> <title> --recipe <slug>   (get also takes --bag <slug>: that one bag's record)",
     synopsis:
       "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
-      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon: `--recipe default` " +
+      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `get --bag <slug>`, which reads one bag's record with no engine: `--recipe default` " +
       "names the worn face's daemon wiki, and `--recipe <slug>` any wiki this face reaches (one it hosts, or one shared " +
       "to it), composed over that wiki's canon, its shared working layer and this face's own layers; a wiki the face " +
       "reaches none of refuses `wiki-unreached`. `get` reads the " +
@@ -748,6 +748,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares tiddler get \"Room 4\" --recipe default                         # the record as a .tid on stdout, the base on stderr",
       "lares tiddler get \"Room 4\" --recipe default --skinny                 # every field, the text left home",
+      "lares tiddler get \"Room 4\" --bag lares                              # that one bag's record, its base and the bag that answered",
       "lares tiddler get lar:///ha.ka.ba/kahua/memory/feedback/x --recipe default --slot '#/why'   # one slot of a meme",
       "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
       "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
@@ -764,6 +765,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
+      "--bag <slug>         (get) read that one bag's record, with no wiki and no engine; put and delete refuse a bag (the meme door takes it: `lares meme put --bag <slug>`), and so do `lares wiki filter | render | status`",
       "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
@@ -803,6 +805,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme put lar:///ha.ka.ba/... --bag lar:///ha.ka.ba/bags/daemon-<relation> --face 1 --file note.mem   # a lit face writes its own lane, sealed by its own chain",
       "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
       "lares meme list --bag lares                                            # every root that one bag holds",
+      "lares meme get lar:///ha.ka.ba/lares/docs/x --recipe lares --all      # a meme past 64 KiB: the cut page names its size and cursor; --all reads to the end",
       "lares meme delete lar:///ha.ka.ba/... --recipe lares --if-match <hash> # a stale base moves nothing",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
@@ -816,7 +819,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
-      "--json             (get) the envelope {uri, text, canonicalHash}; the carrier otherwise, on a terminal or a pipe",
+      "--json             (get) the envelope {uri, text, canonicalHash, bytes, truncated, next}; the carrier otherwise, on a terminal or a pipe",
+      "--max-bytes <N>    (get) the byte cap on one page of text (default 65536); a longer meme answers its first page, names its size and the cursor",
+      "--after <cursor>   (get) the page behind a cut answer: hand back the `next` it named",
+      "--all              (get) follow the cursor to the end and print the whole text",
       "--base <hash>      (put, patch) the canonical hash last read; required on patch; stale → conflict, nothing lands",
       "--slot <#/name>    (patch) the slot whose body moves",
       "--append <file>    (patch) a paragraph at the end of the slot's body",

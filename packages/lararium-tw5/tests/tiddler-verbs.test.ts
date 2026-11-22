@@ -808,3 +808,46 @@ describe("pageFilterAnswer — the one page law the daemon verb and the record p
     expect(() => pageFilterAnswer(all, { after: "not-a-cursor" })).toThrow(/filter-cursor-malformed/);
   });
 });
+
+describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () => {
+  const seed = async (r: Awaited<ReturnType<typeof rig>>): Promise<void> => {
+    const store = r.composite.storeForBag(CANON)!;
+    await store.put({ tiddler: { title: "Canon Note", text: "canon words", tags: ["law", "two words"], type: "text/vnd.tiddlywiki" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: CANON as never });
+    await store.put({ tiddler: { title: "lar:///t/x", text: "root" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: CANON as never });
+    await store.put({ tiddler: { title: "lar:///t/x#/a", text: "slot a" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: CANON as never });
+  };
+
+  test("RED: tiddler-get with `bag` reads that one bag's record, with its fields, hash, bag and position; CONTROL: the anchor still answers a recipe", async () => {
+    const r = await rig();
+    await seed(r);
+    const get = makeTiddlerGetReactor(r.opts);
+    const got = await get({ bag: "lares", title: "Canon Note" }, ctx());
+    expect(got).toMatchObject({ title: "Canon Note", tiddler: { bag: CANON, position: "plain", fields: { text: "canon words", tags: "law [[two words]]" } } });
+    expect((got["tiddler"] as { hash: string }).hash).toMatch(/^sha256-/);
+    expect(await get({ bag: "lares", title: "lar:///t/x" }, ctx())).toMatchObject({ tiddler: { position: "root" } });
+    expect(await get({ bag: "lares", title: "lar:///t/x#/a" }, ctx())).toMatchObject({ tiddler: { position: "slot", family: "lar:///t/x" } });
+    expect(await get({ bag: "lares", title: "lar:///t/x", slot: "#/a" }, ctx())).toMatchObject({ tiddler: { fields: { text: "slot a" } } });
+    expect(await get({ bag: "lares", title: "Canon Note", fields: ["tags"] }, ctx())).toMatchObject({ tiddler: { fields: { title: "Canon Note", tags: "law [[two words]]" } } });
+    expect(await get({ bag: "lares", title: "Canon Note", text: false }, ctx())).toMatchObject({ tiddler: { omitted: ["text"] } });
+    expect(await get({ ...A, title: "Note 01" }, ctx())).toMatchObject({ recipe: "default", tiddler: { fields: { text: "the first note" } } });
+  });
+
+  test("an absent title reads null; a face with no read on the bag refuses by name; a bag nothing reaches refuses by name; a stay-home title refuses", async () => {
+    const r = await rig();
+    await seed(r);
+    const get = makeTiddlerGetReactor(r.opts);
+    expect(await get({ bag: "lares", title: "Nowhere" }, ctx())).toMatchObject({ tiddler: null });
+    await expect(get({ bag: "lares", title: "Canon Note" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
+    await expect(get({ bag: "nowhere", title: "x" }, ctx())).rejects.toThrow(/nothing reaches it/);
+    await expect(get({ bag: "lares", title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+  });
+
+  test("the engine verbs and the writes name the right door where a bag stands: a refusal that points at `tiddler get --bag`, `meme list --bag` and `meme put --bag`", async () => {
+    const r = await rig();
+    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*meme list --bag.*--recipe/s) });
+    await expect(makeWikiRenderReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
+    await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
+    await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/meme put --bag/) });
+    await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/meme delete --bag/) });
+  });
+});
