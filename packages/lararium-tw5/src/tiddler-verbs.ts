@@ -872,7 +872,9 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
 
     // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves.
     if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
-    const base = readBase(optionalStringArg(args, "base"), "tiddler-put", typeof args["text"] === "string");
+    // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
+    const writesText = typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
+    const base = readBase(optionalStringArg(args, "base"), "tiddler-put", writesText);
     if (base !== null && base !== liveHash) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
 
     // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.

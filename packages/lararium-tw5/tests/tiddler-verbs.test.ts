@@ -332,6 +332,17 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await get({ ...A, title: "Tagged", grain: "resolved" }, ctx())).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "tagged body" } } });
   });
 
+  test("RED M2b: a card's base moves no text by any path: `fields.text` and `unset text` refuse base-from-skinny like `text`", async () => {
+    const r = await rig();
+    const get = makeTiddlerGetReactor(r.opts);
+    const put = makeTiddlerPutReactor(r.opts);
+    const card = (await get({ ...A, title: "Note 05", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
+    await expect(put({ ...A, title: "Note 05", fields: { text: "a blind rewrite" }, base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    await expect(put({ ...A, title: "Note 05", unset: ["text"], base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    // CONTROL: a field that is not the text still lands against the card.
+    expect(await put({ ...A, title: "Note 05", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
+  });
+
   test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
