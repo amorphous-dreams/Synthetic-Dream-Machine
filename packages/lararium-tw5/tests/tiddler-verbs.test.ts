@@ -15,7 +15,7 @@ import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-me
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
-  makeWikiStatusReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
+  makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -77,7 +77,17 @@ async function rig(more: { personal?: boolean } = {}) {
 }
 const A = { recipe: "default" } as const;
 
+test("wiki action reactor stands as a separate admitted write door", () => {
+  expect(typeof makeWikiActionReactor).toBe("function");
+});
+
 describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
+  test("wiki action refuses a caller action string before any write", async () => {
+    const r = await rig();
+    const act = makeWikiActionReactor(r.opts);
+    await expect(act({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed", action: "<$action-setfield/>" }, ctx()))
+      .rejects.toThrow(/action|parameter/);
+  });
   test("wiki-filter-tag: a tag filter over a seeded daemon wiki answers its titles; CONTROL: an untagged title stays out", async () => {
     const r = await rig();
     const out = await makeWikiFilterReactor(r.opts)({ ...A, filter: "[tag[memory]sort[title]]" }, ctx());
