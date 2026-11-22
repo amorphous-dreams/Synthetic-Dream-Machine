@@ -42,10 +42,8 @@ export const LAW_PINS_DEFAULT = `[[${LAW_BOOT_SEED}]] [[${LAW_MU_ROOT}]] [prefix
 /** The layers a law row's record may rest in: the oracle floor and the system canon bags (`SYSTEM_CANON_SLUGS`). */
 export const LAW_CANON_BAG_PATTERN = "^lar:///ha\\.ka\\.ba/bags/(oracle|lares|lararium)$";
 
-/**
- * The filters read as calls: the function bodies stand in the canon carrier `lar:///ha.ka.ba/lares/api/filters`
- * (what makes a title law, the pin order, the canon guard), and every surface runs these calls, so no reader carries a copy.
- */
+// The filters read as calls: the function bodies stand in the canon carrier `lar:///ha.ka.ba/lares/api/filters` (what makes a
+// title law, the pin order, the canon guard), and every surface runs these calls, so no reader carries a copy.
 /** The pins that stand as canon law, in the pin set's order: a pin orders the law and adds none. */
 export const LAW_PINS_FILTER = "[lares.law.pins[]]";
 /** The index: the canon pins first, then the canon law they left out. */

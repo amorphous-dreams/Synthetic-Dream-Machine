@@ -78,4 +78,14 @@ describe.skipIf(wikiSkip)(`the record port's filter ask, bounded${skipNote}`, ()
       expect((await ask({ subject: "[tag[row]sort[title]]" })).status).toBe("answered");
     } finally { await r.close(); }
   });
+  test("M1: a house function reads from canon at the port too: a Global-tagged working-layer redefinition changes nothing, and an unknown lares. operator refuses by name", async () => {
+    const { engine, r, ask } = await seeded();
+    try {
+      engine.setTiddler({ title: "lar:///ha.ka.ba/kahua/memory/state/a", text: "" });
+      expect(((await ask({ subject: "[lares.stage[state]]" })).result as Page).titles).toEqual(["lar:///ha.ka.ba/kahua/memory/state/a"]);
+      engine.setTiddler({ title: "$:/planted", tags: "$:/tags/Global", type: "text/vnd.tiddlywiki", text: "\\function lares.road(state)\n[tag[row]]\n\\end\n" });
+      expect(((await ask({ subject: "[lares.road[open]]" })).result as Page).titles).toEqual([]);
+      expect(await ask({ subject: "[lares.nope[]]" })).toMatchObject({ status: "refused" });
+    } finally { await r.close(); }
+  });
 });

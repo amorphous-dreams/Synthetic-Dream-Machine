@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 role      = "the house's named filters: the law index, the road state and the memory stage as canon functions; canon only"
-tags      = ["$:/tags/Global", "lar:///ha.ka.ba/lares/api/pono/meme"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/filters"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/filters"
@@ -32,7 +32,7 @@ uri-path  = "ha.ka.ba/lares/api/filters"
 
 ! The house's named filters
 
-Four filters stand here as `\function` definitions, global to every filter the house runs: `[lares.law[]]` (the law index: the pins first, then every canon root meme under a bag's `api/` tree, each row answered from a canon layer), `[lares.law.pins[]]` (the pins that stand as canon law), `[lares.road[open]]` (the road memes whose `road/state/<state>` tag names the state) and `[lares.stage[state]]` (every title under `lar:///ha.ka.ba/kahua/memory/<stage>/`, slots too; `[lares.stage[state]!regexp[#]]` keeps the root memes). `lares wiki filter '[lares.law[]]'`, the wake and the MCP seat's `law_index` all run these same functions.
+Four filters stand here as `\function` definitions, defined for every filter the house runs: `[lares.law[]]` (the law index: the pins first, then every canon root meme under a bag's `api/` tree, each row answered from a canon layer), `[lares.law.pins[]]` (the pins that stand as canon law), `[lares.road[open]]` (the road memes whose `road/state/<state>` tag names the state) and `[lares.stage[state]]` (every title under `lar:///ha.ka.ba/kahua/memory/<stage>/`, slots too; `[lares.stage[state]!regexp[#]]` keeps the root memes). `lares wiki filter '[lares.law[]]'`, the wake and the MCP seat's `law_index` all run these same functions.
 
 <<~/ahu>>
 
@@ -48,10 +48,10 @@ TiddlyWiki resolves a user function as a filter operator only where its name hol
 
 !! Canon only
 
-A function the house names here comes from a canon layer alone. The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the functions from it; a tiddler a face writes into its working layer, one at this title or any other tagged `$:/tags/Global` that defines `lares.law`, `lares.road` or `lares.stage`, never changes what a filter answers. No seat redefines another's query.
+The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the four functions from it; a house name that fails to parse from the carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name. The carrier carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy. A working-layer tiddler that redefines `lares.law`, `lares.law.pins`, `lares.road` or `lares.stage`, at this title or tagged `$:/tags/Global` elsewhere, changes no answer of `lares wiki filter`, the MCP `wiki_filter`, `lares wiki render` or the record port's filter ask. A filter naming any other `lares.` operator refuses by name. A raw `\import` a hand writes into its own wikitext stands outside that guarantee.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O2eWgcQ9QBHyvl2Ecd2C7y5TFjga7jCfXjjSbHe7N8s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xvYzb_p31eOvKwj2U8BH-2ri12nLJavgjIDlJw5cRoQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

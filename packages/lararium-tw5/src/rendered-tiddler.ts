@@ -38,6 +38,7 @@
  */
 
 import { PROJECTION_FIELD, PROJECTION_RENDERED, RENDERED_FROM_FIELD, renderedFromOf, type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh";
+import { canonFiltersTextOfWiki, functionPragmasOf } from "./house-filters.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
@@ -51,7 +52,7 @@ export const RENDER_TITLE_FIELD = "render-title" as const;
 export const RENDERED_TITLE_SUFFIX = ".rendered" as const;
 
 const GLOBAL_IMPORT = "\\import [all[shadows+tiddlers]tag[$:/tags/Global]!is[draft]]\n";
-const WRAPPER = `${GLOBAL_IMPORT}<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`;
+const wrapperOf = (pragmas: string): string => `${GLOBAL_IMPORT}${pragmas}\n\n<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`;
 const ACTION_DOORS = ["invokeActions", "invokeActionString", "invokeActionsByTag", "dispatchEvent"] as const;
 
 type Fields = Readonly<Record<string, unknown>>;
@@ -158,7 +159,7 @@ export function armRenderedTiddlers(tw5: TW5Engine, ports: RenderedTiddlerPorts)
     }
     const type = renderTypeOf(fields);
     const view = without(title);
-    const widget = view.makeWidget(view.parseText("text/vnd.tiddlywiki", WRAPPER), { variables: { "lares-render-title": source } });
+    const widget = view.makeWidget(view.parseText("text/vnd.tiddlywiki", wrapperOf(functionPragmasOf(canonFiltersTextOfWiki(wiki as never)))), { variables: { "lares-render-title": source } });
     const container = $tw.fakeDocument.createElement("div");
     guarded(widget, () => widget.render(container, null));
     // A render that stands already with these very fields writes nothing (a re-armed island, a boot over a standing render).

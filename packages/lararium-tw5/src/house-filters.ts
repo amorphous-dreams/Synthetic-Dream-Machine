@@ -9,18 +9,24 @@
  * layers' own text instead: the carrier read from a canon bag (the oracle floor, the system canon bags), the
  * `\function` blocks lifted out of it, parsed once per reader's view. A working-layer tiddler that redefines a house
  * function (at the carrier's title, or any other titled `$:/tags/Global`) never reaches that widget, so it changes no answer.
+ * The carrier itself carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy of it. Each house name reads
+ * from the carrier where it parses (the `\function` form, one-line or multi-line, or the `function` sigil) and from the floor
+ * where it does not, name by name; a filter that names a `lares.` operator outside the house set refuses by name, never
+ * falling through to TiddlyWiki's field operator.
  *
- * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers
+ * Meme: lar:///ha.ka.ba/lares/api/filters
  */
 
-import type { CompositeStore } from "@lararium/mesh";
+import { VerbRefusal, type CompositeStore } from "@lararium/mesh";
 import { LAW_CANON_BAG_PATTERN } from "./daemon-law-tiddlers.js";
 
 /** The one canon carrier that defines the house's functions. */
 export const HOUSE_FILTERS_TITLE = "lar:///ha.ka.ba/lares/api/filters";
 
-/** The stem every house function name opens with; a filter naming none of them needs no widget. */
+/** The stem every house function name opens with. */
 export const HOUSE_FUNCTION_STEM = "lares.";
+/** The house's function names, in the carrier's order. */
+export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.stage"];
 
 /**
  * THE FLOOR: the carrier's `\function` blocks as the source carries them, read only where no canon layer holds the carrier
@@ -44,19 +50,72 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 [prefix[lar:///ha.ka.ba/kahua/memory/]] :filter[<currentTiddler>removeprefix[lar:///ha.ka.ba/kahua/memory/]removeprefix<name>removeprefix[/]]
 \end`;
 
-const FUNCTION_BLOCK = /^\\function [^\n]*\n(?:(?!\\end\n?$)[^\n]*\n)*?\\end[ \t]*$/gm;
 const CANON_BAG = new RegExp(LAW_CANON_BAG_PATTERN);
 
-/** The `\function … \end` blocks of a carrier's text, joined as one pragma run; empty where none stands. */
+/**
+ * The function blocks a carrier's text defines, by name, each as one canonical multi-line `\function` block. Three spellings
+ * parse: `\function name(params)` … `\end`, the one-line `\function name(params) body`, and the sigil
+ * ``<<~ function name=`name(params)`>>body<<~/function>>`` (api/pono/function#/syntax). CRLF reads as LF.
+ */
+export function houseBlocksOf(text: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const put = (name: string, params: string | undefined, body: string): void => {
+    const trimmed = body.trim();
+    if (trimmed !== "") out.set(name, `\\function ${name}${params ?? "()"}\n${trimmed}\n\\end`);
+  };
+  const source = text.replace(/\r\n?/g, "\n");
+  const lines = source.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const head = /^\\function[ \t]+([\w.-]+)[ \t]*(\([^)]*\))?[ \t]*(.*)$/.exec(lines[i]!);
+    if (!head) continue;
+    if (head[3] !== "") { put(head[1]!, head[2], head[3]!); continue; }
+    const body: string[] = [];
+    while (++i < lines.length && lines[i]!.trim() !== "\\end") body.push(lines[i]!);
+    put(head[1]!, head[2], body.join("\n"));
+  }
+  for (const sigil of source.matchAll(/<<~[ \t]*function[ \t]+name=`([\w.-]+)(\([^)]*\))?`[^>]*>>([\s\S]*?)<<~\/function>>/g)) put(sigil[1]!, sigil[2], sigil[3]!);
+  return out;
+}
+
+/**
+ * The pragma run a carrier's text yields: every house name, from the carrier where it parses and from the floor where it
+ * does not, name by name. The names beyond the house set a carrier may hold never ride.
+ */
 export function functionPragmasOf(text: string): string {
-  return (text.match(FUNCTION_BLOCK) ?? []).join("\n\n");
+  const held = houseBlocksOf(text);
+  const floor = houseBlocksOf(HOUSE_FILTERS_FLOOR);
+  return HOUSE_FUNCTION_NAMES.map((name) => held.get(name) ?? floor.get(name)!).join("\n\n");
+}
+
+/** The house operators a filter names: each `lares.<name>[` operator, as written. */
+const HOUSE_OPERATOR = /(?<![\w.\/:#-])(lares\.[\w.-]+)(?=\[)/g;
+
+/** A filter naming a `lares.` operator outside the house set refuses by name: TiddlyWiki would read it as a field name and answer the whole store. */
+export function refuseUnknownHouseOperators(filter: string): void {
+  if (!filter.includes(HOUSE_FUNCTION_STEM)) return;
+  for (const match of filter.matchAll(HOUSE_OPERATOR)) {
+    if (!HOUSE_FUNCTION_NAMES.includes(match[1]!)) {
+      throw new VerbRefusal("house-filter-unknown", `house-filter-unknown: "${match[1]}" names no house function (${HOUSE_FUNCTION_NAMES.join(", ")}); the filter refuses before it can read as a field name`);
+    }
+  }
 }
 
 interface WikiLike { getTiddler(title: string): { fields: Record<string, unknown> } | undefined }
 
 /**
- * The carrier's text as a canon layer answers it, topmost layer first; the wiki's own record serves only where that record
- * itself carries a canon stamp (a rig that rides canon as wiki records). The floor where no canon layer holds it.
+ * THE WIKI-STAMP SEAM. A wiki record serves as the carrier only where it itself carries a canon `$origin-bag` stamp (the
+ * island lands canon records stamped; a face's working-layer write lands stamped with its own layer, never a canon one). Else the floor.
+ */
+export function canonFiltersTextOfWiki(wiki: WikiLike): string {
+  const held = wiki.getTiddler(HOUSE_FILTERS_TITLE);
+  const stamp = held?.fields["$origin-bag"];
+  const text = held?.fields["text"];
+  return typeof stamp === "string" && CANON_BAG.test(stamp) && typeof text === "string" && text !== "" ? text : HOUSE_FILTERS_FLOOR;
+}
+
+/**
+ * The carrier's text as a canon layer answers it, topmost layer first; then the wiki-stamp seam; then the floor where no
+ * canon layer holds it.
  */
 export async function canonFiltersText(composite: CompositeStore, wiki: WikiLike, mayRead: (bag: string | null) => Promise<boolean>): Promise<string> {
   for (const bag of [...composite.layerIds].reverse()) {
@@ -65,28 +124,27 @@ export async function canonFiltersText(composite: CompositeStore, wiki: WikiLike
     const text = record?.tiddler["text"];
     if (typeof text === "string" && text !== "" && !record?.meta?.deleted) return text;
   }
-  const held = wiki.getTiddler(HOUSE_FILTERS_TITLE);
-  const stamp = held?.fields["$origin-bag"];
-  const text = held?.fields["text"];
-  return typeof stamp === "string" && CANON_BAG.test(stamp) && typeof text === "string" && text !== "" ? text : HOUSE_FILTERS_FLOOR;
+  return canonFiltersTextOfWiki(wiki);
 }
 
-interface WidgetLike { children?: WidgetLike[]; render(parent: unknown, next: null): void; makeFakeWidgetWithVariables(vars: Record<string, unknown>): unknown }
+interface WidgetLike { children?: WidgetLike[]; parentWidget?: { variables?: Record<string, { isFunctionDefinition?: boolean } | undefined> }; render(parent: unknown, next: null): void; makeFakeWidgetWithVariables(vars: Record<string, unknown>): unknown }
 interface HouseWiki {
   parseText(type: string, text: string): unknown;
   makeWidget(parser: unknown, options: Record<string, unknown>): WidgetLike;
 }
 
 /**
- * The widget a house filter runs under: the canon pragmas rendered once over one text leaf (TiddlyWiki reads a function off
- * the widget's PARENT chain, so the deepest widget stands below every definition). Null where the carrier holds no function.
+ * The widget a house filter runs under: the pragmas rendered once over one text leaf (TiddlyWiki reads a function off the
+ * widget's PARENT chain, so the deepest widget stands below every definition). Every house name must resolve as a function,
+ * or the build refuses by name.
  */
-export function houseWidgetOf(wiki: HouseWiki, document: { createElement(tag: string): unknown }, carrierText: string): unknown | null {
-  const pragmas = functionPragmasOf(carrierText);
-  if (pragmas === "") return null;
-  const root = wiki.makeWidget(wiki.parseText("text/vnd.tiddlywiki", `${pragmas}\n\n.`), {});
+export function houseWidgetOf(wiki: HouseWiki, document: { createElement(tag: string): unknown }, carrierText: string): unknown {
+  const root = wiki.makeWidget(wiki.parseText("text/vnd.tiddlywiki", `${functionPragmasOf(carrierText)}\n\n.`), {});
   root.render(document.createElement("div"), null);
   let deepest = root;
   while (deepest.children && deepest.children.length > 0) deepest = deepest.children[0]!;
+  for (const name of HOUSE_FUNCTION_NAMES) {
+    if (!deepest.parentWidget?.variables?.[name]?.isFunctionDefinition) throw new VerbRefusal("house-filters-unresolved", `house-filters-unresolved: the house function "${name}" did not resolve; no filter runs without it`);
+  }
   return deepest.makeFakeWidgetWithVariables({});
 }

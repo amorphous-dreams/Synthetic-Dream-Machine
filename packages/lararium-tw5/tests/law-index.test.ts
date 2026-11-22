@@ -16,7 +16,7 @@ import { makeWikiFilterReactor, makeWikiRenderReactor, makeTiddlerGetReactor, ma
 import {
   seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_BOOT_SEED, LAW_MU_ROOT, LAW_CANON_BAG_PATTERN, lawStandsFilter,
 } from "../src/daemon-law-tiddlers.js";
-import { HOUSE_FILTERS_TITLE, HOUSE_FILTERS_FLOOR, functionPragmasOf } from "../src/house-filters.js";
+import { HOUSE_FILTERS_TITLE, HOUSE_FILTERS_FLOOR, HOUSE_FUNCTION_NAMES, functionPragmasOf, houseBlocksOf, refuseUnknownHouseOperators } from "../src/house-filters.js";
 import { seedDaemonProtocol } from "../src/daemon-protocol-seed.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -59,12 +59,12 @@ const ctx = (): VerbContext => ({ daemon: {} as CompositeStore, invocation: { re
 /** The canon carrier of the house's functions, as the checkout carries it. */
 const CARRIER_TEXT = readFileSync(new URL("../../../bags/lares/ha.ka.ba/lares/api/filters.mem", import.meta.url), "utf8");
 
-async function rig(seed = true, carrier = true) {
+async function rig(seed = true, carrier: boolean | string = true) {
   const engine = await bootTestWiki({ tiddlers: [{ title: WORKING_POINTER, text: DAEMON }, ...CANON_ROWS] });
   if (seed) seedDaemonLawTiddlers(engine);
   const composite = new CompositeStore();
   const oracle = new MemoryTiddlerStore(ORACLE_BAG);
-  if (carrier) await oracle.put({ tiddler: { title: HOUSE_FILTERS_TITLE, text: CARRIER_TEXT, type: "text/vnd.tiddlywiki" } }, { kind: "boot" } as never);
+  if (carrier) await oracle.put({ tiddler: { title: HOUSE_FILTERS_TITLE, text: typeof carrier === "string" ? carrier : CARRIER_TEXT, type: "text/vnd.tiddlywiki" } }, { kind: "boot" } as never);
   composite.addLayer({ bagId: ORACLE_BAG, store: oracle, writable: false });
   composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
   const opts: TiddlerVerbOptions = { composite, tw5: engine };
@@ -74,6 +74,33 @@ async function rig(seed = true, carrier = true) {
   const write = (title: string, fields: Record<string, string> = {}): void => { engine.wiki.addTiddler({ title, text: "", ...fields, "$origin-bag": WORKING }); };
   return { engine, opts, filter, render, write };
 }
+
+describe("the house's function text, with no wiki booted", () => {
+  test("the floor stands welded to the canon carrier byte for byte, every house name", () => {
+    const carrier = houseBlocksOf(CARRIER_TEXT);
+    const floor = houseBlocksOf(HOUSE_FILTERS_FLOOR);
+    for (const name of HOUSE_FUNCTION_NAMES) {
+      expect(carrier.has(name), `${name} parses from the carrier`).toBe(true);
+      expect(floor.get(name)).toBe(carrier.get(name));
+    }
+    expect(functionPragmasOf(CARRIER_TEXT)).toBe(functionPragmasOf(HOUSE_FILTERS_FLOOR));
+  });
+
+  test("three spellings parse (multi-line, one-line, sigil), CRLF reads as LF, and a dropped name reads from the floor", () => {
+    const canonical = "\\function lares.road(state)\n[tag[x]]\n\\end";
+    const forms = [canonical, "\\function lares.road(state) [tag[x]]", "<<~ function name=`lares.road(state)`>>[tag[x]]<<~/function>>", "\\function lares.road(state)\r\n[tag[x]]\r\n\\end\r\n"];
+    for (const form of forms) expect(houseBlocksOf(form).get("lares.road")).toBe(canonical);
+    const pragmas = functionPragmasOf(forms[1]!);
+    expect(pragmas).toContain(houseBlocksOf(HOUSE_FILTERS_FLOOR).get("lares.stage")!);
+    expect(pragmas).toContain(canonical);
+  });
+
+  test("a lares. operator outside the house set refuses by name; a house name and a title naming lares. pass", () => {
+    expect(() => refuseUnknownHouseOperators("[lares.nope[]]")).toThrow(/house-filter-unknown/);
+    expect(() => refuseUnknownHouseOperators("[tag[a]] +[lares.lawx[]]")).toThrow(/house-filter-unknown/);
+    for (const ok of ["[lares.law[]]", "[lares.law.pins[]]", "[lares.road[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
+  });
+});
 
 describe("the law seed and its canon set", () => {
   test("the seed lays the pin set as a shadow, beside the rest of the protocol seed; the law itself stands as no wiki record", () => {
@@ -182,10 +209,6 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.render("{{{ [lares.law[]match[lar:///planted/everything]] }}}")).toBe("");
   });
 
-  test("the floor stands welded to the canon carrier byte for byte", () => {
-    expect(HOUSE_FILTERS_FLOOR).toBe(functionPragmasOf(CARRIER_TEXT));
-  });
-
   test("a vessel whose canon holds no carrier answers from the floor, and an override still changes nothing", async () => {
     const r = await rig(true, false);
     const answer = [...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))];
@@ -193,6 +216,51 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
     expect(await r.filter("[lares.law[]]")).toEqual(answer);
     expect(await r.render("{{{ [lares.law[]count[]] }}}")).toBe(String(answer.length));
+  });
+
+  test("H1: a carrier that stands but drops, renames or mis-spells a house function reads that name from the floor, never the field fallback", async () => {
+    const all = (await rig()).engine.wiki.filterTiddlers("[all[tiddlers]]").length;
+    const answer = [...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))];
+    const dropped = CARRIER_TEXT.replace(/\\function lares\.law\(\)[\s\S]*?\\end/, "");
+    const renamed = CARRIER_TEXT.replace("\\function lares.stage(name)", "\\function lares.stages(name)");
+    const oneLine = CARRIER_TEXT.replace(/\\function lares\.stage\(name\)\n(.*)\n\\end/, "\\function lares.stage(name) $1");
+    const sigil = CARRIER_TEXT.replace(/\\function lares\.stage\(name\)\n(.*)\n\\end/, "<<~ function name=`lares.stage(name)`>>$1<<~/function>>");
+    for (const text of [dropped, renamed, oneLine, sigil, CARRIER_TEXT.replace(/\n/g, "\r\n"), "garbage"]) {
+      const r = await rig(true, text);
+      expect(await r.filter("[lares.law[]]")).toEqual(answer);
+      expect((await r.filter("[lares.law[]]")).length).toBeLessThan(all);
+      expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual(await r.filter("[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]"));
+    }
+  });
+
+  test("H1b: a lares. operator the house leaves unresolved refuses by name and never answers the store", async () => {
+    const r = await rig();
+    await expect(r.filter("[lares.nope[]]")).rejects.toThrow(/house-filter-unknown/);
+  });
+
+  test("M2: a filter reached by indirection runs under the house widget too", async () => {
+    const r = await rig();
+    r.engine.wiki.addTiddler({ title: "$:/x", text: "[lares.law[]]", "$origin-bag": WORKING });
+    expect(await r.filter("[subfilter{$:/x}]")).toEqual([...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))]);
+  });
+
+  test("L1: the wiki-stamp seam: with no canon layer holding the carrier, a wiki record that carries a canon stamp serves; one stamped with a working layer never does", async () => {
+    const variant = "\\function lares.road(state)\n[[lar:///seam/road]]\n\\end\n";
+    const canonStamped = await rig(true, false);
+    canonStamped.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": ORACLE_BAG });
+    expect(await canonStamped.filter("[lares.road[open]]")).toEqual(["lar:///seam/road"]);
+    const forged = await rig(true, false);
+    forged.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": WORKING });
+    expect(await forged.filter("[lares.road[open]]")).toEqual([]);
+  });
+
+  test("M1: a stamped-canon global carrying the Global tag and a raw span define cannot move a render of a title or the filter", async () => {
+    const r = await rig();
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/forged", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    r.engine.wiki.addTiddler({ title: "lar:///ha.ka.ba/wikis/daemon/working/page", text: "{{{ [lares.law[]count[]] }}}", type: "text/vnd.tiddlywiki", "$origin-bag": WORKING });
+    const n = String(PINS.length + CANON_LAW.filter((t) => !PINS.includes(t)).length);
+    const rendered = String((await makeWikiRenderReactor(r.opts)({ recipe: "default", title: "lar:///ha.ka.ba/wikis/daemon/working/page" }, ctx()))["text"]);
+    expect(rendered).toContain(n);
   });
 
   test("the call answers what the long form answered: the pins, the law, a title's standing", async () => {

@@ -79,7 +79,7 @@ import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { staysHome } from "./stay-home.js";
-import { canonFiltersText, functionPragmasOf, houseWidgetOf, HOUSE_FUNCTION_STEM } from "./house-filters.js";
+import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -323,12 +323,14 @@ function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; 
   if (house) {
     // THE HOUSE'S FUNCTIONS COME FROM CANON ALONE: a filter run with no widget of its own runs under the widget the canon
     // carrier's text builds (house-filters), never under the wiki's `$:/tags/Global` imports, which a working-layer record shadows.
-    let widget: unknown | null | undefined;
+    let widget: unknown;
     const run = wiki.filterTiddlers as unknown as (this: unknown, filter: string, widget?: unknown, source?: unknown) => string[];
     view["filterTiddlers"] = (filter: string, given?: unknown, source?: unknown): string[] => {
-      if (given === undefined && filter.includes(HOUSE_FUNCTION_STEM)) {
-        if (widget === undefined) widget = houseWidgetOf(view as never, house.document, house.text);
-        if (widget) given = widget;
+      refuseUnknownHouseOperators(filter);
+      if (given === undefined) {
+        // EVERY FILTER THE CALLER GIVES NO WIDGET RUNS UNDER THE HOUSE WIDGET, an indirect one (`[subfilter{$:/x}]`) included.
+        widget ??= houseWidgetOf(view as never, house.document, house.text);
+        given = widget;
       }
       return run.call(view, filter, given, source);
     };
