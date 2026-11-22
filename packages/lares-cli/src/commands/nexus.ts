@@ -82,7 +82,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "kahuli":          return await cmdKahuli(args);
     case "publish":         return await cmdPublish(args);
     case "offering":        return await cmdOffering(args);
-    case "promote":         return await cmdPromote(args);
+    case "approve":         return await cmdPromote(args);
     case "cabal":           return await cmdNexusCabal(args);
     case "release":         return await cmdNexusRelease(args);
     case "realm-bag":       return await cmdRealmBag(args);

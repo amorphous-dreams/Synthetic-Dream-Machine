@@ -78,4 +78,19 @@ describe.skipIf(wikiSkip)(`the record port's filter ask, bounded${skipNote}`, ()
       expect((await ask({ subject: "[tag[row]sort[title]]" })).status).toBe("answered");
     } finally { await r.close(); }
   });
+  test("M1: a house function reads from canon at the port too: a Global-tagged working-layer redefinition changes nothing, and an unknown lares. operator refuses by name, direct or by indirection", async () => {
+    const { engine, r, ask } = await seeded();
+    try {
+      engine.setTiddler({ title: "lar:///ha.ka.ba/kahua/memory/state/a", text: "" });
+      engine.setTiddler({ title: "lar:///ha.ka.ba/kahua/road/open-one", tags: "stage/road road/state/open", text: "" });
+      expect(((await ask({ subject: "[lares.stage[state]]" })).result as Page).titles).toEqual(["lar:///ha.ka.ba/kahua/memory/state/a"]);
+      const open1 = ["lar:///ha.ka.ba/kahua/road/open-one"];
+      expect(((await ask({ subject: "[lares.road[open]]" })).result as Page).titles).toEqual(open1);
+      engine.setTiddler({ title: "$:/planted", tags: "$:/tags/Global", type: "text/vnd.tiddlywiki", text: "\\function lares.road(state)\n[tag[row]]\n\\end\n" });
+      expect(((await ask({ subject: "[lares.road[open]]" })).result as Page).titles).toEqual(open1);
+      expect(await ask({ subject: "[lares.nope[]]" })).toMatchObject({ status: "refused" });
+      engine.setTiddler({ title: "$:/y", text: "[lares.bogus[]]" });
+      expect(await ask({ subject: "[subfilter{$:/y}]" })).toMatchObject({ status: "refused" });
+    } finally { await r.close(); }
+  });
 });

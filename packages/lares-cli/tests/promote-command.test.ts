@@ -1,5 +1,5 @@
 /**
- * `lares promote` and `lares kapae` — the operator's doors onto a wiki's promoted rites and onto the face-wide brake.
+ * `lares trust` and `lares kapae` — the operator's doors onto a wiki's promoted rites and onto the face-wide brake.
  *
  * Each act reaches the store door's matching row (`promote-list|prepare|commit|drop|orphan`, `kapae-raise|lower|flag`) with the arguments
  * the row reads (a wiki, a digest, a reason) and prints the row's answer as JSON. A malformed ask refuses before the door. The wiki
@@ -21,7 +21,7 @@ const promote = (...argv: string[]) => cmdPromote(parseArgs(["promote", ...argv]
 const kapae = (...argv: string[]) => cmdKapae(parseArgs(["kapae", ...argv]));
 const D = "d".repeat(64);
 
-describe("lares promote", () => {
+describe("lares trust", () => {
   let lines: string[];
   beforeEach(() => {
     seam.calls = []; seam.output = { ok: true }; lines = [];
@@ -80,4 +80,36 @@ describe("lares kapae", () => {
     expect(await kapae()).toBe(2);
     expect(seam.calls).toEqual([]);
   });
+});
+
+test("the staged-code door exposes trust in place of promote", async () => {
+  const { COMMAND_NAMES } = await import("../src/bin/lares.js");
+  expect(COMMAND_NAMES).toContain("trust");
+  expect(COMMAND_NAMES).not.toContain("promote");
+});
+
+test("each moved door names its replacement whatever flags ride the call", async () => {
+  const { dispatch } = await import("../src/bin/lares.js");
+  const err = vi.spyOn(console, "error").mockImplementation(() => {});
+  for (const [args, replacement] of [
+    [["promote", "list", "--unexpected"], "lares trust"],
+    [["nexus", "promote", "open", "--unexpected"], "lares nexus approve"],
+    [["sense", "promote", "memory", "--unexpected"], "lares sense harden"],
+  ] as const) {
+    expect(await dispatch(args)).toBe(2);
+    expect(err.mock.calls.at(-1)?.join(" ")).toContain(replacement);
+  }
+  err.mockRestore();
+});
+
+test("trust dispatches the existing wire verb and narrowed paths refuse unrelated flags", async () => {
+  const { dispatch } = await import("../src/bin/lares.js");
+  seam.calls = [];
+  const err = vi.spyOn(console, "error").mockImplementation(() => {});
+  expect(await dispatch(["trust", "list"])).toBe(0);
+  expect(seam.calls.at(-1)?.[0]).toBe("promote-list");
+  expect(await dispatch(["nexus", "approve", "check", "a", "b", "--purpose", "x"])).toBe(2);
+  expect(await dispatch(["sense", "harden", "x", "--wing", "x"])).toBe(2);
+  expect(err.mock.calls.flat().join(" ")).toContain("unknown flag");
+  err.mockRestore();
 });

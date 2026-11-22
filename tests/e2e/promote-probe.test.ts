@@ -3,9 +3,9 @@
  *
  *   P1  code lifts as inert data: a marked `startup` module and a `$:/tags/StartupAction` item lift to the kahua stage; the hearth restarts
  *       TWICE and NEITHER runs (no `probe/ran/*` file, no `probe/action-ran`). The lift never loads.
- *   P2  the rites wait: `lares promote list` shows both with origin, digest and code class; a seat session's commit refuses
+ *   P2  the rites wait: `lares trust list` shows both with origin, digest and code class; a seat session's commit refuses
  *       `promote-needs-hand`, its prepare lands on the board.
- *   P3  the hand commits: after `lares promote commit` for each and one restart the module ran once and the action ran.
+ *   P3  the hand commits: after `lares trust commit` for each and one restart the module ran once and the action ran.
  *   P4  the brake: `lares kapae raise` over the module's digest; a restart runs it NOT (the count holds); `lower` and a restart run it again.
  *   P5  the orphan: the stage withdraws the module's item; the boot names the orphan and the module KEEPS running; `promote orphan --keep`
  *       ends the asking.
@@ -66,7 +66,7 @@ async function restart(): Promise<void> {
   await hearth!.stopDaemonOnly();
   hearth = await openStaged({ root: hearth!.root, port: hearth!.port, found: async () => {} });
 }
-const list = async (): Promise<Record<string, any>> => { const r = await hearth!.cli(["promote", "list"]); expect(r.code, said(r)).toBe(0); return answer(r); };
+const list = async (): Promise<Record<string, any>> => { const r = await hearth!.cli(["trust", "list"]); expect(r.code, said(r)).toBe(0); return answer(r); };
 const digestOf = (listing: Record<string, any>, title: string): string => {
   const hit = [...(listing["rows"] ?? []), ...(listing["waiting"] ?? [])].find((r: { title: string }) => r.title === title);
   if (!hit) throw new Error(`no ${title} in ${JSON.stringify(listing).slice(0, 800)}`);
@@ -85,7 +85,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
   test("P1 — code lifts as inert data: two restarts and neither the module nor the StartupAction runs", async () => {
     const obs = await stageThenLift("rites/probe-observer", OBSERVER, JSON.stringify({ "module-type": "startup", type: "application/javascript" }));
     expect(obs.code, said(obs)).toBe(0);
-    const committed = await hearth!.cli(["promote", "commit", digestOf(await list(), "rites/probe-observer")]);
+    const committed = await hearth!.cli(["trust", "commit", digestOf(await list(), "rites/probe-observer")]);
     expect(committed.code, said(committed)).toBe(0);
     const mod = await stageThenLift("rites/probe-module", MODULE, JSON.stringify({ "module-type": "startup", type: "application/javascript" }));
     expect(mod.code, said(mod)).toBe(0);
@@ -129,7 +129,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
   test("P3 — the hand commits both; one restart and the module ran once and the action ran", async () => {
     const listing = await list();
     for (const title of ["rites/probe-module", "rites/probe-action"]) {
-      const r = await hearth!.cli(["promote", "commit", digestOf(listing, title)]);
+      const r = await hearth!.cli(["trust", "commit", digestOf(listing, title)]);
       expect(r.code, said(r)).toBe(0);
     }
     await restart();
@@ -192,7 +192,7 @@ describe.skipIf(!stagedTarget || !built)("promote, live", () => {
     await restart();
     expect((await settle(ranFiles, (f) => f.length >= 1, 60_000)).length).toBe(1);
     expect(hearth!.bootLog()).toMatch(new RegExp(`\\[promote\\].*orphan.*${digest.slice(0, 12)}`));
-    const kept = await hearth!.cli(["promote", "orphan", digest, "--keep"]);
+    const kept = await hearth!.cli(["trust", "orphan", digest, "--keep"]);
     expect(kept.code, said(kept)).toBe(0);
     await restart();
     expect(hearth!.bootLog()).not.toMatch(new RegExp(`\\[promote\\].*orphan.*${digest.slice(0, 12)}`));
