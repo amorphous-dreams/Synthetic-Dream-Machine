@@ -187,6 +187,14 @@ LAW_PINS_FILTER = "[subfilter{" + LAW_PINS_TITLE + "}] " + LAW_CANON_GUARD
 LAW_INDEX_FILTER = "[subfilter{" + LAW_PINS_TITLE + "}] =" + _LAW_FILTER + " +[unique[]] " + LAW_CANON_GUARD
 LAW_ROW_FIELDS = ("description", "role")
 
+# THE HEARTH ROSTER — who is home, offered beside the law: `vessel_roster` reads the worn face and who holds that slot, the
+# seats in two grains (here by presence on the vessel's socket, far by last signed act on the face intent plane), the lanes a
+# seat claims and the vota still waiting. It mirrors `lares vessel roster --json`: both ride the one `hearth-roster` verb the
+# vessel's channel answers itself (`@lararium/node`'s `hearth-roster-read`), so the body this seat returns stands byte for
+# byte the body the CLI's `data` carries. A read: it places nothing and writes no fact.
+HEARTH_VERBS = ("vessel_roster",)
+HEARTH_ROSTER_VERB = "hearth-roster"
+
 # What the seat tells a client at its first contact: read the house's law before acting.
 SEAT_INSTRUCTIONS = (
     "Read the house's law before you act: `law_index` lists the pinned law first (the boot seed, then the Mu family), "
@@ -257,6 +265,7 @@ VERB_SEATS = {
     "law_index": (True, False),         # the pinned law, then the law the pins leave out — a read → HOTL
     "law_pin": (True, False),           # add one `[[uri]]` run to the face's pin set — reversible, trusted → HOTL
     "law_unpin": (True, False),         # take a title out of the pin set — reversible, trusted → HOTL
+    "vessel_roster": (True, False),     # who is home: the vessel's own reading of its seats, lanes and vota — a read → HOTL
     "oracle_cast": (True, False),       # one cast written as one new tiddler in the working layer — reversible, trusted → HOTL
     "tiddler_put": (True, False),       # patch fields, tags, or named text in the working layer — reversible, trusted → HOTL
     "tiddler_delete": (True, False),    # remove one plain tiddler plainly, or a meme family where `family=True` names the act; a lower layer asks `mode` → HOTL
@@ -1081,6 +1090,18 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused(f"target-malformed: `target` names a lit face by handle index (\"h1\") or pet name, got {target!r}")
         return {"target": target.strip()}
 
+    def _wiki_container(verb: str, recipe: "str | None") -> dict:
+        """THE ENGINE VERBS' CONTAINER: a wiki. These verbs run in a wiki's own engine (a filter, a render, a status, a
+        patch, a removal), so they name `recipe` alone; a bag names one store and no wiki, and its reads ride `tiddler_get`
+        (one record), `meme_list` (its roots) and `meme_get` (a meme), its writes `meme_put` and `meme_delete`."""
+        if recipe is None:
+            raise SeatArgumentRefused(f"{verb}: no-container — name the wiki: `recipe` (e.g. \"lares\"; the daemon's own wiki "
+                                      "answers to \"default\"). A bag names no wiki: read one with `tiddler_get(bag=...)`, "
+                                      "`meme_list(bag=...)` or `meme_get(bag=...)`. No default wiki exists.")
+        if not recipe:
+            raise SeatArgumentRefused(f"{verb}: `recipe` names no slug — pass one (`sdm`, `lares`)")
+        return {"recipe": recipe}
+
     def _meme_wire(verb: str, args: dict):
         """Ride `lares_uds.call` and peel the receipt to the verb's own payload — a `null` output stays
         `None` (an absent meme reads null, never the receipt envelope `uds.output` would hand back)."""
@@ -1132,16 +1153,24 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool()
     def meme_get(uri: str, recipe: "str | None" = None, bag: "str | None" = None,
-                 target: "str | None" = None) -> "dict | None":
+                 max_bytes: "int | None" = None, after: "str | None" = None, target: "str | None" = None) -> "dict | None":
         """READ a meme's text + canonical hash at its `lar:` `uri` — mirrors `lares meme get`. CONTAINER
         LAW: exactly one of `recipe` / `bag` names where to read (`recipe="default"` names the @daemon's
-        own wiki); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash} — carry the
+        own wiki); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash, bytes, truncated, next} — carry the
         `canonicalHash` into `meme_put`'s `base` to write against what you read — or null when the meme
         stands absent. THE FLOOR WORD: a face outside the Kahu cabal holds no read on a live house canon document
         (`lares`, `lararium`), so the bag's floor snapshot answers it, and the answer says so: {text, canonicalHash, floor}
         with `floor: true`. A live read carries no `floor`. A floor read may trail the live canon, and a write to
-        that bag from the same face refuses. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write. Rides the @daemon wire, never a store."""
+        that bag from the same face refuses. THE ANSWER IS BOUNDED: it always names the meme's whole size as `bytes`, and
+        carries at most `max_bytes` (default 65536, at most 262144) of `text`, never cutting a character. A meme within
+        the cap answers whole (`truncated` false, `next` null); a longer one answers its first page with `truncated`
+        true and `next`, a cursor: hand it back as `after` for the page behind (the pages join to the whole text; a meme
+        that moved between pages refuses `meme-cursor-stale`, so read again from the first page). Rides the @daemon wire, never a store. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
         args: dict = {**_meme_container("meme_get", recipe, bag), "uri": uri, **_target(target)}
+        if max_bytes is not None:
+            args["maxBytes"] = max_bytes
+        if after:
+            args["after"] = after
         # A reactor outcome never rides bare null, so the daemon answers `{uri, meme}`; the tool hands
         # back the meme alone, as the contract spells it, with the verb's floor word on it where one stands.
         out = _meme_wire("meme-get", args) or {}
@@ -1227,7 +1256,7 @@ def build_mcp(coordinator: LaresCoordinator):
         return [n for n in value if n]
 
     @mcp.tool(annotations=_READS)
-    def wiki_filter(filter: str, recipe: "str | None" = None, bag: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
+    def wiki_filter(filter: str, recipe: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
                     fields: "list | None" = None, limit: "int | None" = None, after: "str | None" = None,
                     max_bytes: "int | None" = None, target: "str | None" = None) -> dict:
         """RUN A TIDDLYWIKI FILTER in the wiki's own engine and read ONE BOUNDED PAGE of its answer — mirrors `lares wiki
@@ -1242,10 +1271,10 @@ def build_mcp(coordinator: LaresCoordinator):
         counts matches that stay home (temp, state, custody titles) or rest in a bag this face holds no read on.
         A RENDERED TIDDLER's slice: where one read of the whole render (`tiddler_get` on the title carrying
         `rendered-from`) answers more than you need, filter its sources for the slice, e.g.
-        `[tag[road/rank]sort[order]]` with `fields=["text"]`. CONTAINER LAW: `recipe` names
-        a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A
+        `[tag[road/rank]sort[order]]` with `fields=["text"]`. CONTAINER: `recipe` names
+        the wiki (a bag names no wiki and takes no filter; read a bag with `tiddler_get(bag=...)` or `meme_list(bag=...)`): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A
         filter result carries the named wiki's words; turn it through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
-        args: dict = {**_meme_container("wiki_filter", recipe, bag), "filter": filter, **_target(target)}
+        args: dict = {**_wiki_container("wiki_filter", recipe), "filter": filter, **_target(target)}
         names = _names("wiki_filter", "fields", fields)
         if names is not None:
             args["fields"] = names
@@ -1273,8 +1302,7 @@ def build_mcp(coordinator: LaresCoordinator):
         here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`, or the source's
         `render-title`) whose text holds the source's render (lists resolved, transclusions filled; `render-type`
         text/plain or text/html) and whose `rendered-from` names the source; one `tiddler_get` on that title reads the
-        whole rendered artifact, and `wiki_filter` over the sources reads a slice. CONTAINER LAW: exactly one of
-        `recipe` / `bag`; `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A record's text carries the layer `bag` names; turn it through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        whole rendered artifact, and `wiki_filter` over the sources reads a slice. CONTAINER LAW: exactly one of `recipe` / `bag`. `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. `bag` names ONE BAG and reads that bag's own record through the meme door's reach and read gate (no engine runs): the answer names the `bag` in place of a `recipe`, carries `floor: true` where the bag's floor snapshot answered, and an absent title reads `tiddler: null`; `position` reads from the bag's own titles. A record's text carries the layer `bag` names; turn it through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
         args: dict = {**_meme_container("tiddler_get", recipe, bag), "title": title, **_target(target)}
         if slot:
             args["slot"] = slot
@@ -1289,7 +1317,7 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_READS)
     def wiki_render(title: "str | None" = None, text: "str | None" = None, recipe: "str | None" = None,
-                    bag: "str | None" = None, form: str = "text", type: "str | None" = None,  # noqa: A002 — the tiddler field's own name
+                    form: str = "text", type: "str | None" = None,  # noqa: A002 — the tiddler field's own name
                     after: "str | None" = None, max_bytes: "int | None" = None, target: "str | None" = None) -> dict:
         """WIKIFY through the wiki's own engine: a tiddler by `title`, or a wikitext span passed as `text` (exactly one
         of the two) — mirrors `lares wiki render`. Transclusions, macros, widgets and filters resolve as the wiki
@@ -1298,13 +1326,13 @@ def build_mcp(coordinator: LaresCoordinator):
         TiddlyWiki wikitext). Returns {recipe, title, form, text, bytes, truncated, next}: `max_bytes` (default 65536)
         caps `text`; where `truncated` reads true, hand `next` back as `after` for the rest (a wiki that moved between
         the two refuses `render-cursor-stale`). An absent title refuses `tiddler-absent`. A render fires no action and
-        dispatches no message. CONTAINER LAW: exactly one of `recipe` / `bag`; `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`.
+        dispatches no message. CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`.
         A render carries the named wiki's words; turn it through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
         if (title is None or title == "") == (text is None or text == ""):
             raise SeatArgumentRefused("wiki_render: name exactly one of `title` (a tiddler) or `text` (a wikitext span)")
         if form not in ("text", "html"):
             raise SeatArgumentRefused(f"wiki_render: `form` reads \"text\" or \"html\", got {form!r}")
-        args: dict = {**_meme_container("wiki_render", recipe, bag), **_target(target)}
+        args: dict = {**_wiki_container("wiki_render", recipe), **_target(target)}
         if title:
             args["title"] = title
         else:
@@ -1320,14 +1348,13 @@ def build_mcp(coordinator: LaresCoordinator):
         return _meme_wire("wiki-render", args)
 
     @mcp.tool(annotations=_READS)
-    def wiki_status(recipe: "str | None" = None, bag: "str | None" = None, target: "str | None" = None) -> dict:
+    def wiki_status(recipe: "str | None" = None, target: "str | None" = None) -> dict:
         """NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
         status`. Returns {recipe, working, layers: [{bag, mounted, read, write, working?, why?}]}: `working` names the
         layer every `tiddler_put` and `meme_put` lands in (null where none stands attached); each layer reads `mounted`
         "writable", "read-only" or "promotion-only" (a canon layer: a write reaches it by action verb alone, never by a put),
-        the face's own `read` and `write`, and `why` where a mounted-writable layer still refuses this face. Read it before a write to learn where the write lands. CONTAINER LAW: exactly one of
-        `recipe` / `bag`; `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write. A visited face's layers read `write: false`."""
-        return _meme_wire("wiki-status", {**_meme_container("wiki_status", recipe, bag), **_target(target)})
+        the face's own `read` and `write`, and `why` where a mounted-writable layer still refuses this face. Read it before a write to learn where the write lands. CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        return _meme_wire("wiki-status", {**_wiki_container("wiki_status", recipe), **_target(target)})
 
     @mcp.tool(annotations=_READS)
     def ddate(format: "str | None" = None, day: "int | None" = None, month: "int | None" = None,
@@ -1517,8 +1544,29 @@ def build_mcp(coordinator: LaresCoordinator):
         pinned, text, hash, bag}."""
         return _law_move("law_unpin", _law_uri("law_unpin", uri), "unpin")
 
+    # ── THE HEARTH ROSTER — who is home, the vessel's own reading ──
+
+    @mcp.tool(annotations=_READS)
+    def vessel_roster() -> dict:
+        """READ WHO IS HOME — mirrors `lares vessel roster --json`. The vessel answers from what it holds now and places
+        nothing. Returns {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts, more}: `rotation` names the face
+        this vessel wears, the session seats holding that slot (`holders`) and any seat acting under another face
+        (`underOther`); `seats` carries one row shape in two grains: `local` (a session bound on the vessel's socket, standing
+        while its process holds the socket; `kind` `ai` for a harness's seat, `hand` for a person's hand, the operator's
+        among them as an equal) and `far` (a signer on a worn face's intent plane, read only by `lastHeard`, the acts none of
+        its own later acts cite: no global now, so nobody far reads online); `lanes` reads the intent claims standing, and
+        `lanesGap` names what the house records no claim for (a leap or a road meme); `vota` lists each intent still waiting
+        on an answer, an outcome (`owedBy` the atom that owes it, else unclaimed) or a frontier; `unread` names each face
+        whose plane did not read, by its code; each face keeps eight rows per list, `counts` counts every row and `more` the rows
+        left out. The rows come from the vessel's live reading: a seat here by the kernel's hold
+        on its socket, a far seat by its signature; turn them through the five tools."""
+        out = _meme_wire(HEARTH_ROSTER_VERB, {})
+        if not isinstance(out, dict):
+            raise uds.LaresVerbError(f"{HEARTH_ROSTER_VERB}: the vessel answered no roster")
+        return out
+
     @mcp.tool(annotations=_PATCHES)
-    def tiddler_put(title: str, recipe: "str | None" = None, bag: "str | None" = None, fields: "dict | None" = None,
+    def tiddler_put(title: str, recipe: "str | None" = None, fields: "dict | None" = None,
                     text: "str | None" = None, unset: "list | None" = None, tags_add: "str | list | None" = None,
                     tags_remove: "str | list | None" = None, base: "str | None" = None, create: bool = False) -> dict:
         """PATCH ONE TIDDLER — set fields, unset fields, add and remove tags, and move the text ONLY where `text` names
@@ -1538,10 +1586,9 @@ def build_mcp(coordinator: LaresCoordinator):
         or tag, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a
         title under the memory stage reads one or two lowercase, hyphen-joined path segments (`stage-path-shape`); a
         put over a rendered tiddler, or one carrying `rendered-from`, refuses `rendered-derives` (only the renderer
-        writes it: edit the source tiddlers). CONTAINER LAW: exactly one of `recipe` /
-        `bag`; `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; a put lands in that wiki's working layer (this face's personal layer of it where
+        writes it: edit the source tiddlers). CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; a put lands in that wiki's working layer (this face's personal layer of it where
         it holds no writer's seat)."""
-        args: dict = {**_meme_container("tiddler_put", recipe, bag), "title": title}
+        args: dict = {**_wiki_container("tiddler_put", recipe), "title": title}
         if fields is not None:
             if not isinstance(fields, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items()):
                 raise SeatArgumentRefused("tiddler_put: `fields` maps field names to string values "
@@ -1572,7 +1619,7 @@ def build_mcp(coordinator: LaresCoordinator):
         return receipt
 
     @mcp.tool(annotations=_REMOVES)
-    def tiddler_delete(title: str, recipe: "str | None" = None, bag: "str | None" = None,
+    def tiddler_delete(title: str, recipe: "str | None" = None,
                        base: "str | None" = None, family: bool = False, mode: "str | None" = None) -> dict:
         """REMOVE ONE TIDDLER, BY THE FAMILY LAW — mirrors `lares tiddler delete <title> [--family] [--mode kapae|reveal]`.
         A DELETE DELETES PLAINLY: with no `mode`, each record leaves its own layer to absent and no tombstone rises (the
@@ -1595,9 +1642,8 @@ def build_mcp(coordinator: LaresCoordinator):
         that hides a lower record. Each act in `consequence.acts` names `bag` (the layer written), `holds` (every layer
         holding the title) and what the wiki reads afterward: `shadowed: [bags]` or `reveals: bag | null`. A rendered
         tiddler (one carrying `rendered-from`) refuses `rendered-derives`: only the renderer writes it, and it leaves when
-        its source drops `projection: rendered`. CONTAINER LAW: exactly one of `recipe` / `bag`; `recipe`
-        names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`."""
-        args: dict = {**_meme_container("tiddler_delete", recipe, bag), "title": title}
+        its source drops `projection: rendered`. CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`."""
+        args: dict = {**_wiki_container("tiddler_delete", recipe), "title": title}
         if base is not None:
             args["base"] = base
         if family is True:

@@ -64,6 +64,7 @@ import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
+import { hearthPlanesOver, readHearthPlane } from "./hearth-roster-read.js";
 import { floorVerbsFor } from "./floor-verbs.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
 import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_VERBS, faceRowAnswer } from "./store-door-verbs.js";
@@ -885,6 +886,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     claim:        floor.storeClaim,
     repo:         result.repo,
     sessions:     result.sessionDoor,
+    // THE HEARTH ROSTER reads each worn face's intent plane through the intent door's own fold, over this vessel's Repo.
+    hearthPlanes: hearthPlanesOver((face) => readHearthPlane(result.repo, result.catalogHandleUrl, face)),
     // THE AI SEAT ACTS INSIDE THE LENT SET (`seat-hand`): a call marked `seat: "ai"` naming a face outside it refuses.
     mountOrdinal:  () => result.mountOrdinal(),
     lentOrdinals: () => unlockedFaceOrdinals(),

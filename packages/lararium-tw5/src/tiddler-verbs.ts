@@ -70,7 +70,7 @@ import {
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
-import { anchorBagOf, readContainer } from "./meme-verbs.js";
+import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
 import { wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX } from "./place-meme.js";
 import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
@@ -80,7 +80,7 @@ import { wornOrigin } from "./verb-dispatcher.js";
 import { wikiWearsNext } from "./island-recipe.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
-export interface TiddlerVerbOptions {
+export interface TiddlerVerbOptions extends Partial<Pick<MemeVerbOptions, "reach" | "slotStore" | "realmWritable" | "recipeOf" | "writeSlot" | "faceLane">> {
   readonly composite: CompositeStore;
   /** The daemon island's engine: its live `$tw.wiki` answers every verb here. Read lazily, at verb time. */
   readonly tw5: Pick<TW5Engine, "$tw">;
@@ -223,7 +223,12 @@ function wikiOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>
   const target = readContainer(args, verb);
   const recipe = opts.wiki?.slug ?? "default";
   if (target.recipe !== recipe) {
-    throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} answers a wiki through its own engine; ${target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`}. Name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki). The meme verbs read one bag's store.`);
+    const write = /^tiddler-(put|delete)$/.test(verb);
+    const door = write
+      ? "A bag takes a record through the meme door: `lares meme put --bag <slug>` · `lares meme delete --bag <slug>`."
+      : "A bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record) · `lares meme list --bag <slug>` (its roots) · `lares meme get <uri> --bag <slug>` (a meme).";
+    const named = target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`;
+    throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} runs in a wiki's own engine; ${named}. ${door} To use ${verb}, name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki).`);
   }
   return { recipe, slug: opts.wiki?.slug ?? DAEMON_WIKI_SLUG };
 }
@@ -464,13 +469,77 @@ function slotTitle(root: string, slot: string): string {
   return `${root}${slot.startsWith("#") ? slot : `#/${slot.replace(/^\/+/, "")}`}`;
 }
 
+/** What a get answers of a record: the named fields, or every field less the text it was told to leave home, under the byte cap (the largest fields leave first, by name). */
+function narrowRecord(fields: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>): { shown: Record<string, string>; omitted: string[] } {
+  const names = namesArg(args["fields"]);
+  const omitted: string[] = [];
+  let shown: Record<string, string> = fields;
+  if (names !== null) {
+    shown = { title };
+    for (const name of names) if (typeof fields[name] === "string") shown[name] = fields[name]!;
+  } else if (flagOff(args["text"]) && typeof fields["text"] === "string") {
+    const { text: _text, ...rest } = fields;
+    shown = rest;
+    omitted.push("text");
+  }
+  // THE BYTE CAP: the largest fields leave first, by name, and the hashes still speak for the whole record.
+  const maxBytes = countArg(args["maxBytes"], WIKI_ANSWER_BYTES_MAX, 256, WIKI_ANSWER_BYTES_MAX);
+  if (bytesOf(shown) > maxBytes) {
+    shown = { ...shown };
+    for (const name of Object.keys(shown).filter((n) => n !== "title").sort((x, y) => bytesOf(shown[y]) - bytesOf(shown[x]))) {
+      if (bytesOf(shown) <= maxBytes) break;
+      delete shown[name];
+      omitted.push(name);
+    }
+  }
+  return { shown, omitted };
+}
+
+/**
+ * A BAG'S RECORD, READ FROM THAT ONE BAG. The reach and the read gate are the meme door's own (`readBagStore`: a mounted layer, an
+ * instance slot, a bag by access, the floor snapshot where the face holds no read on a live house canon document, which the answer
+ * names with `floor: true`). The record answers as the wiki door answers one: fields as TiddlyWiki writes them, `hash`, `textHash`,
+ * the `bag`, and a `position` the bag's own titles decide (a title with `#` titles below it stands a root, one with `#/` in it a slot).
+ * The answer names the bag in place of a wiki (`recipe` stays out), since no engine ran.
+ */
+async function bagGet(
+  opts: TiddlerVerbOptions, container: ReturnType<typeof readContainer>, title: string, args: Readonly<Record<string, unknown>>, ctx: VerbContext,
+): Promise<Record<string, unknown>> {
+  const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+  const { bag, sink, floor } = await readBagStore(opts as unknown as MemeVerbOptions, container.bag!, container.realm, origin, ctx.cap);
+  const held = await sink.read(title);
+  const answered = { bag, title, ...(floor ? { floor: true } : {}) };
+  if (!held) return { ...answered, tiddler: null };
+  const engine = engineOf(opts);
+  const fields = new engine.Tiddler(held as Record<string, unknown>).getFieldStrings();
+  delete fields[ORIGIN_BAG];
+  const { shown, omitted } = narrowRecord(fields, title, args);
+  const root = rootAddressOf(title);
+  const titles = await sink.titles();
+  const position: TiddlerPosition = titles.some((t) => t.startsWith(`${title}#`)) ? "root" : title.includes("#") && root !== title ? "slot" : "plain";
+  return {
+    ...answered,
+    tiddler: {
+      fields: shown, hash: hashOf(fields), textHash: textHashOf(fields), bag, position,
+      ...(position === "slot" ? { family: root } : {}),
+      ...(omitted.length > 0 ? { omitted } : {}),
+    },
+  };
+}
+
 export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
-    const anchor = anchorOf(opts, args, "tiddler-get");
+    const container = readContainer(args, "tiddler-get");
     const named = stringArg(args, "title");
     if (!named) throw new Error("tiddler-get: args.title is required (the tiddler's title; a meme's root lar: URI beside `slot` reads one slot)");
     const slot = optionalStringArg(args, "slot");
     const title = slot ? slotTitle(named, slot) : named;
+    // A BAG NAMES ONE STORE AND NO WIKI: the record reads from that bag through the meme door's own reach and read gate.
+    if (container.bag !== null) {
+      refuseWithheld(title, "tiddler-get");
+      return await bagGet(opts, container, title, args, ctx);
+    }
+    const anchor = anchorOf(opts, args, "tiddler-get");
     refuseWithheld(title, "tiddler-get");
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const wiki = anchor.engine.wiki;
@@ -478,27 +547,7 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
     if (!tiddler) return { recipe: anchor.recipe, title, tiddler: null };
     const { fields, bag } = readRecord(tiddler);
     if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
-    const names = namesArg(args["fields"]);
-    const omitted: string[] = [];
-    let shown: Record<string, string> = fields;
-    if (names !== null) {
-      shown = { title };
-      for (const name of names) if (typeof fields[name] === "string") shown[name] = fields[name]!;
-    } else if (flagOff(args["text"]) && typeof fields["text"] === "string") {
-      const { text: _text, ...rest } = fields;
-      shown = rest;
-      omitted.push("text");
-    }
-    // THE BYTE CAP: the largest fields leave first, by name, and the hashes still speak for the whole record.
-    const maxBytes = countArg(args["maxBytes"], WIKI_ANSWER_BYTES_MAX, 256, WIKI_ANSWER_BYTES_MAX);
-    if (bytesOf(shown) > maxBytes) {
-      shown = { ...shown };
-      for (const name of Object.keys(shown).filter((n) => n !== "title").sort((a, b) => bytesOf(shown[b]) - bytesOf(shown[a]))) {
-        if (bytesOf(shown) <= maxBytes) break;
-        delete shown[name];
-        omitted.push(name);
-      }
-    }
+    const { shown, omitted } = narrowRecord(fields, title, args);
     return {
       recipe: anchor.recipe, title,
       tiddler: { fields: shown, hash: hashOf(fields), textHash: textHashOf(fields), bag, ...placeFields(placeOf(anchor, view, title)), ...(omitted.length > 0 ? { omitted } : {}) },

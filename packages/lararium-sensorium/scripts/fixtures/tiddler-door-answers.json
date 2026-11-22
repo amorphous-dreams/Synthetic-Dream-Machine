@@ -23,6 +23,13 @@
       "output": { "recipe": "default", "title": "lar:///t/x#/b", "tiddler": { "fields": { "title": "lar:///t/x#/b", "text": "! b" }, "hash": "sha256-cc", "textHash": "sha256-dd", "bag": null, "position": "slot", "family": "lar:///t/x" } }
     },
     {
+      "tool": "tiddler_get",
+      "cli": { "command": "tiddler", "positional": ["get", "Canon Note"], "options": { "bag": "lares" }, "flags": {} },
+      "mcp": { "title": "Canon Note", "bag": "lares" },
+      "wire": { "verb": "tiddler-get", "args": { "bag": "lares", "title": "Canon Note" } },
+      "output": { "bag": "lar:///ha.ka.ba/bags/lares", "title": "Canon Note", "tiddler": { "fields": { "title": "Canon Note", "text": "canon words" }, "hash": "sha256-ee", "textHash": "sha256-ff", "bag": "lar:///ha.ka.ba/bags/lares", "position": "plain" } }
+    },
+    {
       "tool": "wiki_render",
       "cli": { "command": "wiki", "positional": ["render", "Handover"], "options": { "recipe": "default", "form": "html", "max-bytes": "4096" }, "flags": {} },
       "mcp": { "title": "Handover", "recipe": "default", "form": "html", "max_bytes": 4096 },

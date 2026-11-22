@@ -69,9 +69,9 @@ export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): 
 export async function guardDoor(args: ParsedArgs, label: string, run: () => Promise<number>): Promise<number> {
   try { return await run(); }
   catch (err) {
-    if (typeof err === "object" && err !== null && (err as { code?: unknown }).code === "no-container") {
+    if (typeof err === "object" && err !== null && ((err as { code?: unknown }).code === "no-container" || (err as { code?: unknown }).code === "wiki-not-anchored")) {
       const msg = err instanceof Error ? err.message : String(err);
-      emit(args, { ok: false, error: { code: "no-container", message: msg }, human: () => console.error(msg) });
+      emit(args, { ok: false, error: { code: String((err as { code?: unknown }).code), message: msg }, human: () => console.error(msg) });
       return 2;
     }
     if (err instanceof DoorUsage) {

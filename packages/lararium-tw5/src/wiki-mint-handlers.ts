@@ -17,7 +17,7 @@ import {
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { makeRequestId, stringArg } from "./handler-args.js";
-import type { WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellCounts } from "./wiki-handler-options.js";
+import type { RetiredShellCarry, WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellCounts } from "./wiki-handler-options.js";
 
 // makeListWikisReactor RELOCATED to @lararium/tw5 (worker-data-verbs) — list-wikis now
 // runs in every vessel's daemon worker (sovereign-worker, verify-then-delegate gated).
@@ -164,7 +164,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
 /** The codes a `retire-wiki` refusal names: the code leads the message (`<code>: <detail>`), as every verb refusal reads. */
 export type WikiRetireCode =
   | "retire-needs-hand" | "no-face" | "system-bag" | "wiki-face-private" | "no-such-wiki" | "not-the-owner" | "wiki-shared"
-  | "wiki-not-empty" | "retire-count-missing" | "retire-count-moved";
+  | "wiki-not-empty" | "retire-count-missing" | "retire-count-moved" | "retire-carry-unlanded";
 
 /** A `retire-wiki` refusal, by name. */
 export class WikiRetireRefusal extends Error {
@@ -193,15 +193,27 @@ const sameCounts = (a: WikiShellCounts, b: WikiShellCounts): boolean => a.workin
  * NOTHING AUTHORED LEAVES BY DEFAULT. The counts name AUTHORED records apart from the house's EFFECT records (a gated ingest's
  * residency row): two walls hold that line, the write side (no hand's door, the tiddler door, the meme door or the engine's
  * cascade, writes a residency ledger: `effect-ledger-house-only`) and the reading (`isHouseEffectRecordOf`: the row reads
- * back exactly as the recorder writes it for that layer's bag). A shell holding effect records alone retires unforced and
- * drops them with the shell, though the effect-record canon calls these rows indelible: the operator approved the drop. A working, draft or personal layer holding a live authored record refuses `wiki-not-empty`
+ * back exactly as the recorder writes it for that layer's bag). A shell holding effect records alone retires unforced.
+ *
+ * THE RECORD OF LEAVING STAYS (residency-model#/effect-record-surface: the artifact may leave; the record of its prior presence
+ * here, and of its leaving, never does). Before any write erases a shell's effect records, the retire CARRIES them, verbatim,
+ * into one retirement record per slug (`retiredShellUri`) in the worn face's daemon wiki working layer, with this retire's
+ * outcome appended: the face owns that layer, it mirrors under `projections/` (a re-found clears only the hearth), and the keep
+ * carries it with the face's daemon working rows. The carry reads its row back; a home that holds no durable document, a write
+ * that faults, a read-back missing any record, or a carried title standing under other fields refuses `retire-carry-unlanded`
+ * with nothing erased. Only the records the carry landed leave the layers; after the erase the layers read once more, and an
+ * effect record that landed between the carry and the erase stays where it rests and the answer names it (`leftBehind`), so
+ * nothing orphans silently. Every retire that carries appends its own outcome; a re-run carries no record twice. The answer
+ * names where they went (`carried`), and `dry-run` names where they would go (`carryTo`).
+ *
+ * A working, draft or personal layer holding a live authored record refuses `wiki-not-empty`
  * (naming no count: `dry-run` reads the counts, and the refusal never carries the forcing line). `force` with no `count`
  * refuses `retire-count-missing`; a `count` other than the total refuses `retire-count-moved`; the very total retires and
  * clears those layers' documents, so a later mint at the same deterministic address opens empty. The counts read twice, the
  * second right before the first write: a total that moved between refuses `retire-count-moved` with nothing written.
  *
- * EVERY CHECK RUNS BEFORE ANY WRITE, and the writes run in the order that leaves a retry able to finish: the layers' content
- * (forced only), the Keyhive and slot bindings, the ledger rows, and the catalog rows LAST, so a fault midway leaves the rows
+ * EVERY CHECK RUNS BEFORE ANY WRITE, and the writes run in the order that leaves a retry able to finish: the carry of the
+ * effect records, the layers' content (the carried effect records, and the authored ones where forced), the Keyhive and slot bindings, the ledger rows, and the catalog rows LAST, so a fault midway leaves the rows
  * that name the face as the owner and the same retire runs again to the end.
  *
  * WHAT STAYS: the canon bag's document and every file of it, the face's binding of the canon bag, every other face's rows.
@@ -243,7 +255,8 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
     const total = totalOf(counts);
     const force = args["force"] === true;
     if (args["dry-run"] === true) {
-      return { slug, status: "would-retire", catalogRows: rows, realmId: bound.includes(ownRealm) ? ownRealm : null, records: counts, total, kept: { canonBag } };
+      const carryTo = counts.effects > 0 ? await opts.shell.carryHome(slug) : null;
+      return { slug, status: "would-retire", catalogRows: rows, realmId: bound.includes(ownRealm) ? ownRealm : null, records: counts, total, carryTo, kept: { canonBag } };
     }
     if (total > 0 && !force) {
       throw new WikiRetireRefusal("wiki-not-empty", `"${slug}" holds records in its working, draft or personal layer; nothing retired. Carry them out first`);
@@ -259,15 +272,31 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
       throw new WikiRetireRefusal("retire-count-moved", `"${slug}" took or lost records while the retire read it; nothing retired`);
     }
 
+    // THE CARRY, before any erase: the effect records leave the shell only once their copy reads back whole in the face's home.
+    const effects = counts.effects > 0 ? await opts.shell.effects(slug) : [];
+    if (effects.length !== counts.effects) {
+      throw new WikiRetireRefusal("retire-count-moved", `"${slug}" took or lost effect records while the retire read it; nothing retired`);
+    }
+    let carried: RetiredShellCarry | null = null;
+    if (effects.length > 0) {
+      const outcome = { realmId: bound.includes(ownRealm) ? ownRealm : null, forced: total > 0, authored: total, carried: effects.map((e) => e.title) };
+      try { carried = await opts.shell.carry(slug, effects, outcome); }
+      catch (cause) {
+        const detail = (cause instanceof Error ? cause.message : String(cause)).replace(/^retire-carry-unlanded:\s*/, "");
+        throw new WikiRetireRefusal("retire-carry-unlanded", `the ${effects.length} effect record${effects.length === 1 ? "" : "s"} of "${slug}" found no durable home (${detail}); nothing retired`);
+      }
+    }
+
     const canonDoc = tiddlerText(ownEntry(handle.doc()?.tiddlers, canonBag)) ?? null;
-    if (total > 0) await opts.shell.clear(slug);
-    else if (counts.effects > 0) await opts.shell.clear(slug, "effects");
+    if (total > 0 || effects.length > 0) await opts.shell.clear(slug, { authored: total > 0, effects: effects.map((e) => e.title) });
+    // THE LAST READING: an effect record no carry named stays in its layer; the answer names it, never a silent orphan.
+    const leftBehind = (await opts.shell.effects(slug)).map((e) => e.title).sort();
     const keyhiveBindings = await opts.shell.forget([wikiSlotUri(slug, "working"), wikiSlotUri(slug, "draft"), wikiSlotUri(slug, "personal")]);
     const slotBindings = await opts.shell.unbindSlots(slug);
     const { realmId, ledgerRows } = await opts.shell.unbind(slug);
     if (rows.length > 0) half.change((doc) => { for (const title of rows) delete doc.tiddlers[title]; });
 
-    return { slug, status: "retired", catalogRows: rows, ledgerRows, realmId, keyhiveBindings, slotBindings, records: counts, forced: total > 0, kept: { canonBag, canonDoc } };
+    return { slug, status: "retired", catalogRows: rows, ledgerRows, realmId, keyhiveBindings, slotBindings, records: counts, forced: total > 0, carried, leftBehind, kept: { canonBag, canonDoc } };
   };
 }
 

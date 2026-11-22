@@ -126,8 +126,8 @@ An agent off every device of the face (a cloud sandbox, another machine) never h
 
 !!! What stands built, and what rests on the road
 
-* ''Built.'' The plane and its entries, `mayAct`, the delegations a far agent carries, owed outcomes, and the door's `runDeclaredEffect` port for idempotent declared verbs (`packages/lararium-mesh/src/intent-*.ts`, `packages/lararium-keyhive/src/face-intent-door.ts`).
-* ''Rests on the road.'' The face actor's lit turn feeding the door on a nalu wave; the face-named vow cap (a standing lei: reach `standing`, scope seat, affordance and enactor); conditional refs; the AI enactor; the hearth roster. Flows 3, 4 and 7, and flow 5's AI branch, therefore read as design until those land, and the pattern integrities above name the law each must keep.
+* ''Built.'' The plane and its entries, `mayAct`, the delegations a far agent carries, owed outcomes, and the door's `runDeclaredEffect` port for idempotent declared verbs (`packages/lararium-mesh/src/intent-*.ts`, `packages/lararium-keyhive/src/face-intent-door.ts`); the hearth roster's read of seats, rotations, lanes, open vota and owed outcomes at wake (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/hearth-roster`>>).
+* ''Rests on the road.'' The face actor's lit turn feeding the door on a nalu wave; the face-named vow cap (a standing lei: reach `standing`, scope seat, affordance and enactor); conditional refs; the AI enactor; a votum's turn count, so the roster names no votum stuck. Flows 3, 4 and 7, and flow 5's AI branch, therefore read as design until those land, and the pattern integrities above name the law each must keep.
 
 ''Cross-reads.'' The verb, summons and outcome records rest at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>; the ledger's facts at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/receipt-ledger`>>; the wave at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>; the hands that issue and answer at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>. A votum may pay into a Votive, the bounty pool of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/libation-pool#/the-wave`>>.
 
@@ -200,6 +200,6 @@ Road item `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-roa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LsxUUfRRpFJR-2RnJHv1Ge_dnP_2zNXLMzbiXuIj4RI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GDV2RiK_HWH0-3Aum9UKtLvjHOjY7VeHjXkuebkka-c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

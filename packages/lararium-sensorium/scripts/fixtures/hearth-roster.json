@@ -1,0 +1,257 @@
+{
+  "_doc": "The hearth roster body one vessel answers (`hearth-roster`), welded across its three readers: `@lararium/mesh`'s composeHearthRoster builds it from `input` (lares-cli hearth-roster-door test), `lares vessel roster --json` carries it as `data`, and the MCP seat's `vessel_roster` returns it unchanged (test_hearth_tools.py).",
+  "input": {
+    "worn": 1,
+    "lit": [
+      2
+    ],
+    "lent": [
+      1,
+      2
+    ],
+    "asker": "seat",
+    "local": [
+      {
+        "session": "0a11bb02-0000-4000-8000-000000000001",
+        "face": 1,
+        "hand": "cli",
+        "anchor": "place"
+      },
+      {
+        "session": "f2c7aa01-0000-4000-8000-000000000002",
+        "face": 1,
+        "hand": "seat",
+        "anchor": "place"
+      },
+      {
+        "session": "9c3d0e03-0000-4000-8000-000000000003",
+        "face": 2,
+        "hand": "seat",
+        "anchor": "place"
+      }
+    ],
+    "planes": [
+      {
+        "face": 1,
+        "self": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "lanes": [
+          {
+            "face": 1,
+            "intent": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "verb": "face-join",
+            "claimant": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "claim": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        ],
+        "vota": [
+          {
+            "face": 1,
+            "intent": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "verb": "face-join",
+            "issuer": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "audience": "pinned",
+            "waitsOn": "outcome",
+            "owedBy": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "claimed": true
+          },
+          {
+            "face": 1,
+            "intent": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "verb": "echo",
+            "issuer": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "audience": "asks",
+            "waitsOn": "answer",
+            "owedBy": null,
+            "claimed": false
+          }
+        ],
+        "far": [
+          {
+            "atom": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "face": 1,
+            "self": true,
+            "standing": "stands",
+            "acts": 2,
+            "lastHeard": [
+              {
+                "entry": "asks",
+                "cid": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+              }
+            ]
+          },
+          {
+            "atom": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "face": 1,
+            "self": false,
+            "standing": "stands",
+            "acts": 3,
+            "lastHeard": [
+              {
+                "entry": "claim",
+                "cid": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "unread": [
+      {
+        "face": 2,
+        "reason": "face-not-held"
+      }
+    ]
+  },
+  "roster": {
+    "grain": {
+      "local": "by presence: the kernel holds each session's socket, so a seat stands while its process stands",
+      "far": "by last signed act on the face intent plane: no global now stands, so nobody far reads online, only last heard"
+    },
+    "rotation": {
+      "vessel": "this vessel",
+      "worn": 1,
+      "lit": [
+        2
+      ],
+      "lent": [
+        1,
+        2
+      ],
+      "holders": [
+        "s-0a11bb02",
+        "s-f2c7aa01"
+      ],
+      "underOther": [
+        {
+          "seat": "s-9c3d0e03",
+          "face": 2
+        }
+      ]
+    },
+    "seats": [
+      {
+        "grain": "local",
+        "seat": "s-0a11bb02",
+        "face": 1,
+        "kind": "hand",
+        "hand": "cli",
+        "anchor": "place"
+      },
+      {
+        "grain": "local",
+        "seat": "s-f2c7aa01",
+        "face": 1,
+        "kind": "ai",
+        "hand": "seat",
+        "anchor": "place"
+      },
+      {
+        "grain": "local",
+        "seat": "s-9c3d0e03",
+        "face": 2,
+        "kind": "ai",
+        "hand": "seat",
+        "anchor": "place"
+      },
+      {
+        "grain": "far",
+        "seat": "aaaaaaaaaaaa",
+        "face": 1,
+        "kind": "device",
+        "self": true,
+        "standing": "stands",
+        "acts": 2,
+        "lastHeard": [
+          {
+            "entry": "asks",
+            "cid": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+          }
+        ]
+      },
+      {
+        "grain": "far",
+        "seat": "bbbbbbbbbbbb",
+        "face": 1,
+        "kind": "device",
+        "self": false,
+        "standing": "stands",
+        "acts": 3,
+        "lastHeard": [
+          {
+            "entry": "claim",
+            "cid": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        ]
+      }
+    ],
+    "asker": "seat",
+    "lanes": [
+      {
+        "face": 1,
+        "intent": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "verb": "face-join",
+        "claimant": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "claim": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      }
+    ],
+    "lanesGap": "no store records a seat's claim on a leap or a road meme (the swarm's lane-state rows wait on a lead's trust), so lanes read the intent plane's claims alone",
+    "vota": [
+      {
+        "face": 1,
+        "intent": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "verb": "face-join",
+        "issuer": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "audience": "pinned",
+        "waitsOn": "outcome",
+        "owedBy": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "claimed": true
+      },
+      {
+        "face": 1,
+        "intent": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "verb": "echo",
+        "issuer": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "asks",
+        "waitsOn": "answer",
+        "owedBy": null,
+        "claimed": false
+      }
+    ],
+    "unread": [
+      {
+        "face": 2,
+        "reason": "face-not-held"
+      }
+    ],
+    "counts": {
+      "local": 3,
+      "far": 1,
+      "lanes": 1,
+      "vota": 2
+    },
+    "more": {
+      "local": 0,
+      "far": 0,
+      "lanes": 0,
+      "vota": 0
+    }
+  },
+  "prose": [
+    "Lares hearth (who is home): 3 seats here · 1 heard from afar · 1 lane · 2 open vota",
+    "rotation: this vessel wears h1, held by s-0a11bb02 (a hand (cli)) and s-f2c7aa01 (an AI seat (seat)); lit beside it: h2; s-9c3d0e03 acts under h2",
+    "here, by presence: the kernel holds each session's socket, so a seat stands while its process stands:",
+    "  s-0a11bb02  h1  a hand (cli), anchored at the place",
+    "  s-f2c7aa01  h1  an AI seat (seat), anchored at the place",
+    "  s-9c3d0e03  h2  an AI seat (seat), anchored at the place",
+    "far, by last signed act on the face intent plane: no global now stands, so nobody far reads online, only last heard:",
+    "  aaaaaaaaaaaa  h1  this vessel's own atom, last heard at asks ffffffffffff (2 acts, stands)",
+    "  bbbbbbbbbbbb  h1  last heard at claim cccccccccccc (3 acts, stands)",
+    "lanes (intent claims):",
+    "  h1 face-join (intent dddddddddddd): claimed by bbbbbbbbbbbb",
+    "  no store records a seat's claim on a leap or a road meme (the swarm's lane-state rows wait on a lead's trust), so lanes read the intent plane's claims alone",
+    "open vota:",
+    "  h1 face-join (intent dddddddddddd, from bbbbbbbbbbbb, audience pinned): waits on an outcome, owed by bbbbbbbbbbbb (claimed)",
+    "  h1 echo (intent eeeeeeeeeeee, from aaaaaaaaaaaa, audience asks): waits on an answer",
+    "unread: h2's intent plane (face-not-held)"
+  ]
+}

@@ -8,6 +8,13 @@
  * here, and of its leaving, never does** — Society of American Archivists
  * professional discipline applied to a CRDT mesh.
  *
+ * Indelible at HOUSE level: CLEAR and DROP never tombstone a ledger row, and
+ * no hand's door writes or removes one (`refuseEffectLedgerWrite`). The one
+ * act that erases a document holding effect records, `retire-wiki` over a
+ * face's wiki shell, first carries them verbatim into that face's retirement
+ * record (`shell-leaving-record.ts`, its daemon wiki working layer) and reads
+ * the copy back; a carry that cannot land refuses the retire, erasing nothing.
+ *
  * The dual-surface design from residency-model.md:
  *   - ACTION verbs (lar URIs, ALL CAPS, SPARQL Update derivation) — gesture
  *   - Effect-record annotations (tiddler tags, archival profession derivation) — audit
@@ -27,6 +34,7 @@ import type { ResidencyAction, ActionVerb } from "./residency-actions.js";
 import { stableTagUri } from "./lar-uris.js";
 import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "./tiddler-store.js";
 import { VerbRefusal } from "./verb-refusal.js";
+import { isShellLeavingUri } from "./shell-leaving-record.js";
 
 // ── Archival verb vocabulary ────────────────────────────────────────────────
 
@@ -130,12 +138,21 @@ export const EFFECT_LEDGER_HOUSE_ONLY = "effect-ledger-house-only";
 /**
  * A RESIDENCY LEDGER TAKES THE HOUSE'S HAND ALONE. The effect recorder (`writeEffectRecord`, through a bag's own store) writes
  * every row under `<holder>/ledger/residency/`; a hand's door (the tiddler door, the meme door, the engine's cascade from a
- * page or a draft) neither writes nor removes one, whoever asks. The refusal names the title and the door.
+ * page or a draft) neither writes nor removes one, whoever asks. The refusal names the title and the door. A shell's record
+ * of leaving (`shell-leaving-record.ts`) takes the same wall: the retire's carry alone writes it.
  */
 export function refuseEffectLedgerWrite(title: string, verb: string): void {
   if (isEffectRecordUri(title)) {
     throw new VerbRefusal(EFFECT_LEDGER_HOUSE_ONLY, `${EFFECT_LEDGER_HOUSE_ONLY}: "${title}" rests in a residency ledger; the house's effect recorder alone writes there, and ${verb} neither writes nor removes it.`);
   }
+  if (isShellLeavingUri(title)) {
+    throw new VerbRefusal(EFFECT_LEDGER_HOUSE_ONLY, `${EFFECT_LEDGER_HOUSE_ONLY}: "${title}" holds a retired shell's effect records; the retire's carry alone writes there, and ${verb} neither writes nor removes it.`);
+  }
+}
+
+/** True when `title` takes the house's hand alone: a residency-ledger row, or a shell's record of leaving. */
+export function isHouseLedgerUri(title: string): boolean {
+  return isEffectRecordUri(title) || isShellLeavingUri(title);
 }
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */

@@ -16,16 +16,17 @@
  * from a writable layer and the layers beneath keep their records; `--mode reveal` retracts the topmost record and the
  * one beneath surfaces. A title the wiki reads absent answers too: a plain delete retracts a kāpae that hides nothing.
  *
- * The container law holds: name `--recipe <slug>` or `--bag <slug>`. `--recipe default` answers the worn face's daemon
- * wiki, and `--recipe <slug>` any wiki that face reaches, in that wiki's own engine; a wiki it reaches none of refuses
- * `wiki-unreached`, and a bag (one bag, no wiki) refuses `wiki-not-anchored`.
+ * The container law holds: `get` names `--recipe <slug>` or `--bag <slug>`; `put` and `delete` name `--recipe <slug>` alone.
+ * `--recipe default` answers the worn face's daemon wiki, and `--recipe <slug>` any wiki that face reaches, in that wiki's own
+ * engine; a wiki it reaches none of refuses `wiki-unreached`. `get --bag <slug>` reads that one bag's record (no engine runs);
+ * `put` and `delete` refuse `--bag` as `wiki-not-anchored` and name `lares meme put | delete --bag`.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
 
 import { readFileSync } from "node:fs";
 import { stdin, stdout } from "node:process";
-import { containerArgs } from "../container-target.js";
+import { containerArgs, engineContainerArgs } from "../container-target.js";
 import { emit, exitFor } from "../render.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
 import { targetOf, targetOnWriteRefusal } from "../target-option.js";
@@ -43,7 +44,7 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   // face it wears, and a put or delete naming it refuses here by name, before any door opens.
   const target = targetOf(args);
   if (sub !== "get" && target.target !== undefined) throw new DoorUsage(targetOnWriteRefusal(`tiddler ${sub}`));
-  const out: Record<string, unknown> = { ...containerArgs(args, `tiddler ${sub}`, sub === "get" ? "read" : "write"), title, ...target };
+  const out: Record<string, unknown> = { ...(sub === "get" ? containerArgs(args, "tiddler get", "read") : engineContainerArgs(args, `tiddler ${sub}`, "write")), title, ...target };
   if (sub === "get") {
     const slot = wordOf(args.options["slot"]);
     if (slot) out["slot"] = slot;

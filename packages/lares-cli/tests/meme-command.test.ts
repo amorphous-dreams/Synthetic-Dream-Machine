@@ -1152,3 +1152,67 @@ describe("a lit face receives visits: --target reads, and a write naming one ref
     expect(() => patchPlan(a(["patch", "lar:///t/x"], { recipe: "default", target: "h1", slot: "#/a", append: "n.txt", base: "sha256:x" }))).toThrow(/cross-face-write-refused/);
   });
 });
+
+describe("lares meme get — a bounded page, a size line and a cursor", () => {
+  const pages: Record<string, { text: string; next: string | null }> = {
+    first: { text: "AAAA", next: "4.0123456789abcdef" },
+    "4.0123456789abcdef": { text: "BBBB", next: "8.0123456789abcdef" },
+    "8.0123456789abcdef": { text: "CC", next: null },
+  };
+  const page = (args: Record<string, unknown>): Record<string, unknown> => {
+    const at = pages[String(args["after"] ?? "first")]!;
+    return { uri: "lar:///t/x", meme: { text: at.text, canonicalHash: "sha256:9", bytes: 10, truncated: at.next !== null, next: at.next } };
+  };
+  const captured = async (run: () => Promise<number>): Promise<{ code: number; json: Record<string, unknown> }> => {
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { lines.push(String(m)); return true; });
+    const code = await run().finally(() => spy.mockRestore());
+    return { code, json: JSON.parse(lines.join("")) as Record<string, unknown> };
+  };
+  const runGet = async (options: Record<string, string>, flags: Record<string, boolean>): Promise<{ code: number; out: string; err: string[] }> => {
+    const out: string[] = []; const err: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { out.push(String(m)); return true; });
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    try {
+      const code = await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default", ...options }, flags } as unknown as ParsedArgs);
+      return { code, out: out.join(""), err };
+    } finally { w.mockRestore(); e.mockRestore(); }
+  };
+
+  test("--max-bytes and --after ride the wire as the verb's own words; a count under 1 refuses before the wire", async () => {
+    expect(memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", "max-bytes": "4096", after: "4.0123456789abcdef" })).args)
+      .toEqual({ uri: "lar:///t/x", recipe: "sdm", maxBytes: "4096", after: "4.0123456789abcdef" });
+    expect(() => memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", "max-bytes": "many" }))).toThrow(/count of at least 1/);
+    expect(memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm" })).args).toEqual({ uri: "lar:///t/x", recipe: "sdm" });
+  });
+
+  test("RED: a cut page prints its text, then says its size, that it was cut and the cursor of the page behind", async () => {
+    h.replyFor = page;
+    const r = await runGet({}, {});
+    expect(r.code).toBe(0);
+    expect(r.out).toBe("AAAA");
+    expect(r.err).toEqual(["base: sha256:9", "size: 10 bytes", expect.stringMatching(/^truncated: .*--after 4\.0123456789abcdef.*--all/)]);
+    expect(h.calls).toHaveLength(1);
+  });
+
+  test("--after reads the page behind; --all follows the cursor and prints the whole text; the envelope carries bytes, truncated and next", async () => {
+    h.replyFor = page;
+    expect((await runGet({ after: "4.0123456789abcdef" }, {})).out).toBe("BBBB");
+    h.calls.length = 0;
+    const all = await runGet({}, { all: true });
+    expect(all.out).toBe("AAAABBBBCC");
+    expect(all.err).toEqual(["base: sha256:9", "size: 10 bytes"]);
+    expect(h.calls.map((c) => c.args["after"])).toEqual([undefined, "4.0123456789abcdef", "8.0123456789abcdef"]);
+    const env = await captured(() => cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }, { all: true })));
+    expect(env.json["data"]).toEqual({ uri: "lar:///t/x", text: "AAAABBBBCC", canonicalHash: "sha256:9", bytes: 10, truncated: false, next: null });
+    const one = await captured(() => cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" })));
+    expect(one.json["data"]).toMatchObject({ text: "AAAA", bytes: 10, truncated: true, next: "4.0123456789abcdef" });
+  });
+
+  test("CONTROL: a whole answer under the cap prints no truncated line", async () => {
+    h.reply = { uri: "lar:///t/x", meme: { text: "whole", canonicalHash: "sha256:9", bytes: 5, truncated: false, next: null } };
+    const r = await runGet({}, {});
+    expect(r.out).toBe("whole");
+    expect(r.err).toEqual(["base: sha256:9", "size: 5 bytes"]);
+  });
+});
