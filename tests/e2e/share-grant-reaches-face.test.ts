@@ -13,6 +13,7 @@
  *   RED      h0 shares the house canon wiki with write to h2; h2 worn reaches it, reads its canon, and its write lands in the
  *            wiki's working layer
  *   RED      `lares wear 2` onto the face already worn replays the landing and changes nothing more; h2 still reaches the wiki
+ *   RED      a read-only grantee (h1) reaches the wiki and reads its working layer read-only; its put never lands there
  *
  * The canon source is the root's own `bags/` (a copy of the checkout's `elyncia-referee` alone), so the vessel seats the wiki as
  * house canon as the live house did. Every answer the walk reads prints as a `[walk]` line. SKIPS LOUDLY when the built CLI or
@@ -110,5 +111,33 @@ describe.skipIf(gaps.length > 0)("★ a landed grant reaches its face: a house c
     say("h2 tiddler get", get);
     expect(get.code, said(get)).toBe(0);
     expect(said(get)).toMatch(/the referee writes here/);
+  }, 240_000);
+
+  // THE HOUSE'S STANDING DESIGN for a face with no writer's seat (the rite's `layer: personal` for the referee): its put never
+  // touches the shared working layer and lands in its own personal layer instead. The walk reads that the working layer refuses it.
+  test("RED: a READ-ONLY grantee reaches the wiki and reads its working layer read-only; its put never lands there (its own personal layer takes it)", async () => {
+    await wear(0);
+    const share = await lar.cli(["wiki", "share", SLUG, "--read", "h1", "--no-json"]);
+    say("h0 wiki share --read h1", share);
+    expect(share.code, said(share)).toBe(0);
+    await wear(1);
+    const status = await lar.cli(["wiki", "status", "--recipe", SLUG, "--no-json"]);
+    say("h1 wiki status (a reader)", status);
+    expect(status.code, said(status)).toBe(0);
+    expect(said(status)).toMatch(new RegExp(`read-only\\s+lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
+    const get = await lar.cli(["tiddler", "get", "Referee smoke", "--recipe", SLUG, "--no-json"]);
+    say("h1 tiddler get (a reader)", get);
+    expect(get.code, said(get)).toBe(0);
+    expect(said(get)).toMatch(/the referee writes here/);
+    const put = await lar.cli(["tiddler", "put", "Engineer smoke", "--recipe", SLUG, "--create", "--text=a reader tries to write", "--no-json"]);
+    say("h1 tiddler put (a reader)", put);
+    expect(said(status), "no shared layer takes the reader's write").toMatch(/working layer: \(none attached; no layer takes a write\)/);
+    expect(said(put)).not.toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
+    expect(said(put)).toMatch(new RegExp(`in lar:///ha\\.ka\\.ba/wikis/${SLUG}/personal`));
+    // The writer reads the shared working layer and finds no record of the reader's there.
+    await wear(2);
+    const theirs = await lar.cli(["tiddler", "get", "Engineer smoke", "--recipe", SLUG, "--no-json"]);
+    say("h2 tiddler get of the reader's title", theirs);
+    expect(said(theirs)).not.toMatch(new RegExp(`bag: lar:///ha\\.ka\\.ba/wikis/${SLUG}/working`));
   }, 240_000);
 });
