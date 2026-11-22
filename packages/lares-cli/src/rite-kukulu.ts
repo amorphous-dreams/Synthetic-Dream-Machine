@@ -31,6 +31,11 @@
  *   7. raise        the shim's restand: down (keep, census), the pūlama re-stood and lit ATTACHED on this terminal where its
  *                   code moved, up, its admit attached where owed, the vessel's unlock and the face last worn
  *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par
+ *   9. canon        after a raise that stood: the canon lag (carriers in the canon source's `bags/` the canon layers lack) prints
+ *                   on every raise. Where that source stands in a checkout and the owner holds this terminal, the lay's preview
+ *                   (each new and changed title; every file under `bags/<holding>` enters canon) asks once, and the lay
+ *                   (`lares vessel lay --canon --apply`) runs only on an explicit yes. A seat (no terminal, or an AI launcher),
+ *                   a source in no checkout, or a vessel waiting on its unlock names the lag and lays nothing
  *
  * A QUIET DAY spends nothing: a vessel that already runs the image under a lit pūlama begins no rite; the raise only tops
  * up the unlock and the face worn.
@@ -160,7 +165,30 @@ export interface RitePorts {
    * no founding record. Absent, the rite says nothing of the seed.
    */
   seedOffer?(head: string): Promise<SeedOffer | null>;
+  /**
+   * THE CANON LAG after the raise (`lares vessel lay --lag` in the vessel that stands): the carriers in the canon source's `bags/`
+   * the canon layers lack, new or changed, and whether that source stands in a checkout; null where the vessel reads none.
+   * Absent, the rite reads no lag and offers no lay.
+   */
+  canonLag?(): Promise<CanonLag | null>;
+  /** One yes-or-no on this terminal (a Ctrl+C reads as no); absent, the rite asks nothing and lays nothing. */
+  ask?(question: string): Promise<boolean>;
+  /** The canon lay on this terminal (`lares vessel lay --canon --apply --yes`), run only after the owner's yes; its exit code. */
+  layCanon?(): Promise<number>;
+  /** Whether an AI seat launched this rite (the harness's mark, or a host chain that reads no person's hand); absent, false. */
+  seat?(): boolean;
 }
+
+/** One holding's lag: the titles its canon source holds that its canon bag lacks (`new`) or holds in other bytes (`changed`). */
+export interface CanonLagHolding { readonly holding: string; readonly toBag: string; readonly new: readonly string[]; readonly changed: readonly string[] }
+/**
+ * The canon lag as the vessel reads it off disk: the canon source dir, whether it stands in a checkout (an SDM repo, read by the
+ * `pnpm-workspace.yaml` beside its `bags/`), each disk-sourced holding's lag, and the total.
+ */
+export interface CanonLag { readonly source: string; readonly checkout: boolean; readonly holdings: readonly CanonLagHolding[]; readonly lag: number }
+
+/** The line that lays canon by hand, holdings leg alone. */
+export const CANON_LAY_LINE = "lares vessel lay --canon --apply";
 
 /** The image a kūkulu replaced: its revision label and the tag the shim keeps it under. */
 export interface PriorImage {
@@ -235,6 +263,66 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  * wears. `rollback` stands the image that ran before (`true`) or the image of an older revision, with no checkout move.
  */
 export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
+  const out = await raiseHouse(ports, opts);
+  // THE CANON LAY rides only a raise that stood: a run that stopped, or one that waits on the hand before any raise, reads no lag.
+  if (out.code !== 0 || out.data["awaits"] === "hand") return out;
+  return canonAfterRaise(ports, out);
+}
+
+/**
+ * AFTER THE RAISE, THE CANON LAG (story U4). Every raise names how many carriers the canon source holds that the canon layers
+ * lack. Where that source stands in a checkout and the owner holds this terminal, the rite shows the lay's preview (each new and
+ * changed title, and the hazard: every file under `bags/<holding>` enters canon) and asks; the lay runs only on an explicit yes,
+ * and a no or a Ctrl+C leaves canon as it stood. A seat (no terminal, or an AI launcher) names the lag and never lays; so does a
+ * canon source in no checkout, and a new vessel that waits on its unlock.
+ */
+export async function canonAfterRaise(ports: RitePorts, out: { code: number; data: Record<string, unknown> }): Promise<{ code: number; data: Record<string, unknown> }> {
+  if (!ports.canonLag) return out;
+  const read = await ports.canonLag().catch(() => null);
+  if (read === null) {
+    ports.say(`kūkulu: the canon lag reads nowhere (the vessel answered no reading); \`lares vessel lay --canon\` previews it`);
+    return { ...out, data: { ...out.data, canon: { read: false } } };
+  }
+  if (read.lag === 0) {
+    ports.say(`kūkulu: canon stands level with ${read.source}; nothing lags`);
+    return { ...out, data: { ...out.data, canon: { lag: 0, checkout: read.checkout, source: read.source } } };
+  }
+  const fresh = read.holdings.reduce((n, h) => n + h.new.length, 0), moved = read.holdings.reduce((n, h) => n + h.changed.length, 0);
+  ports.say(`kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}`);
+  const canon = { lag: read.lag, new: fresh, changed: moved, checkout: read.checkout, source: read.source };
+  const tty = ports.tty ? ports.tty() : true, seat = ports.seat ? ports.seat() : false;
+  const why = !read.checkout ? `${read.source} stands in no checkout, so the raise offers no lay; the lay that feeds it: ${CANON_LAY_LINE}`
+    : out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so nothing lays; once it opens: ${CANON_LAY_LINE}`
+    : seat ? `an AI seat launched this rite, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${CANON_LAY_LINE})`
+    : !tty ? `this seat holds no terminal, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${CANON_LAY_LINE})`
+    : !ports.ask || !ports.layCanon ? `this rite carries no lay, so nothing lays; your hand: ${CANON_LAY_LINE}`
+    : null;
+  if (why !== null) {
+    ports.say(`kūkulu: ${why}`);
+    return { ...out, data: { ...out.data, canon: { ...canon, laid: false, ...(seat || !tty ? { seat: true } : {}) } } };
+  }
+  // THE PREVIEW, before the question: the hazard named plainly, then every title the lay would move.
+  ports.say(`kūkulu: the canon lay ingests the canon source into each canon bag: every file under ${read.source}/<holding> enters canon, these among them:`);
+  for (const h of read.holdings) {
+    if (h.new.length + h.changed.length === 0) continue;
+    ports.say(`  ${h.holding} -> ${h.toBag}: ${h.new.length} new, ${h.changed.length} changed`);
+    for (const t of h.new) ports.say(`    ${"NEW".padEnd(8)} ${t}`);
+    for (const t of h.changed) ports.say(`    ${"CHANGED".padEnd(8)} ${t}`);
+  }
+  if (!(await ports.ask!(`lay these ${read.lag} carrier(s) into canon now?`))) {
+    ports.say(`kūkulu: nothing laid; canon stands as it stood, ${read.lag} carrier(s) behind: ${CANON_LAY_LINE} lays it later`);
+    return { ...out, data: { ...out.data, canon: { ...canon, laid: false } } };
+  }
+  const code = await ports.layCanon!();
+  if (code !== 0) {
+    ports.say(`kūkulu: the canon lay answered ${code}; the house stands, and the lines above name what the lay refused; the lay reads diff-gated, so ${CANON_LAY_LINE} runs again safely`);
+    return { code: 1, data: { ...out.data, canon: { ...canon, laid: false }, refusal: "kukulu-canon-lay-failed" } };
+  }
+  ports.say(`kūkulu: canon laid: ${read.lag} carrier(s) from ${read.source}`);
+  return { ...out, data: { ...out.data, canon: { ...canon, laid: true } } };
+}
+
+async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
   const forward = opts.rollback === undefined;
   // THE LEI READS FIRST, before the fetch, the image step, the tag and the seed: where none stands the rite offers to string one
   // on the spot (as the unlock offers the keep lei), and a no names the plain line before anything slow runs.

@@ -175,7 +175,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "terminal in the same run; an image no admission and no lei carries asks the pūlama's admit there too. With no terminal, a day " +
       "that owes either route stops before anything moves and names the hand act (`lares rite kukulu` on a terminal); every other " +
       "day flows. --rollback stands the image that ran before (--rollback <rev>: an older revision's kept image, or a build from " +
-      "that commit), with no checkout move. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
+      "that commit), with no checkout move. After a raise that stood, the rite names the canon lag (the carriers in the canon source's " +
+      "bags/ the canon layers lack); where that source stands in a checkout and the owner holds the terminal, it shows the lay's " +
+      "preview (each new and changed title: every file under bags/<holding> enters canon) and lays it (`lares vessel lay --canon " +
+      "--apply`) only on an explicit yes; a no or a Ctrl+C leaves canon as it stood, and a seat with no terminal, an AI launcher or a " +
+      "source in no checkout names the lag and lays nothing. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
       "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
       "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
       "shut or rehived since) refuses by name with the line that clears it: each half a lent face lands, landed by hand where the " +
@@ -1239,23 +1243,28 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   "vessel lay": {
-    usage: "usage: lares vessel lay [--apply] [--yes] [--verbose] [--lift-kahua <N>]",
+    usage: "usage: lares vessel lay [--apply] [--yes] [--verbose] [--lift-kahua <N>] [--canon] | --lag",
     synopsis:
       "Lay every disk mirror back into the layer it mirrors: each disk-sourced bags/* holding into its canon through " +
       "INGEST's three-way gate, then every mirror under the projections root into its one layer, a former face's folders " +
       "adopted by pet-name. A bare run previews per holding and writes nothing; `--apply` lands; kahua lifts only on a " +
-      "typed count or `--lift-kahua N`. Idempotent: a second lay lands nothing. Seed names the genesis offer alone; the " +
-      "canon act lays.",
+      "typed count or `--lift-kahua N`. Idempotent: a second lay lands nothing. `--canon` walks the holdings leg alone (canon, " +
+      "never a mirror); `--lag` reads the canon lag off disk (each holding's titles its canon lacks, new or changed, and whether the " +
+      "source stands in a checkout) and writes nothing. Seed names the genesis offer alone; the canon act lays.",
     examples: [
       "lares vessel lay                           # preview every holding; writes nothing",
       "lares vessel lay --apply --yes             # lay every holding (idempotent)",
       "lares vessel lay --apply --lift-kahua 3    # also lift the 3 kahua items the preview named",
+      "lares vessel lay --canon --apply           # lay canon alone (the lay a kūkulu offers on the owner's yes)",
+      "lares vessel lay --lag --json              # data.lag: carriers canon lacks; data.checkout; writes nothing",
     ],
     flags: [
       "--apply              land what the preview names",
       "--yes                answer the canon prompt yes (kahua lifts none on --yes alone)",
       "--verbose            keep full CREATE detail",
       "--lift-kahua <N>     lift the kahua items the lay previewed when N equals their count",
+      "--canon              the holdings leg alone: canon, never a mirror",
+      "--lag                read the canon lag off disk and write nothing",
     ],
     next: ["lares shore", "lares vessel read"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
