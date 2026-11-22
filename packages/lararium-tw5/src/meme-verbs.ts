@@ -60,8 +60,8 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-verbs
  */
 
-import { wearOf, refuseEffectLedgerWrite, offerWithheldTitle, isVolatileVmUri } from "@lararium/mesh";
-import { localFilter } from "./record-port-projection.js";
+import { wearOf, refuseEffectLedgerWrite } from "@lararium/mesh";
+import { staysHome } from "./stay-home.js";
 import {
   AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
@@ -548,7 +548,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
  * the control and secret homes, `cap/**`, the volatile VM plane. The internal reads refuse it by the same name.
  */
 function refuseStayHome(title: string, verb: string): void {
-  if (offerWithheldTitle(title) || localFilter(title) || isVolatileVmUri(title)) {
+  if (staysHome(title)) {
     throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} reads none of it.`);
   }
 }

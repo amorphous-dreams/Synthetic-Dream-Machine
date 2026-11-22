@@ -67,7 +67,7 @@
  */
 
 import {
-  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -78,7 +78,7 @@ import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, has
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { localFilter } from "./record-port-projection.js";
+import { staysHome } from "./stay-home.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -264,7 +264,7 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
  * trail among it (each call's invocation rests at `…/verbs/<requestId>` while its reactor runs), never shared truth.
  * A read that counted it would move the answer it reads, and a paged filter would refuse its own cursor on every call.
  */
-const staysHome = (title: string): boolean => offerWithheldTitle(title) || localFilter(title) || isVolatileVmUri(title);
+
 
 function refuseWithheld(title: string, verb: string): void {
   if (staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
