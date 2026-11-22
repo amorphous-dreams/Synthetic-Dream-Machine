@@ -66,7 +66,7 @@ describe("intent issue", () => {
   });
   test("RED: a cast votum without its thrown coins refuses at the word and on read; CONTROL: the calendar and a thrown cast issue idempotent; POSITIVE: the hand-only class stays unclassified", async () => {
     const atom = await signer(1), verbs = faceIntentVerbs();
-    expect(verbs.classOfVerb("ddate")).toEqual({ class: "idempotent" });
+    expect(verbs.classOfVerb("ddate")).toEqual({ class: "idempotent", bars: { format: "%." } });
     expect(verbs.classOfVerb("oracle-cast")).toEqual({ class: "idempotent", fixes: ["at", "coins"] });
     for (const verb of ["promote", "retire", "unlock", "kui"]) expect(verbs.classOfVerb(verb)).toBeNull();
     const base = { group: "face", signer: atom, verb: "oracle-cast", nonce: "", audience: { mode: "pinned" as const, atom: atom.key }, verbs };
@@ -84,6 +84,19 @@ describe("intent issue", () => {
     const view = readIntentPlane({ group: "face", records: [cast, calendar, unthrown], face, standing: () => "stands", verbs });
     expect(view.intents.map((i) => i.verb).sort()).toEqual(["ddate", "oracle-cast"]);
     expect(view.refused).toContainEqual({ refusal: "args-unfixed" });
+  });
+  test("RED: a calendar votum whose format draws chance (`%.`) refuses at the word and on read, so --every devices never land different text for one votum; CONTROL: a format of the day alone issues", async () => {
+    const atom = await signer(1), verbs = faceIntentVerbs();
+    const base = { group: "face", signer: atom, verb: "ddate", nonce: "", audience: { mode: "every" as const }, verbs };
+    const today = { year: 2026, month: 11, day: 21 };
+    await expect(buildIntent({ ...base, args: { today, format: "%A %." } })).rejects.toThrow("args-draw-chance");
+    const clean = await buildIntent({ ...base, args: { today, format: "%A, %B %d" } });
+    const drawn = await signIntentEntry({ group: "face", entry: "intent", refs: [], issuer: atom.key, verb: "ddate", args: { today, format: "%." }, nonce: "", audience: { mode: "every" } }, atom);
+    const lineage = makeHandLineage([{ epoch: 0, signers: [atom.key], threshold: 1 }])!;
+    const face = { devices: [atom.key], rosterCids: [], admittedAt: new Map<string, string>(), lineage };
+    const view = readIntentPlane({ group: "face", records: [clean, drawn], face, standing: () => "stands", verbs });
+    expect(view.intents).toHaveLength(1);
+    expect(view.refused).toContainEqual({ refusal: "args-draw-chance" });
   });
   test("RED: the same word reissued under another audience or bound finds its id taken (a second body would void the first votum and orphan its outcome); CONTROL: the same body and a fresh votum find it free; POSITIVE: a copy the fold refuses takes nothing", async () => {
     const atom = await signer(1), stranger = await signer(2), verbs = faceIntentVerbs();

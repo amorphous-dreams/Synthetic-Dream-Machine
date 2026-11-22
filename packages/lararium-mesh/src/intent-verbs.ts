@@ -6,8 +6,13 @@ export type IntentVerbClass = "idempotent" | "per-device" | "single-effect";
  * `cosign`: the verb's answer counts only from a device other than the issuer (a ward verb whose effect leaves the device).
  * `fixes`: the arguments an intent of the verb carries from its word, each one a thing the effect would otherwise draw for
  * itself (chance, a time): fixed at the word, every answer and every re-run reads the same effect.
+ * `bars`: an argument whose text names a draw of chance the effect would make for itself (by argument, the token that draws):
+ * an intent naming it refuses, so every answer of one votum lands the same effect.
  */
-export interface IntentVerbDeclaration { readonly class: IntentVerbClass; readonly fenced?: boolean; readonly cosign?: boolean; readonly fixes?: readonly string[] }
+export interface IntentVerbDeclaration {
+  readonly class: IntentVerbClass; readonly fenced?: boolean; readonly cosign?: boolean; readonly fixes?: readonly string[];
+  readonly bars?: Readonly<Record<string, string>>;
+}
 /** The ward verbs a second device of the face co-signs: a kapae lowered, the house cap, and a lei of each rite whose effect leaves the device (`ward-push-lei`; a kukulu lei stays home). */
 export const WARD_COSIGN_VERBS: readonly string[] = Object.freeze(["ward-kapae-lower", "ward-house-cap", ...SWARM_LEI_COSIGNED_RITES.map(wardLeiVerb)]);
 export interface IntentVerbRegistry {
@@ -37,7 +42,8 @@ export function faceIntentVerbs(): IntentVerbRegistry {
   // reads no clock and writes nothing (the caller names the day). A cast lands one tiddler under `create`, its title drawn
   // from its time and its hexagrams, so the issuer throws its coins at the word: every answer then lands the same cast, and
   // a re-run meets the standing one.
-  registry.declareIntentVerb("ddate", "idempotent");
+  // The calendar's one draw of chance, its `%.` exclamation, bars from a votum (a literal `%%.` bars too: the word stays plain).
+  registry.declareIntentVerb("ddate", { class: "idempotent", bars: { format: "%." } });
   registry.declareIntentVerb("oracle-cast", { class: "idempotent", fixes: ["at", "coins"] });
   return registry;
 }
@@ -49,10 +55,11 @@ export function fixtureIntentVerbs(rows: Readonly<Record<string, IntentVerbClass
 }
 export type IssueRefusal = "unclassified-verb" | "single-effect-unpinned" | "cosign-needs-asks";
 /** What an intent's nonce and arguments owe its verb's class: an idempotent verb takes the empty nonce, and each fixed argument rides the word. */
-export function issueArgsCheck(classification: IntentVerbDeclaration, nonce: unknown, args: unknown): "idempotent-nonce" | "args-unfixed" | null {
+export function issueArgsCheck(classification: IntentVerbDeclaration, nonce: unknown, args: unknown): "idempotent-nonce" | "args-unfixed" | "args-draw-chance" | null {
   if (classification.class === "idempotent" && nonce !== "") return "idempotent-nonce";
   const named = typeof args === "object" && args !== null && !Array.isArray(args) ? args as Record<string, unknown> : {};
   if ((classification.fixes ?? []).some((key) => named[key] === undefined || named[key] === null || named[key] === "")) return "args-unfixed";
+  if (Object.entries(classification.bars ?? {}).some(([key, token]) => typeof named[key] === "string" && (named[key] as string).includes(token))) return "args-draw-chance";
   return null;
 }
 export function issueCheck(registry: IntentVerbRegistry, verb: string, audience: IntentAudience): { readonly ok: true; readonly classification: IntentVerbDeclaration } | { readonly ok: false; readonly refusal: IssueRefusal } {
