@@ -1128,6 +1128,19 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     for (const page of pages.slice(0, -1)) expect(page.trimEnd().endsWith("<<~/ahu>>")).toBe(true);
   });
 
+  test("the final page's whole base supports a subsequent whole write", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    let page = await get(r, { grain: "whole" });
+    const pieces = [page.meme.text!];
+    while (page.meme.next?.after) {
+      page = await get(r, { grain: "whole", after: page.meme.next.after });
+      pieces.push(page.meme.text!);
+    }
+    expect(page.meme.next).toBeNull();
+    expect(page.meme.canonicalHash).not.toMatch(/^partial:/);
+    expect(await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: pieces.join("").replace("lorem", "changed"), base: page.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+  });
+
   test("a slot larger than a page rides its own page whole, never cut", async () => {
     const r = await seat(carrier([["a", 40], ["big", 20_000], ["c", 40]]));
     const pages: string[] = [];
