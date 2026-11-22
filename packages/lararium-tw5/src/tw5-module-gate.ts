@@ -2,7 +2,7 @@ import { digestsEqual, formatDigest, SHA256_ALGO } from "@lararium/mesh/agile-di
 import { hex } from "@lararium/mesh/crypto";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { stackOf } from "./has-stack.js";
-import { moduleDigest } from "./module-pins.js";
+import { modulePin } from "./module-pins.js";
 
 // The has-stack model: a kernel-injectable module WEARS the
 // tw5-module component in its stack (tags), never "implements an interface".
@@ -65,7 +65,7 @@ export async function bootTrustedModules(tw: TW5Instance, preloaded: ReadonlySet
       }));
       // TW5's module table reaches a module by the name another module `require`s: its title. The gate
       // defines each trusted module under that name, `define(name, moduleType, definition)`.
-      pins?.add(moduleDigest(body));
+      pins?.add(modulePin(title, moduleType, body));
       tw.modules.define(title, moduleType, body);
     }
   } catch (error) {

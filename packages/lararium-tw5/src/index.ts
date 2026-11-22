@@ -42,7 +42,7 @@ export { mountCamera } from "./tw5-camera.js";
 export { mountGlassCamera } from "./glass-camera.js";
 export { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 export { preloadsFromCasBlob } from "./cas-preloads.js";
-export { armModulePinGate, BLOB_PIN_MISMATCH, casBlobPreloads, MODULE_UNPINNED, moduleDigest, modulePinsOf } from "./module-pins.js";
+export { armModulePinGate, BLOB_PIN_MISMATCH, casBlobPreloads, MODULE_UNPINNED, moduleDigest, modulePin, modulePinsOf } from "./module-pins.js";
 export { mountProjection, dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 export {
   mountCoherenceProjection,

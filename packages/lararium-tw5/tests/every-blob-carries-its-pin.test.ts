@@ -11,7 +11,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { bootGenesisWiki, genesisCoreBlob, genesisModulePins, genesisNote, genesisPreloads, genesisSkip, type EnginePath } from "./genesis-boot.harness.js";
 import { CORE_BLOB_ABSENT, CORE_BLOB_PIN_MISMATCH, CORE_BLOB_UNPINNED, normalizeCoreBootBlob, prepareHostBootInstance, verifyCoreBootBlob } from "../src/tw5-host-bridge.js";
-import { BLOB_PIN_MISMATCH, casBlobPreloads, moduleDigest, modulePinsOf, MODULE_UNPINNED } from "../src/module-pins.js";
+import { BLOB_PIN_MISMATCH, casBlobPreloads, moduleDigest, modulePin, modulePinsOf, MODULE_UNPINNED } from "../src/module-pins.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 
 const flag = "__larPinProbeRan";
@@ -49,7 +49,7 @@ describe("module pins", () => {
     const loose = { title: "a.js", type: "application/javascript", "module-type": "library", text: "exports.a = 1;" };
     const data = { title: "b", text: "plain" };
     const plugin = { title: "$:/plugins/p", "plugin-type": "plugin", text: JSON.stringify({ tiddlers: { "p/c.js": { "module-type": "startup", text: "exports.c = 1;" }, "p/d": { text: "shadow" } } }) };
-    expect([...modulePinsOf([loose, data, plugin])].sort()).toEqual([moduleDigest("exports.a = 1;"), moduleDigest("exports.c = 1;")].sort());
+    expect([...modulePinsOf([loose, data, plugin])].sort()).toEqual([modulePin("a.js", "library", "exports.a = 1;"), modulePin("p/c.js", "startup", "exports.c = 1;")].sort());
   });
 
   test("a CAS blob whose bytes hash elsewhere than its CID refuses by name", () => {
@@ -108,6 +108,19 @@ describe.skipIf(genesisSkip)(`the island evaluates only pinned modules${genesisN
     engines.push(engine);
     expect((engine.$tw as unknown as { wiki: Wiki }).wiki.getTiddler(FORGED), "the forged core module ran").toBeUndefined();
     expect(engine.refusedModules.map((r) => r.title)).toContain(forged.title);
+  }, 120_000);
+
+  test("a pin binds its title and module type: another title carrying a pinned module's text refuses; CONTROL: the pinned title runs", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    // A guard-shaped title shadowed by a no-op whose text a pin names under its own title.
+    const shadow = probe("$:/plugins/lar/pin-probe/guard.js", "library", library.text);
+    const retyped = probe("$:/plugins/lar/pin-probe/retyped.js", "startup", startup.text);
+    const engine = await bootGenesisWiki({ path: "node", preloads: [library, startup, shadow, retyped], modulePins: modulePinsOf([library, startup]) });
+    engines.push(engine);
+    const tw = engine.$tw as unknown as { modules: { titles: Record<string, unknown>; execute(t: string): Record<string, unknown> } };
+    expect(tw.modules.titles[shadow.title], "a pinned text under another title defined").toBeUndefined();
+    expect(engine.refusedModules.map((r) => r.title)).toEqual(expect.arrayContaining([shadow.title, retyped.title]));
+    expect(tw.modules.execute(library.title)["answer"], "CONTROL: the pinned title runs").toBe(42);
   }, 120_000);
 
   test("a module defined after boot meets the same gate; CONTROL: a pinned one defines", async () => {

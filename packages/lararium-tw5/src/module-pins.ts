@@ -4,10 +4,10 @@
  * The SES gate's soundness reads as one equality: the set of code the island evaluates equals the set the host hash-verified
  * (`lar:///ha.ka.ba/lares/api/pono/island-host-contract#/ses-gate`). The core blob carries its pin into the bridge; every other
  * piece of code reaches the engine through ONE door, `$tw.modules.define(name, type, definition)`, and a string definition there
- * later runs through `evalSandboxed`. The gate stands at that door: a string definition whose SHA-256 no pin names never enters
- * the module table, and the refusal reads by name (`ModuleUnpinned`).
+ * later runs through `evalSandboxed`. The gate stands at that door: a string definition no pin names (its title, module type and
+ * text together) never enters the module table, and the refusal reads by name (`ModuleUnpinned`).
  *
- * WHERE A PIN COMES FROM. A pin names the bytes of one module's text, and it reaches the gate only off bytes some other pin already
+ * WHERE A PIN COMES FROM. A pin names one module's title, module type and text, and it reaches the gate only off bytes some other pin already
  * verified: the modules the pinned core blob packs (read off its own preloads before any caller's preload joins them), the modules
  * a CAS blob packs once its bytes hash to the CID the manifest or the genesis seed names (`casBlobPreloads`), and a granted module
  * the trusted-module gate admitted after it checked the grant and the `source-sha256`. `modulePinsOf` reads digests off records;
@@ -23,27 +23,39 @@ export const MODULE_UNPINNED = "ModuleUnpinned";
 /** The named refusal a CAS blob meets when its bytes hash to another value than the CID that names it. */
 export const BLOB_PIN_MISMATCH = "BlobPinMismatch";
 
-/** One module's pin: the lowercase hex SHA-256 of its text's UTF-8 bytes, the string TW5 evaluates. */
+/** The lowercase hex SHA-256 of a module text's UTF-8 bytes, the string TW5 evaluates: what a refusal reports. */
 export function moduleDigest(text: string): string {
   return sha256HexSync(text);
 }
 
 /**
- * The pins of every module the records pack: each loose record carrying a `module-type` and a string text, and each shadow a
- * plugin record packs with one. Hand it only records whose bytes a pin already verified.
+ * One module's pin: the SHA-256 of its title, its module type and its text together, so a pin admits those bytes under the title
+ * and the type the verified record gave them and nowhere else. A pinned no-op's text under a guard module's title refuses.
+ */
+export function modulePin(title: string, moduleType: string, text: string): string {
+  return sha256HexSync(JSON.stringify([title, moduleType, text]));
+}
+
+/**
+ * The pins of every module the records pack: each loose record carrying a title, a `module-type` and a string text, and each shadow
+ * a plugin record packs with one (under the key TW5 names the shadow by). Hand it only records whose bytes a pin already verified.
  */
 export function modulePinsOf(records: readonly Record<string, unknown>[]): Set<string> {
   const pins = new Set<string>();
   for (const record of records) {
     if (!record || typeof record !== "object") continue;
-    if (record["module-type"] !== undefined && typeof record["text"] === "string") pins.add(moduleDigest(record["text"]));
+    if (typeof record["title"] === "string" && typeof record["module-type"] === "string" && typeof record["text"] === "string") {
+      pins.add(modulePin(record["title"], record["module-type"], record["text"]));
+    }
     if (record["plugin-type"] === undefined || typeof record["text"] !== "string") continue;
     let packed: unknown;
     try { packed = (JSON.parse(record["text"]) as { tiddlers?: unknown }).tiddlers; } catch { continue; }
     if (!packed || typeof packed !== "object") continue;
-    for (const shadow of Object.values(packed as Record<string, unknown>)) {
+    for (const [title, shadow] of Object.entries(packed as Record<string, unknown>)) {
       const fields = shadow as Record<string, unknown> | null;
-      if (fields && typeof fields === "object" && fields["module-type"] !== undefined && typeof fields["text"] === "string") pins.add(moduleDigest(fields["text"]));
+      if (fields && typeof fields === "object" && typeof fields["module-type"] === "string" && typeof fields["text"] === "string") {
+        pins.add(modulePin(title, fields["module-type"], fields["text"]));
+      }
     }
   }
   return pins;
@@ -74,9 +86,9 @@ export function armModulePinGate(
   const define = modules.define.bind(modules);
   Object.defineProperty(modules, GATED, { value: true });
   modules.define = (name: string, moduleType: string, definition: unknown): unknown => {
-    if (typeof definition === "string") {
-      const digest = moduleDigest(definition);
-      if (!pins.has(digest)) { onRefuse(name, digest); return undefined; }
+    if (typeof definition === "string" && !pins.has(modulePin(name, moduleType, definition))) {
+      onRefuse(name, moduleDigest(definition));
+      return undefined;
     }
     return define(name, moduleType, definition);
   };
