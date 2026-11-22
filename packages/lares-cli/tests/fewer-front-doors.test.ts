@@ -24,12 +24,12 @@ async function run(argv: string[]): Promise<{ code: number; out: string; err: st
 }
 afterEach(() => vi.restoreAllMocks());
 
-const RETIRED = ["receipt", "cancel", "watch", "draft", "raise", "wing-of", "test-quine"] as const;
+const FOLDED = ["receipt", "cancel", "watch", "draft", "raise", "wing-of", "test-quine"] as const;
 
 describe("fewer front doors", () => {
-  test("★ the retired spellings leave the table and refuse by name ★", async () => {
+  test("★ the folded spellings leave the table and refuse by name ★", async () => {
     const names = COMMANDS.map((c) => c.name);
-    for (const old of RETIRED) {
+    for (const old of FOLDED) {
       expect(names, old).not.toContain(old);
       const r = await run([old]);
       expect(r.code, old).toBe(2);
@@ -91,9 +91,9 @@ describe("fewer front doors", () => {
     expect(r.err).toContain("usage: lares persona raise-sign <challenge-json-text>");
   });
 
-  test("the retired spellings leave every help line, and the folded doors name their new motion", async () => {
+  test("the folded spellings leave every help line, and the folded doors name their new motion", async () => {
     const h = await run(["help"]);
-    for (const old of RETIRED) expect(h.out, old).not.toMatch(new RegExp(`^\\s+(✍ )?${old}\\s`, "m"));
+    for (const old of FOLDED) expect(h.out, old).not.toMatch(new RegExp(`^\\s+(✍ )?${old}\\s`, "m"));
     const vessel = await run(["vessel", "--help"]);
     expect(vessel.out).toContain("request");
     const ingest = await run(["ingest", "--help"]);
