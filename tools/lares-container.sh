@@ -382,9 +382,66 @@ lift_vessel() {
 # that asked for the reading itself (`--observe`) gets that reading alone.
 follow_up=yes
 route_cli() {
+  # A named host file crosses the container boundary as raw stdin. Rotate the positional
+  # arguments while replacing only the consuming value, preserving every other byte of argv.
+  stream_file=""
+  if [ "${1:-}" = tiddler ] && [ "${2:-}" = put ]; then
+    stream_meme="" stream_slot="" stream_n=0 stream_kind="" stream_empty="" stream_want=""
+    # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
+    for stream_arg do
+      if [ -n "$stream_want" ]; then
+        case "$stream_want" in
+          --file|--append) stream_n=$((stream_n + 1)); stream_kind=$stream_want; [ -n "$stream_arg" ] || stream_empty=yes ;;
+        esac
+        stream_want=""
+        continue
+      fi
+      case "$stream_arg" in
+        --meme) stream_meme=yes ;;
+        --slot) stream_slot=yes stream_want=--slot ;;
+        --slot=*) stream_slot=yes ;;
+        --file|--append) stream_want=$stream_arg ;;
+        --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
+        --text|--base|--recipe|--bag|--realm|--face|--target|--fields|--tag-add|--tag-remove|--unset) stream_want=$stream_arg ;;
+      esac
+    done
+    if [ -n "$stream_meme" ] && [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
+    if [ -n "$stream_meme" ] && [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
+    if [ -n "$stream_meme" ] && [ "$stream_n" -eq 1 ] && { [ "$stream_kind" = --file ] || [ -n "$stream_slot" ]; }; then
+      stream_count=$# stream_prev="" stream_skip="" stream_i=0
+      while [ "$stream_i" -lt "$stream_count" ]; do
+        stream_arg=$1; shift; stream_i=$((stream_i + 1))
+        if [ -n "$stream_skip" ]; then
+          stream_skip=""
+        elif [ -n "$stream_prev" ]; then
+          [ "$stream_arg" = - ] || stream_file=$stream_arg
+          [ "$stream_arg" = - ] || stream_arg=-
+          stream_prev=""
+        else
+          case "$stream_arg" in
+            --file|--append) stream_prev=yes ;;
+            --file=*|--append=*)
+              stream_value=${stream_arg#*=}
+              if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
+            --slot|--text|--base|--recipe|--bag|--realm|--face|--target|--fields|--tag-add|--tag-remove|--unset) stream_skip=yes ;;
+          esac
+        fi
+        set -- "$@" "$stream_arg"
+      done
+      if [ -n "$stream_file" ]; then
+        if [ ! -r "$stream_file" ] || [ ! -f "$stream_file" ]; then printf 'lares-container: cannot read host file %s\n' "$stream_file" >&2; return 2; fi
+      fi
+    fi
+  fi
   if running_vessel; then
     # shellcheck disable=SC2046
-    if waited_exec $(pass_env) $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
+    if [ -n "$stream_file" ]; then
+      exec 4<&3
+      exec 3< "$stream_file"
+      if waited_exec $(pass_env) -T lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
+      exec 3<&4
+      exec 4<&-
+    elif waited_exec $(pass_env) $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
     if [ "$rc" -ne 0 ]; then return "$rc"; fi
     if [ -z "$follow_up" ]; then return 0; fi
     # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
@@ -397,7 +454,15 @@ route_cli() {
     printf '%s\n' 'lares-container: no vessel stands; this act runs offline on the store' >&2
     ensure_house
     # shellcheck disable=SC2046
-    waited_run $(pass_env) $(tty_flag) offline "$@"
+    if [ -n "$stream_file" ]; then
+      exec 4<&3
+      exec 3< "$stream_file"
+      waited_run $(pass_env) -T offline "$@"
+      rc=$?
+      exec 3<&4
+      exec 4<&-
+      return "$rc"
+    else waited_run $(pass_env) $(tty_flag) offline "$@"; fi
   fi
 }
 

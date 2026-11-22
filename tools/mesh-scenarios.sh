@@ -1144,7 +1144,7 @@ run_quorum_realm() {
 # rides the envelope. The canonical hash names the same bytes on both sides, or the crossing lied.
 #
 # THE BOOK A MINTS. System canon takes live writes from the Kahu alone, so the crossing rides a user book A
-# mints (`wiki init`), the shape `herm-reshares` walks: `meme put --recipe <book>` lands in the book's working
+# mints (`wiki init`), the shape `herm-reshares` walks: `tiddler put --meme --recipe <book>` lands in the book's working
 # layer, `act MOVE` promotes the carrier group into the book's canon through the island its wiki opens, and
 # `nexus realm-bag <book>` registers that canon on the realm at CONTRACT. A LOAD into canon refuses
 # (`load-into-canon`), so every write lands on working first.
@@ -1220,7 +1220,7 @@ run_meme() {
   step "A puts the witness meme into the book's working layer — the author's bag rides its meta"
   local PUT HASH_A
   meme_text a | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/npc.mem'
-  PUT=$($COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe "$BOOK" --file /tmp/npc.mem --json 2>&1)
+  PUT=$($COMPOSE exec -T lararium-a $LARES tiddler put --meme "$URI" --recipe "$BOOK" --file /tmp/npc.mem --json 2>&1)
   HASH_A=$(json_hash "$PUT")
   if printf '%s' "$PUT" | grep -q '"ok":true' && [ -n "$HASH_A" ]; then ok
   else bad "A's put refused"; printf '%s\n' "$PUT" | tail -3 | sed 's/^/      /'; clear_all; return; fi
@@ -1359,14 +1359,14 @@ run_meme() {
   # THE STEWARD WRITE PATH. The read cap is CONTRACT (every contracted member); the write cap is the NAMED
   # STEWARDS' SET. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B asks from her own vessel (`--join`), the face
   # she names sealing a record that names the standing steward and herself; the record is n-of-n, so it counts
-  # nothing until A consents on hers (`--cosign`). B's `meme put --bag <book>` then resolves the REALM doc
+  # nothing until A consents on hers (`--cosign`). B's `tiddler put --meme --bag <book>` then resolves the REALM doc
   # rather than refusing.
   step "B edits on the base she read, promotes; A gets the new slot"
   local HASH_B GB2 GA2 ASK COSIGN PUT
   HASH_B=$(json_hash "$GB")
   meme_text a b | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-b.mem'
   # CONTROL: before she asks, B's put refuses — a member at the read tier writes nothing.
-  if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
+  if $COMPOSE exec -T lararium-b $LARES tiddler put --meme "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
     bad "B's put --bag <book> LANDED BEFORE she asked — the read tier must refuse a placement"; clear_all; return; fi
   ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag "$BOOK" --face 0 --join --realm "$AID_A" --json 2>&1)
   # THE RECORD CROSSES BEFORE EACH NEXT HAND CAN ACT ON IT. B's ask rides the realm doc to A, and A's consent
@@ -1380,7 +1380,7 @@ run_meme() {
   done
   until_ms=$((SECONDS + 90))
   while :; do
-    PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
+    PUT=$($COMPOSE exec -T lararium-b $LARES tiddler put --meme "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
     if printf '%s' "$PUT" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
     sleep 3
   done
@@ -1409,7 +1409,7 @@ run_meme() {
   # B writes the way she wrote slot b, on the base her own replica reads: the steward placement on the realm doc.
   local HASH_C; HASH_C=$(json_hash "$(meme_read lararium-b)")
   meme_text a b c | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-c.mem'
-  LD=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_C" --file /tmp/npc-c.mem --json 2>&1)
+  LD=$($COMPOSE exec -T lararium-b $LARES tiddler put --meme "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_C" --file /tmp/npc-c.mem --json 2>&1)
   local cut_ok=1; printf '%s' "$LD" | grep -q '"ok":true' || cut_ok=0
   # A MUST NOT see it while B is cut — a slot that crosses a partition names a channel that is not the mesh.
   local leaked=0; GA2=$(meme_read lararium-a); json_text "$GA2" | grep -qF "<<~ ahu slot=\`#/c\`>>" && leaked=1
@@ -1509,7 +1509,7 @@ run_climb() {
 
   step "the face STANDS and is USED — a carrier lands under it"
   $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\`&#x0001;\` from=\`?\` to=\`$URI\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n' > /tmp/climb.mem" 2>/dev/null
-  if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
+  if $COMPOSE exec -T lararium-a $LARES tiddler put --meme "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the roll has no inception to strand"; fi
 
   # THE ROLL. Two more chairs stand on faces of their own, the seed card reveals, and `seal rotate` rolls the charter
@@ -1698,7 +1698,7 @@ run_title() {
   step "★ A — a userinfo-bearing TITLE is REFUSED, and the refusal is legible ★"
   local PUT
   $COMPOSE exec -T lararium-a sh -c "printf 'a body\n' > /tmp/banned.mem" 2>/dev/null
-  PUT=$($COMPOSE exec -T lararium-a $LARES meme put "$BAD_URI" --recipe lares --file /tmp/banned.mem --json 2>&1)
+  PUT=$($COMPOSE exec -T lararium-a $LARES tiddler put --meme "$BAD_URI" --recipe lares --file /tmp/banned.mem --json 2>&1)
   if printf '%s' "$PUT" | grep -q '"ok":false'; then ok
   else
     bad "a userinfo-bearing title was ACCEPTED — the ban is unenforced on the verb path"
@@ -1735,7 +1735,7 @@ run_title() {
   local BODY_URI="lar:///t.title.context/capture"
   $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\`&#x0001;\` from=\`?\` to=\`$BODY_URI\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = \"t.title.context/capture\"\n\`\`\`\n\n<<~ set lares=\`aim\` from=\`lar://mara:operator@crossroads/operator.asks.the-cost\` to=\`lar://compita:agent@crossroads/clerk.reads.the-record\`>>\n\nA quoted link: lar://alias:grant@host/some.path.here\n\n\`\`\`\n<<~ set lares=\`yield\` from=\`lar://compita:agent@crossroads/clerk.named.the-source\` to=\`?\`>>\n\`\`\`\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n' > /tmp/capture.mem" 2>/dev/null
   local CPUT CGET
-  CPUT=$($COMPOSE exec -T lararium-a $LARES meme put "$BODY_URI" --recipe lares --file /tmp/capture.mem --json 2>&1)
+  CPUT=$($COMPOSE exec -T lararium-a $LARES tiddler put --meme "$BODY_URI" --recipe lares --file /tmp/capture.mem --json 2>&1)
   if ! printf '%s' "$CPUT" | grep -q '"ok":true'; then
     bad "a capture carrying userinfo in its BODY was refused — the check read the text, not the title slot"
     printf '      %s\n' "$(printf '%s' "$CPUT" | tail -1 | cut -c1-240)"
@@ -1762,7 +1762,7 @@ run_title() {
   step "★ C — the PERMITTED \`lar://host/path\` title is accepted ★"
   local OPUT
   $COMPOSE exec -T lararium-a sh -c "printf 'a permitted body\n' > /tmp/allowed.mem" 2>/dev/null
-  OPUT=$($COMPOSE exec -T lararium-a $LARES meme put "$OK_URI" --recipe lares --file /tmp/allowed.mem --json 2>&1)
+  OPUT=$($COMPOSE exec -T lararium-a $LARES tiddler put --meme "$OK_URI" --recipe lares --file /tmp/allowed.mem --json 2>&1)
   if printf '%s' "$OPUT" | grep -q '"ok":true'; then ok
   else
     bad "the PERMITTED hostful form was refused — the ruling's allowed shape does not stand"
@@ -1831,7 +1831,7 @@ run_wikis() {
   step "NEG b — the canon bag REFUSES a placement, so the office is not shared"
   local TITLE="lar:///t.wikis.witness/one" REF
   $COMPOSE exec -T lararium-a sh -c "printf 'a wiki-borne carrier\n' > /tmp/wiki-one.mem" 2>/dev/null
-  REF=$($COMPOSE exec -T lararium-a $LARES meme put "$TITLE" --bag "$SLUG" --file /tmp/wiki-one.mem --json 2>&1)
+  REF=$($COMPOSE exec -T lararium-a $LARES tiddler put --meme "$TITLE" --bag "$SLUG" --file /tmp/wiki-one.mem --json 2>&1)
   if printf '%s' "$REF" | grep -qF "holds no writable layer in this island"; then ok
   elif printf '%s' "$REF" | grep -q '"ok":true'; then
     bad "the CANON bag took the placement — it must not hold the default writable office"
@@ -1859,7 +1859,7 @@ run_wikis() {
   # answering stock's 204 — and the status code carries NO signal about which root took the bytes.
   # Measured from the host: that route draws 000
   # (no listener) against `lararium-a`'s published port, because the wiki is not mounted as the served
-  # recipe in this container. The CLI's `meme put` reaches the doc layer and never that door.
+  # recipe in this container. The CLI's `tiddler put --meme` reaches the doc layer and never that door.
   step "the SYNCER door — the save whose 204 hides which root took it"
   gap "unreachable from this container — the wiki is not the served recipe, so the PUT route draws 000"
   printf '      packages/lararium-tw5/src/routes/native-door.ts serves it at priority 110\n'
@@ -1910,7 +1910,7 @@ run_conflict() {
 
   step "a carrier is placed, and projects once"
   $COMPOSE exec -T lararium-a sh -c "printf 'the base text\n' > /tmp/conf.mem" 2>/dev/null
-  if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/conf.mem --json 2>&1 \
+  if $COMPOSE exec -T lararium-a $LARES tiddler put --meme "$URI" --recipe lares --file /tmp/conf.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok
   else bad "the base carrier never landed"; clear_all; return; fi
 
@@ -1925,7 +1925,7 @@ run_conflict() {
     gap "the carrier projected to no file — the mtime reading has nothing to watch"
   else
     M1=$($COMPOSE exec -T lararium-a sh -c "stat -c %Y '$F'" 2>/dev/null | tr -d '\r')
-    $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/conf.mem >/dev/null 2>&1
+    $COMPOSE exec -T lararium-a $LARES tiddler put --meme "$URI" --recipe lares --file /tmp/conf.mem >/dev/null 2>&1
     sleep 5
     M2=$($COMPOSE exec -T lararium-a sh -c "stat -c %Y '$F'" 2>/dev/null | tr -d '\r')
     if [ "$M1" = "$M2" ]; then ok; else bad "an identical write churned the mtime ($M1 → $M2)"; fi
@@ -1939,7 +1939,7 @@ run_conflict() {
   else
     $COMPOSE exec -T lararium-a sh -c "printf 'the DISK hand moved this\n' >> '$F'" 2>/dev/null
     $COMPOSE exec -T lararium-a sh -c "printf 'the RECORD hand moved this\n' > /tmp/conf2.mem" 2>/dev/null
-    $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/conf2.mem >/dev/null 2>&1
+    $COMPOSE exec -T lararium-a $LARES tiddler put --meme "$URI" --recipe lares --file /tmp/conf2.mem >/dev/null 2>&1
     local d=$((SECONDS + 60))
     while ! logs_have "[disk-ward] write refused" lararium-a && [ "$SECONDS" -lt "$d" ]; do sleep 5; done
     if logs_have "projection conflict" lararium-a; then ok
@@ -1960,7 +1960,7 @@ run_conflict() {
   step "the operator is TOLD — a durable daemon working-layer audit under the ward ledger"
   if logs_have "disk-ward" lararium-a; then
     local AUD AUDIT_OUTPUT
-    if ! AUDIT_OUTPUT=$($COMPOSE exec -T lararium-a $LARES meme list --bag lar:///ha.ka.ba/wikis/daemon/working --json 2>&1); then
+    if ! AUDIT_OUTPUT=$($COMPOSE exec -T lararium-a $LARES tiddler get --meme --bag lar:///ha.ka.ba/wikis/daemon/working --json 2>&1); then
       bad "the ward-ledger read failed: $(printf '%s' "$AUDIT_OUTPUT" | tail -1 | cut -c1-200)"
     else
       AUD=$(printf '%s\n' "$AUDIT_OUTPUT" | grep -cF "ledger/ward/" || true)
@@ -1980,7 +1980,7 @@ run_conflict() {
   step "NEG a — CONTROL: a clean carrier still projects"
   local CLEAN="lar:///t.conflict.clean/one"
   $COMPOSE exec -T lararium-a sh -c "printf 'clean text\n' > /tmp/clean.mem" 2>/dev/null
-  if $COMPOSE exec -T lararium-a $LARES meme put "$CLEAN" --recipe lares --file /tmp/clean.mem --json 2>&1 \
+  if $COMPOSE exec -T lararium-a $LARES tiddler put --meme "$CLEAN" --recipe lares --file /tmp/clean.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok
   else bad "a clean carrier no longer projects — the gate refuses everything"; fi
   clear_all

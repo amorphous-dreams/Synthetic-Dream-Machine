@@ -170,7 +170,20 @@ function Act([string]$kind, [string[]]$more) {
   $ended = $false
   $armed = ArmSignalStop $kind
   try {
-    & docker compose @Base @more
+    if ($script:HostInputFile) {
+      $psi = [System.Diagnostics.ProcessStartInfo]::new('docker')
+      $psi.UseShellExecute = $false
+      $psi.RedirectStandardInput = $true
+      foreach ($arg in (@('compose') + $Base + $more)) { $psi.ArgumentList.Add([string]$arg) }
+      $process = [System.Diagnostics.Process]::Start($psi)
+      try {
+        $source = [System.IO.File]::OpenRead($script:HostInputFile)
+        try { $source.CopyTo($process.StandardInput.BaseStream) }
+        finally { $source.Dispose(); $process.StandardInput.Close() }
+        $process.WaitForExit()
+        $global:LASTEXITCODE = $process.ExitCode
+      } finally { $process.Dispose() }
+    } else { & docker compose @Base @more }
     # The signal stop ended the client: its handler owns the exit (by the signal's code), so this thread waits for it.
     while ($null -ne $armed -and [LaresSignalStop]::Stopping) { Start-Sleep -Milliseconds 200 }
     $ended = $true
@@ -372,8 +385,44 @@ function LiftVessel([string[]]$output) {
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
+  $script:HostInputFile = $null
+  if ($argv.Count -ge 3 -and $argv[0] -eq 'tiddler' -and $argv[1] -eq 'put' -and $argv.Contains('--meme')) {
+    $hasSlot = $false
+    $valued = @('--text', '--base', '--recipe', '--bag', '--realm', '--face', '--target', '--fields', '--tag-add', '--tag-remove', '--unset')
+    $sources = @()
+    # A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
+    for ($i = 0; $i -lt $argv.Count; $i++) {
+      $word = $argv[$i]
+      if ($word -eq '--slot') { $hasSlot = $true; $i++ }
+      elseif ($word -like '--slot=*') { $hasSlot = $true }
+      elseif ($word -in $valued) { $i++ }
+      elseif ($word -in @('--file', '--append') -and $i + 1 -lt $argv.Count) {
+        $sources += ,@(($i + 1), $argv[$i + 1], $word)
+        $i++
+      } elseif ($word -match '^--(file|append)=(.*)$') {
+        $sources += ,@($i, $Matches[2], "--$($Matches[1])")
+      }
+    }
+    if ($sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
+    if ($sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
+    if ($sources.Count -eq 1 -and ($hasSlot -or $sources[0][2] -eq '--file')) {
+      $source = $sources[0]
+      if ($source[1] -ne '-') {
+        # A relative path reads against the caller's directory, never .NET's own current directory.
+        $hostPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($source[1])
+        if (-not [System.IO.File]::Exists($hostPath)) { Die "cannot read host file $($source[1])" }
+        try { $handle = [System.IO.File]::OpenRead($hostPath); $handle.Dispose() }
+        catch { Die "cannot read host file $($source[1])" }
+        $script:HostInputFile = $hostPath
+        $argv = @($argv)
+        if ($argv[$source[0]] -match '^--(file|append)=') { $argv[$source[0]] = "$($source[2])=-" }
+        else { $argv[$source[0]] = '-' }
+      }
+    }
+  }
   if (HasRunningVessel) {
-    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $NoTty + @('lares', 'node', $Cli) + $argv)
+    $tty = if ($script:HostInputFile) { @('-T') } else { $NoTty }
+    Act 'exec' (@('exec', '-e', 'LARES_EXEC_TAG') + $PassEnv + $tty + @('lares', 'node', $Cli) + $argv)
     if ($followUp) {
       # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
       $answer = ObserveStanding
@@ -386,8 +435,10 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   } else {
     [Console]::Error.WriteLine('lares-container: no vessel stands; this act runs offline on the store')
     EnsureHouse
-    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $NoTty + @('offline') + $argv)
+    $tty = if ($script:HostInputFile) { @('-T') } else { $NoTty }
+    Act 'run' (@('--profile', 'offline', 'run', '--rm', '--name', $RunName) + $PassEnv + $tty + @('offline') + $argv)
   }
+  $script:HostInputFile = $null
 }
 
 # THE CENSUS BEFORE A STOP, bounded over the whole exec, so a wedged vessel never hangs `down`.
