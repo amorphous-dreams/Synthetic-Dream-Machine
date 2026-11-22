@@ -392,6 +392,16 @@ describe.skipIf(wikiSkip)(`stage reference reaches${skipNote}`, () => {
     r.write(source, { text: `See ${missing}.` });
     expect(await r.filter("[lares.broken[]]")).toContain(missing);
   });
+  test("broken considers only targets and sources inside memory", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/state/";
+    r.write(`${base}source`, { text: `See ${base}missing and lar:///x.y.z/outside` });
+    r.write("lar:///x.y.z/source", { text: `See ${base}from-outside` });
+    const result = await r.filter("[lares.broken[]]");
+    expect(result).toContain(`${base}missing`);
+    expect(result).not.toContain("lar:///x.y.z/outside");
+    expect(result).not.toContain(`${base}from-outside`);
+  });
   test("bare prose and tags reach stage roots, while another root stays unreached", async () => {
     const r = await rig();
     const base = "lar:///ha.ka.ba/kahua/memory/state/";
@@ -404,6 +414,16 @@ describe.skipIf(wikiSkip)(`stage reference reaches${skipNote}`, () => {
     expect(result).not.toContain(`${base}tagged`);
     expect(result).toContain(`${base}alone`);
   });
+  test("unreached scans 1500 records within a practical bound", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/benchmark/";
+    for (let i = 0; i < 1500; i++) r.write(base + i, { text: "lorem ipsum dolor ".repeat(150) + ` ${base}${(i + 1) % 1500}` });
+    const start = performance.now();
+    const result = await r.filter("[lares.unreached[]]");
+    const elapsed = performance.now() - start;
+    expect(result.filter((title: string) => title.startsWith(base))).toEqual([]);
+    expect(elapsed).toBeLessThan(1500);
+  }, 20_000);
   test("working-layer function overrides cannot alter reach answers", async () => {
     const r = await rig();
     const title = "lar:///ha.ka.ba/kahua/memory/state/alone";

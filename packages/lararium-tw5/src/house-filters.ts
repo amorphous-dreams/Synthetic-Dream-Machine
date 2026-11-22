@@ -75,11 +75,11 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 \end
 
 \function lares.broken()
-[prefix[lar:///ha.ka.ba/kahua/memory/]lar-refs:out[]] :filter[is[missing]]
+[prefix[lar:///ha.ka.ba/kahua/memory/]lar-refs:out[]prefix[lar:///ha.ka.ba/kahua/memory/]] :filter[is[missing]]
 \end
 
 \function lares.unreached()
-[prefix[lar:///ha.ka.ba/kahua/memory/]!regexp[#]] :filter[<currentTiddler>lar-refs:in[]!match<currentTiddler>count[]match[0]] :filter[<currentTiddler>lar-refs:tagged[]!match<currentTiddler>count[]match[0]]
+[prefix[lar:///ha.ka.ba/kahua/memory/]!regexp[#]lar-refs:unreached[]]
 \end`;
 
 const CANON_BAG = new RegExp(LAW_CANON_BAG_PATTERN);

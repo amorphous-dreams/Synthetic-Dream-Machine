@@ -15,6 +15,11 @@ describe.skipIf(wikiSkip)(`lar references through the wiki filter${skipNote}`, (
   test("in finds a prose reference to a root", () => {
     expect(engine.wiki.filterTiddlers(`[[${target}]lar-refs:in[]]`)).toContain(source);
   });
+  test("code examples do not create edges; punctuation preserves address contents", () => {
+    const title = "lar:///x.y.z/examples";
+    engine.wiki.addTiddler({ title, text: "`lar:///x.y.z/inline`\n```text\nlar:///x.y.z/fenced\n```\nSee lar:///x.y.z/a(b). and 'lar:///x.y.z/don't'" });
+    expect(engine.wiki.filterTiddlers(`[[${title}]lar-refs:out[]]`)).toEqual(["lar:///x.y.z/a(b)", "lar:///x.y.z/don't"]);
+  });
   test("an unknown suffix refuses", () => {
     expect(() => engine.wiki.filterTiddlers(`[[${source}]lar-refs:unknown[]]`)).toThrow(/unknown suffix/);
   });
