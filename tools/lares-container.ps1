@@ -390,7 +390,8 @@ function LiftVessel([string[]]$output) {
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
-  if ($argv.Count -ge 3 -and $argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') {
+  $isPut = $argv.Count -ge 3 -and $argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put'
+  if ($argv.Count -gt 0) {
     $hasSlot = $false
     $hasMeme = $false
     $alwaysValued = @('--fields', '--note', '--reason', '--text')
@@ -413,12 +414,15 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
         }
       }
     }
-    if ($sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
-    if ($sources.Count -eq 1 -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot)) -and $argv[$sources[0][0]] -cmatch '^--(file|append)=') {
+    foreach ($source in $sources) {
+      if ($source[1] -cne '-' -and $source[1].StartsWith('-')) { Die 'name a host file whose path starts with ./ when it begins with -' }
+    }
+    if ($isPut -and $sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
+    if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -cne '-' -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot)) -and $argv[$sources[0][0]] -cmatch '^--(file|append)=') {
       Die "SeparateSourceToken: use $($sources[0][2]) <path> as separate tokens"
     }
-    if ($sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
-    if ($sources.Count -eq 1 -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot))) {
+    if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
+    if ($isPut -and $sources.Count -eq 1 -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot))) {
       $source = $sources[0]
       if ($source[1] -ne '-') {
         # A relative path reads against the caller's directory, never .NET's own current directory.
