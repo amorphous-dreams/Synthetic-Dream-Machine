@@ -47,7 +47,7 @@ export function memePlan(sub: "put" | "delete", args: ParsedArgs): MemePlan {
 /** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
 export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean>; readonly face?: number } {
   const face = faceNamed(args);
-  const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list"), ...targetNamed(args) };
+  const out: Record<string, string | boolean> = { ...containerArgs(args, "tiddler get --meme"), ...targetNamed(args) };
   if (args.flags["tree"]) out["tree"] = true;
   return { verb: "meme-list", args: out, ...face };
 }
@@ -72,7 +72,7 @@ async function memePut(args: ParsedArgs): Promise<number> {
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
     const code = refusalCodeOf(outcome.error);
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme put: ${outcome.error}`) });
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`tiddler put --meme: ${outcome.error}`) });
     return exitFor(code);
   }
   const receipt = outcome.output;
@@ -109,14 +109,14 @@ async function memePut(args: ParsedArgs): Promise<number> {
  */
 export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly text?: string; readonly mode: "append" | "replace"; readonly face?: number } {
   const face = faceNamed(args);
-  if (targetNamed(args).target !== undefined) throw new UsageError(targetOnWriteRefusal("meme patch"));
+  if (targetNamed(args).target !== undefined) throw new UsageError(targetOnWriteRefusal("tiddler put --meme"));
   const uri = args.positional[1];
-  if (!uri) throw new UsageError("a uri is required (e.g. `lares meme patch lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
-  const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };
+  if (!uri) throw new UsageError("a uri is required (e.g. `lares tiddler put --meme lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
+  const out: Record<string, string> = { uri, ...containerArgs(args, "tiddler put --meme", "write") };
   // Each flag reads by its literal name, so the accepts row answers for it (no computed read).
   const trimmed = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
   const slot = trimmed(args.options["slot"]);
-  if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --recipe <slug> --tree` names the slots a meme holds)");
+  if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares tiddler get --meme --recipe <slug> --tree` names the slots a meme holds)");
   const append = trimmed(args.options["append"]);
   const slotFile = trimmed(args.options["file"]);
   const inline = typeof args.options["text"] === "string" ? args.options["text"] : undefined;
@@ -144,7 +144,7 @@ async function memePatch(args: ParsedArgs): Promise<number> {
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
     const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme patch: ${outcome.error}`) });
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`tiddler put --meme: ${outcome.error}`) });
     return exitFor(code);
   }
   const receipt = outcome.output;
@@ -160,7 +160,7 @@ async function memePatch(args: ParsedArgs): Promise<number> {
     ...(ok ? {} : { error: { code, message: decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${warnings[0] ?? receipt["reason"] ?? where}` } }),
     human: () => {
       if (typeof receipt["has"] === "string") console.log(receipt["has"]);
-      if (!ok) { console.error(`lares meme patch: ${decision === "absent" ? `no meme at ${plan.args["uri"]}` : warnings[0] ?? `${decision}: ${where}`}`); return; }
+      if (!ok) { console.error(`tiddler put --meme: ${decision === "absent" ? `no meme at ${plan.args["uri"]}` : warnings[0] ?? `${decision}: ${where}`}`); return; }
       console.log(`${decision}: ${where}`);
       if (typeof receipt["bag"] === "string") console.log(`  in ${receipt["bag"]}${receipt["layer"] === "personal" ? " (your personal layer)" : ""}`);
       for (const w of warnings) console.log(`  ! ${w}`);
@@ -191,7 +191,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
   let head: Record<string, unknown> = {};
   let requestId = "";
   const refuse = (code: "cap-denied" | "verb-error", message: string): number => {
-    emit(args, { ok: false, requestId, error: { code, message }, human: () => console.error(`lares meme list: ${message}`) });
+    emit(args, { ok: false, requestId, error: { code, message }, human: () => console.error(`tiddler get --meme: ${message}`) });
     return exitFor(code);
   };
   for (let after: string | null = null; ;) {
@@ -228,7 +228,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
     human: () => {
       if (typeof head["has"] === "string") console.log(head["has"]);
       for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
-      for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
+      for (const bag of unreached) console.error(`tiddler get --meme: ${bag} stands unreached; its roots stay unlisted`);
       if (head["floor"] === true || roots.some((r) => r.floor === true)) console.error(FLOOR_READ_NOTE);
     },
   });
@@ -241,7 +241,7 @@ async function memeDelete(args: ParsedArgs): Promise<number> {
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
     const code = refusalCodeOf(outcome.error);
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme delete: ${outcome.error}`) });
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`tiddler delete --meme: ${outcome.error}`) });
     return exitFor(code);
   }
   const receipt = outcome.output;
@@ -258,7 +258,7 @@ async function memeDelete(args: ParsedArgs): Promise<number> {
     ...(code === "ok" ? {} : { error: { code, message } }),
     human: () => {
       if (typeof receipt["has"] === "string") console.log(receipt["has"]);
-      if (code !== "ok") { console.error(`lares meme delete: ${message}`); return; }
+      if (code !== "ok") { console.error(`tiddler delete --meme: ${message}`); return; }
       console.log(`removed: ${plan.args["uri"]}`);
       console.log(`  tombstoned ${tombstoned.length}${retracted.length > 0 ? ` · retracted ${retracted.length}` : ""}`);
       if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);

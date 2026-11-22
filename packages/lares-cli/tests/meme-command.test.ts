@@ -62,7 +62,7 @@ const tmpFile = (text: string): string => {
 };
 
 describe("memePlan — the argument law, no daemon", () => {
-  test("the public meme door refuses the four retired spellings before dispatch", async () => {
+  test("the meme door names the tiddler door for family writes before dispatch", async () => {
     for (const sub of ["put", "patch", "list", "delete"]) {
       expect(await cmdMemeSurface(memeArgs([sub, "lar:///t/x"], { recipe: "default" }))).toBe(2);
     }
@@ -118,7 +118,7 @@ describe("memePlan — the argument law, no daemon", () => {
   });
 });
 
-describe("lares meme put", () => {
+describe("lares tiddler put --meme", () => {
   test("★ reads the meme off --file and dispatches meme-put with uri · text · target · base ★", async () => {
     h.reply = { uri: "lar:///t/x", decision: "ingest", grade: "clean", landed: ["lar:///t/x"], tombstoned: [], canonicalHash: "sha256:1", warnings: [], diagnostics: [] };
     const file = tmpFile("<<^ code=`&#x0001;`>> hello");
@@ -167,7 +167,7 @@ describe("lares meme put", () => {
 });
 
 
-describe("lares meme patch — one slot's body, a base required", () => {
+describe("lares tiddler put --meme --slot — one slot's body, a base required", () => {
   const ingest = { uri: "lar:///t/x", slot: "#/a", decision: "ingest", grade: "clean", landed: ["lar:///t/x", "lar:///t/x#/a"], tombstoned: [], canonicalHash: "sha256:2", warnings: [], diagnostics: [] };
 
   test("★ --append reads its file and dispatches meme-patch with uri · slot · append · base · container ★", async () => {
@@ -212,7 +212,7 @@ describe("lares meme patch — one slot's body, a base required", () => {
   });
 });
 
-describe("lares meme list — roots by default, --tree nests the slots", () => {
+describe("lares tiddler get --meme — roots by default, --tree nests the slots", () => {
   test("★ dispatches meme-list with the container alone; --tree rides as `tree: true` ★", async () => {
     h.reply = { bag: "lar:///ha.ka.ba/bags/sdm", roots: [{ uri: "lar:///t/x", canonicalHash: "sha256:1" }] };
     expect(await cmdFamily(memeArgs(["list"], { bag: "sdm" }))).toBe(0);
@@ -289,7 +289,7 @@ describe("lares meme list — roots by default, --tree nests the slots", () => {
   });
 });
 
-describe("lares meme delete — the removal, over the daemon verb", () => {
+describe("lares tiddler delete --meme — the removal, over the daemon verb", () => {
   test("★ dispatches meme-delete with uri · target · --if-match as `base` ★", async () => {
     h.reply = { uri: "lar:///t/x", decision: "removed", tombstoned: ["lar:///t/x", "lar:///t/x#/a"], canonicalHash: "sha256:1" };
     expect(await cmdFamily(memeArgs(["delete", "lar:///t/x"], { recipe: "sdm", "if-match": "sha256:1" }))).toBe(0);

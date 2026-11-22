@@ -44,7 +44,7 @@
  * so a record the face may not read enters no consequence. A plain tiddler leaves. A meme root or slot answers its
  * consequence and `decision: "refused"` (`refusal: "tiddler-delete-in-a-family"`) unless the call names the family act
  * (`family: true`); with it the consequence's acts land as ONE change per layer. A slot its parent
- * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `meme put`.
+ * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `tiddler put --meme`.
  *
  * A DELETE DELETES PLAINLY; ONLY A LOWER LAYER MAKES IT A CHOICE (lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). With
  * no `mode` named, each record leaves its own layer to absent (`mode: "plain"` in the answer): no tombstone rises and no
