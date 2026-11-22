@@ -75,7 +75,7 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 !!! The siblings ~ standings a carrier holds OUTSIDE the ladder
 
 # ''`kapu` — sealed, referee-side, never ended by another hand.'' No hand but the grant-holder's ends a kapu carrier, and a sweep that cannot read a carrier MUST NOT propose it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapu`>>; the grace table holds a VEIL blob eight rolls against PUBLIC's one, `cas-caps.ts` `GRACE_RATIO_BY_TIER`).
-# ''`tombstone` — a record removed inside a live group.'' The lifecycle governs a carrier's standing on the shelf; the tombstone rite governs a record's presence in a group. The two MUST NOT fuse, or a sync flake could burn a carrier.
+# ''`tombstone` — a record removed inside a live group.'' The lifecycle governs a carrier's standing on the shelf; the tombstone rite governs a record's presence in a group. A removal in a wiki held by more than one human asks its holders, who answer by name.
 
 <<~/ahu>>
 
@@ -110,11 +110,11 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 # ''Any floor with an open lean.'' An unresolved argument holds a claim on the shelf that no tidiness outranks.
 # ''Anything a hoike contests.'' Burning the record a dissent hangs on would close its re-entry key by deletion.
 
-''The hard floor:'' ''the fire burns a path, never a pattern.'' An otakiage touches one path in one tree and reaches no copy anywhere; nothing here MAY reach a record on another vessel — that plane belongs to the tombstone rite and its grace, under the caps.
+''The hard floor:'' the fire touches one path or one tiddler and reaches no copy on another human's vessel.
 
-''A face's own memory stage takes the fire when its holder (the operator wearing that face) calls.'' A tiddler — a whole meme or an ahu slot, each addressed by its full title — in one layer of that face's memory stage wiki stands as its path. The whole of #/the-fire governs it. A line never burns alone: a backward line inside a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and its doors stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
+''Holders choose the plane.'' Where every holder of a wiki stands as one human, whether through one face or many, that human MAY delete their own tiddlers when needed; git holds the ashes in the face or realm tree's history. This includes a face's memory stage and a domain wiki held only by that human's faces. Where a wiki's holders include another human, removal asks them and they answer by name through the tombstone rite, under grace and caps. A seat MAY propose that removal.
 
-''A shared or domain wiki syncs across vessels.'' Its removal belongs to the tombstone rite, under grace and caps. Where a lower layer holds the title, otakiage does not fire; the hand stops and names it. `--mode kapae` belongs to the tombstone plane. A seat MAY propose removal; the wiki's holders answer by name. The record keeps the shared caller and domain stores open (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/questions`>>).
+The rite governs a seat's burns; it never gates a human's own delete in a wiki they alone hold. An AI or tasked spirit burns only on the holder's call, through the stages, with the last check-in and delete commits and the gratitude line. A tiddler, whole meme or ahu slot carries its full title; a line in a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and doors stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
 
 ''Stage road reading, without tag migration:'' `road/state/open` reads `designed`; `road/state/landed` reads `standing`; `folded` reads routed, lifted and welded. The sitting filter names those landed road memes. The standing order “o-takiage at every land” gives them an authored ending once they stand folded; proof, weld and two commits still govern each burn.
 
@@ -170,7 +170,7 @@ Handoff: input <<input>>; output <<output>>. Aftermath: <<aftermath>>. Then <<th
 \end
 ```
 
-A call renders a record; it writes and deletes nothing. `mode=propose` names a burn proposal. `mode=fire` requires the operator's call and a named `caller`; the last check-in commit lands only after that call. #/the-fire governs the deletion doors. A shared or domain wiki permits a removal proposal under the tombstone rite, never a fire call. `proof` names completed work; `hash` names a meme root read and `base` an ahu family read. `commits` names the separate last check-in and burn commits. The thanks call's four lines (carried, homes, clear, thanks) make the commit body alone; its input, output and aftermath ride the handoff.
+A call renders a record; it writes and deletes nothing. `mode=propose` names a burn proposal. `mode=fire` requires the operator's call and a named `caller`; the last check-in commit lands only after that call. #/the-fire governs the deletion doors. A wiki held by more than one human takes removal through the tombstone rite and its named answers. `proof` names completed work; `hash` names a meme root read and `base` an ahu family read. `commits` names the separate last check-in and burn commits. The thanks call's four lines (carried, homes, clear, thanks) make the commit body alone; its input, output and aftermath ride the handoff.
 
 Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/examples`>>.
 
@@ -183,7 +183,7 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 # Operator ruling 2026-09-12: the lifecycle rides a tag family on governed memes only; `status` and `retain` leave the meta; `cacheable` stays as an API-server instruction; `lares-history` serves as the harvest room, emptied and deleted; the fire is called, never scheduled. The ruling stands verbatim, with its enactment and the walked room, at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-lifecycle`>>.
 # Operator ruling 2026-11-21 (the ever-speaking present): the law lifts from the docs record to this api meme; the record keeps the field, the house measurements, the rhymes, the examples, the leans and the questions (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>).
 
-# Operator ruling 2026-11-22: the fire reaches the wiki plane (a tiddler, whole meme or ahu slot, in one layer of one face's memory stage); no line burns; a shared wiki's removal rides the tombstone rite; burn proposes until the operator calls; the controller reads each stage's aftermath; each face's memory stage holds a catma store and a pattern-integrity store.
+# Operator ruling 2026-11-22: holders choose the plane: one human may delete their own tiddlers across their faces and domain wikis, with git holding the ashes; a wiki held by another human takes removal through the tombstone rite and named answers; a seat burns only on the holder's call through the rite; no line burns in that rite; the controller reads each stage's aftermath; each face's memory stage holds a catma store and a pattern-integrity store.
 # Operator ruling 2026-11-22: o-takiage at every land stands as an authored ending over landed road memes once routed, lifted and welded (folded); the sitting names them.
 
 <<~/ahu>>
@@ -207,6 +207,6 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kxRFPKV2V_A2YpIINlTN0TT7DYeavDfJEf1x-mrlIqQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GKGfJ7touBXCvdlLUbYq7Obggk9pvSa2eKpngHcZJDk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
