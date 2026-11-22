@@ -8,6 +8,13 @@
  * here, and of its leaving, never does** — Society of American Archivists
  * professional discipline applied to a CRDT mesh.
  *
+ * Indelible at HOUSE level: CLEAR and DROP never tombstone a ledger row, and
+ * no hand's door writes or removes one (`refuseEffectLedgerWrite`). The one
+ * act that erases a document holding effect records, `retire-wiki` over a
+ * face's wiki shell, first carries them verbatim into that face's retirement
+ * record (`shell-leaving-record.ts`, its daemon wiki working layer) and reads
+ * the copy back; a carry that cannot land refuses the retire, erasing nothing.
+ *
  * The dual-surface design from residency-model.md:
  *   - ACTION verbs (lar URIs, ALL CAPS, SPARQL Update derivation) — gesture
  *   - Effect-record annotations (tiddler tags, archival profession derivation) — audit

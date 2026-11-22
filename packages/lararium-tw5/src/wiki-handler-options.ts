@@ -6,7 +6,7 @@
  * the re-export hub it grew from collapsed (YIN).
  */
 
-import type { Repo, CompositeStore, KahuReachSource, SlotReach } from "@lararium/mesh";
+import type { Repo, CompositeStore, KahuReachSource, SlotReach, CarriedEffectRecord, RetireOutcome } from "@lararium/mesh";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import type { ResidencyOpPost } from "./worker-data-verbs.js";
 
@@ -105,9 +105,23 @@ export interface WikiShellPorts {
   /** How many live records the face's working (workbench), draft and personal layers of the slug hold, the house's effect records
    *  counted apart from the authored ones; a layer no document stands for reads 0. */
   contents(slug: string): Promise<WikiShellCounts>;
-  /** Delete the records in those three layers' documents: every one (a forced retire), or the house's effect records alone (an
-   *  unforced retire over a shell holding nothing authored), so a later mint at the same address opens empty. */
-  clear(slug: string, only?: "effects"): Promise<void>;
+  /** The house's effect records those three layers hold, each with the layer it rests in and its fields exactly as stored: what
+   *  a retire carries out before it erases them. A read that faults throws. */
+  effects(slug: string): Promise<readonly CarriedEffectRecord[]>;
+  /**
+   * CARRY THE RECORD OF LEAVING (residency-model#/effect-record-surface): write `records` into the retirement record for `slug`
+   * (`retiredShellUri`) in the worn face's durable home, its daemon wiki working layer, with `outcome` appended, and read the
+   * row back. Answers where the records went (`title`, `bag`), how many the record now holds for this retire, and how many the
+   * write added (0: every one already stood, and nothing was written). A home that holds no durable document, a write that
+   * faults, a read-back missing any record, or a carried title standing under other fields THROWS: the retire then erases nothing.
+   */
+  carry(slug: string, records: readonly CarriedEffectRecord[], outcome: Omit<RetireOutcome, "face">): Promise<RetiredShellCarry>;
+  /** Where `carry` would land the records for `slug`, or null where no durable home stands (a dry run names it). */
+  carryHome(slug: string): Promise<{ readonly title: string; readonly bag: string } | null>;
+  /** Delete records in those three layers' documents: every authored record where `authored` (a forced retire), and the effect
+   *  records named in `effects` (the ones a carry landed), so a later mint at the same address opens empty. An effect record no
+   *  carry named stays where it rests. */
+  clear(slug: string, what: { readonly authored: boolean; readonly effects: readonly string[] }): Promise<void>;
   /** Drop the face's draft and personal slot binding rows for the slug: the titles dropped. */
   unbindSlots(slug: string): Promise<readonly string[]>;
   /** Drop the ledger's rows binding the slug to the face's own cabal: the realm and the titles dropped. */
@@ -121,9 +135,13 @@ export interface WikiShellPorts {
  * seat wrote); `effects` counts the house's own effect records across the three layers (a gated ingest's residency row): a row
  * that reads back exactly as the effect recorder writes it for a bag that layer's ledger holds (its title under that bag's
  * `ledger/residency/`, its `bag` field naming that bag, no text, no field beside the schema). The shape alone proves nothing, so
- * no hand's door writes a residency ledger (`refuseEffectLedgerWrite`): audit the house minted, which leaves with the shell unforced.
+ * no hand's door writes a residency ledger (`refuseEffectLedgerWrite`): audit the house minted, which a retire carries out into the
+ * face's retirement record (`retiredShellUri`) before the shell leaves, unforced.
  */
 export interface WikiShellCounts { readonly working: number; readonly draft: number; readonly personal: number; readonly effects: number }
+
+/** Where a retire's carry landed the shell's effect records. */
+export interface RetiredShellCarry { readonly title: string; readonly bag: string; readonly records: number; readonly added: number }
 
 /** Options for `retire-wiki`: the catalog (the face's half takes the removal) and the shell's ports. */
 export interface WikiRetireOptions {

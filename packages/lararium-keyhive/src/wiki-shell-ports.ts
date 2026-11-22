@@ -8,6 +8,9 @@
  *   · `shared` — the faces other than this one the ledger seats in the face's workbench, and the share rows naming the slug;
  *   · `contents` / `clear` — the face's working, draft and personal layers (the daemon reads and clears its slot documents),
  *                the house's effect records counted apart from authored ones; a read that faults THROWS, never a zero;
+ *   · `effects` / `carry` / `carryHome` — the record of leaving: the shell's effect records, verbatim, carried into one
+ *                retirement record per slug (`retiredShellUri`) in the face's daemon wiki working layer and read back, before
+ *                `clear` erases them; a home that holds no durable document, or a carry that does not read back whole, THROWS;
  *   · `unbindSlots` — the face's draft and personal slot binding rows for the slug leave the daemon document;
  *   · `unbind` — the ledger rows binding the slug to the face's cabal leave (`retireWorkbench`);
  *   · `forget` — the hive forgets each shell bag's Document and the face plane's bag ledger drops its record, so the face's next
@@ -15,7 +18,10 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
-import { isHouseEffectRecordOf, plainRecord, storedDeleted, wikiBagUri, wikiSlotUri, workbenchSeats, type LarDoc, type StoredLarRecord } from "@lararium/mesh";
+import {
+  buildRetiredShellRecord, carriedFields, holdsEvery, isHouseEffectRecordOf, parseRetiredShellRecord, plainRecord, retiredShellUri, RetiredShellCarryRefusal,
+  storedDeleted, unionRetiredShell, wikiBagUri, wikiSlotUri, workbenchSeats, type CarriedEffectRecord, type LarDoc, type LarTiddlerRecord, type StoredLarRecord,
+} from "@lararium/mesh";
 import type { WikiShellPorts } from "@lararium/tw5";
 import type { BagDocLedger } from "./bag-doc-ledger.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
@@ -85,6 +91,16 @@ export async function faceOwnSlot(rows: BindingRows | null, prefix: string, grou
 /** A layer document as the shell ports read and clear it. */
 export interface ShellLayerDoc { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void }
 
+/**
+ * THE FACE'S DURABLE HOME for the record of a retired shell's leaving: its daemon wiki working layer, read and written as one
+ * store. Supplied only where that layer rests in a document (never a layer held in memory alone).
+ */
+export interface RetiredShellHome {
+  readonly bag: string;
+  get(title: string): Promise<LarTiddlerRecord | null>;
+  put(record: LarTiddlerRecord): Promise<void>;
+}
+
 export interface WikiShellPortsArgs {
   /** The worn face's hive; null where none stands (nothing to forget). */
   readonly provider: () => KeyhiveProvider | null;
@@ -99,6 +115,9 @@ export interface WikiShellPortsArgs {
   /** The face's documents for each layer of the slug, null where none stands. A fault throws. */
   readonly layers: (slug: string) => Promise<Readonly<Record<"working" | "draft" | "personal", ShellLayerDoc | null>>>;
   readonly unbindSlots: WikiShellPorts["unbindSlots"];
+  /** The face's durable home for retirement records (its daemon wiki working layer), or null where none rests: a retire that
+   *  would carry effect records then refuses, erasing nothing. */
+  readonly retiredHome: () => RetiredShellHome | null;
   /** Runs once the shell's bindings left: a holder closes what it composed over them. */
   readonly afterForget?: () => Promise<void>;
 }
@@ -116,10 +135,44 @@ export function wikiShellPorts(args: WikiShellPortsArgs): WikiShellPorts {
       const w = liveRecordSplit(l.working?.doc(), ledgerBagsOf(slug, "working")), d = liveRecordSplit(l.draft?.doc(), ledgerBagsOf(slug, "draft")), p = liveRecordSplit(l.personal?.doc(), ledgerBagsOf(slug, "personal"));
       return { working: w.authored, draft: d.authored, personal: p.authored, effects: w.effects + d.effects + p.effects };
     },
-    clear: async (slug, only) => {
+    effects: async (slug) => {
       const l = await args.layers(slug);
+      const out: CarriedEffectRecord[] = [];
       for (const [kind, layer] of [["working", l.working], ["draft", l.draft], ["personal", l.personal]] as const) {
-        const doomed = Object.entries(layer?.doc()?.tiddlers ?? {}).filter(([title, r]) => only !== "effects" || isHouseEffectRecord(ledgerBagsOf(slug, kind), title, r)).map(([title]) => title);
+        for (const [title, r] of Object.entries(layer?.doc()?.tiddlers ?? {})) {
+          if (storedDeleted(r as never) || !isHouseEffectRecord(ledgerBagsOf(slug, kind), title, r)) continue;
+          out.push({ layer: kind, title, fields: carriedFields(plainRecord(r as StoredLarRecord).tiddler as Record<string, unknown>) });
+        }
+      }
+      return out;
+    },
+    carryHome: async (slug) => {
+      const home = args.retiredHome();
+      return home ? { title: retiredShellUri(slug), bag: home.bag } : null;
+    },
+    carry: async (slug, records, outcome) => {
+      const home = args.retiredHome();
+      if (!home) throw new RetiredShellCarryRefusal("retire-carry-unlanded", "the face's daemon wiki working layer rests in no document here (a floor that cannot seal holds it in memory alone)");
+      const title = retiredShellUri(slug);
+      const standing = await home.get(title);
+      const before = parseRetiredShellRecord(slug, standing);
+      if (standing && !before) throw new RetiredShellCarryRefusal("retire-carry-unlanded", `"${title}" stands and reads as no retirement record of "${slug}"`);
+      const next = unionRetiredShell(slug, before, records, { face: args.face, ...outcome });
+      if (next) await home.put(buildRetiredShellRecord(next));
+      // THE READ-BACK: the carry stands only where every record reads back under the very fields carried.
+      if (!holdsEvery(parseRetiredShellRecord(slug, await home.get(title)), records)) {
+        throw new RetiredShellCarryRefusal("retire-carry-unlanded", `"${title}" did not read back holding every carried record`);
+      }
+      return { title, bag: home.bag, records: records.length, added: next ? next.records.length - (before?.records.length ?? 0) : 0 };
+    },
+    clear: async (slug, what) => {
+      const l = await args.layers(slug);
+      const carried = new Set(what.effects);
+      for (const [kind, layer] of [["working", l.working], ["draft", l.draft], ["personal", l.personal]] as const) {
+        const bags = ledgerBagsOf(slug, kind);
+        const doomed = Object.entries(layer?.doc()?.tiddlers ?? {})
+          .filter(([title, r]) => (isHouseEffectRecord(bags, title, r) ? carried.has(title) : what.authored))
+          .map(([title]) => title);
         if (layer && doomed.length > 0) layer.change((d) => { for (const title of doomed) delete d.tiddlers[title]; });
       }
     },

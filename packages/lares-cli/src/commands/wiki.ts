@@ -214,7 +214,7 @@ export async function cmdWikiInit(args: ParsedArgs, realmDoors: RealmDoors = LIV
 
 const RETIRE_USAGE = "usage: lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]";
 /** The refusals `retire-wiki` (and the session door before it) names by code (`<code>: <detail>`); any other failure reads as the transport's. */
-const RETIRE_REFUSAL = /^(retire-needs-hand|no-face|system-bag|wiki-face-private|no-such-wiki|not-the-owner|wiki-shared|wiki-not-empty|retire-count-missing|retire-count-moved|waking-floor|content-mounted-only|face-not-open|workbench-slug-bound)\b/;
+const RETIRE_REFUSAL = /^(retire-needs-hand|no-face|system-bag|wiki-face-private|no-such-wiki|not-the-owner|wiki-shared|wiki-not-empty|retire-count-missing|retire-count-moved|retire-carry-unlanded|waking-floor|content-mounted-only|face-not-open|workbench-slug-bound)\b/;
 
 /** The doors `lares wiki retire` reads, injectable for a test: the worn face's ordinal and the one session call. */
 export interface RetireDoors {
@@ -234,6 +234,10 @@ const LIVE_RETIRE_DOORS: RetireDoors = {
  * A HAND ACT: it rides a session of the worn face (or `--face N`) opened by the `cli` hand, so a seat session refuses at the
  * socket and the island refuses any ask no hand placed. `--dry-run` reads what would leave and the record counts, writing
  * nothing; a shell holding records refuses `wiki-not-empty` unless `--force --count <records>` names that very count.
+ *
+ * THE RECORD OF LEAVING STAYS: the shell's effect records (the house's residency rows) never leave with it. The vessel carries
+ * them, verbatim, into one retirement record per slug in the face's daemon wiki working layer before it erases them, and the
+ * answer names where they went; a carry that cannot land refuses `retire-carry-unlanded` with nothing erased.
  *
  * ONCE IT LANDS, the local half: the wiki's hold drops, the workbench mirror folder under its realm steps aside by rename, and
  * the slug's realm label releases the realm id the retired workbench held. Each step reads the state it changes, so a run
@@ -292,13 +296,15 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
   const records = (result["records"] ?? {}) as { working?: number; draft?: number; personal?: number; effects?: number };
   const counted = `working ${records.working ?? 0}, draft ${records.draft ?? 0}, personal ${records.personal ?? 0}`;
   const effects = records.effects ?? 0;
+  const where = (v: unknown): { title?: string; bag?: string; records?: number; added?: number } | null => (v && typeof v === "object" ? v as never : null);
   if (dryRun) {
     emit(args, { ok: true, requestId: r.requestId, data: result, human: () => {
       console.log(`wiki: ${slug}  would retire (nothing written)`);
       console.log(`  catalog rows:  ${list(result["catalogRows"]).join(", ") || "(none)"}`);
       console.log(`  workbench:     ${typeof result["realmId"] === "string" ? `realm ${result["realmId"].slice(0, 12)}…` : "(none stood)"}`);
       console.log(`  authored records: ${String(result["total"] ?? 0)} (${counted})`);
-      console.log(`  effect records:   ${effects} (the house's own residency rows; they leave with the shell, unforced)`);
+      const to = where(result["carryTo"]);
+      console.log(`  effect records:   ${effects}${effects > 0 ? ` (the house's own residency rows; ${to ? `carried to ${to.title} in ${to.bag} before the shell goes` : "no durable home stands for their carry, so the retire would refuse"})` : ""}`);
     } });
     return 0;
   }
@@ -314,8 +320,9 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
       console.log(`  ledger rows removed:   ${list(result["ledgerRows"]).length}${typeof result["realmId"] === "string" ? ` (realm ${result["realmId"].slice(0, 12)}…)` : ""}`);
       console.log(`  slot bindings removed: ${list(result["slotBindings"]).length}`);
       console.log(`  keyhive bindings:      ${list(result["keyhiveBindings"]).length}${list(result["keyhiveBindings"]).map((t) => `\n    ${t}`).join("")}`);
-      const dropped = effects > 0 ? `; ${effects} effect record(s) dropped with the shell` : "";
-      console.log(`  records destroyed:     ${result["forced"] === true ? counted : "none authored"}${dropped}`);
+      console.log(`  records destroyed:     ${result["forced"] === true ? counted : "none authored"}`);
+      const carried = where(result["carried"]);
+      if (carried) console.log(`  effect records:        ${carried.records ?? effects} carried to ${carried.title} (${carried.bag}; ${carried.added ?? 0} new), then erased with the shell`);
       console.log(`  kept:                  ${kept.canonBag ?? `bags/${slug}`} (its document and files untouched)`);
       if (kept.canonDoc) console.log(`  canon doc kept:        ${kept.canonDoc} (a re-mint that finds a floor canon row reuses it; one that finds none mints a fresh one and leaves this one orphaned)`);
       if (done.folder) console.log(`  folder set aside:      ${done.folder.to} (renamed, never deleted)`);
@@ -919,7 +926,7 @@ export function wikiStatusLines(out: Record<string, unknown>, consented: readonl
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
   "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent: over a shell a partial init left it stands what is missing (the recipe row, this face's bag registrations, its workbench) and answers `completed` naming each; run again, it answers `already-exists` and changes nothing. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
-  "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]`), a person's hand alone (a seat session refuses): its catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave, its workbench folder steps aside by rename, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shared shell refuses `wiki-shared` (remove the shares first); `--dry-run` reads the record counts, the authored records apart from the house's effect records (a gated ingest's residency rows, which leave with the shell unforced); a shell holding authored records refuses `wiki-not-empty` unless `--force --count` names that count." },
+  "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]`), a person's hand alone (a seat session refuses): its catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave, its workbench folder steps aside by rename, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shared shell refuses `wiki-shared` (remove the shares first); `--dry-run` reads the record counts, the authored records apart from the house's effect records (a gated ingest's residency rows, which the retire carries, verbatim, into one retirement record per slug in the face's daemon wiki working layer before the shell goes, refusing `retire-carry-unlanded` with nothing erased where that carry cannot land); a shell holding authored records refuses `wiki-not-empty` unless `--force --count` names that count." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },

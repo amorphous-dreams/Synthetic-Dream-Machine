@@ -1,5 +1,5 @@
 /**
- * retired-shell-record — THE RECORD OF A SHELL'S LEAVING, where a retired wiki shell's effect records stay.
+ * shell-leaving-record — THE RECORD OF A SHELL'S LEAVING, where a retired wiki shell's effect records stay.
  *
  * Canon calls a residency effect record indelible (`effect-record.ts`, residency-model#/effect-record-surface): the artifact may leave;
  * the record of its prior presence here, and of its leaving, never does. A wiki shell's layers hold such records (a gated
@@ -20,10 +20,10 @@
  */
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 
-/** `lar:///ha.ka.ba/lararium/retired-shells/` — where the record of each retired shell's leaving rests. */
-export const RETIRED_SHELL_URI_PREFIX = "lar:///ha.ka.ba/lararium/retired-shells/";
+/** `lar:///ha.ka.ba/lararium/shell-leavings/` — where the record of each retired shell's leaving rests. */
+export const RETIRED_SHELL_URI_PREFIX = "lar:///ha.ka.ba/lararium/shell-leavings/";
 
-/** `lar:///ha.ka.ba/lararium/retired-shells/<slug>` — one retirement record per wiki slug. */
+/** `lar:///ha.ka.ba/lararium/shell-leavings/<slug>` — one retirement record per wiki slug. */
 export function retiredShellUri(slug: string): string {
   return `${RETIRED_SHELL_URI_PREFIX}${encodeURIComponent(slug)}`;
 }
@@ -35,14 +35,13 @@ export interface CarriedEffectRecord {
   readonly fields: Readonly<Record<string, string>>;
 }
 
-/** What one retire said of itself when it carried: who retired, which realm, the counts it read, and the titles it carried. */
+/** What one retire said of itself when it carried: who retired, which realm, whether forced, the authored count it destroyed, and the titles it carried (the carried records keep their own timestamps). */
 export interface RetireOutcome {
   readonly face: string;
   readonly realmId: string | null;
   readonly forced: boolean;
   readonly authored: number;
   readonly carried: readonly string[];
-  readonly at: string;
 }
 
 /** The retirement record's body. */

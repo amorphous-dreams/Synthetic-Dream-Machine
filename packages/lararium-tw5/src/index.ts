@@ -233,7 +233,7 @@ export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
 export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
 export type {
-  WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, WikiShellCounts, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
+  WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, WikiShellCounts, RetiredShellCarry, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";
 export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-handlers.js";
 export { makeRestampBagTierReactor } from "./bag-tier-restamp.js";

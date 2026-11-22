@@ -1636,6 +1636,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             },
             // Each named wiki's engine composed over the shell that left: the next ask composes afresh.
             afterForget: async () => { await namedWikiEngines?.dropAll().catch(() => undefined); },
+            // THE RECORD OF LEAVING'S HOME: the worn face's daemon wiki working layer, where it rests in a document (`ctx.handles`
+            // names one only then). A layer held in memory alone (a floor that cannot seal) answers none, and the carry refuses.
+            retiredHome: () => {
+              const bag = wikiSlotUri(DAEMON_WIKI_SLUG, "working");
+              if (ctx.recipe.wikiSlug !== DAEMON_WIKI_SLUG || !ctx.composite.hasBag(bag) || !ctx.handles.get(bag)) return null;
+              const store = ctx.composite.storeForBag(bag);
+              if (!store) return null;
+              return {
+                bag,
+                get: (title) => store.get(title),
+                put: (record) => store.put(record, { kind: "lares-verb", requestId: "retire-wiki" }),
+              };
+            },
           }),
         }) : lightAFace("retire-wiki"), { summary: "Retire a wiki shell the worn face minted (its catalog rows, its workbench's ledger rows, its slot bindings and its Keyhive bindings) so the slug mints again under another face; the canon bag and its files stay. A person's hand alone; refuses a face that does not own it, a shell another face reaches, and a shell that holds records unless forced with the count.", surfaces: [VERB_SURFACE.cli] });
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
