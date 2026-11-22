@@ -390,14 +390,14 @@ route_cli() {
     # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
     for stream_arg do
       if [ -n "$stream_want" ]; then
-        case "$stream_want:$stream_arg" in
-          --fields:*|--note:*|--reason:*|--text:*) stream_want=""; continue ;;
-          *:--*) stream_want="" ;;
+        case "$stream_want" in
+          --fields|--note|--reason|--text) stream_want=""; continue ;;
+          *) case "$stream_arg" in --*) stream_want="" ;;
           *)
             case "$stream_want" in
               --file|--append) stream_n=$((stream_n + 1)); stream_kind=$stream_want; [ -n "$stream_arg" ] || stream_empty=yes ;;
             esac
-            stream_want=""; continue ;;
+            stream_want=""; continue ;; esac ;;
         esac
       fi
       case "$stream_arg" in
@@ -417,14 +417,14 @@ route_cli() {
       while [ "$stream_i" -lt "$stream_count" ]; do
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
         if [ -z "$stream_end" ] && [ -n "$stream_want" ]; then
-          case "$stream_want:$stream_arg" in
-            --fields:*|--note:*|--reason:*|--text:*) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
-            *:--*) stream_want="" ;;
+          case "$stream_want" in
+            --fields|--note|--reason|--text) stream_want=""; set -- "$@" "$stream_arg"; continue ;;
+            *) case "$stream_arg" in --*) stream_want="" ;;
             *)
               case "$stream_want" in
                 --file|--append) [ "$stream_arg" = - ] || stream_file=$stream_arg; stream_arg=- ;;
               esac
-              stream_want=""; set -- "$@" "$stream_arg"; continue ;;
+              stream_want=""; set -- "$@" "$stream_arg"; continue ;; esac ;;
           esac
         fi
         if [ -z "$stream_end" ]; then

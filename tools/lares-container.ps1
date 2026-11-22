@@ -414,6 +414,9 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
       }
     }
     if ($sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
+    if ($sources.Count -eq 1 -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot)) -and $argv[$sources[0][0]] -cmatch '^--(file|append)=') {
+      Die "SeparateSourceToken: use $($sources[0][2]) <path> as separate tokens"
+    }
     if ($sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
     if ($sources.Count -eq 1 -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot))) {
       $source = $sources[0]

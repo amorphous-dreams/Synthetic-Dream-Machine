@@ -63,7 +63,7 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", fifo = false } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -162,6 +162,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     }
     // `@HOUSE@` in an argument names the run's scratch house too.
     if (hostInput !== undefined) await writeFile(join(dir, hostName), hostInput);
+    if (hostSibling !== undefined) await writeFile(join(dir, "a"), hostSibling);
     if (fifo) spawnSync("mkfifo", [join(dir, hostName)]);
     const args = argv.map((a) => fill(a).replaceAll("@HOST_FILE@", join(dir, hostName)));
     const direct = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
@@ -219,7 +220,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   const crlf = Buffer.from("one\r\ntwo\r\n\r\n", "utf8");
   test(`${name}: a slot write streams a named host file whole, by --file, --file= or --append`, { skip }, async () => {
     const wire = ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
-    for (const [flag, sink] of [[["--file", "@HOST_FILE@"], /--file -/], [["--file=@HOST_FILE@"], /--file=-/], [["--append", "@HOST_FILE@"], /--append -/]]) {
+    for (const [flag, sink] of [[["--file", "@HOST_FILE@"], /--file -/], ...(name === "sh" ? [[["--file=@HOST_FILE@"], /--file=-/]] : []), [["--append", "@HOST_FILE@"], /--append -/]]) {
       const r = await run(shim, [...wire, ...flag], { env: standing, hostInput: crlf });
       assert.equal(r.status, 0, `${flag.join(" ")}: ${r.stderr}`);
       assert.deepEqual(r.received, crlf, flag.join(" "));
@@ -1977,7 +1978,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
   const wire = ["tiddler", "put", "T", "--recipe", "default"];
   const bytes = Buffer.from("one\r\ntwo\r\n\r\n");
-  for (const [flag, expected] of [[["--file", "@HOST_FILE@"], /--file -/], [["--file=@HOST_FILE@"], /--file=-/]]) {
+  for (const [flag, expected] of [[["--file", "@HOST_FILE@"], /--file -/], ...(name === "sh" ? [[["--file=@HOST_FILE@"], /--file=-/]] : [])]) {
     test(`${name}: plain put carries ${flag[0]} host bytes`, { skip }, async () => {
       const r = await run(shim, [...wire, ...flag], { env, hostInput: bytes });
       assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, bytes); assert.match(r.calls, expected);
@@ -2025,7 +2026,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
       assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null); assert.match(r.calls, /host\.mem/);
     }
   });
-  test(`${name}: an equals source carries a newline in its path`, { skip }, async () => {
+  test(`${name}: an equals source carries a newline in its path`, { skip: skip || name === "ps1" }, async () => {
     const r = await run(shim, [...wire, "--file=@HOST_FILE@"], { env, hostName: "a\nb", hostInput: "host" });
     assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("host"));
   });
@@ -2044,3 +2045,29 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     }
   });
 }
+
+
+test("shim flag sets track the built CLI parser", async () => {
+  const { BOOLEAN_FLAGS, VALUE_FLAGS } = await import("../packages/lares-cli/dist/src/parse-args.js");
+  const sh = await readFile(SH, "utf8"), ps = await readFile(PS1, "utf8");
+  const sorted = (xs) => [...xs].sort();
+  const shBoolean = [...sh.matchAll(/\*=\*\|--no-\*\|(--accept-omissions[^)]*)\)/g)].map(m => m[1].split("|").map(x => x.slice(2)));
+  const shValue = [...sh.matchAll(/(--fields\|--note\|--reason\|--text)\)/g)].map(m => m[1].split("|").map(x => x.slice(2)));
+  const psList = (name) => [...ps.match(new RegExp(`\\$${name} = @\\(([^)]*)\\)`))[1].matchAll(/'([^']+)'/g)].map(m => m[1].replace(/^--/, ""));
+  assert.equal(shBoolean.length, 2); assert.equal(shValue.length, 2);
+  for (const flags of [...shBoolean, psList("boolean")]) assert.deepEqual(sorted(flags), sorted(BOOLEAN_FLAGS));
+  for (const flags of [...shValue, psList("alwaysValued")]) assert.deepEqual(sorted(flags), sorted(VALUE_FLAGS));
+});
+
+for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
+  test(`${name}: a colon followed by dashes stays in the named file path`, { skip }, async () => {
+    const r = await run(shim, ["tiddler", "put", "T", "--file", "@HOST_FILE@"], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "x:--y", hostInput: "named" });
+    assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("named"));
+  });
+}
+test("ps1: equals sources refuse before a colon can select a different host file", { skip: !havePwsh }, async () => {
+  for (const flag of ["--file", "--append"]) {
+    const r = await run(PS1, ["tiddler", "put", "T", "--meme", "--slot", "#/a", `${flag}=@HOST_FILE@`], { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostName: "a:b", hostInput: "named", hostSibling: "wrong" });
+    assert.notEqual(r.status, 0); assert.match(r.stderr, /SeparateSourceToken/); assert.equal(r.received, null); assert.equal(r.calls, "");
+  }
+});
