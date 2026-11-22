@@ -1,0 +1,114 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/technical-art`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/technical-art"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/technical-art"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "specialist fieldcraft for image-generator technical-art plates and transparent compositing"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Art Sigils — Technical-Art Plate Fieldcraft
+
+This optional companion serves artwork delivered as an independently compositable image layer: creature silhouettes, mist, light emission, reflection marks, atmospheric overlays, patches or material details. It follows the eight-dimension `~art` nucleus and the sharktooth invocation grammar of [[Procedure Grammar|ha.ka.ba/lares/api/art-sigils/procedures]]; it adds no mandatory field, changes no procedure, and never makes alpha compositing the default for other artworks.
+
+It works beside its sibling companions: [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] holds the binding delivery properties, [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]] the component ledger, and [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]] with the technical-art reception checks in [[Formal Analysis|ha.ka.ba/lares/api/art-sigils/formal-analysis]] the inspection of a returned plate.
+
+The observations below come from iterative image-generation and OpenRaster compositing work. They report fieldcraft, not controlled evidence about a model's latent mechanisms or a promise of future receiver behavior. The operator approves each asset and every promotion.
+<<~/ahu>>
+
+<<~ ahu slot=`#/image-facing`>>
+!! Tell the artist what appears in ONE output image
+
+* Open with the depicted result: `one isolated transparent RGBA technical-art FX plate`, `several distinct floating organisms on true alpha`, or an equally specific pictorial target. Opening nouns, worktype and immediate visual instructions can pull generated content strongly; treat that pull as an observed prompt-writing hazard, not a deterministic law.
+* Lead with ''positive imagery and spatial relations'': separate luminous wisps with broad empty gaps; identifiable bodies with individual trailing anatomy; illumination from image-upper-right; airflow right-to-left and slightly down. Keep task-board and acceptance-test prose out of the image-facing fields.
+* The receiving artist paints ONE image. Ask for no alternative panels, before/after comparisons, layer labels, aspect-ratio diagrams, captions or illustrated breakdown. Technical notes or examples visible in image references may turn into depicted objects even unasked.
+* A source reference can supply palette, anatomical style, placement or light-direction evidence. Name its limited role outside the image-facing sigil; a receiver can reproduce the whole source environment, its figures or its board instead of the intended isolated mark. For an FX-only request, a transparent approved creature plate may seed better than a flattened scene.
+* Keep the pictured content narrow: `only detached vapor, local radiance and minute particles` reads stronger than a description of every excluded scene element. A long negative inventory can itself supply unwanted imagery.
+* Color and morphology belong to the artwork, never to a default: one blue juvenile example sets no color, anatomy or lifecycle for every spirit organism. A biological term such as `ephyra` names only the intended developmental stage.
+* `no eyes` and `no moth wings` hold as local choices, never house rules; natural-history, mystical and science-fiction treatments may vary by subject.
+
+The receiver's technical controls form a SECOND channel. Ask for a transparent background through the tool's own transparent-background setting when it offers one, apart from naming `true transparent RGBA` in the image-facing worktype and depiction-scope. Neither language nor a setting guarantees output dimensions, alpha, position or isolation: inspect the returned file.
+<<~/ahu>>
+
+<<~ ahu slot=`#/portable-inscription`>>
+!! Example — an FX-only Inscription, no scene vocabulary
+
+One compact house invocation carries the picture; production measurements and verification follow outside the transmitted text.
+
+```tiddlywiki
+<<~ art worktype=`isolated transparent RGBA technical-art FX layer` subject=`seven detached wisps of luminous vapor and tiny marsh-light points` read=`delicate independent breaths of radiance in spacious air` imagery=`small feathered lavender and blue vapor curls, hair-fine amber and cyan refracted glimmers` treatment=`transparent watercolor glazing, subtle optical bloom, vanishing edges` composition=`wide strip, broad empty alpha between effect islands, a few marks bleed beyond margins` relation=`wind right-to-left and slightly down; warm rim from image-upper-right, cool fill opposite` depiction-scope=`only mist and light marks on true alpha; no organisms or depicted setting`>>
+```
+
+The image-facing call carries no table of coordinate acceptance criteria, no reference-scene summary, no render-board heading and no engine flag syntax. A separate technical note records canvas dimensions, intended location and the tool control actually used.
+<<~/ahu>>
+
+<<~ ahu slot=`#/geometry`>>
+!! Geometry, negative space and native-size placement
+
+* Keep four sizes apart: the ''requested artist canvas'', the ''actual generated pixel dimensions'', the ''prepared native plate'' and the ''composite destination''. A generator's stated dimensions stand as intent until measured. Build the desired pixel plate separately when the receiver cannot output it exactly.
+* Express scale visually where it helps: rule-of-thirds bearing, asymmetric grouping, silhouette envelope, share of the source canvas occupied, and the share reserved as transparent negative space. Percentages guide composition; they produce no hard mask or measured bounding box.
+* Tie coordinate instructions to one explicit origin and frame. A worked case: a 1229 × 614 source laid over a 1024 × 1536 image at x=-187, y=1102 extends 187 px left, 18 px right and 180 px below the frame. Those values describe deterministic compositing, never reliable generator positioning.
+* A portrait-space bounding box never works as a hard crop instruction to the generator. Enforce the envelope after output with translation, scaling, crop and alpha bounds; preserve original appendages, or reroll when compliance would take destructive surgery.
+* Request side and bottom bleed when a later painter needs freedom at the frame edge, then check for nonzero alpha at the bleed boundaries; an oversized transparent canvas alone shows no bleed.
+* Record layer x/y and the actual alpha support. Once the prepared plate wins approval, placing it at its assigned coordinates never silently rescales it. Transparent overhang outside a display frame carries intent, not broken canvas data.
+<<~/ahu>>
+
+<<~ ahu slot=`#/alpha`>>
+!! Alpha as material, never a decorative black backing
+
+* Inspect the output's actual alpha channel, not its display over black or a checkerboard. A PNG that looks transparent may hold an opaque rendition of a transparency grid or an opaque scene. Report the fully transparent share, partial-alpha presence and content bounds where useful.
+* Keep the raw generated source apart from the accepted, registered and masked version. Archive rejected alternatives so none passes for approved work.
+* A clip-to-silhouette haze multiplies the original alpha; it never extends a rectangular patch into the sky. A vertical fade can keep a distinct top maximum and bottom minimum, say 100% at top and 42% at bottom; state whether the gradient spans the whole canvas, the asset bounds or a local region.
+* Name three things apart: (a) source pixel alpha, (b) a precomputed clipped gradient or mask, and (c) the ORA layer's global opacity. A request to raise each layer's base strength need not move the minimum of an internal alpha fade; name what changes and what holds.
+* A colored haze blended against the target scene may serve, but check hue, contrast, opacity and blur against the actual backing. For depth, soften edge contrast and lower distant alpha before reaching for a global color wash.
+* Keep unlike elements separable when they need different control: organism bodies and halos, reflective glimmers and aerial tendrils, FX and whole-scene mist. A generator may merge them into one luminous ribbon despite a request for disconnected islands; a reroll can beat extensive reconstruction.
+* OpenRaster stores raster PNG alpha, stacking, visibility, positions, opacity and the blend modes it supports; it carries no round trip for Krita's editable native transparency masks. Keep a grayscale mask guide, or save a Krita-native `.kra` after hand-painting.
+<<~/ahu>>
+
+<<~ ahu slot=`#/light`>>
+!! Light, airflow and grounding
+
+* Tie lighting to picture coordinates in the VIEWER's frame: a low sun near image-right rim-lights right-facing membranes while a distant cool fill attenuates the far side. Explain reflected light apart from internal bioluminescence.
+* Let wind and gesture agree: when streamers drift right-to-left and down, attached mist and detached light traces follow the same drift.
+* Set distant organisms back with a lightly alpha-clipped atmospheric veil and softened contrast, never a box of surrounding fog. Test the whole silhouette: aggressive haze may erase fine tendrils before the main body integrates.
+* Aerial light and water-contact reflection occupy different planes. Keep water glints small and broken, displaced downward by estimated height and water position, and independently editable unless the composition truly demands one inseparable stroke.
+* The strongest lights earn local halos; blooming every lamp or spirit alike flattens luminous hierarchy. Mist can veil surfaces while a tight, fuzzy protection around an important practical light leaves deliberate hand-mask options.
+<<~/ahu>>
+
+<<~ ahu slot=`#/receiver-failures`>>
+!! What a received image proves, and what it leaves unproven
+
+Generation trials of isolated plates turn up recognizable failures: a flattened new scene instead of an isolated asset; a multi-panel labeled comparison board where independent layers stood requested; a continuous fog belt despite explicit sparse islands; a valid transparent image whose translucent color fills far more of the plate than anticipated; tentacles crossing an important face. These outcomes belong to particular workflows, never to universal rates or engine law.
+
+A visually compelling generation may still fail the layer contract. Record BOTH the pictorial merit and the compositing defect. Never present a masked or cropped reconstruction as native isolated RGBA. When extracting sprites from a rejected sheet, keep their provenance and let the operator choose between accepting that labor and a reroll.
+<<~/ahu>>
+
+<<~ ahu slot=`#/handoff`>>
+!! Reversible generate → inspect → register → audition → approve
+
+1. Draft a tight image-facing invocation, plus a separate receiver-control note: transparency flag, references and intended resolution. Leave absent media and unsupplied controls unnamed.
+2. Fire one plate per genuinely independent worktype. Record the receiver, actual output dimensions and image inputs; check real alpha and visible subject membership before compositing.
+3. Register without destruction: keep the raw source, prepared plate, x/y, scale, bounds, alpha gradient formula and its coordinate basis, blend mode, and any grayscale mask guide.
+4. Compare several placements, scales and opacity values against the existing composition. Inspect full-frame hierarchy and local occlusion of faces, hands, ritual objects, lamp light, architecture and water. Measurement checks pixels; the operator judges the artistic read.
+5. Promote only the operator-approved option into the single working ORA, keeping rejected images in o-takiage and a rollback at hand. Check that `stack.xml`, the merged image and the thumbnail agree and that the ZIP opens.
+6. Mark diagnostic opacity as diagnostic; never let a pre-visualization experiment slide silently into final canon. The operator can refine native Krita transparency masks after reviewing the composite.
+
+A prompt cannot enforce a hard rectangle; a pixel mask can. A prepared plate's approval carries no approval for its FX companion or a future scene interpretation. Technical verification stays necessary and never substitutes for pictorial judgment.
+<<~/ahu>>
+
+<<~ ahu slot=`#/aftermath`>>
+!! Aftermath — specialist scope
+
+The core Art Sigils grammar stays medium-neutral and keeps its eight dimensions. Reach for this register only when the artwork demands image-generator technical art, independent transparent layers or their compositing. Its measurements serve as examples, never a mandatory layout. Specific subjects, colors, anatomy, cultural claims and setting rules stay local to their own artistic and world sources.
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3LyO48s5UVhBihkxotVV9x0qFRoC3ygiC5DEsLApJGc`>>
+
+<<^ code=`&#x0004;` to=`?`>>
