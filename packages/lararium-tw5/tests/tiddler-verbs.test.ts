@@ -1113,6 +1113,21 @@ describe.skipIf(wikiSkip)(`the reader's view: a filter and a render compute over
     expect(await titles("[[Sealed]get[text]]")).toEqual(["theirs"]);
   });
 
+  test("hidden citers never reach a target through the reader view", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/state/";
+    const target = `${base}target`, hidden = `${base}hidden`;
+    r.engine.wiki.addTiddler({ title: target, text: "", "$origin-bag": DAEMON });
+    r.engine.wiki.addTiddler({ title: hidden, text: `See ${target}`, "$origin-bag": bagUri("sealed") });
+    const only: Cap = async (_access, bag) => bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" };
+    const filter = makeWikiFilterReactor(r.opts);
+    const titles = async (f: string, cap: Cap) => (await filter({ ...A, filter: f }, ctx(cap)))["titles"] as string[];
+    expect(await titles(`[[${target}]lar-refs:in[]]`, writer)).toContain(hidden);
+    expect(await titles(`[[${target}]lar-refs:in[]]`, only)).not.toContain(hidden);
+    expect(await titles("[lares.unreached[]]", only)).toContain(target);
+    expect(await titles("[lares.unreached[]]", writer)).not.toContain(target);
+  });
+
   test("reach-holds-inside-the-engine: a render transcludes nothing the face may not read; CONTROL: a readable transclusion renders, and the wiki itself stays whole", async () => {
     const r = await rig();
     r.engine.wiki.addTiddler({ title: "Sealed", text: "theirs", "$origin-bag": bagUri("sealed") });
