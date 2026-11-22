@@ -265,7 +265,7 @@ describe("tiddler get --meme — one door reads on a gradient", () => {
     const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
     try { await cmdTiddler({ command: "tiddler", positional: ["get", "Note"], options: { recipe: "default" }, flags: { json: false } } as unknown as ParsedArgs); }
     finally { spy.mockRestore(); e.mockRestore(); }
-    expect(out.join("")).toBe("title: Note\n\nwords");
+    expect(out.join("")).toBe("title: Note\n\nwords\n");
     expect(err).toEqual(["<<~ has name=`Note` params=`recipe/default position/plain bytes/5 base/sha256-aa`>>", "base: sha256-aa"]);
   });
 });
