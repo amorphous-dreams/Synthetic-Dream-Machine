@@ -187,6 +187,8 @@ export * from "./capture-nalu.js";
 export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./host-task.js";
+export * from "./wave-crest.js";
+export * from "./ingest-wave-budget.js";
 export * from "./iris.js";
 export * from "./lent-faces.js";
 export * from "./cross-face-reach.js";

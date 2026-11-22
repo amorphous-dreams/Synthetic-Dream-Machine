@@ -11,11 +11,13 @@
 
 import { taskContentId, digestsEqual } from "@lararium/mesh";
 import {
-  syncedTreeKey, ingestWaveVerb, listSourceFiles, scanFiles, fileToUriForSource, settleIngest as settleIngestVia,
+  syncedTreeKey, ingestWaveVerb, ingestWaitBudgetMs, listSourceFiles, scanFiles, fileToUriForSource, settleIngest as settleIngestVia,
   type SyncedTree, type ScanRow, type ScanStatus, type ScanResult, type PendingDeletion, type FileToUriFn, type SubmitIngestOpts, type IngestSettlement,
+  type IngestPacing,
 } from "@lararium/node";
 import type { SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
+import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "./local-connector.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "./cas-stage.js";
 
 export {
@@ -34,9 +36,10 @@ export {
 export function settleIngest(
   opts: SubmitIngestOpts,
   tree: SyncedTree,
-  submit: (o: SubmitIngestOpts) => Promise<SubmitResult> = submitIngest,
+  submit: (o: SubmitIngestOpts) => Promise<SubmitResult> = (o) => submitIngest(o),
+  pacing?: IngestPacing,
 ): Promise<IngestSettlement> {
-  return settleIngestVia(opts, tree, submit);
+  return settleIngestVia(opts, tree, submit, pacing);
 }
 
 /**
@@ -118,13 +121,58 @@ export function scanSource(
  * `_lar_cas` flag stages the body to the corpus CAS and rides a skinny `textCid`; a utf8 body under the wall rides INLINE.
  * `--in-wiki` wraps the INGEST so it runs IN the active wiki island over its composite (where working lives).
  */
-export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult> {
+/** A wave's wait ended and its receipt read no outcome: what the vessel holds for it, by its request id. */
+export class WaveWaitEnded extends LocalWaitExpired {
+  constructor(verb: string, timeoutMs: number, requestId: string, readonly receiptState: "committed" | "unknown", readonly detail?: string) {
+    super(verb, timeoutMs, requestId);
+  }
+}
+
+/** The doors one wave rides: the verb socket and the receipt read. A suite lends stubs. */
+export interface IngestDoors {
+  readonly run: typeof runVerb;
+  readonly receipt: (requestId: string) => Promise<ReceiptAnswer>;
+}
+export const LIVE_INGEST_DOORS: IngestDoors = { run: runVerb, receipt: (id) => queryReceipt(id) };
+
+export async function submitIngest(opts: SubmitIngestOpts, doors: IngestDoors = LIVE_INGEST_DOORS): Promise<SubmitResult> {
   const deletions = opts.deletions ?? [];
   const { verb: submitName, args: submitArgs } = ingestWaveVerb(opts, (r) => {
     const type = declaredType(r.meta);
     return stageBodyToCas(r.text, { ext: r.ext, flagged: carrierCasFlagged(r.text, r.meta), binary: r.binary ?? false, ...(type ? { type } : {}) });
   });
   const requestId = await taskContentId({ subject: opts.toBag, command: submitName, args: submitArgs, nonce: "" });
-  const timeoutMs = Math.max(10_000, 10_000 + (opts.candidates.length + deletions.length + (opts.kapae?.length ?? 0)) * 400);
-  return await runVerb(submitName, submitArgs, opts.did, { requestId, timeoutMs });
+  // THE WAIT SCALES WITH THE WAVE: its carriers and its encoded bytes, capped (`ingestWaitBudgetMs`).
+  const timeoutMs = ingestWaitBudgetMs({
+    carriers: opts.candidates.length + deletions.length + (opts.kapae?.length ?? 0),
+    bytes: Buffer.byteLength(JSON.stringify(submitArgs), "utf8"),
+  });
+  try {
+    return await doors.run(submitName, submitArgs, opts.did, { requestId, timeoutMs });
+  } catch (err) {
+    if (!(err instanceof LocalWaitExpired)) throw err;
+    return await readBackAfterWait(submitName, timeoutMs, err.requestId, doors);
+  }
+}
+
+/**
+ * THE WAIT ENDED; THE RECEIPT SPEAKS. The same request's receipt, read once (a read, never a dispatch): an outcome that
+ * landed answers as the wave's own (the settle reads it whole); `committed` throws `WaveWaitEnded` reading committed; every
+ * other answer (no line back, a vessel that never arbitrated the id, a dead engine that cannot read it) keeps the outcome
+ * unknown, with the id. A receipt the vessel refuses gives no verdict on the wave, so it never reads as the wave's error.
+ */
+async function readBackAfterWait(verb: string, timeoutMs: number, requestId: string, doors: IngestDoors): Promise<SubmitResult> {
+  let receipt: ReceiptAnswer;
+  try { receipt = await doors.receipt(requestId); }
+  catch (err) { throw new WaveWaitEnded(verb, timeoutMs, requestId, "unknown", `its receipt read failed (${err instanceof Error ? err.message : String(err)})`); }
+  if ((receipt.state === "done" || receipt.state === "error") && receipt.refusal === undefined) {
+    return {
+      status: receipt.state, requestId,
+      ...(receipt.results !== undefined ? { results: receipt.results as NonNullable<SubmitResult["results"]> } : {}),
+      ...(receipt.errorMessage !== undefined ? { errorMessage: receipt.errorMessage } : {}),
+    };
+  }
+  if (receipt.state === "committed") throw new WaveWaitEnded(verb, timeoutMs, requestId, "committed");
+  const detail = receipt.refusal !== undefined ? `its receipt read refused: ${receipt.errorMessage ?? receipt.refusal.reason}` : `its receipt reads ${receipt.state}`;
+  throw new WaveWaitEnded(verb, timeoutMs, requestId, "unknown", detail);
 }

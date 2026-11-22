@@ -57,7 +57,13 @@ export function readFresherCanon(summary: Readonly<Record<string, unknown>>): Fr
   return { working: String(o["working"] ?? ""), titles, count: typeof o["count"] === "number" ? (o["count"] as number) : titles.length };
 }
 
-export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCanonReading }): Promise<number> {
+/** What a caller (the lay) hears beside the exit: the fresher canon, and a wave whose wait ended, read back by its id. */
+export interface IngestSink {
+  fresher?: FresherCanonReading;
+  outcome?: { readonly state: "committed" | "unknown"; readonly requestId: string };
+}
+
+export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<number> {
   // `--watch` fires this gesture per settle. The watcher reads none of the one-shot flags, so each refuses by name
   // rather than riding a long-lived loop that ignores it.
   if (args.flags["watch"] === true) {
@@ -205,6 +211,9 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
     // whose write-door daemon stands to start a daemon already running. `verbFailure`
     // tells the fault apart by its own TYPE.
     const f = verbFailure(err);
+    if (sink && f.requestId !== undefined && (f.code === "outcome-committed" || f.code === "outcome-unknown")) {
+      sink.outcome = { state: f.code === "outcome-committed" ? "committed" : "unknown", requestId: f.requestId };
+    }
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
@@ -222,6 +231,9 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   const summary = summaryOutput(result) ?? {};
   const fresher = readFresherCanon(summary);
   if (sink && fresher) sink.fresher = fresher;
+  if (sink && settled.pageError?.outcome !== undefined && settled.pageError.requestId !== undefined) {
+    sink.outcome = { state: settled.pageError.outcome, requestId: settled.pageError.requestId };
+  }
 
   // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
   // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the

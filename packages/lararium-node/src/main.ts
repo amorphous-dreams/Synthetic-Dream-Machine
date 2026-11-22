@@ -98,6 +98,8 @@ import { mountHermWaymark } from "./bulb-read-face.js";
 import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
+import { createEngineWatch, tapRepoLogs } from "./engine-watch.js";
+import { setLoggerFactory } from "@automerge/automerge-repo";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanDatagramSocket } from "./lan-discovery.js";
 
@@ -218,7 +220,16 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
  *  defaults (`RECEIPT_RING_DEFAULT`, `RECEIPT_RING_BYTES_DEFAULT`). */
 interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number; readonly bytesPerOutcome?: number } } }
 
+/**
+ * ONE ENGINE PER ISOLATE, ONE WATCH (`engine-watch`): this process's Automerge wasm instance backs every document its Repo
+ * holds, so one watch stands for all of them. Health, the verb channel and the Repo's own logger read it.
+ */
+const engineWatch = createEngineWatch();
+engineWatch.onFall((fall) => console.error(`[lararium] engine stopped: ${fall.cause} on the ${fall.path} path (${fall.detail}); health now answers 503 and every verb refuses \`engine-terminated\`. No restart follows by itself.`));
+
 async function main(): Promise<void> {
+  // The Repo catches an inbound message's throw and logs it; the tap hands that error to the watch (the network path).
+  setLoggerFactory(tapRepoLogs(engineWatch));
   const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
   // The seed witness names this boot's seed beside the founding seed: a differing seed reads as an offer, never a refusal (genesis-resolve).
   console.log(checkGenesisPin(storageDir, genesis));
@@ -294,7 +305,7 @@ async function main(): Promise<void> {
   // Health names only the local boot posture. It carries no peer, document,
   // Oracle, Pronaos, or causal truth and begins unavailable until setup stands.
   // It binds on a lararium alone; a herm describes nothing to a stranger.
-  const readinessState = createReadinessState();
+  const readinessState = createReadinessState(engineWatch);
   const readinessFace = mountReadinessFace({ httpServer, state: readinessState, standing: askedStanding, dispatcher });
   // The Pronaos lights only from two explicit operator inputs, and only on a lararium. No build-dir
   // discovery occurs; absent inputs leave the existing Node faces unchanged.
@@ -758,6 +769,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     placeVerb:    (o) => herm.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         herm.repo,
+    engine:       engineWatch,
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[herm] ${line}`),
   }));
@@ -897,6 +909,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     retireAsk:    (requestId) => result.daemon.retireAsk(requestId),
     claim:        floor.storeClaim,
     repo:         result.repo,
+    engine:       engineWatch,
     sessions:     result.sessionDoor,
     // THE HEARTH ROSTER reads each worn face's intent plane through the intent door's own fold, over this vessel's Repo.
     hearthPlanes: hearthPlanesOver((face) => readHearthPlane(result.repo, result.catalogHandleUrl, face)),

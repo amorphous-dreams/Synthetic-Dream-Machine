@@ -198,6 +198,8 @@ export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
+export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
+export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
@@ -224,6 +226,8 @@ export {
   standsClean, standingAfterFault, standingAfterWave, settleIngest, candidatesOf, applyConfirmedRenames, deletionsOf, pairedDeletions,
   carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts, workspaceIngestPorts,
   foldWaveRefusal, mirrorFiles, siteWaveFile, liveLay,
+  INGEST_WAVE_TARGET_MS, INGEST_WAIT_FLOOR_MS, INGEST_WAIT_PER_CARRIER_MS, INGEST_WAIT_PER_MIB_MS, INGEST_WAIT_CAP_MS, ingestWaitBudgetMs,
+  type IngestWaveRecord, type IngestPacing,
   type ScanStatus, type PendingDeletion, type ArmedDeletion, type ScanRow, type ScanSkip, type ScanResult, type FileToUriFn, type MirrorDirs,
   type CarrierAnswer, type AskingCarrier, type IngestSettlement, type IngestVerdict, type StandingAsks, type SubmitIngestOpts,
   type IngestSubmitResult, type IngestSubmit, type StagedCarrier, type CarrierStage, type IslandVerbAsk, type MirrorWave, type MirrorLaid,

@@ -68,6 +68,12 @@ function island(decide: (c: ScanRow, wave: number) => Record<string, unknown>) {
   return { waves, submit };
 }
 const opts = (candidates: ScanRow[]): SubmitIngestOpts => ({ source: "file:///scratch", toBag: BAG, candidates, did: "did:test" });
+/**
+ * ONE WAVE PAST THE AUDIT CAP. The settle crests its first pass under the per-document wave budget (`ingest-wave-pages`
+ * proves that); these vectors prove what ONE wave's answer reads past the outcome's row cap, so they lend the settle a
+ * budget wide enough to keep every carrier in the one wave they name.
+ */
+const ONE_WAVE = { limits: { count: 100_000, bytes: 2 ** 40, ops: 2 ** 40 } } as const;
 const refusal = (c: ScanRow) => ({ decision: "refuse", grade: "error", warnings: [`${c.uri}: torn frame refused`] });
 const landed = (c: ScanRow) => ({ decision: "ingest", grade: "clean", landed: 1, canonicalHash: islandRender(c) });
 
@@ -87,7 +93,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
     const { tree, candidates } = seed(40);
     const bad = new Set([candidates[3]!.uri, candidates[17]!.uri, candidates[39]!.uri]);
     const isl = island((c) => (bad.has(c.uri) ? refusal(c) : landed(c)));
-    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    const s = await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     // The setup took: the first answer crossed the cap and holds no row array.
     expect(readCarrierAnswer(boundOutcomeOutput({ carriers: candidates.map((c) => ({ uri: c.uri, decision: "ingest" })) })["carriers"]).bounded).not.toBeNull();
     expect(s.refused.map((r) => r.uri).sort()).toEqual([...bad].sort());
@@ -104,7 +110,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
     const { tree, candidates } = seed(120);
     const bad = new Set(candidates.filter((_, i) => i % 2 === 0).map((c) => c.uri));   // 60 refusals
     const isl = island((c) => (bad.has(c.uri) ? refusal(c) : landed(c)));
-    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    const s = await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     expect(s.refused.length).toBe(60);
     expect(s.refused.map((r) => r.uri).sort()).toEqual([...bad].sort());
     expect(new Set(s.refused.map((r) => r.why)).size).toBe(60);
@@ -123,7 +129,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
   test("a conflict gets named beside the refusals and keeps its own count", async () => {
     const { tree, candidates } = seed(40);
     const isl = island((c) => (c.uri === candidates[5]!.uri ? { decision: "conflict", grade: "clean" } : c.uri === candidates[6]!.uri ? refusal(c) : landed(c)));
-    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    const s = await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     expect(s.conflicts.map((r) => r.uri)).toEqual([candidates[5]!.uri]);
     expect(s.conflicts[0]!.why).toContain("both moved");
     expect(s.refused.map((r) => r.uri)).toEqual([candidates[6]!.uri]);
@@ -133,7 +139,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
   test("CONTROL: under the cap one wave names every row, landed ones too", async () => {
     const { tree, candidates } = seed(8);
     const isl = island((c) => (c.uri === candidates[2]!.uri ? refusal(c) : landed(c)));
-    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    const s = await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     expect(isl.waves.length).toBe(1);
     expect(s.named.size).toBe(8);
     expect(s.refused.map((r) => r.uri)).toEqual([candidates[2]!.uri]);
@@ -144,7 +150,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
   test("CONTROL: a wave with nothing refused names no refusal and asks once", async () => {
     const { tree, candidates } = seed(40);
     const isl = island(landed);
-    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    const s = await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     expect(s.refused).toEqual([]);
     expect(s.conflicts).toEqual([]);
     expect(isl.waves.length).toBe(1);
@@ -160,7 +166,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
       if (waves.length === 3) return { status: "error", requestId: "req-3", errorMessage: "the vessel recomposes — run again" } as SubmitResult;
       return inner.submit(o);
     };
-    const s = await settleIngest(opts(candidates), tree, submit);
+    const s = await settleIngest(opts(candidates), tree, submit, ONE_WAVE);
     expect(s.pageError).toEqual({ message: "the vessel recomposes — run again", unread: 120 - AUDIT_ARRAY_CAP - INGEST_PAGE });
     expect(s.refused.length).toBe(AUDIT_ARRAY_CAP + INGEST_PAGE);
     expect(waves.length).toBe(3);
@@ -168,7 +174,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
 
   test("a first wave that fails ends the gesture with nothing named and nothing pinned", async () => {
     const { tree, candidates } = seed(40);
-    const s = await settleIngest(opts(candidates), tree, async () => ({ status: "error", requestId: "req-1", errorMessage: "cap-denied: admin" }) as SubmitResult);
+    const s = await settleIngest(opts(candidates), tree, async () => ({ status: "error", requestId: "req-1", errorMessage: "cap-denied: admin" }) as SubmitResult, ONE_WAVE);
     expect(s.first.status).toBe("error");
     expect(s.named.size).toBe(0);
     expect(s.recorded).toBe(0);
@@ -180,7 +186,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
   test("a framed meme with no sidecar pins the render the pure door reads, with no second wave", async () => {
     const { tree, candidates } = seed(40);
     const isl = island(landed);
-    await settleIngest(opts(candidates), tree, isl.submit);
+    await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     expect(isl.waves.length).toBe(1);
     for (const c of candidates) {
       const own = carrierHash(canonicalizeCarrierText(c.uri, c.text)!);
@@ -194,7 +200,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     const plain = candidates.filter((c) => canonicalizeCarrierText(c.uri, c.text) === null);
     expect(plain.length).toBe(20);
     const isl = island((c, wave) => (wave === 1 ? landed(c) : { decision: "noop", reason: "canonical-equivalent", canonicalHash: islandRender(c) }));
-    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    const s = await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     expect(isl.waves.length).toBe(2);
     expect(isl.waves[1]!.candidates.map((c) => c.uri).sort()).toEqual(plain.map((c) => c.uri).sort());
     for (const c of plain) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ path: c.file, disk: c.diskHash, records: islandRender(c) });
@@ -215,7 +221,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     expect(beside.meta).toBeDefined();
     expect(canonicalizeCarrierText(beside.uri, beside.text)).not.toBeNull();   // the door COULD read it
     const isl = island((c, wave) => (wave === 1 ? landed(c) : { decision: "noop", reason: "canonical-equivalent", canonicalHash: islandRender(c) }));
-    await settleIngest(opts(candidates), tree, isl.submit);
+    await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE);
     expect(isl.waves.length).toBe(2);
     expect(isl.waves[1]!.candidates.map((c) => c.uri)).toEqual([uriOf(900)]);
     expect(tree.base(syncedTreeKey(BAG, uriOf(900)))).toEqual({ path: beside.file, disk: beside.diskHash, records: islandRender(beside) });
@@ -232,7 +238,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
       const output = boundOutcomeOutput({ carriers, deletions: { renames: [{ fromUri: "lar:///ha.ka.ba/lares/api/gone", toUri: moved.uri }], absent: [], declined: [] } });
       return { status: "done", requestId: `req-${waves.length}`, results: { [VERB_RESULT_KEY]: { ok: true, output } } } as SubmitResult;
     };
-    const s = await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///ha.ka.ba/lares/api/gone", syncedHash: moved.diskHash }] }, tree, submit);
+    const s = await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///ha.ka.ba/lares/api/gone", syncedHash: moved.diskHash }] }, tree, submit, ONE_WAVE);
     expect(waves.length).toBe(1);
     expect(s.recorded).toBe(39);
     expect(tree.base(syncedTreeKey(BAG, moved.uri))).toBeNull();
@@ -249,7 +255,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
       const carriers = wave === 1 ? [...rows.slice(1), { uri: "lar:///elsewhere", decision: "tombstone" }] : rows;
       return { status: "done", requestId: `req-${wave}`, results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput({ carriers }) } } } as SubmitResult;
     };
-    const s = await settleIngest(opts(candidates), tree, submit);
+    const s = await settleIngest(opts(candidates), tree, submit, ONE_WAVE);
     expect(waves.length).toBe(1 + Math.ceil(40 / INGEST_PAGE));
     expect(s.named.size).toBe(40);
     for (const c of candidates) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ path: c.file, disk: c.diskHash, records: islandRender(c) });
@@ -258,7 +264,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
   test("deletions and the change id ride the first wave alone", async () => {
     const { tree, candidates } = seed(120);
     const isl = island((c) => refusal(c));
-    await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///gone", syncedHash: "sha256:aa" }], changeId: "chg-first" }, tree, isl.submit);
+    await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///gone", syncedHash: "sha256:aa" }], changeId: "chg-first" }, tree, isl.submit, ONE_WAVE);
     expect(isl.waves[0]!.deletions).toEqual([{ uri: "lar:///gone", syncedHash: "sha256:aa" }]);
     expect(isl.waves[0]!.changeId).toBe("chg-first");
     expect(isl.waves.length).toBeGreaterThan(1);
@@ -273,7 +279,7 @@ describe("a refusal never reads as applied", () => {
   test("a refused carrier fails the run and the sentence names each one", async () => {
     const { tree, candidates } = seed(40);
     const isl = island((c) => (c.uri === candidates[9]!.uri ? refusal(c) : landed(c)));
-    const verdict = ingestVerdict(await settleIngest(opts(candidates), tree, isl.submit));
+    const verdict = ingestVerdict(await settleIngest(opts(candidates), tree, isl.submit, ONE_WAVE));
     expect(verdict.failed).toBe(true);
     expect(verdict.message).toBe(`INGEST refused 1 of 40 carrier(s): ${candidates[9]!.uri}`);
   });
@@ -284,15 +290,15 @@ describe("a refusal never reads as applied", () => {
     const inner = island((c) => refusal(c));
     const verdict = ingestVerdict(await settleIngest(opts(candidates), tree, async (o) => (++n === 2
       ? ({ status: "error", requestId: "req-2", errorMessage: "the vessel recomposes" } as SubmitResult)
-      : inner.submit(o))));
+      : inner.submit(o)), ONE_WAVE));
     expect(verdict.failed).toBe(true);
     expect(verdict.message).toContain(`${120 - AUDIT_ARRAY_CAP} carrier(s) stay unread`);
   });
 
   test("CONTROL: a clean run and a run holding a conflict alone both pass, and the conflict stays named", async () => {
     const { tree, candidates } = seed(40);
-    expect(ingestVerdict(await settleIngest(opts(candidates), tree, island(landed).submit))).toEqual({ failed: false, message: null });
-    const s = await settleIngest(opts(candidates), tree, island((c) => (c.uri === candidates[4]!.uri ? { decision: "conflict" } : { decision: "noop", canonicalHash: islandRender(c) })).submit);
+    expect(ingestVerdict(await settleIngest(opts(candidates), tree, island(landed).submit, ONE_WAVE))).toEqual({ failed: false, message: null });
+    const s = await settleIngest(opts(candidates), tree, island((c) => (c.uri === candidates[4]!.uri ? { decision: "conflict" } : { decision: "noop", canonicalHash: islandRender(c) })).submit, ONE_WAVE);
     expect(ingestVerdict(s).failed).toBe(false);
     expect(s.conflicts.map((c) => c.uri)).toEqual([candidates[4]!.uri]);
   });
@@ -307,26 +313,26 @@ describe("a watcher reads what it still owes at its stop, by address", () => {
     const { tree, candidates } = seed(8);
     const bad = candidates[2]!;
     let standing = NO_STANDING_ASKS;
-    standing = standingAfterWave(standing, await settleIngest(opts(candidates), tree, island((c) => (c.uri === bad.uri ? refusal(c) : landed(c))).submit));
+    standing = standingAfterWave(standing, await settleIngest(opts(candidates), tree, island((c) => (c.uri === bad.uri ? refusal(c) : landed(c))).submit, ONE_WAVE));
     expect([...standing.owed]).toEqual([[bad.uri, `${bad.uri}: torn frame refused`]]);
     // A wave over OTHER carriers lands whole and clears nothing.
-    standing = standingAfterWave(standing, await settleIngest(opts(candidates.slice(4)), tree, island(landed).submit));
+    standing = standingAfterWave(standing, await settleIngest(opts(candidates.slice(4)), tree, island(landed).submit, ONE_WAVE));
     expect(standing.owed.has(bad.uri)).toBe(true);
     expect(standsClean(standing)).toBe(false);
     // A hand cures the file: the wave that lands it clears the debt.
-    standing = standingAfterWave(standing, await settleIngest(opts([bad]), tree, island(landed).submit));
+    standing = standingAfterWave(standing, await settleIngest(opts([bad]), tree, island(landed).submit, ONE_WAVE));
     expect(standsClean(standing)).toBe(true);
   });
 
   test("a wave the island answers with an error leaves every carrier and deletion it carried owed", async () => {
     const { tree, candidates } = seed(6);
     const errored = async (): Promise<SubmitResult> => ({ status: "error", requestId: "r", errorMessage: "cap-denied: admin" }) as SubmitResult;
-    let standing = standingAfterWave(NO_STANDING_ASKS, await settleIngest({ ...opts(candidates), deletions: [gone("lar:///gone")] }, tree, errored));
+    let standing = standingAfterWave(NO_STANDING_ASKS, await settleIngest({ ...opts(candidates), deletions: [gone("lar:///gone")] }, tree, errored, ONE_WAVE));
     expect([...standing.owed.keys()].sort()).toEqual(candidates.map((c) => c.uri).sort());
     expect([...standing.owed.values()].every((why) => why === "cap-denied: admin")).toBe(true);
     expect([...standing.owedDeletions]).toEqual([["lar:///gone", "cap-denied: admin"]]);
     // A later wave over half of them clears that half alone, and the deletion stays owed.
-    standing = standingAfterWave(standing, await settleIngest(opts(candidates.slice(0, 3)), tree, island(landed).submit));
+    standing = standingAfterWave(standing, await settleIngest(opts(candidates.slice(0, 3)), tree, island(landed).submit, ONE_WAVE));
     expect([...standing.owed.keys()].sort()).toEqual(candidates.slice(3).map((c) => c.uri).sort());
     expect(standing.owedDeletions.has("lar:///gone")).toBe(true);
   });
@@ -335,7 +341,7 @@ describe("a watcher reads what it still owes at its stop, by address", () => {
     const { tree, candidates } = seed(120);
     let n = 0;
     const inner = island((c) => refusal(c));
-    const s = await settleIngest(opts(candidates), tree, async (o) => (++n === 2 ? ({ status: "error", requestId: "r2", errorMessage: "the vessel recomposes" } as SubmitResult) : inner.submit(o)));
+    const s = await settleIngest(opts(candidates), tree, async (o) => (++n === 2 ? ({ status: "error", requestId: "r2", errorMessage: "the vessel recomposes" } as SubmitResult) : inner.submit(o)), ONE_WAVE);
     const standing = standingAfterWave(NO_STANDING_ASKS, s);
     expect(standing.owed.size).toBe(120);
     expect([...standing.owed.values()].filter((why) => why === "a later wave failed (the vessel recomposes)").length).toBe(120 - AUDIT_ARRAY_CAP);
@@ -351,16 +357,16 @@ describe("a watcher reads what it still owes at its stop, by address", () => {
   test("a vanished address the island declined stays owed; a later wave over OTHER addresses clears nothing; its own re-link clears it", async () => {
     const { tree, candidates } = seed(8);
     const declining = async (o: SubmitIngestOpts): Promise<SubmitResult> => ({ status: "done", requestId: "req-d", results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: o.candidates.map((c) => ({ uri: c.uri, ...landed(c) })), deletions: { renames: [], absent: [], declined: (o.deletions ?? []).map((d) => d.uri) } } } } }) as SubmitResult;
-    let standing = standingAfterWave(NO_STANDING_ASKS, await settleIngest({ ...opts(candidates.slice(0, 2)), deletions: [gone("lar:///gone-1"), gone("lar:///gone-2")] }, tree, declining));
+    let standing = standingAfterWave(NO_STANDING_ASKS, await settleIngest({ ...opts(candidates.slice(0, 2)), deletions: [gone("lar:///gone-1"), gone("lar:///gone-2")] }, tree, declining, ONE_WAVE));
     expect([...standing.owedDeletions.keys()]).toEqual(["lar:///gone-1", "lar:///gone-2"]);
     expect([...standing.owedDeletions.values()][0]).toContain("pending at the vessel's shore");
     // The carriers of that wave landed: a declined address holds no carrier back.
     expect(standing.owed.size).toBe(0);
     // Another address settles in a later wave: the declined ones stay owed.
-    standing = standingAfterWave(standing, await settleIngest({ ...opts(candidates.slice(0, 2)), deletions: [gone("lar:///gone-3")] }, tree, applying(landed).submit));
+    standing = standingAfterWave(standing, await settleIngest({ ...opts(candidates.slice(0, 2)), deletions: [gone("lar:///gone-3")] }, tree, applying(landed).submit, ONE_WAVE));
     expect([...standing.owedDeletions.keys()]).toEqual(["lar:///gone-1", "lar:///gone-2"]);
     // The declined addresses ride again and settle: nothing stays owed.
-    standing = standingAfterWave(standing, await settleIngest({ ...opts([]), deletions: [gone("lar:///gone-1"), gone("lar:///gone-2")] }, tree, applying(landed).submit));
+    standing = standingAfterWave(standing, await settleIngest({ ...opts([]), deletions: [gone("lar:///gone-1"), gone("lar:///gone-2")] }, tree, applying(landed).submit, ONE_WAVE));
     expect(standsClean(standing)).toBe(true);
   });
 
@@ -368,7 +374,7 @@ describe("a watcher reads what it still owes at its stop, by address", () => {
     const { tree, candidates } = seed(6);
     // The island answers `done` and omits the rows (no `carriers` field at all).
     const hollow = async (): Promise<SubmitResult> => ({ status: "done", requestId: "r", results: { [VERB_RESULT_KEY]: { ok: true, output: {} } } }) as SubmitResult;
-    const s = await settleIngest(opts(candidates), tree, hollow);
+    const s = await settleIngest(opts(candidates), tree, hollow, ONE_WAVE);
     expect(s.unanswered.sort()).toEqual(candidates.map((c) => c.uri).sort());
     expect(s.recorded).toBe(0);
     const verdict = ingestVerdict(s);
@@ -376,14 +382,14 @@ describe("a watcher reads what it still owes at its stop, by address", () => {
     expect(verdict.message).toContain("drew no answer for 6 of 6 carrier(s)");
     expect(standingAfterWave(NO_STANDING_ASKS, s).owed.size).toBe(6);
     // CONTROL: the same wave answered whole leaves nothing unanswered.
-    const whole = await settleIngest(opts(candidates), tree, island(landed).submit);
+    const whole = await settleIngest(opts(candidates), tree, island(landed).submit, ONE_WAVE);
     expect(whole.unanswered).toEqual([]);
     expect([...whole.landed].sort()).toEqual(candidates.map((c) => c.uri).sort());
   });
 
   test("a conflict stays out of the debts: the island surfaced it for a hand", async () => {
     const { tree, candidates } = seed(4);
-    const s = await settleIngest(opts(candidates), tree, island((c) => (c.uri === candidates[1]!.uri ? { decision: "conflict" } : landed(c))).submit);
+    const s = await settleIngest(opts(candidates), tree, island((c) => (c.uri === candidates[1]!.uri ? { decision: "conflict" } : landed(c))).submit, ONE_WAVE);
     expect(s.unanswered).toEqual([]);
     expect(standsClean(standingAfterWave(NO_STANDING_ASKS, s))).toBe(true);
   });
