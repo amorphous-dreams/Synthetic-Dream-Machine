@@ -3,8 +3,7 @@
  * (changes · rhythm · couple · cohere · square); three read a signal matrix the caller hands in with `--signal`
  * (lead · forecast · mismatch), and touch no plane at all.
  *
- * Eight instruments once stood as eight sense verbs, each with its own help line and its own MCP tool. They
- * read different things and compute different things, so nothing here merges them: the LENS chooses which
+ * The eight instruments read different things and compute different things, so nothing here merges them: the LENS chooses which
  * instrument runs, and each instrument keeps its own read path and its own daemon verb on the wire. What
  * folds is the door — one verb to learn, one place that lists what can be read, one refusal that names
  * every lens when the one asked for stands nowhere.
@@ -44,7 +43,7 @@ export interface SenseLens {
   readonly run: (a: ParsedArgs) => Promise<number> | number;
 }
 
-/** The lenses, in the order the help lists them. Each name reads as plain English; the wire keeps the old verb. */
+/** The lenses, in the order the help lists them. Each name reads as plain English; `wire` names the daemon verb it rides. */
 export const SENSE_LENSES: Readonly<Record<string, SenseLens>> = {
   changes:  { brief: "where the poured content changes hands (change-points; --spectral, --halves, --span)", wire: "analyze", reads: ["spectral", "halves", "span"], run: cmdAnalyze },
   rhythm:   { brief: "the landed regimes and their couples (--repour re-derives first; --channel)", wire: "rejim", reads: ["repour", "channel"], run: cmdRejim },

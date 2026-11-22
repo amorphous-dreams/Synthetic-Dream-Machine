@@ -1,6 +1,6 @@
 /**
  * THE SENSE DOOR SHRINKS: the read instruments answer as lenses on one `analyze` verb, roster reads at two grains,
- * pour carries the bulk pass, and the retired spellings refuse as unknown verbs (alpha line: no bridge).
+ * pour carries the bulk pass, and an instrument's own name answers as no sense verb (alpha line: no bridge).
  *
  * Every door runs through the real dispatcher under a scratch LAR_ROOT and HOME, so a lens that reads a sensorium
  * reads an empty one and answers its honest absence. Control: a lens asked by its plain name and the same lens asked
@@ -74,7 +74,7 @@ describe("sense analyze --lens: one door, the lens chooses", () => {
   });
 });
 
-describe("the retired spellings refuse as unknown sense verbs", () => {
+describe("an instrument's own name answers as no sense verb: the lens spells it", () => {
   test.each([["ki"], ["li"], ["jing"], ["couple-r"], ["forecast"], ["mismatch"], ["rejim"], ["inspect"], ["sweep"], ["flow"]])(
     "`lares sense %s` reads as no verb", async (verb) => {
       const r = await door(["sense", verb, "--json"]);
