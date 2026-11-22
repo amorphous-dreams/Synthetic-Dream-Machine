@@ -105,13 +105,13 @@ function floorFiles(): { manifestFile: string; approvalFile: string } {
 }
 
 /**
- * The seat signs the manifest's exact bytes BEFORE the vessel stands: `nexus promote open` reads the sealed seat rows, which a
+ * The seat signs the manifest's exact bytes BEFORE the vessel stands: `nexus approve open` reads the sealed seat rows, which a
  * standing vessel's key session owns, so the approval rides the founding rite and only the release (a store verb) waits for the
  * live hearth.
  */
 async function approveGenesisFloor(cli: (args: readonly string[]) => Promise<{ code: number; stdout: string; stderr: string }>): Promise<void> {
   const { manifestFile, approvalFile } = floorFiles();
-  const opened = await cli(["nexus", "promote", "open", manifestFile, "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", approvalFile]);
+  const opened = await cli(["nexus", "approve", "open", manifestFile, "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", approvalFile]);
   expect(opened.code, `${opened.stderr}\n${opened.stdout}`).toBe(0);
 }
 

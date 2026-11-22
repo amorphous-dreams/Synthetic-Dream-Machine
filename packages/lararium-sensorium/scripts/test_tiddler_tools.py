@@ -23,7 +23,7 @@ from lares_mcp import TIDDLER_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, s
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(_HERE, "fixtures", "tiddler-door-answers.json"), encoding="utf-8") as _f:
-    _ROWS = json.load(_f)["rows"]
+    _ROWS = [r for r in json.load(_f)["rows"] if r["tool"] in TIDDLER_VERBS or r["tool"] == "wiki"]
 
 
 class _FakeDaemon:
@@ -85,7 +85,7 @@ def _mcp():
 
 def _tools():
     mcp = _mcp()
-    return {name: mcp._tool_manager.get_tool(name).fn for name in TIDDLER_VERBS}  # noqa: SLF001 — the registered skins
+    return {name: mcp._tool_manager.get_tool(name).fn for name in (*TIDDLER_VERBS, "wiki")}  # noqa: SLF001 — the registered skins
 
 
 def test_tiddler_tools_register_and_seat_hotl(daemon):
@@ -119,7 +119,7 @@ def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
 
 
 def test_the_table_names_every_tool():
-    assert {row["tool"] for row in _ROWS} == set(TIDDLER_VERBS)
+    assert {row["tool"] for row in _ROWS} == set(TIDDLER_VERBS) | {"wiki"}
 
 
 @pytest.mark.parametrize("row", _ROWS, ids=[f"{r['tool']}:{r['wire']['args'].get('title') or r['wire']['args'].get('filter') or 'status'}" for r in _ROWS])
@@ -243,10 +243,40 @@ def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon
     daemon.output = {"bag": "lar:///ha.ka.ba/bags/lares", "title": "T", "tiddler": None}
     assert t["tiddler_get"](title="T", bag="lares") == daemon.output
     assert daemon.wire() == {"verb": "tiddler-get", "args": {"bag": "lares", "title": "T"}}
-    for name in ("wiki_filter", "wiki_render", "wiki_status", "tiddler_put", "tiddler_delete"):
+    for name in ("wiki_filter", "wiki_render", "wiki_status"):
         assert "bag" not in inspect.signature(t[name]).parameters, name
+    for name in ("tiddler_put", "tiddler_delete"):
+        with pytest.raises(ValueError):
+            t[name](title="T", bag="lares")
     with pytest.raises(TypeError):
         t["wiki_filter"](filter="[tag[x]]", bag="lares")
     with pytest.raises(ValueError, match="tiddler_get\\(bag"):
         t["wiki_status"]()
     assert len(daemon.lines) == 1
+
+
+def test_a_retired_parameter_refuses_aloud_before_the_wire(daemon):
+    # `text` retired into `grain` (the lens and the grain kept apart): a caller still naming it hears the refusal and the
+    # word that replaced it, and nothing crosses the wire; the SDK would otherwise drop it and answer a grain never asked.
+    mcp = _mcp()
+    for value in (False, True):
+        is_error, said = _call(mcp, "tiddler_get", {"title": "T", "recipe": "default", "text": value})
+        assert is_error and "param-retired: `text` retired" in said and 'grain="skinny"' in said, said
+    assert daemon.lines == []
+
+
+def test_title_less_family_listing_refuses_the_flags_it_does_not_read(daemon):
+    # The listing reads container, tree and cursor; a slot, grain, fields or max_bytes beside it refuses by name, as the CLI does.
+    t = _tools()
+    for stray in ({"slot": "#/a"}, {"grain": "fat"}, {"fields": ["text"]}, {"max_bytes": 10}):
+        with pytest.raises(ValueError, match="title-less meme listing"):
+            t["tiddler_get"](meme=True, recipe="default", **stray)
+    assert daemon.lines == []
+
+
+def test_slot_write_names_one_source_and_a_base(daemon):
+    t = _tools()
+    for kwargs in ({"slot": "#/a", "base": "sha256:1"}, {"slot": "#/a", "text": "x", "append": "y", "base": "sha256:1"}, {"slot": "#/a", "text": "x"}):
+        with pytest.raises(ValueError):
+            t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", **kwargs)
+    assert daemon.lines == []

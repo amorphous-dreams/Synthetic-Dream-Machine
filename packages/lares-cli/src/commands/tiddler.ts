@@ -19,7 +19,7 @@
  * The container law holds: `get` names `--recipe <slug>` or `--bag <slug>`; `put` and `delete` name `--recipe <slug>` alone.
  * `--recipe default` answers the worn face's daemon wiki, and `--recipe <slug>` any wiki that face reaches, in that wiki's own
  * engine; a wiki it reaches none of refuses `wiki-unreached`. `get --bag <slug>` reads that one bag's record (no engine runs);
- * `put` and `delete` refuse `--bag` as `wiki-not-anchored` and name `lares meme put | delete --bag`.
+ * `put` and `delete` refuse `--bag` as `wiki-not-anchored` and name `lares tiddler put | delete --meme --bag`.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
@@ -32,6 +32,7 @@ import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan 
 import { targetOf, targetOnWriteRefusal } from "../target-option.js";
 import { helpLines } from "../command-help.js";
 import { readCarrierShape } from "@lararium/tw5";
+import { cmdFamily } from "./family.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const SUBS = ["get", "put", "delete"] as const;
@@ -40,6 +41,12 @@ type Sub = typeof SUBS[number];
 /** The verb and its args for a tiddler sub-verb: the argument law, with no daemon in reach. */
 export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   const title = args.positional[1];
+  if (sub === "get" && !title && args.flags["meme"] === true) {
+    const target = targetOf(args);
+    const out: Record<string, unknown> = { ...containerArgs(args, "tiddler get", "read"), ...target };
+    if (args.flags["tree"] === true) out["tree"] = true;
+    return { verb: "meme-list", args: out };
+  }
   if (!title) throw new DoorUsage(`a title is required (e.g. \`lares tiddler ${sub} "My Note" --recipe default\`)`);
   // A LIT FACE RECEIVES VISITS: `--target` names another lit face; a get reads its daemon wiki while the command keeps the
   // face it wears, and a put or delete naming it refuses here by name, before any door opens.
@@ -203,7 +210,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
       const record = tiddler!;
       const { text, ...rest } = record.fields;
       for (const [name, value] of Object.entries(rest)) stdout.write(`${name}: ${value}\n`);
-      if (typeof text === "string") stdout.write(`\n${text}`);
+      if (typeof text === "string") stdout.write(`\n${text}${text.endsWith("\n") ? "" : "\n"}`);
       if (has) console.error(has);
       console.error(`base: ${record.hash}`);
       if (record.bag) console.error(`bag: ${record.bag}`);
@@ -285,6 +292,22 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
 
 export async function cmdTiddler(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
+  if (args.flags["meme"] === true && (sub === "get" && !args.positional[1] || sub === "put" || sub === "delete")) {
+    const familySub = sub === "get" ? "list" : sub === "put" && (args.options["slot"] !== undefined || args.options["append"] !== undefined) ? "patch" : sub;
+    // A slot write names one text source: --append <file>, --text <words> or --file <path> (the slot's whole body).
+    const sources = [args.options["append"], args.options["text"], args.options["file"]].filter((value) => value !== undefined);
+    const ambiguous = sub === "put" && (familySub === "patch" ? sources.length !== 1 : args.options["text"] !== undefined && args.options["file"] !== undefined);
+    const incompatible = sub === "put" && [args.options["fields"], args.options["unset"], args.options["tag-add"], args.options["tag-remove"]].some((value) => value !== undefined)
+      || sub === "put" && args.flags["create"] === true
+      || sub === "delete" && (args.flags["family"] === true || args.options["mode"] !== undefined);
+    if (ambiguous || incompatible) {
+      const message = ambiguous ? "a family write names one text source: --file <path> or --text <words> (a slot write: exactly one of --append <file>, --text, --file)" : "--meme takes family text or removal, not record fields, tags, or modes";
+      emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(`lares tiddler ${sub}: ${message}`) });
+      return exitFor("usage");
+    }
+    const familyArgs = { ...args, command: "meme", positional: sub === "get" ? [familySub] : [familySub, ...args.positional.slice(1)] } as ParsedArgs;
+    return cmdFamily(familyArgs);
+  }
   if (!(SUBS as readonly string[]).includes(sub ?? "")) {
     if (sub) console.error(`lares tiddler: unknown sub-verb "${sub}"`);
     for (const line of helpLines("tiddler")) console.error(line);

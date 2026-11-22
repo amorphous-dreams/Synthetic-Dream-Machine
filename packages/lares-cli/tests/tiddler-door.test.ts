@@ -9,7 +9,9 @@
  * never reads stdin.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
@@ -30,6 +32,10 @@ vi.mock("../src/verb-call.js", () => ({
     return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } } };
   },
 }));
+vi.mock("../src/store-door.js", () => ({
+  storeVerb: async (verb: string, args: Record<string, unknown>) => { h.calls.push({ verb, args }); return { output: h.reply }; },
+  StoreDoorRefusal: class extends Error {},
+}));
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),
   vesselDid: async () => "0x" + "ab".repeat(32),
@@ -38,12 +44,14 @@ vi.mock("../src/env.js", async (orig) => ({
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
 import { cmdWiki, wikiFilterPlan, wikiRenderPlan } from "../src/commands/wiki.js";
-import { COMMANDS } from "../src/bin/lares.js";
+import { cmdKahua } from "../src/commands/kahua.js";
+import { cmdMeme } from "../src/commands/meme.js";
+import { COMMANDS, unknownFlags } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 interface Row {
   tool: string;
-  cli: { command: "tiddler" | "wiki"; positional: string[]; options: Record<string, string>; flags: Record<string, boolean> };
+  cli: { command: "tiddler" | "wiki" | "kahua" | "meme"; positional: string[]; options: Record<string, string>; flags: Record<string, boolean> };
   wire: { verb: string; args: Record<string, unknown> };
   output: Record<string, unknown>;
 }
@@ -59,8 +67,10 @@ async function run(args: ParsedArgs): Promise<{ exit: number; printed: Record<st
   const log = vi.spyOn(console, "log").mockImplementation((...parts: unknown[]) => { chunks.push(parts.join(" ") + "\n"); });
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   try {
-    const exit = args.command === "wiki" ? await cmdWiki(args) : await cmdTiddler(args);
-    return { exit, printed: JSON.parse(chunks.join("")) as Record<string, unknown> };
+    const exit = args.command === "wiki" ? await cmdWiki(args) : args.command === "kahua" ? await cmdKahua(args, null)
+      : args.command === "meme" ? await cmdMeme(args) : await cmdTiddler(args);
+    const printed = JSON.parse(chunks.join("").trim().split("\n").at(-1)!) as Record<string, unknown>;
+    return { exit, printed: args.command === "kahua" ? { ok: true, data: printed } : printed };
   } finally { spy.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
 
@@ -68,7 +78,7 @@ afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply 
 
 describe("verb-table-parity — the CLI half of the tiddler door's one table", () => {
   test("the table names all six verbs, and every door it names stands in the command table", () => {
-    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status"]));
+    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki", "wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status", "kahua_get", "meme_offer_show"]));
     const names = new Set(COMMANDS.map((c) => c.name));
     for (const row of TABLE.rows) expect(names.has(row.cli.command)).toBe(true);
   });
@@ -76,7 +86,9 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
   for (const row of TABLE.rows) {
     test(`${row.tool} (${row.cli.command} ${row.cli.positional.join(" ")}): the row's wire rides the socket and the row's output comes back verbatim`, async () => {
       h.reply = row.output;
-      const { exit, printed } = await run(argv(row.cli.command, row.cli.positional, row.cli.options, row.cli.flags));
+      const options = Object.fromEntries(Object.entries(row.cli.options).map(([key, value]) =>
+        [key, value.startsWith("@fixture/") ? new URL(`../../lararium-sensorium/scripts/fixtures/${value.slice(9)}`, import.meta.url).pathname : value]));
+      const { exit, printed } = await run(argv(row.cli.command, row.cli.positional, options, row.cli.flags));
       expect(h.calls).toEqual([row.wire]);
       expect(exit).toBe(0);
       expect(printed).toMatchObject({ ok: true });
@@ -91,6 +103,65 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
 });
 
 describe("the argument law, no daemon", () => {
+  test("the row refuses family flags on record paths before dispatch", () => {
+    const door = COMMANDS.find((row) => row.name === "tiddler")!;
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", append: "x" })).map((x) => x.name)).toContain("append");
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", file: "x", fields: "{}" }, { meme: true })).map((x) => x.name)).toContain("fields");
+    expect(unknownFlags(door, argv("tiddler", ["delete", "T"], { recipe: "default", mode: "reveal" }, { meme: true })).map((x) => x.name)).toContain("mode");
+    expect(unknownFlags(door, argv("tiddler", ["get", "T"], { recipe: "default" }, { meme: true, tree: true })).map((x) => x.name)).toContain("tree");
+  });
+  test("family writes and listing use the tiddler door while an unqualified empty get refuses", async () => {
+    expect((await run(argv("tiddler", ["get"], { recipe: "default" }))).exit).toBe(2);
+    h.reply = { recipe: "default", roots: [] };
+    expect((await run(argv("tiddler", ["get"], { recipe: "default" }, { meme: true }))).exit).toBe(0);
+    expect(h.calls.at(-1)).toEqual({ verb: "meme-list", args: { recipe: "default" } });
+    h.reply = { uri: "lar:///t/x", decision: "removed", tombstoned: [] };
+    expect((await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { meme: true }))).exit).toBe(0);
+    expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default" } });
+  });
+  test("family delete carries --base as the verb's base, so a stale delete answers conflict", async () => {
+    h.reply = { uri: "lar:///t/x", decision: "conflict", tombstoned: [], canonicalHash: "sha256:2" };
+    const r = await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default", base: "sha256:1" }, { meme: true }));
+    expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default", base: "sha256:1" } });
+    expect(r.exit).toBe(4);
+  });
+  test("family put keeps the whole input and slot patch keeps its base and replacement bytes", async () => {
+    h.reply = { decision: "ingest", uri: "lar:///t/x", landed: [], tombstoned: [], warnings: [] };
+    const dir = mkdtempSync(join(tmpdir(), "family-door-"));
+    try {
+      const file = join(dir, "body.mem");
+      writeFileSync(file, "alpha\n\n", "utf8");
+      const whole = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file }, { meme: true }));
+      expect(whole.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "meme-put", args: { uri: "lar:///t/x", recipe: "default", text: "alpha\n\n" } });
+      const patch = await run(argv("tiddler", ["put", "lar:///t/x"], { bag: "b", slot: "#/a", file, base: "sha256:old" }, { meme: true }));
+      expect(patch.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", bag: "b", slot: "#/a", replace: "alpha\n\n", base: "sha256:old" } });
+      const wholeText = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "inline\n" }, { meme: true }));
+      expect(wholeText.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "meme-put", args: { uri: "lar:///t/x", recipe: "default", text: "inline\n" } });
+      const twoSources = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x", file }, { meme: true }));
+      expect(twoSources.exit).toBe(2);
+      const inline = await run(argv("tiddler", ["put", "lar:///t/x"], { bag: "b", slot: "#/a", text: "no newline", base: "sha256:old" }, { meme: true }));
+      expect(inline.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", bag: "b", slot: "#/a", replace: "no newline", base: "sha256:old" } });
+      const ambiguous = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file, slot: "#/a", append: file, base: "sha256:old" }, { meme: true }));
+      expect(ambiguous.exit).toBe(2);
+      const both = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file, slot: "#/a", text: "x", base: "sha256:old" }, { meme: true }));
+      expect(both.exit).toBe(2);
+      expect(h.calls).toHaveLength(4);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+  test("wiki act narrows its flags before dispatch", () => {
+    const row = COMMANDS.find((c) => c.name === "wiki")!;
+    for (const flag of ["text", "target", "dry-run", "list"]) {
+      const args = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", [flag]: "stray" });
+      expect(unknownFlags(row, args).map((x) => x.name)).toEqual([flag]);
+    }
+    const withFace = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", face: "1" });
+    expect(unknownFlags(row, withFace)).toEqual([]);
+    expect(h.calls).toEqual([]);
+  });
   test("a tiddler verb names its container and its title before anything rides the wire", async () => {
     expect(() => tiddlerPlan("get", argv("tiddler", ["get", "T"]))).toThrow(/no-container/);
     expect(() => tiddlerPlan("get", argv("tiddler", ["get"], { recipe: "default" }))).toThrow(/title is required/);
@@ -136,12 +207,12 @@ describe("a bag names one store and no wiki", () => {
     for (const [cmd, positional] of [["wiki", ["filter", "[tag[x]]"]], ["wiki", ["render", "T"]], ["wiki", ["status"]]] as const) {
       const r = await run(argv(cmd, [...positional], { bag: "lares" }));
       expect(r.exit).toBe(2);
-      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*--meme.*meme list --bag.*--recipe <slug>/s) } });
+      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*--meme.*tiddler get --meme --bag.*--recipe <slug>/s) } });
     }
     for (const sub of ["put", "delete"]) {
       const r = await run(argv("tiddler", [sub, "T"], { bag: "lares", text: "x" }));
       expect(r.exit).toBe(2);
-      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/meme put --bag.*meme delete --bag/s) } });
+      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/tiddler put --meme --bag.*tiddler delete --meme --bag/s) } });
     }
     expect(h.calls).toEqual([]);
     expect(tiddlerPlan("get", argv("tiddler", ["get", "T"], { bag: "lares" })).args).toEqual({ bag: "lares", title: "T" });
@@ -265,7 +336,7 @@ describe("tiddler get --meme — one door reads on a gradient", () => {
     const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
     try { await cmdTiddler({ command: "tiddler", positional: ["get", "Note"], options: { recipe: "default" }, flags: { json: false } } as unknown as ParsedArgs); }
     finally { spy.mockRestore(); e.mockRestore(); }
-    expect(out.join("")).toBe("title: Note\n\nwords");
+    expect(out.join("")).toBe("title: Note\n\nwords\n");
     expect(err).toEqual(["<<~ has name=`Note` params=`recipe/default position/plain bytes/5 base/sha256-aa`>>", "base: sha256-aa"]);
   });
 });
@@ -407,5 +478,17 @@ describe("tiddler get --meme answers the carrier through a pipe (the carrier-fir
     expect(r.code).toBe(3);
     expect(r.out).toBe("");
     expect(r.err.join(" ")).toMatch(/no tiddler at lar:\/\/\/t\/x/);
+  });
+});
+
+describe("tiddler put no longer reads --replace: the word stays free for the exact-once text swap", () => {
+  test("the door refuses --replace on every put path, family or record, before dispatch", async () => {
+    const parseArgs = (await import("../src/parse-args.js")).parseArgs;
+    const row = COMMANDS.find((c) => c.name === "tiddler")!;
+    for (const argvIn of [
+      ["tiddler", "put", "lar:///t/x", "--meme", "--slot", "#/a", "--replace", "f", "--base", "h", "--recipe", "default"],
+      ["tiddler", "put", "T", "--replace", "f", "--recipe", "default"],
+    ]) expect(unknownFlags(row, parseArgs(argvIn)).map((f) => f.name), argvIn.join(" ")).toContain("replace");
+    expect(unknownFlags(row, parseArgs(["tiddler", "put", "lar:///t/x", "--meme", "--slot", "#/a", "--text", "x", "--base", "h", "--recipe", "default"]))).toEqual([]);
   });
 });

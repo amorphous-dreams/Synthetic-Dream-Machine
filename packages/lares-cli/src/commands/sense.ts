@@ -113,7 +113,7 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   roster:      cmdSenseRoster,
   reconcile:   cmdSenseReconcile,
   build:       cmdSenseBuild,
-  promote:     cmdSensePromote,
+  harden:      cmdSensePromote,
   retire:      cmdSenseRetire,
   "un-retire": cmdSenseUnRetire,
   purge:       cmdSensePurge,
@@ -126,9 +126,16 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
  * the handler refuses as a second leg), `roster` none. A leading sensorium name shifts the verb one word right. Every
  * other path, and an analyze line whose lens names nothing (its handler refuses that), reads the whole row (null).
  */
+export function retiredSensePromote(args: ParsedArgs): boolean {
+  const [first, second] = args.positional;
+  return first === "promote" || (second === "promote" && first !== undefined && LIFECYCLE[first] === undefined && !VERBS.includes(first as Verb));
+}
+
 export function sensePathAccepts(args: ParsedArgs): readonly string[] | null {
   const [first, second] = args.positional;
   const verb = first !== undefined && (LIFECYCLE[first] !== undefined || VERBS.includes(first as Verb)) ? first : second;
+  if (retiredSensePromote(args)) return null;
+  if (verb === "harden") return ["approve", "store-swap"];
   if (verb === "analyze") {
     const lens = resolveLens(args.options["lens"] ?? "");
     return lens === undefined ? null : ["lens", "sensorium-root", ...SENSE_LENSES[lens]!.reads];

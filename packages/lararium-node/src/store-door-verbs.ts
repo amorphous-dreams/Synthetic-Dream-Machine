@@ -92,7 +92,7 @@ import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-rou
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
-import type { VerbReactor } from "@lararium/tw5";
+import { hasLine, pagePlaneRows, param, type VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
@@ -174,6 +174,12 @@ export interface StoreDoorDeps {
    * daemon working document the composition holds. Absent on a direct act, whose answers carry no `worn`.
    */
   readonly mountFace?: () => number | null;
+  /**
+   * The relation this composition PROVED a lit face under, by handle index (the worn face's and every lit sibling's), else null.
+   * A face's stage read names it beside the stage, so a lit face the stage cannot read (a non-worn face whose fold will not load)
+   * still names the relation its root carries, and its stage reads `unread` with the cause. Absent on a direct act.
+   */
+  readonly litRelation?: (face: number) => string | null;
   /**
    * Raise the reboot-pending alert in every live wiki after a floor accept (`@lararium/mesh` `raiseFloorAlert`); answers the
    * wikis it reached. Absent on a direct act, which holds no live wiki: the accepted floor mounts at the next boot.
@@ -445,12 +451,35 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "kahua-withdraw": (args) => answer("kahua-withdraw", () => kahua("withdraw", args)),
     "kahua-carry": (args) => answer("kahua-carry", () => kahua("carry", args)),
     "kahua-read": (args) => answer("kahua-read", async () => {
-      const read = await kahua(args["action"] === "get" ? "get" : args["action"] === "staged" ? "staged" : "list", args);
+      const action = args["action"] === "get" ? "get" : args["action"] === "staged" ? "staged" : "list";
+      const face = int(args["face"]);
+      // A LIT FACE NAMES ITS RELATION: the composition proved it lit under that relation, so a list the stage cannot answer (a
+      // non-worn face whose fold will not load here) still names it, and marks the stage `unread` with the cause; a reader
+      // that maps faces to roots (the keep's bundle) claims the root and leaves the stage behind by name, never the root.
+      const proved = action === "list" && face !== undefined ? deps.litRelation?.(face) ?? null : null;
+      let read: Record<string, unknown>;
+      try {
+        read = await kahua(action, args);
+        if (proved !== null && read["relation"] == null) read = { ...read, relation: proved };
+      } catch (e) {
+        if (proved === null || !REFUSALS.some((R) => e instanceof R)) throw e;
+        read = { items: [], relation: proved, stage: "unread", unread: (e as Error).message };
+      }
       // THE DAEMON MOUNT, named as such: the read answers the face it names, and beside it the one face the daemon island
       // mounts (`mount`) and whether this face stands as it (`mounted`); the daemon's working layer holds the mount's document.
-      const face = int(args["face"]);
       const mount = deps.mountFace?.() ?? null;
-      return deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+      const sight = deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+      if (args["action"] === "staged") return sight;
+      if (args["action"] === "get") {
+        const title = String(args["title"]);
+        return { has: hasLine(title, [param("source", "kahua-stage"), param("grain", "item"), param("verified", true)]), ...sight,
+          source: "kahua-stage", grain: "item",
+          ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} --history` } : {}) };
+      }
+      const items = Array.isArray(read["items"]) ? read["items"] : [];
+      const page = pagePlaneRows(items, str(args["after"]), int(args["limit"]));
+      return { has: hasLine("kahua", [param("source", "kahua-stage"), param("grain", "list"), param("count", page.count)]), ...sight,
+        items: page.rows, source: "kahua-stage", grain: "list", count: page.count, next: page.next };
     }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),

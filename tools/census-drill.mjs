@@ -5,7 +5,7 @@
 // and neither the exporting house nor the new house's own founding does).
 //
 // WHERE IT READS FROM: THE HOUSE'S OWN READ DOORS. Every meme, index row, plain record and kahua head comes back through the
-// `lares` CLI (`persona list`, `kahua list`, `wiki list`, `meme list`, `wiki filter`, and `tiddler get` for a record too large
+// `lares` CLI (`persona list`, `kahua get`, `wiki list`, `meme list`, `wiki filter`, and `tiddler get` for a record too large
 // for one filter page), the doors a person reads
 // with. So it reads the store through the gate every face reads through, and never parses a store format (the house
 // promises its doors, never its layout). Two classes stand behind no read door, and those it reads from the house's own files, through the house's
@@ -254,7 +254,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
   const relations = {}, kahuaCids = {};
   let mounted = null;
   for (const p of personas) {
-    const r = lares(["kahua", "list", "--face", String(p.handleIndex)]);
+    const r = lares(["kahua", "get", "--face", String(p.handleIndex)]);
     let answer = null;
     try { answer = JSON.parse(r.stdout.trim().split("\n").pop() ?? ""); } catch { /* the face stands shut */ }
     const face = { petname: p.petname, handleIndex: p.handleIndex, mounted: answer?.mounted === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
@@ -274,7 +274,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
       // A wiki whose listing refuses reads as a row of its own (`unread`), never as an empty listing: the door's code
       // compares across the houses, and the receipt names every wiki that stood unread on either side.
       let listing;
-      try { listing = read(lares, ["meme", "list", "--recipe", recipe, "--json"]); }
+      try { listing = read(lares, ["tiddler", "get", "--meme", "--recipe", recipe, "--json"]); }
       catch (e) {
         if (!(e instanceof DoorRefused) || recipe === "default") throw e;
         classes.unread[recipe] = /\[([a-z-]+)\]|\b([a-z]+(?:-[a-z]+)+):/.exec(e.message)?.slice(1).find(Boolean) ?? "refused";

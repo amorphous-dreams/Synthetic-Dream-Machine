@@ -624,7 +624,7 @@ export async function readCanonOffers(ports: CanonOfferPorts, args: { readonly b
 
 function standingOf(ports: CanonOfferPorts, cid: string): CanonOfferStanding {
   const s = foldCanonOffers(ports.board.doc(), ports.nexus).offers.find((o) => o.offer.cid === cid.trim().toLowerCase());
-  if (!s) throw new CanonOfferRefused("offer-unknown", `no offer under ${cid.slice(0, 16)}… counts on this Nexus's offer table as this door reads it now (a replica of the table that trails its writer reads the same; \`lares meme offer list\` names what counts)`);
+  if (!s) throw new CanonOfferRefused("offer-unknown", `no offer under ${cid.slice(0, 16)}… counts on this Nexus's offer table as this door reads it now (a replica of the table that trails its writer reads the same; \`lares meme offer show\` names what counts)`);
   return s;
 }
 

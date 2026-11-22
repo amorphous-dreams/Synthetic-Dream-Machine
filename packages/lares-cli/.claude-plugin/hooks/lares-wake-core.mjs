@@ -80,28 +80,27 @@ export const WAKE_BUDGET_MS = 12_000;
  * stands.
  */
 export const STATE_PREFIX = "lar:///ha.ka.ba/kahua/memory/state/";
-export const STATE_FILTER = `[prefix[${STATE_PREFIX}]!regexp[#]]`;
+export const STATE_FILTER = "[lares.stage[state]!regexp[#]]";
 export const STATE_HANDOFF = `${STATE_PREFIX}handoff`;
 /**
  * The tag of the one cold-boot view (first-three-wave-map#/the-handoff-walk; road `L43`). The index lists the rest: the
  * state rows lead in their own block, so the view leaves their prefix out.
  */
 export const INDEX_TAG = "stage/index";
-export const INDEX_FILTER = `[tag[${INDEX_TAG}]!prefix[${STATE_PREFIX}]]`;
+export const INDEX_FILTER = `[tag[${INDEX_TAG}]] -[lares.stage[state]]`;
 /** The rows in play stay short: a row ceiling, a byte cap on the block, and one on each row's line. */
 export const STATE_ROWS = 8;
 export const STATE_BYTES = 2048;
 export const STATE_LINE_BYTES = 320;
 /**
  * The law index (lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers): the canon pins first, then the canon law they leave
- * out. The same strings `@lararium/tw5` exports, welded by a test.
+ * out, read as calls to the canon functions (lar:///ha.ka.ba/lares/api/filters). The same strings `@lararium/tw5` exports,
+ * welded by a test. No floor copy of the long forms stands here: where the vessel stands down the wake runs no filter, it
+ * only names the call in its stand-down line, and the vessel's canon answers the call once it stands.
  */
 export const LAW_PINS_TITLE = "$:/config/lares/law/pins";
-const LAW_STEPS = "regexp[^lar:///ha\\.ka\\.ba/(\\w|-)+/api/]!regexp[#]";
-const LAW_FILTER = `[prefix[lar:///ha.ka.ba/]${LAW_STEPS}sort[title]]`;
-export const LAW_CANON_GUARD = `:filter[${LAW_STEPS}] :filter[get[$origin-bag]regexp[^lar:///ha\\.ka\\.ba/bags/(oracle|lares|lararium)$]] :filter[regexp[^lar:///\\S+$]]`;
-export const LAW_PINS_FILTER = `[subfilter{${LAW_PINS_TITLE}}] ${LAW_CANON_GUARD}`;
-export const LAW_INDEX_FILTER = `[subfilter{${LAW_PINS_TITLE}}] =${LAW_FILTER} +[unique[]] ${LAW_CANON_GUARD}`;
+export const LAW_PINS_FILTER = "[lares.law.pins[]]";
+export const LAW_INDEX_FILTER = "[lares.law[]]";
 /** The law block: at most this many pins (the rest counted), then this many law rows; byte caps on the block, a line, a title. */
 export const LAW_PIN_ROWS = 16;
 export const LAW_ROWS = 8;
@@ -551,7 +550,7 @@ export function halvesLines(result) {
   const answer = parseAnswer(result?.stdout);
   if (answer === null) return `Lares tessera conferre unread: ${readFault(result, "read") ?? "the answer did not parse"}`;
   if (refusesLocked(answer)) return null;
-  if (answer.ok === false) return `Lares tessera conferre unread: ${answer.error?.code ?? "refused"}`;
+  if (answer.ok === false) return `Lares tessera conferre unread: ${answer.error?.code ?? "refused"}${answer.error?.message ? `: ${answer.error.message}` : ""}`;
   const records = answer.data?.receipts;
   const red = unmatchedHalves(records);
   const par = new Set((Array.isArray(records) ? records : []).filter((r) => r?.act === "rite-begun").map((r) => String(r.tessera))).size - red.filter((h) => h.half === "begun").length;

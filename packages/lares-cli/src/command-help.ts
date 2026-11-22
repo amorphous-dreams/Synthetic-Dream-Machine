@@ -135,10 +135,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     next: ["where the host holds the engine, a herm stands as the container's own service: docker compose -f docker-compose.surface.yml --profile herm up -d herm"],
   },
-  promote: {
-    usage: "usage: lares promote list|prepare|commit|drop|orphan [digest] [--wiki wiki] [--face N]",
+  trust: {
+    usage: "usage: lares trust list|prepare|commit|drop|orphan [digest] [--wiki wiki] [--face N]",
     synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
-    examples: ["lares promote list --wiki garden", "lares promote prepare <digest> --why reason", "lares promote commit <digest>", "lares promote orphan <digest> --keep"],
+    examples: ["lares trust list --wiki garden", "lares trust prepare <digest> --why reason", "lares trust commit <digest>", "lares trust orphan <digest> --keep"],
     flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
   },
   lei: {
@@ -203,7 +203,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite; (receipts) kukulu reads every lent face's unlanded begin", "--head <commit>   (begin, offer, land) the head",
       "--staging <path>   (begin, a keep) the bundle the keep staged inside its workspace; the vessel derives the id from it",
       "--workspace <name>   (keep, keep-cut) the bound workspace the bundle rests in", "--into <path>   (keep, keep-cut) the place inside it (house where absent)",
-      "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled",
+      "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled; a face whose live stage will not read needs no flag (its files travel, its standing heads stay behind, named)",
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
       "--image <digest>   (offer, begin, land) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
@@ -221,7 +221,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--face N   face index", "--json   structured output"],
   },
   kahua: {
-    usage: "usage: lares kahua mint|propose|stage|lift|withdraw|carry|list|get [title|cid...] [--face N]",
+    usage: "usage: lares kahua mint|propose|stage|lift|withdraw|carry|get [title|cid...] [--face N]",
     synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. The face's founding act pins the stage, by whichever device founds the face; `mint` adopts that pin and registers it, and a face whose log names none refuses `kahua-mint-outside-founding`. Memory climbs in two crossings: `stage` writes a row into the face's local canon bags/daemon-<F> (local, unsigned; any seat may), and a lift carries one staged row to every device the face wears. A lift prints the staged row's preview (title, row digest, fields, body) and lifts only on that row digest typed back at a terminal, or `--digest <hex>` naming the row digest the preview printed; a bare --yes lifts nothing. Two digests share one word: the row digest (what `stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the body digest, the body bytes alone; a lift with `--proposal` compares the proposal's body digest with the staged body. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone. The door reads the row back and refuses `kahua-lift-unstaged` (no such row) or `kahua-lift-digest-moved` (the row moved since the preview); a lift the head already carries lands nothing. An AI seat proposes and stages; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
     examples: [
       "lares kahua mint --face 1",
@@ -233,7 +233,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares kahua carry <cid> <cid> --face 1",
       "lares kahua carry --all --face 1",
       "lares kahua get T --face 1 --history",
-      "lares kahua list --face 1   # the stage's LIFTED items alone; a staged row rests in bags/daemon-<F> and lists here once its lift lands",
+      "lares kahua get --face 1   # the stage's LIFTED items alone; a staged row rests in bags/daemon-<F> and lists here once its lift lands",
     ],
     flags: ["--face N   face index", "--text <body> | --file <path>   (stage) the row's body", "--fields <json>   (stage) the row's fields", "--digest <hex>   (lift) the staged row's row digest, as its preview printed it; it stands in for typing the digest back, and the passphrase prompt still needs a terminal", "--taint a,b | none   inputs from outside the face", "--sources <json>   further daemon sources the item distils (the staged row always rides)", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
   },
@@ -250,7 +250,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--face N   face index", "--to <atom> | --prefer <atoms> | --class <capability> | --every   audience", "--args <json>   issue arguments", "--nonce <text>   invocation nonce", "--void-at <act-cid> | --through <act-cid>   causal bounds", "--agent <key> --prefix <verb> --policy <json> --as-of <cite> | --until <cite>   delegation", "--executor <atom> [--deny]   answer", "--detail <digest>   ask: the act digest a co-sign names", "--json   structured show"],
   },
   nexus: {
-    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal | release>",
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | approve | cabal | release>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
       "  seal <seat | rotate | show | export | import | grow | cold | cofound | roll | anchor>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon); anchor = carry the roll's anchor across them (--out | --from)",
@@ -307,16 +307,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "                                            held apart from `kahuli`, which overturns what the MESH shares",
       "  offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install",
       "  realm-bags [--realm <id>]                 the bags a realm carries, and who keeps each; a listing never enters a realm",
-      "  promote open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>",
+      "  approve open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>",
       "                                            sign the exact bytes of a promotion with the seats held here",
-      "  promote sign <approval> --confirm-statement <digest> [--nexus <aid>] --out <file>   add this vault's seats to it",
-      "  promote check <approval> <file> [--nexus <aid>]   the verdict over the file's bytes (exit 0 only on ok)",
+      "  approve sign <approval> --confirm-statement <digest> [--nexus <aid>] --out <file>   add this vault's seats to it",
+      "  approve check <approval> <file> [--nexus <aid>]   the verdict over the file's bytes (exit 0 only on ok)",
       "  cabal <admit | remove> <group> [--nexus <aid>] [--out <partial>]",
       "                                            the seat quorum admits a PersonaGroup into the Kahu cabal, or removes it",
       "  cabal cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]   add this vault's seats; lands once it counts",
       "  cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync",
       "  release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the",
-      "                                            manifest, the seats' approval of its exact bytes (`promote open --surface floor-release`) rides",
+      "                                            manifest, the seats' approval of its exact bytes (`approve open --surface floor-release`) rides",
       "                                            attached, and it lands on the Nexus's publication board once it counts",
       "  release <manifest-file> --cut [--nexus <aid>]   cut that manifest from LIVE house canon (a promoted offer rides it),",
       "                                            stage the floor in this hearth's CAS; it lands nothing (offering#/the-canon-offer);",
@@ -337,8 +337,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: ["lares nexus offering inspect sha256:<offering-cid>"],
   },
 
-  "nexus promote": {
-    usage: "usage: lares nexus promote <open | sign | check>",
+  "nexus approve": {
+    usage: "usage: lares nexus approve <open | sign | check>",
     synopsis: "the seats' approval of ONE promotion's exact bytes, carried between vaults as a file. The approval holds public material alone; each signature comes from a seat key held in this vault.",
     details: [
       "  open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval.json>",
@@ -349,7 +349,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "                       epoch) that `open` prints, read by a person before a seat signs it",
       "  --confirm-hash       optional: also name the bytes hash, the exact bytes the person approves",
     ],
-    examples: ["lares nexus promote check ./approval.json ./page.md"],
+    examples: ["lares nexus approve check ./approval.json ./page.md"],
     meme: "lar:///ha.ka.ba/lararium/mesh/kahu#/chartered-classes",
   },
 
@@ -766,7 +766,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "records beneath hidden (they stay in their bags); `--mode reveal` retracts the topmost record and the one " +
       "beneath surfaces. A delete of a title the wiki reads absent retracts a kāpae that hides nothing (its " +
       "`.kapae` shadow leaves the disk); `--mode reveal` retracts one that hides a lower record. A meme root or slot " +
-      "takes a field or tag patch here; its text moves through `lares meme put`. `--base` carries the hash last " +
+      "takes a field or tag patch here; its text moves through `lares tiddler put --meme`. `--base` carries the hash last " +
       "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
       "door: `lares wiki filter | render | status`.",
     examples: [
@@ -786,6 +786,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wiki filter '[[Room 4]backlinks[]]' --recipe default               # the link graph rides filters",
       "lares wiki render Handover --recipe default --form html                  # transclusions resolved by the engine",
       "lares wiki status --recipe default                                       # which layer takes a write for this face",
+      "lares wiki act sidebar-layout --recipe default --expected fixed-fluid --resulting fluid-fixed",
       "lares wiki filter '[tag[road]sort[title]]' --recipe kahu                 # a shared wiki, in its own engine",
       "lares tiddler put \"Road note\" --recipe kahu --create --text \"first words\"   # lands in that wiki's working layer",
       "lares tiddler get \"Sibling note\" --recipe default --target h1          # read a lit sibling's daemon wiki, still wearing your own face",
@@ -793,19 +794,21 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
-      "--bag <slug>         (get) read that one bag's record, with no wiki and no engine; put and delete refuse a bag (the meme door takes it: `lares meme put --bag <slug>`), and so do `lares wiki filter | render | status`",
+      "--bag <slug>         (get) read that one bag's record, with no wiki and no engine; put and delete refuse a bag (a family write takes it: `lares tiddler put --meme --bag <slug>`), and so do `lares wiki filter | render | status`",
       "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
       "--target <h1|name>   (get, and `wiki filter | render | status`; on put or delete it refuses) READ another lit face's daemon wiki while keeping the face worn: its canon and working layer, never its personal or draft layer (either bag refuses cross-face-private); a shut face refuses face-not-open; a write naming another face refuses cross-face-write-refused",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
-      "--meme               (get) the meme lens: the root and its slots as one sealed carrier (a record that holds none answers itself)",
+      "--meme               get: carrier or title-less family listing; put: family text or slot patch; delete: family removal",
+      "--tree               (title-less get --meme) nest slots under each listed root",
+      "--append <path>     (put --meme --slot) append to a slot against --base; `-` reads stdin",
       "--skinny             (get) every field, the text left home (the card)",
       "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
       "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",
       "--unset <a,b>        (put) fields to remove",
       "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]",
       "--tag-remove <list>  (put) tags to remove",
-      "--text <words>       (put) the new text   ·   --file <path>  the new text from a file (`-` reads stdin)",
+      "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <path>  the new text from a file (`-` reads stdin)",
       "--base <hash>        (put) the hash last read; stale → conflict, nothing lands",
       "--create             (put) land only where no tiddler stands; an existing one answers `exists`",
       "--if-match <hash>    (delete) the hash last read; stale → conflict, nothing moves",
@@ -818,12 +821,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   meme: {
-    usage: "usage: lares meme <put | patch | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
+    usage: "usage: lares meme <normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
-      "reach; `put` · `patch` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
-      "the daemon verb. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
+      "reach; `project` to any other target, or from a `lar:` uri, rides the daemon verb. A family lands, patches, lists and leaves " +
+      "through `lares tiddler put | get | delete --meme`. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
       "its has-stack past it; `--all` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
@@ -832,12 +835,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
     examples: [
       "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme   # READ a meme: the carrier, base on stderr (the one door)",
-      "lares meme patch lar:///ha.ka.ba/... --recipe lares --slot '#/x' --append note.txt --base <hash>  # one slot's body through the put's gate, resealed",
-      "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
-      "lares meme put lar:///ha.ka.ba/... --bag lar:///ha.ka.ba/bags/daemon-<relation> --face 1 --file note.mem   # a lit face writes its own lane, sealed by its own chain",
-      "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
-      "lares meme list --bag lares                                            # every root that one bag holds",
-      "lares meme delete lar:///ha.ka.ba/... --recipe lares --if-match <hash> # a stale base moves nothing",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
@@ -845,15 +842,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme promote bags/…/docs/pono/x.mem --face 0     # the selected face signs the canon crossing",
       "lares meme promote x.mem --dest-bag lar:///ha.ka.ba/bags/crossroads --approval a.json  # publish for the Nexus: the seats approved these bytes",
       "lares meme offer lar:///ha.ka.ba/... --bag lares     # offer a working record toward canon; canon stays unmoved",
-      "lares meme offer list --bag lares · offer show <cid> · offer promote <cid> [--over-fresher]  # the steward reviews and lands it",
+      "lares meme offer show [--bag lares] · offer show <cid> · offer promote <cid> [--over-fresher]  # the steward reviews and lands it",
     ],
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
       "--base <hash>      (put, patch) the canonical hash last read; required on patch; stale → conflict, nothing lands",
       "--slot <#/name>    (patch) the slot whose body moves",
-      "--append <file>    (patch) a paragraph at the end of the slot's body",
-      "--replace <file>   (patch) the slot's whole body",
+      "--append <file>    (`tiddler put --meme --slot`) a paragraph at the end of the slot's body; a slot's whole body rides `--text` or `--file`",
       "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
       "--file <path>      (put) the meme text (stdin when absent)",
       "--target <h1|name> (get, list) READ another lit face's daemon wiki (`--recipe default`, or one of its daemon bags) while keeping the face worn; its personal and draft layers never answer (cross-face-private), a shut face refuses face-not-open, and a write naming another face refuses at the CLI",
@@ -863,7 +859,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
       `--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into the ${PLANE_LABELS.crossroads} refuses without one`,
       "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
-      "--all              (offer list) retired offers too; open ones alone otherwise",
+      "--all              (offer show) retired offers too; open ones alone otherwise",
       "--over-fresher     (offer promote) the steward's explicit choice to land an offer canon moved under (\"canon is fresher\")",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",

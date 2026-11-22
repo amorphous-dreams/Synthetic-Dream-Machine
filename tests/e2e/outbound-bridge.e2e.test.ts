@@ -73,7 +73,7 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
   });
 
   test("CONTROL: explicit `--recipe default` lands in the daemon wiki and reads it back", async () => {
-    const put = await lar.cli(["meme", "put", uriOf(PATH_A), "--recipe", "default", "--file", join(scratch, "anchor.mem"), "--json"]);
+    const put = await lar.cli(["tiddler", "put", "--meme", uriOf(PATH_A), "--recipe", "default", "--file", join(scratch, "anchor.mem"), "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     const got = await lar.cli(["tiddler", "get", uriOf(PATH_A), "--recipe", "default", "--meme", "--all", "--json"]);
     expect(got.json?.["ok"], said(got)).toBe(true);

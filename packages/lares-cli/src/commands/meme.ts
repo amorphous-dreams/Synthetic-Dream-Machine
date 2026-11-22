@@ -2,7 +2,7 @@
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
  *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
- *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> | --replace <file>) --base <hash>
+ *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> | --replace <file>) --base <hash>   (the public door: `tiddler put --meme --slot … --append <file> | --text|--file`)
  *                                                 — one slot's body through the put's own gate, resealed
  *   list (--recipe <slug> | --bag <slug>) [--tree]
  *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
@@ -15,7 +15,7 @@
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
  *   promote <docs/…/x.mem> [--face N] [--dest-bag <lar:uri>] [--corpus <glob>]
  *   offer <lar:uri ...> --bag <slug>              — offer working records toward a house-canon bag (offering#/the-canon-offer)
- *   offer list [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
+ *   offer show [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
  *   offer show <cid>                              — one offer's field diff against canon now
  *   offer promote <cid> [--over-fresher]          — the Kahu steward lands it in canon and retires it
  *
@@ -90,7 +90,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { stdin, stdout } from "node:process";
+import { stdout } from "node:process";
 import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
@@ -101,9 +101,7 @@ import { newChangeId } from "@lararium/mesh";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
 import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
-import { runVerb, runVerbAsFace, verbFailure } from "../verb-call.js";
-import { faceOption, FaceOptionMalformed } from "../face-option.js";
-import { targetOption, TargetOptionMalformed, targetOnWriteRefusal } from "../target-option.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
@@ -115,15 +113,7 @@ import {
 import { promoteCarrier, type PromotionSeat, type PromotionMove } from "./meme-promote.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-class UsageError extends Error {}
-
-export interface MemePlan {
-  readonly verb: "meme-put" | "meme-list" | "meme-delete";
-  /** The verb args as the daemon receives them — `text` joins on put once the body is read. */
-  readonly args: Record<string, string>;
-  /** The face `--face N` names: the verb acts as that face, on a session of it. Absent: the worn face (the one-shot). */
-  readonly face?: number;
-}
+import { UsageError } from "./meme-shared.js";
 
 /** The targets `project --to` renders. `md` over a file seats local; every other pairing rides the daemon. */
 /** `mem` left the list: the composed carrier reads through the one door, `lares tiddler get <uri> --recipe <slug> --meme --all`. */
@@ -141,80 +131,10 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "patch", "list", "delete", "normalize", "check", "sitting", "project", "promote", "offer"] as const;
+const SUBS = ["normalize", "check", "sitting", "project", "promote", "offer"] as const;
 type Sub = typeof SUBS[number];
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
-
-/**
- * EACH HAT REACHED BY NAME (worn = the default reach · lit = reachable by name · shut = silent): `--face N` names the face a
- * store verb acts as, and the verb rides a session of that face (`runVerbAsFace`), sealed by that face's own chain; with no
- * `--face` the one-shot acts for the worn face. A malformed `--face` refuses `face-malformed` before any door opens.
- */
-function faceNamed(args: ParsedArgs): { face?: number } {
-  try { return faceOption(args); }
-  catch (error) { if (error instanceof FaceOptionMalformed) throw new UsageError(error.message); throw error; }
-}
-
-/** A read's `--target` (the lit face it visits, keeping the face worn), or nothing; a malformed one refuses as usage. */
-function targetNamed(args: ParsedArgs): { target?: string } {
-  try { return targetOption(args); }
-  catch (error) { if (error instanceof TargetOptionMalformed) throw new UsageError(error.message); throw error; }
-}
-
-/** Dispatch a plan: the worn face's one-shot, or a session of the face `--face` named. */
-function dispatch(plan: { readonly verb: string; readonly face?: number }, verbArgs: Record<string, unknown>, did: string): ReturnType<typeof runVerb> {
-  return plan.face === undefined ? runVerb(plan.verb, verbArgs, did) : runVerbAsFace(plan.verb, verbArgs, plan.face);
-}
-
-/** A refusal's code: the shut face's by name, a cap's, else the verb's. */
-function refusalCodeOf(error: string | null | undefined): string {
-  if (/^face-not-open:/.test(error ?? "")) return "face-not-open";
-  return /cap-denied/.test(error ?? "") ? "cap-denied" : "verb-error";
-}
-
-/** Where a write landed, as its answer names it: the bag, and the face where `--face` named one. */
-function landedFace(receipt: Record<string, unknown>): string {
-  return typeof receipt["face"] === "number" ? ` (face h${receipt["face"]})` : "";
-}
-
-/** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
-export function memePlan(sub: "put" | "delete", args: ParsedArgs): MemePlan {
-  const face = faceNamed(args);
-  const uri = args.positional[1];
-  if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
-  // A LIT FACE RECEIVES VISITS through the one read door (`lares tiddler get --target`); a write naming one refuses here by name.
-  const target = targetNamed(args);
-  if (target.target !== undefined) throw new UsageError(targetOnWriteRefusal(`meme ${sub}`));
-  const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, "write") };
-  if (sub === "put") {
-    const base = typeof args.options["base"] === "string" ? args.options["base"].trim() : "";
-    if (base) out["base"] = base;
-    return { verb: "meme-put", args: out, ...face };
-  }
-  // The route spells the base as `If-Match`; the verb reads it as `base` — one hash, two spellings.
-  const base = typeof args.options["if-match"] === "string" ? args.options["if-match"].trim() : "";
-  if (base) out["base"] = base;
-  return { verb: "meme-delete", args: out, ...face };
-}
-
-/** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
-export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean>; readonly face?: number } {
-  const face = faceNamed(args);
-  const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list"), ...targetNamed(args) };
-  if (args.flags["tree"]) out["tree"] = true;
-  return { verb: "meme-list", args: out, ...face };
-}
-
-/** The meme body: `--file`, else the whole of stdin. */
-async function readBody(args: ParsedArgs): Promise<string> {
-  const file = args.options["file"];
-  if (typeof file === "string" && file) return readFileSync(file, "utf8");
-  if (stdin.isTTY) throw new UsageError("no meme text: pass --file <path> or pipe the meme on stdin");
-  const chunks: Buffer[] = [];
-  for await (const chunk of stdin) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-  return Buffer.concat(chunks).toString("utf8");
-}
 
 /**
  * The seat law for `project` — decided from the argument shape alone, with no daemon in reach.
@@ -251,10 +171,6 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
   }
   try {
     switch (sub as Sub) {
-      case "put":       return await memePut(args);
-      case "patch":     return await memePatch(args);
-      case "list":      return await memeList(args);
-      case "delete":    return await memeDelete(args);
       case "normalize": return normalizeFiles(args, true);
       case "check":     return checkFiles(args);
       case "sitting":   return surveySitting(namedFiles(args, "sitting"));
@@ -299,193 +215,16 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
   }
 }
 
-async function memePut(args: ParsedArgs): Promise<number> {
-  const plan = memePlan("put", args);
-  const text = await readBody(args);
-  const result = await dispatch(plan, { ...plan.args, text }, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = refusalCodeOf(outcome.error);
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme put: ${outcome.error}`) });
-    return exitFor(code);
+/** The public family spellings now enter through the tiddler door; keep the handlers for that door. */
+export async function cmdMemeSurface(args: ParsedArgs): Promise<number> {
+  const sub = args.positional[0];
+  if (sub === "put" || sub === "patch" || sub === "list" || sub === "delete") {
+    const moved = sub === "list" ? "tiddler get --meme" : `tiddler ${sub === "patch" ? "put" : sub} <uri> --meme`;
+    const message = `meme ${sub} moved to lares ${moved}`;
+    emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(message) });
+    return exitFor("usage");
   }
-  const receipt = outcome.output;
-  const decision = String(receipt["decision"] ?? "");
-  const landed = Array.isArray(receipt["landed"]) ? (receipt["landed"] as string[]) : [];
-  const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
-  const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-  const ok = decision === "ingest" || decision === "noop";
-  const code = ok ? "ok" : decision === "conflict" ? "conflict" : "verb-error";
-  emit(args, {
-    ok,
-    requestId: result.requestId,
-    data: receipt,
-    ...(ok ? {} : { error: { code, message: `${decision}: ${warnings[0] ?? receipt["reason"] ?? plan.args["uri"]}` } }),
-    human: () => {
-      console.log(`${decision}: ${plan.args["uri"]}`);
-      if (decision === "ingest") console.log(`  landed ${landed.length} · tombstoned ${tombstoned.length}`);
-      // THE ANSWER NAMES THE LAYER: a face that holds no writer's seat in the wiki's workbench lands in its own personal layer.
-      if (typeof receipt["bag"] === "string") console.log(receipt["layer"] === "personal"
-        ? `  in ${receipt["bag"]}${landedFace(receipt)} (your personal layer: this face holds no writer's seat in the wiki's workbench; \`lares meme offer\` carries a record from here)`
-        : `  in ${receipt["bag"]}${landedFace(receipt)}`);
-      if (decision === "noop" && receipt["reason"]) console.log(`  ${receipt["reason"]}`);
-      for (const w of warnings) console.log(`  ! ${w}`);
-      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
-    },
-  });
-  return exitFor(code);
-}
-
-/**
- * THE PATCH'S ARGUMENT LAW, with no daemon in reach: a uri, a container, `--slot '#/name'`, exactly one of `--append <file>` or
- * `--replace <file>`, and `--base <hash>` (a patch edits bytes the writer read, so a blind one refuses before the wire).
- */
-export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly mode: "append" | "replace"; readonly face?: number } {
-  const face = faceNamed(args);
-  if (targetNamed(args).target !== undefined) throw new UsageError(targetOnWriteRefusal("meme patch"));
-  const uri = args.positional[1];
-  if (!uri) throw new UsageError("a uri is required (e.g. `lares meme patch lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
-  const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };
-  // Each flag reads by its literal name, so the accepts row answers for it (no computed read).
-  const trimmed = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
-  const slot = trimmed(args.options["slot"]);
-  if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --recipe <slug> --tree` names the slots a meme holds)");
-  const append = trimmed(args.options["append"]);
-  const replace = trimmed(args.options["replace"]);
-  if (Boolean(append) === Boolean(replace)) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --replace <file> (the slot's whole body)");
-  const base = trimmed(args.options["base"]);
-  if (!base) throw new UsageError("--base <hash> is required: the canonical hash `lares tiddler get <uri> --recipe <slug> --meme` prints on stderr (`base: sha256:…`)");
-  out["slot"] = slot;
-  out["base"] = base;
-  return { verb: "meme-patch", args: out, file: append || replace, mode: append ? "append" : "replace", ...face };
-}
-
-async function memePatch(args: ParsedArgs): Promise<number> {
-  const plan = patchPlan(args);
-  let body: string;
-  try { body = readFileSync(plan.file, "utf8"); } catch { throw new UsageError(`cannot read --${plan.mode} ${plan.file}`); }
-  const result = await dispatch(plan, { ...plan.args, [plan.mode]: body }, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme patch: ${outcome.error}`) });
-    return exitFor(code);
-  }
-  const receipt = outcome.output;
-  const decision = String(receipt["decision"] ?? "");
-  const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-  const ok = decision === "ingest" || decision === "noop";
-  const code = ok ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
-  const where = `${plan.args["uri"]}${plan.args["slot"]}`;
-  emit(args, {
-    ok,
-    requestId: result.requestId,
-    data: receipt,
-    ...(ok ? {} : { error: { code, message: decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${warnings[0] ?? receipt["reason"] ?? where}` } }),
-    human: () => {
-      if (!ok) { console.error(`lares meme patch: ${decision === "absent" ? `no meme at ${plan.args["uri"]}` : warnings[0] ?? `${decision}: ${where}`}`); return; }
-      console.log(`${decision}: ${where}`);
-      if (typeof receipt["bag"] === "string") console.log(`  in ${receipt["bag"]}${receipt["layer"] === "personal" ? " (your personal layer)" : ""}`);
-      for (const w of warnings) console.log(`  ! ${w}`);
-      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
-    },
-  });
-  return exitFor(code);
-}
-
-/** One listed root, as the verb answers it. */
-interface ListedRoot { uri: string; canonicalHash: string; bag?: string; floor?: boolean; slots?: ListedSlot[] }
-
-/** The line a read prints on stderr where a house canon bag's floor snapshot answered it. */
-const FLOOR_READ_NOTE = "read from the floor snapshot: this face holds no read on the live house canon document (the Kahu steward's face reads it live)";
-interface ListedSlot { slot: string; uri: string; slots: ListedSlot[] }
-
-/**
- * THE LISTING ARRIVES IN PAGES. One outcome carries a bounded number of rows, so the verb answers a page
- * and names the cursor of the next (`next`); this door hands each cursor back as `after` until none
- * remains, and a person reads every root. An answer whose `roots` holds no array (an outcome that carried
- * a count where the rows belong) refuses by name: an empty listing over a full seat would state a thing
- * nobody measured. A cursor that fails to advance refuses the same way.
- */
-async function memeList(args: ParsedArgs): Promise<number> {
-  const plan = listPlan(args);
-  const did = await vesselDid();
-  const roots: ListedRoot[] = [];
-  let head: Record<string, unknown> = {};
-  let requestId = "";
-  const refuse = (code: "cap-denied" | "verb-error", message: string): number => {
-    emit(args, { ok: false, requestId, error: { code, message }, human: () => console.error(`lares meme list: ${message}`) });
-    return exitFor(code);
-  };
-  for (let after: string | null = null; ;) {
-    const result = await dispatch(plan, after === null ? plan.args : { ...plan.args, after }, did);
-    requestId = result.requestId;
-    const outcome = readVerbOutcome(result);
-    if (!outcome.ok) return refuse(/cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error", outcome.error ?? "the verb refused");
-    const page = outcome.output["roots"];
-    if (!Array.isArray(page)) {
-      const count = (page as { boundedArrayCount?: unknown } | null | undefined)?.boundedArrayCount;
-      return refuse("verb-error", typeof count === "number"
-        ? `the listing arrived as a count of ${count} roots and named none of them; this vessel answers an unpaged listing`
-        : "the listing named no roots array");
-    }
-    roots.push(...(page as ListedRoot[]));
-    if (after === null) head = outcome.output;
-    const next = outcome.output["next"];
-    if (typeof next !== "string" || next === "") break;
-    if (after !== null && next <= after) return refuse("verb-error", `the listing's cursor stood still at ${next}`);
-    after = next;
-  }
-  const slotLines = (slots: ListedSlot[] | undefined, depth: number): void => {
-    for (const s of slots ?? []) { console.log(`${"  ".repeat(depth)}${s.slot}`); slotLines(s.slots, depth + 1); }
-  };
-  // The seat as the verb named it: one bag, or a recipe with the bags its stack read and any it could not reach.
-  const seat: Record<string, unknown> = {};
-  for (const key of ["bag", "floor", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
-  const unreached = Array.isArray(head["unreached"]) ? (head["unreached"] as string[]) : [];
-  emit(args, {
-    ok: true,
-    requestId,
-    data: { ...seat, roots },
-    // One root per line — the base first so a shell reads it, the uri after; slots indent beneath.
-    human: () => {
-      for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
-      for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
-      if (head["floor"] === true || roots.some((r) => r.floor === true)) console.error(FLOOR_READ_NOTE);
-    },
-  });
-  return 0;
-}
-
-async function memeDelete(args: ParsedArgs): Promise<number> {
-  const plan = memePlan("delete", args);
-  const result = await dispatch(plan, plan.args, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = refusalCodeOf(outcome.error);
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme delete: ${outcome.error}`) });
-    return exitFor(code);
-  }
-  const receipt = outcome.output;
-  const decision = String(receipt["decision"] ?? "");
-  const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
-  const retracted = Array.isArray(receipt["retracted"]) ? (receipt["retracted"] as string[]) : [];
-  const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
-  const message = decision === "conflict" ? `conflict: the records moved past ${plan.args["base"] ?? "the base"} — read again and hand back the live hash`
-                : decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${plan.args["uri"]}`;
-  emit(args, {
-    ok: code === "ok",
-    requestId: result.requestId,
-    data: receipt,
-    ...(code === "ok" ? {} : { error: { code, message } }),
-    human: () => {
-      if (code !== "ok") { console.error(`lares meme delete: ${message}`); return; }
-      console.log(`removed: ${plan.args["uri"]}`);
-      console.log(`  tombstoned ${tombstoned.length}${retracted.length > 0 ? ` · retracted ${retracted.length}` : ""}`);
-      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
-    },
-  });
-  return exitFor(code);
+  return cmdMeme(args);
 }
 
 // ── the local laws: normalize · check ──────────────────────────────────────────────────────────
@@ -1267,7 +1006,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 /**
  * THE OFFERING DOOR (offering#/the-canon-offer), four acts over the daemon's offer verbs:
  *   offer <lar:uri ...> --bag <slug>      `offer-make`: the lit face offers records from its working layer toward a house-canon bag;
- *   offer list [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
+ *   offer show [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
  *   offer show <cid>                      `offer-show`: one offer's field diff against canon now;
  *   offer promote <cid> [--over-fresher]  `offer-promote`: the Kahu steward, on a vessel holding a charter seat, writes the offered bytes into canon and retires the offer.
  * A moved base WARNS ("canon is fresher") in every listing; only a promotion over it takes the explicit `--over-fresher`. A release
@@ -1276,14 +1015,16 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "offer-list" | "offer-show" | "offer-promote"; readonly args: Record<string, unknown> } {
   const act = args.positional[1];
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"] : undefined;
-  if (act === "list") return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}) } };
+  if (act === "list") throw new UsageError("offer list moved to `offer show [<cid>]`");
   if (act === "show" || act === "promote") {
     const cid = args.positional[2];
+    if (act === "show" && !cid) return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}), ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) } };
+    if (act === "show" && (bag !== undefined || args.flags["all"] === true)) throw new UsageError("offer show <cid> refuses list filters --bag and --all");
     if (!cid || !/^[0-9a-f]{64}$/.test(cid)) throw new UsageError(`offer ${act} names one offer CID (64 hex)`);
     return act === "show" ? { verb: "offer-show", args: { cid } } : { verb: "offer-promote", args: { cid, ...(args.flags["over-fresher"] === true ? { overFresher: true } : {}) } };
   }
   const titles = args.positional.slice(1);
-  if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of list · show <cid> · promote <cid>");
+  if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of show [<cid>] · promote <cid>");
   if (bag === undefined) throw new UsageError("offer names the house-canon bag it offers toward (--bag <slug>)");
   return { verb: "offer-make", args: { bag, titles } };
 }
@@ -1371,15 +1112,16 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true, requestId: result.requestId, data: retire !== null ? { ...out, retire } : out,
     human: () => {
+      if ((plan.verb === "offer-list" || plan.verb === "offer-show") && typeof out["has"] === "string") console.log(out["has"]);
       if (plan.verb === "offer-make") {
         console.log(`offer → ${out["landed"] ? "OFFERED" : "HELD (the same offer already stands)"} ${out["cid"]}`);
         for (const r of (out["records"] as Array<{ title: string; base: string | null }>) ?? []) console.log(`  ${r.title}  ${r.base ? `base ${short(r.base)}` : "(a new title)"}`);
-        console.log("  canon stays unmoved; the Kahu steward reviews it (lares meme offer list) and promotes it");
+        console.log("  canon stays unmoved; the Kahu steward reviews it (lares meme offer show) and promotes it");
         return;
       }
       if (plan.verb === "offer-list") {
         const offers = (out["offers"] as OfferRow[]) ?? [];
-        if (offers.length === 0) console.log("offer list: no open offer on this Nexus's table");
+        if (offers.length === 0) console.log("offer show: no open offer on this Nexus's table");
         for (const o of offers) {
           console.log(`${o.cid}  ${o.bag}  offerer ${short(o.offerer)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}${o.refusedRetires?.length ? `  (${o.refusedRetires.length} retire-unauthorised ignored)` : ""}`);
           for (const r of o.records) console.log(`  ${r.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : r.freshness}  ${r.title}`);

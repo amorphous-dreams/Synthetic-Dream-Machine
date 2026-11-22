@@ -2,144 +2,1124 @@
   "_doc": "THE TIDDLER DOOR'S VERB TABLE — one row per verb, read by BOTH skins' tests (`lares-cli/tests/tiddler-door.test.ts` and `scripts/test_tiddler_tools.py`). `cli` spells the `lares` command line (parsed), `mcp` the MCP tool's kwargs, `wire` the one `{verb, args}` both must put on the daemon's socket, and `output` a daemon answer both must hand back verbatim (the CLI as `--json` `data`, the MCP seat as the tool's result). A skin that renames an arg, drops one, or reshapes the answer reds its own half; a row missing a skin reds both (wiki-surface-scout #/a-lean, red `verb-table-parity`).",
   "rows": [
     {
+      "tool": "wiki",
+      "cli": { "command": "wiki", "positional": ["act", "sidebar-layout"], "options": { "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" }, "flags": {} },
+      "mcp": { "verb": "act", "name": "sidebar-layout", "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" },
+      "wire": { "verb": "wiki-action", "args": { "recipe": "kahu", "name": "sidebar-layout", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },
+      "output": { "has": "<<~ has name=`sidebar-layout` params=`recipe/kahu decision/put`>>", "recipe": "kahu", "name": "sidebar-layout", "action": "$:/core/ui/KeyboardShortcuts/change-sidebar-layout", "title": "$:/themes/tiddlywiki/vanilla/options/sidebarlayout", "expected": "fixed-fluid", "resulting": "fluid-fixed", "decision": "put", "receipt": "r1" }
+    },
+    {
       "tool": "wiki_filter",
-      "cli": { "command": "wiki", "positional": ["filter", "[tag[memory]sort[title]]"], "options": { "recipe": "default", "limit": "5", "fields": "priority,tags" }, "flags": {} },
-      "mcp": { "filter": "[tag[memory]sort[title]]", "recipe": "default", "limit": 5, "fields": ["priority", "tags"] },
-      "wire": { "verb": "wiki-filter", "args": { "recipe": "default", "filter": "[tag[memory]sort[title]]", "limit": 5, "fields": ["priority", "tags"] } },
-      "output": { "recipe": "default", "filter": "[tag[memory]sort[title]]", "rows": [{ "title": "Note 01", "fields": { "priority": "high", "tags": "memory" } }], "total": 12, "next": "1.0123456789abcdef", "asOf": "0123456789abcdef" }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "filter",
+          "[tag[memory]sort[title]]"
+        ],
+        "options": {
+          "recipe": "default",
+          "limit": "5",
+          "fields": "priority,tags"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "filter": "[tag[memory]sort[title]]",
+        "recipe": "default",
+        "limit": 5,
+        "fields": [
+          "priority",
+          "tags"
+        ]
+      },
+      "wire": {
+        "verb": "wiki-filter",
+        "args": {
+          "recipe": "default",
+          "filter": "[tag[memory]sort[title]]",
+          "limit": 5,
+          "fields": [
+            "priority",
+            "tags"
+          ]
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "filter": "[tag[memory]sort[title]]",
+        "rows": [
+          {
+            "title": "Note 01",
+            "fields": {
+              "priority": "high",
+              "tags": "memory"
+            }
+          }
+        ],
+        "total": 12,
+        "next": "1.0123456789abcdef",
+        "asOf": "0123456789abcdef"
+      }
     },
     {
       "tool": "tiddler_get",
-      "cli": { "command": "tiddler", "positional": ["get", "Note 02"], "options": { "recipe": "default" }, "flags": { "skinny": true } },
-      "mcp": { "title": "Note 02", "recipe": "default", "grain": "skinny" },
-      "wire": { "verb": "tiddler-get", "args": { "recipe": "default", "title": "Note 02", "grain": "skinny" } },
-      "output": { "has": "<<~ has name=`Note 02` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working memory position/plain base/skinny:sha256-aa`>>", "recipe": "default", "title": "Note 02", "lens": "record", "grain": { "asked": "skinny", "applied": "skinny", "why": "asked: the fields, the text left home" }, "next": { "grain": "fat" }, "tiddler": { "fields": { "title": "Note 02", "tags": "memory", "priority": "low" }, "hash": "skinny:sha256-aa", "textHash": "sha256-bb", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "position": "plain", "omitted": ["text"] } }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get",
+          "Note 02"
+        ],
+        "options": {
+          "recipe": "default"
+        },
+        "flags": {
+          "skinny": true
+        }
+      },
+      "mcp": {
+        "title": "Note 02",
+        "recipe": "default",
+        "grain": "skinny"
+      },
+      "wire": {
+        "verb": "tiddler-get",
+        "args": {
+          "recipe": "default",
+          "title": "Note 02",
+          "grain": "skinny"
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`Note 02` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working memory position/plain base/skinny:sha256-aa`>>",
+        "recipe": "default",
+        "title": "Note 02",
+        "lens": "record",
+        "grain": {
+          "asked": "skinny",
+          "applied": "skinny",
+          "why": "asked: the fields, the text left home"
+        },
+        "next": {
+          "grain": "fat"
+        },
+        "tiddler": {
+          "fields": {
+            "title": "Note 02",
+            "tags": "memory",
+            "priority": "low"
+          },
+          "hash": "skinny:sha256-aa",
+          "textHash": "sha256-bb",
+          "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+          "position": "plain",
+          "omitted": [
+            "text"
+          ]
+        }
+      }
     },
     {
       "tool": "tiddler_get",
-      "cli": { "command": "tiddler", "positional": ["get", "lar:///t/x"], "options": { "recipe": "default", "slot": "#/b", "fields": "text" }, "flags": {} },
-      "mcp": { "title": "lar:///t/x", "recipe": "default", "slot": "#/b", "fields": ["text"] },
-      "wire": { "verb": "tiddler-get", "args": { "recipe": "default", "title": "lar:///t/x", "slot": "#/b", "fields": ["text"] } },
-      "output": { "recipe": "default", "title": "lar:///t/x#/b", "tiddler": { "fields": { "title": "lar:///t/x#/b", "text": "! b" }, "hash": "sha256-cc", "textHash": "sha256-dd", "bag": null, "position": "slot", "family": "lar:///t/x" } }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get",
+          "lar:///t/x"
+        ],
+        "options": {
+          "recipe": "default",
+          "slot": "#/b",
+          "fields": "text"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "lar:///t/x",
+        "recipe": "default",
+        "slot": "#/b",
+        "fields": [
+          "text"
+        ]
+      },
+      "wire": {
+        "verb": "tiddler-get",
+        "args": {
+          "recipe": "default",
+          "title": "lar:///t/x",
+          "slot": "#/b",
+          "fields": [
+            "text"
+          ]
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "lar:///t/x#/b",
+        "tiddler": {
+          "fields": {
+            "title": "lar:///t/x#/b",
+            "text": "! b"
+          },
+          "hash": "sha256-cc",
+          "textHash": "sha256-dd",
+          "bag": null,
+          "position": "slot",
+          "family": "lar:///t/x"
+        }
+      }
     },
     {
       "tool": "tiddler_get",
-      "cli": { "command": "tiddler", "positional": ["get", "Canon Note"], "options": { "bag": "lares" }, "flags": {} },
-      "mcp": { "title": "Canon Note", "bag": "lares" },
-      "wire": { "verb": "tiddler-get", "args": { "bag": "lares", "title": "Canon Note" } },
-      "output": { "bag": "lar:///ha.ka.ba/bags/lares", "title": "Canon Note", "tiddler": { "fields": { "title": "Canon Note", "text": "canon words" }, "hash": "sha256-ee", "textHash": "sha256-ff", "bag": "lar:///ha.ka.ba/bags/lares", "position": "plain" } }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get",
+          "Canon Note"
+        ],
+        "options": {
+          "bag": "lares"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "Canon Note",
+        "bag": "lares"
+      },
+      "wire": {
+        "verb": "tiddler-get",
+        "args": {
+          "bag": "lares",
+          "title": "Canon Note"
+        }
+      },
+      "output": {
+        "bag": "lar:///ha.ka.ba/bags/lares",
+        "title": "Canon Note",
+        "tiddler": {
+          "fields": {
+            "title": "Canon Note",
+            "text": "canon words"
+          },
+          "hash": "sha256-ee",
+          "textHash": "sha256-ff",
+          "bag": "lar:///ha.ka.ba/bags/lares",
+          "position": "plain"
+        }
+      }
     },
     {
       "tool": "tiddler_get",
-      "cli": { "command": "tiddler", "positional": ["get", "lar:///t/x"], "options": { "recipe": "default" }, "flags": { "meme": true } },
-      "mcp": { "title": "lar:///t/x", "recipe": "default", "meme": true },
-      "wire": { "verb": "tiddler-get", "args": { "recipe": "default", "title": "lar:///t/x", "meme": true } },
-      "output": { "has": "<<~ has name=`lar:///t/x` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working type/text/memetic-wikitext+tiddlywiki position/root slots/1 bytes/20 base/sha256:9`>>", "recipe": "default", "title": "lar:///t/x", "lens": "meme", "meme": { "uri": "lar:///t/x", "text": "<<~ ahu slot=`#/b`>>\n", "canonicalHash": "sha256:9", "bytes": 20, "slots": [{ "slot": "#/b", "bytes": 20, "first": null }] }, "grain": { "asked": null, "applied": "whole", "why": "fits one page (20 of 65536 bytes): the whole carrier" }, "next": null }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get",
+          "lar:///t/x"
+        ],
+        "options": {
+          "recipe": "default"
+        },
+        "flags": {
+          "meme": true
+        }
+      },
+      "mcp": {
+        "title": "lar:///t/x",
+        "recipe": "default",
+        "meme": true
+      },
+      "wire": {
+        "verb": "tiddler-get",
+        "args": {
+          "recipe": "default",
+          "title": "lar:///t/x",
+          "meme": true
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`lar:///t/x` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working type/text/memetic-wikitext+tiddlywiki position/root slots/1 bytes/20 base/sha256:9`>>",
+        "recipe": "default",
+        "title": "lar:///t/x",
+        "lens": "meme",
+        "meme": {
+          "uri": "lar:///t/x",
+          "text": "<<~ ahu slot=`#/b`>>\n",
+          "canonicalHash": "sha256:9",
+          "bytes": 20,
+          "slots": [
+            {
+              "slot": "#/b",
+              "bytes": 20,
+              "first": null
+            }
+          ]
+        },
+        "grain": {
+          "asked": null,
+          "applied": "whole",
+          "why": "fits one page (20 of 65536 bytes): the whole carrier"
+        },
+        "next": null
+      }
     },
     {
       "tool": "tiddler_get",
-      "cli": { "command": "tiddler", "positional": ["get", "lar:///t/x"], "options": { "recipe": "default", "after": "1.0123456789abcdef" }, "flags": { "meme": true, "all": true } },
-      "mcp": { "title": "lar:///t/x", "recipe": "default", "meme": true, "grain": "whole", "after": "1.0123456789abcdef" },
-      "wire": { "verb": "tiddler-get", "args": { "recipe": "default", "title": "lar:///t/x", "meme": true, "grain": "whole", "after": "1.0123456789abcdef" } },
-      "output": { "has": "<<~ has name=`lar:///t/x` params=`recipe/default type/text/memetic-wikitext+tiddlywiki position/root slots/2 bytes/140000 base/sha256:9`>>", "recipe": "default", "title": "lar:///t/x", "lens": "meme", "meme": { "uri": "lar:///t/x", "text": "<<~ ahu slot=`#/c`>>\n", "canonicalHash": "sha256:9", "bytes": 140000, "slots": [{ "slot": "#/b", "bytes": 70000, "first": null }, { "slot": "#/c", "bytes": 70000, "first": null }], "page": { "page": 2, "pages": 2 } }, "grain": { "asked": "whole", "applied": "whole", "why": "the whole carrier, page 2 of 2, cut on slot boundaries" }, "next": null }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get",
+          "lar:///t/x"
+        ],
+        "options": {
+          "recipe": "default",
+          "after": "1.0123456789abcdef"
+        },
+        "flags": {
+          "meme": true,
+          "all": true
+        }
+      },
+      "mcp": {
+        "title": "lar:///t/x",
+        "recipe": "default",
+        "meme": true,
+        "grain": "whole",
+        "after": "1.0123456789abcdef"
+      },
+      "wire": {
+        "verb": "tiddler-get",
+        "args": {
+          "recipe": "default",
+          "title": "lar:///t/x",
+          "meme": true,
+          "grain": "whole",
+          "after": "1.0123456789abcdef"
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`lar:///t/x` params=`recipe/default type/text/memetic-wikitext+tiddlywiki position/root slots/2 bytes/140000 base/sha256:9`>>",
+        "recipe": "default",
+        "title": "lar:///t/x",
+        "lens": "meme",
+        "meme": {
+          "uri": "lar:///t/x",
+          "text": "<<~ ahu slot=`#/c`>>\n",
+          "canonicalHash": "sha256:9",
+          "bytes": 140000,
+          "slots": [
+            {
+              "slot": "#/b",
+              "bytes": 70000,
+              "first": null
+            },
+            {
+              "slot": "#/c",
+              "bytes": 70000,
+              "first": null
+            }
+          ],
+          "page": {
+            "page": 2,
+            "pages": 2
+          }
+        },
+        "grain": {
+          "asked": "whole",
+          "applied": "whole",
+          "why": "the whole carrier, page 2 of 2, cut on slot boundaries"
+        },
+        "next": null
+      }
     },
     {
       "tool": "wiki_render",
-      "cli": { "command": "wiki", "positional": ["render", "Handover"], "options": { "recipe": "default", "form": "html", "max-bytes": "4096" }, "flags": {} },
-      "mcp": { "title": "Handover", "recipe": "default", "form": "html", "max_bytes": 4096 },
-      "wire": { "verb": "wiki-render", "args": { "recipe": "default", "title": "Handover", "form": "html", "maxBytes": 4096 } },
-      "output": { "recipe": "default", "title": "Handover", "form": "html", "text": "<p>Tonight: the first note</p>", "bytes": 30, "truncated": false, "next": null }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "render",
+          "Handover"
+        ],
+        "options": {
+          "recipe": "default",
+          "form": "html",
+          "max-bytes": "4096"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "Handover",
+        "recipe": "default",
+        "form": "html",
+        "max_bytes": 4096
+      },
+      "wire": {
+        "verb": "wiki-render",
+        "args": {
+          "recipe": "default",
+          "title": "Handover",
+          "form": "html",
+          "maxBytes": 4096
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "Handover",
+        "form": "html",
+        "text": "<p>Tonight: the first note</p>",
+        "bytes": 30,
+        "truncated": false,
+        "next": null
+      }
     },
     {
       "tool": "wiki_render",
-      "cli": { "command": "wiki", "positional": ["render"], "options": { "recipe": "default", "text": "''bold'' {{Note 01}}" }, "flags": {} },
-      "mcp": { "text": "''bold'' {{Note 01}}", "recipe": "default" },
-      "wire": { "verb": "wiki-render", "args": { "recipe": "default", "text": "''bold'' {{Note 01}}" } },
-      "output": { "recipe": "default", "title": null, "form": "text", "text": "bold the first note", "bytes": 19, "truncated": false, "next": null }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "render"
+        ],
+        "options": {
+          "recipe": "default",
+          "text": "''bold'' {{Note 01}}"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "text": "''bold'' {{Note 01}}",
+        "recipe": "default"
+      },
+      "wire": {
+        "verb": "wiki-render",
+        "args": {
+          "recipe": "default",
+          "text": "''bold'' {{Note 01}}"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": null,
+        "form": "text",
+        "text": "bold the first note",
+        "bytes": 19,
+        "truncated": false,
+        "next": null
+      }
     },
     {
       "tool": "tiddler_put",
-      "cli": { "command": "tiddler", "positional": ["put", "Note 03"], "options": { "recipe": "default", "fields": "{\"status\":\"done\"}", "tag-add": "reviewed [[two words]]", "unset": "priority", "base": "sha256-aa" }, "flags": {} },
-      "mcp": { "title": "Note 03", "recipe": "default", "fields": { "status": "done" }, "tags_add": "reviewed [[two words]]", "unset": ["priority"], "base": "sha256-aa" },
-      "wire": { "verb": "tiddler-put", "args": { "recipe": "default", "title": "Note 03", "fields": { "status": "done" }, "tagsAdd": "reviewed [[two words]]", "unset": ["priority"], "base": "sha256-aa" } },
-      "output": { "recipe": "default", "title": "Note 03", "decision": "put", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "created": false, "changed": ["status", "tags", "priority"], "hash": "sha256-ee", "textHash": "sha256-bb", "position": "plain" }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "put",
+          "Note 03"
+        ],
+        "options": {
+          "recipe": "default",
+          "fields": "{\"status\":\"done\"}",
+          "tag-add": "reviewed [[two words]]",
+          "unset": "priority",
+          "base": "sha256-aa"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "Note 03",
+        "recipe": "default",
+        "fields": {
+          "status": "done"
+        },
+        "tags_add": "reviewed [[two words]]",
+        "unset": [
+          "priority"
+        ],
+        "base": "sha256-aa"
+      },
+      "wire": {
+        "verb": "tiddler-put",
+        "args": {
+          "recipe": "default",
+          "title": "Note 03",
+          "fields": {
+            "status": "done"
+          },
+          "tagsAdd": "reviewed [[two words]]",
+          "unset": [
+            "priority"
+          ],
+          "base": "sha256-aa"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "Note 03",
+        "decision": "put",
+        "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+        "created": false,
+        "changed": [
+          "status",
+          "tags",
+          "priority"
+        ],
+        "hash": "sha256-ee",
+        "textHash": "sha256-bb",
+        "position": "plain"
+      }
     },
     {
       "tool": "tiddler_delete",
-      "cli": { "command": "tiddler", "positional": ["delete", "Other"], "options": { "recipe": "default", "if-match": "sha256-ff" }, "flags": {} },
-      "mcp": { "title": "Other", "recipe": "default", "base": "sha256-ff" },
-      "wire": { "verb": "tiddler-delete", "args": { "recipe": "default", "title": "Other", "base": "sha256-ff" } },
-      "output": { "recipe": "default", "title": "Other", "decision": "removed", "mode": "plain", "tombstoned": [], "retracted": ["Other"], "hash": "sha256-ff", "consequence": { "act": "delete", "target": "Other", "bare": false, "position": "plain", "family": null, "acts": [{ "title": "Other", "act": "retract", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "holds": ["lar:///ha.ka.ba/wikis/daemon/working"], "reveals": null }], "leaves": [], "orphans": [], "refusals": [], "versions": { "Other": "sha256-ff" } } }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "delete",
+          "Other"
+        ],
+        "options": {
+          "recipe": "default",
+          "if-match": "sha256-ff"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "Other",
+        "recipe": "default",
+        "base": "sha256-ff"
+      },
+      "wire": {
+        "verb": "tiddler-delete",
+        "args": {
+          "recipe": "default",
+          "title": "Other",
+          "base": "sha256-ff"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "Other",
+        "decision": "removed",
+        "mode": "plain",
+        "tombstoned": [],
+        "retracted": [
+          "Other"
+        ],
+        "hash": "sha256-ff",
+        "consequence": {
+          "act": "delete",
+          "target": "Other",
+          "bare": false,
+          "position": "plain",
+          "family": null,
+          "acts": [
+            {
+              "title": "Other",
+              "act": "retract",
+              "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+              "holds": [
+                "lar:///ha.ka.ba/wikis/daemon/working"
+              ],
+              "reveals": null
+            }
+          ],
+          "leaves": [],
+          "orphans": [],
+          "refusals": [],
+          "versions": {
+            "Other": "sha256-ff"
+          }
+        }
+      }
     },
     {
       "tool": "tiddler_delete",
-      "cli": { "command": "tiddler", "positional": ["delete", "lar:///t/x"], "options": { "recipe": "default" }, "flags": { "family": true } },
-      "mcp": { "title": "lar:///t/x", "recipe": "default", "family": true },
-      "wire": { "verb": "tiddler-delete", "args": { "recipe": "default", "title": "lar:///t/x", "family": true } },
-      "output": { "recipe": "default", "title": "lar:///t/x", "decision": "removed", "mode": "plain", "tombstoned": [], "retracted": ["lar:///t/x", "lar:///t/x#/b"], "hash": "sha256-aa", "consequence": { "act": "delete", "target": "lar:///t/x", "bare": false, "position": "root", "family": "lar:///t/x", "acts": [{ "title": "lar:///t/x", "act": "retract", "bag": "lar:///ha.ka.ba/wikis/daemon/working" }, { "title": "lar:///t/x#/b", "act": "retract", "bag": "lar:///ha.ka.ba/wikis/daemon/working" }], "leaves": [{ "title": "lar:///t/x/child", "why": "path-child-stands-as-its-own-meme" }], "orphans": [], "refusals": [], "versions": { "lar:///t/x": "sha256-aa", "lar:///t/x#/b": "sha256-cc" } } }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "delete",
+          "lar:///t/x"
+        ],
+        "options": {
+          "recipe": "default"
+        },
+        "flags": {
+          "family": true
+        }
+      },
+      "mcp": {
+        "title": "lar:///t/x",
+        "recipe": "default",
+        "family": true
+      },
+      "wire": {
+        "verb": "tiddler-delete",
+        "args": {
+          "recipe": "default",
+          "title": "lar:///t/x",
+          "family": true
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "lar:///t/x",
+        "decision": "removed",
+        "mode": "plain",
+        "tombstoned": [],
+        "retracted": [
+          "lar:///t/x",
+          "lar:///t/x#/b"
+        ],
+        "hash": "sha256-aa",
+        "consequence": {
+          "act": "delete",
+          "target": "lar:///t/x",
+          "bare": false,
+          "position": "root",
+          "family": "lar:///t/x",
+          "acts": [
+            {
+              "title": "lar:///t/x",
+              "act": "retract",
+              "bag": "lar:///ha.ka.ba/wikis/daemon/working"
+            },
+            {
+              "title": "lar:///t/x#/b",
+              "act": "retract",
+              "bag": "lar:///ha.ka.ba/wikis/daemon/working"
+            }
+          ],
+          "leaves": [
+            {
+              "title": "lar:///t/x/child",
+              "why": "path-child-stands-as-its-own-meme"
+            }
+          ],
+          "orphans": [],
+          "refusals": [],
+          "versions": {
+            "lar:///t/x": "sha256-aa",
+            "lar:///t/x#/b": "sha256-cc"
+          }
+        }
+      }
     },
     {
       "tool": "tiddler_delete",
-      "cli": { "command": "tiddler", "positional": ["delete", "Room 4"], "options": { "recipe": "default", "mode": "reveal" }, "flags": {} },
-      "mcp": { "title": "Room 4", "recipe": "default", "mode": "reveal" },
-      "wire": { "verb": "tiddler-delete", "args": { "recipe": "default", "title": "Room 4", "mode": "reveal" } },
-      "output": { "recipe": "default", "title": "Room 4", "decision": "removed", "mode": "reveal", "tombstoned": [], "retracted": ["Room 4"], "hash": "sha256-gg", "consequence": { "act": "delete", "target": "Room 4", "bare": false, "position": "plain", "family": null, "acts": [{ "title": "Room 4", "act": "retract", "bag": "lar:///ha.ka.ba/wikis/daemon/personal", "holds": ["lar:///ha.ka.ba/wikis/daemon/personal", "lar:///ha.ka.ba/wikis/daemon/working"], "reveals": "lar:///ha.ka.ba/wikis/daemon/working" }], "leaves": [{ "title": "Room 4", "why": "revealed-from:lar:///ha.ka.ba/wikis/daemon/working" }], "orphans": [], "refusals": [], "versions": { "Room 4": "sha256-gg" } } }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "delete",
+          "Room 4"
+        ],
+        "options": {
+          "recipe": "default",
+          "mode": "reveal"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "Room 4",
+        "recipe": "default",
+        "mode": "reveal"
+      },
+      "wire": {
+        "verb": "tiddler-delete",
+        "args": {
+          "recipe": "default",
+          "title": "Room 4",
+          "mode": "reveal"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "Room 4",
+        "decision": "removed",
+        "mode": "reveal",
+        "tombstoned": [],
+        "retracted": [
+          "Room 4"
+        ],
+        "hash": "sha256-gg",
+        "consequence": {
+          "act": "delete",
+          "target": "Room 4",
+          "bare": false,
+          "position": "plain",
+          "family": null,
+          "acts": [
+            {
+              "title": "Room 4",
+              "act": "retract",
+              "bag": "lar:///ha.ka.ba/wikis/daemon/personal",
+              "holds": [
+                "lar:///ha.ka.ba/wikis/daemon/personal",
+                "lar:///ha.ka.ba/wikis/daemon/working"
+              ],
+              "reveals": "lar:///ha.ka.ba/wikis/daemon/working"
+            }
+          ],
+          "leaves": [
+            {
+              "title": "Room 4",
+              "why": "revealed-from:lar:///ha.ka.ba/wikis/daemon/working"
+            }
+          ],
+          "orphans": [],
+          "refusals": [],
+          "versions": {
+            "Room 4": "sha256-gg"
+          }
+        }
+      }
     },
     {
       "tool": "wiki_status",
-      "cli": { "command": "wiki", "positional": ["status"], "options": { "recipe": "default" }, "flags": {} },
-      "mcp": { "recipe": "default" },
-      "wire": { "verb": "wiki-status", "args": { "recipe": "default" } },
-      "output": { "recipe": "default", "working": "lar:///ha.ka.ba/wikis/daemon/working", "layers": [{ "bag": "lar:///ha.ka.ba/bags/lares", "mounted": "read-only", "read": true, "write": false }, { "bag": "lar:///ha.ka.ba/wikis/daemon/working", "mounted": "writable", "read": true, "write": true, "working": true }] }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "status"
+        ],
+        "options": {
+          "recipe": "default"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "recipe": "default"
+      },
+      "wire": {
+        "verb": "wiki-status",
+        "args": {
+          "recipe": "default"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "working": "lar:///ha.ka.ba/wikis/daemon/working",
+        "layers": [
+          {
+            "bag": "lar:///ha.ka.ba/bags/lares",
+            "mounted": "read-only",
+            "read": true,
+            "write": false
+          },
+          {
+            "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+            "mounted": "writable",
+            "read": true,
+            "write": true,
+            "working": true
+          }
+        ]
+      }
     },
     {
       "tool": "wiki_filter",
-      "cli": { "command": "wiki", "positional": ["filter", "[tag[road]sort[title]]"], "options": { "recipe": "kahu" }, "flags": {} },
-      "mcp": { "filter": "[tag[road]sort[title]]", "recipe": "kahu" },
-      "wire": { "verb": "wiki-filter", "args": { "recipe": "kahu", "filter": "[tag[road]sort[title]]" } },
-      "output": { "recipe": "kahu", "filter": "[tag[road]sort[title]]", "titles": ["Road 01", "Road 02"], "total": 2, "next": null, "asOf": "fedcba9876543210" }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "filter",
+          "[tag[road]sort[title]]"
+        ],
+        "options": {
+          "recipe": "kahu"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "filter": "[tag[road]sort[title]]",
+        "recipe": "kahu"
+      },
+      "wire": {
+        "verb": "wiki-filter",
+        "args": {
+          "recipe": "kahu",
+          "filter": "[tag[road]sort[title]]"
+        }
+      },
+      "output": {
+        "recipe": "kahu",
+        "filter": "[tag[road]sort[title]]",
+        "titles": [
+          "Road 01",
+          "Road 02"
+        ],
+        "total": 2,
+        "next": null,
+        "asOf": "fedcba9876543210"
+      }
     },
     {
       "tool": "tiddler_put",
-      "cli": { "command": "tiddler", "positional": ["put", "Road note"], "options": { "recipe": "kahu", "text": "first words" }, "flags": { "create": true } },
-      "mcp": { "title": "Road note", "recipe": "kahu", "text": "first words", "create": true },
-      "wire": { "verb": "tiddler-put", "args": { "recipe": "kahu", "title": "Road note", "create": true, "text": "first words" } },
-      "output": { "recipe": "kahu", "title": "Road note", "decision": "put", "bag": "lar:///ha.ka.ba/wikis/kahu/working", "created": true, "changed": ["title", "text"], "hash": "sha256-ee", "textHash": "sha256-ff", "position": "plain" }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "put",
+          "Road note"
+        ],
+        "options": {
+          "recipe": "kahu",
+          "text": "first words"
+        },
+        "flags": {
+          "create": true
+        }
+      },
+      "mcp": {
+        "title": "Road note",
+        "recipe": "kahu",
+        "text": "first words",
+        "create": true
+      },
+      "wire": {
+        "verb": "tiddler-put",
+        "args": {
+          "recipe": "kahu",
+          "title": "Road note",
+          "create": true,
+          "text": "first words"
+        }
+      },
+      "output": {
+        "recipe": "kahu",
+        "title": "Road note",
+        "decision": "put",
+        "bag": "lar:///ha.ka.ba/wikis/kahu/working",
+        "created": true,
+        "changed": [
+          "title",
+          "text"
+        ],
+        "hash": "sha256-ee",
+        "textHash": "sha256-ff",
+        "position": "plain"
+      }
     },
     {
       "tool": "wiki_status",
-      "cli": { "command": "wiki", "positional": ["status"], "options": { "recipe": "kahu" }, "flags": {} },
-      "mcp": { "recipe": "kahu" },
-      "wire": { "verb": "wiki-status", "args": { "recipe": "kahu" } },
-      "output": { "recipe": "kahu", "working": "lar:///ha.ka.ba/wikis/kahu/working", "layers": [{ "bag": "lar:///ha.ka.ba/bags/kahu", "mounted": "read-only", "read": true, "write": false }, { "bag": "lar:///ha.ka.ba/wikis/kahu/working", "mounted": "writable", "read": true, "write": true, "working": true }] }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "status"
+        ],
+        "options": {
+          "recipe": "kahu"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "recipe": "kahu"
+      },
+      "wire": {
+        "verb": "wiki-status",
+        "args": {
+          "recipe": "kahu"
+        }
+      },
+      "output": {
+        "recipe": "kahu",
+        "working": "lar:///ha.ka.ba/wikis/kahu/working",
+        "layers": [
+          {
+            "bag": "lar:///ha.ka.ba/bags/kahu",
+            "mounted": "read-only",
+            "read": true,
+            "write": false
+          },
+          {
+            "bag": "lar:///ha.ka.ba/wikis/kahu/working",
+            "mounted": "writable",
+            "read": true,
+            "write": true,
+            "working": true
+          }
+        ]
+      }
     },
     {
       "tool": "wiki_filter",
-      "cli": { "command": "wiki", "positional": ["filter", "[tag[memory]]"], "options": { "recipe": "default", "target": "h1" }, "flags": {} },
-      "mcp": { "filter": "[tag[memory]]", "recipe": "default", "target": "h1" },
-      "wire": { "verb": "wiki-filter", "args": { "recipe": "default", "filter": "[tag[memory]]", "target": "h1" } },
-      "output": { "recipe": "default", "filter": "[tag[memory]]", "titles": ["Sibling note"], "total": 1, "next": null, "asOf": "heads-h1", "face": 1, "worn": 0 }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "filter",
+          "[tag[memory]]"
+        ],
+        "options": {
+          "recipe": "default",
+          "target": "h1"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "filter": "[tag[memory]]",
+        "recipe": "default",
+        "target": "h1"
+      },
+      "wire": {
+        "verb": "wiki-filter",
+        "args": {
+          "recipe": "default",
+          "filter": "[tag[memory]]",
+          "target": "h1"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "filter": "[tag[memory]]",
+        "titles": [
+          "Sibling note"
+        ],
+        "total": 1,
+        "next": null,
+        "asOf": "heads-h1",
+        "face": 1,
+        "worn": 0
+      }
     },
     {
       "tool": "tiddler_get",
-      "cli": { "command": "tiddler", "positional": ["get", "Sibling note"], "options": { "recipe": "default", "target": "sibling-face" }, "flags": {} },
-      "mcp": { "title": "Sibling note", "recipe": "default", "target": "sibling-face" },
-      "wire": { "verb": "tiddler-get", "args": { "recipe": "default", "title": "Sibling note", "target": "sibling-face" } },
-      "output": { "recipe": "default", "title": "Sibling note", "tiddler": { "fields": { "title": "Sibling note", "text": "a word the sibling keeps in its working layer" }, "hash": "sha256-s1", "textHash": "sha256-t1", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "position": "plain" }, "face": 1, "worn": 0 }
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get",
+          "Sibling note"
+        ],
+        "options": {
+          "recipe": "default",
+          "target": "sibling-face"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "Sibling note",
+        "recipe": "default",
+        "target": "sibling-face"
+      },
+      "wire": {
+        "verb": "tiddler-get",
+        "args": {
+          "recipe": "default",
+          "title": "Sibling note",
+          "target": "sibling-face"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "Sibling note",
+        "tiddler": {
+          "fields": {
+            "title": "Sibling note",
+            "text": "a word the sibling keeps in its working layer"
+          },
+          "hash": "sha256-s1",
+          "textHash": "sha256-t1",
+          "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+          "position": "plain"
+        },
+        "face": 1,
+        "worn": 0
+      }
     },
     {
       "tool": "wiki_render",
-      "cli": { "command": "wiki", "positional": ["render", "Sibling note"], "options": { "recipe": "default", "target": "1" }, "flags": {} },
-      "mcp": { "title": "Sibling note", "recipe": "default", "target": "1" },
-      "wire": { "verb": "wiki-render", "args": { "recipe": "default", "title": "Sibling note", "target": "1" } },
-      "output": { "recipe": "default", "title": "Sibling note", "form": "text", "text": "a word the sibling keeps in its working layer", "bytes": 45, "truncated": false, "next": null, "face": 1, "worn": 0 }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "render",
+          "Sibling note"
+        ],
+        "options": {
+          "recipe": "default",
+          "target": "1"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "title": "Sibling note",
+        "recipe": "default",
+        "target": "1"
+      },
+      "wire": {
+        "verb": "wiki-render",
+        "args": {
+          "recipe": "default",
+          "title": "Sibling note",
+          "target": "1"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "title": "Sibling note",
+        "form": "text",
+        "text": "a word the sibling keeps in its working layer",
+        "bytes": 45,
+        "truncated": false,
+        "next": null,
+        "face": 1,
+        "worn": 0
+      }
     },
     {
       "tool": "wiki_status",
-      "cli": { "command": "wiki", "positional": ["status"], "options": { "recipe": "default", "target": "h1" }, "flags": {} },
-      "mcp": { "recipe": "default", "target": "h1" },
-      "wire": { "verb": "wiki-status", "args": { "recipe": "default", "target": "h1" } },
-      "output": { "recipe": "default", "working": "lar:///ha.ka.ba/wikis/daemon/working", "layers": [{ "bag": "lar:///ha.ka.ba/wikis/daemon/working", "mounted": "read-only", "read": true, "write": false, "working": true }], "face": 1, "worn": 0 }
-    }
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "status"
+        ],
+        "options": {
+          "recipe": "default",
+          "target": "h1"
+        },
+        "flags": {}
+      },
+      "mcp": {
+        "recipe": "default",
+        "target": "h1"
+      },
+      "wire": {
+        "verb": "wiki-status",
+        "args": {
+          "recipe": "default",
+          "target": "h1"
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "working": "lar:///ha.ka.ba/wikis/daemon/working",
+        "layers": [
+          {
+            "bag": "lar:///ha.ka.ba/wikis/daemon/working",
+            "mounted": "read-only",
+            "read": true,
+            "write": false,
+            "working": true
+          }
+        ],
+        "face": 1,
+        "worn": 0
+      }
+    },
+    {
+      "tool": "tiddler_get",
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "get"
+        ],
+        "options": {
+          "recipe": "default"
+        },
+        "flags": {
+          "meme": true,
+          "tree": true
+        }
+      },
+      "mcp": {
+        "recipe": "default",
+        "meme": true,
+        "tree": true
+      },
+      "wire": {
+        "verb": "meme-list",
+        "args": {
+          "recipe": "default",
+          "tree": true
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`default` params=`kind/family-list recipe/default`>>",
+        "bag": "working",
+        "roots": [
+          {
+            "uri": "lar:///ha.ka.ba/docs/family",
+            "canonicalHash": "sha256:live",
+            "slots": []
+          }
+        ]
+      }
+    },
+    {
+      "tool": "tiddler_put",
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "put",
+          "lar:///ha.ka.ba/docs/family"
+        ],
+        "options": {
+          "recipe": "default",
+          "file": "@fixture/family-input.mem"
+        },
+        "flags": {
+          "meme": true
+        }
+      },
+      "mcp": {
+        "title": "lar:///ha.ka.ba/docs/family",
+        "recipe": "default",
+        "text": "family input\n",
+        "meme": true
+      },
+      "wire": {
+        "verb": "meme-put",
+        "args": {
+          "uri": "lar:///ha.ka.ba/docs/family",
+          "recipe": "default",
+          "text": "family input\n"
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`lar:///ha.ka.ba/docs/family` params=`kind/family-write recipe/default`>>",
+        "uri": "lar:///ha.ka.ba/docs/family",
+        "decision": "ingest",
+        "landed": [
+          "lar:///ha.ka.ba/docs/family"
+        ],
+        "tombstoned": [],
+        "warnings": [],
+        "canonicalHash": "sha256:live"
+      }
+    },
+    {
+      "tool": "tiddler_delete",
+      "cli": {
+        "command": "tiddler",
+        "positional": [
+          "delete",
+          "lar:///ha.ka.ba/docs/family"
+        ],
+        "options": {
+          "bag": "working",
+          "if-match": "sha256:live"
+        },
+        "flags": {
+          "meme": true
+        }
+      },
+      "mcp": {
+        "title": "lar:///ha.ka.ba/docs/family",
+        "bag": "working",
+        "base": "sha256:live",
+        "meme": true
+      },
+      "wire": {
+        "verb": "meme-delete",
+        "args": {
+          "uri": "lar:///ha.ka.ba/docs/family",
+          "bag": "working",
+          "base": "sha256:live"
+        }
+      },
+      "output": {
+        "has": "<<~ has name=`lar:///ha.ka.ba/docs/family` params=`kind/family-delete bag/working base/sha256:live`>>",
+        "uri": "lar:///ha.ka.ba/docs/family",
+        "decision": "removed",
+        "tombstoned": [
+          "lar:///ha.ka.ba/docs/family"
+        ],
+        "retracted": [],
+        "canonicalHash": "sha256:live"
+      }
+    },
+    {"tool": "kahua_get", "cli": {"command": "kahua", "positional": ["get"], "options": {"limit": "2"}, "flags": {}}, "mcp": {"limit": 2}, "wire": {"verb": "kahua-read", "args": {"action": "list", "limit": 2}}, "output": {"has": "<<~ has name=`kahua` params=`source/kahua-stage grain/list count/0`>>", "items": [], "source": "kahua-stage", "grain": "list", "count": 0, "next": null}},
+    {"tool": "kahua_get", "cli": {"command": "kahua", "positional": ["get", "T"], "options": {}, "flags": {}}, "mcp": {"title": "T"}, "wire": {"verb": "kahua-read", "args": {"action": "get", "title": "T"}}, "output": {"has": "<<~ has name=`T` params=`source/kahua-stage grain/item verified/true`>>", "item": null, "source": "kahua-stage", "grain": "item", "nextOperation": "lares kahua get \"T\" --history"}},
+    {"tool": "meme_offer_show", "cli": {"command": "meme", "positional": ["offer", "show"], "options": {"limit": "2"}, "flags": {}}, "mcp": {"limit": 2}, "wire": {"verb": "offer-list", "args": {"limit": 2}}, "output": {"has": "<<~ has name=`offers` params=`source/nexus-offer-table grain/list count/0`>>", "offers": [], "source": "nexus-offer-table", "grain": "list", "count": 0, "next": null}},
+    {"tool": "meme_offer_show", "cli": {"command": "meme", "positional": ["offer", "show", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"], "options": {}, "flags": {}}, "mcp": {"cid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, "wire": {"verb": "offer-show", "args": {"cid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}, "output": {"has": "<<~ has name=`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` params=`source/nexus-offer-table grain/item verified/true`>>", "cid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "diffs": [], "source": "nexus-offer-table", "grain": "item", "nextOperation": "lares meme offer promote aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}
   ]
 }

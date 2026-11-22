@@ -169,7 +169,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     for (let n = 1; n <= NOTES; n++) {
       const file = join(scratch, `note-${n}.mem`);
       writeFileSync(file, memory(n));
-      const put = await lar.cli(["meme", "put", uriOf(n), "--recipe", "default", "--file", file, "--json"]);
+      const put = await lar.cli(["tiddler", "put", "--meme", uriOf(n), "--recipe", "default", "--file", file, "--json"]);
       expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
       if (n === 1) say("seed meme put (note 01)", dataOf(put));
     }
@@ -189,6 +189,18 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const home = await lar.cli(["wiki", "filter", "[all[tiddlers+shadows]prefix[$:/temp/]] [all[tiddlers+shadows]prefix[$:/state/]] [[$:/temp/lares/switcher]get[text]]", ...D]);
     say("CLI wiki filter over the temp and state namespaces", dataOf(home));
     expect(dataOf(home)).toMatchObject({ titles: [], total: 0 });
+    // THE HOUSE'S FUNCTIONS ON A BOOTED VESSEL: the canon layer answers the carrier's text, so `[lares.law[]]` lists the law
+    // (the boot seed leads, as its pin) and the `law list` door and the pins read the same functions.
+    const lawCall = await lar.cli(["wiki", "filter", "[lares.law[]]", ...D]);
+    say("CLI wiki filter [lares.law[]] on a booted vessel", { total: dataOf(lawCall)["total"], first: (dataOf(lawCall)["titles"] as string[] | undefined)?.[0] });
+    expect(lawCall.code, `${lawCall.stdout}\n${lawCall.stderr}`).toBe(0);
+    expect(dataOf(lawCall)["titles"]).toContain("lar:///ha.ka.ba/lares/api/noosphere-boot");
+    expect(Number(dataOf(lawCall)["total"])).toBeGreaterThan(10);
+    const pinsCall = await lar.cli(["wiki", "filter", "[lares.law.pins[]]", ...D]);
+    expect((dataOf(pinsCall)["titles"] as string[])[0]).toBe("lar:///ha.ka.ba/lares/api/noosphere-boot");
+    const listCall = await lar.cli(["law", "list", "--json"]);
+    expect(listCall.code, `${listCall.stdout}\n${listCall.stderr}`).toBe(0);
+    expect(Number(dataOf(listCall)["total"])).toBe(Number(dataOf(lawCall)["total"]));
   }, 120_000);
 
   test("filter by tag under a small cap: the cursor pages through all twelve, and both skins answer the same pages", async () => {
@@ -248,11 +260,11 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(slot.fields["text"]).not.toContain("Rule 3");
     expect(slot).toMatchObject({ position: "slot", family: uriOf(3) });
     const said = await speak(entry, [
-      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", text: false } },
+      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", grain: "skinny" } },
       { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", slot: "#/why" } },
     ]);
     const [seatSkinny, seatSlot] = said.results.map(payload);
-    say("MCP tiddler_get text=false", seatSkinny);
+    say("MCP tiddler_get grain=skinny", seatSkinny);
     say("MCP tiddler_get slot", seatSlot);
     expect(seatSkinny).toEqual({ ok: true, data: dataOf(cliSkinny) });
     expect(seatSlot).toEqual({ ok: true, data: dataOf(cliSlot) });
@@ -350,7 +362,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const extra = NOTES + 1;
     const file = join(scratch, `note-${extra}.mem`);
     writeFileSync(file, memory(extra));
-    expect((await lar.cli(["meme", "put", uriOf(extra), "--recipe", "default", "--file", file, "--json"])).code).toBe(0);
+    expect((await lar.cli(["tiddler", "put", "--meme", uriOf(extra), "--recipe", "default", "--file", file, "--json"])).code).toBe(0);
     const family = [uriOf(extra), `${uriOf(extra)}#/rule`, `${uriOf(extra)}#/why`];
     // WITHOUT THE FLAG: nothing moves, and the answer names every record the delete would move.
     const refused = await lar.cli(["tiddler", "delete", uriOf(extra), ...D]);
@@ -410,6 +422,18 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const got = await lar.cli(["tiddler", "get", "Walk wiki note", ...W]);
     expect(got.code, got.stderr).toBe(0);
     expect((dataOf(got)["tiddler"] as { bag: string }).bag).toBe(`lar:///ha.ka.ba/wikis/${WALK_WIKI}/working`);
+    const layoutTitle = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    const layoutSeed = await lar.cli(["tiddler", "put", layoutTitle, ...W, "--create", "--text", "fixed-fluid"]);
+    expect(layoutSeed.code, layoutSeed.stderr).toBe(0);
+    const changedLayout = await lar.cli(["wiki", "act", "sidebar-layout", ...W, "--expected", "fixed-fluid", "--resulting", "fluid-fixed"]);
+    expect(changedLayout.code, changedLayout.stderr).toBe(0);
+    expect(dataOf(changedLayout)).toMatchObject({ decision: "put", title: layoutTitle, resulting: "fluid-fixed" });
+    const layoutRead = await lar.cli(["tiddler", "get", layoutTitle, ...W]);
+    expect((dataOf(layoutRead)["tiddler"] as { fields: { text: string } }).fields.text).toBe("fluid-fixed");
+    const actedBySeat = await speak(entry, [{ name: "wiki", arguments: { verb: "act", name: "sidebar-layout", recipe: WALK_WIKI, expected: "fluid-fixed", resulting: "fixed-fluid" } }]);
+    say("MCP wiki act", payload(actedBySeat.results[0]));
+    expect(payload(actedBySeat.results[0])).toMatchObject({ ok: true, data: { decision: "put", title: layoutTitle, resulting: "fixed-fluid" } });
+    expect((dataOf(await lar.cli(["tiddler", "get", layoutTitle, ...W]))["tiddler"] as { fields: { text: string } }).fields.text).toBe("fixed-fluid");
     const status = await lar.cli(["wiki", "status", ...W]);
     say(`CLI wiki status --recipe ${WALK_WIKI}`, dataOf(status));
     expect(dataOf(status)).toMatchObject({ recipe: WALK_WIKI, working: `lar:///ha.ka.ba/wikis/${WALK_WIKI}/working` });

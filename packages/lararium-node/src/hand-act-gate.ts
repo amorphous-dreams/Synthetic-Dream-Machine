@@ -13,7 +13,7 @@
  * The same gate serves every hand act on the custody door and the pūlama's hand door; `rite abandon`'s hand gate (#409) names the
  * same need and takes this helper when the two land.
  *
- * A COMMAND WITH NO SOCKET reads its own branch (`readOwnHand`): the sense lifecycle's hand verbs (`lares sense promote`,
+ * A COMMAND WITH NO SOCKET reads its own branch (`readOwnHand`): the sense lifecycle's hand verbs (`lares sense harden`,
  * `retire`, `un-retire`, `purge`, `teardown --confirm`) run direct over the store, so the CLI asks the same three readings of the
  * process that runs the command. A flag the command carries (`--approve`, `--confirm`) names the intent; only this reading
  * approves. Like the peer reading it closes the honest road and the casual omission (a stripped harness mark), not a process

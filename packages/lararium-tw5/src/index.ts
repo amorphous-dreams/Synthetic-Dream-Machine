@@ -175,7 +175,7 @@ export { seedDaemonPersonaTiddlers, makePersonaStateReactor, DAEMON_PERSONA_TIDD
 export { seedDaemonCircleTiddlers, makeCircleStateReactor, DAEMON_CIRCLE_TIDDLERS, CIRCLE_STATE_TITLE } from "./daemon-circle-tiddlers.js";
 export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
-export { seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_PINS_TITLE, LAW_PINS_DEFAULT, LAW_FILTER, LAW_STEPS, LAW_CANON_BAG_PATTERN, LAW_TITLE_PATTERN, LAW_CANON_GUARD, LAW_PINS_FILTER, LAW_INDEX_FILTER, LAW_BOOT_SEED, LAW_MU_ROOT } from "./daemon-law-tiddlers.js";
+export { seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_PINS_TITLE, LAW_PINS_DEFAULT, LAW_CANON_BAG_PATTERN, LAW_PINS_FILTER, LAW_INDEX_FILTER, lawStandsFilter, LAW_BOOT_SEED, LAW_MU_ROOT } from "./daemon-law-tiddlers.js";
 export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE } from "./daemon-roster-tiddlers.js";
 export { seedDaemonIntentTiddlers, DAEMON_INTENT_TIDDLERS, makeIntentViewReactor, INTENT_VIEW_CAP, INTENT_STATE_TITLE, INTENT_PANE_TITLE } from "./daemon-intent-tiddlers.js";
 export { seedShadows, DAEMON_SEED_PLUGIN_PREFIX } from "./daemon-ui-tiddlers.js";
@@ -219,11 +219,11 @@ export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-ve
 export { makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, WikiRetireRefusal } from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
 export { makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
-export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, tagTokens, carrierSlots, carrierSlotText, pageCarrier, memeGradient, slotHasLines, type ReadGrain, type GrainEcho, type CarrierSlot, type MemeGradient } from "./read-gradient.js";
+export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, pagePlaneRows, tagTokens, carrierSlots, carrierSlotText, pageCarrier, memeGradient, slotHasLines, type ReadGrain, type GrainEcho, type CarrierSlot, type MemeGradient } from "./read-gradient.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor, makeWikiActionReactor,
 } from "./tiddler-verbs.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
@@ -330,3 +330,4 @@ export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PR
 export { makeShareSetReactor, makeShareListReactor, readShareEntries } from "./share-verbs.js";
 // The ONE spelling of a person's view-state set: the shared workbench's admit filter reads it (cabal-realm#/the-workbench).
 export { isPersonalTitle } from "./filters/lar-kind.js";
+export { HOUSE_FILTERS_FLOOR, HOUSE_FILTERS_TITLE, HOUSE_FUNCTION_STEM, canonFiltersText, functionPragmasOf, houseWidgetOf } from "./house-filters.js";

@@ -57,9 +57,6 @@ const CLI_FORMS = {
   // rides as a parameter, never a suffix on the verb). The host `meme` is a real top-level CLI command,
   // so each mirrors as `<host> <sub>` — ONE host, four tools, the shape kapae/un_kapae ride under
   // `sense worldline`. The family's LOCAL seats ride LOCAL_SEAT below.
-  meme_put:     "meme put",
-  meme_list:    "meme list",
-  meme_delete:  "meme delete",
   meme_project: "meme project",
   // THE TIDDLER DOOR (wiki-surface-scout #/a-lean) — every TiddlyWiki act over one record or one wiki's engine. The record
   // verbs ride their own host (`lares tiddler get|put|delete`); the engine verbs join the `wiki` host beside the switcher
@@ -88,17 +85,15 @@ const CLI_FORMS = {
   // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
   // holds no MCP tool, the way `kahua lift` holds none.
   meme_offer:      "meme offer",
-  meme_offer_list: "meme offer list",
   meme_offer_show: "meme offer show",
   // The KAHUA seat verbs — an AI seat proposes, stages and reads its face's kahua stage; each mirrors `lares kahua <sub>`
   // (the host `kahua` is a real top-level CLI command). `lares kahua lift|withdraw|carry|mint` stay the operator's hand
   // and hold no MCP tool, the way the LOCAL seats hold none: no tool spells them.
   kahua_propose: "kahua propose",
   kahua_stage:   "kahua stage",
-  kahua_list:    "kahua list",
   kahua_get:     "kahua get",
   // The DURABLE sensorium-lifecycle sub-verbs a seat runs — each mirrors `lares sense <verb>` (the one `sense` door),
-  // routed over the @daemon wire to the pure manifest.json reducer. `sense promote|retire|un-retire|purge|teardown`
+  // routed over the @daemon wire to the pure manifest.json reducer. `sense harden|retire|un-retire|purge|teardown`
   // stay a person's hand at a real terminal and hold no MCP tool (hitl-reads-a-hand), the way `kahua lift` holds none.
   // `roster` reads at two grains on both surfaces: bare, every sensorium; with a name, that one's facets.
   roster:    "sense roster",

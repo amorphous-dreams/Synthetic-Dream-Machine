@@ -60,7 +60,7 @@ const FAMILIES: ReadonlyArray<{ name: string; specs: readonly Spec[]; marker: st
   },
   {
     name: "roster", specs: DAEMON_ROSTER_TIDDLERS as readonly Spec[], marker: "lares-roster-refresh",
-    // The hand verbs (promote · retire · un-retire · purge) render no button: each runs on a terminal alone (hitl-reads-a-hand).
+    // The hand verbs (harden · retire · un-retire · purge) render no button: each runs on a terminal alone (hitl-reads-a-hand).
     state: [
       { title: ROSTER_STATE_TITLE, list: "alpha", type: "application/json", text: JSON.stringify({ alpha: { lifecycle: "active" } }) },
     ],
