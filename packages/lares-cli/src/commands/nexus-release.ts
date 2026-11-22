@@ -6,8 +6,8 @@
  *
  * The approval comes first, from the doors that already carry one between vaults:
  *
- *   lares nexus promote open <manifest-file> --purpose floor-release --surface floor-release --class high-impact --out a.json
- *   lares nexus promote sign a.json --confirm-statement <digest> --out a.json        (each further vault)
+ *   lares nexus approve open <manifest-file> --purpose floor-release --surface floor-release --class high-impact --out a.json
+ *   lares nexus approve sign a.json --confirm-statement <digest> --out a.json        (each further vault)
  *   lares nexus release <manifest-file> --approval a.json
  *
  * The verb rides the store door (`nexus-release`), so a standing vessel's own Repo takes the write and a bare tree
@@ -16,7 +16,7 @@
  *
  * `--cut` CUTS the manifest first, from live house canon (offering#/the-canon-offer): the floor a release after a promotion
  * names, written to <manifest-file> and staged in this hearth's CAS. It lands nothing; the approval and the release follow on
- * that file. `lares nexus release <manifest-file> --cut` → `nexus promote open|sign` → `nexus release <manifest-file> --approval`.
+ * that file. `lares nexus release <manifest-file> --cut` → `nexus approve open|sign` → `nexus release <manifest-file> --approval`.
  * The cut refuses `floor-cut-thin`, by slug, where a bag's live rows count under half its prior snapshot's; `--thin <slug[,slug]>`
  * names a bag that shrank on purpose.
  *
@@ -77,7 +77,7 @@ async function cutRelease(args: ParsedArgs, out: string, aid: string | undefined
         console.log(`  moved:  ${r.moved.join(", ") || "(none)"}   cut: ${r.cut.join(", ")}${r.kept.length ? `   kept (no live canon here): ${r.kept.join(", ")}` : ""}`);
         if (r.dropped.length) console.log(`  dropped (the bag declares a tier the public floor never carries): ${r.dropped.join(", ")}`);
         console.log(`  wrote ${r.out}; the floor stands whole in this hearth's CAS. Next:`);
-        console.log(`    lares nexus promote open ${r.out} --purpose floor-release --surface floor-release --class high-impact --out a.json`);
+        console.log(`    lares nexus approve open ${r.out} --purpose floor-release --surface floor-release --class high-impact --out a.json`);
         console.log(`    lares nexus release ${r.out} --approval a.json`);
       },
     });

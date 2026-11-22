@@ -2,7 +2,7 @@
  * floor-cut — `lares nexus release <manifest-file> --cut`: the node vessel's binding of the release wiring (`@lararium/mesh`
  * `cutReleaseFloor`). It cuts the floor the next release names from LIVE house canon, so a release after a promotion carries the
  * promoted rows (offering#/the-canon-offer). It seals nothing and lands nothing on any board: it writes the manifest file the
- * seats then approve (`lares nexus promote open <manifest-file> --purpose floor-release --surface floor-release`) and stages the
+ * seats then approve (`lares nexus approve open <manifest-file> --purpose floor-release --surface floor-release`) and stages the
  * floor's blobs in this hearth's CAS, where `nexus release` and the porch read them.
  *
  * The ports, by capability (`runFloorCutOver` binds them; `runFloorCut` resolves the charter, the board and the catalog first):

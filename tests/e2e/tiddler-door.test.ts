@@ -189,6 +189,18 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const home = await lar.cli(["wiki", "filter", "[all[tiddlers+shadows]prefix[$:/temp/]] [all[tiddlers+shadows]prefix[$:/state/]] [[$:/temp/lares/switcher]get[text]]", ...D]);
     say("CLI wiki filter over the temp and state namespaces", dataOf(home));
     expect(dataOf(home)).toMatchObject({ titles: [], total: 0 });
+    // THE HOUSE'S FUNCTIONS ON A BOOTED VESSEL: the canon layer answers the carrier's text, so `[lares.law[]]` lists the law
+    // (the boot seed leads, as its pin) and the `law list` door and the pins read the same functions.
+    const lawCall = await lar.cli(["wiki", "filter", "[lares.law[]]", ...D]);
+    say("CLI wiki filter [lares.law[]] on a booted vessel", { total: dataOf(lawCall)["total"], first: (dataOf(lawCall)["titles"] as string[] | undefined)?.[0] });
+    expect(lawCall.code, `${lawCall.stdout}\n${lawCall.stderr}`).toBe(0);
+    expect(dataOf(lawCall)["titles"]).toContain("lar:///ha.ka.ba/lares/api/noosphere-boot");
+    expect(Number(dataOf(lawCall)["total"])).toBeGreaterThan(10);
+    const pinsCall = await lar.cli(["wiki", "filter", "[lares.law.pins[]]", ...D]);
+    expect((dataOf(pinsCall)["titles"] as string[])[0]).toBe("lar:///ha.ka.ba/lares/api/noosphere-boot");
+    const listCall = await lar.cli(["law", "list", "--json"]);
+    expect(listCall.code, `${listCall.stdout}\n${listCall.stderr}`).toBe(0);
+    expect(Number(dataOf(listCall)["total"])).toBe(Number(dataOf(lawCall)["total"]));
   }, 120_000);
 
   test("filter by tag under a small cap: the cursor pages through all twelve, and both skins answer the same pages", async () => {

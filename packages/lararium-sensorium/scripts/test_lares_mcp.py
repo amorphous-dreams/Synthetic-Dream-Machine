@@ -190,6 +190,7 @@ def test_sense_hand_verbs_hold_no_tool_and_no_seat(tmp_path):
     # RED before the cure: promote, retire and purge rode tools gated by an `approve` boolean the model fills, and
     # un_retire rode one ungated. The cure retires each: the operator runs `lares sense <verb>` on their own terminal.
     tools = _mcp_tool_names(tmp_path)
+    assert {"harden", "promote", "sense_harden", "sense_promote", "trust", "nexus_approve", "nexus_promote"}.isdisjoint(tools)
     for v in SENSE_HAND_VERBS:
         tool = v.replace("-", "_")
         assert tool not in tools, f"hand verb {v!r} still rides an MCP tool"

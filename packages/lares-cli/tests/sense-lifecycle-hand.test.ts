@@ -1,5 +1,5 @@
 /**
- * sense-lifecycle-hand — `lares sense promote|retire|un-retire|purge` and `lares sense teardown --confirm` run on a person's
+ * sense-lifecycle-hand — `lares sense harden|retire|un-retire|purge` and `lares sense teardown --confirm` run on a person's
  * hand at a real terminal alone (hitl-reads-a-hand). The command runs direct over manifest.json with no socket between it and
  * the vessel, so it reads its own branch through the house hand gate (`readOwnHand`): a harness on the branch refuses
  * `hand-act-only`, whatever `--approve` or `--confirm` says, and nothing moves. CONTROL: the hand path lands every verb, and the
@@ -36,10 +36,10 @@ const lifecycle = (name: string): string | undefined => (inspectSensorium(name) 
 afterEach(() => vi.restoreAllMocks());
 
 describe("a sense hand verb reads the hand behind the command", () => {
-  test("RED: an AI shell's --approve refuses hand-act-only on promote, retire and purge, and nothing moves", () => {
+  test("RED: an AI shell's --approve refuses hand-act-only on harden, retire and purge, and nothing moves", () => {
     buildEphemeralSensorium("seat-forges");
     for (const [fn, argv] of [
-      [cmdSensePromote, ["promote", "seat-forges", "--approve"]],
+      [cmdSensePromote, ["harden", "seat-forges", "--approve"]],
       [cmdSenseRetire, ["retire", "seat-forges", "--grounds", "superseded", "--approve"]],
       [cmdSensePurge, ["purge", "seat-forges", "--approve"]],
     ] as const) {
@@ -63,14 +63,14 @@ describe("a sense hand verb reads the hand behind the command", () => {
 
   test("RED: a command whose branch reads unknown refuses hand-unattested", () => {
     buildEphemeralSensorium("unread-branch");
-    expect(run(cmdSensePromote, UNREAD, "promote", "unread-branch", "--approve").out).toMatchObject({ ok: false, error: { code: "hand-unattested" } });
+    expect(run(cmdSensePromote, UNREAD, "harden", "unread-branch", "--approve").out).toMatchObject({ ok: false, error: { code: "hand-unattested" } });
     expect(lifecycle("unread-branch")).toBe("pioneer");
   });
 
-  test("CONTROL: the hand path lands promote, retire, un-retire and purge; --approve still names the intent", () => {
+  test("CONTROL: the hand path lands harden, retire, un-retire and purge; --approve still names the intent", () => {
     buildEphemeralSensorium("hand-lands");
-    expect(run(cmdSensePromote, HAND, "promote", "hand-lands").out, "the hand without --approve").toMatchObject({ ok: false });
-    expect(run(cmdSensePromote, HAND, "promote", "hand-lands", "--approve").code).toBe(0);
+    expect(run(cmdSensePromote, HAND, "harden", "hand-lands").out, "the hand without --approve").toMatchObject({ ok: false });
+    expect(run(cmdSensePromote, HAND, "harden", "hand-lands", "--approve").code).toBe(0);
     expect(lifecycle("hand-lands")).not.toBe("pioneer");
     expect(run(cmdSenseRetire, HAND, "retire", "hand-lands", "--grounds", "superseded", "--approve").code).toBe(0);
     expect(run(cmdSenseUnRetire, HAND, "un-retire", "hand-lands").code).toBe(0);

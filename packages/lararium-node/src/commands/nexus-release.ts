@@ -5,7 +5,7 @@
  *
  * THE STEWARD IS A SEAT HELD HERE. The first seat of the charter this vessel holds a key for seals the body under the
  * release domain; the AUTHORITY is the approval, which a person opened and carried between vaults beforehand
- * (`lares nexus promote open|sign <manifest-file> --purpose floor-release --surface floor-release --class high-impact`).
+ * (`lares nexus approve open|sign <manifest-file> --purpose floor-release --surface floor-release --class high-impact`).
  * The door verifies the whole release exactly as a reader will, and lands it only where it counts: a short approval
  * lands nothing and the door says how many seats it still wants.
  *
@@ -124,7 +124,7 @@ export async function runFloorRelease(opts: {
 
 function describe(reason: FloorReleaseRefusal): string {
   switch (reason) {
-    case "approval-below-class-threshold": return "the approval is short of the seats the high-impact bar takes; carry it to the next vault (`lares nexus promote sign`).";
+    case "approval-below-class-threshold": return "the approval is short of the seats the high-impact bar takes; carry it to the next vault (`lares nexus approve sign`).";
     case "approval-bytes-differ":          return "the approval covers other bytes than this manifest file.";
     case "approval-class-below-surface":   return "the approval stands below the high-impact bar a release takes (the chartered classes hold the surface there).";
     case "approval-wrong-charter-epoch":   return "the approval was signed at another charter epoch than this vessel's head; open a fresh one.";

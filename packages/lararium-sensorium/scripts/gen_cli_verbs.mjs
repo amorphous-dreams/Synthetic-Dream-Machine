@@ -96,7 +96,7 @@ const CLI_FORMS = {
   kahua_stage:   "kahua stage",
   kahua_get:     "kahua get",
   // The DURABLE sensorium-lifecycle sub-verbs a seat runs — each mirrors `lares sense <verb>` (the one `sense` door),
-  // routed over the @daemon wire to the pure manifest.json reducer. `sense promote|retire|un-retire|purge|teardown`
+  // routed over the @daemon wire to the pure manifest.json reducer. `sense harden|retire|un-retire|purge|teardown`
   // stay a person's hand at a real terminal and hold no MCP tool (hitl-reads-a-hand), the way `kahua lift` holds none.
   // `roster` reads at two grains on both surfaces: bare, every sensorium; with a name, that one's facets.
   roster:    "sense roster",

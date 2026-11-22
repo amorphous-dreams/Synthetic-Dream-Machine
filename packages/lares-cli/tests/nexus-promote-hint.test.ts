@@ -17,3 +17,8 @@ describe("the promote door's printed sign hints", () => {
     for (const line of printed) expect(line).toMatch(/--confirm-statement \$\{r\.statement\}/);
   });
 });
+
+test("approval hints name the renamed signing door", () => {
+  expect(printed.join("\n")).toContain("lares nexus approve sign");
+  expect(printed.join("\n")).not.toContain("lares nexus promote sign");
+});
