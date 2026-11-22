@@ -783,3 +783,17 @@ def test_pour_bulk_rides_the_sweep_spine(monkeypatch):
     assert calls[-1][0] == "sweep" and calls[-1][1]["surface"] == "claude" and calls[-1][1]["limit"] == 3
     tool("pour")(surface="claude", pointer="/x.jsonl")
     assert calls[-1][0] == "capture" and calls[-1][1]["pointer"] == "/x.jsonl"
+
+
+def test_pour_bulk_refuses_the_one_pointer_shaping(monkeypatch):
+    # `bulk` rides the sweep spine, which carries no preview, no writeback, no pointer and no room: each refuses by
+    # name before the wire, never drops silently (a dropped dry_run would LAND a real backfill on append-only ground).
+    from lares_mcp import SeatArgumentRefused
+    _, tool, calls = _routed_tools(monkeypatch)
+    for shaping, named in (({"dry_run": True}, "dry_run"), ({"writeback": True}, "writeback"),
+                           ({"pointer": "/x.jsonl"}, "pointer"), ({"room": "elsewhere"}, "room")):
+        with pytest.raises(SeatArgumentRefused) as refused:
+            tool("pour")(bulk=True, **shaping)
+        assert named in str(refused.value)
+    assert calls == []
+

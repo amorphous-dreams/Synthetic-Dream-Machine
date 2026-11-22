@@ -908,20 +908,25 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool()
     def pour(surface: str = "all", pointer: "str | None" = None, bulk: bool = False, writeback: bool = False,
-             dry_run: bool = False, wing: "str | None" = None, room: str = "conversations",
+             dry_run: bool = False, wing: "str | None" = None, room: "str | None" = None,
              project: "str | None" = None, limit: "int | None" = None, sensorium: "str | None" = None) -> dict:
         """Capture transcripts into a sensorium (`sensorium` names it; absent → memory) — mirrors `lares sense pour`.
         ONE POINTER: `surface` (claude/codex/copilot) + `pointer` captures that transcript; `writeback` re-enriches a
         wing, `dry_run` previews. BULK: `bulk` captures/recaptures EVERY local operator-AI transcript in one pass (the
         sweep spine, `lares sense pour --bulk`): `surface` `all` folds claude+codex+copilot, else names one; `project`
         narrows claude; `limit` caps each surface (oldest first). IDEMPOTENT — already-landed turns skip, so a re-run
-        catches up and a fresh sensorium fills fully."""
+        catches up and a fresh sensorium fills fully. `bulk` reads no `pointer`, `room`, `dry_run` or `writeback`: each
+        refuses by name beside it (the sweep spine carries no preview, so a dropped `dry_run` would land for real)."""
         if bulk:
+            stray = [n for n, v in (("pointer", pointer), ("room", room), ("dry_run", dry_run), ("writeback", writeback)) if v]
+            if stray:
+                raise SeatArgumentRefused(f"pour: `bulk` reads no {', '.join(f'`{n}`' for n in stray)} — the sweep spine "
+                                          "captures every transcript and previews nothing; drop them, or pour one `pointer`")
             return _call("sweep", sensorium, surface, wing=wing, project=project, limit=limit)
         if not pointer:
             raise SeatArgumentRefused("pour: name a `pointer` (one transcript), or pass `bulk=True` for every transcript")
         return _call("pour", sensorium, surface, pointer, writeback=writeback, dry_run=dry_run,
-                     wing=wing, room=room)
+                     wing=wing, room=room or "conversations")
 
     @mcp.tool()
     def recall(query: str, k: int = 8, wing: "str | None" = None, imago: "str | None" = None,
