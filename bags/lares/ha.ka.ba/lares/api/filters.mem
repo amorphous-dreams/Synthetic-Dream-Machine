@@ -48,7 +48,7 @@ uri-path  = "ha.ka.ba/lares/api/filters"
 [tag[stage/wave]]
 \end
 
-The attractor-store title convention holds these reference titles in wake order; add a later store on its own line. The view supplies presence.
+These reference titles name the engineer face's instance of the attractor-store title convention, in wake order; add a later store on its own line. The view supplies presence.
 
 \function lares.attractors()
 [[lar:///ha.ka.ba/kahua/memory/reference/discordian-catmas]]
@@ -93,6 +93,6 @@ The daemon reads this carrier's text from the canon layers (the oracle floor and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wkgIXfHAxiSbPu2aNS2aO4iJr7wwotlsWhngzCqaO5M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;934xG8bsdxNJ2YgRPSsQVj13elyd7upNeUaFe5wNnjE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -556,9 +556,9 @@ test("wake names attractor stores, their absence and read failures", async () =>
   assert.ok(result.includes(`Attractor stores: ${titles.join(" · ")}`));
   assert.ok(result.indexOf("Attractor stores:") < result.indexOf("Lares memory index"));
   const none = await wake({ run: runner({ ...base, attractors: answered(JSON.stringify({ ok: true, data: { titles: [] } })) }) });
-  assert.match(none, /no attractor stores/);
+  assert.match(none, /Attractor stores: no attractor stores/);
   const unread = await wake({ run: runner({ ...base, attractors: answered("", 127) }) });
-  assert.match(unread, /attractor stores: unread \(the read exited 127 with no answer\)/);
+  assert.match(unread, /Attractor stores: unread \(the read exited 127 with no answer\)/);
   const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })) }) });
   assert.match(down, /Attractor stores: unavailable \(no vessel answers\)/);
 });

@@ -637,8 +637,8 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   else if (attractors !== null) {
     const { fault, answer } = filterAnswer(attractors);
     const titles = answer?.data?.titles;
-    if (fault) lines.push(`attractor stores: unread (${fault.replace(/\s+/g, " ").slice(0, 240)})`);
-    else if (!Array.isArray(titles) || titles.some((title) => typeof title !== "string" || !/^lar:\/\/\/[^\s]{1,240}$/.test(title)) || answer.data.next) lines.push("attractor stores: unread (invalid or incomplete answer)");
+    if (fault) lines.push(`Attractor stores: unread (${fault.replace(/\s+/g, " ").slice(0, 240)})`);
+    else if (!Array.isArray(titles) || titles.some((title) => typeof title !== "string" || !/^lar:\/\/\/[^\s]{1,240}$/.test(title)) || answer.data.next) lines.push("Attractor stores: unread (invalid or incomplete answer)");
     else lines.push(titles.length ? `Attractor stores: ${titles.join(" · ")}` : "Attractor stores: no attractor stores");
   }
   if (state !== null) lines.push(stateLines(state));
