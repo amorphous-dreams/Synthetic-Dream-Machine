@@ -114,9 +114,11 @@ function serialize(p: PalaceProc): Record<string, unknown> {
  * the two doors can never drift a copy-paste twin. It lists ONLY the holders (and
  * spawner legs) the door OWNS: the guest scope keeps the sovereign capture holder
  * off the guest table, and vice-versa. `verb` heads the surface with the door's own
- * verb name (`status` under mempalace, `holders` under sense).
+ * verb name (`status` under mempalace, `holders` under sense). The sovereign door also hands in whether the
+ * vessel's OWN daemon socket answers (`daemonOpen`), the end of the capture route, named in its own words:
+ * never the herm's closed-door phrase, which names a different relation.
  */
-export function runTopology(args: ParsedArgs, door: DoorScope, verb: string): number {
+export function runTopology(args: ParsedArgs, door: DoorScope, verb: string, route?: { readonly daemonOpen: boolean }): number {
   const procs   = snapshot().filter((p) => procInPalaceScope(p, door.scope, { spawners: door.spawners }));
   const hooks   = hookPauseState();
   const holders = procs.filter((p) => p.holdsStore);
@@ -127,6 +129,7 @@ export function runTopology(args: ParsedArgs, door: DoorScope, verb: string): nu
     ok: true,
     data: {
       scope: door.scope,
+      ...(route ? { daemonOpen: route.daemonOpen } : {}),
       hooksPaused: hooks.paused,
       hooksMarker: hooks.marker,
       ...(hooks.reason ? { hooksReason: hooks.reason } : {}),
@@ -136,7 +139,9 @@ export function runTopology(args: ParsedArgs, door: DoorScope, verb: string): nu
     human: () => {
       console.log(`${head} — palace daemon/hook/capture topology (scope: ${door.scope})\n`);
       console.log(`  hooks: ${hooks.paused ? `PAUSED (${hooks.reason ?? "manual"}${hooks.since ? ` since ${hooks.since}` : ""})` : "LIVE (minting on dispatch)"}`);
-      console.log(`  marker: ${hooks.marker}\n`);
+      console.log(`  marker: ${hooks.marker}`);
+      if (route) console.log(`  daemon: ${route.daemonOpen ? "socket up — the capture route reaches it" : "socket down — no daemon answers on this vessel's own socket"}`);
+      console.log("");
       if (procs.length === 0) {
         console.log("  (no palace processes for this island — quiescent)\n");
         console.log("  the warm daemon re-spawns lazily on the next mine / recall.");

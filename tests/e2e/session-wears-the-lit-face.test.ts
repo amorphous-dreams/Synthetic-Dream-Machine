@@ -64,6 +64,16 @@ describe("e2e/session-wears-the-lit-face", () => {
  *       daemon, boot it again on the same root and wear face 1 again: face 1 stands (no `ArchiveIdentityMismatch`), and
  *       neither boot's log names a veil archive the seal refused, so no hive's Archive ever reached another face's row; a
  *       write the lit sibling (face 0) made before the stop reads back after the boot, so the stop dropped none of its saves
+ *
+ * THE READ-ACROSS LEG — A LIT FACE RECEIVES VISITS (operator ruling 2026-11-20, the cross-face reach): the worn face reads the
+ * lit sibling standing, with no lei, by `--target`, and keeps the face it wears; the sibling's personal layer never answers.
+ *
+ *   RA1 RED: the worn face reads face 1's working record and its daemon canon by `--target` (ordinal and pet name), and every
+ *       answer names the face it read and the face worn
+ *   RA2 RED: a title only in face 1's personal layer reads absent to a visit's get, meme read and filter, and naming the
+ *       personal bag refuses `cross-face-private`; face 1 itself still reads it. The other way round too (Sol H1): face 1's
+ *       session visiting the worn face reads its working layer, and the worn face's personal layer never answers it
+ *   RA3 RED: a shut target refuses `face-not-open`, and a write naming another face refuses `cross-face-write-refused`
  */
 describe("e2e/two-face-walk: a lit sibling writes into its own layers while another face stands worn", () => {
   const MEME = "lar:///ha.ka.ba/kahua/memory/walk/sibling-lane";
@@ -200,6 +210,77 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(tid.code).not.toBe(0);
     expect(errCode(tid), out(tid)).toBe("face-not-open");
   }, 120_000);
+
+  test("RA1 RED: the worn face reads face 1's working record and daemon canon by --target, and each answer names both faces", async () => {
+    for (const target of ["1", "h1", "sibling-face"]) {
+      const got = await walk.cli(["tiddler", "get", TID, "--recipe", "default", "--target", target, "--json"]);
+      expect(got.code, `${target}: ${out(got)}`).toBe(0);
+      expect(JSON.stringify(got.json), target).toContain("sibling engine word");
+      expect(data(got), target).toMatchObject({ face: 1, worn: 0 });
+    }
+    const meme = await walk.cli(["tiddler", "get", MEME, "--recipe", "default", "--target", "1", "--meme", "--all", "--json"]);
+    expect(meme.code, out(meme)).toBe(0);
+    expect(out(meme), "the sibling's daemon canon reads through its view").toContain("Sibling stands in its own layer");
+    const filter = await walk.cli(["wiki", "filter", `[[${TID}]is[tiddler]]`, "--recipe", "default", "--target", "1", "--json"]);
+    expect(filter.code, out(filter)).toBe(0);
+    expect(data(filter)).toMatchObject({ titles: [TID], face: 1, worn: 0 });
+    // A sibling's own session visits the worn face the same way (Sol H1): the worn face's working record answers, named both ways.
+    const back = await walk.cli(["tiddler", "get", "$:/walk/worn-engine", "--recipe", "default", "--face", "1", "--target", "0", "--json"]);
+    expect(back.code, out(back)).toBe(0);
+    expect(JSON.stringify(back.json)).toContain("worn engine word");
+    expect(data(back)).toMatchObject({ face: 0, worn: 1, visit: true });
+    // The worn face still reads its own wiki where it names no target.
+    const own = await walk.cli(["tiddler", "get", TID, "--recipe", "default", "--json"]);
+    expect(errCode(own), out(own)).toBe("not-found");
+  }, 180_000);
+
+  test("RA2 RED: a title only in face 1's personal layer never answers a visit, and its personal bag refuses cross-face-private", async () => {
+    const PRIVATE = "lar:///ha.ka.ba/kahua/memory/walk/sibling-private";
+    const PERSONAL = "lar:///ha.ka.ba/wikis/daemon/personal";
+    const file = join(scratch, "sibling-private.mem");
+    writeFileSync(file, memeText(PRIVATE, "Private"));
+    const put = await walk.cli(["meme", "put", PRIVATE, "--bag", PERSONAL, "--file", file, "--face", "1", "--json"]);
+    expect(put.code, out(put)).toBe(0);
+    expect(data(put)["face"]).toBe(1);
+    const own = await walk.cli(["tiddler", "get", PRIVATE, "--bag", PERSONAL, "--face", "1", "--meme", "--all", "--json"]);
+    expect(own.code, `face 1 reads its own personal layer: ${out(own)}`).toBe(0);
+    expect(out(own)).toContain("Private stands in its own layer");
+    const visit = await walk.cli(["tiddler", "get", PRIVATE, "--recipe", "default", "--target", "1", "--meme", "--all", "--json"]);
+    expect(out(visit), "a visit never reads the sibling's personal layer").not.toContain("Private stands in its own layer");
+    expect(visit.code, out(visit)).not.toBe(0);
+    const tid = await walk.cli(["tiddler", "get", PRIVATE, "--recipe", "default", "--target", "1", "--json"]);
+    expect(errCode(tid), out(tid)).toBe("not-found");
+    const filter = await walk.cli(["wiki", "filter", `[[${PRIVATE}]is[tiddler]] [search:text:literal[Private stands in its own layer]]`, "--recipe", "default", "--target", "1", "--json"]);
+    expect(filter.code, out(filter)).toBe(0);
+    expect(data(filter)["titles"], "the filter finds no private record").toEqual([]);
+    const named = await walk.cli(["tiddler", "get", PRIVATE, "--bag", PERSONAL, "--target", "1", "--meme", "--all", "--json"]);
+    expect(named.code).not.toBe(0);
+    expect(out(named), "naming the personal bag refuses before any read").toContain("cross-face-private");
+    // The worn face's own personal layer never answers face 1's visit either (Sol H1: the mount's view, never its own engine).
+    const WORN_PRIVATE = "lar:///ha.ka.ba/kahua/memory/walk/worn-private";
+    const wornFile = join(scratch, "worn-private.mem");
+    writeFileSync(wornFile, memeText(WORN_PRIVATE, "WornPrivate"));
+    const wornPut = await walk.cli(["meme", "put", WORN_PRIVATE, "--bag", PERSONAL, "--file", wornFile, "--json"]);
+    expect(wornPut.code, out(wornPut)).toBe(0);
+    const wornOwn = await walk.cli(["tiddler", "get", WORN_PRIVATE, "--bag", PERSONAL, "--meme", "--all", "--json"]);
+    expect(out(wornOwn), "the worn face reads its own personal layer").toContain("WornPrivate stands in its own layer");
+    const siblingVisit = await walk.cli(["tiddler", "get", WORN_PRIVATE, "--recipe", "default", "--face", "1", "--target", "0", "--meme", "--all", "--json"]);
+    expect(out(siblingVisit), "face 1's visit never reads the worn face's personal layer").not.toContain("WornPrivate stands in its own layer");
+    expect(siblingVisit.code, out(siblingVisit)).not.toBe(0);
+  }, 180_000);
+
+  test("RA3 RED: a shut target refuses face-not-open, and a write naming another face refuses cross-face-write-refused", async () => {
+    const shut = await walk.cli(["tiddler", "get", TID, "--recipe", "default", "--target", "7", "--json"]);
+    expect(shut.code).not.toBe(0);
+    expect(errCode(shut), out(shut)).toBe("face-not-open");
+    const write = await walk.cli(["tiddler", "put", "$:/walk/visitor-write", "--recipe", "default", "--text", "visitor word", "--create", "--target", "1", "--json"]);
+    expect(write.code).not.toBe(0);
+    expect(out(write)).toContain("cross-face-write-refused");
+    for (const face of [[], ["--face", "1"]]) {
+      const seen = await walk.cli(["tiddler", "get", "$:/walk/visitor-write", "--recipe", "default", ...face, "--json"]);
+      expect(errCode(seen), `nothing landed (${face.join(" ") || "worn"}): ${out(seen)}`).toBe("not-found");
+    }
+  }, 180_000);
 
   test("W6 EACH FACE LIVES ONE LIFE: a lock of the lit sibling closes it through its actor before its key locks; it then refuses work by name while the worn face keeps writing, and a fresh light serves it again", async () => {
     const door = await import(TEST_DOOR) as { unlockTestCustody: (root: string, act?: string, face?: number) => Promise<Record<string, unknown> | null> };

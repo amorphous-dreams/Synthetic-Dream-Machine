@@ -9,11 +9,22 @@
  *   SH5 — inside the lent set a seat names any lent face; outside it refuses `face-not-lent` naming the set; a set that
  *         reads empty or doubled refuses by its own reading; where custody names no set, SH1 rules
  *   SH6 — both doors read the lent set (`lentOrdinals`), and main hands it the faces the holder names open
+ *   SH7 — A LIT FACE RECEIVES VISITS (operator ruling 2026-11-20): a read naming another LIT face as its `target` (by ordinal or
+ *         pet name) passes the door with that face resolved to its ordinal, and the call keeps the worn face; acting AS another
+ *         face (`face`, `handleIndex`, a session's ref) still refuses as SH1 rules
+ *   SH8 — the door's order: a private bag refuses `cross-face-private` first; a write naming another face refuses
+ *         `cross-face-write-refused`; an unknown or doubled pet name refuses by name; a target naming the worn face reads as
+ *         none; a verb that reads `target` otherwise passes untouched. Whether a target stands lit, the door does not judge:
+ *         its own face actor answers at `gateFor` (one owner of a face's life; chore-face XV4)
+ *   SH10 — (Sol M3) a private bag refuses before any name resolves; a pet name spelled as an ordinal (`h1`, `1`) that a face
+ *         holds refuses `target-ambiguous`; pet names match case folded, and two faces whose names fold alike refuse
+ *   SH9 — both doors resolve the target (the one-shot line against the mount, a session against the face it wears), then
+ *         admit a visit on its target's actor (`gateFor`); main hands the door the visit verbs and the faces' pet names
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "../src/seat-hand.js";
+import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "../src/seat-hand.js";
 
 describe("the AI seat acts inside the lent set", () => {
   test("SH1 — a seat-kind request naming another face refuses; the worn face or none passes", () => {
@@ -80,5 +91,65 @@ describe("the AI seat acts inside the lent set", () => {
     expect(src).toMatch(/sessionRefuse\(sock, seatRefusalClass\(seatRefused\), requestId\)/);
     expect(src).toMatch(/fail\(seatRefused, seatRefusalClass\(seatRefused\)\)/);
     expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/lentOrdinals:\s+\(\) => unlockedFaceOrdinals\(\)/);
+  });
+});
+
+describe("a lit face receives visits: the door resolves a read's target", () => {
+  const petnames = async (): Promise<ReadonlyArray<readonly [number, string]>> => [[0, "worn-face"], [1, "sibling-face"], [2, "shut-face"], [3, "twin"], [4, "twin"]];
+  const door = (verb: string, args: Record<string, unknown>, worn: number | null = 0) =>
+    crossFaceTargetAtDoor({ verb, args, worn, petnames });
+
+  test("SH7 — a read naming a lit face by ordinal or pet name passes, resolved; acting as another face still refuses", async () => {
+    for (const target of [1, "1", "h1", "sibling-face"]) {
+      expect(await door("tiddler-get", { recipe: "default", title: "T", target }), String(target)).toEqual({ ok: true, args: { recipe: "default", title: "T", target: 1 } });
+    }
+    for (const verb of ["wiki-filter", "wiki-render", "wiki-status", "meme-list"]) expect((await door(verb, { recipe: "default", target: 1 })).ok, verb).toBe(true);
+    // A sibling's own session visits the mount the same way.
+    expect(await door("tiddler-get", { recipe: "default", title: "T", target: "worn-face" }, 1)).toEqual({ ok: true, args: { recipe: "default", title: "T", target: 0 } });
+    // Acting AS another face rides `face` and stays refused where custody names no set.
+    expect(seatFaceRefusal({ seat: "ai", named: namedFaceOf({ face: 1, title: "T" }), worn: 0, lent: null })).toMatch(/^face-hand-refused:/);
+    expect(namedFaceOf({ target: 1 }), "a target names no face to act as").toBeNull();
+  });
+
+  test("SH8 — private first, then the write wall; pet names refuse by name; the worn face reads as none; the lit set is the actor's", async () => {
+    const refusal = async (verb: string, args: Record<string, unknown>) => { const r = await door(verb, args); return r.ok ? null : r.refusal; };
+    expect(await refusal("tiddler-get", { bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: 1 })).toBe("cross-face-private");
+    expect(await refusal("meme-put", { bag: "lar:///ha.ka.ba/wikis/garden/personal", target: 7 })).toBe("cross-face-private");
+    for (const verb of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "meme-project"]) expect(await refusal(verb, { recipe: "default", target: 1 }), verb).toBe("cross-face-write-refused");
+    // A shut target passes the door resolved: its own actor refuses it at the gate (`admitVisit`), never a second lit set here.
+    expect(await door("tiddler-get", { recipe: "default", target: "shut-face" })).toEqual({ ok: true, args: { recipe: "default", target: 2 } });
+    expect(await refusal("tiddler-get", { recipe: "default", target: "nobody" })).toBe("target-unknown");
+    expect(await refusal("tiddler-get", { recipe: "default", target: "twin" })).toBe("target-ambiguous");
+    expect(await door("tiddler-put", { recipe: "default", title: "T", target: 0 }), "the worn face as target reads as none").toEqual({ ok: true, args: { recipe: "default", title: "T" } });
+    // A verb that reads `target` as something other than a face passes untouched.
+    expect(await door("intent-propose", { target: "lar:///x" })).toEqual({ ok: true, args: { target: "lar:///x" } });
+    expect(await door("tiddler-get", { recipe: "default", title: "T" })).toEqual({ ok: true, args: { recipe: "default", title: "T" } });
+  });
+
+  test("SH9 — both doors resolve the target, then a visit admits on its target's actor; main hands the door the visit verbs and pet names", () => {
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "uds-channel.ts"), "utf8");
+    // The session's pass reads the face worn as the session's own (Sol H1); the one-shot line's as the mount, and its visit takes
+    // the same gate a session's does.
+    expect(src).toMatch(/resolveTarget\(frame\["verb"\], frame\["args"\] as Record<string, unknown>, state\.supply\.ordinal\)/);
+    expect(src).toMatch(/resolveTarget\(inv\.verb, inv\.args, mount\)/);
+    expect(src).toMatch(/gate = gateFor\(mount, inv\.verb, inv\.args \?\? \{\}\)/);
+    const main = readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8");
+    expect(main).toMatch(/visitVerbs:\s+CROSS_FACE_READ_VERBS/);
+    expect(main).toMatch(/petnames:\s+async \(\) => \(await makeNodePersonaPetnameStore\(\)\)\.entries\(\)/);
+  });
+});
+
+describe("a lit face receives visits: privacy before names, and names that cannot pose as ordinals (Sol M3)", () => {
+  const door = (args: Record<string, unknown>, names: ReadonlyArray<readonly [number, string]>) =>
+    crossFaceTargetAtDoor({ verb: "tiddler-get", args, worn: 0, petnames: async () => names });
+  const refusal = async (args: Record<string, unknown>, names: ReadonlyArray<readonly [number, string]> = [[1, "sibling-face"]]) => { const r = await door(args, names); return r.ok ? null : r.refusal; };
+
+  test("SH10 — private first, ordinal-looking pet names refuse, names fold case", async () => {
+    expect(await refusal({ bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: "nobody" })).toBe("cross-face-private");
+    expect(await refusal({ bag: "LAR:///ha.ka.ba/wikis/daemon/draft/", target: "1" })).toBe("cross-face-private");
+    expect(await refusal({ recipe: "default", target: "h1" }, [[2, "h1"]])).toBe("target-ambiguous");
+    expect(await refusal({ recipe: "default", target: "1" }, [[2, "1"]])).toBe("target-ambiguous");
+    expect(await door({ recipe: "default", target: "SIBLING-FACE" }, [[1, "sibling-face"]])).toEqual({ ok: true, args: { recipe: "default", target: 1 } });
+    expect(await refusal({ recipe: "default", target: "twin" }, [[1, "Twin"], [2, "twin"]])).toBe("target-ambiguous");
   });
 });

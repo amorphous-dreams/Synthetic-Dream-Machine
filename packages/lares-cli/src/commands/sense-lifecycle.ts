@@ -3,11 +3,11 @@
  * lifecycle-verb functions over manifest.json; no store holder, no daemon needed). One capability, one
  * seat (the reversibility×trust grid mirrored TS-side): an HITL verb (promote · retire · purge) refuses
  * without the operator's `--approve` hand at the door, exactly as the MCP surface refuses without an
- * approval cap (E5). The reads (roster · inspect) and the reversible re-settle (reconcile · un-retire)
+ * approval cap (E5). The read (roster, at two grains) and the reversible re-settle (reconcile · un-retire)
  * run free (HOTL).
  *
  *   lares sense roster                         list every sensorium + its lifecycle
- *   lares sense inspect  <name>                one sensorium's manifest facets
+ *   lares sense roster   <name>                one sensorium's manifest facets (the same read, one grain finer)
  *   lares sense reconcile <name> | --all       re-settle against evidence (on-demand; idempotent)
  *   lares sense build    <name> --ephemeral    mint a fresh pioneer (refuses a name-collision)
  *   lares sense promote  <name> --approve      climb a rung (in-place field-flip)   [+ --store-swap <t>, gated]
@@ -57,16 +57,13 @@ function requireApprove(args: ParsedArgs, verb: string): void {
   guardHitl(verb, args.flags["approve"] === true ? "operator-hand" : undefined);
 }
 
+/** ONE READ AT TWO GRAINS: bare, every sensorium and its lifecycle; with a name, that one sensorium's manifest facets. */
 export function cmdSenseRoster(args: ParsedArgs): number {
-  return landed(args, "roster", { sensoria: rosterSensoria() });
-}
-
-export function cmdSenseInspect(args: ParsedArgs): number {
   const name = args.positional[0];
-  if (!name) return refused(args, "inspect", "inspect wants a sensorium name", "lares sense inspect <name>");
+  if (!name) return landed(args, "roster", { sensoria: rosterSensoria() });
   const insp = inspectSensorium(name);
-  if (!insp) return refused(args, "inspect", `no sensorium named '${name}'`, "lares sense roster");
-  return landed(args, "inspect", insp);
+  if (!insp) return refused(args, "roster", `no sensorium named '${name}'`, "lares sense roster   # every sensorium");
+  return landed(args, "roster", insp);
 }
 
 export function cmdSenseReconcile(args: ParsedArgs): number {

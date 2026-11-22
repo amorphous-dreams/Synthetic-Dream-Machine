@@ -1,9 +1,9 @@
 /**
- * `lares sense jing` (勁) — the coherence verdict at the li∘ki JOINT: do a child-hosting sensorium's lobes
+ * `lares sense analyze --lens square` (勁) — the coherence verdict at the li∘ki JOINT: do a child-hosting sensorium's lobes
  * express ONE coherent trained force, or does the grain fail to round-trip with the flow? Squaring is a cap
  * a child-hosting sensorium `#has` — any sensorium with ≥2 `coupling.children` answers; one without reports
- * the honest no-square. Bare `lares sense jing` reads the MESH — the load-bearing sensorium that hosts the
- * WHO ⊥ AUTHORITY ⊥ FLOW lobes a node federates onto DreamNet; `lares sense <sensorium> jing` squares any
+ * the honest no-square. Bare `lares sense analyze --lens square` reads the MESH — the load-bearing sensorium that hosts the
+ * WHO ⊥ AUTHORITY ⊥ FLOW lobes a node federates onto DreamNet; `lares sense <sensorium> analyze --lens square` squares any
  * operator-designed child-set. No sensorium is hardcoded beyond the mesh default.
  *
  * The read is TS-NATIVE (no python, no daemon compute): `readJing` EXTENDS the lobes to a reconciled self
@@ -12,12 +12,11 @@
  * localizes to the offending lobe: the self stops cohering THERE (the map the node shows the mesh diverges
  * from the territory it holds). A held-open extension means the lobes admit no common self at all.
  *
- *   lares sense [<sensorium>] jing   the coherence verdict — readable lobes · coheres · radius · offending lobe · note
+ *   lares sense [<sensorium>] analyze --lens square   the coherence verdict — readable lobes · coheres · radius · offending lobe · note
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/the-lattice
  *
- * OWED (operator, 2026-10-11): a house-grammar `|en` alias `square` flowing to this same module — declared by
- * the house grammar's alias layer, never a hand-wired second entry in the `sense` door table.
+ * The plain lens name `square` spells this read on the one `analyze` door (sense-analyze.ts).
  */
 
 import { readJing, meshSensoriumDir } from "@lararium/node";
@@ -32,6 +31,7 @@ export function cmdJing(args: ParsedArgs): number {
   emit(args, {
     ok: true,
     data: {
+      lens: "square",
       sensorium: jing.sensorium,
       readable: jing.readable,
       coheres: jing.coheres,
@@ -41,7 +41,7 @@ export function cmdJing(args: ParsedArgs): number {
       note: jing.note,
     },
     human: () => {
-      console.log(`lares sense jing — the li∘ki square (${jing.sensorium})`);
+      console.log(`lares sense analyze --lens square — the li∘ki square (${jing.sensorium})`);
       console.log(`  coheres:      ${jing.coheres ? "yes — the jing lands" : "no"}`);
       console.log(`  readable:     ${jing.readable} lobe(s) · round-trip radius ${jing.radius.toFixed(3)}`);
       if (jing.offendingLobe) console.log(`  diverges at:  ${jing.offendingLobe}`);

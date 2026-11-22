@@ -112,6 +112,34 @@
       "mcp": { "recipe": "kahu" },
       "wire": { "verb": "wiki-status", "args": { "recipe": "kahu" } },
       "output": { "recipe": "kahu", "working": "lar:///ha.ka.ba/wikis/kahu/working", "layers": [{ "bag": "lar:///ha.ka.ba/bags/kahu", "mounted": "read-only", "read": true, "write": false }, { "bag": "lar:///ha.ka.ba/wikis/kahu/working", "mounted": "writable", "read": true, "write": true, "working": true }] }
+    },
+    {
+      "tool": "wiki_filter",
+      "cli": { "command": "wiki", "positional": ["filter", "[tag[memory]]"], "options": { "recipe": "default", "target": "h1" }, "flags": {} },
+      "mcp": { "filter": "[tag[memory]]", "recipe": "default", "target": "h1" },
+      "wire": { "verb": "wiki-filter", "args": { "recipe": "default", "filter": "[tag[memory]]", "target": "h1" } },
+      "output": { "recipe": "default", "filter": "[tag[memory]]", "titles": ["Sibling note"], "total": 1, "next": null, "asOf": "heads-h1", "face": 1, "worn": 0 }
+    },
+    {
+      "tool": "tiddler_get",
+      "cli": { "command": "tiddler", "positional": ["get", "Sibling note"], "options": { "recipe": "default", "target": "sibling-face" }, "flags": {} },
+      "mcp": { "title": "Sibling note", "recipe": "default", "target": "sibling-face" },
+      "wire": { "verb": "tiddler-get", "args": { "recipe": "default", "title": "Sibling note", "target": "sibling-face" } },
+      "output": { "recipe": "default", "title": "Sibling note", "tiddler": { "fields": { "title": "Sibling note", "text": "a word the sibling keeps in its working layer" }, "hash": "sha256-s1", "textHash": "sha256-t1", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "position": "plain" }, "face": 1, "worn": 0 }
+    },
+    {
+      "tool": "wiki_render",
+      "cli": { "command": "wiki", "positional": ["render", "Sibling note"], "options": { "recipe": "default", "target": "1" }, "flags": {} },
+      "mcp": { "title": "Sibling note", "recipe": "default", "target": "1" },
+      "wire": { "verb": "wiki-render", "args": { "recipe": "default", "title": "Sibling note", "target": "1" } },
+      "output": { "recipe": "default", "title": "Sibling note", "form": "text", "text": "a word the sibling keeps in its working layer", "bytes": 45, "truncated": false, "next": null, "face": 1, "worn": 0 }
+    },
+    {
+      "tool": "wiki_status",
+      "cli": { "command": "wiki", "positional": ["status"], "options": { "recipe": "default", "target": "h1" }, "flags": {} },
+      "mcp": { "recipe": "default", "target": "h1" },
+      "wire": { "verb": "wiki-status", "args": { "recipe": "default", "target": "h1" } },
+      "output": { "recipe": "default", "working": "lar:///ha.ka.ba/wikis/daemon/working", "layers": [{ "bag": "lar:///ha.ka.ba/wikis/daemon/working", "mounted": "read-only", "read": true, "write": false, "working": true }], "face": 1, "worn": 0 }
     }
   ]
 }

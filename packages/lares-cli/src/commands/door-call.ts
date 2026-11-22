@@ -51,10 +51,12 @@ export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): 
   catch (error) { if (error instanceof FaceOptionMalformed) throw new DoorUsage(error.message); throw error; }
   const result = face.face === undefined ? await runVerb(plan.verb, plan.args, await vesselDid()) : await runVerbAsFace(plan.verb, plan.args, face.face);
   const outcome = readVerbOutcome(result);
-  if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { ...outcome.output, face: face.face } };
+  // The island names the face it answered from (a visit names the face it read): its word stands over the session's face.
+  if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { face: face.face, ...outcome.output } };
   const message = outcome.error ?? "the verb refused";
   const named = /^([a-z][a-z0-9]*(?:-[a-z0-9]+)+):/.exec(message)?.[1];
   const code = named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";
+  // A visit's refusals name themselves in the hint (`cross-face-private`, `cross-face-write-refused`, `target-unknown`, …).
   emit(args, {
     ok: false, requestId: result.requestId,
     error: { code, message, ...(named && named !== "cap-denied" ? { hint: `refusal: ${named}` } : {}) },

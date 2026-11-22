@@ -16,7 +16,7 @@
  * `session_discovery.discover_all`). The guest-palace-literal (`~/.mempalace/palace`, never an env
  * override) and the ZERO-`lar_*` wall live THERE, at the boundary that actually writes. This leg only
  * resolves the interpreter + stage root and shells the lane, then renders its report — the SAME
- * python-owned discovery the sovereign `lares sense sweep` reads, no second TypeScript discovery.
+ * python-owned discovery the sovereign `lares sense pour --bulk` reads, no second TypeScript discovery.
  */
 
 import { spawnSync } from "node:child_process";

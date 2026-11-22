@@ -1,9 +1,10 @@
 /**
- * `lares sense pour` — the sovereign re-pave and its writeback leg; `lares sense capture` and
- * `lares sense sweep` — the source-stream capture doors.
+ * `lares sense pour` — the sovereign re-pave, its drawers leg (`--bulk`) and its writeback leg;
+ * `lares sense capture` — the one-transcript capture door.
  *
  * `pour --all` walks the whole tending movement: quiesce · baseline · drawers · bearing · projection ·
  * verify · resume, in that order, because each landing step reads what the one before it wrote.
+ * `pour --bulk` runs the drawers leg alone: every local transcript in one pass on the sweep spine.
  * `pour --writeback` runs the bearing leg alone — the lar-telemetry projection onto the drawers,
  * held as a placeholder (operator ruling 2026-10-31, Train Q) until the sensorium arc returns it.
  *
@@ -21,7 +22,8 @@ import { wingFromDir } from "../../wing-law.js";
 import { partitionEphemeral } from "../../ephemeral.js";
 import { runVerb } from "../../verb-call.js";
 import { readVerbOutcome } from "../../verb-result.js";
-import { emit, exitFor, type LaresError } from "../../render.js";
+import { emit, exitFor, refuseUsage, type LaresError } from "../../render.js";
+import { helpLines } from "../../command-help.js";
 import type { ParsedArgs } from "../../parse-args.js";
 
 /** The re-pave's checkpoint home — `<root>/hearth/checkpoints/harvest`. The baseline series lands here under
@@ -51,7 +53,7 @@ function runWriteback(args: ParsedArgs, wing: string): number {
 
 // The bulk `--all` backfill + guest-comparator discovery/staging/mine now live in PYTHON
 // (session_discovery.py + guest_harvest.py; the sovereign sweep in capture_session.py). The python
-// guest lane owns discovery/stage/lock; `lares mempalace harvest` shells it, and `lares sense sweep`
+// guest lane owns discovery/stage/lock; `lares mempalace harvest` shells it, and `lares sense pour --bulk`
 // routes the sovereign lane through the daemon.
 
 /** Recursively collect `.jsonl` files under a root whose basename passes `match`. */
@@ -355,6 +357,15 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
   const roomGuard = guardRoom(args, "pour");
   if (roomGuard !== null) return roomGuard;
 
+  // ONE LEG PER LINE. `--all` already walks the drawers and the bearing, `--bulk` is the drawers leg and
+  // `--writeback` the bearing leg: two on one line would run one and drop the other without a word.
+  const legs = [args.flags["all"] === true && "all", args.flags["bulk"] === true && "bulk", args.flags["writeback"] === true && "writeback"]
+    .filter((leg): leg is string => typeof leg === "string");
+  if (legs.length > 1) {
+    return refuseUsage(args, "sense pour", helpLines("sense"),
+      `${legs.map((l) => `--${l}`).join(" and ")} name two legs; pour walks one (--all the whole movement, --bulk the drawers, --writeback the bearing)`);
+  }
+
   // `--all` IS THE WHOLE MOTION: the legs a sensorium needs filled — drawers, bearing, projection —
   // in the order the second's dependency on the first sets.
   if (args.flags["all"] === true) {
@@ -362,7 +373,7 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: r.code === 0,
       ...(r.code === 0 ? {} : { error: { code: "repave-halted", message: `the ${r.stages.at(-1)?.name} leg refused`,
-                                         hint: "the legs stand alone: `lares sense sweep`, `lares sense pour --writeback`, `lares sense refresh`" } }),
+                                         hint: "the legs stand alone: `lares sense pour --bulk`, `lares sense pour --writeback`, `lares sense refresh`" } }),
       data: { mode: "repave", wing: repaveWing(args), stages: r.stages },
       human: () => {
         for (const s of r.stages) console.log(`  ${s.name.padEnd(11)} ${s.code === 0 ? "landed" : `refused (${s.code})`}`);
@@ -370,6 +381,10 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
     });
     return r.code;
   }
+
+  // --bulk: the drawers leg alone — every transcript in one pass on the sweep spine.
+  // A flag the bulk leg does not read never reaches here: the door's `pathAccepts` (sensePathAccepts) refuses it.
+  if (args.flags["bulk"] === true) return cmdSweep(args);
 
   // --writeback: the bearing leg alone, over the mempalace DRAWERS.
   if (args.flags["writeback"] === true) {
@@ -379,8 +394,8 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
 
   const error: LaresError = {
     code: "usage",
-    message: "pour walks the re-pave (`--all`) or its writeback leg (`--writeback`)",
-    hint: "lares sense pour --all · lares sense pour --writeback [--wing <wing>] · one transcript: lares sense capture <path> --wing <wing>",
+    message: "pour walks the re-pave (`--all`), its drawers leg (`--bulk`) or its writeback leg (`--writeback`)",
+    hint: "lares sense pour --all · lares sense pour --bulk [--surface <s>] · lares sense pour --writeback [--wing <wing>] · one transcript: lares sense capture <path> --wing <wing>",
   };
   emit(args, { ok: false, error, human: () => console.error(`lares sense pour: ${error.message}\n  ${error.hint}`) });
   return 2;
@@ -394,9 +409,9 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
  * the same pointer re-derives its ledger and lands only the new tail; the TypeScript layer neither
  * reads exchanges for capture nor holds a capture WAL.
  */
-/** `lares sense sweep` — the BULK backfill, routed to the ONE daemon `sweep` op: the holder discovers every
+/** `lares sense pour --bulk` — the BULK backfill, routed to the ONE daemon `sweep` op: the holder discovers every
  *  transcript and captures each on its warm stream (no per-session round-trips, no second writer). The
- *  isomorphic twin of the MCP `sweep` tool — CLI + MCP land on the SAME spine. `--surface all|claude|codex|
+ *  isomorphic twin of the MCP `pour(bulk=True)` — CLI + MCP land on the SAME spine. `--surface all|claude|codex|
  *  copilot` (default all) · `--wing` (default wing_<user>) · `--project` (narrows claude) · `--limit`.
  *  Idempotent — a re-run catches up, a fresh sensorium fills fully. */
 export async function cmdSweep(args: ParsedArgs): Promise<number> {
@@ -429,7 +444,7 @@ export async function cmdSweep(args: ParsedArgs): Promise<number> {
                                      hint: "a long backfill outruns the daemon's adaptive budget — narrow it with `--limit` or `--surface`, and re-run: the sweep is idempotent." } }),
     data: { surface, wing, landed, skipped, sessions, output: outcome.output },
     human: () => {
-      if (!outcome.ok) { console.error(`lares sense sweep: ${outcome.error}`); return; }
+      if (!outcome.ok) { console.error(`lares sense pour --bulk: ${outcome.error}`); return; }
       console.log(`[sweep] ${sessions} session(s) → ${landed} landed · ${skipped} re-derived (${surface}, wing ${wing})`);
     },
   });

@@ -188,6 +188,7 @@ export * from "./projection-nalu.js";
 export * from "./host-task.js";
 export * from "./iris.js";
 export * from "./lent-faces.js";
+export * from "./cross-face-reach.js";
 export * from "./chore-ask.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";

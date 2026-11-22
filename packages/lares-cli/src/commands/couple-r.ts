@@ -1,5 +1,5 @@
 /**
- * `lares sense couple-r` — the R effective-transfer-entropy coupling reference: `coupling.R`
+ * `lares sense analyze --lens lead` — the R effective-transfer-entropy coupling reference: `coupling.R`
  * (RTransferEntropy::calc_ete) over an N-signal matrix → the directional who-leads-whom edges. The py/R
  * TWIN of the TS-hull `ki`: `ki`/`jing` run the Gaussian-CMI cohomology in the browser-carried hull; this
  * runs the R reference behind the causal-island boundary (the machine-code-runs-py ruling — the coupling
@@ -9,7 +9,7 @@
  * The signal rides `--signal <path>` — an NDJSON matrix, one JSON array per line (rows=time, cols=signals);
  * `--names a,b,c` labels the columns. Graceful `coupling-skipped` when R / RTransferEntropy is absent.
  *
- *   lares sense couple-r --signal flow.ndjson --names who,authority,flow
+ *   lares sense analyze --lens lead --signal flow.ndjson --names who,authority,flow
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/cohomological-gate
  */
@@ -37,8 +37,8 @@ function readSignalMatrix(path: string): number[][] {
 export async function cmdCoupleR(args: ParsedArgs): Promise<number> {
   const signal = args.options["signal"];
   if (typeof signal !== "string" || signal.length === 0) {
-    emit(args, { ok: false, error: { code: "usage", message: "couple-r needs --signal <ndjson> (rows=time, cols=signals)" },
-                 human: () => console.error("lares sense couple-r: needs --signal <ndjson> (rows=time, cols=signals)") });
+    emit(args, { ok: false, error: { code: "usage", message: "--lens lead needs --signal <ndjson> (rows=time, cols=signals)" },
+                 human: () => console.error("lares sense analyze --lens lead: needs --signal <ndjson> (rows=time, cols=signals)") });
     return exitFor("usage");
   }
   const rows = readSignalMatrix(signal);
@@ -50,7 +50,7 @@ export async function cmdCoupleR(args: ParsedArgs): Promise<number> {
     did = await vesselDid();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense couple-r: ${msg}`) });
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense analyze --lens lead: ${msg}`) });
     return exitFor("not-found");
   }
 
@@ -60,11 +60,11 @@ export async function cmdCoupleR(args: ParsedArgs): Promise<number> {
     // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
     const f = verbFailure(err);
     failCode = f.code;
-    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand --foreground`, or run `lares_mcp --standalone --sensorium <root>` (tool `couple_r`)." : f.hint;
+    const hint = f.code === "daemon-unreachable" ? "Start the daemon with `lares vessel stand --foreground`, or run `lares_mcp --standalone --sensorium <root>` (tool `analyze`, lens `lead`)." : f.hint;
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(hint !== undefined ? { hint } : {}) },
-      human: () => console.error(`lares sense couple-r: ${f.message}`),
+      human: () => console.error(`lares sense analyze --lens lead: ${f.message}`),
     });
     return null;
   });
@@ -72,16 +72,16 @@ export async function cmdCoupleR(args: ParsedArgs): Promise<number> {
   if (submit.status === "error") {
     const msg = submit.errorMessage ?? "unknown";
     emit(args, { ok: false, requestId: submit.requestId, error: { code: "verb-error", message: msg },
-                 human: () => console.error(`lares sense couple-r failed: ${msg}`) });
+                 human: () => console.error(`lares sense analyze --lens lead failed: ${msg}`) });
     return exitFor("verb-error");
   }
   const result = summaryOutput(submit) ?? {};
 
   emit(args, {
     ok: true,
-    data: result,
+    data: { lens: "lead", ...result },
     human: () => {
-      console.log(`lares sense couple-r — the R effective-TE coupling reference`);
+      console.log(`lares sense analyze --lens lead — the R effective-TE coupling reference`);
       console.log(`  signals:      ${rows[0]?.length ?? 0} · samples: ${rows.length}`);
       console.log(`  R available:  ${result["r_available"] === false ? "no — coupling-skipped" : "yes"}`);
       if (result["note"]) console.log(`  note:         ${String(result["note"])}`);

@@ -561,21 +561,36 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   sense: {
-    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense <lifecycle verb> …",
+    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense analyze --lens <lens>  ·  lares sense <lifecycle verb> …",
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +
-      "needs no new verb. TEND the planes with the lifecycle verbs (recall · capture (incl. sub-agent " +
-      "transcripts) · pour · teardown · worldline · telemetry · flow). `pour --all` walks the whole tending movement — " +
-      "quiesce · baseline · drawers · bearing · projection · verify · resume — never the guest miner. " +
-      "Every verb rides the daemon's composed caps (the " +
+      "needs no new verb. ANALYZE through one verb, the lens choosing the instrument (the lenses below). " +
+      "TEND the planes with the lifecycle verbs (recall · capture (incl. sub-agent " +
+      "transcripts) · pour · teardown · worldline · telemetry · holders · roster). `pour --all` walks the whole tending movement — " +
+      "quiesce · baseline · drawers · bearing · projection · verify · resume — never the guest miner; `pour --bulk` " +
+      "runs the drawers leg alone. Every verb rides the daemon's composed caps (the " +
       "single-owner law: nothing opens a store beside the vessel's holder).",
+    details: [
+      "analyze --lens <lens> — the lens chooses the instrument; each keeps its own read path and daemon verb.",
+      "changes rhythm couple cohere square read the poured sensorium; lead forecast mismatch read a --signal you hand in.",
+      "Every answer names the lens it applied; a missing or unknown lens refuses with this list.",
+      "  changes    where the poured content changes hands (--spectral, --halves <w,w>, --span <n>)",
+      "  rhythm     the landed regimes and their couples (--repour re-derives first, --channel <c>)",
+      "  couple     do the sensorium's coupled peers reconcile (the H¹ gate); also ki",
+      "  cohere     do the sensorium's planes glue into one section; also li",
+      "  square     do a child-host's lobes round-trip to one self (bare: the mesh)",
+      "  lead       who leads whom across signals, the R reference (--signal <ndjson>, --names <a,b>)",
+      "  forecast   does a regime shift approach, the R early-warning read (--signal <ndjson>)",
+      "  mismatch   do couple and lead agree over the same signals (--signal <ndjson>, --names <a,b>)",
+    ],
     examples: [
       "lares sense search \"entrance block\" --lens structure   # hybrid recall over a plane",
       "lares sense status --lens content                       # wings · rooms · entities · total",
       "lares sense recall keyhive convergent removal           # verbatim drawers",
       "lares sense recall fork --speaker operator --surface claude  # filters compose (AND)",
       "lares sense pour --all                                  # the sovereign re-pave (all sources)",
+      "lares sense analyze --lens couple                       # one instrument through its lens",
       "lares sense worldline 0425c035                          # walk a session's spirit tree",
       "lares sense teardown --confirm --drain                  # tear the planes for a clean re-pave",
       "lares sense trial-run --trial-root /state/sensorium-serving-one --freeze-receipt /state/freeze-receipt.json --intent one --source-host host-a --model-home /state/model-home",
@@ -587,7 +602,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--wing <w>      scope to one project wing",
       "--agent/--surface/--speaker/--channel/--function   recall filters (compose AND; need a query)",
       "--imago <id>    (recall) fetch one imago verbatim; --list lists imagines",
-      "--all           (pour) sweep every transcript source",
+      "--all           (pour) the whole tending movement · --bulk the drawers leg alone, every transcript",
       "--trial-root <absolute named root>  frozen Claude serving operation; trial-run/search/status only",
       "--model-home <root>  pinned MiniLM assets for trial-run/search; must match the operation receipt",
       "--source-key/--revision <value>  trial search postfilters (bounded candidate window)",
@@ -773,11 +788,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wiki status --recipe default                                       # which layer takes a write for this face",
       "lares wiki filter '[tag[road]sort[title]]' --recipe kahu                 # a shared wiki, in its own engine",
       "lares tiddler put \"Road note\" --recipe kahu --create --text \"first words\"   # lands in that wiki's working layer",
+      "lares tiddler get \"Sibling note\" --recipe default --target h1          # read a lit sibling's daemon wiki, still wearing your own face",
+      "lares wiki filter '[tag[memory]]' --recipe default --target <pet name>  # a visit names its face by pet name too",
     ],
     flags: [
       "--recipe <slug>      the wiki read or written: default (the worn face's daemon wiki) or any wiki this face reaches",
       "--bag <slug>         (get) read that one bag's record, with no wiki and no engine; put and delete refuse a bag (the meme door takes it: `lares meme put --bag <slug>`), and so do `lares wiki filter | render | status`",
       "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
+      "--target <h1|name>   (get, and `wiki filter | render | status`; on put or delete it refuses) READ another lit face's daemon wiki while keeping the face worn: its canon and working layer, never its personal or draft layer (either bag refuses cross-face-private); a shut face refuses face-not-open; a write naming another face refuses cross-face-write-refused",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--meme               (get) the meme lens: the root and its slots as one sealed carrier (a record that holds none answers itself)",
@@ -838,6 +856,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--replace <file>   (patch) the slot's whole body",
       "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
       "--file <path>      (put) the meme text (stdin when absent)",
+      "--target <h1|name> (get, list) READ another lit face's daemon wiki (`--recipe default`, or one of its daemon bags) while keeping the face worn; its personal and draft layers never answer (cross-face-private), a shut face refuses face-not-open, and a write naming another face refuses at the CLI",
       "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
         "`list --bag` names that one bag's own",

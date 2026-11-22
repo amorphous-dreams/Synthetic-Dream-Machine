@@ -401,8 +401,8 @@ export function captureVerbCap(): CapModule {
         registry.register("sweep", async (args) => {
           // BULK backfill — the holder discovers EVERY transcript itself and captures each through its ONE
           // warm stream (no pointer crosses; the holder owns discovery). `surface` `all` (default) folds
-          // claude+codex+copilot; `project`/`limit` narrow. The routed sweep spine `lares sense sweep` /
-          // `pour --all` / the MCP `sweep` all reach.
+          // claude+codex+copilot; `project`/`limit` narrow. The routed sweep spine `lares sense pour --bulk` /
+          // `pour --all` / the MCP `pour` with `bulk` all reach.
           const surface = typeof args["surface"] === "string" ? args["surface"] : "all";
           const wing = typeof args["wing"] === "string" ? args["wing"] : "";
           if (!wing) throw new Error("sweep: args.wing (a non-empty string) required");

@@ -60,7 +60,8 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly faceLife?: FaceLives; readonly visitVerbs?: ReadonlySet<string>; readonly hold?: ReadonlySet<string>; readonly timeoutMs?: number } = {}) {
+async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly faceLife?: FaceLives; readonly visitVerbs?: ReadonlySet<string>; readonly hold?: ReadonlySet<string>; readonly timeoutMs?: number;
+  readonly output?: (o: { verb: string; args: Record<string, unknown> }) => Record<string, unknown>; readonly petnames?: ReadonlyArray<readonly [number, string]> } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -72,7 +73,7 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
   const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "nexus", aid: "nexus-one.synthetic" }), open: async ({ faceRef }) => ({ ok: true, supply: {
     face: face(faceRef), ordinal: Number(faceRef.slice(1)), profile: "seat", presenter: `verified-${faceRef}`,
     anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } as unknown as UdsSessionSigner }) } }) };
-  const placed: Array<{ verb: string; requestId: string; ordinal?: number }> = [];
+  const placed: Array<{ verb: string; requestId: string; ordinal?: number; args: Record<string, unknown>; requestedBy: string }> = [];
   const held: Array<() => void> = [];
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
@@ -84,12 +85,13 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
     ...(lane.faceLife ? { faceLife: lane.faceLife } : {}),
     ...(lane.visitVerbs ? { visitVerbs: lane.visitVerbs } : {}),
     ...(lane.timeoutMs !== undefined ? { timeoutMs: lane.timeoutMs } : {}),
+    ...(lane.petnames ? { petnames: async () => lane.petnames! } : {}),
     placeVerb: (o) => {
       placed.push(o);
       // The worker stamps the mark its placement carried, as the island's dispatcher does (`writeOutcome`).
       const land = () => {
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", cause: "test-worker",
-          batchMode: "best-effort", results: { summary: { ok: true, output: { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
+          batchMode: "best-effort", results: { summary: { ok: true, output: lane.output ? lane.output(o) : { landed: true } } }, ...(o.chore ? { chore: o.chore } : {}) });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       };
       // A held verb's outcome lands only when the test releases it: its reply is still on its way.
@@ -359,4 +361,99 @@ test("SOL R7 (a second response after a close refusal): a visit refused at the c
   expect(replyTo(v.peer, "visit-once"), "one answer, the close's refusal").toHaveLength(1);
   expect(replyTo(v.peer, "visit-once")[0]).toMatchObject({ refusal: { reason: "face-not-open" } });
   drains[0]!(); await closed;
+});
+
+/**
+ * A LIT FACE RECEIVES VISITS at the vessel's door (the re-cut of #407 onto the face actor): the door resolves a visit's `target`
+ * (an ordinal, `h<N>` or a pet name) and refuses a private bag, a write naming another face and an ambiguous name before any
+ * gate; then the visit admits on its TARGET's actor and its answer delivers through that actor's mailbox, on a session and on
+ * the one-shot line alike. "The face worn" names the session's own face, and the mount on the one-shot line, which presents the
+ * worn face alone. A visit's body answers its caller once: every later retrieval withholds it.
+ */
+const READ = { recipe: "default", title: "T" };
+const visitOut = (o: { verb: string; args: Record<string, unknown> }) =>
+  (o.args["target"] !== undefined ? { face: o.args["target"], worn: 0, visit: true, tiddler: { text: "the visited word" } } : { tiddler: { text: "own" } });
+const VISITS = new Set(["tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-list"]);
+
+test("RED XV1 (#407 H1): a session wearing lit h1 that targets the mount keeps its target past the door, by ordinal and by pet name, and admits on h0's actor", async () => {
+  const { lives } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISITS, output: visitOut, petnames: [[0, "Mara"], [1, "Wren"]] });
+  const env = await v.open("h1");
+  for (const [requestId, target] of [["by-ordinal", 0], ["by-handle", "h0"], ["by-name", "mara"]] as const) {
+    const reply = await v.peer.ask({ op: "session:call", ...env, requestId, verb: "tiddler-get", args: { ...READ, target } });
+    expect(reply, requestId).toMatchObject({ kind: "session:result", status: "done" });
+    expect(JSON.stringify(reply), requestId).toContain("the visited word");
+  }
+  expect(v.placed.map((p) => p.args["target"]), "the door resolves each spelling to the mount's ordinal").toEqual([0, 0, 0]);
+  // A target naming the face the session wears reads as no target, and runs as its own read.
+  await v.peer.ask({ op: "session:call", ...env, requestId: "own", verb: "tiddler-get", args: { ...READ, target: "Wren" } });
+  expect(v.placed.at(-1)!.args).not.toHaveProperty("target");
+});
+
+test("RED XV2 (#407 H4): a one-shot line naming a lit sibling as its presenter refuses presenter-rides-a-session, and nothing places; the worn face's line places", async () => {
+  const v = await stand({ lit: [1] });
+  expect(await v.oneShot({ verb: "tiddler-get", args: READ, requestedBy: "verified-h1" })).toMatchObject({ status: "error", refusal: { reason: "presenter-rides-a-session" } });
+  expect(v.placed).toEqual([]);
+  expect(await v.oneShot({ verb: "tiddler-get", args: READ, requestedBy: "0xplace" })).toMatchObject({ status: "done" });
+});
+
+test("RED XV3 (#407 H2): a visit's body answers its caller once; a receipt under its id (one-shot or session) and a re-ask withhold it", async () => {
+  const { lives } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISITS, output: visitOut });
+  const live = await v.oneShot({ verb: "tiddler-get", args: { ...READ, target: 1 }, requestedBy: "0xplace", requestId: "visit-once" });
+  expect(JSON.stringify(live), "the caller reads the visit").toContain("the visited word");
+  const later = await v.oneShot({ op: "receipt", requestId: "visit-once" });
+  expect(later).toMatchObject({ requestId: "visit-once", state: "done", visit: { withheld: true } });
+  expect(JSON.stringify(later), "a receipt hands no visit body back").not.toContain("the visited word");
+  const again = await v.oneShot({ verb: "tiddler-get", args: { ...READ, target: 1 }, requestedBy: "0xplace", requestId: "visit-once" });
+  expect(JSON.stringify(again), "a re-ask under the same id hands no stored body back").not.toContain("the visited word");
+  const env = await v.open("h0");
+  const call = await v.peer.ask({ op: "session:call", ...env, requestId: "s-visit", verb: "tiddler-get", args: { ...READ, target: 1 } });
+  expect(JSON.stringify(call)).toContain("the visited word");
+  const receipt = await v.peer.ask({ op: "session:receipt", ...env, requestId: "s-visit" });
+  expect(JSON.stringify(receipt), "a session receipt hands no visit body back").not.toContain("the visited word");
+  // CONTROL: an own read's body still reads back.
+  await v.oneShot({ verb: "tiddler-get", args: READ, requestedBy: "0xplace", requestId: "own-read" });
+  expect(JSON.stringify(await v.oneShot({ op: "receipt", requestId: "own-read" }))).toContain("own");
+});
+
+test("RED XV4 (#407 H2, Sol 407c-f on the one-shot line): a one-shot visit admits on its target's actor: a shut target refuses face-not-open and nothing places, and a target that closes before the answer leaves delivers face-not-open once, with no body", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISITS, output: visitOut, hold: new Set(["tiddler-get"]) });
+  expect(await v.oneShot({ verb: "tiddler-get", args: { ...READ, target: 7 }, requestedBy: "0xplace", requestId: "shut" }))
+    .toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  expect(v.placed).toEqual([]);
+  const peer = await v.connect();
+  peer.send({ verb: "tiddler-get", args: { ...READ, target: 1 }, requestedBy: "0xplace", requestId: "closing" });
+  await vi.waitFor(() => expect(v.placed.map((p) => p.verb)).toEqual(["tiddler-get"]));
+  const closed = lives.close(1, "pulama closing");
+  await vi.waitFor(() => expect(peer.heard).toHaveLength(1));
+  expect(peer.heard[0]).toMatchObject({ status: "error", refusal: { reason: "face-not-open" } });
+  v.release();
+  await new Promise((r) => setTimeout(r, 200));
+  expect(peer.heard, "one answer: the close's refusal; the body never leaves").toHaveLength(1);
+  expect(JSON.stringify(peer.heard)).not.toContain("the visited word");
+  drains[0]!(); await closed;
+});
+
+test("RED XV5 (#407 M1, M3): the door refuses a private bag first, then a write naming another face, then an unknown or doubled pet name, before any gate; nothing places", async () => {
+  const { lives } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISITS, petnames: [[1, "Wren"], [2, "wren"], [3, "4"]] });
+  const env = await v.open("h0");
+  const ask = (requestId: string, verb: string, args: Record<string, unknown>) => v.peer.ask({ op: "session:call", ...env, requestId, verb, args });
+  expect(await ask("private", "tiddler-get", { title: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: "nobody" })).toMatchObject({ kind: "session:refused", refusal: "cross-face-private" });
+  expect(await ask("write", "tiddler-put", { ...READ, text: "x", target: 1 })).toMatchObject({ kind: "session:refused", refusal: "cross-face-write-refused" });
+  expect(await ask("unknown", "tiddler-get", { ...READ, target: "nobody" })).toMatchObject({ kind: "session:refused", refusal: "target-unknown" });
+  expect(await ask("doubled", "tiddler-get", { ...READ, target: "WREN" })).toMatchObject({ kind: "session:refused", refusal: "target-ambiguous" });
+  expect(await ask("posing", "tiddler-get", { ...READ, target: "4" })).toMatchObject({ kind: "session:refused", refusal: "target-ambiguous" });
+  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, target: 1 }, requestedBy: "0xplace" })).toMatchObject({ status: "error", refusal: { reason: "cross-face-write-refused" } });
+  expect(v.placed).toEqual([]);
+});
+
+test("CONTROL XV6 (Sol 407e): a verb outside the visit reads, carrying a numeric `target` of its own, never meets a face gate", async () => {
+  const { lives } = actors(0);
+  const v = await stand({ faceLife: lives, visitVerbs: VISITS });
+  const reply = await v.oneShot({ verb: "floor-pin", args: { target: 7 }, requestedBy: "0xplace", requestId: "pin-target" });
+  expect(reply).not.toMatchObject({ refusal: { reason: "face-not-open" } });
+  expect(v.placed.map((p) => [p.verb, p.args["target"]])).toEqual([["floor-pin", 7]]);
 });
