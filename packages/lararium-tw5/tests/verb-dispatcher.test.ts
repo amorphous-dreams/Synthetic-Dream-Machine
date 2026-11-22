@@ -222,6 +222,71 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     dispatcher.stop();
   });
 
+  test("A VISIT NEVER REPLAYS (Sol 407c H2): a visit's outcome indexes no effect, and a fresh requestId under the same effectKey runs the reactor again, never copying the stored body", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const { daemon: daemonComposite, control } = makeStores();
+    let runCount = 0;
+    const registry = new VerbTable();
+    // A visit's reactor: its answer carries `visit: true` (`crossFaceReactor`), and each run reads the target afresh.
+    registry.register("tiddler-get", async () => { runCount++; return { face: 1, worn: 0, visit: true, tiddler: { text: `read ${runCount}` } }; });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
+    dispatcher.start();
+    dispatcher.placeVerb({ verb: "tiddler-get", args: { recipe: "default", title: "T", target: 1 }, requestedBy: "did:key:test", requestId: "visit-1", effectKey: "eff-visit" });
+    await settle();
+    expect(runCount).toBe(1);
+    expect(await control.getLive(EFFECT_URI_PREFIX + "eff-visit"), "a visit indexes no effect").toBeNull();
+    dispatcher.placeVerb({ verb: "tiddler-get", args: { recipe: "default", title: "T", target: 1 }, requestedBy: "did:key:test", requestId: "visit-2", effectKey: "eff-visit" });
+    await settle();
+    expect(runCount, "the second visit ran its reactor (and its opening check) afresh").toBe(2);
+    const second = await outcomeOf(control, "visit-2");
+    expect(second?.fields["effect-of"]).toBeUndefined();
+    expect(JSON.stringify(second?.results)).toContain("read 2");
+    dispatcher.stop?.();
+  });
+
+  test("a reused effectKey with CHANGED inputs runs fresh even where the stored results will not parse; matching inputs over unparseable results run fresh too (Sol 407d M4)", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const { daemon: daemonComposite, control } = makeStores();
+    let runCount = 0;
+    const registry = new VerbTable();
+    registry.register("do-effect", async (args) => { runCount++; return { ran: runCount, echo: args["x"] }; });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
+    dispatcher.start();
+    dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:test", requestId: "torn-1", effectKey: "eff-torn" });
+    await settle();
+    expect(runCount).toBe(1);
+    // The stored outcome's results tear (a hand, a bad write): the index still names it.
+    const stored = await control.getLive(OUTCOME_URI_PREFIX + "torn-1");
+    await control.put({ ...stored!, tiddler: { ...stored!.tiddler, results: "{torn" } } as never, { kind: "lares-verb", requestId: "tear" } as never);
+    dispatcher.placeVerb({ verb: "do-effect", args: { x: 2 }, requestedBy: "did:key:test", requestId: "torn-2", effectKey: "eff-torn" });
+    await settle();
+    expect(runCount, "changed inputs run fresh").toBe(2);
+    expect((await outcomeOf(control, "torn-2"))?.fields.status).toBe("done");
+    dispatcher.placeVerb({ verb: "do-effect", args: { x: 1 }, requestedBy: "did:key:test", requestId: "torn-3", effectKey: "eff-torn" });
+    await settle();
+    expect((await outcomeOf(control, "torn-3"))?.fields.status, "a matching digest over torn results concludes, never strands").toBe("done");
+    dispatcher.stop?.();
+  });
+
+  test("A VISIT NEVER REPLAYS: an effect index that names a visit's outcome (written by any hand) copies nothing; the reactor runs", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const { daemon: daemonComposite, control } = makeStores();
+    let runCount = 0;
+    const registry = new VerbTable();
+    registry.register("tiddler-get", async () => { runCount++; return { face: 1, worn: 0, visit: true, tiddler: { text: `read ${runCount}` } }; });
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
+    dispatcher.start();
+    dispatcher.placeVerb({ verb: "tiddler-get", args: { recipe: "default", title: "T", target: 1 }, requestedBy: "did:key:test", requestId: "planted-1", effectKey: "eff-planted" });
+    await settle();
+    // A planted index pointing the effect at that visit's outcome.
+    await control.put({ tiddler: { title: `${EFFECT_URI_PREFIX}eff-planted`, "effect-key": "eff-planted", "request-id": "planted-1" }, meta: { authority: "lares-dispatcher" } } as never, { kind: "lares-verb", requestId: "plant" } as never);
+    dispatcher.placeVerb({ verb: "tiddler-get", args: { recipe: "default", title: "T", target: 1 }, requestedBy: "did:key:test", requestId: "planted-2", effectKey: "eff-planted" });
+    await settle();
+    expect(runCount).toBe(2);
+    expect((await outcomeOf(control, "planted-2"))?.fields["effect-of"]).toBeUndefined();
+    dispatcher.stop?.();
+  });
+
   test("a second attempt under a NEW requestId with the SAME effectKey answers with effect-of and the handler runs ONCE; a changed digest skips the shortcut and runs fresh", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const { daemon: daemonComposite, control } = makeStores();

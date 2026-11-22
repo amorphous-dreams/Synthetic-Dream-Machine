@@ -34,8 +34,8 @@ import {
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
   makeShareSetReactor, makeShareListReactor, readShareEntries,
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
-  faceEngines, type FaceEngines,
-  composeWikiEngineSource, wikiEngines, type WikiEngines, type MemeVerbOptions,
+  faceEngines, type FaceEngines, composeCrossFaceView, enginePool, type EnginePool, type FaceEngine,
+  composeWikiEngineSource, wikiEngines, type WikiEngines, type MemeVerbOptions, type TiddlerVerbOptions,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
@@ -167,14 +167,14 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
+import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl, CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { slotAnnouncer } from "./slot-announcer.js";
 import { makeLitFaceDocs, makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
-import { bootFromSet, composeSiblingEngineSource } from "./face-engine-source.js";
+import { bootFromSet, composeCrossFaceViewSource, composeSiblingEngineSource, crossFacePrivateDocs } from "./face-engine-source.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
@@ -192,7 +192,7 @@ import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
 import { faceSeatTable, type FaceSeat } from "./face-seat-table.js";
-import { faceEngineReactor, faceLaneReactor, FACE_LANE_VERBS, type FaceEnginePorts, type FaceLanePorts } from "./face-lane.js";
+import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_LANE_VERBS, type CrossFacePorts, type FaceEnginePorts, type FaceLanePorts } from "./face-lane.js";
 /** The verbs a lit sibling reaches on its own lane (`face-lane`). */
 export { FACE_LANE_VERBS } from "./face-lane.js";
 import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
@@ -460,6 +460,34 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       ...(wear ? { wear } : {}),
     });
   }));
+  /**
+   * A LIT FACE RECEIVES VISITS: each lit face's CROSS-FACE VIEW (`composeCrossFaceView`), composed on the first visit over that
+   * face's daemon canon and working layer and the shared slots (never its personal layer, never a draft), laid read-only, and
+   * closed when the face drops or no visit touched it for the cold span. The worn face's view reads the documents its island
+   * mounted; a sibling's the documents its own wear named.
+   */
+  let crossFaceViews: EnginePool<number, FaceEngine> | null = null;
+  const crossFaceViewsOf = (ctx: IslandContext): EnginePool<number, FaceEngine> => (crossFaceViews ??= enginePool<number, FaceEngine>(async (handleIndex) => {
+    const worn = asLit(daemonAuth);
+    const face = worn !== null && worn.handleIndex === handleIndex ? worn : litSiblingFaces().find((f) => f.handleIndex === handleIndex) ?? null;
+    if (face === null) return null;
+    // PRIVATE BY DOCUMENT: every document a lit face's private slot names here, which the view refuses whatever label binds it;
+    // a deny set that could not read whole refuses the view (fail closed).
+    const guard = await crossFacePrivateDocs({
+      faces: [...(worn ? [worn] : []), ...litSiblingFaces()],
+      mounted: (slot) => ctx.handles.get(slot) ?? null,
+      control: controlOf(ctx),
+      daemon: ctx.composite.hasBag(DAEMON_BAG_ID) ? ctx.composite.storeForBag(DAEMON_BAG_ID) : null,
+    });
+    return composeCrossFaceView(await composeCrossFaceViewSource({
+      face, recipe: ctx.recipe, bootSet: ctx.bootSet, resolveByCid: ctx.resolveByCid,
+      docs: makeLitFaceDocs({ worn: () => asLit(daemonAuth), siblings: litSiblingFaces, control: () => controlOf(ctx) }),
+      shared: (slot) => ctx.handles.get(slot) ?? null,
+      open: async (url, bag) => await findOrThrow(ctx.repo, url, `${bag} (h${handleIndex}'s own layer, visited)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never,
+      // Only the worn face's own view reads the documents this island mounted: a sibling's never borrows the mount's.
+      worn: face === worn ? (slot) => ctx.handles.get(slot) ?? null : null,
+    }), { privateDocs: guard.docs, unread: guard.unread });
+  }, { idleMs: NAMED_WIKI_ENGINE_COLD_MS }));
   /**
    * EVERY WIKI ITS ENGINE: each registered wiki the worn face reaches answers the tiddler door in its OWN engine (`wiki-engine`),
    * composed on its first ask over that wiki's recipe as the worn face sees it (canon by reference, the shared working layer,
@@ -1035,14 +1063,38 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           return resolved ? { store: resolved.store, owner: resolved.owner } : null;
         },
       };
-      const lane = (verb: string, make: (opts: typeof memeOpts) => VerbReactor): VerbReactor =>
-        faceLaneReactor(verb, make(memeOpts), (faceLane) => make({ ...memeOpts, faceLane }), lanePorts);
+      // A LIT FACE RECEIVES VISITS: a read naming another lit face as its `target` answers from that face's cross-face view,
+      // keeping the worn face, under the target's own standing read (a read alone: no admin ask passes); a write naming another
+      // face refuses, and a private bag refuses first (`crossFaceReactor`).
+      const faceKeyOf = (face: number): string | null => {
+        if (typeof daemonAuth.handleIndex === "number" && face === daemonAuth.handleIndex) return daemonAuth.atom?.key ?? null;
+        for (const [key, lit] of litSiblings) if (lit.handleIndex === face) return key;
+        return null;
+      };
+      const crossPorts: CrossFacePorts = {
+        ...lanePorts,
+        // The mount, or a sibling lit here until it drops; whether its answer may leave, the vessel's face actor decides.
+        stands: (face) => faceKeyOf(face) !== null,
+        view: (face) => crossFaceViewsOf(ctx).of(face),
+        readAs: (face) => async (access, bagUrl) => {
+          const key = faceKeyOf(face);
+          if (access !== "read") return { ok: false, reason: `cross-face-read: a visit to face h${face} reads alone, and takes no ${access}` };
+          if (key === null || !intentVerifier) return { ok: false, reason: `face-not-open: face h${face} stands shut on this island` };
+          return intentVerifier.verify({ presenter: key, bagUrl, access, channel: "local" });
+        },
+      };
+      // The view's own options: its engine and composition, and the floor's public snapshots; no reach beyond the view.
+      const visitOpts = (view: Pick<FaceEngine, "tw5" | "composite">) => ({ tw5: view.tw5, composite: view.composite, ...(memeOpts.floorCanon ? { floorCanon: memeOpts.floorCanon } : {}) });
+      const visited = (verb: string, routed: VerbReactor, make: (opts: ReturnType<typeof visitOpts>) => VerbReactor): VerbReactor =>
+        crossFaceReactor(verb, routed, (view) => make(visitOpts(view)), crossPorts);
+      const lane = (verb: string, make: (opts: MemeVerbOptions) => VerbReactor): VerbReactor =>
+        visited(verb, faceLaneReactor(verb, make(memeOpts), (faceLane) => make({ ...memeOpts, faceLane }), lanePorts), make);
       registry.register("meme-put", lane("meme-put", makeMemePutReactor), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-get", lane("meme-get", makeMemeGetReactor), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("meme-patch", makeMemePatchReactor(memeOpts), { summary: "Edit one slot's body (`append` a paragraph at its end, or `replace` it whole) against `base`, the canonical hash last read; lands through meme-put's own gate and reseals. A stale base refuses `stale-base`, an absent slot `slot-missing`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-patch", visited("meme-patch", makeMemePatchReactor(memeOpts), makeMemePatchReactor), { summary: "Edit one slot's body (`append` a paragraph at its end, or `replace` it whole) against `base`, the canonical hash last read; lands through meme-put's own gate and reseals. A stale base refuses `stale-base`, an absent slot `slot-missing`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-list", lane("meme-list", makeMemeListReactor), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-delete", lane("meme-delete", makeMemeDeleteReactor), { summary: "Remove a meme's whole group; `base` = the canonical hash last read, stale → conflict.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      registry.register("meme-project", makeMemeProjectReactor(memeOpts), { summary: "Project a meme root to a target — mem · md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects mem · md.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-project", visited("meme-project", makeMemeProjectReactor(memeOpts), makeMemeProjectReactor), { summary: "Project a meme root to a target — mem · md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects mem · md.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1): every TiddlyWiki act over one record or the wiki's engine,
       // answered by this island's own `$tw` on the anchor (`recipe: "default"`, the worn face's daemon wiki). The same
@@ -1053,8 +1105,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // EVERY WIKI ITS ENGINE: the mounted face's `recipe: <slug>` answers in that wiki's own engine (`namedWikiEnginesOf`).
       const enginePorts: FaceEnginePorts = { ...lanePorts, engine: (face) => siblingEnginesOf(ctx).of(face) };
       const engineOpts = { ...memeOpts, wikis: namedWikiEnginesOf(ctx, memeOpts) };
-      const engineVerb = (verb: string, make: (opts: typeof memeOpts & { readonly wikis?: WikiEngines }) => VerbReactor): VerbReactor =>
-        faceEngineReactor(verb, make(engineOpts), (engine) => make({ ...memeOpts, tw5: engine.tw5, composite: engine.composite }), enginePorts);
+      const engineVerb = (verb: string, make: (opts: TiddlerVerbOptions) => VerbReactor): VerbReactor =>
+        visited(verb, faceEngineReactor(verb, make(engineOpts), (engine) => make({ ...memeOpts, tw5: engine.tw5, composite: engine.composite }), enginePorts), make);
       registry.register("wiki-filter", engineVerb("wiki-filter", makeWikiFilterReactor), { summary: "Run a TiddlyWiki filter in the wiki's own engine (`recipe: default` the daemon wiki, `recipe: <slug>` any wiki this face reaches); answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-get", engineVerb("tiddler-get", makeTiddlerGetReactor), { summary: "Read one tiddler with its fields, its `hash` (a writer's base) and its `textHash`; `fields` names a subset, `text: false` leaves the text home, `slot` reads one slot of a meme.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the wiki's own engine (the daemon wiki or any wiki this face reaches) to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
@@ -1829,6 +1881,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         },
         check: (verb, context) => {
           if (!daemonAuth.atom) return;
+          // A LIT FACE RECEIVES VISITS, AND ONLY READS: a tiddler door or meme verb naming another face as its `target` passes
+          // the fence as a designated read to a lit face alone; a write naming another face refuses, and so does a shut target.
+          // The visit itself answers from the target's cross-face view (`crossFaceReactor`), which checks again, private first.
+          const target = CROSS_FACE_TARGET_VERBS.has(verb) ? (context.invocation.args as Record<string, unknown> | undefined)?.["target"] : undefined;
+          if (typeof target === "number" || (typeof target === "string" && /^h?(0|[1-9]\d*)$/.test(target))) {
+            const face = typeof target === "number" ? target : Number(target.replace(/^h/, ""));
+            const key = context.presenter === undefined ? bareKey(daemonAuth.atom.key) : bareKey(context.presenter);
+            const wears = key === bareKey(daemonAuth.atom.key) ? daemonAuth.handleIndex : litSiblings.get(key)?.handleIndex;
+            if (face !== wears) {
+              if (!CROSS_FACE_READ_VERBS.has(verb)) throw new VerbRefusal("cross-face-write-refused", `cross-face-write-refused: ${verb} names face h${face}; a write to another face waits on the cross-face write rite, and nothing moved.`);
+              const lit = (typeof daemonAuth.handleIndex === "number" && face === daemonAuth.handleIndex) || [...litSiblings.values()].some((f) => f.handleIndex === face);
+              if (!lit) throw new VerbRefusal("face-not-open", `face-not-open: ${verb} — face h${face} stands shut on this island; a visit reads a lit face alone, and nothing ran.`);
+            }
+          }
           // The vessel's own channel pushes its surfaces under labels (`persona`, `disk-projector`…) that name no face: such a
           // call passes the fence and meets every cap check as the stranger it reads as. Any claim naming a DID other than the
           // mounted face's, a label off the channel (a synced summons), and a call naming no presenter refuse.
@@ -1837,8 +1903,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // it as the mount, on a lit sibling's own lane, or refuses a shut face `face-not-open`. A synced claim still refuses.
           // Only a DID naming one of this island's own faces (the mount, or a face joined beside it) reaches the lane: a
           // stranger's DID names no face here, so it meets the fence below and refuses `content-mounted-only`.
+          // A sibling's DID reaches its lane only on a session the vessel's door bound (`invocation.face`): a one-shot with no bound
+          // session never admits as a face other than the mount (Sol 407c H4).
           if (context.local === true && context.presenter !== undefined && FACE_LANE_VERBS.has(verb)
-            && (bareKey(context.presenter) === bareKey(daemonAuth.atom.key) || litSiblings.has(bareKey(context.presenter)))) return;
+            && (bareKey(context.presenter) === bareKey(daemonAuth.atom.key)
+              || (litSiblings.has(bareKey(context.presenter)) && (context.invocation as { face?: unknown } | undefined)?.face !== undefined))) return;
           // Only the vessel's own channel or a person's surface act wears the mounted face: an unsigned synced claim that
           // names the mounted atom stays a claim and refuses like any other.
           if (context.local !== true || context.presenter === undefined || bareKey(context.presenter) !== bareKey(daemonAuth.atom.key)) {
@@ -1866,6 +1935,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             litSiblings.delete(key);
             // Its own engine closes with it: owed saves drain, the bridge detaches, the VM releases.
             if (typeof dropped?.handleIndex === "number") await siblingEngines?.drop(dropped.handleIndex).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s own engine closed with a fault: ${error instanceof Error ? error.message : String(error)}`));
+            // Its cross-face view closes with it: a shut face receives no visit, cached or fresh.
+            if (typeof dropped?.handleIndex === "number") await crossFaceViews?.drop(dropped.handleIndex).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s cross-face view closed with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // CLOSING A FACE DROPS ITS ENTRY WHOLE: its seat locks, its chain and fold leave, before its identity goes.
             faces.drop(key);
             await Promise.allSettled([...(inFlight.get(face.provider) ?? [])]);
@@ -2218,7 +2289,7 @@ const namesADid = (claim: string): boolean => /^did:/i.test(claim.trim()) || /^[
  * a held face's group, or it refuses by name: a session never falls back silently to another face.
  */
 export function presenterFor(input: {
-  readonly invocation: { readonly requestedBy: string; readonly args: Readonly<Record<string, unknown>> };
+  readonly invocation: { readonly requestedBy: string; readonly args: Readonly<Record<string, unknown>>; readonly face?: string };
   readonly local: boolean;
   readonly auth: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "placeVerifyingKey" | "atom" | "personaGroupId" | "deviceEdge"> & { readonly holds?: (group: string) => boolean; readonly atomOf?: (group: string) => string | null };
 }): string {
@@ -2232,6 +2303,9 @@ export function presenterFor(input: {
   }
   if (bareKey(claim) !== bareKey(auth.placeVerifyingKey)) return claim;
   if (typeof named === "string" && named.length > 0 && named !== auth.personaGroupId) {
+    // A ONE-SHOT NEVER PRESENTS A SIBLING (Sol 407c H4): naming a lit sibling's group presents as it only on a session the
+    // vessel's door bound to a face (`invocation.face`); a line with none presents the mount alone.
+    if (invocation.face === undefined) throw new VerbRefusal("presenter-rides-a-session", `presenter-rides-a-session: this ask names ${named} with no bound session; a one-shot presents the worn face alone, and a sibling acts on a session of its own`);
     const atom = auth.atomOf?.(named);
     if (!atom) throw new Error(`no atom for held group ${named}`);
     return `0x${bareKey(atom)}`;

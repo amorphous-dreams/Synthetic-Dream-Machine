@@ -32,6 +32,7 @@ import { RealmRefused, loadLaresConfig, tempConsentedSlugs } from "@lararium/nod
 import { wikiSlotKindOf } from "@lararium/mesh";
 import { containerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
+import { targetOf } from "../target-option.js";
 import { stdout } from "node:process";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -774,7 +775,7 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
 export function wikiFilterPlan(args: ParsedArgs): DoorPlan {
   const filter = args.positional[0];
   if (!filter) throw new DoorUsage("a filter is required (e.g. `lares wiki filter '[tag[memory]sort[title]]' --recipe default`)");
-  const out: Record<string, unknown> = { ...containerArgs(args, "wiki filter"), filter };
+  const out: Record<string, unknown> = { ...containerArgs(args, "wiki filter"), filter, ...targetOf(args) };
   const fields = namesOf(args.options["fields"]);
   if (fields) out["fields"] = fields;
   const limit = countOf(args.options["limit"], "limit");
@@ -791,7 +792,7 @@ export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
   const title = args.positional[0];
   const span = typeof args.options["text"] === "string" ? args.options["text"] : "";
   if (Boolean(title) === Boolean(span)) throw new DoorUsage("name one source: a title (`lares wiki render \"My Note\" --recipe default`) or a span (`--text \"''bold'' {{My Note}}\"`)");
-  const out: Record<string, unknown> = { ...containerArgs(args, "wiki render"), ...(title ? { title } : { text: span }) };
+  const out: Record<string, unknown> = { ...containerArgs(args, "wiki render"), ...(title ? { title } : { text: span }), ...targetOf(args) };
   const form = wordOf(args.options["form"]);
   if (form) {
     if (form !== "text" && form !== "html") throw new DoorUsage(`--form reads text or html (got "${form}")`);
@@ -808,7 +809,7 @@ export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
 
 /** `lares wiki status`: the daemon verb `wiki-status` and its args. */
 function wikiStatusPlan(args: ParsedArgs): DoorPlan {
-  return { verb: "wiki-status", args: { ...containerArgs(args, "wiki status") } };
+  return { verb: "wiki-status", args: { ...containerArgs(args, "wiki status"), ...targetOf(args) } };
 }
 
 interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[] }
@@ -937,9 +938,9 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "list":       { handler: cmdWikiList,      summary: "Enumerate wikis registered in the catalog. Needs `lares vessel stand --foreground`." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
-  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`." },
-  "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The render reaches stdout." },
-  "status":     { handler: cmdWikiStatus,    summary: "Name each layer the wiki composes and whether this face reads and writes it: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it." },
+  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
+  "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The render reaches stdout. `--target <h1|pet name>` renders in another lit face's view (never its personal layer), keeping the face worn." },
+  "status":     { handler: cmdWikiStatus,    summary: "Name each layer the wiki composes and whether this face reads and writes it: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
 };
 
 /** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */

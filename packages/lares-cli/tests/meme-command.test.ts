@@ -42,7 +42,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdMeme, memePlan, listPlan, projectPlan, bagsResolver } from "../src/commands/meme.js";
+import { cmdMeme, memePlan, listPlan, patchPlan, projectPlan, bagsResolver } from "../src/commands/meme.js";
 import { repoRoot } from "@lararium/mesh/node";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -1140,5 +1140,15 @@ describe("lares meme sitting — the fire is CALLED, and this call burns nothing
     const text = out.done();
     expect(code).toBe(0);
     expect(text).toMatch(/sitting: 1 carrier\(s\) read · 0 candidate\(s\) · 0 held/);
+  });
+});
+
+describe("a lit face receives visits: --target reads, and a write naming one refuses at the CLI (Sol M1)", () => {
+  const a = (positional: string[], options: Record<string, string>) => ({ command: "meme", positional, options, flags: {} } as unknown as ParsedArgs);
+  test("get and list carry the target; put, delete and patch refuse it by name before any door opens", () => {
+    expect(memePlan("get", a(["get", "lar:///t/x"], { recipe: "default", target: "h1" })).args).toEqual({ uri: "lar:///t/x", recipe: "default", target: "h1" });
+    expect(listPlan(a(["list"], { recipe: "default", target: "h1" })).args).toEqual({ recipe: "default", target: "h1" });
+    for (const sub of ["put", "delete"] as const) expect(() => memePlan(sub, a([sub, "lar:///t/x"], { recipe: "default", target: "h1" })), sub).toThrow(/cross-face-write-refused/);
+    expect(() => patchPlan(a(["patch", "lar:///t/x"], { recipe: "default", target: "h1", slot: "#/a", append: "n.txt", base: "sha256:x" }))).toThrow(/cross-face-write-refused/);
   });
 });
