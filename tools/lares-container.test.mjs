@@ -1992,5 +1992,11 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     assert.deepEqual(piped.received, bytes);
     const value = await run(shim, [...wire, "--text", "--file", "--text", "--meme"], { env });
     assert.equal(value.status, 0, value.stderr); assert.equal(value.received, null);
+    const memeValue = await run(shim, [...wire, "--text", "--meme", "--slot", "#/a", "--append", "@HOST_FILE@"], { env, hostInput: bytes });
+    assert.equal(memeValue.status, 0, memeValue.stderr); assert.equal(memeValue.received, null);
+    assert.match(memeValue.calls, /--append .*host\.mem/);
+    const get = await run(shim, ["tiddler", "get", "T", "--file", "@HOST_FILE@"], { env, hostInput: bytes });
+    assert.equal(get.status, 0, get.stderr); assert.equal(get.received, null);
+    assert.match(get.calls, /--file .*host\.mem/);
   });
 }

@@ -386,14 +386,16 @@ function LiftVessel([string[]]$output) {
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
-  if ($argv.Count -ge 3 -and $argv[0] -eq 'tiddler' -and $argv[1] -eq 'put' -and $argv.Contains('--meme')) {
+  if ($argv.Count -ge 3 -and $argv[0] -eq 'tiddler' -and $argv[1] -eq 'put') {
     $hasSlot = $false
+    $hasMeme = $false
     $valued = @('--text', '--base', '--recipe', '--bag', '--realm', '--face', '--target', '--fields', '--tag-add', '--tag-remove', '--unset')
     $sources = @()
     # A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
-      if ($word -eq '--slot') { $hasSlot = $true; $i++ }
+      if ($word -eq '--meme') { $hasMeme = $true }
+      elseif ($word -eq '--slot') { $hasSlot = $true; $i++ }
       elseif ($word -like '--slot=*') { $hasSlot = $true }
       elseif ($word -in $valued) { $i++ }
       elseif ($word -in @('--file', '--append') -and $i + 1 -lt $argv.Count) {
@@ -405,7 +407,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
     }
     if ($sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
     if ($sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
-    if ($sources.Count -eq 1 -and ($hasSlot -or $sources[0][2] -eq '--file')) {
+    if ($sources.Count -eq 1 -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot))) {
       $source = $sources[0]
       if ($source[1] -ne '-') {
         # A relative path reads against the caller's directory, never .NET's own current directory.

@@ -405,9 +405,9 @@ route_cli() {
         --text|--base|--recipe|--bag|--realm|--face|--target|--fields|--tag-add|--tag-remove|--unset) stream_want=$stream_arg ;;
       esac
     done
-    if [ -n "$stream_meme" ] && [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
-    if [ -n "$stream_meme" ] && [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
-    if [ -n "$stream_meme" ] && [ "$stream_n" -eq 1 ] && { [ "$stream_kind" = --file ] || [ -n "$stream_slot" ]; }; then
+    if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
+    if [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
+    if [ "$stream_n" -eq 1 ] && { [ "$stream_kind" = --file ] || { [ -n "$stream_meme" ] && [ -n "$stream_slot" ]; }; }; then
       stream_count=$# stream_prev="" stream_skip="" stream_i=0
       while [ "$stream_i" -lt "$stream_count" ]; do
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
