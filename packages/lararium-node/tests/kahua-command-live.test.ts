@@ -90,6 +90,17 @@ const readUnderMount = (face: number, mount: number) =>
       return reactors["kahua-read"]({ face }, { worn: { ordinal: face } } as never) as Promise<Record<string, unknown>>;
     });
   });
+/** A stage read on a standing vessel that proved `lit` faces lit, each under its relation: the composition's own proof. */
+const readProvedLit = (face: number, mount: number, lit: Readonly<Record<number, string>>) =>
+  withLarRoot(ROOT, async () => {
+    await openTestCustody();
+    return ownedStore(storage, async (repo) => {
+      const catalogUrl = readFileSync(join(storage, "catalog-url"), "utf8").trim();
+      const reactors = storeDoorReactors({ storageDir: storage, sealHome: larSealHome(), repo, catalogUrl, mountFace: () => mount,
+        litRelation: (ordinal: number) => lit[ordinal] ?? null });
+      return reactors["kahua-read"]({ face }, { worn: { ordinal: face } } as never) as Promise<Record<string, unknown>>;
+    });
+  });
 const src = [{ title: "daemon/note", revision: "r1" }];
 const STAGED = [{ title: "note", text: "x" }, { title: "seat", text: "x" }];
 const X = kahuaMemeDigest({ text: "x", fields: {} });
@@ -114,6 +125,16 @@ describe("lares kahua over a founded face", () => {
     expect(other).toMatchObject({ mount: 1, mounted: false });
     expect(Array.isArray(other["items"])).toBe(true);
     expect(other).not.toHaveProperty("worn");
+  }, 240_000);
+
+  test("RED: a lit face whose stage read refuses (a non-worn face the fold cannot load) still names the relation the composition proved it under, its stage marked unread with the cause; CONTROL: a face the composition never proved lit refuses as before", async () => {
+    const relation = "0b5e7c1a-2d3f-4a5b-8c6d-7e8f9a0b1c2d";
+    // h1 stands lit beside the worn h0 under `relation`, and this custody holds no anchors for it: the fold refuses face-not-held.
+    const lit = await readProvedLit(1, 0, { 1: relation });
+    expect(lit).toMatchObject({ relation, items: [], stage: "unread", mount: 0, mounted: false });
+    expect(String(lit["unread"])).toMatch(/face-not-held/);
+    expect(JSON.stringify(await readProvedLit(1, 0, {}))).toMatch(/face-not-held/);
+    expect(await readProvedLit(1, 0, {})).not.toHaveProperty("relation");
   }, 240_000);
 
   test("RED: a direct lift opens no local canon and refuses unstaged; a standing vessel's lift of an unstaged row refuses; a face holding no cap refuses; CONTROL: held, the root lifts a staged row, lists and withdraws", async () => {

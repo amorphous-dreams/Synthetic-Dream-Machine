@@ -242,26 +242,34 @@ function fleetStores() {
   return { petnames: makeFleetPetnameStore(sealedPetnameStore()), declarations: makeFleetDeclarationStore(sealedDeclarationStore()) };
 }
 
+/**
+ * ONE FACE'S STAGE READ (`kahua-read`, list), as the bundle reads a face: its relation, its standing heads and whether it stands as
+ * the daemon mount. A lit face whose stage would not read here answers `stage: "unread"` beside the relation the composition
+ * proved it under (`litRelation`): it keeps that relation, so its root reads claimed, and its stage reads refused by the cause.
+ */
+export function faceStageRead(output: Readonly<Record<string, unknown>>): Pick<BundleVesselFace, "relation" | "kahua" | "kahuaRefusal" | "mounted"> {
+  const relation = typeof output["relation"] === "string" ? output["relation"] : null;
+  const mounted = typeof output["mounted"] === "boolean" ? { mounted: output["mounted"] } : {};
+  if (output["stage"] === "unread") return { relation, kahua: null, kahuaRefusal: typeof output["unread"] === "string" ? output["unread"] : "the face's stage would not read", ...mounted };
+  const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
+  const kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as BundleKahuaHead[] : []))
+    .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
+  return { relation, kahua, ...mounted };
+}
+
 async function liveFaces(): Promise<BundleVesselFace[]> {
   const { petnames, declarations } = fleetStores();
   const out: BundleVesselFace[] = [];
   for (const { handleIndex } of (await readPersonaRoots()).roots) {
     const declaration = await declarations.get(handleIndex);
-    let kahua: BundleKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, mounted: boolean | undefined;
-    try {
-      const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
-      relation = typeof output["relation"] === "string" ? output["relation"] : null;
-      if (typeof output["mounted"] === "boolean") mounted = output["mounted"];
-      const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
-      kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as BundleKahuaHead[] : []))
-        .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
-    } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); kahuaRefusalCode = storeFailure(e).code; }
+    let read: Pick<BundleVesselFace, "relation" | "kahua" | "kahuaRefusal" | "kahuaRefusalCode" | "mounted">;
+    try { read = faceStageRead((await storeVerb("kahua-read", { face: handleIndex, action: "list" })).output); }
+    catch (e) { read = { relation: null, kahua: null, kahuaRefusal: e instanceof Error ? e.message : String(e), kahuaRefusalCode: storeFailure(e).code }; }
     out.push({
-      handleIndex, petname: (await petnames.get(handleIndex)) ?? null, relation,
+      handleIndex, petname: (await petnames.get(handleIndex)) ?? null,
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(handleIndex) : null,
-      kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
-      ...(mounted !== undefined ? { mounted } : {}),
+      ...read,
     });
   }
   // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a lay after a

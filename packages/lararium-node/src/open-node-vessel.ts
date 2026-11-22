@@ -4639,6 +4639,13 @@ async function prepareNodeBootOn(
       wornFleet: () => wornFleetOf().worn,
       // The face this composition wears (lit and proved): a stage read answers `worn` off it.
       mountFace: () => mountFace,
+      // The relation each lit face stands proved under (the worn face's and every lit sibling's): a stage read names it, so a
+      // lit face whose stage will not read here still names the relation its root carries.
+      litRelation: (ordinal: number) => {
+        if (ordinal === mountFace && wornDeviceRelation !== null) return wornDeviceRelation;
+        for (const held of siblingFaces.values()) if (held.ordinal === ordinal && held.relation !== null) return held.relation;
+        return null;
+      },
       // A face's local canon `bags/daemon-<F>`, named by the control document: a kahua lift reads its staged row there.
       faceCanon: faceCanonThroughControl(repo, readControlDoc),
       // A face founded on this standing composition lights beside the worn one at its birth.

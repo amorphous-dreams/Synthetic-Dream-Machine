@@ -26,7 +26,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { kapaeShadowBody, SyncedTree } from "@lararium/node";
 import { DAEMON_BAG_ID, daemonFaceCanonBag } from "@lararium/mesh";
 import { scanFiles } from "../src/ingest-core.js";
-import { houseExport, houseImport, bundleJournalPath, BundleRefused, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
+import { houseExport, houseImport, bundleJournalPath, BundleRefused, faceStageRead, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
 import { BundleVerifyRefused, MANIFEST_FILE, openBundle, readBundleSeat, verifyBundle } from "../src/bundle-manifest.js";
 import { openKeepSeat } from "../src/keep-seat.js";
 import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";
@@ -525,6 +525,23 @@ describe("the house bundle verbs", () => {
     // the next step, in the order a person runs it
     expect(msg).toMatch(/move its root out of the house root/);
     expect(msg).toMatch(/--accept-omissions/);
+  });
+
+  test("C14b — a lit, non-worn face whose stage read answers `unread` beside its proved relation claims its root; its stage stays behind by count, never the root", async () => {
+    // h1 stands lit beside the worn h0 under F2; its fold would not load here, so the vessel answered the relation it proved h1 under.
+    const read = faceStageRead({ items: [], relation: F2, stage: "unread", unread: "face-not-held: h1", mount: 0, mounted: false });
+    expect(read).toMatchObject({ relation: F2, kahua: null, mounted: false });
+    expect(read.kahuaRefusal).toMatch(/face-not-held/);
+    const vessel = oldVessel();
+    const lit: BundleVesselFace = { handleIndex: 1, petname: "joshua-fontany-referee", handle: null, seat: false, chair: null, ...read };
+    put("projections/faces/joshua-fontany-referee/wikis/daemon/ha.ka.ba/notes/referee.tid", tid("lar:///ha.ka.ba/notes/referee", "the referee's note"));
+    const doors = vessel.doors();
+    const both: BundleDoors = { ...doors, faces: async () => [...(await doors.faces()), lit] };
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: both });
+    expect(manifest.omissions.map((o) => o.kind)).not.toContain("unclaimed-face-folders");
+    expect(manifest.omissions).toContainEqual(expect.objectContaining({ kind: "face-unread", count: 1 }));
+    // CONTROL: a whole read keeps its heads and names no refusal.
+    expect(faceStageRead({ items: [], relation: F1, mount: 0, mounted: true })).toEqual({ relation: F1, kahua: [], mounted: true });
   });
 
   test("C15 — an import onto a face that pins no relation because the vessel stands locked or down says: run up and vault unlock first", async () => {
