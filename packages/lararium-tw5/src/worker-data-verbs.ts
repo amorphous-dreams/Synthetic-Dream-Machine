@@ -174,7 +174,10 @@ export function makeResolveReactor(composite: CompositeStore): VerbReactor {
  *  composite layer, so the accessor reads it directly, never through the composite. */
 export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: CatalogAccessor, systemCanonUrl?: (bagUri: string) => Promise<string | null>): VerbReactor {
   return async () => {
-    const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean }> = [];
+    // `canon: "floor"` names WHY a system row carries no document: no Kahu realm document answers this face (it holds no Kahu
+    // reach) and no catalog row names one, so the wiki reads its canon through the floor snapshot (`floorCanonAddress`), which
+    // no document stands behind. A house canon outside the Kahu cabal reads so by design, never as a seat gap.
+    const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean; canon?: "floor" }> = [];
     const cat = await catalog.handle();
     const catTiddlers: Record<string, LarTiddlerRecord> = Object.fromEntries(plainEntries(cat.doc()?.tiddlers));
     // System wikis — oracle-plane recipes (the lares/lararium quine system bags) carry the DEFAULT.
@@ -191,7 +194,8 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
         if (!slug || slug.includes("/")) continue;
         const bagUri = wikiBagUri(slug);
         const own = catTiddlers[recipeUri("catalog", slug)];
-        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: houseCanonUrl(await resolveHouseCanon<string>(bagUri, { realm: systemCanonUrl, row: () => catalog.urlOf(bagUri) })), kind: "system", composition: "default" };
+        const automergeUrl = houseCanonUrl(await resolveHouseCanon<string>(bagUri, { realm: systemCanonUrl, row: () => catalog.urlOf(bagUri) }));
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl, kind: "system", composition: "default", ...(automergeUrl === null ? { canon: "floor" as const } : {}) };
         if (own && !own.meta?.deleted) {
           row.composition = "own";
           row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");

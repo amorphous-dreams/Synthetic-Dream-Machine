@@ -88,6 +88,8 @@ export async function cmdWikiList(args: ParsedArgs): Promise<number> {
     kind?: string;
     composition?: string;
     defaultDiffers?: boolean;
+    /** `floor`: a system row with no document, its canon read through the floor snapshot (no Kahu reach on this face). */
+    canon?: string;
   }>;
   // `--json` answers the daemon's reply verbatim; the prose view adds `composition` (a system wiki's
   // own stack or the default) and whether an own stack differs from the default.
@@ -102,7 +104,8 @@ export async function cmdWikiList(args: ParsedArgs): Promise<number> {
       }
       console.log(`wikis (${wikis.length}):`);
       for (const w of wikis) {
-        const url = w.automergeUrl ? w.automergeUrl.slice(0, 40) + "…" : "(no doc)";
+        const url = w.automergeUrl ? w.automergeUrl.slice(0, 40) + "…"
+          : w.canon === "floor" ? "(canon read through the floor: no live document on this face, which holds no Kahu reach)" : "(no doc)";
         const tag = w.kind ? ` [${w.kind}]` : "";
         const comp = w.composition
           ? `  composition: ${w.composition}${w.defaultDiffers === true ? " (default differs)" : ""}`
