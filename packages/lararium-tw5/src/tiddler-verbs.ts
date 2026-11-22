@@ -85,6 +85,7 @@ import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
 import { wikiWearsNext } from "./island-recipe.js";
+import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 export interface TiddlerVerbOptions extends Partial<Pick<MemeVerbOptions, "reach" | "slotStore" | "realmWritable" | "recipeOf" | "writeSlot" | "faceLane">> {
@@ -210,6 +211,8 @@ const refuseUnreached = (verb: string, why: string): VerbRefusal =>
 async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, verb: string, write: boolean): Promise<TiddlerVerbOptions | null> {
   if (opts.wiki) return null;
   const target = readContainer(args, verb);
+  // THE TW5 DOCS LIBRARY TAKES NO WRITE, named as a wiki or as a bag (`tw5-docs-name`).
+  if (write) { refuseTw5DocsWrite(target.recipe, verb); refuseTw5DocsWrite(target.bag, verb); }
   if (target.recipe === null || target.recipe === "default") return null;
   const slug = target.recipe;
   if (slug === DAEMON_WIKI_SLUG) throw refuseUnreached(verb, `the daemon wiki answers to \`recipe: "default"\` alone`);
@@ -283,7 +286,8 @@ function refuseWithheld(title: string, verb: string): void {
  * A record with no stamp belongs to the engine itself (a shadow, a boot tiddler). One ask per bag per verb.
  */
 async function reachOf(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<(bag: string | null) => Promise<boolean>> {
-  const proof = await cap("read", anchor.bag);
+  // The TW5 docs library rests public: its bag carries no house record, so every face reads it without a cap ask.
+  const proof = isTw5DocsBag(anchor.bag) ? { ok: true as const } : await cap("read", anchor.bag);
   if (!proof.ok) throw new Error(`cap-denied: read on ${anchor.bag} required (${proof.reason ?? "no reason"})`);
   const memo = new Map<string, Promise<boolean>>([[anchor.bag, Promise.resolve(true)]]);
   return (bag) => {
@@ -1289,12 +1293,13 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
       // CANON TAKES NO LANE WRITE: it mounts writable so a promotion (an ACTION verb) can land in it, and `defaultWritable: false` keeps
       // every put off it (`recipe-layer-model` #/the-recipe-stack). Status names it `promotion-only`, never a writable door.
       if (isCanonLayer(opts, slug, bag) && opts.composite.hasWritableBag(bag)) {
-        const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null;
+        const read = isTw5DocsBag(bag) || (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null;
         layers.push({ bag, mounted: "promotion-only", read, write: false });
         continue;
       }
       const mounted = opts.composite.hasWritableBag(bag);
-      const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
+      // The TW5 docs library reads freely (`reachOf`), and its status says so.
+      const read = isTw5DocsBag(bag) || (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
       let write = false;
       let why: string | undefined;
       if (mounted) {

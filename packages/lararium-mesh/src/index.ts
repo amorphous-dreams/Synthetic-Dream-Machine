@@ -500,6 +500,7 @@ export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
+export * from "./tw5-docs-name.js";
 export * from "./executable-class.js";
 export * from "./seat-startup-offer.js";
 export * from "./rendered-derives.js";

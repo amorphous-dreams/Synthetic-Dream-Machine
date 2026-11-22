@@ -33,7 +33,7 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
-import { wearOf } from "@lararium/mesh";
+import { refuseTw5DocsReserved, refuseTw5DocsWrite, wearOf } from "@lararium/mesh";
 import type {
   CompositeStore,
   LarTiddlerRecord,
@@ -513,6 +513,7 @@ export function registerActionReactors(table: VerbTable, opts: ActionHandlerOpti
     const bag = String(args["bag"] ?? "");
     const packPath = String(args["pack-path"] ?? "");
     if (!bag || !packPath) throw new Error("REPACK: `bag` and `pack-path` required");
+    refuseTw5DocsReserved(bag, "REPACK");
     const proof = await ctx.cap("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required to REPACK (${proof.reason ?? "no reason"})`);
     return executeRepack(makeBagAccess(opts), bag, packPath, opts.tw5);
@@ -549,6 +550,13 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
   return async (args, ctx) => {
     const action = residencyFromContext(verb, args, ctx.invocation);
     if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+    // THE TW5 DOCS LIBRARY'S NAME HOLDS ONE RELATION (`tw5-docs-name`): no CREATE mints a bag under it, and no verb writes it,
+    // as a destination or as a source, before any cap ask, placement check or store reach.
+    if (action.verb === "CREATE") refuseTw5DocsReserved(action.bag, "CREATE");
+    else {
+      refuseTw5DocsWrite(destinationBag(action), action.verb);
+      if ("fromBag" in action) refuseTw5DocsWrite(action.fromBag, action.verb);
+    }
 
     if (action.verb === "INGEST") assertDiskWavePlacement(action, opts.diskMirrors);
     // THE FACE-NAMED WAVE (the lit set): it lands only in the named face's own document, and only where the device table

@@ -12,6 +12,9 @@
  *   · the face's write layer (`writeSlot`): `working` where it holds a writer's seat in the wiki's workbench, `personal`
  *     where it holds none, none where no layer takes a write.
  *
+ * The TW5 docs library (`tw5-docs`) composes apart from every recipe: its one layer, the packed tw5.com edition read-only, for
+ * every face, on its first ask (`tw5-docs-library`).
+ *
  * A wiki no recipe names, or one none of whose layers stands for the face, composes nothing: the door refuses
  * `wiki-unreached` by name. A WRITE mints the face's write layer where none stood (the meme door's own mint) and recomposes,
  * so a read never mints. The engine boots from the bytes the island's own engine booted from (`boot`), so it reads through the
@@ -29,6 +32,7 @@ import {
 import { composeFaceEngine, enginePool, type FaceEngine, type FaceEngineSource } from "./face-engine.js";
 import type { RecipeReadyBinding } from "./island-recipe.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import { TW5_DOCS_BAG, TW5_DOCS_RECIPE, isTw5Docs, tw5DocsStore } from "./tw5-docs-library.js";
 
 /** The doors a named wiki's engine composes through: the meme door's own reaches, the island's held documents, and the boot. */
 export interface WikiEngineDeps {
@@ -72,6 +76,8 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
  */
 export async function composeWikiEngineSource(deps: WikiEngineDeps, slug: string, need: { readonly mint: boolean }): Promise<WikiEngineSource | null> {
   if (slug === DAEMON_WIKI_SLUG) return null;
+  // THE TW5 DOCS LIBRARY: every face reaches it, on its one read-only layer, and no write layer ever stands (`tw5-docs-library`).
+  if (isTw5Docs(slug)) return { boot: deps.boot, recipe: TW5_DOCS_RECIPE, ready: [{ slot: TW5_DOCS_BAG, store: await tw5DocsStore() }], gate: TW5_DOCS_BAG };
   const record = await deps.recipeOf(slug);
   if (record === null) return null;
   const recipe = recipeFromRecord(record, slug);

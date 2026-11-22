@@ -102,3 +102,15 @@ test("a bag door takes the bag by its slug or by its bag uri, and a uri outside 
   expect(await show("lar:///ha.ka.ba/bags/book")).toBe(0);
   await expect(show("lar:///ha.ka.ba/wikis/book")).rejects.toThrow(/names no bag: a bag door takes a slug \(book\) or its bag uri \(lar:\/\/\/ha\.ka\.ba\/bags\/book\)/);
 });
+
+test("bag declare refuses the TW5 docs library's slug and bag uri as tw5-docs-reserved, and writes no declaration", async () => {
+  root = mkdtempSync(join(tmpdir(), "bag-declare-reserved-"));
+  process.env["LAR_ROOT"] = root;
+  process.env["LAR_BAGS"] = join(root, "canon");
+  mkdirSync(join(root, "canon", "tw5-docs"), { recursive: true });
+  for (const name of ["tw5-docs", "lar:///ha.ka.ba/bags/tw5-docs"]) {
+    await expect(cmdBagDeclare({ command: "bag", positional: [name], options: { tier: "public" }, flags: { json: true } } as never), name)
+      .rejects.toMatchObject({ reason: "tw5-docs-reserved" });
+  }
+  expect(readBagManifest(join(root, "canon", "tw5-docs"), "tw5-docs").tier, "no declaration landed").toBe("veil");
+});

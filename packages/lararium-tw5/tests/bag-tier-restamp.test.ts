@@ -62,3 +62,14 @@ describe("the declare act re-stamps the catalog row", () => {
     expect(await reactor({ bagUrl: book }, ctx)).toMatchObject({ status: "unchanged" });
   });
 });
+
+describe("the declare act leaves the TW5 docs library's name reserved", () => {
+  test("restamp-bag-tier refuses tw5-docs-reserved, so the vessel refuses the name where a caller skips the CLI, and stamps nothing", async () => {
+    const { floor, view, accessor } = await stand();
+    const docs = bagUri("tw5-docs");
+    const before = JSON.stringify(floor.doc());
+    await expect(makeRestampBagTierReactor({ catalog: accessor, bagTier: () => "public" as CapTier })({ bagUrl: docs }, ctx)).rejects.toMatchObject({ reason: "tw5-docs-reserved" });
+    expect(JSON.stringify(floor.doc())).toBe(before);
+    expect(view).toBeDefined();
+  });
+});

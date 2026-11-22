@@ -85,3 +85,8 @@ describe("the group accessor", () => {
     expect(() => kahuRealmGroup("0xabc")).toThrow(/reads as no PersonaGroup id/);
   });
 });
+
+test("a disk-sourced holding named for the TW5 docs library seats no house canon: the slug rests reserved", () => {
+  expect(houseCanonSlugs(["elyncia", "tw5-docs"])).toContain("elyncia");
+  expect(houseCanonSlugs(["elyncia", "tw5-docs"])).not.toContain("tw5-docs");
+});

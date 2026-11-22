@@ -11,6 +11,8 @@
  *   W4  RED: a write mints the face's write layer where none stood and recomposes; a cold engine closes and the next ask
  *       composes afresh
  *   W5  RED: a rendered record keeps `rendered-derives` on a write through a named wiki's engine
+ *   the TW5 docs library (`tw5-docs`) answers every face read-only: a card led by its has line, the operator vocabulary by
+ *   tag, every write door refusing it by name
  *
  * A real engine boots here (`bootTestWiki`), with the real recipe, adaptor and bridge.
  */
@@ -18,7 +20,9 @@ import { afterEach, describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
 import { AutomergeDocStore, emptyLarDoc, wikiBagUri, wikiSlotUri, type DocHandle, type LarDoc, type LarTiddlerRecord, type Repo as RepoType, type WikiSlotKind } from "@lararium/mesh";
 import { composeWikiEngineSource, wikiEngines, type WikiEngineDeps } from "../src/wiki-engine.js";
-import { makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiFilterReactor, makeWikiStatusReactor } from "../src/tiddler-verbs.js";
+import { makeTiddlerDeleteReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiActionReactor, makeWikiFilterReactor, makeWikiRenderOutReactor, makeWikiStatusReactor } from "../src/tiddler-verbs.js";
+import { makeMemeDeleteReactor, makeMemePatchReactor, makeMemePutReactor } from "../src/meme-verbs.js";
+import { TW5_DOCS_BAG, TW5_DOCS_READ_ONLY, TW5_DOCS_SLUG } from "../src/tw5-docs-library.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
@@ -69,6 +73,49 @@ function sharedWiki(opts: { writeSlot?: "working" | "personal" | null; standing?
 }
 
 describe.skipIf(wikiSkip)(`every wiki its engine${skipNote}`, () => {
+
+  test("the TW5 docs library refuses every write door by name, before any engine composes", async () => {
+    const opts = { composite: null as never, tw5: null as never };
+    const refusal = { reason: TW5_DOCS_READ_ONLY };
+    await expect(makeTiddlerPutReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "No", text: "no" }, ctx())).rejects.toMatchObject(refusal);
+    await expect(makeTiddlerDeleteReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator" }, ctx())).rejects.toMatchObject(refusal);
+    await expect(makeWikiActionReactor(opts)({ recipe: TW5_DOCS_SLUG, name: "x", expected: "x", resulting: "x" }, ctx())).rejects.toMatchObject(refusal);
+    await expect(makeWikiRenderOutReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator", output: "workbench" }, ctx())).rejects.toMatchObject(refusal);
+    for (const make of [makeMemePutReactor, makeMemePatchReactor, makeMemeDeleteReactor]) {
+      await expect(make({} as never)({ recipe: TW5_DOCS_SLUG, uri: "lar:///ha.ka.ba/x", text: "x", slot: "#/x" }, ctx())).rejects.toMatchObject(refusal);
+    }
+  });
+
+  test("the TW5 docs library's bag refuses every --bag write door by name, by its slug and by its bag uri", async () => {
+    const opts = { composite: null as never, tw5: null as never };
+    const refusal = { reason: TW5_DOCS_READ_ONLY };
+    for (const bag of [TW5_DOCS_SLUG, `@${TW5_DOCS_SLUG}`, TW5_DOCS_BAG]) {
+      for (const make of [makeMemePutReactor, makeMemePatchReactor, makeMemeDeleteReactor]) {
+        await expect(make({} as never)({ bag, uri: "lar:///ha.ka.ba/x", text: "x", slot: "#/x" }, ctx()), bag).rejects.toMatchObject(refusal);
+      }
+      await expect(makeTiddlerPutReactor(opts)({ bag, title: "No", text: "no" }, ctx()), bag).rejects.toMatchObject(refusal);
+      await expect(makeTiddlerDeleteReactor(opts)({ bag, title: "backlinks Operator" }, ctx()), bag).rejects.toMatchObject(refusal);
+    }
+  });
+
+  test("the TW5 docs library answers a face that reaches no other wiki and holds no read cap: its card leads with a has line, and its tags list the operators", async () => {
+    const w = sharedWiki({ recipe: false, standing: [], canon: false, writeSlot: null });
+    const engines = wikiEngines((slug, need) => composeWikiEngineSource(w.deps, slug, need)); downs.push(() => engines.dropAll());
+    const opts = { composite: null as never, tw5: null as never, wikis: engines };
+    const denied: VerbContext = { ...ctx(), cap: async () => ({ ok: false, reason: "this face reaches nothing" }) };
+    const got = await makeTiddlerGetReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator" }, denied);
+    expect(got).toMatchObject({ recipe: TW5_DOCS_SLUG, tiddler: { fields: { title: "backlinks Operator", caption: "backlinks" }, bag: TW5_DOCS_BAG } });
+    expect(String(got["has"])).toMatch(/^<<~ has /);
+    const whole = await makeTiddlerGetReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "backlinks Operator", grain: "whole" }, denied);
+    expect((whole["tiddler"] as { fields: Record<string, string> }).fields["text"], "`--all` reads the whole page").toMatch(/list of backlinks/);
+    const filtered = await makeWikiFilterReactor(opts)({ recipe: TW5_DOCS_SLUG, filter: "[tag[Filter Operators]]" }, denied);
+    expect(filtered.titles).toEqual(expect.arrayContaining(["backlinks Operator", "addprefix Operator", "count Operator"]));
+    expect(filtered["total"], "the whole operator vocabulary, paged").toBeGreaterThan(100);
+    const status = await makeWikiStatusReactor(opts)({ recipe: TW5_DOCS_SLUG }, denied);
+    expect(status["layers"], "the library reads freely, and its status says so").toEqual(expect.arrayContaining([expect.objectContaining({ bag: TW5_DOCS_BAG, read: true, write: false })]));
+    await expect(makeTiddlerPutReactor(opts)({ recipe: TW5_DOCS_SLUG, title: "No", text: "no" }, ctx())).rejects.toMatchObject({ reason: TW5_DOCS_READ_ONLY });
+  }, 60_000);
+
   test("W1 RED: a named wiki's engine reads its canon by reference and the shared working layer, and a put lands in the working document", async () => {
     const w = sharedWiki();
     const engines = wikiEngines((slug, need) => composeWikiEngineSource(w.deps, slug, need)); downs.push(() => engines.dropAll());

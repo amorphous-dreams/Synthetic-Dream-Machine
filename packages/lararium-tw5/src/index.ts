@@ -116,6 +116,7 @@ export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe
 export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePool, faceEngines } from "./face-engine.js";
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
 export type { WikiEngine, WikiEngineDeps, WikiEngineSource, WikiEngines } from "./wiki-engine.js";
+export { TW5_DOCS_BAG, isTw5Docs, isTw5DocsBag, tw5DocsRecords } from "./tw5-docs-library.js";
 export type { CrossFaceViewGuard, CrossFaceViewSource, EnginePool, FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
