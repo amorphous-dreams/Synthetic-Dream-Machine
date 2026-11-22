@@ -74,7 +74,7 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
 import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
-import { READ_PAGE_BYTES, byteLength, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type GrainEcho, type ReadGrain } from "./read-gradient.js";
+import { READ_PAGE_BYTES, byteLength, cardBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
@@ -598,7 +598,8 @@ async function recordRead(engine: Engine, held: Record<string, string>, title: s
 
 /** A record lens answer: the has line first, then the record with its grain and next. */
 function recordAnswer(from: Provenance & { readonly answered: Record<string, unknown> }, title: string, read: RecordRead, bag: string | null, place: { position: TiddlerPosition; family?: string | null; orphan?: boolean }, note?: string): Record<string, unknown> {
-  const hash = hashOf(read.fields);
+  // A CARD'S BASE NAMES THE CARD: an answer that left the text home hands a marked base, which no text write takes.
+  const hash = cardBase(hashOf(read.fields), typeof read.fields["text"] === "string" && typeof read.shown["text"] !== "string");
   return {
     has: recordHas(title, read.fields, from, place, hash),
     ...from.answered, title, lens: "record",
@@ -648,7 +649,8 @@ async function memeAnswer(
   const meme = await readMeme(root, sink);
   if (meme === null) return { ...from.answered, title: root, lens: "meme", tiddler: null };
   const read = memeGradient(meme, { grain: asked, after: optionalStringArg(args, "after"), slot });
-  const measures = [param("type", CARRIER_TYPE), param("position", "root"), param("slots", read.slots.length), param("bytes", read.bytes), param("base", meme.canonicalHash)];
+  const base = cardBase(meme.canonicalHash, read.grain.applied === "skinny");
+  const measures = [param("type", CARRIER_TYPE), param("position", "root"), param("slots", read.slots.length), param("bytes", read.bytes), param("base", base)];
   const rootLine = hasLine(root, [...provenanceParams(from), ...tagTokens(rootFields["tags"]), ...measures], rootFields["description"] ?? rootFields["role"]);
   const lines = read.grain.applied === "skinny" ? [rootLine, ...slotHasLines(read.slots)] : [rootLine];
   // THE COMPOSITION READING rides a whole carrier answered in one: the join of a root and its slots is where a two-headed carrier
@@ -658,7 +660,7 @@ async function memeAnswer(
     has: lines.join("\n"),
     ...from.answered, title: root, lens: "meme",
     meme: {
-      uri: root, ...(read.text !== undefined ? { text: read.text } : {}), canonicalHash: meme.canonicalHash, bytes: read.bytes,
+      uri: root, ...(read.text !== undefined ? { text: read.text } : {}), canonicalHash: base, bytes: read.bytes,
       slots: read.slots, ...(slot ? { slot } : {}), ...(read.page ? { page: read.page } : {}),
     },
     grain: read.grain, next: read.next,
@@ -843,7 +845,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
 
     // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves.
     if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "tiddler-put", typeof args["text"] === "string");
     if (base !== null && base !== liveHash) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
 
     // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.
@@ -966,7 +968,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     // A record no mounted layer holds (the engine's own, or a wiki with no store beneath it) has nothing to retract.
     const unheld = named === "reveal" ? read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0) : undefined;
     if (unheld) return refused("reveal-top-unwritable", `no mounted layer holds a record of "${unheld.title}", so a reveal has nothing to retract; \`mode: "kapae"\` removes it. Nothing moved.`);
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "tiddler-delete", false);
     if (base !== null && base !== hash) return { recipe: anchor.recipe, title, decision: "conflict", mode: modeName, tombstoned: [], retracted: [], hash };
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands

@@ -209,7 +209,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const s = skinny["tiddler"] as { fields: Record<string, string>; hash: string; textHash: string; omitted: string[] };
     expect(s.fields).toEqual({ title: "Note 02", tags: "memory", priority: "low", type: "text/vnd.tiddlywiki" });
     expect(s.omitted).toEqual(["text"]);
-    expect(s.hash).toBe(t.hash);
+    expect(s.hash, "a card names its base as the card's").toBe(`skinny:${t.hash}`);
     const named = await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx());
     expect((named["tiddler"] as { fields: Record<string, string> }).fields).toEqual({ title: "Note 02", priority: "low" });
     expect(await get({ ...A, title: "Nowhere" }, ctx())).toMatchObject({ title: "Nowhere", tiddler: null });
@@ -271,6 +271,20 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(web).toMatchObject({ grain: { applied: "handle", why: expect.stringMatching(/never fetch/) }, next: null });
     expect(web["has"]).toContain("_canonical_uri/https://example.org/a.png");
     expect(fetched).toEqual([cid, cid]);
+  });
+
+  test("RED M2 base-from-skinny: a skinny answer's base names the card, so a text put against it refuses by name (naming --all); a field patch against it lands", async () => {
+    const r = await rig();
+    const get = makeTiddlerGetReactor(r.opts);
+    const put = makeTiddlerPutReactor(r.opts);
+    const card = (await get({ ...A, title: "Note 04", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
+    expect(card.hash).toMatch(/^skinny:sha256-/);
+    await expect(put({ ...A, title: "Note 04", text: "a blind rewrite", base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny", message: expect.stringMatching(/--all/) });
+    expect(await put({ ...A, title: "Note 04", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
+    // CONTROL: a fat answer's base authorizes the text write.
+    const fat = (await get({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string };
+    expect(fat.hash).toMatch(/^sha256-/);
+    expect(await put({ ...A, title: "Note 04", text: "a read rewrite", base: fat.hash }, ctx())).toMatchObject({ decision: "put" });
   });
 
   test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {

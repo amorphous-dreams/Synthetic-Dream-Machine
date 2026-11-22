@@ -83,7 +83,7 @@ import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
-import { grainOf, memeGradient } from "./read-gradient.js";
+import { cardBase, grainOf, memeGradient, readBase } from "./read-gradient.js";
 import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
 import type { TiddlerFields } from "./deserializer.js";
 
@@ -499,7 +499,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     refuseEffectLedgerWrite(target.uri, "meme put");
     const text = stringArg(args, "text");
     if (!text) throw new Error("meme-put: args.text is required (the whole meme, framed)");
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "meme-put", true);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
     await requireKahuReach(bag, opts.kahuReach, "meme put", ctx.asker);
@@ -571,7 +571,7 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
       uri: target.uri,
       meme: {
         ...(read.text !== undefined ? { text: read.text } : {}),
-        canonicalHash: meme.canonicalHash, bytes: read.bytes, grain: read.grain, slots: read.slots,
+        canonicalHash: cardBase(meme.canonicalHash, read.grain.applied === "skinny"), bytes: read.bytes, grain: read.grain, slots: read.slots,
         ...(read.page ? { page: read.page } : {}), next: read.next,
       },
       ...(floor ? { floor: true } : {}),
@@ -610,7 +610,7 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     const append = typeof args["append"] === "string" ? args["append"] : null;
     const replace = typeof args["replace"] === "string" ? args["replace"] : null;
     if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "meme-patch", true);
     if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`meme get\` answers for ${target.uri}.`);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink } = await resolveRead(opts, target, origin, ctx.cap);
@@ -879,7 +879,7 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
     refuseEffectLedgerWrite(target.uri, "meme delete");
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "meme-delete", false);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     if (target.recipe && target.recipe !== "default" && !opts.faceLane) return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");

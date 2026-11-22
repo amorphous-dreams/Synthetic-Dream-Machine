@@ -1131,6 +1131,17 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     await expect(get(r, { grain: "whole", after: first.meme.next!.after! })).rejects.toMatchObject({ reason: "read-cursor-stale" });
   });
 
+  test("RED M2 base-from-skinny: a has-stack answer's base names the card, so a meme put or a slot patch against it refuses by name", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const stack = await get(r);
+    expect(stack.meme.canonicalHash).toMatch(/^skinny:/);
+    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 1]]), base: stack.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: stack.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    // CONTROL: the whole carrier's base authorizes the write.
+    const whole = await get(r, { grain: "whole" });
+    expect(whole.meme.canonicalHash).not.toMatch(/^skinny:/);
+  });
+
   test("RED M1: a stay-home title answers no read through the internal meme-get either (`tiddler-withheld`)", async () => {
     const r = rig();
     r.wiki.store.set("$:/temp/lares/alert/x", { title: "$:/temp/lares/alert/x", text: "device-local" });

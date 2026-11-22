@@ -48,6 +48,27 @@ export interface GrainEcho {
 const utf8 = new TextEncoder();
 export const byteLength = (text: string): number => utf8.encode(text).length;
 
+// ── the card's base ──────────────────────────────────────────────────────────────────────────────────
+
+/** The mark a base carries where the answer left the text home: the card names the record, never its text. */
+export const CARD_BASE_PREFIX = "skinny:";
+
+/** A base as an answer hands it: marked as the card's where the text stayed home. */
+export const cardBase = (hash: string, card: boolean): string => (card ? `${CARD_BASE_PREFIX}${hash}` : hash);
+
+/**
+ * READ-MODIFY-WRITE STAYS SAFE ON THE GRADIENT. A base a skinny answer handed out names a record whose text the reader never saw,
+ * so a write that moves text against it refuses `base-from-skinny` and names the read that carries the text (`--all`); a write
+ * that moves no text (a field patch, a delete) reads the bare hash. Answers the hash to compare, or null where no base rides.
+ */
+export function readBase(raw: string | null, verb: string, writesText: boolean): string | null {
+  if (raw === null || !raw.startsWith(CARD_BASE_PREFIX)) return raw;
+  if (writesText) {
+    throw new VerbRefusal("base-from-skinny", `base-from-skinny: ${verb} moves text, and this base came from an answer that left the text home (a skinny card or a has-stack); read the text first (\`lares tiddler get <title> --all\`, \`--meme --all\` for a meme; MCP grain="fat" or "whole") and write against that base. Nothing moved.`);
+  }
+  return raw.slice(CARD_BASE_PREFIX.length);
+}
+
 // ── the has line ─────────────────────────────────────────────────────────────────────────────────────
 
 /** A value quoted for a sigil attribute: one backtick each side, or three where the value holds a backtick. */

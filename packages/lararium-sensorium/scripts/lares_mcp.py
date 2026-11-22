@@ -1271,7 +1271,9 @@ def build_mcp(coordinator: LaresCoordinator):
         body; `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never
         fetched); `slot` (with `slot="#/name"`) answers one slot's span; `whole` reads the whole at the lens's grain (a record fat, a pointer resolved), and on a meme the whole carrier one page at a time,
         each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null. `fields=[…]` answers the
-        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). A
+        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). AN
+        ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses
+        `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A
         RENDERED TIDDLER answers whole here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`,
         or the source's `render-title`) whose `rendered-from` names the source. CONTAINER LAW: exactly one of `recipe` /
         `bag`. `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches, answered in
@@ -1451,7 +1453,8 @@ def build_mcp(coordinator: LaresCoordinator):
         if mode == "pin" and not _law_titles(f"[[{uri}]] {LAW_CANON_GUARD}"):
             raise uds.LaresVerbError(f"law-pin-absent: no canon law stands at {uri} in the worn face's daemon wiki "
                                      "(a pin orders canon law and adds none); nothing moved")
-        got = _meme_wire("tiddler-get", {"recipe": "default", "title": LAW_PINS_TITLE}) or {}
+        # READ FAT: a read-modify-write takes its base only from an answer that carried the text.
+        got = _meme_wire("tiddler-get", {"recipe": "default", "title": LAW_PINS_TITLE, "grain": "fat"}) or {}
         held = got.get("tiddler") or None
         text = str(((held or {}).get("fields") or {}).get("text") or "")
 

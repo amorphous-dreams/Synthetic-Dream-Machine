@@ -13,7 +13,7 @@
       "cli": { "command": "tiddler", "positional": ["get", "Note 02"], "options": { "recipe": "default" }, "flags": { "skinny": true } },
       "mcp": { "title": "Note 02", "recipe": "default", "grain": "skinny" },
       "wire": { "verb": "tiddler-get", "args": { "recipe": "default", "title": "Note 02", "grain": "skinny" } },
-      "output": { "has": "<<~ has name=`Note 02` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working memory position/plain base/sha256-aa`>>", "recipe": "default", "title": "Note 02", "lens": "record", "grain": { "asked": "skinny", "applied": "skinny", "why": "asked: the fields, the text left home" }, "next": { "grain": "fat" }, "tiddler": { "fields": { "title": "Note 02", "tags": "memory", "priority": "low" }, "hash": "sha256-aa", "textHash": "sha256-bb", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "position": "plain", "omitted": ["text"] } }
+      "output": { "has": "<<~ has name=`Note 02` params=`recipe/default layer/lar:///ha.ka.ba/wikis/daemon/working memory position/plain base/skinny:sha256-aa`>>", "recipe": "default", "title": "Note 02", "lens": "record", "grain": { "asked": "skinny", "applied": "skinny", "why": "asked: the fields, the text left home" }, "next": { "grain": "fat" }, "tiddler": { "fields": { "title": "Note 02", "tags": "memory", "priority": "low" }, "hash": "skinny:sha256-aa", "textHash": "sha256-bb", "bag": "lar:///ha.ka.ba/wikis/daemon/working", "position": "plain", "omitted": ["text"] } }
     },
     {
       "tool": "tiddler_get",

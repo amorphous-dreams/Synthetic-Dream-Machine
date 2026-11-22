@@ -63,10 +63,13 @@ class _PinDaemon:
         threading.Thread(target=self._serve, daemon=True).start()
 
     def answer(self, verb: str, args: dict) -> dict:
+        # THE DOOR'S GRADIENT, IN SMALL: an answer that left the text home hands a card's base, which no text put takes.
         if verb == "tiddler-get":
+            mark = "" if args.get("grain") == "fat" else "skinny:"
             return {"recipe": "default", "title": args["title"],
-                    "tiddler": None if self.pins is None else {"fields": {"title": LAW_PINS_TITLE, "text": self.pins}, "hash": f"h{self.hash}"}}
+                    "tiddler": None if self.pins is None else {"fields": {"title": LAW_PINS_TITLE, "text": self.pins}, "hash": f"{mark}h{self.hash}"}}
         if verb == "tiddler-put":
+            assert not str(args.get("base") or "").startswith("skinny:"), "base-from-skinny: the pin set's base came from a card"
             if self.put_decision != "put":
                 return {"decision": self.put_decision, "hash": f"h{self.hash}"}
             self.pins = args["text"]

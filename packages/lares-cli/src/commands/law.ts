@@ -153,7 +153,8 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
       return exitFor("not-found");
     }
   }
-  const got: Ran = await runDoor(args, label, { verb: "tiddler-get", args: { recipe: RECIPE, title: LAW_PINS_TITLE } });
+  // READ FAT: the pin set is a read-modify-write, and only an answer that carried the text hands a base a text put takes.
+  const got: Ran = await runDoor(args, label, { verb: "tiddler-get", args: { recipe: RECIPE, title: LAW_PINS_TITLE, grain: "fat" } });
   if (!got.ok) return got.exit;
   const held = got.output["tiddler"] as { hash?: string; fields?: Record<string, string> } | null | undefined;
   const text = String(held?.fields?.["text"] ?? "");
