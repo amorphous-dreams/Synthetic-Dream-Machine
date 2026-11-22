@@ -114,6 +114,10 @@ export async function cmdBag(args: ParsedArgs): Promise<number> {
     return verb ? 0 : 2;
   }
   const entry = SUBCOMMANDS[verb];
+  if (verb === "list") {
+    console.error("lares bag: `bag list` moved to `lares bag show [<slug>]`.");
+    return 2;
+  }
   if (!entry) {
     console.error(`lares bag: unknown verb "${verb}". Run \`lares bag help\` for the list.`);
     return 2;

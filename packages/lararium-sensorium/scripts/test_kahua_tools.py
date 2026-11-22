@@ -1,4 +1,4 @@
-"""Witness — the `kahua_propose` / `kahua_stage` / `kahua_list` / `kahua_get` MCP tools: an AI seat's reach onto its face's kahua stage.
+"""Witness — the `kahua_propose` / `kahua_stage` / `kahua_get` MCP tools: an AI seat's reach onto its face's kahua stage.
 
 THE SEAT PROPOSES, STAGES AND READS; THE OPERATOR'S HAND LIFTS. Each tool opens a local SESSION under the `seat` hand (the vessel
 seats the `seat` profile, which refuses the kahua pin, lift and withdraw rows at the socket), runs ONE `session:act`
@@ -166,7 +166,7 @@ def test_kahua_propose_opens_a_seat_session_on_the_resolved_face_and_runs_the_pr
     assert any(f.get("op") == "session:close" for f in vessel.frames)
 
 
-def test_kahua_list_and_get_run_the_read_row_on_the_named_worn_face(vessel):
+def test_kahua_get_runs_the_read_row_on_the_named_worn_face(vessel):
     vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "items": []}}
     vessel.worn = 1
     assert _tools()["kahua_get"](face=1) == {"items": []}
@@ -180,7 +180,7 @@ def test_kahua_list_and_get_run_the_read_row_on_the_named_worn_face(vessel):
     assert {f["faceRef"] for f in opened} == {"h1"} and all(f.get("seat") == "ai" for f in opened)
 
 
-def test_kahua_get_list_pages_and_refuses_history_without_a_title_before_the_wire(vessel):
+def test_kahua_get_pages_and_refuses_history_without_a_title_before_the_wire(vessel):
     vessel.answer = {"status": "done", "output": {"items": [], "count": 0, "next": None}}
     assert _tools()["kahua_get"](limit=2, face=1)["count"] == 0
     assert vessel.acts() == [{"act": "kahua-read", "args": {"action": "list", "limit": 2}}]
@@ -251,7 +251,7 @@ def _described(name: str) -> str:
     return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
 
 
-def test_kahua_list_text_names_the_relation_and_the_unpinned_stage():
+def test_kahua_get_text_names_the_relation_and_the_unpinned_stage():
     said = _described("kahua_get")
     assert "relation" in said and '`stage: "none"`' in said
 

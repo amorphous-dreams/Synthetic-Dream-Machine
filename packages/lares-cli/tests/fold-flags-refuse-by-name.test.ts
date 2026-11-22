@@ -33,6 +33,16 @@ describe("a folded sub-path refuses the flags it does not read", () => {
       expect(r.err).toContain(`unknown flag ${flag} for \`lares ${door}\``);
     }
   });
+  test("retired list spellings answer their moved pointer, never an unknown flag", async () => {
+    const k = await run(["kahua", "list", "--face", "1", "--no-json"]);
+    expect(k.code).not.toBe(0);
+    expect(k.err).toContain("moved to `kahua get");
+    expect(k.err).not.toContain("unknown flag");
+    const b = await run(["bag", "list", "--dir", "X", "--no-json"]);
+    expect(b.code).toBe(2);
+    expect(b.err).toContain("moved to `lares bag show");
+    expect(b.err).not.toContain("unknown flag");
+  });
   test("★ persona raise-sign refuses --face and every sibling flag; --as stays ★", async () => {
     const r = await run(["persona", "raise-sign", "{}", "--face", "2", "--no-json"]);
     expect(r.code).toBe(2);

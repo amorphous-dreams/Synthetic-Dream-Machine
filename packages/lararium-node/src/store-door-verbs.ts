@@ -455,7 +455,8 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       if (args["action"] === "get") {
         const title = String(args["title"]);
         return { has: hasLine(title, [param("source", "kahua-stage"), param("grain", "item"), param("verified", true)]), ...sight,
-          source: "kahua-stage", grain: "item", nextOperation: `lares kahua get ${JSON.stringify(title)} --history` };
+          source: "kahua-stage", grain: "item",
+          ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} --history` } : {}) };
       }
       const items = Array.isArray(read["items"]) ? read["items"] : [];
       const page = pagePlaneRows(items, str(args["after"]), int(args["limit"]));
