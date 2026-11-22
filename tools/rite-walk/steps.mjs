@@ -367,8 +367,9 @@ export const STEPS = Object.freeze([
         { name: "tiddler_get", arguments: { title: MEMORY, recipe: "default", meme: true, grain: "whole" } },
       ]);
       if (seat.unreached) return seat;
-      // The one door answers its whole envelope; the carrier rides `meme.text`, which the stringified answer carries.
-      const back = JSON.stringify(seat.results[1] ?? null);
+      // The one door answers its whole envelope; the read-back reads the carrier's own field (`meme.text`), never the has line or a slot row.
+      const answered = seat.results[1];
+      const back = typeof answered?.meme?.text === "string" ? answered.meme.text : "";
       return { ok: back.includes(MEMORY_LINE), answer: `meme_put → ${JSON.stringify(seat.results[0])}` };
     } },
   { id: "lift", prose: "''The lift.''", via: SC, needs: ["unlock-all"], expect: "the stage answers the row digest; the lift signs under the face's root",

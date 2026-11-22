@@ -1744,7 +1744,8 @@ run_title() {
     # THREE SPEAKER-AIMS WENT IN; ALL THREE MUST READ BACK. A processor that stripped one and kept two
     # would satisfy any check that only asked whether the record survived.
     local N
-    N=$(printf '%s' "$CGET" | grep -oE 'lar://[a-z]+:[a-z]+@[a-z.]+' | wc -l | tr -d ' ')
+    # Count in the carrier's own text (`data.meme.text`), never in the has line or a slot row, which may quote a body line.
+    N=$(printf '%s' "$CGET" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).data?.meme?.text??""))}catch{}})' | grep -oE 'lar://[a-z]+:[a-z]+@[a-z.]+' | wc -l | tr -d ' ')
     if [ "${N:-0}" -ge 3 ]; then ok
     else bad "only ${N} of 3 body-borne speaker-aims read back — the body was altered"; fi
   fi
