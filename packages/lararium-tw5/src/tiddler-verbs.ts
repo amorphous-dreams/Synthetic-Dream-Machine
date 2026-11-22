@@ -568,7 +568,11 @@ async function recordRead(engine: Engine, held: Record<string, string>, title: s
   const named = namesArg(args["fields"]) !== null;
   const done = (fields: Record<string, string>, applied: ReadGrain, why: string, next: RecordRead["next"]): RecordRead => {
     const { shown, omitted } = narrowRecord(fields, title, args, applied === "skinny");
-    return { fields, shown, omitted, grain: { asked, applied: named ? "fat" : applied, why: named ? "the named fields" : why }, next };
+    // THE ECHO NAMES WHAT RODE. At the tiddler grain, fat only where the text rode (named fields or the byte cap may leave it home);
+    // a pointer's body grain (handle, resolved) stays its own word whatever the fields.
+    const tiddlerGrain = applied === "fat" || applied === "skinny";
+    const rode: ReadGrain = tiddlerGrain ? (typeof shown["text"] === "string" ? "fat" : "skinny") : applied;
+    return { fields, shown, omitted, grain: { asked, applied: rode, why: named ? `the named fields (${rode === "fat" ? "the text among them" : "the text left home"})` : rode === applied ? why : `${why}; the byte cap left the text home` }, next };
   };
   if (isPointer(held)) {
     const cid = skinnyCid(held);
@@ -697,6 +701,21 @@ async function bagGet(
   return recordAnswer(from, title, read, bag, placeIn(title));
 }
 
+/**
+ * A WORD THE LENS OR THE GRAIN DOES NOT READ REFUSES BY NAME (`read-word-unread`), before anything reads: an answer that silently
+ * dropped a word would misreport what it applied. `after` continues the meme's whole carrier alone; `fields` and `maxBytes` narrow a
+ * record and no carrier; a slot names one slot, which neither the has-stack (skinny) nor the whole carrier reads.
+ */
+function refuseUnreadWords(args: Readonly<Record<string, unknown>>, title: string, lens: boolean, asked: ReadGrain | null, slot: string | null): void {
+  const unread = (word: string, why: string): VerbRefusal =>
+    new VerbRefusal("read-word-unread", `read-word-unread: tiddler-get reads no \`${word}\` here; ${why}. Nothing was read.`);
+  if (!lens && optionalStringArg(args, "after")) throw unread("after", "a cursor continues a meme's whole carrier (`meme: true`, `--meme --all`), and a record answers in one");
+  if (lens && args["fields"] !== undefined) throw unread("fields", "the meme lens answers the carrier, never a field subset; drop `meme` to narrow the record");
+  if (lens && args["maxBytes"] !== undefined) throw unread("maxBytes", "the meme lens pages its carrier on slot boundaries; the byte cap narrows a record alone");
+  const slotted = slot !== null || (title.includes("#/") && rootAddressOf(title) !== title);
+  if (lens && slotted && (asked === "skinny" || asked === "whole")) throw unread("slot", `a slot names one slot, and the ${asked === "skinny" ? "has-stack" : "whole carrier"} reads them all; drop the slot, or the grain`);
+}
+
 export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const container = readContainer(args, "tiddler-get");
@@ -705,6 +724,7 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
     const asked = grainOf(args["grain"]);
     const lens = flagOn(args["meme"]);
     const slot = optionalStringArg(args, "slot");
+    refuseUnreadWords(args, named, lens, asked, slot);
     // The meme lens reads the slot inside the recomposed carrier; the record lens reads the slot's own record.
     const title = slot && !lens ? slotTitle(named, slot) : named;
     // A BAG NAMES ONE STORE AND NO WIKI: the record reads from that bag through the meme door's own reach and read gate.

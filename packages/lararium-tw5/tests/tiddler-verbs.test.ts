@@ -287,6 +287,30 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 04", text: "a read rewrite", base: fat.hash }, ctx())).toMatchObject({ decision: "put" });
   });
 
+  test("RED L1: a word the lens or the grain does not read refuses by name, before anything reads", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    await expect(get({ ...A, title: "Note 02", after: "1.0123456789abcdef" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/after/) });
+    await expect(get({ ...A, title: MEME, meme: true, fields: ["title"] }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/fields/) });
+    await expect(get({ ...A, title: MEME, meme: true, maxBytes: 4096 }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/maxBytes/) });
+    await expect(get({ ...A, title: MEME, meme: true, grain: "skinny", slot: "#/a" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/slot/) });
+    await expect(get({ ...A, title: MEME, meme: true, grain: "whole", slot: "#/a" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread" });
+    await expect(get({ ...A, title: `${MEME}#/a`, meme: true, grain: "whole" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread" });
+    // CONTROL: the words each lens reads still answer.
+    expect(await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx())).toMatchObject({ grain: { applied: "slot" } });
+    expect(await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx())).toMatchObject({ lens: "record" });
+  });
+
+  test("RED L4: the echo names the grain that rode: named fields without the text read skinny; a pointer keeps its body grain under named fields", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Handle2", _is_skinny: "yes", textCid: "cd".repeat(32), type: "text/plain" });
+    const get = makeTiddlerGetReactor(r.opts);
+    expect(await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx())).toMatchObject({ grain: { applied: "skinny" } });
+    expect(await get({ ...A, title: "Note 02", fields: ["text"] }, ctx())).toMatchObject({ grain: { applied: "fat" } });
+    expect(await get({ ...A, title: "Handle2", fields: ["textCid"] }, ctx())).toMatchObject({ grain: { applied: "handle" } });
+  });
+
   test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
