@@ -41,7 +41,7 @@
 import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { peerSeatOf } from "./uds-peer.js";
 import { HEARTH_CLOSING, HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlanes } from "./hearth-roster-read.js";
-import { choreAtDoor, isChore } from "./chore-face.js";
+import { choreAtDoor, entersADrain, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
 import { PARK_LIMIT } from "./owned-store.js";
@@ -1733,13 +1733,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           const resolved = await resolveTarget(inv.verb, inv.args, mount);
           if (!resolved.ok) return fail(resolved.message, resolved.refusal);
           if (resolved.args !== undefined) inv.args = resolved.args;
-          // ONE GATE PER ONE-SHOT, decided once: a visit admits on its target's actor (`gateFor`); otherwise a write (a chore: it
-          // writes or signs) admits as work on the face it acts as (the face it names, or the mount), as a session's verb does on
-          // the face it wears, so no one-shot write enters that face's drain. ONLY A WRITE ENTERS A DRAIN: a chore-free verb (a
-          // read, a row of the place) that visits no face keeps its path.
+          // ONE GATE PER ONE-SHOT, decided once: a visit admits on its target's actor (`gateFor`); otherwise a write (a chore, or a
+          // chore-free write into the daemon layer such as realm-feed: `entersADrain`) admits as work on the face it acts as (the
+          // face it names, or the mount), as a session's verb does on the face it wears, so no one-shot write enters that face's
+          // drain. ONLY A WRITE ENTERS A DRAIN: a read, or a row of the place, that visits no face keeps its path.
           const acts = named ?? mount;
           gate = mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null ? gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined
-            : acts !== null && isChore(inv.verb) ? workGate(acts) ?? undefined
+            : acts !== null && entersADrain(inv.verb) ? workGate(acts) ?? undefined
             : undefined;
         }
         if (oneShotChore) {

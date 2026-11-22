@@ -493,6 +493,10 @@ test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the main
   expect(await v.oneShot({ verb: "meme-get", args: { recipe: "default", uri: MEME.uri }, requestedBy: "0xop", requestId: "read-during" }))
     .toMatchObject({ status: "done" });
   expect(v.placed.map((p) => p.requestId)).toEqual(["one-before", "read-during"]);
+  // A CHORE-FREE WRITE STILL TAKES THE GATE: realm-feed rolls a lease slot and lands its receipt in the daemon layer.
+  expect(await v.oneShot({ verb: "realm-feed", args: { realm: "r", writer: "w" }, requestedBy: "0xop", requestId: "feed-during" }))
+    .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
+  expect(v.placed.map((p) => p.requestId)).toEqual(["one-before", "read-during"]);
   drains[0]!();
   await closed;
 });
