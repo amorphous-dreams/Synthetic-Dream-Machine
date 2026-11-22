@@ -24,7 +24,7 @@ describe("the rehive's answer", () => {
     expect(wear).toBeGreaterThan(-1);
     expect(share).toBeGreaterThan(wear);
     expect(kahu).toBeGreaterThan(share);
-    expect(text).toContain("lares kahua list --face 1");
+    expect(text).toContain("lares kahua get --face 1");
     expect(text).toContain("lares kahua carry --all --face 1");
     expect(text).toContain("lares bag share --list --json > shares-before.json");
     expect(text).toContain("--note '<its note>'");

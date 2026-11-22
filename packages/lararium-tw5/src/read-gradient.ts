@@ -150,6 +150,28 @@ export function hasLine(name: string, params: readonly string[], tagline?: strin
   return `<<~ has name=${quoted(name)} params=${quoted(body)}>>`;
 }
 
+/** A bounded page of plane rows. The cursor carries the offset and a fingerprint of the full answer. */
+export function pagePlaneRows<T>(rows: readonly T[], after?: string | null, limit = 32): { rows: T[]; count: number; next: string | null } {
+  if (!Number.isInteger(limit) || limit < 1) throw new VerbRefusal("plane-limit-malformed", "plane-limit-malformed: name a positive whole row count");
+  const text = JSON.stringify(rows);
+  let fingerprint = 2166136261;
+  for (let i = 0; i < text.length; i++) fingerprint = Math.imul(fingerprint ^ text.charCodeAt(i), 16777619);
+  const tag = (fingerprint >>> 0).toString(16);
+  const match = after ? /^([0-9]+)\.([0-9a-f]+)$/.exec(after) : null;
+  if (after && (!match || match[2] !== tag)) throw new VerbRefusal("plane-cursor-stale", "plane-cursor-stale: the list moved; read its first page again");
+  const offset = match ? Math.min(Number(match[1]), rows.length) : 0;
+  const size = Math.min(limit, 32);
+  const page: T[] = [];
+  let bytes = 2;
+  for (const row of rows.slice(offset, offset + size)) {
+    const cost = new TextEncoder().encode(JSON.stringify(row)).length + (page.length ? 1 : 0);
+    if (page.length && bytes + cost > READ_PAGE_BYTES) break;
+    page.push(row); bytes += cost;
+  }
+  const end = offset + page.length;
+  return { rows: page, count: rows.length, next: end < rows.length ? `${end}.${tag}` : null };
+}
+
 /** A record's own tags as stack tokens, in the order the record writes them (TiddlyWiki's bracketed list). */
 export function tagTokens(tags: string | undefined): string[] {
   if (typeof tags !== "string" || tags.trim() === "") return [];

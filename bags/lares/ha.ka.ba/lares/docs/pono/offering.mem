@@ -440,8 +440,8 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 !!! The surfaces — one door, both hosts
 
 * ''Shared seam'': `@lararium/mesh` `canon-offer` holds every decision; the daemon island registers `offer-make` · `offer-list` · `offer-show` · `offer-promote` (`@lararium/tw5` `canon-offer-verbs`) on node and browser alike. Only the Nexus binding forks: the shore's charter (node), else the Nexus the call names (a browser page, whose island reads no charter).
-* ''CLI'': `lares meme offer <uri…> --bag <slug>` · `offer list [--bag] [--all]` · `offer show <cid>` · `offer promote <cid> [--over-fresher]` — under the meme door, the one-screen help holding.
-* ''MCP'': `meme_offer` · `meme_offer_list` · `meme_offer_show`. The promotion holds no MCP tool: the steward's hand alone lands canon (the kahua lift's shape).
+* ''CLI'': `lares meme offer <uri…> --bag <slug>` · `offer show [<cid>] [--bag] [--all]` · `offer promote <cid> [--over-fresher]` — under the meme door, the one-screen help holding.
+* ''MCP'': `meme_offer` · `meme_offer_show`. The promotion holds no MCP tool: the steward's hand alone lands canon (the kahua lift's shape).
 
 !!! Moʻolelo — the forks this door decided (each overrulable)
 
@@ -515,6 +515,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZLGuTB4hX03Pc8S0geJbWFLGzQybMzu72grgzjPWh0c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WjudHx25gxyB-gbH6phqOnmc6iLlJvifNuRQzEKe1gc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

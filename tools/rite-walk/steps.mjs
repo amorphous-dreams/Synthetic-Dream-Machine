@@ -314,7 +314,7 @@ const liftKahua = async (ctx) => {
 };
 /** Whether the engineer's kahua stage reads the walk's pre-export item. */
 const engineerReads = async (ctx) => {
-  const list = await ctx.cli(["kahua", "list", "--face", "1", "--json"]);
+  const list = await ctx.cli(["kahua", "get", "--face", "1", "--json"]);
   return list.code === 0 && `${list.stdout}`.includes(STAGED);
 };
 /** The engineer's lift knows the item the walk staged before the export: its lay previews it (and the lift lands it), or the stage already reads it. Zero previews with no item standing fails by name. */
@@ -417,13 +417,13 @@ export const STEPS = Object.freeze([
       const offer = await ctx.cli(["meme", "offer", OFFERED, "--bag", "lares", "--no-json"]);
       return { ok: offer.code === 0, answer: `${landing(put)} · ${offer.code === 0 ? lineOf(`${offer.stdout}\n${offer.stderr}`, "offer") : refusalOf(offer)}` };
     } },
-  { id: "promote", prose: "Wearing the steward (`lares vault unlock --face 0`, the passphrase again)", via: SC, needs: ["offer"], expect: "the offer lists; the promotion writes the Kahu realm's standing document",
+  { id: "promote", prose: "Wearing the steward (`lares vault unlock --face 0`, the passphrase again)", via: SC, needs: ["offer"], expect: "the offer shows; the promotion writes the Kahu realm's standing document",
     run: async (ctx) => {
       const worn = await ctx.wear(0);
       if (worn?.wears !== 0) return { ok: false, answer: `the steward never stood worn: ${JSON.stringify(worn)}` };
-      const list = await ctx.cli(["meme", "offer", "list", "--bag", "lares", "--json"]);
+      const list = await ctx.cli(["meme", "offer", "show", "--bag", "lares", "--json"]);
       const cid = /"cid"\s*:\s*"([^"]+)"/.exec(list.stdout)?.[1];
-      if (list.code !== 0 || !cid) return { ok: false, answer: `meme offer list: ${list.code === 0 ? "names no offer" : refusalOf(list)}` };
+      if (list.code !== 0 || !cid) return { ok: false, answer: `meme offer show: ${list.code === 0 ? "names no offer" : refusalOf(list)}` };
       const promoted = await ctx.cli(["meme", "offer", "promote", cid, "--yes", "--no-json"]);
       return promoted.code === 0 ? { ok: true, answer: lineOf(promoted.stdout) } : { ok: false, answer: refusalOf(promoted) };
     } },

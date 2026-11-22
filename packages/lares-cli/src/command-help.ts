@@ -221,7 +221,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--face N   face index", "--json   structured output"],
   },
   kahua: {
-    usage: "usage: lares kahua mint|propose|stage|lift|withdraw|carry|list|get [title|cid...] [--face N]",
+    usage: "usage: lares kahua mint|propose|stage|lift|withdraw|carry|get [title|cid...] [--face N]",
     synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. The face's founding act pins the stage, by whichever device founds the face; `mint` adopts that pin and registers it, and a face whose log names none refuses `kahua-mint-outside-founding`. Memory climbs in two crossings: `stage` writes a row into the face's local canon bags/daemon-<F> (local, unsigned; any seat may), and a lift carries one staged row to every device the face wears. A lift prints the staged row's preview (title, row digest, fields, body) and lifts only on that row digest typed back at a terminal, or `--digest <hex>` naming the row digest the preview printed; a bare --yes lifts nothing. Two digests share one word: the row digest (what `stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the body digest, the body bytes alone; a lift with `--proposal` compares the proposal's body digest with the staged body. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone. The door reads the row back and refuses `kahua-lift-unstaged` (no such row) or `kahua-lift-digest-moved` (the row moved since the preview); a lift the head already carries lands nothing. An AI seat proposes and stages; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
     examples: [
       "lares kahua mint --face 1",
@@ -233,7 +233,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares kahua carry <cid> <cid> --face 1",
       "lares kahua carry --all --face 1",
       "lares kahua get T --face 1 --history",
-      "lares kahua list --face 1   # the stage's LIFTED items alone; a staged row rests in bags/daemon-<F> and lists here once its lift lands",
+      "lares kahua get --face 1   # the stage's LIFTED items alone; a staged row rests in bags/daemon-<F> and lists here once its lift lands",
     ],
     flags: ["--face N   face index", "--text <body> | --file <path>   (stage) the row's body", "--fields <json>   (stage) the row's fields", "--digest <hex>   (lift) the staged row's row digest, as its preview printed it; it stands in for typing the digest back, and the passphrase prompt still needs a terminal", "--taint a,b | none   inputs from outside the face", "--sources <json>   further daemon sources the item distils (the staged row always rides)", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
   },
@@ -846,7 +846,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme promote bags/…/docs/pono/x.mem --face 0     # the selected face signs the canon crossing",
       "lares meme promote x.mem --dest-bag lar:///ha.ka.ba/bags/crossroads --approval a.json  # publish for the Nexus: the seats approved these bytes",
       "lares meme offer lar:///ha.ka.ba/... --bag lares     # offer a working record toward canon; canon stays unmoved",
-      "lares meme offer list --bag lares · offer show <cid> · offer promote <cid> [--over-fresher]  # the steward reviews and lands it",
+      "lares meme offer show [--bag lares] · offer show <cid> · offer promote <cid> [--over-fresher]  # the steward reviews and lands it",
     ],
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
@@ -864,7 +864,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
       `--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into the ${PLANE_LABELS.crossroads} refuses without one`,
       "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
-      "--all              (offer list) retired offers too; open ones alone otherwise",
+      "--all              (offer show) retired offers too; open ones alone otherwise",
       "--over-fresher     (offer promote) the steward's explicit choice to land an offer canon moved under (\"canon is fresher\")",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
