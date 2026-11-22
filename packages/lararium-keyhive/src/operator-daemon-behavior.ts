@@ -1038,9 +1038,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const lane = (verb: string, make: (opts: typeof memeOpts) => VerbReactor): VerbReactor =>
         faceLaneReactor(verb, make(memeOpts), (faceLane) => make({ ...memeOpts, faceLane }), lanePorts);
       registry.register("meme-put", lane("meme-put", makeMemePutReactor), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
-      // ONE DOOR READS: `meme-get` stands internal (no surface declares it), the read-back of the one placement function a lane and a
-      // test still call; every surface reads a meme through `tiddler-get` with `meme: true` (`lares tiddler get --meme`, MCP `tiddler_get`).
-      registry.register("meme-get", lane("meme-get", makeMemeGetReactor));
+      // ONE DOOR READS: `meme-get` stands internal (no surface declares it, no lane carries it, no chore-free seat), the read-back of
+      // the one placement function the placement tests call; every surface reads a meme through `tiddler-get` with `meme: true`.
+      registry.register("meme-get", makeMemeGetReactor(memeOpts));
       registry.register("meme-patch", makeMemePatchReactor(memeOpts), { summary: "Edit one slot's body (`append` a paragraph at its end, or `replace` it whole) against `base`, the canonical hash last read; lands through meme-put's own gate and reseals. A stale base refuses `stale-base`, an absent slot `slot-missing`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-list", lane("meme-list", makeMemeListReactor), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-delete", lane("meme-delete", makeMemeDeleteReactor), { summary: "Remove a meme's whole group; `base` = the canonical hash last read, stale → conflict.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });

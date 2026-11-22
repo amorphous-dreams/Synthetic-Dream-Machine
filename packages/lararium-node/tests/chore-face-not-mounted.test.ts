@@ -6,6 +6,7 @@
  * the mount places and its answer carries the receipt mark (`ChoreReceiptMark`: the acting face, the asker's hand, its session).
  * Reads keep their path, and a place row acts as the place.
  */
+import { CHORE_FREE_VERBS } from "../src/chore-face.js";
 import { controlStoreOf } from "@lararium/mesh";
 import { afterEach, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -162,12 +163,14 @@ test("CONTROL: the AI seat's meme write naming no face, or naming the mount, pla
 test("CONTROL: reads keep their path from the h1 session (a meme read, a recall), and a place row acts as the place", async () => {
   const v = await stand();
   const env = await v.open("h1");
-  for (const verb of ["meme-get", "recall", "floor-status"]) {
+  for (const verb of ["tiddler-get", "recall", "floor-status"]) {
     const reply = await v.peer.ask({ op: "session:call", ...env, requestId: `read-${verb}`, verb, args: {} });
     expect(reply, verb).toMatchObject({ kind: "session:result", status: "done" });
     expect(reply["chore"], verb).toBeUndefined();
   }
-  expect(v.placed.map((p) => p.verb)).toEqual(["meme-get", "recall", "floor-status"]);
+  expect(v.placed.map((p) => p.verb)).toEqual(["tiddler-get", "recall", "floor-status"]);
+  // The internal `meme-get` holds no surface and no chore-free seat: a sibling session's call to it reads as a chore.
+  expect(CHORE_FREE_VERBS).not.toHaveProperty("meme-get");
 });
 
 // THE ASKER RIDES THE PLACEMENT (seat-canon-reach, T4-2): the door hands the hand it read (`seat` off the seat kind, `cli`
@@ -194,7 +197,7 @@ test("RED: a session's call places with the session's own hand; CONTROL: a read 
   const opened = await v.peer.ask({ op: "session:open", requestId: "open-tab", faceRef: "h0", hand: "tab" });
   const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
   await v.peer.ask({ op: "session:call", ...env, requestId: "put-hand", verb: "meme-put", args: MEME });
-  await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "meme-get", args: {} });
+  await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "tiddler-get", args: {} });
   expect(v.placed.map(askerOf)).toEqual(["tab", "tab"]);
 });
 
@@ -206,7 +209,7 @@ test("RED: the seat's meme write places with its chore mark, and a later receipt
   await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "put-mark" });
   expect((v.placed[0] as { chore?: unknown }).chore).toEqual(mark);
   expect(await v.oneShot({ op: "receipt", requestId: "put-mark" })).toMatchObject({ requestId: "put-mark", state: "done", chore: mark });
-  await v.oneShot({ verb: "meme-get", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "get-mark" });
+  await v.oneShot({ verb: "tiddler-get", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "get-mark" });
   expect((v.placed[1] as { chore?: unknown }).chore).toBeUndefined();
   expect(await v.oneShot({ op: "receipt", requestId: "get-mark" })).not.toHaveProperty("chore");
 });

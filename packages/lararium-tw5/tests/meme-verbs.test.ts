@@ -1131,6 +1131,13 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     await expect(get(r, { grain: "whole", after: first.meme.next!.after! })).rejects.toMatchObject({ reason: "read-cursor-stale" });
   });
 
+  test("RED M1: a stay-home title answers no read through the internal meme-get either (`tiddler-withheld`)", async () => {
+    const r = rig();
+    r.wiki.store.set("$:/temp/lares/alert/x", { title: "$:/temp/lares/alert/x", text: "device-local" });
+    await expect(makeMemeGetReactor(r.opts)({ recipe: "default", uri: "$:/temp/lares/alert/x" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeMemeProjectReactor(r.opts)({ recipe: "default", uri: "$:/temp/lares/alert/x", to: "md" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+  });
+
   test("an absent meme still answers null", async () => {
     const r = rig();
     const out = await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx());

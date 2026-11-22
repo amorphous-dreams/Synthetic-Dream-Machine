@@ -60,7 +60,8 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-verbs
  */
 
-import { wearOf, refuseEffectLedgerWrite } from "@lararium/mesh";
+import { wearOf, refuseEffectLedgerWrite, offerWithheldTitle, isVolatileVmUri } from "@lararium/mesh";
+import { localFilter } from "./record-port-projection.js";
 import {
   AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
@@ -542,9 +543,20 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
   };
 }
 
+/**
+ * A TITLE THAT STAYS HOME answers no read at any door (the tiddler door's own law, `staysHome`): the temp and state namespaces,
+ * the control and secret homes, `cap/**`, the volatile VM plane. The internal reads refuse it by the same name.
+ */
+function refuseStayHome(title: string, verb: string): void {
+  if (offerWithheldTitle(title) || localFilter(title) || isVolatileVmUri(title)) {
+    throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} reads none of it.`);
+  }
+}
+
 export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-get");
+    refuseStayHome(target.uri, "meme-get");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
     // The read hands a person the meme's TEXT: a pointer whose body rests in the content tier refuses by name.
@@ -885,6 +897,7 @@ const PROJECT_VERB_TARGETS = ["md", "html", "tid", "json"] as const;
 export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-project");
+    refuseStayHome(target.uri, "meme-project");
     const to = stringArg(args, "to");
     if (!to) throw new Error("meme-project: args.to is required (md · html · tid · json)");
     // THE CARRIER ITSELF READS THROUGH THE ONE DOOR: `mem` left this verb's targets for `tiddler-get` with `meme: true` and
