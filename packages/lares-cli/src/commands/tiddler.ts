@@ -102,17 +102,29 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   return { verb: "tiddler-put", args: out };
 }
 
-/** A put's text, only where the caller names a source: `--text <words>`, `--file <path>`, or `--file -` for stdin. A field patch reads none. */
-async function putText(args: ParsedArgs): Promise<string | null> {
-  const inline = args.options["text"];
-  const file = wordOf(args.options["file"]);
-  if (typeof inline === "string" && file) throw new DoorUsage("name one text source: --text <words> or --file <path>, never both");
-  if (typeof inline === "string") return inline;
-  if (!file) return null;
-  if (file !== "-") return readFileSync(file, "utf8");
+/** The bytes a named source holds: a host path, or `-` for stdin. */
+async function sourceBytes(flag: string, source: string): Promise<string> {
+  if (source !== "-") {
+    try { return readFileSync(source, "utf8"); } catch { throw new DoorUsage(`cannot read --${flag} ${source}`); }
+  }
   const chunks: Buffer[] = [];
   for await (const chunk of stdin) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
   return Buffer.concat(chunks).toString("utf8");
+}
+
+/**
+ * A put's words, only where the caller names a source: `--text <words>`, `--file <path>` (or `-` for stdin) for the whole text,
+ * `--append <path>` (or `-`) for words that land at the end of the standing text. A field patch reads none.
+ */
+async function putText(args: ParsedArgs): Promise<{ readonly text: string } | { readonly append: string } | null> {
+  const inline = args.options["text"];
+  const file = wordOf(args.options["file"]);
+  const append = wordOf(args.options["append"]);
+  if (typeof inline === "string" && file) throw new DoorUsage("name one text source: --text <words> or --file <path>, never both");
+  if (append) return { append: await sourceBytes("append", append) };
+  if (typeof inline === "string") return { text: inline };
+  if (!file) return null;
+  return { text: await sourceBytes("file", file) };
 }
 
 interface GotTiddler { fields: Record<string, string>; hash: string; textHash: string | null; bag: string | null; position: string; family?: string; omitted?: string[] }
@@ -229,15 +241,16 @@ const FLOOR_NOTE = "read from the floor snapshot: this face holds no read on the
 
 async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const plan = tiddlerPlan("put", args);
-  const text = await putText(args);
-  const ran = await runDoor(args, "tiddler put", text === null ? plan : { verb: plan.verb, args: { ...plan.args, text } });
+  const words = await putText(args);
+  const ran = await runDoor(args, "tiddler put", words === null ? plan : { verb: plan.verb, args: { ...plan.args, ...words } });
   if (!ran.ok) return ran.exit;
   const receipt = ran.output;
   const decision = String(receipt["decision"] ?? "");
   const changed = Array.isArray(receipt["changed"]) ? (receipt["changed"] as string[]) : [];
   const ok = decision === "put" || decision === "noop";
   const code = ok ? "ok" : decision === "conflict" || decision === "exists" ? "conflict" : "verb-error";
-  const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now. Read again and hand back the live hash`
+  const message = decision === "conflict" && words !== null && "append" in words ? `conflict: ${plan.args["title"]} kept moving under the append; it reads ${receipt["hash"] ?? "absent"} now and nothing landed. Send the append again`
+                : decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now. Read again and hand back the live hash`
                 : decision === "exists" ? `exists: a tiddler already stands at ${plan.args["title"]} (--create lands only where none does)`
                 : `${decision}: ${plan.args["title"]}`;
   emit(args, {
@@ -245,6 +258,7 @@ async function tiddlerPut(args: ParsedArgs): Promise<number> {
     ...(ok ? {} : { error: { code, message } }),
     human: () => {
       if (!ok) { console.error(`lares tiddler put: ${message}`); return; }
+      if (typeof receipt["has"] === "string") console.log(receipt["has"]);
       console.log(`${decision}: ${plan.args["title"]}`);
       if (decision === "put") console.log(`  ${receipt["created"] === true ? "created" : "changed"} ${changed.join(", ")}`);
       if (typeof receipt["bag"] === "string" && decision === "put") console.log(`  in ${receipt["bag"]}`);

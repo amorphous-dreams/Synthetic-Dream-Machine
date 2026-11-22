@@ -67,7 +67,7 @@
  */
 
 import {
-  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, executableClassOf, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -917,6 +917,15 @@ function patchArg(raw: unknown): Record<string, string> {
   return value as Record<string, string>;
 }
 
+/** THE APPEND JOIN: a standing text that does not end on a newline takes exactly one `\n` before the appended words; an empty
+ *  or newline-ended text takes them as they come. */
+export function appendedText(standing: string, words: string): string {
+  return standing === "" || standing.endsWith("\n") ? standing + words : `${standing}\n${words}`;
+}
+
+/** How many times one put re-reads a record that moved under its admission before it answers `conflict`. */
+const PUT_SETTLE_ROUNDS = 16;
+
 export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "tiddler-put", true);
@@ -926,62 +935,98 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
     refuseEffectLedgerWrite(title, "tiddler-put");
     await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
     const { wiki, utils, Tiddler } = anchor.engine;
-    const standing = wiki.getTiddler(title);
-    const held = standing ? readRecord(standing) : null;
+    const append = typeof args["append"] === "string" ? args["append"] : null;
+    if (append !== null) {
+      // AN APPEND NAMES ONLY ITS WORDS: it overwrites nothing, so it carries no base, no whole text and no field patch.
+      const crossed = ["text", "base", "fields", "unset"].filter((name) => args[name] !== undefined && args[name] !== null);
+      if (crossed.length > 0) throw new VerbRefusal("append-alone", `append-alone: an append lands its words at the end of the standing text and carries no ${crossed.map((n) => `\`${n}\``).join(", ")}; send those as their own put. Nothing moved.`);
+      if (append === "") throw new VerbRefusal("append-empty", "append-empty: an append names the words it lands. Nothing moved.");
+    }
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
-    if (held && !(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
-    const before = held?.fields ?? null;
-    const liveHash = before ? hashOf(before) : null;
-    const place = standing ? placeOf(anchor, view, title) : { position: "plain" as TiddlerPosition, family: null, orphan: false };
-    const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
-      ({ recipe: anchor.recipe, title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
 
-    // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves.
-    if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
-    // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
-    const writesText = typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
-    const base = readBase(optionalStringArg(args, "base"), "tiddler-put", writesText);
-    if (base !== null && base !== liveHash) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
+    // THE LANDING, AS A COMPARE-AND-SWAP ON THE LIVE WIKI. The wiki serializes every writer that passes through it in this
+    // process: its `addTiddler` runs synchronously on the event loop, and the shore's drain carries each title's wiki state to
+    // the store in the order the wiki took it. A writer that reaches the store directly (a meme door sink, INGEST, a face lane,
+    // a peer's wave) meets the drain's per-field merge instead, where two writes of one field resolve last-writer-wins. A round reads the record, decides, awaits admission, then re-reads it; only a record that
+    // still hashes as it read lands, in the same synchronous step as that re-read, so no other hand slips between the read
+    // and the write. A record that moved meanwhile sends the round back to read again (an append re-composes over the newer
+    // text; a base the moved record fails to match answers `conflict`), bounded, and a round that never settles answers `conflict`.
+    let admitted: string | null = null;
+    for (let round = 0; ; round++) {
+      const standing = wiki.getTiddler(title);
+      const held = standing ? readRecord(standing) : null;
+      if (held && !(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
+      const before = held?.fields ?? null;
+      const liveHash = before ? hashOf(before) : null;
+      const place = standing ? placeOf(anchor, view, title) : { position: "plain" as TiddlerPosition, family: null, orphan: false };
+      const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
+        ({ recipe: anchor.recipe, title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
+      if (round >= PUT_SETTLE_ROUNDS) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null, unsettled: round });
 
-    // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.
-    const patch = patchArg(args["fields"]);
-    if (patch["title"] !== undefined && patch["title"] !== title) throw new VerbRefusal("fields-malformed", "fields-malformed: a put never re-titles; `fields.title` must match args.title or stay absent.");
-    const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
-    if (typeof args["text"] === "string") next["text"] = args["text"];
-    for (const name of namesArg(args["unset"]) ?? []) if (name !== "title") delete next[name];
-    const listArg = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? (utils.parseStringArray(raw) ?? []) : [];
-    const add = listArg(args["tagsAdd"]);
-    const remove = new Set(listArg(args["tagsRemove"]));
-    let tags = utils.parseStringArray(next["tags"] ?? "") ?? [];
-    if (add.length > 0 || remove.size > 0) {
-      tags = [...tags.filter((tag) => !remove.has(tag)), ...add.filter((tag) => !tags.includes(tag) && !remove.has(tag))];
-      if (tags.length > 0) next["tags"] = utils.stringifyList(tags); else delete next["tags"];
+      // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves. An append to a missing
+      // title refuses unless `create` names it; with `create`, an append lands a new record or joins the standing one.
+      if (append !== null) {
+        if (!standing && !flagOn(args["create"])) throw new VerbRefusal("append-target-missing", `append-target-missing: no record "${title}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.`);
+      } else if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
+      // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
+      const writesText = append !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
+      const base = readBase(optionalStringArg(args, "base"), "tiddler-put", writesText);
+      if (base !== null && base !== liveHash) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
+
+      // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.
+      const patch = patchArg(args["fields"]);
+      if (patch["title"] !== undefined && patch["title"] !== title) throw new VerbRefusal("fields-malformed", "fields-malformed: a put never re-titles; `fields.title` must match args.title or stay absent.");
+      const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
+      if (typeof args["text"] === "string") next["text"] = args["text"];
+      if (append !== null) next["text"] = appendedText(before?.["text"] ?? "", append);
+      for (const name of namesArg(args["unset"]) ?? []) if (name !== "title") delete next[name];
+      const listArg = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? (utils.parseStringArray(raw) ?? []) : [];
+      const add = listArg(args["tagsAdd"]);
+      const remove = new Set(listArg(args["tagsRemove"]));
+      let tags = utils.parseStringArray(next["tags"] ?? "") ?? [];
+      if (add.length > 0 || remove.size > 0) {
+        tags = [...tags.filter((tag) => !remove.has(tag)), ...add.filter((tag) => !tags.includes(tag) && !remove.has(tag))];
+        if (tags.length > 0) next["tags"] = utils.stringifyList(tags); else delete next["tags"];
+      }
+      if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
+
+      // THE FAMILY FENCE. A meme root or slot takes a field or tag patch here; its text, its type and its carriage fields
+      // move through the meme door, which re-splits the family and re-mints its block check. A new record never joins a
+      // family here either.
+      const moved = (name: string): boolean => (before?.[name] ?? undefined) !== (next[name] ?? undefined);
+      const structural = Object.keys({ ...(before ?? {}), ...next }).filter((name) => moved(name) && (name === "text" || name === "type" || name.startsWith("$")));
+      const joinsFamily = !standing && (next["type"] === CARRIER_TYPE || next["$fragment-parent"] !== undefined);
+      if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
+        throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares tiddler put --meme\` lands a family's text through the Confluence gate${append !== null ? " (`--slot '#/x' --append` appends to a slot)" : ""}. A field or tag patch on a standing root or slot lands here.`);
+      }
+      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
+      refuseRenderedWrite(title, before, next, "tiddler put");
+      refuseMalformedStagePath(title);
+
+      const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
+      if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
+      // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei. A call
+      // spends once: a round the swap sent back re-admits only where the record it would land reads as another executable class.
+      const executable = executableClassOf(next);
+      const admits = executable === null ? null : `${executable.class}\u0000${executable.mark}`;
+      if (round === 0 || admits !== admitted) {
+        await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
+        admitted = admits;
+      }
+      // THE SWAP: from this re-read to `addTiddler` no await stands, so nothing else runs between them.
+      const now = wiki.getTiddler(title);
+      if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) continue;
+      // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
+      // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
+      wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
+      wiki.addTiddler(new Tiddler(next));
+      const landed = readRecord(wiki.getTiddler(title)!).fields;
+      const hash = hashOf(landed);
+      return {
+        ...(append !== null ? { has: hasLine(title, [param("recipe", anchor.recipe), param("decision", "put"), param("hash", hash)]) } : {}),
+        ...answer("put", { created: !standing, changed, hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}) }),
+      };
     }
-    if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
-
-    // THE FAMILY FENCE. A meme root or slot takes a field or tag patch here; its text, its type and its carriage fields
-    // move through the meme door, which re-splits the family and re-mints its block check. A new record never joins a
-    // family here either.
-    const moved = (name: string): boolean => (before?.[name] ?? undefined) !== (next[name] ?? undefined);
-    const structural = Object.keys({ ...(before ?? {}), ...next }).filter((name) => moved(name) && (name === "text" || name === "type" || name.startsWith("$")));
-    const joinsFamily = !standing && (next["type"] === CARRIER_TYPE || next["$fragment-parent"] !== undefined);
-    if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
-      throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares tiddler put --meme\` lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
-    }
-    // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
-    refuseRenderedWrite(title, before, next, "tiddler put");
-    refuseMalformedStagePath(title);
-
-    const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
-    if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
-    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei.
-    await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
-    // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
-    // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
-    wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
-    wiki.addTiddler(new Tiddler(next));
-    const landed = readRecord(wiki.getTiddler(title)!).fields;
-    return answer("put", { created: !standing, changed, hash: hashOf(landed), textHash: textHashOf(landed) });
   };
 });
 

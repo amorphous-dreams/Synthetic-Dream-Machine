@@ -105,7 +105,8 @@ async function memePut(args: ParsedArgs): Promise<number> {
 
 /**
  * THE PATCH'S ARGUMENT LAW, with no daemon in reach: a uri, a container, `--slot '#/name'`, exactly one of `--append <file>` or
- * `--file <path>` (its whole body), and `--base <hash>` (a patch edits bytes the writer read, so a blind one refuses before the wire).
+ * `--text <words>` | `--file <path>` (its whole body), and `--base <hash>` on a whole-body write (it edits bytes the writer read, so a
+ * blind one refuses before the wire); an append overwrites nothing and may carry none.
  */
 export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly text?: string; readonly mode: "append" | "replace"; readonly face?: number } {
   const face = faceNamed(args);
@@ -122,9 +123,10 @@ export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; read
   const inline = typeof args.options["text"] === "string" ? args.options["text"] : undefined;
   if (Number(Boolean(append)) + Number(Boolean(slotFile)) + Number(inline !== undefined) !== 1) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --text <words> | --file <path> (the slot's whole body)");
   const base = trimmed(args.options["base"]);
-  if (!base) throw new UsageError("--base <hash> is required: the canonical hash `lares tiddler get <uri> --recipe <slug> --meme` prints on stderr (`base: sha256:…`)");
+  // AN APPEND OVERWRITES NOTHING, so it lands without a base; a whole-slot write edits bytes the writer read and keeps one.
+  if (!base && !append) throw new UsageError("--base <hash> is required on a whole-slot write (--text | --file): the canonical hash `lares tiddler get <uri> --recipe <slug> --meme` prints on stderr (`base: sha256:…`); an --append alone lands without one");
   out["slot"] = slot;
-  out["base"] = base;
+  if (base) out["base"] = base;
   return { verb: "meme-patch", args: out, file: append || slotFile, ...(inline !== undefined ? { text: inline } : {}), mode: append ? "append" : "replace", ...face };
 }
 

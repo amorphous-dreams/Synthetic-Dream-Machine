@@ -167,7 +167,7 @@ describe("lares tiddler put --meme", () => {
 });
 
 
-describe("lares tiddler put --meme --slot — one slot's body, a base required", () => {
+describe("lares tiddler put --meme --slot — one slot's body, a base required on a whole-slot write", () => {
   const ingest = { uri: "lar:///t/x", slot: "#/a", decision: "ingest", grade: "clean", landed: ["lar:///t/x", "lar:///t/x#/a"], tombstoned: [], canonicalHash: "sha256:2", warnings: [], diagnostics: [] };
 
   test("★ --append reads its file and dispatches meme-patch with uri · slot · append · base · container ★", async () => {
@@ -197,12 +197,12 @@ describe("lares tiddler put --meme --slot — one slot's body, a base required",
     expect(await cmdFamily(memeArgs(["patch", "lar:///t/x"], { slot: "#/a", append: tmpFile("x"), base: "sha256:1", recipe: "default" }))).toBe(3);
   });
 
-  test("the argument law refuses before the wire: no --base, no --slot, both or neither of --append and --file", async () => {
+  test("the argument law refuses before the wire: a whole-slot write with no --base, no --slot, both or neither of --append and --file", async () => {
     const file = tmpFile("x");
     const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       for (const options of [
-        { slot: "#/a", append: file, recipe: "default" },
+        { slot: "#/a", file, recipe: "default" },
         { append: file, base: "sha256:1", recipe: "default" },
         { slot: "#/a", base: "sha256:1", recipe: "default" },
         { slot: "#/a", append: file, file, base: "sha256:1", recipe: "default" },
