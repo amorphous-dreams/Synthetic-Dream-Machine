@@ -92,7 +92,7 @@ export function pageOfSlot(text: string, slot: string, pageBytes = READ_PAGE_BYT
   for (let i = 0; i < segments.length; i++) {
     const bytes = byteLength(segments[i]!);
     if (current && size + bytes > pageBytes) { page++; size = 0; }
-    current = true;
+    current = current || bytes > 0;
     size += bytes;
     if (slots[i] === top) return page;
   }

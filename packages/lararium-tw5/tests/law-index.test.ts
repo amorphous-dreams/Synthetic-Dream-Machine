@@ -57,13 +57,14 @@ type Cap = VerbContext["cap"];
 const writer: Cap = async (access, bag) => (bag === DAEMON || access === "read" ? { ok: true } : { ok: false, reason: "no-grant" });
 const ctx = (): VerbContext => ({ daemon: {} as CompositeStore, invocation: { requestId: "r1" } as VerbContext["invocation"], cap: writer });
 
-/** The canon carrier of the house's functions, as the checkout carries it. */
-const CARRIER_TEXT = ((): string => {
+/** Load a declared canon carrier for execution in the test wiki. */
+const canonCarrier = (suffix: string): string => {
   const repo = new URL("../../..", import.meta.url).pathname;
-  const listed = carrierFiles(repo).find((f) => f.endsWith("api/filters.mem"));
-  if (!listed) throw new Error("no carrier ends api/filters.mem");
+  const listed = carrierFiles(repo).find((f) => f.endsWith(suffix));
+  if (!listed) throw new Error(`no carrier ends ${suffix}`);
   return readFileSync(listed.startsWith("/") ? listed : `${repo}${listed}`, "utf8");
-})();
+};
+const CARRIER_TEXT = canonCarrier("api/filters.mem");
 
 async function rig(seed = true, carrier: boolean | string = true) {
   const engine = await bootTestWiki({ tiddlers: [{ title: WORKING_POINTER, text: DAEMON }, ...CANON_ROWS] });
@@ -78,7 +79,7 @@ async function rig(seed = true, carrier: boolean | string = true) {
   const filter = async (f: string): Promise<string[]> => (await makeWikiFilterReactor(opts)({ recipe: "default", filter: f }, ctx()))["titles"] as string[];
   /** A record a face writes: it lands in the working layer, its stamp naming that layer. */
   const write = (title: string, fields: Record<string, string> = {}): void => { engine.wiki.addTiddler({ title, text: "", ...fields, "$origin-bag": WORKING }); };
-  return { engine, opts, filter, render, write };
+  return { engine, opts, oracle, filter, render, write };
 }
 
 describe("the house's function text, with no wiki booted", () => {
@@ -93,9 +94,9 @@ describe("the house's function text, with no wiki booted", () => {
   });
 
   test("three spellings parse (multi-line, one-line, sigil), CRLF reads as LF, and a dropped name reads from the floor", () => {
-    const canonical = "\\function lares.road(state)\n[tag[x]]\n\\end";
-    const forms = [canonical, "\\function lares.road(state) [tag[x]]", "<<~ function name=`lares.road(state)`>>[tag[x]]<<~/function>>", "\\function lares.road(state)\r\n[tag[x]]\r\n\\end\r\n"];
-    for (const form of forms) expect(houseBlocksOf(form).get("lares.road")).toBe(canonical);
+    const canonical = "\\function lares.course(standing)\n[tag[x]]\n\\end";
+    const forms = [canonical, "\\function lares.course(standing) [tag[x]]", "<<~ function name=`lares.course(standing)`>>[tag[x]]<<~/function>>", "\\function lares.course(standing)\r\n[tag[x]]\r\n\\end\r\n"];
+    for (const form of forms) expect(houseBlocksOf(form).get("lares.course")).toBe(canonical);
     const pragmas = functionPragmasOf(forms[1]!);
     expect(pragmas).toContain(houseBlocksOf(HOUSE_FILTERS_FLOOR).get("lares.stage")!);
     expect(pragmas).toContain(canonical);
@@ -104,7 +105,7 @@ describe("the house's function text, with no wiki booted", () => {
   test("a lares. operator outside the house set refuses by name; a house name and a title naming lares. pass", () => {
     expect(() => refuseUnknownHouseOperators("[lares.nope[]]")).toThrow(/house-filter-unknown/);
     expect(() => refuseUnknownHouseOperators("[tag[a]] +[lares.lawx[]]")).toThrow(/house-filter-unknown/);
-    for (const ok of ["[lares.law[]]", "[lares.law.pins[]]", "[lares.road[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
+    for (const ok of ["[lares.law[]]", "[lares.law.pins[]]", "[lares.course[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
   });
 });
 
@@ -251,13 +252,13 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
   });
 
   test("L1: the wiki-stamp seam: with no canon layer holding the carrier, a wiki record that carries a canon stamp serves; one stamped with a working layer never does", async () => {
-    const variant = "\\function lares.road(state)\n[[lar:///seam/road]]\n\\end\n";
+    const variant = "\\function lares.course(standing)\n[[lar:///seam/course]]\n\\end\n";
     const canonStamped = await rig(true, false);
     canonStamped.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": ORACLE_BAG });
-    expect(await canonStamped.filter("[lares.road[open]]")).toEqual(["lar:///seam/road"]);
+    expect(await canonStamped.filter("[lares.course[open]]")).toEqual(["lar:///seam/course"]);
     const forged = await rig(true, false);
     forged.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": WORKING });
-    expect(await forged.filter("[lares.road[open]]")).toEqual([]);
+    expect(await forged.filter("[lares.course[open]]")).toEqual([]);
   });
 
   test("M1: a stamped-canon global carrying the Global tag and a raw span define cannot move a render of a title or the filter", async () => {
@@ -269,6 +270,101 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(rendered).toContain(n);
   });
 
+  test("course standings derive from proof and other stage citations; waves list their tag", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const open = `${base}course/open.one.waits`;
+    const closed = `${base}course/closed.one.waits`;
+    const ready = `${base}course/ready.one.waits`;
+    const wave = `${base}wave/first`;
+    r.write(open, { tags: "stage/course", proof: "  " });
+    r.write(closed, { tags: "stage/course", proof: "git:abc" });
+    r.write(ready, { tags: "stage/course", proof: "git:def", text: ready });
+    r.write(`${base}state/reader`, { tags: "stage/state", text: `A bare cite ${closed}` });
+    r.write(wave, { tags: "stage/wave", list: `${open} ${closed} ${ready}` });
+    expect(await r.filter("[lares.course[open]]")).toEqual([open]);
+    expect(await r.filter("[lares.course[closed]]")).toEqual([closed, ready].sort());
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([ready]);
+    expect(await r.filter("[lares.course[unknown]]")).toEqual([]);
+    expect(await r.filter("[lares.waves[]]")).toEqual([wave]);
+  });
+
+  test("road remains readable during migration", async () => {
+    const r = await rig();
+    r.write("road-open", { tags: "stage/road road/state/open" });
+    r.write("road-set-down", { tags: "stage/road road/state/set-down" });
+    expect(await r.filter("[lares.road[open]]")).toEqual(["road-open"]);
+    expect(await r.filter("[lares.road[set-down]]")).toEqual(["road-set-down"]);
+  });
+
+  test("only whole, case-sensitive citations from other stage records block ash", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const item = (name: string) => `${base}course/${name}.one.waits`;
+    for (const name of ["linked", "self", "external", "slot", "prefix", "case"]) r.write(item(name), { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/linker`, { text: `[[${item("linked")}]]` });
+    r.write(item("self"), { tags: "stage/course", proof: "git:abc", text: `[[${item("self")}]]` });
+    r.write("outside", { text: `[[${item("external")}]] ${item("external")}` });
+    r.write(`${item("slot")}#/entry`, { tags: "stage/course", proof: "git:abc", text: `[[${item("slot")}]] ${item("slot")}` });
+    r.write(`${base}state/prefix`, { text: `${item("prefix")}-two` });
+    r.write(`${base}state/case`, { text: item("case").toUpperCase() });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual(["self", "external", "slot", "prefix", "case"].map(item).sort());
+    expect(await r.filter("[lares.course[closed]]")).not.toContain(`${item("slot")}#/entry`);
+  });
+
+  test("a sentence-ending period cites a course item without matching a longer dotted title", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const cited = `${base}course/period.one.lands`;
+    const longer = `${base}course/dotted.one.lands`;
+    for (const title of [cited, longer]) r.write(title, { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/period-reader`, { text: `Proof lands at ${cited}.` });
+    r.write(`${base}state/dotted-reader`, { text: `Proof lands at ${longer}.more` });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([longer]);
+  });
+
+  test("another stage record citing a slot holds its carrier", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const direct = `${base}course/slot.one.lands`;
+    const loulou = `${base}course/loulou.one.lands`;
+    for (const title of [direct, loulou]) r.write(title, { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/slot-reader`, { text: `Read ${direct}#/entry` });
+    r.write(`${base}state/loulou-reader`, { text: `<<~ loulou uri=\`${loulou}#/entry\`>>` });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([]);
+  });
+
+  test("the course board renders the chosen wave and each standing", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const wave = `${base}wave/first`;
+    const item = `${base}course/open.one.waits`;
+    const ready = `${base}course/ready.one.waits`;
+    const other = `${base}course/other.one.waits`;
+    const cited = `${base}course/cited.one.waits`;
+    const template = "lar:///ha.ka.ba/lares/api/course-board";
+    const source = canonCarrier("api/course-board.mem");
+    await r.oracle.put({ tiddler: { title: template, text: source, type: "text/memetic-wikitext+tiddlywiki" } }, { kind: "boot" } as never);
+    r.engine.wiki.addTiddler({ title: template, text: source, type: "text/memetic-wikitext+tiddlywiki", "$origin-bag": ORACLE_BAG });
+    r.write(item, { tags: "stage/course", question: "What comes next?", answer: "build" });
+    r.write(ready, { tags: "stage/course", proof: "git:abc", question: "What landed?", answer: "decision" });
+    r.write(cited, { tags: "stage/course", proof: "git:cited" });
+    r.write(`${base}state/citer`, { text: `[[${cited}]]` });
+    r.write(other, { tags: "stage/course", question: "Outside wave" });
+    r.write(wave, { tags: "stage/wave", list: `${item} ${ready} ${cited}` });
+    r.write(`${base}board`, { waves: "[lares.waves[]]", text: `{{||${template}}}`, type: "text/vnd.tiddlywiki" });
+    const rendered = String((await makeWikiRenderReactor(r.opts)({ recipe: "default", title: `${base}board`, form: "html" }, ctx()))["text"]);
+    for (const value of [wave, "open", "closed", "ash-ready", item, "What comes next?", "build", ready, "What landed?", "decision"]) expect(rendered).toContain(value);
+    expect(rendered).not.toContain(other);
+    const columns = [...rendered.matchAll(/<section class="course-column"[^>]*>([\s\S]*?)<\/section>/g)].map((m) => m[1]!);
+    expect(columns).toHaveLength(3);
+    for (const [i, expected] of [[0, [item]], [1, [ready, cited]], [2, [ready]]] as const) {
+      for (const title of [item, ready, cited]) {
+        expect(columns[i]!.includes(title), `${title} in column ${i}`).toBe((expected as readonly string[]).includes(title));
+      }
+    }
+  });
+
   test("the call answers what the long form answered: the pins, the law, a title's standing", async () => {
     const r = await rig();
     expect(await r.filter(LAW_PINS_FILTER)).toEqual(PINS);
@@ -276,19 +372,10 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri#/anatomy`))).toEqual([]);
   });
 
-  test("[lares.road[open]] lists what the long form lists; [lares.stage[state]] lists the stage's titles, root memes with !regexp[#]", async () => {
+  test("[lares.stage[state]] lists the stage's titles, root memes with !regexp[#]", async () => {
     const r = await rig();
     const stage = "lar:///ha.ka.ba/kahua/memory";
-    for (const [title, tags] of [
-      ["lar:///ha.ka.ba/kahua/road/leap-a", "stage/road road/state/open road/kind/leap"],
-      ["lar:///ha.ka.ba/kahua/road/leap-b", "stage/road road/state/done road/kind/leap"],
-      ["lar:///ha.ka.ba/kahua/road/leap-c", "stage/road road/state/open road/kind/fix"],
-      ["lar:///ha.ka.ba/kahua/road/not-road", "road/state/open"],
-    ] as const) r.engine.wiki.addTiddler({ title, tags, text: "" });
     for (const t of [`${stage}/state/handoff`, `${stage}/state/other`, `${stage}/state/other#/entry`, `${stage}/statement/x`, `${stage}/index/y`]) r.engine.wiki.addTiddler({ title: t, text: "", tags: "stage/index" });
-    expect(await r.filter("[lares.road[open]]")).toEqual(await r.filter("[tag[stage/road]tag[road/state/open]]"));
-    expect(await r.filter("[lares.road[open]]")).toEqual(["lar:///ha.ka.ba/kahua/road/leap-a", "lar:///ha.ka.ba/kahua/road/leap-c"]);
-    expect(await r.filter("[lares.road[done]]")).toEqual(["lar:///ha.ka.ba/kahua/road/leap-b"]);
     expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual(await r.filter(`[prefix[${stage}/state/]!regexp[#]]`));
     expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual([`${stage}/state/handoff`, `${stage}/state/other`].sort());
     expect(await r.filter("[lares.stage[state]]")).toContain(`${stage}/state/other#/entry`);

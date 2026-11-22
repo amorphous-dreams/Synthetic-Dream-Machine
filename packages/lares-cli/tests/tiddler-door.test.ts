@@ -498,6 +498,14 @@ describe("tiddler get --meme reads the composition it carries", () => {
     expect(env.exit).not.toBe(0);
   });
 
+  test("whole pages join to the framed carrier's UTF-8 bytes", async () => {
+    const cut = Math.floor(CLEAN.length / 2);
+    h.replyFor = paged([CLEAN.slice(0, cut), CLEAN.slice(cut)]);
+    const result = await human({ all: true });
+    expect(Buffer.from(result.out, "utf8")).toEqual(Buffer.from(CLEAN, "utf8"));
+    expect(result.code).toBe(0);
+  });
+
   test("a carrier answered in one page carries the door's own reading; the CLI names it and exits non-zero", async () => {
     h.replyFor = paged([TWO_FRAMES], { check: "unchecked", faults: ["2 text frames stand where the grammar admits one"] });
     const r = await human({});

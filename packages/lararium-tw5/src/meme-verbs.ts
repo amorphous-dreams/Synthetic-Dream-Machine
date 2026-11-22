@@ -577,7 +577,8 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
     const meme = await readMeme(target.uri, sink);
     if (meme === null) return { uri: target.uri, meme: null, ...(floor ? { floor: true } : {}) };
     // ON A GRADIENT BY GRAIN (read-gradient): whole within a page, the has-stack past it, the whole paged on slot boundaries.
-    const slot = optionalStringArg(args, "slot");
+    const requestedSlot = optionalStringArg(args, "slot");
+    const slot = requestedSlot && !requestedSlot.startsWith("#/") ? `#/${requestedSlot}` : requestedSlot;
     const read = memeGradient(meme, { grain: grainOf(args["grain"]), after: optionalStringArg(args, "after"), slot });
     return {
       uri: target.uri,
@@ -624,6 +625,9 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
     const rawBase = optionalStringArg(args, "base");
     const span = partialSpanOf(rawBase);
+    if (rawBase?.startsWith("partial:") && (!span || !/^partial:(?:#\/[^:]+|p[1-9][0-9]*):.+$/.test(rawBase))) {
+      throw new VerbRefusal("base-outside-span", "base-outside-span: this partial base names no readable span; read the slot or whole carrier again. The span guards honest base reuse and grants no authorization.");
+    }
     const base = readBase(rawBase, "meme-patch", true, "accept");
     if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`tiddler get --meme\` answers for ${target.uri}.`);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };

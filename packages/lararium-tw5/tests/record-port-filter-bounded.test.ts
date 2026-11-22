@@ -82,12 +82,14 @@ describe.skipIf(wikiSkip)(`the record port's filter ask, bounded${skipNote}`, ()
     const { engine, r, ask } = await seeded();
     try {
       engine.setTiddler({ title: "lar:///ha.ka.ba/kahua/memory/state/a", text: "" });
-      engine.setTiddler({ title: "lar:///ha.ka.ba/kahua/road/open-one", tags: "stage/road road/state/open", text: "" });
+      engine.setTiddler({ title: "lar:///ha.ka.ba/kahua/memory/course/open.one.waits", tags: "stage/course", text: "" });
       expect(((await ask({ subject: "[lares.stage[state]]" })).result as Page).titles).toEqual(["lar:///ha.ka.ba/kahua/memory/state/a"]);
-      const open1 = ["lar:///ha.ka.ba/kahua/road/open-one"];
-      expect(((await ask({ subject: "[lares.road[open]]" })).result as Page).titles).toEqual(open1);
-      engine.setTiddler({ title: "$:/planted", tags: "$:/tags/Global", type: "text/vnd.tiddlywiki", text: "\\function lares.road(state)\n[tag[row]]\n\\end\n" });
-      expect(((await ask({ subject: "[lares.road[open]]" })).result as Page).titles).toEqual(open1);
+      engine.setTiddler({ title: "lar:///ha.ka.ba/kahua/road/open-one", tags: "stage/road road/state/open", text: "" });
+      expect(((await ask({ subject: "[lares.road[open]]" })).result as Page).titles).toEqual(["lar:///ha.ka.ba/kahua/road/open-one"]);
+      const open1 = ["lar:///ha.ka.ba/kahua/memory/course/open.one.waits"];
+      expect(((await ask({ subject: "[lares.course[open]]" })).result as Page).titles).toEqual(open1);
+      engine.setTiddler({ title: "$:/planted", tags: "$:/tags/Global", type: "text/vnd.tiddlywiki", text: "\\function lares.course(standing)\n[tag[row]]\n\\end\n" });
+      expect(((await ask({ subject: "[lares.course[open]]" })).result as Page).titles).toEqual(open1);
       expect(await ask({ subject: "[lares.nope[]]" })).toMatchObject({ status: "refused" });
       engine.setTiddler({ title: "$:/y", text: "[lares.bogus[]]" });
       expect(await ask({ subject: "[subfilter{$:/y}]" })).toMatchObject({ status: "refused" });

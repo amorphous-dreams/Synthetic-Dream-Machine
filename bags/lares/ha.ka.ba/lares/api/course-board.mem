@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/course-board`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+role      = "render a course board from its waves field"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/course-board"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/course-board"
+```
+
+<$let defaultWaves="[lares.waves[]]">
+<$let waves={{{ [<currentTiddler>get[waves]else<defaultWaves>] }}}>
+<$list filter="[subfilter<waves>]" variable="wave">
+<section class="course-wave">
+<h2><$text text=<<wave>>/></h2>
+<div class="course-columns" style="display:flex;gap:1em;align-items:flex-start">
+<$list filter="[enlist[open closed ash-ready]]" variable="standing">
+<section class="course-column" style="flex:1">
+<h3><$text text=<<standing>>/></h3>
+<$list filter="[lares.course<standing>] :intersection[list<wave>]">
+<article class="course-card"><h4><$link><$view field="title"/></$link></h4><p><$view field="question"/></p><p><$view field="answer"/></p></article>
+</$list>
+</section>
+</$list>
+</div>
+</section>
+</$list>
+</$let>
+</$let>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rsKrPQkyY0qRq8OCRmdnObK8IEZNe687Cc_owm8y2_0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

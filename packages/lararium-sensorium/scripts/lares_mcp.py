@@ -1258,7 +1258,7 @@ def build_mcp(coordinator: LaresCoordinator):
     def tiddler_get(title: "str | None" = None, recipe: "str | None" = None, bag: "str | None" = None, meme: bool = False,
                     grain: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
                     fields: "list | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
-                    tree: bool = False) -> dict:
+                    tree: bool = False, all: bool = False) -> dict:
         """READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. With no title and `meme=True`, list families: `tree=True` nests their slots, `after` names the next page. A bag listing returns {bag, roots, next}; a named recipe returns {recipe, bags, roots, next}; under `recipe="default"` no row names a `bag`. A floor read returns {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.
         EVERY ANSWER LEADS WITH `has`,
         a `<<~ has name=`…` params=`…`>>` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own
@@ -1276,7 +1276,7 @@ def build_mcp(coordinator: LaresCoordinator):
         carrier and a longer one its has-stack. `skinny` leaves the text home; `fat` carries it; `handle` names a pointer's
         body; `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never
         fetched); `slot` (with `slot="#/name"`) answers one slot's span at `meme.slotText` (never `text`, the whole carrier's field); `whole` reads the whole at the lens's grain (a record fat, a pointer resolved), and on a meme the whole carrier one page at a time,
-        each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null. `fields=[…]` answers the
+        each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null; `all=True` joins and validates all pages, retaining the first provenance and the whole base. A partial span guards honest base reuse and grants no authorization. `fields=[…]` answers the
         named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). AN
         ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses
         `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A slot answer, or a
@@ -1290,6 +1290,8 @@ def build_mcp(coordinator: LaresCoordinator):
         own records through the meme door's reach and read gate (no engine runs): the answer names the `bag`, and carries
         `floor: true` where the bag's floor snapshot answered. A record's text carries the layer `bag` names; turn it
         through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        if all and (not meme or title is None or slot or after or grain not in (None, "whole")):
+            raise SeatArgumentRefused("tiddler_get: all requires a titled meme whole read without slot or after")
         if title is None:
             if not meme:
                 raise SeatArgumentRefused("tiddler_get: a title is required unless meme=True lists families")
@@ -1313,7 +1315,79 @@ def build_mcp(coordinator: LaresCoordinator):
             args["fields"] = names
         if max_bytes is not None:
             args["maxBytes"] = max_bytes
-        return _meme_wire("tiddler-get", args)
+        if not all:
+            return _meme_wire("tiddler-get", args)
+        args["grain"] = "whole"
+        first = _meme_wire("tiddler-get", args)
+        if not isinstance(first, dict) or not isinstance(first.get("meme"), dict):
+            return first
+        import re
+        def refuse():
+            raise SeatArgumentRefused("read-page-mismatch: whole carrier pages failed validation; read again")
+        page = first
+        parts = []
+        seen = set()
+        origin_keys = ("title", "recipe", "bag", "lens", "face", "worn", "floor")
+        origin = tuple(first.get(k) for k in origin_keys)
+        first_meme = first["meme"]
+        def provenance(answer):
+            has = answer.get("has")
+            if not isinstance(has, str) or not has.startswith("<<~ has "):
+                refuse()
+            return tuple(re.findall(r"(?:^|\s)(?:layer|floor)/[^\s`]+", has))
+        first_provenance = provenance(first)
+        expected_hash = None
+        count = None
+        index = 1
+        while True:
+            m = page.get("meme")
+            if (not isinstance(m, dict) or not isinstance(m.get("text"), str) or
+                    not isinstance(m.get("canonicalHash"), str) or not m["canonicalHash"] or
+                    not isinstance(m.get("uri"), str) or not m["uri"]):
+                refuse()
+            if provenance(page) != first_provenance or tuple(page.get(k) for k in origin_keys) != origin or m.get("uri") != first_meme.get("uri") or m.get("bytes") != first_meme.get("bytes"):
+                refuse()
+            mark = m["canonicalHash"]
+            match = re.fullmatch(r"partial:p([1-9][0-9]*):(.+)", mark)
+            bare = match.group(2) if match else mark
+            if mark.startswith("partial:") and (not match or int(match.group(1)) != index):
+                refuse()
+            if expected_hash is None:
+                expected_hash = bare
+            if bare != expected_hash:
+                refuse()
+            info = m.get("page")
+            if info is not None:
+                if not isinstance(info, dict) or info.get("page") != index or not isinstance(info.get("pages"), int) or info["pages"] < index:
+                    refuse()
+                if count is None:
+                    count = info["pages"]
+                if info["pages"] != count:
+                    refuse()
+            elif index > 1:
+                refuse()
+            parts.append(m["text"])
+            nxt = page.get("next")
+            if nxt is None:
+                if match or (count is not None and count != index) or len("".join(parts).encode("utf-8")) != m.get("bytes"):
+                    refuse()
+                break
+            if not isinstance(nxt, dict) or nxt.get("grain") != "whole" or not isinstance(nxt.get("after"), str) or not nxt["after"] or not match or count is None or index >= count:
+                refuse()
+            cursor = nxt["after"]
+            if cursor in seen:
+                refuse()
+            seen.add(cursor)
+            page = _meme_wire("tiddler-get", {**args, "after": cursor})
+            if not isinstance(page, dict):
+                refuse()
+            index += 1
+        if index == 1:
+            return first
+        whole = {**first_meme, "text": "".join(parts), "canonicalHash": expected_hash}
+        whole.pop("page", None)
+        has = re.sub(r"(?<= )base/[^\s`]+", lambda _: f"base/{expected_hash}", first["has"], count=1)
+        return {**first, "has": has, "meme": whole, "next": None}
 
     @mcp.tool(annotations=_READS)
     def wiki_render(title: "str | None" = None, text: "str | None" = None, recipe: "str | None" = None,
