@@ -63,7 +63,7 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", fifo = false } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -110,6 +110,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // THE VESSEL'S LOG before a down removes it: stdout and stderr both, as the engine writes them.
       `case " $* " in *" logs --tail "*) printf '%s\\n' "\${FAKE_VESSEL_LOG:-}"; printf '%s\\n' "\${FAKE_VESSEL_LOG_ERR:-}" >&2; exit "\${FAKE_LOGS_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
+      (refuseInput ? `case " $* " in *" tiddler put "*) printf "lares tiddler put: usage refusal\\n" >&2; exit 2;; esac\n` : "") +
       `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*) cat > "$CALL_LOG.stdin";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
@@ -160,8 +161,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       }
     }
     // `@HOUSE@` in an argument names the run's scratch house too.
-    if (hostInput !== undefined) await writeFile(join(dir, "host.mem"), hostInput);
-    const args = argv.map((a) => fill(a).replaceAll("@HOST_FILE@", join(dir, "host.mem")));
+    if (hostInput !== undefined) await writeFile(join(dir, hostName), hostInput);
+    if (fifo) spawnSync("mkfifo", [join(dir, hostName)]);
+    const args = argv.map((a) => fill(a).replaceAll("@HOST_FILE@", join(dir, hostName)));
     const direct = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
     // `viaHarnessShell`: a shell carrying the harness mark launches the shim with the mark stripped (`env -u CLAUDECODE`), and
     // `; true` keeps that shell its parent, so only the chain, never the shim's own environment, carries the harness.
@@ -175,7 +177,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
     const shellMark = viaHarnessShell ? { CLAUDECODE: "1" } : {};
     const r = tty === undefined
-      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, ...shellMark, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", input, stdio: [input === undefined ? "ignore" : "pipe", "pipe", "pipe"] })
+      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, ...shellMark, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", timeout: 30000, input, stdio: [input === undefined ? "ignore" : "pipe", "pipe", "pipe"] })
       : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let received = null; try { received = await readFile(`${log}.stdin`); } catch {}
@@ -1998,5 +2000,47 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     const get = await run(shim, ["tiddler", "get", "T", "--file", "@HOST_FILE@"], { env, hostInput: bytes });
     assert.equal(get.status, 0, get.stderr); assert.equal(get.received, null);
     assert.match(get.calls, /--file .*host\.mem/);
+  });
+}
+
+
+for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
+  const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
+  const wire = ["tiddler", "put", "T"];
+  test(`${name}: a vessel refusal survives an unread host stream`, { skip }, async () => {
+    for (const size of [10, 1024 * 1024]) {
+      const r = await run(shim, [...wire, "--file", "@HOST_FILE@"], { env, hostInput: Buffer.alloc(size), refuseInput: true });
+      assert.equal(r.status, 2, r.stderr); assert.match(r.stderr, /usage refusal/); assert.doesNotMatch(r.calls, / stop INT /);
+    }
+  });
+  test(`${name}: non-regular host sources refuse before docker`, { skip }, async () => {
+    for (const [path, fifo] of [["@HOST_FILE@", true], ["/dev/zero", false], ["/proc/self/stat", false]]) {
+      const r = await run(shim, [...wire, "--file", path], { env, fifo });
+      assert.equal(r.status, 2, r.stderr); assert.match(r.stderr, /cannot read host file/); assert.equal(r.calls, "");
+    }
+  });
+  test(`${name}: option and command spelling keep case`, { skip }, async () => {
+    for (const args of [[...wire, "--FILE", "@HOST_FILE@"], ["TIDDLER", "PUT", "T", "--file", "@HOST_FILE@"]]) {
+      const r = await run(shim, args, { env, hostInput: "host" });
+      assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null); assert.match(r.calls, /host\.mem/);
+    }
+  });
+  test(`${name}: an equals source carries a newline in its path`, { skip }, async () => {
+    const r = await run(shim, [...wire, "--file=@HOST_FILE@"], { env, hostName: "a\nb", hostInput: "host" });
+    assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("host"));
+  });
+  test(`${name}: end of options leaves later sources untouched`, { skip }, async () => {
+    const r = await run(shim, [...wire, "--", "--file", "@HOST_FILE@"], { env, hostInput: "host" });
+    assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null); assert.match(r.calls, /-- --file .*host\.mem/);
+  });
+  test(`${name}: valued options follow the CLI peek rule`, { skip }, async () => {
+    for (const flag of ["--recipe", "--tag-add", "--slot", "--file"]) {
+      const r = await run(shim, [...wire, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
+      assert.equal(r.status, 0, `${flag}: ${r.stderr}`); assert.deepEqual(r.received, Buffer.from("host"), flag);
+    }
+    for (const flag of ["--fields", "--note", "--reason", "--text"]) {
+      const r = await run(shim, [...wire, flag, "--file", "@HOST_FILE@"], { env, hostInput: "host" });
+      assert.equal(r.status, 0, r.stderr); assert.equal(r.received, null, flag);
+    }
   });
 }

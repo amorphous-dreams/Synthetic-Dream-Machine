@@ -178,8 +178,12 @@ function Act([string]$kind, [string[]]$more) {
       $process = [System.Diagnostics.Process]::Start($psi)
       try {
         $source = [System.IO.File]::OpenRead($script:HostInputFile)
-        try { $source.CopyTo($process.StandardInput.BaseStream) }
-        finally { $source.Dispose(); $process.StandardInput.Close() }
+        try {
+          try { $source.CopyTo($process.StandardInput.BaseStream) }
+          catch [System.IO.IOException] { }
+          try { $process.StandardInput.Close() }
+          catch [System.IO.IOException] { }
+        } finally { $source.Dispose() }
         $process.WaitForExit()
         $global:LASTEXITCODE = $process.ExitCode
       } finally { $process.Dispose() }
@@ -386,23 +390,27 @@ function LiftVessel([string[]]$output) {
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
-  if ($argv.Count -ge 3 -and $argv[0] -eq 'tiddler' -and $argv[1] -eq 'put') {
+  if ($argv.Count -ge 3 -and $argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') {
     $hasSlot = $false
     $hasMeme = $false
-    $valued = @('--text', '--base', '--recipe', '--bag', '--realm', '--face', '--target', '--fields', '--tag-add', '--tag-remove', '--unset')
+    $alwaysValued = @('--fields', '--note', '--reason', '--text')
+    $boolean = @('accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'launch', 'list', 'meme', 'memory', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'writeback', 'yes')
     $sources = @()
-    # A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
-      if ($word -eq '--meme') { $hasMeme = $true }
-      elseif ($word -eq '--slot') { $hasSlot = $true; $i++ }
-      elseif ($word -like '--slot=*') { $hasSlot = $true }
-      elseif ($word -in $valued) { $i++ }
-      elseif ($word -in @('--file', '--append') -and $i + 1 -lt $argv.Count) {
-        $sources += ,@(($i + 1), $argv[$i + 1], $word)
-        $i++
-      } elseif ($word -match '^--(file|append)=(.*)$') {
+      if ($word -ceq '--') { break }
+      if ($word -ceq '--meme') { $hasMeme = $true; continue }
+      if ($word -clike '--slot=*') { $hasSlot = $true; continue }
+      if ($word -cmatch '(?s)^--(file|append)=(.*)$') {
         $sources += ,@($i, $Matches[2], "--$($Matches[1])")
+        continue
+      }
+      if ($word -ceq '--slot') { $hasSlot = $true }
+      if ($word -clike '--*' -and $word -cnotlike '--no-*' -and $word -cnotlike '*=*' -and $word.Substring(2) -cnotin $boolean) {
+        if ($i + 1 -lt $argv.Count -and ($word -cin $alwaysValued -or $argv[$i + 1] -cnotlike '--*')) {
+          if ($word -cin @('--file', '--append')) { $sources += ,@(($i + 1), $argv[$i + 1], $word) }
+          $i++
+        }
       }
     }
     if ($sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
@@ -412,12 +420,18 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
       if ($source[1] -ne '-') {
         # A relative path reads against the caller's directory, never .NET's own current directory.
         $hostPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($source[1])
+        if (-not $IsWindows) {
+          & test -f $hostPath
+          if ($LASTEXITCODE -ne 0) { Die "cannot read host file $($source[1])" }
+          $fsType = & stat -f -c %T -- $hostPath 2>$null
+          if ($LASTEXITCODE -eq 0 -and $fsType -ceq 'proc') { Die "cannot read host file $($source[1])" }
+        }
         if (-not [System.IO.File]::Exists($hostPath)) { Die "cannot read host file $($source[1])" }
         try { $handle = [System.IO.File]::OpenRead($hostPath); $handle.Dispose() }
         catch { Die "cannot read host file $($source[1])" }
         $script:HostInputFile = $hostPath
         $argv = @($argv)
-        if ($argv[$source[0]] -match '^--(file|append)=') { $argv[$source[0]] = "$($source[2])=-" }
+        if ($argv[$source[0]] -cmatch '^--(file|append)=') { $argv[$source[0]] = "$($source[2])=-" }
         else { $argv[$source[0]] = '-' }
       }
     }
