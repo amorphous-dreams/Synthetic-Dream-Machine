@@ -38,7 +38,7 @@ vi.mock("../src/env.js", async (orig) => ({
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
 import { cmdWiki, wikiFilterPlan, wikiRenderPlan } from "../src/commands/wiki.js";
-import { COMMANDS } from "../src/bin/lares.js";
+import { COMMANDS, unknownFlags } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 interface Row {
@@ -68,7 +68,7 @@ afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply 
 
 describe("verb-table-parity — the CLI half of the tiddler door's one table", () => {
   test("the table names all six verbs, and every door it names stands in the command table", () => {
-    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status"]));
+    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki", "wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status"]));
     const names = new Set(COMMANDS.map((c) => c.name));
     for (const row of TABLE.rows) expect(names.has(row.cli.command)).toBe(true);
   });
@@ -91,6 +91,14 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
 });
 
 describe("the argument law, no daemon", () => {
+  test("wiki act narrows its flags before dispatch", () => {
+    const row = COMMANDS.find((c) => c.name === "wiki")!;
+    for (const flag of ["text", "target", "dry-run", "list"]) {
+      const args = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", [flag]: "stray" });
+      expect(unknownFlags(row, args).map((x) => x.name)).toEqual([flag]);
+    }
+    expect(h.calls).toEqual([]);
+  });
   test("a tiddler verb names its container and its title before anything rides the wire", async () => {
     expect(() => tiddlerPlan("get", argv("tiddler", ["get", "T"]))).toThrow(/no-container/);
     expect(() => tiddlerPlan("get", argv("tiddler", ["get"], { recipe: "default" }))).toThrow(/title is required/);

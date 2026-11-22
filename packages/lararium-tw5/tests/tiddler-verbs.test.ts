@@ -88,6 +88,55 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(act({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed", action: "<$action-setfield/>" }, ctx()))
       .rejects.toThrow(/action|parameter/);
   });
+
+  test("wiki action invokes the floor shadow on an isolated view and lands one gated layout change", async () => {
+    const r = await rig();
+    const title = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    expect((r.engine.wiki as unknown as { getShadowSource(title: string): string }).getShadowSource("$:/core/ui/KeyboardShortcuts/change-sidebar-layout")).toBe("$:/core");
+    r.engine.wiki.addTiddler({ title, text: "fixed-fluid" });
+    await r.hold(DAEMON, [title]);
+    const out = await makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx());
+    await r.landed();
+    expect(out).toMatchObject({ decision: "put", title, resulting: "fluid-fixed", receipt: "r1" });
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fluid-fixed");
+    expect(r.engine.wiki.tiddlerExists("$:/core/ui/KeyboardShortcuts/change-sidebar-layout")).toBe(false);
+  });
+
+  test("wiki action keeps a denied or stale layout unchanged", async () => {
+    const r = await rig();
+    const title = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    r.engine.wiki.addTiddler({ title, text: "fixed-fluid" });
+    await r.hold(DAEMON, [title]);
+    const act = makeWikiActionReactor(r.opts);
+    const ask = { ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" };
+    await expect(act(ask, ctx(reader))).rejects.toThrow(/cap-denied/);
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fixed-fluid");
+    expect(await r.composite.storeForBag(DAEMON)!.get(title)).toMatchObject({ tiddler: { text: "fixed-fluid" } });
+    expect(await act({ ...ask, expected: "fluid-fixed", resulting: "fixed-fluid" }, ctx())).toMatchObject({ decision: "conflict", observed: "fixed-fluid" });
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fixed-fluid");
+  });
+
+  test("wiki action keeps the live wiki untouched when the put gate closes after native invocation", async () => {
+    const r = await rig();
+    const title = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    r.engine.wiki.addTiddler({ title, text: "fixed-fluid" });
+    await r.hold(DAEMON, [title]);
+    let adminAsks = 0;
+    const cap: Cap = async (access) => access === "read" || ++adminAsks === 1 ? { ok: true } : { ok: false, reason: "closed" };
+    await expect(makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx(cap)))
+      .rejects.toThrow(/cap-denied/);
+    await r.landed();
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fixed-fluid");
+    expect((await r.composite.storeForBag(DAEMON)!.get(title))?.tiddler["text"]).toBe("fixed-fluid");
+  });
+
+  test("wiki action refuses an ordinary override of the admitted floor shadow", async () => {
+    const r = await rig();
+    const title = "$:/core/ui/KeyboardShortcuts/change-sidebar-layout";
+    r.engine.wiki.addTiddler({ title, text: "<$action-setfield $tiddler='Other' text='wrong'/>" });
+    await expect(makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx()))
+      .rejects.toThrow(/wiki-action-origin/);
+  });
   test("wiki-filter-tag: a tag filter over a seeded daemon wiki answers its titles; CONTROL: an untagged title stays out", async () => {
     const r = await rig();
     const out = await makeWikiFilterReactor(r.opts)({ ...A, filter: "[tag[memory]sort[title]]" }, ctx());

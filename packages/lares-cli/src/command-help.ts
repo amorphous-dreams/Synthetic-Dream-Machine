@@ -786,6 +786,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wiki filter '[[Room 4]backlinks[]]' --recipe default               # the link graph rides filters",
       "lares wiki render Handover --recipe default --form html                  # transclusions resolved by the engine",
       "lares wiki status --recipe default                                       # which layer takes a write for this face",
+      "lares wiki act sidebar-layout --recipe default --expected fixed-fluid --resulting fluid-fixed",
       "lares wiki filter '[tag[road]sort[title]]' --recipe kahu                 # a shared wiki, in its own engine",
       "lares tiddler put \"Road note\" --recipe kahu --create --text \"first words\"   # lands in that wiki's working layer",
       "lares tiddler get \"Sibling note\" --recipe default --target h1          # read a lit sibling's daemon wiki, still wearing your own face",
