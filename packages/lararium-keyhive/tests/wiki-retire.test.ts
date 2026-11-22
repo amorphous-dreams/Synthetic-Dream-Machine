@@ -29,17 +29,27 @@
  * R11 (red, referee-walk #5) a gated-ingest residency row the house minted counts as an effect record, never an authored one:
  *    `--dry-run` names the two apart, a shell holding effect records alone retires unforced and drops them, and a record that
  *    only wears the effect tag (no residency-ledger title) counts as authored.
+ * R12 (red, the record of leaving stays) before a retire erases a shell's effect records it CARRIES them, verbatim, into one
+ *    retirement record per slug in the face's daemon wiki working layer (`retiredShellUri`), and names where they went; the
+ *    carried copy reads back whole. A carry that cannot land (no durable home, a write that faults, a write that reads back
+ *    short, a title standing under other fields) refuses `retire-carry-unlanded` and erases nothing. A re-run carries nothing
+ *    new and writes nothing; a forced retire carries the effects beside destroying the authored rows.
+ * R13 (red, #433 cold read) the record's home answers only where the face's own daemon working slot rests in a document: a
+ *    layer held in memory alone, a slot the control document names for no face, or a handle on another document (the floor's
+ *    slot under a face not yet seated) answers none; the face's control-named slot answers its own store. A real retire always
+ *    appends its outcome, even when it adds no record; an effect record that lands between the carry and the erase stays
+ *    where it rests and the answer names it (`leftBehind`).
  */
 import { describe, test, expect } from "vitest";
 import {
   DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, buildEffectRecordTiddler, effectRecordUri, emptyLarDoc, LARES_EFFECT_RECORD_TAG, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, materializeSharedLarDoc, noteWorkbench, noteWorkbenchSeat,
-  privateCabalRealmId, realmWorkbenchDocUrl, recipeUri, wikiBagUri, wikiSlotUri, workbenchSeats,
-  type DocHandle, type LarDoc, type Repo,
+  parseRetiredShellRecord, plainRecord, privateCabalRealmId, realmWorkbenchDocUrl, recipeUri, retiredShellUri, wikiBagUri, wikiSlotUri, workbenchSeats,
+  type DocHandle, type LarDoc, type LarTiddlerRecord, type Repo,
 } from "@lararium/mesh";
 import { makeCatalogAccessorOver, makeInitWikiReactor, makeRetireWikiReactor, type VerbContext, type WikiShellPorts } from "@lararium/tw5";
 import { InMemoryEventStore, KeyhiveProvider } from "../src/index.js";
 import { standWorkbench, type LedgerDoc } from "../src/workbench-realm.js";
-import { faceOwnSlot, wikiShellPorts, type ShellLayerDoc } from "../src/wiki-shell-ports.js";
+import { daemonRetiredHome, faceOwnSlot, wikiShellPorts, type ShellLayerDoc } from "../src/wiki-shell-ports.js";
 
 const SLUG = "elyncia-referee";
 const ENGINEER = "0x" + "e1".repeat(32);
@@ -75,9 +85,22 @@ async function vessel() {
     // The working layer rests at the realm's deterministic address while the ledger binds the face's own realm.
     const working = async (): Promise<DocHandle<LarDoc> | null> => ledgerWorkbenchRealms(ledger.doc(), SLUG).includes(privateCabalRealmId(group, SLUG))
       ? materializeSharedLarDoc(repo, realmWorkbenchDocUrl(privateCabalRealmId(group, SLUG), SLUG), "board:workbench") : null;
-    const faults = { layers: false, unbind: false, moveAfterReads: 0 };
+    const faults = { layers: false, unbind: false, clear: false, moveAfterReads: 0, home: "stands" as "stands" | "absent" | "throws" | "drops", onCarry: null as null | (() => void) };
     let reads = 0;
+    // THE FACE'S DAEMON WORKING LAYER, where the record of a retired shell's leaving rests (its own document per face).
+    const daemonWorking = repo.create<LarDoc>(emptyLarDoc()) as DocHandle<LarDoc>;
+    const home = {
+      bag: wikiSlotUri("daemon", "working"),
+      get: async (title: string) => { const r = daemonWorking.doc()?.tiddlers[title]; return r ? plainRecord(r as never) : null; },
+      put: async (record: LarTiddlerRecord) => {
+        if (faults.home === "throws") throw new Error("document-unavailable: the daemon working layer did not answer");
+        if (faults.home === "drops") return;
+        faults.onCarry?.();
+        daemonWorking.change((d) => { d.tiddlers[record.tiddler.title] = JSON.parse(JSON.stringify(record)) as never; });
+      },
+    };
     const ports = wikiShellPorts({
+      retiredHome: async () => (faults.home === "absent" ? null : home),
       provider: () => provider, face: group, ledger: async () => ledger,
       shares: async (slug) => shareRows.filter((s) => s === `wiki:${slug}`),
       layers: async () => {
@@ -87,9 +110,13 @@ async function vessel() {
       },
       unbindSlots: async () => [],
     });
-    const shell: WikiShellPorts = { ...ports, unbind: async (slug) => { if (faults.unbind) throw new Error("ledger write faulted"); return ports.unbind(slug); } };
+    const shell: WikiShellPorts = {
+      ...ports,
+      unbind: async (slug) => { if (faults.unbind) throw new Error("ledger write faulted"); return ports.unbind(slug); },
+      clear: async (slug, what) => { if (faults.clear) throw new Error("layer write faulted"); return ports.clear(slug, what); },
+    };
     return {
-      group, half, catalog, provider, draft, personal, working, faults,
+      group, half, catalog, provider, draft, personal, working, faults, daemonWorking,
       init: () => makeInitWikiReactor({
         repo, catalog, rootDir: "", vesselDid: () => "did:key:vessel",
         registerBag: async (bag) => { await provider.registerBag(bag); },
@@ -227,7 +254,7 @@ describe("R4 — what never retires", () => {
     const v = await vessel();
     const engineer = await v.face(ENGINEER, 0x82);
     const floorOnly = makeCatalogAccessorOver(v.repo, makeCatalogView(v.floor as DocHandle<LarDoc>, null));
-    const shell = wikiShellPorts({ provider: () => engineer.provider, face: ENGINEER, ledger: async () => v.ledger, shares: async () => [], layers: async () => ({ working: null, draft: null, personal: null }), unbindSlots: async () => [] });
+    const shell = wikiShellPorts({ retiredHome: async () => null, provider: () => engineer.provider, face: ENGINEER, ledger: async () => v.ledger, shares: async () => [], layers: async () => ({ working: null, draft: null, personal: null }), unbindSlots: async () => [] });
     await expect(makeRetireWikiReactor({ catalog: floorOnly, shell })({ slug: SLUG }, HAND)).rejects.toThrow(/^no-face:/);
   });
 });
@@ -343,7 +370,7 @@ describe("R9 (F1/F2) — the CLI hand alone, and the face's own slots alone", ()
     const byUrl = new Map<string, DocHandle<LarDoc>>([[floorDraft.url, floorDraft], [floorPersonal.url, floorPersonal]]);
     const own = async (prefix: string, url: string) => { const s = await faceOwnSlot(store, prefix, ENGINEER, url); return s ? byUrl.get(s.url)! : null; };
     const shell = wikiShellPorts({
-      provider: () => engineer.provider, face: ENGINEER, ledger: async () => v.ledger, shares: async () => [], unbindSlots: async () => [],
+      retiredHome: async () => null, provider: () => engineer.provider, face: ENGINEER, ledger: async () => v.ledger, shares: async () => [], unbindSlots: async () => [],
       // The resolver's fallback hands the floor's urls; the port keeps only the face's own.
       layers: async () => ({ working: await engineer.working(), draft: await own(DRAFT_BINDINGS_PREFIX, floorDraft.url), personal: await own(PERSONAL_BINDINGS_PREFIX, floorPersonal.url) }),
     });
@@ -475,5 +502,160 @@ describe("R11 (referee walk #5) — the house's effect records never count as a 
     await expect(engineer.retire({ force: true, count: 2 })).rejects.toThrow(/^retire-count-moved:/);
     expect(await engineer.retire({ force: true, count: 1 })).toMatchObject({ status: "retired", forced: true });
     expect([live(workbench), live(engineer.draft)]).toEqual([0, 0]);
+  });
+});
+
+describe("R12 (the record of leaving stays) — a retire carries the shell's effect records out before it erases them", () => {
+  const WORKING = wikiSlotUri(SLUG, "working"), PERSONAL = wikiSlotUri(SLUG, "personal");
+  const effect = (h: ShellLayerDoc, bag: string, eventId: string): Record<string, unknown> => {
+    const rec = buildEffectRecordTiddler({
+      eventId, archivalVerb: "accession", actionVerb: "INGEST" as never, requestId: `req-${eventId}`, bag,
+      actor: "lares", timestamp: "2026-11-21T00:00:00.000Z", tiddlerTitle: `Tiddler ${eventId}`,
+    });
+    h.change((d) => { d.tiddlers[rec.tiddler.title] = rec as never; });
+    return { ...rec.tiddler };
+  };
+  const carried = (engineer: { daemonWorking: DocHandle<LarDoc> }) => {
+    const r = engineer.daemonWorking.doc()?.tiddlers[retiredShellUri(SLUG)];
+    return parseRetiredShellRecord(SLUG, r ? plainRecord(r as never) : null);
+  };
+  async function effectOnly(fill: number) {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, fill);
+    await engineer.init();
+    await engineer.stand();
+    const workbench = (await engineer.working())!;
+    const originals = [effect(workbench, WORKING, "evt-a"), effect(workbench, wikiBagUri(SLUG), "evt-b"), effect(engineer.personal, PERSONAL, "evt-c")];
+    return { v, engineer, workbench, originals };
+  }
+
+  test("an effect-only shell carries its N records out, names where they went, and the carried copy reads back whole", async () => {
+    const { v, engineer, workbench, originals } = await effectOnly(0xa1);
+    expect(await engineer.retire({ "dry-run": true })).toMatchObject({ status: "would-retire", total: 0, records: { effects: 3 }, carryTo: { title: retiredShellUri(SLUG), bag: wikiSlotUri("daemon", "working") } });
+    expect(carried(engineer)).toBeNull();
+    const r = await engineer.retire();
+    expect(r).toMatchObject({ status: "retired", forced: false, records: { effects: 3 }, carried: { title: retiredShellUri(SLUG), bag: wikiSlotUri("daemon", "working"), records: 3, added: 3 } });
+    const body = carried(engineer)!;
+    expect(body.records.map((x) => [x.layer, x.title])).toEqual([
+      ["working", effectRecordUri(wikiBagUri(SLUG), "evt-b")], ["working", effectRecordUri(WORKING, "evt-a")], ["personal", effectRecordUri(PERSONAL, "evt-c")],
+    ].sort((a, b) => (a[1]! < b[1]! ? -1 : 1)));
+    for (const o of originals) expect(body.records.find((x) => x.title === o["title"])!.fields).toEqual(o);
+    expect(body.retires).toHaveLength(1);
+    expect(body.retires[0]).toMatchObject({ face: ENGINEER, realmId: privateCabalRealmId(ENGINEER, SLUG), forced: false, authored: 0 });
+    expect([live(workbench), live(engineer.personal)]).toEqual([0, 0]);
+    expect(engineer.rows()).toEqual([]);
+    expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([]);
+  });
+
+  for (const fault of ["absent", "throws", "drops"] as const) {
+    test(`a carry that cannot land (home ${fault}) refuses \`retire-carry-unlanded\` and erases nothing`, async () => {
+      const { v, engineer, workbench } = await effectOnly(0xa2);
+      engineer.faults.home = fault;
+      await expect(engineer.retire()).rejects.toThrow(/^retire-carry-unlanded:.*nothing retired/);
+      expect([live(workbench), live(engineer.personal)]).toEqual([2, 1]);
+      expect(engineer.rows()).toEqual(SHELL_ROWS);
+      expect(ledgerWorkbenchRealms(v.ledger.doc(), SLUG)).toEqual([privateCabalRealmId(ENGINEER, SLUG)]);
+      expect(engineer.provider.docIdOfBag(WORKING)).not.toBeNull();
+    });
+  }
+
+  test("a carried title standing under other fields refuses and erases nothing", async () => {
+    const { engineer, workbench } = await effectOnly(0xa3);
+    const title = effectRecordUri(WORKING, "evt-a");
+    engineer.daemonWorking.change((d) => {
+      d.tiddlers[retiredShellUri(SLUG)] = { tiddler: { title: retiredShellUri(SLUG), type: "application/json", text: JSON.stringify({ slug: SLUG, records: [{ layer: "working", title, fields: { title, bag: "other" } }], retires: [] }) } } as never;
+    });
+    await expect(engineer.retire()).rejects.toThrow(/^retire-carry-unlanded:/);
+    expect(live(workbench)).toBe(2);
+    expect(engineer.rows()).toEqual(SHELL_ROWS);
+  });
+
+  test("a re-run is idempotent: a retire whose erase faulted after the carry re-carries no record twice, appends its own outcome, and finishes", async () => {
+    const { engineer, workbench } = await effectOnly(0xa4);
+    engineer.faults.clear = true;
+    await expect(engineer.retire()).rejects.toThrow(/layer write faulted/);
+    const records = JSON.stringify(carried(engineer)!.records);
+    expect(carried(engineer)!.records).toHaveLength(3);
+    expect(live(workbench)).toBe(2);
+    engineer.faults.clear = false;
+    expect(await engineer.retire()).toMatchObject({ status: "retired", carried: { records: 3, added: 0 }, leftBehind: [] });
+    expect(JSON.stringify(carried(engineer)!.records)).toBe(records);
+    expect(carried(engineer)!.retires).toHaveLength(2);
+    expect(live(workbench)).toBe(0);
+    // A third run finds no shell, writes nothing, and the record stands as it was.
+    const after = JSON.stringify(engineer.daemonWorking.doc()?.tiddlers[retiredShellUri(SLUG)]);
+    await expect(engineer.retire()).rejects.toThrow(/^no-such-wiki:/);
+    expect(JSON.stringify(engineer.daemonWorking.doc()?.tiddlers[retiredShellUri(SLUG)])).toBe(after);
+  });
+
+  test("a forced retire carries the effect records beside destroying the authored rows by count", async () => {
+    const { engineer, workbench } = await effectOnly(0xa5);
+    seed(engineer.draft, 2, "mine");
+    await expect(engineer.retire()).rejects.toThrow(/^wiki-not-empty:/);
+    expect(await engineer.retire({ force: true, count: 2 })).toMatchObject({ status: "retired", forced: true, carried: { records: 3, added: 3 } });
+    expect(carried(engineer)!.retires[0]).toMatchObject({ forced: true, authored: 2 });
+    expect([live(workbench), live(engineer.draft), live(engineer.personal)]).toEqual([0, 0, 0]);
+  });
+
+  test("a shell holding no effect record carries nothing and writes no record", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xa6);
+    await engineer.init();
+    await engineer.stand();
+    expect(await engineer.retire()).toMatchObject({ status: "retired", carried: null });
+    expect(carried(engineer)).toBeNull();
+  });
+  test("a copy re-ingested off disk (no writer's stamp, body whole) keeps every record it holds and takes the stamp; a row that does not parse refuses", async () => {
+    const { engineer, workbench } = await effectOnly(0xb2);
+    const prior = { layer: "working", title: "lar:///ha.ka.ba/wikis/elyncia-referee/working/ledger/residency/older", fields: { title: "lar:///ha.ka.ba/wikis/elyncia-referee/working/ledger/residency/older" } };
+    const offDisk = (text: string) => engineer.daemonWorking.change((d) => {
+      d.tiddlers[retiredShellUri(SLUG)] = { tiddler: { title: retiredShellUri(SLUG), type: "text/plain", text } } as never;
+    });
+    offDisk("not json");
+    await expect(engineer.retire()).rejects.toThrow(/^retire-carry-unlanded:/);
+    expect(live(workbench)).toBe(2);
+    offDisk(JSON.stringify({ slug: SLUG, records: [prior], retires: [{ face: ENGINEER, realmId: null, forced: false, authored: 0, carried: [prior.title] }] }));
+    expect(await engineer.retire()).toMatchObject({ status: "retired", carried: { records: 3, added: 3 } });
+    const body = carried(engineer)!;
+    expect(body.records.map((r) => r.title)).toContain(prior.title);
+    expect(body.records).toHaveLength(4);
+    expect(body.retires).toHaveLength(2);
+  });
+});
+
+describe("R13 (#433 cold read) — the home is the face's own slot, every retire leaves its outcome, and nothing orphans silently", () => {
+  const BAG = wikiSlotUri("daemon", "working");
+  const FACE_SLOT = "automerge:face-own-working";
+  const store = { get: async () => null, put: async () => {} };
+  const io = (over: Partial<Parameters<typeof daemonRetiredHome>[0]> = {}): Parameters<typeof daemonRetiredHome>[0] => ({
+    wikiSlug: "daemon", hasBag: () => true, store: () => store as never, handleUrl: () => FACE_SLOT, controlUrl: async () => FACE_SLOT, ...over,
+  });
+
+  test("a seated face's control-named slot answers its own store", async () => {
+    expect(await daemonRetiredHome(io())).toMatchObject({ bag: BAG });
+  });
+
+  test("a layer held in memory alone, no layer, another wiki, a slot the control names for no face, or a handle on another document answers none", async () => {
+    expect(await daemonRetiredHome(io({ handleUrl: () => undefined }))).toBeNull();          // a floor that cannot seal: memory alone
+    expect(await daemonRetiredHome(io({ hasBag: () => false }))).toBeNull();
+    expect(await daemonRetiredHome(io({ store: () => null }))).toBeNull();
+    expect(await daemonRetiredHome(io({ wikiSlug: "elyncia-referee" }))).toBeNull();
+    expect(await daemonRetiredHome(io({ controlUrl: async () => null }))).toBeNull();      // the control names no slot for this face
+    expect(await daemonRetiredHome(io({ handleUrl: () => "automerge:floor-working" }))).toBeNull();   // pinned, not yet seated: the floor's slot
+    expect(await daemonRetiredHome(io({ controlUrl: async () => { throw new Error("control-home-unavailable"); } }))).toBeNull();
+  });
+
+  test("an effect record landing between the carry and the erase stays where it rests, and the answer names it", async () => {
+    const v = await vessel();
+    const engineer = await v.face(ENGINEER, 0xb1);
+    await engineer.init();
+    await engineer.stand();
+    const workbench = (await engineer.working())!;
+    const rec = (eventId: string) => buildEffectRecordTiddler({ eventId, archivalVerb: "accession", actionVerb: "INGEST" as never, requestId: `req-${eventId}`, bag: wikiSlotUri(SLUG, "working"), actor: "lares", timestamp: "2026-11-21T00:00:00.000Z" });
+    workbench.change((d) => { const r = rec("early"); d.tiddlers[r.tiddler.title] = r as never; });
+    engineer.faults.onCarry = () => { workbench.change((d) => { const r = rec("late"); d.tiddlers[r.tiddler.title] = r as never; }); };
+    const late = effectRecordUri(wikiSlotUri(SLUG, "working"), "late");
+    expect(await engineer.retire()).toMatchObject({ status: "retired", carried: { records: 1 }, leftBehind: [late] });
+    expect(Object.keys(workbench.doc()!.tiddlers)).toEqual([late]);
   });
 });

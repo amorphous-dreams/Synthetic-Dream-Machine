@@ -40,9 +40,9 @@ import {
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
-import { faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
+import { daemonRetiredHome, faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
 import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh";
-import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -1636,6 +1636,18 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             },
             // Each named wiki's engine composed over the shell that left: the next ask composes afresh.
             afterForget: async () => { await namedWikiEngines?.dropAll().catch(() => undefined); },
+            // THE RECORD OF LEAVING'S HOME: the worn face's own daemon working slot, only where the composition holds it in a
+            // document (`ctx.handles`) and that document is the one the control names for this face (`daemonRetiredHome`).
+            retiredHome: () => daemonRetiredHome({
+              wikiSlug: ctx.recipe.wikiSlug,
+              hasBag: (bag) => ctx.composite.hasBag(bag),
+              store: (bag) => ctx.composite.storeForBag(bag),
+              handleUrl: (bag) => ctx.handles.get(bag)?.url,
+              controlUrl: async () => {
+                const text = (await controlOf(ctx).get(daemonSlotTitle("working", daemonAuth.personaGroupId!)))?.tiddler?.text;
+                return typeof text === "string" && text.length > 0 ? text : null;
+              },
+            }),
           }),
         }) : lightAFace("retire-wiki"), { summary: "Retire a wiki shell the worn face minted (its catalog rows, its workbench's ledger rows, its slot bindings and its Keyhive bindings) so the slug mints again under another face; the canon bag and its files stay. A person's hand alone; refuses a face that does not own it, a shell another face reaches, and a shell that holds records unless forced with the count.", surfaces: [VERB_SURFACE.cli] });
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
