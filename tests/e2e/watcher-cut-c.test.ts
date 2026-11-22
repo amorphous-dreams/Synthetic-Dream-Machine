@@ -26,17 +26,53 @@ import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
+import { operatorHandEnv } from "../harness/operator-hand.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
-const TICK_TMPL = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/pono/tick.mem");
 const LARES_URI = "lar:///ha.ka.ba/bags/lares";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 let lar: LarInstance;
 let SRC = "";
-let tickTemplate = "";
+
+/**
+ * THE TEST'S OWN FIXTURE CARRIER, never live canon prose. A template read off a canon page (it was `pono/tick`) moves under
+ * the test whenever that page's words move, and the edit below then finds no line to change. This carrier holds the one line
+ * the live-and-coalesce edit hunts (`''Status: DEFERRED''`), so the edit always finds it. The slug `pono/cutc-template` swaps
+ * for each case's own.
+ */
+const CARRIER_TEMPLATE = [
+  "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>",
+  "",
+  "<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/cutc-template`>>",
+  "<<^ code=`&#x0002;`>>",
+  "",
+  "```toml meta",
+  "cacheable = true",
+  'namespace = "&#x2299;"',
+  'role      = "the watcher e2e fixture carrier — a disk peer\'s edits, vanishes and renames walk it"',
+  'title     = "lar:///ha.ka.ba/lares/api/pono/cutc-template"',
+  'type      = "text/memetic-wikitext+tiddlywiki"',
+  'uri-path  = "ha.ka.ba/lares/api/pono/cutc-template"',
+  "```",
+  "",
+  "<<~ ahu slot=`#/head`>>",
+  "",
+  "! Watcher fixture carrier",
+  "",
+  "A fixture carrier the watcher's end-to-end suite lands, edits, removes and renames.",
+  "",
+  "''Status: DEFERRED''",
+  "",
+  "<<~/ahu>>",
+  "",
+  "<<^ code=`&#x0003;` bcc=`ni:///sha-256;AWDExptc_13xpVuC_lZ5pDKm8XXL82LNv3sTh19naVc`>>",
+  "",
+  "<<^ code=`&#x0004;` to=`?`>>",
+  "",
+].join("\n");
 
 /** Disk path a `cutc-<slug>` carrier projects to under the staged bags mirror. */
 function carrierPath(slug: string): string {
@@ -46,10 +82,10 @@ function carrierUri(slug: string): string {
   return `lar:///ha.ka.ba/lares/api/pono/${slug}`;
 }
 
-/** Template a fresh carrier from tick.mem, swapping ONLY the URI slug (the path
+/** Template a fresh carrier from the fixture, swapping ONLY the slug (the path
  *  derives the record URI; the body prose carries over untouched). */
 function carrierBody(slug: string): string {
-  return tickTemplate.replaceAll("pono/tick", `pono/${slug}`);
+  return CARRIER_TEMPLATE.replaceAll("pono/cutc-template", `pono/${slug}`);
 }
 
 /** A carrier's check stamp, and the carrier's words with that stamp set aside. */
@@ -83,7 +119,8 @@ function spawnWatch(): WatchProc {
       "--source", SRC, "--to", LARES_URI, "--apply",
       "--debounce", "150",
     ],
-    { cwd: REPO_ROOT, env: { ...process.env, LAR_ROOT: lar.root, LAR_PORT: String(lar.port) } },
+    // A clean hand of its own, whatever seat launched the suite: the watcher is an operator-hand act (`seat-canon-reach` reads its marks).
+    { cwd: REPO_ROOT, env: operatorHandEnv({ ...process.env, LAR_ROOT: lar.root, LAR_PORT: String(lar.port) }) },
   );
   child.stdout?.on("data", (d) => { log += String(d); });
   child.stderr?.on("data", (d) => { log += String(d); });
@@ -115,7 +152,6 @@ beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;
   SRC = join(lar.root, "projections/bags/lares");
-  tickTemplate = readFileSync(TICK_TMPL, "utf8");
 
   // Write all test carriers, then land them in ONE ingest wave.
   for (const slug of SLUGS) writeCarrier(slug);
