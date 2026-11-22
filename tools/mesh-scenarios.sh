@@ -197,7 +197,7 @@ logs_have() {
 answers() {
   case "$1" in
     herm-*) $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js vessel unbound >/dev/null 2>&1 ;;
-    *)      $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js bag stats --json >/dev/null 2>&1 ;;
+    *)      $COMPOSE exec -T "$1" node packages/lares-cli/dist/src/bin/lares.js wiki status --json >/dev/null 2>&1 ;;
   esac
 }
 

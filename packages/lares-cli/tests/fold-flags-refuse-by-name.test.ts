@@ -26,7 +26,7 @@ describe("a folded sub-path refuses the flags it does not read", () => {
       expect(r.code).toBe(2);
       expect(r.err).toContain("unknown flag");
     }
-    for (const [door, verb, destination] of [["wiki", "unpin", "wiki pin"], ["wiki", "hold", "wiki pin"], ["wiki", "release", "wiki pin"], ["wiki", "open", "wiki switch"], ["wiki", "list", "wiki status"], ["wiki", "active", "wiki status"], ["bag", "pin", "wiki pin"], ["bag", "unpin", "wiki pin"], ["bag", "stats", "wiki status"]]) {
+    for (const [door, verb, destination] of [["wiki", "unpin", "wiki pin"], ["wiki", "hold", "wiki pin"], ["wiki", "release", "wiki pin"], ["wiki", "open", "wiki switch"], ["wiki", "list", "wiki status"], ["wiki", "active", "wiki status"], ["bag", "pin", "wiki pin"], ["bag", "unpin", "wiki pin"], ["bag", "stats", "wiki status"]] as const) {
       const r = await run([door, verb, "x", "--face", "1", "--no-json"]);
       expect(r.code).toBe(2);
       expect(r.err).toContain(destination);

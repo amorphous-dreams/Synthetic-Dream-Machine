@@ -264,7 +264,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
   }
   const relationToPetname = Object.fromEntries(Object.entries(relations).map(([pet, rel]) => [rel, pet]));
   const reading = { schema: CENSUS_SCHEMA, label, faces, face: {}, house: {}, allowed: { relations, kahuaCids } };
-  const wikis = read(lares, ["wiki", "list", "--json"]).wikis ?? [];
+  const wikis = read(lares, ["wiki", "status", "--json"]).catalog?.wikis ?? [];
   if (mounted) {
     const pet = mounted.face.petname ?? `h${mounted.face.handleIndex}`;
     const classes = { memes: {}, unread: {}, index: {}, plain: {}, kahua: {}, kapae: {} };

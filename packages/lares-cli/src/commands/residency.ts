@@ -31,7 +31,7 @@ export async function cmdPin(args: ParsedArgs): Promise<number> {
   const url    = args.positional[0];
   const reason = args.options["reason"];
   if (!url) {
-    console.error("usage: lares pin <bag-url> [--reason <text>]");
+    console.error("usage: lares wiki pin <bag-url> --bag [--reason <text>]");
     return 2;
   }
   return await runResidencyCommand("pin", { url, ...(reason && { reason }) });
@@ -40,7 +40,7 @@ export async function cmdPin(args: ParsedArgs): Promise<number> {
 export async function cmdUnpin(args: ParsedArgs): Promise<number> {
   const url = args.positional[0];
   if (!url) {
-    console.error("usage: lares unpin <bag-url>");
+    console.error("usage: lares wiki pin <bag-url> --bag --release");
     return 2;
   }
   return await runResidencyCommand("unpin", { url });

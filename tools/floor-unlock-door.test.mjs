@@ -61,14 +61,14 @@ test("the floor stands over the marker's user wiki and lives; the unlock mounts 
     const first = await unlockTestCustody(root);
     assert.equal(first?.reading, "opens", JSON.stringify(first));
     ok("wiki", "init", WIKI);
-    ok("wiki", "open", WIKI);
+    ok("wiki", "switch", WIKI, "--next-boot");
     ok("vessel", "stop", "--port", String(port));
 
     // F1: a fresh boot holds no key, so it stands at the floor, and the process lives.
     stand();
     const atFloor = door();
     assert.equal(atFloor?.unlocked, false, `the vessel stands at the floor: ${JSON.stringify(atFloor)}`);
-    assert.doesNotMatch(lares("wiki", "active").out, new RegExp(WIKI), "the floor mounts not the marker's wiki");
+    assert.doesNotMatch(lares("wiki", "status").out, new RegExp(WIKI), "the floor mounts not the marker's wiki");
     assert.equal(atFloor?.standing, "herm", JSON.stringify(atFloor));
     assert.ok(atFloor?.wikiAwaits == null, `the herm names no wiki: ${JSON.stringify(atFloor)}`);
 
@@ -77,7 +77,7 @@ test("the floor stands over the marker's user wiki and lives; the unlock mounts 
     assert.equal(opened?.reading, "opens", JSON.stringify(opened));
     assert.equal(opened?.held, true, `the sovereign composition stood: ${JSON.stringify(opened)}`);
     assert.equal(opened?.standing, "hearth", JSON.stringify(opened));
-    const active = ok("wiki", "active");
+    const active = ok("wiki", "status");
     assert.match(active, new RegExp(WIKI), `the unlock mounts the waiting wiki:\n${active}`);
     const after = door();
     assert.equal(after?.unlocked, true, JSON.stringify(after));

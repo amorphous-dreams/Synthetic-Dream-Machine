@@ -105,17 +105,17 @@ json_verb() {
 # slugs it runs; a freshly founded vessel runs exactly one).
 wiki_slug() {
   if [ -n "${BROWSER_CI_WIKI:-}" ]; then printf '%s\n' "$BROWSER_CI_WIKI"; return; fi
-  slug=$(lares wiki active | awk '/^active wikis/ {on=1; next} /rotatable pin budget/ {on=0} on && NF {print $NF; exit}')
+  slug=$(lares wiki status --json | node -e 'let s=""; process.stdin.on("data", c => s+=c); process.stdin.on("end", () => { const a=JSON.parse(s).data?.activation?.active ?? []; console.log(typeof a[0] === "string" ? a[0] : a[0]?.slug ?? ""); });')
   [ -n "$slug" ] || die "the node runs no wiki; run up first"
   printf '%s\n' "$slug"
 }
 
 walk_document_preflight() {
   slug=$(wiki_slug)
-  wikis=$(lares wiki list --json) || die "WIKI_DOC_MISSING: cannot read the registered document for $slug; run wiki init for that wiki before starting the walk"
+  wikis=$(lares wiki status --json) || die "WIKI_DOC_MISSING: cannot read the registered document for $slug; run wiki init for that wiki before starting the walk"
   INFO_SLUG=$slug INFO_WIKIS=$wikis node -e '
     const e = process.env;
-    const wikis = JSON.parse(e.INFO_WIKIS).data?.wikis ?? [];
+    const wikis = JSON.parse(e.INFO_WIKIS).data?.catalog?.wikis ?? [];
     const mine = wikis.filter((wiki) => wiki.slug === e.INFO_SLUG);
     const mounted = mine.find((wiki) => wiki.kind === "system") ?? mine.find((wiki) => wiki.kind === "user");
     if (!mounted || typeof mounted.automergeUrl !== "string" || !/^automerge:.+$/.test(mounted.automergeUrl)) {
@@ -218,14 +218,14 @@ case "$verb" in
         # WHERE THIS LANDS: `wiki add-bag` writes the NODE's own composition (its catalog recipe), which shadows a
         # system wiki's default (oracle) recipe for the node's mount, its live watch and `get --recipe` alike. A
         # catalog never crosses, so an admitted leaf still mounts the default recipe.
-        wikis=$(lares wiki list --json)
+        wikis=$(lares wiki status --json)
         if printf '%s' "$wikis" | node -e '
           let input = "";
           process.stdin.setEncoding("utf8");
           process.stdin.on("data", (chunk) => input += chunk);
           process.stdin.on("end", () => {
             const reply = JSON.parse(input);
-            const wikis = reply.data?.wikis;
+            const wikis = reply.data?.catalog?.wikis;
             process.exit(Array.isArray(wikis) && wikis.some((wiki) => wiki.slug === process.argv[1] && wiki.kind === "system") ? 0 : 1);
           });' "$slug"; then
           printf '%s\n' "browser-ci: note: $slug is a [system] wiki; this verb writes the node's own recipe (its catalog), which the node's mount and \`get --recipe\` read, and which no leaf receives. An admitted leaf mounts the default recipe (oracle lararium lares): ingest into a bag that recipe stacks (the default lar:///ha.ka.ba/bags/lares) to reach a leaf (see info: recipe.leafReadsDefaultRecipe)" >&2
@@ -257,9 +257,9 @@ case "$verb" in
     # crossroads prints a `[herm]   gate key:` line too; the read names the hearth's line alone, and the last boot.
     gate=$(compose logs --no-color lares 2>/dev/null | sed -n 's/^.*\[lararium\] gate key: \([0-9a-f]\{64\}\)[[:space:]]*$/\1/p' | tail -n 1)
     [ -n "$gate" ] || die "the node's log names no [lararium] gate key; run up first"
-    bags=$(lares bag stats | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p')
+    bags=$(lares wiki status --json | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{const r=JSON.parse(s).data?.residency ?? {}; console.log([...(r.pinned ?? []), ...(r.wela ?? []).map(x=>x.url)].join("\n"));});')
     # Every document the catalog and oracle plane register is data in the JSON wiki list.
-    wikis=$(lares wiki list --json)
+    wikis=$(lares wiki status --json)
     # The recipe's bag stack, in order. No read-only verb names it; `wiki pin` walks it (and re-asserts the stowage of
     # those same bags, which a mounted wiki wants held anyway). A wiki without a catalog recipe yet answers no stack.
     stack=$(lares wiki pin "$slug" 2>/dev/null | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p' || true)
@@ -272,7 +272,7 @@ case "$verb" in
       const host = "http://127.0.0.1:" + e.INFO_PORT;
       const ws = (o) => o.replace(/^http/, "ws") + "/ws";
       const reply = JSON.parse(e.INFO_WIKIS);
-      const docs = (reply.data?.wikis ?? []).filter((wiki) =>
+      const docs = (reply.data?.catalog?.wikis ?? []).filter((wiki) =>
         typeof wiki.slug === "string" && typeof wiki.uri === "string" && typeof wiki.kind === "string" &&
         typeof wiki.automergeUrl === "string" && /^automerge:.+$/.test(wiki.automergeUrl)).map((wiki) => ({
           slug: wiki.slug, kind: wiki.kind, bag: wiki.uri, doc: wiki.automergeUrl,

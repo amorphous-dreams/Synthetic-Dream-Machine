@@ -134,7 +134,7 @@ def test_every_tiddler_tool_refuses_a_missing_container_before_the_wire(daemon):
     t = _tools()
     for call in (lambda: t["wiki_filter"](filter="[tag[x]]"), lambda: t["tiddler_get"](title="T"),
                  lambda: t["wiki_render"](title="T"), lambda: t["tiddler_put"](title="T", fields={"a": "b"}),
-                 lambda: t["tiddler_delete"](title="T"), lambda: t["wiki_status"](),
+                 lambda: t["tiddler_delete"](title="T"),
                  lambda: t["tiddler_get"](title="T", recipe="default", bag="lares"),
                  lambda: t["wiki_filter"](filter="[tag[x]]", recipe=None)):
         with pytest.raises(ValueError, match="no-container"):
@@ -247,6 +247,6 @@ def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon
         assert "bag" not in inspect.signature(t[name]).parameters, name
     with pytest.raises(TypeError):
         t["wiki_filter"](filter="[tag[x]]", bag="lares")
-    with pytest.raises(ValueError, match="tiddler_get\\(bag"):
-        t["wiki_status"]()
-    assert len(daemon.lines) == 1
+    overview = t["wiki_status"]()
+    assert set(overview) == {"catalog", "activation", "residency"}
+    assert [line["verb"] for line in daemon.lines[-3:]] == ["list-wikis", "wiki-active", "residency"]

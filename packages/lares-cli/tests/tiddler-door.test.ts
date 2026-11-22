@@ -175,6 +175,37 @@ describe("a bag names one store and no wiki", () => {
   });
 });
 
+describe("wiki residency and switch wire", () => {
+  test.each([
+    [{}, "pin-wiki", { slug: "works" }],
+    [{ release: true }, "unpin-wiki", { slug: "works" }],
+    [{ bag: true }, "pin", { url: "works" }],
+    [{ bag: true, release: true }, "unpin", { url: "works" }],
+    [{ rotate: true }, "wiki-hold", { slug: "works" }],
+    [{ rotate: true, release: true }, "wiki-release", { slug: "works" }],
+  ])("pin flags %j send %s", async (flags, verb, wireArgs) => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    await cmdWiki(argv("wiki", ["pin", "works"], {}, flags));
+    expect(h.calls).toEqual([{ verb, args: wireArgs }]);
+    vi.restoreAllMocks();
+  });
+  test.each([[{}, "wiki-switch", { slug: "works", remount: true }],
+    [{ "next-boot": true }, "open-wiki", { slug: "works" }]])(
+    "switch flags %j send %s", async (flags, verb, wireArgs) => {
+      vi.spyOn(console, "log").mockImplementation(() => {});
+      await cmdWiki(argv("wiki", ["switch", "works"], {}, flags));
+      expect(h.calls).toEqual([{ verb, args: wireArgs }]);
+      vi.restoreAllMocks();
+    });
+  test("status surveys the vessel or reads the named engine", async () => {
+    await run(argv("wiki", ["status"]));
+    expect(h.calls).toEqual(["list-wikis", "wiki-active", "residency"].map(verb => ({ verb, args: {} })));
+    h.calls.length = 0;
+    await run(argv("wiki", ["status"], { recipe: "works" }));
+    expect(h.calls).toEqual([{ verb: "wiki-status", args: { recipe: "works" } }]);
+  });
+});
+
 describe("the exit classes a receipt maps to", () => {
   test("an absent tiddler exits not-found; a stale base and an existing title exit conflict; a family delete carries its refusal name", async () => {
     h.reply = { recipe: "default", title: "T", tiddler: null };

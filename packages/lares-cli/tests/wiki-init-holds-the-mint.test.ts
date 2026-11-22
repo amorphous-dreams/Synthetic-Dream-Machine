@@ -40,7 +40,7 @@ test("a full budget holds nothing, names the budget and the verb that frees a ho
   expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
   expect(sent).not.toContain("wiki-hold");
   expect(text).toMatch(/3\/3/);
-  expect(text).toContain("lares wiki release");
+  expect(text).toContain("lares wiki pin <slug> --rotate --release");
   expect(text).toContain("fresh");
 });
 
