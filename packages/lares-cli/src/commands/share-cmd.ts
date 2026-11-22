@@ -204,7 +204,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     if (applied !== null) {
       const carried = Number(applied["carried"] ?? 0), pending = Number(applied["pending"] ?? 0);
       doors.out(`  landed: ${Number(applied["granted"] ?? 0)} grant(s)`
-        + (carried > 0 ? `; ${carried} of them reach the grantee's catalog when the daemon mount next runs under that face (\`lares vault unlock --face N\`)` : "")
+        + (carried > 0 ? `; ${carried} of them reach the grantee's catalog at that face's next wear (\`lares wear N\`, or \`lares vault unlock --face N\`), which lifts them` : "")
         + (pending > 0 ? `; ${pending} wait for a shut face (\`lares vault unlock --face N\`, then share again)` : ""));
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         doors.out(`  workbench: wiki ${String(w["slug"])} rides realm ${String(w["realmId"]).slice(0, 12)}… (${Number(w["members"] ?? 0)} member face(s)${w["founded"] === true ? ", founded now" : ""})`);
