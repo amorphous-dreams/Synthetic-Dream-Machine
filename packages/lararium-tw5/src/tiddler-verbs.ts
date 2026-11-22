@@ -74,7 +74,7 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
 import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
-import { READ_PAGE_BYTES, byteLength, cardBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type GrainEcho, type ReadGrain } from "./read-gradient.js";
+import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
@@ -654,7 +654,7 @@ async function memeAnswer(
   const meme = await readMeme(root, sink);
   if (meme === null) return { ...from.answered, title: root, lens: "meme", tiddler: null };
   const read = memeGradient(meme, { grain: asked, after: optionalStringArg(args, "after"), slot });
-  const base = cardBase(meme.canonicalHash, read.grain.applied === "skinny");
+  const base = memeBase(meme.canonicalHash, read);
   const measures = [param("type", CARRIER_TYPE), param("position", "root"), param("slots", read.slots.length), param("bytes", read.bytes), param("base", base)];
   const rootLine = hasLine(root, [...provenanceParams(from), ...tagTokens(rootFields["tags"]), ...measures], rootFields["description"] ?? rootFields["role"]);
   const lines = read.grain.applied === "skinny" ? [rootLine, ...slotHasLines(read.slots)] : [rootLine];

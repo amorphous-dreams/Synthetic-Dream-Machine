@@ -1273,7 +1273,9 @@ def build_mcp(coordinator: LaresCoordinator):
         each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null. `fields=[…]` answers the
         named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). AN
         ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses
-        `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A
+        `base-from-skinny`, so read fat (`grain="fat"`, a meme `grain="whole"`) before you rewrite a text. A slot answer, or a
+        page short of the end, hands a partial base (`partial:…`): a slot patch takes it, a whole-carrier write refuses
+        `base-from-partial`; the last page hands the bare base. A
         RENDERED TIDDLER answers whole here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`,
         or the source's `render-title`) whose `rendered-from` names the source. CONTAINER LAW: exactly one of `recipe` /
         `bag`. `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches, answered in

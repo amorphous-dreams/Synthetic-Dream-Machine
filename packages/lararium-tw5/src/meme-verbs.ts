@@ -83,7 +83,7 @@ import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
-import { cardBase, grainOf, memeGradient, readBase } from "./read-gradient.js";
+import { grainOf, memeBase, memeGradient, readBase } from "./read-gradient.js";
 import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
 import type { TiddlerFields } from "./deserializer.js";
 
@@ -571,7 +571,7 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
       uri: target.uri,
       meme: {
         ...(read.text !== undefined ? { text: read.text } : {}),
-        canonicalHash: cardBase(meme.canonicalHash, read.grain.applied === "skinny"), bytes: read.bytes, grain: read.grain, slots: read.slots,
+        canonicalHash: memeBase(meme.canonicalHash, read), bytes: read.bytes, grain: read.grain, slots: read.slots,
         ...(read.page ? { page: read.page } : {}), next: read.next,
       },
       ...(floor ? { floor: true } : {}),
@@ -610,7 +610,7 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     const append = typeof args["append"] === "string" ? args["append"] : null;
     const replace = typeof args["replace"] === "string" ? args["replace"] : null;
     if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
-    const base = readBase(optionalStringArg(args, "base"), "meme-patch", true);
+    const base = readBase(optionalStringArg(args, "base"), "meme-patch", true, true);
     if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`tiddler get --meme\` answers for ${target.uri}.`);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink } = await resolveRead(opts, target, origin, ctx.cap);

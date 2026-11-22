@@ -1103,7 +1103,7 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     const pages = [first.meme.text!];
     for (let page = first; page.meme.next?.after; ) {
       page = await get(r, { grain: "whole", after: page.meme.next.after });
-      expect(page.meme.canonicalHash).toBe(first.meme.canonicalHash);
+      expect(page.meme.canonicalHash.replace(/^partial:/, "")).toBe(first.meme.canonicalHash.replace(/^partial:/, ""));
       expect(page.meme.text!.startsWith("<<~ ahu slot=")).toBe(true);
       pages.push(page.meme.text!);
     }
@@ -1140,6 +1140,14 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     // CONTROL: the whole carrier's base authorizes the write.
     const whole = await get(r, { grain: "whole" });
     expect(whole.meme.canonicalHash).not.toMatch(/^skinny:/);
+  });
+
+  test("RED partial-base: a meme put refuses a partial base (one page, one slot) by name; a slot patch takes it", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" });
+    expect(first.meme.canonicalHash).toMatch(/^partial:/);
+    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 1]]), base: first.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
+    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: first.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
   });
 
   test("RED M1: a stay-home title answers no read through the internal meme-get either (`tiddler-withheld`)", async () => {

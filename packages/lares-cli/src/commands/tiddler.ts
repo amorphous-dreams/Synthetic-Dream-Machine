@@ -155,7 +155,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
   // A JOINED READ ECHOES THE JOIN, never the first page's `page 1 of N`.
   const joinedGrain = followed && grain ? { ...grain, why: `the whole carrier, ${parts.length} pages joined on slot boundaries` } : grain;
   const data0 = followed && meme
-    ? { ...first.output, meme: (({ page: _page, ...whole }) => ({ ...whole, text: parts.join("") }))(meme), grain: joinedGrain, next: null }
+    ? { ...first.output, has: output["has"], meme: (({ page: _page, ...whole }) => ({ ...whole, text: parts.join("") }))(meme), grain: joinedGrain, next: null }
     : output;
   // ── THE COMPOSITION READING, WHERE A HUMAN WAITS ON A CARRIER ─────────────────────────────────────────
   // The whole carrier the meme lens answers is the composed one: the join a root and its slot children make. That join is where

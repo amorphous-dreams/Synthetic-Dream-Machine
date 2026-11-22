@@ -343,6 +343,21 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 05", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
   });
 
+  test("RED partial-base: a slot answer and a page short of the end hand a partial base, which no meme put takes; the last page and the whole hand the bare base", async () => {
+    const r = await rig();
+    const big = (x: string): string => `body of ${x} ${"lorem ".repeat(5_000)}`;
+    const text = memeText(["a", "b", "c"]).replace(/body of (\w)/g, (_m, x: string) => big(x));
+    expect((await placeMeme({ uri: MEME, text }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    const slot = await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx());
+    expect((slot["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^partial:/);
+    const first = await get({ ...A, title: MEME, meme: true, grain: "whole" }, ctx());
+    expect((first["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^partial:/);
+    let page = first;
+    while ((page["next"] as { after?: string } | null)?.after) page = await get({ ...A, title: MEME, meme: true, grain: "whole", after: (page["next"] as { after: string }).after }, ctx());
+    expect((page["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^sha256/);
+  });
+
   test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });

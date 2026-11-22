@@ -56,12 +56,30 @@ export const CARD_BASE_PREFIX = "skinny:";
 /** A base as an answer hands it: marked as the card's where the text stayed home. */
 export const cardBase = (hash: string, card: boolean): string => (card ? `${CARD_BASE_PREFIX}${hash}` : hash);
 
+/** The mark a base carries where the answer carried PART of the carrier: one slot, or a page short of the end. */
+export const PARTIAL_BASE_PREFIX = "partial:";
+
+/** A meme answer's base: the card's where the carrier stayed home, partial where one slot or a page short of the end rode, else bare. */
+export function memeBase(hash: string, read: { readonly grain: { readonly applied: ReadGrain }; readonly next: { readonly after?: string } | null }): string {
+  if (read.grain.applied === "skinny") return `${CARD_BASE_PREFIX}${hash}`;
+  if (read.grain.applied === "slot" || (read.grain.applied === "whole" && read.next?.after)) return `${PARTIAL_BASE_PREFIX}${hash}`;
+  return hash;
+}
+
 /**
  * READ-MODIFY-WRITE STAYS SAFE ON THE GRADIENT. A base a skinny answer handed out names a record whose text the reader never saw,
  * so a write that moves text against it refuses `base-from-skinny` and names the read that carries the text (`--all`); a write
  * that moves no text (a field patch, a delete) reads the bare hash. Answers the hash to compare, or null where no base rides.
  */
-export function readBase(raw: string | null, verb: string, writesText: boolean): string | null {
+export function readBase(raw: string | null, verb: string, writesText: boolean, acceptsPartial = false): string | null {
+  if (raw !== null && raw.startsWith(PARTIAL_BASE_PREFIX)) {
+    // A PARTIAL BASE (one slot, or a page short of the end) names a carrier the reader saw only in part: a slot patch takes it,
+    // since it edits the part it read; a write of the whole carrier refuses it. The last page of a paged read hands the bare base.
+    if (writesText && !acceptsPartial) {
+      throw new VerbRefusal("base-from-partial", `base-from-partial: ${verb} writes the whole carrier, and this base came from an answer that carried part of it (one slot, or a page short of the end); read it whole (\`lares tiddler get <uri> --meme --all\`, or MCP grain="whole" to the last page) and write against that base. Nothing moved.`);
+    }
+    return raw.slice(PARTIAL_BASE_PREFIX.length);
+  }
   if (raw === null || !raw.startsWith(CARD_BASE_PREFIX)) return raw;
   if (writesText) {
     throw new VerbRefusal("base-from-skinny", `base-from-skinny: ${verb} moves text, and this base came from an answer that left the text home (a skinny card or a has-stack); read the text first (\`lares tiddler get <title> --all\`, \`--meme --all\` for a meme; MCP grain="fat" or "whole") and write against that base. Nothing moved.`);
