@@ -18,6 +18,10 @@
  * answers. The block reads into every session's context, so it also prints each title only as one `lar:` address within a
  * byte cap, caps the pins it shows, and says that its rows read as data.
  *
+ * WHO IS HOME. Beside the law rides the hearth roster (`rosterArgv`, the shim's `vessel roster --json`): the worn face and who
+ * holds it, the seats here by presence and far by last signed act, the lanes and the open vota, framed by provenance and weight
+ * (`ROSTER_WEIGHT_LINE`) and capped; a vessel that answers no "up" skips it with the other memory reads.
+ *
  * ONE BUDGET. The harness bounds a hook (`hooks/hooks.json`, 15 seconds), and past that bound it discards the hook's
  * whole answer. So the three reads start together and share one budget that closes inside the harness's bound: a read
  * still open then stops and reports itself by name, and the wake carries what the other reads answered. The budget
@@ -343,6 +347,75 @@ export function lawLines(result, pinsResult = null) {
   return renderLaw(answer, pins);
 }
 
+/**
+ * THE HEARTH ROSTER (lar:///ha.ka.ba/lararium/mesh/hearth-roster): who is home, read through the shim's `vessel roster --json`,
+ * which the vessel's verb channel answers itself. The block reads the rotation first (the operator reads it first), then the
+ * seats in their two grains, the lanes and the open vota, within a byte cap; a vessel that answers no "up" skips it quietly.
+ */
+export const ROSTER_BYTES = 2048;
+export const ROSTER_ROWS = 8;
+export const rosterArgv = () => ["vessel", "roster", "--json"];
+const ROSTER_FURTHER = "read it whole: vessel_roster() or lares vessel roster";
+/** The line that frames the rows by provenance and weight: the vessel's own live reading, turned through the five tools. */
+export const ROSTER_WEIGHT_LINE =
+  "these rows come from this vessel's own live reading: a seat here stands by the kernel's hold on its socket, a far seat by its signature on the face intent plane; " +
+  "turn them through the five tools (🜁 verify a claim before you lean on it, 🜄 weigh who stands with whom against the live work) and hold the operator's seat as an equal; operator and node hold the frame together";
+const TOKEN = /^[a-z0-9][a-z0-9:._-]{0,63}$/;
+const tok = (v) => (typeof v === "string" && TOKEN.test(v) ? v : "?");
+const hexOf = (v, n = 12) => (typeof v === "string" && /^[0-9a-f]+$/.test(v) ? v.slice(0, n) : "?");
+const seatId = (v) => (typeof v === "string" && /^(s-[0-9a-z]{1,8}|[0-9a-f]{1,12})$/.test(v) ? v : "?");
+const face = (v) => (Number.isSafeInteger(v) && v >= 0 ? `h${v}` : "h?");
+const kindOf = (s) => (s?.kind === "ai" ? `an AI seat (${tok(s.hand)})` : `a hand (${tok(s.hand)})`);
+const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+/** One roster row's line, either grain, in plain words. */
+function rosterSeatLine(s) {
+  if (s?.grain === "local") return `${seatId(s.seat)}  ${face(s.face)}  ${kindOf(s)}, here by presence`;
+  const heard = (Array.isArray(s?.lastHeard) ? s.lastHeard : []).map((t) => `${tok(t?.entry)} ${hexOf(t?.cid)}`).join(", ") || "no act";
+  return `${seatId(s?.seat)}  ${face(s?.face)}  ${s?.self ? "this vessel's own atom, " : ""}last heard at ${heard} (${tok(s?.standing)})`;
+}
+
+/** The roster block from the shim's JSON answer: count line, weight line, rotation, rows within the cap, the gap, and where to read on. */
+export function renderRoster(answer, cap = ROSTER_BYTES) {
+  const r = answer?.data ?? {};
+  const counts = r.counts ?? {};
+  const seats = Array.isArray(r.seats) ? r.seats : [];
+  const rot = r.rotation ?? {};
+  const byId = (id) => { const s = seats.find((x) => x?.seat === id); return s ? `${seatId(id)} (${kindOf(s)})` : seatId(id); };
+  const worn = Number.isSafeInteger(rot.worn) ? `this vessel wears ${face(rot.worn)}` : "this vessel wears no face (it stands at its floor)";
+  const holders = Array.isArray(rot.holders) ? rot.holders : [];
+  const held = !Number.isSafeInteger(rot.worn) ? "" : holders.length > 0 ? `, held by ${holders.map(byId).join(" and ")}` : ", and no session holds it now";
+  const other = (Array.isArray(rot.underOther) ? rot.underOther : []).map((o) => `; ${seatId(o?.seat)} acts under ${face(o?.face)}`).join("");
+  const rows = [
+    ...seats.map((s) => `${s?.grain === "local" ? "here" : "far "}  ${rosterSeatLine(s)}`),
+    ...(Array.isArray(r.lanes) ? r.lanes : []).map((l) => `lane  ${face(l?.face)} ${tok(l?.verb)} (intent ${hexOf(l?.intent)}): claimed by ${hexOf(l?.claimant)}`),
+    ...(Array.isArray(r.vota) ? r.vota : []).map((v) => `votum ${face(v?.face)} ${tok(v?.verb)} (intent ${hexOf(v?.intent)}): waits on ${v?.waitsOn === "answer" ? "an answer" : v?.waitsOn === "frontier" ? "a frontier this vessel does not hold" : `an outcome, ${v?.owedBy ? `owed by ${hexOf(v.owedBy)}` : "unclaimed"}`}`),
+    ...(Array.isArray(r.unread) ? r.unread : []).map((u) => `unread ${face(u?.face)}'s intent plane (${tok(u?.reason)})`),
+  ];
+  const lines = [];
+  let size = 0;
+  for (const row of rows) {
+    if (lines.length >= ROSTER_ROWS || size + bytes(row) + 1 > cap) break;
+    lines.push(row);
+    size += bytes(row) + 1;
+  }
+  const cut = lines.length < rows.length ? [`cut at the wake's cap after ${lines.length} of ${rows.length} rows`] : [];
+  return [
+    `Lares hearth (who is home): ${count(Number(counts.local ?? 0), "seat", "seats")} here · ${Number(counts.far ?? 0)} heard from afar · ${count(Number(counts.lanes ?? 0), "lane", "lanes")} · ${count(Number(counts.vota ?? 0), "open votum", "open vota")}`,
+    ROSTER_WEIGHT_LINE,
+    `rotation: ${worn}${held}${other}`,
+    ...lines, ...cut,
+    "seats here stand by presence; far seats read only by last signed act (no global now, so nobody far reads online); lanes read the intent plane's claims alone (no leap or road-meme claim store stands)",
+    ROSTER_FURTHER,
+  ].join("\n");
+}
+
+/** The roster read's lines: the block where the vessel answered, else one line naming the cause. */
+export function rosterLines(result) {
+  const { fault, answer } = filterAnswer(result);
+  return fault ? `Lares hearth (who is home) unread: ${fault}; ${ROSTER_FURTHER}` : renderRoster(answer);
+}
+
 /** The refusal a locked vessel answers, in the words a session reads: it calls the operator at once. */
 export const LOCKED_LINE = "vessel locked: tell the operator now (the harness's push notification) to run `lares vault unlock`; tool calls answer `vessel-locked` until it opens";
 
@@ -509,6 +582,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const stateRead = optional("state", stateArgv());
   const lawRead = optional("law", lawArgv());
   const lawPinsRead = optional("lawPins", lawPinsArgv());
+  const rosterRead = optional("roster", rosterArgv());
   const gitRead = optional("git", gitArgv());
   const halvesRead = optional("halves", halvesArgv());
   const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
@@ -516,10 +590,11 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, stateRead, lawRead, lawPinsRead, rosterRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
   const state = stateRead && seen.up ? await budget.settle(stateRead) : null;
   const law = lawRead && seen.up ? await budget.settle(lawRead) : null;
   const lawPins = lawPinsRead && seen.up ? await budget.settle(lawPinsRead) : null;
+  const roster = rosterRead && seen.up ? await budget.settle(rosterRead) : null;
   const index = seen.up ? await budget.settle(reads.index) : null;
   const leiAnswers = {};
   const checkout = gitRead && seen.up ? checkoutOf(await budget.settle(gitRead)) : null;
@@ -542,6 +617,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   ];
   if (state !== null) lines.push(stateLines(state));
   if (law !== null) lines.push(lawLines(law, lawPins));
+  if (roster !== null) lines.push(rosterLines(roster));
   lines.push(seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)");
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }

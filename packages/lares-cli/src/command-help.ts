@@ -515,7 +515,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
-    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|census|fresher|floor|rite> [flags]",
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|roster|census|fresher|floor|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
@@ -527,6 +527,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
       "lares vessel read --palaces             # health, plus the palace-organ table",
+      "lares vessel roster                     # who is home: the worn face, the seats here and far, the lanes, the open vota",
       "lares vessel lay --apply --yes          # lay every holding (idempotent)",
       "lares vessel lay --apply --verbose      # keep full CREATE detail",
       "lares vessel fresher --bag sdm          # each working copy's base hash beside the canon hash standing now",
@@ -544,6 +545,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --init         found a vessel where the root holds none — writes LAR_ROOT alone; the operator's homes ride `lares home`, the mempalace sidecar `mempalace install`",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
+      "roster --json        the roster whole: {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts}, the body the MCP seat's vessel_roster answers",
       "read --json          the reading as one JSON object (every lens; `read vessel` names each document); a pipe reads the terminal's prose",
       "census --docs        every document the stores hold: its class (current · duplicate · orphan · last-version · sealed-unread), who names it, the unnamed list; removes nothing; --json the full rows",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",

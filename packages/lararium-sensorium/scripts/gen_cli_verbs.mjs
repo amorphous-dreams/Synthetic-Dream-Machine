@@ -95,6 +95,9 @@ const CLI_FORMS = {
   law_index:      "law list",
   law_pin:        "law pin",
   law_unpin:      "law unpin",
+  // THE HEARTH ROSTER — who is home, offered beside the law. The tool mirrors `lares vessel roster` (a `vessel` sub-door: the
+  // top-level list holds its one screen); both ride the one `hearth-roster` verb the vessel's channel answers itself.
+  vessel_roster:  "vessel roster",
   // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
   // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
   // holds no MCP tool, the way `kahua lift` holds none.

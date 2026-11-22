@@ -48,7 +48,7 @@ export function proseFirst(args: ParsedArgs): ParsedArgs {
  * The reads that answer a pipe in prose (`proseFirst`), as `<command> <sub>` the way an operator types them. A caller that
  * parses one of them names `--json`; `tests/quiet-pipe-parse-sites.test.ts` holds every parse site in the tree to it.
  */
-export const PROSE_FIRST_READS: readonly string[] = ["vault status", "vault unlock", "vessel read", "wear", "ddate", "law list"];
+export const PROSE_FIRST_READS: readonly string[] = ["vault status", "vault unlock", "vessel read", "wear", "ddate", "law list", "vessel roster"];
 
 /**
  * A failure an agent can branch on: a STABLE class `code`, a human `message`,

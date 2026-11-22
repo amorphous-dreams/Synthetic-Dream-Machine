@@ -81,6 +81,7 @@ export * from "./intent-entry.js";
 export * from "./intent-verbs.js";
 export * from "./intent-read.js";
 export * from "./intent-view.js";
+export * from "./hearth-roster.js";
 export * from "./intent-issue.js";
 export * from "./ward-cosign.js";
 export * from "./ward-cosign-gate.js";

@@ -40,6 +40,7 @@
 
 import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { peerSeatOf } from "./uds-peer.js";
+import { HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlaneReading } from "./hearth-roster-read.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
@@ -69,6 +70,11 @@ import type { SessionSignBook } from "./session-sign-door.js";
 
 export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
+  /**
+   * THE HEARTH ROSTER'S PLANE READ (`hearth-roster`): each named face's intent plane as the roster reads it (far seats, lanes,
+   * vota), and each face whose plane did not read with its cause. Absent: no plane reads, and the roster names each face unread.
+   */
+  readonly hearthPlanes?: (faces: readonly number[]) => Promise<HearthPlaneReading>;
   /** THE WORN FACE's ordinal (the mounted face), or null at the floor: an AI seat naming no face acts as it, and where no lent set reads, as it alone (`seat-hand`). */
   readonly mountOrdinal?: () => number | null;
   /** THE LENT SET: the faces the holder names open (under a pūlama, the set it lends). An AI seat names a face inside it (`seat-hand`). */
@@ -1501,6 +1507,23 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const answerUnknown = (requestId: string) => { respond({ status: "unknown", requestId }); };
       if (parsed && typeof parsed === "object" && (parsed as { op?: unknown }).op === "session:open") {
         queueSession(parsed, sock);
+        return;
+      }
+      // THE HEARTH ROSTER READS WHAT THIS CHANNEL HOLDS (`hearth-roster-read`): the sessions bound on this socket, the worn slot
+      // and the worn faces' intent planes. A read, so it never reaches `placeVerb` and writes no fact, and it answers a locked
+      // vessel too: the sessions stand whatever custody holds, and a plane that cannot read says why.
+      if (sessionRequestId === undefined && (parsed as { verb?: unknown } | null)?.verb === HEARTH_ROSTER_VERB) {
+        const asked = (parsed as { requestId?: unknown }).requestId;
+        const requestId = typeof asked === "string" && asked !== "" ? asked : newRequestId();
+        arbitrating += 1;
+        void (async () => {
+          const asker = seatKindOf(parsed) !== null || await peerSeatOf(sock) === "ai" ? "seat" as const : "hand" as const;
+          const local = [...sessionSockets.values()].flatMap((state) => state.sessionId && state.supply && state.hand && state.anchor
+            ? [{ session: state.sessionId, face: state.supply.ordinal, hand: state.hand, anchor: state.anchor.kind }] : []);
+          const output = await hearthRosterOf({ worn: mountOf(), lit: opts.litOrdinals?.() ?? [], lent: await lentOf(), local, asker, ...(opts.hearthPlanes ? { planes: opts.hearthPlanes } : {}) });
+          respond({ status: "done", requestId, results: { summary: { ok: true, output } } });
+        })().catch((err: unknown) => fail(err instanceof Error ? err.message : String(err)))
+          .finally(() => { arbitrating -= 1; if (idle()) drained?.(); });
         return;
       }
       // A LOCKED VESSEL FAILS CLOSED, AND A FACELESS PLACE HOLDS NO CONTROL DOCUMENT: with the control document unread (the

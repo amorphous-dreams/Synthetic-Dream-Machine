@@ -87,6 +87,7 @@
     "law_index",
     "law_pin",
     "law_unpin",
+    "vessel_roster",
     "meme_offer",
     "meme_offer_list",
     "meme_offer_show",
@@ -137,6 +138,7 @@
     "law_index": "law list",
     "law_pin": "law pin",
     "law_unpin": "law unpin",
+    "vessel_roster": "vessel roster",
     "meme_offer": "meme offer",
     "meme_offer_list": "meme offer list",
     "meme_offer_show": "meme offer show",
@@ -162,6 +164,7 @@
     "oracle",
     "sense",
     "tiddler",
+    "vessel",
     "wiki"
   ],
   "not_yet_mirrored": [
@@ -171,7 +174,6 @@
     "lei",
     "rite",
     "intent-relay",
-    "vessel",
     "herm",
     "host",
     "walk",
