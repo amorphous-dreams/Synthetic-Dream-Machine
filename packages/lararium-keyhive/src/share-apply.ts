@@ -200,13 +200,29 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     const row = rows.find((r) => r.kind === "wiki" && shareEntryBag(r) === bag);
     return row && isHouseCanonBag(bag) ? recipeUri("catalog", row.slug) : null;
   };
+  /**
+   * A NAMED OWNER, while the vessel's ledger binds no workbench for the wiki: the face the row names as its owner, else the face
+   * whose open catalog half minted the canon's row (a hand-over carries the recipe row alone, so no grantee ever holds the
+   * canon's), else, where neither stands, a face the row names neither reader nor writer (the lander of a wiki no face stood).
+   * A grantee whose own wear lifted the recipe row never reads as the owner here: it hands the row nowhere and founds nothing.
+   */
+  const namedHouseOwner = (bag: string, face: number): boolean => {
+    const named = namedOwner(bag);
+    if (named !== undefined) return named === face;
+    const minter = deps.faces.find((f) => rowIn(halves.get(f.handleIndex)?.doc(), bag) !== undefined);
+    if (minter !== undefined) return minter.handleIndex === face;
+    const answer = resolveShare({ bag, rows, faces: deps.faces });
+    return !answer.read.includes(face) && !answer.write.includes(face);
+  };
   // THE FACE THAT STOOD THE WIKI holds its recipe row: where the vessel's ledger binds the wiki's workbench under a face, that
-  // face alone hands the row on, so a grantee whose own wear lifted the row never hands it back to the owner or onward.
+  // face alone hands the row on; while it binds none, only a named owner does (`namedHouseOwner`), so a grantee whose own wear
+  // lifted the row never hands it back to the owner or onward.
   const holderOf = async (slug: string, bag: string, recipe: string): Promise<number | null> => {
     const holder = ownerOf(bag, recipe);
-    if (holder === null || !deps.workbenchOwner) return holder;
-    const seat = await deps.workbenchOwner(slug).catch(() => null);
-    return seat?.boundElsewhere && seat.bound !== holder ? null : holder;
+    if (holder === null) return null;
+    const seat = deps.workbenchOwner ? await deps.workbenchOwner(slug).catch(() => null) : null;
+    if (seat?.boundElsewhere) return seat.bound === holder ? holder : null;
+    return namedHouseOwner(bag, holder) ? holder : null;
   };
   const handOvers: OwedGrant[] = [];
   for (const row of rows) {
@@ -236,10 +252,11 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     if (isHouseCanonBag(bag)) {
       // Nothing delegated: the hand-over's carries and flags leave; a recipe row a grantee's own wear already lifted names a
       // wiki whose canon every face reads anyway, and the workbench's seat (the write) leaves with the row.
-      for (const h of handOvers.filter((o) => o.bag === bag)) {
-        await dropCarried(deps.faces.find((f) => f.handleIndex === h.grantee)?.group, bag);
-        await deps.flag.clear(sharePendingTitle(h, deps.salt));
-      }
+      // EVERY FACE THE ROW NAMES loses its carry, the recipe's holder worn or not: nothing delegated, so the unshare always
+      // completes, and no later wear lifts a row the share took back.
+      const named = resolveShare({ bag, rows, faces: deps.faces });
+      for (const index of new Set([...named.read, ...named.write])) await dropCarried(deps.faces.find((f) => f.handleIndex === index)?.group, bag);
+      for (const h of handOvers.filter((o) => o.bag === bag)) await deps.flag.clear(sharePendingTitle(h, deps.salt));
       continue;
     }
     if (ownerOf(bag) === null) { standingBags.add(bag); continue; }
@@ -329,7 +346,14 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       // its light. Where no face stood the wiki yet, the canon's owner founds it, and a house canon wiki's lander does.
       const seat = await deps.workbenchOwner?.(row.slug) ?? null;
       if (seat?.boundElsewhere && seat.bound === null) continue;
-      const ownerIndex = seat?.bound ?? (isHouseCanonBag(bag) ? seat?.founder ?? null : ownerOf(bag));
+      // A HOUSE CANON WIKI FOUNDS ONLY UNDER A NAMED OWNER while the ledger binds none: a grantee's wear (its replay of this
+      // landing) never founds the wiki's realm under itself.
+      const founder = seat?.founder ?? null;
+      if (seat?.bound == null && isHouseCanonBag(bag) && founder !== null && !namedHouseOwner(bag, founder)) {
+        deps.log?.(`[share-apply] workbench ${row.slug} waits: h${founder} names no owner of it, so it founds nothing`);
+        continue;
+      }
+      const ownerIndex = seat?.bound ?? (isHouseCanonBag(bag) ? founder : ownerOf(bag));
       const owner = ownerIndex === null ? undefined : deps.faces.find((f) => f.handleIndex === ownerIndex);
       if (!owner?.group) continue;
       const answer = resolveShare({ bag, rows, faces: deps.faces, owner: owner.handleIndex });
