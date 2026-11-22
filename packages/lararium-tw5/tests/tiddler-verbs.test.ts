@@ -130,6 +130,33 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((await r.composite.storeForBag(DAEMON)!.get(title))?.tiddler["text"]).toBe("fixed-fluid");
   });
 
+  test("wiki action refuses a runtime plugin shadow of the admitted action and writes nothing", async () => {
+    const r = await rig();
+    const target = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    r.engine.wiki.addTiddler({ title: target, text: "fixed-fluid" });
+    await r.hold(DAEMON, [target]);
+    const plugin = { tiddlers: { "$:/core/ui/KeyboardShortcuts/change-sidebar-layout": { title: "$:/core/ui/KeyboardShortcuts/change-sidebar-layout", text: "<$action-setfield $tiddler='Other' text='x'/>" } } };
+    await r.composite.storeForBag(DAEMON)!.put({ tiddler: { title: "$:/plugins/x/y", type: "application/json", "plugin-type": "plugin", text: JSON.stringify(plugin) }, meta: {} }, { kind: "lares-verb", requestId: "plug" }, { bag: DAEMON as never });
+    await r.landed();
+    // A runtime plugin registers as the engine registers one: read its info, then unpack its shadows.
+    const live = r.engine.wiki as unknown as { readPluginInfo(titles: string[]): void; registerPluginTiddlers(type: string, titles?: string[]): void; unpackPluginTiddlers(): void; getShadowSource(t: string): string | undefined };
+    live.readPluginInfo(["$:/plugins/x/y"]);
+    live.registerPluginTiddlers("plugin");
+    live.unpackPluginTiddlers();
+    expect(live.getShadowSource("$:/core/ui/KeyboardShortcuts/change-sidebar-layout")).not.toBe("$:/core");
+    await expect(makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx()))
+      .rejects.toThrow(/wiki-action-origin/);
+    expect(r.engine.wiki.getTiddlerText(target)).toBe("fixed-fluid");
+    expect(r.engine.wiki.getTiddlerText("Other")).toBe("untagged");
+  });
+
+  test("wiki action refuses names that only the prototype chain holds", async () => {
+    const r = await rig();
+    for (const name of ["constructor", "toString", "__proto__"])
+      await expect(makeWikiActionReactor(r.opts)({ ...A, name, expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx()))
+        .rejects.toThrow(/wiki-action-unknown/);
+  });
+
   test("wiki action refuses an ordinary override of the admitted floor shadow", async () => {
     const r = await rig();
     const title = "$:/core/ui/KeyboardShortcuts/change-sidebar-layout";

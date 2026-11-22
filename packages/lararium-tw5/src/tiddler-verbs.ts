@@ -943,7 +943,7 @@ export const makeWikiActionReactor = everyWiki("wiki-action", true, (opts: Tiddl
     const unknown = Object.keys(args).find((key) => !allowed.has(key));
     if (unknown) throw new VerbRefusal("wiki-action-parameter", `wiki-action-parameter: unknown parameter "${unknown}"`);
     const name = stringArg(args, "name");
-    const action = ADMITTED_WIKI_ACTIONS[name];
+    const action = Object.hasOwn(ADMITTED_WIKI_ACTIONS, name) ? ADMITTED_WIKI_ACTIONS[name] : undefined;
     if (!action) throw new VerbRefusal("wiki-action-unknown", `wiki-action-unknown: no admitted action "${name}"`);
     const expected = stringArg(args, "expected");
     const resulting = stringArg(args, "resulting");

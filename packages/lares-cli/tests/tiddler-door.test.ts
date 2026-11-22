@@ -97,6 +97,8 @@ describe("the argument law, no daemon", () => {
       const args = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", [flag]: "stray" });
       expect(unknownFlags(row, args).map((x) => x.name)).toEqual([flag]);
     }
+    const withFace = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", face: "1" });
+    expect(unknownFlags(row, withFace)).toEqual([]);
     expect(h.calls).toEqual([]);
   });
   test("a tiddler verb names its container and its title before anything rides the wire", async () => {
