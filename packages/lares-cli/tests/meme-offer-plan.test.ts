@@ -20,6 +20,13 @@ describe("lares meme offer", () => {
     expect(plan("promote", CID, "--over-fresher")).toEqual({ verb: "offer-promote", args: { cid: CID, overFresher: true } });
   });
 
+  test("offer show folds list and item while item refuses list filters", () => {
+    expect(plan("show")).toEqual({ verb: "offer-list", args: {} });
+    expect(plan("show", CID)).toEqual({ verb: "offer-show", args: { cid: CID } });
+    expect(() => plan("show", CID, "--all")).toThrow(/--all/);
+    expect(() => plan("show", CID, "--bag", "lares")).toThrow(/--bag/);
+  });
+
   test("a malformed act refuses by name before any socket", () => {
     expect(() => plan("lar:///ha.ka.ba/x")).toThrow(/--bag/);
     expect(() => plan("promote", "nope")).toThrow(/64 hex/);

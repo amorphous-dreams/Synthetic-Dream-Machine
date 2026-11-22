@@ -133,6 +133,16 @@ describe("lares kahua", () => {
     expect(seam.calls).toEqual([]);
   });
 
+  test("plane read folds list and item through get, while history needs a title", async () => {
+    expect(await run("get")).toBe(0);
+    expect(await run("get", "T", "--history")).toBe(0);
+    expect(await run("get", "--history")).toBe(1);
+    expect(seam.calls).toEqual([
+      ["kahua-read", { action: "list" }],
+      ["kahua-read", { action: "get", title: "T", history: true }],
+    ]);
+  });
+
   test("RED: `carry` reaches the carry row with the cids it names, or `--all` for every earlier head; CONTROL: a carry naming neither, or both, refuses before the door", async () => {
     const CID2 = "d".repeat(64);
     expect(await run("carry", CID, CID2, "--face", "1")).toBe(0);
