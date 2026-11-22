@@ -23,7 +23,8 @@ import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, conclude
 import { HAND_PROFILES, type SessionFace } from "@lararium/mesh/session-contract";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor, type UdsSessionSigner } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
-import { harnessOnBranch, peerPidsIn, statOf, type ProcReader } from "../src/uds-peer.js";
+import { harnessOnBranch, peerPidsIn, statOf, type PeerKind, type ProcReader } from "../src/uds-peer.js";
+import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS } from "../src/store-door-verbs.js";
 
 const HARNESS_MARKS = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
 
@@ -35,7 +36,7 @@ const face = (name: string): SessionFace => ({
 const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
-async function stand() {
+async function stand(opts: { peerKind?: (sock: Socket) => Promise<PeerKind> } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -50,6 +51,7 @@ async function stand() {
   const placed: Array<{ verb: string; requestId: string; asker?: string }> = [];
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
+    handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS, handOnlyCodes: STORE_DOOR_HAND_CODES, ...(opts.peerKind ? { peerKind: opts.peerKind } : {}),
     switchActs: { write: async () => {} },
     mountOrdinal: () => 0,
     lentOrdinals: async () => [0],
@@ -143,6 +145,40 @@ test("CONTROL: an in-process client (the vessel's own process) keeps the line's 
   await answered;
   expect(v.placed.map(askerOf)).toEqual(["cli"]);
 });
+
+// AN UNREAD PEER BOOKS NO HAND (hitl-reads-a-hand): `cli` rides only a peer that reads `hand`. A peer the socket table cannot
+// read (no `ss`, a peer gone, an unreadable link) places its ask with no asker, and a hand-only verb refuses `hand-unattested`.
+const UNREAD = async (): Promise<PeerKind> => "unknown";
+
+test("RED: an unread peer's one-shot line places with no asker; CONTROL: a peer that reads hand places cli", async () => {
+  const v = await stand({ peerKind: UNREAD });
+  await runClient(v.socketPath, [{ verb: "meme-get", args: MEME, requestedBy: "0xop", requestId: "unread-line" }], false);
+  expect(v.placed.map(askerOf)).toEqual([undefined]);
+  const c = await stand({ peerKind: async () => "hand" });
+  await runClient(c.socketPath, [{ verb: "meme-get", args: MEME, requestedBy: "0xop", requestId: "read-line" }], false);
+  expect(c.placed.map(askerOf)).toEqual(["cli"]);
+}, 20_000);
+
+test("RED: an unread peer's session refuses a hand-only call (retire-wiki, purge) hand-unattested and places a plain call with no asker", async () => {
+  const v = await stand({ peerKind: UNREAD });
+  const out = await runClient(v.socketPath, [
+    { op: "session:open", requestId: "open-h0", faceRef: "h0", hand: "cli" },
+    { op: "session:call", requestId: "retire-h0", verb: "retire-wiki", args: { slug: "x" } },
+    { op: "session:call", requestId: "purge-h0", verb: "purge", args: { name: "x" } },
+    { op: "session:call", requestId: "get-h0", verb: "meme-get", args: MEME },
+  ], false);
+  expect(out.match(/hand-unattested/g)?.length).toBe(2);
+  expect(v.placed.map((p) => [(p as { verb: string }).verb, askerOf(p)])).toEqual([["meme-get", undefined]]);
+}, 20_000);
+
+test("CONTROL: a session whose peer reads hand places its hand-only call with asker cli", async () => {
+  const v = await stand({ peerKind: async () => "hand" });
+  await runClient(v.socketPath, [
+    { op: "session:open", requestId: "open-h0", faceRef: "h0", hand: "cli" },
+    { op: "session:call", requestId: "retire-h0", verb: "retire-wiki", args: { slug: "x" } },
+  ], false);
+  expect(v.placed.map((p) => [(p as { verb: string }).verb, askerOf(p)])).toEqual([["retire-wiki", "cli"]]);
+}, 20_000);
 
 // THE READING ITSELF, over a vector `/proc`: the branch walk, the cut at the vessel's line, and the socket-table read.
 const procOf = (rows: Record<number, { comm: string; ppid: number; env?: string[]; argv?: string[] }>): ProcReader => ({
