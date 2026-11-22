@@ -224,7 +224,14 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         for (const r of owned.filter((r, i) => r !== next[i])) await doors.verb("share-set", shareSetArgs(r));
       }
       for (const w of Array.isArray(applied["waiting"]) ? applied["waiting"] as string[] : []) doors.out(`  waits: "${w}" names no face here`);
-      for (const slug of Array.isArray(applied["unowned"]) ? applied["unowned"] as string[] : []) doors.out(`  waits: "${slug}" stands in no catalog the daemon mount reads: run the daemon mount under the face that owns it (\`lares vault unlock --face N\`) and share again, or stand it first (\`lares wiki init ${slug}\`)`);
+      for (const unownedSlug of Array.isArray(applied["unowned"]) ? applied["unowned"] as string[] : []) {
+        const ownerName = next.find((r) => r.slug === unownedSlug)?.owner;
+        const owners = ownerName ? faces.filter((f) => f.petname === ownerName) : [];
+        if (owners.length === 1) {
+          const owner = `h${owners[0]!.handleIndex}`;
+          doors.out(`  waits: ${owner} owns ${unownedSlug}; run this share worn as ${owner}`);
+        } else doors.out(`  waits: "${unownedSlug}" stands in no catalog the daemon mount reads: run the daemon mount under the face that owns it (\`lares vault unlock --face N\`) and share again, or stand it first (\`lares wiki init ${unownedSlug}\`)`);
+      }
     }
     for (const w of resolveShare({ bag: shareEntryBag(row), rows: next, faces }).waiting) doors.err(`  "${w}" names no face here; the row keeps it, and it lands when a face carries that pet-name`);
     return 0;
