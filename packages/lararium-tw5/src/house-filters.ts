@@ -26,7 +26,7 @@ export const HOUSE_FILTERS_TITLE = "lar:///ha.ka.ba/lares/api/filters";
 /** The stem every house function name opens with. */
 export const HOUSE_FUNCTION_STEM = "lares.";
 /** The house's function names, in the carrier's order. */
-export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.course.uncited", "lares.course.standing", "lares.course", "lares.waves", "lares.stage"];
+export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.course.citers", "lares.course.text-uncited", "lares.course.uncited", "lares.course.standing", "lares.course", "lares.waves", "lares.stage"];
 
 /**
  * THE FLOOR: the carrier's `\function` blocks as the source carries them, read only where no canon layer holds the carrier
@@ -42,8 +42,20 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 [subfilter{$:/config/lares/law/pins}] =[prefix[lar:///ha.ka.ba/]regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]sort[title]] +[unique[]] :filter[regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]] :filter[get[$origin-bag]regexp[^lar:///ha\.ka\.ba/bags/(oracle|lares|lararium)$]] :filter[regexp[^lar:///\S+$]]
 \end
 
+\function lares.road(state)
+[tag[stage/road]] :filter[tags[]removeprefix[road/state/]match<state>]
+\end
+
+\function lares.course.citers(pattern,t)
+[all[tiddlers]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>search:text:literal,casesensitive<t>regexp:text<pattern>] :filter[<currentTiddler>removeprefix<t>prefix[#/]then[no]else[yes]match[yes]]
+\end
+
+\function lares.course.text-uncited(t)
+[<t>escaperegexp[]addsuffix[(?:(?!(?:-|\.|/|#))\W|$)]] :map[lares.course.citers<currentTiddler>,<t>count[]] +[match[0]]
+\end
+
 \function lares.course.uncited(t)
-[<t>backlinks[]count[]match[0]] :filter[all[tiddlers]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>search:text:literal<t>count[]match[0]]
+[<t>backlinks[]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>] :filter[<currentTiddler>removeprefix<t>prefix[#/]then[no]else[yes]match[yes]] +[count[]match[0]] :filter[lares.course.text-uncited<t>]
 \end
 
 \function lares.course.standing(t)
@@ -51,7 +63,7 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 \end
 
 \function lares.course(standing)
-[tag[stage/course]] :filter[lares.course.standing<currentTiddler>match<standing>]
+[tag[stage/course]!regexp[#]] :filter[lares.course.standing<currentTiddler>match<standing>]
 \end
 
 \function lares.waves()

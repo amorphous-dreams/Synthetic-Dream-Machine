@@ -78,7 +78,7 @@ async function rig(seed = true, carrier: boolean | string = true) {
   const filter = async (f: string): Promise<string[]> => (await makeWikiFilterReactor(opts)({ recipe: "default", filter: f }, ctx()))["titles"] as string[];
   /** A record a face writes: it lands in the working layer, its stamp naming that layer. */
   const write = (title: string, fields: Record<string, string> = {}): void => { engine.wiki.addTiddler({ title, text: "", ...fields, "$origin-bag": WORKING }); };
-  return { engine, opts, filter, render, write };
+  return { engine, opts, oracle, filter, render, write };
 }
 
 describe("the house's function text, with no wiki booted", () => {
@@ -288,6 +288,29 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.filter("[lares.waves[]]")).toEqual([wave]);
   });
 
+  test("road remains readable during migration", async () => {
+    const r = await rig();
+    r.write("road-open", { tags: "stage/road road/state/open" });
+    r.write("road-landed", { tags: "stage/road road/state/landed" });
+    expect(await r.filter("[lares.road[open]]")).toEqual(["road-open"]);
+    expect(await r.filter("[lares.road[landed]]")).toEqual(["road-landed"]);
+  });
+
+  test("only whole, case-sensitive citations from other stage records block ash", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const item = (name: string) => `${base}course/${name}.one.waits`;
+    for (const name of ["linked", "self", "external", "slot", "prefix", "case"]) r.write(item(name), { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/linker`, { text: `[[${item("linked")}]]` });
+    r.write(item("self"), { tags: "stage/course", proof: "git:abc", text: `[[${item("self")}]]` });
+    r.write("outside", { text: `[[${item("external")}]] ${item("external")}` });
+    r.write(`${item("slot")}#/entry`, { tags: "stage/course", proof: "git:abc", text: `[[${item("slot")}]] ${item("slot")}` });
+    r.write(`${base}state/prefix`, { text: `${item("prefix")}-two` });
+    r.write(`${base}state/case`, { text: item("case").toUpperCase() });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual(["self", "external", "slot", "prefix", "case"].map(item).sort());
+    expect(await r.filter("[lares.course[closed]]")).not.toContain(`${item("slot")}#/entry`);
+  });
+
   test("the course board renders the chosen wave and each standing", async () => {
     const r = await rig();
     const base = "lar:///ha.ka.ba/kahua/memory/";
@@ -295,17 +318,28 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     const item = `${base}course/open.one.waits`;
     const ready = `${base}course/ready.one.waits`;
     const other = `${base}course/other.one.waits`;
+    const cited = `${base}course/cited.one.waits`;
     const template = "lar:///ha.ka.ba/lares/api/course-board";
     const source = readFileSync(new URL("../../../bags/lares/ha.ka.ba/lares/api/course-board.mem", import.meta.url), "utf8");
-    r.write(template, { type: "text/vnd.tiddlywiki", text: source.slice(source.indexOf("<$let"), source.indexOf("<<^ code=`&#x0003;`")) });
+    await r.oracle.put({ tiddler: { title: template, text: source, type: "text/memetic-wikitext+tiddlywiki" } }, { kind: "boot" } as never);
+    r.engine.wiki.addTiddler({ title: template, text: source, type: "text/memetic-wikitext+tiddlywiki", "$origin-bag": ORACLE_BAG });
     r.write(item, { tags: "stage/course", question: "What comes next?", answer: "build" });
     r.write(ready, { tags: "stage/course", proof: "git:abc", question: "What landed?", answer: "decision" });
+    r.write(cited, { tags: "stage/course", proof: "git:cited" });
+    r.write(`${base}state/citer`, { text: `[[${cited}]]` });
     r.write(other, { tags: "stage/course", question: "Outside wave" });
-    r.write(wave, { tags: "stage/wave", list: `${item} ${ready}` });
+    r.write(wave, { tags: "stage/wave", list: `${item} ${ready} ${cited}` });
     r.write(`${base}board`, { waves: "[lares.waves[]]", text: `{{||${template}}}`, type: "text/vnd.tiddlywiki" });
-    const rendered = String((await makeWikiRenderReactor(r.opts)({ recipe: "default", title: `${base}board` }, ctx()))["text"]);
+    const rendered = String((await makeWikiRenderReactor(r.opts)({ recipe: "default", title: `${base}board`, form: "html" }, ctx()))["text"]);
     for (const value of [wave, "open", "closed", "ash-ready", item, "What comes next?", "build", ready, "What landed?", "decision"]) expect(rendered).toContain(value);
     expect(rendered).not.toContain(other);
+    const columns = [...rendered.matchAll(/<section class="course-column"[^>]*>([\s\S]*?)<\/section>/g)].map((m) => m[1]!);
+    expect(columns).toHaveLength(3);
+    for (const [i, expected] of [[0, [item]], [1, [ready, cited]], [2, [ready]]] as const) {
+      for (const title of [item, ready, cited]) {
+        expect(columns[i]!.includes(title), `${title} in column ${i}`).toBe(expected.includes(title));
+      }
+    }
   });
 
   test("the call answers what the long form answered: the pins, the law, a title's standing", async () => {

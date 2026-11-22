@@ -122,6 +122,8 @@ Where a lower layer holds the title, a seat's fire stops and names it to the hol
 
 The rite governs a seat's burns; it never gates a human's own delete in a wiki they alone hold. An AI or tasked spirit burns only on the holder's (the operator, for a face they wear) call, through the stages, with the last check-in and delete commits and the gratitude line. A tiddler, whole meme or ahu slot carries its full title; a line in a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and doors stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
 
+''Migration reading:'' `[lares.road[landed]]` lists landed road memes; `[lares.course[ash-ready]]` lists proved course items without inbound citations. A hand reads each for fold; proof, weld and two commits govern each burn.
+
 ''Course reading:'' `[lares.course[ash-ready]]` lists proved items without inbound citations; a hand reads each item for fold before naming it a candidate. Proof, weld and two commits still govern each burn.
 
 !!! Who calls it
@@ -189,7 +191,7 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 # Operator ruling 2026-09-12: the lifecycle rides a tag family on governed memes only; `status` and `retain` leave the meta; `cacheable` stays as an API-server instruction; `lares-history` serves as the harvest room, emptied and deleted; the fire is called, never scheduled. The ruling stands verbatim, with its enactment and the walked room, at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-lifecycle`>>.
 # Operator ruling 2026-11-21 (the ever-speaking present): the law lifts from the docs record to this api meme; the record keeps the field, the house measurements, the rhymes, the examples, the leans and the questions (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>).
 # Operator ruling 2026-11-22: holders choose the plane: one human may delete their own tiddlers across their faces and domain wikis, with git's history holding what the delete removed wherever the layer carries a mirror; a delete in a layer with no mirror stays final; a wiki held by another human takes removal through the tombstone rite and named answers; a seat burns only on the holder's (the operator, for a face they wear) call through the rite; no line burns in that rite; the controller reads each stage's aftermath; each face's memory stage holds a catma store and a pattern-integrity store.
-# Operator ruling 2026-11-22: o-takiage at every land stands as an authored ending over landed road memes once routed, lifted and welded (folded); a road filter lists them and a hand reads each for fold.
+# Operator ruling 2026-11-22: o-takiage at every land stands as an authored ending over landed road memes once routed, lifted and welded (folded); `[lares.road[landed]]` lists them; `[lares.course[ash-ready]]` lists course items, and a hand reads each for fold.
 
 <<~/ahu>>
 
@@ -212,6 +214,6 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EAgui_TaXWUqPLro9lFiDXvHoCmGJMEEzrAyT9CcEus`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z9RYwdrUTsjTuIRo3m_wj032lPzm7d6oUUndtPAGGPc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
