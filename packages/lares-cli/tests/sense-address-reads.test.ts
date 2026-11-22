@@ -25,7 +25,11 @@ vi.mock("@lararium/node", async (importOriginal) => {
     sensoriumNames: () => ["memory", "other"],
     sensoriumDir: (name: string) => `/scratch/sensoriums/${name}`,
     memorySensoriumDir: () => "/scratch/sensoriums/memory",
-    sensoriumLenses: () => ({ content: "/scratch/sensoriums/memory/content", "other/content": "/scratch/sensoriums/other/content" }),
+    sensoriumLenses: () => ({
+      content: "/scratch/sensoriums/memory/content",
+      "other/content": "/scratch/sensoriums/other/content",
+      "other/who/content": "/scratch/sensoriums/other/who/content",
+    }),
     openMemorySensorium: () => fake,
     makeLaresQuery: () => fake,
   };
@@ -66,5 +70,25 @@ describe("a named sensorium's reads reach its own planes", () => {
     const r = await run(["search", "anything"]);
     expect(r.code).toBe(0);
     expect(searched).toEqual(["content"]);
+  });
+
+  test("crossplane keeps working for a named sensorium: it widens that sensorium's own planes", async () => {
+    searched.length = 0;
+    const r = await run(["other", "search", "anything"], { lens: "crossplane" });
+    expect(r.code).toBe(0);
+    expect(searched).toEqual(["other/crossplane"]);
+  });
+
+  test("a child plane reads under the named sensorium; a lens already addressed to it rides as written", async () => {
+    searched.length = 0;
+    expect((await run(["other", "search", "anything"], { lens: "who/content" })).code).toBe(0);
+    expect((await run(["other", "search", "anything"], { lens: "other/content" })).code).toBe(0);
+    expect(searched).toEqual(["other/who/content", "other/content"]);
+  });
+
+  test("--trial-root keeps its own path under a name (CONTROL: the trial refusal, never a plane refusal)", async () => {
+    const r = await run(["other", "relate", "x"], { "trial-root": "/scratch/trial" });
+    expect(r.code).not.toBe(0);
+    expect(String((r.out["error"] as Record<string, unknown>)["message"])).toContain("trial relate is unsupported");
   });
 });

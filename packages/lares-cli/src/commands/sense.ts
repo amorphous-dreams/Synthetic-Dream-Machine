@@ -147,14 +147,20 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
   const [verb, ...rest] = positional;
   // THE ADDRESS REACHES THE READ. A bare plane name keys the `memory` sensorium in the lens map, so a named
   // sensorium's read turns `--lens <plane>` into its own `<name>/<plane>` key; read bare, `lares sense other
-  // search` would answer from memory and never say so. `memory` keeps its bare keys, and a lens already
-  // spelled `<sensorium>/<plane>` rides as written.
+  // search` would answer from memory and never say so. A child plane (`who/content`) reads under the name too,
+  // and only a lens already spelled `<name>/…` rides as written. `memory` keeps its bare keys, and a frozen
+  // trial (`--trial-root`) keeps its own path whatever the name.
+  const trialRoot = args.options["trial-root"];
   const asked = args.options["lens"] ?? "content";
-  const lens = sensoriumName && sensoriumName !== "memory" && !asked.includes("/") ? `${sensoriumName}/${asked}` : asked;
+  const addressed = sensoriumName !== undefined && sensoriumName !== "memory" && !trialRoot;
+  const lens = addressed && !asked.startsWith(`${sensoriumName}/`) ? `${sensoriumName}/${asked}` : asked;
   // `crossplane` is a search MODE, not a plane-dir (it widens content hits across form+structure by the
   // cid-join), so it rides the lens slot beside the real planes without a dir of its own.
-  const trialRoot = args.options["trial-root"];
-  const known = trialRoot ? ["content"] : [...Object.keys(sensoriumLenses()), "crossplane"];
+  // A `crossplane` read widens from a sibling `content` plane, so every palace holding one answers it under its
+  // own prefix (`other/crossplane`, `mesh/who/crossplane`), beside the bare memory form.
+  const planes = Object.keys(sensoriumLenses());
+  const crossplanes = planes.filter((k) => k.endsWith("/content")).map((k) => `${k.slice(0, -"content".length)}crossplane`);
+  const known = trialRoot ? ["content"] : [...planes, "crossplane", ...crossplanes];
 
   if (!verb || !VERBS.includes(verb as Verb)) {
     emit(args, {
@@ -175,7 +181,7 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
   if (!known.includes(lens)) {
     emit(args, {
       ok: false,
-      error: { code: "verb-error", message: sensoriumName ? `sensorium '${sensoriumName}' holds no plane at '${lens}'` : `unknown lens '${lens}'`, hint: `planes: ${known.join(" · ")}` },
+      error: { code: "verb-error", message: addressed ? `sensorium '${sensoriumName}' holds no plane at '${lens}'` : `unknown lens '${lens}'`, hint: `planes: ${known.join(" · ")}` },
       human: () => console.error(`lares sense — no plane named '${lens}'. Planes: ${known.join(" · ")}`),
     });
     return exitFor("verb-error");
