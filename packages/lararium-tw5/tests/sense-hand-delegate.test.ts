@@ -10,7 +10,7 @@ import { createRequire } from "node:module";
 import { afterEach, expect, test } from "vitest";
 import { emptyLarDoc, mkDaemonDelegateVerb, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
-import { captureVerbCap, type DaemonVerbProvider } from "../src/verb-caps.js";
+import { captureVerbCap, type DaemonVerbProvider, type VerbContribution } from "../src/verb-caps.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { sharePolicy?: () => Promise<boolean> }) => RepoType;
@@ -54,7 +54,7 @@ function open() {
     sensePromote: answer("promote"), senseRetire: answer("retire"), senseUnRetire: answer("un-retire"), sensePurge: answer("purge"),
   } as unknown as DaemonVerbProvider;
   const registry = new VerbTable();
-  captureVerbCap().build(<T>() => provider as unknown as T)(registry);
+  (captureVerbCap().build(<T>() => provider as unknown as T) as VerbContribution)(registry);
   core.mountMainVerbs(registry);
   const say = (msg: unknown): void => { for (const l of [...listeners]) l(msg); };
   const delegate = async (requestId: string, verb: string, args: Record<string, unknown>): Promise<{ result?: unknown; error?: string }> => {

@@ -8,7 +8,7 @@
  * the args, and the reads stay open to a seat.
  */
 import { describe, expect, test } from "vitest";
-import { captureVerbCap, type DaemonVerbProvider } from "../src/verb-caps.js";
+import { captureVerbCap, type DaemonVerbProvider, type VerbContribution } from "../src/verb-caps.js";
 import { VerbTable, type VerbContext } from "../src/verb-dispatcher.js";
 
 type Call = { readonly verb: string; readonly input: Record<string, unknown> };
@@ -21,7 +21,7 @@ function stand(): { readonly table: VerbTable; readonly calls: Call[] } {
     sensePromote: answer("promote"), senseRetire: answer("retire"), senseUnRetire: answer("un-retire"), sensePurge: answer("purge"),
   } as unknown as DaemonVerbProvider;
   const table = new VerbTable();
-  captureVerbCap().build(<T>() => provider as unknown as T)(table);
+  (captureVerbCap().build(<T>() => provider as unknown as T) as VerbContribution)(table);
   return { table, calls };
 }
 
