@@ -255,6 +255,16 @@ def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon
     assert [line["verb"] for line in daemon.lines[-3:]] == ["list-wikis", "wiki-active", "residency"]
 
 
+def test_a_retired_parameter_refuses_aloud_before_the_wire(daemon):
+    # `text` retired into `grain` (the lens and the grain kept apart): a caller still naming it hears the refusal and the
+    # word that replaced it, and nothing crosses the wire; the SDK would otherwise drop it and answer a grain never asked.
+    mcp = _mcp()
+    for value in (False, True):
+        is_error, said = _call(mcp, "tiddler_get", {"title": "T", "recipe": "default", "text": value})
+        assert is_error and "param-retired: `text` retired" in said and 'grain="skinny"' in said, said
+    assert daemon.lines == []
+
+
 def test_title_less_family_listing_refuses_the_flags_it_does_not_read(daemon):
     # The listing reads container, tree and cursor; a slot, grain, fields or max_bytes beside it refuses by name, as the CLI does.
     t = _tools()
