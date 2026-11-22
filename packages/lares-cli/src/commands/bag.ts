@@ -18,7 +18,7 @@
  *   compact <url>                 — DXOS-style snapshot-restart; bounds history
  *   cas [--all] [--fetch <cid>] [--pin <cid>] [--release <cid>] [--sweep [--dry-run]]
  *                                 — the cid/ CAS tier: blobs · referenced · unreferenced · bytes; fetch · pin · release · sweep
- *   list                          — every bag: declared tier + home, and whether it sits where it belongs
+ *   show                          — every bag: declared tier + home, and whether it sits where it belongs
  *   show <bag>                    — one bag's declaration, resolved on this vessel
  *   declare <bag> --tier --home   — write/amend the declaration (moves no bytes)
  *   home <bag> --to <home> --approve  — MOVE the bytes and re-anchor the declaration together
@@ -92,8 +92,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   // ── The LIFECYCLE half. Everything above answers a RUNTIME question (is this doc in RAM); these answer
   // what a bag IS, who may read it, where it belongs, and how to move it — the questions a bag could not
   // answer about itself at all until it carried a declaration.
-  "list":          { handler: bagLifecycle(cmdBagList),    summary: "Every bag: its declared cap-tier + home, and whether it sits where it says it belongs." },
-  "show":          { handler: bagLifecycle(cmdBagShow),    summary: "One bag's declaration, and where that resolves on THIS vessel." },
+  "show":          { handler: bagLifecycle(async (a) => a.positional[0] ? cmdBagShow(a) : cmdBagList(a)), summary: "List bags, or show one bag's declaration and resolution." },
   "declare":       { handler: bagLifecycle(cmdBagDeclare), summary: "Write/amend a bag's own declaration (--tier --home --repo --role). Moves no bytes." },
   "home":          { handler: bagLifecycle(cmdBagHome),    summary: "MOVE a bag to a home (--to, --repo). Plans by default; --approve performs it." },
   "repo":          { handler: bagLifecycle(cmdBagRepo),    summary: "The repo registry: `list` | `add <id> --root <path>` | `drop <id>`. Bags name IDs, never paths." },

@@ -17,7 +17,10 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import KAHUA_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, seat_of
+from lares_mcp import KAHUA_VERBS, OFFER_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, seat_of
+
+with open(os.path.join(os.path.dirname(__file__), "fixtures", "tiddler-door-answers.json"), encoding="utf-8") as _f:
+    PLANE_ROWS = [r for r in json.load(_f)["rows"] if r["tool"] in {"kahua_get", "meme_offer_show"}]
 
 
 class _FakeVessel:
@@ -110,11 +113,46 @@ def _tools():
 def test_kahua_tools_register_seat_hotl_and_carry_no_lift():
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert set(KAHUA_VERBS) == {"kahua_propose", "kahua_stage", "kahua_list", "kahua_get"} <= names
+    assert set(KAHUA_VERBS) == {"kahua_propose", "kahua_stage", "kahua_get"} <= names
     for v in KAHUA_VERBS:
         assert v in VERB_SEATS and seat_of(v) == "HOTL"
     # The operator's hand lifts: no MCP tool pins, lifts or withdraws.
-    assert names.isdisjoint({"kahua_lift", "kahua_withdraw", "kahua_mint"})
+    assert names.isdisjoint({"kahua_lift", "kahua_withdraw", "kahua_mint", "kahua_list", "meme_offer_list", "bag_show"})
+
+
+def test_offer_show_folds_list_and_item_over_the_existing_wire(monkeypatch):
+    calls = []
+    def wire(verb, args):
+        calls.append((verb, args))
+        return {"results": {"summary": {"ok": True, "output": {"has": "<<~ has name=`offers` params=`count/0`>>", "offers": []}}}}
+    monkeypatch.setattr(uds, "call", wire)
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    show = mcp._tool_manager.get_tool("meme_offer_show").fn
+    assert show()["offers"] == []
+    cid = "a" * 64
+    assert show(cid=cid)["offers"] == []
+    assert calls == [("offer-list", {}), ("offer-show", {"cid": cid})]
+    with pytest.raises(ValueError, match="list filters"):
+        show(cid=cid, all=True)
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("row", PLANE_ROWS, ids=lambda r: f"{r['tool']}:{r['wire']['verb']}")
+def test_plane_fixture_parity(row, vessel, monkeypatch):
+    if row["tool"] == "kahua_get":
+        vessel.answer = {"status": "done", "output": row["output"]}
+        result = _tools()["kahua_get"](**row["mcp"])
+        assert vessel.acts() == [{"act": row["wire"]["verb"], "args": row["wire"]["args"]}]
+    else:
+        calls = []
+        def wire(verb, args):
+            calls.append({"verb": verb, "args": args})
+            return {"results": {"summary": {"ok": True, "output": row["output"]}}}
+        monkeypatch.setattr(uds, "call", wire)
+        mcp = build_mcp(DaemonCoordinator(wing="w"))
+        result = mcp._tool_manager.get_tool("meme_offer_show").fn(**row["mcp"])
+        assert calls == [row["wire"]]
+    assert result == row["output"]
 
 
 def test_kahua_propose_opens_a_seat_session_on_the_resolved_face_and_runs_the_propose_row(vessel):
@@ -131,7 +169,7 @@ def test_kahua_propose_opens_a_seat_session_on_the_resolved_face_and_runs_the_pr
 def test_kahua_list_and_get_run_the_read_row_on_the_named_worn_face(vessel):
     vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "items": []}}
     vessel.worn = 1
-    assert _tools()["kahua_list"](face=1) == {"items": []}
+    assert _tools()["kahua_get"](face=1) == {"items": []}
     vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "item": None, "history": []}}
     assert _tools()["kahua_get"](title="T", history=True, face=1) == {"item": None, "history": []}
     assert vessel.acts() == [{"act": "kahua-read", "args": {"action": "list"}},
@@ -142,12 +180,21 @@ def test_kahua_list_and_get_run_the_read_row_on_the_named_worn_face(vessel):
     assert {f["faceRef"] for f in opened} == {"h1"} and all(f.get("seat") == "ai" for f in opened)
 
 
+def test_kahua_get_list_pages_and_refuses_history_without_a_title_before_the_wire(vessel):
+    vessel.answer = {"status": "done", "output": {"items": [], "count": 0, "next": None}}
+    assert _tools()["kahua_get"](limit=2, face=1)["count"] == 0
+    assert vessel.acts() == [{"act": "kahua-read", "args": {"action": "list", "limit": 2}}]
+    with pytest.raises(ValueError, match="history needs a title"):
+        _tools()["kahua_get"](history=True, face=1)
+    assert len(vessel.acts()) == 1
+
+
 def test_the_ai_seat_naming_an_open_lent_face_other_than_the_worn_one_opens_that_face(vessel):
     # EACH SESSION WEARS ONE FACE INSIDE THE LENT SET: the client asks the vessel for the named face and lets the vessel's
     # wall judge the set, never refusing a face for standing apart from the worn one.
     vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "items": []}}
     vessel.worn = 2
-    assert _tools()["kahua_list"](face=1) == {"items": []}
+    assert _tools()["kahua_get"](face=1) == {"items": []}
     assert _tools()["kahua_get"](title="T", face=0) == {"items": []}
     opened = [f for f in vessel.frames if f.get("op") == "session:open"]
     assert [(f["hand"], f["faceRef"], f.get("seat")) for f in opened] == [("seat", "h1", "ai"), ("seat", "h0", "ai")]
@@ -157,7 +204,7 @@ def test_a_face_outside_the_lent_set_refuses_by_the_vessels_name(vessel):
     vessel.lent = {2}
     vessel.worn = 2
     with pytest.raises(uds.LaresVerbError, match="face-not-lent"):
-        _tools()["kahua_list"](face=1)
+        _tools()["kahua_get"](face=1)
     assert not vessel.acts()
 
 
@@ -174,7 +221,7 @@ def test_the_mcp_seat_marks_every_request_line_as_the_ai_seat(vessel):
 def test_with_several_faces_open_and_none_named_the_seat_acts_as_the_worn_face(vessel):
     vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "items": []}}
     vessel.worn = 1
-    assert _tools()["kahua_list"]() == {"items": []}
+    assert _tools()["kahua_get"]() == {"items": []}
     assert [f["args"] for f in vessel.frames if f.get("op") == "act"] == [{"worn": True}]
     assert [f["faceRef"] for f in vessel.frames if f.get("op") == "session:open"] == ["h1"]
 
@@ -183,7 +230,7 @@ def test_a_named_face_that_stands_shut_refuses_by_name_and_opens_no_session(vess
     vessel.open = {1}
     vessel.worn = 1
     with pytest.raises(uds.LaresVerbError, match="face-not-open"):
-        _tools()["kahua_list"](face=2)
+        _tools()["kahua_get"](face=2)
     assert not any(f.get("op") == "session:open" for f in vessel.frames)
 
 
@@ -191,7 +238,7 @@ def test_a_row_refusal_and_a_session_refusal_raise_by_name(vessel):
     vessel.worn = 0
     vessel.answer = {"status": "done", "output": {"refused": "kahua-unpinned: the face pins no stage", "refusal": "KahuaRefused"}}
     with pytest.raises(uds.LaresVerbError, match="kahua-unpinned"):
-        _tools()["kahua_list"](face=0)
+        _tools()["kahua_get"](face=0)
     vessel.refuse = "beyond-profile"
     with pytest.raises(uds.LaresVerbError, match="beyond-profile"):
         _tools()["kahua_get"](title="T", face=0)
@@ -205,7 +252,7 @@ def _described(name: str) -> str:
 
 
 def test_kahua_list_text_names_the_relation_and_the_unpinned_stage():
-    said = _described("kahua_list")
+    said = _described("kahua_get")
     assert "relation" in said and '`stage: "none"`' in said
 
 

@@ -149,8 +149,11 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
         door = "kahua-carry"; payload = all ? { all: true } : { cids };
         break;
       }
-      case "list": door = "kahua-read"; payload = { action: "list" }; break;
-      default: door = "kahua-read"; payload = { action: "get", title: need("a title"), ...(args.flags["history"] === true ? { history: true } : {}) };
+      case "list": throw new Error("kahua list moved to `kahua get [<title>]`");
+      default:
+        if (!target && args.flags["history"] === true) throw new Error("get --history needs a title");
+        door = "kahua-read";
+        payload = target ? { action: "get", title: target, ...(args.flags["history"] === true ? { history: true } : {}) } : { action: "list", ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) };
     }
     const { output } = await storeVerb(door, { ...face, ...payload });
     console.log(JSON.stringify(output));

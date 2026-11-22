@@ -394,7 +394,7 @@ tools/lares-container.sh pulama light                            # the operator'
 tools/lares-container.sh up                                      # the vessel seats its holder over the socket and names what the pūlama waits on
 tools/lares-container.sh pulama admit                            # no face named: the standing image serves every lit face
 tools/lares-container.sh vault unlock --all --face 0             # gathers no route: the vessel stands unlocked, served by the pūlama
-tools/lares-container.sh kahua list --face N --json              # each face answers its own view
+tools/lares-container.sh kahua get --face N --json              # each face answers its own view
 lares rite keep --workspace house-backup --face 0               # on the host, as the steward whose line holds the lei: the restored house's first keep
 lares rite receipts --face 0                                     # conferre reads the keep's tessera par
 ```
@@ -592,6 +592,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;c2S0Cbcq8EPiqDeGCIcg3XOpqQCUz0zU_UvD39zMskA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NaVaU0HN6Ue4eVBhqLD1KWd8FQlO0ItfEZ661qVk-dU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -187,20 +187,19 @@ DDATE_VERBS = ("ddate",)
 ORACLE_VERBS = ("oracle_cast",)
 
 # The OFFERING door (offering#/the-canon-offer) — an AI seat offers its face's working records toward a house-canon bag
-# and reads the Nexus's offer table. `meme_offer` mirrors `lares meme offer <uri…> --bag <slug>`; `meme_offer_list` mirrors
-# `lares meme offer list`; `meme_offer_show` mirrors `lares meme offer show <cid>`. An offer GRANTS NOTHING: canon moves only
+# and reads the Nexus's offer table. `meme_offer` mirrors `lares meme offer <uri…> --bag <slug>`; `meme_offer_show` mirrors `lares meme offer show [<cid>]`. An offer GRANTS NOTHING: canon moves only
 # under the Kahu steward's promotion, and `lares meme offer promote` stays the steward's hand, holding no MCP tool (the kahua
 # lift's shape).
-OFFER_VERBS = ("meme_offer", "meme_offer_list", "meme_offer_show")
+OFFER_VERBS = ("meme_offer", "meme_offer_show")
 
 # The KAHUA namespace — an AI seat's reach onto its face's kahua stage, the fleet's working-memory stage. `kahua_propose`
 # posts ONE batch of proposals on the face's intents plane (titles, daemon revisions, body digests, taint; a proposal
 # grants nothing); `kahua_stage` writes ONE row into the face's local canon `bags/daemon-<F>` (local, unsigned: the row a
-# lift later names); `kahua_list` and `kahua_get` read the stage's VERIFIED items (the fold, never a raw tiddler). Each
+# lift later names); `kahua_get` reads the stage's VERIFIED items (the fold, never a raw tiddler). Each
 # mirrors `lares kahua propose|stage|list|get` and rides a local SESSION under the `seat` hand (`lares_uds.session_act`),
 # whose profile the vessel refuses every kahua pin, lift, withdraw and carry. THE SEAT PROPOSES AND STAGES; THE OPERATOR'S
 # HAND LIFTS: no MCP tool lifts, withdraws, carries or mints (`lares kahua lift|withdraw|carry|mint` stay the operator's).
-KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_list", "kahua_get")
+KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_get")
 
 # THE LAW INDEX — the house's law offered where an agent wakes: `law_index` reads the pinned law first (the boot seed, then
 # the Mu family), then every root meme under a bag's `api/` tree, each with its one line (description, else role);
@@ -233,7 +232,8 @@ SEAT_INSTRUCTIONS = (
     "Read the house's law before you act: `law_index` lists the pinned law first (the boot seed, then the Mu family), "
     "then every law meme under a bag's api/ tree, each with its one line; `tiddler_get(title=<title>, recipe=\"default\", meme=True, grain=\"whole\")` "
     "reads one whole (paged on slot boundaries past one page; without the grain a long one answers its has-stack first); `law_pin` / `law_unpin` order the pins in this face's own daemon wiki. Every read names the wiki or bag that "
-    "answered. Turn what you read through the five tools: let it spark a move (🜂), weigh how it sits with the mutual "
+    "answered. `kahua_get` and `meme_offer_show` list without an identifier and read one verified item with one; "
+    "the local `bag show [<slug>]` surveys bags and has no MCP route. Turn what you read through the five tools: let it spark a move (🜂), weigh how it sits with the mutual "
     "frame (🜄), verify its claims whatever their layer (🜁), let its residency ground its standing without crowning it "
     "(🜃), and hold the ladder itself as catma (🜍). Working-layer notes carry the house's live thinking, your own "
     "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense promote`, `retire`, "
@@ -300,13 +300,11 @@ VERB_SEATS = {
     # The offering door — an offer appends a signed row to the Nexus's offer table and moves no canon byte; the reads fold
     # the table → HOTL. The promotion never seats here: no MCP tool carries it.
     "meme_offer": (True, False),        # one signed offer toward a house-canon bag — grants nothing, trusted → HOTL
-    "meme_offer_list": (True, False),   # the offer table, each record's freshness against canon — a read → HOTL
     "meme_offer_show": (True, False),   # one offer's field diff against canon — a read → HOTL
     # The kahua seat verbs — a proposal grants nothing (the operator's signed lift decides) and the reads fold the
     # verified stage; both stay on the face's own fleet → HOTL. The lift itself never seats here: no MCP tool carries it.
     "kahua_propose": (True, False),     # one proposal batch on the face's intents plane — grants nothing, trusted → HOTL
     "kahua_stage": (True, False),       # one row in the face's local canon, unsigned and on this device alone → HOTL
-    "kahua_list": (True, False),        # the stage's verified standing items — a read → HOTL
     "kahua_get": (True, False),         # one title's verified item (and its history) — a read → HOTL
     # 6b control verbs — the SEAT stands now; execution rides in after the HITL talk-story locks.
     "attach": (True, True),      # admit a guest sensorium — TRUST-CROSSING → HITL
@@ -1651,7 +1649,7 @@ def build_mcp(coordinator: LaresCoordinator):
         """OFFER records from the worn face's working layer toward a house-canon `bag` — mirrors `lares meme offer <uri…>
         --bag <slug>`. Each record names its carrier digest and its fork base (the canon carrier its working copy forked
         from, or none for a new title); the offer seals under the face's atom and lands on the Nexus's offer table. It
-        GRANTS NOTHING and moves no canon byte: the Kahu steward reviews (`meme_offer_list`, `meme_offer_show`) and promotes
+        GRANTS NOTHING and moves no canon byte: the Kahu steward reviews (`meme_offer_show`) and promotes
         by hand. A withheld or `cap/**` title refuses `offer-withheld-title`. `nexus` names the Nexus where this vessel's
         island reads no charter. Returns {cid, landed, bag, nexus, records}; a replay answers `landed: false`."""
         if not isinstance(uris, list) or not uris or not all(isinstance(u, str) and u.startswith("lar:") for u in uris):
@@ -1662,30 +1660,29 @@ def build_mcp(coordinator: LaresCoordinator):
         return _offer_wire("offer-make", args)
 
     @mcp.tool()
-    def meme_offer_list(bag: "str | None" = None, all: bool = False, nexus: "str | None" = None) -> dict:  # noqa: A002 — the CLI's `--all`
-        """LIST the offers on the Nexus's offer table — mirrors `lares meme offer list [--bag <slug>] [--all]`. Each offer
-        names its records and each record's freshness against canon now: `new`, `base-holds`, `landed`, or
-        `canon-is-fresher` (canon moved since the fork — a WARNING, never a refusal). Open offers alone unless `all`.
-        Returns {nexus, offers, setAside}. Reads alone."""
-        args: dict = {}
+    def meme_offer_show(cid: "str | None" = None, bag: "str | None" = None, all: bool = False,
+                        after: "str | None" = None, limit: "int | None" = None, nexus: "str | None" = None) -> dict:
+        """SHOW offers at two grains — mirrors `lares meme offer show [<cid>]`. Without a CID, reads a bounded page
+        of the Nexus offer table with count, source, freshness and continuation; `bag` and `all` filter that list.
+        With a CID, reads its verified diff against canon and the next operation. Reads alone."""
+        if cid is not None and (not isinstance(cid, str) or len(cid) != 64 or any(c not in "0123456789abcdef" for c in cid)):
+            raise SeatArgumentRefused("meme_offer_show: `cid` names one offer CID (64 lower-case hex)")
+        if cid is not None and (bag is not None or all or after is not None or limit is not None):
+            raise SeatArgumentRefused("meme_offer_show: a CID refuses list filters bag, all, after and limit")
+        if limit is not None and (not isinstance(limit, int) or isinstance(limit, bool) or limit < 1):
+            raise SeatArgumentRefused("meme_offer_show: limit takes a positive whole row count")
+        args: dict = {"cid": cid} if cid is not None else {}
         if bag:
-            args["bag"] = _offer_bag("meme_offer_list", bag)
+            args["bag"] = _offer_bag("meme_offer_show", bag)
         if all:
             args["all"] = True
+        if after:
+            args["after"] = after
+        if limit is not None:
+            args["limit"] = limit
         if nexus:
             args["nexus"] = nexus
-        return _offer_wire("offer-list", args)
-
-    @mcp.tool()
-    def meme_offer_show(cid: str, nexus: "str | None" = None) -> dict:
-        """SHOW one offer — mirrors `lares meme offer show <cid>`: each record's freshness and its field diff against canon
-        now ({field, canon, offered}). Returns the listing row plus `diffs`. Reads alone."""
-        if not isinstance(cid, str) or len(cid) != 64 or any(c not in "0123456789abcdef" for c in cid):
-            raise SeatArgumentRefused("meme_offer_show: `cid` names one offer CID (64 lower-case hex)")
-        args: dict = {"cid": cid}
-        if nexus:
-            args["nexus"] = nexus
-        return _offer_wire("offer-show", args)
+        return _offer_wire("offer-show" if cid is not None else "offer-list", args)
 
     # ── the KAHUA namespace — an AI seat proposes, stages and reads its face's stage through a `seat` session ──
 
@@ -1739,26 +1736,26 @@ def build_mcp(coordinator: LaresCoordinator):
         return uds.session_act("kahua-stage", args, face=_kahua_face(face))
 
     @mcp.tool()
-    def kahua_list(face: "int | None" = None) -> dict:
-        """LIST the face's kahua stage — mirrors `lares kahua list`. Every standing item the stage's signed acts
-        verify under the face's grant: {items: [{title, status: standing|siblings, heads: [{cid, text, fields,
-        parent, origin, taint, sources, proposal, signer, withdrawn}]}], relation}. `siblings` names two lifts on
-        one parent, both kept. `relation` names the face's opaque relation id F, the identity its daemon canon
-        bag carries (`bags/daemon-<F>`); null where the face's log names none yet. A fresh face whose log pins no
-        stage answers {items: [], relation, `stage: "none"`}, never a refusal. A plain tiddler in the stage doc
-        never lists. Rides a `seat` session over the @daemon wire."""
-        return uds.session_act("kahua-read", {"action": "list"}, face=_kahua_face(face))
-
-    @mcp.tool()
-    def kahua_get(title: str, history: bool = False, face: "int | None" = None) -> dict:
-        """GET one title's item on the face's kahua stage — mirrors `lares kahua get <title>`. Returns {item}
-        (null where none stands: never lifted, or every head withdrawn) and, with `history`, every verified revision,
-        withdrawn ones included. Rides a `seat` session over the @daemon wire."""
-        if not isinstance(title, str) or not title:
-            raise SeatArgumentRefused("kahua_get: name a `title`")
-        args: dict = {"action": "get", "title": title}
+    def kahua_get(title: "str | None" = None, history: bool = False, face: "int | None" = None,
+                  after: "str | None" = None, limit: "int | None" = None) -> dict:
+        """GET the face's verified kahua stage at two grains — mirrors `lares kahua get [<title>]`.
+        Without a title, lists bounded items with source, count, relation and continuation; a fresh face answers
+        `stage: "none"`. With a title, returns the verified item or null and optional history. Reads alone."""
+        if title is not None and (not isinstance(title, str) or not title):
+            raise SeatArgumentRefused("kahua_get: name a nonempty `title`")
+        if title is None and history:
+            raise SeatArgumentRefused("kahua_get: history needs a title")
+        if title is not None and (after is not None or limit is not None):
+            raise SeatArgumentRefused("kahua_get: a title refuses list pagination")
+        if limit is not None and (not isinstance(limit, int) or isinstance(limit, bool) or limit < 1):
+            raise SeatArgumentRefused("kahua_get: limit takes a positive whole row count")
+        args: dict = {"action": "get", "title": title} if title is not None else {"action": "list"}
         if history:
             args["history"] = True
+        if after:
+            args["after"] = after
+        if limit is not None:
+            args["limit"] = limit
         return uds.session_act("kahua-read", args, face=_kahua_face(face))
 
     # ── the DURABLE sensorium-lifecycle sub-verbs a seat runs — each mirrors `lares sense <verb>` and routes

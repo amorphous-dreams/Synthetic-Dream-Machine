@@ -219,7 +219,7 @@ export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-ve
 export { makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, WikiRetireRefusal } from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
 export { makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
-export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, tagTokens, carrierSlots, carrierSlotText, pageCarrier, memeGradient, slotHasLines, type ReadGrain, type GrainEcho, type CarrierSlot, type MemeGradient } from "./read-gradient.js";
+export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, pagePlaneRows, tagTokens, carrierSlots, carrierSlotText, pageCarrier, memeGradient, slotHasLines, type ReadGrain, type GrainEcho, type CarrierSlot, type MemeGradient } from "./read-gradient.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {

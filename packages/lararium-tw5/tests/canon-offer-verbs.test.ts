@@ -22,6 +22,17 @@ import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fix
 import { placeMeme, readMeme } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
 import { storedLarRecord } from "@lararium/mesh";
+import { pagePlaneRows } from "../src/read-gradient.js";
+
+test("plane rows bound empty and many answers with a checked continuation", () => {
+  expect(pagePlaneRows([])).toEqual({ rows: [], count: 0, next: null });
+  const rows = Array.from({ length: 33 }, (_, i) => ({ cid: String(i) }));
+  const first = pagePlaneRows(rows);
+  expect(first).toMatchObject({ count: 33, rows: rows.slice(0, 32) });
+  expect(first.next).toBeTruthy();
+  expect(pagePlaneRows(rows, first.next)).toMatchObject({ rows: rows.slice(32), count: 33, next: null });
+  expect(() => pagePlaneRows(rows.slice(1), first.next)).toThrow(/plane-cursor-stale/);
+});
 
 /** A meme of two slots: its root record calls two slot records, so the root alone renders hollow. */
 const MEME_URI = "lar:///ha.ka.ba/lares/docs/pono/offered-whole";
@@ -127,8 +138,13 @@ describe("the offer verbs", () => {
       expect(r.canon.headsNow()).toEqual(canonHeads);
       const cid = String(made["cid"]);
       const listed = await makeOfferListReactor(r.opts(undefined, h1))({ bag: "lares" }, ctxOf(r.composite));
+      expect(listed).toMatchObject({ source: "nexus-offer-table", grain: "list", count: 1, next: null });
+      expect(String(listed["has"])).toMatch(/^<<~ has /);
       expect((listed["offers"] as Array<{ cid: string; records: Array<{ freshness: string }> }>)[0]).toMatchObject({ cid, records: [{ freshness: "base-holds" }] });
       const shown = await makeOfferShowReactor(r.opts(undefined, h1))({ cid }, ctxOf(r.composite));
+      expect(shown).toMatchObject({ source: "nexus-offer-table", grain: "item", nextOperation: `lares meme offer promote ${cid}` });
+      expect(String(shown["has"])).toMatch(/^<<~ has /);
+      expect(await makeOfferShowReactor(r.opts(undefined, h1))({ cid: "f".repeat(64) }, ctxOf(r.composite))).toMatchObject({ ok: false, refusal: "offer-unknown" });
       expect(shown["diffs"]).toEqual([{ title: T, fields: [{ field: "text", canon: "canon says", offered: "the engineer says" }] }]);
 
       expect(await reasonOf(async () => makeOfferPromoteReactor(r.opts(await strangerHand("admitted-not-joined"), h1))({ cid }, ctxOf(r.composite)))).toBe("kahu-reach");
