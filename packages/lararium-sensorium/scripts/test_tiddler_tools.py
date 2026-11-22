@@ -280,3 +280,10 @@ def test_slot_write_names_one_source_and_a_base(daemon):
         with pytest.raises(ValueError):
             t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", **kwargs)
     assert daemon.lines == []
+
+
+def test_meme_all_joins_pages_and_retains_the_first_provenance(daemon):
+    daemon.output = {"has": "<<~ has name=`first`>>", "title": "lar:///t/x", "meme": {"text": "aloha", "canonicalHash": "hash", "bytes": 5}, "grain": {"applied": "whole"}, "next": None}
+    answer = _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
+    assert answer == daemon.output
+    assert daemon.wire()["args"]["grain"] == "whole"

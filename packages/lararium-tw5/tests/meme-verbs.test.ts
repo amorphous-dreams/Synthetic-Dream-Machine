@@ -1036,6 +1036,19 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
   });
 
+  test("an unbound partial base refuses before a slot write", async () => {
+    const { read, patch } = await seeded();
+    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", base: `partial:${(await read()).canonicalHash}` }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+  });
+
+  test("bare and canonical slot reads name the same span", async () => {
+    const { r } = await seeded();
+    const get = makeMemeGetReactor(r.opts);
+    const bare = await get({ recipe: "default", uri: URI, slot: "a" }, ctx());
+    const canonical = await get({ recipe: "default", uri: URI, slot: "#/a" }, ctx());
+    expect(bare).toEqual(canonical);
+  });
+
   test("★ a missing slot refuses by name and moves nothing ★", async () => {
     const { read, patch } = await seeded();
     const receipt = await patch({ recipe: "default", uri: URI, slot: "#/nowhere", append: "x", base: (await read()).canonicalHash }, ctx());

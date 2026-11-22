@@ -11,7 +11,7 @@ import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { carrierFiles } from "../src/carrier-files.js";
-import { carrierSlots, carrierSlotText, pageCarrier, READ_PAGE_BYTES } from "../src/read-gradient.js";
+import { carrierSlots, carrierSlotText, pageCarrier, pageOfSlot, READ_PAGE_BYTES } from "../src/read-gradient.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 /** The grammar's own carrier, found through the house's carrier walk (`carrierFiles`), the one the witness below reads. */
@@ -75,4 +75,13 @@ describe("the read gradient's slots are the stored family's", () => {
     expect(off).toEqual([]);
     expect(checked, "the witness reads the canon, never an empty walk").toBeGreaterThan(500);
   }, 120_000); // the walk reads every canon carrier (~988) twice over; a CI runner needs far past the default 5 s
+});
+
+
+test("a byte-zero oversized slot and its sibling follow the splitter's pages", () => {
+  const text = `<<~ ahu slot=\`#/a\`>>\n${"x".repeat(100)}\n<<~/ahu>>\n<<~ ahu slot=\`#/b\`>>\n<<~ ahu slot=\`#/b/nested\`>>\nn\n<<~/ahu>>\n<<~/ahu>>\n`;
+  const first = pageCarrier(text, "hash", null, 50);
+  expect(first.text).toContain("#/a");
+  expect(pageOfSlot(text, "#/a", 50)).toBe(1);
+  expect(pageOfSlot(text, "#/b/nested", 50)).toBe(2);
 });
