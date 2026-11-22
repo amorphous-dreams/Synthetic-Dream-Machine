@@ -1,5 +1,5 @@
 {
-  "description": "Lares wake — on session start, observe the live Lararium and carry its frame, the homes line, the rows in play and the worn face's memory index into the chat; before a compaction, hand the summary the rows in play and the index by address; at a session's end, start the due keep (`lares rite keep --if-due`). Portable (node exec-form, no bash).",
+  "description": "Lares wake — on session start, observe the live Lararium and carry its frame, the homes line, the rows in play, the law, who is home and the worn face's memory index into the chat; before a compaction, hand the summary the rows in play and the index by address; at a session's end, start the due keep (`lares rite keep --if-due`). Portable (node exec-form, no bash).",
   "hooks": {
     "SessionStart": [
       {

@@ -135,7 +135,8 @@ def test_every_tiddler_tool_refuses_a_missing_container_before_the_wire(daemon):
     for call in (lambda: t["wiki_filter"](filter="[tag[x]]"), lambda: t["tiddler_get"](title="T"),
                  lambda: t["wiki_render"](title="T"), lambda: t["tiddler_put"](title="T", fields={"a": "b"}),
                  lambda: t["tiddler_delete"](title="T"), lambda: t["wiki_status"](),
-                 lambda: t["tiddler_get"](title="T", recipe="default", bag="lares")):
+                 lambda: t["tiddler_get"](title="T", recipe="default", bag="lares"),
+                 lambda: t["wiki_filter"](filter="[tag[x]]", recipe=None)):
         with pytest.raises(ValueError, match="no-container"):
             call()
     assert daemon.lines == []
@@ -232,3 +233,20 @@ def test_the_cards_name_the_rendered_read(daemon):
     assert "rendered-from" in filt and "slice" in filt, filt
     for name in ("tiddler_put", "tiddler_delete"):
         assert "rendered-derives" in tools[name].description, name
+
+
+def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon):
+    # `tiddler_get` reads a bag (one record, no engine) and names it on the wire; every engine verb names `recipe` alone,
+    # so a `bag` there never rides (the call refuses before the wire, the signature carries no `bag`).
+    import inspect
+    t = _tools()
+    daemon.output = {"bag": "lar:///ha.ka.ba/bags/lares", "title": "T", "tiddler": None}
+    assert t["tiddler_get"](title="T", bag="lares") == daemon.output
+    assert daemon.wire() == {"verb": "tiddler-get", "args": {"bag": "lares", "title": "T"}}
+    for name in ("wiki_filter", "wiki_render", "wiki_status", "tiddler_put", "tiddler_delete"):
+        assert "bag" not in inspect.signature(t[name]).parameters, name
+    with pytest.raises(TypeError):
+        t["wiki_filter"](filter="[tag[x]]", bag="lares")
+    with pytest.raises(ValueError, match="tiddler_get\\(bag"):
+        t["wiki_status"]()
+    assert len(daemon.lines) == 1

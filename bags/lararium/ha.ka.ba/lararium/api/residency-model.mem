@@ -149,6 +149,8 @@ Every ACTION writes an ''indelible effect record'' tiddler in each affected bag,
 
 Effect records live within each bag at `lar:///<bag>/ledger/residency/<event-id>` — the bag's indelible residency ledger. Records stay append-only and persist in perpetuity, even when a later ACTION deaccessions the underlying tiddler. ''The artifact may leave; the record of its prior presence here, and of its leaving, never does.''
 
+The house holds that line where a whole document leaves: `lares wiki retire` erases a face's wiki shell, and before it erases a shell layer's effect records it carries them verbatim into one retirement record per slug, `lar:///ha.ka.ba/lararium/shell-leavings/<slug>`, in that face's daemon wiki working layer, and reads the copy back. The face owns that layer, its mirror rests under `projections/` past a re-found, and the keep carries it. A carry that cannot land refuses the retire (`retire-carry-unlanded`) and erases nothing (`packages/lararium-mesh/src/shell-leaving-record.ts`).
+
 This dual-surface design — ACTION verbs for the //gesture//, archival verbs for the //audit// — resonates structurally with web3 causal-islands models. The archival profession solved the identity-across-custody problem before software did; we adopt the discipline along with the vocabulary. The ''Floating Librarians of Mu register'' applies — Mu's stewards of memory cooperate with archivists, not with version-control engineers.
 
 <<~/ahu>>
@@ -299,6 +301,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QgUTlA3cAubKuuqI9wbGsa9c9XfGQM3Jj_00Fd3544s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lmdfu_pYk3AaxJxqhakht_ZmCh7Pnk521giK0c-UcyQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
