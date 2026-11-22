@@ -52,6 +52,7 @@ import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-con
 import { verbFailure, refusalCode, refusalHint } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { cmdDraft } from "./draft.js";
 
 /**
  * A receipt's `done`/`error` reads exactly like `runVerb`'s own resolved result — build that shape
@@ -111,6 +112,7 @@ function printUsage(): void {
   console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
   console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
   console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>]");
+  console.error("  --draft <uri>      pull a tiddler from a lower bag into a writable draft [--to <bag>] (no tombstone)");
   console.error("");
   console.error("  --yes              skip confirmation prompt");
   console.error("  --dry-run          preview the effect without committing it");
@@ -195,7 +197,7 @@ async function actRepack(args: ParsedArgs): Promise<number> {
           emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
           return exitFor("request-interrupted");
         }
-        const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares receipt ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
+        const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares vessel request ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
         emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
@@ -244,6 +246,14 @@ async function actRepack(args: ParsedArgs): Promise<number> {
 export interface ActClaims { readonly houseCanon?: boolean }
 
 export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<number> {
+  // `--draft <uri>` pulls a lower-bag tiddler into a writable draft: the pull rides this door, the landing rides an ACTION verb.
+  if (args.flags["draft"] === true) {
+    if (args.positional[0] !== undefined && (isActionVerb(args.positional[0]) || args.positional[0] === "REPACK")) {
+      console.error(`lares act --draft: "${args.positional[0]}" is an ACTION verb; --draft takes the tiddler to pull (lares act --draft <uri>)`);
+      return 2;
+    }
+    return await cmdDraft(args);
+  }
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -567,7 +577,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         // is a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
         // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
         // retry rather than a new change: reuse `--change-id`.
-        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares vessel request ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
           human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },

@@ -55,7 +55,10 @@ describe("L3 · help and refusal render the same bytes", () => {
     expect(r.out.trimEnd()).toBe(helpLines(key).join("\n").trimEnd());
   });
 
-  test.each(refusingDoors().map((k) => [k]))("`%s` refuses an unknown verb with the same lines, exit 2", async (key) => {
+  // A sub-door that takes a positional where a sub-verb would stand (`persona raise-sign <challenge-json>`) holds no verb for an
+  // unknown name to miss: its refusal rides a missing argument, which `tests/fewer-front-doors.test.ts` walks.
+  const TAKES_A_POSITIONAL = new Set(["persona raise-sign"]);
+  test.each(refusingDoors().filter((k) => !TAKES_A_POSITIONAL.has(k)).map((k) => [k]))("`%s` refuses an unknown verb with the same lines, exit 2", async (key) => {
     const r = await door([...key.split(" "), UNKNOWN, "--no-json"]);
     expect(refusalCarries(r, key)).toBe(true);
   });

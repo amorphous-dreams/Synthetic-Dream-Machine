@@ -9,7 +9,7 @@
  * vessel's own /tmp.
  *
  * HOST VERBS STAY HOME. `home` and `repo` edit this machine's homes and checkout; `help` and every `--help` render
- * from the table; `wing-of` reads a transcript on this disk; `mempalace` tends the guest comparator in this home;
+ * from the table; `mempalace` tends the guest comparator in this home;
  * `meme normalize|check` and `meme project <file> --to md` run over a file with no daemon; `surface` keeps the face pools,
  * which rest on this disk, and asks the vessel only for the face no label settles. They never forward.
  *
@@ -79,7 +79,7 @@ export function shimHelpLines(verb: string): string[] | null {
 }
 
 /** Commands that run on this machine whole. */
-const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "ddate", "mempalace", "mcp", "surface"]);
+const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "ddate", "mempalace", "mcp", "surface"]);
 
 /** Commands with some sub-verbs local and the rest in the vessel. */
 const MIXED_COMMANDS: ReadonlySet<string> = new Set(["meme", "rite"]);
@@ -196,7 +196,6 @@ export function decideRoute(input: RouteInput): Route {
 const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
   act:     ["out", "source"],                       // REPACK --source <bundle> [--out <file>]; --from names a bag
   ingest:  ["source"],
-  watch:   ["source"],
   meme:    ["file", "out", "root"],
   bag:     ["dir", "root"],                         // bag repo add --root <path>; --dir <bags dir>
   vault:   ["out"],

@@ -1,5 +1,5 @@
 /**
- * watch-rides-the-seat — `lares watch` rides the ONE drain seat (`@lararium/node` watch-core, face-pools W1): the settle,
+ * watch-rides-the-seat — `lares ingest --watch` rides the ONE drain seat (`@lararium/node` watch-core, face-pools W1): the settle,
  * the one-wave-at-a-time rerun, the noise filter and the cookie proof stand there once, and the CLI fills only its wave.
  *
  *   L1 the package hands the seat, the noise filter, the cookie proof and the pool's host out of its barrel
@@ -8,7 +8,7 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 
-describe("lares watch rides the one drain seat", () => {
+describe("lares ingest --watch rides the one drain seat", () => {
   test("L1 — @lararium/node hands out drainSeat, isWatchNoise, cookieSelfTest and armFacePoolWatch", async () => {
     const node = await import("@lararium/node") as Record<string, unknown>;
     expect(typeof node["drainSeat"]).toBe("function");

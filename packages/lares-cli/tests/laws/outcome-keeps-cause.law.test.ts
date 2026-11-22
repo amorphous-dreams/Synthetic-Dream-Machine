@@ -109,7 +109,7 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
       ["bag-retired", () => refusalHint("bag-retired", undefined), "lares act CREATE --bag"],
       ["bag-retired through the store door", () => storeFailure(new RoutedVerbRefused("m", "bag-retired")).hint, "lares act CREATE --bag"],
       ["daemon-unreachable", () => verbFailure(new DaemonUnreachable("/x")).hint, "lares vessel stand"],
-      ["outcome-unknown", () => verbFailure(new LocalWaitExpired("v", 1, "req-7")).hint, "lares receipt req-7"],
+      ["outcome-unknown", () => verbFailure(new LocalWaitExpired("v", 1, "req-7")).hint, "lares vessel request req-7"],
     ];
     test.each(CURES.map(([c, f, n]) => [c, f, n] as [string, () => string | undefined, string]))("the cure for %s names its settling act", (_cause, cure, names) => {
       expect(cure() ?? "").toContain(names);
@@ -186,7 +186,7 @@ describe("L9 · a named outcome keeps its cause and its exit class", () => {
       const held = storeFailure(Object.assign(Object.create(StoreHeld.prototype) as Error, { message: "a vessel (pid 7) holds the store" }));
       expect([waited.code, slow.code, gone.code, held.code]).toEqual(["outcome-unknown", "store-door-timeout", "daemon-unreachable", "store-held"]);
       expect([waited.code, slow.code, gone.code, held.code].map(exitFor)).toEqual([6, 3, 3, 4]);
-      expect(waited.hint).toMatch(/lares receipt req-7/);   // an unknown outcome names the read that settles it
+      expect(waited.hint).toMatch(/lares vessel request req-7/);   // an unknown outcome names the read that settles it
     });
 
     test("a fault that names nothing keeps the word its command gave (CONTROL)", () => {

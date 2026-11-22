@@ -130,12 +130,12 @@ The CLI and the vessel share a machine and meet at the vessel's owner-only socke
 
 | A person runs | The line | The vessel answers |
 | `lares act …` and every verb command | the verb, its arguments, the requester, a request id the CLI minted | the outcome, a named refusal, or `unknown` where the vessel's own wait ended |
-| `lares receipt <id>` | `{op:"receipt"}` | the ledger's reading of the id |
-| `lares cancel <id>` | `{op:"cancel"}` | what a receipt read answers after the cancel took its turn: `abandoned` where the cancel stands, else what the vessel holds for the id |
+| `lares vessel request <id>` | `{op:"receipt"}` | the ledger's reading of the id |
+| `lares vessel request <id> --cancel` | `{op:"cancel"}` | what a receipt read answers after the cancel took its turn: `abandoned` where the cancel stands, else what the vessel holds for the id |
 
 On this leg two of the three receipts exist. The cancel line carries the caller's abandonment, and the answer carries the vessel's outcome. No relay stands between them, so no delivery receipt exists.
 
-''`lares cancel` reports both.'' A cancel that stands reads `withdrawn: true` and exits clean. A cancel that met a commit reads `withdrawn: false` with the code `cancel-lost` and the state the vessel holds, and the act runs on. A line from the vessel that names no state reads as a fault on both doors, never as a verdict.
+''`lares vessel request --cancel` reports both.'' A cancel that stands reads `withdrawn: true` and exits clean. A cancel that met a commit reads `withdrawn: false` with the code `cancel-lost` and the state the vessel holds, and the act runs on. A line from the vessel that names no state reads as a fault on both doors, never as a verdict.
 
 ''The CLI mints the request id before it sends'', so the id survives a lost answer. A CLI whose wait ended reports `outcome-unknown` with the id, reads the receipt once by that id, and never sends the verb a second time.
 
@@ -191,6 +191,6 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KNqwm7XIiXCXP0d1--i0VEYG3U2t4l5Xpd_n3PFE3xo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WEPjfa5pdEhHo6MKgxSkCQD4RH5rjny9PImhKl5J1t8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

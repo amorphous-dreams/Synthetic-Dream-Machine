@@ -286,7 +286,7 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 * ''A holder that answers the asker and fences its epoch, faceless.'' The shared holder delivers each island message by one closed route table (`packages/lararium-browser/src/holder-routes.ts`): a reply to the port that asked, camera traffic to the port that leases the camera, the island's own asks to the port whose manifest it took; it drops the rest by name and broadcasts nothing. It mints one random `ownerEpoch` per boot and one random `sessionId` per port, greets each port with its envelope, and refuses by name, to that port alone, a message with no envelope, another owner's epoch, an unknown session, another port's session or another generation; the island sees no envelope (`packages/lararium-browser/src/shared-holder-core.ts`, the tab's half in `shared-holder.ts`). These sessions carry the maintenance channel and wear no face.
 * ''A CLI over the local socket'' with caller-generated request ids and durable outcomes (`packages/lares-cli/src/local-connector.ts`, `packages/lararium-node/src/uds-channel.ts`). The one-shot maintenance frame reads one line and ends its socket. A bound session rides the same socket in line-delimited frames: `session:open` through the explicit `UdsSessionDoor` seam (the face supplier answers the `SessionFace`, the hand's profile and the presenter; a face hint grants nothing; no door means `no-session-door`), then `session:call`, `session:receipt`, `session:cancel` and `session:close`, each checked by `checkBound` and answered in arrival order, and each session ends with its socket. A face's request ids and effect keys rest under its proof subject (#/receipts), and a terminal answer leaves after the disk fence. The node's production door answers `session:open` and `session:switch` (#/the-hands) at the vessel's anchor, its dialed Nexus or its own place; a verb that acts as a face rides a session alone, and a faceless vessel serves the maintenance frame alone.
 * ''A working document in the wiki's realm workbench'' (`realmWorkbenchDocUrl`, `standWorkbench`, the slot-doc resolver's workbench port; #/the-working-layer).
-* ''A watcher that names its own destination.'' `lares watch --source <dir> --to <bagUri>` takes the bag from its caller and submits each wave under the vessel's identity (`packages/lares-cli/src/commands/watch.ts`); no lease and no face stands between a disk edit and its signature.
+* ''A watcher that names its own destination.'' `lares ingest --watch --source <dir> --to <bagUri>` takes the bag from its caller and submits each wave under the vessel's identity (`packages/lares-cli/src/commands/watch.ts`); no lease and no face stands between a disk edit and its signature.
 
 ''What stands specified in code.'' Each names a module and its vectors. No production path calls any of them, so none reads as built (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/wiring-an-unreached-module`>>).
 
@@ -340,6 +340,6 @@ The debts and the history behind this contract: <<~ loulou uri=`lar:///ha.ka.ba/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rUq4M1YBDIp8TPlmvEsLtYigNnvA3bE7S1BpV8bwo5M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ogz_da8PfyEk5H81-P1-QaV_biY_EavClHFPgkd1QvE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

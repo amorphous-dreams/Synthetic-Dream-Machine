@@ -3,7 +3,7 @@
  * (NEXT VECTOR build 4, the deferred cut; handoff #watcher-talk-story).
  *
  * A one-shot `lares ingest` walks disk, so a vanished carrier never appears in its
- * scan; the long-lived `lares watch` daemon, tracking what it last saw, witnesses a
+ * scan; the long-lived `lares ingest --watch` daemon, tracking what it last saw, witnesses a
  * vanish. The watcher tombstones nothing by itself and holds no clock over a vanish:
  * it hands each vanished address to the vessel's shore, where the carrier stands as a
  * PENDING REMOVAL until a person answers through `lares shore`. This vector drives the
@@ -73,13 +73,13 @@ interface WatchProc {
   readonly stop: () => Promise<void>;
 }
 
-/** Spawn `lares watch --apply` against the staged vessel; stream its log. */
+/** Spawn `lares ingest --watch --apply` against the staged vessel; stream its log. */
 function spawnWatch(): WatchProc {
   let log = "";
   const child = spawn(
     process.execPath,
     [
-      CLI_BIN, "watch",
+      CLI_BIN, "ingest", "--watch",
       "--source", SRC, "--to", LARES_URI, "--apply",
       "--debounce", "150",
     ],

@@ -1,7 +1,7 @@
 /**
  * watch-core — THE DRAIN, ONE SEAT (face-pools #/lanes W1, W2). Disk events carry HINTS (Confluence): the seat coalesces a
  * settle window into ONE wave, runs one wave at a time, and queues exactly one rerun for hints that land mid-wave. The
- * CLI's `lares watch` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
+ * CLI's `lares ingest --watch` fills the wave with its INGEST settle; the vessel fills it over the WORN face's pool.
  *
  * THE VESSEL'S HOST (`armFacePoolWatch`) watches one face root, `projections/faces/<pet name>/`, and its planes alone:
  * `wikis/daemon/`, `bags/daemon/`, `bags/kahua/` (the kahua stage flows back from disk too: RULED floor 4 (b)), `personal/`, `recovery/`. It

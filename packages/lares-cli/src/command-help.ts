@@ -515,7 +515,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
-    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|roster|census|fresher|floor|rite> [flags]",
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|roster|census|fresher|floor|request|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
@@ -533,6 +533,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel fresher --bag sdm          # each working copy's base hash beside the canon hash standing now",
       "lares vessel lay --apply --lift-kahua 3    # also lift the 3 kahua items the preview named",
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
+      "lares vessel request <requestId>        # read a request's receipt, dispatching nothing",
+      "lares vessel request <requestId> --cancel  # withdraw it before it is read: your own hand, never a timeout's",
       "lares vessel floor status               # the vessel's floor pin: pinned release, newest seen, fast-forward, fork",
       "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
       "lares vessel floor seed [--genesis <dir>]  # the seed a genesis dir offers (CID, digests) beside the founding record; moves nothing",
@@ -548,6 +550,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "roster --json        the roster whole: {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts, more}, the body the MCP seat's vessel_roster answers",
       "read --json          the reading as one JSON object (every lens; `read vessel` names each document); a pipe reads the terminal's prose",
       "census --docs        every document the stores hold: its class (current · duplicate · orphan · last-version · sealed-unread), who names it, the unnamed list; removes nothing; --json the full rows",
+      "request <requestId>  the receipt the vessel's ledger and durable outcome doc hold; reads, never dispatches; --cancel withdraws the request (the operator's own explicit act)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
       "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
       "floor seed --genesis <dir>  the genesis dir whose seed reads (else LAR_GENESIS through the one resolver; an image carries /app/genesis); --json carries `seed`, the line the pūlama takes",
@@ -973,7 +976,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list | sync | reissue [--nexus <aid>] [--face N] | recovery-contact show <index> | recovery-contact offer --prefix <persona-…> | recovery-contact enrol <index> --threshold <k> <offer>… | recovery-contact view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list | sync | reissue [--nexus <aid>] [--face N] | recovery-contact show <index> | recovery-contact offer --prefix <persona-…> | recovery-contact enrol <index> --threshold <k> <offer>… | recovery-contact view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key> | raise-sign <challenge-json> [--as <index>]>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
@@ -995,6 +998,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares persona provisional 1              # a restored face: the head its restore read, and who could confirm it",
       "lares persona confirm 1 <lar-log-view:…>  # one party's own view of that head confirms the face",
       "lares persona view <persona-…> --seat-key <key>   # a chair this vessel holds signs its view of a face's head",
+      "lares persona raise-sign '<challenge-json>' --as 0   # sign a vessel's raise challenge as that persona's leaf (its own entry: `lares persona raise-sign --help`)",
       "lares persona recovery-contact view --prefix <persona-…>  # a recovery contact signs its own view of a face's head with its card",
     ],
     flags: [
@@ -1193,11 +1197,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares vessel stand --with-web"],
   },
 
-  raise: {
-    usage: "usage: lares raise sign <challenge-json-text> [--as <persona-index>]",
+  "persona raise-sign": {
+    usage: "usage: lares persona raise-sign <challenge-json-text> [--as <persona-index>]",
     synopsis:
       "The RECOGNISER's half of the raise ceremony. A vessel standing at the WAKING FLOOR emits a challenge " +
-      "as a line of JSON text (its boot log prints it); `raise sign` signs THAT TEXT, taken literally as the " +
+      "as a line of JSON text (its boot log prints it); `persona raise-sign` signs THAT TEXT, taken literally as the " +
       "positional argument (never a path — it reads no file), with your persona's LEAF for the Nexus the " +
       "challenge names (never the root). It attaches that leaf's admit, read off your own replica of the " +
       "Nexus's carriage board as a presented admit — the counted head, its closed lineage, and any roll " +
@@ -1205,9 +1209,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "on an admit it reads HELD on its own place-side carried set — no key of yours ever rests on the " +
       "vessel you raise, and the grant stands only until that Nexus's lease epoch rolls past it.",
     examples: [
-      "lares raise sign '{\"vesselId\":\"<id>\",\"nexus\":\"<aid>\",\"epoch\":0,\"nonce\":\"<hex>\"}'" +
+      "lares persona raise-sign '{\"vesselId\":\"<id>\",\"nexus\":\"<aid>\",\"epoch\":0,\"nonce\":\"<hex>\"}'" +
         "   # sign the vessel's printed challenge as persona 0's leaf",
-      "lares raise sign \"$(cat ./challenge.json)\" --as 2   # ... as persona 2's leaf, challenge saved to a file first",
+      "lares persona raise-sign \"$(cat ./challenge.json)\" --as 2   # ... as persona 2's leaf, challenge saved to a file first",
     ],
     flags: ["--as <persona-index>   which held persona's leaf signs the grant"],
     next: ["lares persona list", "lares vessel read"],
