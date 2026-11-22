@@ -150,11 +150,11 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     expect(`${r.stdout}${r.stderr}`).toMatch(/not-found/);
   });
 
-  test("meme_put with recipe=default through the seat, and `lares tiddler get --recipe default --meme` read the same bytes", async () => {
+  test("tiddler_put with meme=true through the seat, and `lares tiddler get --recipe default --meme` read the same bytes", async () => {
     const projection = join(daemonWikiDir(lar.root), `${PATH}.mem`);
     expect(existsSync(projection), "control: the fresh daemon wiki has no seat tiddler yet").toBe(false);
     const said = await speak(entry, harnessEnv(entry.env), [
-      { name: "meme_put", arguments: { uri: URI, text: MEME, recipe: "default" } },
+      { name: "tiddler_put", arguments: { title: URI, text: MEME, recipe: "default", meme: true } },
       { name: "tiddler_get", arguments: { title: URI, recipe: "default", meme: true, grain: "whole" } },
     ]);
     expect(said.results.length, `the seat answered ${said.results.length} of 2 calls; stderr:\n${said.stderr.slice(-1500)}`).toBe(2);

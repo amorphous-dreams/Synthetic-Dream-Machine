@@ -29,6 +29,7 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { freePort, openStaged, stageDir, unlockStaged, type LarInstance } from "../harness/instance.js";
 import { seedTestCustody } from "../harness/test-door.js";
+import { nameSeatSkip, seatLaunched } from "../harness/seat-launch.js";
 
 /**
  * The herm's rendezvous — DERIVED from its root, never hunted under it.
@@ -264,6 +265,7 @@ afterAll(async () => {
 });
 
 describe("the herm — the floor of the lararium cap stack", () => {
+  nameSeatSkip("herm-floor", ["R5"]);
   test("R1 — a herm reaches live: found, stood, and NO face ever lit", async () => {
     root = standHermRoot();
     seedTestCustody(root, "ignore");   // the harness names the founding route
@@ -374,7 +376,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
       .toMatch(/light a face|unknown verb|no face|waking floor/i);
   }, R4_BUDGET_MS);
 
-  test("R5 — a herm LIFTS into a lararium: the Stable founding act over the place, re-wake, the hearth verbs stand", async () => {
+  test.skipIf(seatLaunched)("R5 — a herm LIFTS into a lararium: the Stable founding act over the place, re-wake, the hearth verbs stand", async () => {
     // THE CHARTER R2 CARRIED IN BELONGS TO THE HEARTH THAT FOUNDED IT, never to this place: a face binds its own hearth's seed
     // charter, and a hearth founds its own seed. The herm's copy leaves before the lift measures a charterless place.
     rmSync(join(root, "hearth", "nexus"), { recursive: true, force: true });
