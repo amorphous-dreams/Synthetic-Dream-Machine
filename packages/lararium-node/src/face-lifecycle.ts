@@ -111,6 +111,9 @@ export interface VisitTicket {
   drop(): void;
 }
 
+/** What a close of every face answers: whether each face reached CLOSED whole (its saves drained, its host side down). */
+export interface FacesClosed { readonly whole: boolean }
+
 /** Why a light request answered as it did. */
 export type LightAnswer = "lit" | "refused";
 
@@ -161,9 +164,10 @@ export interface FaceLives {
   /**
    * Close every face this set knows through its actor (a stand-down, a stop, a slide, a whole lock): resolves once each closed or
    * faulted. A stand-down logs a face that did not close whole and carries on; under `strict` (a whole lock, whose key must not
-   * drop over saves that did not seal) a face that did not close whole rejects, naming each such face.
+   * drop over saves that did not seal) a face that did not close whole rejects, naming each such face. It answers whether every
+   * face closed whole, so a stand-down that carried on still knows (a vessel says its clean goodbye on a whole close alone).
    */
-  closeAll(reason: string, options?: { readonly hold?: boolean; readonly strict?: boolean; readonly stop?: boolean }): Promise<void>;
+  closeAll(reason: string, options?: { readonly hold?: boolean; readonly strict?: boolean; readonly stop?: boolean }): Promise<FacesClosed>;
   /**
    * Hold a face past CLOSED (dark, or closing with its saves drained and its host side down), so it lights not until `release`;
    * answers false (holding nothing) where the face lit, lights, or still settles or drains, and true (holding nothing) for a face
@@ -487,6 +491,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
       if (opts?.strict === true && faults.length > 0) {
         throw new Error(`${faults.map((f) => `face h${f.ordinal}`).join(", ")} did not close whole, so the key stays open: ${faults.map((f) => f.why).join("; ")}`);
       }
+      return { whole: faults.length === 0 };
     },
     hold(ordinal) {
       // A face this set never knew never lit here: nothing stands to hold, and it stays unknown (its door stays ungated).

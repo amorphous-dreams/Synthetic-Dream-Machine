@@ -177,7 +177,7 @@ import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
-import { drainPlans, faceLives, type FaceLives, type FaceLit } from "./face-lifecycle.js";
+import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed } from "./face-lifecycle.js";
 import { adoptFirstLit, faceLend } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -613,7 +613,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
    * Close every face through its actor (a whole lock, ahead of the custody door's line; a stand-down): resolves once each closed or
    * faulted. Under `strict` (a whole lock) a face that did not close whole rejects, naming it, so the key stays open.
    */
-  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<FacesClosed>;
   /** Lift the hold a lock's close set on a face (`dropFace`), once its key locked or the lock let it be: a mount that went dark
    *  while its key still stands open reads lit again. */
   releaseFace: (ordinal: number) => void;
@@ -638,7 +638,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   stopTick:  () => void;
   /** Tear this composition down whole: every island, timer, socket and listener it stood, then its Repo. The
    *  floor it was handed keeps standing; a floor it stood itself releases. */
-  teardown: (closeSessions?: () => Promise<void>) => Promise<void>;
+  /** Answers whether every face closed whole through its actor before the rest tore down: a stand-down that met a face
+   *  holding unsealed saves still tears down, and says so here. */
+  teardown: (closeSessions?: () => Promise<void>) => Promise<FacesClosed>;
   /** The oracle's floor gates, one per Nexus this vessel stands in — the read face a host mounts takes them. */
   floorGates: FlowGateArgs["gates"];
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
@@ -828,7 +830,7 @@ interface NodeBootPrep {
   mountOrdinal: () => number | null;
   litOrdinals: () => readonly number[];
   faceLife: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
-  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<FacesClosed>;
   releaseFace: (ordinal: number) => void;
   releaseFaces: () => void;
   holdFace: (ordinal: number) => boolean;
@@ -5218,7 +5220,7 @@ async function prepareNodeBootOn(
     faceLife,
     // Every face closes held: none lights again on this composition, whose key drops or which stands down next. A whole lock
     // closes strict: a face whose saves did not seal rejects, and its key stays open.
-    closeFaces: async (reason, options) => { await faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }); },
+    closeFaces: (reason, options) => faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }),
     releaseFace,
     releaseFaces: () => { for (const ordinal of faceLife.ordinals()) releaseFace(ordinal); },
     holdFace: (ordinal) => faceLife.hold(ordinal),
@@ -5346,7 +5348,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   // NO EARLY READY: the composition returns standing on its working layer (red 3).
   await p.hostWorkingMounted();
   sayCapMints(p.repo, (line) => console.log(`[lararium] ${line}`));
-  let down: Promise<void> | null = null;
+  let down: Promise<FacesClosed> | null = null;
   return {
     islandCaps: p.islandCaps,
     activeWikiId: p.slotActiveWikiId(),
@@ -5391,9 +5393,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     teardown: (closeSessions) => (down ??= (async () => {
       // EVERY FACE CLOSES THROUGH ITS ACTOR FIRST (a stop, a slide, a wear change): its visits refuse, its work settles and its
       // saves drain before anything below flushes or tears down, and before any next composition lights a face.
-      await p.closeFaces("the composition stands down", { stop: true });
+      const closed = await p.closeFaces("the composition stands down", { stop: true });
       if (closeSessions) p.onShutdown({ what: "the external sessions", phase: "flush", down: closeSessions });
       await p.teardown();
+      return closed;
     })()),
     floorGates: p.floorGates,
     siblingChannel: p.siblingChannel,

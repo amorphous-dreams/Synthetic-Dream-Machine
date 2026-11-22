@@ -154,6 +154,26 @@ export function pulamaStandBy(a: {
   };
 }
 
+/**
+ * THE CLEAN GOODBYE ON A WHOLE CLOSE ALONE (sealed-store#/the-lit-set): a stand-down that met a face whose drain faulted still
+ * tears down, but that face may hold a save it never sealed, so the vessel says no goodbye and its leaving reads as a drop, which
+ * holds the pūlama's close. Answers whether the goodbye was heard.
+ */
+export async function cleanGoodbye(closed: { readonly whole: boolean }, goodbye: () => Promise<boolean>, log: (line: string) => void): Promise<boolean> {
+  if (!closed.whole) {
+    log("no goodbye: a face did not close whole and may hold an unsealed save, so this leaving reads as a drop");
+    return false;
+  }
+  try {
+    const heard = await goodbye();
+    log(heard ? "the pūlama heard this life's goodbye: every save drained" : "no goodbye stands: the pūlama did not hear one, so this leaving reads as a drop");
+    return heard;
+  } catch (e) {
+    log(`goodbye unsent: ${e instanceof Error ? e.message : String(e)}`);
+    return false;
+  }
+}
+
 /** Seat the stand-by and dial once; answers whether a session stood. */
 export async function standByPulama(a: Parameters<typeof pulamaStandBy>[0]): Promise<boolean> {
   return (await pulamaStandBy(a).dial()).session;

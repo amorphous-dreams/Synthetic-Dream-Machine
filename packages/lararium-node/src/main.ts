@@ -82,7 +82,7 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
@@ -986,13 +986,11 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       httpServer.close();
       await step("main-flush", () => result.repo.flush(), (ms) =>
         console.log(`[lararium] main replica flushed durably (main-flush ${ms}ms)`));
-      await step("composition", () => result.teardown(() => front.close()));
-      // THE CLEAN GOODBYE (sealed-store#/the-lit-set): every face closed through its actor and its saves drained, and the
-      // composition closed durably, so this life tells its pūlama it leaves, naming itself. A goodbye unheard changes nothing.
-      await step("goodbye", async () => {
-        try { if (await goodbye()) console.log("[lararium] the pūlama heard this life's goodbye: every save drained"); }
-        catch (e) { console.log(`[lararium] goodbye unsent: ${e instanceof Error ? e.message : String(e)}`); }
-      });
+      const closed = await step("composition", () => result.teardown(() => front.close()));
+      // THE CLEAN GOODBYE (sealed-store#/the-lit-set): only where every face closed whole through its actor (its saves drained)
+      // and the composition closed durably does this life tell its pūlama it leaves, naming itself. A face that did not close
+      // whole says no goodbye, and a goodbye unheard changes nothing: either leaving reads as a drop.
+      await step("goodbye", () => cleanGoodbye(closed, goodbye, (line) => console.log(`[lararium] ${line}`)));
       await floor.release();
       clearTimeout(pastBudget);
       console.log(`[lararium] shutdown complete — composition closed durably (${spans.join(" · ")})`);
@@ -1008,9 +1006,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
     releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, replayLend: result.replayLend,
-    closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
+    closeFaces: async () => { await result.closeFaces("a whole lock closes every face", { strict: true }); }, onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
-    teardown: () => result.teardown(() => front.detach()),
+    teardown: async () => { await result.teardown(() => front.detach()); },
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
     walk: result.walkDial,

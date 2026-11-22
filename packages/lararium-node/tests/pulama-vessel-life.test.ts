@@ -12,7 +12,8 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { personaGroupDigest } from "../src/persona-group-file.js";
-import { pulamaStandBy } from "../src/pulama-seat.js";
+import { cleanGoodbye, pulamaStandBy } from "../src/pulama-seat.js";
+import { faceLives } from "../src/face-lifecycle.js";
 import { fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -262,6 +263,33 @@ describe("a clean goodbye: a vessel that drained every save tells its pūlama so
     hearth(f, 5);   // the hearth names life 5 again: its lend stands, unproven ended
     expect(await f.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 0 });
     expect(f.kept.unlockedFaces()).toContain(a.fcid);
+  });
+
+  test("★ A STAND-DOWN THAT DID NOT CLOSE WHOLE SAYS NO GOODBYE: a face whose drain faults reads the close not whole, the goodbye stays unsent, and the exit reads as a drop; CONTROL: a whole close says it and the first close locks ★", async () => {
+    for (const drain of ["faults", "drains"] as const) {
+      const { f, a } = await standOne(`goodbye-drain-${drain}`, 3);
+      const vessel = f.vessel({}, { id: L(3) });
+      const by = pulamaStandBy({ holder: vessel, onLog: () => {}, recompose: async () => ({ standing: "hearth" }) });
+      expect(await by.dial()).toEqual({ session: true, waits: null });
+      const lives = faceLives({
+        light: async () => ({ atomKey: null, custody: null }),
+        drainSaves: async () => { if (drain === "faults") throw new Error("a save did not seal"); },
+        dropWorker: async () => {}, teardownHost: () => {}, recompose: async () => {}, log: () => {},
+      }, { nonce: "stand-down" });
+      lives.adopt(0, { atomKey: "k0", custody: null });
+      const closed = await lives.closeAll("the composition stands down", { hold: true, stop: true });
+      expect(closed, drain).toEqual({ whole: drain === "drains" });
+      expect(await cleanGoodbye(closed, () => by.goodbye(), () => {}), drain).toBe(drain === "drains");
+      await vessel.lock();   // the process exits
+      await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+      if (drain === "faults") {
+        expect(await f.server.closeFace(0), "the unsealed save holds the first close").toMatchObject({ reading: "closing", unanswered: 0 });
+        expect(f.kept.unlockedFaces()).toContain(a.fcid);
+      } else {
+        expect(await f.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
+      }
+      await f.drop(); fx = null;
+    }
   });
 
   test("THE STAND-BY SAYS IT: a goodbye through the stand-by ends the session and composes no floor after it; CONTROL: a plain drop composes the floor", async () => {
