@@ -66,8 +66,8 @@ export interface SiblingPlaneMounts {
   mount(group: string, proven: { readonly ok: true; readonly planes: SiblingFacePlanes } | { readonly ok: false } | null): SiblingMountReading<{ readonly bags: readonly string[] }>;
   /** The bag a document files under, and the face it seals under while that face stands lit (none once dark); null where no mount names it. */
   bagOf(documentId: string, lit: readonly LitPlaneFace[]): { readonly bagId: string; readonly face: string | null } | null;
-  /** The face went dark (a close, a lock): its mount leaves whole. */
-  drop(group: string): void;
+  /** The face went dark (a close, a lock): its mount leaves whole, naming the documents it unmounts so each cache evicts them. */
+  drop(group: string): readonly string[];
   /** Every group that holds a mount. */
   groups(): string[];
 }
@@ -94,7 +94,11 @@ export function siblingPlaneMounts(): SiblingPlaneMounts {
       }
       return null;
     },
-    drop(group) { mounts.delete(group); },
+    drop(group) {
+      const rows = mounts.get(group) ?? [];
+      mounts.delete(group);
+      return rows.map((r) => r.documentId);
+    },
     groups: () => [...mounts.keys()].sort(),
   };
 }

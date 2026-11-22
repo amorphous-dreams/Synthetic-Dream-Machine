@@ -16,8 +16,12 @@ export interface FaceDoorHandle {
 }
 
 export interface FaceDoors {
-  /** Stand a face's door: the lot holds the face open first, so the door's attach heeds on a standing turn. A door already standing for the face drops first. */
-  stand(key: string, make: () => FaceDoorHandle): Promise<void>;
+  /**
+   * Stand a face's door: the lot holds the face open first, so the door's attach heeds on a standing turn. A door already
+   * standing for the face drops first. `release` runs once at the face's drop, after the votum in flight landed and the door
+   * detached: it evicts what the door opened for this face.
+   */
+  stand(key: string, make: () => FaceDoorHandle, release?: () => void): Promise<void>;
   /** Whether the face's door stands and its face has not begun to close: the door's turn reads it. */
   open(key: string): boolean;
   /** The face's lit turn: its door heeds, or the log names once that it stands no door. */
@@ -29,7 +33,8 @@ export interface FaceDoors {
 }
 
 export function faceDoors(log: (line: string) => void): FaceDoors {
-  const doors = new Map<string, { door: FaceDoorHandle | null; detach: (() => void) | null; closing: boolean }>();
+  type Held = { door: FaceDoorHandle | null; detach: (() => void) | null; closing: boolean; release: (() => void) | null };
+  const doors = new Map<string, Held>();
   const said = new Set<string>();
   const drop = async (key: string): Promise<void> => {
     const held = doors.get(key);
@@ -40,12 +45,15 @@ export function faceDoors(log: (line: string) => void): FaceDoors {
     try { await held.door?.heed(); } finally {
       held.detach?.();
       if (doors.get(key) === held) doors.delete(key);
+      const release = held.release;
+      held.release = null;
+      try { release?.(); } catch (error) { log(`face ${key.slice(0, 12)}…'s door released with a fault: ${String(error)}`); }
     }
   };
   return {
-    async stand(key, make) {
+    async stand(key, make, release) {
       if (doors.has(key)) await drop(key);
-      const held: { door: FaceDoorHandle | null; detach: (() => void) | null; closing: boolean } = { door: null, detach: null, closing: false };
+      const held: Held = { door: null, detach: null, closing: false, release: release ?? null };
       doors.set(key, held);
       held.door = make();
       held.detach = held.door.attach();

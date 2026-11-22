@@ -94,7 +94,9 @@ describe("L3: the lit life bounds the mount", () => {
     expect(mounts.bagOf("p", lit)).toEqual({ bagId: personaBagIdFor(G), face: "subject-of-g" });
     expect(mounts.bagOf("t", [])).toEqual({ bagId: ids.intents, face: null });
     expect(mounts.bagOf("c", lit), "a plane kind the mount never took names nothing").toBeNull();
-    mounts.drop(G);
+    // The close names both documents it unmounts, so the vessel and the island evict them from their caches; a second drop names none.
+    expect([...mounts.drop(G)].sort()).toEqual(["p", "t"]);
+    expect(mounts.drop(G)).toEqual([]);
     expect(mounts.bagOf("t", lit)).toBeNull();
     expect(mounts.bagOf("p", lit)).toBeNull();
     expect(mounts.groups()).toEqual([]);

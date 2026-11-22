@@ -517,12 +517,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       kelPrefix: face.personaKel.prefix, anchor: face.faceAnchor, fleetRoot: face.deviceEdge.personaRootDid, ledger,
       acting: typeof face.handleIndex === "number" ? face.handleIndex : null, hold: (pending) => holding(provider, pending) });
     if (!litSiblings.has(key)) return;
+    // THE LIT LIFE BOUNDS WHAT THE DOOR OPENED: at the face's drop both planes leave this island's Repo cache, so nothing of
+    // the sibling's plane pair stays decrypted here or keeps replicating while the face stands dark.
+    const pair = [plane.documentId, personaPlane.documentId];
     await intentDoors.stand(key, () => ({ heed: () => door.heed(), attach: () => {
       const wake = (): void => { void door.heed(); };
       personaPlane.on("change", wake);
       const detach = door.attach();
       return () => { detach(); personaPlane.off("change", wake); };
-    } }));
+    } }), () => { for (const id of pair) void ctx.repo.removeFromCache(id as never).catch(() => {}); });
   };
   // V3: every slot document the resolver answers reaches the vessel's bag map before any write lands in it
   // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.

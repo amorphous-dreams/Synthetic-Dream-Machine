@@ -1027,6 +1027,15 @@ async function prepareNodeBootOn(
   /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
    *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
   const siblingPlanes = siblingPlaneMounts();
+  /** A sibling's plane mount leaves whole: its two documents leave the Repo's cache and any save of theirs waiting in memory
+   *  drops unwritten, so nothing of the pair stays decrypted or replicating while the face stands dark. */
+  const dropSiblingPlanes = (group: string): void => {
+    const unmounted = siblingPlanes.drop(group);
+    if (unmounted.length === 0) return;
+    sealedRest.forget(unmounted);
+    for (const id of unmounted) void repo.removeFromCache(id as never).catch(() => {});
+    sealedRest.store.mapMoved();
+  };
   /**
    * EACH FACE LIVES ONE LIFE (`face-lifecycle`): one lifecycle actor per face this composition may light, the mount's beside each
    * sibling's. The actor alone holds a face's opening, its island atom key and its custody opening; the door admits work and
@@ -2511,7 +2520,7 @@ async function prepareNodeBootOn(
   const removeSibling = (group: string, expected = siblingFaces.get(group)): void => {
     if (!expected || siblingFaces.get(group) !== expected) return;
     siblingFaces.delete(group);
-    siblingPlanes.drop(group);
+    dropSiblingPlanes(group);
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
     const dropped = sealedRest.forget(owned);
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
@@ -2554,7 +2563,7 @@ async function prepareNodeBootOn(
     for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held);
     // THE LIT LIFE BOUNDS A SIBLING'S PLANE MOUNT: the close takes it whole, whether or not its host side ever stood.
     const closing = faceEntries.get(ordinal);
-    if (closing) siblingPlanes.drop(closing.personaGroupId);
+    if (closing) dropSiblingPlanes(closing.personaGroupId);
     // THE CUSTODY ID STAYS PAST DARK: the lend sweep the return to dark replays reads it to skip a face its pūlama names closing
     // (the next light reads it afresh).
     faceEntries.delete(ordinal);

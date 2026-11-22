@@ -652,7 +652,8 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
       atom: f.h1, standing: () => "stands", admitTurn: () => (lot.open("h1") ? { done: () => {} } : null),
       runDeclaredEffect: async () => { calls++; if (calls === 1) await held; return { text: "Sweetmorn" }; } });
     await calendarOn(f, shared, 21); await calendarOn(f, shared, 22);
-    await lot.stand("h1", () => door);
+    const released: string[] = [];
+    await lot.stand("h1", () => door, () => { released.push(`released after ${outcomes(shared, f.group)} outcome(s)`); });
     for (let i = 0; i < 200 && calls === 0; i++) await new Promise((r) => setImmediate(r));
     expect(calls).toBe(1);
     const dropped = lot.drop("h1");
@@ -662,6 +663,10 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
     expect(outcomes(shared, f.group), "the votum in flight lands").toBe(1);
     expect(calls, "no next votum after the close began").toBe(1);
     expect(lot.keys()).toEqual([]);
+    // THE CLOSE EVICTS WHAT THE DOOR OPENED: the release runs once, after the votum in flight landed and the door detached.
+    expect(released).toEqual(["released after 1 outcome(s)"]);
+    await lot.drop("h1");
+    expect(released, "a second drop releases nothing").toHaveLength(1);
     // Detached: a plane change and a turn wake nothing.
     await calendarOn(f, shared, 23);
     lot.turn("h1");
