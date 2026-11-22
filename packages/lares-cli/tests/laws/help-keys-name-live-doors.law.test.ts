@@ -41,7 +41,8 @@ describe("the per-command help registry", () => {
   test("the registry stays SPARSE — a missing entry is legal, and this test never demands one", () => {
     // Stated so nobody later "fixes" the asymmetry by requiring an entry per command: the dispatch
     // summary is the fallback, and forcing a second description per verb is how two of them drift apart.
-    expect(Object.keys(COMMAND_HELP).length).toBeLessThan(COMMAND_NAMES.length);
+    // A sub-door key (`vessel lay`) answers one motion beneath its door, so only the door-level keys count against the doors.
+    expect(Object.keys(COMMAND_HELP).filter((k) => !k.includes(" ")).length).toBeLessThan(COMMAND_NAMES.length);
   });
 
   test("meme help publishes the required store target", () => {

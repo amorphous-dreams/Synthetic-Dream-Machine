@@ -181,7 +181,7 @@ The ACTION family grew past pure residency. The first six (ADD/COPY/MOVE/CLEAR/D
 
 * ''Authority:'' cap-verify an ''operator(admin)'' grant on `@oracle` (engine-watch EW-5; the mint-gate pattern — node genesis office). Peers federate `@oracle` read-only; they never RECONCILE.
 * ''Mechanism (additive, never arbitrating):'' fold the genesis doc forward into `@oracle` (Automerge merge, additive — operator content survives). Because automerge LWW resolves by ''op-id, not wall-clock'', the verb MUST ''enforce the fold direction'' (the newer engine intended-wins) and ''SURFACE every operator field it would shadow'' (#conflict-resolution: detect + record, never silently pick) — it never auto-resolves a contended field.
-* ''v1 safety envelope:'' dry-run ''preview'' (clone → merge → diff → render the Patch[]; the `lares watch` preview precedent) → ''conflict-surface'' (the shadowed fields) → ''confirm-gate'' (`--force` for agents, the `lares act` y/N precedent) → ''idempotent'' (an applied-engine-version marker; reconcile with content-addressed `taskContentId` so the two dedup paths agree) → ''indelible effect record'' (`lar:///@oracle/ledger/residency/<id>` — engine-version-id · genesis-checksum · timestamp · outcome; the ledger doubles as the idempotency gate, Flyway-style).
+* ''v1 safety envelope:'' dry-run ''preview'' (clone → merge → diff → render the Patch[]; the `lares ingest --watch` preview precedent) → ''conflict-surface'' (the shadowed fields) → ''confirm-gate'' (`--force` for agents, the `lares act` y/N precedent) → ''idempotent'' (an applied-engine-version marker; reconcile with content-addressed `taskContentId` so the two dedup paths agree) → ''indelible effect record'' (`lar:///@oracle/ledger/residency/<id>` — engine-version-id · genesis-checksum · timestamp · outcome; the ledger doubles as the idempotency gate, Flyway-style).
 * ''No down-script.'' An additive CRDT merge has no inverse; rollback rides the ''retained pre-fold generation'' (Nix-style; the op-log holds it until an epoch — never a reverse migration).
 * ''Boot warns, never folds'' (engine-watch EW-1/EW-6).
 
@@ -301,6 +301,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lmdfu_pYk3AaxJxqhakht_ZmCh7Pnk521giK0c-UcyQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IV_2zvxUu06-zgVSSHoPO9Ois7dsUvcTIEypaYK6WzE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

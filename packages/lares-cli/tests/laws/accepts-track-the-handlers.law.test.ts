@@ -43,13 +43,13 @@ const SRC = resolve(dirname(fileURLToPath(import.meta.url)), "../../src");
 /** Which file each command's handler lives in (the `import` the table row names). */
 const HANDLER_FILE: Readonly<Record<string, string>> = {
   vessel: "commands/vessel", herm: "commands/herm", host: "commands/host-cmd", walk: "commands/walk-cmd",
-  act: "commands/act", ingest: "commands/ingest", export: "commands/export", import: "commands/import", watch: "commands/watch", shore: "commands/shore", surface: "commands/surface", realm: "commands/realm", draft: "commands/draft",
-  receipt: "commands/receipt-cmd", cancel: "commands/receipt-cmd", events: "commands/events", meme: "commands/meme", bag: "commands/bag",
+  act: "commands/act", ingest: "commands/ingest", export: "commands/export", import: "commands/import", shore: "commands/shore", surface: "commands/surface", realm: "commands/realm",
+  events: "commands/events", meme: "commands/meme", bag: "commands/bag",
   wiki: "commands/wiki", tiddler: "commands/tiddler", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
-  "wing-of": "commands/wing-of", ddate: "commands/ddate-cmd", oracle: "commands/oracle-cmd", law: "commands/law", mempalace: "commands/mempalace", hooks: "commands/hooks", mcp: "commands/mcp", lei: "commands/lei", rite: "commands/rite",
-  sensorium: "commands/sensorium", "test-quine": "commands/scripted", vault: "commands/vault", wear: "commands/wear",
+  ddate: "commands/ddate-cmd", oracle: "commands/oracle-cmd", law: "commands/law", mempalace: "commands/mempalace", hooks: "commands/hooks", mcp: "commands/mcp", lei: "commands/lei", rite: "commands/rite",
+  sensorium: "commands/sensorium", vault: "commands/vault", wear: "commands/wear",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
-  edge: "commands/edge", raise: "commands/raise", nexus: "commands/nexus",
+  edge: "commands/edge", nexus: "commands/nexus",
   handle: "commands/handle", fleet: "commands/fleet", intent: "commands/intent", "intent-relay": "commands/intent-relay", kahua: "commands/kahua", promote: "commands/promote", kapae: "commands/kapae",
 };
 
@@ -144,11 +144,8 @@ function computedSites(files: readonly string[]): Map<string, number> {
  * line carries them. Named per command, each with its reason, so an exemption never covers a user flag.
  */
 const BUILT_INSIDE: Readonly<Record<string, readonly string[]>> = {
-  vessel: ["from", "out", "title", "plane", "source", "to", "source-uri"],   // seed builds its act/ingest lines
+  vessel: ["from", "out", "title", "plane", "source", "to", "source-uri", "draft", "watch", "debounce"],   // seed builds its act/ingest lines; both doors now carry a fold
   sense:  ["help-mempalace"],                  // the guest comparator's help rides `lares mempalace`
-  // `commands/scripted` holds the stand and bake handlers beside this one, and the walk reads a file whole.
-  // `cmdTestQuine` takes the line and reads none of it, so the row stays empty and `lares test-quine --x` refuses.
-  "test-quine": ["genesis", "port", "root", "wiki"],
 };
 
 /**
@@ -216,16 +213,13 @@ describe("the accepts rows track the handlers", () => {
     });
   }
 
-  test("★ a flag nobody reads refuses by name at the door: `--debug` on a stand, every flag but the global ones on the quine check ★", () => {
+  test("★ a flag nobody reads refuses by name at the door: `--debug` on a stand, a global flag passes ★", () => {
     const line = (command: string, flags: Record<string, boolean>) => ({ command, positional: ["stand"], options: {}, flags });
     const vessel = COMMANDS.find((c) => c.name === "vessel")!;
-    const quine = COMMANDS.find((c) => c.name === "test-quine")!;
     expect(unknownFlags(vessel, line("vessel", { debug: true })).map((f) => f.name)).toEqual(["debug"]);
-    expect(unknownFlags(quine, line("test-quine", { fresh: true, debug: true })).map((f) => f.name).sort()).toEqual(["debug", "fresh"]);
-    expect(quine.accepts).toEqual([]);
-    // CONTROL: a flag the stand reads passes, and a global flag passes on the quine check.
+    // CONTROL: a flag the stand reads passes, and a global flag passes.
     expect(unknownFlags(vessel, line("vessel", { restart: true }))).toEqual([]);
-    expect(unknownFlags(quine, line("test-quine", { json: true }))).toEqual([]);
+    expect(unknownFlags(vessel, line("vessel", { json: true }))).toEqual([]);
     // No table that feeds the door still names it: the boolean set and the posture plan read no `debug`.
     expect(BOOLEAN_FLAGS.has("debug")).toBe(false);
     expect(posturePlan(["debug"]).dropped).toEqual([]);

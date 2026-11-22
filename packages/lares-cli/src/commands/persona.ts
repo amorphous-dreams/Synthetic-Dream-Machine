@@ -50,6 +50,7 @@ import {
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { cmdRaiseSign } from "./raise.js";
 
 class UsageError extends Error {}
 
@@ -109,6 +110,7 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "provisional": return await personaProvisional(args);
       case "confirm": return await personaConfirm(args);
       case "view": return await personaView(args);
+      case "raise-sign": return await cmdRaiseSign({ ...args, positional: args.positional.slice(1) });
       default:
         console.error(`lares persona: unknown sub-verb "${sub}"`);
         return usage(args, sub);

@@ -1,7 +1,7 @@
 /**
  * shore-core — the two lines every shore act rides: `wiki-act` carrying the `shore` verb into the active
  * wiki's island, and the `shore` verb itself into the daemon island, each answer read whole and the two read
- * as one shore (`askShore`). `lares shore` sends a person's answers through it; `lares watch` sends what it
+ * as one shore (`askShore`). `lares shore` sends a person's answers through it; `lares ingest --watch` sends what it
  * sensed on disk; `lares ingest --apply` asks its settle word.
  */
 
