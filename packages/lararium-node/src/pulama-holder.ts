@@ -117,6 +117,9 @@ const derivedOf = (raw: unknown): Record<string, Uint8Array> => {
   return out;
 };
 
+/** How long a vessel's goodbye waits on its pūlama before it leaves unheard: the exit's liveness bound, never a verdict. */
+export const GOODBYE_WAIT_MS = 2_000;
+
 export function makePulamaHolder(a: {
   readonly homes: CustodyHomes;
   /** Open one channel to the pūlama. A pūlama that does not answer rejects. */
@@ -129,6 +132,11 @@ export function makePulamaHolder(a: {
    * together by it; absent, the hello names no life and its session stands with none.
    */
   readonly life?: () => unknown;
+  /**
+   * How long a goodbye waits on the pūlama's answer before this side leaves unheard (default {@link GOODBYE_WAIT_MS}). A bound on
+   * the exit's liveness alone, never a verdict: an answer past it changes nothing here, and an unheard goodbye reads as a drop.
+   */
+  readonly goodbyeWaitMs?: number;
 }): PulamaHolder {
   let session: Session | null = null;
   let nextId = 1;
@@ -298,14 +306,20 @@ export function makePulamaHolder(a: {
     async tellWorn(ordinal) { await call("face.worn", { ordinal }); },
     async goodbye() {
       const s = session, life = a.life?.();
-      if (s === null) return false;
+      // A GOODBYE WHILE A DIAL RUNS COUNTS AS LEAVING: the dial in flight seats no session after it.
+      if (s === null) { left += 1; return false; }
       // THE GOODBYE IS THE SESSION'S LAST WORD: this side leaves too, heard or not. With no life to name, none is said, and the
-      // leaving reads as any dropped session does.
+      // leaving reads as any dropped session does. A SILENT PŪLAMA HOLDS NO EXIT: past its bound the goodbye leaves unheard.
+      let bound: ReturnType<typeof setTimeout> | undefined;
       try {
         if (life === undefined) return false;
-        await call("vessel.goodbye", { life });
-        return true;
-      } catch { return false; } finally { left += 1; if (session === s) { s.channel.close(); drop(s); } }
+        const unheard = new Promise<false>((resolve) => { bound = setTimeout(() => resolve(false), a.goodbyeWaitMs ?? GOODBYE_WAIT_MS); });
+        return await Promise.race([call("vessel.goodbye", { life }).then(() => true as const), unheard]);
+      } catch { return false; } finally {
+        clearTimeout(bound);
+        left += 1;
+        if (session === s) { s.channel.close(); drop(s); }
+      }
     },
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,

@@ -14,6 +14,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { cleanGoodbye, pulamaStandBy } from "../src/pulama-seat.js";
 import { faceLives } from "../src/face-lifecycle.js";
+import { makePulamaHolder } from "../src/pulama-holder.js";
+import { pulamaChannelPair } from "../src/pulama-wire.js";
 import { fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -290,6 +292,35 @@ describe("a clean goodbye: a vessel that drained every save tells its pūlama so
       }
       await f.drop(); fx = null;
     }
+  });
+
+  test("A SILENT PŪLAMA HOLDS NO EXIT: a goodbye the pūlama never answers ends within its bound, unheard, and the leaving reads as a drop", async () => {
+    const { f, a } = await standOne("goodbye-silent", 3);
+    const vessel = makePulamaHolder({
+      homes: f.seat.homes, offer: () => ({}), life: () => ({ id: L(3) }), goodbyeWaitMs: 50,
+      dial: async () => {
+        const pair = pulamaChannelPair();
+        // The pūlama hears every frame but the goodbye: it never answers one.
+        f.server.accept({ ...pair.pulama, onFrame: (listener) => pair.pulama.onFrame((frame) => { if (frame.t === "req" && frame["op"] === "vessel.goodbye") return; listener(frame); }) });
+        return pair.vessel;
+      },
+    });
+    await vessel.unlock([]);
+    expect(await vessel.goodbye(), "unheard within its bound").toBe(false);
+    expect(vessel.isUnlocked()).toBe(false);
+    await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+    expect(await f.server.closeFace(0), "life 3's lend still holds the first close").toMatchObject({ reading: "closing", unanswered: 0 });
+    expect(f.kept.unlockedFaces()).toContain(a.fcid);
+  });
+
+  test("A GOODBYE WHILE A DIAL RUNS COUNTS AS LEAVING: the dial in flight seats no session after it", async () => {
+    const { f } = await standOne("goodbye-mid-dial", 3);
+    const vessel = f.vessel({}, { id: L(3) });
+    const dialing = vessel.unlock([]);
+    expect(await vessel.goodbye()).toBe(false);
+    await expect(dialing).rejects.toThrow();
+    expect(vessel.isUnlocked()).toBe(false);
+    await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
   });
 
   test("THE STAND-BY SAYS IT: a goodbye through the stand-by ends the session and composes no floor after it; CONTROL: a plain drop composes the floor", async () => {
