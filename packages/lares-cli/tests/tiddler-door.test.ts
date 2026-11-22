@@ -99,6 +99,22 @@ describe("verb-table-parity — the CLI half of the tiddler door's one table", (
 });
 
 describe("the argument law, no daemon", () => {
+  test("wiki render output takes a distinct effectful route", () => {
+    const plan = wikiRenderPlan(argv("wiki", ["[tag[export]]"], {
+      recipe: "default", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html",
+    }));
+    expect(plan).toMatchObject({ verb: "wiki-render-out", args: {
+      recipe: "default", filter: "[tag[export]]", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html",
+    } });
+  });
+  test("wiki render output flags reach only the output path", () => {
+    const row = COMMANDS.find((c) => c.name === "wiki")!;
+    const output = argv("wiki", ["render", "[tag[export]]"], { recipe: "default", output: "workbench", filename: "[addsuffix[.html]]", type: "text/html" });
+    expect(unknownFlags(row, output)).toEqual([]);
+    for (const sub of ["filter", "status", "act"]) {
+      expect(unknownFlags(row, argv("wiki", [sub], { output: "workbench" })).map((x) => x.name)).toEqual(["output"]);
+    }
+  });
   test("wiki act narrows its flags before dispatch", () => {
     const row = COMMANDS.find((c) => c.name === "wiki")!;
     for (const flag of ["text", "target", "dry-run", "list"]) {
