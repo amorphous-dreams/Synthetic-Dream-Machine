@@ -1277,29 +1277,46 @@ def build_mcp(coordinator: LaresCoordinator):
         return _meme_wire("wiki-filter", args)
 
     @mcp.tool(annotations=_READS)
-    def tiddler_get(title: str, recipe: "str | None" = None, bag: "str | None" = None, slot: "str | None" = None,
-                    fields: "list | None" = None, text: bool = True, max_bytes: "int | None" = None) -> dict:
-        """READ ONE TIDDLER WITH ITS FIELDS, whatever its type (a plain note, a data tiddler, a meme's root or a slot) —
-        mirrors `lares tiddler get <title>`. Returns {recipe, title, tiddler}: `tiddler` reads null where none stands,
-        else {fields, hash, textHash, bag, position, family?, omitted?}. `fields` holds every field as a string (`tags`
-        as TiddlyWiki writes a list). `hash` names the whole record: hand it to `tiddler_put` / `tiddler_delete` as
-        `base`. `textHash` names the text alone, so a field patch shows it unmoved. `bag` names the layer that answered;
-        `position` reads `plain`, `root` or `slot`, with `family` the meme's root. THREE NARROWINGS: `fields=[…]` answers
-        the named fields alone; `text=False` answers every field and leaves the text home; `slot="#/name"` beside a
-        meme's root `title` reads that ONE slot's record. `max_bytes` caps the answer: the largest fields leave first
-        and `omitted` names them. For a meme's WHOLE recomposed text use `meme_get`. A RENDERED TIDDLER answers whole
-        here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`, or the source's
-        `render-title`) whose text holds the source's render (lists resolved, transclusions filled; `render-type`
-        text/plain or text/html) and whose `rendered-from` names the source; one `tiddler_get` on that title reads the
-        whole rendered artifact, and `wiki_filter` over the sources reads a slice. CONTAINER LAW: exactly one of `recipe` / `bag`. `recipe` names a wiki: `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. `bag` names ONE BAG and reads that bag's own record through the meme door's reach and read gate (no engine runs): the answer names the `bag` in place of a `recipe`, carries `floor: true` where the bag's floor snapshot answered, and an absent title reads `tiddler: null`; `position` reads from the bag's own titles. A record's text carries the layer `bag` names; turn it through the five tools."""
+    def tiddler_get(title: str, recipe: "str | None" = None, bag: "str | None" = None, meme: bool = False,
+                    grain: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
+                    fields: "list | None" = None, max_bytes: "int | None" = None) -> dict:
+        """READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. EVERY ANSWER LEADS WITH `has`,
+        a `<<~ has name=`…` params=`…`>>` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own
+        tags, the measure keys (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/
+        _integrity/ size/` verbatim), then `~` and the description or role; a meme's has-stack adds one `#/slot` line per
+        slot. Beside it `grain` echoes {asked, applied, why} and `next` names the next unfold ({grain, after?}) or null.
+        TWO AXES, KEPT APART. The LENS: the record by default, {recipe|bag, title, lens: "record", tiddler: {fields, hash,
+        textHash, bag, position, family?, omitted?}} (`tiddler` null where none stands; hand `hash` to `tiddler_put` /
+        `tiddler_delete` as `base`); `meme=True` recomposes the root and its slot children into ONE carrier sealed by its
+        bcc, {title, lens: "meme", meme: {uri, text?, canonicalHash, bytes, slots, slot?, page?}} (hand `canonicalHash` to a
+        meme write as `base`); a slot child's title recomposes from its root and points at the slot; a record that holds no
+        meme answers the record with a `note` saying so. The GRAIN (`grain`, one of skinny · fat · handle · resolved · slot ·
+        whole; an unknown grain refuses `grain-unknown`): none named, a record within one page (65536 bytes) answers fat and a
+        longer one skinny (the text left home), a pointer its handle, a blob skinny; a meme within a page answers its whole
+        carrier and a longer one its has-stack. `skinny` leaves the text home; `fat` carries it; `handle` names a pointer's
+        body; `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never
+        fetched); `slot` (with `slot="#/name"`) answers one slot's span; `whole` answers the whole carrier one page at a time,
+        each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null. `fields=[…]` answers the
+        named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). A
+        RENDERED TIDDLER answers whole here: a source marked `projection: rendered` derives a live tiddler (`<source>.rendered`,
+        or the source's `render-title`) whose `rendered-from` names the source. CONTAINER LAW: exactly one of `recipe` /
+        `bag`. `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches, answered in
+        that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`. `bag` names ONE BAG and reads that bag's
+        own records through the meme door's reach and read gate (no engine runs): the answer names the `bag`, and carries
+        `floor: true` where the bag's floor snapshot answered. A record's text carries the layer `bag` names; turn it
+        through the five tools."""
         args: dict = {**_meme_container("tiddler_get", recipe, bag), "title": title}
+        if meme:
+            args["meme"] = True
+        if grain:
+            args["grain"] = grain
         if slot:
             args["slot"] = slot
+        if after:
+            args["after"] = after
         names = _names("tiddler_get", "fields", fields)
         if names is not None:
             args["fields"] = names
-        if text is False:
-            args["text"] = False
         if max_bytes is not None:
             args["maxBytes"] = max_bytes
         return _meme_wire("tiddler-get", args)

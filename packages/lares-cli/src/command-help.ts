@@ -736,8 +736,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `get --bag <slug>`, which reads one bag's record with no engine: `--recipe default` " +
       "names the worn face's daemon wiki, and `--recipe <slug>` any wiki this face reaches (one it hosts, or one shared " +
       "to it), composed over that wiki's canon, its shared working layer and this face's own layers; a wiki the face " +
-      "reaches none of refuses `wiki-unreached`. `get` reads the " +
-      "record (fields, then the text) and the `base` hash a writer hands back; `put` PATCHES: it sets and unsets " +
+      "reaches none of refuses `wiki-unreached`. `get` answers ON A GRADIENT and leads with a `<<~ has …>>` line " +
+      "(provenance, the record's tags, its measures, `base/`): a record within one page answers fat (fields, then the " +
+      "text), a longer one skinny; `--meme` recomposes a meme's root and slots into one sealed carrier, whole within a " +
+      "page, its has-stack past it, and `--all` reads the whole carrier paged on slot boundaries. `--grain` names " +
+      "skinny or fat (the tiddler grain), handle or resolved (a pointer's body, from the local CAS by CID; a web2 " +
+      "`_canonical_uri` stays named, never fetched), slot or whole (the meme); an unknown grain refuses. `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it, landing in the " +
       "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
       "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
@@ -755,6 +759,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares tiddler get \"Room 4\" --recipe default --skinny                 # every field, the text left home",
       "lares tiddler get \"Room 4\" --bag lares                              # that one bag's record, its base and the bag that answered",
       "lares tiddler get lar:///ha.ka.ba/kahua/memory/feedback/x --recipe default --slot '#/why'   # one slot of a meme",
+      "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme    # the carrier on stdout (a pipe too); past a page, its has-stack",
+      "lares tiddler get lar:///ha.ka.ba/lares/docs/x --recipe lares --meme --all > x.mem   # the whole carrier, paged on slot boundaries",
       "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
       "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
       "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
@@ -774,7 +780,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--face N             act as face N on a session of it (the worn face where absent; a shut face refuses face-not-open; a lit sibling answers from its own daemon wiki, --recipe default)",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
-      "--skinny             (get) every field, the text left home",
+      "--meme               (get) the meme lens: the root and its slots as one sealed carrier (a record that holds none answers itself)",
+      "--grain <g>          (get) skinny · fat · handle · resolved · slot · whole; none: the gradient picks by size",
+      "--skinny             (get) every field, the text left home (--grain skinny)",
+      "--all                (get) the whole: a meme's carrier, its pages followed to the end (--grain whole)",
+      "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",
       "--unset <a,b>        (put) fields to remove",
       "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]",
       "--tag-remove <list>  (put) tags to remove",
@@ -786,7 +796,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--mode <kapae|reveal> (delete) over a lower layer's record: kapae hides it   ·   reveal surfaces it (none: a plain delete)",
       "--max-bytes <N>      (get) the byte cap on the answer; the largest fields leave first and get named",
     ],
-    next: ["lares wiki filter '[tag[memory]]' --recipe default", "lares meme get <uri> --recipe default   # a family's whole text"],
+    next: ["lares wiki filter '[tag[memory]]' --recipe default", "lares tiddler get <uri> --recipe default --meme   # a family's whole text"],
     meme: "lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout",
   },
 

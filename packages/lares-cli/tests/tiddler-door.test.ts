@@ -182,3 +182,68 @@ describe("the exit classes a receipt maps to", () => {
     expect(one.printed["data"]).toEqual(pages[""]);
   });
 });
+
+describe("tiddler get --meme — one door reads on a gradient", () => {
+  const ROOT_LINE = "<<~ has name=`lar:///t/x` params=`recipe/default type/text/memetic-wikitext+tiddlywiki position/root slots/2 bytes/10 base/sha256:9`>>";
+  const slots = [{ slot: "#/a", bytes: 4, first: "a" }, { slot: "#/b", bytes: 6, first: "b" }];
+  const answer = (args: Record<string, unknown>): Record<string, unknown> => {
+    const base = { recipe: "default", title: "lar:///t/x", lens: "meme" };
+    if (args["grain"] !== "whole") {
+      return { has: `${ROOT_LINE}\n<<~ has name=\`#/a\` params=\`bytes/4 ~ a\`>>\n<<~ has name=\`#/b\` params=\`bytes/6 ~ b\`>>`, ...base,
+        meme: { uri: "lar:///t/x", canonicalHash: "sha256:9", bytes: 10, slots }, grain: { asked: null, applied: "skinny", why: "runs past one page" }, next: { grain: "whole" } };
+    }
+    const second = args["after"] === "1.0123456789abcdef";
+    return { has: ROOT_LINE, ...base, meme: { uri: "lar:///t/x", text: second ? "BBBBBB" : "AAAA", canonicalHash: "sha256:9", bytes: 10, slots, page: { page: second ? 2 : 1, pages: 2 } },
+      grain: { asked: "whole", applied: "whole", why: "the whole carrier, cut on slot boundaries" }, next: second ? null : { grain: "whole", after: "1.0123456789abcdef" } };
+  };
+  /** Run a human-mode get (no --json) and read stdout and stderr apart. */
+  async function human(options: Record<string, string>, flags: Record<string, boolean>): Promise<{ exit: number; out: string; err: string[] }> {
+    const out: string[] = []; const err: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation(((chunk: unknown) => { out.push(String(chunk)); return true; }) as never);
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    try {
+      const exit = await cmdTiddler({ command: "tiddler", positional: ["get", "lar:///t/x"], options: { recipe: "default", ...options }, flags } as unknown as ParsedArgs);
+      return { exit, out: out.join(""), err };
+    } finally { spy.mockRestore(); e.mockRestore(); }
+  }
+
+  test("RED: the lens and the grain ride the wire apart; --skinny and --all spell the grain; two grains refuse before the wire", () => {
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "lar:///t/x"], { recipe: "default" }, { meme: true })).args).toEqual({ recipe: "default", title: "lar:///t/x", meme: true });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "lar:///t/x"], { recipe: "default" }, { meme: true, all: true })).args).toEqual({ recipe: "default", title: "lar:///t/x", meme: true, grain: "whole" });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "Note"], { recipe: "default", grain: "resolved" })).args).toEqual({ recipe: "default", title: "Note", grain: "resolved" });
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "Note"], { recipe: "default" }, { skinny: true })).args).toEqual({ recipe: "default", title: "Note", grain: "skinny" });
+    expect(() => tiddlerPlan("get", argv("tiddler", ["get", "Note"], { recipe: "default", grain: "fat" }, { skinny: true }))).toThrow(/name one grain/);
+  });
+
+  test("RED: past a page, a pipe gets the has-stack on stdout (never a cut carrier) and stderr names the whole", async () => {
+    h.replyFor = answer;
+    const r = await human({}, { meme: true });
+    expect(r.exit).toBe(0);
+    expect(r.out).toBe(`${ROOT_LINE}\n<<~ has name=\`#/a\` params=\`bytes/4 ~ a\`>>\n<<~ has name=\`#/b\` params=\`bytes/6 ~ b\`>>\n`);
+    expect(r.err).toEqual(["base: sha256:9", "size: 10 bytes", "grain: skinny (runs past one page)", expect.stringMatching(/--all reads the whole carrier/)]);
+  });
+
+  test("RED: --all follows the pages and writes the whole carrier on stdout, the root's has line on stderr; --json carries it joined", async () => {
+    h.replyFor = answer;
+    const r = await human({}, { meme: true, all: true });
+    expect(r.out).toBe("AAAABBBBBB");
+    expect(r.err[0]).toBe(ROOT_LINE);
+    expect(h.calls.map((c) => c.args["after"])).toEqual([undefined, "1.0123456789abcdef"]);
+    h.calls.length = 0;
+    const env = await run(argv("tiddler", ["get", "lar:///t/x"], { recipe: "default" }, { meme: true, all: true }));
+    expect(env.printed["data"]).toMatchObject({ has: ROOT_LINE, lens: "meme", meme: { text: "AAAABBBBBB", canonicalHash: "sha256:9" }, next: null });
+  });
+
+  test("CONTROL: the record lens prints the record as a .tid reads, its has line first on stderr", async () => {
+    h.replyFor = null;
+    h.reply = { has: "<<~ has name=`Note` params=`recipe/default position/plain bytes/5 base/sha256-aa`>>", recipe: "default", title: "Note", lens: "record",
+      tiddler: { fields: { title: "Note", text: "words" }, hash: "sha256-aa", textHash: "sha256-bb", bag: null, position: "plain" }, grain: { asked: null, applied: "fat", why: "fits one page" }, next: null };
+    const out: string[] = []; const err: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation(((chunk: unknown) => { out.push(String(chunk)); return true; }) as never);
+    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
+    try { await cmdTiddler({ command: "tiddler", positional: ["get", "Note"], options: { recipe: "default" }, flags: { json: false } } as unknown as ParsedArgs); }
+    finally { spy.mockRestore(); e.mockRestore(); }
+    expect(out.join("")).toBe("title: Note\n\nwords");
+    expect(err).toEqual(["<<~ has name=`Note` params=`recipe/default position/plain bytes/5 base/sha256-aa`>>", "base: sha256-aa"]);
+  });
+});
