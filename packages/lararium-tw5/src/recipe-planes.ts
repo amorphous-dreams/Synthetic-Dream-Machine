@@ -4,7 +4,7 @@
  * Two registry planes can carry a recipe for a slug. The oracle plane holds a system wiki's DEFAULT
  * recipe (written at genesis, shared by every vessel); the catalog holds the vessel's OWN composition
  * of any wiki, system or user. Own shadows default, exactly as a working layer shadows canon. Every
- * reader — the boot mount, the live watch, `meme get --recipe`, the compose verbs — walks the planes
+ * reader — the boot mount, the live watch, `tiddler get --meme --recipe`, the compose verbs — walks the planes
  * in the order this module spells, so no site carries an order of its own.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-planes

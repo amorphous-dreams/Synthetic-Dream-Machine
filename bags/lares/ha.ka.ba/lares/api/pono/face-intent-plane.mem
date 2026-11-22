@@ -159,7 +159,7 @@ An agent off every device of the face (a cloud sandbox, another machine) never h
 | "admit this new device to the face" | an `intent` pinned to the hearth that holds the root |
 | an agent's request for approval | an `asks`, answered by a session wearing the face |
 | a vessel's boot outcome | the vessel's daemon bag |
-| `lares meme get` on the local socket, touching that vessel alone | no entry; a receipt in that vessel's daemon bag |
+| `lares tiddler get --meme` on the local socket, touching that vessel alone | no entry; a receipt in that vessel's daemon bag |
 
 ''The myth'': the conch blows for decisions, never for breaths. The slate holds the chalk; the conch carries the call, names who should answer, and hears who did.
 
@@ -204,6 +204,6 @@ Road item `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-roa
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qgw_JjTh_OIvQV1h7cTRt3XlOA81DcBr2enkJbpoGR8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kSUDtfrvXylRIsX-EhbGslRiMtWnwCKhLe3Xb6_vAoY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

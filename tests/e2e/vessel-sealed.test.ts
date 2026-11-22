@@ -103,7 +103,7 @@ async function custodyReading(): Promise<Record<string, unknown>> {
 }
 
 /** A recipe read of the witness carrier, as the vessel answers it right now. */
-const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["meme", "get", URI, ...WIKI, "--json"]);
+const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
 
 /**
  * This suite's rite: the Stable founding act, then persona zero's root split, so a device share rests beside the sealed rows
@@ -163,7 +163,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     carrierHash = String(dataOf(put)["canonicalHash"]);
     const got = await readCarrier();
     expect(got.json?.["ok"], said(got)).toBe(true);
-    expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
+    expect(String((dataOf(got)["meme"] as Record<string, unknown> | undefined)?.["canonicalHash"])).toBe(carrierHash);
 
     // The hearth's own archive export lands through the sealed writer: still the vessel key's seal, never bare.
     for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
@@ -208,7 +208,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(reading).toMatchObject({ unlocked: true, standing: "hearth" });
     const got = await readCarrier();
     expect(got.json?.["ok"], said(got)).toBe(true);
-    expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
+    expect(String((dataOf(got)["meme"] as Record<string, unknown> | undefined)?.["canonicalHash"])).toBe(carrierHash);
     for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
     expect(readFileSync(SHARE()).equals(shareAtFounding), "a stand re-minted the device share").toBe(true);
   }, 300_000);

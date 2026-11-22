@@ -12,7 +12,8 @@ import { describe, test, expect } from "vitest";
 import { CompositeStore, NoWorkingLayerRefusal, bagUri, carrierHashOf, overrideBaseOf, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, MEME_GET_BYTES, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { READ_PAGE_BYTES } from "../src/read-gradient.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput } from "../src/verb-vm.js";
 import { placeMeme } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
@@ -297,7 +298,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const { canon } = stacked(r);
     await land(canon, bagUri("garden"), ["a"]);
     await shadow(r, ["a"]);
-    await expect(makeMemeProjectReactor(r.opts)({ recipe: "garden", uri: URI, to: "mem" }, ctx())).rejects.toThrow(/no meme stands/);
+    await expect(makeMemeProjectReactor(r.opts)({ recipe: "garden", uri: URI, to: "md" }, ctx())).rejects.toThrow(/no meme stands/);
   });
 
   test("CONTROL: a tombstone BENEATH a live record shadows nothing above it", async () => {
@@ -569,16 +570,12 @@ describe("meme-project — the daemon skin of the projection", () => {
     expect(capCalls).toEqual([{ access: "read", bag: bagUri("daemon") }]);
   });
 
-  test("a named bag projects mem and md over that bag's records, through the text laws", async () => {
+  test("RED: a named bag projects md over that bag's records; the carrier itself (mem) reads through the one door and refuses here by name", async () => {
     const r = rigWithFace();
     projectCalls.length = 0;
     await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
     const project = makeMemeProjectReactor(r.opts);
-    const mem = await project({ bag: "sdm", uri: URI, to: "mem" }, ctx());
-    expect(mem["contentType"]).toBe("text/memetic-wikitext+tiddlywiki");
-    expect(mem["text"]).toContain("<<~ ahu slot=`#/a`>>");
-    const get = await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
-    expect(mem["text"]).toBe((get["meme"] as { text: string }).text);
+    await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(/tiddler-get \(meme: true, grain: "whole"\)/);
     const md = await project({ bag: "sdm", uri: URI, to: "md" }, ctx());
     expect(md["contentType"]).toBe("text/markdown");
     expect(md["text"]).toContain("# a");
@@ -590,9 +587,9 @@ describe("meme-project — the daemon skin of the projection", () => {
   test("★ refusals are loud: an unknown target names the targets; a wiki render on a bag names the anchor; an absent meme names the URI ★", async () => {
     const r = rigWithFace();
     const project = makeMemeProjectReactor(r.opts);
-    await expect(project({ recipe: "default", uri: URI, to: "docx" }, ctx())).rejects.toThrow(/docx.*mem · md · html · tid · json/);
+    await expect(project({ recipe: "default", uri: URI, to: "docx" }, ctx())).rejects.toThrow(/docx.*md · html · tid · json/);
     await expect(project({ bag: "sdm", uri: URI, to: "html" }, ctx())).rejects.toThrow(/anchor/);
-    await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(URI);
+    await expect(project({ bag: "sdm", uri: URI, to: "md" }, ctx())).rejects.toThrow(URI);
     await expect(project({ recipe: "default", uri: URI }, ctx())).rejects.toThrow(/args\.to/);
   });
 });
@@ -1032,7 +1029,7 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     const live = (await read()).canonicalHash;
     const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", base: stale }, ctx());
     expect(receipt).toMatchObject({ decision: "conflict", reason: "stale-base", canonicalHash: live });
-    expect(String((receipt["warnings"] as string[])[0])).toMatch(/^stale-base: /);
+    expect(String((receipt["warnings"] as string[])[0])).toMatch(/^stale-base: .*`tiddler get --meme --all`/); // the recovery names the one read door
     expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
   });
 
@@ -1047,7 +1044,7 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     const { read, patch } = await seeded();
     const base = (await read()).canonicalHash;
     expect(await patch({ recipe: "default", uri: "lar:///t/none", slot: "#/a", append: "x", base }, ctx())).toMatchObject({ decision: "absent" });
-    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x" }, ctx())).rejects.toMatchObject({ reason: "base-required" });
+    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x" }, ctx())).rejects.toMatchObject({ reason: "base-required", message: expect.stringMatching(/`tiddler get --meme`/) });
     await expect(patch({ recipe: "default", uri: URI, append: "x", base }, ctx())).rejects.toThrow(/slot/);
     await expect(patch({ recipe: "default", uri: URI, slot: "#/a", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });
     await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", replace: "y", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });
@@ -1061,72 +1058,129 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
   });
 });
 
-describe("meme-get — a bounded answer: a byte cap, a size line and a cursor", () => {
-  const bulky = (words: number, word = "lorem"): string =>
+describe("meme-get — on a gradient by grain: whole within a page, the has-stack past it, never a mid-slot cut", () => {
+  const words = (n: number, word = "lorem"): string => Array.from({ length: n }, () => word).join(" ");
+  const carrier = (slots: ReadonlyArray<readonly [string, number]>, word = "lorem"): string =>
     `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-    `<<~ ahu slot=\`#/a\`>>\n\n! a\n\n${Array.from({ length: words }, () => word).join(" ")}\n\n<<~/ahu>>\n` +
+    slots.map(([s, n]) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n${words(n, word)}\n\n<<~/ahu>>\n`).join("\n") +
     `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
   const seat = async (text: string) => {
     const r = rig();
     await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text }, ctx());
     return r;
   };
-  type Got = { meme: { text: string; canonicalHash: string; bytes: number; truncated: boolean; next: string | null } };
+  type Got = { meme: { text?: string; canonicalHash: string; bytes: number; grain: { asked: string | null; applied: string; why: string }; slots: Array<{ slot: string; bytes: number }>; page?: { page: number; pages: number }; next: { grain: string; after?: string } | null } };
   const get = async (r: Rig, extra: Record<string, unknown> = {}): Promise<Got> =>
     (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI, ...extra }, ctx())) as unknown as Got;
   const size = (text: string): number => new TextEncoder().encode(text).length;
+  const read = async (r: Rig): Promise<string> => (await get(r, { grain: "whole" })).meme.text!;
 
-  test("the default cap is named, and a normal meme still answers whole with its size line", async () => {
-    expect(MEME_GET_BYTES).toBe(65_536);
-    const r = await seat(bulky(40));
+  test("one page names the gradient's edge, and a carrier within it answers whole, byte for byte", async () => {
+    expect(READ_PAGE_BYTES).toBe(65_536);
+    const r = await seat(carrier([["a", 40], ["b", 40]]));
     const got = await get(r);
-    expect(got.meme.truncated).toBe(false);
+    expect(got.meme.grain.applied).toBe("whole");
     expect(got.meme.next).toBeNull();
-    expect(got.meme.bytes).toBe(size(got.meme.text));
-    expect(got.meme.text).toContain("lorem lorem");
+    expect(got.meme.text).toBe(await read(r));
+    expect(got.meme.bytes).toBe(size(got.meme.text!));
+    expect(got.meme.slots.map((s) => s.slot)).toEqual(["#/a", "#/b"]);
   });
 
-  test("RED: a meme past the cap answers one page under it, says it is cut and names the cursor; the pages join to the whole", async () => {
-    const r = await seat(bulky(60_000));
-    const first = await get(r);
-    expect(first.meme.truncated).toBe(true);
-    expect(typeof first.meme.next).toBe("string");
-    expect(size(first.meme.text)).toBeLessThanOrEqual(MEME_GET_BYTES);
-    expect(first.meme.bytes).toBeGreaterThan(MEME_GET_BYTES);
-    let text = first.meme.text;
-    for (let page = first; page.meme.next; ) {
-      page = await get(r, { after: page.meme.next });
-      expect(page.meme.canonicalHash).toBe(first.meme.canonicalHash);
-      text += page.meme.text;
+  test("RED: a carrier past a page answers its has-stack (the slots, no text) and names the whole as next; no truncated carrier", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const got = await get(r);
+    expect(got.meme.bytes).toBeGreaterThan(READ_PAGE_BYTES);
+    expect(got.meme.grain.applied).toBe("skinny");
+    expect(got.meme.text).toBeUndefined();
+    expect(got.meme.slots.map((s) => s.slot)).toEqual(["#/a", "#/b", "#/c"]);
+    expect(got.meme.next).toEqual({ grain: "whole" });
+  });
+
+  test("RED: the whole grain pages on slot boundaries; the pages join to the carrier and none ends mid-slot", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" });
+    expect(first.meme.page?.pages).toBeGreaterThan(1);
+    const pages = [first.meme.text!];
+    for (let page = first; page.meme.next?.after; ) {
+      page = await get(r, { grain: "whole", after: page.meme.next.after });
+      const bare = (h: string): string => h.replace(/^partial:(?:#\/[^:]+|p[0-9]+):/, "");
+      expect(bare(page.meme.canonicalHash)).toBe(bare(first.meme.canonicalHash));
+      expect(page.meme.text!.startsWith("<<~ ahu slot=")).toBe(true);
+      pages.push(page.meme.text!);
     }
-    expect(size(text)).toBe(first.meme.bytes);
-    const whole = await get(r, { maxBytes: 262_144 * 4 });
-    expect(whole.meme.truncated).toBe(first.meme.bytes > 262_144);
+    expect(size(pages.join(""))).toBe(first.meme.bytes);
+    for (const page of pages.slice(0, -1)) expect(page.trimEnd().endsWith("<<~/ahu>>")).toBe(true);
   });
 
-  test("a page never splits a multi-byte character, and the pages still join to the whole", async () => {
-    const r = await seat(bulky(900, "épée"));
+  test("a slot larger than a page rides its own page whole, never cut", async () => {
+    const r = await seat(carrier([["a", 40], ["big", 20_000], ["c", 40]]));
     const pages: string[] = [];
-    for (let page = await get(r, { maxBytes: 1000 }); ; ) {
-      expect(size(page.meme.text)).toBeLessThanOrEqual(1000);
-      expect(page.meme.text).not.toContain("\uFFFD");
-      pages.push(page.meme.text);
-      if (!page.meme.next) break;
-      page = await get(r, { maxBytes: 1000, after: page.meme.next });
+    for (let page = await get(r, { grain: "whole" }); ; ) {
+      pages.push(page.meme.text!);
+      if (!page.meme.next?.after) break;
+      page = await get(r, { grain: "whole", after: page.meme.next.after });
     }
-    expect(pages.length).toBeGreaterThan(1);
-    expect(pages.join("")).toBe((await get(r, { maxBytes: 262_144 })).meme.text);
+    expect(pages.some((p) => p.startsWith("<<~ ahu slot=`#/big`") && size(p) > READ_PAGE_BYTES)).toBe(true);
   });
 
-  test("a cursor that reads as none refuses; a meme that moved under the cursor refuses stale", async () => {
-    const r = await seat(bulky(60_000));
-    const first = await get(r);
-    await expect(get(r, { after: "nonsense" })).rejects.toMatchObject({ reason: "meme-cursor-malformed" });
-    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: bulky(60_001) }, ctx());
-    await expect(get(r, { after: first.meme.next! })).rejects.toMatchObject({ reason: "meme-cursor-stale" });
+  test("a cursor that reads as none refuses; a carrier that moved under the cursor refuses stale; an unknown grain refuses loudly", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" });
+    await expect(get(r, { grain: "whole", after: "nonsense" })).rejects.toMatchObject({ reason: "read-cursor-malformed" });
+    await expect(get(r, { grain: "thin" })).rejects.toMatchObject({ reason: "grain-unknown" });
+    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 6_001], ["b", 6_000], ["c", 6_000]]) }, ctx());
+    await expect(get(r, { grain: "whole", after: first.meme.next!.after! })).rejects.toMatchObject({ reason: "read-cursor-stale" });
   });
 
-  test("an absent meme still answers null, with no page words", async () => {
+  test("RED M2 base-from-skinny: a has-stack answer's base names the card, so a meme put or a slot patch against it refuses by name", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const stack = await get(r);
+    expect(stack.meme.canonicalHash).toMatch(/^skinny:/);
+    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 1]]), base: stack.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: stack.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    // CONTROL: the whole carrier's base authorizes the write.
+    const whole = await get(r, { grain: "whole" });
+    expect(whole.meme.canonicalHash).not.toMatch(/^skinny:/);
+  });
+
+  test("RED partial-base: a meme put refuses a partial base (one page, one slot) by name; a slot patch takes it", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" });
+    expect(first.meme.canonicalHash).toMatch(/^partial:/);
+    await expect(makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: carrier([["a", 1]]), base: first.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
+    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: first.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+  });
+
+  test("RED span: a slot answer's partial base names its slot, and a patch of another slot refuses base-outside-span", async () => {
+    const r = await seat(carrier([["a", 40], ["b", 40]]));
+    const slot = await get(r, { slot: "#/a" });
+    expect(slot.meme.canonicalHash).toMatch(/^partial:#\/a:/);
+    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/b", append: "more", base: slot.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: slot.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+  });
+
+  test("RED span: a page's partial base names its page, and a patch of a slot on another page refuses base-outside-span", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    const first = await get(r, { grain: "whole" });
+    expect(first.meme.canonicalHash).toMatch(/^partial:p1:/);
+    await expect(makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/c", append: "more", base: first.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+    expect(await makeMemePatchReactor(r.opts)({ recipe: "default", uri: URI, slot: "#/a", append: "more", base: first.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
+  });
+
+  test("RED span: meme delete, a whole-family act, refuses a partial base", async () => {
+    const r = await seat(carrier([["a", 40], ["b", 40]]));
+    const slot = await get(r, { slot: "#/a" });
+    await expect(makeMemeDeleteReactor(r.opts)({ recipe: "default", uri: URI, base: slot.meme.canonicalHash }, ctx())).rejects.toMatchObject({ reason: "base-from-partial" });
+  });
+
+  test("RED M1: a stay-home title answers no read through the internal meme-get either (`tiddler-withheld`)", async () => {
+    const r = rig();
+    r.wiki.store.set("$:/temp/lares/alert/x", { title: "$:/temp/lares/alert/x", text: "device-local" });
+    await expect(makeMemeGetReactor(r.opts)({ recipe: "default", uri: "$:/temp/lares/alert/x" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeMemeProjectReactor(r.opts)({ recipe: "default", uri: "$:/temp/lares/alert/x", to: "md" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+  });
+
+  test("an absent meme still answers null", async () => {
     const r = rig();
     const out = await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx());
     expect(out["meme"]).toBeNull();

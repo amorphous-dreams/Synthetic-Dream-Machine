@@ -38,7 +38,8 @@ function rig() {
 describe("each hat reached by name: the island's per-face lane", () => {
   it("the lane carries the meme verbs and the tiddler door's engine verbs", () => {
     expect([...FACE_ENGINE_VERBS].sort()).toEqual(["oracle-cast", "tiddler-delete", "tiddler-get", "tiddler-put", "wiki-filter", "wiki-render", "wiki-status"]);
-    expect([...FACE_LANE_VERBS].sort()).toEqual(["meme-delete", "meme-get", "meme-list", "meme-put", ...FACE_ENGINE_VERBS].sort());
+    // ONE DOOR READS: a lit sibling reads through `tiddler-get` on its own engine; the internal `meme-get` rides no lane.
+    expect([...FACE_LANE_VERBS].sort()).toEqual(["meme-delete", "meme-list", "meme-put", ...FACE_ENGINE_VERBS].sort());
   });
 
   it("LIT SIBLING: its put runs on its own lane (its own document) and the answer names its face", async () => {
@@ -160,7 +161,7 @@ describe("a lit face receives visits: a read names another lit face as its targe
   });
 
   it("V3 RED: PRIVATE FIRST: a bag naming a private layer refuses `cross-face-private` before the verb, the lit set or a view is read", async () => {
-    const r = visitRig("meme-get");
+    const r = visitRig("tiddler-get");
     for (const target of [1, 7]) {
       await expect(r.reactor({ uri: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/daemon/personal", target }, r.ctx(`0x${MOUNT}`))).rejects.toMatchObject({ reason: "cross-face-private" });
     }

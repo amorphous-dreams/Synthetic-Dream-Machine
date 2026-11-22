@@ -35,7 +35,7 @@ export type BagReach = "private" | "visitable";
 export const PRIVATE_SLOT_KINDS: ReadonlySet<WikiSlotKind> = new Set(["personal", "draft"]);
 
 /** The read and render verbs a seat may aim at another lit face (`target`); every other verb naming another face refuses. */
-export const CROSS_FACE_READ_VERBS: ReadonlySet<string> = new Set(["tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-get", "meme-list"]);
+export const CROSS_FACE_READ_VERBS: ReadonlySet<string> = new Set(["tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-list"]);
 
 /**
  * The verbs whose `target` names a FACE: the tiddler door and the meme verbs. A read among them visits a lit target; a write

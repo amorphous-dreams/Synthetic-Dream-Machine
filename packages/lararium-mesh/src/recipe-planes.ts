@@ -5,7 +5,7 @@
  * recipe (written at genesis, shared by every vessel); the catalog holds the vessel's OWN composition
  * of any wiki, system or user. Own shadows default, exactly as a working layer shadows canon. Every
  * reader walks the planes in the order this module spells, so no site carries an order of its own: the
- * surface mount's resolver (`surface-recipe`), the boot mount, the live watch, `meme get --recipe` and
+ * surface mount's resolver (`surface-recipe`), the boot mount, the live watch, `tiddler get --meme --recipe` and
  * the compose verbs.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-planes

@@ -37,8 +37,10 @@ function evaluate(text: string): string[] {
 }
 
 function answer(verb: string, args: Record<string, unknown>): Record<string, unknown> {
-  if (verb === "tiddler-get") return { recipe: "default", title: args["title"], tiddler: h.pins === null ? null : { fields: { title: LAW_PINS_TITLE, text: h.pins }, hash: `h${h.hash}` } };
+  // THE DOOR'S GRADIENT, IN SMALL: an answer that left the text home hands a card's base, which no text put takes (base-from-skinny).
+  if (verb === "tiddler-get") return { recipe: "default", title: args["title"], tiddler: h.pins === null ? null : { fields: { title: LAW_PINS_TITLE, text: h.pins }, hash: `${args["grain"] === "fat" ? "" : "skinny:"}h${h.hash}` } };
   if (verb === "tiddler-put") {
+    if (String(args["base"] ?? "").startsWith("skinny:")) throw new Error("base-from-skinny: the pin set's base came from an answer that left the text home");
     if (h.putDecision !== "put") return { decision: h.putDecision, hash: `h${h.hash}` };
     h.pins = String(args["text"]);
     h.hash++;

@@ -8,11 +8,11 @@
  *   get (absent)         → not-found, nothing lands (`--recipe lares`)
  *   put --bag lares      → refuses: a placement never shadows up (CONTROL)
  *   put (framed)         → ingest; the root and `#/a` landed
- *   get                  → the same bytes back, with the canonical hash as `base` (`--recipe lares`)
+ *   tiddler get --meme   → the same bytes back, with the canonical hash as `base` (`--recipe lares`)
  *   put --base (fresh)   → ingest; the dropped slot tombstoned
  *   put --base (stale)   → conflict; nothing moves  (the CONTROL — a door only shown saying yes is no door)
  *   project --to md      → the submission pair beside `--out`
- *   project --to mem     → the canonical carrier, byte-equal to `get`
+ *   project --to mem     → refuses (the carrier reads through `tiddler get --meme --all`, the CONTROL)
  *   project --to html    → a document, rendered from the explicit daemon wiki recipe
  *
  * THE SHARED TREE STAYS STILL. A staged boot bakes its genesis INTO ITS ROOT from the plugin that
@@ -103,7 +103,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   let base = "";
 
   test("★ a bare store read refuses by name before daemon dispatch ★", async () => {
-    const r = await lar.cli(["meme", "get", URI, "--json"]); // intentional-bare-refusal
+    const r = await lar.cli(["tiddler", "get", URI, "--meme", "--all", "--json"]); // intentional-bare-refusal
     expect((r.json?.["error"] as Record<string, unknown>)?.["code"], said(r)).toBe("no-container");
     expect(r.code).toBe(2);
   });
@@ -116,7 +116,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("get of an absent meme → not-found", async () => {
-    const r = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
+    const r = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     expect((r.json?.["error"] as Record<string, unknown>)?.["code"], said(r)).toBe("not-found");
     expect(r.code).toBe(3);
@@ -133,9 +133,9 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("get → the same bytes back, with the canonical hash", async () => {
-    const r = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
+    const r = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
-    const d = r.json?.["data"] as Record<string, unknown>;
+    const d = (r.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>;
     const text = String(d["text"]);
     // The read hands back the CANONICAL carrier: the framing normalized, the block check stamped, the
     // body whole. Framed as sent, the two slots and the address read back verbatim.
@@ -145,9 +145,9 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     base = String(d["canonicalHash"]);
     // The base IS the digest of the bytes handed back — collided here, never assumed.
     expect(base).toBe(`sha256:${createHash("sha256").update(text).digest("hex")}`);
-    // The prose seat writes the text alone to stdout, so `lares meme get <uri> > file` carries the meme;
+    // The prose seat writes the text alone to stdout, so `lares tiddler get <uri> --meme --all > file` carries the meme;
     // a pipe implies `--json`, so the prose seat is asked for by name.
-    const human = await lar.cli(["meme", "get", URI, ...WIKI, "--no-json"]);
+    const human = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--no-json"]);
     expect(human.stdout).toBe(text);
     expect(human.stderr).toContain(`base: ${base}`);
   });
@@ -163,14 +163,14 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("CONTROL: put --base (stale) → conflict; nothing moves", async () => {
-    const before = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
+    const before = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
     const r = await lar.cli(["meme", "put", URI, ...WIKI, "--base", base, "--file", join(scratch, "ab.mem"), "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     expect((r.json?.["error"] as Record<string, unknown>)?.["code"]).toBe("conflict");
     expect(r.code).toBe(4);
-    const after = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
-    const afterText = String((after.json?.["data"] as Record<string, unknown>)["text"]);
-    expect(afterText).toBe(String((before.json?.["data"] as Record<string, unknown>)["text"]));
+    const after = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
+    const afterText = String(((after.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]);
+    expect(afterText).toBe(String(((before.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]));
     expect(afterText).toContain("<<~ ahu slot=`#/c`>>");
     expect(afterText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
@@ -188,11 +188,13 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(meta).toContain(PATH);
   });
 
-  test("project --to mem → the canonical carrier, byte-equal to `get`", async () => {
+  test("CONTROL: project --to mem left the verb — the carrier itself reads through the one door, and the usage names the targets", async () => {
     const r = await lar.cli(["meme", "project", URI, ...WIKI, "--to", "mem", "--no-json"]);
-    expect(r.code, said(r)).toBe(0);
-    const got = await lar.cli(["meme", "get", URI, ...WIKI, "--no-json"]);
-    expect(r.stdout).toBe(got.stdout);
+    expect(r.code, said(r)).toBe(2);
+    expect(r.stderr).toMatch(/md · html · tid · json/);
+    const got = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--no-json"]);
+    expect(got.code, said(got)).toBe(0);
+    expect(got.stdout).toContain(`uri-path = "${PATH}"`);
   });
 
   test("list → the root stands with its canonical hash; --tree nests its slots (the daemon registers meme-list)", async () => {
@@ -208,7 +210,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   test("delete → 0 and the group leaves; get answers not-found (the daemon registers meme-delete)", async () => {
     const r = await lar.cli(["meme", "delete", URI, ...WIKI, "--json"]);
     expect(r.code, said(r)).toBe(0);
-    const got = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
+    const got = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
     const err = got.json?.["error"] as Record<string, unknown> | undefined;
     expect(err?.["code"] ?? got.json?.["code"], said(got)).toBe("not-found");
     // CONTROL: a delete of what no longer stands answers not-found, never a second removal.
@@ -241,9 +243,9 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(put.json?.["ok"], said(put)).toBe(true);
     const r = await lar.cli(["act", "MOVE", "--title", MOVE_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
     expect(r.json?.["ok"], `the MOVE out of the daemon wiki refused — ${said(r)}`).toBe(true);
-    const gone = await lar.cli(["meme", "get", MOVE_URI, "--bag", DAEMON_WORKING, "--json"]);
+    const gone = await lar.cli(["tiddler", "get", MOVE_URI, "--bag", DAEMON_WORKING, "--meme", "--all", "--json"]);
     expect((gone.json?.["error"] as Record<string, unknown>)?.["code"], `the carrier still stands in the daemon's working layer — ${said(gone)}`).toBe("not-found");
-    const there = await lar.cli(["meme", "get", MOVE_URI, "--bag", CROSSROADS_URI, "--json"]);
+    const there = await lar.cli(["tiddler", "get", MOVE_URI, "--bag", CROSSROADS_URI, "--meme", "--all", "--json"]);
     expect(there.json?.["ok"], `the carrier never reached crossroads — ${said(there)}`).toBe(true);
   });
 

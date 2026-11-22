@@ -62,18 +62,25 @@ const tmpFile = (text: string): string => {
 
 describe("memePlan — the argument law, no daemon", () => {
   test("bare targets refuse before a daemon can receive an empty container", () => {
-    expect(() => memePlan("get", memeArgs(["get", "lar:///t/x"]))).toThrow(/no-container/);
+    expect(() => memePlan("delete", memeArgs(["delete", "lar:///t/x"]))).toThrow(/no-container/);
   });
   test("--recipe and --bag ride through as bare slugs", () => {
-    expect(memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm" })).args).toEqual({ uri: "lar:///t/x", recipe: "sdm" });
-    expect(memePlan("get", memeArgs(["get", "lar:///t/x"], { bag: "sdm" })).args).toEqual({ uri: "lar:///t/x", bag: "sdm" });
+    expect(memePlan("delete", memeArgs(["delete", "lar:///t/x"], { recipe: "sdm" })).args).toEqual({ uri: "lar:///t/x", recipe: "sdm" });
+    expect(memePlan("delete", memeArgs(["delete", "lar:///t/x"], { bag: "sdm" })).args).toEqual({ uri: "lar:///t/x", bag: "sdm" });
   });
   test("explicit recipe default names the daemon wiki through the resolver sentinel", () => {
-    expect(memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "default" })).args)
+    expect(memePlan("delete", memeArgs(["delete", "lar:///t/x"], { recipe: "default" })).args)
       .toEqual({ uri: "lar:///t/x", recipe: "default" });
   });
+  test("ONE DOOR READS: `meme get` retired into `lares tiddler get --meme`; the meme door names no get", async () => {
+    const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }, { json: false }))).toBe(2);
+    expect(stderr.mock.calls.flat().join(" ")).toMatch(/unknown sub-verb "get"/);
+    stderr.mockRestore();
+    expect(h.calls).toEqual([]);
+  });
   test("CONTROL: every store planner forwards exactly either explicit target", () => {
-    for (const sub of ["put", "get", "delete"] as const) {
+    for (const sub of ["put", "delete"] as const) {
       expect(memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "r" })).args["recipe"]).toBe("r");
       expect(memePlan(sub, memeArgs([sub, "lar:///t/x"], { bag: "b" })).args["bag"]).toBe("b");
     }
@@ -83,7 +90,7 @@ describe("memePlan — the argument law, no daemon", () => {
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", bag: "b" })).container).toEqual({ bag: "b" });
   });
   test("EACH HAT REACHED BY NAME: a store verb naming `--face N` plans to act as face N (its session carries it); with no `--face` it plans for the worn face; a malformed `--face` refuses `face-malformed`", () => {
-    for (const sub of ["put", "get", "delete"] as const) {
+    for (const sub of ["put", "delete"] as const) {
       const plan = memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "default", face: "1" }));
       expect(plan.face).toBe(1);
       expect(plan.args).not.toHaveProperty("face");
@@ -94,10 +101,10 @@ describe("memePlan — the argument law, no daemon", () => {
     expect(listPlan(memeArgs(["list"], { recipe: "default" }))).toEqual({ verb: "meme-list", args: { recipe: "default" } });
   });
   test("★ --recipe AND --bag together refuse ★", () => {
-    expect(() => memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", bag: "sdm" }))).toThrow(/one of/);
+    expect(() => memePlan("delete", memeArgs(["delete", "lar:///t/x"], { recipe: "sdm", bag: "sdm" }))).toThrow(/one of/);
   });
   test("a missing uri refuses", () => {
-    expect(() => memePlan("get", memeArgs(["get"]))).toThrow(/uri/);
+    expect(() => memePlan("delete", memeArgs(["delete"]))).toThrow(/uri/);
   });
   test("put carries --base", () => {
     expect(memePlan("put", memeArgs(["put", "lar:///t/x"], { recipe: "default", base: "sha256:abc" })).args).toEqual({ uri: "lar:///t/x", recipe: "default", base: "sha256:abc" });
@@ -152,78 +159,6 @@ describe("lares meme put", () => {
   });
 });
 
-describe("lares meme get", () => {
-  test("dispatches meme-get and returns 0 on a hit", async () => {
-    h.reply = { uri: "lar:///t/x", meme: { text: "T", canonicalHash: "sha256:9" } };
-    expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "sdm" }))).toBe(0);
-    expect(h.calls).toEqual([{ verb: "meme-get", args: { uri: "lar:///t/x", recipe: "sdm" } }]);
-  });
-  test("a bare target refuses before the daemon verb is called", async () => {
-    const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], {}, { json: false }))).toBe(2);
-    expect(h.calls).toEqual([]);
-    expect(stderr.mock.calls.flat().join(" ")).toMatch(/no-container.*--recipe.*--bag/s);
-    stderr.mockRestore();
-  });
-  test("★ an absent meme exits not-found ★", async () => {
-    h.reply = { uri: "lar:///t/x", meme: null };
-    expect(await cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }))).toBe(3);
-  });
-
-  /** Run one get with exactly these flags (no `--json` default), catching stdout bytes and stderr lines. */
-  const carrierRun = async (flags: Record<string, boolean>): Promise<{ code: number; out: string; err: string[] }> => {
-    h.reply = { uri: "lar:///t/x", meme: { text: "<<^ code=`&#x0001;`>> body\n", canonicalHash: "sha256:9" } };
-    const out: string[] = [];
-    const err: string[] = [];
-    const w = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { out.push(String(m)); return true; });
-    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
-    const tty = process.stdout.isTTY;
-    // A PIPE: stdout holds no terminal, where every other verb answers JSON.
-    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
-    try {
-      const code = await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default" }, flags } as unknown as ParsedArgs);
-      return { code, out: out.join(""), err };
-    } finally {
-      Object.defineProperty(process.stdout, "isTTY", { value: tty, configurable: true });
-      w.mockRestore(); e.mockRestore();
-    }
-  };
-
-  test("★ through a pipe, a bare get answers the CARRIER on stdout and the base on stderr as one line ★", async () => {
-    const r = await carrierRun({});
-    expect(r.code).toBe(0);
-    expect(r.out).toBe("<<^ code=`&#x0001;`>> body\n");
-    expect(r.err).toEqual(["base: sha256:9"]);
-  });
-
-  test("`--no-json` stays a working alias of the carrier default", async () => {
-    const r = await carrierRun({ json: false });
-    expect(r.out).toBe("<<^ code=`&#x0001;`>> body\n");
-    expect(r.err).toEqual(["base: sha256:9"]);
-  });
-
-  test("CONTROL: `--json` asks for the envelope, the base inside it", async () => {
-    const r = await carrierRun({ json: true });
-    expect(r.code).toBe(0);
-    expect(JSON.parse(r.out)["data"]).toEqual({ uri: "lar:///t/x", text: "<<^ code=`&#x0001;`>> body\n", canonicalHash: "sha256:9" });
-  });
-
-  test("through a pipe, an absent meme refuses in prose on stderr and leaves stdout empty, so a redirect never saves an error as a meme", async () => {
-    h.reply = { uri: "lar:///t/x", meme: null };
-    const err: string[] = [];
-    const w = vi.spyOn(process.stdout, "write").mockImplementation(() => { throw new Error("stdout took bytes"); });
-    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
-    const tty = process.stdout.isTTY;
-    Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
-    try {
-      expect(await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default" }, flags: {} } as unknown as ParsedArgs)).toBe(3);
-    } finally {
-      Object.defineProperty(process.stdout, "isTTY", { value: tty, configurable: true });
-      w.mockRestore(); e.mockRestore();
-    }
-    expect(err.join(" ")).toMatch(/no meme at lar:\/\/\/t\/x/);
-  });
-});
 
 describe("lares meme patch — one slot's body, a base required", () => {
   const ingest = { uri: "lar:///t/x", slot: "#/a", decision: "ingest", grade: "clean", landed: ["lar:///t/x", "lar:///t/x#/a"], tombstoned: [], canonicalHash: "sha256:2", warnings: [], diagnostics: [] };
@@ -327,16 +262,10 @@ describe("lares meme list — roots by default, --tree nests the slots", () => {
     expect(out.json["data"]).toEqual({ recipe: "lares", bags: ["w", "c"], unreached: ["lar:///ha.ka.ba/bags/far"], roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1", bag: "c" }] });
   });
 
-  test("a read the floor answered says so: the listing and the get each carry `floor: true` where the verb named the floor, and nothing where it named none", async () => {
+  test("a read the floor answered says so: the listing carries `floor: true` where the verb named the floor", async () => {
     h.reply = { bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }], next: null };
     const listed = await captured(() => cmdMeme(memeArgs(["list"], { bag: "lararium" })));
     expect(listed.json["data"]).toEqual({ bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }] });
-    h.reply = { uri: "lar:///t/a", floor: true, meme: { text: "body", canonicalHash: "sha256:1" } };
-    const got = await captured(() => cmdMeme(memeArgs(["get", "lar:///t/a"], { bag: "lararium" })));
-    expect(got.json["data"]).toEqual({ uri: "lar:///t/a", text: "body", canonicalHash: "sha256:1", floor: true });
-    // CONTROL: a live read names no floor.
-    h.reply = { uri: "lar:///t/a", meme: { text: "body", canonicalHash: "sha256:1" } };
-    expect((await captured(() => cmdMeme(memeArgs(["get", "lar:///t/a"], { bag: "lararium" })))).json["data"]).toEqual({ uri: "lar:///t/a", text: "body", canonicalHash: "sha256:1" });
   });
 
   test("★ --recipe AND --bag together refuse; nothing reaches the wire ★", async () => {
@@ -389,8 +318,8 @@ describe("lares meme (bare)", () => {
     await cmdMeme(memeArgs([]));
     spy.mockRestore();
     const usage = lines.join("\n");
-    for (const sub of ["put", "get", "list", "delete", "normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
-    expect(usage).toMatch(/--to <mem\|md\|html\|tid\|json>/);
+    for (const sub of ["put", "list", "delete", "normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
+    expect(usage).toMatch(/--to <md\|html\|tid\|json>/);
   });
 });
 
@@ -504,6 +433,8 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
 describe("projectPlan — the seat law, no daemon", () => {
   test("a target off the list refuses; a missing --to refuses; --recipe with --bag refuses", () => {
     expect(() => projectPlan(memeArgs(["project", "x.mem"], { to: "pdf" }))).toThrow(/--to/);
+    // The carrier itself reads through the one door (`lares tiddler get <uri> --meme --all`): `mem` left the targets.
+    expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "mem", recipe: "default" }))).toThrow(/--to names the target, one of md · html · tid · json/);
     expect(() => projectPlan(memeArgs(["project", "x.mem"]))).toThrow(/--to/);
     expect(() => projectPlan(memeArgs(["project", "lar:///t/x"], { to: "html", recipe: "sdm", bag: "sdm" }))).toThrow(/no-container/);
   });
@@ -883,130 +814,6 @@ describe("lares meme project — the daemon seat rides meme-project", () => {
   });
 });
 
-/**
- * THE COMPOSITION VERDICT REACHES THE OPERATOR WHO ASKED FOR IT.
- *
- * `readCarrierShape` reads a fault that exists NOWHERE in the records it composes: a guest pastes a whole
- * framed carrier into an `ahu` section, the child's bytes read as a legal carrier, the root's bytes read as
- * a legal carrier, and `expandRefs` joins them into an illegal one carrying TWO text frames where only the
- * first verifies. The paste GRADES CLEAN — measured, `child-grade-decision.mem` #/measured row 11 — and the
- * shape reading, which catches it (row 13), had exactly ONE production caller in the whole tree: the
- * `--gradient` survey. No door, no gate, no route, no projector read it.
- *
- * SO THE COST ROUTED FROM THE ACTOR'S PRESENT TO A STRANGER'S FUTURE. Four months on, a reader on another
- * peer meets a carrier with two heads and an `unchecked` verdict, with no author left to ask.
- *
- * `project --to mem` is where a human stands waiting on a command they JUST TYPED, and it is the one target
- * whose output IS a carrier, so that is where the reading belongs.
- *
- * AND IT REPORTS RATHER THAN REFUSES — see the ruling in `memeProject`. These tests pin both halves: the
- * bytes still land, and the fault still reaches BOTH channels with a non-zero exit.
- */
-describe("project --to mem reads the composition it just rendered", () => {
-  /** The two-frame smuggle, as `expandRefs` composes it. Assembled at read time — it declares nothing on disk. */
-  const HEAD = [
-    `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>`,
-    ``,
-    `<<^ code=\`&#x0001;\` namespace=\`&#x2299;\` from=\`?\` to=\`lar:///t/two-heads\`>>`,
-    `<<^ code=\`&#x0002;\`>>`,
-    ``,
-  ].join("\n");
-  const TWO_FRAMES = HEAD + [
-    "```toml meta",
-    `type     = "text/memetic-wikitext+tiddlywiki"`,
-    `uri-path = "t/two-heads"`,
-    "```",
-    ``, `body one`, ``,
-    `<<^ code=\`&#x0002;\`>>`, ``, `body two`, ``,
-    `<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;AAAA\`>>`,
-    `<<^ code=\`&#x0004;\` to=\`?\`>>`, ``,
-  ].join("\n");
-  const TORN = HEAD + [
-    "```toml meta",
-    `type     = "text/memetic-wikitext+tiddlywiki"`,
-    `uri-path = "t/two-heads"`,
-    "```",
-    ``, `body one`, ``,
-  ].join("\n");
-
-  /** Run the door on the human channel, gathering what each stream carried. */
-  async function human(reply: Record<string, unknown>, options: Record<string, string> = {}): Promise<{ code: number; out: string; err: string }> {
-    h.calls.length = 0; h.refuse = "";
-    h.reply = reply;
-    const out: string[] = []; const err: string[] = [];
-    const so = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { out.push(String(l)); return true; }) as never);
-    const ce = vi.spyOn(console, "error").mockImplementation(((...a: unknown[]) => { err.push(a.map(String).join(" ")); }) as never);
-    const cl = vi.spyOn(console, "log").mockImplementation(((...a: unknown[]) => { out.push(a.map(String).join(" ")); }) as never);
-    const code = await cmdMeme(memeArgs(["project", "lar:///t/two-heads"], { recipe: "default", to: "mem", ...options }, { json: false }));
-    so.mockRestore(); ce.mockRestore(); cl.mockRestore();
-    return { code, out: out.join("\n"), err: err.join("\n") };
-  }
-
-  test("★ RED — a composed render carrying TWO text frames reaches the operator's channel ★", async () => {
-    const r = await human({ uri: "lar:///t/two-heads", to: "mem", text: TWO_FRAMES, contentType: "text/memetic-wikitext+tiddlywiki" });
-    // THE FAULT REACHES A HUMAN, in the words the reading itself uses.
-    expect(r.err).toMatch(/2 text frames stand where the grammar admits one/);
-    // …and the BYTES STILL LAND. A reading that ate the operator's render would drop bytes to protect the
-    // grammar — the one thing the diagnostics ladder forbids.
-    expect(r.out).toContain("body two");
-    // …and a hook can catch it: the render happened, the reading faulted, the exit says so.
-    expect(r.code).not.toBe(0);
-  });
-
-  test("the fault rides the --json channel too (vitest is never a TTY, so `emit` renders JSON on the flag)", async () => {
-    h.calls.length = 0; h.refuse = "";
-    h.reply = { uri: "lar:///t/two-heads", to: "mem", text: TWO_FRAMES, contentType: "text/memetic-wikitext+tiddlywiki" };
-    const lines: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { lines.push(String(l)); return true; }) as never);
-    const code = await cmdMeme(memeArgs(["project", "lar:///t/two-heads"], { to: "mem", recipe: "default" }, { json: true }));
-    spy.mockRestore();
-    const reply = JSON.parse(lines.find((l) => l.startsWith("{")) ?? "{}") as { ok?: boolean; data?: Record<string, unknown> };
-    const shape = reply.data?.["shape"] as { faults?: string[] } | undefined;
-    expect(shape?.faults?.join(" ")).toMatch(/2 text frames stand where the grammar admits one/);
-    // `ok` names whether the ACT landed; the exit code names what the READING found. Two facts, two
-    // channels — the same custody ⊥ secret-kind separation, one altitude along.
-    expect(reply.ok).toBe(true);
-    expect(reply.data?.["text"]).toBe(TWO_FRAMES);
-    expect(code).not.toBe(0);
-  });
-
-  test("CONTROL: a clean carrier projects silently and BYTE-IDENTICALLY, exactly as before", async () => {
-    const clean = readFileSync(PRISM, "utf8");
-    const r = await human({ uri: "lar:///ha.ka.ba/lares/api/pono/prism", to: "mem", text: clean, contentType: "text/memetic-wikitext+tiddlywiki" });
-    expect(r.code).toBe(0);
-    expect(r.err).toBe("");                 // not one line of shape noise on a carrier at its floor
-    expect(r.out).toBe(clean);              // byte-identical, and nothing else on stdout
-  });
-
-  test("CONTROL: a clean carrier's --out file lands byte-identical and the exit stays 0", async () => {
-    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
-    const out = join(d, "clean.mem");
-    const clean = readFileSync(PRISM, "utf8");
-    const r = await human({ uri: "lar:///ha.ka.ba/lares/api/pono/prism", to: "mem", text: clean, contentType: "text/memetic-wikitext+tiddlywiki" }, { out });
-    expect(r.code).toBe(0);
-    expect(readFileSync(out, "utf8")).toBe(clean);
-  });
-
-  test("CONTROL: a TORN frame reads DISTINCT from a two-frame smuggle — truncated is never unchecked", async () => {
-    const torn = await human({ uri: "lar:///t/two-heads", to: "mem", text: TORN, contentType: "text/memetic-wikitext+tiddlywiki" });
-    expect(torn.err).toMatch(/the frame opens and never closes — STX stands without ETX/);
-    expect(torn.err).not.toMatch(/2 text frames/);
-    const two = await human({ uri: "lar:///t/two-heads", to: "mem", text: TWO_FRAMES, contentType: "text/memetic-wikitext+tiddlywiki" });
-    expect(two.err).not.toMatch(/opens and never closes/);
-  });
-
-  test("CONTROL: the OTHER targets read no carrier shape — an html render is not a carrier", async () => {
-    h.calls.length = 0; h.refuse = "";
-    h.reply = { uri: "lar:///t/x", to: "html", text: "<p>not a carrier at all</p>", contentType: "text/html" };
-    const lines: string[] = [];
-    const so = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { lines.push(String(l)); return true; }) as never);
-    const code = await cmdMeme(memeArgs(["project", "lar:///t/x"], { to: "html", recipe: "default" }, { json: true }));
-    so.mockRestore();
-    const reply = JSON.parse(lines.find((l) => l.startsWith("{")) ?? "{}") as { data?: Record<string, unknown> };
-    expect("shape" in (reply.data ?? {})).toBe(false);
-    expect(code).toBe(0);
-  });
-});
 
 /**
  * THE SIDECAR RIDES THE JSON REPLY. The daemon's `meme-project` answers `{ text, meta }` for md — a carrier in
@@ -1145,74 +952,10 @@ describe("lares meme sitting — the fire is CALLED, and this call burns nothing
 
 describe("a lit face receives visits: --target reads, and a write naming one refuses at the CLI (Sol M1)", () => {
   const a = (positional: string[], options: Record<string, string>) => ({ command: "meme", positional, options, flags: {} } as unknown as ParsedArgs);
-  test("get and list carry the target; put, delete and patch refuse it by name before any door opens", () => {
-    expect(memePlan("get", a(["get", "lar:///t/x"], { recipe: "default", target: "h1" })).args).toEqual({ uri: "lar:///t/x", recipe: "default", target: "h1" });
+  test("list carries the target; put, delete and patch refuse it by name before any door opens (a meme read visits through `tiddler get --target`)", () => {
     expect(listPlan(a(["list"], { recipe: "default", target: "h1" })).args).toEqual({ recipe: "default", target: "h1" });
     for (const sub of ["put", "delete"] as const) expect(() => memePlan(sub, a([sub, "lar:///t/x"], { recipe: "default", target: "h1" })), sub).toThrow(/cross-face-write-refused/);
     expect(() => patchPlan(a(["patch", "lar:///t/x"], { recipe: "default", target: "h1", slot: "#/a", append: "n.txt", base: "sha256:x" }))).toThrow(/cross-face-write-refused/);
   });
 });
 
-describe("lares meme get — a bounded page, a size line and a cursor", () => {
-  const pages: Record<string, { text: string; next: string | null }> = {
-    first: { text: "AAAA", next: "4.0123456789abcdef" },
-    "4.0123456789abcdef": { text: "BBBB", next: "8.0123456789abcdef" },
-    "8.0123456789abcdef": { text: "CC", next: null },
-  };
-  const page = (args: Record<string, unknown>): Record<string, unknown> => {
-    const at = pages[String(args["after"] ?? "first")]!;
-    return { uri: "lar:///t/x", meme: { text: at.text, canonicalHash: "sha256:9", bytes: 10, truncated: at.next !== null, next: at.next } };
-  };
-  const captured = async (run: () => Promise<number>): Promise<{ code: number; json: Record<string, unknown> }> => {
-    const lines: string[] = [];
-    const spy = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { lines.push(String(m)); return true; });
-    const code = await run().finally(() => spy.mockRestore());
-    return { code, json: JSON.parse(lines.join("")) as Record<string, unknown> };
-  };
-  const runGet = async (options: Record<string, string>, flags: Record<string, boolean>): Promise<{ code: number; out: string; err: string[] }> => {
-    const out: string[] = []; const err: string[] = [];
-    const w = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { out.push(String(m)); return true; });
-    const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
-    try {
-      const code = await cmdMeme({ command: "meme", positional: ["get", "lar:///t/x"], options: { recipe: "default", ...options }, flags } as unknown as ParsedArgs);
-      return { code, out: out.join(""), err };
-    } finally { w.mockRestore(); e.mockRestore(); }
-  };
-
-  test("--max-bytes and --after ride the wire as the verb's own words; a count under 1 refuses before the wire", async () => {
-    expect(memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", "max-bytes": "4096", after: "4.0123456789abcdef" })).args)
-      .toEqual({ uri: "lar:///t/x", recipe: "sdm", maxBytes: "4096", after: "4.0123456789abcdef" });
-    expect(() => memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", "max-bytes": "many" }))).toThrow(/count of at least 1/);
-    expect(memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm" })).args).toEqual({ uri: "lar:///t/x", recipe: "sdm" });
-  });
-
-  test("RED: a cut page prints its text, then says its size, that it was cut and the cursor of the page behind", async () => {
-    h.replyFor = page;
-    const r = await runGet({}, {});
-    expect(r.code).toBe(0);
-    expect(r.out).toBe("AAAA");
-    expect(r.err).toEqual(["base: sha256:9", "size: 10 bytes", expect.stringMatching(/^truncated: .*--after 4\.0123456789abcdef.*--all/)]);
-    expect(h.calls).toHaveLength(1);
-  });
-
-  test("--after reads the page behind; --all follows the cursor and prints the whole text; the envelope carries bytes, truncated and next", async () => {
-    h.replyFor = page;
-    expect((await runGet({ after: "4.0123456789abcdef" }, {})).out).toBe("BBBB");
-    h.calls.length = 0;
-    const all = await runGet({}, { all: true });
-    expect(all.out).toBe("AAAABBBBCC");
-    expect(all.err).toEqual(["base: sha256:9", "size: 10 bytes"]);
-    expect(h.calls.map((c) => c.args["after"])).toEqual([undefined, "4.0123456789abcdef", "8.0123456789abcdef"]);
-    const env = await captured(() => cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" }, { all: true })));
-    expect(env.json["data"]).toEqual({ uri: "lar:///t/x", text: "AAAABBBBCC", canonicalHash: "sha256:9", bytes: 10, truncated: false, next: null });
-    const one = await captured(() => cmdMeme(memeArgs(["get", "lar:///t/x"], { recipe: "default" })));
-    expect(one.json["data"]).toMatchObject({ text: "AAAA", bytes: 10, truncated: true, next: "4.0123456789abcdef" });
-  });
-
-  test("CONTROL: a whole answer under the cap prints no truncated line", async () => {
-    h.reply = { uri: "lar:///t/x", meme: { text: "whole", canonicalHash: "sha256:9", bytes: 5, truncated: false, next: null } };
-    const r = await runGet({}, {});
-    expect(r.out).toBe("whole");
-    expect(r.err).toEqual(["base: sha256:9", "size: 5 bytes"]);
-  });
-});

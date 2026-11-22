@@ -6,6 +6,7 @@
  * the mount places and its answer carries the receipt mark (`ChoreReceiptMark`: the acting face, the asker's hand, its session).
  * Reads keep their path, and a place row acts as the place.
  */
+import { CHORE_FREE_VERBS } from "../src/chore-face.js";
 import { controlStoreOf } from "@lararium/mesh";
 import { afterEach, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -164,12 +165,14 @@ test("CONTROL: the AI seat's meme write naming no face, or naming the mount, pla
 test("CONTROL: reads keep their path from the h1 session (a meme read, a recall), and a place row acts as the place", async () => {
   const v = await stand();
   const env = await v.open("h1");
-  for (const verb of ["meme-get", "recall", "floor-status"]) {
+  for (const verb of ["tiddler-get", "recall", "floor-status"]) {
     const reply = await v.peer.ask({ op: "session:call", ...env, requestId: `read-${verb}`, verb, args: {} });
     expect(reply, verb).toMatchObject({ kind: "session:result", status: "done" });
     expect(reply["chore"], verb).toBeUndefined();
   }
-  expect(v.placed.map((p) => p.verb)).toEqual(["meme-get", "recall", "floor-status"]);
+  expect(v.placed.map((p) => p.verb)).toEqual(["tiddler-get", "recall", "floor-status"]);
+  // The internal `meme-get` holds no surface and no chore-free seat: a sibling session's call to it reads as a chore.
+  expect(CHORE_FREE_VERBS).not.toHaveProperty("meme-get");
 });
 
 // THE ASKER RIDES THE PLACEMENT (seat-canon-reach, T4-2): the door hands the hand it read (`seat` off the seat kind, `cli`
@@ -196,7 +199,7 @@ test("RED: a session's call places with the session's own hand; CONTROL: a read 
   const opened = await v.peer.ask({ op: "session:open", requestId: "open-tab", faceRef: "h0", hand: "tab" });
   const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
   await v.peer.ask({ op: "session:call", ...env, requestId: "put-hand", verb: "meme-put", args: MEME });
-  await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "meme-get", args: {} });
+  await v.peer.ask({ op: "session:call", ...env, requestId: "read-hand", verb: "tiddler-get", args: {} });
   expect(v.placed.map(askerOf)).toEqual(["tab", "tab"]);
 });
 
@@ -208,7 +211,7 @@ test("RED: the seat's meme write places with its chore mark, and a later receipt
   await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "put-mark" });
   expect((v.placed[0] as { chore?: unknown }).chore).toEqual(mark);
   expect(await v.oneShot({ op: "receipt", requestId: "put-mark" })).toMatchObject({ requestId: "put-mark", state: "done", chore: mark });
-  await v.oneShot({ verb: "meme-get", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "get-mark" });
+  await v.oneShot({ verb: "tiddler-get", args: MEME, requestedBy: "0xseat", seat: "ai", requestId: "get-mark" });
   expect((v.placed[1] as { chore?: unknown }).chore).toBeUndefined();
   expect(await v.oneShot({ op: "receipt", requestId: "get-mark" })).not.toHaveProperty("chore");
 });
@@ -370,7 +373,7 @@ test("SOL R7 (a second response after a close refusal): a visit refused at the c
 const READ = { recipe: "default", title: "T" };
 const visitOut = (o: { verb: string; args: Record<string, unknown> }) =>
   (o.args["target"] !== undefined ? { face: o.args["target"], worn: 0, visit: true, tiddler: { text: "the visited word" } } : { tiddler: { text: "own" } });
-const VISITS = new Set(["tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-get", "meme-list"]);
+const VISITS = new Set(["tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-list"]);
 
 test("RED XV1 (#407 H1): a session wearing lit h1 that targets the mount keeps its target past the door, by ordinal and by pet name, and admits on h0's actor", async () => {
   const { lives } = actors(0, 1);
@@ -455,7 +458,7 @@ test("RED XV5 (#407 M1, M3): the door refuses a private bag first, then a write 
   const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISITS, petnames: [[1, "Wren"], [2, "wren"], [3, "4"]] });
   const env = await v.open("h0");
   const ask = (requestId: string, verb: string, args: Record<string, unknown>) => v.peer.ask({ op: "session:call", ...env, requestId, verb, args });
-  expect(await ask("private", "meme-get", { uri: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: "nobody" })).toMatchObject({ kind: "session:refused", refusal: "cross-face-private" });
+  expect(await ask("private", "tiddler-get", { title: "lar:///t/x", bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: "nobody" })).toMatchObject({ kind: "session:refused", refusal: "cross-face-private" });
   expect(await ask("write", "tiddler-put", { ...READ, text: "x", target: 1 })).toMatchObject({ kind: "session:refused", refusal: "cross-face-write-refused" });
   expect(await ask("unknown", "tiddler-get", { ...READ, target: "nobody" })).toMatchObject({ kind: "session:refused", refusal: "target-unknown" });
   expect(await ask("doubled", "tiddler-get", { ...READ, target: "WREN" })).toMatchObject({ kind: "session:refused", refusal: "target-ambiguous" });
@@ -490,7 +493,7 @@ test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the main
   }
   expect(v.placed.map((p) => p.requestId)).toEqual(["one-before"]);
   // ONLY A WRITE ENTERS A DRAIN: a one-shot read (a chore-free verb) keeps its path while the mount drains.
-  expect(await v.oneShot({ verb: "meme-get", args: { recipe: "default", uri: MEME.uri }, requestedBy: "0xop", requestId: "read-during" }))
+  expect(await v.oneShot({ verb: "tiddler-get", args: { recipe: "default", title: MEME.uri }, requestedBy: "0xop", requestId: "read-during" }))
     .toMatchObject({ status: "done" });
   expect(v.placed.map((p) => p.requestId)).toEqual(["one-before", "read-during"]);
   // A CHORE-FREE WRITE STILL TAKES THE GATE: realm-feed rolls a lease slot and lands its receipt in the daemon layer.

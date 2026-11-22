@@ -195,12 +195,12 @@ describe("L8 · meme project: the target and source shape decide the seat", () =
   });
 });
 
-describe("L8 · meme put|get|delete|list: each sub reaches its declared daemon verb with the container", () => {
+describe("L8 · meme put|delete|list: each sub reaches its declared daemon verb with the container (a read rides `tiddler get --meme`)", () => {
   const args = (positional: string[], options: Record<string, string>, flags: Record<string, boolean> = {}): ParsedArgs =>
     ({ command: "meme", positional, options, flags: { json: true, ...flags } }) as unknown as ParsedArgs;
-  const VERB_OF = { put: "meme-put", get: "meme-get", delete: "meme-delete" } as const;
+  const VERB_OF = { put: "meme-put", delete: "meme-delete" } as const;
 
-  for (const sub of ["put", "get", "delete"] as const) {
+  for (const sub of ["put", "delete"] as const) {
     for (const container of [{ recipe: "sdm" }, { bag: "lares" }]) {
       test(`${sub} ${Object.keys(container)[0]} -> ${VERB_OF[sub]}`, () => {
         const plan = memePlan(sub, args([sub, "lar:///t/x"], container));
@@ -221,7 +221,7 @@ describe("L8 · meme put|get|delete|list: each sub reaches its declared daemon v
     expect(memePlan("put", args(["put", "lar:///t/x"], { bag: "b", base: "h" })).args["base"]).toBe("h");
   });
   test("CONTROL: two subs reach two different verbs", () => {
-    const a = memePlan("get", args(["get", "lar:///t/x"], { bag: "b" })).verb;
+    const a = memePlan("delete", args(["delete", "lar:///t/x"], { bag: "b" })).verb;
     const b = memePlan("put", args(["put", "lar:///t/x"], { bag: "b" })).verb;
     expect(a).not.toBe(b);
   });

@@ -25,7 +25,7 @@ const PLACE = "a row of the place: acts as the place, never as a face";
 export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze({
   // The daemon island's reads (its content fence still judges each presenter).
   "where": READ, "resolve": READ, "unbound-docs": READ, "fresher-canon": READ,
-  "meme-get": READ, "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
+  "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
   "wiki-filter": READ, "tiddler-get": READ, "wiki-render": READ, "wiki-status": READ, "circle-list": READ,
   "list-wikis": READ, "share-list": READ, "workbench-seat": READ, "intent-view": READ, "sealed-reading": READ, "events": READ,
   "realm-clock": READ,

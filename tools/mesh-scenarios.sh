@@ -1168,19 +1168,19 @@ run_meme() {
     local s; for s in "$@"; do printf '<<~ ahu slot=`#/%s`>>\n\n! %s\n\n<<~/ahu>>\n\n' "$s" "$s"; done
     printf '<<^ code=`&#x0003;`>>\n\n<<^ code=`&#x0004;` to=`?`>>\n'
   }
-  # One `meme get --bag <book> --json` on a hearth — the whole JSON, for the caller to read fields off.
+  # One `tiddler get --bag <book> --meme --all --json` on a hearth — the whole JSON, for the caller to read fields off.
   # B stands on her own seed: A's realm reaches her as a carried charter's realm, named on every realm-scoped call.
-  meme_get() {
-    if [ "$1" = lararium-b ]; then $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag "$BOOK" --realm "$AID_A" --json 2>&1
-    else $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag "$BOOK" --json 2>&1; fi
+  meme_read() {
+    if [ "$1" = lararium-b ]; then $COMPOSE exec -T "$1" $LARES tiddler get "$URI" --bag "$BOOK" --realm "$AID_A" --meme --all --json 2>&1
+    else $COMPOSE exec -T "$1" $LARES tiddler get "$URI" --bag "$BOOK" --meme --all --json 2>&1; fi
   }
-  json_text() { printf '%s' "$1" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(String(j.data?.text??""))}catch{}})'; }
+  json_text() { printf '%s' "$1" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(String(j.data?.meme?.text??""))}catch{}})'; }
   json_hash() { printf '%s' "$1" | grep -oE '"canonicalHash":"[^"]+"' | head -1 | cut -d'"' -f4; }
   # Poll a hearth's `get` until its text carries `$2` (a slot marker) or the budget ends; echoes the JSON.
   await_meme() {
     local svc="$1" marker="$2" until=$((SECONDS + ${3:-90})) out=""
     while [ "$SECONDS" -lt "$until" ]; do
-      out=$(meme_get "$svc")
+      out=$(meme_read "$svc")
       if printf '%s' "$out" | grep -q '"ok":true' && json_text "$out" | grep -qF "$marker"; then printf '%s' "$out"; return 0; fi
       sleep 3
     done
@@ -1278,7 +1278,7 @@ run_meme() {
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
 
-  # B READS THE REGISTRATION BEFORE SHE READS THE BOOK. `meme get --bag <book>` reaches A's doc through the counted
+  # B READS THE REGISTRATION BEFORE SHE READS THE BOOK. `tiddler get --bag <book> --meme` reaches A's doc through the counted
   # registration B's realm plane folds, and it answers "holds no layer" alike for a registration B has not folded and for a
   # document her dial has not reached; so B first names A's registration, counted and naming A's exact document, and only
   # then does a content read mean the carriage. The poll ends on that reading; its budget only bounds a silence.
@@ -1296,7 +1296,7 @@ run_meme() {
     printf '      B realm-bags: %s\n' "$(printf '%s' "$SEEN" | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
   fi
 
-  # THE READING THE SCENARIO EXISTS FOR. The realm carries A's registration; B's `meme get --bag <book>` walks
+  # THE READING THE SCENARIO EXISTS FOR. The realm carries A's registration; B's `tiddler get --bag <book> --meme` walks
   # the realm plane first (reach-by-access) and reads A's doc across the dial — A's wire gate federates the
   # realm doc and the registered bag's doc to a contracted MEMBER and to nobody else.
   step "★ B gets it — the line byte-whole, canonicalHash = A's ★"
@@ -1407,12 +1407,12 @@ run_meme() {
   local NET="${MESH_PROJECT}_mesh" CB="${MESH_PROJECT}-lararium-b-1"
   if ! docker network disconnect "$NET" "$CB" >/dev/null 2>&1; then bad "could not cut B off the mesh"; clear_all; return; fi
   # B writes the way she wrote slot b, on the base her own replica reads: the steward placement on the realm doc.
-  local HASH_C; HASH_C=$(json_hash "$(meme_get lararium-b)")
+  local HASH_C; HASH_C=$(json_hash "$(meme_read lararium-b)")
   meme_text a b c | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-c.mem'
   LD=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag "$BOOK" --realm "$AID_A" --base "$HASH_C" --file /tmp/npc-c.mem --json 2>&1)
   local cut_ok=1; printf '%s' "$LD" | grep -q '"ok":true' || cut_ok=0
   # A MUST NOT see it while B is cut — a slot that crosses a partition names a channel that is not the mesh.
-  local leaked=0; GA2=$(meme_get lararium-a); json_text "$GA2" | grep -qF "<<~ ahu slot=\`#/c\`>>" && leaked=1
+  local leaked=0; GA2=$(meme_read lararium-a); json_text "$GA2" | grep -qF "<<~ ahu slot=\`#/c\`>>" && leaked=1
   docker network connect "$NET" "$CB" >/dev/null 2>&1 || { bad "could not return B to the mesh"; clear_all; return; }
   if [ "$cut_ok" -eq 0 ]; then bad "B's put refused while cut — a sovereign vessel writes offline"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'
   elif [ "$leaked" -eq 1 ]; then bad "A read B's edit WHILE B was cut — the partition did not partition"
@@ -1713,7 +1713,7 @@ run_title() {
   # happened to the record. So each read-back here asks the recipe the put went through.
   step "A — and the record SURVIVES where its author can see it"
   local BACK
-  BACK=$($COMPOSE exec -T lararium-a $LARES meme get "$BAD_URI" --recipe lares --json 2>&1)
+  BACK=$($COMPOSE exec -T lararium-a $LARES tiddler get "$BAD_URI" --recipe lares --meme --all --json 2>&1)
   if printf '%s' "$PUT" | grep -q '"ok":false' && ! printf '%s' "$BACK" | grep -q '"ok":true'; then
     gap "the write was refused and nothing was stored — the author's copy stands only on their screen"
     printf '      the spec asks a refusal to PRESERVE the record; a bare refusal preserves nothing\n'
@@ -1740,11 +1740,12 @@ run_title() {
     bad "a capture carrying userinfo in its BODY was refused — the check read the text, not the title slot"
     printf '      %s\n' "$(printf '%s' "$CPUT" | tail -1 | cut -c1-240)"
   else
-    CGET=$($COMPOSE exec -T lararium-a $LARES meme get "$BODY_URI" --recipe lares --json 2>&1)
+    CGET=$($COMPOSE exec -T lararium-a $LARES tiddler get "$BODY_URI" --recipe lares --meme --all --json 2>&1)
     # THREE SPEAKER-AIMS WENT IN; ALL THREE MUST READ BACK. A processor that stripped one and kept two
     # would satisfy any check that only asked whether the record survived.
     local N
-    N=$(printf '%s' "$CGET" | grep -oE 'lar://[a-z]+:[a-z]+@[a-z.]+' | wc -l | tr -d ' ')
+    # Count in the carrier's own text (`data.meme.text`), never in the has line or a slot row, which may quote a body line.
+    N=$(printf '%s' "$CGET" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).data?.meme?.text??""))}catch{}})' | grep -oE 'lar://[a-z]+:[a-z]+@[a-z.]+' | wc -l | tr -d ' ')
     if [ "${N:-0}" -ge 3 ]; then ok
     else bad "only ${N} of 3 body-borne speaker-aims read back — the body was altered"; fi
   fi

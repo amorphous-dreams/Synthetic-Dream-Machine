@@ -104,7 +104,7 @@ describe("a lit face receives visits: the door resolves a read's target", () => 
     for (const target of [1, "1", "h1", "sibling-face"]) {
       expect(await door("tiddler-get", { recipe: "default", title: "T", target }), String(target)).toEqual({ ok: true, args: { recipe: "default", title: "T", target: 1 } });
     }
-    for (const verb of ["wiki-filter", "wiki-render", "wiki-status", "meme-get", "meme-list"]) expect((await door(verb, { recipe: "default", target: 1 })).ok, verb).toBe(true);
+    for (const verb of ["wiki-filter", "wiki-render", "wiki-status", "meme-list"]) expect((await door(verb, { recipe: "default", target: 1 })).ok, verb).toBe(true);
     // A sibling's own session visits the mount the same way.
     expect(await door("tiddler-get", { recipe: "default", title: "T", target: "worn-face" }, 1)).toEqual({ ok: true, args: { recipe: "default", title: "T", target: 0 } });
     // Acting AS another face rides `face` and stays refused where custody names no set.
@@ -114,7 +114,7 @@ describe("a lit face receives visits: the door resolves a read's target", () => 
 
   test("SH8 — private first, then the write wall; pet names refuse by name; the worn face reads as none; the lit set is the actor's", async () => {
     const refusal = async (verb: string, args: Record<string, unknown>) => { const r = await door(verb, args); return r.ok ? null : r.refusal; };
-    expect(await refusal("meme-get", { bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: 1 })).toBe("cross-face-private");
+    expect(await refusal("tiddler-get", { bag: "lar:///ha.ka.ba/wikis/daemon/personal", target: 1 })).toBe("cross-face-private");
     expect(await refusal("meme-put", { bag: "lar:///ha.ka.ba/wikis/garden/personal", target: 7 })).toBe("cross-face-private");
     for (const verb of ["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch", "meme-project"]) expect(await refusal(verb, { recipe: "default", target: 1 }), verb).toBe("cross-face-write-refused");
     // A shut target passes the door resolved: its own actor refuses it at the gate (`admitVisit`), never a second lit set here.
@@ -143,7 +143,7 @@ describe("a lit face receives visits: the door resolves a read's target", () => 
 
 describe("a lit face receives visits: privacy before names, and names that cannot pose as ordinals (Sol M3)", () => {
   const door = (args: Record<string, unknown>, names: ReadonlyArray<readonly [number, string]>) =>
-    crossFaceTargetAtDoor({ verb: "meme-get", args, worn: 0, petnames: async () => names });
+    crossFaceTargetAtDoor({ verb: "tiddler-get", args, worn: 0, petnames: async () => names });
   const refusal = async (args: Record<string, unknown>, names: ReadonlyArray<readonly [number, string]> = [[1, "sibling-face"]]) => { const r = await door(args, names); return r.ok ? null : r.refusal; };
 
   test("SH10 — private first, ordinal-looking pet names refuse, names fold case", async () => {

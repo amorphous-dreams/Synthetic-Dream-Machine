@@ -6,7 +6,7 @@
  * A real engine boots here (`bootTestWiki`), so a filter, a backlink and a render answer as TiddlyWiki answers them.
  */
 import { describe, test, expect } from "vitest";
-import { SwarmRefused } from "@lararium/mesh";
+import { SwarmRefused, sha256HexBytesSync } from "@lararium/mesh";
 import { CompositeStore, bagUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG, buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { retractsOf, tombstonesOf, type Consequence } from "@lararium/mesh/family";
@@ -205,11 +205,11 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const t = whole["tiddler"] as { hash: string; textHash: string };
     expect(t.hash).toMatch(/^sha256-[0-9a-f]{64}$/);
     expect(t.textHash).toMatch(/^sha256-[0-9a-f]{64}$/);
-    const skinny = await get({ ...A, title: "Note 02", text: false }, ctx());
+    const skinny = await get({ ...A, title: "Note 02", grain: "skinny" }, ctx());
     const s = skinny["tiddler"] as { fields: Record<string, string>; hash: string; textHash: string; omitted: string[] };
     expect(s.fields).toEqual({ title: "Note 02", tags: "memory", priority: "low", type: "text/vnd.tiddlywiki" });
     expect(s.omitted).toEqual(["text"]);
-    expect(s.hash).toBe(t.hash);
+    expect(s.hash, "a card names its base as the card's").toBe(`skinny:${t.hash}`);
     const named = await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx());
     expect((named["tiddler"] as { fields: Record<string, string> }).fields).toEqual({ title: "Note 02", priority: "low" });
     expect(await get({ ...A, title: "Nowhere" }, ctx())).toMatchObject({ title: "Nowhere", tiddler: null });
@@ -225,6 +225,217 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((slot["tiddler"] as { fields: Record<string, string> }).fields["text"]).not.toContain("body of a");
     expect(await get({ ...A, title: MEME }, ctx())).toMatchObject({ tiddler: { position: "root", family: MEME } });
     expect(await get({ ...A, title: MEME, slot: "#/none" }, ctx())).toMatchObject({ title: `${MEME}#/none`, tiddler: null });
+  });
+
+  test("RED one-door-has: every answer leads with a `<<~ has …>>` line — provenance, the record's tags, the measure keys, base, a tagline — and echoes its grain", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Card", tags: "road/kind/leap [[two words]]", type: "text/vnd.tiddlywiki", description: "One read door on a gradient", text: "small" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: "Card" }, ctx());
+    expect(Object.keys(got)[0]).toBe("has");
+    const hash = (got["tiddler"] as { hash: string }).hash;
+    expect(got["has"]).toBe(`<<~ has name=\`Card\` params=\`recipe/default road/kind/leap [[two words]] type/text/vnd.tiddlywiki position/plain bytes/5 base/${hash} ~ One read door on a gradient\`>>`);
+    expect(got).toMatchObject({ lens: "record", grain: { asked: null, applied: "fat" }, next: null });
+  });
+
+  test("RED one-door-record-gradient: a record past one page answers skinny with next fat; --grain fat carries the text; an unknown grain refuses loudly", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Big", text: "x".repeat(70_000) });
+    const get = makeTiddlerGetReactor(r.opts);
+    const thin = await get({ ...A, title: "Big" }, ctx());
+    expect(thin).toMatchObject({ grain: { applied: "skinny" }, next: { grain: "fat" }, tiddler: { omitted: ["text"] } });
+    expect((thin["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBeUndefined();
+    const fat = await get({ ...A, title: "Big", grain: "fat" }, ctx());
+    expect((fat["tiddler"] as { fields: Record<string, string> }).fields["text"]).toHaveLength(70_000);
+    expect(fat).toMatchObject({ grain: { asked: "fat", applied: "fat" }, next: null });
+    await expect(get({ ...A, title: "Big", grain: "thin" }, ctx())).rejects.toMatchObject({ reason: "grain-unknown" });
+  });
+
+  test("RED one-door-pointer: a pointer answers its handle (the fields verbatim on the has line); resolved reads the local CAS by CID and verifies; a web2 address stays named, never fetched", async () => {
+    const r = await rig();
+    const body = new TextEncoder().encode("the body the handle names");
+    const cid = sha256HexBytesSync(body);
+    r.engine.setTiddler({ title: "Pointer", _is_skinny: "yes", textCid: cid, size: String(body.length), type: "text/plain" });
+    r.engine.setTiddler({ title: "Web", _canonical_uri: "https://example.org/a.png", type: "image/png" });
+    const fetched: string[] = [];
+    const get = makeTiddlerGetReactor({ ...r.opts, resolveByCid: async (c) => { fetched.push(c); return c === cid ? body : null; } });
+    const handle = await get({ ...A, title: "Pointer" }, ctx());
+    expect(handle).toMatchObject({ grain: { applied: "handle" }, next: { grain: "resolved" } });
+    expect(handle["has"]).toContain(`textCid/${cid}`);
+    expect(handle["has"]).toContain(`size/${body.length}`);
+    expect(fetched).toEqual([]);
+    const resolved = await get({ ...A, title: "Pointer", grain: "resolved" }, ctx());
+    expect(resolved).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "the body the handle names" } } });
+    // `whole` on a pointer (the CLI's `--all`) reads the body grain's whole: resolved.
+    expect(await get({ ...A, title: "Pointer", grain: "whole" }, ctx())).toMatchObject({ grain: { asked: "whole", applied: "resolved" } });
+    const web = await get({ ...A, title: "Web", grain: "resolved" }, ctx());
+    expect(web).toMatchObject({ grain: { applied: "handle", why: expect.stringMatching(/never fetch/) }, next: null });
+    expect(web["has"]).toContain("_canonical_uri/https://example.org/a.png");
+    expect(fetched).toEqual([cid, cid]);
+  });
+
+  test("RED M2 base-from-skinny: a skinny answer's base names the card, so a text put against it refuses by name (naming --all); a field patch against it lands", async () => {
+    const r = await rig();
+    const get = makeTiddlerGetReactor(r.opts);
+    const put = makeTiddlerPutReactor(r.opts);
+    const card = (await get({ ...A, title: "Note 04", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
+    expect(card.hash).toMatch(/^skinny:sha256-/);
+    await expect(put({ ...A, title: "Note 04", text: "a blind rewrite", base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny", message: expect.stringMatching(/--all/) });
+    expect(await put({ ...A, title: "Note 04", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
+    // CONTROL: a fat answer's base authorizes the text write.
+    const fat = (await get({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string };
+    expect(fat.hash).toMatch(/^sha256-/);
+    expect(await put({ ...A, title: "Note 04", text: "a read rewrite", base: fat.hash }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("RED L1: a word the lens or the grain does not read refuses by name, before anything reads", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    await expect(get({ ...A, title: "Note 02", after: "1.0123456789abcdef" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/after/) });
+    await expect(get({ ...A, title: MEME, meme: true, fields: ["title"] }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/fields/) });
+    await expect(get({ ...A, title: MEME, meme: true, maxBytes: 4096 }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/maxBytes/) });
+    await expect(get({ ...A, title: MEME, meme: true, grain: "skinny", slot: "#/a" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/slot/) });
+    await expect(get({ ...A, title: MEME, meme: true, grain: "whole", slot: "#/a" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread" });
+    await expect(get({ ...A, title: `${MEME}#/a`, meme: true, grain: "whole" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread" });
+    // CONTROL: the words each lens reads still answer.
+    expect(await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx())).toMatchObject({ grain: { applied: "slot" } });
+    expect(await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx())).toMatchObject({ lens: "record" });
+  });
+
+  test("RED L4: the echo names the grain that rode: named fields without the text read skinny; a pointer keeps its body grain under named fields", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Handle2", _is_skinny: "yes", textCid: "cd".repeat(32), type: "text/plain" });
+    const get = makeTiddlerGetReactor(r.opts);
+    expect(await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx())).toMatchObject({ grain: { applied: "skinny" } });
+    expect(await get({ ...A, title: "Note 02", fields: ["text"] }, ctx())).toMatchObject({ grain: { applied: "fat" } });
+    expect(await get({ ...A, title: "Handle2", fields: ["textCid"] }, ctx())).toMatchObject({ grain: { applied: "handle" } });
+  });
+
+  test("RED L3: a recomposition that leaves out slot children this face may not read says so (`withheld`), never a silent short carrier", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const SECRET = "lar:///ha.ka.ba/bags/secret";
+    const held = r.engine.wiki.getTiddler(`${MEME}#/b`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...held, "$origin-bag": SECRET });
+    const partial: Cap = async (access, bag) => (bag === SECRET ? { ok: false, reason: "no-grant" } : access === "read" || bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: MEME, meme: true }, ctx(partial));
+    expect(got).toMatchObject({ withheld: 1, note: expect.stringMatching(/1 slot record.*withheld/) });
+    expect((got["meme"] as { text: string }).text).not.toContain("body of b");
+  });
+
+  test("RED L6: resolved verifies a tagged or uppercase CID through the house verify", async () => {
+    const r = await rig();
+    const body = new TextEncoder().encode("tagged body");
+    const hex = sha256HexBytesSync(body);
+    r.engine.setTiddler({ title: "Tagged", _is_skinny: "yes", textCid: `sha256:${hex.toUpperCase()}`, type: "text/plain" });
+    const get = makeTiddlerGetReactor({ ...r.opts, resolveByCid: async () => body });
+    expect(await get({ ...A, title: "Tagged", grain: "resolved" }, ctx())).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "tagged body" } } });
+  });
+
+  test("RED M2b: a card's base moves no text by any path: `fields.text` and `unset text` refuse base-from-skinny like `text`", async () => {
+    const r = await rig();
+    const get = makeTiddlerGetReactor(r.opts);
+    const put = makeTiddlerPutReactor(r.opts);
+    const card = (await get({ ...A, title: "Note 05", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
+    await expect(put({ ...A, title: "Note 05", fields: { text: "a blind rewrite" }, base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    await expect(put({ ...A, title: "Note 05", unset: ["text"], base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    // CONTROL: a field that is not the text still lands against the card.
+    expect(await put({ ...A, title: "Note 05", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("RED partial-base: a slot answer and a page short of the end hand a partial base, which no meme put takes; the last page and the whole hand the bare base", async () => {
+    const r = await rig();
+    const big = (x: string): string => `body of ${x} ${"lorem ".repeat(5_000)}`;
+    const text = memeText(["a", "b", "c"]).replace(/body of (\w)/g, (_m, x: string) => big(x));
+    expect((await placeMeme({ uri: MEME, text }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    const slot = await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx());
+    expect((slot["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^partial:/);
+    const first = await get({ ...A, title: MEME, meme: true, grain: "whole" }, ctx());
+    expect((first["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^partial:/);
+    let page = first;
+    while ((page["next"] as { after?: string } | null)?.after) page = await get({ ...A, title: MEME, meme: true, grain: "whole", after: (page["next"] as { after: string }).after }, ctx());
+    expect((page["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^sha256/);
+  });
+
+  test("RED fat-carries: an explicit fat or whole read of a record past the byte cap (a plugin-sized text) carries the text whole; a named --max-bytes still caps", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "lar:///ha.ka.ba/lararium/plugins/lares/big", type: "application/json", "plugin-type": "plugin", text: JSON.stringify({ tiddlers: { a: { text: "x".repeat(400_000) } } }) });
+    const get = makeTiddlerGetReactor(r.opts);
+    for (const grain of ["fat", "whole"]) {
+      const got = await get({ ...A, title: "lar:///ha.ka.ba/lararium/plugins/lares/big", grain }, ctx());
+      expect(got, grain).toMatchObject({ grain: { applied: "fat" } });
+      expect(((got["tiddler"] as { fields: Record<string, string> }).fields["text"] ?? "").length, grain).toBeGreaterThan(400_000);
+    }
+    const capped = await get({ ...A, title: "lar:///ha.ka.ba/lararium/plugins/lares/big", grain: "fat", maxBytes: 4096 }, ctx());
+    expect(capped).toMatchObject({ grain: { applied: "skinny" }, tiddler: { omitted: expect.arrayContaining(["text"]) } });
+  });
+
+  test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
+    const get = makeTiddlerGetReactor(r.opts);
+    // The tiddler grain: the card, the text left home and named.
+    const card = await get({ ...A, title: "Note 02", grain: "skinny" }, ctx());
+    expect(card).toMatchObject({ grain: { asked: "skinny", applied: "skinny" }, tiddler: { omitted: ["text"] } });
+    // The body grain: a record that names its body by CID answers its handle at either ask; the two words never merge.
+    const handle = await get({ ...A, title: "Handle" }, ctx());
+    expect(handle).toMatchObject({ grain: { asked: null, applied: "handle" } });
+    const asked = await get({ ...A, title: "Handle", grain: "skinny" }, ctx());
+    expect(asked).toMatchObject({ grain: { asked: "skinny", applied: "handle", why: expect.stringMatching(/tiddler grain reads no body/) } });
+    expect((asked["tiddler"] as { omitted?: string[] }).omitted).toBeUndefined();
+  });
+
+  test("RED one-door-meme-lens: --meme on a meme within a page answers the whole carrier byte for byte, sealed, with base/ on its has line", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const whole = await readMeme(MEME, wikiMemeSink(r.engine.wiki));
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: MEME, meme: true }, ctx());
+    expect(got).toMatchObject({ lens: "meme", title: MEME, grain: { applied: "whole" }, next: null, meme: { uri: MEME, text: whole!.text, canonicalHash: whole!.canonicalHash } });
+    expect(got["has"]).toMatch(new RegExp(`^<<~ has name=\`${MEME}\` params=\`recipe/default .*type/${CARRIER.replace(/[+/]/g, "\\$&")} position/root slots/2 bytes/\\d+ base/${whole!.canonicalHash}\``));
+  });
+
+  test("RED one-door-meme-gradient: past a page --meme answers the has-stack (root line plus one per slot); --all pages on slot boundaries and the pages join to the carrier", async () => {
+    const r = await rig();
+    const big = (s: string): string => `body of ${s} ${"lorem ".repeat(5_000)}`;
+    const text = memeText(["a", "b", "c"]).replace(/body of (\w)/g, (_m, s: string) => big(s));
+    expect((await placeMeme({ uri: MEME, text }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const whole = await readMeme(MEME, wikiMemeSink(r.engine.wiki));
+    const get = makeTiddlerGetReactor(r.opts);
+    const stack = await get({ ...A, title: MEME, meme: true }, ctx());
+    expect(stack).toMatchObject({ grain: { applied: "skinny" }, next: { grain: "whole" } });
+    expect((stack["meme"] as { text?: string }).text).toBeUndefined();
+    const lines = String(stack["has"]).split("\n");
+    expect(lines).toHaveLength(4);
+    expect(lines.slice(1).map((l) => /name=`([^`]+)`/.exec(l)![1])).toEqual(["#/a", "#/b", "#/c"]);
+    const pages: string[] = [];
+    for (let page = await get({ ...A, title: MEME, meme: true, grain: "whole" }, ctx()); ; ) {
+      pages.push((page["meme"] as { text: string }).text);
+      const after = (page["next"] as { after?: string } | null)?.after;
+      if (!after) break;
+      page = await get({ ...A, title: MEME, meme: true, grain: "whole", after }, ctx());
+    }
+    expect(pages.length).toBeGreaterThan(1);
+    expect(pages.join("")).toBe(whole!.text);
+    expect(pages.slice(1).every((p) => p.startsWith("<<~ ahu slot="))).toBe(true);
+  });
+
+  test("RED one-door-meme-edges: a slot child recomposes from its root and points at the slot; a record that holds no meme answers itself and says so", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    const slot = await get({ ...A, title: `${MEME}#/b`, meme: true }, ctx());
+    expect(slot).toMatchObject({ lens: "meme", title: MEME, grain: { applied: "slot" }, meme: { uri: MEME, slot: "#/b" } });
+    // L2: a slot's span rides `slotText`, a name no JSON reader mistakes for the whole carrier (`text`).
+    expect((slot["meme"] as { text?: string }).text).toBeUndefined();
+    expect((slot["meme"] as { slotText: string }).slotText).toMatch(/^<<~ ahu slot=`#\/b`>>[\s\S]*body of b[\s\S]*<<~\/ahu>>\n$/);
+    expect((slot["meme"] as { slotText: string }).slotText).not.toContain("body of a");
+    const named = await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx());
+    expect((named["meme"] as { slotText: string }).slotText).toContain("body of a");
+    await expect(get({ ...A, title: MEME, meme: true, slot: "#/none" }, ctx())).rejects.toMatchObject({ reason: "slot-missing" });
+    const plain = await get({ ...A, title: "Note 02", meme: true }, ctx());
+    expect(plain).toMatchObject({ lens: "record", note: expect.stringMatching(/holds no meme/), tiddler: { fields: { text: "see [[Note 01]] and note 2" } } });
+    expect(String(plain["has"])).toMatch(/^<<~ has name=`Note 02`/);
   });
 
   test("wiki-render-transclusion: a transcluding tiddler renders its transcluded text; CONTROL: a plain tiddler renders its own", async () => {
@@ -843,7 +1054,10 @@ describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () =
     expect(await get({ bag: "lares", title: "lar:///t/x#/a" }, ctx())).toMatchObject({ tiddler: { position: "slot", family: "lar:///t/x" } });
     expect(await get({ bag: "lares", title: "lar:///t/x", slot: "#/a" }, ctx())).toMatchObject({ tiddler: { fields: { text: "slot a" } } });
     expect(await get({ bag: "lares", title: "Canon Note", fields: ["tags"] }, ctx())).toMatchObject({ tiddler: { fields: { title: "Canon Note", tags: "law [[two words]]" } } });
-    expect(await get({ bag: "lares", title: "Canon Note", text: false }, ctx())).toMatchObject({ tiddler: { omitted: ["text"] } });
+    expect(await get({ bag: "lares", title: "Canon Note", grain: "skinny" }, ctx())).toMatchObject({ tiddler: { omitted: ["text"] } });
+    const noMeme = await get({ bag: "lares", title: "lar:///t/x", meme: true }, ctx());
+    expect(noMeme).toMatchObject({ bag: CANON, lens: "record", note: expect.stringMatching(/holds no meme/), tiddler: { fields: { text: "root" } } });
+    expect(String(noMeme["has"])).toContain(`bag/${CANON}`);
     expect(await get({ ...A, title: "Note 01" }, ctx())).toMatchObject({ recipe: "default", tiddler: { fields: { text: "the first note" } } });
   });
 

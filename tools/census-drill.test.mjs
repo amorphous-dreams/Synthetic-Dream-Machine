@@ -376,7 +376,7 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
 
     // ── THE INSTRUMENT FAILS: delete one meme, change another, drop one share ───────────────────────────────────
     fresh.must(["meme", "delete", POND, "--recipe", "default", "--json"]);
-    const kite = JSON.parse(fresh.must(["meme", "get", KITE, "--recipe", "default", "--json"]).stdout).data;
+    const kite = JSON.parse(fresh.must(["tiddler", "get", KITE, "--recipe", "default", "--meme", "--all", "--json"]).stdout).data.meme;
     const kiteFile = join(scratch, "kite-changed.mem");
     writeFileSync(kiteFile, memeText(KITE, "fly the kite high", ""));
     fresh.must(["meme", "put", KITE, "--recipe", "default", "--file", kiteFile, "--base", kite.canonicalHash, "--json"]);

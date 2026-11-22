@@ -71,4 +71,19 @@ describe("a folded sub-path refuses the flags it does not read", () => {
     // CONTROL: a founding sub-door still gates.
     expect(needsFreshBuild(parseArgs(["vessel", "found"]))).toBe(true);
   });
+
+  test("★ tiddler get folds by lens and grain: the meme lens refuses --fields and --max-bytes, the record lens refuses --after, a slot refuses beside --skinny or --all under --meme ★", async () => {
+    for (const [argv, flag] of [
+      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--fields", "text"], "--fields"],
+      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--max-bytes", "4096"], "--max-bytes"],
+      [["tiddler", "get", "Note", "--recipe", "default", "--after", "1.0123456789abcdef"], "--after"],
+      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--skinny", "--slot", "#/a"], "--slot"],
+      [["tiddler", "get", "lar:///x", "--recipe", "default", "--meme", "--all", "--slot", "#/a"], "--slot"],
+      [["tiddler", "put", "Note", "--recipe", "default", "--slot", "#/a"], "--slot"],
+    ] as const) {
+      const r = await run([...argv, "--no-json"]);
+      expect(r.code, argv.join(" ")).toBe(2);
+      expect(r.err).toContain(`unknown flag ${flag} for \`lares tiddler\``);
+    }
+  });
 });
