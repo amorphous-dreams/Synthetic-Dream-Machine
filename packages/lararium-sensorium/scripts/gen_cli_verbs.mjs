@@ -57,9 +57,6 @@ const CLI_FORMS = {
   // rides as a parameter, never a suffix on the verb). The host `meme` is a real top-level CLI command,
   // so each mirrors as `<host> <sub>` — ONE host, four tools, the shape kapae/un_kapae ride under
   // `sense worldline`. The family's LOCAL seats ride LOCAL_SEAT below.
-  meme_put:     "meme put",
-  meme_list:    "meme list",
-  meme_delete:  "meme delete",
   meme_project: "meme project",
   // THE TIDDLER DOOR (wiki-surface-scout #/a-lean) — every TiddlyWiki act over one record or one wiki's engine. The record
   // verbs ride their own host (`lares tiddler get|put|delete`); the engine verbs join the `wiki` host beside the switcher

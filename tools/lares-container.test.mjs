@@ -63,7 +63,7 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -110,6 +110,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // THE VESSEL'S LOG before a down removes it: stdout and stderr both, as the engine writes them.
       `case " $* " in *" logs --tail "*) printf '%s\\n' "\${FAKE_VESSEL_LOG:-}"; printf '%s\\n' "\${FAKE_VESSEL_LOG_ERR:-}" >&2; exit "\${FAKE_LOGS_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
+      `case " $* " in *" tiddler put "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
@@ -159,7 +160,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       }
     }
     // `@HOUSE@` in an argument names the run's scratch house too.
-    const args = argv.map(fill);
+    if (hostInput !== undefined) await writeFile(join(dir, "host.mem"), hostInput);
+    const args = argv.map((a) => fill(a).replaceAll("@HOST_FILE@", join(dir, "host.mem")));
     const direct = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
     // `viaHarnessShell`: a shell carrying the harness mark launches the shim with the mark stripped (`env -u CLAUDECODE`), and
     // `; true` keeps that shell its parent, so only the chain, never the shim's own environment, carries the harness.
@@ -173,9 +175,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
     const shellMark = viaHarnessShell ? { CLAUDECODE: "1" } : {};
     const r = tty === undefined
-      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, ...shellMark, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
+      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, ...shellMark, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", input, stdio: [input === undefined ? "ignore" : "pipe", "pipe", "pipe"] })
       : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
+    let received = null; try { received = await readFile(`${log}.stdin`); } catch {}
     if (SUITE_SEAT && !rawSeat && filled.CLAUDECODE === undefined && !viaHarnessShell) calls = calls.replaceAll(" -e CLAUDECODE", "");
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
@@ -184,13 +187,31 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let cacheLeft = null; try { cacheLeft = await readdir(join(house, "cache")); } catch {}
     let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
     let keepOwed = false; try { await stat(join(house, "run", "keep-owed")); keepOwed = true; } catch {}
-    return { ...r, calls, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
+    return { ...r, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
 // ATTACHED: under a real pseudo-terminal the shim must NOT add -T, or the founding loses its human-route prompt.
 // (Reading `-t 1` inside the `$(tty_flag)` substitution once always read false: stdout there is a pipe.)
 const haveScript = spawnSync("script", ["--version"]).status === 0;
+
+for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
+  test(`${name}: a named family file crosses as exact stdin bytes and an absent file refuses before exec`, { skip }, async () => {
+    const bytes = Buffer.from("first\n\nlast\n", "utf8");
+    const landed = await run(shim, ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--file", "@HOST_FILE@"],
+      { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, hostInput: bytes });
+    assert.equal(landed.status, 0, landed.stderr);
+    assert.deepEqual(landed.received, bytes);
+    assert.match(landed.calls, /--file -/);
+    const piped = await run(shim, ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--file", "-"],
+      { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" }, input: bytes });
+    assert.deepEqual(piped.received, bytes);
+    const absent = await run(shim, ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--file", "@HOST_FILE@"],
+      { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" } });
+    assert.notEqual(absent.status, 0);
+    assert.doesNotMatch(absent.calls, / node .* tiddler put /);
+  });
+}
 test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-reset-"));
   try {

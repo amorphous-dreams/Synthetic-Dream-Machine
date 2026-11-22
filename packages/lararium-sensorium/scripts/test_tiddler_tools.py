@@ -243,8 +243,11 @@ def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon
     daemon.output = {"bag": "lar:///ha.ka.ba/bags/lares", "title": "T", "tiddler": None}
     assert t["tiddler_get"](title="T", bag="lares") == daemon.output
     assert daemon.wire() == {"verb": "tiddler-get", "args": {"bag": "lares", "title": "T"}}
-    for name in ("wiki_filter", "wiki_render", "wiki_status", "tiddler_put", "tiddler_delete"):
+    for name in ("wiki_filter", "wiki_render", "wiki_status"):
         assert "bag" not in inspect.signature(t[name]).parameters, name
+    for name in ("tiddler_put", "tiddler_delete"):
+        with pytest.raises(ValueError):
+            t[name](title="T", bag="lares")
     with pytest.raises(TypeError):
         t["wiki_filter"](filter="[tag[x]]", bag="lares")
     with pytest.raises(ValueError, match="tiddler_get\\(bag"):

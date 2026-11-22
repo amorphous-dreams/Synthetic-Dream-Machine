@@ -2,7 +2,7 @@
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
  *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
- *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> | --replace <file>) --base <hash>
+ *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> | --replace <file>) --base <hash>   (the public door: `tiddler put --meme --slot … --append <file> | --text|--file`)
  *                                                 — one slot's body through the put's own gate, resealed
  *   list (--recipe <slug> | --bag <slug>) [--tree]
  *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
@@ -209,7 +209,9 @@ export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readon
 /** The meme body: `--file`, else the whole of stdin. */
 async function readBody(args: ParsedArgs): Promise<string> {
   const file = args.options["file"];
-  if (typeof file === "string" && file) return readFileSync(file, "utf8");
+  if (typeof file === "string" && file && file !== "-") {
+    try { return readFileSync(file, "utf8"); } catch { throw new UsageError(`cannot read --file ${file}`); }
+  }
   if (stdin.isTTY) throw new UsageError("no meme text: pass --file <path> or pipe the meme on stdin");
   const chunks: Buffer[] = [];
   for await (const chunk of stdin) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
@@ -299,6 +301,18 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
   }
 }
 
+/** The public family spellings now enter through the tiddler door; keep the handlers for that door. */
+export async function cmdMemeSurface(args: ParsedArgs): Promise<number> {
+  const sub = args.positional[0];
+  if (sub === "put" || sub === "patch" || sub === "list" || sub === "delete") {
+    const moved = sub === "list" ? "tiddler get --meme" : `tiddler ${sub === "patch" ? "put" : sub} <uri> --meme`;
+    const message = `meme ${sub} moved to lares ${moved}`;
+    emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(message) });
+    return exitFor("usage");
+  }
+  return cmdMeme(args);
+}
+
 async function memePut(args: ParsedArgs): Promise<number> {
   const plan = memePlan("put", args);
   const text = await readBody(args);
@@ -322,6 +336,7 @@ async function memePut(args: ParsedArgs): Promise<number> {
     data: receipt,
     ...(ok ? {} : { error: { code, message: `${decision}: ${warnings[0] ?? receipt["reason"] ?? plan.args["uri"]}` } }),
     human: () => {
+      if (typeof receipt["has"] === "string") console.log(receipt["has"]);
       console.log(`${decision}: ${plan.args["uri"]}`);
       if (decision === "ingest") console.log(`  landed ${landed.length} · tombstoned ${tombstoned.length}`);
       // THE ANSWER NAMES THE LAYER: a face that holds no writer's seat in the wiki's workbench lands in its own personal layer.
@@ -340,7 +355,7 @@ async function memePut(args: ParsedArgs): Promise<number> {
  * THE PATCH'S ARGUMENT LAW, with no daemon in reach: a uri, a container, `--slot '#/name'`, exactly one of `--append <file>` or
  * `--replace <file>`, and `--base <hash>` (a patch edits bytes the writer read, so a blind one refuses before the wire).
  */
-export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly mode: "append" | "replace"; readonly face?: number } {
+export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; readonly args: Record<string, string>; readonly file: string; readonly text?: string; readonly mode: "append" | "replace"; readonly face?: number } {
   const face = faceNamed(args);
   if (targetNamed(args).target !== undefined) throw new UsageError(targetOnWriteRefusal("meme patch"));
   const uri = args.positional[1];
@@ -352,18 +367,27 @@ export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; read
   if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --recipe <slug> --tree` names the slots a meme holds)");
   const append = trimmed(args.options["append"]);
   const replace = trimmed(args.options["replace"]);
-  if (Boolean(append) === Boolean(replace)) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --replace <file> (the slot's whole body)");
+  const inline = typeof args.options["text"] === "string" ? args.options["text"] : undefined;
+  if (Number(Boolean(append)) + Number(Boolean(replace)) + Number(inline !== undefined) !== 1) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --text <words> | --file <path> (the slot's whole body)");
   const base = trimmed(args.options["base"]);
   if (!base) throw new UsageError("--base <hash> is required: the canonical hash `lares tiddler get <uri> --recipe <slug> --meme` prints on stderr (`base: sha256:…`)");
   out["slot"] = slot;
   out["base"] = base;
-  return { verb: "meme-patch", args: out, file: append || replace, mode: append ? "append" : "replace", ...face };
+  return { verb: "meme-patch", args: out, file: append || replace, ...(inline !== undefined ? { text: inline } : {}), mode: append ? "append" : "replace", ...face };
 }
 
 async function memePatch(args: ParsedArgs): Promise<number> {
   const plan = patchPlan(args);
   let body: string;
-  try { body = readFileSync(plan.file, "utf8"); } catch { throw new UsageError(`cannot read --${plan.mode} ${plan.file}`); }
+  if (plan.text !== undefined) {
+    body = plan.text;
+  } else if (plan.file === "-") {
+    const chunks: Buffer[] = [];
+    for await (const chunk of stdin) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    body = Buffer.concat(chunks).toString("utf8");
+  } else {
+    try { body = readFileSync(plan.file, "utf8"); } catch { throw new UsageError(`cannot read --${plan.mode} ${plan.file}`); }
+  }
   const result = await dispatch(plan, { ...plan.args, [plan.mode]: body }, await vesselDid());
   const outcome = readVerbOutcome(result);
   if (!outcome.ok) {
@@ -383,6 +407,7 @@ async function memePatch(args: ParsedArgs): Promise<number> {
     data: receipt,
     ...(ok ? {} : { error: { code, message: decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${warnings[0] ?? receipt["reason"] ?? where}` } }),
     human: () => {
+      if (typeof receipt["has"] === "string") console.log(receipt["has"]);
       if (!ok) { console.error(`lares meme patch: ${decision === "absent" ? `no meme at ${plan.args["uri"]}` : warnings[0] ?? `${decision}: ${where}`}`); return; }
       console.log(`${decision}: ${where}`);
       if (typeof receipt["bag"] === "string") console.log(`  in ${receipt["bag"]}${receipt["layer"] === "personal" ? " (your personal layer)" : ""}`);
@@ -441,7 +466,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
   };
   // The seat as the verb named it: one bag, or a recipe with the bags its stack read and any it could not reach.
   const seat: Record<string, unknown> = {};
-  for (const key of ["bag", "floor", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
+  for (const key of ["has", "bag", "floor", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
   const unreached = Array.isArray(head["unreached"]) ? (head["unreached"] as string[]) : [];
   emit(args, {
     ok: true,
@@ -449,6 +474,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
     data: { ...seat, roots },
     // One root per line — the base first so a shell reads it, the uri after; slots indent beneath.
     human: () => {
+      if (typeof head["has"] === "string") console.log(head["has"]);
       for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
       for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
       if (head["floor"] === true || roots.some((r) => r.floor === true)) console.error(FLOOR_READ_NOTE);
@@ -479,6 +505,7 @@ async function memeDelete(args: ParsedArgs): Promise<number> {
     data: receipt,
     ...(code === "ok" ? {} : { error: { code, message } }),
     human: () => {
+      if (typeof receipt["has"] === "string") console.log(receipt["has"]);
       if (code !== "ok") { console.error(`lares meme delete: ${message}`); return; }
       console.log(`removed: ${plan.args["uri"]}`);
       console.log(`  tombstoned ${tombstoned.length}${retracted.length > 0 ? ` · retracted ${retracted.length}` : ""}`);

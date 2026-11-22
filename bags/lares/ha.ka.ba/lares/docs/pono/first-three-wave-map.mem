@@ -68,7 +68,7 @@ The operator leans the `lararium` bag. ''Weighed'' (measured): `bags/lararium/me
 ''THE DERIVED LIBRARY'' (proposed text for <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model#/daemon-and-domain`>>; a later scribe applies it, this carrier edits nothing there):
 
 * A derived library holds records ONE named tool writes as a pure function of ONE named commit of a tracked tree. Its bag's `meta.mem` declares `cap-tier = "public"`, `home = "hearth"` and a new key `derived = "<tool>"`; each record carries the commit it derives from (`head`).
-* It composes only as a library, beneath the host wiki's canon (the `libraries` row), and takes no write from any hand door: `meme put`, `tiddler put`, a residency `MOVE` or `COPY` naming it, a kāpae and a lift each refuse `derived-library-read-only`.
+* It composes only as a library, beneath the host wiki's canon (the `libraries` row), and takes no write from any hand door: `tiddler put --meme`, `tiddler put`, a residency `MOVE` or `COPY` naming it, a kāpae and a lift each refuse `derived-library-read-only`.
 * One road writes it: an INGEST wave whose source root the vessel grants to that bag alone (`<LAR_ROOT>/cache/<bag>/<head>/`). A wave replaces the whole bag: a title absent from the new wave retracts to absent (a reveal, never a kāpae, since nothing lies beneath its namespace).
 * It never bakes into genesis, never rides a release cut, never takes an offer or a promotion, never travels in an export or a carry (each refuses or skips by `derived`), and survives a re-founding only as its cache folder, re-ingested at the next boot or the next land.
 * Its titles live under one namespace the host wiki's canon never writes (`lar:///ha.ka.ba/codemap/`), so its place beneath canon shadows nothing in practice.
@@ -152,7 +152,7 @@ Each runs as `wiki_filter(filter=…, recipe="lararium", fields=[…])` on the M
 
 !!! Reds, files, size
 
-* Reds: `codemap-outline-lines` (a fixture file's declarations answer their exact line ranges); `codemap-pure-of-head` (two runs at one head write byte-identical folders); `codemap-cite-ambiguous` (a basename two files carry lands on the root's `cite-ambiguous`, in no file's `cited-by`); `codemap-no-body` (no tiddler text carries a line of a fixture's function body); `derived-library-read-only` (a `meme put` into `codemap` refuses); `derived-never-bakes` (a genesis bake over a scratch tree skips a `derived` bag). Controls: a repo-path citation lands on its file; a public authored bag still bakes.
+* Reds: `codemap-outline-lines` (a fixture file's declarations answer their exact line ranges); `codemap-pure-of-head` (two runs at one head write byte-identical folders); `codemap-cite-ambiguous` (a basename two files carry lands on the root's `cite-ambiguous`, in no file's `cited-by`); `codemap-no-body` (no tiddler text carries a line of a fixture's function body); `derived-library-read-only` (a `tiddler put --meme` into `codemap` refuses); `derived-never-bakes` (a genesis bake over a scratch tree skips a `derived` bag). Controls: a repo-path citation lands on its file; a public authored bag still bakes.
 * Files: new `tools/codemap.mjs`, `tools/codemap/outline.mjs`, `tools/codemap/cites.mjs`, `tools/codemap.test.mjs` (lane `L40a`, new files alone); the derived class in `packages/lararium-mesh/src/bag-home.ts`, the bake's bag walk, the offer door's bag check, the export's bag walk, and the `lararium` recipe record (lane `L40b`).
 * Size: `L40a` one builder, a short lane; `L40b` one builder, a medium lane touching four doors.
 * Saves (inferred, against today's measured costs): a builder's first orientation drops from opening a giant whole (90,000 tokens) to one filter page and one slice (a few thousand); a scout's "which tests cover this" stops costing a grep round; the giants' split map falls out of `size-class` and `imported-by` with no reader.
@@ -210,7 +210,7 @@ The store door hands the kahua memes the worn face, refuses a write for any othe
 
 !!! Reds, files, size
 
-* Reds: `lane-card-fields-round-trip` (a card put with its fields answers them whole through `tiddler_get` and through the filter); `lane-card-no-code-class` (the template's fields pass the fence); `handback-status-line-one` (a handback carrying two status lines refuses at the helper). Control: a meme put of the same card into `works` reads back through `meme_get`.
+* Reds: `lane-card-fields-round-trip` (a card put with its fields answers them whole through `tiddler_get` and through the filter); `lane-card-no-code-class` (the template's fields pass the fence); `handback-status-line-one` (a handback carrying two status lines refuses at the helper). Control: a tiddler put of --meme the same card into `works` reads back through `meme_get`.
 * Files: new `tools/lane-card.mjs` (writes a card or a handback through `lares tiddler put`, or prints the MCP call for a spirit; lane `L41a`, new files alone); the road carrier (`L41b` = `L17-2d`, the controller's hand).
 * Saves (inferred): a builder's brief drops from a scout's report (often 20 to 60 KB) to one card under 2,000 tokens; the controller's aftermath reads N status lines instead of N handbacks; the road stops needing whole reads for "what stands open".
 
@@ -390,6 +390,6 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 * ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2GKBSWQl5t7wEg5524wX7teZV2-7Lij6MnyBR1uybyU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gKGIalXNrWAURNrqn4B4vxjcsHcjDZuyVi6BSFwyTZ4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

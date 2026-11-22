@@ -274,7 +274,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
       // A wiki whose listing refuses reads as a row of its own (`unread`), never as an empty listing: the door's code
       // compares across the houses, and the receipt names every wiki that stood unread on either side.
       let listing;
-      try { listing = read(lares, ["meme", "list", "--recipe", recipe, "--json"]); }
+      try { listing = read(lares, ["tiddler", "get", "--meme", "--recipe", recipe, "--json"]); }
       catch (e) {
         if (!(e instanceof DoorRefused) || recipe === "default") throw e;
         classes.unread[recipe] = /\[([a-z-]+)\]|\b([a-z]+(?:-[a-z]+)+):/.exec(e.message)?.slice(1).find(Boolean) ?? "refused";

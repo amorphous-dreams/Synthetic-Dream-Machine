@@ -80,7 +80,7 @@ describe.skipIf(gaps.length > 0)("★ RECIPE PARITY — one meme, two doors, one
   });
 
   test("the island: meme put --recipe then tiddler get --recipe --meme hands back the canonical carrier under its hash", async () => {
-    const put = await lar.cli(["meme", "put", URI, "--recipe", "lares", "--file", join(scratch, "ab.mem"), "--json"]);
+    const put = await lar.cli(["tiddler", "put", "--meme", URI, "--recipe", "lares", "--file", join(scratch, "ab.mem"), "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     const get = await lar.cli(["tiddler", "get", URI, "--recipe", "lares", "--meme", "--all", "--json"]);
     expect(get.json?.["ok"], said(get)).toBe(true);

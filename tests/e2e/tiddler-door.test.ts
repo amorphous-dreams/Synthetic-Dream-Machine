@@ -169,7 +169,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     for (let n = 1; n <= NOTES; n++) {
       const file = join(scratch, `note-${n}.mem`);
       writeFileSync(file, memory(n));
-      const put = await lar.cli(["meme", "put", uriOf(n), "--recipe", "default", "--file", file, "--json"]);
+      const put = await lar.cli(["tiddler", "put", "--meme", uriOf(n), "--recipe", "default", "--file", file, "--json"]);
       expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
       if (n === 1) say("seed meme put (note 01)", dataOf(put));
     }
@@ -350,7 +350,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const extra = NOTES + 1;
     const file = join(scratch, `note-${extra}.mem`);
     writeFileSync(file, memory(extra));
-    expect((await lar.cli(["meme", "put", uriOf(extra), "--recipe", "default", "--file", file, "--json"])).code).toBe(0);
+    expect((await lar.cli(["tiddler", "put", "--meme", uriOf(extra), "--recipe", "default", "--file", file, "--json"])).code).toBe(0);
     const family = [uriOf(extra), `${uriOf(extra)}#/rule`, `${uriOf(extra)}#/why`];
     // WITHOUT THE FLAG: nothing moves, and the answer names every record the delete would move.
     const refused = await lar.cli(["tiddler", "delete", uriOf(extra), ...D]);

@@ -42,7 +42,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdMeme, memePlan, listPlan, patchPlan, projectPlan, bagsResolver } from "../src/commands/meme.js";
+import { cmdMeme, cmdMemeSurface, memePlan, listPlan, patchPlan, projectPlan, bagsResolver } from "../src/commands/meme.js";
 import { repoRoot } from "@lararium/mesh/node";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -61,6 +61,12 @@ const tmpFile = (text: string): string => {
 };
 
 describe("memePlan — the argument law, no daemon", () => {
+  test("the public meme door refuses the four retired spellings before dispatch", async () => {
+    for (const sub of ["put", "patch", "list", "delete"]) {
+      expect(await cmdMemeSurface(memeArgs([sub, "lar:///t/x"], { recipe: "default" }))).toBe(2);
+    }
+    expect(h.calls).toEqual([]);
+  });
   test("bare targets refuse before a daemon can receive an empty container", () => {
     expect(() => memePlan("delete", memeArgs(["delete", "lar:///t/x"]))).toThrow(/no-container/);
   });
@@ -318,7 +324,7 @@ describe("lares meme (bare)", () => {
     await cmdMeme(memeArgs([]));
     spy.mockRestore();
     const usage = lines.join("\n");
-    for (const sub of ["put", "list", "delete", "normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
+    for (const sub of ["normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
     expect(usage).toMatch(/--to <md\|html\|tid\|json>/);
   });
 });

@@ -382,9 +382,49 @@ lift_vessel() {
 # that asked for the reading itself (`--observe`) gets that reading alone.
 follow_up=yes
 route_cli() {
+  # A named host file crosses the container boundary as raw stdin. Rotate the positional
+  # arguments while replacing only the consuming value, preserving every other byte of argv.
+  stream_file=""
+  if [ "${1:-}" = tiddler ] && [ "${2:-}" = put ]; then
+    stream_meme="" stream_patch="" stream_slot="" stream_put="" stream_count=0
+    for stream_arg do
+      case "$stream_arg" in --meme) stream_meme=yes ;; --slot|--slot=*) stream_slot=yes ;;
+        --append|--append=*) stream_patch=yes ;;
+        --file|--file=*) stream_put=yes ;;
+      esac
+    done
+    if [ -n "$stream_meme" ] && { { [ -z "$stream_patch" ] && [ -n "$stream_put" ]; } || { [ -n "$stream_patch" ] && [ -n "$stream_slot" ] && [ -z "$stream_put" ]; }; }; then
+      stream_count=$# stream_prev="" stream_i=0
+      while [ "$stream_i" -lt "$stream_count" ]; do
+        stream_arg=$1; shift; stream_i=$((stream_i + 1))
+        if [ -n "$stream_prev" ]; then
+          [ "$stream_arg" = - ] || stream_file=$stream_arg
+          [ "$stream_arg" = - ] || stream_arg=-
+          stream_prev=""
+        else
+          case "$stream_arg" in
+            --file|--append) stream_prev=yes ;;
+            --file=*|--append=*)
+              stream_value=${stream_arg#*=}
+              if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
+          esac
+        fi
+        set -- "$@" "$stream_arg"
+      done
+      if [ -n "$stream_file" ]; then
+        if [ ! -r "$stream_file" ] || [ ! -f "$stream_file" ]; then printf 'lares-container: cannot read host file %s\n' "$stream_file" >&2; return 2; fi
+      fi
+    fi
+  fi
   if running_vessel; then
     # shellcheck disable=SC2046
-    if waited_exec $(pass_env) $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
+    if [ -n "$stream_file" ]; then
+      exec 4<&3
+      exec 3< "$stream_file"
+      if waited_exec $(pass_env) -T lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
+      exec 3<&4
+      exec 4<&-
+    elif waited_exec $(pass_env) $(tty_flag) lares node "$CLI" "$@"; then rc=0; else rc=$?; fi
     if [ "$rc" -ne 0 ]; then return "$rc"; fi
     if [ -z "$follow_up" ]; then return 0; fi
     # The verb landed. A standing check that fails leaves a possible lift unperformed, so it never passes silently.
@@ -397,7 +437,15 @@ route_cli() {
     printf '%s\n' 'lares-container: no vessel stands; this act runs offline on the store' >&2
     ensure_house
     # shellcheck disable=SC2046
-    waited_run $(pass_env) $(tty_flag) offline "$@"
+    if [ -n "$stream_file" ]; then
+      exec 4<&3
+      exec 3< "$stream_file"
+      waited_run $(pass_env) -T offline "$@"
+      rc=$?
+      exec 3<&4
+      exec 4<&-
+      return "$rc"
+    else waited_run $(pass_env) $(tty_flag) offline "$@"; fi
   fi
 }
 
