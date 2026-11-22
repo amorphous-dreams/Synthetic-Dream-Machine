@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/persona-policy-record"
 
 ! Persona-Policy ~ the record
 
-The persona-policy law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>; its dated rulings stand in that meme's `#/rulings`. This record keeps the dated code read the law's OWED points to.
+The persona-policy law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>; its dated rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/rulings`>>. This record keeps the dated code read the law's OWED points to.
 
 <<~/ahu>>
 
@@ -39,6 +39,6 @@ The code as it stands cracks against the ruling in three places (read 2026-10-11
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fcHKncx0RUDhJ63gqwY-GUD9WIObS5f3o-qvO4t4FXs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gMANZh0lC7ilyZVy77ISD3uveVKflIqzD7I4qX1pDck`>>
 
 <<^ code=`&#x0004;` to=`?`>>

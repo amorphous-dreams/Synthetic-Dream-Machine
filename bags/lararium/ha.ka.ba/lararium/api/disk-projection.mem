@@ -4,17 +4,16 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-hydrate       = true
-l-space       = "stable"
-namespace     = "&#x0950; &#x0901;"
-revision-note = "the `disk-leaning` grading reads as GRAIN, never as a write door — two grounds under one word, the authoring grain and the surviving copy, both holding, pointed at wiki-layer-ontology#/alpha-transition; prior: working↔canon split (shore-law): a wiki's saved edits land in the typed working-slot live layer (wikis/, tracked); canon (bags/) is reached only by a cap-gated promotion MOVE; the general lararium shore law (working↔canon · plane↔plane · host↔lararium) governs every causal-island crossing, host-agnostic surface contract; prior: oracle-floor/@lararium split (#/oracle-split) — the runtime system island (@oracle) separates from the memetic corpus (@lararium); projection-law trued to running code; co-projection rewrite; carrier-whole at rest"
-role          = "load-bearing invariant — the node vessel's two on-disk projection surfaces: bags/ (seed/canon) vs wikis/ (projection/output); which bags mirror, which ride the sync mesh"
-status-why    = "the disk projector stands live; bags render to wikis"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
-title         = "lar:///ha.ka.ba/lararium/api/disk-projection"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lararium/api/disk-projection"
+cacheable  = true
+hydrate    = true
+l-space    = "stable"
+namespace  = "&#x0950; &#x0901;"
+role       = "load-bearing invariant — the node vessel's two on-disk projection surfaces: bags/ (seed/canon) vs wikis/ (projection/output); which bags mirror, which ride the sync mesh; a wiki's saved edits land in the typed working-slot live layer (wikis/), and canon (bags/) is reached only by a cap-gated promotion MOVE; the lararium shore law (working↔canon · plane↔plane · host↔lararium) governs every causal-island crossing as a host-agnostic surface contract; the `disk-leaning` grading reads as GRAIN, never a write door; the runtime system island (@oracle) separates from the memetic corpus (@lararium); carriers rest whole"
+status-why = "the disk projector stands live; bags render to wikis"
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lararium/api/disk-projection"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/api/disk-projection"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -265,6 +264,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5WdPNNjj0Th8BUjH6XQOGYANruSarOD61Bv-PgESGiE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wepSkhoXozt04x38U5yb6Yzb7hJosmOrnAXIUMSTG_Y`>>
 
 <<^ code=`&#x0004;` to=`?`>>

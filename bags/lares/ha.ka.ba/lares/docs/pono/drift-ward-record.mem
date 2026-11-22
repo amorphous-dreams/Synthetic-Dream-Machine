@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/drift-ward-record"
 
 ! Drift-Ward ~ the record
 
-The gauge speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward`>>; its rulings stand in that meme's `#/rulings`.
+The gauge speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward`>>; its rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward#/rulings`>>.
 
 <<~/ahu>>
 
@@ -35,6 +35,6 @@ The gauge's panel first rode a `hud` sigil; the boot seed's `set` sigil carries 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SPyDPrzeIoIp8aqq_RQ1_UwZbydo-6rx92teczHR7oM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HRMGgc2G_aYOjuH-DCLlD45FD36-nCp0mKQeUpDVk-s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

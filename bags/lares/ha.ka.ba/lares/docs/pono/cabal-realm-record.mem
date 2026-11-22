@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/cabal-realm-record"
 
 ! Cabal-Realm ~ the record
 
-The cabal-realm law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>; its dated rulings stand in that meme's `#/rulings`. This record keeps the history the law points to and the roads it names as owed.
+The cabal-realm law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>>; its dated rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/rulings`>>. This record keeps the history the law points to and the roads it names as owed.
 
 <<~/ahu>>
 
@@ -41,6 +41,6 @@ The cabal-realm law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cab
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;INJLrlCX-aVec15wK0biGln9fIaUqXJXU6yyeiyRhaI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mVcoF5ZOz0-dEaSVzia9-xk0LbS7nqtdGBjellAEs0c`>>
 
 <<^ code=`&#x0004;` to=`?`>>
