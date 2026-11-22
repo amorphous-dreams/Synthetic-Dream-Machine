@@ -186,6 +186,14 @@ export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemeP
     if (base) out["base"] = base;
     return { verb: "meme-delete", args: out, ...face };
   }
+  // THE PAGE WORDS (`meme get` answers a bounded page): `--max-bytes <N>` caps the text, `--after <cursor>` continues a cut answer.
+  const maxBytes = typeof args.options["max-bytes"] === "string" ? args.options["max-bytes"].trim() : "";
+  if (maxBytes) {
+    if (!/^[0-9]+$/.test(maxBytes) || Number(maxBytes) < 1) throw new UsageError(`--max-bytes takes a count of at least 1 (got "${maxBytes}")`);
+    out["maxBytes"] = maxBytes;
+  }
+  const after = typeof args.options["after"] === "string" ? args.options["after"].trim() : "";
+  if (after) out["after"] = after;
   return { verb: "meme-get", args: out, ...face };
 }
 
@@ -339,29 +347,70 @@ async function memePut(args: ParsedArgs): Promise<number> {
   return exitFor(code);
 }
 
+interface GotMeme { text: string; canonicalHash: string; bytes?: number; truncated?: boolean; next?: string | null }
+
+/**
+ * `meme get` ANSWERS ONE BOUNDED PAGE. A meme within the cap (the daemon's default, 64 KiB) answers whole, as it always did; a
+ * longer one answers its first page and says so on stderr (`truncated`, the size and the cursor). `--after <cursor>` reads the page
+ * behind, `--max-bytes <N>` moves the cap, and `--all` follows the cursor to the end and prints the whole text. The size line
+ * (`size: N bytes`) rides stderr beside the base, so a pipe that carries the carrier on stdout still hears the size.
+ */
 async function memeGet(args: ParsedArgs): Promise<number> {
   const plan = memePlan("get", args);
-  const result = await dispatch(plan, plan.args, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = refusalCodeOf(outcome.error);
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme get: ${outcome.error}`) });
-    return exitFor(code);
+  const did = await vesselDid();
+  const parts: string[] = [];
+  let last: GotMeme | null = null;
+  let requestId = "";
+  let fromFloor = false;
+  for (let after: string | null = typeof plan.args["after"] === "string" ? plan.args["after"] : null; ;) {
+    const wire = after === null ? plan.args : { ...plan.args, after };
+    const result = await dispatch(plan, wire, did);
+    const outcome = readVerbOutcome(result);
+    if (!outcome.ok) {
+      const code = refusalCodeOf(outcome.error);
+      emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme get: ${outcome.error}`) });
+      return exitFor(code);
+    }
+    requestId = result.requestId;
+    const meme = outcome.output["meme"] as GotMeme | null | undefined;
+    fromFloor = outcome.output["floor"] === true;
+    if (!meme) {
+      emit(args, { ok: false, requestId, error: { code: "not-found", message: `no meme at ${plan.args["uri"]}` }, human: () => console.error(`lares meme get: no meme at ${plan.args["uri"]}`) });
+      return exitFor("not-found");
+    }
+    parts.push(meme.text);
+    last = meme;
+    const next = typeof meme.next === "string" && meme.next !== "" ? meme.next : null;
+    if (args.flags["all"] !== true || next === null) break;
+    if (next === after) {
+      const message = `the meme's cursor stood still at ${next}`;
+      emit(args, { ok: false, requestId, error: { code: "verb-error", message }, human: () => console.error(`lares meme get: ${message}`) });
+      return 4;
+    }
+    after = next;
   }
-  const meme = outcome.output["meme"] as { text: string; canonicalHash: string } | null | undefined;
-  const fromFloor = outcome.output["floor"] === true;
-  if (!meme) {
-    emit(args, { ok: false, requestId: result.requestId, error: { code: "not-found", message: `no meme at ${plan.args["uri"]}` }, human: () => console.error(`lares meme get: no meme at ${plan.args["uri"]}`) });
-    return exitFor("not-found");
-  }
+  const text = parts.join("");
+  const got = last!;
+  const cut = got.truncated === true;
   emit(args, {
     ok: true,
-    requestId: result.requestId,
+    requestId,
     // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
-    data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash, ...(fromFloor ? { floor: true } : {}) },
+    // `bytes` names the whole meme's size; `truncated` and `next` name a cut page and the cursor of the one behind it.
+    data: {
+      uri: plan.args["uri"], text, canonicalHash: got.canonicalHash,
+      ...(typeof got.bytes === "number" ? { bytes: got.bytes, truncated: cut, next: cut ? got.next ?? null : null } : {}),
+      ...(fromFloor ? { floor: true } : {}),
+    },
     // The text alone reaches stdout, a terminal or a redirect alike (`carrierFirst`), so `lares meme get <uri> --recipe <slug>
-    // > file` carries the meme. The base rides stderr as one line, `base: sha256:…`, for the writer's `--base`.
-    human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
+    // > file` carries the meme. The base rides stderr as one line, `base: sha256:…`, for the writer's `--base`, and the size line beside it.
+    human: () => {
+      stdout.write(text);
+      console.error(`base: ${got.canonicalHash}`);
+      if (typeof got.bytes === "number") console.error(`size: ${got.bytes} bytes`);
+      if (cut) console.error(`truncated: this page ends at the byte cap; read the rest with --after ${got.next} (or --all for the whole text; --max-bytes <N> moves the cap)`);
+      if (fromFloor) console.error(FLOOR_READ_NOTE);
+    },
   });
   return 0;
 }

@@ -462,3 +462,17 @@ def test_meme_put_text_names_the_seat_canon_refusal_and_the_true_layer():
 def test_tiddler_put_text_names_the_seat_canon_refusal():
     said = _described("tiddler_put")
     assert "seat-canon-reach" in said
+
+
+def test_meme_get_pages_by_bytes_and_cursor(daemon):
+    # THE ANSWER IS BOUNDED: `max_bytes` rides as `maxBytes` and the cursor rides back as `after`; the daemon's size line
+    # (`bytes`, `truncated`, `next`) crosses the seat on the meme untouched.
+    page = {**_GET_MEME, "bytes": 90000, "truncated": True, "next": "65536.0123456789abcdef"}
+    daemon.output = {"uri": _URI, "meme": page}
+    assert _get(uri=_URI, recipe="default", max_bytes=4096) == page
+    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI, "maxBytes": 4096}}
+    _get(uri=_URI, recipe="default", after="65536.0123456789abcdef")
+    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI, "after": "65536.0123456789abcdef"}}
+    # CONTROL: a plain read names neither word on the wire.
+    _get(uri=_URI, recipe="default")
+    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI}}

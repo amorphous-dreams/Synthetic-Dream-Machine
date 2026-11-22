@@ -12,7 +12,7 @@ import { describe, test, expect } from "vitest";
 import { CompositeStore, NoWorkingLayerRefusal, bagUri, carrierHashOf, overrideBaseOf, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, MEME_GET_BYTES, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput } from "../src/verb-vm.js";
 import { placeMeme } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
@@ -1058,5 +1058,77 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "<<^ code=`&#x0003;`>>", base: (await read()).canonicalHash }, ctx());
     expect(receipt["decision"]).not.toBe("ingest");
     expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
+  });
+});
+
+describe("meme-get — a bounded answer: a byte cap, a size line and a cursor", () => {
+  const bulky = (words: number, word = "lorem"): string =>
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+    `<<~ ahu slot=\`#/a\`>>\n\n! a\n\n${Array.from({ length: words }, () => word).join(" ")}\n\n<<~/ahu>>\n` +
+    `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+  const seat = async (text: string) => {
+    const r = rig();
+    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text }, ctx());
+    return r;
+  };
+  type Got = { meme: { text: string; canonicalHash: string; bytes: number; truncated: boolean; next: string | null } };
+  const get = async (r: Rig, extra: Record<string, unknown> = {}): Promise<Got> =>
+    (await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI, ...extra }, ctx())) as unknown as Got;
+  const size = (text: string): number => new TextEncoder().encode(text).length;
+
+  test("the default cap is named, and a normal meme still answers whole with its size line", async () => {
+    expect(MEME_GET_BYTES).toBe(65_536);
+    const r = await seat(bulky(40));
+    const got = await get(r);
+    expect(got.meme.truncated).toBe(false);
+    expect(got.meme.next).toBeNull();
+    expect(got.meme.bytes).toBe(size(got.meme.text));
+    expect(got.meme.text).toContain("lorem lorem");
+  });
+
+  test("RED: a meme past the cap answers one page under it, says it is cut and names the cursor; the pages join to the whole", async () => {
+    const r = await seat(bulky(60_000));
+    const first = await get(r);
+    expect(first.meme.truncated).toBe(true);
+    expect(typeof first.meme.next).toBe("string");
+    expect(size(first.meme.text)).toBeLessThanOrEqual(MEME_GET_BYTES);
+    expect(first.meme.bytes).toBeGreaterThan(MEME_GET_BYTES);
+    let text = first.meme.text;
+    for (let page = first; page.meme.next; ) {
+      page = await get(r, { after: page.meme.next });
+      expect(page.meme.canonicalHash).toBe(first.meme.canonicalHash);
+      text += page.meme.text;
+    }
+    expect(size(text)).toBe(first.meme.bytes);
+    const whole = await get(r, { maxBytes: 262_144 * 4 });
+    expect(whole.meme.truncated).toBe(first.meme.bytes > 262_144);
+  });
+
+  test("a page never splits a multi-byte character, and the pages still join to the whole", async () => {
+    const r = await seat(bulky(900, "épée"));
+    const pages: string[] = [];
+    for (let page = await get(r, { maxBytes: 1000 }); ; ) {
+      expect(size(page.meme.text)).toBeLessThanOrEqual(1000);
+      expect(page.meme.text).not.toContain("\uFFFD");
+      pages.push(page.meme.text);
+      if (!page.meme.next) break;
+      page = await get(r, { maxBytes: 1000, after: page.meme.next });
+    }
+    expect(pages.length).toBeGreaterThan(1);
+    expect(pages.join("")).toBe((await get(r, { maxBytes: 262_144 })).meme.text);
+  });
+
+  test("a cursor that reads as none refuses; a meme that moved under the cursor refuses stale", async () => {
+    const r = await seat(bulky(60_000));
+    const first = await get(r);
+    await expect(get(r, { after: "nonsense" })).rejects.toMatchObject({ reason: "meme-cursor-malformed" });
+    await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: bulky(60_001) }, ctx());
+    await expect(get(r, { after: first.meme.next! })).rejects.toMatchObject({ reason: "meme-cursor-stale" });
+  });
+
+  test("an absent meme still answers null, with no page words", async () => {
+    const r = rig();
+    const out = await makeMemeGetReactor(r.opts)({ recipe: "default", uri: URI }, ctx());
+    expect(out["meme"]).toBeNull();
   });
 });

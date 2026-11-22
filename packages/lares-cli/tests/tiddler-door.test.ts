@@ -111,6 +111,32 @@ describe("the argument law, no daemon", () => {
   });
 });
 
+describe("a bag names one store and no wiki", () => {
+  test("RED: the engine verbs and the writes refuse --bag before the wire and name the right door; CONTROL: tiddler get --bag rides the wire", async () => {
+    for (const [cmd, positional] of [["wiki", ["filter", "[tag[x]]"]], ["wiki", ["render", "T"]], ["wiki", ["status"]]] as const) {
+      const r = await run(argv(cmd, [...positional], { bag: "lares" }));
+      expect(r.exit).toBe(2);
+      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*meme list --bag.*meme get <uri> --bag.*--recipe <slug>/s) } });
+    }
+    for (const sub of ["put", "delete"]) {
+      const r = await run(argv("tiddler", [sub, "T"], { bag: "lares", text: "x" }));
+      expect(r.exit).toBe(2);
+      expect(r.printed).toMatchObject({ ok: false, error: { code: "wiki-not-anchored", message: expect.stringMatching(/meme put --bag.*meme delete --bag/s) } });
+    }
+    expect(h.calls).toEqual([]);
+    expect(tiddlerPlan("get", argv("tiddler", ["get", "T"], { bag: "lares" })).args).toEqual({ bag: "lares", title: "T" });
+    h.reply = { bag: "lar:///ha.ka.ba/bags/lares", title: "T", tiddler: { fields: { title: "T", text: "words" }, hash: "sha256-x", textHash: "sha256-y", bag: "lar:///ha.ka.ba/bags/lares", position: "plain" } };
+    expect(await run(argv("tiddler", ["get", "T"], { bag: "lares" }))).toMatchObject({ exit: 0, printed: { ok: true } });
+    expect(h.calls).toEqual([{ verb: "tiddler-get", args: { bag: "lares", title: "T" } }]);
+  });
+
+  test("a wiki verb with no container still says no-container, and names the wiki to give", async () => {
+    const r = await run(argv("wiki", ["filter", "[tag[x]]"]));
+    expect(r.exit).toBe(2);
+    expect(r.printed).toMatchObject({ error: { code: "no-container", message: expect.stringMatching(/name the wiki: --recipe <slug>/) } });
+  });
+});
+
 describe("the exit classes a receipt maps to", () => {
   test("an absent tiddler exits not-found; a stale base and an existing title exit conflict; a family delete carries its refusal name", async () => {
     h.reply = { recipe: "default", title: "T", tiddler: null };

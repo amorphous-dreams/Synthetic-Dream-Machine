@@ -30,7 +30,7 @@ import { ensureWikiRealm, labelRealmOf, LIVE_REALM_DOORS, placeWikiInRealm, rele
 import { sealedAct } from "../sealed-act-door.js";
 import { RealmRefused, loadLaresConfig, tempConsentedSlugs } from "@lararium/node";
 import { wikiSlotKindOf } from "@lararium/mesh";
-import { containerArgs } from "../container-target.js";
+import { engineContainerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
 import { stdout } from "node:process";
 import type { ParsedArgs } from "../parse-args.js";
@@ -774,7 +774,7 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
 export function wikiFilterPlan(args: ParsedArgs): DoorPlan {
   const filter = args.positional[0];
   if (!filter) throw new DoorUsage("a filter is required (e.g. `lares wiki filter '[tag[memory]sort[title]]' --recipe default`)");
-  const out: Record<string, unknown> = { ...containerArgs(args, "wiki filter"), filter };
+  const out: Record<string, unknown> = { ...engineContainerArgs(args, "wiki filter"), filter };
   const fields = namesOf(args.options["fields"]);
   if (fields) out["fields"] = fields;
   const limit = countOf(args.options["limit"], "limit");
@@ -791,7 +791,7 @@ export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
   const title = args.positional[0];
   const span = typeof args.options["text"] === "string" ? args.options["text"] : "";
   if (Boolean(title) === Boolean(span)) throw new DoorUsage("name one source: a title (`lares wiki render \"My Note\" --recipe default`) or a span (`--text \"''bold'' {{My Note}}\"`)");
-  const out: Record<string, unknown> = { ...containerArgs(args, "wiki render"), ...(title ? { title } : { text: span }) };
+  const out: Record<string, unknown> = { ...engineContainerArgs(args, "wiki render"), ...(title ? { title } : { text: span }) };
   const form = wordOf(args.options["form"]);
   if (form) {
     if (form !== "text" && form !== "html") throw new DoorUsage(`--form reads text or html (got "${form}")`);
@@ -808,7 +808,7 @@ export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
 
 /** `lares wiki status`: the daemon verb `wiki-status` and its args. */
 function wikiStatusPlan(args: ParsedArgs): DoorPlan {
-  return { verb: "wiki-status", args: { ...containerArgs(args, "wiki status") } };
+  return { verb: "wiki-status", args: { ...engineContainerArgs(args, "wiki status") } };
 }
 
 interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[] }
