@@ -81,3 +81,9 @@ describe("lares kapae", () => {
     expect(seam.calls).toEqual([]);
   });
 });
+
+test("the staged-code door exposes trust in place of promote", async () => {
+  const { COMMAND_NAMES } = await import("../src/bin/lares.js");
+  expect(COMMAND_NAMES).toContain("trust");
+  expect(COMMAND_NAMES).not.toContain("promote");
+});
