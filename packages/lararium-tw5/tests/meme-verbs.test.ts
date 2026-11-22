@@ -1036,6 +1036,19 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
   });
 
+  test("an unbound partial base refuses before a slot write", async () => {
+    const { read, patch } = await seeded();
+    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", base: `partial:${(await read()).canonicalHash}` }, ctx())).rejects.toMatchObject({ reason: "base-outside-span" });
+  });
+
+  test("bare and canonical slot reads name the same span", async () => {
+    const { r } = await seeded();
+    const get = makeMemeGetReactor(r.opts);
+    const bare = await get({ recipe: "default", uri: URI, slot: "a" }, ctx());
+    const canonical = await get({ recipe: "default", uri: URI, slot: "#/a" }, ctx());
+    expect(bare).toEqual(canonical);
+  });
+
   test("★ a missing slot refuses by name and moves nothing ★", async () => {
     const { read, patch } = await seeded();
     const receipt = await patch({ recipe: "default", uri: URI, slot: "#/nowhere", append: "x", base: (await read()).canonicalHash }, ctx());
@@ -1113,6 +1126,19 @@ describe("meme-get — on a gradient by grain: whole within a page, the has-stac
     }
     expect(size(pages.join(""))).toBe(first.meme.bytes);
     for (const page of pages.slice(0, -1)) expect(page.trimEnd().endsWith("<<~/ahu>>")).toBe(true);
+  });
+
+  test("the final page's whole base supports a subsequent whole write", async () => {
+    const r = await seat(carrier([["a", 6_000], ["b", 6_000], ["c", 6_000]]));
+    let page = await get(r, { grain: "whole" });
+    const pieces = [page.meme.text!];
+    while (page.meme.next?.after) {
+      page = await get(r, { grain: "whole", after: page.meme.next.after });
+      pieces.push(page.meme.text!);
+    }
+    expect(page.meme.next).toBeNull();
+    expect(page.meme.canonicalHash).not.toMatch(/^partial:/);
+    expect(await makeMemePutReactor(r.opts)({ recipe: "default", uri: URI, text: pieces.join("").replace("lorem", "changed"), base: page.meme.canonicalHash }, ctx())).toMatchObject({ decision: "ingest" });
   });
 
   test("a slot larger than a page rides its own page whole, never cut", async () => {
