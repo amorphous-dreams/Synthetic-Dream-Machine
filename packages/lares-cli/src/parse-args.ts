@@ -31,7 +31,7 @@
  * one of `VALUE_OR_FLAG`.
  */
 export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
-  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "cancel", "cards", "cosign", "confirm", "create", "cut", "drain",
+  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "cosign", "confirm", "create", "cut", "drain",
   "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
   "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "launch", "list", "meme", "memory", "observe", "orphans", "over-fresher",
   "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "remove", "repour", "restart", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",

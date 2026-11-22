@@ -561,14 +561,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   sense: {
-    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense <lifecycle verb> …",
+    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense analyze --lens <lens>  ·  lares sense <lifecycle verb> …",
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +
-      "needs no new verb. TEND the planes with the lifecycle verbs (recall · capture (incl. sub-agent " +
-      "transcripts) · pour · teardown · worldline · telemetry · flow). `pour --all` walks the whole tending movement — " +
-      "quiesce · baseline · drawers · bearing · projection · verify · resume — never the guest miner. " +
-      "Every verb rides the daemon's composed caps (the " +
+      "needs no new verb. ANALYZE through one verb, the lens choosing the instrument (`lares sense analyze " +
+      "--help` lists the lenses). TEND the planes with the lifecycle verbs (recall · capture (incl. sub-agent " +
+      "transcripts) · pour · teardown · worldline · telemetry · holders · roster). `pour --all` walks the whole tending movement — " +
+      "quiesce · baseline · drawers · bearing · projection · verify · resume — never the guest miner; `pour --bulk` " +
+      "runs the drawers leg alone. Every verb rides the daemon's composed caps (the " +
       "single-owner law: nothing opens a store beside the vessel's holder).",
     examples: [
       "lares sense search \"entrance block\" --lens structure   # hybrid recall over a plane",
@@ -576,6 +577,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares sense recall keyhive convergent removal           # verbatim drawers",
       "lares sense recall fork --speaker operator --surface claude  # filters compose (AND)",
       "lares sense pour --all                                  # the sovereign re-pave (all sources)",
+      "lares sense analyze --lens couple                       # one instrument through its lens",
       "lares sense worldline 0425c035                          # walk a session's spirit tree",
       "lares sense teardown --confirm --drain                  # tear the planes for a clean re-pave",
       "lares sense trial-run --trial-root /state/sensorium-serving-one --freeze-receipt /state/freeze-receipt.json --intent one --source-host host-a --model-home /state/model-home",
@@ -587,13 +589,46 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--wing <w>      scope to one project wing",
       "--agent/--surface/--speaker/--channel/--function   recall filters (compose AND; need a query)",
       "--imago <id>    (recall) fetch one imago verbatim; --list lists imagines",
-      "--all           (pour) sweep every transcript source",
+      "--all           (pour) the whole tending movement · --bulk the drawers leg alone, every transcript",
       "--trial-root <absolute named root>  frozen Claude serving operation; trial-run/search/status only",
       "--model-home <root>  pinned MiniLM assets for trial-run/search; must match the operation receipt",
       "--source-key/--revision <value>  trial search postfilters (bounded candidate window)",
       "--confirm/--drain/--force   (teardown) remove / quiesce-first / override live holders",
     ],
-    next: ["lares sense status --lens content", "lares mempalace status   # the guest comparator door"],
+    next: ["lares sense status --lens content", "lares sense analyze --help   # the lenses", "lares mempalace status   # the guest comparator door"],
+  },
+
+  "sense analyze": {
+    usage: "usage: lares sense [<sensorium>] analyze --lens <lens> [flags]",
+    synopsis:
+      "Read a poured sensorium through one lens. The lens chooses the instrument; each keeps its own read path and " +
+      "daemon verb, so nothing merges. Every answer names the lens it applied, and a missing or unknown lens refuses " +
+      "with this list.",
+    details: [
+      "Lenses:",
+      "  changes    where the poured content changes hands (change-points)",
+      "  rhythm     the landed regimes and their couples; --repour re-derives first",
+      "  couple     do the sensorium's coupled peers reconcile (the H¹ gate); also ki",
+      "  cohere     do the sensorium's planes glue into one section; also li",
+      "  square     do a child-host's lobes round-trip to one self (bare: the mesh)",
+      "  lead       who leads whom across signals (the R transfer-entropy reference)",
+      "  forecast   does a regime shift approach (the R early-warning read)",
+      "  mismatch   do couple and lead agree over the same signals",
+    ],
+    examples: [
+      "lares sense analyze --lens changes --halves 4,8,16",
+      "lares sense analyze --lens rhythm --repour",
+      "lares sense memetic-wikitext analyze --lens couple",
+      "lares sense analyze --lens forecast --signal series.ndjson",
+      "lares sense analyze --lens mismatch --signal flow.ndjson --names who,authority,flow",
+    ],
+    flags: [
+      "--lens <lens>        the instrument (required)",
+      "--spectral --halves <w,w> --span <n>   (changes) the embedding surface, Foote widths, context words",
+      "--repour --channel <c>                 (rhythm) re-derive first, from that stream channel",
+      "--signal <ndjson> --names <a,b>        (lead, forecast, mismatch) rows=time, cols=signals",
+    ],
+    meme: "lar:///ha.ka.ba/lararium/sensorium/sense-analyze",
   },
 
   realm: {

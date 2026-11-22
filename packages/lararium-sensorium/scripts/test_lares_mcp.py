@@ -199,7 +199,7 @@ def test_sense_lifecycle_verbs_carry_their_real_seats():
     # in-loop-human graduation (promote) and judged deaccession (retire) cross HITL, as does purge.
     for v in SENSE_LIFECYCLE_VERBS:
         assert v in VERB_SEATS, f"sense-lifecycle verb {v!r} rides UNSEATED"
-    for v in ("roster", "inspect", "build", "reconcile", "un_retire"):
+    for v in ("roster", "build", "reconcile", "un_retire"):
         assert seat_of(v) == "HOTL"        # reads + reversible moves run on the operator's loop
     for v in ("promote", "retire", "purge"):
         assert seat_of(v) == "HITL"        # graduation · deaccession · byte-GC need the operator's hand
@@ -707,3 +707,79 @@ def test_daemon_rejim_routes_and_repour_rides_refresh(monkeypatch):
     dc.rejim(repour=True, sensorium_root="/root/mesh")
     assert calls[0] == ("refresh", {"which": "rejim", "sensoriumRoot": "/root/mesh"})   # repour rides refresh
     assert calls[1] == ("rejim", {"sensoriumRoot": "/root/mesh"})         # then reads, root threaded
+
+
+# ── the SENSE DOOR SHRINKS (road leap-ux-collapse, fold 1): the read instruments answer as lenses on one
+#    `analyze` tool, roster reads at two grains, pour carries the bulk pass. Each lens keeps its own wire verb. ──
+
+_RETIRED_TOOLS = {"ki", "li", "jing", "couple_r", "forecast", "mismatch", "rejim", "inspect", "sweep"}
+
+
+def _routed_tools(monkeypatch):
+    calls = []
+    monkeypatch.setattr("lares_mcp.uds.output", lambda verb, args: (calls.append((verb, args)), {"answered": verb})[1])
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    tool = lambda name: mcp._tool_manager.get_tool(name).fn  # noqa: E731,SLF001 — the registered skin
+    return mcp, tool, calls
+
+
+def test_the_retired_sense_tools_leave_the_seat(monkeypatch):
+    mcp, _, _ = _routed_tools(monkeypatch)
+    names = {t.name for t in asyncio.run(mcp.list_tools())}
+    assert names.isdisjoint(_RETIRED_TOOLS), sorted(names & _RETIRED_TOOLS)
+    assert {"analyze", "roster", "pour"} <= names
+    for v in _RETIRED_TOOLS:
+        assert v not in VERB_SEATS, f"{v!r} keeps a seat after its tool retired"
+
+
+def test_analyze_lens_routes_each_lens_to_its_own_wire_verb(monkeypatch):
+    from lares_mcp import ANALYZE_LENSES
+    _, tool, calls = _routed_tools(monkeypatch)
+    for lens, wire in ANALYZE_LENSES.items():
+        calls.clear()
+        out = tool("analyze")(lens=lens, rows=[[1.0, 2.0]])
+        assert out["lens"] == lens                                  # every answer echoes the lens it applied
+        assert calls[-1][0].replace("-", "_") == wire               # the lens chooses; the wire verb stays its own
+
+
+def test_analyze_house_names_flow_to_their_plain_lens(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    assert tool("analyze")(lens="ki")["lens"] == "couple" and calls[-1][0] == "ki"
+    assert tool("analyze")(lens="li")["lens"] == "cohere" and calls[-1][0] == "li"
+
+
+def test_analyze_unknown_or_missing_lens_refuses_naming_every_lens(monkeypatch):
+    from lares_mcp import ANALYZE_LENSES, SeatArgumentRefused
+    _, tool, calls = _routed_tools(monkeypatch)
+    for asked in (None, "zz-no-such-lens"):
+        with pytest.raises(SeatArgumentRefused) as refused:
+            tool("analyze")(lens=asked)
+        for lens in ANALYZE_LENSES:
+            assert lens in str(refused.value)
+    assert calls == []                                              # a refusal reaches no wire
+
+
+def test_analyze_lenses_weld_to_the_cli_table():
+    # ONE LENS TABLE, TWO SKINS: the fixture carries the CLI's own table (gen_cli_verbs.mjs reads SENSE_LENSES),
+    # and the seat's table names the same lenses riding the same wire verbs.
+    from lares_mcp import ANALYZE_LENSES, ANALYZE_LENS_ALIASES
+    with open(_CLI_VERBS, encoding="utf-8") as f:
+        inv = json.load(f)
+    assert {k: v.replace("_", "-") for k, v in ANALYZE_LENSES.items()} == inv["analyze_lenses"]
+    assert ANALYZE_LENS_ALIASES == inv["analyze_lens_aliases"]
+
+
+def test_roster_reads_at_two_grains(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    tool("roster")()
+    assert calls[-1] == ("roster", {})
+    tool("roster")(name="memory")
+    assert calls[-1] == ("inspect", {"name": "memory"})
+
+
+def test_pour_bulk_rides_the_sweep_spine(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    tool("pour")(bulk=True, surface="claude", limit=3)
+    assert calls[-1][0] == "sweep" and calls[-1][1]["surface"] == "claude" and calls[-1][1]["limit"] == 3
+    tool("pour")(surface="claude", pointer="/x.jsonl")
+    assert calls[-1][0] == "capture" and calls[-1][1]["pointer"] == "/x.jsonl"

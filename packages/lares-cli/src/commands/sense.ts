@@ -21,26 +21,19 @@
 import { openMemorySensorium, makeLaresQuery, runTrialServing, trialContentDir, verifyTrialModel, sensoriumLenses, sensoriumNames, sensoriumDir, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
-import { cmdPour, cmdCapture, cmdSweep } from "./capture/harvest.js";
+import { cmdPour, cmdCapture } from "./capture/harvest.js";
 import { cmdWorldline } from "./worldline.js";
 import { cmdTelemetry } from "./telemetry.js";
 import { cmdPalaceTeardown } from "./palace-teardown.js";
 import { cmdRecall } from "./recall.js";
 import { cmdRefresh } from "./refresh.js";
-import { cmdFlow } from "./flow.js";
 import { cmdMeta } from "./meta.js";
-import { cmdRejim } from "./rejim.js";
-import { cmdAnalyze } from "./analyze.js";
-import { cmdKi } from "./ki.js";
-import { cmdLi } from "./li.js";
-import { cmdJing } from "./jing.js";
-import { cmdCoupleR } from "./couple-r.js";
+import { cmdSenseAnalyze } from "./sense-analyze.js";
 import { cmdPlaneRecord } from "./plane-record.js";
-import { cmdForecast } from "./forecast.js";
-import { cmdMismatch } from "./mismatch.js";
 import { runQuiesce, runResume, runTopology, type DoorScope } from "./mempalace.js";
+import { udsAlive } from "../local-connector.js";
 import {
-  cmdSenseRoster, cmdSenseInspect, cmdSenseReconcile, cmdSenseBuild,
+  cmdSenseRoster, cmdSenseReconcile, cmdSenseBuild,
   cmdSensePromote, cmdSenseRetire, cmdSenseUnRetire, cmdSensePurge,
 } from "./sense-lifecycle.js";
 import { setupSensorium } from "../setup-sensorium.js";
@@ -66,8 +59,9 @@ function cmdSenseQuiesce(args: ParsedArgs): Promise<number> {
 function cmdSenseResume(args: ParsedArgs): number {
   return runResume(args, senseDoor(args));
 }
-function cmdSenseHolders(args: ParsedArgs): number {
-  return runTopology(args, senseDoor(args), "holders");
+/** The holder topology, and whether this vessel's own daemon socket answers (the end of the capture route). */
+async function cmdSenseHolders(args: ParsedArgs): Promise<number> {
+  return runTopology(args, senseDoor(args), "holders", { daemonOpen: await udsAlive() });
 }
 
 const VERBS = ["search", "relate", "structure", "status"] as const;
@@ -78,7 +72,7 @@ type Verb = (typeof VERBS)[number];
  * door, beside the four plane-READ verbs above. Each OWNS its handler outright — no top-level twin.
  * `sense` tends the sovereign lar_* planes; `mempalace` tends the guest comparator: one island per
  * namespace. `pour --all` walks the whole tending movement (quiesce · baseline · drawers · bearing ·
- * projection · verify · resume). Never the guest miner.
+ * projection · verify · resume); `pour --bulk` runs its drawers leg alone. Never the guest miner.
  * `recall` reads the verbatim drawers over the SOVEREIGN content plane —
  * the SAME dir `sense search --lens content` opens (both derive memorySensoriumContentDir() through
  * mempalace-pool; the daemon recall verb NAMES it, never the guest). Guest-shaped recall output means a
@@ -94,43 +88,27 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   recall:    cmdRecall,
   refresh:   cmdRefresh,
   capture:   cmdCapture,
-  pour:      cmdPour,
-  sweep:     cmdSweep,       // the BULK backfill on the ONE spine — CLI twin of the MCP `sweep` tool
+  pour:      cmdPour,        // `--all` the whole tending movement · `--bulk` the drawers leg (the sweep spine) · `--writeback`
   teardown:  cmdPalaceTeardown,
   worldline: cmdWorldline,
   telemetry: cmdTelemetry,
-  flow:      cmdFlow,
   meta:      cmdMeta,
-  // The human-query INSTRUMENTS over the poured sensorium — rhythm (rejim), change-points (analyze), and
-  // the Ki coupling verdict (ki) and the Li gluing verdict (li) — the cosheaf ⊥ sheaf dual. rejim +
-  // analyze read/compute; ki + li read TS-native (no daemon; the H¹ hull lives in @mesh).
-  //
-  // OWED (operator, 2026-10-11): a HOUSE-GRAMMAR `|en` alias layer over these three verbs — `couple` for
-  // `ki`, `cohere` for `li`, `square` for `jing` — each flowing to the SAME module, declared by the house
-  // grammar rather than hand-wired here. Until that layer stands, only the three names below answer; an
-  // English spelling reads as an unknown verb and draws the usage refusal.
-  rejim:     cmdRejim,
-  analyze:   cmdAnalyze,
-  ki:        cmdKi,       // owed |en alias: `couple` — the coupling verdict, the same H¹ gate
-  li:        cmdLi,       // owed |en alias: `cohere` — the gluing verdict, the li-radius + the same H¹ gate
-  jing:      cmdJing,     // 勁 — the li∘ki square: does a child-host's grain round-trip with its flow?
-                          // owed |en alias: `square` — the joint read, neither li nor ki
-  // The cross-plane witness — the last MCP tool that had no CLI door (surface-parity).
+  // EVERY READ INSTRUMENT over a poured sensorium answers through ONE verb: `analyze --lens <lens>`
+  // (sense-analyze.ts holds the lens table — changes · rhythm · couple · cohere · square · lead · forecast ·
+  // mismatch). The lens chooses the instrument; each keeps its own read path and daemon verb.
+  analyze:   cmdSenseAnalyze,
+  // The cross-plane witness — ONE cid across content · structure · form (surface-parity).
   "plane-record": cmdPlaneRecord,
-  "couple-r": cmdCoupleR, // the R effective-TE coupling reference (coupling.R) — the py/R twin of ki, the
-                          // machine-code plane behind the causal-island boundary; compare vs ki for a mismatch
-  forecast:  cmdForecast, // the R early-warning plane (ews.R) — a critical-slowing-down bifurcation forecast
-  mismatch:  cmdMismatch, // the ki↔R comparator — TS-hull Gaussian-CMI ⋈ R effective-TE, "is the coupling honest?"
   // Holder lifecycle — the SOVEREIGN parallel of `lares mempalace`, each door scoped to its own island.
-  // `status` is already a plane-READ verb (the persistence lens), so the holder TOPOLOGY rides as `holders`.
+  // `status` is already a plane-READ verb (the persistence lens), so the holder TOPOLOGY rides as `holders`,
+  // which also names whether this vessel's own daemon socket answers (the end of the capture route).
   quiesce:   cmdSenseQuiesce,
   resume:    cmdSenseResume,
   holders:   cmdSenseHolders,
   // The DURABLE sensorium lifecycle door (E1.2·E2.*·E5) — run DIRECT over manifest.json (no store holder,
   // no daemon). Reads + the reversible re-settle run HOTL; promote/retire/purge seat HITL (need --approve,
-  // the TS mirror of the approval cap). The MCP three-way mirror is a deferred ahead-of-surface allowance.
+  // the TS mirror of the approval cap). `roster` reads at two grains: bare, every sensorium; `roster <name>`, one.
   roster:      cmdSenseRoster,
-  inspect:     cmdSenseInspect,
   reconcile:   cmdSenseReconcile,
   build:       cmdSenseBuild,
   promote:     cmdSensePromote,
