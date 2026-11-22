@@ -206,6 +206,16 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/recursive-reading`>>
+
+!! Recursive reading ~ the cores meet an outside reader
+
+The house's catma and pattern-integrity registries draw new material toward patterns that already predict it. A reader LIFTs a fresh rule into a predicting core, adds a tell or a place the pattern lives when evidence warrants one, and names a candidate when no core predicts it. A new core or a changed rule or reason waits for the operator's word (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage#/the-lifecycle`>>).
+
+''The same reading reaches the cores themselves.'' Before a registry folds its own superseded material, a reader from a different context reads it cold and collides with its author's reading; findings merge only after both readings name their differences. A method never serves as its sole grader. The collision gives the fold an outside witness, just as a carrier's author never witnesses its own fold (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>).
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -213,9 +223,11 @@ Run this against any new code before merging:
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/quine-principles`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;f40UD5XpjjTqNHPHWMNFMGzIFvkb_o2XmmOESVPiXr4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fJ29Asq_i3WptsYyIG835tJ_-DJnaBgk43ciRKLNQJE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
