@@ -125,9 +125,11 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
   // sensorium names never collide, so a leading token resolves unambiguously.
   let positional = args.positional;
   let sensoriumRoot: string | undefined;
+  let sensoriumName: string | undefined;
   const first = positional[0];
   if (first && LIFECYCLE[first] === undefined && !VERBS.includes(first as Verb) && sensoriumNames().includes(first)) {
     sensoriumRoot = sensoriumDir(first);
+    sensoriumName = first;
     positional = positional.slice(1);
   }
   // Thread the resolved root to the verb (absent → the verb keeps its memory default).
@@ -143,7 +145,12 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
 
   // `--key value` lands in `options`; `--key` alone lands in `flags`. The lens carries a VALUE.
   const [verb, ...rest] = positional;
-  const lens = args.options["lens"] ?? "content";
+  // THE ADDRESS REACHES THE READ. A bare plane name keys the `memory` sensorium in the lens map, so a named
+  // sensorium's read turns `--lens <plane>` into its own `<name>/<plane>` key; read bare, `lares sense other
+  // search` would answer from memory and never say so. `memory` keeps its bare keys, and a lens already
+  // spelled `<sensorium>/<plane>` rides as written.
+  const asked = args.options["lens"] ?? "content";
+  const lens = sensoriumName && sensoriumName !== "memory" && !asked.includes("/") ? `${sensoriumName}/${asked}` : asked;
   // `crossplane` is a search MODE, not a plane-dir (it widens content hits across form+structure by the
   // cid-join), so it rides the lens slot beside the real planes without a dir of its own.
   const trialRoot = args.options["trial-root"];
@@ -168,7 +175,7 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
   if (!known.includes(lens)) {
     emit(args, {
       ok: false,
-      error: { code: "verb-error", message: `unknown lens '${lens}'`, hint: `planes: ${known.join(" · ")}` },
+      error: { code: "verb-error", message: sensoriumName ? `sensorium '${sensoriumName}' holds no plane at '${lens}'` : `unknown lens '${lens}'`, hint: `planes: ${known.join(" · ")}` },
       human: () => console.error(`lares sense — no plane named '${lens}'. Planes: ${known.join(" · ")}`),
     });
     return exitFor("verb-error");
