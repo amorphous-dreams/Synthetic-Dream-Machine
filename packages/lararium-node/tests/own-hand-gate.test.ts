@@ -9,7 +9,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { ownPeerKind, readOwnHand } from "../src/hand-act-gate.js";
-import type { ProcReader } from "../src/uds-peer.js";
+import { branchKind, type ProcReader } from "../src/uds-peer.js";
 import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS } from "../src/store-door-verbs.js";
 
 /** A process table: pid → [comm, ppid, environ]. */
@@ -38,6 +38,19 @@ describe("a command reads its own hand", () => {
 
   test("RED: an unreadable chain reads unknown, never a hand", () => {
     expect(ownPeerKind({}, 300, procs({}))).toBe("unknown");
+  });
+
+  test("RED: an unreadable middle link reads unknown, never hand (the walk cannot see past it)", () => {
+    // 200's parent 150 stands unreadable: whatever stands above it (a harness, or none) reads nothing.
+    const BROKEN = procs({ 300: ["node", 200, {}], 200: ["zsh", 150, {}], 1: ["init", 0, {}] });
+    expect(ownPeerKind({}, 300, BROKEN)).toBe("unknown");
+    expect(branchKind(300, 0, BROKEN)).toBe("unknown");
+    // A peer's branch reads the same way at the vessel's door: an unreadable link below the vessel's line reads unknown.
+    expect(branchKind(300, 1, BROKEN)).toBe("unknown");
+    // CONTROL: a chain that reaches init, or the vessel's own line, reads every link.
+    expect(branchKind(300, 0, TERMINAL)).toBe("hand");
+    expect(branchKind(300, 100, TERMINAL)).toBe("hand");
+    expect(branchKind(300, 0, HARNESS)).toBe("ai");
   });
 
   test("CONTROL: a terminal's chain with no harness reads hand", () => {

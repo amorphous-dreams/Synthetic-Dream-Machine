@@ -20,7 +20,7 @@
  * that leaves the harness's branch on purpose.
  */
 import type { Socket } from "node:net";
-import { harnessMark, harnessOnBranch, peerKindOf, PROC, type PeerKind, type ProcReader } from "./uds-peer.js";
+import { branchKind, harnessMark, peerKindOf, PROC, type PeerKind, type ProcReader } from "./uds-peer.js";
 
 export type HandReading =
   | { readonly admit: "hand" | "route-proves" }
@@ -43,13 +43,12 @@ function handOf(kind: PeerKind, opts: { readonly proveRoute: boolean }): HandRea
 
 /**
  * How the process running a command reads: `ai` where a harness mark stands in its own environment or a harness stands on its
- * parent chain (up to init: no vessel line cuts this walk, since the command makes the whole act); `unknown` where its own
- * `/proc` entry cannot be read; else `hand`.
+ * parent chain (up to init: no vessel line cuts this walk, since the command makes the whole act); `unknown` where any link
+ * of that chain cannot be read (`branchKind`); else `hand`.
  */
 export function ownPeerKind(env: Readonly<Record<string, string | undefined>> = process.env, self: number = process.pid, read: ProcReader = PROC): PeerKind {
   if (Object.entries(env).some(([key, value]) => harnessMark(key, value))) return "ai";
-  if (read.stat(self) === null) return "unknown";
-  return harnessOnBranch(self, 0, read) ? "ai" : "hand";
+  return branchKind(self, 0, read);
 }
 
 /** Read the hand behind a command that runs in its own process (no socket): the same verdicts `readHand` gives a peer. */
