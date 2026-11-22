@@ -1017,6 +1017,34 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     expect(after.canonicalHash).not.toBe(before.canonicalHash);
   });
 
+  test("★ an append with no base lands at the end of the slot's body and the family stays sealed whole ★", async () => {
+    const { r, read, patch } = await seeded();
+    const before = await read();
+    const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "dated note" }, ctx());
+    expect(receipt).toMatchObject({ decision: "ingest", slot: "#/a" });
+    expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a\n\ndated note");
+    expect(String(r.wiki.store.get(`${URI}#/b`)!["text"])).toBe("! b");
+    const after = await read();
+    expect(after.text).toMatch(SEALED);
+    expect(after.canonicalHash).toBe(receipt["canonicalHash"]);
+    expect(after.canonicalHash).not.toBe(before.canonicalHash);
+  });
+
+  test("★ base-less slot appends racing one family both land, and a replace on a base read before them refuses stale ★", async () => {
+    const { r, read, patch } = await seeded();
+    for (let i = 0; i < 8; i++) {
+      const base = (await read()).canonicalHash;
+      const words = [`north ${i}`, `south ${i}`];
+      const receipts = await Promise.all(words.map((append) => patch({ recipe: "default", uri: URI, slot: "#/a", append }, ctx())));
+      expect(receipts.map((x) => x["decision"])).toEqual(["ingest", "ingest"]);
+      const body = String(r.wiki.store.get(`${URI}#/a`)!["text"]);
+      for (const w of words) expect(body).toContain(w);
+      expect((await read()).text).toMatch(SEALED);
+      expect(await patch({ recipe: "default", uri: URI, slot: "#/a", replace: "! a", base }, ctx())).toMatchObject({ decision: "conflict", reason: "stale-base" });
+      expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe(body);
+    }
+  });
+
   test("--replace swaps the slot's whole body and leaves its siblings", async () => {
     const { r, read, patch } = await seeded();
     const receipt = await patch({ recipe: "default", uri: URI, slot: "#/b", replace: "! b, rewritten\n\nnew prose", base: (await read()).canonicalHash }, ctx());
@@ -1056,11 +1084,11 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     expect(String((receipt["warnings"] as string[])[0])).toMatch(/^slot-missing: /);
   });
 
-  test("an absent meme answers absent; the argument law refuses no base, no slot, and both or neither of append and replace", async () => {
+  test("an absent meme answers absent; the argument law refuses a replace with no base, no slot, and both or neither of append and replace", async () => {
     const { read, patch } = await seeded();
     const base = (await read()).canonicalHash;
     expect(await patch({ recipe: "default", uri: "lar:///t/none", slot: "#/a", append: "x", base }, ctx())).toMatchObject({ decision: "absent" });
-    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x" }, ctx())).rejects.toMatchObject({ reason: "base-required", message: expect.stringMatching(/`tiddler get --meme`/) });
+    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", replace: "x" }, ctx())).rejects.toMatchObject({ reason: "base-required", message: expect.stringMatching(/`tiddler get --meme`/) });
     await expect(patch({ recipe: "default", uri: URI, append: "x", base }, ctx())).rejects.toThrow(/slot/);
     await expect(patch({ recipe: "default", uri: URI, slot: "#/a", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });
     await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", replace: "y", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });

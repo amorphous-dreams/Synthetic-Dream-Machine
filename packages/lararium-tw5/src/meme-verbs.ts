@@ -6,7 +6,7 @@
  *
  *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
- *   meme-patch    { recipe?, bag?, uri, slot, append | replace, base } → PlaceMemeReceipt & { slot } | { decision: absent }
+ *   meme-patch    { recipe?, bag?, uri, slot, append [base] | replace base } → PlaceMemeReceipt & { slot } | { decision: absent }
  *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
  *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, retracted?, canonicalHash?, readFrom?, tombstonedIn?, unreached? }
  *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
@@ -609,8 +609,9 @@ export async function readBagStore(
  * `meme-patch` — ONE SLOT'S BODY, THROUGH THE PUT'S OWN GATE. The read walks what `meme-get` walks (the same container, the
  * same read gate); `patchSlotCarrier` edits the slot's record in a copy of the family and recomposes the carrier, which mints
  * the block check; the put reactor lands that text under the writer's base, so the patch passes every law a put passes: the
- * Confluence gate, the Kahu predicate, the admin cap, a recipe's copy-up, the layer the answer names. A base is required (a
- * blind patch would land over bytes the writer never read); a stale one refuses `stale-base` and names the live hash; a slot
+ * Confluence gate, the Kahu predicate, the admin cap, a recipe's copy-up, the layer the answer names. A replace carries a base
+ * (a blind replace would land over bytes the writer never read); an append overwrites nothing and may carry none, landing over
+ * the carrier as it reads and resealing the whole family; a stale base refuses `stale-base` and names the live hash; a slot
  * the meme does not hold refuses `slot-missing`. Its answer is the put's receipt with the slot named beside it.
  */
 export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
@@ -631,7 +632,8 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
       throw new VerbRefusal("base-outside-span", "base-outside-span: this partial base names no readable span; read the slot or whole carrier again. The span guards honest base reuse and grants no authorization.");
     }
     const base = readBase(rawBase, "meme-patch", true, "accept");
-    if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`tiddler get --meme\` answers for ${target.uri}.`);
+    // AN APPEND OVERWRITES NOTHING, so it lands without a base; a whole-slot replace edits bytes the writer read and keeps one.
+    if (!base && append === null) throw new VerbRefusal("base-required", `base-required: a slot replace edits bytes the writer read; pass args.base, the canonical hash \`tiddler get --meme\` answers for ${target.uri} (an append alone lands without one).`);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink } = await resolveRead(opts, target, origin, ctx.cap);
     if (await holdsUnreadPointer(target.uri, sink)) {
@@ -648,23 +650,34 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
         if (standing && standing.canonicalHash === base && pageOfSlot(standing.text, slot) !== span.page) throw outside(`page ${span.page} of the whole carrier`);
       }
     }
-    const read = await patchSlotCarrier({ uri: target.uri, slot, mode: append !== null ? "append" : "replace", text: append ?? replace!, baseHash: base }, sink);
-    const none = { uri: target.uri, slot, landed: [], tombstoned: [], diagnostics: [] };
-    if (read.kind === "absent") return { has: familyHas(target.uri, { ...target }, "family-patch"), ...none, decision: "absent", warnings: [] };
-    if (read.kind === "stale") {
-      return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
-        warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`tiddler get --meme --all\`) and patch against that base.`] };
-    }
-    if (read.kind === "slot-missing") {
-      const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`tiddler get --meme --tree\` names the slots it holds.`;
-      return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "refuse", grade: "error", canonicalHash: read.canonicalHash, warnings: [message],
-        diagnostics: [{ from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: SLOT_MISSING_CODE, message }] };
-    }
     const container: Record<string, string> = {};
     for (const key of ["recipe", "bag", "realm"]) if (typeof args[key] === "string") container[key] = args[key] as string;
-    return { ...(await put({ ...container, uri: target.uri, text: read.text, base }, ctx)), slot };
+    // A BASE-LESS APPEND COMPOSES OVER THE CARRIER AS IT READS, and the family put lands it under that read's own hash: the
+    // put's family turn (`placeMeme`) checks the hash and lands in one serialized step, so a carrier another hand moved in
+    // between answers `conflict`, and the append reads again and re-composes over the newer bytes, bounded. It never lands
+    // over bytes it did not compose on, and a round that never settles answers `conflict` with nothing moved.
+    for (let round = 0; ; round++) {
+      const read = await patchSlotCarrier({ uri: target.uri, slot, mode: append !== null ? "append" : "replace", text: append ?? replace!, baseHash: base }, sink);
+      const none = { uri: target.uri, slot, landed: [], tombstoned: [], diagnostics: [] };
+      if (read.kind === "absent") return { has: familyHas(target.uri, { ...target }, "family-patch"), ...none, decision: "absent", warnings: [] };
+      if (read.kind === "stale") {
+        return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
+          warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`tiddler get --meme --all\`) and patch against that base.`] };
+      }
+      if (read.kind === "slot-missing") {
+        const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`tiddler get --meme --tree\` names the slots it holds.`;
+        return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "refuse", grade: "error", canonicalHash: read.canonicalHash, warnings: [message],
+          diagnostics: [{ from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: SLOT_MISSING_CODE, message }] };
+      }
+      const landed = await put({ ...container, uri: target.uri, text: read.text, base: base ?? read.canonicalHash }, ctx);
+      if (base === null && landed["decision"] === "conflict" && round + 1 < PATCH_SETTLE_ROUNDS) continue;
+      return { ...landed, slot };
+    }
   };
 }
+
+/** How many times a base-less slot append re-reads a carrier that moved under it before it answers `conflict`. */
+const PATCH_SETTLE_ROUNDS = 16;
 
 /**
  * THE PAGE A LISTING ANSWERS. A verb's outcome carries at most `AUDIT_ARRAY_CAP` rows of any array and

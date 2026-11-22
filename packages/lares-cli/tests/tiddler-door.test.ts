@@ -141,7 +141,7 @@ describe("the argument law, no daemon", () => {
   });
   test("the row refuses family flags on record paths before dispatch", () => {
     const door = COMMANDS.find((row) => row.name === "tiddler")!;
-    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", append: "x" })).map((x) => x.name)).toContain("append");
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", slot: "#/a" })).map((x) => x.name)).toContain("slot");
     expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", file: "x", fields: "{}" }, { meme: true })).map((x) => x.name)).toContain("fields");
     expect(unknownFlags(door, argv("tiddler", ["delete", "T"], { recipe: "default", mode: "reveal" }, { meme: true })).map((x) => x.name)).toContain("mode");
     expect(unknownFlags(door, argv("tiddler", ["get", "T"], { recipe: "default" }, { meme: true, tree: true })).map((x) => x.name)).toContain("tree");
@@ -160,6 +160,41 @@ describe("the argument law, no daemon", () => {
     const r = await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default", base: "sha256:1" }, { meme: true }));
     expect(h.calls.at(-1)).toEqual({ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "default", base: "sha256:1" } });
     expect(r.exit).toBe(4);
+  });
+  test("a plain append names its words alone: the row refuses --text, --file, --base, --fields and --unset beside it by name", () => {
+    const door = COMMANDS.find((row) => row.name === "tiddler")!;
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", append: "-" }, { create: true }))).toEqual([]);
+    for (const flag of ["text", "file", "base", "fields", "unset"]) {
+      expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", append: "-", [flag]: "x" })).map((x) => x.name)).toEqual([flag]);
+    }
+    expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", text: "x", base: "sha256:1" }))).toEqual([]);
+  });
+  test("a plain append carries the host file's bytes as args.append with no base, and prints the has line and the new hash", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "append-door-"));
+    try {
+      const file = join(dir, "note.txt");
+      writeFileSync(file, "a dated note\n", "utf8");
+      h.reply = { has: "<<~ has name=`Ledger` params=`recipe/default decision/put hash/sha256:2`>>", recipe: "default", title: "Ledger", decision: "put", created: false, changed: ["text"], hash: "sha256:2" };
+      const landed = await run(argv("tiddler", ["put", "Ledger"], { recipe: "default", append: file }));
+      expect(landed).toMatchObject({ exit: 0, printed: { data: { decision: "put", hash: "sha256:2" } } });
+      expect(h.calls.at(-1)).toEqual({ verb: "tiddler-put", args: { recipe: "default", title: "Ledger", append: "a dated note\n" } });
+      h.reply = { recipe: "default", title: "Ledger", decision: "conflict", hash: "sha256:3" };
+      expect((await run(argv("tiddler", ["put", "Ledger"], { recipe: "default", append: file }))).exit).toBe(4);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+  test("a slot append rides without a base; a whole-slot write without one refuses before the wire", async () => {
+    h.reply = { decision: "ingest", uri: "lar:///t/x", landed: [], tombstoned: [], warnings: [] };
+    const dir = mkdtempSync(join(tmpdir(), "slot-append-"));
+    try {
+      const file = join(dir, "note.txt");
+      writeFileSync(file, "a dated note\n", "utf8");
+      const appended = await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/log", append: file }, { meme: true }));
+      expect(appended.exit).toBe(0);
+      expect(h.calls.at(-1)).toEqual({ verb: "meme-patch", args: { uri: "lar:///t/x", recipe: "default", slot: "#/log", append: "a dated note\n" } });
+      const before = h.calls.length;
+      expect((await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/log", text: "whole" }, { meme: true }))).exit).toBe(2);
+      expect(h.calls).toHaveLength(before);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
   test("family put keeps the whole input and slot patch keeps its base and replacement bytes", async () => {
     h.reply = { decision: "ingest", uri: "lar:///t/x", landed: [], tombstoned: [], warnings: [] };
