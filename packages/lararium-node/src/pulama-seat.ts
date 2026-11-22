@@ -155,6 +155,22 @@ export function pulamaStandBy(a: {
 }
 
 /**
+ * THE LIFE REMEMBERS A CLOSE THAT WAS NOT WHOLE: the pūlama holder and its stand-by outlive every composition of one vessel life,
+ * so a recomposition whose teardown left a face's drain faulted still holds that face's unsealed save when a later, whole stand-down
+ * exits. Every teardown and stand-down of the life notes its answer here; one close that was not whole latches the life, and its
+ * goodbye stays unsent. An answer that names no `whole` (a composition that held no face) changes nothing.
+ */
+export function lifeCloses(): { note(closed: unknown): void; whole(): boolean } {
+  let whole = true;
+  return {
+    note(closed) {
+      if (typeof closed === "object" && closed !== null && (closed as { whole?: unknown }).whole === false) whole = false;
+    },
+    whole: () => whole,
+  };
+}
+
+/**
  * THE CLEAN GOODBYE ON A WHOLE CLOSE ALONE (sealed-store#/the-lit-set): a stand-down that met a face whose drain faulted still
  * tears down, but that face may hold a save it never sealed, so the vessel says no goodbye and its leaving reads as a drop, which
  * holds the pūlama's close. Answers whether the goodbye was heard.

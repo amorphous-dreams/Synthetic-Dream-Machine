@@ -12,7 +12,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { personaGroupDigest } from "../src/persona-group-file.js";
-import { cleanGoodbye, pulamaStandBy } from "../src/pulama-seat.js";
+import { cleanGoodbye, lifeCloses, pulamaStandBy } from "../src/pulama-seat.js";
 import { faceLives } from "../src/face-lifecycle.js";
 import { makePulamaHolder } from "../src/pulama-holder.js";
 import { pulamaChannelPair } from "../src/pulama-wire.js";
@@ -265,6 +265,29 @@ describe("a clean goodbye: a vessel that drained every save tells its pūlama so
     hearth(f, 5);   // the hearth names life 5 again: its lend stands, unproven ended
     expect(await f.server.closeFace(0)).toMatchObject({ reading: "closing", unanswered: 0 });
     expect(f.kept.unlockedFaces()).toContain(a.fcid);
+  });
+
+  test("★ THE LIFE REMEMBERS A CLOSE THAT WAS NOT WHOLE: a recomposition whose teardown left a face's drain faulted, then a whole stand-down under the same life, sends no goodbye, and the first close holds; CONTROL: whole closes all the way say it ★", async () => {
+    for (const history of ["recomposed-not-whole", "all-whole"] as const) {
+      const { f, a } = await standOne(`goodbye-life-${history}`, 3);
+      const vessel = f.vessel({}, { id: L(3) });
+      const by = pulamaStandBy({ holder: vessel, onLog: () => {}, recompose: async () => ({ standing: "hearth" }) });
+      expect(await by.dial()).toEqual({ session: true, waits: null });
+      const life = lifeCloses();
+      life.note({ whole: history === "all-whole" });   // composition A's teardown, at a recomposition
+      life.note(undefined);                            // a floor composition that holds no face answers nothing
+      life.note({ whole: true });                      // composition B's stand-down, at the exit
+      expect(await cleanGoodbye({ whole: life.whole() }, () => by.goodbye(), () => {}), history).toBe(history === "all-whole");
+      await vessel.lock();
+      await vi.waitFor(() => expect(f.server.sessions()).toBe(0));
+      if (history === "recomposed-not-whole") {
+        expect(await f.server.closeFace(0), "A's unsealed save holds the first close").toMatchObject({ reading: "closing", unanswered: 0 });
+        expect(f.kept.unlockedFaces()).toContain(a.fcid);
+      } else {
+        expect(await f.server.closeFace(0)).toEqual({ reading: "locked", face: 0 });
+      }
+      await f.drop(); fx = null;
+    }
   });
 
   test("★ A STAND-DOWN THAT DID NOT CLOSE WHOLE SAYS NO GOODBYE: a face whose drain faults reads the close not whole, the goodbye stays unsent, and the exit reads as a drop; CONTROL: a whole close says it and the first close locks ★", async () => {
