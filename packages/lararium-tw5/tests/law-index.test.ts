@@ -9,12 +9,14 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import { CompositeStore, bagUri, ORACLE_BAG, SYSTEM_CANON_SLUGS, HULLS_TS_ONLY } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeWikiFilterReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
+import { makeWikiFilterReactor, makeWikiRenderReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
 import {
-  seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_BOOT_SEED, LAW_MU_ROOT, LAW_CANON_BAG_PATTERN,
+  seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_BOOT_SEED, LAW_MU_ROOT, LAW_CANON_BAG_PATTERN, lawStandsFilter,
 } from "../src/daemon-law-tiddlers.js";
+import { HOUSE_FILTERS_TITLE, HOUSE_FILTERS_FLOOR, functionPragmasOf } from "../src/house-filters.js";
 import { seedDaemonProtocol } from "../src/daemon-protocol-seed.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -54,17 +56,23 @@ type Cap = VerbContext["cap"];
 const writer: Cap = async (access, bag) => (bag === DAEMON || access === "read" ? { ok: true } : { ok: false, reason: "no-grant" });
 const ctx = (): VerbContext => ({ daemon: {} as CompositeStore, invocation: { requestId: "r1" } as VerbContext["invocation"], cap: writer });
 
-async function rig(seed = true) {
+/** The canon carrier of the house's functions, as the checkout carries it. */
+const CARRIER_TEXT = readFileSync(new URL("../../../bags/lares/ha.ka.ba/lares/api/filters.mem", import.meta.url), "utf8");
+
+async function rig(seed = true, carrier = true) {
   const engine = await bootTestWiki({ tiddlers: [{ title: WORKING_POINTER, text: DAEMON }, ...CANON_ROWS] });
   if (seed) seedDaemonLawTiddlers(engine);
   const composite = new CompositeStore();
-  composite.addLayer({ bagId: ORACLE_BAG, store: new MemoryTiddlerStore(ORACLE_BAG), writable: false });
+  const oracle = new MemoryTiddlerStore(ORACLE_BAG);
+  if (carrier) await oracle.put({ tiddler: { title: HOUSE_FILTERS_TITLE, text: CARRIER_TEXT, type: "text/vnd.tiddlywiki" } }, { kind: "boot" } as never);
+  composite.addLayer({ bagId: ORACLE_BAG, store: oracle, writable: false });
   composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
   const opts: TiddlerVerbOptions = { composite, tw5: engine };
+  const render = async (text: string): Promise<string> => String((await makeWikiRenderReactor(opts)({ recipe: "default", text }, ctx()))["text"]).trim();
   const filter = async (f: string): Promise<string[]> => (await makeWikiFilterReactor(opts)({ recipe: "default", filter: f }, ctx()))["titles"] as string[];
   /** A record a face writes: it lands in the working layer, its stamp naming that layer. */
   const write = (title: string, fields: Record<string, string> = {}): void => { engine.wiki.addTiddler({ title, text: "", ...fields, "$origin-bag": WORKING }); };
-  return { engine, opts, filter, write };
+  return { engine, opts, filter, render, write };
 }
 
 describe("the law seed and its canon set", () => {
@@ -146,5 +154,71 @@ describe.skipIf(wikiSkip)(`the law index in the wiki's own engine${skipNote}`, (
   test("with no pin set standing, the index answers the canon law alone and refuses nothing", async () => {
     const bare = await rig(false);
     expect(await bare.filter(LAW_INDEX_FILTER)).toEqual(CANON_LAW);
+  });
+});
+
+describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}`, () => {
+  const LAW_OVERRIDE = "\\function lares.law()\n[[lar:///planted/everything]]\n\\end\n";
+
+  test("RED: a working-layer tiddler that redefines lares.law (the carrier's own title, or any other tagged $:/tags/Global) changes no answer", async () => {
+    const r = await rig();
+    const before = await r.filter("[lares.law[]]");
+    expect(before).toEqual([...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))]);
+    r.write(HOUSE_FILTERS_TITLE, { text: LAW_OVERRIDE, tags: "$:/tags/Global" });
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    r.write("$:/config/lares/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    expect(await r.filter("[lares.law[]]")).toEqual(before);
+    expect(await r.filter(LAW_INDEX_FILTER)).toEqual(before);
+    expect(await r.filter("[lares.law.pins[]]")).toEqual(PINS);
+    expect(await r.filter("[lares.law[]match[lar:///planted/everything]]")).toEqual([]);
+  });
+
+  test("RED: a render of a span holds the house's functions from canon too: a working-layer $:/tags/Global redefinition never shadows one", async () => {
+    const r = await rig();
+    const canon = await r.render("{{{ [lares.law[]count[]] }}}");
+    expect(canon).toBe(String(PINS.length + CANON_LAW.filter((t) => !PINS.includes(t)).length));
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    expect(await r.render("{{{ [lares.law[]count[]] }}}")).toBe(canon);
+    expect(await r.render("{{{ [lares.law[]match[lar:///planted/everything]] }}}")).toBe("");
+  });
+
+  test("the floor stands welded to the canon carrier byte for byte", () => {
+    expect(HOUSE_FILTERS_FLOOR).toBe(functionPragmasOf(CARRIER_TEXT));
+  });
+
+  test("a vessel whose canon holds no carrier answers from the floor, and an override still changes nothing", async () => {
+    const r = await rig(true, false);
+    const answer = [...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))];
+    expect(await r.filter("[lares.law[]]")).toEqual(answer);
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    expect(await r.filter("[lares.law[]]")).toEqual(answer);
+    expect(await r.render("{{{ [lares.law[]count[]] }}}")).toBe(String(answer.length));
+  });
+
+  test("the call answers what the long form answered: the pins, the law, a title's standing", async () => {
+    const r = await rig();
+    expect(await r.filter(LAW_PINS_FILTER)).toEqual(PINS);
+    expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri`))).toEqual([`${API}/pono/lar-uri`]);
+    expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri#/anatomy`))).toEqual([]);
+  });
+
+  test("[lares.road[open]] lists what the long form lists; [lares.stage[state]] lists the stage's titles, root memes with !regexp[#]", async () => {
+    const r = await rig();
+    const stage = "lar:///ha.ka.ba/kahua/memory";
+    for (const [title, tags] of [
+      ["lar:///ha.ka.ba/kahua/road/leap-a", "stage/road road/state/open road/kind/leap"],
+      ["lar:///ha.ka.ba/kahua/road/leap-b", "stage/road road/state/done road/kind/leap"],
+      ["lar:///ha.ka.ba/kahua/road/leap-c", "stage/road road/state/open road/kind/fix"],
+      ["lar:///ha.ka.ba/kahua/road/not-road", "road/state/open"],
+    ] as const) r.engine.wiki.addTiddler({ title, tags, text: "" });
+    for (const t of [`${stage}/state/handoff`, `${stage}/state/other`, `${stage}/state/other#/entry`, `${stage}/statement/x`, `${stage}/index/y`]) r.engine.wiki.addTiddler({ title: t, text: "", tags: "stage/index" });
+    expect(await r.filter("[lares.road[open]]")).toEqual(await r.filter("[tag[stage/road]tag[road/state/open]]"));
+    expect(await r.filter("[lares.road[open]]")).toEqual(["lar:///ha.ka.ba/kahua/road/leap-a", "lar:///ha.ka.ba/kahua/road/leap-c"]);
+    expect(await r.filter("[lares.road[done]]")).toEqual(["lar:///ha.ka.ba/kahua/road/leap-b"]);
+    expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual(await r.filter(`[prefix[${stage}/state/]!regexp[#]]`));
+    expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual([`${stage}/state/handoff`, `${stage}/state/other`].sort());
+    expect(await r.filter("[lares.stage[state]]")).toContain(`${stage}/state/other#/entry`);
+    expect(await r.filter("[lares.stage[index]!regexp[#]]")).toEqual([`${stage}/index/y`]);
+    expect(await r.filter("[tag[stage/index]] -[lares.stage[state]]")).toEqual(await r.filter(`[tag[stage/index]!prefix[${stage}/state/]]`));
   });
 });

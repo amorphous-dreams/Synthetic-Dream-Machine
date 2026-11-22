@@ -79,6 +79,7 @@ import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { staysHome } from "./stay-home.js";
+import { canonFiltersText, functionPragmasOf, houseWidgetOf, HOUSE_FUNCTION_STEM } from "./house-filters.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -304,7 +305,7 @@ type Visible = (title: string, tiddler: EngineTiddler | undefined) => boolean;
  * lives for one verb call. The wiki's indexes (tags, fields, backlinks) still name hidden TITLES; the verb's answer
  * gate drops those and counts them `withheld`. Writes never ride the view.
  */
-function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
+function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; document: { createElement(tag: string): unknown } } | null): EngineWiki {
   const view = Object.create(wiki) as EngineWiki & Record<string, unknown>;
   view["filterCache"] = Object.create(null);
   view["filterCacheCount"] = 0;
@@ -319,6 +320,19 @@ function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
   view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
   view.allTitles = () => wiki.allTitles().filter(shown);
   view.allShadowTitles = () => wiki.allShadowTitles().filter(shown);
+  if (house) {
+    // THE HOUSE'S FUNCTIONS COME FROM CANON ALONE: a filter run with no widget of its own runs under the widget the canon
+    // carrier's text builds (house-filters), never under the wiki's `$:/tags/Global` imports, which a working-layer record shadows.
+    let widget: unknown | null | undefined;
+    const run = wiki.filterTiddlers as unknown as (this: unknown, filter: string, widget?: unknown, source?: unknown) => string[];
+    view["filterTiddlers"] = (filter: string, given?: unknown, source?: unknown): string[] => {
+      if (given === undefined && filter.includes(HOUSE_FUNCTION_STEM)) {
+        if (widget === undefined) widget = houseWidgetOf(view as never, house.document, house.text);
+        if (widget) given = widget;
+      }
+      return run.call(view, filter, given, source);
+    };
+  }
   return view;
 }
 
@@ -327,7 +341,7 @@ function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
  * each bag any record names answers the face's reach once, so the predicate itself reads no cap and stays synchronous
  * inside the engine.
  */
-async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean> }> {
+async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean>; pragmas: string }> {
   const mayRead = await reachOf(opts, anchor, cap);
   const wiki = anchor.engine.wiki;
   const bags = new Set<string>();
@@ -335,7 +349,9 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
   const visible: Visible = (title, tiddler) => !staysHome(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
-  return { view: readerView(wiki, visible), visible, mayRead };
+  const text = await canonFiltersText(opts.composite, wiki, mayRead);
+  const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
+  return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
 }
 
 /**
@@ -783,7 +799,9 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
     const outputType = RENDER_FORMS[form];
     if (!outputType) throw new Error(`wiki-render: args.form reads "text" or "html"; got "${form}"`);
     if (title !== null) refuseWithheld(title, "wiki-render");
-    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
+    const { view, mayRead, pragmas } = await viewFor(opts, anchor, ctx.cap);
+    // THE HOUSE'S FUNCTIONS RIDE AFTER THE GLOBAL IMPORT, from canon alone: a working-layer `$:/tags/Global` tiddler never shadows one.
+    const globals = pragmas === "" ? GLOBAL_IMPORT : `${GLOBAL_IMPORT}${pragmas}\n\n`;
     const wiki = anchor.engine.wiki;
     let rendered: string;
     if (title !== null) {
@@ -793,12 +811,12 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
       if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
       rendered = view.renderText(outputType, WIKITEXT,
         // The blank lines keep the wrapper in block mode, so no stray paragraph wraps the tiddler's own blocks.
-        `${GLOBAL_IMPORT}<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`,
+        `${globals}<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`,
         { variables: { "lares-render-title": title } });
     } else {
       const type = optionalStringArg(args, "type") ?? WIKITEXT;
       // The carrier type reads as a superset of wikitext, so the import pragma leads both; any other type renders as it stands.
-      rendered = view.renderText(outputType, type, type === WIKITEXT || type === CARRIER_TYPE ? `${GLOBAL_IMPORT}${span}` : span!);
+      rendered = view.renderText(outputType, type, type === WIKITEXT || type === CARRIER_TYPE ? `${globals}${span}` : span!);
     }
     // THE BYTE CAP, WITH A CURSOR: the cursor names the render it continues (an offset and the render's digest), so a
     // wiki that moved between two pages refuses by name and never splices two renders.
