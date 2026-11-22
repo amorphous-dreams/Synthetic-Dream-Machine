@@ -8,6 +8,7 @@
  */
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm, stat } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -17,6 +18,31 @@ const ROOT = resolve(import.meta.dirname, "..");
 const SH = join(ROOT, "tools/lares-container.sh");
 const PS1 = join(ROOT, "tools/lares-container.ps1");
 const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0;
+
+/**
+ * THIS SUITE'S OWN HOST CHAIN, read the way the shim's `host_chain_kind` reads it (hitl-reads-a-hand): every shim this suite
+ * runs descends from this process, so where a harness stands above the suite every act the shim runs carries the seat mark.
+ * `run` folds that mark out of the recorded calls unless the case sets CLAUDECODE itself or asks for the raw calls
+ * (`rawSeat`), so a run inside a harness reads as CI does; the seat-mark cases read the raw calls against this reading.
+ */
+function suiteChainKind() {
+  const named = (n) => { const b = n.slice(n.lastIndexOf("/") + 1); return b === "claude" || b.startsWith("codex"); };
+  const read = (path) => { try { return readFileSync(path, "utf8"); } catch { return null; } };
+  for (let at = process.pid, n = 0; at > 0; n += 1) {
+    if (n >= 64) return "unknown";
+    const stat = read(`/proc/${at}/stat`);
+    if (stat === null) return "unknown";
+    const env = (read(`/proc/${at}/environ`) ?? "").split("\0");
+    if (env.some((e) => e === "CLAUDECODE=1" || /^CODEX_SANDBOX(_NETWORK_DISABLED)?=.+/.test(e))) return "ai";
+    if (named(stat.slice(stat.indexOf("(") + 1, stat.lastIndexOf(")")))) return "ai";
+    if ((read(`/proc/${at}/cmdline`) ?? "").split("\0").slice(0, 2).some((a) => a !== "" && named(a))) return "ai";
+    const ppid = Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[1]);
+    if (!Number.isSafeInteger(ppid)) return "unknown";
+    at = ppid;
+  }
+  return "hand";
+}
+const SUITE_SEAT = suiteChainKind() !== "hand";
 
 /**
  * THE ENV FILE RESTS AT `~/.lares/lares-surface.env`, outside every bind, the same file `resolveLaresMcp` reads, and
@@ -37,7 +63,7 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {} } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -134,7 +160,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     }
     // `@HOUSE@` in an argument names the run's scratch house too.
     const args = argv.map(fill);
-    const cmd = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
+    const direct = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
+    // `viaHarnessShell`: a shell carrying the harness mark launches the shim with the mark stripped (`env -u CLAUDECODE`), and
+    // `; true` keeps that shell its parent, so only the chain, never the shim's own environment, carries the harness.
+    const cmd = viaHarnessShell ? ["sh", ["-c", 'env -u CLAUDECODE "$0" "$@"; true', direct[0], ...direct[1]]] : direct;
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
     const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, ...gitEnv };
@@ -142,10 +171,12 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const head = checkout && checkout !== "none" ? spawnSync("git", ["-C", join(dir, "repo"), "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim() : "";
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, typeof v === "string" ? fill(v).replaceAll("@HEAD12@", head.slice(0, 12)).replaceAll("@HEAD@", head) : v]));
     // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
+    const shellMark = viaHarnessShell ? { CLAUDECODE: "1" } : {};
     const r = tty === undefined
-      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
+      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled, ...shellMark, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
       : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled, PATH: `${dir}:${filled.PATH ?? process.env.PATH}` }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
+    if (SUITE_SEAT && !rawSeat && filled.CLAUDECODE === undefined && !viaHarnessShell) calls = calls.replaceAll(" -e CLAUDECODE", "");
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
     const made = {};
@@ -236,7 +267,8 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
       env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: join(dir, "home"), LARES_COMPOSE_FILE: compose, LARES_HOUSE: join(dir, "house"), LARES_WORKSPACE: "/w" },
       encoding: "utf8",
     });
-    const calls = await readFile(log, "utf8");
+    // A harness above this suite sends the seat mark on every act (SUITE_SEAT); folded out here as `run` folds it.
+    const calls = (await readFile(log, "utf8")).replaceAll(SUITE_SEAT ? " -e CLAUDECODE" : "\u0000", "");
     assert.match(calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?offline vessel found --skip-build --root \/lar --genesis \/app\/genesis\s*$/m);
     assert.doesNotMatch(calls, /(^|\s)-T(\s|$)/);
   } finally { await rm(dir, { recursive: true, force: true }); }
@@ -310,6 +342,28 @@ for (const [name, shim] of shims) {
     assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ (?:-e \S+ )*-e CLAUDECODE /);
     const bare = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.doesNotMatch(bare.calls, /-e (?:CLAUDECODE|CODEX_SANDBOX)/);
+  });
+
+  // THE HOST CHAIN CROSSES AS THE MARK (hitl-reads-a-hand): inside the vessel an exec'd process has parent pid 0, so the shim
+  // reads its own host chain before any act. A harness shell that strips the mark from the shim it launches still sends the
+  // seat mark in, on the exec and on the offline run alike.
+  test(`${name}: RED a harness shell that strips the mark still sends -e CLAUDECODE into the vessel (exec and offline run)`, { skip: name === "ps1" && !havePwsh }, async () => {
+    const r = await run(shim, ["sense", "purge", "x", "--approve"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, viaHarnessShell: true });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / sense purge x --approve$/.test(l));
+    assert.ok(exec, r.calls);
+    assert.match(exec, /(^| )-e CLAUDECODE( |$)/);
+    const offline = await run(shim, ["wiki", "retire", "x"], { env: MOUNTS, viaHarnessShell: true });
+    assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ (?:-e \S+ )*-e CLAUDECODE /);
+  });
+
+  test(`${name}: CONTROL the operator's shell carries the mark only where its own chain reads a harness`, { skip: name === "ps1" && !havePwsh }, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawSeat: true });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / vessel read$/.test(l));
+    assert.ok(exec, r.calls);
+    if (SUITE_SEAT) assert.match(exec, /(^| )-e CLAUDECODE( |$)/, "this suite runs under a harness, so its shims carry the mark");
+    else assert.doesNotMatch(exec, /-e CLAUDECODE/, "an operator's shell with no harness on its chain carries none");
   });
 
   test(`${name}: an act carries its stop handle: an exec its LARES_EXEC_TAG by name, a run its lares-offline-<tag> name`, async () => {
