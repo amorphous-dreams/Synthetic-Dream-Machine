@@ -30,7 +30,7 @@ test("the wake carries the memory index beside the frame and the homes line", as
   assert.match(context, /read a row: tiddler_get\(title=<title>, recipe="default", meme=true\)/);
   assert.doesNotMatch(context, /after=/);
   // The read rides the vessel's own door: the daemon wiki, the index tag, title and description, a row limit, a byte cap.
-  assert.deepEqual(calls.index, ["wiki", "filter", "[tag[stage/index]!prefix[lar:///ha.ka.ba/kahua/memory/state/]]", "--recipe", "default", "--fields", "title,description", "--limit", "32", "--max-bytes", String(INDEX_BYTES), "--json"]);
+  assert.deepEqual(calls.index, ["wiki", "filter", "[tag[stage/index]] -[lares.stage[state]]", "--recipe", "default", "--fields", "title,description", "--limit", "32", "--max-bytes", String(INDEX_BYTES), "--json"]);
   assert.deepEqual(calls.index, indexArgv());
   assert.deepEqual(calls.observe, ["vessel", "stand", "--observe", "--json"]);
 });
@@ -41,7 +41,7 @@ test("a page with a cursor names the call that reads further", async () => {
     index: answered(page([row("a/one", "One."), row("a/two", "Two.")], { total: 6, next: "2.90a1a6dbea5e1f15" })),
   }) });
   assert.match(context, /Lares memory index: 6 rows \(2 shown\)\n/);
-  assert.match(context, /read further: wiki_filter\(filter="\[tag\[stage\/index\]!prefix\[lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/\]\]", recipe="default", fields=\["title","description"\], after="2\.90a1a6dbea5e1f15"\)/);
+  assert.match(context, /read further: wiki_filter\(filter="\[tag\[stage\/index\]\] -\[lares\.stage\[state\]\]", recipe="default", fields=\["title","description"\], after="2\.90a1a6dbea5e1f15"\)/);
 });
 
 test("the byte cap cuts the index and says so", () => {
@@ -110,7 +110,7 @@ test("one budget bounds all three reads, and each read left open reports itself"
 
 test("wake-index-lists-the-rest: the index leaves the state rows to their own block", () => {
   const { INDEX_FILTER } = core;
-  assert.equal(INDEX_FILTER, `[tag[stage/index]!prefix[${STATE_PREFIX}]]`);
+  assert.equal(INDEX_FILTER, "[tag[stage/index]] -[lares.stage[state]]");
   assert.equal(indexArgv()[2], INDEX_FILTER);
   // The render keeps the door's order: the wake never re-sorts.
   const block = renderIndex(JSON.parse(page([row("project/first", "F."), row("feedback/second", "S.")])));
@@ -147,7 +147,7 @@ test("wake-leads-with-rows-in-play: every wake prints the state rows before the 
     // The read derives the rows by their address prefix, slot titles (`…#/entry`) left out: no list of addresses rides the wake.
     // No sort by `modified`: the stage memes carry no such field, so the door's title order stands.
     assert.deepEqual(calls.state, stateArgv());
-    assert.equal(calls.state[2], `[prefix[${STATE_PREFIX}]!regexp[#]]`);
+    assert.equal(calls.state[2], "[lares.stage[state]!regexp[#]]");
   }
   // CONTROL: no handoff row leaves the door's order as it stands.
   const bare = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), state: answered(statePage(STATE.filter((r) => !r.title.endsWith("/handoff")))) }) });
@@ -162,11 +162,11 @@ test("wake-leads-with-rows-in-play: the block stays short, and a fault or an emp
   assert.ok(shown.length > 0 && shown.length <= STATE_ROWS, `${shown.length} rows shown`);
   for (const line of shown) assert.ok(Buffer.byteLength(line) <= 400, `a row line holds ${Buffer.byteLength(line)} bytes`);
   assert.match(long, /Lares working memories on the stage \(start here\): 20 rows \(\d+ shown\)/);
-  assert.match(long, /(read further|read the whole view): wiki_filter\(filter="\[prefix\[lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/\]!regexp\[#\]\]"/);
+  assert.match(long, /(read further|read the whole view): wiki_filter\(filter="\[lares\.stage\[state\]!regexp\[#\]\]"/);
   const none = await wake({ run: runner({ ...base, state: answered(statePage([])) }) });
   assert.match(none, /Lares working memories on the stage: no row stands under lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/ in the worn face's daemon wiki/);
   const broken = await wake({ run: runner({ ...base, state: answered("", 127) }) });
-  assert.match(broken, /Lares working memories on the stage unread: the read exited 127 with no answer; the view: wiki_filter\(filter="\[prefix/);
+  assert.match(broken, /Lares working memories on the stage unread: the read exited 127 with no answer; the view: wiki_filter\(filter="\[lares\.stage/);
   // CONTROL: a vessel that answers down reads no state rows and says the memory skip once.
   const killed = [];
   const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })), index: hung(killed, "index"), state: hung(killed, "state") }) });

@@ -18,7 +18,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers
  */
 
-import { LAW_CANON_GUARD, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE } from "@lararium/tw5";
+import { LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, lawStandsFilter } from "@lararium/tw5";
 import { emit, exitFor, proseFirst } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, countOf, guardDoor, runDoor, wordOf } from "./door-call.js";
@@ -145,7 +145,7 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
   const label = `law ${mode}`;
   const uri = lawUriOf(args.positional[1]);
   if (mode === "pin") {
-    const stands = await filterAll(args, label, `[[${uri}]] ${LAW_CANON_GUARD}`);
+    const stands = await filterAll(args, label, lawStandsFilter(uri));
     if (!stands.ok) return stands.exit;
     if (stands.titles.length === 0) {
       const message = `law-pin-absent: no canon law stands at ${uri} in the worn face's daemon wiki (a pin orders canon law and adds none); nothing moved`;

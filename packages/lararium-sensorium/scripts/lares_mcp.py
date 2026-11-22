@@ -211,12 +211,8 @@ KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_get")
 # never in house canon (the seat's canon fence holds); a pin orders canon law and adds none.
 LAW_VERBS = ("law_index", "law_pin", "law_unpin")
 LAW_PINS_TITLE = "$:/config/lares/law/pins"
-_LAW_STEPS = "regexp[^lar:///ha\\.ka\\.ba/(\\w|-)+/api/]!regexp[#]"
-_LAW_FILTER = "[prefix[lar:///ha.ka.ba/]" + _LAW_STEPS + "sort[title]]"
-LAW_CANON_GUARD = (":filter[" + _LAW_STEPS + "] :filter[get[$origin-bag]regexp[^lar:///ha\\.ka\\.ba/bags/(oracle|lares|lararium)$]] "
-                   ":filter[regexp[^lar:///\\S+$]]")
-LAW_PINS_FILTER = "[subfilter{" + LAW_PINS_TITLE + "}] " + LAW_CANON_GUARD
-LAW_INDEX_FILTER = "[subfilter{" + LAW_PINS_TITLE + "}] =" + _LAW_FILTER + " +[unique[]] " + LAW_CANON_GUARD
+LAW_PINS_FILTER = "[lares.law.pins[]]"
+LAW_INDEX_FILTER = "[lares.law[]]"
 LAW_ROW_FIELDS = ("description", "role")
 
 # THE HEARTH ROSTER — who is home, offered beside the law: `vessel_roster` reads the worn face and who holds that slot, the
@@ -1445,7 +1441,7 @@ def build_mcp(coordinator: LaresCoordinator):
 
     def _law_move(verb: str, uri: str, mode: str) -> dict:
         """Edit the pin set by one run and land it against the base read; the engine says whether the title stands selected."""
-        if mode == "pin" and not _law_titles(f"[[{uri}]] {LAW_CANON_GUARD}"):
+        if mode == "pin" and not _law_titles(f"[lares.law[]match[{uri}]]"):
             raise uds.LaresVerbError(f"law-pin-absent: no canon law stands at {uri} in the worn face's daemon wiki "
                                      "(a pin orders canon law and adds none); nothing moved")
         # READ FAT: a read-modify-write takes its base only from an answer that carried the text.
