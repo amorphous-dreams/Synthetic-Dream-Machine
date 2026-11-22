@@ -12,7 +12,7 @@ docname    = "draft-fontany-memetic-wikitext-00"
 ipr        = "trust200902"
 l-space    = "stable"
 namespace  = "&#x2299;"
-role       = "submittable specification for text/memetic-wikitext — abstract, conformance (RFC-2119), lexical structure, ABNF surface grammar, dual-layer processing model, pranala type system, media-type registration, security. Ontology referenced, not duplicated. Sibling submissions: the lar: URI spec and the carrier framing spec."
+role       = "submittable specification for text/memetic-wikitext — abstract, conformance (RFC-2119), lexical structure, ABNF surface grammar, dual-layer processing model, pranala type system, media-type registration, security. Ontology referenced, not duplicated. Sibling submissions: the lar: URI spec and the carrier framing spec. This document keeps the language and composes as the document production the frame wraps; the transmission-frame half stands in the sibling framing spec, which it cites as [FRAMING]"
 status-why = "submission-draft"
 tags       = ["lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
@@ -752,6 +752,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZtVxEfAaSIbnccm8N_0bafo4ZzcYBSTFO0HujjoDGAA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zTsXbcFJKFFGmrY_evWpD5AkLSVplK64doNJaAY2EnQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

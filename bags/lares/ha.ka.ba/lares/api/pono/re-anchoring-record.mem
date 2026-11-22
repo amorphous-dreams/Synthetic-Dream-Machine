@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = false
 l-space   = "stable"
-role      = "the re-anchoring record — one artifact folded two ways: an EVENT on write, accrued DEPTH on read. Holds the un-thresholded attestor bundle, the grounds-free boundary, and the attester⊥minter split, each with its shipped prior art and what it cost to align"
+role      = "the re-anchoring record — one artifact folded two ways: an EVENT on write, accrued DEPTH on read. Holds the un-thresholded attestor bundle, the grounds-free boundary, and the attester⊥minter split, each with its shipped prior art and what it cost to align. The artifact records THAT a re-anchoring happened and never what made it valid; it carries the three mechanisms that survive alignment with prior art, the six classes that refuse, and the rulings each refusal breaks"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/re-anchoring-record"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -128,6 +128,6 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;q5r64sdBI5IGPjiX7TN7xIoxe4Bod_5MgfQBEXky2ps`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9tUGTe60aNC-iXtc2NBSkh1BXNXNBbkMst9AQ7agiTw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
