@@ -1,5 +1,5 @@
 /**
- * house-filters — the house's named filters (`[lares.law[]]`, `[lares.law.pins[]]`, `[lares.road[open]]`, `[lares.stage[state]]`)
+ * house-filters — the house's named filters (`[lares.law[]]`, `[lares.law.pins[]]`, `[lares.course[open]]`, `[lares.stage[state]]`)
  * stand as `\function` definitions in ONE canon carrier, and a filter reaches them from canon alone.
  *
  * TiddlyWiki resolves a user function as a filter operator only where the name holds a period (`filters/unknown.js`), so
@@ -26,7 +26,7 @@ export const HOUSE_FILTERS_TITLE = "lar:///ha.ka.ba/lares/api/filters";
 /** The stem every house function name opens with. */
 export const HOUSE_FUNCTION_STEM = "lares.";
 /** The house's function names, in the carrier's order. */
-export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.stage"];
+export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.course.citers", "lares.course.text-uncited", "lares.course.uncited", "lares.course.standing", "lares.course", "lares.waves", "lares.stage"];
 
 /**
  * THE FLOOR: the carrier's `\function` blocks as the source carries them, read only where no canon layer holds the carrier
@@ -44,6 +44,30 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 
 \function lares.road(state)
 [tag[stage/road]] :filter[tags[]removeprefix[road/state/]match<state>]
+\end
+
+\function lares.course.citers(pattern,t)
+[all[tiddlers]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>search:text:literal,casesensitive<t>regexp:text<pattern>] :filter[<currentTiddler>removeprefix<t>prefix[#/]then[no]else[yes]match[yes]]
+\end
+
+\function lares.course.text-uncited(t)
+[<t>escaperegexp[]addsuffix[(?:\.(?!\w|-)|#/|(?!(?:-|\.|/|#))\W|$)]] :map[lares.course.citers<currentTiddler>,<t>count[]] +[match[0]]
+\end
+
+\function lares.course.uncited(t)
+[<t>backlinks[]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>] :filter[<currentTiddler>removeprefix<t>prefix[#/]then[no]else[yes]match[yes]] +[count[]match[0]] :filter[lares.course.text-uncited<t>]
+\end
+
+\function lares.course.standing(t)
+[<t>!has[proof]then[open]] :else[<t>get[proof]trim[]is[blank]then[open]] :else[lares.course.uncited<t>then[closed ash-ready]else[closed]enlist-input[]]
+\end
+
+\function lares.course(standing)
+[tag[stage/course]!regexp[#]] :filter[lares.course.standing<currentTiddler>match<standing>]
+\end
+
+\function lares.waves()
+[tag[stage/wave]]
 \end
 
 \function lares.stage(name)
