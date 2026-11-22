@@ -3605,9 +3605,8 @@ async function prepareNodeBootOn(
       const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
       const proved = plane ? await proofOfOtherFace(plane) : null;
       const intents = proved?.planes?.intents ?? null;
-      const mounted = siblingPlanes.mount(group, plane && intents ? { ok: true, planes: { persona: plane.url, intents } } : null);
-      if (!mounted.ok) { console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: ${mounted.detail}`); return null; }
-      return plane && intents ? { persona: plane.url, intents } : null;
+      if (!plane || !intents) { console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: no proof of its pair stands`); return null; }
+      return { persona: plane.url, intents };
     };
     async function proofOfOtherFace(plane: (typeof bootstrap.personaPlanes)[number]) {
       try {
@@ -3798,6 +3797,11 @@ async function prepareNodeBootOn(
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       relation: (group: string) => siblingRelationOf(group),
       planes: (group: string) => siblingPlanesOf(group),
+      // The proven pair mounts after the face's last standing check; a refused pair mounts nothing.
+      mountPlanes: (group: string, planes: { readonly persona: string; readonly intents: string }) => {
+        const mounted = siblingPlanes.mount(group, { ok: true, planes });
+        if (!mounted.ok) console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: ${mounted.detail}`);
+      },
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
@@ -3925,9 +3929,12 @@ async function prepareNodeBootOn(
       const custody = await noteCustody(ordinal);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal], current: () => live() });
       if (!entry) throw new Error(`face h${ordinal} stands shut, or proves nothing here`);
-      if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
-      classDeviceLedgers(vesselPrivate, [entry.atom.key]);
-      await daemonVm.lightFace(entry);
+      // A LIGHT THAT REFUSES DROPS THE MOUNT ITS PROOF LANDED: a refused light reaches no close, so no teardown would.
+      try {
+        if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
+        classDeviceLedgers(vesselPrivate, [entry.atom.key]);
+        await daemonVm.lightFace(entry);
+      } catch (error) { dropSiblingPlanes(entry.personaGroupId); throw error; }
       faceEntries.set(ordinal, entry);
       const lit: FaceLit = { atomKey: entry.atom.key, custody };
       if (!live()) return lit;
@@ -3935,6 +3942,7 @@ async function prepareNodeBootOn(
       catch (error) {
         // The awaited mint refused: release its provider too, so nothing of the face stands in the island.
         await daemonVm.dropFace(entry.atom.key);
+        dropSiblingPlanes(entry.personaGroupId);
         throw error;
       }
       if (!live()) return lit;

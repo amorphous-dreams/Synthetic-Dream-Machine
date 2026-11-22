@@ -54,12 +54,22 @@ describe("joined face authentication", () => {
     expect(four!.registerBags).not.toContain(personaScopedBagIds("group-4").intents);
     expect(four!.registerBags).not.toContain(personaScopedBagIds("group-4").persona);
   });
-  test("L3 RED: a face that closes while its planes prove carries nothing", async () => {
+  test("L3 RED: a face that closes while its planes prove carries nothing and mounts nothing; CONTROL: a face still lit mounts its pair once, after its last check", async () => {
     const { ports } = fixture();
+    const pair = { persona: "automerge:p1", intents: "automerge:t1" };
     let open = true;
+    const mounted: string[] = [];
+    // The proof answers after the face closed: the mount, which the port names apart from the proof, never lands.
     const entries = await joinedFaceAuth({ ...ports, ordinals: () => [1], current: () => open,
-      planes: async () => { open = false; return { persona: "automerge:p1", intents: "automerge:t1" }; } });
+      planes: async () => { open = false; return pair; }, mountPlanes: (group) => { mounted.push(group); } });
     expect(entries).toEqual([]);
+    expect(mounted, "a closed face's proof mounts nothing").toEqual([]);
+    // Lit through its last check, the face mounts its proven pair once, and the mount reads the face lit at that moment.
+    let checks = 0;
+    const lit = await joinedFaceAuth({ ...ports, ordinals: () => [1], current: () => { checks++; return true; },
+      planes: async () => pair, mountPlanes: (group, planes) => { mounted.push(`${group} ${planes.intents} after ${checks} checks`); } });
+    expect(lit).toHaveLength(1);
+    expect(mounted).toEqual([`group-1 automerge:t1 after ${checks} checks`]);
   });
   test("RED: a lit sibling's hive registers its OWN selves record's bag, so the record the bag map files under that face seals under that face's own session; CONTROL: never another face's record", async () => {
     const { ports } = fixture();
