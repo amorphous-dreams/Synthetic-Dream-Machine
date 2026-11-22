@@ -7,7 +7,7 @@
  * here runs a hand verb.
  *
  * THE HAND VERBS RENDER NO BUTTON (hitl-reads-a-hand): the reconcile button renders for everyone, and
- * promote · retire · un-retire · purge render as a note naming the command, since each runs on a person's
+ * harden · retire · un-retire · purge render as a note naming the command, since each runs on a person's
  * hand at a real terminal alone and the vessel refuses it from a tab, a seat or a synced summons. A wiki
  * tiddler any writer can set approves nothing.
  *
@@ -59,7 +59,7 @@ refresh
 reconcile
 </$button>
 
-<span class="lares-life-hand" data-lares-hand="promote retire un-retire purge">promote · retire · un-retire · purge — your own terminal: <code>lares sense &lt;verb&gt; <$text text=<<sensName>>/></code></span>
+<span class="lares-life-hand" data-lares-hand="harden retire un-retire purge">harden · retire · un-retire · purge — your own terminal: <code>lares sense &lt;verb&gt; <$text text=<<sensName>>/></code></span>
 
 </div>
 </$let>

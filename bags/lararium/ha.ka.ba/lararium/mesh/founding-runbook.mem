@@ -488,14 +488,14 @@ A share's landing may outrun the verb's local wait; the verb then reads its own 
 ```sh
 lares nexus release floor.json --cut                                      # cuts the manifest from live canon; lands nothing
 lares down                                                                # the seat signs with the vessel stopped
-lares nexus promote open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json   # signs with every seat this vault holds; on this hearth it answers `ok — 1 of 1 seats`
+lares nexus approve open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json   # signs with every seat this vault holds; on this hearth it answers `ok — 1 of 1 seats`
 lares up                                                                  # stand again, wearing the steward
 lares nexus release floor.json --approval approval.json                   # the release lands on the publication board
 ```
 
-''Stop, sign, start.'' `nexus promote open` and `nexus promote sign` open the seat's key from the sealed custody on their own road, and a standing vessel holds that custody: with the vessel up they refuse (`A sealed act rides the vessel's custody door … Stop the vessel to run it alone`). So the cut runs on the standing vessel, the vessel stops, each seat signs, the vessel stands again, and the release lands with the approval. The manifest file and the approval file rest on disk across the stop.
+''Stop, sign, start.'' `nexus approve open` and `nexus approve sign` open the seat's key from the sealed custody on their own road, and a standing vessel holds that custody: with the vessel up they refuse (`A sealed act rides the vessel's custody door … Stop the vessel to run it alone`). So the cut runs on the standing vessel, the vessel stops, each seat signs, the vessel stands again, and the release lands with the approval. The manifest file and the approval file rest on disk across the stop.
 
-''One seat signs at `open`; a further seat signs into a second file.'' `promote open` signs with every seat the vault holds. The rite's hearth holds the one chair its charter counts, so `open` completes the approval alone (`ok — 1 of 1 seats`) and no `sign` runs there: a `sign` in the same vault refuses `every seat this vessel holds already signed this approval, or it holds none`. Where a charter counts more chairs than one vault holds, carry `approval.json` to each further seat's vault and sign into a NEW file: `lares nexus promote sign approval.json --confirm-statement 'ni:///sha-256;<digest>' --out approval-2.json` (the statement digest whole, as `promote open` printed it, quoted, since the `;` ends an unquoted shell word). The door never writes over the partial it read (`--out names the partial you carried … name another file`), so the carried file stays as it came if the write fails; the release then names the last file written (`--approval approval-2.json`).
+''One seat signs at `open`; a further seat signs into a second file.'' `approve open` signs with every seat the vault holds. The rite's hearth holds the one chair its charter counts, so `open` completes the approval alone (`ok — 1 of 1 seats`) and no `sign` runs there: a `sign` in the same vault refuses `every seat this vessel holds already signed this approval, or it holds none`. Where a charter counts more chairs than one vault holds, carry `approval.json` to each further seat's vault and sign into a NEW file: `lares nexus approve sign approval.json --confirm-statement 'ni:///sha-256;<digest>' --out approval-2.json` (the statement digest whole, as `approve open` printed it, quoted, since the `;` ends an unquoted shell word). The door never writes over the partial it read (`--out names the partial you carried … name another file`), so the carried file stays as it came if the write fails; the release then names the last file written (`--approval approval-2.json`).
 
 The cut refuses `floor-cut-thin` by slug where a bag's live records count under half its prior snapshot's; `--thin <slug[,slug]>` names a bag that shrank on purpose. On a hearth the steward seeded, the cut answers every public-tier bag (`elyncia`, `lararium`, `lares`, `sdm`) with its live records and no `--thin`; a thin refusal there means the steward's lay has not run (see ''The steward lays first''). A floor door's refusal answers under its own name (`floor-no-charter`, `floor-no-genesis`, `floor-cut-thin`). Then `lares vessel floor accept`; every accept raises the reboot alert until a live floor swap lands.
 
@@ -528,7 +528,7 @@ lares vault unlock --face 2 && lares vessel lay --apply --yes            # the r
 
 Read back per face: each face's memories through `/mcp`, its own personal layers of the shared wikis, and the promoted record in the steward's live canon (the canon source carried it, and the steward's lay laid it). Then `lares import ~/.lares/config/carry-2 --apply`, run wearing each face in turn, lands nothing and counts every record as `already` or, for another face's private records, `waiting`; and a final lay lands nothing and says nothing of shares.
 
-''The floor pin starts again at genesis.'' The vessel's pin rests in its control home and the release on the former Nexus's board, and a re-founding clears both: `lares vessel floor status` answers `pinSource: genesis`, `board: absent`, and a face outside the Kahu cabal reads the promoted record `not-found` from the floor. So the release block runs once more on the new founding (`nexus release floor.json --cut`, `down`, `nexus promote open …`, `up`, `nexus release floor.json --approval approval.json`, `vessel floor accept`), and from its next wear on every face reads the promoted record on the floor (`floor: true`).
+''The floor pin starts again at genesis.'' The vessel's pin rests in its control home and the release on the former Nexus's board, and a re-founding clears both: `lares vessel floor status` answers `pinSource: genesis`, `board: absent`, and a face outside the Kahu cabal reads the promoted record `not-found` from the floor. So the release block runs once more on the new founding (`nexus release floor.json --cut`, `down`, `nexus approve open …`, `up`, `nexus release floor.json --approval approval.json`, `vessel floor accept`), and from its next wear on every face reads the promoted record on the floor (`floor: true`).
 
 ''Proves'': three faces of one human stand on one hearth, write face-private memory, share one workbench, move canon by offer and release, take a browser in by carried files, and carry all of it across a re-founding by content.
 
@@ -592,6 +592,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;G1okkmmhoLsr5sCUi3dZllnEscfrigo31H59BBb97ao`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YvKnhNELSfsG6lap5MVqoZ3As6-PDs88QfQydGypmQk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
