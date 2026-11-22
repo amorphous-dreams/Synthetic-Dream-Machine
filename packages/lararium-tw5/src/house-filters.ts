@@ -26,7 +26,7 @@ export const HOUSE_FILTERS_TITLE = "lar:///ha.ka.ba/lares/api/filters";
 /** The stem every house function name opens with. */
 export const HOUSE_FUNCTION_STEM = "lares.";
 /** The house's function names, in the carrier's order. */
-export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.course.citers", "lares.course.text-uncited", "lares.course.uncited", "lares.course.standing", "lares.course", "lares.waves", "lares.stage", "lares.broken", "lares.unreached"];
+export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.course.citers", "lares.course.text-uncited", "lares.course.uncited", "lares.course.standing", "lares.course", "lares.waves", "lares.attractors", "lares.stage", "lares.broken", "lares.unreached"];
 
 /**
  * THE FLOOR: the carrier's `\function` blocks as the source carries them, read only where no canon layer holds the carrier
@@ -68,6 +68,12 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 
 \function lares.waves()
 [tag[stage/wave]]
+\end
+
+\function lares.attractors()
+[[discordian-catmas]] [[pattern-integrities]] [[practices]]
++[addprefix[lar:///ha.ka.ba/kahua/memory/reference/]]
+:filter[is[tiddler]]
 \end
 
 \function lares.stage(name)
