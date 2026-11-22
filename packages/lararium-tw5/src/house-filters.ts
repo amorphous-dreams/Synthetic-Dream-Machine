@@ -51,7 +51,7 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 \end
 
 \function lares.course.text-uncited(t)
-[<t>escaperegexp[]addsuffix[(?:(?!(?:-|\.|/|#))\W|$)]] :map[lares.course.citers<currentTiddler>,<t>count[]] +[match[0]]
+[<t>escaperegexp[]addsuffix[(?:\.(?!\w|-)|#/|(?!(?:-|\.|/|#))\W|$)]] :map[lares.course.citers<currentTiddler>,<t>count[]] +[match[0]]
 \end
 
 \function lares.course.uncited(t)

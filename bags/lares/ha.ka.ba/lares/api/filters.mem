@@ -29,7 +29,7 @@ uri-path  = "ha.ka.ba/lares/api/filters"
 \end
 
 \function lares.course.text-uncited(t)
-[<t>escaperegexp[]addsuffix[(?:(?!(?:-|\.|/|#))\W|$)]] :map[lares.course.citers<currentTiddler>,<t>count[]] +[match[0]]
+[<t>escaperegexp[]addsuffix[(?:\.(?!\w|-)|#/|(?!(?:-|\.|/|#))\W|$)]] :map[lares.course.citers<currentTiddler>,<t>count[]] +[match[0]]
 \end
 
 \function lares.course.uncited(t)
@@ -76,6 +76,6 @@ The daemon reads this carrier's text from the canon layers (the oracle floor and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pCPiKB_MYFEXce_-nIlF58NAJQXEylsvdhp6eeCHIUU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;agwtXIAZJV-mvPohCKAikQELWUSZmUhEA2FWCv03GIs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -291,9 +291,9 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
   test("road remains readable during migration", async () => {
     const r = await rig();
     r.write("road-open", { tags: "stage/road road/state/open" });
-    r.write("road-landed", { tags: "stage/road road/state/landed" });
+    r.write("road-set-down", { tags: "stage/road road/state/set-down" });
     expect(await r.filter("[lares.road[open]]")).toEqual(["road-open"]);
-    expect(await r.filter("[lares.road[landed]]")).toEqual(["road-landed"]);
+    expect(await r.filter("[lares.road[set-down]]")).toEqual(["road-set-down"]);
   });
 
   test("only whole, case-sensitive citations from other stage records block ash", async () => {
@@ -309,6 +309,28 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     r.write(`${base}state/case`, { text: item("case").toUpperCase() });
     expect(await r.filter("[lares.course[ash-ready]]")).toEqual(["self", "external", "slot", "prefix", "case"].map(item).sort());
     expect(await r.filter("[lares.course[closed]]")).not.toContain(`${item("slot")}#/entry`);
+  });
+
+  test("a sentence-ending period cites a course item without matching a longer dotted title", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const cited = `${base}course/period.one.lands`;
+    const longer = `${base}course/dotted.one.lands`;
+    for (const title of [cited, longer]) r.write(title, { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/period-reader`, { text: `Proof lands at ${cited}.` });
+    r.write(`${base}state/dotted-reader`, { text: `Proof lands at ${longer}.more` });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([longer]);
+  });
+
+  test("another stage record citing a slot holds its carrier", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const direct = `${base}course/slot.one.lands`;
+    const loulou = `${base}course/loulou.one.lands`;
+    for (const title of [direct, loulou]) r.write(title, { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/slot-reader`, { text: `Read ${direct}#/entry` });
+    r.write(`${base}state/loulou-reader`, { text: `<<~ loulou uri=\`${loulou}#/entry\`>>` });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([]);
   });
 
   test("the course board renders the chosen wave and each standing", async () => {
