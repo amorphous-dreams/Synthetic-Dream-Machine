@@ -548,3 +548,36 @@ test("menu failures and timeouts name their cause", async () => {
     assert.match(result, cause);
   }
 });
+
+test("wake-names-the-docs-library: the line names the library only where the vessel answers it, and a refusal reads unread by its cause", async () => {
+  const calls = {};
+  const status = JSON.stringify({ ok: true, requestId: "r", data: { recipe: "tw5-docs", layers: [{ bag: "lar:///ha.ka.ba/bags/tw5-docs" }] } });
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
+  const read = await wake({ run: runner({ ...base, docs: answered(status) }, calls) });
+  assert.match(read, /^Library: tw5-docs \(TiddlyWiki docs, read-only\)/m);
+  assert.deepEqual(calls.docs, ["wiki", "status", "--recipe", "tw5-docs", "--json"]);
+  assert.deepEqual(calls.docs, core.docsArgv());
+  const older = JSON.stringify({ ok: false, error: { code: "wiki-unreached", message: "wiki-unreached: wiki-status — no wiki \"tw5-docs\" this face reaches" } });
+  const unreached = await wake({ run: runner({ ...base, docs: answered(older, 4) }) });
+  assert.match(unreached, /^Library: tw5-docs unread \(wiki-unreached: wiki-status — no wiki "tw5-docs" this face reaches\)$/m);
+  assert.doesNotMatch(unreached, /TiddlyWiki docs, read-only/);
+  const slow = await wake({ budgetMs: 40, run: runner({ ...base, docs: hung([], "docs") }) });
+  assert.match(slow, /^Library: tw5-docs unread \(no answer inside the wake's budget\)$/m);
+  const killed = [];
+  const down = await wake({ run: runner({ observe: answered(JSON.stringify({ data: { node: { up: false } } })), homes: answered("h"), index: hung([], "index"), docs: hung(killed, "docs") }) });
+  assert.doesNotMatch(down, /Library: tw5-docs/);
+  assert.ok(killed.includes("docs"), "a vessel that answers down stops the library read");
+});
+test("wake names attractor stores, their absence and read failures", async () => {
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
+  const titles = ["discordian-catmas", "pattern-integrities", "practices"].map((name) => `lar:///ha.ka.ba/kahua/memory/reference/${name}`);
+  const result = await wake({ run: runner({ ...base, attractors: answered(JSON.stringify({ ok: true, data: { titles } })) }) });
+  assert.ok(result.includes(`Attractor stores: ${titles.join(" · ")}`));
+  assert.ok(result.indexOf("Attractor stores:") < result.indexOf("Lares memory index"));
+  const none = await wake({ run: runner({ ...base, attractors: answered(JSON.stringify({ ok: true, data: { titles: [] } })) }) });
+  assert.match(none, /Attractor stores: no attractor stores/);
+  const unread = await wake({ run: runner({ ...base, attractors: answered("", 127) }) });
+  assert.match(unread, /Attractor stores: unread \(the read exited 127 with no answer\)/);
+  const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })) }) });
+  assert.match(down, /Attractor stores: unavailable \(no vessel answers\)/);
+});

@@ -372,6 +372,30 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri#/anatomy`))).toEqual([]);
   });
 
+  test("attractor stores follow convention order and ignore non-canon overrides", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/reference/";
+    const titles = ["discordian-catmas", "pattern-integrities", "practices"].map((name) => base + name);
+    expect(await r.filter("[lares.attractors[]]")).toEqual([]);
+    for (const title of [...titles].reverse()) r.write(title);
+    r.write(base + "other");
+    r.write(HOUSE_FILTERS_TITLE, { text: "\\function lares.attractors()\n[[planted]]\n\\end", tags: "$:/tags/Global" });
+    expect(await r.filter("[lares.attractors[]]")).toEqual(titles);
+  });
+
+  test("attractor stores exclude a store hidden from the reader view", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/reference/";
+    const visible = base + "discordian-catmas", hidden = base + "practices";
+    const sealed = bagUri("sealed");
+    r.write(visible);
+    r.engine.wiki.addTiddler({ title: hidden, text: "private", "$origin-bag": sealed });
+    const only: Cap = async (access, bag) => access === "read" && bag !== sealed ? { ok: true } : { ok: false, reason: "no-grant" };
+    const filter = makeWikiFilterReactor(r.opts);
+    expect((await filter({ recipe: "default", filter: "[lares.attractors[]]" }, ctx()))["titles"]).toEqual([visible, hidden]);
+    expect((await filter({ recipe: "default", filter: "[lares.attractors[]]" }, { ...ctx(), cap: only }))["titles"]).toEqual([visible]);
+  });
+
   test("[lares.stage[state]] lists the stage's titles, root memes with !regexp[#]", async () => {
     const r = await rig();
     const stage = "lar:///ha.ka.ba/kahua/memory";

@@ -20,7 +20,7 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
 import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
-import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh";
+import { wikiIslandWithholds, vesselDocBags, refuseTw5DocsWrite, type WikiIslandMount } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -4602,6 +4602,8 @@ async function prepareNodeBootOn(
         ? wikiSlugOfBag(source) : null;
       const target = typeof args["wiki"] === "string" && args["wiki"]
         ? args["wiki"] : sourceWiki ?? destinationWiki ?? slotActiveWikiId;
+      // THE TW5 DOCS LIBRARY TAKES NO WRITE: neither as the wiki an act lands in, nor as its destination or source bag.
+      for (const name of [target, destination, source]) refuseTw5DocsWrite(typeof name === "string" ? name : null, "wiki-act");
       const activation = await wikiActivation.ensureActive(target);
       if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
       return vmManager.placeWikiVerb(target, {

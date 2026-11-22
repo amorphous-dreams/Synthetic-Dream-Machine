@@ -38,7 +38,7 @@
 
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { houseCanonSlugs } from "@lararium/mesh";
+import { houseCanonSlugs, namesTw5Docs } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";
@@ -75,6 +75,11 @@ export async function layHolding(
   h: { holding: string; source: string; toBag: string },
   diskSourced: boolean = canonIsDisk(h),
 ): Promise<LayHolding> {
+  // A dir named for the TW5 docs library stands no bag (`tw5-docs-name`, `projectionRoots`): the lay names that, never the
+  // off-disk reason the sourced-slug reading would otherwise give it.
+  if (namesTw5Docs(h.holding)) {
+    return { ...h, gesture: "skip", exitCode: 0, reason: "tw5-docs-reserved: dir stands no bag (the name rests with the read-only TW5 docs library, `--recipe tw5-docs`)" };
+  }
   if (!diskSourced) {
     return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the lay feeds disk canon alone" };
   }

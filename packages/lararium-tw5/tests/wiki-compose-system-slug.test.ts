@@ -53,6 +53,16 @@ function rig() {
 const ctx = {} as VerbContext;
 
 describe("a system slug composes through the vessel's own record", () => {
+  test("init-wiki on the TW5 docs library's slug refuses tw5-docs-reserved and mints nothing", async () => {
+    const r = rig();
+    const before = JSON.stringify(r.catalog.tiddlers);
+    for (const slug of ["tw5-docs", "@tw5-docs"]) {
+      await expect(makeInitWikiReactor(r.mint)({ slug }, ctx), slug).rejects.toMatchObject({ reason: "tw5-docs-reserved" });
+    }
+    expect(r.created).toEqual([]);
+    expect(JSON.stringify(r.catalog.tiddlers)).toBe(before);
+  });
+
   test("init-wiki on a system slug mints nothing and answers what stands in the oracle", async () => {
     const r = rig();
     const before = JSON.stringify(r.catalog.tiddlers);

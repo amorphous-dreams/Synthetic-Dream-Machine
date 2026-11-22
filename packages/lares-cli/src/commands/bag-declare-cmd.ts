@@ -35,7 +35,7 @@ import {
   readRepoRegistry, registerRepo, unregisterRepo, repoRegistryPath, realmFoldersOnDisk,
 } from "@lararium/node";
 import {
-  parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
+  parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone, refuseTw5DocsReserved,
   type BagHome, type BagManifest,
 } from "@lararium/mesh";
 import { join } from "node:path";
@@ -165,6 +165,7 @@ export async function cmdBagShow(args: ParsedArgs): Promise<number> {
 /** Write or amend a bag's own declaration. It moves no bytes — `bag home` does that. */
 export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   const bag   = bagArg(args, "declare");
+  refuseTw5DocsReserved(bag, "bag declare");
   const roots = bagHomeRoots();
   const found = findBag(args, bag, roots);
 

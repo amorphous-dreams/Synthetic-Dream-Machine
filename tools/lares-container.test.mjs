@@ -227,6 +227,19 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
       assert.match(r.calls, sink);
     }
   });
+  test(`${name}: a plain put streams a named --append host file whole, passes --append - through, and refuses a missing one before exec`, { skip }, async () => {
+    const wire = ["tiddler", "put", "Ledger", "--recipe", "default"];
+    const landed = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing, hostInput: crlf });
+    assert.equal(landed.status, 0, landed.stderr);
+    assert.deepEqual(landed.received, crlf);
+    assert.match(landed.calls, /--append -/);
+    const piped = await run(shim, [...wire, "--append", "-"], { env: standing, input: crlf });
+    assert.equal(piped.status, 0, piped.stderr);
+    assert.deepEqual(piped.received, crlf);
+    const missing = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing });
+    assert.notEqual(missing.status, 0);
+    assert.doesNotMatch(missing.calls, / node .* tiddler put /);
+  });
   test(`${name}: a missing --append file, an empty source, a repeated source and a flag-shaped value refuse or pass as the CLI would`, { skip }, async () => {
     const wire = ["tiddler", "put", "lar:///t/x", "--meme", "--recipe", "default", "--slot", "#/a", "--base", "sha256:1"];
     const missing = await run(shim, [...wire, "--append", "@HOST_FILE@"], { env: standing });
@@ -1995,9 +2008,10 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     assert.deepEqual(piped.received, bytes);
     const value = await run(shim, [...wire, "--text", "--file", "--text", "--meme"], { env });
     assert.equal(value.status, 0, value.stderr); assert.equal(value.received, null);
+    // `--text --meme` carries "--meme" as a value, so this put stays plain, and its `--append` streams the host file.
     const memeValue = await run(shim, [...wire, "--text", "--meme", "--slot", "#/a", "--append", "@HOST_FILE@"], { env, hostInput: bytes });
-    assert.equal(memeValue.status, 0, memeValue.stderr); assert.equal(memeValue.received, null);
-    assert.match(memeValue.calls, /--append .*host\.mem/);
+    assert.equal(memeValue.status, 0, memeValue.stderr); assert.deepEqual(memeValue.received, bytes);
+    assert.match(memeValue.calls, /--append -/);
     const get = await run(shim, ["tiddler", "get", "T", "--file", "@HOST_FILE@"], { env, hostInput: bytes });
     assert.equal(get.status, 0, get.stderr); assert.equal(get.received, null);
     assert.match(get.calls, /--file .*host\.mem/);
@@ -2080,9 +2094,9 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
         const r = await run(shim, ["tiddler", "put", "T", ...slot, flag, "-x:y"], { env, hostCwd: true, hostName: "-x:y", hostInput: "right", hostSibling: "wrong" });
         if (name === "ps1") {
           assert.notEqual(r.status, 0); assert.match(r.stderr, /path starts with \.\//); assert.equal(r.calls, "");
-        } else if (flag === "--file" || slot.length) {
+        } else {
           assert.equal(r.status, 0, r.stderr); assert.deepEqual(r.received, Buffer.from("right"));
-        } else { assert.equal(r.status, 0, r.stderr); assert.match(r.calls, /--append -x:y/); }
+        }
       }
     }
   });

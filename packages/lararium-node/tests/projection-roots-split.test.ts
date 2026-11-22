@@ -49,6 +49,12 @@ describe("projectionRoots — the mirror root splits by origin", () => {
     expect(roots.bagRoot("notes")).toBe(join(projections, "bags", "notes"));
     expect(roots.bagRoot("notes").startsWith(join(state, "bags"))).toBe(false);
   });
+  test("a canon source dir named for the TW5 docs library stands no bag: the slug rests reserved", () => {
+    const { projections, canon } = tree("lares", "tw5-docs");
+    const roots = projectionRoots({ projectionRoot: projections, canonBags: canon });
+    expect(roots.sourcedSlugs()).toEqual(["lares"]);
+    expect(roots.bagRoot("tw5-docs")).toBe(join(projections, "bags", "tw5-docs"));
+  });
   test("a private plane stays under the projections root even where a source dir of its name stands", () => {
     const { projections, canon } = tree("daemon", "kahua");
     const roots = projectionRoots({ projectionRoot: projections, canonBags: canon });

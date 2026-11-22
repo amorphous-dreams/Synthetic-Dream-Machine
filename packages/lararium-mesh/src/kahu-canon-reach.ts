@@ -23,6 +23,7 @@
  */
 import { bagUri } from "./lar-uris.js";
 import { VerbRefusal } from "./verb-refusal.js";
+import { namesTw5Docs } from "./tw5-docs-name.js";
 import { kahuCabalCanonAccess, type KahuCabalAccess } from "./kahu-cabal-admission.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import type { Hand } from "./session-contract.js";
@@ -52,7 +53,7 @@ export const PUBLIC_BOARD_SLUGS: readonly string[] = ["crossroads"];
 /** The house canon's slugs over a vessel's disk-sourced holdings: the system canon, plus every sourced slug but the board. */
 export function houseCanonSlugs(sourcedSlugs: Iterable<string> = []): string[] {
   const out = new Set(SYSTEM_CANON_SLUGS);
-  for (const slug of sourcedSlugs) if (/^[a-z0-9][a-z0-9-]*$/.test(slug) && !PUBLIC_BOARD_SLUGS.includes(slug)) out.add(slug);
+  for (const slug of sourcedSlugs) if (/^[a-z0-9][a-z0-9-]*$/.test(slug) && !PUBLIC_BOARD_SLUGS.includes(slug) && !namesTw5Docs(slug)) out.add(slug);
   return [...out].sort();
 }
 
