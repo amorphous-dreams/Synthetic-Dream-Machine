@@ -22,7 +22,7 @@ function storedSlots(text: string): string[] | null {
   if (!uri) return null;
   const root = `lar:///${uri}`;
   let records: Array<Record<string, unknown>>;
-  try { records = memeticWikitextDeserializer(text, { title: root }, {} as never) as Array<Record<string, unknown>>; }
+  try { records = memeticWikitextDeserializer(text, { title: root }) as Array<Record<string, unknown>>; }
   catch { return null; }
   return records.map((r) => String(r["title"] ?? "")).filter((t) => t.startsWith(`${root}#/`) && !t.slice(root.length + 2).includes("/") && !t.includes("#/$"))
     .map((t) => t.slice(root.length));

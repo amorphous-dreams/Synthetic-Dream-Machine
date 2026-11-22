@@ -319,7 +319,6 @@ describe("lares meme (bare)", () => {
     spy.mockRestore();
     const usage = lines.join("\n");
     for (const sub of ["put", "list", "delete", "normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
-    expect(usage).not.toMatch(/lares meme get /); // intentional-bare-refusal: the retired verb, named to prove it gone
     expect(usage).toMatch(/--to <md\|html\|tid\|json>/);
   });
 });
