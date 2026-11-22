@@ -8,7 +8,7 @@
  *
  * WHAT A DOOR OPENED LEAVES WITH IT, and only that: each door names the documents it opened for its face (`opened`) and how they
  * leave the cache (`evict`). Its drop evicts them once the votum in flight landed and the door detached; a re-stand (a repeat
- * light of a lit face) evicts only what the new door no longer holds; a stand that refuses after opening evicts what it opened,
+ * light of a lit face) evicts only what the new door does not hold; a stand that refuses after opening evicts what it opened,
  * except what the standing door still holds (`evictUnheld`).
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/the-vow
