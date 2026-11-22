@@ -29,6 +29,7 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { freePort, openStaged, stageDir, unlockStaged, type LarInstance } from "../harness/instance.js";
 import { seedTestCustody } from "../harness/test-door.js";
+import { operatorHandEnv, runOwnHandSync } from "../harness/operator-hand.js";
 
 /**
  * The herm's rendezvous — DERIVED from its root, never hunted under it.
@@ -56,17 +57,19 @@ let root = "";
 let hearth: LarInstance | null = null;
 
 /** Run one `lares` command against the herm's root and read its last JSON line; the platform's own warnings never count. */
-function run(args: readonly string[]): { code: number; said: string; json: Record<string, unknown> | null } {
-  const r = spawnSync(process.execPath, [CLI, ...args], { env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8" });
+function run(args: readonly string[], seat: Record<string, string> = {}): { code: number; said: string; json: Record<string, unknown> | null } {
+  // The child starts orphaned under a clean hand of its own (`runOwnHandSync`), whatever launched the suite: the door reads its
+  // ancestry, and a seat standing above this suite never reads as the call's. A test naming a seat passes its mark.
+  const r = runOwnHandSync(process.execPath, [CLI, ...args], { env: { ...process.env, LAR_ROOT: root }, cwd: REPO, seat });
   // The runtime's own warnings (node:sqlite's ExperimentalWarning and its `--trace-warnings` hint) print on stderr AFTER
   // a command's last word when the module loads late; they are the platform's lines, never this house's answer.
   const said = `${r.stdout}\n${r.stderr}`.split("\n")
     .filter((l) => !/ExperimentalWarning|--trace-warnings/.test(l)).join("\n").trim().split("\n").slice(-3).join("\n");
   let json: Record<string, unknown> | null = null;
-  for (const line of (r.stdout ?? "").trim().split("\n").reverse()) {
+  for (const line of (r.stdout).trim().split("\n").reverse()) {
     try { json = JSON.parse(line) as Record<string, unknown>; break; } catch { /* not json */ }
   }
-  return { code: r.status ?? -1, said, json };
+  return { code: r.code, said, json };
 }
 
 /** How long a stop may hold the port, and a stand may take to reach live with its verb door bound. */
@@ -268,7 +271,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     root = standHermRoot();
     seedTestCustody(root, "ignore");   // the harness names the founding route
     execFileSync(process.execPath, [CLI, "vessel", "found", "--skip-build"], {
-      env: { ...process.env, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
+      env: operatorHandEnv({ ...process.env, LAR_ROOT: root }), cwd: REPO, stdio: "ignore",
     });
     const { live, log } = await standHerm(root);
     // The failure carries the next reach-for-a-face by name — that is what this vector is for.
@@ -289,7 +292,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // And the locked floor says so when asked: a sealed read beside it refuses and names the unlock, where it
     // once opened a second key session of its own.
     const asked = spawnSync(process.execPath, [CLI, "persona", "list", "--json"], {
-      env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8",
+      env: operatorHandEnv({ ...process.env, LAR_ROOT: root }), cwd: REPO, encoding: "utf8",
     });
     expect(asked.status, `a locked floor answered a sealed read:\n${asked.stdout.slice(0, 400)}`).not.toBe(0);
     expect(`${asked.stdout}\n${asked.stderr}`).toMatch(/lares vault unlock/);
@@ -389,6 +392,10 @@ describe("the herm — the floor of the lararium cap stack", () => {
     const unseeded = run(["persona", "new", "0", "--name", "the lift"]);
     expect(unseeded.code, `an opened place with no seed charter lit a face:\n${unseeded.said}`).not.toBe(0);
     expect(unseeded.said).toMatch(/no seed charter stands here/);
+    // COMPANION — THE WALL STANDS: the same act, its child carrying a seat mark, refuses as an AI seat's call whatever the place holds.
+    const seated = run(["persona", "new", "0", "--name", "the lift"], { CLAUDECODE: "1" });
+    expect(seated.code, `a seat-marked child lit a face:\n${seated.said}`).not.toBe(0);
+    expect(seated.said).toMatch(/face-hand-refused/);
     // The lift: the Stable founding act over the standing place, with no vessel holding the store.
     await stopVessel();
     const lit = run(["vessel", "found", "--hearth", "--name", "the lift", "--skip-build"]);

@@ -32,6 +32,7 @@ import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
 import { FACE_PLANES, faceRoot, realmRoot, REALM_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
 import { realmPlacement } from "../../packages/lararium-node/src/realm-labels.js";
+import { operatorHandEnv } from "./operator-hand.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -152,7 +153,8 @@ function runCli(env: Record<string, string>, args: readonly string[]): Promise<C
   return new Promise((resolve) => {
     // The harness hands its staged CLI the test ward route explicitly (the product binary never answers one from a file).
     const child = spawn(process.execPath, ["--import", TEST_WARD_ROUTE, CLI_BIN, ...args], {
-      env: { ...process.env, ...env },
+      // A clean hand of its own, whatever seat launched the suite (operator-hand.ts): the walls read the child's marks.
+      env: operatorHandEnv({ ...process.env, ...env }),
       cwd: REPO_ROOT,
     });
     let stdout = "";
