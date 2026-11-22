@@ -25,7 +25,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../../lararium-mesh/src/vessel-island-pool-core.js";
 import { expandRecipe, wikiSlotUri } from "../../lararium-mesh/src/wiki-recipe.js";
-import { workspaceRootsOf, facePersonalRoot, FACES_PROJECTION_DIR } from "../src/bag-paths.js";
+import { workspaceRootsOf, facePersonalRoot, FACES_PROJECTION_DIR, houseIgnored } from "../src/bag-paths.js";
+import { publishWikiRender } from "../src/render-output.js";
+import { isWatchNoise, WORKSPACE_SKIP } from "../src/watch-core.js";
 
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
@@ -112,5 +114,71 @@ describe("M3 — personal survives a reset", () => {
     expect(existsSync(join(h.hearth, "vessel.key"))).toBe(false);
     expect(readFileSync(join(h.projections, FACES_PROJECTION_DIR, "Heron", "personal", "notes", "Private page.tid"), "utf8")).toContain("mine alone");
     expect(() => facePersonalRoot(h.projections, "../escape")).toThrow(/face-segment-separator/);
+  });
+});
+
+describe("render output custody in a bound workbench", () => {
+  const files = [{ name: "a.html", text: "first", source: "A" }, { name: "nested/b.html", text: "second", source: "B" }];
+  test("publishes a has-led manifest and a repeated request returns its first receipt", () => {
+    const h = house();
+    const workbench = join(h.workspaces, "notes"); mkdirSync(workbench);
+    const a = publishWikiRender({ workbench, hearth: h.hearth, files, skipped: ["C"] });
+    expect(a).toMatchObject({ outcome: "written", files: [{ name: "a.html", bytes: 5 }, { name: "nested/b.html", bytes: 6 }], skipped: ["C"] });
+    expect(a.has).toMatch(/^<<~ has /);
+    expect(readFileSync(join(workbench, "rendered", "a.html"), "utf8")).toBe("first");
+    expect(houseIgnored("rendered/a.html")).not.toBeNull();
+    expect(isWatchNoise("rendered/a.html")).toBe(true);
+    expect(WORKSPACE_SKIP).toContain("rendered");
+    expect(publishWikiRender({ workbench, hearth: h.hearth, files, skipped: ["C"] })).toEqual(a);
+    writeFileSync(join(workbench, "rendered", "a.html"), "edited later");
+    expect(publishWikiRender({ workbench, hearth: h.hearth, files, skipped: ["C"] })).toEqual(a);
+  });
+  test("preflights every path and existing output before any byte lands", () => {
+    const h = house(); const workbench = join(h.workspaces, "notes"); mkdirSync(workbench);
+    for (const name of ["/tmp/out", "../out", "C:/out", "nested/../out", "nested\\out"]) {
+      expect(() => publishWikiRender({ workbench, hearth: h.hearth, files: [files[0]!, { name, text: "x", source: "B" }], skipped: [] })).toThrow(/render-path-refused/);
+      expect(existsSync(join(workbench, "rendered", "a.html"))).toBe(false);
+    }
+    expect(() => publishWikiRender({ workbench, hearth: h.hearth, files: [files[0]!, { ...files[0]!, source: "B" }], skipped: [] })).toThrow(/render-name-duplicate/);
+    expect(existsSync(join(workbench, "rendered", "a.html"))).toBe(false);
+    mkdirSync(join(workbench, "rendered")); writeFileSync(join(workbench, "rendered", "nested"), "obstruction");
+    expect(() => publishWikiRender({ workbench, hearth: h.hearth, files, skipped: [] })).toThrow(/render-path-refused/);
+    expect(existsSync(join(workbench, "rendered", "a.html"))).toBe(false);
+  });
+  test("refuses symlink escape, a hearth root and an unbound workbench", () => {
+    const h = house(); const workbench = join(h.workspaces, "notes"); mkdirSync(workbench);
+    mkdirSync(join(workbench, "rendered")); symlinkSync(h.hearth, join(workbench, "rendered", "nested"));
+    expect(() => publishWikiRender({ workbench, hearth: h.hearth, files, skipped: [] })).toThrow(/render-path-symlink/);
+    expect(existsSync(join(workbench, "rendered", "a.html"))).toBe(false);
+    expect(() => publishWikiRender({ workbench: h.hearth, hearth: h.hearth, files, skipped: [] })).toThrow(/render-workbench-in-hearth/);
+    expect(() => publishWikiRender({ workbench: join(h.workspaces, "absent"), hearth: h.hearth, files, skipped: [] })).toThrow(/render-workbench-unbound/);
+    const checkoutBench = join(h.checkout, "notes"); mkdirSync(checkoutBench);
+    symlinkSync(checkoutBench, join(h.workspaces, "checkout"));
+    expect(publishWikiRender({ workbench: join(h.workspaces, "checkout"), hearth: h.hearth, files: [files[0]!], skipped: [] }).outcome).toBe("written");
+  });
+  test("selection budgets and an empty result keep the workbench bounded", () => {
+    const h = house(); const workbench = join(h.workspaces, "notes"); mkdirSync(workbench);
+    expect(() => publishWikiRender({ workbench, hearth: h.hearth, files: Array.from({ length: 129 }, (_, i) => ({ name: `${i}.html`, text: "x", source: `${i}` })), skipped: [] })).toThrow(/render-count-budget/);
+    expect(() => publishWikiRender({ workbench, hearth: h.hearth, files: [{ name: "large.html", text: "x".repeat(4_194_305), source: "A" }], skipped: [] })).toThrow(/render-byte-budget/);
+    expect(existsSync(join(workbench, "rendered", "0.html"))).toBe(false);
+    expect(publishWikiRender({ workbench, hearth: h.hearth, files: [], skipped: ["A"] })).toMatchObject({ outcome: "written", files: [], skipped: ["A"] });
+  });
+  test("an interrupted publication names the partial set; retry completes with the same bytes", () => {
+    const h = house(); const workbench = join(h.workspaces, "notes"); mkdirSync(workbench);
+    const partial = publishWikiRender({ workbench, hearth: h.hearth, files, skipped: [], beforeWrite: (name) => { if (name === "nested/b.html") throw new Error("interrupted"); } });
+    expect(partial).toMatchObject({ outcome: "partial", files: [{ name: "a.html" }], refusal: "interrupted" });
+    expect(existsSync(join(workbench, "rendered", "nested", "b.html"))).toBe(false);
+    const final = publishWikiRender({ workbench, hearth: h.hearth, files, skipped: [] });
+    expect(final).toMatchObject({ outcome: "written", files: [{ name: "a.html" }, { name: "nested/b.html" }] });
+    expect(publishWikiRender({ workbench, hearth: h.hearth, files, skipped: [] })).toEqual(final);
+    expect(() => publishWikiRender({ workbench, hearth: h.hearth, files: [{ name: "a.html", text: "changed", source: "A" }], skipped: [] })).toThrow(/render-overwrite-refused/);
+    expect(publishWikiRender({ workbench, hearth: h.hearth, files: [{ name: "a.html", text: "changed", source: "A" }], skipped: [], overwrite: true }).outcome).toBe("written");
+  });
+  test("a competing writer cannot turn the no-overwrite grant into a replacement", () => {
+    const h = house(); const workbench = join(h.workspaces, "notes"); mkdirSync(workbench);
+    const first = publishWikiRender({ workbench, hearth: h.hearth, files: [files[0]!], skipped: [],
+      beforeWrite: () => writeFileSync(join(workbench, "rendered", "a.html"), "other writer") });
+    expect(first).toMatchObject({ outcome: "partial", files: [] });
+    expect(readFileSync(join(workbench, "rendered", "a.html"), "utf8")).toBe("other writer");
   });
 });

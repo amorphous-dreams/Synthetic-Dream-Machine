@@ -16,10 +16,10 @@
  * A real engine boots here (`bootTestWiki`), so the render answers as TiddlyWiki answers it.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, type CompositeStore as Composite } from "@lararium/mesh";
+import { CompositeStore, bagUri, wikiSlotUri, type CompositeStore as Composite } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { exportCarrierFile } from "../src/meme-write.js";
-import { makeTiddlerGetReactor, makeWikiFilterReactor } from "../src/tiddler-verbs.js";
+import { makeTiddlerGetReactor, makeWikiFilterReactor, makeWikiRenderOutReactor } from "../src/tiddler-verbs.js";
 import { armRenderedTiddlers, renderedTitleOf, RENDERED_FROM_FIELD } from "../src/rendered-tiddler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -70,6 +70,20 @@ const ctx = (composite: Composite): VerbContext => ({
 });
 
 describe.skipIf(wikiSkip)(`the rendered tiddler${skipNote}`, () => {
+  test("native file output prepares bytes without landing a derived record", async () => {
+    const r = await rig();
+    const working = wikiSlotUri("notes", "working");
+    r.engine.wiki.addTiddler({ title: WORKING_POINTER, text: working });
+    await settle();
+    const before = r.writes.length;
+    const answer = await makeWikiRenderOutReactor({ composite: r.composite, tw5: r.engine, wiki: { slug: "notes", gate: working } })
+      ({ recipe: "notes", output: "workbench", filter: "[[Note]]" }, ctx(r.composite));
+    expect(answer).toMatchObject({ files: [{ name: "Note.html", source: "Note" }] });
+    await settle();
+    expect(r.writes).toHaveLength(before);
+    expect(r.engine.wiki.getTiddler("Note.html")).toBeUndefined();
+    r.stop();
+  });
   test("RED: a `projection: rendered` source derives a live text/html tiddler marked rendered-from, its list resolved and transclusions filled; CONTROL: an unmarked tiddler derives nothing", async () => {
     const r = await rig();
     const rendered = r.engine.wiki.getTiddler("Road.rendered");

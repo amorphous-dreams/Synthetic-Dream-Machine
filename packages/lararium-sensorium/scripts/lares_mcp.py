@@ -1295,7 +1295,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_READS)
     def wiki_render(title: "str | None" = None, text: "str | None" = None, recipe: "str | None" = None,
                     form: str = "text", type: "str | None" = None,  # noqa: A002 — the tiddler field's own name
-                    after: "str | None" = None, max_bytes: "int | None" = None, target: "str | None" = None) -> dict:
+                    after: "str | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
+                    output: "str | None" = None) -> dict:
         """WIKIFY through the wiki's own engine: a tiddler by `title`, or a wikitext span passed as `text` (exactly one
         of the two) — mirrors `lares wiki render`. Transclusions, macros, widgets and filters resolve as the wiki
         resolves them (`{{Other}}`, `<$list filter="[tag[x]]">`, `<$count filter=…/>`), so a span works as a small
@@ -1304,7 +1305,9 @@ def build_mcp(coordinator: LaresCoordinator):
         caps `text`; where `truncated` reads true, hand `next` back as `after` for the rest (a wiki that moved between
         the two refuses `render-cursor-stale`). An absent title refuses `tiddler-absent`. A render fires no action and
         dispatches no message. CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`.
-        A render carries the named wiki's words; turn it through the five tools. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        A render carries the named wiki's words; turn it through the five tools. `output` refuses by name on this read-only MCP seat; the node CLI holds the workbench disk grant. A LIT FACE RECEIVES VISITS: `target` names another lit face this read visits, by handle index (`"h1"`, `"1"`) or by its pet name, while the seat keeps the face it wears; the answer names the face it read (`face`) and the face worn (`worn`). A visit reads that face's daemon wiki (`recipe="default"`) through a view of its canon and working layer, never its personal or draft layer (private: a title only there reads absent, a personal or draft bag refuses `cross-face-private`); a shut face refuses `face-not-open`; a visit takes no write."""
+        if output is not None:
+            raise SeatArgumentRefused("render-output-substrate-refused: this MCP seat holds a read grant and no node workbench output grant")
         if (title is None or title == "") == (text is None or text == ""):
             raise SeatArgumentRefused("wiki_render: name exactly one of `title` (a tiddler) or `text` (a wikitext span)")
         if form not in ("text", "html"):

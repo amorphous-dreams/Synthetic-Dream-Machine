@@ -35,6 +35,7 @@ import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-regist
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { publishWikiRender, type RenderFile } from "./render-output.js";
 import { larBootstrapPath, larCatalogUrlPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { basename, dirname, join } from "path";
@@ -69,7 +70,7 @@ import {
   faceAtomKeyFromSeed, type FaceAtomKey, siblingPlaneMounts,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
+  wikiSlugOfBag, resolveDiskMirrors, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
@@ -997,6 +998,7 @@ async function prepareNodeBootOn(
    *  workspace, then each `<projections>/realms/<realm pet name>/wikis/<slug>` a realm label holds that no workspace takes, read
    *  afresh at each after-live. */
   let readWorkbenches: () => WorkbenchFolder[] = () => [];
+  let renderWorkbenchOf: (slug: string) => string | null = () => null;
   /** THE QUIET POINT'S REALM MOVES (`settleRealmMoves`), set in makePool: run at the re-stand and at the last workbench watch's lock. */
   let settleRealmFolders: () => void = () => {};
   /** THE WATCHES over the workbench folders (`armWorkspaceWatch`): armed at after-live beside the face pool's, downed with it. */
@@ -4608,6 +4610,20 @@ async function prepareNodeBootOn(
         requestedBy: ctx.invocation.requestedBy,
       });
     });
+    registry.register("wiki-render-out", async (args, ctx) => {
+      const recipe = args["recipe"];
+      if (typeof recipe !== "string" || recipe === "default") throw new Error("render-workbench-unbound: name a selected wiki with a disk workbench");
+      if (args["target"] !== undefined) throw new Error("render-output-visit-refused: output cannot visit another face");
+      const workbench = renderWorkbenchOf(recipe);
+      if (!workbench) throw new Error(`render-workbench-unbound: wiki ${recipe} holds no bound workbench`);
+      const prepared = await islandAsk(daemonHolder)((ports) => askIslandVerb({
+        ...ports, verb: "wiki-render-out-prepare", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy, requestId: newRequestId(),
+      })).answer;
+      const files = prepared["files"];
+      if (!Array.isArray(files)) throw new Error("render-output-substrate-refused: the island answered no prepared files");
+      return { ...publishWikiRender({ workbench, hearth: larHearthHome(), files: files as RenderFile[],
+        skipped: Array.isArray(prepared["skipped"]) ? prepared["skipped"] as string[] : [], overwrite: args["overwrite"] === true }) };
+    }, { summary: "Publish native wiki render output inside the selected wiki's bound workbench.", surfaces: ["cli"] });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
     // THE EXEC LEI'S MAIN HALF: the daemon island routes `exec-lei-spend` here (it holds no key); this vessel spends one return
     // of the standing exec lei over the control document's swarm wiki, under the mounted face's trust and its own atom.
@@ -4994,6 +5010,11 @@ async function prepareNodeBootOn(
       // above, so resolveDiskMirrors skips this for them — no double-project.
       { bagId: "self",          mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags"), realmBase: realmBaseOf("bags") },
     ];
+    renderWorkbenchOf = (slug) => {
+      if (workspaces.unbound.some((line) => line.startsWith(`${slug}:`)) || workspaces.refused.some((line) => line.startsWith(`${slug}:`) && line.includes("inside the hearth"))) return null;
+      return resolveDiskMirrors(diskMirrorGrant, [wikiSlotUri(slug, "working")], slug)
+        .find((entry) => entry.bagId === wikiSlotUri(slug, "working"))?.mirrorRoot ?? null;
+    };
     // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.
     // The shared Crossroads board materializes once and is read fresh per mount (a

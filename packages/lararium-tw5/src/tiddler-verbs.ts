@@ -141,7 +141,10 @@ const flagOn = (raw: unknown): boolean => raw === true || raw === "true" || raw 
 
 interface EngineTiddler { fields: Record<string, unknown>; getFieldStrings(): Record<string, string> }
 interface EngineWiki extends FilterWiki {
-  filterTiddlers(filter: string): string[];
+  filterTiddlers(filter: string, widget?: unknown, iterator?: unknown): string[];
+  makeTiddlerIterator(titles: string[]): unknown;
+  parseTiddler(title: string): unknown;
+  makeWidget(parser: unknown, options: { variables: Record<string, string> }): { render(container: unknown, nextSibling: null): void };
   getTiddler(title: string): EngineTiddler | undefined;
   tiddlerExists(title: string): boolean;
   addTiddler(tiddler: unknown): void;
@@ -156,6 +159,8 @@ interface EngineWiki extends FilterWiki {
 }
 interface Engine {
   wiki: EngineWiki;
+  rootWidget: unknown;
+  fakeDocument: { createElement(name: string): { innerHTML: string; textContent: string } };
   Tiddler: new (...fields: Array<Record<string, unknown>>) => EngineTiddler;
   utils: { parseStringArray(value: string): string[] | null; stringifyList(list: readonly string[]): string };
 }
@@ -772,6 +777,43 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
 const GLOBAL_IMPORT = "\\import [all[shadows+tiddlers]tag[$:/tags/Global]!is[draft]]\n";
 const WIKITEXT = "text/vnd.tiddlywiki";
 const RENDER_FORMS: Readonly<Record<string, string>> = { text: "text/plain", html: "text/html" };
+
+/** Prepare native --render output inside the caller's permission-filtered wiki. A node shore publishes the bytes. */
+export const makeWikiRenderOutReactor = everyWiki("wiki-render-out-prepare", true, (opts: TiddlerVerbOptions): VerbReactor => async (args, ctx) => {
+  const anchor = anchorOf(opts, args, "wiki-render-out-prepare", true);
+  if (anchor.recipe === "default" || wikiSlotKindOf(anchor.slug, anchor.bag) !== "working") throw new VerbRefusal("render-output-grant-denied", "render-output-grant-denied: this face holds no writer's seat in the selected wiki's workbench");
+  const allowed = await ctx.cap("admin", anchor.bag);
+  if (!allowed.ok) throw new VerbRefusal("render-output-grant-denied", `render-output-grant-denied: write on ${anchor.bag} required`);
+  if (args["output"] !== "workbench") throw new VerbRefusal("render-output-substrate-refused", "render-output-substrate-refused: only a node workbench grants output");
+  const filter = stringArg(args, "filter");
+  const filename = optionalStringArg(args, "filename") ?? "[is[tiddler]addsuffix[.html]]";
+  const type = optionalStringArg(args, "type") ?? "text/html";
+  const template = optionalStringArg(args, "template");
+  const rawVariables = args["variables"];
+  if (rawVariables !== undefined && (!rawVariables || typeof rawVariables !== "object" || Array.isArray(rawVariables) || Object.values(rawVariables).some((v) => typeof v !== "string")))
+    throw new VerbRefusal("render-variables-malformed", "render-variables-malformed: variables must pair names with string values");
+  const variables = (rawVariables ?? {}) as Record<string, string>;
+  const { view } = await viewFor(opts, anchor, ctx.cap);
+  const engine = anchor.engine;
+  const titles = view.filterTiddlers(filter);
+  if (titles.length > 128) throw new VerbRefusal("render-count-budget", "render-count-budget: the selection exceeds 128 sources");
+  const files: Array<{ name: string; text: string; source: string }> = [];
+  const skipped: string[] = [];
+  let bytes = 0;
+  for (const title of titles) {
+    const names = view.filterTiddlers(filename, engine.rootWidget, view.makeTiddlerIterator([title]));
+    if (names.length === 0 || names[0] === "") { skipped.push(title); continue; }
+    const parser = view.parseTiddler(template ?? title);
+    const widget = view.makeWidget(parser, { variables: { ...variables, currentTiddler: title, storyTiddler: title } });
+    const container = engine.fakeDocument.createElement("div");
+    widget.render(container, null);
+    const text = type === "text/html" ? container.innerHTML : container.textContent;
+    bytes += utf8.encode(text).length;
+    if (bytes > 4_194_304) throw new VerbRefusal("render-byte-budget", "render-byte-budget: output exceeds four MiB");
+    files.push({ name: names[0]!, text, source: title });
+  }
+  return { recipe: anchor.recipe, files, skipped };
+});
 
 export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {

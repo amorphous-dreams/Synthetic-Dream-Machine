@@ -500,7 +500,7 @@ export function wikisFileToUri(instanceRoot: string, filePath: string): string |
  *     across devices, so no lay reads it back, no export carries it and no pool's history takes it.
  */
 export const HOUSE_IGNORED = {
-  topDirs: [".git", ".vscode", ".shore", TEMP_LAYER_DIR] as readonly string[],
+  topDirs: [".git", ".vscode", ".shore", "rendered", TEMP_LAYER_DIR] as readonly string[],
   dirSuffixes: [ORPHAN_FOLDER_SUFFIX] as readonly string[],
   tempFile: /\.\d+(?:\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\.tmp$/,
   viewState: {
