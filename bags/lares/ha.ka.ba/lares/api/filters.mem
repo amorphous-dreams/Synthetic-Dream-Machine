@@ -5,7 +5,7 @@
 
 ```toml meta
 cacheable = true
-role      = "the house's named filters: the law index, the road state and the memory stage as canon functions; canon only"
+role      = "the house's named filters: the law index, course standing, waves and the memory stage as canon functions; canon only"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/filters"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -20,8 +20,20 @@ uri-path  = "ha.ka.ba/lares/api/filters"
 [subfilter{$:/config/lares/law/pins}] =[prefix[lar:///ha.ka.ba/]regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]sort[title]] +[unique[]] :filter[regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]] :filter[get[$origin-bag]regexp[^lar:///ha\.ka\.ba/bags/(oracle|lares|lararium)$]] :filter[regexp[^lar:///\S+$]]
 \end
 
-\function lares.road(state)
-[tag[stage/road]] :filter[tags[]removeprefix[road/state/]match<state>]
+\function lares.course.uncited(t)
+[<t>backlinks[]count[]match[0]] :filter[all[tiddlers]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>search:text:literal<t>count[]match[0]]
+\end
+
+\function lares.course.standing(t)
+[<t>!has[proof]then[open]] :else[<t>get[proof]trim[]is[blank]then[open]] :else[lares.course.uncited<t>then[closed ash-ready]else[closed]enlist-input[]]
+\end
+
+\function lares.course(standing)
+[tag[stage/course]] :filter[lares.course.standing<currentTiddler>match<standing>]
+\end
+
+\function lares.waves()
+[tag[stage/wave]]
 \end
 
 \function lares.stage(name)
@@ -32,7 +44,7 @@ uri-path  = "ha.ka.ba/lares/api/filters"
 
 ! The house's named filters
 
-Four filters stand here as `\function` definitions, defined for every filter the house runs: `[lares.law[]]` (the law index: the pins first, then every canon root meme under a bag's `api/` tree, each row answered from a canon layer), `[lares.law.pins[]]` (the pins that stand as canon law), `[lares.road[open]]` (the road memes whose `road/state/<state>` tag names the state) and `[lares.stage[state]]` (every title under `lar:///ha.ka.ba/kahua/memory/<stage>/`, slots too; `[lares.stage[state]!regexp[#]]` keeps the root memes). `lares wiki filter '[lares.law[]]'`, the wake and the MCP seat's `law_index` all run these same functions.
+The house filters stand here as `\function` definitions, defined for every filter the house runs: `[lares.law[]]` (the law index: the pins first, then every canon root meme under a bag's `api/` tree, each row answered from a canon layer), `[lares.law.pins[]]` (the pins that stand as canon law), `[lares.course[open]]` (course items whose proof reads blank), `[lares.course[closed]]` (items carrying proof), `[lares.course[ash-ready]]` (proved items without inbound citations), `[lares.waves[]]` (wave titles) and `[lares.stage[state]]` (every title under `lar:///ha.ka.ba/kahua/memory/<stage>/`, slots too; `[lares.stage[state]!regexp[#]]` keeps the root memes). `lares wiki filter '[lares.law[]]'`, the wake and the MCP seat's `law_index` all run these same functions.
 
 <<~/ahu>>
 
@@ -48,10 +60,10 @@ TiddlyWiki resolves a user function as a filter operator only where its name hol
 
 !! Canon only
 
-The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the four functions from it; a house name that fails to parse from the carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name. The carrier carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy. A working-layer tiddler that redefines `lares.law`, `lares.law.pins`, `lares.road` or `lares.stage`, at this title or tagged `$:/tags/Global` elsewhere, changes no answer of `lares wiki filter`, the MCP `wiki_filter`, `lares wiki render` or the record port's filter ask. A filter naming any other `lares.` operator refuses by name. A raw `\import` a hand writes into its own wikitext stands outside that guarantee.
+The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the functions from it; a house name that fails to parse from the carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name. The carrier carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy. A working-layer tiddler that redefines `lares.law`, `lares.law.pins`, `lares.course`, its helpers, `lares.waves` or `lares.stage`, at this title or tagged `$:/tags/Global` elsewhere, changes no answer of `lares wiki filter`, the MCP `wiki_filter`, `lares wiki render` or the record port's filter ask. A filter naming any other `lares.` operator refuses by name. A raw `\import` a hand writes into its own wikitext stands outside that guarantee.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xvYzb_p31eOvKwj2U8BH-2ri12nLJavgjIDlJw5cRoQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yzU2odKeU-FZ9uUnYjdJxUnzWF_skfOzLceGnNXzYPw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

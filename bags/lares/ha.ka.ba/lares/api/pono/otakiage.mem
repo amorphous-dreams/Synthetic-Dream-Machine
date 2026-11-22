@@ -122,7 +122,7 @@ Where a lower layer holds the title, a seat's fire stops and names it to the hol
 
 The rite governs a seat's burns; it never gates a human's own delete in a wiki they alone hold. An AI or tasked spirit burns only on the holder's (the operator, for a face they wear) call, through the stages, with the last check-in and delete commits and the gratitude line. A tiddler, whole meme or ahu slot carries its full title; a line in a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and doors stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
 
-''Stage road reading, without tag migration:'' `road/state/open` reads `designed`; `road/state/landed` reads `standing`; `folded` reads routed, lifted and welded. The sitting reading names `lifecycle/*` candidates alone. Landed road memes list through a road filter (`[tag[road/state/landed]]`); a hand reads each for fold before naming it a candidate. The standing order “o-takiage at every land” gives them an authored ending once they stand folded; proof, weld and two commits still govern each burn.
+''Course reading:'' `[lares.course[ash-ready]]` lists proved items without inbound citations; a hand reads each item for fold before naming it a candidate. Proof, weld and two commits still govern each burn.
 
 !!! Who calls it
 
@@ -212,6 +212,6 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4c8_twadG-imnzJyD39hW9LsUEaEYOMsaGbelUUZpf0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EAgui_TaXWUqPLro9lFiDXvHoCmGJMEEzrAyT9CcEus`>>
 
 <<^ code=`&#x0004;` to=`?`>>

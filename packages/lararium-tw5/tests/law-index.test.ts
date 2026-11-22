@@ -93,9 +93,9 @@ describe("the house's function text, with no wiki booted", () => {
   });
 
   test("three spellings parse (multi-line, one-line, sigil), CRLF reads as LF, and a dropped name reads from the floor", () => {
-    const canonical = "\\function lares.road(state)\n[tag[x]]\n\\end";
-    const forms = [canonical, "\\function lares.road(state) [tag[x]]", "<<~ function name=`lares.road(state)`>>[tag[x]]<<~/function>>", "\\function lares.road(state)\r\n[tag[x]]\r\n\\end\r\n"];
-    for (const form of forms) expect(houseBlocksOf(form).get("lares.road")).toBe(canonical);
+    const canonical = "\\function lares.course(standing)\n[tag[x]]\n\\end";
+    const forms = [canonical, "\\function lares.course(standing) [tag[x]]", "<<~ function name=`lares.course(standing)`>>[tag[x]]<<~/function>>", "\\function lares.course(standing)\r\n[tag[x]]\r\n\\end\r\n"];
+    for (const form of forms) expect(houseBlocksOf(form).get("lares.course")).toBe(canonical);
     const pragmas = functionPragmasOf(forms[1]!);
     expect(pragmas).toContain(houseBlocksOf(HOUSE_FILTERS_FLOOR).get("lares.stage")!);
     expect(pragmas).toContain(canonical);
@@ -104,7 +104,7 @@ describe("the house's function text, with no wiki booted", () => {
   test("a lares. operator outside the house set refuses by name; a house name and a title naming lares. pass", () => {
     expect(() => refuseUnknownHouseOperators("[lares.nope[]]")).toThrow(/house-filter-unknown/);
     expect(() => refuseUnknownHouseOperators("[tag[a]] +[lares.lawx[]]")).toThrow(/house-filter-unknown/);
-    for (const ok of ["[lares.law[]]", "[lares.law.pins[]]", "[lares.road[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
+    for (const ok of ["[lares.law[]]", "[lares.law.pins[]]", "[lares.course[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
   });
 });
 
@@ -251,13 +251,13 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
   });
 
   test("L1: the wiki-stamp seam: with no canon layer holding the carrier, a wiki record that carries a canon stamp serves; one stamped with a working layer never does", async () => {
-    const variant = "\\function lares.road(state)\n[[lar:///seam/road]]\n\\end\n";
+    const variant = "\\function lares.course(standing)\n[[lar:///seam/course]]\n\\end\n";
     const canonStamped = await rig(true, false);
     canonStamped.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": ORACLE_BAG });
-    expect(await canonStamped.filter("[lares.road[open]]")).toEqual(["lar:///seam/road"]);
+    expect(await canonStamped.filter("[lares.course[open]]")).toEqual(["lar:///seam/course"]);
     const forged = await rig(true, false);
     forged.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": WORKING });
-    expect(await forged.filter("[lares.road[open]]")).toEqual([]);
+    expect(await forged.filter("[lares.course[open]]")).toEqual([]);
   });
 
   test("M1: a stamped-canon global carrying the Global tag and a raw span define cannot move a render of a title or the filter", async () => {
@@ -269,6 +269,45 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(rendered).toContain(n);
   });
 
+  test("course standings derive from proof and other stage citations; waves list their tag", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const open = `${base}course/open.one.waits`;
+    const closed = `${base}course/closed.one.waits`;
+    const ready = `${base}course/ready.one.waits`;
+    const wave = `${base}wave/first`;
+    r.write(open, { tags: "stage/course", proof: "  " });
+    r.write(closed, { tags: "stage/course", proof: "git:abc" });
+    r.write(ready, { tags: "stage/course", proof: "git:def", text: ready });
+    r.write(`${base}state/reader`, { tags: "stage/state", text: `A bare cite ${closed}` });
+    r.write(wave, { tags: "stage/wave", list: `${open} ${closed} ${ready}` });
+    expect(await r.filter("[lares.course[open]]")).toEqual([open]);
+    expect(await r.filter("[lares.course[closed]]")).toEqual([closed, ready].sort());
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([ready]);
+    expect(await r.filter("[lares.course[unknown]]")).toEqual([]);
+    expect(await r.filter("[lares.waves[]]")).toEqual([wave]);
+  });
+
+  test("the course board renders the chosen wave and each standing", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const wave = `${base}wave/first`;
+    const item = `${base}course/open.one.waits`;
+    const ready = `${base}course/ready.one.waits`;
+    const other = `${base}course/other.one.waits`;
+    const template = "lar:///ha.ka.ba/lares/api/course-board";
+    const source = readFileSync(new URL("../../../bags/lares/ha.ka.ba/lares/api/course-board.mem", import.meta.url), "utf8");
+    r.write(template, { type: "text/vnd.tiddlywiki", text: source.slice(source.indexOf("<$let"), source.indexOf("<<^ code=`&#x0003;`")) });
+    r.write(item, { tags: "stage/course", question: "What comes next?", answer: "build" });
+    r.write(ready, { tags: "stage/course", proof: "git:abc", question: "What landed?", answer: "decision" });
+    r.write(other, { tags: "stage/course", question: "Outside wave" });
+    r.write(wave, { tags: "stage/wave", list: `${item} ${ready}` });
+    r.write(`${base}board`, { waves: "[lares.waves[]]", text: `{{||${template}}}`, type: "text/vnd.tiddlywiki" });
+    const rendered = String((await makeWikiRenderReactor(r.opts)({ recipe: "default", title: `${base}board` }, ctx()))["text"]);
+    for (const value of [wave, "open", "closed", "ash-ready", item, "What comes next?", "build", ready, "What landed?", "decision"]) expect(rendered).toContain(value);
+    expect(rendered).not.toContain(other);
+  });
+
   test("the call answers what the long form answered: the pins, the law, a title's standing", async () => {
     const r = await rig();
     expect(await r.filter(LAW_PINS_FILTER)).toEqual(PINS);
@@ -276,19 +315,10 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri#/anatomy`))).toEqual([]);
   });
 
-  test("[lares.road[open]] lists what the long form lists; [lares.stage[state]] lists the stage's titles, root memes with !regexp[#]", async () => {
+  test("[lares.stage[state]] lists the stage's titles, root memes with !regexp[#]", async () => {
     const r = await rig();
     const stage = "lar:///ha.ka.ba/kahua/memory";
-    for (const [title, tags] of [
-      ["lar:///ha.ka.ba/kahua/road/leap-a", "stage/road road/state/open road/kind/leap"],
-      ["lar:///ha.ka.ba/kahua/road/leap-b", "stage/road road/state/done road/kind/leap"],
-      ["lar:///ha.ka.ba/kahua/road/leap-c", "stage/road road/state/open road/kind/fix"],
-      ["lar:///ha.ka.ba/kahua/road/not-road", "road/state/open"],
-    ] as const) r.engine.wiki.addTiddler({ title, tags, text: "" });
     for (const t of [`${stage}/state/handoff`, `${stage}/state/other`, `${stage}/state/other#/entry`, `${stage}/statement/x`, `${stage}/index/y`]) r.engine.wiki.addTiddler({ title: t, text: "", tags: "stage/index" });
-    expect(await r.filter("[lares.road[open]]")).toEqual(await r.filter("[tag[stage/road]tag[road/state/open]]"));
-    expect(await r.filter("[lares.road[open]]")).toEqual(["lar:///ha.ka.ba/kahua/road/leap-a", "lar:///ha.ka.ba/kahua/road/leap-c"]);
-    expect(await r.filter("[lares.road[done]]")).toEqual(["lar:///ha.ka.ba/kahua/road/leap-b"]);
     expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual(await r.filter(`[prefix[${stage}/state/]!regexp[#]]`));
     expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual([`${stage}/state/handoff`, `${stage}/state/other`].sort());
     expect(await r.filter("[lares.stage[state]]")).toContain(`${stage}/state/other#/entry`);
