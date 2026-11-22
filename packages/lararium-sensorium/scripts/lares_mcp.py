@@ -878,6 +878,11 @@ def build_mcp(coordinator: LaresCoordinator):
 
     mcp = _Seat("lares", instructions=SEAT_INSTRUCTIONS)
 
+    _READS = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
+    _PATCHES = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False)
+    _REMOVES = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False)
+    _CASTS = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
+
     # The addressed-sensorium shore: an AI names a sensorium; the tool resolves the name to its root and
     # threads it up the @daemon cap-ladder (the routed recall/capture/refresh verbs pick the holder by
     # root). Absent → the memory default. A standalone coordinator binds ONE palace at construction, so a
@@ -902,11 +907,12 @@ def build_mcp(coordinator: LaresCoordinator):
         method = getattr(coordinator, verb)
         return method(*args, sensorium_root=root, **kwargs) if routed else method(*args, **kwargs)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_CASTS)
     def pour(surface: str = "all", pointer: "str | None" = None, bulk: bool = False, writeback: bool = False,
              dry_run: bool = False, wing: "str | None" = None, room: "str | None" = None,
              project: "str | None" = None, limit: "int | None" = None, sensorium: "str | None" = None) -> dict:
-        """Capture transcripts into a sensorium (`sensorium` names it; absent → memory) — mirrors `lares sense pour`.
+        """Capture transcripts into a sensorium.
+        Capture transcripts into a sensorium (`sensorium` names it; absent → memory) — mirrors `lares sense pour`.
         ONE POINTER: `surface` (claude/codex/copilot) + `pointer` captures that transcript; `writeback` re-enriches a
         wing, `dry_run` previews. BULK: `bulk` captures/recaptures EVERY local operator-AI transcript in one pass (the
         sweep spine, `lares sense pour --bulk`): `surface` `all` folds claude+codex+copilot, else names one; `project`
@@ -924,7 +930,7 @@ def build_mcp(coordinator: LaresCoordinator):
         return _call("pour", sensorium, surface, pointer, writeback=writeback, dry_run=dry_run,
                      wing=wing, room=room or "conversations")
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def recall(query: str, k: int = 8, wing: "str | None" = None, imago: "str | None" = None,
                list: bool = False, agent: "str | None" = None, surface: "str | None" = None,
                speaker: "str | None" = None, channel: "str | None" = None, function: "str | None" = None,
@@ -943,29 +949,32 @@ def build_mcp(coordinator: LaresCoordinator):
                      agent=agent, surface=surface, speaker=speaker, channel=channel, function=function,
                      pair=pair, lens=lens)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def status(sensorium: "str | None" = None) -> dict:
         """Report what a sensorium holds (the taxonomy). `sensorium` names it; absent → memory."""
         return _call("status", sensorium)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def worldline(selector: "str | None" = None, sensorium: "str | None" = None) -> dict:
-        """Render the fork-DAG rhizome of turns. `selector` names which run/handle to walk; `sensorium`
+        """Render the graph of conversation turns.
+        Render the fork-DAG rhizome of turns. `selector` names which run/handle to walk; `sensorium`
         names the sensorium (absent → memory)."""
         return _call("worldline", sensorium, selector)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_PATCHES)
     def kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        """Mute a worldline branch (a fork-path-dead-end) + cascade the mute across a sensorium
+        """Mute a conversation branch and its descendants in a sensorium.
+        Mute a worldline branch (a fork-path-dead-end) + cascade the mute across a sensorium
         (`sensorium` names it; absent → memory)."""
         return _call("kapae", sensorium, branch, tick)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_PATCHES)
     def un_kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        """Restore a previously kapae-muted branch across a sensorium (`sensorium` names it; absent → memory)."""
+        """Restore a muted conversation branch in a sensorium.
+        Restore a previously kapae-muted branch across a sensorium (`sensorium` names it; absent → memory)."""
         return _call("un_kapae", sensorium, branch, tick)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def analyze(lens: "str | None" = None, spectral: bool = False, halves: "str | None" = None, span: "int | None" = None,
                 repour: bool = False, channel: "str | None" = None, rows: "list | None" = None,
                 names: "list | None" = None, sensorium: "str | None" = None) -> dict:
@@ -1006,11 +1015,12 @@ def build_mcp(coordinator: LaresCoordinator):
             out = _call(verb, sensorium)
         return {"lens": resolved, **out} if isinstance(out, dict) else {"lens": resolved, "result": out}
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def flow(petname: "str | None" = None, target: "list | None" = None,
              signal: "list | None" = None, names: "list | None" = None,
              sensorium: "str | None" = None) -> dict:
-        """The pet-named COMPOSED-FLOW surface — one tool, N flows (the anti-verb-sprawl door). Bare (no
+        """Run or list named flows over sensorium data.
+        The pet-named COMPOSED-FLOW surface — one tool, N flows (the anti-verb-sprawl door). Bare (no
         `petname`) lists the flow-set (crystal · rhythm · couple) with their cap-stacks. `petname` + a
         `signal` matrix (rows=time, cols=signals; `names` labels the columns) RUNS that flow: the @daemon
         looks its cap-stack up and runs each step routed by hull, threading each outcome to the next. New
@@ -1019,14 +1029,15 @@ def build_mcp(coordinator: LaresCoordinator):
         (feature-gated: the projector runs now, empty until the re-pour lands child signals)."""
         return _call("flow", sensorium, petname=petname, targets=target, rows=signal, names=names)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def plane_record(cid: str, sensorium: "str | None" = None) -> dict:
-        """The cross-plane witness: one cid -> presence + payload summary across content,
+        """Read a record across the sensorium planes.
+        The cross-plane witness: one cid -> presence + payload summary across content,
         structure and form (honest nulls where a plane lacks it). `sensorium` names the sensorium
         (absent → memory)."""
         return _call("plane_record", sensorium, cid)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_PATCHES)
     def wiki(verb: str, slug: "str | None" = None, name: "str | None" = None,
              recipe: "str | None" = None, expected: "str | None" = None,
              resulting: "str | None" = None, bag: bool = False, rotate: bool = False,
@@ -1191,7 +1202,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["base"] = base
         return _meme_wire("meme-delete", args)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def meme_project(uri: str, to: str, recipe: "str | None" = None, bag: "str | None" = None) -> dict:
         """RENDER the meme the island holds at its `lar:` `uri` to a target — mirrors `lares meme project
         <uri> --to <target>`. `to` names the target: `md` (the submission markdown) · `html` · `tid` · `json`;
@@ -1208,12 +1219,6 @@ def build_mcp(coordinator: LaresCoordinator):
 
     # EVERY TOOL STATES ITS ANNOTATIONS. The schema's defaults read worst-case (destructive, open-world, never
     # idempotent, never read-only), so each tool below names all four. They advise a client; the vessel's wards enforce.
-    _READS = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
-    _PATCHES = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False)
-    _REMOVES = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False)
-    # A cast writes a NEW record each call (a fresh throw, a fresh title): never idempotent, never destructive.
-    _CASTS = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
-
     def _names(verb: str, key: str, value) -> "list | None":
         if value is None:
             return None
@@ -1259,7 +1264,8 @@ def build_mcp(coordinator: LaresCoordinator):
                     grain: "str | None" = None, slot: "str | None" = None, after: "str | None" = None,
                     fields: "list | None" = None, max_bytes: "int | None" = None, target: "str | None" = None,
                     tree: bool = False) -> dict:
-        """READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. With no title and `meme=True`, list families: `tree=True` nests their slots, `after` names the next page. A bag listing returns {bag, roots, next}; a named recipe returns {recipe, bags, roots, next}; under `recipe="default"` no row names a `bag`. A floor read returns {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.
+        """Read a tiddler or meme from a wiki or bag.
+        READ ONE TIDDLER OR ONE MEME, ON A GRADIENT — mirrors `lares tiddler get <title>`. With no title and `meme=True`, list families: `tree=True` nests their slots, `after` names the next page. A bag listing returns {bag, roots, next}; a named recipe returns {recipe, bags, roots, next}; under `recipe="default"` no row names a `bag`. A floor read returns {bag, floor, roots, next}, and each row from a recipe's floor bag carries `floor: true`.
         EVERY ANSWER LEADS WITH `has`,
         a `<<~ has name=`…` params=`…`>>` line: provenance (`recipe/` or `bag/`, `layer/`, `floor/true`), the record's own
         tags, the measure keys (`type/ position/ family/ slots/ bytes/ base/`, a pointer's `_canonical_uri/ textCid/
@@ -1349,7 +1355,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_READS)
     def wiki_status(recipe: "str | None" = None, target: "str | None" = None) -> dict:
-        """Without a recipe, survey the catalog, activation and vessel residency. With a recipe, NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
+        """Survey wiki residency and layer access.
+        Without a recipe, survey the catalog, activation and vessel residency. With a recipe, NAME EACH LAYER THE WIKI COMPOSES AND WHETHER THIS SESSION'S FACE READS AND WRITES IT — mirrors `lares wiki
         status`. Returns {recipe, working, layers: [{bag, mounted, read, write, working?, why?}]}: `working` names the
         layer every `tiddler_put` (with or without `meme=True`) lands in (null where none stands attached); each layer reads `mounted`
         "writable", "read-only" or "promotion-only" (a canon layer: a write reaches it by action verb alone, never by a put),
@@ -1571,13 +1578,14 @@ def build_mcp(coordinator: LaresCoordinator):
             raise uds.LaresVerbError(f"{HEARTH_ROSTER_VERB}: the vessel answered no roster")
         return out
 
-    @mcp.tool(annotations=_PATCHES)
+    @mcp.tool(annotations=_CASTS)
     def tiddler_put(title: str, recipe: "str | None" = None, fields: "dict | None" = None,
                     text: "str | None" = None, unset: "list | None" = None, tags_add: "str | list | None" = None,
                     tags_remove: "str | list | None" = None, base: "str | None" = None, create: bool = False,
                     meme: bool = False, bag: "str | None" = None, slot: "str | None" = None,
                     append: "str | None" = None) -> dict:
-        """PATCH ONE TIDDLER — `meme=True` places a whole carrier from `text`, or writes `slot` against `base` through exactly one of `text` (the slot's whole body) and `append` (a paragraph at its end); a bag or a recipe names the family seat. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`. House canon bags refuse `seat-canon-reach`; offer through `meme_offer` after a recipe copy-up. The receipt's `layer` names a personal placement where this face holds no writer's seat.
+        """Patch a tiddler or meme in a wiki or bag.
+        PATCH ONE TIDDLER — `meme=True` places a whole carrier from `text`, or writes `slot` against `base` through exactly one of `text` (the slot's whole body) and `append` (a paragraph at its end); a bag or a recipe names the family seat. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`. House canon bags refuse `seat-canon-reach`; offer through `meme_offer` after a recipe copy-up. The receipt's `layer` names a personal placement where this face holds no writer's seat.
         Set fields, unset fields, add and remove tags, and move the text ONLY where `text` names
         it — mirrors `lares tiddler put <title>`. `fields` maps field names to STRING values (a list rides as TiddlyWiki
         writes it: "one [[two words]]"); `unset` names fields to remove; `tags_add` / `tags_remove` take a list of tags
@@ -1710,7 +1718,7 @@ def build_mcp(coordinator: LaresCoordinator):
             raise uds.LaresVerbError(str(out.get("why") or out.get("refusal") or f"{verb} refused"), str(out.get("refusal") or f"{verb}-refused"))
         return out
 
-    @mcp.tool()
+    @mcp.tool(annotations=_CASTS)
     def meme_offer(uris: list, bag: str, nexus: "str | None" = None) -> dict:
         """OFFER records from the worn face's working layer toward a house-canon `bag` — mirrors `lares meme offer <uri…>
         --bag <slug>`. Each record names its carrier digest and its fork base (the canon carrier its working copy forked
@@ -1725,7 +1733,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["nexus"] = nexus
         return _offer_wire("offer-make", args)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def meme_offer_show(cid: "str | None" = None, bag: "str | None" = None, all: bool = False,
                         after: "str | None" = None, limit: "int | None" = None, nexus: "str | None" = None) -> dict:
         """SHOW offers at two grains — mirrors `lares meme offer show [<cid>]`. Without a CID, reads a bounded page
@@ -1757,7 +1765,7 @@ def build_mcp(coordinator: LaresCoordinator):
             raise SeatArgumentRefused(f"kahua: `face` takes a whole persona index from 0, got {face!r}")
         return face
 
-    @mcp.tool()
+    @mcp.tool(annotations=_CASTS)
     def kahua_propose(proposals: list, face: "int | None" = None, session: "str | None" = None) -> dict:
         """PROPOSE items for the face's kahua stage — mirrors `lares kahua propose`. `proposals` lists
         {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's
@@ -1778,7 +1786,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["session"] = session
         return uds.session_act("kahua-propose", args, face=_kahua_face(face))
 
-    @mcp.tool()
+    @mcp.tool(annotations=_PATCHES)
     def kahua_stage(title: str, text: str, fields: "dict | None" = None, face: "int | None" = None) -> dict:
         """STAGE one row into the face's local canon `bags/daemon-<F>` — mirrors `lares kahua stage <title> --text
         <body> [--fields <json>]`. The first of memory's two crossings: local to this device, unsigned, and it lifts
@@ -1801,7 +1809,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["fields"] = fields
         return uds.session_act("kahua-stage", args, face=_kahua_face(face))
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def kahua_get(title: "str | None" = None, history: bool = False, face: "int | None" = None,
                   after: "str | None" = None, limit: "int | None" = None) -> dict:
         """GET the face's verified kahua stage at two grains — mirrors `lares kahua get [<title>]`.
@@ -1828,7 +1836,7 @@ def build_mcp(coordinator: LaresCoordinator):
     #    over the @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The hand verbs
     #    (harden·retire·un-retire·purge) hold no tool: the operator runs `lares sense <verb>` on a terminal. ──
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READS)
     def roster(name: "str | None" = None) -> dict:
         """ROSTER at two grains — bare: every durable sensorium + its lifecycle facet (state · caps · half-life ·
         retirement); `name`: that one sensorium's full manifest facets (caps · coupling · apertures · retirement).
@@ -1837,7 +1845,7 @@ def build_mcp(coordinator: LaresCoordinator):
             return uds.output("inspect", {"name": name})
         return uds.output("roster", {})
 
-    @mcp.tool()
+    @mcp.tool(annotations=_CASTS)
     def build(name: str, half_life: "int | None" = None) -> dict:
         """BUILD a fresh EPHEMERAL pioneer sensorium (agent self-service; a retire undoes it → HOTL). Refuses
         a name-collision LOUD. Mirrors `lares sense build <name> --ephemeral`; `half_life` tunes the hardening
@@ -1847,7 +1855,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["halfLife"] = half_life
         return uds.output("build", args)
 
-    @mcp.tool()
+    @mcp.tool(annotations=_PATCHES)
     def reconcile(name: "str | None" = None, all: bool = False) -> dict:
         """RECONCILE — re-settle one sensorium (`name`) or every sensorium (`all`) against its evidence
         (idempotent; the pure reducer writes only on change). Reversible re-settle → HOTL. Mirrors

@@ -516,3 +516,19 @@ test("conferre names the receipt read's failure message", () => {
   const failed = { stdout: JSON.stringify({ ok: false, error: { code: "error", message: "receipt document unavailable" } }), code: 1 };
   assert.match(core.halvesLines(failed), /conferre unread: error: receipt document unavailable/);
 });
+
+test("wake carries the registered menu digest only while the vessel answers up", async () => {
+  const menu = answered(JSON.stringify({ digest: "a1b2c3d4e5f6" }));
+  const up = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), menu }) });
+  assert.match(up, /Lares tool menu: sha256:a1b2c3d4e5f6/);
+  const down = await wake({ run: runner({ observe: answered(JSON.stringify({ data: { node: { up: false } } })), homes: answered("h"), index: answered(page([])), menu }) });
+  assert.doesNotMatch(down, /Lares tool menu:/);
+});
+
+test("the menu digest follows sorted registered names and first lines", async () => {
+  const { menuDigest } = await import("../.claude-plugin/hooks/lares-menu-read.mjs");
+  const a = [{ name: "z", description: "Read one.\nMore." }, { name: "a", description: "Write one." }];
+  assert.equal(menuDigest(a), menuDigest([...a].reverse()));
+  assert.notEqual(menuDigest(a), menuDigest([{ ...a[0], description: "Read two." }, a[1]]));
+  assert.notEqual(menuDigest(a), menuDigest([{ ...a[0], name: "other" }, a[1]]));
+});
