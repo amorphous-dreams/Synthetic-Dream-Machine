@@ -48,8 +48,8 @@ describe.skipIf(!stagedTarget)("a minted book takes a put and promotes it", () =
     expect(moved.json?.["ok"], `MOVE refused: ${JSON.stringify(moved.json)}`).toBe(true);
     expect(Number((moved.json?.["data"] as { moved?: unknown } | undefined)?.moved ?? 0)).toBeGreaterThan(0);
 
-    const got = await lar.cli(["meme", "get", URI, "--bag", BOOK, "--json"]);
+    const got = await lar.cli(["tiddler", "get", URI, "--bag", BOOK, "--meme", "--all", "--json"]);
     expect(got.json?.["ok"], `canon read refused: ${JSON.stringify(got.json)}`).toBe(true);
-    expect((got.json?.["data"] as { canonicalHash?: string } | undefined)?.canonicalHash).toBe(putData?.canonicalHash);
+    expect((got.json?.["data"] as { meme?: { canonicalHash?: string } } | undefined)?.meme?.canonicalHash).toBe(putData?.canonicalHash);
   }, 300_000);
 });

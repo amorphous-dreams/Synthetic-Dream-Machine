@@ -18,7 +18,7 @@
  *
  * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module imports nothing — no `node:fs`, no environment read.
  * The `meme` field NAMES the wiki record behind a verb door (`lar:` names; it never fetches); the `--meme`
- * reach rides the daemon verb rail `lares meme get` already uses, which any vessel holding the cap can run.
+ * reach rides the one read door `lares tiddler get --meme` already uses, which any vessel holding the cap can run.
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
@@ -118,7 +118,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--all            follow every cursor to the end",
       "--json           emit the answer: list {filter, pinsTitle, pins, rows, total, next}; pin {title, uri, decision, pinned, text, hash}",
     ],
-    next: ["lares meme get <uri> --recipe default      # read one law meme whole"],
+    next: ["lares tiddler get <uri> --recipe default --meme   # read one law meme whole"],
     meme: "lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers",
   },
   herm: {
@@ -739,9 +739,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "reaches none of refuses `wiki-unreached`. `get` answers ON A GRADIENT and leads with a `<<~ has …>>` line " +
       "(provenance, the record's tags, its measures, `base/`): a record within one page answers fat (fields, then the " +
       "text), a longer one skinny; `--meme` recomposes a meme's root and slots into one sealed carrier, whole within a " +
-      "page, its has-stack past it, and `--all` reads the whole carrier paged on slot boundaries. `--grain` names " +
-      "skinny or fat (the tiddler grain), handle or resolved (a pointer's body, from the local CAS by CID; a web2 " +
-      "`_canonical_uri` stays named, never fetched), slot or whole (the meme); an unknown grain refuses. `put` PATCHES: it sets and unsets " +
+      "page, its has-stack past it. `--skinny` reads the card; `--all` the whole at the lens's grain: a record fat, a " +
+      "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
+      "paged on slot boundaries; `--slot` one slot. `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it, landing in the " +
       "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
       "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
@@ -781,9 +781,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--meme               (get) the meme lens: the root and its slots as one sealed carrier (a record that holds none answers itself)",
-      "--grain <g>          (get) skinny · fat · handle · resolved · slot · whole; none: the gradient picks by size",
-      "--skinny             (get) every field, the text left home (--grain skinny)",
-      "--all                (get) the whole: a meme's carrier, its pages followed to the end (--grain whole)",
+      "--skinny             (get) every field, the text left home (the card)",
+      "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
       "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",
       "--unset <a,b>        (put) fields to remove",
       "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]",
@@ -801,26 +800,25 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   meme: {
-    usage: "usage: lares meme <put | get | patch | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
+    usage: "usage: lares meme <put | patch | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
-      "reach; `put` · `get` · `patch` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
-      "the daemon verb. Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
+      "reach; `put` · `patch` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
+      "the daemon verb. A meme READS through the one door: `lares tiddler get <uri> --recipe <slug> --meme` (whole within a page, " +
+      "its has-stack past it; `--all` the whole carrier). Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
       "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
       "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone. " +
       "`--base` carries the " +
       "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
     examples: [
-      "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # the carrier on stdout (a pipe too), the base on stderr; --json for the envelope",
+      "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme   # READ a meme: the carrier, base on stderr (the one door)",
       "lares meme patch lar:///ha.ka.ba/... --recipe lares --slot '#/x' --append note.txt --base <hash>  # one slot's body through the put's gate, resealed",
-      "lares meme get road.html --recipe lares       # a rendered record (`projection: rendered` on its source): one read; its writes refuse rendered-derives, so edit the sources",
       "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
       "lares meme put lar:///ha.ka.ba/... --bag lar:///ha.ka.ba/bags/daemon-<relation> --face 1 --file note.mem   # a lit face writes its own lane, sealed by its own chain",
       "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
       "lares meme list --bag lares                                            # every root that one bag holds",
-      "lares meme get lar:///ha.ka.ba/lares/docs/x --recipe lares --all      # a meme past one page answers its has-stack; --all reads it whole, paged on slot boundaries",
       "lares meme delete lar:///ha.ka.ba/... --recipe lares --if-match <hash> # a stale base moves nothing",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
@@ -834,9 +832,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
       "--bag <slug>       a residency placement into that bag (refused when this island cannot write it)",
-      "--json             (get) the envelope {uri, text?, canonicalHash, bytes, grain, slots, next}; the carrier otherwise, on a terminal or a pipe",
-      "--after <cursor>   (get) one page of the whole carrier: hand back the cursor `next` named",
-      "--all              (get) the whole carrier, its pages (each cut on a slot boundary) followed to the end",
       "--base <hash>      (put, patch) the canonical hash last read; required on patch; stale → conflict, nothing lands",
       "--slot <#/name>    (patch) the slot whose body moves",
       "--append <file>    (patch) a paragraph at the end of the slot's body",
@@ -857,7 +852,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "editor's problem matcher (lar:///ha.ka.ba/lares/cli/problems); a clean file prints nothing, the exit stays",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
         "e.g. a call site's `:` vs `=`) — default reports them as a preference and moves no byte",
-      "--to <mem|md|html|tid|json>   (project) the render target",
+      "--to <md|html|tid|json>   (project) the render target (the carrier itself: `lares tiddler get <uri> --recipe <slug> --meme --all`)",
       "--out <path>       (project) the pair's directory (--to md) or the rendered file; stdout otherwise",
       "--check            (project --to md, over a <file.md|dir>) prove currency by re-projection alone; " +
         "writes nothing, exits 1 naming each pair whose source moved or vanished, or whose bytes drifted",

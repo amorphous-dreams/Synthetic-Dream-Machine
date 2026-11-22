@@ -174,7 +174,7 @@ describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a 
     let text = "";
     const deadline = performance.now() + 120_000;
     while (performance.now() < deadline) {
-      const got = await B2.cli(["meme", "get", SEALED_URI, "--recipe", "lares", "--json"]);
+      const got = await B2.cli(["tiddler", "get", SEALED_URI, "--recipe", "lares", "--meme", "--all", "--json"]);
       text = got.stdout + got.stderr;
       if (got.code === 0 && text.includes(SEALED_MARK)) break;
       await new Promise((r) => setTimeout(r, 2_000));

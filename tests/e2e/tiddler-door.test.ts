@@ -302,9 +302,9 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(after.fields).toMatchObject({ status: "done", tags: "memory feedback reviewed" });
     expect(after.textHash).toBe(before.textHash);
     expect(after.hash).toBe(dataOf(put)["hash"]);
-    // The meme door still reads the family whole after a field patch on its root.
-    const meme = await lar.cli(["meme", "get", uriOf(5), ...D]);
-    say("CLI meme get after the patch (the family still recomposes)", { code: meme.code, hasWhy: String(dataOf(meme)["text"]).includes("Because walk 5 measured it.") });
+    // The meme lens still reads the family whole after a field patch on its root.
+    const meme = await lar.cli(["tiddler", "get", uriOf(5), "--meme", "--all", ...D]);
+    say("CLI tiddler get --meme after the patch (the family still recomposes)", { code: meme.code, hasWhy: String((dataOf(meme)["meme"] as Record<string, unknown> | undefined)?.["text"]).includes("Because walk 5 measured it.") });
     expect(meme.code, meme.stderr).toBe(0);
     // CONTROL: the base the patch moved past lands nothing, on both skins.
     const stale = await lar.cli(["tiddler", "put", uriOf(5), "--fields", JSON.stringify({ status: "stale" }), "--base", before.hash, ...D]);
@@ -385,7 +385,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("CLI wiki filter over the family's address after the delete", left);
     expect(left).toEqual([]);
     expect((await lar.cli(["tiddler", "get", uriOf(extra), ...D])).code).toBe(3);
-    expect((await lar.cli(["meme", "get", uriOf(extra), "--recipe", "default", "--json"])).code).not.toBe(0);
+    expect((await lar.cli(["tiddler", "get", uriOf(extra), "--recipe", "default", "--meme", "--all", "--json"])).code).not.toBe(0);
   }, 300_000);
 
   test("EVERY WIKI ITS ENGINE: a wiki the face founds answers the tiddler door in its own engine, on both skins; the daemon wiki reads none of it", async () => {

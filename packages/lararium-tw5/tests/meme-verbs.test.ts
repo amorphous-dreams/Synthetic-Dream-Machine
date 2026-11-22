@@ -298,7 +298,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const { canon } = stacked(r);
     await land(canon, bagUri("garden"), ["a"]);
     await shadow(r, ["a"]);
-    await expect(makeMemeProjectReactor(r.opts)({ recipe: "garden", uri: URI, to: "mem" }, ctx())).rejects.toThrow(/no meme stands/);
+    await expect(makeMemeProjectReactor(r.opts)({ recipe: "garden", uri: URI, to: "md" }, ctx())).rejects.toThrow(/no meme stands/);
   });
 
   test("CONTROL: a tombstone BENEATH a live record shadows nothing above it", async () => {
@@ -570,16 +570,12 @@ describe("meme-project — the daemon skin of the projection", () => {
     expect(capCalls).toEqual([{ access: "read", bag: bagUri("daemon") }]);
   });
 
-  test("a named bag projects mem and md over that bag's records, through the text laws", async () => {
+  test("RED: a named bag projects md over that bag's records; the carrier itself (mem) reads through the one door and refuses here by name", async () => {
     const r = rigWithFace();
     projectCalls.length = 0;
     await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
     const project = makeMemeProjectReactor(r.opts);
-    const mem = await project({ bag: "sdm", uri: URI, to: "mem" }, ctx());
-    expect(mem["contentType"]).toBe("text/memetic-wikitext+tiddlywiki");
-    expect(mem["text"]).toContain("<<~ ahu slot=`#/a`>>");
-    const get = await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
-    expect(mem["text"]).toBe((get["meme"] as { text: string }).text);
+    await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(/tiddler-get \(meme: true, grain: "whole"\)/);
     const md = await project({ bag: "sdm", uri: URI, to: "md" }, ctx());
     expect(md["contentType"]).toBe("text/markdown");
     expect(md["text"]).toContain("# a");
@@ -591,9 +587,9 @@ describe("meme-project — the daemon skin of the projection", () => {
   test("★ refusals are loud: an unknown target names the targets; a wiki render on a bag names the anchor; an absent meme names the URI ★", async () => {
     const r = rigWithFace();
     const project = makeMemeProjectReactor(r.opts);
-    await expect(project({ recipe: "default", uri: URI, to: "docx" }, ctx())).rejects.toThrow(/docx.*mem · md · html · tid · json/);
+    await expect(project({ recipe: "default", uri: URI, to: "docx" }, ctx())).rejects.toThrow(/docx.*md · html · tid · json/);
     await expect(project({ bag: "sdm", uri: URI, to: "html" }, ctx())).rejects.toThrow(/anchor/);
-    await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(URI);
+    await expect(project({ bag: "sdm", uri: URI, to: "md" }, ctx())).rejects.toThrow(URI);
     await expect(project({ recipe: "default", uri: URI }, ctx())).rejects.toThrow(/args\.to/);
   });
 });

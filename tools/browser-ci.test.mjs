@@ -1,6 +1,6 @@
 /**
  * tools/browser-ci.sh against a fake `docker` that records argv. Nothing here starts a container: the live proof
- * (up, ingest, meme get, qa smoke, down) runs against the real image. This pins the driver's contract: the verb
+ * (up, ingest, tiddler get --meme, qa smoke, down) runs against the real image. This pins the driver's contract: the verb
  * routing, the refusals by name, that `down` removes the volumes, and that no argv ever carries the Docker socket.
  */
 import assert from "node:assert/strict";
@@ -249,8 +249,8 @@ test("BROWSER_CI_WIKI names the wiki without asking the node", async () => {
 
 test("get reads AS the mounted wiki by default, and takes an explicit --bag or --recipe", async () => {
   const u = "lar:///ha.ka.ba/x/y";
-  assert.match((await run(["get", u])).calls, /meme get lar:\/\/\/ha\.ka\.ba\/x\/y --recipe lares/);
-  assert.match((await run(["get", u, "--bag", "aki-fixture"])).calls, /meme get .* --bag aki-fixture/);
+  assert.match((await run(["get", u])).calls, /tiddler get lar:\/\/\/ha\.ka\.ba\/x\/y --recipe lares --meme --all/);
+  assert.match((await run(["get", u, "--bag", "aki-fixture"])).calls, /tiddler get .* --bag aki-fixture --meme --all/);
   assert.equal((await run(["get", u, "--tag", "z"])).status, 2);
 });
 

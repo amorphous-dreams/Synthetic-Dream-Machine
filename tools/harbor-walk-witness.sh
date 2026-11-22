@@ -168,7 +168,7 @@ while [ ! -f "$projected" ] && [ "$tries" -lt 30 ]; do sleep 1; tries=$((tries +
 result 'leg 1: a sourced canon bag projects back under /workspace/bags' test -f "$projected"
 result 'leg 1: the house writes no private plane under /workspace' test -z "$(find "$SCRATCH_WORKSPACE" -mindepth 1 \( -path "$SCRATCH_WORKSPACE/bags" -o -path "$SCRATCH_WORKSPACE/wikis" \) -prune -o -print -quit)$(find "$SCRATCH_WORKSPACE/bags" "$SCRATCH_WORKSPACE/wikis" -maxdepth 1 \( -name daemon -o -name kahua \) -print -quit)"
 # The daemon recipe explicitly includes the public crossroads library.
-got=$(lares meme get lar:///ha.ka.ba/lares/docs/harbor-walk-probe --recipe default --json 2>&1 || :)
+got=$(lares tiddler get lar:///ha.ka.ba/lares/docs/harbor-walk-probe --recipe default --meme --all --json 2>&1 || :)
 result "leg 1: the wiki's recipe resolves the carrier"          contains "$got" '"ok":true'
 drop_scratch
 

@@ -76,6 +76,7 @@ import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "
 import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
 import { READ_PAGE_BYTES, byteLength, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
+import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
@@ -232,7 +233,7 @@ function wikiOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>
     const write = /^tiddler-(put|delete)$/.test(verb);
     const door = write
       ? "A bag takes a record through the meme door: `lares meme put --bag <slug>` · `lares meme delete --bag <slug>`."
-      : "A bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record) · `lares meme list --bag <slug>` (its roots) · `lares meme get <uri> --bag <slug>` (a meme).";
+      : "A bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record; `--meme` a meme) · `lares meme list --bag <slug>` (its roots).";
     const named = target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`;
     throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} runs in a wiki's own engine; ${named}. ${door} To use ${verb}, name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki).`);
   }
@@ -559,7 +560,7 @@ interface RecordRead {
 /**
  * THE RECORD LENS ON THE GRADIENT. No grain named: a pointer answers its handle (the name travels, the body stays home); a blob
  * answers skinny (the blob law); a record whose text fits one page answers fat; a longer one answers skinny, with `next` naming
- * fat. `skinny` leaves the text home; `fat` (and `whole`) carries it; `handle` names a pointer's body; `resolved` reads a pointer's
+ * fat. `skinny` leaves the text home; `fat` (and `whole`) carries it; `handle` names a pointer's body; `resolved` (and `whole`) reads a pointer's
  * bytes from the local CAS by CID and verifies them, and a web2 `_canonical_uri` stays named, never fetched. A body grain on a
  * record that holds its text inline answers fat and says why; the record lens reads no slot grain beyond the slot's own record.
  */
@@ -572,7 +573,8 @@ async function recordRead(engine: Engine, held: Record<string, string>, title: s
   if (isPointer(held)) {
     const cid = skinnyCid(held);
     const web2 = cid === null && typeof held["_canonical_uri"] === "string";
-    if (asked === "resolved") {
+    // `whole` on a pointer asks for the whole body: the body grain's own word for it reads `resolved`.
+    if (asked === "resolved" || asked === "whole") {
       if (web2) return done(held, "handle", `a web2 \`_canonical_uri\` names the body and the door never fetches it (web3 only): ${held["_canonical_uri"]}`, null);
       if (cid === null) return done(held, "handle", "the pointer names no CID to resolve", null);
       const bytes = cas ? await cas(cid) : null;
@@ -649,6 +651,9 @@ async function memeAnswer(
   const measures = [param("type", CARRIER_TYPE), param("position", "root"), param("slots", read.slots.length), param("bytes", read.bytes), param("base", meme.canonicalHash)];
   const rootLine = hasLine(root, [...provenanceParams(from), ...tagTokens(rootFields["tags"]), ...measures], rootFields["description"] ?? rootFields["role"]);
   const lines = read.grain.applied === "skinny" ? [rootLine, ...slotHasLines(read.slots)] : [rootLine];
+  // THE COMPOSITION READING rides a whole carrier answered in one: the join of a root and its slots is where a two-headed carrier
+  // comes into being, so the read names its faults (report, never refuse; `child-grade-decision.mem` #/measured rows 11, 13).
+  const shape = read.text !== undefined && !read.page && read.grain.applied === "whole" ? readCarrierShape(read.text) : null;
   return {
     has: lines.join("\n"),
     ...from.answered, title: root, lens: "meme",
@@ -657,6 +662,7 @@ async function memeAnswer(
       slots: read.slots, ...(slot ? { slot } : {}), ...(read.page ? { page: read.page } : {}),
     },
     grain: read.grain, next: read.next,
+    ...(shape && shape.faults.length > 0 ? { shape: { check: shape.marks.check, faults: shape.faults } } : {}),
   };
 }
 

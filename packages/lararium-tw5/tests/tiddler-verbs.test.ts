@@ -265,10 +265,27 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(fetched).toEqual([]);
     const resolved = await get({ ...A, title: "Pointer", grain: "resolved" }, ctx());
     expect(resolved).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "the body the handle names" } } });
+    // `whole` on a pointer (the CLI's `--all`) reads the body grain's whole: resolved.
+    expect(await get({ ...A, title: "Pointer", grain: "whole" }, ctx())).toMatchObject({ grain: { asked: "whole", applied: "resolved" } });
     const web = await get({ ...A, title: "Web", grain: "resolved" }, ctx());
     expect(web).toMatchObject({ grain: { applied: "handle", why: expect.stringMatching(/never fetch/) }, next: null });
     expect(web["has"]).toContain("_canonical_uri/https://example.org/a.png");
-    expect(fetched).toEqual([cid]);
+    expect(fetched).toEqual([cid, cid]);
+  });
+
+  test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
+    const get = makeTiddlerGetReactor(r.opts);
+    // The tiddler grain: the card, the text left home and named.
+    const card = await get({ ...A, title: "Note 02", grain: "skinny" }, ctx());
+    expect(card).toMatchObject({ grain: { asked: "skinny", applied: "skinny" }, tiddler: { omitted: ["text"] } });
+    // The body grain: a record that names its body by CID answers its handle at either ask; the two words never merge.
+    const handle = await get({ ...A, title: "Handle" }, ctx());
+    expect(handle).toMatchObject({ grain: { asked: null, applied: "handle" } });
+    const asked = await get({ ...A, title: "Handle", grain: "skinny" }, ctx());
+    expect(asked).toMatchObject({ grain: { asked: "skinny", applied: "handle", why: expect.stringMatching(/tiddler grain reads no body/) } });
+    expect((asked["tiddler"] as { omitted?: string[] }).omitted).toBeUndefined();
   });
 
   test("RED one-door-meme-lens: --meme on a meme within a page answers the whole carrier byte for byte, sealed, with base/ on its has line", async () => {

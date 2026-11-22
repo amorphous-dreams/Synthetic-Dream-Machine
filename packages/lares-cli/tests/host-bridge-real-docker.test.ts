@@ -73,7 +73,7 @@ describe.skipIf(!enabled)("the host bridge against real docker (a throwaway comp
   }, 120_000);
 
   it("argv crosses exact: spaces, quotes, an empty string, `--`", () => {
-    const argv = ["meme", "get", "lar:///a b", "--bag", "", "it's", "--", "--json"];
+    const argv = ["tiddler", "get", "lar:///a b", "--bag", "", "it's", "--", "--json"];
     const r = lares(argv);
     expect(r.status, r.stderr).toBe(0);
     expect(report(r.stdout, "ARG")).toEqual(argv);
@@ -88,8 +88,8 @@ describe.skipIf(!enabled)("the host bridge against real docker (a throwaway comp
   }, 60_000);
 
   it("the vessel's exit code returns unchanged", () => {
-    expect(lares(["meme", "get", "exit:7", "--bag", "lares"]).status).toBe(7);
-    expect(lares(["meme", "get", "exit:0", "--bag", "lares"]).status).toBe(0);
+    expect(lares(["tiddler", "get", "exit:7", "--bag", "lares"]).status).toBe(7);
+    expect(lares(["tiddler", "get", "exit:0", "--bag", "lares"]).status).toBe(0);
   }, 60_000);
 
   it("a piped run reads no TTY inside", () => {

@@ -32,7 +32,7 @@ export function containerArgs(args: ParsedArgs, verb: string, direction: "read" 
 /**
  * Name the wiki an ENGINE verb runs in (`wiki filter | render | status`, `tiddler put | delete`): `--recipe <slug>` alone. A bag
  * names one store and no wiki, so these verbs refuse `--bag` before the wire and name the door that answers a bag: a read rides
- * `tiddler get --bag` (one record), `meme list --bag` (its roots) and `meme get --bag` (a meme); a write rides `meme put --bag`
+ * `tiddler get --bag` (one record; `--meme` a meme) and `meme list --bag` (its roots); a write rides `meme put --bag`
  * and `meme delete --bag`.
  */
 export function engineContainerArgs(args: ParsedArgs, verb: string, direction: "read" | "write" = "read"): Record<string, string> {
@@ -41,7 +41,7 @@ export function engineContainerArgs(args: ParsedArgs, verb: string, direction: "
   if (bag) {
     const door = direction === "write"
       ? "a bag takes a record through the meme door: `lares meme put --bag <slug>` · `lares meme delete --bag <slug>`"
-      : "a bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record) · `lares meme list --bag <slug>` (its roots) · `lares meme get <uri> --bag <slug>` (a meme)";
+      : "a bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record; `--meme` a meme) · `lares meme list --bag <slug>` (its roots)";
     throw new ContainerTargetRefusal(`lares ${verb}: wiki-not-anchored — ${verb} runs in a wiki's own engine, and --bag names one bag and no wiki; ${door}. To use ${verb}, name the wiki: --recipe <slug> (--recipe default for the daemon wiki).`, "wiki-not-anchored");
   }
   if (!recipe) {

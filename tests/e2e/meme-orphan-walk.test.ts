@@ -96,8 +96,9 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`))), `no carrier file under ${mirror}: ${JSON.stringify(walkFiles())}`).toBe(true);
     console.error(`[walk] after put: ${JSON.stringify(walkFiles())}`);
     expect(walkFiles()).toEqual([`${PATH}.mem`]);
-    const flag = await lar.cli(["meme", "get", FLAG, ...ANCHOR, "--json"]);
-    expect(flag.json?.["ok"], "a whole family raises no flag").toBe(false);
+    // The flag stays home (a `$:/temp` alert): no door reads it, so the folder on disk carries the witness.
+    const flag = await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"]);
+    expect(said(flag), "a stay-home alert answers no door").toMatch(/tiddler-withheld/);
   });
 
   test("★ a delete takes the family whole: the answer names root and slots, the carrier file leaves, nothing orphans ★", async () => {
@@ -125,10 +126,10 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
     console.error(`[walk] ${PATH}.orphans/a.tid reads:\n${readFileSync(orphanFile, "utf8")}`);
     expect(readFileSync(orphanFile, "utf8")).toContain(`title: ${URI}#/a`);
     expect(readFileSync(orphanFile, "utf8")).toContain("an orphaned slot body");
-    const flag = await lar.cli(["meme", "get", FLAG, ...ANCHOR, "--json"]);
-    console.error(`[walk] the flag reads: ${JSON.stringify((flag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? flag.json)}`);
-    expect(flag.json?.["ok"], said(flag)).toBe(true);
-    expect(String((flag.json?.["data"] as Record<string, unknown>)["text"])).toContain(`${URI}#/a`);
+    // The wiki's orphan flag is a `$:/temp` alert, which stays home and answers no door (`tiddler-withheld`); the
+    // `<stem>.orphans/` folder above is the outside witness, and the flag's raise rides the tw5 unit suite (surfaceOrphanAlert).
+    const flag = await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"]);
+    expect(said(flag), "a stay-home alert answers no door").toMatch(/tiddler-withheld/);
   });
 
   test("★ the root returns: the slot re-roots, the orphan folder leaves and the flag clears ★", async () => {
@@ -137,8 +138,6 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`)) && !existsSync(join(mirror, `${PATH}.orphans`))), `the folder stayed: ${JSON.stringify(walkFiles())}`).toBe(true);
     console.error(`[walk] after the root returned: ${JSON.stringify(walkFiles())}`);
     // The pass that removes the folder clears the flag first, so a folder that left names a flag that left.
-    const flag = await lar.cli(["meme", "get", FLAG, ...ANCHOR, "--json"]);
-    console.error(`[walk] the flag after the return: ${JSON.stringify(flag.json?.["error"] ?? flag.json?.["data"])}`);
-    expect(flag.json?.["ok"], "the flag clears with the folder").toBe(false);
+    // The folder leaving is the outside witness; the flag itself stays home (`tiddler-withheld`).
   });
 });

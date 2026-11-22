@@ -879,11 +879,19 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   };
 }
 
+/** The targets `meme-project` renders: every projection but the carrier itself, which reads through `tiddler-get`. */
+const PROJECT_VERB_TARGETS = ["md", "html", "tid", "json"] as const;
+
 export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-project");
     const to = stringArg(args, "to");
-    if (!to) throw new Error("meme-project: args.to is required (mem · md · html · tid · json)");
+    if (!to) throw new Error("meme-project: args.to is required (md · html · tid · json)");
+    // THE CARRIER ITSELF READS THROUGH THE ONE DOOR: `mem` left this verb's targets for `tiddler-get` with `meme: true` and
+    // `grain: "whole"` (`lares tiddler get <uri> --meme --all`), which pages the composed carrier on slot boundaries.
+    if (!(PROJECT_VERB_TARGETS as readonly string[]).includes(to)) {
+      throw new Error(`meme-project: unknown target "${to}"; it renders md · html · tid · json, and the carrier itself reads through tiddler-get (meme: true, grain: "whole")`);
+    }
     const projectTarget = projectTargetOf(to);
     const dialect = optionalStringArg(args, "dialect") ?? undefined;
     const tongue = optionalStringArg(args, "tongue") ?? undefined;
@@ -901,12 +909,11 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
       if (!face) throw new Error("meme-project: the anchor wiki publishes no $tw.lares.meme (the meme-face startup module is absent)");
       return { ...face.project(target.uri, projectTarget, { ...(dialect ? { dialect } : {}), ...(tongue ? { tongue } : {}) }) };
     }
-    if (projectTarget !== "mem" && projectTarget !== "md") {
-      throw new Error(`meme-project: "${projectTarget}" renders through a wiki and projects from the anchor only; a recipe or bag target projects mem · md`);
+    if (projectTarget !== "md") {
+      throw new Error(`meme-project: "${projectTarget}" renders through a wiki and projects from the anchor only; a recipe or bag target projects md`);
     }
     const meme = await readMeme(target.uri, sink);
     if (!meme) throw new Error(`meme-project: no meme stands under ${target.uri} in ${bag}`);
-    if (projectTarget === "mem") return { ...projectCarrierText(meme.text, target.uri, projectTarget) };
 
     // THE STORE PATH, `md`: the recorded-target record (`submissionTitleOf(uri)`) is a RENDERED
     // pair's sidecar, never a carrier a store's `readMeme` can answer — a store seat holds carrier

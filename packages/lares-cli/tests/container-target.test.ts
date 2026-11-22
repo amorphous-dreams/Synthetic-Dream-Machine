@@ -12,31 +12,31 @@ const args = (options: Record<string, string> = {}): ParsedArgs => ({
 describe("containerArgs", () => {
   test("requires one explicit container and names both ways to supply it", () => {
     try {
-      containerArgs(args(), "meme get");
+      containerArgs(args(), "tiddler get");
       throw new Error("expected no-container refusal");
     } catch (err) {
       expect(err).toMatchObject({ code: "no-container" });
       expect((err as Error).message).toBe(
-        "lares meme get: no-container — name where to read: --recipe <slug> (as that wiki, e.g. --recipe lares) or --bag <slug> (that one bag). No default wiki exists.",
+        "lares tiddler get: no-container — name where to read: --recipe <slug> (as that wiki, e.g. --recipe lares) or --bag <slug> (that one bag). No default wiki exists.",
       );
     }
   });
 
   test("returns exactly the named container", () => {
-    expect(containerArgs(args({ recipe: " lares " }), "meme get")).toEqual({ recipe: "lares" });
+    expect(containerArgs(args({ recipe: " lares " }), "tiddler get")).toEqual({ recipe: "lares" });
     expect(containerArgs(args({ bag: " sd m " }), "meme put", "write")).toEqual({ bag: "sd m" });
   });
 
   test("a realm rides beside a bag and names that bag's realm; control: with none named the bag stands alone", () => {
     const realm = "C1AB".repeat(16);
-    expect(containerArgs(args({ bag: "lares", realm: ` ${realm} ` }), "meme get")).toEqual({ bag: "lares", realm: realm.toLowerCase() });
-    expect(containerArgs(args({ bag: "lares" }), "meme get")).toEqual({ bag: "lares" });
-    expect(containerArgs(args({ bag: "lares", realm: "  " }), "meme get")).toEqual({ bag: "lares" });
+    expect(containerArgs(args({ bag: "lares", realm: ` ${realm} ` }), "tiddler get")).toEqual({ bag: "lares", realm: realm.toLowerCase() });
+    expect(containerArgs(args({ bag: "lares" }), "tiddler get")).toEqual({ bag: "lares" });
+    expect(containerArgs(args({ bag: "lares", realm: "  " }), "tiddler get")).toEqual({ bag: "lares" });
   });
 
   test("a realm beside a recipe refuses by name: a wiki lives in no realm", () => {
     try {
-      containerArgs(args({ recipe: "lares", realm: "a".repeat(64) }), "meme get");
+      containerArgs(args({ recipe: "lares", realm: "a".repeat(64) }), "tiddler get");
       throw new Error("expected no-container refusal");
     } catch (err) {
       expect(err).toMatchObject({ code: "no-container" });
@@ -46,17 +46,19 @@ describe("containerArgs", () => {
 
   test("the same named refusal rejects two containers", () => {
     try {
-      containerArgs(args({ recipe: "lares", bag: "sdm" }), "meme get");
+      containerArgs(args({ recipe: "lares", bag: "sdm" }), "tiddler get");
       throw new Error("expected no-container refusal");
     } catch (err) {
       expect(err).toMatchObject({ code: "no-container" });
-      expect((err as Error).message).toBe("lares meme get: no-container — name one of --recipe <slug> or --bag <slug>, never both.");
+      expect((err as Error).message).toBe("lares tiddler get: no-container — name one of --recipe <slug> or --bag <slug>, never both.");
     }
   });
 });
 
 type BareCall = { file: string; line: number; command: string };
 const VERB = "(?:put|get|list|delete|project)";
+/** The doors a content caller names a container on: the meme door's verbs, and the one read door's meme lens (`tiddler get … --meme`). */
+const DOOR = `(?:meme\\s+${VERB}|tiddler\\s+get)`;
 
 function scanBareCalls(file: string, source: string): BareCall[] {
   const lines = source.split(/\r?\n/);
@@ -70,9 +72,9 @@ function scanBareCalls(file: string, source: string): BareCall[] {
     if (/^\s*(?:\/\/|#|\*)/.test(line)) continue;
     if (/\b(?:test|describe)\s*\(/.test(line)) continue;
     const code = line.replace(/\s+\/\/.*$/, "").replace(/(^|\s)#.*$/, "$1");
-    const shell = new RegExp(`\\b(?:lares|\\$LARES|\\$\\{LARES\\})\\s+meme\\s+(${VERB})(?=\\s|$)`).exec(code);
-    const node = new RegExp(`\\bnode\\s+[^\\s;&|]*lares\\.(?:mjs|js)\\s+meme\\s+(${VERB})(?=\\s|$)`).exec(code);
-    const jsonVerb = new RegExp(`\\bjson_verb\\s+meme\\s+(${VERB})(?=\\s|$)`).exec(code);
+    const shell = new RegExp(`\\b(?:lares|\\$LARES|\\$\\{LARES\\})\\s+${DOOR}(?=\\s|$)`).exec(code);
+    const node = new RegExp(`\\bnode\\s+[^\\s;&|]*lares\\.(?:mjs|js)\\s+${DOOR}(?=\\s|$)`).exec(code);
+    const jsonVerb = new RegExp(`\\bjson_verb\\s+${DOOR}(?=\\s|$)`).exec(code);
     const invocation = shell ?? node ?? jsonVerb;
     if (invocation) {
       const tail = code.slice(invocation.index);
@@ -80,12 +82,13 @@ function scanBareCalls(file: string, source: string): BareCall[] {
       const group = [command];
       while (/\\\s*$/.test(group[group.length - 1]!) && i + 1 < lines.length) group.push(lines[++i]!);
       const full = group.join(" ");
-      if (!/--(?:recipe|bag)\b/.test(full) && !/\$@/.test(full) && !(/meme\s+project\b/.test(full) && /--to\s+md\b/.test(full))) {
+      const tiddlerRead = /tiddler\s+get\b/.test(full);
+      if ((!tiddlerRead || /--meme\b/.test(full)) && !/--(?:recipe|bag)\b/.test(full) && !/\$@/.test(full) && !(/meme\s+project\b/.test(full) && /--to\s+md\b/.test(full))) {
         out.push({ file, line: i + 1, command: full.trim() });
       }
     }
 
-    const array = /["']meme["']\s*,\s*["'](put|get|list|delete|project)["']/.exec(code);
+    const array = /["']meme["']\s*,\s*["'](put|get|list|delete|project)["']|["']tiddler["']\s*,\s*["']get["'](?=[^\]]*["']--meme["'])/.exec(code);
     if (!array) continue;
     const start = code.lastIndexOf("[", array.index);
     const close = code.indexOf("]", array.index);
@@ -136,11 +139,11 @@ describe("repository content-container law", () => {
 
   test("CONTROL: each supported call spelling is detected when bare", () => {
     const planted = [
-      ["shell.sh", "lares meme get lar:///t/x"],
-      ["node.sh", "node ./packages/lares-cli/bin/lares.mjs meme get lar:///t/x"],
-      ["function.sh", "function pull() { lares meme get lar:///t/x; }"],
-      ["json.sh", "json_verb meme get lar:///t/x"],
-      ["array.ts", 'const args = ["meme", "get", "lar:///t/x"];'],
+      ["shell.sh", "lares tiddler get lar:///t/x --meme"],
+      ["node.sh", "node ./packages/lares-cli/bin/lares.mjs meme put lar:///t/x"],
+      ["function.sh", "function pull() { lares tiddler get lar:///t/x --meme; }"],
+      ["json.sh", "json_verb tiddler get lar:///t/x --meme"],
+      ["array.ts", 'const args = ["tiddler", "get", "lar:///t/x", "--meme"];'],
     ] as const;
     expect(planted.map(([file, source]) => [file, scanBareCalls(file, source).length]))
       .toEqual(planted.map(([file]) => [file, 1]));

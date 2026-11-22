@@ -30,6 +30,7 @@ import { containerArgs, engineContainerArgs } from "../container-target.js";
 import { emit, exitFor, proseFirst } from "../render.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
 import { helpLines } from "../command-help.js";
+import { readCarrierShape } from "@lararium/tw5";
 import type { ParsedArgs } from "../parse-args.js";
 
 const SUBS = ["get", "put", "delete"] as const;
@@ -45,12 +46,13 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
     if (slot) out["slot"] = slot;
     const fields = namesOf(args.options["fields"]);
     if (fields) out["fields"] = fields;
-    // THE GRADIENT: the lens (`--meme` recomposes the carrier) and the grain (`--grain`; `--skinny` and `--all` spell its two common
-    // asks) ride apart. The door refuses a grain outside its closed set by name.
+    // THE GRADIENT: the lens (`--meme` recomposes the carrier) and the grain ride apart, and the line spells the grain with the
+    // flags it already held: `--skinny` (the card), `--all` (the whole at the lens's grain: a record fat, a pointer resolved from
+    // the local CAS, a meme's carrier paged on slot boundaries), `--slot` (one slot). None: the door picks by size.
     if (args.flags["meme"] === true) out["meme"] = true;
-    const grains = [wordOf(args.options["grain"]), args.flags["skinny"] === true ? "skinny" : null, args.flags["all"] === true ? "whole" : null].filter((g): g is string => g !== null);
-    if (new Set(grains).size > 1) throw new DoorUsage(`name one grain: --grain <g>, --skinny (skinny) or --all (whole); got ${grains.join(" and ")}`);
-    if (grains[0]) out["grain"] = grains[0];
+    if (args.flags["skinny"] === true && args.flags["all"] === true) throw new DoorUsage("name one grain: --skinny (the card) or --all (the whole), never both");
+    if (args.flags["skinny"] === true) out["grain"] = "skinny";
+    if (args.flags["all"] === true) out["grain"] = "whole";
     const after = wordOf(args.options["after"]);
     if (after) out["after"] = after;
     const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
@@ -149,9 +151,21 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
   const followed = lens && args.flags["all"] === true && parts.length > 1;
   const note = typeof output["note"] === "string" ? output["note"] : null;
   // `--all` followed: the envelope carries the whole carrier the pages joined to, the first page's has line, and no next.
-  const data = followed && meme
+  const data0 = followed && meme
     ? { ...first.output, meme: (({ page: _page, ...whole }) => ({ ...whole, text: parts.join("") }))(meme), next: null }
     : output;
+  // ── THE COMPOSITION READING, WHERE A HUMAN WAITS ON A CARRIER ─────────────────────────────────────────
+  // The whole carrier the meme lens answers is the composed one: the join a root and its slot children make. That join is where
+  // a whole class of fault comes into being and nowhere else (two legal carriers joined into one with two text frames, only the
+  // first verifying: `child-grade-decision.mem` #/measured rows 11 and 13). So the read carries `readCarrierShape` over the
+  // whole carrier: the faults ride the machine channel (`shape`) and stderr, never stdout (the operator's artifact), and the
+  // exit carries the reading while `ok` carries the act. REPORT, NEVER REFUSE: write-open, read-certified; withholding the
+  // bytes would arbitrate over a carrier its author wrote on purpose, and no byte of the read is wrong.
+  // The door reads a carrier answered in one page (`shape`, where it faults); a carrier `--all` joined from pages reads here.
+  const joined = followed ? readCarrierShape(parts.join("")) : null;
+  const shape = joined ? { check: joined.marks.check, faults: joined.faults } : (output["shape"] as { check: string; faults: string[] } | undefined) ?? null;
+  const faulted = shape !== null && shape.faults.length > 0;
+  const data = joined && faulted ? { ...data0, shape } : data0;
   emit(args, {
     ok: true, requestId: ran.requestId, data,
     human: () => {
@@ -171,6 +185,11 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
           if (after) console.error(`page ${meme.page.page} of ${meme.page.pages}: read the next with --after ${after} (or --all for the whole carrier)`);
         }
         if (output["floor"] === true) console.error(FLOOR_NOTE);
+        if (faulted) {
+          console.error(`\n⚠ the composed carrier stands below its full floor (check ${shape!.check}):`);
+          for (const fault of shape!.faults) console.error(`  ⚠ ${fault}`);
+          console.error("  the bytes above are what the island composed — read the fault before you carry them anywhere.");
+        }
         return;
       }
       const record = tiddler!;
@@ -187,7 +206,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
       if (output["floor"] === true) console.error(FLOOR_NOTE);
     },
   });
-  return 0;
+  return faulted ? 1 : 0;
 }
 
 /** The note a floor read carries: the bag's floor snapshot answered, since this face holds no read on the live house canon document. */

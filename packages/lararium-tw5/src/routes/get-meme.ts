@@ -18,7 +18,7 @@ module-type: route
  * ── A RECIPE READS ITS STACK ────────────────────────────────────────────────────────────────────
  * On a plain server the wiki IS the stack: `recipes/default` reads the one wiki, top to bottom, and
  * that is the whole recipe. On an island a recipe is a stack of bags (canon ← working ← draft ←
- * temp), and `meme get --recipe <slug>` reads it the same way — top-down, the first live record
+ * temp), and `tiddler get <uri> --meme --recipe <slug>` reads it the same way — top-down, the first live record
  * wins — while `meme put --recipe <slug>` writes the recipe's designated writable bag. The two doors
  * answer the same bytes and the same `canonicalHash` for the same recipe; `tests/e2e/recipe-parity`
  * witnesses it over a live fork server and a staged island.

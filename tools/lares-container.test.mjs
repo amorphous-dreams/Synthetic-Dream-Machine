@@ -559,7 +559,7 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a verb the CLI refuses keeps its exit status, and no standing check follows`, async () => {
-    const r = await run(shim, ["meme", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
+    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default", "--meme"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
     assert.equal(r.status, 7);
     assert.doesNotMatch(r.calls, /--observe/);
   });

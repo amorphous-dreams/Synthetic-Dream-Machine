@@ -359,14 +359,15 @@ export const STEPS = Object.freeze([
     run: cli(["wiki", "share", "lares", "--write", FACES.engineer, "--read", FACES.referee, "--no-json"], ["workbench: wiki lares rides realm", "(2 member face(s))"]) },
 
   // Memory, the lift, another face.
-  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "meme_put lands a stage meme; meme_get reads it back",
+  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "meme_put lands a stage meme; tiddler_get(meme) reads it back",
     run: async (ctx) => {
       const text = memeText(MEMORY, MEMORY_LINE);
       const seat = await ctx.seat([
         { name: "meme_put", arguments: { uri: MEMORY, text, recipe: "default" } },
-        { name: "meme_get", arguments: { uri: MEMORY, recipe: "default" } },
+        { name: "tiddler_get", arguments: { title: MEMORY, recipe: "default", meme: true, grain: "whole" } },
       ]);
       if (seat.unreached) return seat;
+      // The one door answers its whole envelope; the carrier rides `meme.text`, which the stringified answer carries.
       const back = JSON.stringify(seat.results[1] ?? null);
       return { ok: back.includes(MEMORY_LINE), answer: `meme_put → ${JSON.stringify(seat.results[0])}` };
     } },
@@ -468,7 +469,7 @@ export const STEPS = Object.freeze([
       for (const [face, name] of [[1, "engineer"], [2, "referee"]]) {
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
-        const got = await ctx.cli(["meme", "get", NOTE(name), "--recipe", "notes", "--no-json"]);
+        const got = await ctx.cli(["tiddler", "get", NOTE(name), "--recipe", "notes", "--meme", "--all", "--no-json"]);
         const ok = got.code === 0 && got.stdout.includes(`the ${name} wrote this page`);
         said.push(`${name}: ${ok ? "its page reads back" : refusalOf(got)}`);
         if (!ok) return { ok: false, answer: said.join(" · ") };

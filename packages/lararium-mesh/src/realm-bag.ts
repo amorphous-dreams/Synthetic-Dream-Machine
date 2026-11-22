@@ -140,7 +140,7 @@ export interface RealmBagRegistration {
   readonly kind:       typeof REALM_BAG_DOMAIN;
   /** The realm this registration lives in — a record carried onto another realm's doc never counts. */
   readonly realmId:    string;
-  /** The bag's lar: URI — the name both sides ask by (`meme get --bag lares`). */
+  /** The bag's lar: URI — the name both sides ask by (`tiddler get --meme --bag lares`). */
   readonly bagUri:     string;
   /** The Automerge doc URL the bag's tiddlers live in — the doc the members replicate. */
   readonly docUrl:     string;

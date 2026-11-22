@@ -30,7 +30,7 @@ afterAll(async () => { await lar?.stop(); });
 
 describe("e2e/session-wears-the-lit-face", () => {
   test("S1 RED: the CLI, naming the place, reads its lit face's wiki as the face", async () => {
-    const got = await lar.cli(["meme", "get", URI, "--recipe", "lares", "--json"]);
+    const got = await lar.cli(["tiddler", "get", URI, "--recipe", "lares", "--meme", "--all", "--json"]);
     expect(JSON.stringify(got.json), "the wiki answers not-found, never cap-denied").toContain("not-found");
     expect(JSON.stringify(got.json)).not.toContain("cap-denied");
   });
@@ -141,10 +141,10 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     const put = await walk.cli(["meme", "put", MEME, "--bag", siblingBag, "--file", file, "--face", "1", "--json"]);
     expect(put.code, out(put)).toBe(0);
     expect(data(put)["face"], "the answer names the face it landed in").toBe(1);
-    const back = await walk.cli(["meme", "get", MEME, "--bag", siblingBag, "--face", "1", "--json"]);
+    const back = await walk.cli(["tiddler", "get", MEME, "--bag", siblingBag, "--face", "1", "--meme", "--all", "--json"]);
     expect(back.code, out(back)).toBe(0);
     expect(out(back)).toContain("Sibling stands in its own layer");
-    const worn = await walk.cli(["meme", "get", MEME, "--recipe", "default", "--json"]);
+    const worn = await walk.cli(["tiddler", "get", MEME, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(out(worn), "the worn face never sees the sibling's working layer").not.toContain("Sibling stands in its own layer");
     expect(worn.code, out(worn)).not.toBe(0);
   }, 180_000);
@@ -168,10 +168,10 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     writeFileSync(file, memeText(WORN_MEME, "Worn"));
     const put = await walk.cli(["meme", "put", WORN_MEME, "--recipe", "default", "--file", file, "--json"]);
     expect(put.code, out(put)).toBe(0);
-    const back = await walk.cli(["meme", "get", WORN_MEME, "--recipe", "default", "--json"]);
+    const back = await walk.cli(["tiddler", "get", WORN_MEME, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(back.code, out(back)).toBe(0);
     expect(out(back)).toContain("Worn stands in its own layer");
-    const sibling = await walk.cli(["meme", "get", WORN_MEME, "--recipe", "default", "--face", "1", "--json"]);
+    const sibling = await walk.cli(["tiddler", "get", WORN_MEME, "--recipe", "default", "--face", "1", "--meme", "--all", "--json"]);
     expect(out(sibling), "the sibling never sees the worn face's working layer").not.toContain("Worn stands in its own layer");
     expect(sibling.code, out(sibling)).not.toBe(0);
     const tid = await walk.cli(["tiddler", "put", "$:/walk/worn-engine", "--recipe", "default", "--text", "worn engine word", "--create", "--json"]);
@@ -218,7 +218,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     await door.unlockTestCustody(walk.root, "unlock", 0);
     let relit: CliResult | null = null;
     for (let look = 0; look < 60; look++) {
-      relit = await walk.cli(["meme", "get", MEME, "--bag", siblingBag, "--face", "1", "--json"]);
+      relit = await walk.cli(["tiddler", "get", MEME, "--bag", siblingBag, "--face", "1", "--meme", "--all", "--json"]);
       if (relit.code === 0) break;
       await new Promise((r) => setTimeout(r, 1000));
     }
@@ -272,7 +272,7 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     // THE SIBLING'S WRITE SURVIVED THE STOP: face 0, lit again beside face 1, reads it back from its own layer.
     let back: CliResult | null = null;
     for (let look = 0; look < 30; look++) {
-      back = await restand.cli(["meme", "get", SIB_MEME, "--bag", faceZeroBag, "--face", "0", "--json"]);
+      back = await restand.cli(["tiddler", "get", SIB_MEME, "--bag", faceZeroBag, "--face", "0", "--meme", "--all", "--json"]);
       if (back.code === 0 && out(back).includes("Before-stop stands in its own layer")) break;
       await new Promise((r) => setTimeout(r, 1000));
     }
