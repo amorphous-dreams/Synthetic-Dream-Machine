@@ -70,7 +70,7 @@ describe("lares vessel roster", () => {
     const body = JSON.parse(r.out) as { ok: boolean; data: HearthRoster };
     expect(body.ok).toBe(true);
     expect(body.data).toEqual(JSON.parse(JSON.stringify(ROSTER)));
-    expect(Object.keys(body.data).sort()).toEqual(["asker", "counts", "grain", "lanes", "lanesGap", "rotation", "seats", "unread", "vota"]);
+    expect(Object.keys(body.data).sort()).toEqual(["asker", "counts", "grain", "lanes", "lanesGap", "more", "rotation", "seats", "unread", "vota"]);
     h.refuse = "vessel-locked: run `lares vault unlock`";
     const refused = await run(argv({ json: true }));
     expect(refused.exit).not.toBe(0);

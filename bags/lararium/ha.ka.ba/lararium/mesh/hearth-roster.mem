@@ -62,10 +62,26 @@ Each intent that stands open reads as one votum: waiting on an answer (an asks a
 
 !! Guards ~ provenance, weight and what prints
 
-The roster frames its rows by provenance and weight (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust#/read-doors`>>): a seat here by the kernel's hold on its socket, a far seat by its signature, each turned through the five tools. A far device signs what it writes, so a verb prints only as a short token, an atom or a cid only as hex, and a plane's fault only as its lead code. Every list sorts by what it holds, so the same house reads the same roster. The verb channel answers the read itself and never places it, so the read writes no fact.
+The roster frames its rows by provenance and weight (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/l-space-trust#/read-doors`>>): a seat here by the kernel's hold on its socket, a far seat by its signature, each turned through the five tools.
+
+* ''What prints.'' A far device signs what it writes, so a verb prints only as a short token, an atom or a cid only as hex. A plane's fault prints only as its code: the kebab code its message leads with, else its error class (a locked custody reads `custody-locked`). The echoed request id stays a short token, and any other id the caller sent is replaced.
+* ''What it keeps.'' Each face keeps eight rows per list (seats here, seats far, lanes, vota, and a far seat's tips). The body counts every row in `counts` and the rows it left out in `more`. The bound is a count of rows, never a clock.
+* ''What it writes.'' The verb channel answers the read itself and never places it, so the read writes no fact. Every list sorts by what it holds, so the same house reads the same roster.
+* ''The drain.'' A read never holds the vessel's close: the roster's socket counts in no arbitration and in none of the frames a closing seat waits out. The close interrupts the plane reads still open, as an event and never a timer; each face it ends reads unread as `vessel-closing`, and the faces already read stand.
+* ''A seat's short id.'' A local seat prints as `s-` and the first eight hex characters of its session id: 32 of that id's 122 random bits. The whole id opens nothing either: a session frame binds to the socket that opened it (`SessionTable.checkBound`), so another socket that names the session, even by its whole envelope, refuses `unbound-session`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lyqFXnJ97dKBL7K6KLQP3uzLVbGTuEOWlt7rtyKVY9A`>>
+<<~ ahu slot=`#/who-reads`>>
+
+!! Who reads ~ the house to any seat that shares its uid
+
+''Decision (2026-11-21).'' The roster shows the whole house to any socket peer under the vessel's own uid, an AI seat with a narrower lent set included: every worn face's seats, lanes and vota, not only the faces the asker may act as. This keeps the operator's ruling of 2026-11-21: seats stand as equals, and trust rides the binding (each act still meets its own gate: the lent set, the seat's profile, the face's cap). The roster reads presence the kernel holds and plane content the signers signed, filtered to tokens and hex. It carries no secret, no key and no record body, and it acts on nothing.
+
+''Reads outside the face's turn.'' The roster reads each plane outside the face actor's turn. A read that lands during a face's drain can come back stale (the plane as it stood when the read began) or unread by its code; the next read answers afresh.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_8waMlodrlhcbmeSySKH7TOMgpYAeX26VO7z6Wv60hA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -400,6 +400,9 @@ export function renderRoster(answer, cap = ROSTER_BYTES) {
     size += bytes(row) + 1;
   }
   const cut = lines.length < rows.length ? [`cut at the wake's cap after ${lines.length} of ${rows.length} rows`] : [];
+  // The rows the vessel itself left out (each face keeps eight per list), counted in the body it answered.
+  const left = ["local", "far", "lanes", "vota"].reduce((n, k) => n + (Number.isSafeInteger(r.more?.[k]) && r.more[k] > 0 ? r.more[k] : 0), 0);
+  if (left > 0) cut.push(`+${left} more rows the vessel left out (each face keeps 8 per list)`);
   return [
     `Lares hearth (who is home): ${count(Number(counts.local ?? 0), "seat", "seats")} here · ${Number(counts.far ?? 0)} heard from afar · ${count(Number(counts.lanes ?? 0), "lane", "lanes")} · ${count(Number(counts.vota ?? 0), "open votum", "open vota")}`,
     ROSTER_WEIGHT_LINE,

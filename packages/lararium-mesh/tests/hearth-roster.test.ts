@@ -4,7 +4,7 @@ import { makeHandLineage } from "../src/hand-lineage.js";
 import { intentEntryCid, intentId, signIntentEntry, type IntentAudience, type SignedIntentEntry } from "../src/intent-entry.js";
 import { readIntentPlane } from "../src/intent-read.js";
 import { fixtureIntentVerbs } from "../src/intent-verbs.js";
-import { composeHearthRoster, hearthToken, planeRosterOf, renderHearthRoster, HEARTH_GRAIN, HEARTH_LANES_GAP, type HearthLocalSeat } from "../src/hearth-roster.js";
+import { composeHearthRoster, hearthToken, planeRosterOf, renderHearthRoster, HEARTH_GRAIN, HEARTH_LANES_GAP, HEARTH_ROWS, type HearthLocalSeat, type HearthPlaneDigest } from "../src/hearth-roster.js";
 
 // The intent fold's own fixture (intent-read.test.ts): two devices, a root, one face.
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -89,6 +89,33 @@ describe("hearth roster", () => {
     expect(JSON.stringify(two)).toBe(JSON.stringify(one));
     const moved = composeHearthRoster({ worn: 2, lit: [], lent: null, local: seats, asker: "hand", planes: [], unread: [] });
     expect(moved.rotation.holders).toEqual(["s-9c3d0e03"]);
+  });
+
+  test("RED: each face keeps eight rows per list and the body counts the rest; CONTROL: a small house keeps every row and counts none", () => {
+    const atom = (n: number) => n.toString(16).padStart(64, "0");
+    const big: HearthPlaneDigest = { face: 1, self: atom(1),
+      far: Array.from({ length: 20 }, (_, n) => ({ atom: atom(n + 1), face: 1, self: n === 0, standing: "stands" as const, acts: n === 0 ? 1 : n, lastHeard: Array.from({ length: 12 }, (_, k) => ({ entry: "claim", cid: atom(100 + k) })) })),
+      lanes: Array.from({ length: 12 }, (_, n) => ({ face: 1, intent: atom(200 + n), verb: "echo", claimant: atom(2), claim: atom(300 + n) })),
+      vota: Array.from({ length: 13 }, (_, n) => ({ face: 1, intent: atom(400 + n), verb: "echo", issuer: atom(2), audience: "every", waitsOn: "outcome" as const, owedBy: null, claimed: false })) };
+    const many = Array.from({ length: 11 }, (_, n) => ({ session: `${String(n).padStart(8, "0")}-0000-4000-8000-000000000000`, face: 1, hand: "cli" as const, anchor: "place" as const }));
+    const r = composeHearthRoster({ worn: 1, lit: [], lent: null, local: many, asker: "hand", planes: [big], unread: [] });
+    expect(HEARTH_ROWS).toBe(8);
+    expect(r.seats.filter((s) => s.grain === "local")).toHaveLength(8);
+    expect(r.seats.filter((s) => s.grain === "far")).toHaveLength(8);
+    expect(r.lanes).toHaveLength(8);
+    expect(r.vota).toHaveLength(8);
+    expect(r.more).toEqual({ local: 3, far: 12, lanes: 4, vota: 5 });
+    expect(r.counts).toEqual({ local: 11, far: 19, lanes: 12, vota: 13 });
+    expect(r.rotation.holders).toHaveLength(8);
+    // The own atom leads the far rows, then the busiest signers; a far seat's tips stop at eight too.
+    const far = r.seats.filter((s) => s.grain === "far");
+    expect(far[0]).toMatchObject({ self: true });
+    expect(far[1]!.acts).toBe(19);
+    expect(far[0]!.lastHeard).toHaveLength(8);
+    expect(renderHearthRoster(r)).toContain("  +12 more (each face keeps 8 rows)");
+    const small = composeHearthRoster({ worn: 1, lit: [], lent: null, local: seats, asker: "hand", planes: [], unread: [] });
+    expect(small.more).toEqual({ local: 0, far: 0, lanes: 0, vota: 0 });
+    expect(renderHearthRoster(small).join("\n")).not.toMatch(/more \(each face/);
   });
 
   test("RED: a far signer's verb prints only as a short token; CONTROL: a plain verb prints whole", () => {

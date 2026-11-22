@@ -40,7 +40,7 @@
 
 import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { peerSeatOf } from "./uds-peer.js";
-import { HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlaneReading } from "./hearth-roster-read.js";
+import { HEARTH_CLOSING, HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlanes } from "./hearth-roster-read.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
@@ -74,7 +74,7 @@ export interface UdsChannelOptions {
    * THE HEARTH ROSTER'S PLANE READ (`hearth-roster`): each named face's intent plane as the roster reads it (far seats, lanes,
    * vota), and each face whose plane did not read with its cause. Absent: no plane reads, and the roster names each face unread.
    */
-  readonly hearthPlanes?: (faces: readonly number[]) => Promise<HearthPlaneReading>;
+  readonly hearthPlanes?: HearthPlanes;
   /** THE WORN FACE's ordinal (the mounted face), or null at the floor: an AI seat naming no face acts as it, and where no lent set reads, as it alone (`seat-hand`). */
   readonly mountOrdinal?: () => number | null;
   /** THE LENT SET: the faces the holder names open (under a pūlama, the set it lends). An AI seat names a face inside it (`seat-hand`). */
@@ -1047,6 +1047,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const inFlight = new Set<Socket>();
   const table = new SessionTable(ownerEpoch);
   let closing = false;
+  /** The event that ends every hearth-roster plane read still open: the seat's close fires it (`HEARTH_CLOSING`). */
+  let interruptRosters: (reason: string) => void = () => {};
+  const rosterInterrupt = new Promise<string>((resolve) => { interruptRosters = resolve; });
   /** Flush, then drop: a session's signer leaves only after every save it booked rested sealed. */
   const flushThenDrop = async (signer: UdsSessionSigner | undefined): Promise<void> => {
     if (!signer) return;
@@ -1512,18 +1515,22 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // THE HEARTH ROSTER READS WHAT THIS CHANNEL HOLDS (`hearth-roster-read`): the sessions bound on this socket, the worn slot
       // and the worn faces' intent planes. A read, so it never reaches `placeVerb` and writes no fact, and it answers a locked
       // vessel too: the sessions stand whatever custody holds, and a plane that cannot read says why.
+      // A READ NEVER HOLDS THE DRAIN: the roster's socket leaves the frames this seat waits out and counts in no arbitration,
+      // so a plane read that hangs (an Automerge or board read) never keeps the vessel from closing. The close interrupts it
+      // instead (`rosterInterrupt`, an event and never a timer), and every face still unread answers `vessel-closing`.
       if (sessionRequestId === undefined && (parsed as { verb?: unknown } | null)?.verb === HEARTH_ROSTER_VERB) {
+        settleOne(sock);
         const asked = (parsed as { requestId?: unknown }).requestId;
-        const requestId = typeof asked === "string" && asked !== "" ? asked : newRequestId();
-        arbitrating += 1;
+        // The id echoes back only as a short token; any other id the caller sent is replaced, never repeated.
+        const requestId = typeof asked === "string" && /^[A-Za-z0-9._:-]{1,128}$/.test(asked) ? asked : newRequestId();
         void (async () => {
           const asker = seatKindOf(parsed) !== null || await peerSeatOf(sock) === "ai" ? "seat" as const : "hand" as const;
           const local = [...sessionSockets.values()].flatMap((state) => state.sessionId && state.supply && state.hand && state.anchor
             ? [{ session: state.sessionId, face: state.supply.ordinal, hand: state.hand, anchor: state.anchor.kind }] : []);
-          const output = await hearthRosterOf({ worn: mountOf(), lit: opts.litOrdinals?.() ?? [], lent: await lentOf(), local, asker, ...(opts.hearthPlanes ? { planes: opts.hearthPlanes } : {}) });
-          respond({ status: "done", requestId, results: { summary: { ok: true, output } } });
-        })().catch((err: unknown) => fail(err instanceof Error ? err.message : String(err)))
-          .finally(() => { arbitrating -= 1; if (idle()) drained?.(); });
+          const output = await hearthRosterOf({ worn: mountOf(), lit: opts.litOrdinals?.() ?? [], lent: await lentOf(), local, asker,
+            interrupt: rosterInterrupt, ...(opts.hearthPlanes ? { planes: opts.hearthPlanes } : {}) });
+          if (!sock.destroyed) respond({ status: "done", requestId, results: { summary: { ok: true, output } } });
+        })().catch((err: unknown) => { if (!sock.destroyed) fail(err instanceof Error ? err.message : String(err)); });
         return;
       }
       // A LOCKED VESSEL FAILS CLOSED, AND A FACELESS PLACE HOLDS NO CONTROL DOCUMENT: with the control document unread (the
@@ -1723,6 +1730,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     handleSessionFrame: queueSession,
     close: async () => {
       closing = true;
+      interruptRosters(HEARTH_CLOSING);
       for (const [sock, state] of sessionSockets) {
         if (state.sessionId) table.close(state.sessionId);
         await flushThenDrop(state.signer);

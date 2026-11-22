@@ -100,8 +100,17 @@ export interface HearthRoster {
   readonly lanesGap: string;
   readonly vota: readonly HearthVotum[];
   readonly unread: readonly { readonly face: number; readonly reason: string }[];
+  /** Every row the house holds, kept or not (`far` leaves this vessel's own atom out). */
   readonly counts: { readonly local: number; readonly far: number; readonly lanes: number; readonly vota: number };
+  /** The rows the vessel left out of the body: each face keeps `HEARTH_ROWS` seats here, seats far, lanes and vota at most. */
+  readonly more: { readonly local: number; readonly far: number; readonly lanes: number; readonly vota: number };
 }
+
+/**
+ * The rows one face keeps in each list (seats here, seats far, lanes, vota; and a far seat's tips): a count of rows, never a
+ * clock, so the body stays bounded whatever a far device writes. The wake shows the same eight.
+ */
+export const HEARTH_ROWS = 8;
 
 export const HEARTH_GRAIN = {
   local: "by presence: the kernel holds each session's socket, so a seat stands while its process stands",
@@ -190,15 +199,20 @@ export function composeHearthRoster(input: {
   readonly unread: readonly { readonly face: number; readonly reason: string }[];
 }): HearthRoster {
   const local = [...input.local].sort((a, b) => a.face - b.face || handOrder[a.hand] - handOrder[b.hand] || byText(a.session, b.session));
-  const localSeats: HearthSeat[] = local.map((s) => ({ grain: "local", seat: localId(s.session), face: s.face, kind: s.hand === "seat" ? "ai" : "hand", hand: s.hand, anchor: s.anchor }));
+  const localKept = perFace(local, (s) => s.face);
+  const localSeats: HearthSeat[] = localKept.kept.map((s) => ({ grain: "local", seat: localId(s.session), face: s.face, kind: s.hand === "seat" ? "ai" : "hand", hand: s.hand, anchor: s.anchor }));
   const planes = [...input.planes].sort((a, b) => a.face - b.face);
-  const farSeats: HearthSeat[] = planes.flatMap((p) => p.far.map((f) => ({
-    grain: "far" as const, seat: f.atom.slice(0, 12), face: f.face, kind: "device" as const, self: f.self, standing: f.standing, acts: f.acts, lastHeard: f.lastHeard,
-  })));
+  // The far rows a face keeps: its own atom first (the local seats sign through it), then the busiest signers, then by atom.
+  const farAll = planes.flatMap((p) => [...p.far].sort((a, b) => Number(b.self) - Number(a.self) || b.acts - a.acts || byText(a.atom, b.atom)));
+  const farKept = perFace(farAll, (f) => f.face);
+  const farSeats: HearthSeat[] = farKept.kept.map((f) => ({
+    grain: "far" as const, seat: f.atom.slice(0, 12), face: f.face, kind: "device" as const, self: f.self, standing: f.standing, acts: f.acts, lastHeard: f.lastHeard.slice(0, HEARTH_ROWS),
+  }));
   const holders = input.worn === null ? [] : localSeats.filter((s) => s.face === input.worn).map((s) => s.seat);
   const underOther = localSeats.filter((s) => s.face !== input.worn).map((s) => ({ seat: s.seat, face: s.face }));
-  const lanes = planes.flatMap((p) => p.lanes);
-  const vota = planes.flatMap((p) => p.vota);
+  const lanesKept = perFace(planes.flatMap((p) => p.lanes), (l) => l.face);
+  const votaKept = perFace(planes.flatMap((p) => p.vota), (v) => v.face);
+  const lanes = lanesKept.kept, vota = votaKept.kept;
   return {
     grain: { local: HEARTH_GRAIN.local, far: HEARTH_GRAIN.far },
     rotation: {
@@ -209,8 +223,22 @@ export function composeHearthRoster(input: {
     asker: input.asker,
     lanes, lanesGap: HEARTH_LANES_GAP, vota,
     unread: [...input.unread].sort((a, b) => a.face - b.face || byText(a.reason, b.reason)),
-    counts: { local: localSeats.length, far: farSeats.filter((s) => s.self !== true).length, lanes: lanes.length, vota: vota.length },
+    counts: { local: local.length, far: farAll.filter((f) => !f.self).length, lanes: lanes.length + lanesKept.more, vota: vota.length + votaKept.more },
+    more: { local: localKept.more, far: farKept.more, lanes: lanesKept.more, vota: votaKept.more },
   };
+}
+
+/** The rows each face keeps (`HEARTH_ROWS` at most, in the order given), and how many it leaves out. */
+function perFace<T>(rows: readonly T[], faceOf: (row: T) => number): { readonly kept: T[]; readonly more: number } {
+  const seen = new Map<number, number>();
+  const kept: T[] = [];
+  let more = 0;
+  for (const row of rows) {
+    const n = seen.get(faceOf(row)) ?? 0;
+    seen.set(faceOf(row), n + 1);
+    if (n < HEARTH_ROWS) kept.push(row); else more++;
+  }
+  return { kept, more };
 }
 
 const short = (id: string): string => id.slice(0, 12);
@@ -242,6 +270,9 @@ export function hearthRotationLine(r: HearthRoster["rotation"], seats: readonly 
   return `rotation: ${worn}${held}${lit}${other}`;
 }
 
+/** The line naming the rows the vessel left out, where it left any. */
+const moreLine = (n: number): string[] => (n > 0 ? [`  +${n} more (each face keeps ${HEARTH_ROWS} rows)`] : []);
+
 /** The whole roster as plain lines: the rotation first, then the seats here and far, the lanes, the vota and any plane unread. */
 export function renderHearthRoster(r: HearthRoster): string[] {
   const local = r.seats.filter((s) => s.grain === "local");
@@ -251,13 +282,17 @@ export function renderHearthRoster(r: HearthRoster): string[] {
     hearthRotationLine(r.rotation, r.seats),
     `here, ${r.grain.local}:`,
     ...(local.length > 0 ? local.map((s) => `  ${hearthSeatLine(s)}`) : ["  no session stands on this vessel's socket"]),
+    ...moreLine(r.more.local),
     `far, ${r.grain.far}:`,
     ...(far.length > 0 ? far.map((s) => `  ${hearthSeatLine(s)}`) : ["  no signed act reads on a worn face's intent plane"]),
+    ...moreLine(r.more.far),
     "lanes (intent claims):",
     ...r.lanes.map((l) => `  h${l.face} ${l.verb} (intent ${short(l.intent)}): claimed by ${short(l.claimant)}`),
+    ...moreLine(r.more.lanes),
     `  ${r.lanes.length === 0 ? "no claim stands; " : ""}${r.lanesGap}`,
     "open vota:",
     ...(r.vota.length > 0 ? r.vota.map((v) => `  ${hearthVotumLine(v)}`) : ["  none waits"]),
+    ...moreLine(r.more.vota),
     ...r.unread.map((u) => `unread: h${u.face}'s intent plane (${u.reason})`),
   ];
   return lines;

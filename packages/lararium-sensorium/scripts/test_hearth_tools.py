@@ -85,7 +85,7 @@ def test_red_the_seat_puts_the_one_roster_verb_and_returns_the_body_unchanged_co
     assert [(ln["verb"], ln["args"]) for ln in daemon.lines] == [(HEARTH_ROSTER_VERB, {})]
     assert HEARTH_ROSTER_VERB == "hearth-roster"
     assert one == FIXTURE["roster"]
-    assert sorted(one) == ["asker", "counts", "grain", "lanes", "lanesGap", "rotation", "seats", "unread", "vota"]
+    assert sorted(one) == ["asker", "counts", "grain", "lanes", "lanesGap", "more", "rotation", "seats", "unread", "vota"]
     # The rotation first: the worn face, who holds it, each seat under another face.
     assert one["rotation"]["worn"] == 1 and one["rotation"]["holders"] == ["s-0a11bb02", "s-f2c7aa01"]
     # Two grains, one row shape; nobody far reads online, only last heard.

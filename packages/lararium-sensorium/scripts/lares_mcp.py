@@ -1520,7 +1520,7 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_READS)
     def vessel_roster() -> dict:
         """READ WHO IS HOME — mirrors `lares vessel roster --json`. The vessel answers from what it holds now and places
-        nothing. Returns {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts}: `rotation` names the face
+        nothing. Returns {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts, more}: `rotation` names the face
         this vessel wears, the session seats holding that slot (`holders`) and any seat acting under another face
         (`underOther`); `seats` carries one row shape in two grains: `local` (a session bound on the vessel's socket, standing
         while its process holds the socket; `kind` `ai` for a harness's seat, `hand` for a person's hand, the operator's
@@ -1528,7 +1528,8 @@ def build_mcp(coordinator: LaresCoordinator):
         its own later acts cite: no global now, so nobody far reads online); `lanes` reads the intent claims standing, and
         `lanesGap` names what the house records no claim for (a leap or a road meme); `vota` lists each intent still waiting
         on an answer, an outcome (`owedBy` the atom that owes it, else unclaimed) or a frontier; `unread` names each face
-        whose plane did not read, by its code. The rows come from the vessel's live reading: a seat here by the kernel's hold
+        whose plane did not read, by its code; each face keeps eight rows per list, `counts` counts every row and `more` the rows
+        left out. The rows come from the vessel's live reading: a seat here by the kernel's hold
         on its socket, a far seat by its signature; turn them through the five tools."""
         out = _meme_wire(HEARTH_ROSTER_VERB, {})
         if not isinstance(out, dict):

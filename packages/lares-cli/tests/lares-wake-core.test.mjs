@@ -482,6 +482,11 @@ test("the roster block: a far row's free text never prints, the rows stop at the
   const capped = renderRoster(many);
   assert.equal(capped.split("\n").filter((l) => l.startsWith("here  ")).length, ROSTER_ROWS);
   assert.match(capped, new RegExp(`cut at the wake's cap after ${ROSTER_ROWS} of 22 rows`));
+  // The vessel's own cap rides the body as `more`; the wake counts it beside its own.
+  assert.doesNotMatch(capped, /left out/);
+  const left = structuredClone(ROSTER);
+  left.data.more = { local: 3, far: 12, lanes: 0, vota: 5 };
+  assert.match(renderRoster(left), /\n\+20 more rows the vessel left out \(each face keeps 8 per list\)\n/);
   const refused = JSON.stringify({ ok: false, error: { code: "verb-error", message: "verb-error: the vessel refused the read" } });
   const context = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), roster: answered(refused, 1) }) });
   assert.match(context, /Lares hearth \(who is home\) unread: verb-error: the vessel refused the read; read it whole/);

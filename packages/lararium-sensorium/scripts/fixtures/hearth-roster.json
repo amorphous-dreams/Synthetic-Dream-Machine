@@ -228,6 +228,12 @@
       "far": 1,
       "lanes": 1,
       "vota": 2
+    },
+    "more": {
+      "local": 0,
+      "far": 0,
+      "lanes": 0,
+      "vota": 0
     }
   },
   "prose": [

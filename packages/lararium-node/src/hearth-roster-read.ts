@@ -25,12 +25,22 @@ export interface HearthPlaneReading {
   readonly unread: readonly { readonly face: number; readonly reason: string }[];
 }
 
-/** A plane read's fault as one short code (its lead token), so no free text crosses into the roster. */
+/**
+ * A plane read's fault as one short code, so no free text crosses into the roster: the kebab code its message leads with
+ * (`face-not-held: h3`, `[ward-signer] …`), else its error class in kebab form (`CustodyLocked` reads `custody-locked`), else
+ * `unread`.
+ */
 export function hearthReason(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
-  const lead = /^\s*\[?([A-Za-z][A-Za-z0-9-]*)/.exec(message)?.[1] ?? "";
-  return /^[A-Za-z][A-Za-z0-9-]{0,63}$/.test(lead) ? lead : "unread";
+  const lead = /^\s*\[?([a-z][a-z0-9]*(?:-[a-z0-9]+)+)\b/.exec(message)?.[1];
+  if (lead !== undefined && lead.length <= 64) return lead;
+  const name = error instanceof Error ? error.name : "";
+  if (name !== "Error" && /^[A-Z][A-Za-z]{1,63}$/.test(name)) return name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+  return "unread";
 }
+
+/** The reason a plane read the vessel's close interrupted reads under. */
+export const HEARTH_CLOSING = "vessel-closing";
 
 /** One face's intent plane as the roster reads it, through the intent door's own fold (`runIntentCommand`'s `show`). */
 export async function readHearthPlane(repo: Repo, catalogUrl: string | undefined, face: number): Promise<HearthPlaneDigest> {
@@ -46,13 +56,25 @@ export async function readHearthPlane(repo: Repo, catalogUrl: string | undefined
   return planeRosterOf(view, { face, self: atom.key });
 }
 
-/** Each face's plane, one after another; a face that does not read names its cause and the others ride on. */
-export function hearthPlanesOver(read: (face: number) => Promise<HearthPlaneDigest>): (faces: readonly number[]) => Promise<HearthPlaneReading> {
-  return async (faces) => {
+/** The plane port: each named face's plane, and an event that interrupts the reads still open (the vessel's close). */
+export type HearthPlanes = (faces: readonly number[], interrupt?: Promise<string>) => Promise<HearthPlaneReading>;
+
+/**
+ * Each face's plane, one after another; a face that does not read names its cause and the others ride on. An interrupt (an
+ * event, never a timer) ends the read open at that moment and every face after it, each unread under the interrupt's code;
+ * the faces already read stand. The read itself runs on unawaited: no Automerge or board read can be torn mid-flight.
+ */
+export function hearthPlanesOver(read: (face: number) => Promise<HearthPlaneDigest>): HearthPlanes {
+  return async (faces, interrupt) => {
     const planes: HearthPlaneDigest[] = [], unread: { face: number; reason: string }[] = [];
+    let stopped: string | null = null;
+    const stop = interrupt?.then((reason) => { stopped = reason; return { stopped: reason } as const; });
     for (const face of [...new Set(faces)].sort((a, b) => a - b)) {
-      try { planes.push(await read(face)); }
-      catch (error) { unread.push({ face, reason: hearthReason(error) }); }
+      if (stopped !== null) { unread.push({ face, reason: stopped }); continue; }
+      try {
+        const got = await (stop ? Promise.race([read(face).then((digest) => ({ digest })), stop]) : read(face).then((digest) => ({ digest })));
+        if ("digest" in got) planes.push(got.digest); else unread.push({ face, reason: got.stopped });
+      } catch (error) { unread.push({ face, reason: hearthReason(error) }); }
     }
     return { planes, unread };
   };
@@ -65,11 +87,21 @@ export async function hearthRosterOf(input: {
   readonly lent: readonly number[] | null;
   readonly local: readonly HearthLocalSeat[];
   readonly asker: "seat" | "hand";
-  readonly planes?: (faces: readonly number[]) => Promise<HearthPlaneReading>;
+  readonly planes?: HearthPlanes;
+  /** An event that ends the plane reads still open (the vessel's close); each face it ends reads unread under its code. */
+  readonly interrupt?: Promise<string>;
 }): Promise<HearthRoster> {
-  const faces = [...(input.worn === null ? [] : [input.worn]), ...input.lit];
-  const reading: HearthPlaneReading = input.planes
-    ? await input.planes(faces).catch((error: unknown) => ({ planes: [], unread: faces.map((face) => ({ face, reason: hearthReason(error) })) }))
-    : { planes: [], unread: [...new Set(faces)].map((face) => ({ face, reason: "no-plane-read" })) };
+  const faces = [...new Set([...(input.worn === null ? [] : [input.worn]), ...input.lit])];
+  const allUnread = (reason: string): HearthPlaneReading => ({ planes: [], unread: faces.map((face) => ({ face, reason })) });
+  let reading: HearthPlaneReading;
+  if (!input.planes) reading = allUnread("no-plane-read");
+  else {
+    const asked = input.planes(faces, input.interrupt).catch((error: unknown) => allUnread(hearthReason(error)));
+    // A port that ignores the interrupt still yields to it: the roster answers, and the port's late reading drops. The
+    // fallback waits one turn of the event loop (a turn, not a duration), so a port that honours the interrupt answers
+    // first and keeps the faces it already read.
+    const yielded = input.interrupt?.then((reason) => new Promise<HearthPlaneReading>((resolve) => setImmediate(() => resolve(allUnread(reason)))));
+    reading = yielded ? await Promise.race([asked, yielded]) : await asked;
+  }
   return composeHearthRoster({ worn: input.worn, lit: input.lit, lent: input.lent, local: input.local, asker: input.asker, planes: reading.planes, unread: reading.unread });
 }

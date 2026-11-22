@@ -545,7 +545,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --init         found a vessel where the root holds none — writes LAR_ROOT alone; the operator's homes ride `lares home`, the mempalace sidecar `mempalace install`",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
-      "roster --json        the roster whole: {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts}, the body the MCP seat's vessel_roster answers",
+      "roster --json        the roster whole: {grain, rotation, seats, asker, lanes, lanesGap, vota, unread, counts, more}, the body the MCP seat's vessel_roster answers",
       "read --json          the reading as one JSON object (every lens; `read vessel` names each document); a pipe reads the terminal's prose",
       "census --docs        every document the stores hold: its class (current · duplicate · orphan · last-version · sealed-unread), who names it, the unnamed list; removes nothing; --json the full rows",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
