@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { INTERRUPTED, priorImageRef, riteKukulu, type CanonLag, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
+import { INTERRUPTED, priorImageRef, riteKukulu, type HouseLag, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
@@ -455,16 +455,20 @@ const readPriorImage = (): Promise<PriorImage | null> => new Promise((resolve) =
   });
 });
 
-/**
- * THE CANON LAG as the host reads it: the vessel's `vessel lay --lag` answer, null where it answers no reading of that shape.
- */
-export function canonLagOf(output: Record<string, unknown>): CanonLag | null {
-  const holdings = output["holdings"];
-  if (typeof output["source"] !== "string" || typeof output["lag"] !== "number" || !Array.isArray(holdings)) return null;
+/** THE LAG as the host reads it: the vessel's `vessel lay --lag` answer, null where it answers no reading of that shape. */
+export function houseLagOf(output: Record<string, unknown>): HouseLag | null {
+  const holdings = output["holdings"], benches = output["benches"];
+  if (typeof output["source"] !== "string" || typeof output["lag"] !== "number" || !Array.isArray(holdings) || !Array.isArray(benches)) return null;
   const titles = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+  const bench = (b: Record<string, unknown>) => ({
+    slug: String(b["slug"]), toBag: String(b["toBag"]), planned: titles(b["planned"]),
+    mounts: b["mounts"] === true ? true : b["mounts"] === false ? false : null, ...(typeof b["why"] === "string" ? { why: b["why"] } : {}),
+  });
+  const read = (benches as Array<Record<string, unknown>>).map(bench);
   return {
     source: output["source"], checkout: output["checkout"] === true, lag: output["lag"],
     holdings: (holdings as Array<Record<string, unknown>>).map((h) => ({ holding: String(h["holding"]), toBag: String(h["toBag"]), new: titles(h["new"]), changed: titles(h["changed"]) })),
+    wikis: typeof output["wikis"] === "string" ? output["wikis"] : null, benches: read, benchLag: read.reduce((n, b) => n + b.planned.length, 0),
   };
 }
 
@@ -476,13 +480,13 @@ const askOnTerminal = (q: string): Promise<boolean> => new Promise((resolve) => 
 });
 
 /**
- * The canon lay on this terminal, after the owner's yes: this CLI again (the bridge forwards it into the vessel), holdings leg
- * alone. A Ctrl+C reaches the lay, which shares this terminal; this process holds SIGINT until it ends.
+ * The workbench lay on this terminal, after the owner's yes: this CLI again (the bridge forwards it into the vessel), the checkout's
+ * workbench folders alone. A Ctrl+C reaches the lay, which shares this terminal; this process holds SIGINT until it ends.
  */
-const layCanonOnTerminal = (): Promise<number> => new Promise((resolve) => {
+const layWorkbenchOnTerminal = (): Promise<number> => new Promise((resolve) => {
   const hold = (): void => {};
   process.on("SIGINT", hold);
-  const child = spawn(process.execPath, [BIN, "vessel", "lay", "--canon", "--apply", "--yes"], { stdio: "inherit" });
+  const child = spawn(process.execPath, [BIN, "vessel", "lay", "--workbench", "--apply"], { stdio: "inherit" });
   child.once("error", () => { process.off("SIGINT", hold); resolve(127); });
   child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
 });
@@ -507,10 +511,10 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     ranImage: () => shimRead(shim, ["vessel-image"]),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
-    // THE CANON LAY AFTER THE RAISE: the lag read in the vessel that stands, the owner's yes on this terminal, then the lay.
-    canonLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? canonLagOf(read.output) : null; },
+    // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay rides the owner's yes on this terminal, never canon.
+    houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
     ask: askOnTerminal,
-    layCanon: layCanonOnTerminal,
+    layWorkbench: layWorkbenchOnTerminal,
     // An AI launcher is a seat: the harness's mark, or a host chain that reads no person's hand (the bridge marks it the same way).
     seat: () => ownPeerKind(process.env) !== "hand",
     say,

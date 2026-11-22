@@ -31,11 +31,14 @@
  *   7. raise        the shim's restand: down (keep, census), the pūlama re-stood and lit ATTACHED on this terminal where its
  *                   code moved, up, its admit attached where owed, the vessel's unlock and the face last worn
  *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par
- *   9. canon        after a raise that stood: the canon lag (carriers in the canon source's `bags/` the canon layers lack) prints
- *                   on every raise. Where that source stands in a checkout and the owner holds this terminal, the lay's preview
- *                   (each new and changed title; every file under `bags/<holding>` enters canon) asks once, and the lay
- *                   (`lares vessel lay --canon --apply`) runs only on an explicit yes. A seat (no terminal, or an AI launcher),
- *                   a source in no checkout, or a vessel waiting on its unlock names the lag and lays nothing
+ *   9. lag          after a raise that stood, the lag reads aloud on every raise: the canon bag behind the canon source (the
+ *                   carriers in `bags/` the canon layers lack; canon fills through promote and the floor's sealed cut, never
+ *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
+ *                   newer sealed floor the release carries than the vessel serves. Where the canon source stands in a checkout
+ *                   and the owner holds this terminal, the workbench lay's preview (each title a workbench the worn face mounts
+ *                   would take) asks once, and the lay (`lares vessel lay --workbench --apply`) runs only on an explicit yes; a
+ *                   workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
+ *                   checkout, or a vessel waiting on its unlock names the lag and lays nothing
  *
  * A QUIET DAY spends nothing: a vessel that already runs the image under a lit pūlama begins no rite; the raise only tops
  * up the unlock and the face worn.
@@ -166,29 +169,37 @@ export interface RitePorts {
    */
   seedOffer?(head: string): Promise<SeedOffer | null>;
   /**
-   * THE CANON LAG after the raise (`lares vessel lay --lag` in the vessel that stands): the carriers in the canon source's `bags/`
-   * the canon layers lack, new or changed, and whether that source stands in a checkout; null where the vessel reads none.
-   * Absent, the rite reads no lag and offers no lay.
+   * THE LAG after the raise (`lares vessel lay --lag` in the vessel that stands): canon behind the canon source, each workbench behind
+   * the checkout's `wikis/<slug>` and whether the worn face mounts it; null where the vessel reads none. Absent, the rite reads no lag.
    */
-  canonLag?(): Promise<CanonLag | null>;
+  houseLag?(): Promise<HouseLag | null>;
   /** One yes-or-no on this terminal (a Ctrl+C reads as no); absent, the rite asks nothing and lays nothing. */
   ask?(question: string): Promise<boolean>;
-  /** The canon lay on this terminal (`lares vessel lay --canon --apply --yes`), run only after the owner's yes; its exit code. */
-  layCanon?(): Promise<number>;
+  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), run only after the owner's yes; its exit code. */
+  layWorkbench?(): Promise<number>;
   /** Whether an AI seat launched this rite (the harness's mark, or a host chain that reads no person's hand); absent, false. */
   seat?(): boolean;
 }
 
 /** One holding's lag: the titles its canon source holds that its canon bag lacks (`new`) or holds in other bytes (`changed`). */
-export interface CanonLagHolding { readonly holding: string; readonly toBag: string; readonly new: readonly string[]; readonly changed: readonly string[] }
+export interface LagHolding { readonly holding: string; readonly toBag: string; readonly new: readonly string[]; readonly changed: readonly string[] }
 /**
- * The canon lag as the vessel reads it off disk: the canon source dir, whether it stands in a checkout (an SDM repo, read by the
- * `pnpm-workspace.yaml` beside its `bags/`), each disk-sourced holding's lag, and the total.
+ * One workbench's lag: the titles the checkout's `wikis/<slug>` holds new or moved against that wiki's working layer, and whether the
+ * worn face mounts the workbench (a writer's seat there); `why` names what keeps it from mounting, `mounts` null where the seat read nowhere.
  */
-export interface CanonLag { readonly source: string; readonly checkout: boolean; readonly holdings: readonly CanonLagHolding[]; readonly lag: number }
+export interface BenchLag { readonly slug: string; readonly toBag: string; readonly planned: readonly string[]; readonly mounts: boolean | null; readonly why?: string }
+/**
+ * The house's lag as the vessel reads it: the canon source dir and whether it stands in a checkout (an SDM repo, read by the
+ * `pnpm-workspace.yaml` beside its `bags/`), each disk-sourced holding's canon lag and its total, the `wikis/` dir beside the source
+ * (null where none stands), and each workbench's lag and its total.
+ */
+export interface HouseLag {
+  readonly source: string; readonly checkout: boolean; readonly holdings: readonly LagHolding[]; readonly lag: number;
+  readonly wikis: string | null; readonly benches: readonly BenchLag[]; readonly benchLag: number;
+}
 
-/** The line that lays canon by hand, holdings leg alone. */
-export const CANON_LAY_LINE = "lares vessel lay --canon --apply";
+/** The line that lays the checkout's workbench projection by hand. */
+export const WORKBENCH_LAY_LINE = "lares vessel lay --workbench --apply";
 
 /** The image a kūkulu replaced: its revision label and the tag the shim keeps it under. */
 export interface PriorImage {
@@ -266,60 +277,82 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   const out = await raiseHouse(ports, opts);
   // THE CANON LAY rides only a raise that stood: a run that stopped, or one that waits on the hand before any raise, reads no lag.
   if (out.code !== 0 || out.data["awaits"] === "hand") return out;
-  return canonAfterRaise(ports, out);
+  return lagAfterRaise(ports, out);
 }
 
+/** Whether a seed line's ratchet words read the floor moved (`ratchetWords`: `… · floor moved`). */
+const floorMoved = (words: unknown): boolean => typeof words === "string" && /(?:^|· )floor moved(?: ·|$)/.test(words);
+
 /**
- * AFTER THE RAISE, THE CANON LAG (story U4). Every raise names how many carriers the canon source holds that the canon layers
- * lack. Where that source stands in a checkout and the owner holds this terminal, the rite shows the lay's preview (each new and
- * changed title, and the hazard: every file under `bags/<holding>` enters canon) and asks; the lay runs only on an explicit yes,
- * and a no or a Ctrl+C leaves canon as it stood. A seat (no terminal, or an AI launcher) names the lag and never lays; so does a
- * canon source in no checkout, and a new vessel that waits on its unlock.
+ * AFTER THE RAISE, THE LAG (story U4, re-scoped under Mu, operator 2026-11-22). Every raise names how far the house stands behind
+ * what it carries: the canon bag behind the canon source, each workbench behind the checkout's `wikis/<slug>`, and a newer sealed
+ * floor the release carries. The raise never writes canon: canon fills through promote and the floor's sealed cut. Where the canon
+ * source stands in a checkout and the owner holds this terminal, the rite previews the workbench lay (each title a workbench the
+ * worn face mounts would take) and asks; the lay runs only on an explicit yes, and a no or a Ctrl+C leaves every layer as it stood.
+ * A seat (no terminal, or an AI launcher) names the lag and never lays; so does a source in no checkout, and a vessel that waits on
+ * its unlock.
  */
-export async function canonAfterRaise(ports: RitePorts, out: { code: number; data: Record<string, unknown> }): Promise<{ code: number; data: Record<string, unknown> }> {
-  if (!ports.canonLag) return out;
-  const read = await ports.canonLag().catch(() => null);
-  if (read === null) {
-    ports.say(`kūkulu: the canon lag reads nowhere (the vessel answered no reading); \`lares vessel lay --canon\` previews it`);
-    return { ...out, data: { ...out.data, canon: { read: false } } };
+export async function lagAfterRaise(ports: RitePorts, out: { code: number; data: Record<string, unknown> }): Promise<{ code: number; data: Record<string, unknown> }> {
+  if (!ports.houseLag) return out;
+  // THE FLOOR the release carries, beside the floor the vessel serves: the seed line this run read, or a fresh read on a quiet day.
+  let seedWords = (out.data["seed"] as { ratchets?: unknown } | undefined)?.ratchets;
+  if (seedWords === undefined && out.data["rollback"] === undefined && ports.seedOffer && typeof out.data["head"] === "string") {
+    const offer = await ports.seedOffer(out.data["head"]).catch(() => null);
+    if (offer !== null) seedWords = ratchetWords(compareGenesisDigests(offer.record, offer.seed.digests));
   }
-  if (read.lag === 0) {
-    ports.say(`kūkulu: canon stands level with ${read.source}; nothing lags`);
-    return { ...out, data: { ...out.data, canon: { lag: 0, checkout: read.checkout, source: read.source } } };
+  const floor = floorMoved(seedWords);
+  if (floor) ports.say("kūkulu: the release this vessel runs carries a newer sealed floor than the vessel serves (floor moved); the raise names it and stands no floor");
+  const read = await ports.houseLag().catch(() => null);
+  if (read === null) {
+    ports.say("kūkulu: the lag reads nowhere (the vessel answered no reading); `lares vessel lay --lag` reads it");
+    return { ...out, data: { ...out.data, lag: { read: false, ...(floor ? { floor: "moved" } : {}) } } };
   }
   const fresh = read.holdings.reduce((n, h) => n + h.new.length, 0), moved = read.holdings.reduce((n, h) => n + h.changed.length, 0);
-  ports.say(`kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}`);
-  const canon = { lag: read.lag, new: fresh, changed: moved, checkout: read.checkout, source: read.source };
+  ports.say(read.lag === 0
+    ? `kūkulu: canon stands level with ${read.source}`
+    : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; canon fills through promote and the floor's sealed cut, never from a raise`);
+  const lagging = read.benches.filter((b) => b.planned.length > 0);
+  if (read.wikis !== null) {
+    ports.say(read.benchLag === 0
+      ? `kūkulu: the checkout's workbenches stand level with ${read.wikis}`
+      : `kūkulu: the workbenches lag the checkout's ${read.wikis} by ${read.benchLag} carrier(s): ${lagging.map((b) => `${b.slug} ${b.planned.length}`).join(", ")}`);
+  }
+  for (const b of lagging) {
+    if (b.mounts === true) continue;
+    ports.say(`kūkulu: workbench ${b.slug} does not mount under the worn face (${b.why ?? (b.mounts === null ? "its seat read nowhere" : "no writer's seat")}); nothing of it lays`);
+  }
+  const lag = { canon: read.lag, workbench: read.benchLag, checkout: read.checkout, source: read.source, ...(floor ? { floor: "moved" } : {}) };
+  const mounted = lagging.filter((b) => b.mounts === true);
+  const offered = mounted.reduce((n, b) => n + b.planned.length, 0);
+  if (offered === 0) return { ...out, data: { ...out.data, lag } };
   const tty = ports.tty ? ports.tty() : true, seat = ports.seat ? ports.seat() : false;
-  const why = !read.checkout ? `${read.source} stands in no checkout, so the raise offers no lay; the lay that feeds it: ${CANON_LAY_LINE}`
-    : out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so nothing lays; once it opens: ${CANON_LAY_LINE}`
-    : seat ? `an AI seat launched this rite, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${CANON_LAY_LINE})`
-    : !tty ? `this seat holds no terminal, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${CANON_LAY_LINE})`
-    : !ports.ask || !ports.layCanon ? `this rite carries no lay, so nothing lays; your hand: ${CANON_LAY_LINE}`
+  const why = !read.checkout ? `${read.source} stands in no checkout, so the raise offers no lay`
+    : out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so nothing lays; once it opens: ${WORKBENCH_LAY_LINE}`
+    : seat ? `an AI seat launched this rite, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
+    : !tty ? `this seat holds no terminal, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
+    : !ports.ask || !ports.layWorkbench ? `this rite carries no lay, so nothing lays; your hand: ${WORKBENCH_LAY_LINE}`
     : null;
   if (why !== null) {
     ports.say(`kūkulu: ${why}`);
-    return { ...out, data: { ...out.data, canon: { ...canon, laid: false, ...(seat || !tty ? { seat: true } : {}) } } };
+    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false, ...(seat || !tty ? { seat: true } : {}) } } };
   }
-  // THE PREVIEW, before the question: the hazard named plainly, then every title the lay would move.
-  ports.say(`kūkulu: the canon lay ingests the canon source into each canon bag: every file under ${read.source}/<holding> enters canon, these among them:`);
-  for (const h of read.holdings) {
-    if (h.new.length + h.changed.length === 0) continue;
-    ports.say(`  ${h.holding} -> ${h.toBag}: ${h.new.length} new, ${h.changed.length} changed`);
-    for (const t of h.new) ports.say(`    ${"NEW".padEnd(8)} ${t}`);
-    for (const t of h.changed) ports.say(`    ${"CHANGED".padEnd(8)} ${t}`);
+  // THE PREVIEW, before the question: where the files go (each wiki's working layer, canon untouched), then every title.
+  ports.say(`kūkulu: the workbench lay carries each file under ${read.wikis}/<slug> into that wiki's working layer; canon stays as it stands:`);
+  for (const b of mounted) {
+    ports.say(`  ${b.slug} -> ${b.toBag}: ${b.planned.length}`);
+    for (const t of b.planned) ports.say(`    ${t}`);
   }
-  if (!(await ports.ask!(`lay these ${read.lag} carrier(s) into canon now?`))) {
-    ports.say(`kūkulu: nothing laid; canon stands as it stood, ${read.lag} carrier(s) behind: ${CANON_LAY_LINE} lays it later`);
-    return { ...out, data: { ...out.data, canon: { ...canon, laid: false } } };
+  if (!(await ports.ask!(`lay these ${offered} carrier(s) into the workbench now?`))) {
+    ports.say(`kūkulu: nothing laid; the workbench stands as it stood: ${WORKBENCH_LAY_LINE} lays it later`);
+    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false } } };
   }
-  const code = await ports.layCanon!();
+  const code = await ports.layWorkbench!();
   if (code !== 0) {
-    ports.say(`kūkulu: the canon lay answered ${code}; the house stands, and the lines above name what the lay refused; the lay reads diff-gated, so ${CANON_LAY_LINE} runs again safely`);
-    return { code: 1, data: { ...out.data, canon: { ...canon, laid: false }, refusal: "kukulu-canon-lay-failed" } };
+    ports.say(`kūkulu: the workbench lay answered ${code}; the house stands, the lines above name what the lay refused, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} runs again safely`);
+    return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false }, refusal: "kukulu-workbench-lay-failed" } };
   }
-  ports.say(`kūkulu: canon laid: ${read.lag} carrier(s) from ${read.source}`);
-  return { ...out, data: { ...out.data, canon: { ...canon, laid: true } } };
+  ports.say(`kūkulu: the workbench laid: ${offered} carrier(s) from ${read.wikis}`);
+  return { ...out, data: { ...out.data, lag, workbench: { offered, laid: true } } };
 }
 
 async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {

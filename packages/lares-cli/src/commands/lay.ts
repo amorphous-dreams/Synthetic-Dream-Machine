@@ -25,13 +25,15 @@
  *
  *   lares vessel lay [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
  *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
- *   lares vessel lay --canon [--apply] [--yes]              — the holdings leg alone: canon, never a mirror
- *   lares vessel lay --lag                                  — the canon lag off disk (what canon lacks); writes nothing
+ *   lares vessel lay --workbench [--apply]                  — the checkout's workbench folders alone (`<source>/../wikis/<slug>`)
+ *                                          into each wiki's working layer the worn face mounts; never canon, never a face root
+ *   lares vessel lay --lag                                  — the house's lag; writes nothing
  *
- * THE CANON LAG (`readCanonLag`) reads what the kūkulu prints on every raise: each disk-sourced holding's titles its canon
- * lacks (NEW) or holds in other bytes (CHANGED), scanned against the Synced tree the INGEST gate keeps, with no daemon and no
- * write; and whether the canon source stands in a checkout (an SDM repo: `pnpm-workspace.yaml` beside its `bags/`), the one
- * case where the raise offers the lay on the owner's yes.
+ * THE LAG (`readHouseLag`) reads what the kūkulu prints on every raise: each disk-sourced holding's titles its canon lacks (NEW)
+ * or holds in other bytes (CHANGED), scanned against the Synced tree the INGEST gate keeps; each checkout workbench folder's titles
+ * new or moved against its wiki's working layer, with whether the worn face mounts that workbench; and whether the canon source
+ * stands in a checkout (an SDM repo: `pnpm-workspace.yaml` beside its `bags/`), the one case where the raise offers the workbench
+ * lay on the owner's yes. Canon itself fills through promote and the floor's sealed cut: no raise lays it.
  */
 
 import { existsSync, readdirSync, statSync } from "node:fs";
@@ -41,11 +43,11 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";
 import { fileToUriForSource, openSyncedTree, scanSource } from "../ingest-core.js";
-import type { CanonLag, CanonLagHolding } from "../rite-kukulu.js";
+import type { HouseLag, LagHolding } from "../rite-kukulu.js";
 import { askShore, readShoreList } from "../shore-core.js";
 import { cmdIngest, type FresherCanonReading } from "./ingest.js";
 import { cmdAct } from "./act.js";
-import { LIVE_MIRROR_DOORS, type MirrorDoors } from "../seed-mirrors.js";
+import { LIVE_MIRROR_DOORS, readBenchLag, type MirrorDoors } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
 
 export interface LayHolding {
@@ -200,16 +202,17 @@ export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahua
 export const canonSourceIsCheckout = (bagsDir: string): boolean => existsSync(join(dirname(bagsDir), "pnpm-workspace.yaml"));
 
 /**
- * THE CANON LAG, read off disk: every disk-sourced holding scanned against the Synced tree (the INGEST gate's own two cheap
- * legs, no daemon, no write). A title the tree never synced reads NEW; one whose bytes moved (or that moved home) reads
- * CHANGED. A holding whose canon stands off disk takes no lay, so it counts no lag.
+ * THE HOUSE'S LAG, read and never written: every disk-sourced holding scanned against the Synced tree (the INGEST gate's own two
+ * cheap legs, no daemon). A title the tree never synced reads NEW; one whose bytes moved (or that moved home) reads CHANGED. A
+ * holding whose canon stands off disk takes no lay, so it counts no lag. Beside it, each checkout workbench's lag and seat
+ * (`readBenchLag`).
  */
-export function readCanonLag(bagsDir: string = larBagsDir()): CanonLag {
+export async function readHouseLag(doors: MirrorDoors = LIVE_MIRROR_DOORS, bagsDir: string = larBagsDir()): Promise<HouseLag> {
   const root = larRoot();
   const tree = openSyncedTree();
   const projections = larProjectionsDirOrNone();
   const dirs = { bags: bagsDir, wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
-  const holdings: CanonLagHolding[] = [];
+  const holdings: LagHolding[] = [];
   for (const h of discoverHoldings(bagsDir)) {
     if (!canonIsDisk(h)) continue;
     const scan = scanSource(root, h.source, h.toBag, tree, fileToUriForSource(root, h.source, dirs, tree));
@@ -220,23 +223,31 @@ export function readCanonLag(bagsDir: string = larBagsDir()): CanonLag {
       changed: rows.filter((r) => r.status === "changed" || r.status === "renamed").map((r) => r.uri),
     });
   }
-  return { source: bagsDir, checkout: canonSourceIsCheckout(bagsDir), holdings, lag: holdings.reduce((n, h) => n + h.new.length + h.changed.length, 0) };
+  const benches = await readBenchLag(doors);
+  return {
+    source: bagsDir, checkout: canonSourceIsCheckout(bagsDir), holdings, lag: holdings.reduce((n, h) => n + h.new.length + h.changed.length, 0),
+    wikis: benches.dir, benches: benches.benches, benchLag: benches.benches.reduce((n, b) => n + b.planned.length, 0),
+  };
 }
 
 export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
   const bagsDir = larBagsDir();
   if (args.flags["lag"]) {
-    const lag = readCanonLag(bagsDir);
+    const lag = await readHouseLag(mirrorDoors, bagsDir);
     emit(args, {
       ok: true,
       data: lag as unknown as Record<string, unknown>,
       human: () => {
-        for (const h of lag.holdings) console.log(`${h.holding}: ${h.new.length} new, ${h.changed.length} changed`);
-        console.log(`lay: canon lags ${lag.source} by ${lag.lag} carrier(s)${lag.checkout ? "" : " · the source stands in no checkout"}`);
+        for (const h of lag.holdings) console.log(`canon ${h.holding}: ${h.new.length} new, ${h.changed.length} changed`);
+        for (const b of lag.benches) console.log(`workbench ${b.slug}: ${b.planned.length} new or moved${b.mounts === true ? "" : ` · does not mount (${b.why ?? "unread"})`}`);
+        console.log(`lay: canon lags ${lag.source} by ${lag.lag} carrier(s)${lag.wikis === null ? "" : ` · the workbenches lag ${lag.wikis} by ${lag.benchLag}`}${lag.checkout ? "" : " · the source stands in no checkout"}`);
       },
     });
     return 0;
   }
+  // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu offers on the owner's yes): no holdings leg, no
+  // face root, no share, no kahua; each workbench lays only where the worn face holds a writer's seat.
+  if (args.flags["workbench"]) return runMirrors({ apply: args.flags["apply"] === true, json: args.flags["json"] === true, benchesOnly: true }, mirrorDoors);
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
     emit(args, {
@@ -279,8 +290,6 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
   }
   const offDisk = ledger.filter((h) => h.gesture === "skip").length;
   console.log(`lay: ${fed.length - failed.length}/${fed.length} holdings${floorRead > 0 ? ` · ${floorRead} read the floor` : ""}${offDisk > 0 ? ` · ${offDisk} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
-  // `--canon` walks the holdings leg alone (the kūkulu's lay on the owner's yes): no mirror moves.
-  if (args.flags["canon"]) return failed.length === 0 ? 0 : 1;
   // THE MIRRORS LEG, after canon stands: every mirror under the projections root back into its one layer.
   const mirrors = await runMirrorLeg(args, mirrorDoors);
   return failed.length === 0 && mirrors === 0 ? 0 : 1;
