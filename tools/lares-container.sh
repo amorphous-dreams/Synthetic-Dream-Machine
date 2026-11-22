@@ -513,6 +513,8 @@ tty_flag() { if [ -z "$HAVE_TTY" ]; then printf -- '-T'; fi; }
 # `-e NAME` (compose reads the value from this environment), so no value rides argv; no other name crosses, and no
 # credential. The harness marks (CLAUDECODE, CODEX_SANDBOX, CODEX_SANDBOX_NETWORK_DISABLED) make the CLI ask as an AI
 # seat (#231's seat-canon-reach); a process's ancestry cannot cross the container boundary, so the mark is its one carrier.
+# The host `lares` reads its own host chain before it forwards (host-bridge `forwardEnvFor`) and sets CLAUDECODE=1 wherever a
+# harness stands anywhere up that chain or the chain reads nothing, so a stripped mark still crosses (hitl-reads-a-hand).
 pass_env() {
   for name in NO_COLOR TERM COLORTERM LARES_DEBUG CLAUDECODE CODEX_SANDBOX CODEX_SANDBOX_NETWORK_DISABLED; do
     eval "isset=\${$name+x}"
