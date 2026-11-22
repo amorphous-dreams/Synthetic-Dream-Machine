@@ -20,6 +20,20 @@ async function run(argv: string[]): Promise<{ code: number; err: string }> {
 afterEach(() => vi.restoreAllMocks());
 
 describe("a folded sub-path refuses the flags it does not read", () => {
+  test("wiki residency paths refuse sibling flags and moved doors name their destination", async () => {
+    for (const argv of [["wiki", "pin", "x", "--next-boot"], ["wiki", "switch", "x", "--release"], ["wiki", "pin", "x", "--reason", "why"]]) {
+      const r = await run([...argv, "--no-json"]);
+      expect(r.code).toBe(2);
+      expect(r.err).toContain("unknown flag");
+    }
+    for (const [door, verb, destination] of [["wiki", "unpin", "wiki pin"], ["wiki", "hold", "wiki pin"], ["wiki", "release", "wiki pin"], ["wiki", "open", "wiki switch"], ["wiki", "list", "wiki status"], ["wiki", "active", "wiki status"], ["bag", "pin", "wiki pin"], ["bag", "unpin", "wiki pin"], ["bag", "stats", "wiki status"]]) {
+      const r = await run([door, verb, "x", "--face", "1", "--no-json"]);
+      expect(r.code).toBe(2);
+      expect(r.err).toContain(destination);
+      expect(r.err).not.toContain("unknown flag");
+    }
+  });
+
   test("plane reads refuse sibling mutation flags before dispatch", async () => {
     for (const [argv, flag, door] of [
       [["kahua", "get", "T", "--text", "overwrite"], "--text", "kahua"],
