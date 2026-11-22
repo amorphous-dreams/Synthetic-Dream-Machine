@@ -580,6 +580,23 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddlerText("Room 4")).toBe("bed by the window");
   });
 
+  test("concurrent appends retain both texts and a stale whole-text put refuses", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    for (let i = 0; i < 20; i++) {
+      const title = `Append race ${i}`;
+      await put({ ...A, title, create: true, text: "start" }, ctx());
+      const base = ((await get({ ...A, title }, ctx()))["tiddler"] as { hash: string }).hash;
+      const receipts = await Promise.all(["first", "second"].map(append => put({ ...A, title, append }, ctx())));
+      expect(receipts.map(x => x["decision"])).toEqual(["put", "put"]);
+      const text = r.engine.wiki.getTiddlerText(title);
+      expect(["start\nfirst\nsecond", "start\nsecond\nfirst"]).toContain(text);
+      expect(await put({ ...A, title, text: "replacement", base }, ctx())).toMatchObject({ decision: "conflict" });
+      expect(r.engine.wiki.getTiddlerText(title)).toBe(text);
+    }
+  });
+
   test("tiddler-put stale base refuses: a moved record answers conflict with the live hash and nothing lands; CONTROL: the live base lands", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
