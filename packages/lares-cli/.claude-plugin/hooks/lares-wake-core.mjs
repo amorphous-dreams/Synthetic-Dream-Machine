@@ -551,7 +551,7 @@ export function halvesLines(result) {
   const answer = parseAnswer(result?.stdout);
   if (answer === null) return `Lares tessera conferre unread: ${readFault(result, "read") ?? "the answer did not parse"}`;
   if (refusesLocked(answer)) return null;
-  if (answer.ok === false) return `Lares tessera conferre unread: ${answer.error?.code ?? "refused"}`;
+  if (answer.ok === false) return `Lares tessera conferre unread: ${answer.error?.code ?? "refused"}${answer.error?.message ? `: ${answer.error.message}` : ""}`;
   const records = answer.data?.receipts;
   const red = unmatchedHalves(records);
   const par = new Set((Array.isArray(records) ? records : []).filter((r) => r?.act === "rite-begun").map((r) => String(r.tessera))).size - red.filter((h) => h.half === "begun").length;

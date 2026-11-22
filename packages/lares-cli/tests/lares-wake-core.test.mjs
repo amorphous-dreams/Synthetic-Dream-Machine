@@ -511,3 +511,8 @@ test("a roster read the budget closes reports itself by name and the wake rides 
   assert.match(context, /Lares memory index/);
   assert.deepEqual(killed, ["roster"]);
 });
+
+test("conferre names the receipt read's failure message", () => {
+  const failed = { stdout: JSON.stringify({ ok: false, error: { code: "error", message: "receipt document unavailable" } }), code: 1 };
+  assert.match(core.halvesLines(failed), /conferre unread: error: receipt document unavailable/);
+});
