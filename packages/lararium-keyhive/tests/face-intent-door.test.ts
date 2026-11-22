@@ -653,7 +653,7 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
       runDeclaredEffect: async () => { calls++; if (calls === 1) await held; return { text: "Sweetmorn" }; } });
     await calendarOn(f, shared, 21); await calendarOn(f, shared, 22);
     const released: string[] = [];
-    await lot.stand("h1", () => door, () => { released.push(`released after ${outcomes(shared, f.group)} outcome(s)`); });
+    await lot.stand("h1", () => door, { opened: ["plane-h1", "persona-h1"], evict: (ids) => { released.push(`released ${ids.join(",")} after ${outcomes(shared, f.group)} outcome(s)`); } });
     for (let i = 0; i < 200 && calls === 0; i++) await new Promise((r) => setImmediate(r));
     expect(calls).toBe(1);
     const dropped = lot.drop("h1");
@@ -664,7 +664,7 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
     expect(calls, "no next votum after the close began").toBe(1);
     expect(lot.keys()).toEqual([]);
     // THE CLOSE EVICTS WHAT THE DOOR OPENED: the release runs once, after the votum in flight landed and the door detached.
-    expect(released).toEqual(["released after 1 outcome(s)"]);
+    expect(released).toEqual(["released plane-h1,persona-h1 after 1 outcome(s)"]);
     await lot.drop("h1");
     expect(released, "a second drop releases nothing").toHaveLength(1);
     // Detached: a plane change and a turn wake nothing.
@@ -675,13 +675,39 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
     expect(outcomes(shared, f.group)).toBe(1);
   });
 
+  test("EDGE A RED: a repeat light re-stands the face's door and evicts only what the new door no longer holds; CONTROL: a plain drop evicts all it opened", async () => {
+    const lot = faceDoors(() => {}), evicted: string[][] = [];
+    const quiet = (): { heed: () => Promise<void>; attach: () => () => void } => ({ heed: async () => {}, attach: () => () => {} });
+    await lot.stand("h1", quiet, { opened: ["plane", "persona"], evict: (ids) => { evicted.push([...ids]); } });
+    // The same pair lit again: the old door drops, and nothing it opened leaves, since the new door holds both.
+    await lot.stand("h1", quiet, { opened: ["plane", "persona"], evict: (ids) => { evicted.push([...ids]); } });
+    expect(evicted).toEqual([]);
+    // A moved persona plane: only the plane the new door no longer holds leaves.
+    await lot.stand("h1", quiet, { opened: ["plane", "persona-2"], evict: (ids) => { evicted.push([...ids]); } });
+    expect(evicted).toEqual([["persona"]]);
+    await lot.drop("h1");
+    expect(evicted).toEqual([["persona"], ["plane", "persona-2"]]);
+  });
+
+  test("EDGE B RED: a stand that refuses after opening evicts what it opened, except what the standing door still holds", async () => {
+    const lot = faceDoors(() => {}), evicted: string[][] = [];
+    const quiet = (): { heed: () => Promise<void>; attach: () => () => void } => ({ heed: async () => {}, attach: () => () => {} });
+    lot.evictUnheld("h1", ["plane", "persona"], (ids) => { evicted.push([...ids]); });
+    expect(evicted, "no door stands: both leave").toEqual([["plane", "persona"]]);
+    await lot.stand("h1", quiet, { opened: ["plane", "persona"], evict: () => {} });
+    lot.evictUnheld("h1", ["plane", "persona-2"], (ids) => { evicted.push([...ids]); });
+    expect(evicted[1], "the standing door keeps its plane").toEqual(["persona-2"]);
+    lot.evictUnheld("h1", ["plane"], (ids) => { evicted.push([...ids]); });
+    expect(evicted, "nothing unheld, nothing evicted").toHaveLength(2);
+  });
+
   test("L2 RED: a lit sibling's door opens its intents plane only after its pair re-reads against its own log and KEL, and stands only through the lot; CONTROL: the census finds the planted order", () => {
     const source = readFileSync(new URL("../src/operator-daemon-behavior.ts", import.meta.url), "utf8");
     const start = source.indexOf("const standSiblingDoor = async"), end = source.indexOf("intentDoors.stand(key", start);
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
     const block = source.slice(start, end);
-    const read = block.indexOf("readSiblingFacePlanes("), recheck = block.indexOf("recheckSiblingPlanes("), opensIntents = block.indexOf("opened(read.planes.intents");
+    const read = block.indexOf("readSiblingFacePlanes("), recheck = block.indexOf("recheckSiblingPlanes("), opensIntents = block.indexOf("own(read.planes.intents");
     expect(read).toBeGreaterThan(-1);
     expect(recheck).toBeGreaterThan(read);
     expect(opensIntents, "the intents plane opens after the re-check").toBeGreaterThan(recheck);
@@ -689,6 +715,9 @@ describe("each lit face stands its own door: the lit life bounds it, and every w
     expect(block).toMatch(/hold: \(pending\) => holding\(provider, pending\)/);
     // A sibling's door pays idempotent declared verbs alone (no effects map), so an outcome that misses the vessel's drain answers again whole.
     expect(block).not.toMatch(/\beffects:/);
+    // EDGE B: every refusal after opening evicts what it opened (the standing door's own kept), and so does a throw.
+    expect(block).toMatch(/const refuse = \(why: string\): void => \{\s*intentDoors\.evictUnheld\(key, openedIds, evict\);/);
+    expect(source.slice(start, source.indexOf("\n  };\n", start))).toMatch(/catch \(error\) \{\s*intentDoors\.evictUnheld\(key, openedIds, evict\);\s*throw error;/);
   });
 
   test("L4 RED: a door handed the other face's plane lands no outcome (its receipt stays owed); CONTROL: on its own plane it lands", async () => {

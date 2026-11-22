@@ -494,38 +494,51 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    */
   const standSiblingDoor = async (face: JoinedFaceAuth, ctx: IslandContext): Promise<void> => {
     const key = bareKey(face.atom.key), group = face.personaGroupId;
-    const refuse = (why: string): void => console.log(`[daemon] face ${key.slice(0, 12)}… stands no intent door: ${why}`);
     if (face.facePlanes === undefined) return;
+    // WHAT THIS STAND OPENS LEAVES WITH IT: the sibling's two planes, never the shared KEL board. A refusal after opening evicts
+    // them (except what the face's standing door still holds), and the door it stands evicts them at its drop.
+    const openedIds: string[] = [];
+    const evict = (ids: readonly string[]): void => { for (const id of ids) void ctx.repo.removeFromCache(id as never).catch(() => {}); };
+    const refuse = (why: string): void => {
+      intentDoors.evictUnheld(key, openedIds, evict);
+      console.log(`[daemon] face ${key.slice(0, 12)}… stands no intent door: ${why}`);
+    };
     const read = readSiblingFacePlanes(face.facePlanes);
     if (!read.ok) return refuse(`${read.refusal}: ${read.detail}`);
     const board = daemonAuth.personaKel?.board;
     if (!board) return refuse("the manifest names no persona-KEL board to read its lineage from");
-    const opened = (url: string, what: string) => findOrThrow(ctx.repo, url, `${what} (h${face.handleIndex ?? "?"})`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as unknown as Promise<DocHandle<LarDoc>>;
-    const [personaPlane, kelBoard] = await Promise.all([opened(read.planes.persona, "the sibling's persona plane"), opened(board, "the persona-KEL board")]);
-    const recheck = recheckSiblingPlanes({ planes: read.planes, records: faceRecordsOf([personaPlane.doc()], group),
-      chain: personaKelChainForPrefix(kelBoard.doc(), face.personaKel.prefix), anchor: face.faceAnchor, group });
-    if (!recheck.ok) return refuse(`${recheck.refusal}: ${recheck.detail}`);
-    const plane = await opened(read.planes.intents, "the sibling's intents plane");
-    const self = intentPlaneSelf(plane.doc()), own = personaSiblingBagIds(personaBagIdFor(group))?.intents ?? null;
-    if (self !== null && self !== own) return refuse(`intent-plane-misfiled: the plane names itself ${self}`);
-    const atom = faceAtomKeyFromSeed(meshHexToBytes(face.atom.seed), group);
-    if (atom.key !== face.atom.key) return refuse("its atom differs from its seed");
-    const provider = providers.get(key)?.provider;
-    if (!provider) return refuse("its hive no longer stands here");
-    const ledger = await materializeSharedLarDoc(ctx.repo, edgeLedgerDocUrl(atom.key), "ledger:edge");
-    const door = await faceIntentDoorOver(ctx, { group, atom: { key: atom.key, sign: atom.sign }, ownKey: atom.key, plane, personaPlane, kelBoard,
-      kelPrefix: face.personaKel.prefix, anchor: face.faceAnchor, fleetRoot: face.deviceEdge.personaRootDid, ledger,
-      acting: typeof face.handleIndex === "number" ? face.handleIndex : null, hold: (pending) => holding(provider, pending) });
-    if (!litSiblings.has(key)) return;
-    // THE LIT LIFE BOUNDS WHAT THE DOOR OPENED: at the face's drop both planes leave this island's Repo cache, so nothing of
-    // the sibling's plane pair stays decrypted here or keeps replicating while the face stands dark.
-    const pair = [plane.documentId, personaPlane.documentId];
-    await intentDoors.stand(key, () => ({ heed: () => door.heed(), attach: () => {
-      const wake = (): void => { void door.heed(); };
-      personaPlane.on("change", wake);
-      const detach = door.attach();
-      return () => { detach(); personaPlane.off("change", wake); };
-    } }), () => { for (const id of pair) void ctx.repo.removeFromCache(id as never).catch(() => {}); });
+    const find = (url: string, what: string) => findOrThrow(ctx.repo, url, `${what} (h${face.handleIndex ?? "?"})`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as unknown as Promise<DocHandle<LarDoc>>;
+    const own = async (url: string, what: string): Promise<DocHandle<LarDoc>> => { const handle = await find(url, what); openedIds.push(handle.documentId); return handle; };
+    try {
+      const [personaPlane, kelBoard] = await Promise.all([own(read.planes.persona, "the sibling's persona plane"), find(board, "the persona-KEL board")]);
+      const recheck = recheckSiblingPlanes({ planes: read.planes, records: faceRecordsOf([personaPlane.doc()], group),
+        chain: personaKelChainForPrefix(kelBoard.doc(), face.personaKel.prefix), anchor: face.faceAnchor, group });
+      if (!recheck.ok) return refuse(`${recheck.refusal}: ${recheck.detail}`);
+      const plane = await own(read.planes.intents, "the sibling's intents plane");
+      const self = intentPlaneSelf(plane.doc()), ownBag = personaSiblingBagIds(personaBagIdFor(group))?.intents ?? null;
+      if (self !== null && self !== ownBag) return refuse(`intent-plane-misfiled: the plane names itself ${self}`);
+      const atom = faceAtomKeyFromSeed(meshHexToBytes(face.atom.seed), group);
+      if (atom.key !== face.atom.key) return refuse("its atom differs from its seed");
+      const provider = providers.get(key)?.provider;
+      if (!provider) return refuse("its hive no longer stands here");
+      const ledger = await materializeSharedLarDoc(ctx.repo, edgeLedgerDocUrl(atom.key), "ledger:edge");
+      const door = await faceIntentDoorOver(ctx, { group, atom: { key: atom.key, sign: atom.sign }, ownKey: atom.key, plane, personaPlane, kelBoard,
+        kelPrefix: face.personaKel.prefix, anchor: face.faceAnchor, fleetRoot: face.deviceEdge.personaRootDid, ledger,
+        acting: typeof face.handleIndex === "number" ? face.handleIndex : null, hold: (pending) => holding(provider, pending) });
+      if (!litSiblings.has(key)) return refuse("it closed while its door stood");
+      // THE LIT LIFE BOUNDS WHAT THE DOOR OPENED: at the face's drop both planes leave this island's Repo cache, so nothing of
+      // the sibling's plane pair stays decrypted here or keeps replicating while the face stands dark; a repeat light keeps
+      // what the new door holds.
+      await intentDoors.stand(key, () => ({ heed: () => door.heed(), attach: () => {
+        const wake = (): void => { void door.heed(); };
+        personaPlane.on("change", wake);
+        const detach = door.attach();
+        return () => { detach(); personaPlane.off("change", wake); };
+      } }), { opened: [...openedIds], evict });
+    } catch (error) {
+      intentDoors.evictUnheld(key, openedIds, evict);
+      throw error;
+    }
   };
   // V3: every slot document the resolver answers reaches the vessel's bag map before any write lands in it
   // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
