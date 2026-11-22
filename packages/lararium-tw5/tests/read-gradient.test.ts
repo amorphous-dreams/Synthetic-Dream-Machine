@@ -14,7 +14,12 @@ import { carrierFiles } from "../src/carrier-files.js";
 import { carrierSlots, carrierSlotText, pageCarrier, READ_PAGE_BYTES } from "../src/read-gradient.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
-const MEMETIC_WIKITEXT = `${REPO}bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext.mem`;
+/** The grammar's own carrier, found through the house's carrier walk (`carrierFiles`), the one the witness below reads. */
+const carrierAt = (tail: string): string => {
+  const listed = carrierFiles(REPO).find((f) => f.endsWith(tail));
+  if (!listed) throw new Error(`no carrier ends ${tail}`);
+  return listed.startsWith("/") ? listed : `${REPO}${listed}`;
+};
 
 /** The top-level slots the decomposer stores for a carrier, in order, or null where it declares no address. */
 function storedSlots(text: string): string[] | null {
@@ -30,7 +35,7 @@ function storedSlots(text: string): string[] | null {
 
 describe("the read gradient's slots are the stored family's", () => {
   test("RED H1: memetic-wikitext.mem (inline-code ahu openers in its prose) reads every top-level slot the family stores", () => {
-    const text = readFileSync(MEMETIC_WIKITEXT, "utf8");
+    const text = readFileSync(carrierAt("api/pono/memetic-wikitext.mem"), "utf8");
     const stored = storedSlots(text)!;
     expect(stored.length).toBeGreaterThan(20);
     expect(carrierSlots(text).map((s) => s.slot)).toEqual(stored);

@@ -35,6 +35,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
+import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
 import { cmdWiki, wikiFilterPlan, wikiRenderPlan } from "../src/commands/wiki.js";
 import { COMMANDS } from "../src/bin/lares.js";
@@ -281,7 +282,14 @@ describe("tiddler get --meme — one door reads on a gradient", () => {
  * still land, and the fault reaches both channels with a non-zero exit.
  */
 describe("tiddler get --meme reads the composition it carries", () => {
-  const PRISM = new URL("../../../bags/lares/ha.ka.ba/lares/api/pono/prism.mem", import.meta.url);
+  /** A clean carrier at its full floor, minted here and stamped by the house's own normalizer (no canon read). */
+  const CLEAN = normalizeMemeSource([
+    `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>`, ``,
+    `<<^ code=\`&#x0001;\` namespace=\`&#x2299;\` from=\`?\` to=\`lar:///t/clean\`>>`, `<<^ code=\`&#x0002;\`>>`, ``,
+    "```toml meta", `type     = "text/memetic-wikitext+tiddlywiki"`, `uri-path = "t/clean"`, "```", ``,
+    "<<~ ahu slot=`#/a`>>", ``, `! a`, ``, `one clean body`, ``, "<<~/ahu>>", ``,
+    `<<^ code=\`&#x0003;\`>>`, ``, `<<^ code=\`&#x0004;\` to=\`?\`>>`, ``,
+  ].join("\n")).text;
   const HEAD = [
     `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>`,
     ``,
@@ -341,7 +349,7 @@ describe("tiddler get --meme reads the composition it carries", () => {
   });
 
   test("CONTROL: a clean carrier reads silently and BYTE-IDENTICALLY; no ⚠ line rides stderr", async () => {
-    const clean = readFileSync(PRISM, "utf8");
+    const clean = CLEAN;
     h.replyFor = paged([clean]);
     const r = await human({});
     expect(r.code).toBe(0);
