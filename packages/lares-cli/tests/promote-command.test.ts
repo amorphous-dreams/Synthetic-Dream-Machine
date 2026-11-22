@@ -1,5 +1,5 @@
 /**
- * `lares promote` and `lares kapae` — the operator's doors onto a wiki's promoted rites and onto the face-wide brake.
+ * `lares trust` and `lares kapae` — the operator's doors onto a wiki's promoted rites and onto the face-wide brake.
  *
  * Each act reaches the store door's matching row (`promote-list|prepare|commit|drop|orphan`, `kapae-raise|lower|flag`) with the arguments
  * the row reads (a wiki, a digest, a reason) and prints the row's answer as JSON. A malformed ask refuses before the door. The wiki
@@ -21,7 +21,7 @@ const promote = (...argv: string[]) => cmdPromote(parseArgs(["promote", ...argv]
 const kapae = (...argv: string[]) => cmdKapae(parseArgs(["kapae", ...argv]));
 const D = "d".repeat(64);
 
-describe("lares promote", () => {
+describe("lares trust", () => {
   let lines: string[];
   beforeEach(() => {
     seam.calls = []; seam.output = { ok: true }; lines = [];
@@ -88,7 +88,7 @@ test("the staged-code door exposes trust in place of promote", async () => {
   expect(COMMAND_NAMES).not.toContain("promote");
 });
 
-test("retired doors direct every flag-bearing call to its replacement", async () => {
+test("each moved door names its replacement whatever flags ride the call", async () => {
   const { dispatch } = await import("../src/bin/lares.js");
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   for (const [args, replacement] of [

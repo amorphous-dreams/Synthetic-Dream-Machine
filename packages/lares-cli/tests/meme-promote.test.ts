@@ -132,6 +132,7 @@ async function seated(opts?: { admin?: boolean; residency?: Ledger }): Promise<S
     approverNym:    key,
     approverKeyDid: key,
     holdsAdmin:     async () => opts?.admin !== false,
+    verifyApproval: () => { throw new Error("unexpected approval verification"); },
     residencyOf:    async (title) => [...residency].filter(([, ts]) => ts.has(title)).map(([bag]) => bag),
     move:           async (m) => {
       moves.push(m);
