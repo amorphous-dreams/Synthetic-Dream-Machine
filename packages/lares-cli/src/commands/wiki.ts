@@ -824,6 +824,25 @@ function wikiStatusPlan(args: ParsedArgs): DoorPlan {
   return { verb: "wiki-status", args: { ...engineContainerArgs(args, "wiki status"), ...targetOf(args) } };
 }
 
+export function wikiActionPlan(args: ParsedArgs): DoorPlan {
+  const name = args.positional[0];
+  if (!name || args.positional.length !== 1) throw new DoorUsage("name one admitted action: wiki act sidebar-layout --recipe <wiki> --expected <layout> --resulting <layout>");
+  const expected = wordOf(args.options["expected"]);
+  const resulting = wordOf(args.options["resulting"]);
+  if (!expected || !resulting) throw new DoorUsage("--expected and --resulting each need a layout value");
+  return { verb: "wiki-action", args: { ...engineContainerArgs(args, "wiki act"), name, expected, resulting } };
+}
+
+async function cmdWikiAction(args: ParsedArgs): Promise<number> {
+  return guardDoor(args, "wiki act", async () => {
+    const ran = await runDoor(args, "wiki act", wikiActionPlan(args));
+    if (!ran.ok) return ran.exit;
+    emit(args, { ok: true, requestId: ran.requestId, data: ran.output,
+      human: () => { console.log(String(ran.output["has"])); console.log(`${String(ran.output["decision"])} ${String(ran.output["title"])} · receipt ${ran.requestId}`); } });
+    return 0;
+  });
+}
+
 interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[] }
 
 /**
@@ -953,6 +972,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
   "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The render reaches stdout. `--target <h1|pet name>` renders in another lit face's view (never its personal layer), keeping the face worn." },
   "status":     { handler: cmdWikiStatus,    summary: "Name each layer the wiki composes and whether this face reads and writes it: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
+  "act":        { handler: cmdWikiAction, summary: "Run one admitted native action: `wiki act sidebar-layout --recipe <wiki> --expected fixed-fluid --resulting fluid-fixed`." },
 };
 
 /** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */

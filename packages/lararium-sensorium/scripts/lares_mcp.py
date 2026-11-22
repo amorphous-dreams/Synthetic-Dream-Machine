@@ -170,7 +170,7 @@ MEME_VERBS = ("meme_put", "meme_list", "meme_delete", "meme_project")
 # hands back the same answer body (`fixtures/tiddler-door-answers.json` welds both skins to one table). THE CONTAINER
 # LAW holds; `recipe="default"` names the worn face's daemon wiki and `recipe=<slug>` any wiki that face reaches (one it
 # hosts, or one shared to it), each answered in that wiki's own engine; a wiki the face reaches none of refuses
-# `wiki-unreached`, and a bag (one bag, no wiki) refuses `wiki-not-anchored`. No tool here runs an action string or dispatches a `tm-*` message (`wiki_act`, phase 2), and
+# `wiki-unreached`, and a bag (one bag, no wiki) refuses `wiki-not-anchored`. The `wiki` tool runs only named admitted actions; no caller action string or `tm-*` message crosses it, and
 # the switcher keeps its one `wiki` tool until that phase renames it.
 TIDDLER_VERBS = ("tiddler_get", "tiddler_put", "tiddler_delete", "wiki_filter", "wiki_render", "wiki_status")
 
@@ -239,6 +239,7 @@ SEAT_INSTRUCTIONS = (
     "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense promote`, `retire`, "
     "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
     "the command for the operator to run on their own terminal, since no value a seat fills approves it."
+    " The `wiki` tool's `verb=\"act\"` runs one named admitted action (today `sidebar-layout`) in the wiki `recipe` names, with the `expected` and `resulting` values checked; it takes no action text, and a stale `expected` answers `conflict` and writes nothing."
 )
 
 # The targets `meme_project` renders — the same list `lares meme project --to` takes. The carrier itself reads through
@@ -272,7 +273,7 @@ VERB_SEATS = {
     "plane_record": (True, False),      # cross-plane read — reversible, trusted (structure/form fold onto recall --lens)
     "analyze": (True, False),           # every lens reads (rhythm's `repour` rides the reversible refresh) — mutates nothing → HOTL
     "flow": (True, False),              # the pet-named composed cap-stack runner — read-only compute, routed → HOTL
-    "wiki": (True, False),              # switcher (switch/hold/release/active) — reversible, low-trust, LOCAL residency → HOTL
+    "wiki": (True, False),              # switcher and admitted action — reversible gated wiki write → HOTL
     # The meme placement pair — a put lands through the gate (a re-put restores; tombstones move, never
     # delete) and a get reads; both stay on the operator's own island → HOTL.
     "meme_put": (True, False),          # place a meme's text at a lar: uri through the Confluence gate — reversible, trusted → HOTL
@@ -1023,16 +1024,26 @@ def build_mcp(coordinator: LaresCoordinator):
         return _call("plane_record", sensorium, cid)
 
     @mcp.tool()
-    def wiki(verb: str, slug: "str | None" = None) -> dict:
-        """The wiki-SWITCHER — mirrors `lares wiki <verb>` over the @daemon activation cap:
+    def wiki(verb: str, slug: "str | None" = None, name: "str | None" = None,
+             recipe: "str | None" = None, expected: "str | None" = None,
+             resulting: "str | None" = None) -> dict:
+        """The wiki door — mirrors selected `lares wiki <verb>` operations:
         `switch <slug>` LIVE-activates a wiki (no reboot — the true swap; wakes it cold from its
         recipe; a browser flips its projection surface). `hold`/`release <slug>` rotate the
         active-wiki pin (budget-enforced: @daemon always + N rotatable). `active` reports the live
-        state (running wikis + which are held). One namespace, four sub-verbs — never top-level twins.
+        state (running wikis + which are held). `act` runs one admitted floor-shadow action
+        with an explicit recipe and checked starting and resulting layout values.
         Rides the @daemon cap-wire like every verb (uds), never a local store."""
-        allowed = {"switch", "hold", "release", "active"}
+        allowed = {"switch", "hold", "release", "active", "act"}
         if verb not in allowed:
             raise SeatArgumentRefused(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
+        if verb == "act":
+            if slug is not None or not recipe or not name or not expected or not resulting:
+                raise SeatArgumentRefused("wiki act: name, recipe, expected and resulting required; slug refused")
+            return _meme_wire("wiki-action", {**_wiki_container("wiki act", recipe), "name": name,
+                                              "expected": expected, "resulting": resulting})
+        if any(value is not None for value in (name, recipe, expected, resulting)):
+            raise SeatArgumentRefused("wiki: action parameters ride `verb=act` alone")
         args: dict = {"slug": slug} if slug else {}
         return uds.output(f"wiki-{verb}", args)
 

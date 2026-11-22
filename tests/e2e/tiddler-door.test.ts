@@ -410,6 +410,18 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const got = await lar.cli(["tiddler", "get", "Walk wiki note", ...W]);
     expect(got.code, got.stderr).toBe(0);
     expect((dataOf(got)["tiddler"] as { bag: string }).bag).toBe(`lar:///ha.ka.ba/wikis/${WALK_WIKI}/working`);
+    const layoutTitle = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    const layoutSeed = await lar.cli(["tiddler", "put", layoutTitle, ...W, "--create", "--text", "fixed-fluid"]);
+    expect(layoutSeed.code, layoutSeed.stderr).toBe(0);
+    const changedLayout = await lar.cli(["wiki", "act", "sidebar-layout", ...W, "--expected", "fixed-fluid", "--resulting", "fluid-fixed"]);
+    expect(changedLayout.code, changedLayout.stderr).toBe(0);
+    expect(dataOf(changedLayout)).toMatchObject({ decision: "put", title: layoutTitle, resulting: "fluid-fixed" });
+    const layoutRead = await lar.cli(["tiddler", "get", layoutTitle, ...W]);
+    expect((dataOf(layoutRead)["tiddler"] as { fields: { text: string } }).fields.text).toBe("fluid-fixed");
+    const actedBySeat = await speak(entry, [{ name: "wiki", arguments: { verb: "act", name: "sidebar-layout", recipe: WALK_WIKI, expected: "fluid-fixed", resulting: "fixed-fluid" } }]);
+    say("MCP wiki act", payload(actedBySeat.results[0]));
+    expect(payload(actedBySeat.results[0])).toMatchObject({ ok: true, data: { decision: "put", title: layoutTitle, resulting: "fixed-fluid" } });
+    expect((dataOf(await lar.cli(["tiddler", "get", layoutTitle, ...W]))["tiddler"] as { fields: { text: string } }).fields.text).toBe("fixed-fluid");
     const status = await lar.cli(["wiki", "status", ...W]);
     say(`CLI wiki status --recipe ${WALK_WIKI}`, dataOf(status));
     expect(dataOf(status)).toMatchObject({ recipe: WALK_WIKI, working: `lar:///ha.ka.ba/wikis/${WALK_WIKI}/working` });
