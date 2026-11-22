@@ -838,3 +838,45 @@ def test_wiki_seat_reach_stays_on_switch_rotate_and_act(monkeypatch):
         with pytest.raises(Exception, match=name):
             wiki(**args)
         assert calls == []
+
+
+
+def test_registered_tools_carry_seat_annotations_and_plain_first_lines():
+    from lares_mcp import VERB_SEATS, TOOL_NATURE, tool_annotation_hints, DaemonCoordinator, build_mcp
+
+    tools = asyncio.run(build_mcp(DaemonCoordinator(wing="w")).list_tools())
+    assert next(t for t in tools if t.name == "analyze").annotations.read_only_hint is False
+    assert set(TOOL_NATURE) == {t.name for t in tools}
+    verbs = set("capture recall report render mute restore read run switch wikify survey cast pin unpin patch remove offer show propose stage get roster build reconcile".split())
+
+    def check(tool):
+        assert tool.name in VERB_SEATS and VERB_SEATS[tool.name] == (True, False)
+        a = tool.annotations
+        assert a is not None, tool.name
+        assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == (
+            *tool_annotation_hints(tool.name),
+        ), tool.name
+        first = tool.description.splitlines()[0]
+        assert len(first) < 120, (tool.name, first)
+        assert first.split()[0] in {v.capitalize() for v in verbs}, (tool.name, first)
+
+    for tool in tools:
+        check(tool)
+    from copy import deepcopy
+    planted = deepcopy(tools[0])
+    planted.annotations = None
+    with pytest.raises(AssertionError):
+        check(planted)
+    planted = deepcopy(tools[0])
+    planted.annotations.open_world_hint = True
+    with pytest.raises(AssertionError):
+        check(planted)
+
+    planted = deepcopy(next(t for t in tools if t.name == "analyze"))
+    planted.annotations.read_only_hint = True
+    with pytest.raises(AssertionError):
+        check(planted)
+    planted = deepcopy(next(t for t in tools if t.annotations.read_only_hint))
+    planted.annotations.destructive_hint = True
+    with pytest.raises(AssertionError):
+        check(planted)

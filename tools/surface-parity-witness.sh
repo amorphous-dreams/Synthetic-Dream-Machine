@@ -38,7 +38,7 @@ if not CLI.exists():
     print(f"[surface-parity] no built CLI at {CLI} — run `pnpm build` first"); sys.exit(1)
 
 tools = [t.replace("_", "-") for t in
-         re.findall(r'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
+         re.findall(r'@mcp\.tool\([^\n]*\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
 
 # A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool(...)` with its arguments on ONE line
 # (the tiddler door's tools state their annotations there: `@mcp.tool(annotations=_READS)`), so a decorator
@@ -129,7 +129,7 @@ EXEMPT: dict[str, str] = {
 
 def daemon_verbs_mcp(name: str) -> set:
     """The daemon verbs an MCP tool routes to — read off its own `_call(...)`."""
-    body = re.search(rf'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
+    body = re.search(rf'@mcp\.tool\([^\n]*\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
                      MCP.read_text(), re.S)
     found = set(re.findall(r'_call\(\s*"(\w+)"', body.group(0))) if body else set()
     return {v.replace("_", "-") for v in found}
