@@ -433,6 +433,23 @@ test("RED XV4 (#407 H2, Sol 407c-f on the one-shot line): a one-shot visit admit
   drains[0]!(); await closed;
 });
 
+test("ONE GATE PER ONE-SHOT: a one-shot visit to a target whose close drains refuses face-closing on the target's actor, and nothing places; a one-shot write on the mount still holds the mount's work gate", async () => {
+  const { lives, drains } = actors(0, 1);
+  const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISITS, output: visitOut });
+  const closed = lives.close(1, "pulama closing");
+  await vi.waitFor(() => expect(drains).toHaveLength(1));
+  expect(await v.oneShot({ verb: "tiddler-get", args: { ...READ, target: 1 }, requestedBy: "0xplace", requestId: "visit-closing" }))
+    .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
+  expect(v.placed).toEqual([]);
+  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "mount-write" })).toMatchObject({ status: "done" });
+  drains[0]!(); await closed;
+  const mountClose = lives.close(0, "lock");
+  await vi.waitFor(() => expect(drains).toHaveLength(2));
+  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xop", requestId: "mount-write-closing" }))
+    .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
+  drains[1]!(); await mountClose;
+});
+
 test("RED XV5 (#407 M1, M3): the door refuses a private bag first, then a write naming another face, then an unknown or doubled pet name, before any gate; nothing places", async () => {
   const { lives } = actors(0, 1);
   const v = await stand({ lit: [1], faceLife: lives, visitVerbs: VISITS, petnames: [[1, "Wren"], [2, "wren"], [3, "4"]] });

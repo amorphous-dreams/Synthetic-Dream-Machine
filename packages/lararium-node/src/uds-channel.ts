@@ -1733,19 +1733,19 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           const resolved = await resolveTarget(inv.verb, inv.args, mount);
           if (!resolved.ok) return fail(resolved.message, resolved.refusal);
           if (resolved.args !== undefined) inv.args = resolved.args;
-          if (mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null) gate = gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined;
+          // ONE GATE PER ONE-SHOT, decided once: a visit admits on its target's actor (`gateFor`); otherwise a write (a chore: it
+          // writes or signs) admits as work on the face it acts as (the face it names, or the mount), as a session's verb does on
+          // the face it wears, so no one-shot write enters that face's drain. ONLY A WRITE ENTERS A DRAIN: a chore-free verb (a
+          // read, a row of the place) that visits no face keeps its path.
+          const acts = named ?? mount;
+          gate = mount !== null && visitTargetOf(mount, inv.verb, inv.args) !== null ? gateFor(mount, inv.verb, inv.args ?? {}) ?? undefined
+            : acts !== null && isChore(inv.verb) ? workGate(acts) ?? undefined
+            : undefined;
         }
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });
           if (chore !== null && !chore.ok) return fail(chore.message, chore.refusal);
           if (chore?.ok) { choreMark = chore.mark; inv.chore = chore.mark; }
-        }
-        // ONE-SHOT WORK RIDES THE WORK GATE: the line's write (a chore: it writes or signs) admits as work on the face it acts as
-        // (the face it names, or the mount), as a session's verb does on the face it wears, so a one-shot write never enters that
-        // face's drain. ONLY A WRITE ENTERS A DRAIN: a chore-free verb (a read, a row of the place) keeps its path.
-        if (sessionRequestId === undefined) {
-          const acts = named ?? mount;
-          gate = acts !== null && isChore(inv.verb) ? workGate(acts) ?? undefined : undefined;
         }
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.
