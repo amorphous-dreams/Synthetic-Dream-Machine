@@ -62,6 +62,8 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 
 ''A ROOM full of unread material reads `harvest`, never `folded`'' — folding follows the reading. ''The last check-in reads `retiring`'' — the state a reader bisecting the history lands on.
 
+''The harvest reading meets the house's cores.'' For each rule it LIFTs, the reading asks whether a catma registry or a pattern-integrity registry already predicts it. A predicting core carries the rule; a new tell or place it lives can sharpen that core. Where no core predicts it, the reading names a candidate. A new core, or a change to a core's rule or reason, waits for the operator's word under `rule`; the reader from another context collides before findings merge (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity#/recursive-reading`>>).
+
 !!! Axis B ~ kind: what counts as enactment
 
 ```
@@ -127,6 +129,10 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 
 ''The hard floor:'' ''the fire burns a path, never a pattern.'' An otakiage touches one path in one tree and reaches no copy anywhere; nothing here MAY reach a record on another vessel — that plane belongs to `removeMeme` and its grace, under the caps, and the two MUST NOT meet.
 
+''The wiki plane carries its own path.'' A tiddler — a whole meme or an ahu slot, each addressed by its full title — in one layer of one vessel's wiki stands as that wiki's path. Fire on that tiddler reaches no other layer or vessel and never meets `removeMeme`. The same ladder, READ → LIFT → WELD → BURN in groups with the declaration last, never-burn list, caller, gratitude line and two-commit shape govern it. Its doors read `lares tiddler delete <title> --recipe <r> --if-match <hash>` (`--family` for a meme root); an ahu slot leaves through a family put without that slot. A line never burns alone: a backward line inside a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and its limits stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
+
+''Stage road reading, without tag migration:'' `road/state/open` reads `designed`; `road/state/landed` reads `standing`; routed, lifted and welded material reads `folded`. The standing order “o-takiage at every land” supplies the authored ending that counts as a call already made for landed road memes; proof, weld and the two commits still govern each burn.
+
 !!! Who calls it
 
 ''The operator calls; any hand may carry.'' A Nexus lives on traffic, so its silence ends it with no admin act (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>>); a `.mem` file at a fixed path never goes quiet, and a stale carrier reads exactly like a standing one. ''The capability answers NONE where quiet does the work, and answers OPERATOR where quiet does nothing.''
@@ -149,6 +155,30 @@ The last check-in commit's body says four things and stops:
 # ''The thanks'' — one clause, in the house's own voice, naming what the carrier did.
 
 The ending belongs to the thing's completion, never to its worthlessness — 「感謝の気持ちをこめて納める」. The subject follows the house's convention, `lar:///w1.w2.w3 — summary`, with the three-term root naming what the ending DID.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sigils`>>
+
+!! Sigils ~ the record inside a sitting
+
+The sitting convenes as a talk-story floor (#/the-fire); no sigil opens it. These calls record its reading and acts. `mu` and `aperture` optionally name the seed's attention instruments (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/mu-five-tools`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/aperture`>>). An `unchecked` value exposes a check the call has yet to carry.
+
+```memetic-wikitext
+\procedure ~sitting(candidates never:"unchecked" held:"unchecked" mu:"00" aperture:"18/theme") Sitting (<<mu>>, <<aperture>>): candidates <<candidates>>; never burns <<never>>; held <<held>>.
+\procedure ~lift(item core action:"candidate" mu:"!0" aperture:"6/beat") Lift <<item>> toward <<core>> (<<mu>>, <<aperture>>): <<action>>.
+\procedure ~weld(source inbound:"unchecked" backlinks:"unchecked" search:"unchecked" owed:"unchecked" mu:"?0" aperture:"14/arc") Weld <<source>> (<<mu>>, <<aperture>>): inbound <<inbound>>; `backlinks[]` <<backlinks>>; `search[]` for bare `lar:` cites <<search>>; owed items <<owed>>.
+\procedure ~burn(target proof hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked" mu:"_!" aperture:"2/pulse") Burn <<target>> (<<mu>>, <<aperture>>): proof <<proof>>; hash <<hash>> or base <<base>>; layers <<layers>>; two commits <<commits>>. Gratitude: carried <<carried>>; each part went <<homes>>; nothing dangles <<clear>>; thanks <<thanks>>.
+```
+
+`action` reads `carried` · `tell` · `lives` · `draft` · `candidate`. A `burn` target names a whole meme or an ahu slot by full title; `proof` carries no default and must name the source's completed work. A meme root carries a plain-read `hash`; an ahu family put carries its family-read `base`. `commits` names the last check-in and the burn commit; the four gratitude values form the last check-in body.
+
+```memetic-wikitext
+<<~ sitting candidates=`road/one-door` never=`canon; kapu; contested floors` held=`road/open-lean`>>
+<<~ lift item=`one-door rule` core=`catma registry` action=`carried`>>
+<<~ weld source=`road/one-door` inbound=`zero after repointing` backlinks=`zero` search=`zero bare cites` owed=`each item reads at its new home`>>
+<<~ burn target=`lar:///example.road.folds/one-door` proof=`merged cure and read-back` hash=`sha256-…` layers=`working only` commits=`last check-in; burn` carried=`the one-door rule` homes=`lar:///example.rule.stands/one-door` clear=`zero inbound; edge check green` thanks=`you gave the rule its first path`>>
+```
 
 <<~/ahu>>
 
@@ -175,9 +205,11 @@ The ending belongs to the thing's completion, never to its worthlessness — 「
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ByQyPsTg4AH8Rx5dbhmizEgiXJG_dlmj7MzjB3uJQeQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wBCDA9445l_oocBho89_aAETjyGT4SHdvEaWgG1qqgs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
