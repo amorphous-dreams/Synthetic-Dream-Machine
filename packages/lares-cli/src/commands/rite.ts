@@ -112,7 +112,10 @@ const KEEP_PORTS: KeepPorts = {
   },
   // A KEEP NAMING NO FACE ACTS AS THE KEEP'S FACE, read over the faces the house holds (the custody door's census, open and shut).
   houseFaces: async () => houseFaces(),
-  cut: async (dest, opts) => (await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
+  cut: async (dest, opts) => {
+    const r = await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) });
+    return { ...r.manifest, unreadFaces: r.unreadFaces };
+  },
   // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
   wikis: {
     read: async () => {
@@ -157,6 +160,7 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
       if (!out.kept) { console.log(`keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`); return; }
       console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
       for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
+      if ((out.unreadFaces?.length ?? 0) > 0) console.log(`    standing heads left behind for ${out.unreadFaces!.map((i) => `h${i}`).join(", ")} (this terminal alone names them)`);
       console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land --tessera ${out.tessera} --head ${out.bundleId}`);
     } }, out.kept ? `keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest}, return ${out.n} of the keep lei spent; land it: lares rite land --tessera ${out.tessera} --head ${out.bundleId}` : `keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`);
     return 0;

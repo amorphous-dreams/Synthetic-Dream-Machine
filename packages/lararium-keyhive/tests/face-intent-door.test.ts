@@ -584,7 +584,7 @@ describe("vota answer on the face's own turn, and each outcome keeps its chore m
   const outcomesOf = (shared: ReturnType<typeof plane>, group: string) =>
     (intentEntryRecordsOfGroup(shared.doc, group) as { body: { entry: string; cause?: string } }[]).filter((r) => r.body.entry === "outcome");
 
-  test("RED: a face standing dark answers no votum; CONTROL: its lit turn answers it once and settles its ticket; POSITIVE: the same votum worded again and a second lit turn land nothing more", async () => {
+  test("RED: a face standing dark answers no votum; CONTROL: its lit pass answers it once and settles its ticket; POSITIVE: the same votum worded again and a second lit pass land nothing more", async () => {
     const f = await faceOf(), shared = plane(), effect = vi.fn(async () => ({ text: "Sweetmorn" }));
     let lit = false, admitted = 0, settled = 0;
     const door = makeFaceIntentDoor({ group: f.group, plane: shared.handle, personaRecords: () => f.log, kelChain: () => [f.inception], verbs: faceIntentVerbs(), log: () => {},

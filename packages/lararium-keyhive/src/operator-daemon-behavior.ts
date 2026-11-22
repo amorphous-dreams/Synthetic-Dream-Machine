@@ -22,7 +22,7 @@ import {
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor, makeWikiActionReactor,
   makeOracleCastReactor,
   ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
@@ -468,7 +468,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       kelChain: () => chainNow(), anchor: face.anchor,
       standing: standings.standing, acquisition: standings.acquisition,
       verbs: faceIntentVerbs(), ...(face.effects ? { effects: face.effects } : {}),
-      // The face's turn stands while its door does and its hive stands here; its close or the island's stop ends it.
+      // The face gate stands while its door does and its hive stands here; its close or the island's stop ends it.
       admitTurn: () => (intentDoors.open(key) && providers.has(key) ? { done: () => {} } : null),
       acting: () => face.acting,
       runDeclaredEffect: async (verb, args, at) => {
@@ -1229,6 +1229,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("wiki-filter", engineVerb("wiki-filter", makeWikiFilterReactor), { summary: "Run a TiddlyWiki filter in the wiki's own engine (`recipe: default` the daemon wiki, `recipe: <slug>` any wiki this face reaches); answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-get", engineVerb("tiddler-get", makeTiddlerGetReactor), { summary: "Read one tiddler or one meme on a gradient: every answer leads with a `<<~ has …>>` line and echoes its `grain` and `next`. The record lens (default) answers the fields, `hash` (a writer's base) and `textHash`, whole within one page and skinny past it; `meme: true` recomposes the root and its slots into one sealed carrier, whole within a page, its has-stack past it, `grain: whole` paged on slot boundaries (`after` the cursor). `grain` names skinny · fat · handle · resolved · slot · whole (an unknown grain refuses); `fields` names a subset; `slot` reads one slot.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-render", engineVerb("wiki-render", makeWikiRenderReactor), { summary: "Wikify a title or a wikitext span through the wiki's own engine (the daemon wiki or any wiki this face reaches) to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("wiki-action", engineVerb("wiki-action", makeWikiActionReactor), { summary: "Run one named action from the admitted table in the wiki's own engine (`recipe` names the wiki, `name` the row, `expected` and `resulting` the checked values; no caller action text). It reads the floor shadow unoverridden, runs it on an isolated view against the one target the row may change, and lands that change through the ordinary gated put; the answer leads with its `<<~ has …>>` line and carries the receipt and `change`. A stale `expected` answers `conflict` and writes nothing; an unknown name or parameter, an overridden shadow, a withheld target or a denied write refuses by name.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-put", engineVerb("tiddler-put", makeTiddlerPutReactor), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-delete", engineVerb("tiddler-delete", makeTiddlerDeleteReactor), { summary: "Remove one tiddler by the family law: with no `mode` a delete deletes plainly (each record leaves its own layer, no tombstone; `mode: plain` in the answer) and retracts a kāpae that hides nothing; a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; where a lower layer holds the title too, no mode refuses `delete-mode-needed` and the caller names one: `kapae` tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("wiki-status", engineVerb("wiki-status", makeWikiStatusReactor), { summary: "Name each layer the wiki composes (the daemon wiki, or any wiki this face reaches) and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
@@ -2075,7 +2076,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);
           // THE LIT LIFE BOUNDS ITS DOOR: the votum in flight lands under the face's hive, then the door detaches, before the hive goes.
           // The vessel's close reached CLOSED without waiting on this drop (face-lifecycle), so an outcome landing here may miss its
-          // drain; it answers again at the face's next lit turn, and a sibling's door pays idempotent declared verbs alone.
+          // drain; it answers again at the face's next lit pass, and a sibling's door pays idempotent declared verbs alone.
           await intentDoors.drop(key);
           const face = providers.get(key);
           if (face) {
@@ -2312,7 +2313,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       for (const face of daemonAuth.joinedFaces ?? []) {
         try { await lightJoinedFace(face, ctx); }
         catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); continue; }
-        // A SIBLING LIT WITH THE COMPOSITION takes its lit turn here: its door stands on its own queue, never holding the boot.
+        // A SIBLING LIT WITH THE COMPOSITION takes its lit pass here: its door stands on its own queue, never holding the boot.
         const key = bareKey(face.atom.key);
         void onFaceQueue(key, async () => {
           if (!litSiblings.has(key)) return;

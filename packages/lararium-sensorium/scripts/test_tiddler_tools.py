@@ -85,7 +85,7 @@ def _mcp():
 
 def _tools():
     mcp = _mcp()
-    return {name: mcp._tool_manager.get_tool(name).fn for name in TIDDLER_VERBS}  # noqa: SLF001 — the registered skins
+    return {name: mcp._tool_manager.get_tool(name).fn for name in (*TIDDLER_VERBS, "wiki")}  # noqa: SLF001 — the registered skins
 
 
 def test_tiddler_tools_register_and_seat_hotl(daemon):
@@ -119,7 +119,7 @@ def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
 
 
 def test_the_table_names_every_tool():
-    assert {row["tool"] for row in _ROWS} == set(TIDDLER_VERBS)
+    assert {row["tool"] for row in _ROWS} == set(TIDDLER_VERBS) | {"wiki"}
 
 
 @pytest.mark.parametrize("row", _ROWS, ids=[f"{r['tool']}:{r['wire']['args'].get('title') or r['wire']['args'].get('filter') or 'status'}" for r in _ROWS])

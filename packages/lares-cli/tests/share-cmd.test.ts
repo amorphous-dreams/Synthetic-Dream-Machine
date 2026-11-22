@@ -125,6 +125,13 @@ describe("the share door", () => {
     expect(parseShareFile(f.file()!)).toEqual([]);
   });
 
+  test("a non-owner landing names the owner whose wear can hand on the share", async () => {
+    const file = serializeShareFile([{ slug: "elyncia-referee", kind: "wiki", read: "the referee", write: "", owner: "joshua-fontany" }]);
+    const f = fake({ file, applied: { granted: 0, pending: 0, unowned: ["elyncia-referee"] } });
+    expect(await cmdShare("wiki", f.doors)(args(["elyncia-referee"], { read: "h1" }))).toBe(0);
+    expect(f.out.join("\n")).toMatch(/h0 owns elyncia-referee; run `lares wear 0`, then this share/);
+  });
+
   test("SH5 — the row keeps its owner in the control document as in the file", async () => {
     const prior = fake({ file: serializeShareFile([{ slug: "notes", kind: "wiki", read: "", write: "", owner: "joshua-fontany" }]) });
     const seeded = parseShareFile(prior.file()!);

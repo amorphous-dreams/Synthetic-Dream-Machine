@@ -346,6 +346,22 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
+  test("a wiki-action request replays its first receipt and a fresh request dispatches anew", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const args = { recipe: "default", name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" };
+      const first = { verb: "wiki-action", args, requestedBy: "did:key:test", requestId: "wiki-action-first" };
+      expect((await sendLine(v.socketPath, first))["status"]).toBe("done");
+      await v.restart();
+      expect((await sendLine(v.socketPath, first))["status"]).toBe("done");
+      expect(counter.n).toBe(1);
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: first.requestId }))["state"]).toBe("done");
+      expect((await sendLine(v.socketPath, { ...first, requestId: "wiki-action-fresh" }))["status"]).toBe("done");
+      expect(counter.n).toBe(2);
+    } finally { await v.teardown(); }
+  });
+
   test("a fresh ledger reads receipts only from the control document", async () => {
     const v = await Vessel.boot({ placeVerbImpl: () => {} });
     try {

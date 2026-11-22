@@ -69,9 +69,11 @@ describe("a system slug composes through the vessel's own record", () => {
     await expect(makeInitWikiReactor({ ...r.mint, systemCanonUrl: async () => null })({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag: "lares" names a system bag, and no wiki stands on it/);
     await expect(makeInitWikiReactor({ ...r.mint, systemCanonUrl: undefined as never })({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
     const rows = (await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor, async () => null)({}, ctx))["wikis"];
-    expect(rows).toEqual([expect.objectContaining({ slug: "lares", kind: "system", automergeUrl: null })]);
+    // The row says why it names no document: its canon reads through the floor snapshot, which no document stands behind.
+    expect(rows).toEqual([expect.objectContaining({ slug: "lares", kind: "system", automergeUrl: null, canon: "floor" })]);
     const held = (await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor, r.systemCanonUrl)({}, ctx))["wikis"];
     expect(held).toEqual([expect.objectContaining({ slug: "lares", kind: "system", automergeUrl: "automerge:lares-canon" })]);
+    expect(held).toEqual([expect.not.objectContaining({ canon: "floor" })]);
   });
 
   test("init-wiki and list-wikis on a system slug answer the realm's document while a catalog row names another (CONTROL: with no realm document named, the row answers)", async () => {

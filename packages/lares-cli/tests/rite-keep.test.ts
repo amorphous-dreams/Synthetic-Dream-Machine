@@ -141,6 +141,16 @@ describe("the keep rite, vessel half", () => {
     expect(deep.calls[2]).toMatch(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${there.bundleId}","staged":"devices/one/\\.house\\.keep-[0-9a-f]{12}","face":1\\}$`));
   });
 
+  test("K2b RED: a cut that left a face's standing heads behind names that face by handle index in the keep's answer to the terminal; CONTROL: a whole cut names none", async () => {
+    const r = rig();
+    const cut = r.ports.cut;
+    const named: KeepPorts = { ...r.ports, cut: async (dest, opts) => ({ ...(await cut(dest, opts)), unreadFaces: [2] }) };
+    const out = await riteKeep(named, { workspace: "backup" });
+    expect(out).toMatchObject({ kept: true, unreadFaces: [2] });
+    const whole = await riteKeep(rig({ notes: { pond: "the pond\n" } }).ports, { workspace: "backup" });
+    expect(whole).not.toHaveProperty("unreadFaces");
+  });
+
   test("K3 RED: a begin the vessel refuses leaves the workspace as it stood; CONTROL: the earlier bundle still verifies, byte for byte", async () => {
     const first = rig();
     const kept = await riteKeep(first.ports, { workspace: "backup" });

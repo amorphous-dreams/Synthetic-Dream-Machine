@@ -70,7 +70,7 @@ afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply 
 
 describe("verb-table-parity — the CLI half of the tiddler door's one table", () => {
   test("the table names all six verbs, and every door it names stands in the command table", () => {
-    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status"]));
+    expect(new Set(TABLE.rows.map((r) => r.tool))).toEqual(new Set(["wiki", "wiki_filter", "tiddler_get", "wiki_render", "tiddler_put", "tiddler_delete", "wiki_status"]));
     const names = new Set(COMMANDS.map((c) => c.name));
     for (const row of TABLE.rows) expect(names.has(row.cli.command)).toBe(true);
   });
@@ -143,6 +143,16 @@ describe("the argument law, no daemon", () => {
       expect(both.exit).toBe(2);
       expect(h.calls).toHaveLength(4);
     } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+  test("wiki act narrows its flags before dispatch", () => {
+    const row = COMMANDS.find((c) => c.name === "wiki")!;
+    for (const flag of ["text", "target", "dry-run", "list"]) {
+      const args = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", [flag]: "stray" });
+      expect(unknownFlags(row, args).map((x) => x.name)).toEqual([flag]);
+    }
+    const withFace = argv("wiki", ["act", "sidebar-layout"], { recipe: "default", expected: "fixed-fluid", resulting: "fluid-fixed", face: "1" });
+    expect(unknownFlags(row, withFace)).toEqual([]);
+    expect(h.calls).toEqual([]);
   });
   test("a tiddler verb names its container and its title before anything rides the wire", async () => {
     expect(() => tiddlerPlan("get", argv("tiddler", ["get", "T"]))).toThrow(/no-container/);
@@ -318,7 +328,7 @@ describe("tiddler get --meme — one door reads on a gradient", () => {
     const e = vi.spyOn(console, "error").mockImplementation((m: unknown) => { err.push(String(m)); });
     try { await cmdTiddler({ command: "tiddler", positional: ["get", "Note"], options: { recipe: "default" }, flags: { json: false } } as unknown as ParsedArgs); }
     finally { spy.mockRestore(); e.mockRestore(); }
-    expect(out.join("")).toBe("title: Note\n\nwords");
+    expect(out.join("")).toBe("title: Note\n\nwords\n");
     expect(err).toEqual(["<<~ has name=`Note` params=`recipe/default position/plain bytes/5 base/sha256-aa`>>", "base: sha256-aa"]);
   });
 });

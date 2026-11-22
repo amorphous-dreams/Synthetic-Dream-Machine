@@ -210,7 +210,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
       const record = tiddler!;
       const { text, ...rest } = record.fields;
       for (const [name, value] of Object.entries(rest)) stdout.write(`${name}: ${value}\n`);
-      if (typeof text === "string") stdout.write(`\n${text}`);
+      if (typeof text === "string") stdout.write(`\n${text}${text.endsWith("\n") ? "" : "\n"}`);
       if (has) console.error(has);
       console.error(`base: ${record.hash}`);
       if (record.bag) console.error(`bag: ${record.bag}`);

@@ -922,6 +922,81 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
   };
 });
 
+// A row names a verified floor shadow and the sole record its native action may change.
+// The caller supplies values only; no action text or message name crosses this door.
+interface AdmittedWikiAction {
+  readonly title: string;
+  readonly target: string;
+  readonly values: readonly string[];
+}
+const ADMITTED_WIKI_ACTIONS: Readonly<Record<string, AdmittedWikiAction>> = {
+  "sidebar-layout": {
+    title: "$:/core/ui/KeyboardShortcuts/change-sidebar-layout",
+    target: "$:/themes/tiddlywiki/vanilla/options/sidebarlayout",
+    values: ["fixed-fluid", "fluid-fixed"],
+  },
+};
+
+export const makeWikiActionReactor = everyWiki("wiki-action", true, (opts: TiddlerVerbOptions): VerbReactor => {
+  return async (args, ctx) => {
+    const allowed = new Set(["recipe", "name", "expected", "resulting"]);
+    const unknown = Object.keys(args).find((key) => !allowed.has(key));
+    if (unknown) throw new VerbRefusal("wiki-action-parameter", `wiki-action-parameter: unknown parameter "${unknown}"`);
+    const name = stringArg(args, "name");
+    const action = Object.hasOwn(ADMITTED_WIKI_ACTIONS, name) ? ADMITTED_WIKI_ACTIONS[name] : undefined;
+    if (!action) throw new VerbRefusal("wiki-action-unknown", `wiki-action-unknown: no admitted action "${name}"`);
+    const expected = stringArg(args, "expected");
+    const resulting = stringArg(args, "resulting");
+    if (!action.values.includes(expected) || !action.values.includes(resulting) || expected === resulting)
+      throw new VerbRefusal("wiki-action-parameter", `wiki-action-parameter: ${name} needs distinct admitted expected and resulting layout values`);
+    const anchor = anchorOf(opts, args, "wiki-action", true);
+    refuseWithheld(action.target, "wiki-action");
+    refuseEffectLedgerWrite(action.target, "wiki-action");
+    await requireWrite(opts, anchor, ctx.cap, "wiki action", ctx.asker);
+    const wiki = anchor.engine.wiki as EngineWiki & {
+      isShadowTiddler(title: string): boolean;
+      getShadowSource(title: string): string | undefined;
+      getTiddlerText(title: string, fallback?: string): string;
+    };
+    // A tiddler overriding the shadow would move the action bytes outside the pinned floor.
+    if (!wiki.isShadowTiddler(action.title) || wiki.tiddlerExists(action.title) || wiki.getShadowSource(action.title) !== "$:/core")
+      throw new VerbRefusal("wiki-action-origin", `wiki-action-origin: "${action.title}" needs its unoverridden floor shadow`);
+    const { view } = await viewFor(opts, anchor, ctx.cap);
+    const before = view.getTiddler(action.target);
+    const beforeFields = before ? readRecord(before).fields : null;
+    const observed = beforeFields?.["text"] ?? "";
+    if (observed !== expected)
+      return { has: hasLine(name, [param("recipe", anchor.recipe), param("decision", "conflict")]), recipe: anchor.recipe, name,
+        title: action.target, decision: "conflict", expected, observed, resulting: observed };
+
+    // The native widget receives a one-call copy-on-write view. Its add/delete ports can
+    // record only this row's target, so no mutation reaches the authoritative wiki yet.
+    let candidate: EngineTiddler | null = null;
+    let changed = 0;
+    const sandbox = Object.create(view) as EngineWiki;
+    sandbox.addTiddler = (record) => {
+      const next = record as EngineTiddler;
+      if (next.fields["title"] !== action.target || ++changed > 1)
+        throw new VerbRefusal("wiki-action-scope", `wiki-action-scope: ${name} tried a change outside its single admitted target`);
+      candidate = next;
+    };
+    sandbox.deleteTiddler = () => { throw new VerbRefusal("wiki-action-scope", `wiki-action-scope: ${name} tried to delete a record`); };
+    const root = (opts.tw5.$tw as unknown as { rootWidget: { wiki: EngineWiki; invokeActionString(s: string): void } }).rootWidget;
+    const widget = Object.create(root) as typeof root;
+    widget.wiki = sandbox;
+    widget.invokeActionString(wiki.getTiddlerText(action.title));
+    const nextFields = candidate ? readRecord(candidate).fields : null;
+    if (changed !== 1 || nextFields?.["text"] !== resulting)
+      throw new VerbRefusal("wiki-action-result", `wiki-action-result: ${name} did not produce the requested layout`);
+    const put = await makeTiddlerPutReactor(opts)({ recipe: anchor.recipe, title: action.target,
+      text: resulting, ...(beforeFields ? { base: hashOf(beforeFields) } : { create: true }) }, ctx);
+    return { has: hasLine(name, [param("recipe", anchor.recipe), param("decision", String(put["decision"]))]),
+      recipe: anchor.recipe, name, action: action.title, title: action.target, expected,
+      resulting: put["decision"] === "put" ? resulting : observed, decision: put["decision"],
+      receipt: ctx.invocation.requestId, change: put };
+  };
+});
+
 // ── tiddler-delete ────────────────────────────────────────────────────────────────────────────────────
 
 export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts: TiddlerVerbOptions): VerbReactor => {

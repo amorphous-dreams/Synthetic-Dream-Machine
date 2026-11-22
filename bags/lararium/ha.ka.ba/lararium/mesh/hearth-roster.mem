@@ -78,10 +78,10 @@ The roster frames its rows by provenance and weight (<<~ loulou uri=`lar:///ha.k
 
 ''Decision (2026-11-21).'' The roster shows the whole house to any socket peer under the vessel's own uid, an AI seat with a narrower lent set included: every worn face's seats, lanes and vota, not only the faces the asker may act as. This keeps the operator's ruling of 2026-11-21: seats stand as equals, and trust rides the binding (each act still meets its own gate: the lent set, the seat's profile, the face's cap). The roster reads presence the kernel holds and plane content the signers signed, filtered to tokens and hex. It carries no secret, no key and no record body, and it acts on nothing.
 
-''Reads outside the face's turn.'' The roster reads each plane outside the face actor's turn. A read that lands during a face's drain can come back stale (the plane as it stood when the read began) or unread by its code; the next read answers afresh.
+''Reads outside the face gate.'' The roster reads each plane outside the face actor's gate. A read that lands during a face's drain can come back stale (the plane as it stood when the read began) or unread by its code; the next read answers afresh.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_8waMlodrlhcbmeSySKH7TOMgpYAeX26VO7z6Wv60hA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_XGziMVlIxDyBrC1M-KyUJlc4nSSVa-ylXhiUURjb6U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

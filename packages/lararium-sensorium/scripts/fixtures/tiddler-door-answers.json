@@ -2,6 +2,13 @@
   "_doc": "THE TIDDLER DOOR'S VERB TABLE — one row per verb, read by BOTH skins' tests (`lares-cli/tests/tiddler-door.test.ts` and `scripts/test_tiddler_tools.py`). `cli` spells the `lares` command line (parsed), `mcp` the MCP tool's kwargs, `wire` the one `{verb, args}` both must put on the daemon's socket, and `output` a daemon answer both must hand back verbatim (the CLI as `--json` `data`, the MCP seat as the tool's result). A skin that renames an arg, drops one, or reshapes the answer reds its own half; a row missing a skin reds both (wiki-surface-scout #/a-lean, red `verb-table-parity`).",
   "rows": [
     {
+      "tool": "wiki",
+      "cli": { "command": "wiki", "positional": ["act", "sidebar-layout"], "options": { "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" }, "flags": {} },
+      "mcp": { "verb": "act", "name": "sidebar-layout", "recipe": "kahu", "expected": "fixed-fluid", "resulting": "fluid-fixed" },
+      "wire": { "verb": "wiki-action", "args": { "recipe": "kahu", "name": "sidebar-layout", "expected": "fixed-fluid", "resulting": "fluid-fixed" } },
+      "output": { "has": "<<~ has name=`sidebar-layout` params=`recipe/kahu decision/put`>>", "recipe": "kahu", "name": "sidebar-layout", "action": "$:/core/ui/KeyboardShortcuts/change-sidebar-layout", "title": "$:/themes/tiddlywiki/vanilla/options/sidebarlayout", "expected": "fixed-fluid", "resulting": "fluid-fixed", "decision": "put", "receipt": "r1" }
+    },
+    {
       "tool": "wiki_filter",
       "cli": {
         "command": "wiki",
