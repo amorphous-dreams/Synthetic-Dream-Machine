@@ -153,8 +153,8 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
   it("RED: a Ctrl+C during the workbench lay (exit 130) reads as interrupted, never failed", async () => {
     const f = fakes({ yes: true, lay: 130 });
     const out = await riteKukulu(f.ports, {});
-    expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true } } });
-    expect(out.data).not.toHaveProperty("refusal");
+    // The --json answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
+    expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } });
     expect(f.said.join("\n")).toMatch(/the workbench lay was interrupted; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
   });
 
