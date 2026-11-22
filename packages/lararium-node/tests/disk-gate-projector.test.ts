@@ -1,12 +1,11 @@
+import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
-import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
 
-const CORE = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
 const BAG = "mirror-bag";
 const unrelatedBag = "unmirrored-bag";
 const rootPrefix = "lar:///ha.ka.ba/disk-gate";
@@ -15,7 +14,7 @@ let diskRoot = "";
 
 beforeAll(async () => {
   engine = new TW5Engine();
-  await engine.boot(new Uint8Array(readFileSync(CORE)));
+  await engine.boot(vendoredCore());
 }, 60_000);
 
 afterEach(() => {

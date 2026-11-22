@@ -19,7 +19,7 @@
 import { automergeLoad, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER } from "@lararium/mesh";
 import { existsSync } from "fs";
 
-import { TW5Engine }       from "@lararium/tw5";
+import { TW5Engine, casBlobPreloads, modulePinsOf } from "@lararium/tw5";
 import type { TW5TiddlerFields } from "@lararium/tw5";
 import type { LarDoc } from "@lararium/mesh";
 import { ENGINE_CORE_ID, GRAMMAR_TAG, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
@@ -107,7 +107,8 @@ async function main(): Promise<void> {
   // ------------------------------------------------------------------
   console.log("[quine] booting TW5Engine…");
   const vm = new TW5Engine();
-  await vm.boot(coreBlob, [pluginTiddler]);
+  // The plugin blob read on its CID, the core on its own: the engine evaluates only modules those pins cover.
+  await vm.boot(coreBlob, [pluginTiddler], undefined, { modulePins: modulePinsOf(casBlobPreloads(pluginBytes, pluginEntry.sha256)) });
   console.log("[quine] TW5Engine ready");
 
   // ------------------------------------------------------------------

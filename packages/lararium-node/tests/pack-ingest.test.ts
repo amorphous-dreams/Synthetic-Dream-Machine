@@ -8,9 +8,10 @@
  * foreign-titled members — the map is their only prior record).
  */
 
+import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, beforeAll } from "vitest";
 import { createHash } from "node:crypto";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { CompositeStore, ORIGINAL_TIDDLER_PATHS, parseProvenance, membersOfPack } from "@lararium/mesh";
 import type { VerbContext, Verb, CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh";
@@ -81,7 +82,7 @@ describe.skipIf(coreBlobSkip)(
   let engine: TW5Engine;
   beforeAll(async () => {
     engine = new TW5Engine();
-    await engine.boot(new Uint8Array(readFileSync(CORE)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
+    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
   }, 60_000);
 
   test("a 3-tiddler bundle lands all three + maps each to the pack file", async () => {

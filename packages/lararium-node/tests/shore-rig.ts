@@ -10,6 +10,7 @@
  * projector's own idle handshake.
  */
 
+import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -102,7 +103,7 @@ export class ShoreRig {
   /** A rig over `count` tracked carriers, its wiki booted with the grammar plugin. */
   static async stand(count = 3): Promise<ShoreRig> {
     const engine = new TW5Engine();
-    await engine.boot(new Uint8Array(readFileSync(CORE)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
+    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
     return new ShoreRig(engine, count);
   }
 

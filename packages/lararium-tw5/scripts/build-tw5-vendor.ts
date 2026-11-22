@@ -75,6 +75,8 @@ await new Promise<void>((resolve_p, reject) => {
 
 const sizeKb = Math.round(fs.statSync(CORE_JS_TW5).size / 1024);
 console.log(`build-tw5-vendor: wrote ${CORE_JS_TW5} (${sizeKb} kB)`);
+// The bake's pin: the SHA-256 of the bytes it just wrote, carried in source so every boot of the vendored blob checks against it.
+const coreSha256 = _require("crypto").createHash("sha256").update(fs.readFileSync(CORE_JS_TW5)).digest("hex") as string;
 
 // ---------------------------------------------------------------------------
 // Step 2 — Generate generated-tw5-version.ts
@@ -88,6 +90,9 @@ export const TW5_VERSION = "${TW5_VERSION}";
 
 /** Filename of the vendored TW5 core blob in lararium-tw5/tw5-core/. */
 export const TW5_CORE_SCRIPT_FILENAME = "${TW5_SCRIPT_FILENAME}";
+
+/** The bake's pin: SHA-256 of the vendored core blob's bytes. A boot of that blob carries it as \`sha256\`. */
+export const TW5_CORE_SHA256 = "${coreSha256}";
 
 /** Absolute path to the lararium-tw5/tw5-core/ directory (build artifact, gitignored). */
 export const TW5_CORE_DIR = new URL("../tw5-core", import.meta.url).pathname;

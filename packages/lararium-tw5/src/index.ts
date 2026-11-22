@@ -42,6 +42,7 @@ export { mountCamera } from "./tw5-camera.js";
 export { mountGlassCamera } from "./glass-camera.js";
 export { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 export { preloadsFromCasBlob } from "./cas-preloads.js";
+export { armModulePinGate, BLOB_PIN_MISMATCH, casBlobPreloads, MODULE_UNPINNED, moduleDigest, modulePin, modulePinsOf } from "./module-pins.js";
 export { mountProjection, dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 export {
   mountCoherenceProjection,
@@ -147,7 +148,7 @@ export type { CarrierResolver as LazyCarrierResolver } from "./lazy-resolver.js"
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
 
-export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated-tw5-version.js";
+export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR, TW5_CORE_SHA256 } from "./generated-tw5-version.js";
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 

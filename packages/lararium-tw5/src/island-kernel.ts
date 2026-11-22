@@ -39,6 +39,7 @@
  */
 
 import { TW5Engine } from "./tw5-vm.js";
+import type { TW5CoreBootBlob } from "./tw5-host-bridge.js";
 import type {
   IslandToVesselMsg,
   IslandMsg_Event,
@@ -74,12 +75,12 @@ export class IslandKernel {
    */
   async bootTw5(
     wikiUri:          string,
-    coreBlob:         Uint8Array,
+    coreBlob:         TW5CoreBootBlob,
     preloadedTiddlers?: readonly Record<string, unknown>[],
-    options?: { onInstance?: (instance: import("./types/tiddlywiki.js").TW5Instance) => void; grantedDigests?: ReadonlySet<string> },
+    options?: { onInstance?: (instance: import("./types/tiddlywiki.js").TW5Instance) => void; grantedDigests?: ReadonlySet<string>; modulePins?: ReadonlySet<string> },
   ): Promise<void> {
     this._wikiUri = wikiUri;
-    if (coreBlob.byteLength === 0) {
+    if (coreBlob.bytes.byteLength === 0) {
       this._postFault(wikiUri, "manifest rejected: coreBlob carries zero bytes — authority cannot boot without a TW5 engine");
       throw new Error("zero-byte coreBlob");
     }
