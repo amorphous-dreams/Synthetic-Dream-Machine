@@ -399,6 +399,27 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 | ''`kapu` sibling'' | <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapu`>> | "above-namespace authority law; kernel/sacred tier capability; trust boundary root". No hand but the grant-holder's ends what it governs |
 | ''`tombstone` sibling'' | <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage`>> | carries PIN, RELEASE and the sweep — the grammar for a record leaving a live group, which the lifecycle never touches |
 
+!!! Worked stage calls
+
+A chained sitting hands each output forward and lets a fresh tasked spirit take each next call through `~otakiage-brief`:
+
+```memetic-wikitext
+<<~ otakiage-shelf input=`memory stage shelf` act=`name candidates, never burns and held floors` output=`one folded road; canon and kapu never burn; open lean held` aftermath=`review the held floor` then=`read`>>
+<<~ otakiage-read input=`one folded road` act=`read the full title, layer and proof` output=`one-door rule and completed work` aftermath=`review every source claim` then=`lift`>>
+<<~ otakiage-lift input=`one-door rule and completed work` act=`carry the rule into a predicting core` output=`rule at its living home` aftermath=`review the core's prediction` then=`weld`>>
+<<~ otakiage-weld input=`rule at its living home` act=`repoint inbound; inspect backlinks[] and search[]` output=`zero inbound; every part homed` aftermath=`review meme check --edges` then=`thanks`>>
+<<~ otakiage-thanks input=`zero inbound; every part homed` carried=`one-door rule` homes=`lar:///example.rule.stands/one-door` clear=`zero inbound; edge check green` thanks=`you gave the rule its first path` output=`last check-in drafted` aftermath=`review four lines before a fire call` then=`burn`>>
+<<~ otakiage-burn input=`last check-in drafted` act=`propose lar:///example.road.folds/one-door` proof=`merged cure and read-back` hash=`sha256-…` layers=`own memory stage, working layer` commits=`last check-in pending; burn pending` output=`proposed path` aftermath=`review proof and operator call` then=`rest`>>
+<<~ otakiage-rest input=`proposed path, no burn committed` act=`true indexes, tally zero ended paths, stop` output=`zero ended paths` aftermath=`review index and tally`>>
+<<~ otakiage-brief mask=`Ash-Reader` call=`~otakiage-read` input=`one folded road` aftermath=`review every source claim`>>
+```
+
+A single-stage call may start from a fresh read and stop for review:
+
+```memetic-wikitext
+<<~ otakiage stage=`weld` input=`fresh reading of lar:///example.road.folds/one-door` act=`inspect backlinks[] and search[]` output=`inbound edge list` aftermath=`review each edge and owed home` then=`thanks`>>
+```
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/leans`>>
@@ -441,15 +462,15 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 !! The stage ash ~ a reading across the wiki plane
 
-Each face's own memory stage gives the fire a tiddler in one layer of its wiki as its path, when its holder calls. A whole meme or an ahu slot carries its own full title. The deletion door takes a whole tiddler; the slot leaves through a family put. The fire reaches neither another layer nor another vessel. A shared or domain wiki syncs across vessels, so its removal travels through `removeMeme` with tombstone, grace and caps. A seat proposes that removal and the wiki's holders answer by name. The law's ladder, walk, never-burn list, operator call, gratitude line and two commits govern the face's fire (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage#/the-fire`>>).
+Each face's own memory stage gives the fire a tiddler in one layer of its wiki as its path, when its holder (the operator wearing that face) calls. A whole meme or an ahu slot carries its own full title. The deletion door takes a whole tiddler; the slot leaves through a family put. The fire reaches neither another layer nor another vessel. A shared or domain wiki syncs across vessels, so its removal travels through the tombstone rite with grace and caps. `removeMeme` in `place-meme.ts`, `tombstoneInBag` and `removeInBag`, `pairRenames`, and `lares shore remove` in `commands/shore.ts` witness the implementation; the law names the rite and reach. A seat proposes that removal and the wiki's holders answer by name. The law's ladder, walk, never-burn list, operator call, gratitude line and two commits govern the face's fire (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage#/the-fire`>>).
 
 ''Attractor cores.'' Each face's memory stage wiki holds two attractor stores, one for catmas and one for pattern integrities. The engineer face's titles `lar:///ha.ka.ba/kahua/memory/reference/discordian-catmas` and `lar:///ha.ka.ba/kahua/memory/reference/pattern-integrities` show a title convention, without importing either store's contents. The harvest reading holds each rule against those stores. A core that predicts the rule carries it; a fresh tell or place it lives sharpens the core; a rule no core predicts becomes a candidate. A new core or a changed reason waits for the operator's word. The stores undergo the same reading: the author's account meets a reader from another context before findings merge (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity#/recursive-reading`>>).
 
-''Three readers keep the method open.'' The maker's reading names what the procedure intends; a cold reader tries to run its doors from the page alone; a YIN reader asks how much of its bulk serves the wave. Their collisions expose checks that prose claims but no door performs. The YIN reading finds that 37% of the stage procedure serves its wave; that proportion calls for folding the useful pattern into the existing law instead of carrying a second rite beside it. The measurement describes this procedure's reading, not a standing quota for other carriers.
+''Three readers keep the method open.'' The maker's reading names what the procedure intends; a cold reader tries to run its doors from the page alone; a YIN reader asks how much of its bulk serves the wave. Their collisions expose checks that prose claims but no door performs. The YIN reading of 2026-11-22 measures 37% of the stage ash procedure as serving its wave; that proportion calls for folding the useful pattern into the existing law instead of carrying a second rite beside it. The measurement describes this procedure's reading, not a standing quota for other carriers.
 
 ''Backward burns, forward stays.'' Memory keeps rules, forms, warranted quotes with their pointers, candidates and open questions where a future reader can use them. A backward line that narrates how a standing meme arrived gets trued under the ever-speaking present (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>): the hand edits that meme, and the commit keeps the history. A dated reading gets re-dated; a ruling date keeps its provenance. A line-grain burn drops out because deleting part of a standing tiddler cannot satisfy the fire's whole-path proof and risks erasing its forward claims. A whole meme or an ahu slot can finish the rite after its contents find homes.
 
-''Rhymes and limits.'' The stage ash follows the same READ, LIFT, WELD, BURN walk, names the declaration last, refuses an unread or contested carrier, and thanks the carrier in its last check-in. `backlinks[]` finds linked inbound titles; `search[]` finds bare `lar:` citations that backlinks miss. A layer check keeps the fire from silently exposing a lower copy. The git log carries the ending while the wiki loses its working-layer tiddler; the two-commit witness keeps the last complete state legible. The stage road tags keep their own spelling, and the law maps them to its ladder without rewriting their cards.
+''Rhymes and limits.'' The stage ash follows the same READ, LIFT, WELD, BURN walk, names the declaration last, refuses an unread or contested carrier, and thanks the carrier in its last check-in. Where a lower layer holds the title, the hand stops and names it; `--mode kapae` belongs to the tombstone plane. `backlinks[]` finds linked inbound titles; `search[]` finds bare `lar:` citations that backlinks miss. A layer check keeps the fire from silently exposing a lower copy. The memory stage projects into the face tree's git. Its last check-in and burn ride separate commits there, keeping the last complete state legible. The stage road tags keep their own spelling, and the law maps them to its ladder without rewriting their cards.
 
 <<~/ahu>>
 
@@ -490,6 +511,6 @@ Each face's own memory stage gives the fire a tiddler in one layer of its wiki a
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z82_NteI7XzJlPEBZ1wnl7CcY9TLP7NVu8NiBIzH-WE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LCNiI6ZRG-fTVRGNvPfSnMKFUtPfUQfLtXeNJM2jwU4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

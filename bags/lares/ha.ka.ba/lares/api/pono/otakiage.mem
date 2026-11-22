@@ -41,16 +41,6 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 
 !!! Axis A ~ standing: the stages, in order
 
-```
-<<~ has entity=`Stage` name=`fleeting` params=`tag/none holds/nothing-on-disk ~ a turn's scratch; the temp slot never persists`>>
-<<~ has entity=`Stage` name=`designed` params=`tag/lifecycle-designed holds/a-shape-argued ~ nothing enacted; status-why names what stands unbuilt`>>
-<<~ has entity=`Stage` name=`standing` params=`tag/lifecycle-standing holds/a-ruling-enacted ~ status-why names the witness that proves it`>>
-<<~ has entity=`Stage` name=`folded` params=`tag/lifecycle-folded holds/pointers-alone ~ every lean closed, every ruling rehomed, every inbound edge re-pointed`>>
-<<~ has entity=`Stage` name=`harvest` params=`tag/lifecycle-harvest holds/materials-awaiting-a-home ~ harvest-to names the living bag; the room's emptiness is the witness`>>
-<<~ has entity=`Stage` name=`retiring` params=`tag/lifecycle-retiring holds/a-last-check-in ~ welded, nothing names it, the commit explains its own ending`>>
-<<~ has entity=`Stage` name=`gone` params=`tag/none holds/git-alone ~ the shelf holds nothing; the commit holds the argument`>>
-```
-
 |! stage |! the tag |! what the carrier holds |! what `status-why` reads |! what `meme check` ENFORCES |
 | ''`fleeting`'' | ''none — no carrier exists'' | a turn's scratch: a `$:/temp` tiddler, a draft in the wiki island's `temp` slot (a `MemoryTiddlerStore`, `island-recipe.ts` `buildIslandRecipe`), a spirit's working note | //nothing — it never reaches a meta block// | ''nothing''. A fleeting thing that wants a check has stopped being fleeting |
 | ''`designed`'' | `lifecycle/designed` | a shape argued whole against the house and the field; leans open by design | what stands ''unbuilt'', in those words | open `-> ?` leans read ''correct''. An empty `#/leans` slot reads ''wrong'': a design with no open question has either been ruled or never argued |
@@ -60,22 +50,15 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 | ''`retiring`'' | `lifecycle/retiring` | the last check-in: welded, nothing names it | the commit explains its own ending | as `folded`: zero inbound, or the sitting reads it `held` |
 | ''`gone`'' | ''none — no carrier exists'' | nothing; git holds the bytes, the commit holds the argument and its trailers (rendered by `tools/changelog-render.mjs`) | //nothing// | the shelf's ''global'' check: zero dangling edges gained |
 
-''A ROOM full of unread material reads `harvest`, never `folded`'' — folding follows the reading. ''The last check-in reads `retiring`'' — the state a reader bisecting the history lands on.
+''Unread material reads `harvest`, never `folded`.'' The last check-in reads `retiring`.
 
-''The harvest reading meets each face's memory-stage attractor stores.'' Each face carries a catma store and a pattern-integrity store in its memory stage wiki. The engineer face names its worked pair `lar:///ha.ka.ba/kahua/memory/reference/discordian-catmas` and `lar:///ha.ka.ba/kahua/memory/reference/pattern-integrities`; those titles show the convention, never prescribe their contents or another face's titles. For each rule it LIFTs, the reading asks whether a core in either store already predicts it. A predicting core carries the rule; a new tell or place it lives can sharpen that core. Where no core predicts it, the reading names a candidate. A new core, or a change to a core's rule or reason, waits for the operator's word under `rule`. The stores' recursive reading stays in <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity#/recursive-reading`>>.
+''Each face's memory stage holds a catma store and a pattern-integrity store.'' The harvest reading asks whether a core already predicts each lifted rule. A predicting core carries it; a fresh tell sharpens it; an unpredicted rule becomes a candidate. A new core or changed reason waits for the operator's word under `rule`. The recursive reading follows <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity#/recursive-reading`>>; the engineer face's titles stand in the docs record.
 
 !!! Axis B ~ kind: what counts as enactment
 
-```
-<<~ has entity=`Kind` name=`build` params=`enactment/code-plus-a-red-first-witness ~ the default; a designed build owes a test`>>
-<<~ has entity=`Kind` name=`rite` params=`enactment/invocation ~ a practice convened, never built; it can never owe code`>>
-<<~ has entity=`Kind` name=`reading` params=`enactment/a-measurement-dated ~ a field scout or a census; it ages rather than breaks`>>
-<<~ has entity=`Kind` name=`floor` params=`enactment/an-exit ~ a talk-story floor; it closes by moʻolelo, hoike or honest suspension`>>
-```
-
 ''The kind rides `tags` too'' — `kind/rite` · `kind/build` · `kind/reading` · `kind/floor`. The prefixes keep the two questions apart on one key, so a filter never guesses which it answers.
 
-''The axes cross and answer different questions.'' `rite` × `standing` names a convened practice; `reading` × `standing` names a dated measurement, which goes ''stale'' rather than wrong and wants a re-date, never a fire; `floor` × `folded` names the class the fire governs. A ''`build`'' carrier reading `standing` with no witness reads wrong; a ''`rite`'' carrier reading `standing` with no witness reads fine, since invocation IS its witness. Fusing the axes makes one of those two rules unstatable. `talk-story`, `hoike`, both their skills and the runbooks carry `kind/rite` and stand ungoverned.
+''Kind and stage answer different questions.'' A `build` at `standing` owes a witness; a `rite` at `standing` carries its invocation as witness. A dated `reading` grows stale and wants re-dating, never fire. `talk-story` and `hoike` carry `kind/rite` and stand ungoverned.
 
 !!! The transitions ~ six rites, each with a who, a witness and a record
 
@@ -85,14 +68,14 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 | ''promote'' | `docs/pono/x` → `api/pono/x` | ''the kahu quorum'' — whoever holds `cap("admin", …)` on the canon bag (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canon-boundary`>>) | the cap gate | the commit |
 | ''fold'' | standing → folded | ''the spirit that closed the last open lean'' — never the carrier's own author witnessing its own fold (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>) | `meme check --edges <carrier> $(git ls-files 'bags/*.mem')` shows ''zero inbound'', and a grep of the source tree and the CHANGELOG finds no `lar:` URI naming it; every ruling reachable at its new `standing` home | each slot rewritten to "folded to `lar:///…`"; `status-why` names the targets; the CHANGELOG names the fold |
 | ''otakiage'' | folded → gone | ''the operator CALLS it; any hand MAY carry it'' (#/the-fire) | the fold's weld still holds at the moment of the fire (re-run, never trusted from the fold commit); the house's checks green in the same commit | the last check-in commit, then the delete commit; ''git holds the argument'', the CHANGELOG holds the fact |
-| ''tombstone'' | //orthogonal — a live record leaving a live group// | `removeMeme` through any skin (`place-meme.ts`) or a person's `lares shore remove` answer (`commands/shore.ts`) | a vanished disk file stays pending; a person answers by name, or a signed standing instruction covers its bounded class (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`>>) | the synced tree's `null` (`synced-tree.ts`); the group's whole tombstone set in the result |
+| ''tombstone'' | //orthogonal — a live record leaving a live group// | the holder answers through the removal door under the tombstone rite | a vanished disk file stays pending; a person answers by name, or a signed standing instruction covers its bounded class (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`>>) | the synced tree's `null`; the group's whole tombstone set in the result |
 
-''The two-commit shape.'' The last check-in and the delete ride ''separate commits'', so the shelf carries one state in which the carrier stands complete, marked as ending, with every pointer re-aimed. A reader bisecting the history lands on a carrier that explains its own ending, never on a diff that removes it.
+''The two-commit shape.'' The last check-in and the burn ride separate commits in the face tree's git; the memory stage projects into that git-backed tree. The first leaves the complete carrier marked for ending. The second removes it.
 
 !!! The siblings ~ standings a carrier holds OUTSIDE the ladder
 
 # ''`kapu` — sealed, referee-side, never ended by another hand.'' No hand but the grant-holder's ends a kapu carrier, and a sweep that cannot read a carrier MUST NOT propose it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapu`>>; the grace table holds a VEIL blob eight rolls against PUBLIC's one, `cas-caps.ts` `GRACE_RATIO_BY_TIER`).
-# ''`tombstone` — a record removed inside a live group.'' The lifecycle governs a carrier's standing in the shelf; the tombstone governs a record's presence in a group (`removeMeme` takes the whole group; `tombstoneInBag` hides where `removeInBag` removes; `pairRenames` declines ambiguous matches). The two MUST NOT fuse, or a sync flake could burn a carrier.
+# ''`tombstone` — a record removed inside a live group.'' The lifecycle governs a carrier's standing on the shelf; the tombstone rite governs a record's presence in a group. The two MUST NOT fuse, or a sync flake could burn a carrier.
 
 <<~/ahu>>
 
@@ -127,29 +110,29 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 # ''Any floor with an open lean.'' An unresolved argument holds a claim on the shelf that no tidiness outranks.
 # ''Anything a hoike contests.'' Burning the record a dissent hangs on would close its re-entry key by deletion.
 
-''The hard floor:'' ''the fire burns a path, never a pattern.'' An otakiage touches one path in one tree and reaches no copy anywhere; nothing here MAY reach a record on another vessel — that plane belongs to `removeMeme` and its grace, under the caps, and the two MUST NOT meet.
+''The hard floor:'' ''the fire burns a path, never a pattern.'' An otakiage touches one path in one tree and reaches no copy anywhere; nothing here MAY reach a record on another vessel — that plane belongs to the tombstone rite and its grace, under the caps.
 
-''A face's own memory stage takes the fire when its holder calls.'' A tiddler — a whole meme or an ahu slot, each addressed by its full title — in one layer of that face's own memory stage wiki stands as that wiki's path. Fire on that tiddler reaches no other layer or vessel. The same ladder, READ → LIFT → WELD → BURN in groups with the declaration last, never-burn list, caller, gratitude line and two-commit shape govern it. Its doors read `lares tiddler delete <title> --recipe <r> --if-match <hash>` (`--family` for a meme root); an ahu slot leaves through a family put without that slot. A line never burns alone: a backward line inside a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and its limits stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
+''A face's own memory stage takes the fire when its holder (the operator wearing that face) calls.'' A tiddler — a whole meme or an ahu slot, each addressed by its full title — in one layer of that face's memory stage wiki stands as its path. The whole of #/the-fire governs it. A line never burns alone: a backward line inside a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and its doors stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
 
-''A shared or domain wiki syncs across vessels.'' A burn there would reach another vessel's record. That plane belongs to the tombstone: a record leaving a live group that syncs across vessels, under grace and caps, its holders answering by name; otakiage MUST NOT fire there. The law names the plane by its rite and its reach, never by a code function. A seat MAY propose removal, and the wiki's holders — the cabal or realm that holds it — answer by name. The record leaves the shared caller and any domain attractor stores as open questions (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/questions`>>).
+''A shared or domain wiki syncs across vessels.'' Its removal belongs to the tombstone rite, under grace and caps. Where a lower layer holds the title, otakiage does not fire; the hand stops and names it. `--mode kapae` belongs to the tombstone plane. A seat MAY propose removal; the wiki's holders answer by name. The record keeps the shared caller and domain stores open (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/questions`>>).
 
-''Stage road reading, without tag migration:'' `road/state/open` reads `designed`; `road/state/landed` reads `standing`; routed, lifted and welded material reads `folded`. The standing order “o-takiage at every land” supplies the authored ending that counts as a call already made for landed road memes; proof, weld and the two commits still govern each burn.
+''Stage road reading, without tag migration:'' `road/state/open` reads `designed`; `road/state/landed` reads `standing`; `folded` reads routed, lifted and welded. The sitting filter names those landed road memes. The standing order “o-takiage at every land” gives them an authored ending once they stand folded; proof, weld and two commits still govern each burn.
 
 !!! Who calls it
 
-''The operator calls; any hand may carry.'' A Nexus lives on traffic, so its silence ends it with no admin act (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>>); a `.mem` file at a fixed path never goes quiet, and a stale carrier reads exactly like a standing one. ''The capability answers NONE where quiet does the work, and answers OPERATOR where quiet does nothing.''
+''The operator calls; any hand may carry.'' A fixed path never goes quiet. Its silence cannot answer for the operator, unlike a Nexus whose traffic ends (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>>).
 
-A spirit MAY close a lean, run the weld and prepare the fold whole; it MUST NOT rule that the argument has ended, for the reason it may not witness its own block. ''An authored ending, ruled at pour time,'' stands as a call already made — the one shape that skips a fresh call. Judgement sits with the operator; mechanics sit with whoever runs the commands. What the carrier MUST NOT do is end in silence, and the two-commit shape enforces that.
+A spirit MAY close a lean, run the weld and prepare the fold whole; it MUST NOT rule its own argument ended. An authored ending, ruled by the operator, supplies the call for a covered carrier; the hand still records `mode=fire` and names that ruling in `caller` before the last check-in commit lands. Without that call, thanks stays a draft. Mechanics follow the operator's ruling.
 
 !!! How it convenes ~ never a calendar
 
-# ''The reading names candidates; it never burns.'' `lares meme sitting` (and `meme check --sitting`) holds the whole shelf at once and names every candidate — `lifecycle/folded` or `lifecycle/retiring` with nothing naming it, plus every harvest room still standing — then stops. ''A carrier any other carrier still names reads `held`, however its stage reads.'' The reading never exits non-zero, so a hook can run it.
-# ''The operator calls the season'' — one sitting, several carriers at once, at a moment the operator names: a phase boundary, a founding, a release. A wave shows its own shape.
+# ''The reading names candidates; it never burns.'' `lares meme sitting` (and `meme check --sitting`) names folded or retiring carriers with nothing naming them, standing harvest rooms, and landed road memes after routing, lifting and welding, then stops. ''A carrier any other carrier still names reads `held`, however its stage reads.'' The reading never exits non-zero, so a hook can run it.
+# ''The operator calls the season'' — one sitting, several carriers, at a named phase boundary, founding or release.
 # ''No sigil opens the sitting;'' it convenes as a talk-story floor, which carries the three exits it needs (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>).
 
 !!! The gratitude line
 
-The last check-in commit's body says four things and stops:
+The thanks call drafts four lines. Only a burn call with `mode=fire` and named `caller` lets those lines land as the last check-in commit body:
 
 # ''What the carrier carried'' — in the present tense, as the thing it held.
 # ''Where each part went'' — the fold targets by `lar:` URI, one hop to the content.
@@ -162,50 +145,34 @@ The ending belongs to the thing's completion, never to its worthlessness — 「
 
 <<~ ahu slot=`#/sigils`>>
 
-!! Sigils ~ callable records inside a sitting
+!! Sigils ~ stage records inside a sitting
 
-The sitting convenes as a talk-story floor (#/the-fire); no sigil opens it. A call records one stage and doubles as the inscription in a handoff line or commit body. Each call names its `input` (the prior `output`, or a fresh reading), its `act`, its `output`, and the `aftermath` a reviewer checks before `then` runs. `then` names the next stage; it grants no automatic permission to run it. ''The aftermath gate:'' in a chain handed to tasked spirits, the controller, never the spirit that ran a stage, reads that stage's `aftermath` before releasing the next (no hand witnesses its own act). A hand MAY pass one call at a time, inspect its aftermath, and then pass the named output as the next input. `unchecked` exposes a missing check. `mu` and `aperture` optionally name the attention instruments (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/mu-five-tools`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/aperture`>>).
+The sitting convenes as a talk-story floor (#/the-fire). A seat declares these reference definitions in accessible wiki scope before calling them. The shelf call records the reading's candidates. Read inspects each whole carrier and layer; lift seeks each rule's home; weld checks inbound edges and owed homes; thanks drafts the four-line body; burn checks proof and layer; rest tallies committed paths. Each stage returns `output` and `aftermath`; the controller reads the aftermath before releasing the next input. A hand MAY pass one call at a time; a second hand or the operator reads its aftermath before the next input passes. `unchecked` exposes missing work. `mu` and `aperture` name the attention instruments (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/mu-five-tools`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/aperture`>>).
 
 ```memetic-wikitext
-\procedure ~otakiage-sitting(input:"unchecked" act:"read the shelf and name candidates, never-burn cases and held cases" output:"unchecked" aftermath:"review every candidate and hold before reading" then:"read" mu:"00" aperture:"18/theme") Sitting (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-read(input:"unchecked" act:"read each whole carrier and its layer" output:"unchecked" aftermath:"review the complete source, floor and proof of completion" then:"lift" mu:"_!" aperture:"14/arc") Read (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-lift(input:"unchecked" act:"lift each rule into a predicting catma or pattern-integrity store, or name a candidate" output:"unchecked" aftermath:"review each destination and seek the operator's word for a new or changed core" then:"weld" mu:"!0" aperture:"10/measure") Lift (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-weld(input:"unchecked" act:"repoint inbound edges and read backlinks[] plus search[] for bare lar: citations" output:"unchecked" aftermath:"review zero inbound edges, owed homes and meme check --edges" then:"thanks" mu:"?0" aperture:"14/arc") Weld (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-thanks(input:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked" output:"unchecked" aftermath:"review the four lines and the last check-in commit" then:"burn" mu:"_!" aperture:"6/beat") Thanks (<<mu>>, <<aperture>>): input <<input>>; carried <<carried>>; each part went <<homes>>; nothing dangles <<clear>>; thanks <<thanks>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-burn(input:"unchecked" act:"name one full title and its completed work" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" mode:"propose" caller:"unchecked" output:"unchecked" aftermath:"review proof, layer, hash or base, caller, and separate last-check-in and burn commits" then:"rest" mu:"_!" aperture:"2/pulse") Burn (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; proof <<proof>>; hash <<hash>> or base <<base>>; layers <<layers>>; commits <<commits>>; caller <<caller>>; mode <<mode>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-rest(input:"unchecked" act:"true the indexes, tally the ended paths and stop" output:"unchecked" aftermath:"review the index and tally against the committed paths" then:"stop" mu:"_0" aperture:"10/measure") Rest (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-brief(mask:"unchecked" lane:"lar:///ha.ka.ba/lares/api/pono/otakiage#/the-fire" call:"unchecked" input:"unchecked" aftermath:"unchecked") <<mask>>: Lares (Tasked Spirit). Read <<lane>>. Run <<call>> with input <<input>>. Hand back its output and aftermath; reviewer checks <<aftermath>> before the next call.
-\procedure ~otakiage(stage:"sitting" input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"stop" mode:"propose" caller:"unchecked" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked" mu:"_0" aperture:"10/measure")
-<$list filter="[<stage>match[sitting]]">Sitting (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.</$list>
-<$list filter="[<stage>match[read]]">Read (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.</$list>
-<$list filter="[<stage>match[lift]]">Lift (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.</$list>
-<$list filter="[<stage>match[weld]]">Weld (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.</$list>
-<$list filter="[<stage>match[thanks]]">Thanks (<<mu>>, <<aperture>>): input <<input>>; carried <<carried>>; each part went <<homes>>; nothing dangles <<clear>>; thanks <<thanks>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.</$list>
-<$list filter="[<stage>match[burn]]">Burn (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; proof <<proof>>; hash <<hash>> or base <<base>>; layers <<layers>>; commits <<commits>>; caller <<caller>>; mode <<mode>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.</$list>
-<$list filter="[<stage>match[rest]]">Rest (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.</$list>
+\procedure ~otakiage-shelf(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"00" aperture:"18/theme") Shelf (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-read(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_!" aperture:"14/arc") Read (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-lift(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"!0" aperture:"10/measure") Lift (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-weld(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"?0" aperture:"14/arc") Weld (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-thanks(input:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_!" aperture:"6/beat")
+Thanks (<<mu>>, <<aperture>>). Commit body draft:
+Carried: <<carried>>
+Homes: <<homes>>
+Clear: <<clear>>
+Thanks: <<thanks>>
+Handoff: input <<input>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\end
+\procedure ~otakiage-burn(input:"unchecked" act:"unchecked" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" mode:"propose" caller:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_!" aperture:"2/pulse") Burn (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; proof <<proof>>; hash <<hash>> or base <<base>>; layers <<layers>>; commits <<commits>>; caller <<caller>>; mode <<mode>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.<$list filter="[<mode>match[fire]]"><$list filter="[<caller>match[unchecked]]"> VOID: mode=fire with caller unchecked; no fire may follow.</$list></$list>
+\procedure ~otakiage-rest(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_0" aperture:"10/measure") Rest (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-brief(mask:"unchecked" lane:"#/sigils" call:"unchecked" input:"unchecked" aftermath:"unchecked") <<mask>>: Lares (Tasked Spirit). Read <<lane>>. Run <<call>> with input <<input>>. Hand back its output and aftermath; reviewer checks <<aftermath>> before the next call.
+\procedure ~otakiage(stage:"unchecked" input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mode:"propose" caller:"unchecked" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked")
+<$list filter="[<stage>regexp[^(shelf|read|lift|weld|thanks|burn|rest)$]]"><$transclude $variable={{{ [<stage>addprefix[~otakiage-]] }}} input=<<input>> act=<<act>> output=<<output>> aftermath=<<aftermath>> then=<<then>> mode=<<mode>> caller=<<caller>> proof=<<proof>> hash=<<hash>> base=<<base>> layers=<<layers>> commits=<<commits>> carried=<<carried>> homes=<<homes>> clear=<<clear>> thanks=<<thanks>>/></$list>
 \end
 ```
 
-A burn call defaults to `mode=propose`: it records a candidate and performs no deletion. Only the operator's call permits `mode=fire`, and `caller` then names that call. The hand still runs the explicit deletion door after the proof and review; the procedure writes a record, never executes a deletion. `proof` must name the source's completed work before that door opens; `hash` names a meme root's plain read, while `base` names an ahu family put's family read. `commits` names the separate last check-in and burn commits. The `thanks` call writes the four-part last check-in body. A shared or domain wiki permits a removal proposal under `removeMeme`, never a fire call.
+A call renders a record; it writes and deletes nothing. `mode=propose` names a burn proposal. `mode=fire` requires the operator's call and a named `caller`; the last check-in commit lands only after that call. #/the-fire governs the deletion doors. A shared or domain wiki permits a removal proposal under the tombstone rite, never a fire call. `proof` names completed work; `hash` names a meme root read and `base` an ahu family read. `commits` names the separate last check-in and burn commits. The thanks call's four lines (carried, homes, clear, thanks) make the commit body alone; its input, output and aftermath ride the handoff.
 
-A chained sitting hands each output forward and lets a fresh tasked spirit take each next call through `~otakiage-brief`:
-
-```memetic-wikitext
-<<~ otakiage-sitting input=`memory stage shelf` act=`name candidates, never burns and held floors` output=`one folded road; canon and kapu never burn; open lean held` aftermath=`review the held floor` then=`read`>>
-<<~ otakiage-read input=`one folded road` act=`read the full title, layer and proof` output=`one-door rule and completed work` aftermath=`review every source claim` then=`lift`>>
-<<~ otakiage-lift input=`one-door rule and completed work` act=`carry the rule into a predicting core` output=`rule at its living home` aftermath=`review the core's prediction` then=`weld`>>
-<<~ otakiage-weld input=`rule at its living home` act=`repoint inbound; inspect backlinks[] and search[]` output=`zero inbound; every part homed` aftermath=`review meme check --edges` then=`thanks`>>
-<<~ otakiage-thanks input=`zero inbound; every part homed` carried=`one-door rule` homes=`lar:///example.rule.stands/one-door` clear=`zero inbound; edge check green` thanks=`you gave the rule its first path` output=`last check-in committed` aftermath=`review four lines and commit` then=`burn`>>
-<<~ otakiage-burn input=`last check-in committed` act=`propose lar:///example.road.folds/one-door` proof=`merged cure and read-back` hash=`sha256-…` layers=`own memory stage, working layer` commits=`last check-in; burn` output=`proposed path` aftermath=`review proof and operator call` then=`rest`>>
-<<~ otakiage-rest input=`proposed path, no burn committed` act=`true indexes, tally zero ended paths, stop` output=`zero ended paths` aftermath=`review index and tally`>>
-<<~ otakiage-brief mask=`Ash-Reader` call=`~otakiage-read` input=`one folded road` aftermath=`review every source claim`>>
-```
-
-A single-stage call may start from a fresh read and stop for review:
-
-```memetic-wikitext
-<<~ otakiage stage=`weld` input=`fresh reading of lar:///example.road.folds/one-door` act=`inspect backlinks[] and search[]` output=`inbound edge list` aftermath=`review each edge and owed home` then=`thanks`>>
-```
+Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/examples`>>.
 
 <<~/ahu>>
 
@@ -215,6 +182,9 @@ A single-stage call may start from a fresh read and stop for review:
 
 # Operator ruling 2026-09-12: the lifecycle rides a tag family on governed memes only; `status` and `retain` leave the meta; `cacheable` stays as an API-server instruction; `lares-history` serves as the harvest room, emptied and deleted; the fire is called, never scheduled. The ruling stands verbatim, with its enactment and the walked room, at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-lifecycle`>>.
 # Operator ruling 2026-11-21 (the ever-speaking present): the law lifts from the docs record to this api meme; the record keeps the field, the house measurements, the rhymes, the examples, the leans and the questions (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>).
+
+# Operator ruling 2026-11-22: the fire reaches the wiki plane (a tiddler, whole meme or ahu slot, in one layer of one face's memory stage); no line burns; a shared wiki's removal rides the tombstone rite; burn proposes until the operator calls; the controller reads each stage's aftermath; each face's memory stage holds a catma store and a pattern-integrity store.
+# Operator ruling 2026-11-22: o-takiage at every land stands as an authored ending over landed road memes once routed, lifted and welded (folded); the sitting names them.
 
 <<~/ahu>>
 
@@ -237,6 +207,6 @@ A single-stage call may start from a fresh read and stop for review:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_B-cF8pES4vRcVbrnz4G-RSM-SDqti4sWZVKek_Ob3Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kxRFPKV2V_A2YpIINlTN0TT7DYeavDfJEf1x-mrlIqQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
