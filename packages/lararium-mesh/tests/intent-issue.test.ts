@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
-import { readIntentEntry, signIntentEntry } from "../src/intent-entry.js";
+import { intentEntryCid, readIntentEntry, signIntentEntry } from "../src/intent-entry.js";
 import { intentId } from "../src/intent-entry.js";
 import { makeHandLineage } from "../src/hand-lineage.js";
-import { readIntentPlane } from "../src/intent-read.js";
+import { intentIdTakenBy, readIntentPlane } from "../src/intent-read.js";
 import { buildAnswer, buildAsks, buildCancel, buildClaim, buildIntent, buildOutcome, buildRelease, buildSupersede, buildTakeover, IntentRefusal } from "../src/intent-issue.js";
 import { faceIntentVerbs, fixtureIntentVerbs, WARD_COSIGN_VERBS } from "../src/intent-verbs.js";
 import { cosignDigest } from "../src/ward-cosign.js";
@@ -84,5 +84,23 @@ describe("intent issue", () => {
     const view = readIntentPlane({ group: "face", records: [cast, calendar, unthrown], face, standing: () => "stands", verbs });
     expect(view.intents.map((i) => i.verb).sort()).toEqual(["ddate", "oracle-cast"]);
     expect(view.refused).toContainEqual({ refusal: "args-unfixed" });
+  });
+  test("RED: the same word reissued under another audience or bound finds its id taken (a second body would void the first votum and orphan its outcome); CONTROL: the same body and a fresh votum find it free; POSITIVE: a copy the fold refuses takes nothing", async () => {
+    const atom = await signer(1), stranger = await signer(2), verbs = faceIntentVerbs();
+    const lineage = makeHandLineage([{ epoch: 0, signers: [atom.key], threshold: 1 }])!;
+    const face = { devices: [atom.key], rosterCids: [], admittedAt: new Map<string, string>(), lineage };
+    const fold = (records: unknown[]) => readIntentPlane({ group: "face", records, face, standing: () => "stands", verbs });
+    const base = { group: "face", signer: atom, verb: "ddate", args: { today: { year: 2026, month: 11, day: 21 } }, nonce: "", verbs };
+    const first = await buildIntent({ ...base, audience: { mode: "every" } });
+    const view = fold([first]);
+    for (const rival of [await buildIntent({ ...base, audience: { mode: "pinned", atom: atom.key } }), await buildIntent({ ...base, audience: { mode: "every" }, bound: { through: "edge" } })]) {
+      expect(intentId(rival.body as never)).toBe(intentId(first.body as never));
+      expect(intentIdTakenBy(view, rival)).toBe(intentEntryCid(first));
+    }
+    expect(intentIdTakenBy(view, first)).toBeNull();
+    expect(intentIdTakenBy(view, await buildIntent({ ...base, args: { today: { year: 2026, month: 11, day: 22 } }, audience: { mode: "every" } }))).toBeNull();
+    // A forged copy under the id (signed by a stranger, so the fold refuses it) takes nothing: it cannot block the true word.
+    const forged = await signIntentEntry({ group: "face", entry: "intent", refs: [], issuer: atom.key, verb: "ddate", args: base.args, nonce: "", audience: { mode: "class", capability: "x" } }, stranger);
+    expect(intentIdTakenBy(fold([forged]), first)).toBeNull();
   });
 });

@@ -2,7 +2,7 @@ import { readIntentAdmission } from "./intent-admission.js";
 /** Pure read of a face's unordered intent entries. No arrival order decides an effect. */
 import { sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 import { isCurrentEpoch, signsAtEpoch, type HandLineage } from "./hand-lineage.js";
-import { intentId, readIntentEntry, type IntentAudience, type IntentBound, type SignedIntentEntry } from "./intent-entry.js";
+import { intentEntryCid, intentId, readIntentEntry, type IntentAudience, type IntentBound, type SignedIntentEntry } from "./intent-entry.js";
 import { argsWithinPolicy, verbInPrefix, type DelegationBound, type DelegationCite, type DelegationPolicy } from "./intent-delegation.js";
 import { issueArgsCheck, issueCheck, WARD_COSIGN_VERBS, type IntentVerbClass, type IntentVerbRegistry } from "./intent-verbs.js";
 
@@ -238,6 +238,21 @@ export function readIntentPlane(input: IntentReadInput): IntentView {
   }
   refused.sort((a, b) => a.refusal.localeCompare(b.refusal) || (a.cid ?? "").localeCompare(b.cid ?? ""));
   return { intents: states, delegations, refused, refusedAdmissions, collisions, strayAnswers, standing: input.standing, holdsCapability: input.holdsCapability ?? (() => false), face: input.face };
+}
+
+/**
+ * THE SAME WORD NAMES ONE VOTUM. An intent's id hashes issuer, verb, arguments and nonce apart from its audience and bound, so
+ * the word reissued under another audience or bound names a standing id with a second body, which the read refuses copy by
+ * copy (`id-collision`), voiding the first votum and orphaning any outcome it landed. The cid of the body standing under the
+ * entry's id on the plane the view folds, or null where the id stands free or holds this very body. Only what the fold
+ * reads counts: a copy it refuses (a forgery, a foreign delegation) takes no id and blocks no true word.
+ */
+export function intentIdTakenBy(view: IntentView, entry: SignedIntentEntry): string | null {
+  const id = intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }), cid = intentEntryCid(entry);
+  const standing = view.intents.find((state) => state.id === id);
+  if (standing) return standing.cid === cid ? null : standing.cid;
+  const collided = view.collisions.find((c) => c.id === id);
+  return collided && !collided.cids.includes(cid) ? collided.cids[0]! : null;
 }
 
 export type MayActReason = "spent" | "answered" | "void" | "not-audience" | "pinned-elsewhere" | "fenced-by-claim" | "awaiting-answer" | "unknown-frontier" | "atom-aside" | "cosign-needs-asks";
