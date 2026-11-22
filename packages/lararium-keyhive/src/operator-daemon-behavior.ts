@@ -468,7 +468,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       kelChain: () => chainNow(), anchor: face.anchor,
       standing: standings.standing, acquisition: standings.acquisition,
       verbs: faceIntentVerbs(), ...(face.effects ? { effects: face.effects } : {}),
-      // The face's turn stands while its door does and its hive stands here; its close or the island's stop ends it.
+      // The face gate stands while its door does and its hive stands here; its close or the island's stop ends it.
       admitTurn: () => (intentDoors.open(key) && providers.has(key) ? { done: () => {} } : null),
       acting: () => face.acting,
       runDeclaredEffect: async (verb, args, at) => {
@@ -2075,7 +2075,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (daemonAuth.atom && key === bareKey(daemonAuth.atom.key)) throw new Error(`mounted face ${key} cannot be dropped`);
           // THE LIT LIFE BOUNDS ITS DOOR: the votum in flight lands under the face's hive, then the door detaches, before the hive goes.
           // The vessel's close reached CLOSED without waiting on this drop (face-lifecycle), so an outcome landing here may miss its
-          // drain; it answers again at the face's next lit turn, and a sibling's door pays idempotent declared verbs alone.
+          // drain; it answers again at the face's next lit pass, and a sibling's door pays idempotent declared verbs alone.
           await intentDoors.drop(key);
           const face = providers.get(key);
           if (face) {
@@ -2312,7 +2312,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       for (const face of daemonAuth.joinedFaces ?? []) {
         try { await lightJoinedFace(face, ctx); }
         catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); continue; }
-        // A SIBLING LIT WITH THE COMPOSITION takes its lit turn here: its door stands on its own queue, never holding the boot.
+        // A SIBLING LIT WITH THE COMPOSITION takes its lit pass here: its door stands on its own queue, never holding the boot.
         const key = bareKey(face.atom.key);
         void onFaceQueue(key, async () => {
           if (!litSiblings.has(key)) return;

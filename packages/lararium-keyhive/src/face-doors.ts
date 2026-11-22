@@ -34,7 +34,7 @@ export interface FaceDoors {
   stand(key: string, make: () => FaceDoorHandle, owns?: FaceDoorOwns): Promise<void>;
   /** Whether the face's door stands and its face has not begun to close: the door's turn reads it. */
   open(key: string): boolean;
-  /** The face's lit turn: its door heeds, or the log names once that it stands no door. */
+  /** The face's lit pass: its door heeds, or the log names once that it stands no door. */
   turn(key: string): void;
   /** The face closes: its door answers nothing more, the votum in flight lands, the door detaches, and what it opened leaves. */
   drop(key: string): Promise<void>;
