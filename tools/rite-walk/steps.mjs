@@ -398,7 +398,7 @@ export const STEPS = Object.freeze([
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
         const file = ctx.file(`note-${name}.mem`, memeText(NOTE(name), `the ${name} wrote this page`));
-        const put = await ctx.cli(["meme", "put", NOTE(name), "--recipe", "notes", "--file", file, "--json"]);
+        const put = await ctx.cli(["tiddler", "put", "--meme", NOTE(name), "--recipe", "notes", "--file", file, "--json"]);
         said.push(`${name}: ${put.code === 0 ? landing(put) : refusalOf(put)}`);
         if (put.code !== 0 || !landing(put).startsWith(layer)) return { ok: false, answer: said.join(" · ") };
       }
@@ -412,7 +412,7 @@ export const STEPS = Object.freeze([
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
       const file = ctx.file("offered.mem", memeText(OFFERED, "the engineer offers this record to house canon"));
-      const put = await ctx.cli(["meme", "put", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
+      const put = await ctx.cli(["tiddler", "put", "--meme", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
       if (put.code !== 0 || !landing(put).startsWith("layer: personal")) return { ok: false, answer: `meme put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
       const offer = await ctx.cli(["meme", "offer", OFFERED, "--bag", "lares", "--no-json"]);
       return { ok: offer.code === 0, answer: `${landing(put)} · ${offer.code === 0 ? lineOf(`${offer.stdout}\n${offer.stderr}`, "offer") : refusalOf(offer)}` };

@@ -47,9 +47,9 @@ describe("★ the help registry names the meme behind each verb door ★", () =>
   test("store usage and examples require an explicit container", () => {
     const meme = COMMAND_HELP.meme!;
     expect(meme.usage).toContain("(--recipe <slug> | --bag <slug>)");
-    for (const verb of ["put", "list", "delete"]) {
-      const example = meme.examples?.find((line) => new RegExp(`\\blares meme ${verb}\\b`).test(line));
-      expect(example, `${verb} example`).toMatch(/--(?:recipe|bag)\s+\S+/);
+    // The family verbs moved to the tiddler door: no meme example teaches a retired spelling.
+    for (const verb of ["put", "patch", "list", "delete"]) {
+      expect(meme.examples?.some((line) => new RegExp(`\\blares meme ${verb}\\b`).test(line)), `meme ${verb} example`).toBe(false);
     }
     expect(meme.synopsis).not.toMatch(/anchor|default wiki/i);
     const summary = COMMANDS.find((command) => command.name === "meme")!.summary;

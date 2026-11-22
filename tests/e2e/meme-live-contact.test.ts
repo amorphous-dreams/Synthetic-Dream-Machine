@@ -109,7 +109,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("CONTROL: `--bag lares` refuses a put — the bag holds no writable layer and a placement never shadows up", async () => {
-    const r = await lar.cli(["meme", "put", URI, "--bag", "lares", "--file", join(scratch, "ab.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", "--meme", URI, "--bag", "lares", "--file", join(scratch, "ab.mem"), "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     expect((r.json?.["error"] as Record<string, unknown>)?.["message"], said(r)).toMatch(/holds no writable layer/);
     expect(r.code).toBe(4);
@@ -123,7 +123,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("put of a framed meme → ingest; the root and `#/a` landed", async () => {
-    const r = await lar.cli(["meme", "put", URI, ...WIKI, "--file", join(scratch, "ab.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", "--meme", URI, ...WIKI, "--file", join(scratch, "ab.mem"), "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
     expect(d["decision"]).toBe("ingest");
@@ -153,7 +153,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("put --base (fresh) with a changed slot → ingest; `#/b` tombstoned, `#/c` born", async () => {
-    const r = await lar.cli(["meme", "put", URI, ...WIKI, "--base", base, "--file", join(scratch, "ac.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", "--meme", URI, ...WIKI, "--base", base, "--file", join(scratch, "ac.mem"), "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
     expect(d["decision"]).toBe("ingest");
@@ -164,7 +164,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
 
   test("CONTROL: put --base (stale) → conflict; nothing moves", async () => {
     const before = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
-    const r = await lar.cli(["meme", "put", URI, ...WIKI, "--base", base, "--file", join(scratch, "ab.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", "--meme", URI, ...WIKI, "--base", base, "--file", join(scratch, "ab.mem"), "--json"]);
     expect(r.json?.["ok"]).toBe(false);
     expect((r.json?.["error"] as Record<string, unknown>)?.["code"]).toBe("conflict");
     expect(r.code).toBe(4);
@@ -198,7 +198,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("list → the root stands with its canonical hash; --tree nests its slots (the daemon registers meme-list)", async () => {
-    const r = await lar.cli(["meme", "list", ...WIKI, "--tree", "--json"]);
+    const r = await lar.cli(["tiddler", "get", "--meme", ...WIKI, "--tree", "--json"]);
     expect(r.code, said(r)).toBe(0);
     const roots = (r.json?.["data"] as { roots: { uri: string; canonicalHash: string; slots?: { slot: string }[] }[] }).roots;
     const mine = roots.find((x) => x.uri === URI);
@@ -208,19 +208,19 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   });
 
   test("delete → 0 and the group leaves; get answers not-found (the daemon registers meme-delete)", async () => {
-    const r = await lar.cli(["meme", "delete", URI, ...WIKI, "--json"]);
+    const r = await lar.cli(["tiddler", "delete", "--meme", URI, ...WIKI, "--json"]);
     expect(r.code, said(r)).toBe(0);
     const got = await lar.cli(["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
     const err = got.json?.["error"] as Record<string, unknown> | undefined;
     expect(err?.["code"] ?? got.json?.["code"], said(got)).toBe("not-found");
     // CONTROL: a delete of what no longer stands answers not-found, never a second removal.
-    const again = await lar.cli(["meme", "delete", URI, ...WIKI, "--json"]);
+    const again = await lar.cli(["tiddler", "delete", "--meme", URI, ...WIKI, "--json"]);
     expect(again.code, said(again)).not.toBe(0);
   });
 
   test("project --to html from the anchor → a document through the house template, inside the island", async () => {
     // html renders from the daemon wiki when explicitly targeted, so the meme lands there first.
-    const put = await lar.cli(["meme", "put", URI, "--recipe", "default", "--file", join(scratch, "ab.mem"), "--json"]);
+    const put = await lar.cli(["tiddler", "put", "--meme", URI, "--recipe", "default", "--file", join(scratch, "ab.mem"), "--json"]);
     expect(put.code, said(put)).toBe(0);
     const r = await lar.cli(["meme", "project", URI, "--recipe", "default", "--to", "html", "--no-json"]);
     expect(r.code, said(r)).toBe(0);
@@ -239,7 +239,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     const MOVE_PATH = "ha.ka.ba/t/witness/move";
     const MOVE_URI  = `lar:///${MOVE_PATH}`;
     writeFileSync(join(scratch, "move.mem"), meme(["a"]).replaceAll(URI, MOVE_URI).replaceAll(PATH, MOVE_PATH));
-    const put = await lar.cli(["meme", "put", MOVE_URI, "--bag", DAEMON_WORKING, "--file", join(scratch, "move.mem"), "--json"]);
+    const put = await lar.cli(["tiddler", "put", "--meme", MOVE_URI, "--bag", DAEMON_WORKING, "--file", join(scratch, "move.mem"), "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     const r = await lar.cli(["act", "MOVE", "--title", MOVE_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
     expect(r.json?.["ok"], `the MOVE out of the daemon wiki refused — ${said(r)}`).toBe(true);
