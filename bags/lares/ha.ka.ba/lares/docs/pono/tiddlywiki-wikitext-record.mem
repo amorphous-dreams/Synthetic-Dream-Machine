@@ -27,10 +27,10 @@ The specification draft reads at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/
 
 !! Dated checks
 
-* 2026-08-24: the IANA media-types registry checked for `text/vnd.tiddlywiki` — no entry (the draft's #/media-type states the standing claim with the registry to read).
+* 2026-08-24: the IANA media-types registry checked for `text/vnd.tiddlywiki` — no entry (the draft's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext#/media-type`>> states the standing claim with the registry to read).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pysJXg-6HEhjGYRrpL89h6nNvOuXzHPftZw1igWQPLg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Fq5agnrheupdLmqJc2p1eJmttmpxsbcQC-uXLeSP6Co`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -283,7 +283,7 @@ test("E17 canon-dated-history: a history verb beside an ISO date reads in live c
 });
 test("E18 canon-dated-meta: an authored date key in a live canon meta reads; a ruling dated in the body and a record carrier's dated meta do not", () => {
   const meta = (line) => "<<^ code=`&#x0002;`>>\n\n```toml meta\ntitle = \"lar:///ha.ka.ba/lares/api/pono/a\"\n" + line + "\n```\n\nBody.\n";
-  for (const line of ['written = "2026-06-12"', 'status-date = "2026-09-08"', 'revised-on = "2026-10-01"', 'date = "x"', 'proposed-on = "2026-11-01"', 'created = "2026-05-01"']) {
+  for (const line of ['written = "2026-06-12"', 'status-date = "2026-09-08"', 'revised-on = "2026-10-01"', 'date = "x"', 'proposed-on = "2026-11-01"', 'created = "2026-05-01"', 'revision-note = "minted"', 'role = "the plane, cut 2026-06-06"', 'status-why = "open until 2026-11"']) {
     assert.equal(scanCanonMetaText("a.mem", meta(line)).length, 1, line);
   }
   const r = canon(meta('written = "2026-06-12"')); assert.equal(r.status, 1); assert.match(r.stdout, /canon-dated-meta +bags\/lares\/ha\.ka\.ba\/lares\/api\/pono\/a\.mem:5/);

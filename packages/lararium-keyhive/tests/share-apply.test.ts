@@ -6,6 +6,12 @@
  *   SA2 — the grantee stands shut: nothing lifts, an opaque flag stands (it names no face, no bag), and the next light lands it
  *         and clears the flag
  *   SA3 — a house canon bag owes no grant (it rests in the Kahu realm); a pet-name no face carries waits, named
+ *   SA9 — a HOUSE CANON wiki's row delegates no canon, yet hands each grantee the wiki's recipe row by the one carry and lift
+ *         a bag row rides, so the grantee reaches the wiki (the referee walk's `wiki-unreached` under a written share); a
+ *         shut grantee waits behind its flag, a replay moves nothing, and an unshare takes the carry back
+ *   SA10 — while the ledger binds no workbench, only a NAMED owner (the row's, or the canon row's minter) hands the recipe
+ *         on or founds the realm: a grantee's replay does neither
+ *   SA11 — an unshare drops the carry of every face the row names, the recipe's holder worn or not
  */
 import { describe, expect, test } from "vitest";
 import { bagUri, recipeUri, emptyLarDoc, seatHouseCanon, storedLarRecord, SHARE_PENDING_PREFIX, type LarDoc, type ShareEntry } from "@lararium/mesh";
@@ -197,5 +203,131 @@ describe("the share config lands", () => {
     expect(grants, "the reader delegates nothing, to the owner or to another reader").toEqual([]);
     expect(await run(0)).toMatchObject({ granted: 2 });
     expect(grants).toEqual([[0, 1], [0, 2]]);
+  });
+
+  test("RED SA9 — a HOUSE CANON wiki's row hands each grantee the wiki's recipe row (no delegation: canon reads from the floor), through the carry and the wear's lift a bag row rides; a shut grantee waits behind its flag and lands at its light; a replay moves nothing; an unshare takes the carry back", async () => {
+    seatHouseCanon(["referee"]);
+    try {
+      const REFEREE = bagUri("referee"), RECIPE = recipeUri("catalog", "referee");
+      const ownerHalf = half({ [REFEREE]: "automerge:refereeCanon" });
+      ownerHalf.change((d) => { d.tiddlers[RECIPE] = storedLarRecord(RECIPE, { text: "{\"bags\":[]}", kind: "recipe" }, "test") as never; });
+      const granteeHalf = half();
+      const flags = new Set<string>();
+      const grants: Array<Record<string, unknown>> = [];
+      const carried = new Map<string, { group: string; bag: string; row: unknown }>();
+      const carry = {
+        put: async (group: string, bag: string, row: unknown) => { carried.set(`${group}\n${bag}`, { group, bag, row }); },
+        list: async (group: string) => [...carried.values()].filter((c) => c.group === group).map((c) => ({ bag: c.bag, row: c.row as never })),
+        clear: async (group: string, bag: string) => { carried.delete(`${group}\n${bag}`); },
+      };
+      const rows: ShareEntry[] = [{ slug: "referee", kind: "wiki", read: "owner referee", write: "referee" }];
+      const run = (worn: 0 | 2, opts: { granteeLit?: boolean; unshare?: string[] } = {}) => applyShares({
+        rows: async () => rows, salt: "salt", carry,
+        faces: [
+          { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => (worn === 0 ? ownerHalf : null) },
+          { handleIndex: 2, petname: "referee", group: opts.granteeLit === false ? null : "g2", catalog: async () => (worn === 2 && opts.granteeLit !== false ? granteeHalf : null) },
+        ],
+        grant: async (g) => { grants.push({ ...g }); return { fresh: true }; },
+        revoke: async () => {},
+        // The vessel's ledger binds the wiki's workbench under the face that stood it (h0), lit in every leg.
+        workbenchOwner: async () => ({ bound: 0, founder: worn, boundElsewhere: true }),
+        ...(opts.unshare ? { unshare: opts.unshare } : {}),
+        flag: { set: async (t) => { flags.add(t); }, clear: async (t) => { flags.delete(t); }, has: async (t) => flags.has(t) },
+      });
+      // The grantee SHUT: the hand-over waits behind an opaque flag, named by the count; nothing carries, nothing delegates.
+      expect(await run(0, { granteeLit: false })).toMatchObject({ granted: 0, pending: 1, carried: 0 });
+      expect(flags.size).toBe(1);
+      expect([...flags][0]).not.toMatch(/referee|owner/);
+      // Its light, the owner worn: the recipe row carries for the grantee's own wear, the flag clears, and no delegation rides.
+      expect(await run(0)).toMatchObject({ granted: 1, pending: 0, carried: 1, moved: 1 });
+      expect(flags.size).toBe(0);
+      expect(grants, "house canon delegates nothing: every face reads it from the floor").toEqual([]);
+      expect([...carried.values()].map((c) => `${c.group} ${c.bag}`), "the recipe row alone carries; the canon's row stays the owner's").toEqual([`g2 ${RECIPE}`]);
+      // Idempotent: the same landing again holds the same one carry.
+      expect(await run(0)).toMatchObject({ granted: 1, carried: 1 });
+      expect(carried.size).toBe(1);
+      // The grantee worn: its own half takes the recipe row, and the carry leaves.
+      expect(await run(2)).toMatchObject({ lifted: 1, pending: 0 });
+      expect(JSON.stringify(granteeHalf.doc().tiddlers[RECIPE])).toContain("recipe");
+      expect(granteeHalf.doc().tiddlers[REFEREE]).toBeUndefined();
+      expect(carried.size).toBe(0);
+      // CONTROL: both halves open in one island: the recipe row lands directly, once; a replay writes nothing more.
+      const direct = half();
+      const both = () => applyShares({
+        rows: async () => rows, salt: "salt",
+        faces: [{ handleIndex: 0, petname: "owner", group: "g0", catalog: async () => ownerHalf }, { handleIndex: 2, petname: "referee", group: "g2", catalog: async () => direct }],
+        grant: async () => ({ fresh: true }), flag: { set: async () => {}, clear: async () => {} },
+      });
+      expect(await both()).toMatchObject({ granted: 1, moved: 1 });
+      expect(Object.keys(direct.doc().tiddlers)).toEqual([RECIPE]);
+      expect(await both(), "a replay over a half that names the recipe moves nothing").toMatchObject({ granted: 1, moved: 0 });
+      // THE UNSHARE TAKES THE CARRY BACK: a carried recipe row the grantee never wore leaves, so no later wear lifts it.
+      await run(0);
+      expect(carried.size).toBe(1);
+      expect(await run(0, { unshare: ["referee"] })).toMatchObject({ granted: 0, carried: 0, standing: [] });
+      expect(carried.size).toBe(0);
+    } finally { seatHouseCanon([]); }
+  });
+
+  /** A house canon wiki's rig with a ledger that binds NO workbench (a landing whose workbench threw after the grants carried). */
+  function unboundRig() {
+    const REFEREE = bagUri("referee"), RECIPE = recipeUri("catalog", "referee");
+    const recipeRow = () => storedLarRecord(RECIPE, { text: "{\"bags\":[]}", kind: "recipe" }, "test") as never;
+    const ownerHalf = half({ [REFEREE]: "automerge:refereeCanon" });
+    ownerHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow(); });
+    // The grantee's own wear already lifted the recipe row: its half names the recipe and never the canon's row.
+    const granteeHalf = half();
+    granteeHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow(); });
+    const carried = new Map<string, { group: string; bag: string; row: unknown }>();
+    const carry = {
+      put: async (group: string, bag: string, row: unknown) => { carried.set(`${group}\n${bag}`, { group, bag, row }); },
+      list: async (group: string) => [...carried.values()].filter((c) => c.group === group).map((c) => ({ bag: c.bag, row: c.row as never })),
+      clear: async (group: string, bag: string) => { carried.delete(`${group}\n${bag}`); },
+    };
+    const founded: number[] = [];
+    const rows: ShareEntry[] = [{ slug: "referee", kind: "wiki", read: "owner referee other", write: "referee" }];
+    const run = (worn: 0 | 1 | 2 | null, opts: { unshare?: string[] } = {}) => applyShares({
+      rows: async () => rows, salt: "salt", carry,
+      faces: [
+        { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => (worn === 0 ? ownerHalf : null) },
+        { handleIndex: 1, petname: "other", group: "g1", catalog: async () => null },
+        { handleIndex: 2, petname: "referee", group: "g2", catalog: async () => (worn === 2 ? granteeHalf : null) },
+      ],
+      grant: async () => ({ fresh: true }), revoke: async () => {},
+      ...(opts.unshare ? { unshare: opts.unshare } : {}),
+      // THE LEDGER BINDS NOTHING: the worn face would found (the daemon's port names the worn face as founder).
+      workbenchOwner: async () => ({ bound: null, founder: worn, boundElsewhere: false }),
+      workbench: async (row, owner) => { founded.push(owner.handleIndex); return { slug: row.slug, realmId: `realm-of-h${owner.handleIndex}`, founded: true, members: 0, removed: [] }; },
+      flag: { set: async () => {}, clear: async () => {} },
+    });
+    return { RECIPE, carried, founded, run };
+  }
+
+  test("RED SA10 — while the ledger binds no workbench, a grantee whose wear lifted a house canon wiki's recipe row neither hands it onward nor founds the wiki's realm under itself; CONTROL: the owner who minted the canon row hands it over and founds", async () => {
+    seatHouseCanon(["referee"]);
+    try {
+      const r = unboundRig();
+      // The grantee worn (a wear's replay of the landing): no hand-over leaves its half, and no realm founds under it.
+      expect(await r.run(2)).toMatchObject({ granted: 0, carried: 0, pending: 0 });
+      expect([...r.carried.keys()], "the grantee hands the recipe row to no face").toEqual([]);
+      expect(r.founded, "a grantee's replay founds no realm under itself").toEqual([]);
+      // CONTROL: the owner worn, its half minted the canon's row: it hands the recipe to the other named faces and founds.
+      expect(await r.run(0)).toMatchObject({ granted: 2, carried: 2 });
+      expect([...r.carried.values()].map((c) => `${c.group} ${c.bag}`).sort()).toEqual([`g1 ${r.RECIPE}`, `g2 ${r.RECIPE}`]);
+      expect(r.founded).toEqual([0]);
+    } finally { seatHouseCanon([]); }
+  });
+
+  test("RED SA11 — an unshare of a house canon wiki drops the carry of every face the row names, while no face that holds the recipe stands worn; the grantee's next wear lifts nothing", async () => {
+    seatHouseCanon(["referee"]);
+    try {
+      const r = unboundRig();
+      await r.run(0);
+      expect(r.carried.size).toBe(2);
+      // No face worn that holds the recipe (a third face stands worn, its half naming nothing): the unshare still drops every carry.
+      await r.run(1, { unshare: ["referee"] });
+      expect(r.carried.size, "every face the row names loses its carry").toBe(0);
+      expect(await r.run(2), "the grantee's next wear lifts nothing the share took back").toMatchObject({ lifted: 0 });
+    } finally { seatHouseCanon([]); }
   });
 });

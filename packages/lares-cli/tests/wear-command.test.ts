@@ -30,6 +30,14 @@ vi.mock("../src/custody-door.js", async (real) => ({
   },
 }));
 vi.mock("../src/local-connector.js", async (real) => ({ ...(await real<typeof import("../src/local-connector.js")>()), udsAlive: async () => true }));
+// THE SHARE LANDING a wear replays: a stub that records each landing and answers what the test names.
+const landings: Array<Record<string, unknown>> = [];
+let landed: Record<string, unknown> | null = { granted: 0, lifted: 0, pending: 0 };
+vi.mock("../src/share-doors.js", async (real) => ({
+  ...(await real<typeof import("../src/share-doors.js")>()),
+  LIVE_SHARE_DOORS: { faces: async () => [{ handleIndex: 0, petname: "steward" }, { handleIndex: 2, petname: "referee" }], file: { read: () => null, write: () => {} }, verb: async () => null, out: () => {}, err: () => {} },
+  landShares: async (_doors: unknown, faces: unknown) => { landings.push({ faces }); return landed; },
+}));
 
 import { parseArgs } from "../src/parse-args.js";
 
@@ -50,7 +58,7 @@ let root: string;
 const ENV_KEYS = ["HOME", "LARES_PULAMA", "LAR_PULAMA_SOCKET", "CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
 let priorEnv: Record<string, string | undefined> = {};
 beforeEach(() => {
-  prompts = 0; frames.length = 0; out = [];
+  prompts = 0; frames.length = 0; out = []; landings.length = 0; landed = { granted: 0, lifted: 0, pending: 0 };
   root = mkdtempSync(join(tmpdir(), "wear-command-"));
   process.env["LAR_ROOT"] = root;
   priorEnv = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
@@ -130,6 +138,35 @@ describe("RED lares wear N", () => {
     }
   });
 
+  it("★ RED a wear onto the face already worn replays the share landing: the rows a grant carried for it lift, by name (the referee walk's `stands worn already` changed nothing) ★", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 2, held: true, already: true, standing: "hearth" };
+    landed = { granted: 0, lifted: 1, pending: 0 };
+    expect(await cmdWear(parseArgs(["wear", "2", "--no-json"]))).toBe(0);
+    expect(landings, "one landing, naming every face by handle index and pet-name").toEqual([{ faces: [{ handleIndex: 0, petname: "steward" }, { handleIndex: 2, petname: "referee" }] }]);
+    expect(out.join("\n")).toMatch(/face h2 stands worn already/);
+    expect(out.join("\n")).toMatch(/shares: 1 granted row\(s\) now stand in h2's catalog/);
+    // The envelope carries the landing beside the wear's answer.
+    out = []; landings.length = 0;
+    expect(await wear("2")).toBe(0);
+    expect(answer()).toMatchObject({ ok: true, data: { op: "wear", face: 2, already: true, shares: { lifted: 1, granted: 0, pending: 0 } } });
+    expect(landings).toHaveLength(1);
+  });
+
+  it("a wear's replay that finds a face still shut names the wait; a replay that moves nothing says nothing; a refused wear lands nothing", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
+    landed = { granted: 0, lifted: 0, pending: 1 };
+    expect(await cmdWear(parseArgs(["wear", "1", "--no-json"]))).toBe(0);
+    expect(out.join("\n")).toMatch(/shares: 1 grant\(s\) wait for a shut face/);
+    out = []; landed = { granted: 0, lifted: 0, pending: 0 };
+    expect(await cmdWear(parseArgs(["wear", "1", "--no-json"]))).toBe(0);
+    expect(out).toEqual(["wearing h1: the vessel stands as hearth. No route was asked."]);
+    // CONTROL: a refused switch takes no landing.
+    landings.length = 0;
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth", switchRefused: "h1 would not stand", wornAgain: 0 };
+    expect(await wear("1")).toBe(1);
+    expect(landings).toEqual([]);
+  });
+
   it("the command table seats `wear`, accepting `face` alone", () => {
     const row = COMMANDS.find((c) => c.name === "wear");
     expect(row).toBeDefined();
@@ -155,6 +192,7 @@ describe("RED vault unlock gathers a route only while custody stays closed", () 
     expect(prompts).toBe(0);
     expect(frames).toEqual([{ op: "custody" }, { op: "census" }, { op: "wear", face: 1 }]);
     expect(answer()).toMatchObject({ ok: true, data: { op: "wear", face: 1 } });
+    expect(landings, "the unlock that wears an open face replays the share landing, as the wear does").toHaveLength(1);
   });
 
   it("`unlock --face N` on a held key where no face hN stands refuses by name and asks nothing", async () => {

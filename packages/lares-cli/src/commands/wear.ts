@@ -5,12 +5,17 @@
  * composes again on it. A wear asks no route and carries none: its frame names the face and nothing beside it, so nothing here
  * reaches for a prompt. A vessel holding no key names the one act that opens it (`lares vault unlock`) and sends no wear.
  *
+ * A wear that lands replays the share landing (`share-apply`), as an unlock does: a grant's rows carried for the face now worn
+ * lift into its own catalog half, the face already worn among them (its mount stood before the grant landed), and the wear
+ * names what moved and what still waits on a shut face.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house
  */
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { helpLines } from "../command-help.js";
 import { emit, proseFirst, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 
 /**
  * The harness's own marks, as each AI harness sets them in the shells it runs (Claude Code, Codex's sandbox). A wear sent under
@@ -78,6 +83,37 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
     return refuse(reason, typeof a["errorMessage"] === "string" ? a["errorMessage"] : `the wear refused (${reason})`, a);
   }
   if (typeof a["switchRefused"] === "string") return refuse("wear-refused", wearLine(a), a);
-  emit(args, { ok: true, data: a, human: () => console.log(wearLine(a)) });
+  // A WEAR REPLAYS THE SHARE LANDING (sealed-store#/the-share-config), as an unlock does: the rows a grant carried for the face
+  // now worn lift into its own catalog half, and a grant that waited on a face this vessel now holds lit lands. A wear onto
+  // the face already worn remounts nothing, so this replay alone reaches a grant landed since that face's mount. A replay over
+  // a landed share moves nothing.
+  const shares = await replayShares();
+  emit(args, {
+    ok: true, data: { ...a, ...(shares.landed ? { shares: shares.landed } : {}), ...(shares.waits ? { sharesWait: shares.waits } : {}) },
+    human: () => {
+      console.log(wearLine(a));
+      for (const line of sharesLines(shares.landed, face)) console.log(line);
+      if (shares.waits) console.error(`shares: the share config waits (${shares.waits}); \`lares wiki share --list\` reads it`);
+    },
+  });
   return 0;
+}
+
+/** What a share landing moved, as the wear names it: nothing where it moved nothing. */
+function sharesLines(landed: { granted: number; lifted: number; pending: number } | null, face: number): string[] {
+  if (!landed) return [];
+  return [
+    ...(landed.lifted > 0 ? [`shares: ${landed.lifted} granted row(s) now stand in h${face}'s catalog`] : []),
+    ...(landed.granted > 0 ? [`shares: ${landed.granted} grant(s) landed for the faces this vessel holds lit`] : []),
+    ...(landed.pending > 0 ? [`shares: ${landed.pending} grant(s) wait for a shut face (\`lares vault unlock --face N\`)`] : []),
+  ];
+}
+
+async function replayShares(): Promise<{ landed: { granted: number; lifted: number; pending: number } | null; waits?: string }> {
+  try {
+    const landed = await landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces());
+    return { landed: landed === null ? null : { granted: Number(landed["granted"] ?? 0), lifted: Number(landed["lifted"] ?? 0), pending: Number(landed["pending"] ?? 0) } };
+  } catch (e) {
+    return { landed: null, waits: e instanceof Error ? e.message : String(e) };
+  }
 }

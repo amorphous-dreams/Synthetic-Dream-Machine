@@ -4,14 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = false
-l-space       = "stable"
-revision-note = "PROVISIONAL — the conversion act: a fed guest re-anchors from host to realm at a periodic assembly. Shaped, unbuilt, and deliberately UNDER-SPECIFIED: the mesh holds that a re-anchoring happened and never what made it valid"
-role          = "the conversion act — how a stranger begins to dwell. The guest dwells WITH a host (a dyad, one edge); the thing-event re-anchors that dwelling INTO the realm. The assembly stands as the third party that inverts the host-payment problem: the host is paid in depth for GIVING the guest away, never in a dependant kept"
-tags          = ["api/pono/meme"]
-title         = "lar:///ha.ka.ba/lares/api/pono/the-thing-event"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lares/api/pono/the-thing-event"
+cacheable  = false
+l-space    = "stable"
+status-why = "PROVISIONAL — the conversion act: a fed guest re-anchors from host to realm at a periodic assembly. Shaped, unbuilt, and deliberately UNDER-SPECIFIED: the mesh holds that a re-anchoring happened and never what made it valid"
+role       = "the conversion act — how a stranger begins to dwell. The guest dwells WITH a host (a dyad, one edge); the thing-event re-anchors that dwelling INTO the realm. The assembly stands as the third party that inverts the host-payment problem: the host is paid in depth for GIVING the guest away, never in a dependant kept"
+tags       = ["api/pono/meme"]
+title      = "lar:///ha.ka.ba/lares/api/pono/the-thing-event"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/the-thing-event"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -95,6 +95,6 @@ That reads as the same law as //the naming layer performs, so it must never cert
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MjlUxUOVH0RyHgxn53it9VVAou8EUnz3PUobxCU4_Nw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RQP_-eqWglnKLFo2BdmSj3_QNmkEv4UjcVkRsqJmDLk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

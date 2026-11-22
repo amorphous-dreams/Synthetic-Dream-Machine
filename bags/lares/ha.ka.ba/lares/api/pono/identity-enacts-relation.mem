@@ -4,14 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = false
-l-space       = "stable"
-revision-note = "PROVISIONAL — the constructor, the declared partition, declaration ⊥ gauge, fluid-not-frozen rank, and the vocabulary. Operator-ruled spans marked RULED; the rest reads PROPOSED and unbuilt"
-role          = "the identity plane's ontology: identity ENACTS a relation; a mutual hold constitutes a scale RELATIVE TO A DECLARED PARTITION; the declaration, the measurement and the decision stand as three artifacts with three owners; rank runs fluid, never frozen, and a later act may causally supersede a lift at a verified fence. Expands lararium-identity's five-scale axis with what makes a scale real"
-tags          = ["api/pono/meme"]
-title         = "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lares/api/pono/identity-enacts-relation"
+cacheable  = false
+l-space    = "stable"
+status-why = "PROVISIONAL — the constructor, the declared partition, declaration ⊥ gauge, fluid-not-frozen rank, and the vocabulary. Operator-ruled spans marked RULED; the rest reads PROPOSED and unbuilt"
+role       = "the identity plane's ontology: identity ENACTS a relation; a mutual hold constitutes a scale RELATIVE TO A DECLARED PARTITION; the declaration, the measurement and the decision stand as three artifacts with three owners; rank runs fluid, never frozen, and a later act may causally supersede a lift at a verified fence. Expands lararium-identity's five-scale axis with what makes a scale real"
+tags       = ["api/pono/meme"]
+title      = "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/identity-enacts-relation"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -381,6 +381,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8zhUALvpVpO1K7GNBcW3DOMDujmWgxt3CHh48HWDWRg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bTG2AunsxKf_xzFs3-vuXb0TahmGW1-xeh321cc8jW4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

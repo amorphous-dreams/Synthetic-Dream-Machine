@@ -70,7 +70,7 @@ Four adapters stand green against the `SourceAdapter` interface. Each names {`ap
 | ''Copilot-Chat'' | `true` | `requestId` | supersede-in-log; `currentBranch` = ''replayed live'' (op-log, not truncation) |
 | ''Copilot-CLI'' | `true` | ''content-hash'' (`editedTurnIndices` flags re-emit = EDIT) | NO out-of-file fork; `UNIQUE(session_id, turn_index)` upsert |
 
-''The lesson worth canon — a per-TURN id MUST ride the content-hash rung, never the session-index rung.'' Codex's `turn_id` and Copilot-CLI's `turn_index` both key ''per turn'', not per message. Handed to the `(sessionId ⊕ monotonic-index)` rung, a per-turn id ''re-keys the same slot on edit'', ''collides the user/assistant siblings'' that share a turn, and ''breaks the cross-fork diff''. So the ladder must ''drop a per-turn id down to content-hash(role ‖ normalized-text)'': a hash over the verbatim-copied text stays ''cross-fork-stable'' — the same slot on two forks hashes identical — which is exactly what `diffGone` needs to see a turn as //kept//, not //gone//. The rung 2 monotonic-index law (#/the-identity-ladder) holds only for a ''per-message'' running index, never a per-turn one.
+''The lesson worth canon — a per-TURN id MUST ride the content-hash rung, never the session-index rung.'' Codex's `turn_id` and Copilot-CLI's `turn_index` both key ''per turn'', not per message. Handed to the `(sessionId ⊕ monotonic-index)` rung, a per-turn id ''re-keys the same slot on edit'', ''collides the user/assistant siblings'' that share a turn, and ''breaks the cross-fork diff''. So the ladder must ''drop a per-turn id down to content-hash(role ‖ normalized-text)'': a hash over the verbatim-copied text stays ''cross-fork-stable'' — the same slot on two forks hashes identical — which is exactly what `diffGone` needs to see a turn as //kept//, not //gone//. The rung 2 monotonic-index law (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/rewind-adapter#/the-identity-ladder`>>) holds only for a ''per-message'' running index, never a per-turn one.
 
 ''Separator law.'' `identityLadder` ''owns the namespace separator'' — adapters hand it the raw parts (session, index, role, text) and never hand-type a `⊕` / `‖` separator themselves. One code-path composes every id, so no adapter drifts the namespacing.
 
@@ -98,12 +98,12 @@ Two research spirits stood the survey:
 
 ''Cited grounds:'' Claude Code sessions + checkpointing docs · Codex fork / rollout (DeepWiki) · Copilot-CLI chronicle · VS Code chat-checkpoints docs · Cursor `restore = overwrite` (staff forum) · Gemini session-management docs · Aider commands reference · the ''cass 22-agent'' survey.
 
-''Verify-gate CLOSED — Copilot-Chat.'' The open gate (was: does replay-to-offset reconstruct the pre-restore tail?) ''closed on the bytes'': `kind:0` base op present ''only at line 0, never compacted'' · a real edit stacked ''three coexisting ops'' all recoverable by replay · ''120 of 269'' files leave their superseded ops in the append log. Verdict: Copilot-Chat ''appends and keeps'' → ''Family A, `appendOnly: true`'' (#/two-families). No `.jsonl` truncation ships; the "truncate" idiom lives in the logical `requests[]` view alone.
+''Verify-gate CLOSED — Copilot-Chat.'' The open gate (was: does replay-to-offset reconstruct the pre-restore tail?) ''closed on the bytes'': `kind:0` base op present ''only at line 0, never compacted'' · a real edit stacked ''three coexisting ops'' all recoverable by replay · ''120 of 269'' files leave their superseded ops in the append log. Verdict: Copilot-Chat ''appends and keeps'' → ''Family A, `appendOnly: true`'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/rewind-adapter#/two-families`>>). No `.jsonl` truncation ships; the "truncate" idiom lives in the logical `requests[]` view alone.
 
 ''Open verification (before donating):'' the ''Copilot-CLI'' adapter stands ''schema-verified, not fully bytes-verified'' — this box's lone session was empty. Its `appendOnly: true` + the `editedTurnIndices` re-emit logic read clean from the `UNIQUE(session_id, turn_index)` schema, but a ''real Copilot-CLI session'' must exercise them before the reconciler donates.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;musEg9V1z--lc_fztvqVjcfedgKzrUIMq5YgjGrUTig`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;V2CZ9qAHiKPPOmw0QCy-YRAVcjSgHz2FNvE1Xd_QvT4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

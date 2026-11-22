@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/face-intent-plane-record"
 
 ! The face intent plane ~ the record
 
-The plane's law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>; its dated rulings stand in that meme's `#/rulings`. This record keeps the build order.
+The plane's law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>; its dated rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane#/rulings`>>. This record keeps the build order.
 
 <<~/ahu>>
 
@@ -27,6 +27,6 @@ Item `I1` on the founding road in the kahu workbench carries the build, red-firs
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dqykXydnhk8UNygDXBoW5l6ydrxpXjzpZYofWajFJzI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3ePzXXltX-4HrtDYA0HUYox-cgPzBa07igyZ6-PjQ8g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

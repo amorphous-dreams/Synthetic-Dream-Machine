@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/lararium-identity-record"
 
 ! Lararium Identity ~ the record
 
-The identity law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>; its dated rulings stand in that meme's `#/rulings`. This record keeps what the law points to: the scouts, the syntheses, and the owed work.
+The identity law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>; its dated rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/rulings`>>. This record keeps what the law points to: the scouts, the syntheses, and the owed work.
 
 <<~/ahu>>
 
@@ -50,6 +50,6 @@ The identity law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/larari
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ddrVPQlM69rmX_Ni80ovbKocEzFUb591y_FkWBfPa6A`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;crk7Qb8teK4-a5BB4BNnDDdUtWFSehLvvZuYd7fuUbs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
