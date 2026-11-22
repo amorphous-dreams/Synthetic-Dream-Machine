@@ -1029,7 +1029,7 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     const live = (await read()).canonicalHash;
     const receipt = await patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", base: stale }, ctx());
     expect(receipt).toMatchObject({ decision: "conflict", reason: "stale-base", canonicalHash: live });
-    expect(String((receipt["warnings"] as string[])[0])).toMatch(/^stale-base: /);
+    expect(String((receipt["warnings"] as string[])[0])).toMatch(/^stale-base: .*`tiddler get --meme --all`/); // the recovery names the one read door
     expect(String(r.wiki.store.get(`${URI}#/a`)!["text"])).toBe("! a");
   });
 
@@ -1044,7 +1044,7 @@ describe("meme-patch — one slot's body, through the put's own gate", () => {
     const { read, patch } = await seeded();
     const base = (await read()).canonicalHash;
     expect(await patch({ recipe: "default", uri: "lar:///t/none", slot: "#/a", append: "x", base }, ctx())).toMatchObject({ decision: "absent" });
-    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x" }, ctx())).rejects.toMatchObject({ reason: "base-required" });
+    await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x" }, ctx())).rejects.toMatchObject({ reason: "base-required", message: expect.stringMatching(/`tiddler get --meme`/) });
     await expect(patch({ recipe: "default", uri: URI, append: "x", base }, ctx())).rejects.toThrow(/slot/);
     await expect(patch({ recipe: "default", uri: URI, slot: "#/a", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });
     await expect(patch({ recipe: "default", uri: URI, slot: "#/a", append: "x", replace: "y", base }, ctx())).rejects.toMatchObject({ reason: "patch-malformed" });

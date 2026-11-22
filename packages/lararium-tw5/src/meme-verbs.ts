@@ -611,7 +611,7 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     const replace = typeof args["replace"] === "string" ? args["replace"] : null;
     if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
     const base = readBase(optionalStringArg(args, "base"), "meme-patch", true);
-    if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`meme get\` answers for ${target.uri}.`);
+    if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`tiddler get --meme\` answers for ${target.uri}.`);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink } = await resolveRead(opts, target, origin, ctx.cap);
     if (await holdsUnreadPointer(target.uri, sink)) {
@@ -622,7 +622,7 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     if (read.kind === "absent") return { ...none, decision: "absent", warnings: [] };
     if (read.kind === "stale") {
       return { ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
-        warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`meme get\`) and patch against that base.`] };
+        warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`tiddler get --meme --all\`) and patch against that base.`] };
     }
     if (read.kind === "slot-missing") {
       const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`meme list --tree\` names the slots it holds.`;
