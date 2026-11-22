@@ -52,6 +52,14 @@ uri-path  = "ha.ka.ba/lares/api/filters"
 [prefix[lar:///ha.ka.ba/kahua/memory/]] :filter[<currentTiddler>removeprefix[lar:///ha.ka.ba/kahua/memory/]removeprefix<name>removeprefix[/]]
 \end
 
+\function lares.broken()
+[prefix[lar:///ha.ka.ba/kahua/memory/]lar-refs:out[]] :filter[is[missing]]
+\end
+
+\function lares.unreached()
+[prefix[lar:///ha.ka.ba/kahua/memory/]!regexp[#]] :filter[<currentTiddler>lar-refs:in[]!match<currentTiddler>count[]match[0]] :filter[<currentTiddler>lar-refs:tagged[]!match<currentTiddler>count[]match[0]]
+\end
+
 <<~ ahu slot=`#/head`>>
 
 ! The house's named filters
@@ -76,6 +84,6 @@ The daemon reads this carrier's text from the canon layers (the oracle floor and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;agwtXIAZJV-mvPohCKAikQELWUSZmUhEA2FWCv03GIs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XtNYTTxI3q9S-ZMSqISEKFo_20i-_FwTymBFRsZkEY8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

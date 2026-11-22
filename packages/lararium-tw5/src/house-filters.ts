@@ -26,7 +26,7 @@ export const HOUSE_FILTERS_TITLE = "lar:///ha.ka.ba/lares/api/filters";
 /** The stem every house function name opens with. */
 export const HOUSE_FUNCTION_STEM = "lares.";
 /** The house's function names, in the carrier's order. */
-export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.course.citers", "lares.course.text-uncited", "lares.course.uncited", "lares.course.standing", "lares.course", "lares.waves", "lares.stage"];
+export const HOUSE_FUNCTION_NAMES: readonly string[] = ["lares.law.pins", "lares.law", "lares.road", "lares.course.citers", "lares.course.text-uncited", "lares.course.uncited", "lares.course.standing", "lares.course", "lares.waves", "lares.stage", "lares.broken", "lares.unreached"];
 
 /**
  * THE FLOOR: the carrier's `\function` blocks as the source carries them, read only where no canon layer holds the carrier
@@ -72,6 +72,14 @@ export const HOUSE_FILTERS_FLOOR = String.raw`\function lares.law.pins()
 
 \function lares.stage(name)
 [prefix[lar:///ha.ka.ba/kahua/memory/]] :filter[<currentTiddler>removeprefix[lar:///ha.ka.ba/kahua/memory/]removeprefix<name>removeprefix[/]]
+\end
+
+\function lares.broken()
+[prefix[lar:///ha.ka.ba/kahua/memory/]lar-refs:out[]] :filter[is[missing]]
+\end
+
+\function lares.unreached()
+[prefix[lar:///ha.ka.ba/kahua/memory/]!regexp[#]] :filter[<currentTiddler>lar-refs:in[]!match<currentTiddler>count[]match[0]] :filter[<currentTiddler>lar-refs:tagged[]!match<currentTiddler>count[]match[0]]
 \end`;
 
 const CANON_BAG = new RegExp(LAW_CANON_BAG_PATTERN);
