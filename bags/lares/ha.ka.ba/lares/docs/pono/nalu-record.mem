@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/nalu-record"
 
 ! Nalu ~ the record
 
-The nalu law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>; its dated ruling stands in that meme's `#/rulings`.
+The nalu law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>; its dated ruling stands in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/rulings`>>.
 
 <<~/ahu>>
 
@@ -31,6 +31,6 @@ The nalu law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>; i
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9RzqO8ZvFimvZVb6JaFRuNUtdYbB7sW_rLLvS-F634Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p6eopUnvyDgEoGCFUP1h1Lm5IRwkKXZnB_2ttpRXULc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

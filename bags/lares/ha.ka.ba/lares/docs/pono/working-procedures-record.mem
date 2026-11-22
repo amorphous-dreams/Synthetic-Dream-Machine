@@ -56,12 +56,12 @@ that names its act before it writes a vector, a wire or a count.
 <<<
 # 2026-10-16: early alpha until a third human; evergreen with no old shapes; recursive o-takiage.
 # 2026-10-25: the commit that moves a shape may refuse the old spelling by name; the next commit burns that refusal.
-# 2026-10-14, 2026-10-30: forks settle down the ladder of #/forks.
-# 2026-11-18: a `.mem` conflict that touches only `bcc=` seal lines resolves by taking the bodies and re-sealing with `lares meme normalize` (lar:///ha.ka.ba/kahua/memory/research/two-hearths-flow#/rulings, D6); #/the-seal-merge.
+# 2026-10-14, 2026-10-30: forks settle down the ladder of <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/forks`>>.
+# 2026-11-18: a `.mem` conflict that touches only `bcc=` seal lines resolves by taking the bodies and re-sealing with `lares meme normalize` (lar:///ha.ka.ba/kahua/memory/research/two-hearths-flow#/rulings, D6); <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/the-seal-merge`>>.
 <<<
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WFTs4f6VLnvu5dHaCjTBqfhRXZmOexFekyuR_8r6kbo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4flK4BJpUIxfndopLmTs89ZtW9BbsVq7VzRYP5NAT1o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

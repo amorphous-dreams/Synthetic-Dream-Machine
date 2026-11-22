@@ -4,14 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = false
-l-space       = "stable"
-revision-note = "PLACEHOLDER — an open question with a shaped rim and no answer. Minted so later talk-story has somewhere to pour"
-role          = "the unanswered question that gates the conversion act — what a Nexus wants members FOR. Where a collective held its own appetite, admission machinery ran for centuries; where admission required expropriating a named incumbent, no peacetime machinery appeared at all"
-tags          = ["api/pono/meme"]
-title         = "lar:///ha.ka.ba/lares/api/pono/what-a-nexus-wants"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lares/api/pono/what-a-nexus-wants"
+cacheable  = false
+l-space    = "stable"
+status-why = "PLACEHOLDER — an open question with a shaped rim and no answer. Minted so later talk-story has somewhere to pour"
+role       = "the unanswered question that gates the conversion act — what a Nexus wants members FOR. Where a collective held its own appetite, admission machinery ran for centuries; where admission required expropriating a named incumbent, no peacetime machinery appeared at all"
+tags       = ["api/pono/meme"]
+title      = "lar:///ha.ka.ba/lares/api/pono/what-a-nexus-wants"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/what-a-nexus-wants"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -56,6 +56,6 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;DsCzObpXWG4x1kpv25_HBu9AY2fqlUryRji-J2zu8MY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5kIXYhB8foS8yXXbQIVOag86cteCeeTjw22S_YPNp80`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,21 +4,20 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-author        = "Joshua Fontany <joshua.fontany@gmail.com>"
-cacheable     = true
-cat           = "info"
-date          = "2026-10-03"
-docname       = "draft-fontany-memetic-wikitext-00"
-ipr           = "trust200902"
-l-space       = "stable"
-namespace     = "&#x2299;"
-revision-note = "the transmission-frame half stands in its own sibling specification (api/pono/memetic-wikitext-framing); this document keeps the language, composes as the document production the frame wraps, and cites [FRAMING] where the frame law lives"
-role          = "submittable specification for text/memetic-wikitext — abstract, conformance (RFC-2119), lexical structure, ABNF surface grammar, dual-layer processing model, pranala type system, media-type registration, security. Ontology referenced, not duplicated. Sibling submissions: the lar: URI spec and the carrier framing spec."
-status-why    = "submission-draft"
-tags          = ["lifecycle/standing"]
-title         = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext"
+author     = "Joshua Fontany <joshua.fontany@gmail.com>"
+cacheable  = true
+cat        = "info"
+date       = "2026-10-03"
+docname    = "draft-fontany-memetic-wikitext-00"
+ipr        = "trust200902"
+l-space    = "stable"
+namespace  = "&#x2299;"
+role       = "submittable specification for text/memetic-wikitext — abstract, conformance (RFC-2119), lexical structure, ABNF surface grammar, dual-layer processing model, pranala type system, media-type registration, security. Ontology referenced, not duplicated. Sibling submissions: the lar: URI spec and the carrier framing spec."
+status-why = "submission-draft"
+tags       = ["lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/memetic-wikitext"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -753,6 +752,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;QBezlvs2Lk7Vf9jjzA8lV_Usl2HemYdUABLxyMGzhY8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZtVxEfAaSIbnccm8N_0bafo4ZzcYBSTFO0HujjoDGAA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

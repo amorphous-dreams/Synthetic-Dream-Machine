@@ -4,17 +4,16 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-hydrate       = true
-l-space       = "stable"
-namespace     = "&#x0950; &#x0901;"
-revision-note = "minted 2026-06-06 — extracted from lar-uri #path-taxonomy TW5 System Boundary; lar-uri retains only the scheme-intrinsic clause + a loulou here"
-role          = "load-bearing invariant — the sync boundary admits any valid TW5 tiddler; the $:/ system plane stays browser-local by the system filters; a lar: title marks a placed, address-bearing carrier"
-status-why    = "the namespace design; no source carries it yet"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/designed"]
-title         = "lar:///ha.ka.ba/lararium/api/sync-namespace"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lararium/api/sync-namespace"
+cacheable  = true
+hydrate    = true
+l-space    = "stable"
+namespace  = "&#x0950; &#x0901;"
+role       = "load-bearing invariant — the sync boundary admits any valid TW5 tiddler; the $:/ system plane stays browser-local by the system filters; a lar: title marks a placed, address-bearing carrier"
+status-why = "the namespace design; no source carries it yet"
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/api/sync-namespace"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/api/sync-namespace"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -94,6 +93,6 @@ This dual-distribution shape names a ''packaging convention, not a namespace exc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WkWpFgam9Ug4EaTxIdAuG28bl9iJH7yrQUWWQniGiVU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pFZONkEm0NFd14rypsTK1HhRZ2Kr7Y61wxzyfhUTS1g`>>
 
 <<^ code=`&#x0004;` to=`?`>>
