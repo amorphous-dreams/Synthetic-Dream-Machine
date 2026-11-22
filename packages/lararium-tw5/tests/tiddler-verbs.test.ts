@@ -7,7 +7,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { SwarmRefused } from "@lararium/mesh";
-import { CompositeStore, bagUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG } from "@lararium/mesh";
+import { CompositeStore, bagUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG, buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { retractsOf, tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -319,6 +319,21 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await r.landed();
     await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: effectRecordUri(DAEMON, "real") }, ctx())).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
     expect(await r.composite.storeForBag(DAEMON)!.get(effectRecordUri(DAEMON, "real"))).not.toBeNull();
+  });
+
+  test("RED (the record of leaving stays): the tiddler door neither writes nor deletes a shell's record of leaving, for any asker", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const title = retiredShellUri("elyncia-referee");
+    for (const asker of [undefined, "seat", "cli"] as const) {
+      await expect(put({ ...A, title, text: "{}", fields: { type: "application/json" } }, { ...ctx(), ...(asker ? { asker } : {}) })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    }
+    expect(await r.composite.storeForBag(DAEMON)!.get(title)).toBeNull();
+    const rec = buildRetiredShellRecord(unionRetiredShell("elyncia-referee", null, [], { face: "0xface", realmId: null, forced: false, authored: 0, carried: [] }));
+    await r.composite.storeForBag(DAEMON)!.put(rec, { kind: "lares-verb", requestId: "retire-wiki" });
+    await r.landed();
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title }, ctx())).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    expect(await r.composite.storeForBag(DAEMON)!.get(title)).not.toBeNull();
   });
 
   test("RED: the seat wall reads the one executable-class list: a seat-asked module, script type, plugin, startup action, global, view template and an unlisted system tag each offer (seat-startup-offer) and land nothing; CONTROL plain `$:/config` lands for a seat, and the operator's hand and no asker land every class natively", async () => {

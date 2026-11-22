@@ -145,7 +145,9 @@ test("RED (referee walk #5, the record of leaving stays) --dry-run and the lande
   answer = retired(ID);
   (answer.output!["records"] as Record<string, number>)["effects"] = 1;
   answer.output!["carried"] = { ...where, records: 1, added: 1 };
+  answer.output!["leftBehind"] = ["lar:///ha.ka.ba/wikis/elyncia-referee/working/ledger/residency/late"];
   expect(await run()).toBe(0);
+  expect(text).toMatch(/left behind:\s+1 effect record\(s\) landed after the carry and stay in the shell's documents\n\s+lar:\/\/\/ha\.ka\.ba\/wikis\/elyncia-referee\/working\/ledger\/residency\/late/);
   expect(text).toMatch(/records destroyed:\s+none authored/);
   expect(text).toMatch(/effect records:\s+1 carried to lar:\/\/\/ha\.ka\.ba\/lararium\/shell-leavings\/elyncia-referee \(lar:\/\/\/ha\.ka\.ba\/wikis\/daemon\/working; 1 new\), then erased with the shell/);
 });
