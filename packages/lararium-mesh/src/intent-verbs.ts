@@ -54,6 +54,12 @@ export function fixtureIntentVerbs(rows: Readonly<Record<string, IntentVerbClass
   return registry;
 }
 export type IssueRefusal = "unclassified-verb" | "single-effect-unpinned" | "cosign-needs-asks";
+/** What a word whose id stands taken does next, by its verb's class: an idempotent verb takes the empty nonce alone, so another votum changes its arguments; any other verb names a fresh nonce. */
+export function intentIdTakenAdvice(classification: IntentVerbDeclaration | null): string {
+  return classification?.class === "idempotent"
+    ? "the same word names the same votum; change the arguments to word another"
+    : "the same word names the same votum; name a fresh nonce to word another";
+}
 /** What an intent's nonce and arguments owe its verb's class: an idempotent verb takes the empty nonce, and each fixed argument rides the word. */
 export function issueArgsCheck(classification: IntentVerbDeclaration, nonce: unknown, args: unknown): "idempotent-nonce" | "args-unfixed" | "args-draw-chance" | null {
   if (classification.class === "idempotent" && nonce !== "") return "idempotent-nonce";

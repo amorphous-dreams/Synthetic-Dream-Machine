@@ -5,7 +5,7 @@ import { intentId } from "../src/intent-entry.js";
 import { makeHandLineage } from "../src/hand-lineage.js";
 import { intentIdTakenBy, readIntentPlane } from "../src/intent-read.js";
 import { buildAnswer, buildAsks, buildCancel, buildClaim, buildIntent, buildOutcome, buildRelease, buildSupersede, buildTakeover, IntentRefusal } from "../src/intent-issue.js";
-import { faceIntentVerbs, fixtureIntentVerbs, WARD_COSIGN_VERBS } from "../src/intent-verbs.js";
+import { faceIntentVerbs, fixtureIntentVerbs, intentIdTakenAdvice, WARD_COSIGN_VERBS } from "../src/intent-verbs.js";
 import { cosignDigest } from "../src/ward-cosign.js";
 
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
@@ -115,5 +115,11 @@ describe("intent issue", () => {
     // A forged copy under the id (signed by a stranger, so the fold refuses it) takes nothing: it cannot block the true word.
     const forged = await signIntentEntry({ group: "face", entry: "intent", refs: [], issuer: atom.key, verb: "ddate", args: base.args, nonce: "", audience: { mode: "class", capability: "x" } }, stranger);
     expect(intentIdTakenBy(fold([forged]), first)).toBeNull();
+  });
+  test("EDGE D RED: an id taken under an idempotent verb advises changing the arguments, never a nonce it would refuse; CONTROL: a nonce-bearing verb advises a fresh nonce", () => {
+    const verbs = faceIntentVerbs();
+    expect(intentIdTakenAdvice(verbs.classOfVerb("ddate"))).toMatch(/change the arguments/);
+    expect(intentIdTakenAdvice(verbs.classOfVerb("ddate"))).not.toMatch(/nonce/);
+    expect(intentIdTakenAdvice(verbs.classOfVerb("face-join"))).toMatch(/fresh nonce/);
   });
 });

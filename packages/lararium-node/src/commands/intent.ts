@@ -7,7 +7,7 @@ import {
   buildAnswer, buildAsks, buildCancel, buildClaim, buildDelegation, buildDelegationRevoke, buildIntent, buildSupersede, buildTakeover,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceAtomKeyFromSeed, faceIntentVerbs,
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
-  readIntentEntry, intentIdTakenBy,
+  readIntentEntry, intentIdTakenBy, intentIdTakenAdvice,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
   WardRefused, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
@@ -321,7 +321,7 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
         // THE SAME WORD NAMES ONE VOTUM: a body already standing under this id (the word under another audience or bound)
         // refuses here, before a second body could void the first and orphan its outcome.
         { const taken = intentIdTakenBy(view(), entry);
-          if (taken) throw new IntentRefused(`intent-id-taken: votum ${intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }).slice(0, 12)}… stands under another audience or bound (${taken.slice(0, 12)}…); name a fresh nonce for another votum`); }
+          if (taken) throw new IntentRefused(`intent-id-taken: votum ${intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }).slice(0, 12)}… stands under another audience or bound (${taken.slice(0, 12)}…); ${intentIdTakenAdvice(verbs.classOfVerb(opts.verb))}`); }
         break;
       }
       case "ask":
