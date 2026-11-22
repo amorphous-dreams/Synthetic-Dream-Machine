@@ -18,7 +18,7 @@ import { mountCamera } from "./tw5-camera.js";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
 import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
 import { checkFilter, pageFilterAnswer, type FilterRow } from "./filter-page.js";
-import { canonFiltersText, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
+import { canonFiltersText, houseFilterWikiOf } from "./house-filters.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
@@ -448,9 +448,8 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         const filter = msg.subject ?? "";
         checkFilter(wiki, filter);
         // The port's filter ask runs under the house widget too: a house function reads from canon, never the wiki's globals.
-        refuseUnknownHouseOperators(filter);
-        const house = houseWidgetOf(wiki as never, ($tw as unknown as { fakeDocument: { createElement(tag: string): unknown } }).fakeDocument, await canonFiltersText(ctx.composite, wiki as never, async () => true));
-        const titles = wiki.filterTiddlers(filter, house as never).filter(title => visible(title, port));
+        const house = houseFilterWikiOf(wiki as never as Parameters<typeof houseFilterWikiOf>[0], ($tw as unknown as { fakeDocument: { createElement(tag: string): unknown } }).fakeDocument, await canonFiltersText(ctx.composite, wiki as never, async () => true)) as unknown as typeof wiki;
+        const titles = house.filterTiddlers(filter).filter(title => visible(title, port));
         const names = msg.fields;
         const rowOf = names === undefined ? undefined : (title: string): FilterRow => {
           const held = (wiki.getTiddler(title) as { getFieldStrings?: () => Record<string, string> } | undefined)?.getFieldStrings?.() ?? {};

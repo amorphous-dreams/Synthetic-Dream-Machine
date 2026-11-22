@@ -148,3 +148,26 @@ export function houseWidgetOf(wiki: HouseWiki, document: { createElement(tag: st
   }
   return deepest.makeFakeWidgetWithVariables({});
 }
+
+interface FilterWiki extends HouseWiki { filterTiddlers(filter: string, widget?: unknown, source?: unknown): string[] }
+
+/**
+ * A wiki whose every filter runs under the house widget, nested and indirect filters (`[subfilter{$:/y}]`) included, and refuses
+ * an unknown `lares.` operator wherever it stands. It inherits the wiki, with filter caches of its own, so it never changes the wiki's.
+ */
+export function houseFilterWikiOf<W extends FilterWiki>(wiki: W, document: { createElement(tag: string): unknown }, carrierText: string): W {
+  const view = Object.create(wiki) as W;
+  const slots = view as unknown as Record<string, unknown>;
+  slots["filterCache"] = Object.create(null);
+  slots["filterCacheCount"] = 0;
+  slots["caches"] = Object.create(null);
+  slots["globalCache"] = Object.create(null);
+  let widget: unknown;
+  const run = wiki.filterTiddlers as (this: unknown, filter: string, widget?: unknown, source?: unknown) => string[];
+  slots["filterTiddlers"] = (filter: string, given?: unknown, source?: unknown): string[] => {
+    refuseUnknownHouseOperators(filter);
+    if (given === undefined) { widget ??= houseWidgetOf(view, document, carrierText); given = widget; }
+    return run.call(view, filter, given, source);
+  };
+  return view;
+}
