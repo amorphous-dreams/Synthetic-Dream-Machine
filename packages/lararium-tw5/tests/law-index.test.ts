@@ -57,13 +57,14 @@ type Cap = VerbContext["cap"];
 const writer: Cap = async (access, bag) => (bag === DAEMON || access === "read" ? { ok: true } : { ok: false, reason: "no-grant" });
 const ctx = (): VerbContext => ({ daemon: {} as CompositeStore, invocation: { requestId: "r1" } as VerbContext["invocation"], cap: writer });
 
-/** The canon carrier of the house's functions, as the checkout carries it. */
-const CARRIER_TEXT = ((): string => {
+/** Load a declared canon carrier for execution in the test wiki. */
+const canonCarrier = (suffix: string): string => {
   const repo = new URL("../../..", import.meta.url).pathname;
-  const listed = carrierFiles(repo).find((f) => f.endsWith("api/filters.mem"));
-  if (!listed) throw new Error("no carrier ends api/filters.mem");
+  const listed = carrierFiles(repo).find((f) => f.endsWith(suffix));
+  if (!listed) throw new Error(`no carrier ends ${suffix}`);
   return readFileSync(listed.startsWith("/") ? listed : `${repo}${listed}`, "utf8");
-})();
+};
+const CARRIER_TEXT = canonCarrier("api/filters.mem");
 
 async function rig(seed = true, carrier: boolean | string = true) {
   const engine = await bootTestWiki({ tiddlers: [{ title: WORKING_POINTER, text: DAEMON }, ...CANON_ROWS] });
@@ -342,7 +343,7 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     const other = `${base}course/other.one.waits`;
     const cited = `${base}course/cited.one.waits`;
     const template = "lar:///ha.ka.ba/lares/api/course-board";
-    const source = readFileSync(new URL("../../../bags/lares/ha.ka.ba/lares/api/course-board.mem", import.meta.url), "utf8");
+    const source = canonCarrier("api/course-board.mem");
     await r.oracle.put({ tiddler: { title: template, text: source, type: "text/memetic-wikitext+tiddlywiki" } }, { kind: "boot" } as never);
     r.engine.wiki.addTiddler({ title: template, text: source, type: "text/memetic-wikitext+tiddlywiki", "$origin-bag": ORACLE_BAG });
     r.write(item, { tags: "stage/course", question: "What comes next?", answer: "build" });
@@ -359,7 +360,7 @@ describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}
     expect(columns).toHaveLength(3);
     for (const [i, expected] of [[0, [item]], [1, [ready, cited]], [2, [ready]]] as const) {
       for (const title of [item, ready, cited]) {
-        expect(columns[i]!.includes(title), `${title} in column ${i}`).toBe(expected.includes(title));
+        expect(columns[i]!.includes(title), `${title} in column ${i}`).toBe((expected as readonly string[]).includes(title));
       }
     }
   });
