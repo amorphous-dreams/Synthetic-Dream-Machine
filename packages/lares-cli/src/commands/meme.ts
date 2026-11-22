@@ -2,7 +2,7 @@
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
  *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
- *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> | --replace <file>) --base <hash>   (the public door: `tiddler put --meme --slot … --append <file> | --text|--file`)
+ *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> [--base <hash>] | --replace <file> --base <hash>)   (the public door: `tiddler put --meme --slot … --append <file> | --text|--file`)
  *                                                 — one slot's body through the put's own gate, resealed
  *   list (--recipe <slug> | --bag <slug>) [--tree]
  *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]

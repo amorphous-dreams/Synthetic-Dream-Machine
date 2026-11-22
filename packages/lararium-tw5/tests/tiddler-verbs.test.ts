@@ -580,6 +580,24 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddlerText("Room 4")).toBe("bed by the window");
   });
 
+  test("an append lands at the end with one joining newline, leads with its has line, and refuses a base, a text, a field patch or a missing title", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    await expect(put({ ...A, title: "Ledger", append: "one" }, ctx())).rejects.toMatchObject({ reason: "append-target-missing" });
+    expect(r.engine.wiki.tiddlerExists("Ledger")).toBe(false);
+    expect(await put({ ...A, title: "Ledger", append: "one", create: true }, ctx())).toMatchObject({ decision: "put", created: true });
+    expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one");
+    const receipt = await put({ ...A, title: "Ledger", append: "two\n" }, ctx());
+    expect(String(receipt["has"])).toMatch(/^<<~ has name=`Ledger` params=`.*decision\/put hash\//);
+    expect(Object.keys(receipt)[0]).toBe("has");
+    await put({ ...A, title: "Ledger", append: "three" }, ctx());
+    expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one\ntwo\nthree");
+    for (const crossed of [{ text: "x" }, { base: String(receipt["hash"]) }, { fields: { kind: "x" } }]) {
+      await expect(put({ ...A, title: "Ledger", append: "four", ...crossed }, ctx())).rejects.toMatchObject({ reason: "append-alone" });
+    }
+    expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one\ntwo\nthree");
+  });
+
   test("concurrent appends retain both texts and a stale whole-text put refuses", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
@@ -592,6 +610,11 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       expect(receipts.map(x => x["decision"])).toEqual(["put", "put"]);
       const text = r.engine.wiki.getTiddlerText(title);
       expect(["start\nfirst\nsecond", "start\nsecond\nfirst"]).toContain(text);
+      // The order the record took: the receipt that names the standing hash landed last, and its words close the text.
+      const live = ((await get({ ...A, title }, ctx()))["tiddler"] as { hash: string }).hash;
+      const last = receipts.findIndex(x => x["hash"] === live);
+      expect(last).toBeGreaterThanOrEqual(0);
+      expect(text!.endsWith(["first", "second"][last]!)).toBe(true);
       expect(await put({ ...A, title, text: "replacement", base }, ctx())).toMatchObject({ decision: "conflict" });
       expect(r.engine.wiki.getTiddlerText(title)).toBe(text);
     }

@@ -386,7 +386,7 @@ route_cli() {
   # arguments while replacing only the consuming value, preserving every other byte of argv.
   stream_file=""
   if [ "${1:-}" = tiddler ] && [ "${2:-}" = put ]; then
-    stream_meme="" stream_slot="" stream_n=0 stream_kind="" stream_empty="" stream_want=""
+    stream_n=0 stream_kind="" stream_empty="" stream_want=""
     # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
     for stream_arg do
       if [ -n "$stream_want" ]; then
@@ -402,17 +402,15 @@ route_cli() {
       fi
       case "$stream_arg" in
         --) break ;;
-        --meme) stream_meme=yes ;;
-        --slot) stream_slot=yes stream_want=--slot ;;
-        --slot=*) stream_slot=yes ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--overwrite|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
     if [ -n "$stream_empty" ]; then printf 'lares-container: %s names no host file (an empty value)\n' "$stream_kind" >&2; return 2; fi
-    if [ "$stream_n" -eq 1 ] && { [ "$stream_kind" = --file ] || { [ -n "$stream_meme" ] && [ -n "$stream_slot" ]; }; }; then
+    # Every put streams its one named source: `--file` (the whole text) and `--append` (words at the end, on a record or a slot).
+    if [ "$stream_n" -eq 1 ]; then
       stream_count=$# stream_want="" stream_end="" stream_i=0
       while [ "$stream_i" -lt "$stream_count" ]; do
         stream_arg=$1; shift; stream_i=$((stream_i + 1))
@@ -433,7 +431,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--overwrite|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"

@@ -531,7 +531,29 @@ function receiptOfNonIngest(
  * Place one meme into a sink through the Confluence gate. Never throws on a bad meme — the receipt
  * carries the refusal; a sink verb that throws propagates.
  */
-export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
+export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
+  return inFamilyTurn(input.uri, () => placeMemeNow(input, sink));
+}
+
+/**
+ * ONE FAMILY WRITE AT A TIME, PER ROOT. A family write reads the carrier, checks the writer's base, vets, and lands its records
+ * one by one, with awaits between; two writes of one root left to interleave would each pass the base check on the same bytes
+ * and the later would land over the earlier. So every place and every removal of a root waits its turn behind the one before
+ * it in this process: the base check and the landing it guards run as one serialized step, and a write that read bytes the turn
+ * before it moved answers `conflict`. A turn that throws hands the root on all the same.
+ */
+const familyTurns = new Map<string, Promise<unknown>>();
+function inFamilyTurn<T>(uri: string, act: () => Promise<T>): Promise<T> {
+  const key = rootAddressOf(uri);
+  const before = familyTurns.get(key) ?? Promise.resolve();
+  const turn = before.then(act, act);
+  const settled = turn.catch(() => undefined);
+  familyTurns.set(key, settled);
+  void settled.then(() => { if (familyTurns.get(key) === settled) familyTurns.delete(key); });
+  return turn;
+}
+
+async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
   const { uri } = input;
   const hash = input.hash ?? defaultHash;
   const { view, decision, currentRenderHash } = await evaluate(input, sink);
@@ -599,8 +621,9 @@ export interface SlotPatchInput {
   readonly slot: string;
   readonly mode: "append" | "replace";
   readonly text: string;
-  /** The canonical hash the writer read; the patch reads against it and nothing else. */
-  readonly baseHash: string;
+  /** The canonical hash the writer read; the patch reads against it and nothing else. An append alone may name none: it then
+   *  composes over the carrier as it reads now, and the answer's `canonicalHash` names the base that composition stands on. */
+  readonly baseHash: string | null;
   readonly hash?: (text: string) => string;
 }
 
@@ -627,7 +650,7 @@ export async function patchSlotCarrier(input: SlotPatchInput, sink: Pick<MemeSin
   if (!group.includes(input.uri)) return { kind: "absent" };
   const reader = (map: ReadonlyMap<string, TiddlerFields>) => (title: string): TiddlerFields | undefined => map.get(title);
   const canonicalHash = hash(expandMemeRefs(reader(records), input.uri) ?? heldText(records.get(input.uri)));
-  if (input.baseHash !== canonicalHash) return { kind: "stale", canonicalHash };
+  if (input.baseHash === null ? input.mode !== "append" : input.baseHash !== canonicalHash) return { kind: "stale", canonicalHash };
   const title = `${rootAddressOf(input.uri)}${input.slot}`;
   const slot = records.get(title);
   if (!slot || !group.includes(title) || slot["$slot"] !== input.slot) return { kind: "slot-missing", canonicalHash };
@@ -668,10 +691,19 @@ export async function readMeme(
  * to match the standing render answers `conflict` and removes nothing. `absent` when no root stands under
  * the URI. The answer carries the `consequence` the removal read, so a caller sees what it left behind.
  */
-export async function removeMeme(
+export function removeMeme(
   input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
   sink: MemeSink,
-): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; retracted?: readonly string[]; canonicalHash?: string; consequence?: Consequence }> {
+): Promise<RemoveMemeReceipt> {
+  return inFamilyTurn(input.uri, () => removeMemeNow(input, sink));
+}
+
+type RemoveMemeReceipt = { decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; retracted?: readonly string[]; canonicalHash?: string; consequence?: Consequence };
+
+async function removeMemeNow(
+  input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
+  sink: MemeSink,
+): Promise<RemoveMemeReceipt> {
   const hash = input.hash ?? defaultHash;
   const { group, text, view } = await currentRender(input.uri, sink);
   if (!group.includes(input.uri)) return { decision: "absent", tombstoned: [] };

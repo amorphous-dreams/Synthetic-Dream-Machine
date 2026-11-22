@@ -1213,6 +1213,8 @@ def build_mcp(coordinator: LaresCoordinator):
     _REMOVES = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False)
     # A cast writes a NEW record each call (a fresh throw, a fresh title): never idempotent, never destructive.
     _CASTS = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
+    # A put patches, and an `append` lands its words again on each call, so the put as a whole never reads idempotent.
+    _PUTS = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
 
     def _names(verb: str, key: str, value) -> "list | None":
         if value is None:
@@ -1648,19 +1650,25 @@ def build_mcp(coordinator: LaresCoordinator):
             raise uds.LaresVerbError(f"{HEARTH_ROSTER_VERB}: the vessel answered no roster")
         return out
 
-    @mcp.tool(annotations=_PATCHES)
+    @mcp.tool(annotations=_PUTS)
     def tiddler_put(title: str, recipe: "str | None" = None, fields: "dict | None" = None,
                     text: "str | None" = None, unset: "list | None" = None, tags_add: "str | list | None" = None,
                     tags_remove: "str | list | None" = None, base: "str | None" = None, create: bool = False,
                     meme: bool = False, bag: "str | None" = None, slot: "str | None" = None,
                     append: "str | None" = None) -> dict:
-        """PATCH ONE TIDDLER — `meme=True` places a whole carrier from `text`, or writes `slot` against `base` through exactly one of `text` (the slot's whole body) and `append` (a paragraph at its end); a bag or a recipe names the family seat. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`. House canon bags refuse `seat-canon-reach`; offer through `meme_offer` after a recipe copy-up. The receipt's `layer` names a personal placement where this face holds no writer's seat.
+        """PATCH ONE TIDDLER — `meme=True` places a whole carrier from `text`, or writes `slot` through exactly one of `text` (the slot's whole body, against `base`) and `append` (a paragraph at its end, no `base`: an append overwrites nothing, and the family reseals whole); a bag or a recipe names the family seat. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`. House canon bags refuse `seat-canon-reach`; offer through `meme_offer` after a recipe copy-up. The receipt's `layer` names a personal placement where this face holds no writer's seat.
         Set fields, unset fields, add and remove tags, and move the text ONLY where `text` names
         it — mirrors `lares tiddler put <title>`. `fields` maps field names to STRING values (a list rides as TiddlyWiki
         writes it: "one [[two words]]"); `unset` names fields to remove; `tags_add` / `tags_remove` take a list of tags
         (or one TiddlyWiki list string); every field the patch leaves unnamed stays as it stood, so a field or tag patch
         never touches the text and a text put keeps the fields. `base` carries the `hash` read from `tiddler_get`: a
-        record that moved past it lands nothing. `create=True` lands only where no tiddler stands. The write lands in the
+        record that moved past it lands nothing (a base guards honest reuse, never a lock). `create=True` lands only where no tiddler stands.
+        APPEND: `append` (without `meme`) lands its words at the end of the record's text with NO base, read and written in
+        one step on the live wiki, so two appends at once both land, in the order the record took them; a text that does
+        not end on a newline takes one before the words. It names its words alone (`text`, `base`, `fields`, `unset`
+        beside it refuse `append-alone`); a missing title refuses `append-target-missing` unless `create=True`, which then
+        lands the words as a new record. Not idempotent: each call appends again. The receipt leads with its `has` line
+        and names the new `hash`. The write lands in the
         wiki's WORKING layer (`wiki_status` names it), never canon: a write this seat aims at a house canon bag refuses
         `seat-canon-reach` (the seat edits canon through `tiddler_put(meme=True, recipe=...)` and `meme_offer`). Returns {recipe, title, decision, bag, created,
         changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it.
@@ -1678,10 +1686,12 @@ def build_mcp(coordinator: LaresCoordinator):
             if any(value is not None for value in (fields, unset, tags_add, tags_remove)) or create:
                 raise SeatArgumentRefused("tiddler_put: family text takes no record field or tag patch")
             if slot is not None or append is not None:
-                if not slot or (text is None) == (append is None) or not base:
-                    raise SeatArgumentRefused("tiddler_put: a slot write names slot, base and exactly one of text (the slot's whole body) or append")
+                if not slot or (text is None) == (append is None) or (text is not None and not base):
+                    raise SeatArgumentRefused("tiddler_put: a slot write names slot and exactly one of text (the slot's whole body, with base) or append (base optional)")
                 args: dict = {**_meme_container("tiddler_put", recipe, bag), "uri": title,
-                              "slot": slot, "base": base, "append" if append is not None else "replace": append if append is not None else text}
+                              "slot": slot, "append" if append is not None else "replace": append if append is not None else text}
+                if base:
+                    args["base"] = base
                 receipt = _meme_wire("meme-patch", args) or {}
                 if receipt.get("decision") in ("refuse", "conflict", "absent"):
                     raise uds.LaresVerbError(f"meme-patch {receipt.get('decision')}: {receipt.get('warnings') or receipt.get('reason') or title}")
@@ -1689,9 +1699,14 @@ def build_mcp(coordinator: LaresCoordinator):
             if text is None:
                 raise SeatArgumentRefused("tiddler_put: meme=True requires text")
             return meme_put(uri=title, text=text, recipe=recipe, bag=bag, base=base)
-        if bag is not None or slot is not None or append is not None:
+        if bag is not None or slot is not None:
             raise SeatArgumentRefused("tiddler_put: bag and slot editing require meme=True")
         args: dict = {**_wiki_container("tiddler_put", recipe), "title": title}
+        if append is not None:
+            crossed = [name for name, value in (("text", text), ("base", base), ("fields", fields), ("unset", unset)) if value is not None]
+            if crossed:
+                raise SeatArgumentRefused(f"tiddler_put: an append names its words alone; {', '.join(crossed)} rides as its own put")
+            args["append"] = append
         if fields is not None:
             if not isinstance(fields, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items()):
                 raise SeatArgumentRefused("tiddler_put: `fields` maps field names to string values "
@@ -1714,7 +1729,9 @@ def build_mcp(coordinator: LaresCoordinator):
         decision = receipt.get("decision")
         if decision in ("conflict", "exists"):
             said = [f"tiddler-put {decision}: nothing landed at {title}"]
-            if decision == "conflict":
+            if decision == "conflict" and append is not None:
+                said.append(f"the record kept moving under the append and reads hash {receipt.get('hash') or 'absent'} now: send the append again")
+            elif decision == "conflict":
                 said.append(f"the record reads hash {receipt.get('hash') or 'absent'} now: tiddler_get, merge, put with that base")
             else:
                 said.append("a tiddler already stands there (create lands only where none does)")

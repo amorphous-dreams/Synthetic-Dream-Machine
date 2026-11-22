@@ -101,14 +101,15 @@ def test_tiddler_tools_register_and_seat_hotl(daemon):
 
 def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
     # The schema's defaults read worst-case (destructive, open-world, non-idempotent, not read-only), so each tool
-    # states all four. Reads read-only; the put and the delete name what they move; no tool reaches the open world.
+    # states all four. Reads read-only; the put and the delete name what they move (an append makes the put non-idempotent);
+    # no tool reaches the open world.
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
     want = {
         "wiki_filter":    (True, False, True),
         "tiddler_get":    (True, False, True),
         "wiki_render":    (True, False, True),
         "wiki_status":    (True, False, True),
-        "tiddler_put":    (False, False, True),
+        "tiddler_put":    (False, False, False),  # an append lands again on each call
         "tiddler_delete": (False, True, True),
     }
     for name, (read_only, destructive, idempotent) in want.items():
@@ -276,7 +277,27 @@ def test_title_less_family_listing_refuses_the_flags_it_does_not_read(daemon):
     assert daemon.lines == []
 
 
-def test_slot_write_names_one_source_and_a_base(daemon):
+def test_an_append_rides_without_a_base_on_a_record_and_a_slot_and_names_its_words_alone(daemon):
+    t = _tools()
+    daemon.output = {"has": "<<~ has name=`Ledger` params=`recipe/default decision/put hash/sha256:2`>>", "recipe": "default", "title": "Ledger", "decision": "put", "hash": "sha256:2"}
+    assert t["tiddler_put"](title="Ledger", recipe="default", append="a dated note")["hash"] == "sha256:2"
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Ledger", "append": "a dated note"}}
+    assert t["tiddler_put"](title="Ledger", recipe="default", append="first", create=True)["decision"] == "put"
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Ledger", "append": "first", "create": True}}
+    before = len(daemon.lines)
+    for crossed in ({"text": "x"}, {"base": "sha256:1"}, {"fields": {"a": "b"}}, {"unset": ["a"]}):
+        with pytest.raises(ValueError, match="append names its words alone"):
+            t["tiddler_put"](title="Ledger", recipe="default", append="y", **crossed)
+    assert len(daemon.lines) == before
+    daemon.output = {"recipe": "default", "title": "Ledger", "decision": "conflict", "hash": "sha256:3"}
+    with pytest.raises(uds.LaresVerbError, match=r"kept moving under the append.*sha256:3"):
+        t["tiddler_put"](title="Ledger", recipe="default", append="y")
+    daemon.output = {"uri": "lar:///t/x", "slot": "#/a", "decision": "ingest", "landed": [], "warnings": []}
+    assert t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", slot="#/a", append="note")["decision"] == "ingest"
+    assert daemon.wire() == {"verb": "meme-patch", "args": {"recipe": "default", "uri": "lar:///t/x", "slot": "#/a", "append": "note"}}
+
+
+def test_slot_write_names_one_source_and_a_whole_body_write_names_a_base(daemon):
     t = _tools()
     for kwargs in ({"slot": "#/a", "base": "sha256:1"}, {"slot": "#/a", "text": "x", "append": "y", "base": "sha256:1"}, {"slot": "#/a", "text": "x"}):
         with pytest.raises(ValueError):

@@ -392,21 +392,16 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   $script:HostInputFile = $null
   $isPut = $argv.Count -ge 3 -and $argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put'
   if ($argv.Count -gt 0) {
-    $hasSlot = $false
-    $hasMeme = $false
     $alwaysValued = @('--fields', '--note', '--reason', '--text')
-    $boolean = @('accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'launch', 'list', 'meme', 'memory', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'writeback', 'yes')
+    $boolean = @('accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'launch', 'list', 'meme', 'memory', 'observe', 'orphans', 'over-fresher', 'overwrite', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
       if ($word -ceq '--') { break }
-      if ($word -ceq '--meme') { $hasMeme = $true; continue }
-      if ($word -clike '--slot=*') { $hasSlot = $true; continue }
       if ($word -cmatch '(?s)^--(file|append)=(.*)$') {
         $sources += ,@($i, $Matches[2], "--$($Matches[1])")
         continue
       }
-      if ($word -ceq '--slot') { $hasSlot = $true }
       if ($word -clike '--*' -and $word -cnotlike '--no-*' -and $word -cnotlike '*=*' -and $word.Substring(2) -cnotin $boolean) {
         if ($i + 1 -lt $argv.Count -and ($word -cin $alwaysValued -or $argv[$i + 1] -cnotlike '--*')) {
           if ($word -cin @('--file', '--append')) { $sources += ,@(($i + 1), $argv[$i + 1], $word) }
@@ -418,11 +413,12 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
       if ($source[1] -cne '-' -and $source[1].StartsWith('-')) { Die 'name a host file whose path starts with ./ when it begins with -' }
     }
     if ($isPut -and $sources.Count -gt 1) { Die 'name one text source: --file or --append, once' }
-    if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -cne '-' -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot)) -and $argv[$sources[0][0]] -cmatch '^--(file|append)=') {
+    if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -cne '-' -and $argv[$sources[0][0]] -cmatch '^--(file|append)=') {
       Die "SeparateSourceToken: use $($sources[0][2]) <path> as separate tokens"
     }
     if ($isPut -and $sources.Count -eq 1 -and $sources[0][1] -eq '') { Die "$($sources[0][2]) names no host file (an empty value)" }
-    if ($isPut -and $sources.Count -eq 1 -and ($sources[0][2] -eq '--file' -or ($hasMeme -and $hasSlot))) {
+    # Every put streams its one named source: `--file` (the whole text) and `--append` (words at the end, on a record or a slot).
+    if ($isPut -and $sources.Count -eq 1) {
       $source = $sources[0]
       if ($source[1] -ne '-') {
         # A relative path reads against the caller's directory, never .NET's own current directory.
