@@ -532,3 +532,19 @@ test("the menu digest follows sorted registered names and first lines", async ()
   assert.notEqual(menuDigest(a), menuDigest([{ ...a[0], description: "Read two." }, a[1]]));
   assert.notEqual(menuDigest(a), menuDigest([{ ...a[0], name: "other" }, a[1]]));
 });
+
+
+test("menu digest tracks full descriptions, schemas and annotations", async () => {
+  const { menuDigest } = await import("../.claude-plugin/hooks/lares-menu-read.mjs");
+  const tool = { name: "read", description: "Read.\nDetails.", inputSchema: { type: "object", properties: { a: { type: "string" } } }, annotations: { readOnlyHint: true } };
+  for (const change of [{ description: "Read.\nChanged." }, { inputSchema: { type: "object", properties: { a: { type: "number" } } } }, { annotations: { readOnlyHint: false } }]) assert.notEqual(menuDigest([tool]), menuDigest([{ ...tool, ...change }]));
+  assert.equal(menuDigest([tool]), menuDigest([{ ...tool, inputSchema: { properties: { a: { type: "string" } }, type: "object" } }]));
+});
+
+test("menu failures and timeouts name their cause", async () => {
+  for (const [menu, cause] of [[answered("", 127), /exited 127/], [hung([], "menu"), /no answer inside the wake's budget/], [answered("invalid"), /did not parse/]]) {
+    const result = await wake({ budgetMs: 30, run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), menu }) });
+    assert.match(result, /Lares tool menu: unread \(/);
+    assert.match(result, cause);
+  }
+});

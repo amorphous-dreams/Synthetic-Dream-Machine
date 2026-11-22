@@ -619,8 +619,16 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
     ...(seen.library ? [seen.library] : []),
     `Lares homes: ${homesLine}`,
   ];
-  if (menu && menu.code === 0) {
-    try { const { digest } = JSON.parse(menu.stdout); if (/^[0-9a-f]{12}$/.test(digest)) lines.push(`Lares tool menu: sha256:${digest}`); } catch { /* no menu answered */ }
+  if (menu !== null) {
+    let digest;
+    if (menu !== BUDGET && menu.code === 0) {
+      try { digest = JSON.parse(menu.stdout).digest; } catch { /* report the malformed answer below */ }
+    }
+    if (/^[0-9a-f]{12}$/.test(digest ?? "")) lines.push(`Lares tool menu: sha256:${digest}`);
+    else {
+      const cause = readFault(menu, "read") ?? (menu.code !== 0 ? `the read exited ${menu.code}` : "the read's answer did not parse (exit 0)");
+      lines.push(`Lares tool menu: unread (${String(cause).replace(/\s+/g, " ")})`);
+    }
   }
   if (state !== null) lines.push(stateLines(state));
   if (law !== null) lines.push(lawLines(law, lawPins));

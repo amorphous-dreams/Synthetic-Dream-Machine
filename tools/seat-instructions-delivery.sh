@@ -2,9 +2,8 @@
 # Hand-run only: prepare a disposable seat for an operator's fresh-session delivery experiment.
 # This script has no CI caller and never changes host configuration.
 set -euo pipefail
-scratch='/tmp/claude-1000/-home-joshu-Synthetic-Dream-Machine/5bbead2c-50c8-49fe-a4d1-0fd98e24591e/scratchpad/wave-steward/terra-A4'
 repo=$(cd "$(dirname "$0")/.." && pwd)
-house=$(mktemp -d "$scratch/seat-delivery.XXXXXXXX")
+house=$(mktemp -d "${TMPDIR:-/tmp}/seat-delivery.XXXXXXXX")
 nonce=$(python3 -c 'import secrets; print(secrets.token_hex(16))')
 mkdir -p "$house/seat"
 python3 - "$repo" "$house/seat/lares_mcp.py" "$nonce" <<'PY'
@@ -18,7 +17,10 @@ text = text.replace(needle, needle + f'    "\\nNONCE {nonce}\\n"\n', 1)
 pathlib.Path(target).write_text(text)
 PY
 printf 'Scratch LAR_ROOT: %s\nScratch seat: %s/seat/lares_mcp.py\n' "$house" "$house"
-printf '%s\n' 'Stand the scratch vessel first, then launch a fresh session with:'
+printf '%s\n' 'Stand the scratch vessel first:'
+printf 'node %q %q && node %q %q && LAR_ROOT=%q node %q vessel found --hearth --name seat-delivery --skip-build && LAR_ROOT=%q node %q vessel stand --init --skip-build\n' \
+  "$repo/tools/test-scratch-marker.mjs" "$house" "$repo/tools/seed-test-custody.mjs" "$house" "$house" "$repo/packages/lares-cli/bin/lares.mjs" "$house" "$repo/packages/lares-cli/bin/lares.mjs"
+printf '%s\n' 'Then launch a fresh session with:'
 python3 - "$repo" "$house" <<'PYCOMMAND'
 import json, pathlib, shlex, sys
 repo, house = sys.argv[1:]

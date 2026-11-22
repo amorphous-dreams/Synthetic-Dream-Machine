@@ -4,8 +4,10 @@ import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 
 export function menuDigest(tools) {
-  const rows = tools.map(({ name, description }) => [name, String(description ?? "").split(/\r?\n/, 1)[0]]);
-  rows.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  const canonical = (value) => Array.isArray(value) ? value.map(canonical) :
+    value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonical(value[key])])) : value;
+  const rows = tools.map(({ name, description, inputSchema, annotations }) => canonical({ name, description, inputSchema, annotations }));
+  rows.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
   return createHash("sha256").update(JSON.stringify(rows)).digest("hex").slice(0, 12);
 }
 
