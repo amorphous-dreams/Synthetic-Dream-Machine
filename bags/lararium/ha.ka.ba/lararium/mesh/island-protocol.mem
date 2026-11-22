@@ -4,14 +4,13 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-l-space       = "lararium"
-revision-note = "ea-breath law lands: breath message (phase + monotonic progress) added island→vessel; watchdogs re-arm on breath, judge frozen evidence by stall budget, silence alone times out; mkBreath factory"
-role          = "island message envelope schema: all vessel ↔ causal-island message types, the nine-clause Island Sovereignty Law, IslandGrants (typed ocap manifest capabilities), and envelope factories"
-source-file   = "packages/lararium-mesh/src/island-protocol.ts"
-title         = "lar:///ha.ka.ba/lararium/mesh/island-protocol"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lararium/mesh/island-protocol"
+cacheable   = true
+l-space     = "lararium"
+role        = "island message envelope schema: all vessel ↔ causal-island message types, the nine-clause Island Sovereignty Law, IslandGrants (typed ocap manifest capabilities), and envelope factories"
+source-file = "packages/lararium-mesh/src/island-protocol.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/island-protocol"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/island-protocol"
 ```
 
 <<~ ahu slot=`#/contract`>>
@@ -119,6 +118,6 @@ The manifest HANDS the island typed structural capabilities — each field arriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;eHcayRRSNiO9InOVG9ksE-8QojMqmfHNFPWrIuPz3UE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qytwyP2ehLiEbEh8VIEoICPafPS85Y0hby_V_2GPwcs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

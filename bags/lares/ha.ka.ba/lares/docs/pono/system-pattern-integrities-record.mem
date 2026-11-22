@@ -25,7 +25,7 @@ This docs record keeps the history behind <<~ loulou uri=`lar:///ha.ka.ba/lares/
 
 !! Moved text, verbatim
 
-* Law headers carried their dates inline: "FFZ disk projection law (2026-05-01):", "FFZ island law (2026-05-01):", "FFZ pentadic law (2026-05-06):". The api meme's #/rulings now holds each as a dated line.
+* Law headers carried their dates inline: "FFZ disk projection law (2026-05-01):", "FFZ island law (2026-05-01):", "FFZ pentadic law (2026-05-06):". The api meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/rulings`>> now holds each as a dated line.
 * The AUTHORITY sources line named `lares/lararium-research/PRINCIPLES.md`, a path the tree no longer holds.
 * The SYSTEM laws read: "These encode the design-time heuristics that governed the web3 refactor."
 * ISLAND_2_GENESIS_ROOT opened "@phase: S5" and GEN_4_QUINE_PROPERTY opened "@phase: S5 — proved Sprint 5.": the quine closure and the genesis root entered under the fifth sprint.
@@ -35,6 +35,6 @@ This docs record keeps the history behind <<~ loulou uri=`lar:///ha.ka.ba/lares/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4RIPoy7iUmzRxPQHfbGkvSWKDLsCd9eh0xxJpCGrPu0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zs40Qc0Kp3PP2vX76relqE1ytDsYvp6uDvHxecE7Z0M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

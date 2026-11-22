@@ -1,13 +1,22 @@
 {
+  // The token lives in VS Code's secret storage: the first start prompts once.
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "playwright-extension-token",
+      "description": "Playwright MCP extension token",
+      "password": true
+    }
+  ],
   "servers": {
-    // playwright — Chrome extension mode (requires PLAYWRIGHT_MCP_EXTENSION_TOKEN)
+    // playwright - Chrome extension mode
     "playwright": {
       "type": "stdio",
       "command": "npx",
       "args": ["@playwright/mcp@latest", "--extension"],
       "env": {
-        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "TobGnoZQCvsWHH07J_zxs0ADEoz5KJBRAbgfLDLdfT4"
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "${input:playwright-extension-token}"
       }
-    },
+    }
   }
 }

@@ -4,17 +4,16 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-hydrate       = true
-l-space       = "stable"
-namespace     = "&#x0950; &#x0901;"
-revision-note = "warm (mahana) tier CUT after adversarial+kupono+YIN research; two states (wela/anu) only"
-role          = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands"
-status-why    = "rides the residency substrate; the tier read stands with it"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
-title         = "lar:///ha.ka.ba/lararium/api/residency-tiers"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
+cacheable  = true
+hydrate    = true
+l-space    = "stable"
+namespace  = "&#x0950; &#x0901;"
+role       = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands; the warm (mahana) tier stands cut after adversarial, kupono and YIN research, so two states (wela/anu) only"
+status-why = "rides the residency substrate; the tier read stands with it"
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lararium/api/residency-tiers"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/api/residency-tiers"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -119,6 +118,8 @@ Pin/unpin gestures carry no verb name (the state change describes itself). `hoʻ
 
 The model holds two tiers (`wela` live / `anu` torn down). A third (warm / frozen) tier enters ONLY when BOTH hold: (a) a //measured// island resume-latency problem under real focus-rotation, AND (b) a definition that genuinely ''sheds memory'' — isolate evicted, handle-cache retained, resume re-instantiates the engine against still-warm handles and skips the `ea` handshake (the bfcache lineage done right). At that point adopt bfcache vocabulary (freeze / resume / evict), a freeze-disqualifier discipline (mid-replication may not freeze), and a second-chance reference bit on the sweeper (as built, the sweeper trims by pure age).
 
+''The warm (mahana) tier stands cut after adversarial, kupono and YIN research'': the model holds two states, wela and anu, only.
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/edges`>>
@@ -144,6 +145,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Q_oZ4dqRTrAF8V7UNyC5lkwGD6L4JV9PGwFA7x0Joz0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PjTDJedaC74Nj_XXZbykBzcxUoqIXegUVmEtufejyvQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

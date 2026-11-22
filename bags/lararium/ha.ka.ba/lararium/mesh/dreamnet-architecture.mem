@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-role      = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Re-trued 2026-09-20 against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
+role      = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Trued against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
 title     = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
@@ -724,6 +724,6 @@ The carriage-client fetch item stays OWED (measured 2026-10-22). The vessel-side
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;R6MyZGXqCmfmQMhKZvf0Bj0nYTAz2e7VCMI-q3qxNWI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8akObbSSZUemRnAvwStm2VdAGEnRAHjb5V3T44__EAs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
