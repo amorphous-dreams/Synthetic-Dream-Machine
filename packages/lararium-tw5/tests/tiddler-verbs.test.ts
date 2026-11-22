@@ -311,6 +311,27 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await get({ ...A, title: "Handle2", fields: ["textCid"] }, ctx())).toMatchObject({ grain: { applied: "handle" } });
   });
 
+  test("RED L3: a recomposition that leaves out slot children this face may not read says so (`withheld`), never a silent short carrier", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const SECRET = "lar:///ha.ka.ba/bags/secret";
+    const held = r.engine.wiki.getTiddler(`${MEME}#/b`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...held, "$origin-bag": SECRET });
+    const partial: Cap = async (access, bag) => (bag === SECRET ? { ok: false, reason: "no-grant" } : access === "read" || bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: MEME, meme: true }, ctx(partial));
+    expect(got).toMatchObject({ withheld: 1, note: expect.stringMatching(/1 slot record.*withheld/) });
+    expect((got["meme"] as { text: string }).text).not.toContain("body of b");
+  });
+
+  test("RED L6: resolved verifies a tagged or uppercase CID through the house verify", async () => {
+    const r = await rig();
+    const body = new TextEncoder().encode("tagged body");
+    const hex = sha256HexBytesSync(body);
+    r.engine.setTiddler({ title: "Tagged", _is_skinny: "yes", textCid: `sha256:${hex.toUpperCase()}`, type: "text/plain" });
+    const get = makeTiddlerGetReactor({ ...r.opts, resolveByCid: async () => body });
+    expect(await get({ ...A, title: "Tagged", grain: "resolved" }, ctx())).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "tagged body" } } });
+  });
+
   test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
     const r = await rig();
     r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
@@ -366,10 +387,12 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const get = makeTiddlerGetReactor(r.opts);
     const slot = await get({ ...A, title: `${MEME}#/b`, meme: true }, ctx());
     expect(slot).toMatchObject({ lens: "meme", title: MEME, grain: { applied: "slot" }, meme: { uri: MEME, slot: "#/b" } });
-    expect((slot["meme"] as { text: string }).text).toMatch(/^<<~ ahu slot=`#\/b`>>[\s\S]*body of b[\s\S]*<<~\/ahu>>\n$/);
-    expect((slot["meme"] as { text: string }).text).not.toContain("body of a");
+    // L2: a slot's span rides `slotText`, a name no JSON reader mistakes for the whole carrier (`text`).
+    expect((slot["meme"] as { text?: string }).text).toBeUndefined();
+    expect((slot["meme"] as { slotText: string }).slotText).toMatch(/^<<~ ahu slot=`#\/b`>>[\s\S]*body of b[\s\S]*<<~\/ahu>>\n$/);
+    expect((slot["meme"] as { slotText: string }).slotText).not.toContain("body of a");
     const named = await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx());
-    expect((named["meme"] as { text: string }).text).toContain("body of a");
+    expect((named["meme"] as { slotText: string }).slotText).toContain("body of a");
     await expect(get({ ...A, title: MEME, meme: true, slot: "#/none" }, ctx())).rejects.toMatchObject({ reason: "slot-missing" });
     const plain = await get({ ...A, title: "Note 02", meme: true }, ctx());
     expect(plain).toMatchObject({ lens: "record", note: expect.stringMatching(/holds no meme/), tiddler: { fields: { text: "see [[Note 01]] and note 2" } } });

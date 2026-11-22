@@ -1262,14 +1262,14 @@ def build_mcp(coordinator: LaresCoordinator):
         TWO AXES, KEPT APART. The LENS: the record by default, {recipe|bag, title, lens: "record", tiddler: {fields, hash,
         textHash, bag, position, family?, omitted?}} (`tiddler` null where none stands; hand `hash` to `tiddler_put` /
         `tiddler_delete` as `base`); `meme=True` recomposes the root and its slot children into ONE carrier sealed by its
-        bcc, {title, lens: "meme", meme: {uri, text?, canonicalHash, bytes, slots, slot?, page?}} (hand `canonicalHash` to a
+        bcc, {title, lens: "meme", meme: {uri, text? | slotText?, canonicalHash, bytes, slots, slot?, page?}, withheld?} (hand `canonicalHash` to a
         meme write as `base`); a slot child's title recomposes from its root and points at the slot; a record that holds no
         meme answers the record with a `note` saying so. The GRAIN (`grain`, one of skinny · fat · handle · resolved · slot ·
         whole; an unknown grain refuses `grain-unknown`): none named, a record within one page (65536 bytes) answers fat and a
         longer one skinny (the text left home), a pointer its handle, a blob skinny; a meme within a page answers its whole
         carrier and a longer one its has-stack. `skinny` leaves the text home; `fat` carries it; `handle` names a pointer's
         body; `resolved` reads it from the local CAS by CID and verifies it (a web2 `_canonical_uri` stays named, never
-        fetched); `slot` (with `slot="#/name"`) answers one slot's span; `whole` reads the whole at the lens's grain (a record fat, a pointer resolved), and on a meme the whole carrier one page at a time,
+        fetched); `slot` (with `slot="#/name"`) answers one slot's span at `meme.slotText` (never `text`, the whole carrier's field); `whole` reads the whole at the lens's grain (a record fat, a pointer resolved), and on a meme the whole carrier one page at a time,
         each page cut on a slot boundary: hand `next.after` back as `after` until `next` reads null. `fields=[…]` answers the
         named fields alone; `max_bytes` caps a record answer (the largest fields leave first and `omitted` names them). AN
         ANSWER THAT LEFT THE TEXT HOME hands a card's base (`skinny:sha256-…`): a field patch takes it, a text write refuses

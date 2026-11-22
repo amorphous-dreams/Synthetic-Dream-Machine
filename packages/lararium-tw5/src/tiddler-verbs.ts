@@ -67,7 +67,7 @@
  */
 
 import {
-  NoWorkingLayerRefusal, VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -583,7 +583,7 @@ async function recordRead(engine: Engine, held: Record<string, string>, title: s
       if (cid === null) return done(held, "handle", "the pointer names no CID to resolve", null);
       const bytes = cas ? await cas(cid) : null;
       if (!bytes) return done(held, "handle", cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to resolve from", null);
-      if (sha256HexBytesSync(bytes) !== cid) return done(held, "handle", `the bytes the local CAS holds for ${cid} hash otherwise: refused, never spliced`, null);
+      if (!verifyCidBytes(bytes, cid)) return done(held, "handle", `the bytes the local CAS holds for ${cid} hash otherwise: refused, never spliced`, null);
       const text = isBlob(engine, held) ? base64Of(bytes) : new TextDecoder().decode(bytes);
       return done({ ...held, text }, "resolved", `the body resolved from the local CAS by CID ${cid}, verified`, null);
     }
@@ -626,6 +626,7 @@ function recordAnswer(from: Provenance & { readonly answered: Record<string, unk
 async function memeAnswer(
   engine: Engine, sink: Pick<MemeSink, "titles" | "read">, from: Provenance & { readonly answered: Record<string, unknown> }, named: string,
   args: Readonly<Record<string, unknown>>, asked: ReadGrain | null, cas: CasPort, placeOfTitle: (title: string, fields: Record<string, string>) => { position: TiddlerPosition; family?: string | null; orphan?: boolean },
+  withheld = 0,
 ): Promise<Record<string, unknown>> {
   const slotArg = optionalStringArg(args, "slot");
   const root = rootAddressOf(named);
@@ -660,15 +661,19 @@ async function memeAnswer(
   // THE COMPOSITION READING rides a whole carrier answered in one: the join of a root and its slots is where a two-headed carrier
   // comes into being, so the read names its faults (report, never refuse; `child-grade-decision.mem` #/measured rows 11, 13).
   const shape = read.text !== undefined && !read.page && read.grain.applied === "whole" ? readCarrierShape(read.text) : null;
+  // A SLOT'S SPAN RIDES `slotText`, a name no JSON reader mistakes for the whole carrier; the whole (or a page of it) rides `text`.
+  const carried = read.text === undefined ? {} : read.grain.applied === "slot" ? { slotText: read.text } : { text: read.text };
   return {
     has: lines.join("\n"),
     ...from.answered, title: root, lens: "meme",
     meme: {
-      uri: root, ...(read.text !== undefined ? { text: read.text } : {}), canonicalHash: base, bytes: read.bytes,
+      uri: root, ...carried, canonicalHash: base, bytes: read.bytes,
       slots: read.slots, ...(slot ? { slot } : {}), ...(read.page ? { page: read.page } : {}),
     },
     grain: read.grain, next: read.next,
     ...(shape && shape.faults.length > 0 ? { shape: { check: shape.marks.check, faults: shape.faults } } : {}),
+    // THE RECOMPOSITION NAMES WHAT IT LEFT OUT: slot records this face may not read never enter the carrier, and the answer says so.
+    ...(withheld > 0 ? { withheld, note: `${withheld} slot record${withheld === 1 ? "" : "s"} of this meme ${withheld === 1 ? "rests" : "rest"} in a layer this face may not read: withheld from the carrier, which reads short of them` } : {}),
   };
 }
 
@@ -745,7 +750,9 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
       const bag = top ? readRecord(top).bag : null;
       if (top && !(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
       const sink = { titles: () => view.allTitles(), read: (t: string) => (view.getTiddler(t) as { fields?: TiddlerFields } | undefined)?.fields };
-      return memeAnswer(engine, sink, { recipe: anchor.recipe, layer: bag, answered }, title, args, asked, opts.resolveByCid, placeIn);
+      const prefix = `${rootAddressOf(title)}#`;
+      const withheld = wiki.allTitles().filter((t) => t.startsWith(prefix) && !staysHome(t) && !view.tiddlerExists(t)).length;
+      return memeAnswer(engine, sink, { recipe: anchor.recipe, layer: bag, answered }, title, args, asked, opts.resolveByCid, placeIn, withheld);
     }
     const tiddler = wiki.getTiddler(title);
     if (!tiddler) return { ...answered, title, tiddler: null };

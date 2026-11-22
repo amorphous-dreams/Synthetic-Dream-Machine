@@ -104,7 +104,7 @@ async function putText(args: ParsedArgs): Promise<string | null> {
 }
 
 interface GotTiddler { fields: Record<string, string>; hash: string; textHash: string | null; bag: string | null; position: string; family?: string; omitted?: string[] }
-interface GotMeme { uri: string; text?: string; canonicalHash: string; bytes: number; slots: Array<{ slot: string; bytes: number; first: string | null }>; slot?: string; page?: { page: number; pages: number } }
+interface GotMeme { uri: string; text?: string; slotText?: string; canonicalHash: string; bytes: number; slots: Array<{ slot: string; bytes: number; first: string | null }>; slot?: string; page?: { page: number; pages: number } }
 interface GotGrain { asked: string | null; applied: string; why: string }
 interface GotNext { grain: string; after?: string }
 
@@ -127,6 +127,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
   for (;;) {
     const meme = ran.output["meme"] as GotMeme | undefined;
     if (typeof meme?.text === "string") parts.push(meme.text);
+    else if (typeof meme?.slotText === "string") parts.push(meme.slotText);
     const after = (ran.output["next"] as GotNext | null | undefined)?.after ?? null;
     if (!lens || args.flags["all"] !== true || !after) break;
     const step = await runDoor(args, "tiddler get", { verb: plan.verb, args: { ...plan.args, grain: "whole", after } });
@@ -170,7 +171,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
     ok: true, requestId: ran.requestId, data,
     human: () => {
       if (meme) {
-        if (typeof meme.text === "string") {
+        if (typeof meme.text === "string" || typeof meme.slotText === "string") {
           stdout.write(parts.join(""));
           console.error(has.split("\n")[0]);
         } else {
@@ -179,7 +180,7 @@ async function tiddlerGet(given: ParsedArgs): Promise<number> {
         console.error(`base: ${meme.canonicalHash}`);
         console.error(`size: ${meme.bytes} bytes`);
         if (grain) console.error(`grain: ${grain.applied} (${grain.why})`);
-        if (typeof meme.text !== "string") console.error("the carrier runs past one page: stdout carries its has-stack; --all reads the whole carrier, paged on slot boundaries");
+        if (typeof meme.text !== "string" && typeof meme.slotText !== "string") console.error("the carrier runs past one page: stdout carries its has-stack; --all reads the whole carrier, paged on slot boundaries");
         else if (meme.page && !followed) {
           const after = (output["next"] as GotNext | null | undefined)?.after;
           if (after) console.error(`page ${meme.page.page} of ${meme.page.pages}: read the next with --after ${after} (or --all for the whole carrier)`);
