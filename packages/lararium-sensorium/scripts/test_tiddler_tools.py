@@ -101,7 +101,7 @@ def test_tiddler_tools_register_and_seat_hotl(daemon):
 
 def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
     # The schema's defaults read worst-case (destructive, open-world, non-idempotent, not read-only), so each tool
-    # states all four. Reads read-only; the put and the delete name what they move (an append makes the put non-idempotent);
+    # states all four. Reads read-only; the put and the delete name what they move (a whole-text put destroys, an append repeats);
     # no tool reaches the open world.
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
     want = {
@@ -109,7 +109,7 @@ def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
         "tiddler_get":    (True, False, True),
         "wiki_render":    (True, False, True),
         "wiki_status":    (True, False, True),
-        "tiddler_put":    (False, False, False),  # an append lands again on each call
+        "tiddler_put":    (False, True, False),   # `text=` replaces the whole text; an append lands again on each call
         "tiddler_delete": (False, True, True),
     }
     for name, (read_only, destructive, idempotent) in want.items():

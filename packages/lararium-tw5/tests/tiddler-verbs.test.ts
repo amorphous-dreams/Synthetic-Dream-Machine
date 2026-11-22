@@ -590,8 +590,9 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const receipt = await put({ ...A, title: "Ledger", append: "two\n" }, ctx());
     expect(String(receipt["has"])).toMatch(/^<<~ has name=`Ledger` params=`.*decision\/put hash\//);
     expect(Object.keys(receipt)[0]).toBe("has");
-    await put({ ...A, title: "Ledger", append: "three" }, ctx());
+    await put({ ...A, title: "Ledger", append: "three", tagsAdd: "dated" }, ctx());
     expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one\ntwo\nthree");
+    expect(r.engine.wiki.getTiddler("Ledger")!.fields["tags"]).toEqual(["dated"]);
     for (const crossed of [{ text: "x" }, { base: String(receipt["hash"]) }, { fields: { kind: "x" } }]) {
       await expect(put({ ...A, title: "Ledger", append: "four", ...crossed }, ctx())).rejects.toMatchObject({ reason: "append-alone" });
     }
@@ -716,6 +717,39 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(spends).toEqual(["default|Lei startup|seat"]);
     await expect(put({ ...A, title: "Other startup", tagsAdd: "$:/tags/StartupAction" }, seat)).rejects.toMatchObject({ reason: "seat-startup-offer" });
     expect(r.engine.wiki.getTiddler("Other startup")).toBeUndefined();
+  });
+
+  test("racing seat appends to an executable record spend one exec-lei return each and both land", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    let left = 2;
+    const execLei = { spend: async () => {
+      if (left === 0) throw new SwarmRefused("swarm-lei-spent", "the lei holds no return");
+      return { lei: "c".repeat(64), n: left-- };
+    } };
+    await put({ ...A, title: "Macro row", create: true, text: "\\define a() a", tagsAdd: "$:/tags/Macro" }, ctx());
+    const seat: VerbContext = { ...ctx(), asker: "seat", execLei };
+    const receipts = await Promise.all(["\\define b() b", "\\define c() c"].map((append) => put({ ...A, title: "Macro row", append }, seat)));
+    expect(receipts.map((x) => x["decision"])).toEqual(["put", "put"]);
+    expect(left).toBe(0);
+    const text = r.engine.wiki.getTiddlerText("Macro row")!;
+    for (const words of ["define b()", "define c()"]) expect(text).toContain(words);
+  });
+
+  test("a based whole-text put racing an append through admission refuses stale or lands beneath it, and the append survives", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    for (let i = 0; i < 20; i++) {
+      const title = `Based race ${i}`;
+      await put({ ...A, title, create: true, text: "start" }, ctx());
+      const base = ((await get({ ...A, title }, ctx()))["tiddler"] as { hash: string }).hash;
+      const [appended, based] = await Promise.all([put({ ...A, title, append: "kept" }, ctx()), put({ ...A, title, text: "replacement", base }, ctx())]);
+      expect(appended["decision"]).toBe("put");
+      const text = r.engine.wiki.getTiddlerText(title);
+      if (based["decision"] === "put") expect(text).toBe("replacement\nkept");
+      else { expect(based["decision"]).toBe("conflict"); expect(text).toBe("start\nkept"); }
+    }
   });
 
   test("★ slot-level-put witness: a tiddler put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {

@@ -1213,8 +1213,9 @@ def build_mcp(coordinator: LaresCoordinator):
     _REMOVES = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False)
     # A cast writes a NEW record each call (a fresh throw, a fresh title): never idempotent, never destructive.
     _CASTS = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
-    # A put patches, and an `append` lands its words again on each call, so the put as a whole never reads idempotent.
-    _PUTS = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
+    # A put patches: `text=` replaces the whole text (destructive), and an `append` lands its words again on each call (never
+    # idempotent). One tool carries both, so its hints hold for the worst of them.
+    _PUTS = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=False, openWorldHint=False)
 
     def _names(verb: str, key: str, value) -> "list | None":
         if value is None:
@@ -1664,9 +1665,10 @@ def build_mcp(coordinator: LaresCoordinator):
         never touches the text and a text put keeps the fields. `base` carries the `hash` read from `tiddler_get`: a
         record that moved past it lands nothing (a base guards honest reuse, never a lock). `create=True` lands only where no tiddler stands.
         APPEND: `append` (without `meme`) lands its words at the end of the record's text with NO base, read and written in
-        one step on the live wiki, so two appends at once both land, in the order the record took them; a text that does
-        not end on a newline takes one before the words. It names its words alone (`text`, `base`, `fields`, `unset`
-        beside it refuse `append-alone`); a missing title refuses `append-target-missing` unless `create=True`, which then
+        one step on the live wiki, so two appends through this door at once both land, in the order the record took them
+        (a writer that reaches the store directly merges per field, last writer winning); a text that does not end on a
+        newline takes one before the words. `tags_add`, `tags_remove` and `create` ride beside it; it names its words
+        alone otherwise (`text`, `base`, `fields`, `unset` beside it refuse `append-alone`); a missing title refuses `append-target-missing` unless `create=True`, which then
         lands the words as a new record. Not idempotent: each call appends again. The receipt leads with its `has` line
         and names the new `hash`. The write lands in the
         wiki's WORKING layer (`wiki_status` names it), never canon: a write this seat aims at a house canon bag refuses

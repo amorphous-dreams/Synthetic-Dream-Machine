@@ -67,7 +67,7 @@
  */
 
 import {
-  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, executableClassOf, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -944,12 +944,14 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
     }
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
 
-    // THE LANDING, AS A COMPARE-AND-SWAP ON THE LIVE WIKI. The wiki stands as this vessel's one serialization point: its
-    // `addTiddler` runs synchronously on the event loop, and the shore's drain carries each title's wiki state to the store in
-    // the order the wiki took it. A round reads the record, decides, awaits admission, then re-reads it; only a record that
+    // THE LANDING, AS A COMPARE-AND-SWAP ON THE LIVE WIKI. The wiki serializes every writer that passes through it in this
+    // process: its `addTiddler` runs synchronously on the event loop, and the shore's drain carries each title's wiki state to
+    // the store in the order the wiki took it. A writer that reaches the store directly (a meme door sink, INGEST, a face lane,
+    // a peer's wave) meets the drain's per-field merge instead, where two writes of one field resolve last-writer-wins. A round reads the record, decides, awaits admission, then re-reads it; only a record that
     // still hashes as it read lands, in the same synchronous step as that re-read, so no other hand slips between the read
     // and the write. A record that moved meanwhile sends the round back to read again (an append re-composes over the newer
     // text; a base the moved record fails to match answers `conflict`), bounded, and a round that never settles answers `conflict`.
+    let admitted: string | null = null;
     for (let round = 0; ; round++) {
       const standing = wiki.getTiddler(title);
       const held = standing ? readRecord(standing) : null;
@@ -1003,8 +1005,14 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
 
       const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
       if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
-      // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei.
-      await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
+      // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei. A call
+      // spends once: a round the swap sent back re-admits only where the record it would land reads as another executable class.
+      const executable = executableClassOf(next);
+      const admits = executable === null ? null : `${executable.class}\u0000${executable.mark}`;
+      if (round === 0 || admits !== admitted) {
+        await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
+        admitted = admits;
+      }
       // THE SWAP: from this re-read to `addTiddler` no await stands, so nothing else runs between them.
       const now = wiki.getTiddler(title);
       if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) continue;

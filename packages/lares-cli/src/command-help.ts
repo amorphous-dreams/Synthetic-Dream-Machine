@@ -758,7 +758,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "pointer resolved from the local CAS by CID (a web2 `_canonical_uri` stays named, never fetched), a meme's carrier " +
       "paged on slot boundaries; `--slot` one slot. `put` PATCHES: it sets and unsets " +
       "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it (`--append` lands words at " +
-      "the end with no base, read and written in one step on the live wiki, so two appends at once both land), landing in the " +
+      "the end with no base, read and written in one step on the live wiki, so two appends through this door at once both land; " +
+      "a writer that reaches the store directly merges per field, last writer winning), landing in the " +
       "wiki's working layer (this face's own personal layer of a wiki where it holds no writer's seat); `delete` removes a plain tiddler plainly: the record leaves its layer and no tombstone " +
       "rises; a meme root or slot answers the consequence the delete would land and refuses by name " +
       "(`tiddler-delete-in-a-family`) unless `--family` names the family act, which lands the root and its slots as " +
@@ -779,7 +780,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares tiddler get lar:///ha.ka.ba/lares/docs/x --recipe lares --meme --all > x.mem   # the whole carrier, paged on slot boundaries",
       "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
       "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
-      "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending at once both land",
+      "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending through the door at once both land",
       "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --meme --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
       "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
       "lares tiddler delete lar:///t/x --recipe default --family              # a meme root and its slots, one change",
@@ -805,7 +806,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--meme               get: carrier or title-less family listing; put: family text or slot patch; delete: family removal",
       "--tree               (title-less get --meme) nest slots under each listed root",
-      "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; refuses beside --text, --file, --base, --fields, --unset   ·   (put --meme --slot) a paragraph at the end of the slot's body, the family resealed whole",
+      "--append <path | -> (put) words from a host file or stdin land at the end of the standing text, no base needed (an append overwrites nothing): a text that does not end on a newline takes one before them; a missing title refuses unless --create; --tag-add, --tag-remove and --create ride beside it; refuses beside --text, --file, --base, --fields, --unset   ·   (put --meme --slot) a paragraph at the end of the slot's body, the family resealed whole",
       "--skinny             (get) every field, the text left home (the card)",
       "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
       "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",

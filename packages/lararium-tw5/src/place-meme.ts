@@ -216,6 +216,8 @@ export interface PlaceMemeInput {
   /** True where no person stands behind the placement (a watcher's wave): with no base it never adopts
    *  over records that say something else, and answers `conflict`, `no-base` (`ingest-gate`, rule 4½). */
   readonly unattended?: boolean;
+  /** How long this write waits on the root's turn before it refuses `family-turn-held`; defaults to `FAMILY_TURN_WAIT_MS`. */
+  readonly turnWaitMs?: number;
   /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
   readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
 }
@@ -532,22 +534,38 @@ function receiptOfNonIngest(
  * carries the refusal; a sink verb that throws propagates.
  */
 export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
-  return inFamilyTurn(input.uri, () => placeMemeNow(input, sink));
+  return inFamilyTurn(input.uri, () => placeMemeNow(input, sink), input.turnWaitMs);
 }
 
 /**
- * ONE FAMILY WRITE AT A TIME, PER ROOT. A family write reads the carrier, checks the writer's base, vets, and lands its records
- * one by one, with awaits between; two writes of one root left to interleave would each pass the base check on the same bytes
- * and the later would land over the earlier. So every place and every removal of a root waits its turn behind the one before
- * it in this process: the base check and the landing it guards run as one serialized step, and a write that read bytes the turn
- * before it moved answers `conflict`. A turn that throws hands the root on all the same.
+ * ONE FAMILY WRITE AT A TIME, PER ROOT, PER DOOR-FAMILY IN ONE PROCESS. A family write reads the carrier, checks the writer's
+ * base, vets, and lands its records one by one, with awaits between; two writes of one root left to interleave would each pass
+ * the base check on the same bytes and the later would land over the earlier. So every place and every removal of a root that
+ * runs through this module instance waits its turn behind the one before it: the base check and the landing it guards run as
+ * one serialized step, and a write that read bytes the turn before it moved answers `conflict`. The turns live in this module
+ * instance: the plugin bundle and the host's meme verbs each keep their own, and a writer that reaches the store directly meets
+ * the shore drain's per-field merge, where two writes of one field resolve last-writer-wins. A turn that throws hands the root on
+ * all the same; a write that waits past its bound on a turn that never settles refuses `family-turn-held` and moves nothing,
+ * and the root stays held behind that turn, never skipping it.
  */
-const familyTurns = new Map<string, Promise<unknown>>();
-function inFamilyTurn<T>(uri: string, act: () => Promise<T>): Promise<T> {
+export const FAMILY_TURN_WAIT_MS = 30_000;
+const FAMILY_TURN_HELD = "family-turn-held";
+const familyTurns = new Map<string, Promise<void>>();
+function inFamilyTurn<T>(uri: string, act: () => Promise<T>, waitMs: number = FAMILY_TURN_WAIT_MS): Promise<T> {
   const key = rootAddressOf(uri);
   const before = familyTurns.get(key) ?? Promise.resolve();
-  const turn = before.then(act, act);
-  const settled = turn.catch(() => undefined);
+  const turn = (async () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const bound = new Promise<false>((resolve) => { timer = setTimeout(() => resolve(false), waitMs); });
+    const ready = await Promise.race([before.then(() => true as const), bound]);
+    clearTimeout(timer);
+    if (!ready) {
+      // A refusal by name, in the shape every door reads (`isVerbRefusal`: the name and a string reason).
+      throw Object.assign(new Error(`${FAMILY_TURN_HELD}: another write of ${key} has held its turn past ${waitMs} ms; nothing moved. Try again once it settles.`), { name: "VerbRefusal", reason: FAMILY_TURN_HELD });
+    }
+    return act();
+  })();
+  const settled = Promise.all([before, turn.catch(() => undefined)]).then(() => undefined);
   familyTurns.set(key, settled);
   void settled.then(() => { if (familyTurns.get(key) === settled) familyTurns.delete(key); });
   return turn;
