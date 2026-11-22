@@ -472,6 +472,10 @@ test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the main
       .toMatchObject({ status: "error", refusal: { reason: "face-closing" } });
   }
   expect(v.placed.map((p) => p.requestId)).toEqual(["one-before"]);
+  // ONLY A WRITE ENTERS A DRAIN: a one-shot read (a chore-free verb) keeps its path while the mount drains.
+  expect(await v.oneShot({ verb: "meme-get", args: { recipe: "default", uri: MEME.uri }, requestedBy: "0xop", requestId: "read-during" }))
+    .toMatchObject({ status: "done" });
+  expect(v.placed.map((p) => p.requestId)).toEqual(["one-before", "read-during"]);
   drains[0]!();
   await closed;
 });

@@ -1740,11 +1740,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           if (chore !== null && !chore.ok) return fail(chore.message, chore.refusal);
           if (chore?.ok) { choreMark = chore.mark; inv.chore = chore.mark; }
         }
-        // ONE-SHOT WORK RIDES THE WORK GATE: the line's verb admits as work on the face it acts as (the face it names, or the
-        // mount), as a session's verb does on the face it wears, so a one-shot write never enters that face's drain.
+        // ONE-SHOT WORK RIDES THE WORK GATE: the line's write (a chore: it writes or signs) admits as work on the face it acts as
+        // (the face it names, or the mount), as a session's verb does on the face it wears, so a one-shot write never enters that
+        // face's drain. ONLY A WRITE ENTERS A DRAIN: a chore-free verb (a read, a row of the place) keeps its path.
         if (sessionRequestId === undefined) {
           const acts = named ?? mount;
-          gate = acts !== null ? workGate(acts) ?? undefined : undefined;
+          gate = acts !== null && isChore(inv.verb) ? workGate(acts) ?? undefined : undefined;
         }
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.
