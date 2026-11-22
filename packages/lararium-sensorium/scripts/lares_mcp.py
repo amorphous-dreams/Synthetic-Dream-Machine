@@ -236,7 +236,7 @@ SEAT_INSTRUCTIONS = (
     "the local `bag show [<slug>]` surveys bags and has no MCP route. Turn what you read through the five tools: let it spark a move (🜂), weigh how it sits with the mutual "
     "frame (🜄), verify its claims whatever their layer (🜁), let its residency ground its standing without crowning it "
     "(🜃), and hold the ladder itself as catma (🜍). Working-layer notes carry the house's live thinking, your own "
-    "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense promote`, `retire`, "
+    "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense harden`, `retire`, "
     "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
     "the command for the operator to run on their own terminal, since no value a seat fills approves it."
     " The `wiki` tool's `verb=\"act\"` runs one named admitted action (today `sidebar-layout`) in the wiki `recipe` names, with the `expected` and `resulting` values checked; it takes no action text, and a stale `expected` answers `conflict` and writes nothing."
@@ -253,11 +253,11 @@ PROJECT_TARGETS = ("md", "html", "tid", "json")
 # reducers, no store holder), and the CLI form rides the one `sense` door.
 SENSE_LIFECYCLE_VERBS = ("roster", "build", "reconcile")
 
-# THE HAND VERBS hold no tool here (hitl-reads-a-hand): `sense promote`, `retire`, `un-retire`, `purge` and
+# THE HAND VERBS hold no tool here (hitl-reads-a-hand): `sense harden`, `retire`, `un-retire`, `purge` and
 # `teardown` run on a person's hand at a real terminal alone. The CLI reads its own branch for that hand and the
 # vessel refuses every asker but a terminal's, so a seat's approval value approves nothing and a tool that always
 # refused would only stand as surface. A seat names the command for the operator to run on their own terminal.
-SENSE_HAND_VERBS = ("promote", "retire", "un-retire", "purge", "teardown")
+SENSE_HAND_VERBS = ("harden", "retire", "un-retire", "purge", "teardown")
 
 # The reversibility×trust GRID: each verb declares (reversible, trust_crossing). The seat follows —
 # HOTL (reversible AND trusted) runs on the operator's loop, no pause; HITL (irreversible OR trust-
@@ -1771,7 +1771,7 @@ def build_mcp(coordinator: LaresCoordinator):
 
     # ── the DURABLE sensorium-lifecycle sub-verbs a seat runs — each mirrors `lares sense <verb>` and routes
     #    over the @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The hand verbs
-    #    (promote·retire·un-retire·purge) hold no tool: the operator runs `lares sense <verb>` on a terminal. ──
+    #    (harden·retire·un-retire·purge) hold no tool: the operator runs `lares sense <verb>` on a terminal. ──
 
     @mcp.tool()
     def roster(name: "str | None" = None) -> dict:

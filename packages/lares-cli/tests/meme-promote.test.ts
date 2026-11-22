@@ -41,6 +41,16 @@ import { join } from "node:path";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import { verifyPromotionReceipt, promotionReceiptPath } from "../src/promotion-receipt.js";
 import { promoteCarrier, type PromotionSeat } from "../src/commands/meme-promote.js";
+import { dispatch, COMMANDS } from "../src/bin/lares.js";
+import { runPromoteCheckBytes } from "@lararium/node";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../../lararium-node/src/node-vessel-identity.js";
+import { larSealHome } from "../../lararium-node/src/vessel-paths.js";
+import { writeNexusDoc } from "../../lararium-node/src/nexus-doc.js";
+import { seatSuiteWard } from "../../lararium-node/tests/support/scratch-custody-setup.js";
+import { chairKey, seatChairs } from "../../lararium-node/tests/seat-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+
+seatSuiteWard();
 
 const SEED = new Uint8Array(32).fill(9);
 
@@ -141,6 +151,37 @@ async function seated(opts?: { admin?: boolean; residency?: Ledger }): Promise<S
 const plan = (root: string) => ({ root, file: SUBJECT_REL, fromBag: LIVE_BAG, destBag: CANON_BAG });
 
 describe("lares meme promote — the crossing moves residency, and the address holds", () => {
+  test("nexus approve output crosses the canon approval verifier and tampering refuses", async () => {
+    const root = tree();
+    const priorRoot = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    try {
+      await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+      await generateOrLoadPersonaGroupRoot(0);
+      const chair = (await seatChairs([0])).keys[0]!;
+      const charter = heldCharter({ keys: [chair], threshold: 1, successors: { keys: [await chairKey(0, 1)], threshold: 1 } });
+      writeNexusDoc(larSealHome(), charter.doc());
+      const approvalFile = join(root, "approval.json");
+      expect(COMMANDS.find((row) => row.name === "nexus")).toBeDefined();
+      expect(await dispatch(["nexus", "approve", "open", join(root, SUBJECT_REL), "--purpose", "canon promotion", "--surface", "crossroads", "--class", "high-impact", "--out", approvalFile])).toBe(0);
+      const approval = JSON.parse(readFileSync(approvalFile, "utf8"));
+      const crossroads = "lar:///ha.ka.ba/bags/crossroads";
+      const verifyApproval: NonNullable<PromotionSeat["verifyApproval"]> = (candidate, bytes) =>
+        runPromoteCheckBytes({ approval: candidate, bytes, sealHome: larSealHome() });
+      const tampered = { ...approval, purpose: "another purpose" };
+      const refusedSeat = await seated();
+      const refused = await promoteCarrier({ ...plan(root), destBag: crossroads, approval: tampered }, { ...refusedSeat.seat, verifyApproval });
+      expect(refused).toEqual({ ok: false, reason: "below-class-threshold" });
+      expect(refusedSeat.moves).toEqual([]);
+      const acceptedSeat = await seated();
+      const accepted = await promoteCarrier({ ...plan(root), destBag: crossroads, approval }, { ...acceptedSeat.seat, verifyApproval });
+      expect(accepted.ok, accepted.ok ? "" : accepted.reason).toBe(true);
+      expect(acceptedSeat.moves).toHaveLength(1);
+    } finally {
+      if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
+      rmSync(root, { recursive: true, force: true });
+    }
+  }, 30_000);
   test("RED: the promoted carrier's bytes stand IDENTICAL — uri-path, address mark, block check", async () => {
     const root = tree();
     try {

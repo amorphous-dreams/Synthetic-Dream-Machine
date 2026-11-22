@@ -2,18 +2,18 @@
  * `lares sense` lifecycle sub-verbs — the DURABLE sensorium lifecycle door, run DIRECT (CLI → the node
  * lifecycle-verb functions over manifest.json; no store holder, no daemon needed).
  *
- * THE HAND VERBS READ A HAND (hitl-reads-a-hand). `promote`, `retire`, `un-retire` and `purge` run on a person's
+ * THE HAND VERBS READ A HAND (hitl-reads-a-hand). `harden`, `retire`, `un-retire` and `purge` run on a person's
  * hand at a real terminal alone. With no socket between this command and the vessel, the command reads its own
  * branch through the house hand gate (`readOwnHand`): a harness mark in its environment or a harness on its parent
  * chain refuses `hand-act-only`, an unreadable chain refuses `hand-unattested`, and nothing moves. `--approve`
- * still names the intent on promote, retire and purge; it approves nothing by itself. The read (roster, at two
+ * still names the intent on harden, retire and purge; it approves nothing by itself. The read (roster, at two
  * grains), the reversible re-settle (reconcile) and the pioneer build run for every caller.
  *
  *   lares sense roster                         list every sensorium + its lifecycle
  *   lares sense roster   <name>                one sensorium's manifest facets (the same read, one grain finer)
  *   lares sense reconcile <name> | --all       re-settle against evidence (on-demand; idempotent)
  *   lares sense build    <name> --ephemeral    mint a fresh pioneer (refuses a name-collision)
- *   lares sense promote  <name> --approve      climb a rung (in-place field-flip)   [+ --store-swap <t>, gated]   hand
+ *   lares sense harden  <name> --approve      climb a rung (in-place field-flip)   [+ --store-swap <t>, gated]   hand
  *   lares sense retire   <name> --grounds <g> --approve   judged tombstone (NO byte-delete)                   hand
  *   lares sense un-retire <name>               move-not-delete restore of the prior state                        hand
  *   lares sense purge    <name> --approve      the irreversible byte GC (tombstone-only)                         hand
@@ -123,13 +123,13 @@ export function cmdSenseBuild(args: ParsedArgs): number {
 
 export function cmdSensePromote(args: ParsedArgs, hand: HandRead = ownHand): number {
   const name = args.positional[0];
-  if (!name) return refused(args, "promote", "promote wants a sensorium name", "lares sense promote <name> --approve");
+  if (!name) return refused(args, "harden", "harden wants a sensorium name", "lares sense harden <name> --approve");
   try {
-    const read = requireHand(args, "promote", `lares sense promote ${name} --approve`, hand);
+    const read = requireHand(args, "harden", `lares sense harden ${name} --approve`, hand);
     const storeSwapTarget = args.options["store-swap"];
-    return landed(args, "promote", promoteSensorium(name, read, storeSwapTarget ? { storeSwapTarget } : {}));
+    return landed(args, "harden", promoteSensorium(name, read, storeSwapTarget ? { storeSwapTarget } : {}));
   } catch (e) {
-    return refusedBy(args, "promote", e);
+    return refusedBy(args, "harden", e);
   }
 }
 

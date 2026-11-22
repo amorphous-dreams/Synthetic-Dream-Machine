@@ -35,7 +35,7 @@ const args = (positional: string[], flags: Record<string, boolean> = {}): Parsed
 const VERBS = [
   "seal", "kapae", "un_kapae", "contract", "revoke", "carry", "uncarry", "members",
   "accept-carriage", "admit-take", "carry-for", "posture", "rite", "kahuli", "publish", "offering",
-  "realm-bag", "realm-bags", "promote", "cabal",
+  "realm-bag", "realm-bags", "approve", "cabal",
 ] as const;
 
 describe("lares nexus — every verb reaches its door", () => {

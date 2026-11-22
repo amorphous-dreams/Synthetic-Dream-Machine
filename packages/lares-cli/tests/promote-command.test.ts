@@ -87,3 +87,29 @@ test("the staged-code door exposes trust in place of promote", async () => {
   expect(COMMAND_NAMES).toContain("trust");
   expect(COMMAND_NAMES).not.toContain("promote");
 });
+
+test("retired doors direct every flag-bearing call to its replacement", async () => {
+  const { dispatch } = await import("../src/bin/lares.js");
+  const err = vi.spyOn(console, "error").mockImplementation(() => {});
+  for (const [args, replacement] of [
+    [["promote", "list", "--unexpected"], "lares trust"],
+    [["nexus", "promote", "open", "--unexpected"], "lares nexus approve"],
+    [["sense", "promote", "memory", "--unexpected"], "lares sense harden"],
+  ] as const) {
+    expect(await dispatch(args)).toBe(2);
+    expect(err.mock.calls.at(-1)?.join(" ")).toContain(replacement);
+  }
+  err.mockRestore();
+});
+
+test("trust dispatches the existing wire verb and narrowed paths refuse unrelated flags", async () => {
+  const { dispatch } = await import("../src/bin/lares.js");
+  seam.calls = [];
+  const err = vi.spyOn(console, "error").mockImplementation(() => {});
+  expect(await dispatch(["trust", "list"])).toBe(0);
+  expect(seam.calls.at(-1)?.[0]).toBe("promote-list");
+  expect(await dispatch(["nexus", "approve", "check", "a", "b", "--purpose", "x"])).toBe(2);
+  expect(await dispatch(["sense", "harden", "x", "--wing", "x"])).toBe(2);
+  expect(err.mock.calls.flat().join(" ")).toContain("unknown flag");
+  err.mockRestore();
+});
