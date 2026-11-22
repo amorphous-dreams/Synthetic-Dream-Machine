@@ -486,8 +486,8 @@ async function main(): Promise<void> {
     await first;
     const prior = composition;
     composition = null;
-    // THE LIFE REMEMBERS: a teardown here that left a face unsealed keeps this life's goodbye unsent at its exit.
-    lifeClosed.note(await prior?.teardown());
+    // THE LIFE REMEMBERS: a teardown here that left a face unsealed, or threw, keeps this life's goodbye unsent at its exit.
+    if (prior !== null) await lifeClosed.noteTeardown(() => prior.teardown());
     const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
     composition = out.stood;
     standAgainOnMountClose(out.stood);

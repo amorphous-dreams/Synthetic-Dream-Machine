@@ -267,6 +267,19 @@ describe("a clean goodbye: a vessel that drained every save tells its pūlama so
     expect(f.kept.unlockedFaces()).toContain(a.fcid);
   });
 
+  test("A TEARDOWN THAT THROWS COUNTS NOT WHOLE: a recomposition whose teardown rejects (its close answered, then a shutdown step threw) rejects on, and a later whole stand-down sends no goodbye; CONTROL: a teardown that answers whole leaves the life whole", async () => {
+    const thrown = lifeCloses();
+    await expect(thrown.noteTeardown(async () => { throw new Error("a shutdown step threw"); })).rejects.toThrow(/a shutdown step threw/);
+    thrown.note({ whole: true });
+    expect(thrown.whole(), "the throw latched the life").toBe(false);
+    let said = false;
+    expect(await cleanGoodbye({ whole: thrown.whole() }, async () => { said = true; return true; }, () => {})).toBe(false);
+    expect(said, "no goodbye went out").toBe(false);
+    const clean = lifeCloses();
+    expect(await clean.noteTeardown(async () => ({ whole: true }))).toEqual({ whole: true });
+    expect(clean.whole()).toBe(true);
+  });
+
   test("★ THE LIFE REMEMBERS A CLOSE THAT WAS NOT WHOLE: a recomposition whose teardown left a face's drain faulted, then a whole stand-down under the same life, sends no goodbye, and the first close holds; CONTROL: whole closes all the way say it ★", async () => {
     for (const history of ["recomposed-not-whole", "all-whole"] as const) {
       const { f, a } = await standOne(`goodbye-life-${history}`, 3);

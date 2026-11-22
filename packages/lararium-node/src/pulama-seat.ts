@@ -160,11 +160,18 @@ export function pulamaStandBy(a: {
  * exits. Every teardown and stand-down of the life notes its answer here; one close that was not whole latches the life, and its
  * goodbye stays unsent. An answer that names no `whole` (a composition that held no face) changes nothing.
  */
-export function lifeCloses(): { note(closed: unknown): void; whole(): boolean } {
+export function lifeCloses(): { note(closed: unknown): void; noteTeardown<T>(teardown: () => Promise<T>): Promise<T>; whole(): boolean } {
   let whole = true;
+  const note = (closed: unknown): void => {
+    if (typeof closed === "object" && closed !== null && (closed as { whole?: unknown }).whole === false) whole = false;
+  };
   return {
-    note(closed) {
-      if (typeof closed === "object" && closed !== null && (closed as { whole?: unknown }).whole === false) whole = false;
+    note,
+    // A TEARDOWN THAT THROWS COUNTS NOT WHOLE: its close may have answered not whole before a later step threw, so the life
+    // latches and the fault rises on.
+    async noteTeardown(teardown) {
+      try { const closed = await teardown(); note(closed); return closed; }
+      catch (e) { whole = false; throw e; }
     },
     whole: () => whole,
   };
