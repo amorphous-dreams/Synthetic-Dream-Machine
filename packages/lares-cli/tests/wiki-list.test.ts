@@ -8,8 +8,9 @@ import { afterEach, describe, test, expect, vi } from "vitest";
 const ANSWER = {
   wikis: [
     { slug: "lares", uri: "lar:///ha.ka.ba/wikis/lares", automergeUrl: "automerge:abc", kind: "system", composition: "own", defaultDiffers: true },
-    { slug: "plain", uri: "lar:///ha.ka.ba/wikis/plain", automergeUrl: null, kind: "system", composition: "default" },
+    { slug: "plain", uri: "lar:///ha.ka.ba/wikis/plain", automergeUrl: null, kind: "system", composition: "default", canon: "floor" },
     { slug: "mine",  uri: "lar:///ha.ka.ba/wikis/mine",  automergeUrl: "automerge:def", kind: "user" },
+    { slug: "bare",  uri: "lar:///ha.ka.ba/wikis/bare",  automergeUrl: null, kind: "user" },
   ],
 };
 const asFace: Array<{ name: string; face: number }> = [];
@@ -50,6 +51,16 @@ describe("lares wiki list", () => {
     expect(text).toMatch(/plain[^\n]*composition: default/);
     const mine = text.split("\n").find((l) => l.includes("mine")) ?? "";
     expect(mine).not.toMatch(/composition/);
+  });
+
+  test("a system wiki whose canon reads through the floor says so plainly, never `(no doc)`; CONTROL: a user row with no document still reads `(no doc)`", async () => {
+    const c = capture();
+    expect(await cmdWikiList(parseArgs(["wiki", "--no-json"]))).toBe(0);
+    const lines = c.out().split("\n");
+    const under = (slug: string): string => lines[lines.findIndex((l) => l.includes(`wikis/${slug}`)) + 1] ?? "";
+    expect(under("plain")).toMatch(/canon read through the floor/);
+    expect(under("plain")).not.toMatch(/no doc/);
+    expect(under("bare")).toMatch(/\(no doc\)/);
   });
 
   test("`--json` emits the daemon's answer verbatim as `data`", async () => {
