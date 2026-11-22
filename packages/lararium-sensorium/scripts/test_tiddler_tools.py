@@ -150,6 +150,8 @@ def test_arguments_refuse_before_the_wire(daemon):
         t["wiki_render"](recipe="default", title="T", text="span")
     with pytest.raises(ValueError, match="form"):
         t["wiki_render"](recipe="default", title="T", form="pdf")
+    with pytest.raises(ValueError, match="render-output-substrate-refused"):
+        t["wiki_render"](recipe="default", title="T", output="workbench")
     with pytest.raises(ValueError, match="string values"):
         t["tiddler_put"](recipe="default", title="T", fields={"n": 1})
     assert daemon.lines == []

@@ -1733,6 +1733,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           } else inv.asker = "cli";
         }
         const named = namedFaceOf(inv.args);
+        // THE AI SEAT PROPOSES on a one-shot line as on a session: a hand-only verb refuses the seat by its code before it places.
+        if (sessionRequestId === undefined && seat !== null && opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand; a seat proposes`, opts.handOnlyCodes?.get(inv.verb) ?? "beyond-profile");
         const mount = mountOf();
         // NO SILENT STEWARD (`chore-face`): a one-shot chore designates its face (the face it names, or with none named the
         // mount, as `face.resolve` answers a seat) and meets `actingFaceOf` on the lent set the seat wall reads, one read for

@@ -334,7 +334,7 @@ export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
 export type { VesselKeel, VesselBootstrap, VesselCoreAssembly, MountManifest, MountEntry } from "./open-vessel-core.js";
 export { awaitIslandMsg } from "./vessel-host.js";
 export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
-export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
+export { VesselIslandPoolCore, resolveDiskMirrors } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiSpecResolution } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, VesselRestState, DiskMirrorGrant } from "./vessel-island-pool-core.js";

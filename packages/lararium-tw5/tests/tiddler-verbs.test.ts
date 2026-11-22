@@ -7,14 +7,14 @@
  */
 import { describe, test, expect } from "vitest";
 import { SwarmRefused, sha256HexBytesSync } from "@lararium/mesh";
-import { CompositeStore, bagUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG, buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh";
+import { CompositeStore, bagUri, wikiSlotUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG, buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { retractsOf, tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
   makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
@@ -1061,6 +1061,39 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
 });
 
 describe.skipIf(wikiSkip)(`the reader's view: a filter and a render compute over what the face may read${skipNote}`, () => {
+  test("native output selects per source, applies a template and variables, and skips empty filenames", async () => {
+    const r = await rig();
+    const WORKING = wikiSlotUri("notes", "working");
+    r.engine.wiki.addTiddler({ title: WORKING_POINTER, text: WORKING });
+    const templateText = "<$text text=<<label>>/>:<$text text=<<currentTiddler>>/>:<$text text=<<storyTiddler>>/>:{{Note 01}}";
+    r.engine.wiki.addTiddler({ title: "ExportTemplate", type: "text/vnd.tiddlywiki", text: templateText });
+    r.engine.wiki.addTiddler({ title: "Sealed", text: "private words", "$origin-bag": bagUri("sealed") });
+    const output = makeWikiRenderOutReactor({ ...r.opts, wiki: { slug: "notes", gate: WORKING } });
+    const writing: Cap = async (access, bag) => (access === "read" && bag !== bagUri("sealed")) || (access === "admin" && bag === WORKING) ? { ok: true } : { ok: false, reason: "no-grant" };
+    const ask = { recipe: "notes", output: "workbench", filter: "[[Note 01]] [[Note 02]]", filename: "[is[tiddler]match[Note 01]addsuffix[.html]]", template: "ExportTemplate", variables: { label: "sent" } };
+    const answer = await output(ask, ctx(writing));
+    expect(answer).toMatchObject({ files: [{ name: "Note 01.html", source: "Note 01" }], skipped: ["Note 02"] });
+    const native = r.engine.$tw.wiki as unknown as { parseTiddler(title: string): object; makeWidget(parser: object, options: { variables: Record<string, string> }): { render(container: object, sibling: null): void } };
+    const container = r.engine.$tw.fakeDocument.createElement("div");
+    native.makeWidget(native.parseTiddler("ExportTemplate"), { variables: { label: "sent", currentTiddler: "Note 01", storyTiddler: "Note 01" } }).render(container, null);
+    expect((answer["files"] as Array<{ text: string }>)[0]!.text).toBe(container.innerHTML);
+    r.engine.wiki.addTiddler({ title: "ExportTemplate", type: "text/vnd.tiddlywiki", text: `${templateText} {{Sealed}}` });
+    const denied = await output(ask, ctx(writing));
+    expect((denied["files"] as Array<{ text: string }>)[0]!.text).not.toContain("private words");
+    expect(await output({ ...ask, filter: "[[Sealed]]", template: undefined }, ctx(writing))).toMatchObject({ files: [] });
+    await expect(output({ ...ask, filter: "[[Note 01]]" }, ctx(reader))).rejects.toThrow(/render-output-grant-denied/);
+  });
+  test("the filename filter runs under the house widget over the reader's view: a house function resolves in it as in the selection", async () => {
+    const r = await rig();
+    const WORKING = wikiSlotUri("notes", "working");
+    r.engine.wiki.addTiddler({ title: WORKING_POINTER, text: WORKING });
+    r.engine.wiki.addTiddler({ title: "Road A", tags: "stage/road road/state/open", text: "open road" });
+    const output = makeWikiRenderOutReactor({ ...r.opts, wiki: { slug: "notes", gate: WORKING } });
+    const writing: Cap = async (access, bag) => access === "read" || (access === "admin" && bag === WORKING) ? { ok: true } : { ok: false, reason: "no-grant" };
+    const answer = await output({ recipe: "notes", output: "workbench", filter: "[[Note 01]]", filename: "[is[tiddler]addsuffix[.html]] :filter[all[tiddlers]lares.road[open]count[]!match[0]]" }, ctx(writing));
+    expect(await makeWikiFilterReactor(r.opts)({ ...A, filter: "[lares.road[open]]" }, ctx(writing)), "the selection resolves the same house function").toMatchObject({ titles: ["Road A"] });
+    expect(answer).toMatchObject({ files: [{ name: "Note 01.html", source: "Note 01" }], skipped: [] });
+  });
   test("reach-holds-inside-the-engine: a filter that reads a withheld title's text by name, or by iteration, answers none of it; CONTROL: a readable title's text answers", async () => {
     const r = await rig();
     const filter = makeWikiFilterReactor(r.opts);
