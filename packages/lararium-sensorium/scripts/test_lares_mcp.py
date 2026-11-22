@@ -838,3 +838,11 @@ def test_wiki_seat_reach_stays_on_switch_rotate_and_act(monkeypatch):
         with pytest.raises(Exception, match=name):
             wiki(**args)
         assert calls == []
+
+
+def test_registered_tools_carry_seat_annotations_and_plain_first_lines():
+    """Every registered tool exposes its seat contract and a concise action."""
+    import lares_mcp
+
+    assert hasattr(lares_mcp, 'validate_tool_menu')
+    lares_mcp.validate_tool_menu()
