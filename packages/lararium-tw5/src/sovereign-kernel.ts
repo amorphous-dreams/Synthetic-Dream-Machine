@@ -78,7 +78,7 @@ import { waitForSlotDocument } from "./slot-wait.js";
 import { storeLiveness, type StoreLiveness } from "./store-liveness.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { openIslandStory } from "./island-story.js";
-import { preloadsFromCasBlob } from "./cas-preloads.js";
+import { casBlobPreloads, modulePinsOf } from "./module-pins.js";
 import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
 import { librarySlotUrl, liveKahuaFace } from "./kahua-layer.js";
 import { installLazyResolver } from "./lazy-resolver.js";
@@ -513,9 +513,10 @@ export function runSovereignKernel(
       }
       let preloads: Record<string, unknown>[];
       try {
-        preloads = preloadsFromCasBlob(bytes);
+        // The blob's own CID pins its bytes: a blob that hashes elsewhere refuses by name before a record of it reads.
+        preloads = casBlobPreloads(bytes, cid);
       } catch (err) {
-        _post(mkFault(msg.wikiUri, `island cannot read plugin tiddler ${cid.slice(0, 12)}… as JSON: ${err instanceof Error ? err.message : String(err)}`));
+        _post(mkFault(msg.wikiUri, `island cannot read plugin tiddler ${cid.slice(0, 12)}…: ${err instanceof Error ? err.message : String(err)}`));
         return;
       }
       for (const t of preloads) pluginTiddlers.push(t);
@@ -558,8 +559,11 @@ export function runSovereignKernel(
     let bootInstance: Record<string, unknown> | undefined;
     let used = false;
     try {
-      await handler.bootTw5(msg.wikiUri, coreBytes, pluginTiddlers, {
+      // Every blob carries its pin into the engine: the core its manifest coreHash, each plugin module the CID its blob just
+      // verified against, so the engine evaluates exactly the code the manifest named.
+      await handler.bootTw5(msg.wikiUri, { bytes: coreBytes, sha256: msg.coreHash }, pluginTiddlers, {
         grantedDigests: new Set(msg.pluginCids ?? []),
+        modulePins: modulePinsOf(pluginTiddlers),
         onInstance(instance) {
           bootInstance = instance as unknown as Record<string, unknown>;
           Object.defineProperty(instance, "larariumWritableStand", {

@@ -1,3 +1,4 @@
+import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, expect, test } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -113,9 +114,8 @@ test("★ a kāpae raised before the face root stood projects its shadow into th
   // The face's planes moved to `faces/<pet name>/` (the old relation-keyed folder held the shadow): a fresh face root
   // meets a bag whose title already stands kāpae'd, with no change event to carry it. The start's own pass writes it.
   const { TW5Engine } = await import("../../lararium-tw5/src/tw5-vm.js");
-  const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import("../../lararium-tw5/src/generated-tw5-version.js");
   const engine = new TW5Engine();
-  await engine.boot(new Uint8Array(readFileSync(join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME))));
+  await engine.boot(vendoredCore());
   root = mkdtempSync(join(tmpdir(), "kapae-disk-"));
   const store = new MemoryTiddlerStore(bag);
   await store.put({ tiddler: { title, text: "live" } }, origin);

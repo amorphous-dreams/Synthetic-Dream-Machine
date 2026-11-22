@@ -1,5 +1,6 @@
+import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildIntent, buildOutcome, countPlaneEntries, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
@@ -8,11 +9,10 @@ import { buildIntent, buildOutcome, countPlaneEntries, ed25519SignerFromSeed, ed
 import { makeFaceIntentDoor } from "@lararium/keyhive";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
-import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
 import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 let engine: TW5Engine;
-beforeAll(async () => { engine = new TW5Engine(); await engine.boot(new Uint8Array(readFileSync(join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME)))); }, 60_000);
+beforeAll(async () => { engine = new TW5Engine(); await engine.boot(vendoredCore()); }, 60_000);
 
 const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 const plane = () => {

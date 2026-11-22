@@ -22,16 +22,21 @@ import { frameCarrier } from "@lararium/memetic-frame";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { exportMemeText } from "../src/meme-write.js";
-import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "../src/generated-tw5-version.js";
+import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR, TW5_CORE_SHA256 } from "../src/generated-tw5-version.js";
+import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
 import { witnessStaticTiddlers } from "../plugin-build/source-manifest.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main(): Promise<void> {
   const corePath = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
-  const coreBlob = new Uint8Array(readFileSync(corePath));
+  const coreBlob = { bytes: new Uint8Array(readFileSync(corePath)), sha256: TW5_CORE_SHA256 };
+  // The grammar's module pins: the tracked plugin blob, read only once it hashes to the bake attestation's pin.
+  const plugins = path.join(__dirname, "..", "plugins");
+  const attestation = JSON.parse(readFileSync(path.join(plugins, "standalone", "lares-memetic-wikitext.attestation.json"), "utf8")) as { pluginJsonSha256: string };
+  const modulePins = modulePinsOf(casBlobPreloads(new Uint8Array(readFileSync(path.join(plugins, "lares-memetic-wikitext.json"))), attestation.pluginJsonSha256));
   const engine = new TW5Engine();
-  await engine.boot(coreBlob, [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
+  await engine.boot(coreBlob, [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins });
 
   const failures: string[] = [];
   const wiki = engine.wiki;

@@ -44,8 +44,10 @@ uri-path  = "ha.ka.ba/lares/api/pono/island-host-contract"
 ''No unpinned code enters the island realm until a Compartment boundary holds it, because hash-pinning vouches for provenance and never for intent.''
 
 * ''Soundness.'' Pinning holds sound if and only if the set of code the island evaluates equals the set the host hash-verified. Any evaluation path outside that set (a module tiddler, a plugin, an evaluated string) breaks the equality, and a pin on the core then vouches for nothing the island runs beside it.
-* ''What stands.'' `verifyCoreBootBlob` checks the core blob's bytes against the SHA-256 the blob carries and refuses a mismatch before evaluation. A blob that carries no expected hash passes unchecked, so the core check vouches only where a pin rides along.
-* ''What rests on the road.'' No Compartment boundary stands in the code: no SES `lockdown`, no `Compartment`, no `harden`. This gate names the boundary unpinned code waits on; it never claims the boundary stands built. Until one stands, code without a pin MUST NOT enter the island realm.
+* ''Every core blob carries its pin (built).'' `loadTiddlyWikiFromBlob`, the one door every core evaluation walks through, calls `verifyCoreBootBlob` before a byte runs: an absent blob refuses as `CoreBlobAbsent`, a blob with no SHA-256 pin as `CoreBlobUnpinned`, and a blob whose bytes hash elsewhere as `CoreBlobPinMismatch`. The pin comes from outside the bytes in hand: the manifest's `coreHash` on the sovereign kernel, the boot set's `engineCid` on a face's own engine, the handoff's verified `coreCid` on the glass, the genesis seed's row, or the vendor bake's `TW5_CORE_SHA256`.
+* ''Every module carries its pin (built).'' Code reaches the engine beside the core through one door, `$tw.modules.define`, and `armModulePinGate` stands on it before `boot()`: a string definition whose SHA-256 no pin names never enters the module table, refuses as `ModuleUnpinned`, and raises an alert under `$:/temp/lares/alert/refused/module-unpinned/`. The pins: the modules the pinned core packs (read off its own preloads before a caller's preload joins them), the modules each plugin blob packs once `casBlobPreloads` reads its bytes against the CID the manifest or seed names, and a granted module the trusted-module gate admits after it checks the grant and the `source-sha256`. A preload that takes a core module's title with other text refuses, since the core pin covers only the core's bytes. One gate serves the Node worker path, the browser Worker path and the page.
+* ''What no hash covers (named).'' The glass mirror's person plugin (a wiki record plugin on a vessel whose store rests sealed) carries no CID: the vessel's sealed-rest word admits it and the glass hands its modules to the gate as pins. Test and dev rigs pin the tree's own bakes (the tracked plugin attestation's `pluginJsonSha256`, or a fixture's own bytes). An object or function definition handed to `$tw.modules.define` carries no text to evaluate and passes the gate: only code already running in the realm can hand one. Pinned code still runs in the island realm with the realm's full reach.
+* ''What rests on the road.'' No Compartment boundary stands in the code: no SES `lockdown`, no `Compartment`, no `harden`. This gate names the boundary unpinned code waits on; it never claims the boundary stands built. Until one stands, code without a pin MUST NOT enter the island realm, and a pin vouches for provenance alone, never for what the pinned code does.
 * ''Never vm2.'' The island MUST NOT take `vm2`, or any `vm`-context sandbox, as its boundary. Node's `vm` serves the engine's module loader and grants no isolation.
 
 <<~/ahu>>
@@ -58,6 +60,6 @@ uri-path  = "ha.ka.ba/lares/api/pono/island-host-contract"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AyeyhQc4-2J2oatCIv9ThZsE7ZnYv_vGD58N9_c63gY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5GTJmpyKyjB6vaVC3mMkx_q0WiJOmK1Vroz1XJea1BY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -6,5 +6,8 @@ export const TW5_VERSION = "5.5.0-prerelease";
 /** Filename of the vendored TW5 core blob in lararium-tw5/tw5-core/. */
 export const TW5_CORE_SCRIPT_FILENAME = "tiddlywikicore-5.5.0-prerelease.js";
 
+/** The bake's pin: SHA-256 of the vendored core blob's bytes. A boot of that blob carries it as `sha256`. */
+export const TW5_CORE_SHA256 = "4da77b1097b522bfeb83cd3f7c747f5c6644d05352161af509c039f7dbdc5f92";
+
 /** Absolute path to the lararium-tw5/tw5-core/ directory (build artifact, gitignored). */
 export const TW5_CORE_DIR = new URL("../tw5-core", import.meta.url).pathname;
