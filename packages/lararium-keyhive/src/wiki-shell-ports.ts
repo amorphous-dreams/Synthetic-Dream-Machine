@@ -20,7 +20,7 @@
  */
 import {
   buildRetiredShellRecord, carriedFields, holdsEvery, isHouseEffectRecordOf, parseRetiredShellRecord, plainRecord, retiredShellUri, RetiredShellCarryRefusal,
-  storedDeleted, unionRetiredShell, wikiBagUri, wikiSlotUri, workbenchSeats, type CarriedEffectRecord, type LarDoc, type LarTiddlerRecord, type StoredLarRecord,
+  storedDeleted, unionRetiredShell, wikiBagUri, wikiSlotUri, workbenchSeats, DAEMON_WIKI_SLUG, type CarriedEffectRecord, type ChangeOrigin, type LarDoc, type LarTiddlerRecord, type StoredLarRecord,
 } from "@lararium/mesh";
 import type { WikiShellPorts } from "@lararium/tw5";
 import type { BagDocLedger } from "./bag-doc-ledger.js";
@@ -101,6 +101,37 @@ export interface RetiredShellHome {
   put(record: LarTiddlerRecord): Promise<void>;
 }
 
+/** What `daemonRetiredHome` reads of the daemon's composition and its control document. */
+export interface DaemonRetiredHomeIo {
+  /** The slug of the wiki this composition runs (the home stands only in the daemon wiki's). */
+  readonly wikiSlug: string;
+  readonly hasBag: (bag: string) => boolean;
+  readonly store: (bag: string) => { get(title: string): Promise<LarTiddlerRecord | null>; put(record: LarTiddlerRecord, origin: ChangeOrigin): Promise<void> } | null;
+  /** The url of the document the composition holds for `bag`, or undefined where none rests (a layer held in memory alone). */
+  readonly handleUrl: (bag: string) => string | undefined;
+  /** The url the vessel's control document names for the worn face's working slot (`daemonSlotTitle("working", group)`), or null. */
+  readonly controlUrl: () => Promise<string | null>;
+}
+
+/**
+ * THE FACE'S OWN DAEMON WORKING SLOT, as the home of the record of leaving: the daemon wiki's working layer, only where it rests
+ * in a document AND that document is the one the control document names for the worn face (`daemon-slot/working/<group>`).
+ * A layer held in memory alone (a floor that cannot seal), a slot the control names for no face, a control read that faults, or
+ * a handle on another document (the floor's slot, under a face pinned and not yet seated) answers null, and the carry refuses.
+ */
+export async function daemonRetiredHome(io: DaemonRetiredHomeIo): Promise<RetiredShellHome | null> {
+  const bag = wikiSlotUri(DAEMON_WIKI_SLUG, "working");
+  if (io.wikiSlug !== DAEMON_WIKI_SLUG || !io.hasBag(bag)) return null;
+  const held = io.handleUrl(bag);
+  if (!held) return null;
+  let named: string | null;
+  try { named = await io.controlUrl(); } catch { return null; }
+  if (named === null || named !== held) return null;
+  const store = io.store(bag);
+  if (!store) return null;
+  return { bag, get: (title) => store.get(title), put: (record) => store.put(record, { kind: "lares-verb", requestId: "retire-wiki" }) };
+}
+
 export interface WikiShellPortsArgs {
   /** The worn face's hive; null where none stands (nothing to forget). */
   readonly provider: () => KeyhiveProvider | null;
@@ -115,9 +146,9 @@ export interface WikiShellPortsArgs {
   /** The face's documents for each layer of the slug, null where none stands. A fault throws. */
   readonly layers: (slug: string) => Promise<Readonly<Record<"working" | "draft" | "personal", ShellLayerDoc | null>>>;
   readonly unbindSlots: WikiShellPorts["unbindSlots"];
-  /** The face's durable home for retirement records (its daemon wiki working layer), or null where none rests: a retire that
-   *  would carry effect records then refuses, erasing nothing. */
-  readonly retiredHome: () => RetiredShellHome | null;
+  /** The face's durable home for retirement records (its daemon wiki working layer, `daemonRetiredHome`), or null where none
+   *  rests: a retire that would carry effect records then refuses, erasing nothing. */
+  readonly retiredHome: () => Promise<RetiredShellHome | null>;
   /** Runs once the shell's bindings left: a holder closes what it composed over them. */
   readonly afterForget?: () => Promise<void>;
 }
@@ -147,23 +178,26 @@ export function wikiShellPorts(args: WikiShellPortsArgs): WikiShellPorts {
       return out;
     },
     carryHome: async (slug) => {
-      const home = args.retiredHome();
+      const home = await args.retiredHome();
       return home ? { title: retiredShellUri(slug), bag: home.bag } : null;
     },
     carry: async (slug, records, outcome) => {
-      const home = args.retiredHome();
-      if (!home) throw new RetiredShellCarryRefusal("retire-carry-unlanded", "the face's daemon wiki working layer rests in no document here (a floor that cannot seal holds it in memory alone)");
+      const home = await args.retiredHome();
+      if (!home) throw new RetiredShellCarryRefusal("retire-carry-unlanded", "the face's own daemon wiki working slot rests in no document here (a floor that cannot seal holds it in memory alone, or the composition holds a document the control names for no face)");
       const title = retiredShellUri(slug);
       const standing = await home.get(title);
-      const before = parseRetiredShellRecord(slug, standing);
-      if (standing && !before) throw new RetiredShellCarryRefusal("retire-carry-unlanded", `"${title}" stands and reads as no retirement record of "${slug}"`);
+      // A copy the house re-ingested off disk carries no writer's stamp; its body, read whole, stays in the union and takes the
+      // stamp as the carry writes. A row whose body does not parse whole refuses: the carry never writes over what it cannot read.
+      const before = parseRetiredShellRecord(slug, standing) ?? parseRetiredShellRecord(slug, standing, { unstamped: true });
+      if (standing && !before) throw new RetiredShellCarryRefusal("retire-carry-unlanded", `"${title}" stands and does not read as a retirement record of "${slug}"`);
       const next = unionRetiredShell(slug, before, records, { face: args.face, ...outcome });
-      if (next) await home.put(buildRetiredShellRecord(next));
+      await home.put(buildRetiredShellRecord(next));
       // THE READ-BACK: the carry stands only where every record reads back under the very fields carried.
-      if (!holdsEvery(parseRetiredShellRecord(slug, await home.get(title)), records)) {
+      const landed = parseRetiredShellRecord(slug, await home.get(title));
+      if (!holdsEvery(landed, records) || (landed?.retires.length ?? 0) !== next.retires.length) {
         throw new RetiredShellCarryRefusal("retire-carry-unlanded", `"${title}" did not read back holding every carried record`);
       }
-      return { title, bag: home.bag, records: records.length, added: next ? next.records.length - (before?.records.length ?? 0) : 0 };
+      return { title, bag: home.bag, records: records.length, added: next.records.length - (before?.records.length ?? 0) };
     },
     clear: async (slug, what) => {
       const l = await args.layers(slug);

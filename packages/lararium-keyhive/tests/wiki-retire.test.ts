@@ -605,6 +605,22 @@ describe("R12 (the record of leaving stays) — a retire carries the shell's eff
     expect(await engineer.retire()).toMatchObject({ status: "retired", carried: null });
     expect(carried(engineer)).toBeNull();
   });
+  test("a copy re-ingested off disk (no writer's stamp, body whole) keeps every record it holds and takes the stamp; a row that does not parse refuses", async () => {
+    const { engineer, workbench } = await effectOnly(0xb2);
+    const prior = { layer: "working", title: "lar:///ha.ka.ba/wikis/elyncia-referee/working/ledger/residency/older", fields: { title: "lar:///ha.ka.ba/wikis/elyncia-referee/working/ledger/residency/older" } };
+    const offDisk = (text: string) => engineer.daemonWorking.change((d) => {
+      d.tiddlers[retiredShellUri(SLUG)] = { tiddler: { title: retiredShellUri(SLUG), type: "text/plain", text } } as never;
+    });
+    offDisk("not json");
+    await expect(engineer.retire()).rejects.toThrow(/^retire-carry-unlanded:/);
+    expect(live(workbench)).toBe(2);
+    offDisk(JSON.stringify({ slug: SLUG, records: [prior], retires: [{ face: ENGINEER, realmId: null, forced: false, authored: 0, carried: [prior.title] }] }));
+    expect(await engineer.retire()).toMatchObject({ status: "retired", carried: { records: 3, added: 3 } });
+    const body = carried(engineer)!;
+    expect(body.records.map((r) => r.title)).toContain(prior.title);
+    expect(body.records).toHaveLength(4);
+    expect(body.retires).toHaveLength(2);
+  });
 });
 
 describe("R13 (#433 cold read) — the home is the face's own slot, every retire leaves its outcome, and nothing orphans silently", () => {

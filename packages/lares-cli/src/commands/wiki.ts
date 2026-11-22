@@ -323,6 +323,8 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
       console.log(`  records destroyed:     ${result["forced"] === true ? counted : "none authored"}`);
       const carried = where(result["carried"]);
       if (carried) console.log(`  effect records:        ${carried.records ?? effects} carried to ${carried.title} (${carried.bag}; ${carried.added ?? 0} new), then erased with the shell`);
+      const left = list(result["leftBehind"]);
+      if (left.length > 0) console.log(`  left behind:           ${left.length} effect record(s) landed after the carry and stay in the shell's documents${left.map((t) => `\n    ${t}`).join("")}`);
       console.log(`  kept:                  ${kept.canonBag ?? `bags/${slug}`} (its document and files untouched)`);
       if (kept.canonDoc) console.log(`  canon doc kept:        ${kept.canonDoc} (a re-mint that finds a floor canon row reuses it; one that finds none mints a fresh one and leaves this one orphaned)`);
       if (done.folder) console.log(`  folder set aside:      ${done.folder.to} (renamed, never deleted)`);

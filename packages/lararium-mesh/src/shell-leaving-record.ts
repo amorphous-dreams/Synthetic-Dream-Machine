@@ -8,13 +8,21 @@
  * face owns that layer (one owner per registry), it mirrors to the face's root under `projections/` (a re-found clears only the
  * hearth), and the keep bundle carries it with the rest of the face's daemon working rows. The shell goes; the record stays.
  *
- * ONE RECORD PER SLUG, a union. A later retire of the same slug (a re-minted shell retired again) adds its records to the same
- * row and appends its own outcome; a re-run that carries nothing new writes nothing (idempotent). A carried title that already
- * stands under other fields refuses: an effect record's event id names one event, so two bodies under one title name a fault,
- * never a merge.
+ * ONE RECORD PER SLUG, a union. Every retire that carries appends its own outcome; a record already held under the same
+ * fields stays once (a re-run carries no record twice). A carried title that already stands under other fields refuses: an
+ * effect record's event id names one event, so two bodies under one title name a fault, never a merge.
+ *
+ * THE HOUSE'S HAND ALONE. The title rests outside every residency ledger, so the effect-ledger wall names it beside them
+ * (`isHouseLedgerUri`, `refuseEffectLedgerWrite`): the tiddler door, the meme door and every hand origin of the composite
+ * (a page's save, a tool's draft, a canvas's draft) neither write nor remove it, whoever asks. A row reads as the house's only
+ * where the retire's own writer stamped it (`meta.authority` = `lares-retire-wiki`) and its body parses whole.
  *
  * The record's title rests outside every residency ledger (`isEffectRecordUri` reads it false), so it projects as a face's
  * memory row does; its text holds the carried records as JSON, each with the layer it left and its fields exactly as stored.
+ * It types itself `text/plain`: a `.json` carrier reads back as tiddlers (the JSON deserializer splits the body), while a plain
+ * body and its `.meta` sidecar read back byte for byte. The writer's stamp (`meta.authority`) rides the stored record, never a
+ * disk carrier, so a copy re-ingested off disk (a keep's import after a re-found) reads as no retirement record by itself; the
+ * next carry for that slug reads its body whole (`unstamped`), keeps every record it holds, and stamps it as it writes.
  *
  * Meme: lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface
  */
@@ -22,6 +30,14 @@ import type { LarTiddlerRecord } from "./tiddler-store.js";
 
 /** `lar:///ha.ka.ba/lararium/shell-leavings/` — where the record of each retired shell's leaving rests. */
 export const RETIRED_SHELL_URI_PREFIX = "lar:///ha.ka.ba/lararium/shell-leavings/";
+
+/** True when `title` names a shell's record of leaving. */
+export function isShellLeavingUri(title: string): boolean {
+  return title.startsWith(RETIRED_SHELL_URI_PREFIX);
+}
+
+/** The writer's stamp a retirement record carries (`meta.authority`); a row without it reads as no retirement record. */
+export const RETIRED_SHELL_AUTHORITY = "lares-retire-wiki";
 
 /** `lar:///ha.ka.ba/lararium/shell-leavings/<slug>` — one retirement record per wiki slug. */
 export function retiredShellUri(slug: string): string {
@@ -73,9 +89,19 @@ export function carriedFields(fields: Readonly<Record<string, unknown>>): Record
   return out;
 }
 
-/** Parse a stored retirement record back to its body, or null where the row reads as no retirement record of `slug`. */
-export function parseRetiredShellRecord(slug: string, record: LarTiddlerRecord | null | undefined): RetiredShellBody | null {
+const isOutcome = (o: unknown): o is RetireOutcome => {
+  const r = o as Partial<RetireOutcome> | null;
+  return !!r && typeof r === "object" && typeof r.face === "string" && (r.realmId === null || typeof r.realmId === "string")
+    && typeof r.forced === "boolean" && typeof r.authored === "number" && Number.isInteger(r.authored) && r.authored >= 0
+    && Array.isArray(r.carried) && r.carried.every((t) => typeof t === "string");
+};
+
+/** Parse a stored retirement record back to its body, or null where the row reads as no retirement record of `slug`: one the
+ *  retire's writer never stamped, or one whose body does not parse whole. `unstamped` reads the body alone (the carry's
+ *  reading of a copy the house re-ingested off disk, which it stamps again as it writes). */
+export function parseRetiredShellRecord(slug: string, record: LarTiddlerRecord | null | undefined, opts: { readonly unstamped?: boolean } = {}): RetiredShellBody | null {
   const t = record?.tiddler as Record<string, unknown> | undefined;
+  if (opts.unstamped !== true && (record?.meta as { authority?: unknown } | undefined)?.authority !== RETIRED_SHELL_AUTHORITY) return null;
   if (!t || t["title"] !== retiredShellUri(slug) || typeof t["text"] !== "string") return null;
   let body: unknown;
   try { body = JSON.parse(t["text"]); } catch { return null; }
@@ -85,24 +111,23 @@ export function parseRetiredShellRecord(slug: string, record: LarTiddlerRecord |
     if (!r || typeof r.title !== "string" || !LAYERS.has(r.layer) || typeof r.fields !== "object" || r.fields === null) return null;
     if (Object.values(r.fields).some((v) => typeof v !== "string")) return null;
   }
+  for (const o of b.retires as readonly unknown[]) if (!isOutcome(o)) return null;
   return { slug, records: b.records, retires: b.retires };
 }
 
 /**
- * The union a carry writes: the standing body (or none) with `incoming` added and `outcome` appended. Answers `null` where every
- * incoming record already stands under the same fields (nothing to write). A title that stands under other fields throws.
+ * The union a carry writes: the standing body (or none) with `incoming` added (each title once) and `outcome` appended, every
+ * time: a real retire always leaves its outcome. A title that stands under other fields throws.
  */
-export function unionRetiredShell(slug: string, standing: RetiredShellBody | null, incoming: readonly CarriedEffectRecord[], outcome: RetireOutcome): RetiredShellBody | null {
+export function unionRetiredShell(slug: string, standing: RetiredShellBody | null, incoming: readonly CarriedEffectRecord[], outcome: RetireOutcome): RetiredShellBody {
   const held = new Map((standing?.records ?? []).map((r) => [r.title, r] as const));
-  const added: CarriedEffectRecord[] = [];
   for (const r of incoming) {
     const prior = held.get(r.title);
-    if (prior === undefined) { added.push(r); held.set(r.title, r); continue; }
+    if (prior === undefined) { held.set(r.title, r); continue; }
     if (!sameFields(prior.fields, r.fields)) {
       throw new RetiredShellCarryRefusal("retire-carry-unlanded", `"${r.title}" already stands in ${retiredShellUri(slug)} under other fields; one event id names one event, so nothing carries and nothing retires`);
     }
   }
-  if (added.length === 0 && standing !== null) return null;
   return { slug, records: [...held.values()].sort(byTitle), retires: [...(standing?.retires ?? []), outcome] };
 }
 
@@ -111,12 +136,12 @@ export function buildRetiredShellRecord(body: RetiredShellBody): LarTiddlerRecor
   return {
     tiddler: {
       title: retiredShellUri(body.slug),
-      type: "application/json",
+      type: "text/plain",
       "retired-wiki": body.slug,
       "effect-records": String(body.records.length),
       text: JSON.stringify(body, null, 2),
     },
-    meta: { authority: "lares-retire-wiki" },
+    meta: { authority: RETIRED_SHELL_AUTHORITY },
   };
 }
 

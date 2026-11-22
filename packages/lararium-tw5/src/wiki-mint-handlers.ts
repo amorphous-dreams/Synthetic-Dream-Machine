@@ -201,8 +201,10 @@ const sameCounts = (a: WikiShellCounts, b: WikiShellCounts): boolean => a.workin
  * outcome appended: the face owns that layer, it mirrors under `projections/` (a re-found clears only the hearth), and the keep
  * carries it with the face's daemon working rows. The carry reads its row back; a home that holds no durable document, a write
  * that faults, a read-back missing any record, or a carried title standing under other fields refuses `retire-carry-unlanded`
- * with nothing erased. Only the records the carry landed leave the layers. A re-run carries nothing new and writes nothing.
- * The answer names where they went (`carried`), and `dry-run` names where they would go (`carryTo`).
+ * with nothing erased. Only the records the carry landed leave the layers; after the erase the layers read once more, and an
+ * effect record that landed between the carry and the erase stays where it rests and the answer names it (`leftBehind`), so
+ * nothing orphans silently. Every retire that carries appends its own outcome; a re-run carries no record twice. The answer
+ * names where they went (`carried`), and `dry-run` names where they would go (`carryTo`).
  *
  * A working, draft or personal layer holding a live authored record refuses `wiki-not-empty`
  * (naming no count: `dry-run` reads the counts, and the refusal never carries the forcing line). `force` with no `count`
@@ -287,12 +289,14 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
 
     const canonDoc = tiddlerText(ownEntry(handle.doc()?.tiddlers, canonBag)) ?? null;
     if (total > 0 || effects.length > 0) await opts.shell.clear(slug, { authored: total > 0, effects: effects.map((e) => e.title) });
+    // THE LAST READING: an effect record no carry named stays in its layer; the answer names it, never a silent orphan.
+    const leftBehind = (await opts.shell.effects(slug)).map((e) => e.title).sort();
     const keyhiveBindings = await opts.shell.forget([wikiSlotUri(slug, "working"), wikiSlotUri(slug, "draft"), wikiSlotUri(slug, "personal")]);
     const slotBindings = await opts.shell.unbindSlots(slug);
     const { realmId, ledgerRows } = await opts.shell.unbind(slug);
     if (rows.length > 0) half.change((doc) => { for (const title of rows) delete doc.tiddlers[title]; });
 
-    return { slug, status: "retired", catalogRows: rows, ledgerRows, realmId, keyhiveBindings, slotBindings, records: counts, forced: total > 0, carried, kept: { canonBag, canonDoc } };
+    return { slug, status: "retired", catalogRows: rows, ledgerRows, realmId, keyhiveBindings, slotBindings, records: counts, forced: total > 0, carried, leftBehind, kept: { canonBag, canonDoc } };
   };
 }
 

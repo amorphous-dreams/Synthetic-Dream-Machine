@@ -111,8 +111,8 @@ export interface WikiShellPorts {
   /**
    * CARRY THE RECORD OF LEAVING (residency-model#/effect-record-surface): write `records` into the retirement record for `slug`
    * (`retiredShellUri`) in the worn face's durable home, its daemon wiki working layer, with `outcome` appended, and read the
-   * row back. Answers where the records went (`title`, `bag`), how many the record now holds for this retire, and how many the
-   * write added (0: every one already stood, and nothing was written). A home that holds no durable document, a write that
+   * row back. Answers where the records went (`title`, `bag`), how many this retire carried, and how many the write added to the
+   * record (0: every one already stood; the retire's outcome still appends). A home that holds no durable document, a write that
    * faults, a read-back missing any record, or a carried title standing under other fields THROWS: the retire then erases nothing.
    */
   carry(slug: string, records: readonly CarriedEffectRecord[], outcome: Omit<RetireOutcome, "face">): Promise<RetiredShellCarry>;

@@ -27,11 +27,14 @@ describe.skipIf(wikiSkip)(`the record of leaving round-trips its carrier${skipNo
   test("★ the exported carrier reads back to the same fields and body; with the house's stamp it parses whole ★", () => {
     const file = exportCarrierFile(engine, record.tiddler.title as string);
     expect(file).not.toBeNull();
+    // A `.json` carrier would read back as tiddlers (the JSON deserializer splits the body); the record types itself text/plain.
+    expect(file!.ext).not.toBe(".json");
     const d = makeTw5Deserializer(engine);
     const fields = file!.metaBody ? d.parseFields(file!.metaBody) : {};
-    const back = d.deserialize(file!.ext, file!.body, { ...fields, title: record.tiddler.title as string })[0]!;
+    const all = d.deserialize(file!.ext, file!.body, { ...fields, title: record.tiddler.title as string });
+    const back = all[0]!;
     expect(String(back["text"]).trim()).toBe(String(record.tiddler.text).trim());
-    expect(back["type"]).toBe("application/json");
+    expect(back["type"]).toBe("text/plain");
     expect(back["retired-wiki"]).toBe(SLUG);
     // Off disk the row carries no writer's stamp, and reads as no retirement record by itself.
     expect(parseRetiredShellRecord(SLUG, { tiddler: back as never })).toBeNull();
