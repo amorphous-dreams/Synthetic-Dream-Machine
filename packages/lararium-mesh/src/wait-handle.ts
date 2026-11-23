@@ -60,6 +60,9 @@ export interface SealedRestDoor {
   quarantine?(documentId: string, why: string): void;
   /** Told once when a sealed document held read-only settles: opened, refused on integrity evidence, or pending. */
   onSettled?(settled: SealedSettlement): void;
+  /** Why the vessel holds this document back from its engine (a resting engine fall names it in flight), or null. A held
+   *  document stands read-only and unread over its own id, never under a writable fallback, until the hand releases it. */
+  heldBack?(documentId: string): string | null;
 }
 
 /** How a sealed document held read-only over its own id settled. */
@@ -136,6 +139,20 @@ function holdSealed<T>(repo: Repo, progress: DocumentProgress<T>, documentId: st
   return own;
 }
 
+/** The held-back document's own handle, marked a stand-in and held unopened with the door's reason; null where none holds. */
+function heldBackHandle(repo: Repo, url: string): DocHandle<unknown> | null {
+  const heldBack = SEALED_DOORS.get(repo)?.heldBack;
+  if (heldBack === undefined) return null;
+  const documentId = documentIdOf(url);
+  const why = heldBack(documentId);
+  if (why === null) return null;
+  const own = (repo.handles as Record<DocumentId, DocHandle<unknown> | undefined>)[documentId as DocumentId];
+  if (own === undefined) return null;
+  markStandIn(own);
+  holdSealedUnopened(own, why);
+  return own;
+}
+
 const documentIdOf = (url: string): string =>
   isValidAutomergeUrl(url) ? parseAutomergeUrl(url).documentId : interpretAsDocumentId(url as never);
 
@@ -156,6 +173,10 @@ export async function waitHandle<T>(
   readyMs: number = LOCAL_READY_MS,
 ): Promise<DocHandle<T>> {
   const progress = repo.findWithProgress<T>(url as AutomergeUrl);
+  // A HELD-BACK DOCUMENT MOUNTS NO WRITABLE FALLBACK: the storage hands the engine none of its bytes, so it stands read-only
+  // and unread over its own id at once, and a write into it refuses naming why; nothing lands under a fresh id.
+  const held = heldBackHandle(repo, String(url));
+  if (held !== null) return held as DocHandle<T>;
   const ready = await Promise.race([
     progress.whenReady().then((h) => h).catch(() => null),
     // LIVENESS: a peer-held document may never arrive; the fallback can still merge later.

@@ -21,8 +21,9 @@
  *
  * THE DOCUMENT IN FLIGHT. The Repo handles each inbound message synchronously inside the network subsystem's `message`
  * emit (`tapInboundDocs` wraps it), so a trap met there knows the document that message named: the fall carries it as
- * `inFlight`, and the next boot's probe reads it (`engine-fall`). A trap met anywhere else (the ledger's write, a storage
- * save) names none, and says so with null.
+ * `inFlight`, and the next boot's probe reads it (`engine-fall`). The Repo's storage source logs a load or save it could
+ * not finish under the document's own id ("Error loading document <id> from storage"), so a trap logged there names that
+ * document too. A trap met anywhere else (the ledger's write) names none, and says so with null.
  *
  * NO RESTART LOOP. A restart may re-trap while it loads the same documents (CatColab #1461), so the watch itself never
  * restarts anything. The vessel's entry answers the fall (`engine-fall`): it flushes what it can and exits once, so the
@@ -151,16 +152,26 @@ export function createEngineWatch(clock: () => Date = () => new Date()): EngineW
 /**
  * NAME THE DOCUMENT IN FLIGHT on every inbound message: wrap the Repo's network subsystem `emit`, so each `message` it hands
  * the Repo runs inside `watch.carrying(documentId)`. The Repo catches a handler's throw and logs it (`tapRepoLogs`) inside
- * that same synchronous emit, so a trap read there names the message's document. Every other event passes untouched.
- * Idempotent per emitter. Answers the emitter.
+ * that same synchronous emit, so a trap read there names the message's document. A message naming a HELD document (one a
+ * resting fall names in flight, `engine-fall`) never reaches the Repo: a peer's sync would hand the engine its changes as
+ * surely as the storage would. Every other event passes untouched. Idempotent per emitter. Answers the emitter.
  */
-export function tapInboundDocs<T extends object>(emitter: T, watch: EngineWatch = ISOLATE_ENGINE, _held: readonly string[] = []): T {
+export function tapInboundDocs<T extends object>(
+  emitter: T, watch: EngineWatch = ISOLATE_ENGINE, held: readonly string[] = [],
+  log: (line: string) => void = (line) => console.warn(`[lararium] ${line}`),
+): T {
   if (TAPPED.has(emitter)) return emitter;
   TAPPED.add(emitter);
+  const holds = new Set(held);
+  const named = new Set<string>();
   const target = emitter as unknown as { emit: (event: string, ...args: unknown[]) => boolean };
   const emit = target.emit.bind(emitter);
   target.emit = (event: string, ...args: unknown[]): boolean => {
     const documentId = event === "message" ? (args[0] as { documentId?: unknown } | undefined)?.documentId : undefined;
+    if (typeof documentId === "string" && holds.has(documentId)) {
+      if (!named.has(documentId)) { named.add(documentId); log(`engine fall: an inbound message for ${documentId} held back (a resting fall names it in flight); none reaches the engine`); }
+      return false;
+    }
     return typeof documentId === "string" && documentId !== ""
       ? watch.carrying(documentId, () => emit(event, ...args))
       : emit(event, ...args);
@@ -200,6 +211,9 @@ export interface RepoLogger {
  * message"), so its logger offers the one place the network path's trap surfaces. `.debug` stays silent here, as the stock
  * factory leaves it to `DEBUG=automerge-repo:*`.
  */
+/** The storage source's own line for a load or save it could not finish, naming the document. */
+const STORAGE_DOC = /\bError (?:loading|saving) document (\S+) (?:from|to) storage\b/;
+
 export function tapRepoLogs(watch: EngineWatch, print: (...args: unknown[]) => void = (...a) => console.error(...a)): (namespace: string) => RepoLogger {
   return (namespace) => {
     const prefix = `[${namespace}]`;
@@ -208,7 +222,9 @@ export function tapRepoLogs(watch: EngineWatch, print: (...args: unknown[]) => v
       info: (message, ...args) => console.info(prefix, message, ...args),
       warn: (message, ...args) => console.warn(prefix, message, ...args),
       error: (message, ...args) => {
-        for (const arg of [message, ...args]) watch.note(arg, "repo");
+        const named = typeof message === "string" ? STORAGE_DOC.exec(message)?.[1] : undefined;
+        const noteAll = (): void => { for (const arg of [message, ...args]) watch.note(arg, "repo"); };
+        if (named !== undefined) watch.carrying(named, noteAll); else noteAll();
         print(prefix, message, ...args);
       },
     };
