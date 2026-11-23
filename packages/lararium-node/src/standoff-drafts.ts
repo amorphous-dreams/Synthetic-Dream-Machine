@@ -285,7 +285,9 @@ export class StandoffKeeper {
 
   private async awaiting(entry: KeeperStandoff, path: string, drafts: readonly string[], why: string): Promise<KeeperOutcome> {
     this.rounds.delete(entry.uri);
-    await this.deps.alert({ standoff: entry.standoff, bagId: entry.bagId, uri: entry.uri, path, drafts, why });
+    // ONE ALERT PER STAND-OFF: a memetic carrier's awaiting alert stands here; a native carrier loads no drafts, and the
+    // ward rail's own alert stays its one alert.
+    if (extname(path) === ".mem") await this.deps.alert({ standoff: entry.standoff, bagId: entry.bagId, uri: entry.uri, path, drafts, why });
     return { kind: "awaiting", drafts, why };
   }
 }

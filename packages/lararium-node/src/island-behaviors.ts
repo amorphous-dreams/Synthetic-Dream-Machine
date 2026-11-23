@@ -170,6 +170,9 @@ export function mountDiskProjection(
     ? collapseConfigOf((title) => (ctx.tw5.$tw as unknown as Tw5WikiLike).wiki.getTiddler(title)?.fields ?? null)
     : manifestRules, bag);
   let keeper: StandoffKeeper | null = null;
+  // The temp layer the keeper's awaiting alert stands in: this island's own wiki's. None (a lit face's projection) keeps the
+  // rail's alert as the one alert.
+  const tempBag = manifest.recipe?.wikiSlug ? wikiSlotUri(manifest.recipe.wikiSlug, "temp") : null;
   const projector = new LarDiskProjector({
   mirrors,
   // The ONE render shore: a carrier projects back to ITS OWN filetype
@@ -242,13 +245,21 @@ export function mountDiskProjection(
   // collapse rules. The rail hears the stand-off only where no rule collapsed it; where the bag holds no rule, it hears at
   // once, as it always did, and the keeper's drafts and its awaiting alert follow.
   onConflict: (info) => {
-    const post = (drafts?: readonly string[]): void => ctx.post(hostEvent(ctx.wikiUri, "confluence:conflict", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff, ...(drafts && drafts.length > 0 ? { drafts: drafts.join(" ") } : {}) }));
+    const post = (o: { readonly drafts?: readonly string[]; readonly auditOnly?: boolean } = {}): void => ctx.post(hostEvent(ctx.wikiUri, "confluence:conflict", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff, ...(o.drafts && o.drafts.length > 0 ? { drafts: o.drafts.join(" ") } : {}), ...(o.auditOnly === true ? { auditOnly: true } : {}) }));
     if (keeper === null) { post(); return; }
+    // ONE ALERT PER STAND-OFF (operator ruling, 2026-11-23): where the keeper loads a memetic carrier's drafts and can place
+    // its own awaiting alert (the island's temp layer), that alert supersedes the rail's; the rail still files its audit row.
+    const path = projector.standing().find((st) => st.bagId === info.bagId && st.uri === info.uri && st.standoff === info.standoff)?.path;
+    const folds = tempBag !== null && typeof path === "string" && path.endsWith(".mem");
     const ruled = collapseRules(info.bagId).size > 0;
-    if (!ruled) post();
+    const waits = folds || ruled;
+    if (!waits) post();
     void keeper.weigh(info).then(
-      (outcome) => { if (ruled && outcome.kind !== "collapsed") post(outcome.kind === "awaiting" ? outcome.drafts : []); },
-      (err: unknown) => { console.error(`[standoff] ${info.uri}: the keeper did not weigh the stand-off: ${err instanceof Error ? err.message : String(err)}`); if (ruled) post(); },
+      (outcome) => {
+        if (!waits || outcome.kind === "collapsed") return;
+        post({ drafts: outcome.kind === "awaiting" ? outcome.drafts : [], auditOnly: folds && outcome.kind === "awaiting" });
+      },
+      (err: unknown) => { console.error(`[standoff] ${info.uri}: the keeper did not weigh the stand-off: ${err instanceof Error ? err.message : String(err)}`); if (waits) post(); },
     );
   },
   // The standoff the projector surfaced stands resolved: the same rail carries its key with `resolved`,
@@ -293,7 +304,6 @@ export function mountDiskProjection(
   });
   // THE STAND-OFF KEEPER: the disk side of each stand-off loads as drafts in this island's wiki (the worn face's draft
   // layer), the person's rules collapse what they can, and what stays raises one awaiting alert in this wiki's temp layer.
-  const tempBag = manifest.recipe?.wikiSlug ? wikiSlotUri(manifest.recipe.wikiSlug, "temp") : null;
   const alertOrigin = (key: string) => ({ kind: "lares-verb" as const, requestId: `standoff-${key}` });
   keeper = new StandoffKeeper({
     wiki: keeperWikiOf(ctx.tw5.$tw as unknown as Tw5WikiLike),
