@@ -12,8 +12,17 @@
  *   · MISSING — live canon holds the carrier and the floor holds none of its rows;
  *   · OLDER   — the floor serves the carrier with bytes live canon no longer holds (a slot moved, arrived, or left; a carrier
  *               canon retired still rides the floor and reads here too).
+ * Both sides pass through the cut's one row form, the floor's rows as well as live canon's: a genesis floor rests the carrier's
+ * deserialized fields as the bake read them, live canon rests what INGEST landed, and neither residency stamps nor absent fields
+ * read as drift.
  * A slug with no live document on this vessel reads `unread` by name and counts nothing. NULL where the floor itself does not
- * read (the manifest or a snapshot this CAS cannot answer), or where no slug's live canon reads: never a silent zero.
+ * read (the manifest or a snapshot this CAS cannot answer), or where no slug's live canon reads: never a silent zero. The
+ * reading (`readFloorDriftReading`) names WHY it reads null, so no caller guesses a cause.
+ *
+ * WHAT IT CANNOT SEE: it walks the slugs the pinned manifest names. A public canon bag declared after the cut, which the floor
+ * keys no snapshot for, stays invisible here: its carriers ride no floor, so they neither miss nor age against it. A canon cut
+ * (`cutReleaseFloor`) walks the prior floor's slugs alone, so such a bag joins the floor only at a release bake that re-keys the
+ * slugs (`cutGenesisFloor`).
  *
  * Meme: lar:///ha.ka.ba/lararium/node/genesis-island#/the-floor-rides-releases
  */
@@ -65,28 +74,37 @@ function canonical(value: unknown): string {
   return JSON.stringify(order(value));
 }
 
-/** Read the floor's drift behind live public canon. Null where the floor does not read, or no slug's live canon does. */
-export async function readFloorDrift(ports: FloorDriftPorts): Promise<FloorDrift | null> {
+/** The drift, or null with the reason it does not read. */
+export type FloorDriftReading =
+  | { readonly drift: FloorDrift; readonly why?: undefined }
+  | { readonly drift: null; readonly why: string };
+
+/** The row form both sides compare under: the cut's (`floorRowOf`), as one canonical string. */
+const rowForm = (title: string, record: LarTiddlerRecord): string | null => {
+  const row = floorRowOf(title, record);
+  return row ? canonical(row.tiddler) : null;
+};
+
+/** Read the floor's drift behind live public canon, naming why where it does not read. */
+export async function readFloorDriftReading(ports: FloorDriftPorts): Promise<FloorDriftReading> {
   const manifestBytes = await ports.blob(ports.manifestCid);
-  if (!manifestBytes) return null;
+  if (!manifestBytes) return { drift: null, why: `the floor manifest ${ports.manifestCid} does not read from this vessel's CAS` };
   const opened = readFloorManifest(manifestBytes);
-  if ("refusal" in opened) return null;
+  if ("refusal" in opened) return { drift: null, why: `the floor manifest ${ports.manifestCid} reads ${opened.refusal}` };
   const slugs: FloorDriftSlug[] = [];
   const unread: string[] = [];
   for (const slug of floorSlugs(opened.manifest)) {
     const cid = opened.manifest.snapshots[slug]!;
     const bytes = await ports.blob(cid);
-    const snap = bytes ? openFloorSnapshot(bytes, cid) : null;
-    if (snap === null || "refusal" in snap) return null;
+    if (!bytes) return { drift: null, why: `the floor's ${slug} snapshot ${cid} does not read from this vessel's CAS` };
+    const snap = openFloorSnapshot(bytes, cid);
+    if ("refusal" in snap) return { drift: null, why: `the floor's ${slug} snapshot reads ${snap.refusal}` };
     const live = await ports.canonRows(slug);
     if (live === null) { unread.push(slug); continue; }
     const floorRows = new Map<string, string>();
-    for (const [title, r] of Object.entries(snap.rows)) floorRows.set(title, canonical(r.tiddler));
+    for (const [title, r] of Object.entries(snap.rows)) { const form = rowForm(title, r); if (form !== null) floorRows.set(title, form); }
     const liveRows = new Map<string, string>();
-    for (const [title, r] of Object.entries(live)) {
-      const row = floorRowOf(title, r);
-      if (row) liveRows.set(title, canonical(row.tiddler));
-    }
+    for (const [title, r] of Object.entries(live)) { const form = rowForm(title, r); if (form !== null) liveRows.set(title, form); }
     const floorCarriers = new Set([...floorRows.keys()].map(carrierOf));
     const missing = new Set<string>();
     const older = new Set<string>();
@@ -98,7 +116,12 @@ export async function readFloorDrift(ports: FloorDriftPorts): Promise<FloorDrift
     for (const title of floorRows.keys()) if (!liveRows.has(title)) older.add(carrierOf(title));
     slugs.push({ slug, missing: [...missing].sort(), older: [...older].sort() });
   }
-  if (slugs.length === 0) return null;
+  if (slugs.length === 0) return { drift: null, why: `no live canon document reads here for any slug the floor names (${unread.join(", ")})` };
   const carriers = [...new Set(slugs.flatMap((s) => [...s.missing, ...s.older]))].sort();
-  return { manifest: ports.manifestCid, count: carriers.length, carriers, slugs, unread };
+  return { drift: { manifest: ports.manifestCid, count: carriers.length, carriers, slugs, unread } };
+}
+
+/** Read the floor's drift behind live public canon. Null where the floor does not read, or no slug's live canon does. */
+export async function readFloorDrift(ports: FloorDriftPorts): Promise<FloorDrift | null> {
+  return (await readFloorDriftReading(ports)).drift;
 }

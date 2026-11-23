@@ -17,7 +17,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { cutFloorSnapshot, floorManifestBytes, sha256HexBytesSync, type FloorManifest, type LarTiddlerRecord } from "../src/index.js";
-import { readFloorDrift } from "../src/floor-drift.js";
+import { readFloorDrift, readFloorDriftReading } from "../src/floor-drift.js";
 
 const row = (title: string, text: string, extra: Record<string, unknown> = {}): LarTiddlerRecord => ({ tiddler: { title, text, ...extra } as LarTiddlerRecord["tiddler"] });
 const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";
@@ -77,6 +77,13 @@ describe("floor drift — the pinned floor against live public canon", () => {
     };
     const drift = await readFloorDrift({ manifestCid: f.cid, blob: f.blob, canonRows: async (slug) => live[slug as keyof typeof live] ?? null });
     expect(drift).toMatchObject({ count: 0, carriers: [], unread: [] });
+    // The other side too: a floor whose rows rest residency stamps (a bake that kept them) reads level against live canon without.
+    const stamped = floor({
+      lararium: Object.fromEntries(Object.entries(pinned.lararium).map(([t, r]) => [t, row(t, String(r.tiddler.text), { bag: "lar:///ha.ka.ba/bags/lararium", "$origin-bag": "lar:///ha.ka.ba/bags/lararium" })])),
+      lares: pinned.lares,
+    });
+    const both = await readFloorDrift({ manifestCid: stamped.cid, blob: stamped.blob, canonRows: async (slug) => pinned[slug as keyof typeof pinned] ?? null });
+    expect(both).toMatchObject({ count: 0, carriers: [] });
   });
 
   test("RED: an unreadable floor answers null, never a silent zero; a slug with no live document reads unread by name", async () => {
@@ -87,5 +94,14 @@ describe("floor drift — the pinned floor against live public canon", () => {
     const half = await readFloorDrift({ manifestCid: f.cid, blob: f.blob, canonRows: async (slug) => (slug === "lares" ? pinned.lares : null) });
     expect(half).toMatchObject({ count: 0, unread: ["lararium"] });
     expect(await readFloorDrift({ manifestCid: f.cid, blob: f.blob, canonRows: async () => null })).toBeNull();
+  });
+
+  test("RED: a null reading names its cause, never a guessed one", async () => {
+    const f = floor(pinned);
+    expect((await readFloorDriftReading({ manifestCid: "0".repeat(64), blob: f.blob, canonRows: async () => ({}) })).why).toMatch(/manifest 0{64} does not read from this vessel's CAS/);
+    const torn = async (c: string) => (c === f.cid ? f.blobs.get(c)! : null);
+    expect((await readFloorDriftReading({ manifestCid: f.cid, blob: torn, canonRows: async () => ({}) })).why).toMatch(/the floor's lararium snapshot \w+ does not read/);
+    expect((await readFloorDriftReading({ manifestCid: f.cid, blob: f.blob, canonRows: async () => null })).why).toMatch(/no live canon document reads here for any slug the floor names \(lararium, lares\)/);
+    expect((await readFloorDriftReading({ manifestCid: f.cid, blob: f.blob, canonRows: async (slug) => pinned[slug as keyof typeof pinned] })).why).toBeUndefined();
   });
 });

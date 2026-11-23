@@ -73,6 +73,8 @@ describe("an unread founding record", () => {
     expect(lines).toContain("  floor drift:     3 carrier(s) behind live canon · lararium 2 missing, 1 older · lares 0 missing, 0 older · unread sdm");
     expect(lines).toContain(`    missing: ${[ROSTER, CREST].sort().join(", ")}`);
     expect(lines).toContain(`    older:   ${PLAN}`);
-    expect(floorStatusLines({ ...base, floorDrift: null })).toContain("  floor drift:     unread (no live canon reads beside this floor)");
+    expect(floorStatusLines({ ...base, floorDrift: null, floorDriftWhy: "no catalog names live canon beside this store, so no live canon reads here" }))
+      .toContain("  floor drift:     unread (no catalog names live canon beside this store, so no live canon reads here)");
+    expect(floorStatusLines(base)).toContain("  floor drift:     unread (the standing vessel answers no drift reading; its build predates it, and a refresh carries it)");
   });
 });

@@ -272,13 +272,14 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
       } finally { process.stdout.write = write; }
       return JSON.parse(written.join("").trim().split("\n").at(-1)!) as { ok: boolean; data: HouseLag & { floorDrift: unknown } };
     };
-    const read = await answer(async () => drift);
+    const read = await answer(async () => ({ drift }));
     expect(read.data).toMatchObject({ lag: 1, floorDrift: drift });
-    const unread = await answer(async () => null);
-    expect(unread.data).toMatchObject({ lag: 1 });
+    expect(read.data).not.toHaveProperty("floorDriftWhy");
+    const unread = await answer(async () => ({ drift: null, why: "no standing vessel answers the floor read" }));
+    expect(unread.data).toMatchObject({ lag: 1, floorDriftWhy: "no standing vessel answers the floor read" });
     expect(unread.data).toHaveProperty("floorDrift", null);
-    const thrown = await answer(async () => { throw new Error("no vessel answers"); });
-    expect(thrown.data).toHaveProperty("floorDrift", null);
+    const thrown = await answer(async () => { throw new Error("the socket went"); });
+    expect(thrown.data).toMatchObject({ floorDrift: null, floorDriftWhy: "the floor read faulted: the socket went" });
   });
 
   it("RED: the human lag names the floor's drift on its own line, by carrier; CONTROL: an unread drift says so", async () => {
@@ -294,11 +295,11 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
       } finally { console.log = log; }
       return out;
     };
-    const lines = await human(async () => ({ manifest: "f".repeat(64), count: 1, carriers: [CREST], slugs: [{ slug: "lararium", missing: [CREST], older: [] }], unread: [] }));
+    const lines = await human(async () => ({ drift: { manifest: "f".repeat(64), count: 1, carriers: [CREST], slugs: [{ slug: "lararium", missing: [CREST], older: [] }], unread: [] } }));
     expect(lines.some((l) => /^lay: canon lags .* by 1 carrier\(s\)/.test(l))).toBe(true);
     expect(lines).toContain("floor: the floor this vessel serves trails live canon by 1 carrier(s) · lararium 1 missing, 0 older");
     expect(lines).toContain(`  missing: ${CREST}`);
-    expect(await human(async () => null)).toContain("floor: drift unread (no standing vessel, or no live canon reads beside its floor)");
+    expect(await human(async () => ({ drift: null, why: "no standing vessel answers the floor read" }))).toContain("floor: drift unread (no standing vessel answers the floor read)");
   });
 
   it("RED: `vessel lay --workbench --apply` lays the checkout's workbench waves alone: no holdings ingest, no face root, no share, no kahua", async () => {

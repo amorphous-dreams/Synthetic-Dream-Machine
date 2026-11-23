@@ -177,6 +177,7 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       expect(line).toContain("floor pin: none — this vessel stands in no Nexus charter");
       // CONTROL: no catalog names live canon here, so the drift reads null, never a silent zero.
       expect(out).toHaveProperty("floorDrift", null);
+      expect(out["floorDriftWhy"]).toMatch(/no catalog names live canon/);
     });
   });
 

@@ -54,6 +54,8 @@ export type FloorStatusOutput = Partial<FloorStatus> & {
   /** How far the floor this vessel serves trails live public canon, by carrier; null (or absent, on a vessel older than the
    *  reading) where it does not read. */
   readonly floorDrift?: FloorDrift | null;
+  /** Why `floorDrift` reads null, by name, where the vessel names it. */
+  readonly floorDriftWhy?: string;
 };
 
 /** How many carrier names a drift line spells before it counts the rest. */
@@ -77,8 +79,9 @@ export function floorDriftNames(d: FloorDrift, indent: string): string[] {
 }
 
 /** The floor drift's lines on the status: the count by carrier and the names, or why it reads unread. */
-function floorDriftLines(d: FloorDrift | null | undefined): string[] {
-  if (d === null || d === undefined) return ["  floor drift:     unread (no live canon reads beside this floor)"];
+function floorDriftLines(d: FloorDrift | null | undefined, why: string | undefined): string[] {
+  if (d === undefined) return ["  floor drift:     unread (the standing vessel answers no drift reading; its build predates it, and a refresh carries it)"];
+  if (d === null) return [`  floor drift:     unread (${why ?? "no reason named"})`];
   return [`  floor drift:     ${d.count} carrier(s) behind live canon · ${floorDriftTally(d)}`, ...floorDriftNames(d, "    ")];
 }
 
@@ -101,7 +104,7 @@ export function floorStatusLines(s: FloorStatusOutput): string[] {
         ? "  floor pin:       none (no Nexus charter; the founding record's genesis floor serves)"
         : `  floor pin:       ${s.pinned?.manifest ?? "?"} — its manifest does not read from this vessel's CAS`);
   }
-  lines.push(...floorDriftLines(s.floorDrift));
+  lines.push(...floorDriftLines(s.floorDrift, s.floorDriftWhy));
   if (s.nexusRefused) {
     lines.push(`  nexus:           refused ${s.nexusRefused.refusal} — ${s.nexusRefused.message}`);
     return lines;

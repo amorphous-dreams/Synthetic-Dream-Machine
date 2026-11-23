@@ -29,8 +29,8 @@
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
-  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorDrift, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
-  type FloorDrift, type FloorPinLike,
+  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorDriftReading, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
+  type FloorDrift, type FloorDriftReading, type FloorPinLike,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
 import { bootDaemonUrl } from "../boot-face-planes.js";
@@ -135,25 +135,31 @@ export type FloorStatusRead = Partial<FloorStatus> & {
   readonly genesis: FoundingRecordTruths & { readonly line: string };
   /** The Nexus part's refusal, by name, where this place stands in no charter. */
   readonly nexusRefused?: { readonly refusal: string; readonly message: string };
-  /** How far the floor this vessel serves trails live public canon, by carrier (`readFloorDrift`); null where it does not read. */
+  /** How far the floor this vessel serves trails live public canon, by carrier (`readFloorDriftReading`); null where it does not read. */
   readonly floorDrift: FloorDrift | null;
+  /** Why `floorDrift` reads null, by name; absent where it reads. */
+  readonly floorDriftWhy?: string;
 };
 
 /**
  * THE FLOOR'S DRIFT behind live public canon: the floor this vessel serves (the pin, else the genesis floor) against each canon
- * document the catalog names. A read; it writes nothing. Null where no catalog names live canon here or the floor does not read,
- * and a reading that throws answers null too: the drift never takes the status down with it.
+ * document the catalog names. A read; it writes nothing. Where it does not read, it answers null WITH the reason, by name: no
+ * catalog here, a floor blob this CAS cannot answer, no live canon document, or the fault a read threw. The drift never takes the
+ * status down with it, and never reads as a zero it did not count.
  */
-async function nodeFloorDrift(opts: NodeFloorOptions, manifestCid: string | null): Promise<FloorDrift | null> {
-  if (manifestCid === null || !opts.catalogUrl) return null;
+async function nodeFloorDrift(opts: NodeFloorOptions, manifestCid: string | null): Promise<FloorDriftReading> {
+  if (manifestCid === null) return { drift: null, why: "this vessel names no floor manifest (no pin and no genesis floor)" };
+  if (!opts.catalogUrl) return { drift: null, why: "no catalog names live canon beside this store, so no live canon reads here" };
   try {
     const docUrlOf = await nodeCanonDocUrl(opts.repo, opts.catalogUrl);
-    return await readFloorDrift({
+    return await readFloorDriftReading({
       manifestCid,
       blob: async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
       canonRows: (slug) => nodeCanonRows(opts.repo, docUrlOf, slug),
     });
-  } catch { return null; }
+  } catch (e) {
+    return { drift: null, why: `the drift read faulted: ${(e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()}` };
+  }
 }
 
 /**
@@ -187,10 +193,11 @@ export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatu
     ? "none — this vessel stands in no Nexus charter, so the founding record's genesis floor serves"
     : `${status?.pinned.manifest ?? "?"} does not read from this vessel's CAS`;
   const genesis = { ...truths, line: foundingRecordLine(truths, { pinNote }) };
-  const floorDrift = await nodeFloorDrift(opts, status?.pinned.manifest ?? genesisFloorCidOf(island));
+  const reading = await nodeFloorDrift(opts, status?.pinned.manifest ?? genesisFloorCidOf(island));
+  const drift = { floorDrift: reading.drift, ...(reading.why !== undefined ? { floorDriftWhy: reading.why } : {}) };
   return nexusRefused
-    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, floorDrift }
-    : { ...status!, genesis, floorDrift };
+    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, ...drift }
+    : { ...status!, genesis, ...drift };
 }
 
 /** `lares floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */
