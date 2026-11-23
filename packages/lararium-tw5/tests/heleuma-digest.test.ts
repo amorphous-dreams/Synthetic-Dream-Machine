@@ -18,7 +18,7 @@ import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
 import { frameCarrier, verifyBcc } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
-import { moduleBodyDigest, applySourceSha256Patch } from "../scripts/heleuma-digest.js";
+import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches } from "../scripts/heleuma-digest.js";
 
 const MODULE = "lar:///ha.ka.ba/lararium/tw5/modules/probe";
 const CODE = 'exports.probe = function () { return "probe"; };';
@@ -55,5 +55,15 @@ describe("★ a patched anchor re-stamps its check ★", () => {
     const patched = applySourceSha256Patch(anchor, `sha256:${sha(CODE)}`);
     expect(patched).toContain(`source-sha256 = "sha256:${sha(CODE)}"`);
     expect(verifyBcc(patched)).toBe("ok");
+  });
+});
+
+describe("mesh source window", () => {
+  test("a stale digest reads as drift; the matching digest passes", () => {
+    const tid = `title: ${MODULE}\ntype: text/plain\n\n${CODE}`;
+    expect(sourceTiddlerMatches(CODE, tid, MODULE, `sha256:${sha("stale")}`)).toBe(false);
+    expect(sourceTiddlerMatches(CODE, tid, MODULE, `sha256:${sha(CODE)}`)).toBe(true);
+    expect(sourceTiddlerMatches(CODE, tid.replace("\n\n", "\nmodule-type: library\n\n"), MODULE, `sha256:${sha(CODE)}`)).toBe(false);
+    expect(sourceTiddlerMatches(CODE + "changed", tid, MODULE, `sha256:${sha(CODE)}`)).toBe(false);
   });
 });

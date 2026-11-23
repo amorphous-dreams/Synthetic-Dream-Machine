@@ -14,7 +14,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-module
  */
-import { tagDigest, formatDigest, SHA256_ALGO } from "@lararium/mesh/agile-digest";
+import { tagDigest, formatDigest, digestsEqual, SHA256_ALGO } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
@@ -47,4 +47,15 @@ export function applySourceSha256Patch(content: string, digest: string): string 
     : `${body}\nsource-sha256 = "${tagged}"`;
   // The column law holds after the patch, so the anchor stays canonical under `meme check`.
   return stampCarrier(content.slice(0, bodyStart) + alignMetaTomlColumns(next) + content.slice(bodyEnd));
+}
+
+/** Check the source window's type, exact Git bytes and anchor digest. */
+export function sourceTiddlerMatches(source: string, tid: string, title: string, claimed: string): boolean {
+  const split = tid.indexOf("\n\n");
+  if (split < 0) return false;
+  const head = tid.slice(0, split).split("\n");
+  const body = tid.slice(split + 2);
+  return head.includes(`title: ${title}`) && head.includes("type: text/plain")
+    && !head.some((field) => /^module-type:/.test(field)) && body === source
+    && digestsEqual(formatDigest(SHA256_ALGO, sha256HexSync(body)), claimed);
 }
