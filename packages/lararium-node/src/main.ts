@@ -236,7 +236,11 @@ async function main(): Promise<void> {
     hold: () => { setInterval(() => {}, HOLD_TICK_MS); },
     log: (line) => console.error(`[lararium] ${line}`),
   });
-  armFallKeeper(fallKeeper, process);
+  // THE STOP SIGNALS ARM HERE TOO, before any composition stands: the hand's stop of a fallen vessel clears the count and
+  // exits 0 even when the fall came during boot. Before a fall a signal passes to `onStop`: until a composition stands, it
+  // ends the boot as the signal itself would; once one stands, the composition's own graceful shutdown answers it.
+  let onStop: (sig: "SIGINT" | "SIGTERM") => void = (sig) => process.exit(sig === "SIGINT" ? 130 : 143);
+  armFallKeeper(fallKeeper, process, (sig) => onStop(sig));
   // The seed witness names this boot's seed beside the founding seed: a differing seed reads as an offer, never a refusal (genesis-resolve).
   console.log(checkGenesisPin(storageDir, genesis));
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
@@ -572,14 +576,9 @@ async function main(): Promise<void> {
   if (!byPulama && await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
     console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");
   }
-  // ONE pair of handlers for the process: a signal reaches whichever composition stands when it lands.
-  // A SIGNAL REACHING A FALLEN ENGINE READS AS THE HAND'S STOP: the hand has seen the named state, so the restart count clears.
-  const onSignal = (sig: string): void => {
-    if (engineWatch.fallen()) clearEngineFalls(storageDir);
-    if (composition) composition.onSignal(sig); else signalHeld = sig;
-  };
-  process.on("SIGINT",  () => onSignal("SIGINT"));
-  process.on("SIGTERM", () => onSignal("SIGTERM"));
+  // ONE pair of handlers for the process (armed with the keeper): a signal reaches whichever composition stands when it
+  // lands. A signal reaching a fallen engine never arrives here: the keeper reads it as the hand's stop (`handStop`).
+  onStop = (sig) => { if (composition) composition.onSignal(sig); else signalHeld = sig; };
 }
 
 

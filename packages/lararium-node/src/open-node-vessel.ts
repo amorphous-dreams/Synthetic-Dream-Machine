@@ -2266,7 +2266,8 @@ async function prepareNodeBootOn(
   const corpusCasDir = corpusCasDirFromEnv();
   // THE HOUSE CANON SEATS HERE, off the checkout's disk-sourced holdings (`seatHouseCanonFromCheckout`), before any island
   // spawns: every island is handed the same slugs.
-  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout() };
+  // The documents a resting engine fall names in flight ride in too: the daemon island's own store holds them back.
+  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout(), heldBack };
   const hermShore = hermCasTransitFromEnv();
   const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
   // The floor stack carries `resolveCid` as the record's `cas` (below): a boot that refuses before it composes leaves no `cas` behind.

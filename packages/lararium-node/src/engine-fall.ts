@@ -41,7 +41,7 @@ import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { isCondemned, type DocLoadProbe, type ProbeResult } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-import type { EngineFall, EngineWatch } from "./engine-watch.js";
+import { engineFatalCauseOf, type EngineFall, type EngineWatch } from "./engine-watch.js";
 import type { StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo/slim";
 import { shoreFlushLines, type ShoreFlushReading } from "./shore-verb.js";
 
@@ -53,8 +53,9 @@ export const ENGINE_RESTART_CAP = 1;
 
 /** The hand act a vessel that stays down names. */
 export const ENGINE_DOWN_HAND_ACT =
-  "the vessel already rose once from an engine fall and fell again, so it stays down: preserve the hearth (copy it aside), "
-  + "then repair or restore from a keep bundle; stopping the vessel by hand clears the count, and the next stand may rise once more";
+  "the vessel already rose once from an engine fall and fell again, so it stays down: health answers 503 (after a fall during boot "
+  + "no verb reaches it); stop the vessel by hand (the stop clears the count and exits 0), preserve the hearth (copy it aside), then "
+  + "repair or restore from a keep bundle; the next stand may rise once more, and a document a fall named in flight stays held";
 
 const FALLS_FILE = ".engine-falls";
 
@@ -206,7 +207,16 @@ export function heldInFlight(falls: readonly RestingFall[]): string[] {
  * it stays down (`hold`), so health keeps answering 503 and every verb keeps refusing `engine-terminated`. A dead engine's
  * throw that reaches the keeper before anything else names the fall. Before any fall an uncaught throw ends the process
  * with 1, as Node's own default does. The process after a fall reads as a husk by design: it serves the named state and
- * runs nothing else.
+ * runs nothing else. A fall during boot leaves a thinner husk: the boot's own fault path has closed the verb socket, so
+ * health answers 503 over HTTP and no verb reaches it at all.
+ *
+ * THE HAND'S STOP REACHES A FALLEN VESSEL FROM THE FIRST MOMENT. The keeper arms the stop signals beside the throws, before
+ * any composition stands (`armFallKeeper`): a SIGINT or SIGTERM that reaches a fallen engine reads as the hand having seen
+ * the named state, so it clears the restart count and exits 0. Before a fall the signal passes to whatever answers it then.
+ *
+ * ONLY A DEAD ENGINE'S OWN SIGNATURES name a fall from an uncaught throw: `Module terminated` and the wasm trap. wasm-bindgen's
+ * "recursive use … unsafe aliasing" reports a JS re-entrancy fault with the engine still standing, so met uncaught before
+ * any fall it ends the process with 1, as any ordinary fault does.
  */
 export interface FallKeeper {
   /** Null while the engine stands, `answering` while the fall's answer runs, then that answer's verdict. */
@@ -215,6 +225,7 @@ export interface FallKeeper {
   uncaught(error: unknown): void;
   /** The boot's own rejection: true where the engine has fallen, so the fall's answer owns the end, never the boot's fault path. */
   absorbs(error: unknown): boolean;
+  /** A stop signal: true where the engine has fallen (the count clears and the process exits 0); false passes it on. */
   handStop(signal: string): boolean;
 }
 
@@ -225,7 +236,14 @@ export interface FallKeeperPorts extends Omit<FallPorts, "life"> {
   readonly hold: () => void;
 }
 
-const firstLine = (error: unknown): string => (error instanceof Error ? `${error.name}: ${error.message}` : String(error)).split("\n")[0]!;
+/** A throw as text, or "<unprintable>" where even printing it throws. */
+const printed = (error: unknown, stack: boolean): string => {
+  try { return error instanceof Error ? (stack ? (error.stack ?? error.message) : `${error.name}: ${error.message}`) : String(error); }
+  catch { return "<unprintable>"; }
+};
+const firstLine = (error: unknown): string => printed(error, false).split("\n")[0]!;
+/** The uncaught throws that name a fall: the dead engine's own two signatures, never the re-entrancy fault. */
+const namesFall = (error: unknown): boolean => { const cause = engineFatalCauseOf(error); return cause === "module-terminated" || cause === "wasm-unreachable"; };
 
 /** THE FALL'S KEEPER: answers the fall once (one exit at most, never beside an exit 1), and absorbs what the dead engine throws after it. */
 export function keepFallDown(watch: EngineWatch, ports: FallKeeperPorts): FallKeeper {
@@ -238,7 +256,7 @@ export function keepFallDown(watch: EngineWatch, ports: FallKeeperPorts): FallKe
     if (absorbed.has(line)) return;
     absorbed.add(line);
     ports.log(`engine fall: ${what} absorbed (${line}); ${verdict === "stays-down"
-      ? "the vessel stays down: health answers 503 and every verb refuses `engine-terminated`"
+      ? "the vessel stays down: health answers 503 and every verb it still serves refuses `engine-terminated`"
       : "the fall's answer alone decides the exit"}`);
   };
   watch.onFall((fall) => {
@@ -253,14 +271,21 @@ export function keepFallDown(watch: EngineWatch, ports: FallKeeperPorts): FallKe
   return {
     verdict: () => verdict,
     uncaught: (error) => {
-      watch.note(error, "repo");
+      if (namesFall(error)) watch.note(error, "repo");
       if (watch.fallen() !== null) { absorb(error, "a throw after the fall"); return; }
-      ports.log(`uncaught: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`);
+      ports.log(`uncaught: ${printed(error, true)}`);
       exitOnce(1);
     },
-    handStop: () => false,
+    handStop: (signal) => {
+      if (watch.fallen() === null) return false;
+      try { clearEngineFalls(ports.storageDir); }
+      catch (err) { ports.log(`engine fall: the count did not clear (${firstLine(err)})`); }
+      ports.log(`engine fall: ${signal} reached the fallen engine: the hand's stop clears the count; exiting 0`);
+      exitOnce(0);
+      return true;
+    },
     absorbs: (error) => {
-      watch.note(error, "repo");
+      if (namesFall(error)) watch.note(error, "repo");
       if (watch.fallen() === null) return false;
       absorb(error, "the boot's rejection after the fall");
       return true;
@@ -268,10 +293,16 @@ export function keepFallDown(watch: EngineWatch, ports: FallKeeperPorts): FallKe
   };
 }
 
-/** Arm the keeper on the process's own two events (one listener each). */
-export function armFallKeeper(keeper: FallKeeper, proc: { on(event: "uncaughtException" | "unhandledRejection", listener: (error: unknown) => void): unknown }): void {
+/** Arm the keeper on the process's own events (one listener each): the uncaught throw, the unhandled rejection, and the two
+ *  stop signals, which pass to `otherwise` where no fall stands. */
+export function armFallKeeper(
+  keeper: FallKeeper,
+  proc: { on(event: string, listener: (...args: unknown[]) => void): unknown },
+  otherwise: (signal: "SIGINT" | "SIGTERM") => void,
+): void {
   proc.on("uncaughtException", (error) => keeper.uncaught(error));
   proc.on("unhandledRejection", (error) => keeper.uncaught(error));
+  for (const signal of ["SIGINT", "SIGTERM"] as const) proc.on(signal, () => { if (!keeper.handStop(signal)) otherwise(signal); });
 }
 
 /** Why a held-back document stands read-only. */

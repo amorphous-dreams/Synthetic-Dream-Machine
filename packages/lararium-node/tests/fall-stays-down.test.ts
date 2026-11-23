@@ -177,7 +177,7 @@ describe("a fallen engine stays down", () => {
     const p = keeperPorts(storageDir, "b".repeat(32));
     const keeper = keepFallDown(watch, p.ports);
     const proc = new EventEmitter();
-    armFallKeeper(keeper, proc);
+    armFallKeeper(keeper, proc, () => {});
     proc.emit("uncaughtException", trap(), "uncaughtException");
     await settle();
     expect(keeper.verdict()).toBe("stays-down");

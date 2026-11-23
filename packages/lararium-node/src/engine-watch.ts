@@ -169,7 +169,13 @@ export function tapInboundDocs<T extends object>(
   target.emit = (event: string, ...args: unknown[]): boolean => {
     const documentId = event === "message" ? (args[0] as { documentId?: unknown } | undefined)?.documentId : undefined;
     if (typeof documentId === "string" && holds.has(documentId)) {
-      if (!named.has(documentId)) { named.add(documentId); log(`engine fall: an inbound message for ${documentId} held back (a resting fall names it in flight); none reaches the engine`); }
+      // A peer that ASKS hears the document unavailable at once, by name, never a silence it must wait out.
+      const asked = args[0] as { type?: unknown; senderId?: unknown };
+      const send = (emitter as { send?: (message: unknown) => void }).send;
+      if (asked.type === "request" && typeof asked.senderId === "string" && typeof send === "function") {
+        send.call(emitter, { type: "doc-unavailable", documentId, targetId: asked.senderId });
+      }
+      if (!named.has(documentId)) { named.add(documentId); log(`engine fall: ${documentId} held back from inbound sync (a resting fall names it in flight): none of it reaches the engine, and a peer that asks hears it unavailable`); }
       return false;
     }
     return typeof documentId === "string" && documentId !== ""
@@ -212,7 +218,7 @@ export interface RepoLogger {
  * factory leaves it to `DEBUG=automerge-repo:*`.
  */
 /** The storage source's own line for a load or save it could not finish, naming the document. */
-const STORAGE_DOC = /\bError (?:loading|saving) document (\S+) (?:from|to) storage\b/;
+const STORAGE_DOC = /^Error (?:loading|saving) document (\S+) (?:from|to) storage\b/;
 
 export function tapRepoLogs(watch: EngineWatch, print: (...args: unknown[]) => void = (...a) => console.error(...a)): (namespace: string) => RepoLogger {
   return (namespace) => {
