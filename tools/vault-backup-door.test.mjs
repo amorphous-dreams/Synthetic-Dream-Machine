@@ -26,6 +26,9 @@ import { unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
+
+// THE BUDGET COMES FROM ITS ONE OWNER (the built @lararium/mesh attempt-budget), never a count pinned here.
+const { ATTEMPT_BUDGET } = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/attempt-budget.js")).href);
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 const nodeMain = join(repo, "packages/lararium-node/dist/src/main.js");
 const door = join(repo, "tools/backup-test-custody.mjs");
@@ -112,7 +115,7 @@ test("a standing vessel cuts one face's backup bundle through its custody door",
 
     // ── B2: the vessel's own route gets asked again ─────────────────────────────────────────────────────────
     const missed = await backupTestCustody(root, { face: 0, out: join(outDir, "missed.bundle"), vesselPassphrase: "a-wrong-route-for-the-cut" });
-    assert.deepEqual({ ok: missed.ok, reason: missed.reason, attemptsLeft: missed.attemptsLeft }, { ok: false, reason: "no-slot-opens", attemptsLeft: 4 });
+    assert.deepEqual({ ok: missed.ok, reason: missed.reason, attemptsLeft: missed.attemptsLeft }, { ok: false, reason: "no-slot-opens", attemptsLeft: ATTEMPT_BUDGET - 1 });
     assert.equal(existsSync(join(outDir, "missed.bundle")), false);
 
     // ── B4: a face this vessel holds no root for ────────────────────────────────────────────────────────────

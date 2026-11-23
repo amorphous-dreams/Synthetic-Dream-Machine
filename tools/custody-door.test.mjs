@@ -35,6 +35,9 @@ const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 const nodeMain = join(repo, "packages/lararium-node/dist/src/main.js");
 const door = join(repo, "tools/unlock-test-custody.mjs");
 
+// THE BUDGET COMES FROM ITS ONE OWNER (the built @lararium/mesh attempt-budget), never a count pinned here.
+const { ATTEMPT_BUDGET } = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/attempt-budget.js")).href);
+
 const freePort = () => new Promise((resolve) => {
   const s = createServer();
   s.listen(0, "127.0.0.1", () => { const { port } = s.address(); s.close(() => resolve(port)); });
@@ -134,7 +137,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     assert.ok(Object.keys(before).length > 0, "the census finds private rows to compare (a silent census proves nothing)");
     const miss = await sendCustodyFrame(root, { op: "unlock", credentials: [{ kind: "passphrase", passphrase: WRONG }] });
     assert.equal(miss.reading, "no-slot-opens");
-    assert.equal(miss.attemptsLeft, 2);
+    assert.equal(miss.attemptsLeft, ATTEMPT_BUDGET - 1);
     assert.equal((await unlockTestCustody(root, "status")).unlocked, false, "K2: a miss holds nothing");
     assert.deepEqual(privateRows(node, root), before, "K2: a miss moves no private row");
     const livesBefore = vessel.lives();
@@ -207,7 +210,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
 
     // ── K4: five misses spend the boot's attempts; a restart opens the door again ────────────────────────────
     vessel = await stand(root);
-    for (const left of [4, 3, 2, 1, 0]) {
+    for (let left = ATTEMPT_BUDGET - 1; left >= 0; left--) {
       const m = await sendCustodyFrame(root, { op: "unlock", credentials: [{ kind: "passphrase", passphrase: `${WRONG}-${left}` }] });
       assert.deepEqual({ reading: m.reading, attemptsLeft: m.attemptsLeft }, { reading: "no-slot-opens", attemptsLeft: left });
     }
@@ -267,7 +270,7 @@ test("the door reads a key that opened over a refused composition as a refusal",
   assert.equal(custodyActLanded("unlock", refused), false, "K6: held false reads as a refusal");
   assert.equal(custodyActLanded("unlock", { ...refused, held: true, refused: undefined }), true, "K6 control: a held key lands");
   assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "already-unlocked" }), true);
-  assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "no-slot-opens", attemptsLeft: 2 }), false);
+  assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "no-slot-opens", attemptsLeft: ATTEMPT_BUDGET - 1 }), false);
   assert.equal(custodyActLanded("unlock", null), false);
   assert.equal(custodyActLanded("lock", { locked: true }), true);
   assert.equal(custodyActLanded("status", { unlocked: false }), true);
