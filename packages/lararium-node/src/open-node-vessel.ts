@@ -4653,6 +4653,8 @@ async function prepareNodeBootOn(
       // THE INNER VERB ROUTES AS A STRING OR REFUSES, never coerced: the socket's per-op hand gate reads the same field strictly.
       const verb = routingString(args, "verb", "wiki-act");
       if (verb === "") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act names the verb it carries (\`verb\`)`);
+      // NO NESTING: a wiki-act carries a wiki's verb, never another wiki-act, so no envelope wraps one past a gate that reads one level.
+      if (verb.toLowerCase() === "wiki-act") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act carries a wiki's verb, never another wiki-act`);
       const innerArgs = routingObject(args, "args", "wiki-act");
       const destination = innerArgs["to-bag"] ?? innerArgs["bag"];
       // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.

@@ -267,10 +267,12 @@ test("RED M2: an INGEST a seat sends places unattended, whatever it claims, on a
   const inner = (p: { verb: string; args?: unknown }) => (p.verb === "INGEST" ? p.args : (p.args as { args?: unknown }).args) as Record<string, unknown>;
   expect(v.placed.length).toBe(3);
   for (const p of v.placed) expect(inner(p)["unattended"], p.requestId).toBe(true);
+  // CONTROL: a cli session's wave claims nothing (an attended claim reads malformed, `ingest-seat-unattended` U2) and stays so.
+  const { unattended: _claim, ...plain } = wave;
   const w = await stand();
   const cli = await w.open("hint-a", "cli");
-  await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-ingest", verb: "wiki-act", args: { verb: "INGEST", args: wave } });
-  expect(inner(w.placed[0]!)["unattended"]).toBe(false);
+  await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-ingest", verb: "wiki-act", args: { verb: "INGEST", args: plain } });
+  expect(inner(w.placed[0]!)["unattended"]).toBeUndefined();
 });
 
 test("RED L3: a session opened with hand cli but marked by a seat (`seat: \"ai\"`) wears the seat's profile, as its one-shot line does: its shore remove refuses", async () => {
@@ -279,6 +281,20 @@ test("RED L3: a session opened with hand cli but marked by a seat (`seat: \"ai\"
   const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
   expect(await v.peer.ask({ op: "session:call", ...env, requestId: "marked-remove", verb: "shore", args: { op: "remove", uris: ["lar:///a.b.c/x"] } }))
     .toMatchObject({ kind: "session:refused", refusal: "shore-needs-hand" });
+  expect(v.placed).toEqual([]);
+});
+
+test("RED H1b: case and nesting never slip the gate: a seat's `SHORE`/`Remove`, and a wiki-act nested in a wiki-act, refuse and place nothing", async () => {
+  const v = await stand();
+  const asks: Array<[string, Record<string, unknown>]> = [
+    ["SHORE", { op: "remove", uris: ["lar:///a.b.c/x"] }],
+    ["wiki-act", { verb: "Shore", args: { op: "Remove", uris: ["lar:///a.b.c/x"] } }],
+    ["wiki-act", { verb: "wiki-act", args: { verb: "shore", args: { op: "remove", uris: ["lar:///a.b.c/x"] } } }],
+  ];
+  for (const [verb, args] of asks) {
+    const reply = await (await v.line()).ask({ verb, requestedBy: "seat-line", requestId: `seat-${verb}-${JSON.stringify(args).length}`, seat: "ai", args });
+    expect(reply["status"], JSON.stringify(args)).toBe("error");
+  }
   expect(v.placed).toEqual([]);
 });
 

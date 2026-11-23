@@ -334,10 +334,14 @@ export function shoreHandCode(verb: string, args: unknown): string | null {
   // THE GATE READS THE ROUTING FIELDS AS THE HANDLER DOES (`routing-arg`): a string, or a refusal. An inner verb, an op or an
   // inner argument object of any other shape refuses here, so no wrapping (`verb: ["shore"]`) routes past the gate.
   if (verb === "wiki-act" && ((a["verb"] !== undefined && typeof a["verb"] !== "string") || (a["args"] !== undefined && (typeof a["args"] !== "object" || a["args"] === null || Array.isArray(a["args"]))))) return "routing-arg-malformed";
-  const shore = verb === SHORE_VERB ? a : verb === "wiki-act" && a["verb"] === SHORE_VERB ? (a["args"] ?? {}) as Record<string, unknown> : null;
+  // CASE FOLDS, as the routed lookups read a verb (`routedReadOnlyBags`): `SHORE` or `Remove` reach the gate as `shore`/`remove`,
+  // so a later case-folding lookup never reopens the gap. A wiki-act nested in a wiki-act refuses outright.
+  const inner = verb === "wiki-act" && typeof a["verb"] === "string" ? a["verb"].toLowerCase() : null;
+  if (inner === "wiki-act") return "routing-arg-malformed";
+  const shore = verb.toLowerCase() === SHORE_VERB ? a : inner === SHORE_VERB ? (a["args"] ?? {}) as Record<string, unknown> : null;
   if (shore === null) return null;
   if (shore["op"] !== undefined && typeof shore["op"] !== "string") return "routing-arg-malformed";
-  return typeof shore["op"] === "string" && SHORE_HAND_OPS.has(shore["op"]) ? SHORE_HAND_CODE : null;
+  return typeof shore["op"] === "string" && SHORE_HAND_OPS.has(shore["op"].toLowerCase()) ? SHORE_HAND_CODE : null;
 }
 
 /**
