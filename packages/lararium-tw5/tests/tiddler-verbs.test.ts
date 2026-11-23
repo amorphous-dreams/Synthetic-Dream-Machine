@@ -304,7 +304,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const TOKEN = "ghp_" + "Zx9".repeat(10);
     const PAT = "github_pat_" + "A1b2".repeat(8);
     const MINT = "ab".repeat(32);
-    const ALERT = "$:/temp/lares/alert/boot-fault/1";
+    const ALERT = "$:/temp/lares/alert/engine-waiting";
     r.engine.wiki.addTiddler({ title: ALERT, tags: ["$:/tags/Alert", `tag ${TOKEN}`], text: `a fetch failed with token ${TOKEN}, ${PAT}, ticket ${MINT}, sha256:${MINT} and AKIAIOSFODNN7EXAMPLE`, detail: `retry with ${TOKEN}` });
     const fields = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx()))["tiddler"] as { fields: Record<string, unknown> }).fields;
     const said = JSON.stringify(fields);
@@ -315,6 +315,17 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(JSON.stringify(await makeWikiFilterReactor(r.opts)({ ...A, filter: `[[${ALERT}]get[text]]` }, ctx()))).not.toContain(TOKEN);
     expect(JSON.stringify(await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))).not.toContain(TOKEN);
     expect(r.engine.wiki.getTiddler(ALERT)!.fields["text"]).toContain(TOKEN);
+    // A boot fault leaves as its component and one fixed line: a parse error's quoted record text never crosses the door.
+    const FAULT = "$:/temp/lares/alert/boot-fault/1";
+    r.engine.wiki.addTiddler({ title: FAULT, tags: "$:/tags/Alert", component: "island-boot", text: "SyntaxError: Unexpected token in JSON: {\"text\":\"a private note\"}" });
+    const fault = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: FAULT }, ctx()))["tiddler"] as { fields: Record<string, unknown> }).fields;
+    expect(fault["component"]).toBe("island-boot");
+    expect(JSON.stringify(fault)).not.toContain("a private note");
+    // A refused module's digest leaves named by its scheme, so the strict hex rule keeps the one value a person compares.
+    const DIGEST = "ef".repeat(32);
+    const REFUSED = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/m.js";
+    r.engine.wiki.addTiddler({ title: REFUSED, tags: "$:/tags/Alert", text: `module-unpinned: $:/plugins/x/m.js (sha256:${DIGEST}) carries no pin` });
+    expect(JSON.stringify(await makeTiddlerGetReactor(r.opts)({ ...A, title: REFUSED }, ctx()))).toContain(`sha256:${DIGEST}`);
   });
 
   test("RED: an alert answers only a reader of the record it names: a reader without the bag reads the record cap-denied AND no alert about it; a parallel draft never opens; a dot-segment title opens nothing; the meme lens reads no alert; CONTROL: a reader with the bag reads the alert", async () => {

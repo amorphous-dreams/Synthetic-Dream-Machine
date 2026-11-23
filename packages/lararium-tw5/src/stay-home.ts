@@ -31,7 +31,7 @@ const ALERT_BASE_FIELDS = ["title", "text", "tags", "alert-kind"] as const;
  * THE KINDS THE READ DOOR OPENS, each with the fields it reads and the record titles it names (the title after the kind, or a
  * field's list). A kind absent here stays home.
  */
-export const ALERT_READS: Readonly<Record<string, { readonly fields: readonly string[]; readonly names: (rest: string, fields: Readonly<Record<string, unknown>>) => string[] }>> = Object.freeze({
+export const ALERT_READS: Readonly<Record<string, { readonly fields: readonly string[]; readonly names: (rest: string, fields: Readonly<Record<string, unknown>>) => string[]; readonly text?: string }>> = Object.freeze({
   // A refusal names an engine's module, plugin or prompt (`refused/<kind>/<title>`), never a record a bag holds.
   "refused":        { fields: [], names: () => [] },
   // The root stands absent by the alert's own meaning; the orphans it lists stand, each in its bag.
@@ -40,7 +40,9 @@ export const ALERT_READS: Readonly<Record<string, { readonly fields: readonly st
   "landing-failed": { fields: [], names: (rest) => [rest] },
   "engine-waiting": { fields: ["cause"], names: () => [] },
   "reboot-pending": { fields: ["cause"], names: () => [] },
-  "boot-fault":     { fields: ["component"], names: () => [] },
+  // A boot fault's own words (an error's stack, a parse error quoting the record it choked on, from any bag) never leave: the
+  // door answers its component and one fixed line, and the island's own alert bar keeps the words.
+  "boot-fault":     { fields: ["component"], names: () => [], text: "The island's boot raised a fault; its words stay on the island's own alert bar." },
 });
 
 /** A TiddlyWiki title list (`a [[b c]] d`) read into its titles. */
@@ -106,6 +108,7 @@ export function redactedAlertFields(title: string, fields: Readonly<Record<strin
   for (const name of [...ALERT_BASE_FIELDS, ...ALERT_READS[k.kind]!.fields]) {
     const value = fields[name];
     if (name === "title") { out[name] = title; continue; }
+    if (name === "text" && ALERT_READS[k.kind]!.text !== undefined) { out[name] = ALERT_READS[k.kind]!.text; continue; }
     if (typeof value === "string") out[name] = clean(value);
     else if (Array.isArray(value)) out[name] = value.map((v) => (typeof v === "string" ? clean(v) : v));
   }
