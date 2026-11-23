@@ -664,27 +664,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    * no realm seats founds its own private cabal of one for a slug no other face of the vessel stands, and none for a slug
    * the ledger already binds; a face seated in two realms for one slug refuses `workbench-two-realms` by name.
    */
-  /**
-   * THE REST GATE (cabal-realm#/the-workbench, OWED): the vessel seals the working document of the wiki it MOUNTS under the
-   * worn face's own content key (`wornFaceWikiBags`; the island's one holder carries the worn face's), so a face seated in
-   * ANOTHER face's realm cannot open that document's rest on this vessel, and a save it made there would seal one document
-   * under two faces (the fault 9d57bb71e named: `reference-unknown`, a working layer neither face loads again). Until a
-   * workbench's rest seals for its realm's roster, such a seat mounts no workbench here and writes its own `personal` layer,
-   * as a face with no seat does; its seat still stands in the realm's Document for the wire and for its own vessels.
-   */
-  const restsUnderAnotherFace = (slug: string, realmId: string, face: string): boolean =>
-    realmId !== privateCabalRealmId(face, slug) && daemonAuth.registerBags.includes(wikiSlotUri(slug, "working"));
-  const restGateNamed = new Set<string>();
   const faceWorkbench = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face: string) => async (slug: string, mint: boolean): Promise<string | null> => {
     const hive = provider();
     if (!hive) return null;
     const realmId = await faceWorkbenchRealm(hive, asLedgerDoc(await workbenchLedgerOf(ctx)), slug, face, mint);
-    // The mount reads the roster, so the realm's writer book follows it.
+    // The mount reads the roster, so the realm's writer book follows it. THE REST SEALS FOR THE ROSTER (cabal-realm#/the-workbench):
+    // a face seated in another face's realm mounts the workbench here too, and its holder opens the realm's lockbox.
     if (realmId !== null) await readRealmBook(ctx, slug);
-    if (realmId !== null && hive === kh && restsUnderAnotherFace(slug, realmId, face)) {
-      if (!restGateNamed.has(slug)) { restGateNamed.add(slug); console.log(`[workbench] ${slug}: this face holds a seat in realm ${realmId.slice(0, 12)}…, and the workbench's document rests sealed under its owner face on this vessel; this face mounts none of it and writes its personal layer`); }
-      return null;
-    }
     return realmId;
   };
   /** Whether one face's hive holds a writer's seat in a wiki's workbench (`workbenchWriterSeat`): a face that holds none writes `personal`. */
@@ -2055,9 +2041,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               const rolled = under === null ? null : await under.seat.rollNow(wikiSlotUri(row.slug, "working"), under.signer);
               if (rolled === null || "refusal" in rolled) console.log(`[workbench] ${row.slug}: ${landed.removed.length} seat(s) left the realm; the workbench's key rolls at its next seal${rolled !== null && "refusal" in rolled ? ` (roll-now refused: ${rolled.refusal})` : " (no owner session signs here)"}`);
             }
-            // THE REST GATE, said at the door: a workbench of the wiki this vessel mounts rests sealed under its owner's key.
-            const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
-            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
+            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed };
           },
           // THE UNSHARE TAKES THE READER BACK: the owner's hive revokes the grantee's agent from the bag, by the pair (the delegation id
           // lived only in the process that made it).
@@ -2090,13 +2074,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const slug = typeof args["slug"] === "string" ? args["slug"].trim() : "";
         if (slug === "") throw new VerbRefusal("workbench-seat-incomplete", "workbench-seat-incomplete: name the wiki (`slug`)");
         const realms = ledgerWorkbenchRealms((await workbenchLedgerOf(ctx)).doc(), slug);
-        const face = daemonAuth.personaGroupId;
-        // `restsUnderOwner`: the vessel seals this workbench's document under one face's key (the wiki it mounts), so a seat
-        // another face holds there writes `personal` on this vessel (the rest gate).
-        const restsUnderOwner = face !== undefined && realms.some((realmId) => restsUnderAnotherFace(slug, realmId, face));
         // `realms`: the canon realm ids the ledger binds for the slug, which a local realm label records beside its pet name
         // (`lares realm move`); the ids name realms, never a face, and the label stays on this house.
-        return { ok: true, slug, writeSlot: await slotDocsOf(ctx).writeSlot(slug), bound: realms.length > 0, realms, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
+        return { ok: true, slug, writeSlot: await slotDocsOf(ctx).writeSlot(slug), bound: realms.length > 0, realms };
       }, { summary: "Read the worn face's write layer for a wiki (`working` where it holds a writer's seat in the wiki's workbench or its own write would found one, `personal` otherwise), whether this vessel's ledger binds the wiki's workbench, and the realm ids it binds.", surfaces: [VERB_SURFACE.cli] });
       // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
       // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that

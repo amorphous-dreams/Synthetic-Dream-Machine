@@ -40,6 +40,16 @@
  *   Y3 a revoke and a seat in one landing converge: the successor serves the newcomer, never the revoked face.
  *   Y4 idempotence: a second projection notes no second removal, and a second `rollNow` mints nothing.
  *   Y5 own shadow: the revoked face's holder founds, rolls and mints nothing.
+ *   Y6 a projection on a seated face's replica, one that never ingested a later seat, notes no removal: only the owner's
+ *      replica (the hand that revokes) reads a seat gone as revoked.
+ *
+ * A6 the rest gate retires:
+ *   G1 (static) the island mounts the realm a face's seat reads, with no rest gate: no `restsUnderAnotherFace`, no mounted-hive
+ *      guard; each face's seat composes the realm port, the realm-aware standing and the hand-on.
+ *   G2 (static census) neither `workbench-seat` nor the share landing answers `restsUnderOwner`, and no consumer (the share
+ *      door, the seed, the import) reads it.
+ *   G3 a face seated `admin` in another face's realm mounts it and writes `working`; a face seated `read` mounts it, reads it,
+ *      and writes `personal`.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -50,7 +60,7 @@ import {
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
 import { readdirSync, readFileSync } from "node:fs";
-import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, type LedgerDoc } from "../src/workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -256,7 +266,7 @@ describe("A2 — writer standing follows the realm's seat, keyed to the lineage"
 
     // THE REVOKE: the owner's hive revokes the engineer's seat; the roster's projection reads it; the roll lands.
     await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
-    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
     book.set({ seated: [a.own], former: [{ chain: b.own, removedBy: [ACT] }] });
     const roll = contentKeyRollSink(seatA.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => a.signer }));
     await roll({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
@@ -293,7 +303,7 @@ describe("A4 — shareable history by default; chained boxes; the late seat", ()
     expect(said(await seatA.sealValues({ bagId: WORKING, values: [w1], signer: a.signer }))).toBe("OK");
     expect(said(await seatB.sealValues({ bagId: WORKING, values: [w2], signer: b.signer }))).toBe("OK");
     await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
-    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
     book.set({ seated: [a.own], former: [{ chain: b.own, removedBy: [ACT] }] });
     await contentKeyRollSink(seatA.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => a.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
     expect(said(await seatA.sealValues({ bagId: WORKING, values: [w3], signer: a.signer }))).toBe("OK");
@@ -382,7 +392,7 @@ describe("A5 — a roll derives from state; a revoke rolls now", () => {
     expect(said(await seats.get("engineer")!.sealValues({ bagId: WORKING, values: [w2], signer: b.signer }))).toBe("OK");
 
     await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
-    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
     expect(workbenchRemovals(v.ledger.d, realmId, SLUG).map((r) => r.face), "ONE removal noted").toEqual(["group-engineer"]);
     await b.hive.ingestPeerEvents(await a.hive.eventsForPeer(bOnA));
     seats = await island.stand();
@@ -407,7 +417,7 @@ describe("A5 — a roll derives from state; a revoke rolls now", () => {
     await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
     const s2 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 two")], signer: a.signer });
     expect(keyOf(s2), "no removal noted yet: the seal rides the same head").toBe(keyOf(s1));
-    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
     seats = await island.stand();
     const s3 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 three")], signer: a.signer });
     expect(said(s3)).toBe("OK");
@@ -453,8 +463,8 @@ describe("A5 — a roll derives from state; a revoke rolls now", () => {
     let seats = await island.stand();
     expect(said(await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y4 one")], signer: a.signer }))).toBe("OK");
     await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
-    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
-    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
     expect(workbenchRemovals(v.ledger.d, realmId, SLUG).length, "Y4: one removal, however often the roster projects").toBe(1);
     seats = await island.stand();
     expect(said(await seats.get("steward")!.rollNow(WORKING, a.signer))).toBe("OK");
@@ -470,5 +480,59 @@ describe("A5 — a roll derives from state; a revoke rolls now", () => {
     const rolled = await seats.get("engineer")!.rollNow(WORKING, b.signer);
     expect("rolled" in rolled ? rolled.rolled : rolled, "and rolls nothing").toBe(null);
     expect((await new SealedStore(v.rest).records("key-version")).length, "no version minted by the revoked face").toBe(versions);
+  });
+});
+
+describe("A5 — Y6: only the owner's replica notes a removal", () => {
+  test("Y6: a seated face's mount projects from a replica that never saw the newest seat, and notes no removal", async () => {
+    const { v, a, b, realmId } = await sharedWorkbench([0xea, 0xeb]);
+    const r = await face("referee", 0xec);
+    const rOnA = (await a.hive.receiveContactCard(await r.hive.contactCard())).id;
+    await landWorkbench({ slug: SLUG }, [{ face: "group-engineer", agentHex: (await a.hive.receiveContactCard(await b.hive.contactCard())).id, access: "write" }, { face: "group-referee", agentHex: rOnA, access: "read" }], { provider: a.hive, ledger: v.ledger, ownerFace: "group-steward" });
+    // The engineer's hive never ingested the referee's seat: its mount projects the roster from that replica.
+    expect(await faceWorkbenchRealm(b.hive, v.ledger, SLUG, "group-engineer", true)).toBe(realmId);
+    expect(workbenchRemovals(v.ledger.d, realmId, SLUG), "no removal: the referee was never revoked").toEqual([]);
+  });
+});
+
+describe("A6 — the rest gate retires", () => {
+  const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8");
+  const island = read("../src/operator-daemon-behavior.ts");
+
+  test("G1 (static): the island mounts the realm a seat reads, and every face's seat seals for the roster", () => {
+    expect(island, "no rest gate stands").not.toMatch(/restsUnderAnotherFace|restGateNamed/);
+    const mount = island.slice(island.indexOf("const faceWorkbench = (ctx: IslandContext"), island.indexOf("const faceWrites = (ctx"));
+    expect(mount, "the mount answers the realm the seat reads, and reads the writer book").toMatch(/await faceWorkbenchRealm\([\s\S]*await readRealmBook\(ctx, slug\)[\s\S]*return realmId;/);
+    expect(mount, "no mounted-hive guard turns a seated face to personal").not.toMatch(/hive === kh/);
+    const seat = island.slice(island.indexOf("const seatOfFace = ("), island.indexOf("const standSiblingSeat = ("));
+    expect(seat).toMatch(/standing: faceStanding\(\{ own: \(\) => entry\.chain, bags: face\.bags, realmWriters:/);
+    expect(seat).toMatch(/realm: realmRestPort\(/);
+    expect(seat).toMatch(/handOn: \(served, wrapper\) => handRealmOpsOn\(/);
+  });
+
+  test("G2 (static census): no reply answers `restsUnderOwner`, and no consumer reads it", () => {
+    const verb = island.slice(island.indexOf('registry.register("workbench-seat"'), island.indexOf("registry.fence("));
+    expect(verb, "the seat verb answers its write layer, its binding and its realms").toMatch(/return \{ ok: true, slug, writeSlot: await slotDocsOf\(ctx\)\.writeSlot\(slug\), bound: realms\.length > 0, realms \};/);
+    for (const rel of ["../src/operator-daemon-behavior.ts", "../src/share-apply.ts", "../../lares-cli/src/commands/share-cmd.ts", "../../lares-cli/src/seed-mirrors.ts", "../../lares-cli/src/commands/house-bundle.ts"]) {
+      expect(read(rel), rel).not.toMatch(/restsUnderOwner/);
+    }
+  });
+
+  test("G3: an admin seat in another face's realm mounts it and writes working; a read seat mounts, reads, and writes personal", async () => {
+    const { v, a, b, realmId } = await sharedWorkbench([0xf1, 0xf2]);
+    const r = await face("referee", 0xf3);
+    const rOnA = (await a.hive.receiveContactCard(await r.hive.contactCard())).id;
+    await landWorkbench({ slug: SLUG }, [{ face: "group-engineer", agentHex: (await a.hive.receiveContactCard(await b.hive.contactCard())).id, access: "write" }, { face: "group-referee", agentHex: rOnA, access: "read" }], { provider: a.hive, ledger: v.ledger, ownerFace: "group-steward" });
+    await r.hive.ingestPeerEvents(await a.hive.eventsForPeer(rOnA));
+    expect(await faceWorkbenchRealm(b.hive, v.ledger, SLUG, "group-engineer", true), "the engineer mounts the steward's realm").toBe(realmId);
+    expect(await workbenchWriterSeat(b.hive, v.ledger.d, SLUG), "and writes working").toBe(true);
+    expect(await faceWorkbenchRealm(r.hive, v.ledger, SLUG, "group-referee", true), "the referee mounts it too").toBe(realmId);
+    expect(await workbenchWriterSeat(r.hive, v.ledger.d, SLUG), "and writes personal").toBe(false);
+    // The referee reads the steward's change through its own holder (readers follow the roster).
+    const island2 = islandOf(v, [a, b, r]);
+    const seats = await island2.stand();
+    const line = change("g3 for every seat");
+    expect(said(await seats.get("steward")!.sealValues({ bagId: WORKING, values: [line], signer: a.signer }))).toBe("OK");
+    expect(said(await seats.get("referee")!.holder.openValue({ bagId: WORKING, role: "change", ref: line.ref })), "a read seat opens the workbench").toBe("OK");
   });
 });

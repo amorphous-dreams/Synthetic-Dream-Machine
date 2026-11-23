@@ -249,10 +249,15 @@ export async function workbenchWriterSeat(provider: KeyhiveProvider, ledger: Lar
  * the realm's key Document seats the agent on this replica, and leaves where it does not. Keyhive answers; the ledger mirrors
  * it. The reading asks the key Document the ledger names that seats this hive, else (a replica that adopted the key and
  * noted no row of it) the Document the hive maps the slot to. Rows whose face no candidate names read again through the
- * agent they carry. Returns the faces the projection holds.
+ * agent they carry. Returns the faces the projection holds. On the owner's replica (`notesRemovals`) a seat the ledger held that
+ * the Document no longer holds leaves ONE removal row beside its dropped seat row (the rest seals for the roster).
  */
 export async function projectWorkbenchRoster(
   provider: KeyhiveProvider, ledger: LedgerDoc, realmId: string, slug: string, candidates: ReadonlyMap<string, string> = new Map(),
+  /** `notesRemovals`: this projection reads the realm owner's own replica, the hand that revokes (the share door's landing),
+   *  so a seat it reads gone was revoked, and it notes the removal the workbench's roll answers. A projection on any other
+   *  replica (a seated face's mount) may read a seat it never ingested as absent, so it notes none. */
+  opts: { readonly notesRemovals?: boolean } = {},
 ): Promise<readonly string[]> {
   const self = await provider.whoami();
   let rosterDoc: string | null = null;
@@ -264,7 +269,7 @@ export async function projectWorkbenchRoster(
   for (const [face, agentHex] of all) {
     const seated = rosterDoc !== null && await provider.seatedInDoc(agentHex, rosterDoc);
     if (seated) { held.push(face); ledger.change((d) => noteWorkbenchSeat(d, realmId, slug, face, agentHex)); }
-    else if (noted.has(face)) {
+    else if (opts.notesRemovals === true && noted.has(face)) {
       // A SEAT THE LEDGER HELD LEFT: its row drops, and ONE removal row names the act the workbench's content-key roll answers
       // (the rest seals for the roster), so a revoke always rotates the workbench's key.
       const was = noted.get(face)!;
@@ -335,7 +340,7 @@ export async function landWorkbench(
   let seated = 0;
   for (const m of fresh) { await admitWorkbenchFace(ports.provider, row.slug, m.agentHex, m.access); seated++; }
   const candidates = new Map<string, string>([[ports.ownerFace, await ports.provider.whoami()], ...members.map((m) => [m.face, m.agentHex] as [string, string])]);
-  await projectWorkbenchRoster(ports.provider, ports.ledger, realmId, row.slug, candidates);
+  await projectWorkbenchRoster(ports.provider, ports.ledger, realmId, row.slug, candidates, { notesRemovals: true });
   // THE HAND-OVER: each face seated now takes the head's one chained box (its history declared shareable at the founding).
   if (keyholder !== null) for (const m of fresh) await keyholder.handOver(m.agentHex);
   return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort() };
