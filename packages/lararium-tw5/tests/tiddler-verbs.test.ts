@@ -282,6 +282,23 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(makeWikiRenderReactor(r.opts)({ ...A, title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
   });
 
+  test("RED: an alert the house raises (`$:/temp/lares/alert/…`) reads through the one door, a get, a filter and a render alike, and takes no write; CONTROL: every other temp title still stays home", async () => {
+    const r = await rig();
+    const ALERT = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/evil.js";
+    r.engine.wiki.addTiddler({ title: ALERT, tags: "$:/tags/Alert", text: "Module refused: its SHA-256 matches no pin" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx());
+    expect((got["tiddler"] as { fields: Record<string, string> }).fields).toMatchObject({ title: ALERT, text: "Module refused: its SHA-256 matches no pin" });
+    const listed = await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx());
+    expect(listed).toMatchObject({ titles: [ALERT], total: 1 });
+    expect(String((await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))["text"] ?? "")).toContain("matches no pin");
+    // The alert reads and never writes: the house raises and clears it, never a door.
+    await expect(makeTiddlerPutReactor(r.opts)({ ...A, title: ALERT, text: "cleared" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: ALERT }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    // CONTROL: the rest of the temp namespace stays home.
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/]]" }, ctx()))["titles"]).toEqual([ALERT]);
+  });
+
   test("tiddler-get: a plain tiddler answers its fields (today's meme get drops them); fields-only leaves the text home", async () => {
     const r = await rig();
     const get = makeTiddlerGetReactor(r.opts);
