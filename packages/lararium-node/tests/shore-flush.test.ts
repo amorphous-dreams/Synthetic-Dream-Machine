@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
-import { answerShore, answerShoreSeats, flushEveryShore, shoreFlush, SHORE_OPS, SHORE_VERB } from "../src/shore-verb.js";
+import { answerShore, answerShoreSeats, flushEveryShore, shoreFlush, shoreHandCode, shoreStuckFaces, SHORE_HAND_CODE, SHORE_OPS, SHORE_VERB } from "../src/shore-verb.js";
 import type { TW5Engine } from "@lararium/tw5";
 
 let root = "";
@@ -125,8 +125,10 @@ describe("the shore's flush", () => {
     const seats = { own: worn, worn: 0, lit: (face: number) => (face === 2 ? sibling : null), litFaces: () => [2] };
     expect(await answerShoreSeats(seats, { op: "list", face: 2 })).toMatchObject({ ok: true, op: "list", face: 2 });
     expect(await answerShoreSeats(seats, { op: "list", face: 0 })).toMatchObject({ ok: true, op: "list", face: 0 });
-    expect(await answerShoreSeats(seats, { op: "list", face: 1 })).toMatchObject({ ok: false, refusal: "face-unprojected", face: 1 });
-    expect(await answerShoreSeats(seats, { op: "list", face: "h2" })).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    const unprojected = await answerShoreSeats(seats, { op: "list", face: 1 });
+    expect(unprojected).toMatchObject({ ok: false, refusal: "face-unprojected", face: 1 });
+    expect(String(unprojected["why"])).toMatch(/lares vessel census.*lares vault unlock --face 1/);
+    expect(await answerShoreSeats(seats, { op: "list", face: "h2" })).toMatchObject({ ok: false, refusal: "face-malformed" });
     // The sibling's failed carrier reads through its face, and a flush naming no face reaches it beside the worn one.
     expect((await answerShoreSeats(seats, { op: "census", face: 2 }))["carriers"]).toEqual([{ state: "failed", uri: RETRIES, bagId: BAG }]);
     siblingThrows = false;
@@ -137,5 +139,19 @@ describe("the shore's flush", () => {
     expect(await answerShoreSeats(seats, { op: "list" })).toMatchObject({ ok: true, op: "list" });
     expect((await answerShoreSeats(seats, { op: "list" }))["face"]).toBeUndefined();
     await worn.stop(); await sibling.stop();
+  });
+
+  test("RED S6 — the shore's settling ops read hand-only per op, on the shore verb and through wiki-act; the stuck faces read off the rows", () => {
+    for (const op of ["take-records", "restore", "remove"]) {
+      expect(shoreHandCode("shore", { op })).toBe(SHORE_HAND_CODE);
+      expect(shoreHandCode("wiki-act", { verb: "shore", args: { op } })).toBe(SHORE_HAND_CODE);
+    }
+    for (const op of ["list", "sense", "settle", "render", "census", "flush"]) expect(shoreHandCode("shore", { op }), op).toBeNull();
+    expect(shoreHandCode("wiki-act", { verb: "tiddler-get", args: { op: "remove" } })).toBeNull();
+    const reading = { whole: false, islands: [
+      { island: "daemon", answered: true as const, written: [], writtenCount: 0, unwritten: [{ state: "failed" as const, uri: "u", bagId: null, why: "w", face: 2 } as never], unwrittenCount: 1, fileWrites: 0, drained: true },
+      { island: "wiki:home", answered: true as const, written: [], writtenCount: 0, unwritten: [{ state: "pending" as const, uri: "v", bagId: null, why: "w" }], unwrittenCount: 1, fileWrites: 0, drained: false },
+    ] };
+    expect(shoreStuckFaces(reading, 0)).toEqual([0, 2]);
   });
 });

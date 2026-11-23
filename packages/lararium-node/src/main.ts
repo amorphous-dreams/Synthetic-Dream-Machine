@@ -103,7 +103,7 @@ import { ISOLATE_ENGINE, tapRepoLogs } from "./engine-watch.js";
 import { createEngineMeter, readProcessWasm, type EngineMeter } from "./engine-meter.js";
 import { armFallKeeper, clearEngineFalls, heldInFlight, keepFallDown, readEngineFalls, HELD_HAND_ACT, type FallKeeper } from "./engine-fall.js";
 import { readVesselLife } from "./vessel-life.js";
-import type { ShoreFlushReading } from "./shore-verb.js";
+import { shoreHandCode, type ShoreFlushReading } from "./shore-verb.js";
 import { setLoggerFactory } from "@automerge/automerge-repo";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanDatagramSocket } from "./lan-discovery.js";
@@ -964,6 +964,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     sessionVerbs: STORE_DOOR_FACE_VERBS,
     handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS,
     handOnlyCodes: STORE_DOOR_HAND_CODES,
+    // THE SHORE SETTLES BY A PERSON: a seat's take-records, restore or remove refuses `shore-needs-hand`, per op (`shoreHandCode`).
+    handOnlyOp:   shoreHandCode,
     socketVerbs:  new Set([...STORE_DOOR_FACE_VERBS, ...REALM_KEY_VERBS]),
     // A FACE ROW ANSWERS ON THE SOCKET ALONE (K20): the store door's face rows, and the realm verbs a session runs that
     // name a face's key (`REALM_SESSION_ACTS`), ride `session:act` beside the sealed acts, main's handler running as the

@@ -59,7 +59,7 @@ import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.j
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
 import { readHand } from "./hand-act-gate.js";
 import type { PeerKind } from "./uds-peer.js";
-import { shoreFlushLines, type ShoreFlushReading } from "./shore-verb.js";
+import { shoreFlushLines, shoreStuckFaces, type ShoreFlushReading } from "./shore-verb.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
@@ -475,7 +475,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       for (const line of shoreFlushLines(shore)) deps.onLog(`wear h${face}: ${line}`);
       if (!shore.whole && !yes) {
         const strands = shoreFlushLines(shore).filter((_, i) => { const part = shore.islands[i]!; return !part.answered || part.unwrittenCount > 0; });
-        return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until that face is worn again: wear again with --yes to turn anyway`, { shore });
+        const stuck = shoreStuckFaces(shore, before ?? null);
+        const where = stuck.length > 0 ? `on ${stuck.map((f) => `h${f}`).join(", ")}` : "on an island that did not answer";
+        return refuse("shore-unwritten", `the shore's flush left records unwritten ${where} (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until a flush writes them (\`lares shore flush\`): wear again with --yes to turn anyway`, { shore });
       }
     }
     const priorMount = daemonMountState();
@@ -828,7 +830,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // no record and moves no custody, so it rides beside the chain and asks no credential, as the census does.
       const flushing = deps.shoreFlush?.() ?? null;
       if (flushing === null) {
-        answer(sock, { op, status: "error", errorMessage: "no composition sits to flush its shores; stand the vessel, then ask again", refusal: { reason: "flush-unavailable" } });
+        answer(sock, { op, status: "error", errorMessage: "no composition sits to flush its shores: stand the vessel (`lares vessel stand`), or unlock it (`lares vault unlock`) where it rests locked, then ask again", refusal: { reason: "flush-unavailable" } });
         return true;
       }
       void flushing.then(

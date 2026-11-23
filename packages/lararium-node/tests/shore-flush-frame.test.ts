@@ -35,7 +35,9 @@ describe("the shore-flush frame", () => {
   });
 
   test("RED F2 — no composition sitting refuses flush-unavailable; CONTROL: a door with no flush wired refuses the same", async () => {
-    expect(await ask(door(() => null))).toMatchObject({ op: "shore-flush", status: "error", refusal: { reason: "flush-unavailable" } });
+    const none = await ask(door(() => null));
+    expect(none).toMatchObject({ op: "shore-flush", status: "error", refusal: { reason: "flush-unavailable" } });
+    expect(String(none["errorMessage"])).toContain("lares vessel stand");
     expect(await ask(door())).toMatchObject({ op: "shore-flush", status: "error", refusal: { reason: "flush-unavailable" } });
   });
 

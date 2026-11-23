@@ -18,6 +18,7 @@ import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, conclude
 import { HAND_PROFILES } from "@lararium/mesh/session-contract";
 import { KAHUA_OPERATOR_VERBS, PROMOTE_HAND_CODES, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS } from "../src/store-door-verbs.js";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
+import { shoreHandCode } from "../src/shore-verb.js";
 import { claimStore } from "../src/owned-store.js";
 
 const KAHUA_ROWS = ["kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
@@ -75,7 +76,7 @@ async function stand() {
   } };
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
-    switchActs: { write: async () => {} }, sessionVerbs: new Set([...KAHUA_ROWS]), handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS, handOnlyCodes: STORE_DOOR_HAND_CODES,
+    switchActs: { write: async () => {} }, sessionVerbs: new Set([...KAHUA_ROWS]), handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS, handOnlyCodes: STORE_DOOR_HAND_CODES, handOnlyOp: shoreHandCode,
     socketVerbs: new Set([...KAHUA_ROWS]), sessionActs: sessionActs as never,
     placeVerb: (o) => {
       // The old route: the island runs the row and its outcome body rests in the daemon document beside its requester.
@@ -218,4 +219,24 @@ test("RED: a seat's `wiki-render-out` refuses `render-output-needs-hand` at the 
   const cli = await w.open("hint-a", "cli");
   await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-render", verb: "wiki-render-out", args: { recipe: "notes", output: "workbench", filter: "[all[]]" } });
   expect(w.placed.map((p) => p.verb)).toEqual(["wiki-render-out"]);
+});
+
+test("RED: a seat-marked one-shot line's shore take-records, restore and remove refuse `shore-needs-hand` and place nothing, on the shore verb and through wiki-act; a seat session's call refuses the same; CONTROL: the seat lists, and a cli session's remove places", async () => {
+  const v = await stand();
+  for (const op of ["take-records", "restore", "remove"]) {
+    for (const [verb, args] of [["shore", { op, uri: "lar:///a.b.c/x", key: "k" }], ["wiki-act", { verb: "shore", args: { op, uri: "lar:///a.b.c/x", key: "k" } }]] as const) {
+      const reply = await (await v.line()).ask({ verb, requestedBy: "seat-line", requestId: `seat-${verb}-${op}`, seat: "ai", args });
+      expect(JSON.stringify(reply), `${verb} ${op}`).toContain("shore-needs-hand");
+    }
+  }
+  const env = await v.open("hint-a", "seat");
+  expect(await v.peer.ask({ op: "session:call", ...env, requestId: "seat-call-remove", verb: "shore", args: { op: "remove", uris: ["lar:///a.b.c/x"] } }))
+    .toMatchObject({ kind: "session:refused", refusal: "shore-needs-hand" });
+  expect(v.placed).toEqual([]);
+  await (await v.line()).ask({ verb: "shore", requestedBy: "seat-line", requestId: "seat-list", seat: "ai", args: { op: "list" } });
+  expect(v.placed.map((p) => p.verb)).toEqual(["shore"]);
+  const w = await stand();
+  const cli = await w.open("hint-a", "cli");
+  await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-remove", verb: "shore", args: { op: "remove", uris: ["lar:///a.b.c/x"] } });
+  expect(w.placed.map((p) => p.verb)).toEqual(["shore"]);
 });

@@ -423,7 +423,8 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
   // A KEYED ACT names one standoff: the records' side taken, or the records' side read.
   const keyed = op === "take-records" || op === "render";
   for (const island of reach) {
-    const listed = await readShoreList(ask(island), { op: "list", ...(keyed && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}) });
+    // THE LISTING READS THE SHORE THE ANSWER NAMES: a face's answer lists that face's own projector, never the worn face's.
+    const listed = await readShoreList(ask(island), { op: "list", ...(keyed && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}), ...(shoreArgs["face"] !== undefined ? { face: shoreArgs["face"] } : {}) });
     if (!listed.ok) { if (holdsNoShore(listed)) continue; return refusedAt(island, listed); }
     if (keyed) {
       const stands = listed.standoffs.filter((s) => s["uri"] === uri);

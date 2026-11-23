@@ -1704,16 +1704,25 @@ def build_mcp(coordinator: LaresCoordinator):
         args: dict = {"op": "list"}
         if face is not None:
             if not isinstance(face, int) or isinstance(face, bool) or face < 0:
-                raise SeatArgumentRefused("shore: `face` names a handle index (a whole number from 0)")
+                raise SeatArgumentRefused("face-malformed: shore: `face` names a handle index (a whole number from 0), as `shore(face=2)`")
             args["face"] = face
         if bag is not None:
             args["bag"] = bag
         islands = ("daemon",) if face is not None else SHORE_ISLANDS
         standoffs: list = []
         pending: list = []
+        def unpaged(island, why):
+            return uds.LaresVerbError(f"shore-list-unpaged: the {island} island: {why}")
+
+        # EVERY PAGE OF EACH ISLAND, under readShoreList's guards (lares-cli shore-core): rows where a count stands, a page with no
+        # mark, a cursor that stands still or rows short of the counts refuse `shore-list-unpaged`; a mark that moves refuses
+        # `shore-list-moved`. A list never states a shore nobody measured.
         for island in islands:
             after = None
             mark = None
+            counts = None
+            got_s: list = []
+            got_p: list = []
             while True:
                 page_args = {**args, **({"after": after} if after is not None else {})}
                 out = (_meme_wire("wiki-act", {"verb": SHORE_VERB, "args": page_args}) if island == "wiki"
@@ -1722,15 +1731,27 @@ def build_mcp(coordinator: LaresCoordinator):
                     if out.get("refusal") == "no-disk-shore":
                         break
                     raise uds.LaresVerbError(f"{out.get('refusal') or 'shore-refused'}: the {island} island: {out.get('why') or 'refused'}")
-                # Two pages under one mark read one shore; a mark that moves between pages names no one shore.
-                if mark is not None and out.get("mark") != mark:
+                for name in ("standoffs", "pending"):
+                    if not isinstance(out.get(name), list):
+                        raise unpaged(island, f"the shore's {name} arrived as a count and named none of them; this vessel answers an unpaged list")
+                if not isinstance(out.get("mark"), str):
+                    raise unpaged(island, "the shore's page named no mark of the shore it read")
+                if mark is not None and out["mark"] != mark:
                     raise uds.LaresVerbError(f"shore-list-moved: the {island} island's shore moved while its pages were read; read it again")
-                mark = out.get("mark")
-                standoffs.extend({**r, "island": island} for r in out.get("standoffs") or [])
-                pending.extend({**r, "island": island} for r in out.get("pending") or [])
-                after = out.get("next")
-                if not after:
+                mark = out["mark"]
+                counts = (out.get("standoffCount"), out.get("pendingCount"))
+                got_s.extend({**r, "island": island} for r in out["standoffs"])
+                got_p.extend({**r, "island": island} for r in out["pending"])
+                nxt = out.get("next")
+                if not isinstance(nxt, str) or nxt == "":
                     break
+                if after is not None and nxt <= after:
+                    raise unpaged(island, "the shore's cursor stood still between two pages")
+                after = nxt
+            if counts is not None and counts != (len(got_s), len(got_p)):
+                raise unpaged(island, f"the shore counted {counts[0]}/{counts[1]} standoffs/pending and its pages named {len(got_s)}/{len(got_p)}")
+            standoffs.extend(got_s)
+            pending.extend(got_p)
         return {"standoffs": standoffs, "standoffCount": len(standoffs), "pending": pending, "pendingCount": len(pending),
                 **({"face": face} if face is not None else {})}
 

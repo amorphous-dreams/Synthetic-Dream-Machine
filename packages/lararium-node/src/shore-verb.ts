@@ -292,13 +292,47 @@ export function shoreFlushStandDown(flush: () => Promise<ShoreFlushReading>, war
   } };
 }
 
+/**
+ * The faces whose carriers a flush left unwritten, in order: a row that names its face (a lit sibling's) reads that face, and
+ * every other unwritten row reads the worn face (`worn`, the daemon's own projector and each resident wiki ride it).
+ */
+export function shoreStuckFaces(reading: ShoreFlushReading, worn: number | null): number[] {
+  const faces = new Set<number>();
+  for (const part of reading.islands) {
+    if (!part.answered) continue;
+    for (const row of part.unwritten) {
+      const face = (row as { face?: unknown }).face;
+      if (typeof face === "number") faces.add(face);
+      else if (worn !== null) faces.add(worn);
+    }
+    if (part.unwrittenCount > part.unwritten.length && worn !== null) faces.add(worn);
+  }
+  return [...faces].sort((a, b) => a - b);
+}
+
 /** One line per island, for a log: what each flush wrote and what it left. */
 export function shoreFlushLines(reading: ShoreFlushReading): string[] {
   if (reading.islands.length === 0) return ["shore flush: no island mounts a disk shore"];
   return reading.islands.map((i) => i.answered
     ? `shore flush: the ${i.island} island wrote ${i.writtenCount} owed carrier(s) (${i.fileWrites} file write(s))`
-      + (i.unwrittenCount > 0 ? `; ${i.unwrittenCount} unwritten: ${i.unwritten.map((u) => `${u.uri} (${u.state}: ${u.why})`).join("; ")}` : "")
+      + (i.unwrittenCount > 0 ? `; ${i.unwrittenCount} unwritten: ${i.unwritten.map((u) => `${u.uri}${typeof (u as { face?: unknown }).face === "number" ? ` on h${(u as { face?: number }).face}` : ""} (${u.state}: ${u.why})`).join("; ")}` : "")
     : `shore flush: the ${i.island} island did not answer: ${i.refusal !== undefined ? `${i.refusal}: ` : ""}${i.why}`);
+}
+
+/**
+ * THE SHORE'S SETTLING ACTS, A PERSON'S HAND ALONE (the operator's standing law: a standoff settles only by a person). The
+ * socket refuses each from a seat (`shoreHandCode`, read per op), on a session and on a one-shot line alike, whether it rides the
+ * `shore` verb itself or `wiki-act` into the active wiki. A seat lists, reads a render and flushes; it never takes a side.
+ */
+export const SHORE_HAND_OPS: ReadonlySet<string> = new Set(["take-records", "restore", "remove"]);
+/** The refusal a seat's settling act reads. */
+export const SHORE_HAND_CODE = "shore-needs-hand";
+
+/** The hand code a call's shore op reads, or null where the call settles nothing: per op, never per verb. */
+export function shoreHandCode(verb: string, args: unknown): string | null {
+  const a = (args ?? {}) as Record<string, unknown>;
+  const shore = verb === SHORE_VERB ? a : verb === "wiki-act" && a["verb"] === SHORE_VERB ? (a["args"] ?? {}) as Record<string, unknown> : null;
+  return shore !== null && typeof shore["op"] === "string" && SHORE_HAND_OPS.has(shore["op"]) ? SHORE_HAND_CODE : null;
 }
 
 /** The projectors one daemon island holds: the worn face's own, and each lit sibling's by its handle index. */
@@ -323,11 +357,11 @@ export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<
   const noShore = { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" };
   if (args["face"] !== undefined) {
     const face = args["face"];
-    if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) return { ok: false, op, refusal: "shore-answer-incomplete", why: "`face` names a handle index (a whole number from 0)" };
+    if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) return { ok: false, op, refusal: "face-malformed", why: "`face` names a handle index (a whole number from 0): `lares shore --face 2`" };
     const { face: _face, ...rest } = args;
     const projector = face === seats.worn ? seats.own : seats.lit(face);
     if (projector === null) {
-      return { ok: false, op, face, refusal: "face-unprojected", why: `face h${face} stands no projection on this vessel: it stands shut or unlit, or carries no folder (a lit face projects under its own root once it lights with one)` };
+      return { ok: false, op, face, refusal: "face-unprojected", why: `face h${face} stands no projection on this vessel: it stands shut or unlit, or carries no folder (a lit face projects under its own root once it lights with one). \`lares vessel census\` names the faces lit and shut; \`lares vault unlock --face ${face}\` lights a shut one` };
     }
     return { ...(await answerShore(projector, rest)), face };
   }

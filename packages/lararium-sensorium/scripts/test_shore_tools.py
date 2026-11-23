@@ -19,9 +19,10 @@ import lares_uds as uds
 from lares_mcp import SEAT_INSTRUCTIONS, SHORE_VERBS, DaemonCoordinator, build_mcp, seat_of
 
 
-def _list(rows_standoff, rows_pending, nxt=None, **extra):
-    return {"ok": True, "op": "list", "standoffs": rows_standoff, "standoffCount": len(rows_standoff),
-            "pending": rows_pending, "pendingCount": len(rows_pending), "mark": "m1", "next": nxt, **extra}
+def _list(rows_standoff, rows_pending, nxt=None, counts=None, **extra):
+    s_count, p_count = counts if counts is not None else (len(rows_standoff), len(rows_pending))
+    return {"ok": True, "op": "list", "standoffs": rows_standoff, "standoffCount": s_count,
+            "pending": rows_pending, "pendingCount": p_count, "mark": "m1", "next": nxt, **extra}
 
 
 class _ShoreDaemon:
@@ -31,6 +32,7 @@ class _ShoreDaemon:
     def __init__(self, path: str) -> None:
         self.path = path
         self.lines: list = []
+        self.wiki_fault = None
         self.reading = {"islands": [{"island": "daemon", "answered": True, "written": [], "writtenCount": 0, "unwritten": [],
                                      "unwrittenCount": 0, "fileWrites": 0, "drained": True}], "whole": True}
         self._srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -44,8 +46,14 @@ class _ShoreDaemon:
         verb, args = line["verb"], line["args"]
         shore = args["args"] if verb == "wiki-act" else args
         if verb == "wiki-act":
-            out = (_list([{"uri": "lar:///a.b.c/w", "bagId": "w", "standoff": "k1"}], [], nxt="c1") if "after" not in shore
-                   else _list([{"uri": "lar:///a.b.c/w2", "bagId": "w", "standoff": "k2"}], []))
+            out = (_list([{"uri": "lar:///a.b.c/w", "bagId": "w", "standoff": "k1"}], [], nxt="c1", counts=(2, 0)) if "after" not in shore
+                   else _list([{"uri": "lar:///a.b.c/w2", "bagId": "w", "standoff": "k2"}], [], nxt=self.wiki_fault == "still" and "c1" or None, counts=(2, 0)))
+            if self.wiki_fault == "unmarked":
+                out.pop("mark")
+            elif self.wiki_fault == "counted":
+                out["standoffs"] = {"boundedArrayCount": 40}
+            elif self.wiki_fault == "short":
+                out["standoffCount"] = 3
         elif "face" in shore:
             out = _list([{"uri": "lar:///a.b.c/sib", "bagId": "s", "standoff": "k9"}], [], face=shore["face"])
         else:
@@ -125,3 +133,20 @@ def test_red_the_seat_instructions_name_both_shore_tools_and_the_hand_that_settl
     assert "lares shore" in SEAT_INSTRUCTIONS
     readme = open(os.path.join(os.path.dirname(__file__), "..", "..", "lares-cli", ".claude-plugin", "README.md"), encoding="utf-8").read()
     assert "shore_flush()" in readme and "shore(face=N)" in readme
+
+
+@pytest.mark.parametrize("fault, why", [
+    ("unmarked", "named no mark"),
+    ("counted", "arrived as a count"),
+    ("still", "cursor stood still"),
+    ("short", "counted 3/0 standoffs/pending and its pages named 2/0"),
+])
+def test_red_shore_refuses_an_unpaged_list_by_name(daemon, fault, why):
+    daemon.wiki_fault = fault
+    with pytest.raises(uds.LaresVerbError, match=f"shore-list-unpaged.*{why}"):
+        _fn("shore")()
+
+
+def test_red_shore_refuses_a_malformed_face_by_name():
+    with pytest.raises(Exception, match="face-malformed"):
+        _fn("shore")(face=-1)

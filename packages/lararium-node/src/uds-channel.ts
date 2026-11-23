@@ -131,6 +131,11 @@ export interface UdsChannelOptions {
   /** Per-act refusal codes for the hand-only gate; other rows use beyond-profile. */
   readonly handOnlyCodes?: ReadonlyMap<string, string>;
   /**
+   * A verb whose hand-only reach turns on its arguments (the shore's settling ops, `shoreHandCode`): the code a seat's call reads,
+   * or null where this call settles nothing. It gates exactly as `handOnlyActs` does, on a session and on a one-shot line.
+   */
+  readonly handOnlyOp?: (verb: string, args: unknown) => string | null;
+  /**
    * Verbs whose answer on a session rides its socket alone (`session:act`): the face rows and the realm verbs that name a
    * face's key at a realm's Nexus (`REALM_KEY_VERBS`). A `session:call`, whose outcome body rests in the daemon wiki's
    * control document beside the session's face, refuses one `answers-on-the-socket`, as it refuses every `sessionVerbs` row.
@@ -1375,6 +1380,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // A SPIRIT'S HAND PROPOSES on a call too: a hand-only island verb (`retire-wiki`) refuses a seat session by its code.
     if (state.supply.profile === "seat" && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, opts.handOnlyCodes?.get(frame["verb"]) ?? "beyond-profile", requestId);
     if (state.unattested && opts.handOnlyActs?.has(frame["verb"])) return sessionRefuse(sock, "hand-unattested", requestId);
+    const opCode = opts.handOnlyOp?.(frame["verb"], frame["args"]) ?? null;
+    if (opCode !== null && state.supply.profile === "seat") return sessionRefuse(sock, opCode, requestId);
+    if (opCode !== null && state.unattested) return sessionRefuse(sock, "hand-unattested", requestId);
     // NO SILENT STEWARD (`chore-face`): the daemon runs a chore on its mount's authority, so the session's face meets
     // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
     const mount = mountOf();
@@ -1785,11 +1793,14 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           else if (peer === "unknown") {
             delete inv.asker;
             if (opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand, and this line's peer reads nothing to attest one`, "hand-unattested");
+            if (opts.handOnlyOp?.(inv.verb, inv.args) != null) return fail(`"${inv.verb}" settles a standoff, a person's hand alone, and this line's peer reads nothing to attest one`, "hand-unattested");
           } else inv.asker = "cli";
         }
         const named = namedFaceOf(inv.args);
         // THE AI SEAT PROPOSES on a one-shot line as on a session: a hand-only verb refuses the seat by its code before it places.
         if (sessionRequestId === undefined && seat !== null && opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand; a seat proposes`, opts.handOnlyCodes?.get(inv.verb) ?? "beyond-profile");
+        const opCode = sessionRequestId === undefined && seat !== null ? opts.handOnlyOp?.(inv.verb, inv.args) ?? null : null;
+        if (opCode !== null) return fail(`"${inv.verb}" settles a standoff, a person's hand alone (\`lares shore\` at a terminal); a seat lists and reads`, opCode);
         const mount = mountOf();
         // NO SILENT STEWARD (`chore-face`): a one-shot chore designates its face (the face it names, or with none named the
         // mount, as `face.resolve` answers a seat) and meets `actingFaceOf` on the lent set the seat wall reads, one read for

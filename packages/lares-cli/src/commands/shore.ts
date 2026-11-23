@@ -58,6 +58,7 @@ import { createInterface } from "readline/promises";
 import { stdin, stdout } from "process";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
+import { readOwnHand, type HandReading } from "@lararium/node";
 import { verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
 import { askShore, askSettle, askShoreFlush, readShoreList, readSettlePending, shoreFlushExit, type ShoreAnswer, type ShoreFlushReading } from "../shore-core.js";
@@ -142,13 +143,31 @@ function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
     : `remove ${what}: each carrier leaves the wiki, and its records rest under a tombstone. Proceed? [y/N] `;
 }
 
-export async function cmdShore(args: ParsedArgs): Promise<number> {
+/** How this command reads the hand that runs it (`readOwnHand`); a test names another reading. */
+export type ShoreHandRead = () => HandReading;
+
+/**
+ * TAKE-DISK SETTLES BY A PERSON. Its write rides the ingest leg, which the vessel's per-op shore gate never sees, so the command
+ * reads its own branch first (the house hand gate): a harness on it refuses `shore-needs-hand`, and an unread branch refuses
+ * `hand-unattested`. `take-records`, `restore` and `remove` meet the same law at the vessel's socket (`shoreHandCode`).
+ */
+export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = () => readOwnHand({ proveRoute: false })): Promise<number> {
   const act = (args.positional[0] ?? "list") as ShoreAct;
   if (!(SHORE_ACTS as readonly string[]).includes(act)) { printUsage(); return 2; }
   const shaped = shoreArgs(act, args);
   if ("usage" in shaped) {
     emit(args, { ok: false, error: { code: "usage", message: shaped.usage }, human: () => { console.error(`lares shore: ${shaped.usage}`); printUsage(); } });
     return exitFor("usage");
+  }
+
+  if (act === "take-disk") {
+    const reading = hand();
+    if ("refusal" in reading) {
+      const code = reading.refusal === "hand-act-only" ? "shore-needs-hand" : reading.refusal;
+      const message = `take-disk settles a standoff, a person's hand alone: run \`lares shore take-disk\` at your own terminal (${reading.refusal})`;
+      emit(args, { ok: false, error: { code, message }, human: () => console.error(`lares shore: ${code}: ${message}`) });
+      return 1;
+    }
   }
 
   // LIFT-KAHUA: the count IS the confirmation, so it asks nothing more; the mirror leg refuses a count that moved.
