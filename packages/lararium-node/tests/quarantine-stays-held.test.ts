@@ -15,6 +15,8 @@
  *   Q6  an id held beside bytes standing under it (a crash between the manifest and the move, or between a restore's move
  *       and its marking) releases with keep; restore and fresh name keep, never a move by hand.
  *   Q7  a restore reads the moved bytes beside the manifest, so a store read under another root prefix still restores.
+ *   Q8  keep refuses where nothing stands under the id (it would free a writable blank); with the moved bytes gone too,
+ *       restore names only fresh, and fresh refuses for a sibling-carried plane.
  *
  * Real doors throughout: the child probe, the clean-tail child and the quarantine, over a real NodeFS store. The tear
  * comes by hand; nothing runs out of wasm memory.
@@ -212,5 +214,31 @@ d("a quarantined document stays held across boots until a hand act releases it",
     const restored = await boot(storageDir, daemonUrl);
     expect(restored.entry?.status).toBe("mounted");
     expect(restored.writable).toBe(true);
+  }, 120_000);
+
+  test("Q8 — keep refuses where nothing stands under the id; each refusal names only an act that can land", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-quarantine-held-")));
+    const daemonUrl = await storeWithDaemonDoc(storageDir);
+    const daemonId = daemonUrl.replace(/^automerge:/, "");
+    const movedTo = quarantineDoc(storageDir, { documentId: daemonId, status: "aborted" }, { bagId: DAEMON_BAG_ID })!;
+
+    // The moved bytes still rest: keep refuses and names restore.
+    const withBytes = releaseQuarantinedDoc(storageDir, daemonId, "kept");
+    expect(withBytes).toMatchObject({ ok: false });
+    expect(withBytes.ok === false && withBytes.why).toMatch(/--release </);
+
+    // The moved bytes gone as well: restore and keep each name fresh alone, never each other.
+    rmSync(movedTo, { recursive: true, force: true });
+    const restore = releaseQuarantinedDoc(storageDir, daemonId, "restored");
+    expect(restore.ok === false && restore.why).toMatch(/--release-fresh/);
+    expect(restore.ok === false && restore.why).not.toMatch(/--release-keep/);
+    const keep = releaseQuarantinedDoc(storageDir, daemonId, "kept");
+    expect(keep.ok === false && keep.why).toMatch(/--release-fresh/);
+    expect(keep.ok === false && keep.why).not.toMatch(/--release </);
+
+    // The hold still stands: the next boot holds the plane read-only, no blank.
+    const held = await boot(storageDir, daemonUrl);
+    expect(held.entry?.status).toBe("degraded");
+    expect(held.writable).toBe(false);
   }, 120_000);
 });
