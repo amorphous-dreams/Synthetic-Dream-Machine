@@ -21,6 +21,11 @@
  *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
  *     carrier in the wiki, where the wiki shore lands the tombstone.
  *
+ * THE SHORE NAMES WHAT IT LETS GO. Where a commit took a pending removal's file from its checkout, `list`, the `remove`
+ * answer and the lay's closing lines name that commit beside the row: short sha, subject, PR, and the ashes git keeps
+ * (`<sha>^:<path>`); `remove` adds where the commit says the substance went. JSON carries it as `retiredBy`. A receipt,
+ * never a gate: no checkout, no git, or a spent bound leaves every line as it stands (`shore-retirement.ts`).
+ *
  * `list` looks at the disk first, so what it shows stands true to the bytes at that instant, and it reads
  * every page the island answers, so a list of any length names every row. An answer
  * names the state its giver read: a standoff's key, and for more than one pending removal the count. Where
@@ -56,7 +61,7 @@ import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
 import { readKahuaPending, LIVE_MIRROR_DOORS } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
-import type { Retirement } from "../shore-retirement.js";
+import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, type Retirement } from "../shore-retirement.js";
 
 /** The acts this door carries. */
 export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
@@ -249,11 +254,12 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       return exitFor("verb-error");
     }
     const { standoffs, pending } = listed;
-    const receipts = new Map<string, Retirement>();
+    // THE RECEIPT: each pending removal whose file a commit took from the checkout names that commit (`shore-retirement.ts`).
+    const receipts = pendingReceipts(pending);
     const kahua = readKahuaPending();
     emit(args, {
       ok: true, ...(listed.requestId !== undefined ? { requestId: listed.requestId } : {}),
-      data: { op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length, kahuaPending: kahua, kahuaPendingCount: kahua.length },
+      data: { op: "list", standoffs, standoffCount: standoffs.length, pending: withRetiredBy(pending, receipts), pendingCount: pending.length, kahuaPending: kahua, kahuaPendingCount: kahua.length },
       human: () => {
         if (kahua.length > 0) {
           console.log(`${kahua.length} kahua item(s) wait for a hand: a lay previewed them and nothing lifted on --yes alone`);
@@ -274,6 +280,20 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       },
     });
     return 0;
+  }
+
+  // A REMOVE names what it lets go: the pending rows read first (a read alone, bounded; an unread shore names no receipt),
+  // and each carrier the answer reached carries its retiring commit and where its substance went.
+  let named: ReadonlyArray<Record<string, unknown>> = [];
+  let receipts: ReadonlyMap<string, Retirement> = new Map();
+  if (act === "remove") {
+    try {
+      const listed = await Promise.race([
+        readShoreList((a) => askShore(a, did), typeof shaped.args["bag"] === "string" ? { bag: shaped.args["bag"] } : {}),
+        new Promise<null>((resolve) => { const t = setTimeout(() => resolve(null), RECEIPT_LIST_BOUND_MS); t.unref(); }),
+      ]);
+      if (listed !== null && listed.ok) { named = listed.pending; receipts = pendingReceipts(named); }
+    } catch { /* the receipt stays unread; the answer stands */ }
   }
 
   let answer: ShoreAnswer;
@@ -299,14 +319,15 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return exitFor("verb-error");
   }
 
+  const retiredBy = retiredByUri(answeredRows(answer.output).done, named, receipts);
   emit(args, {
     ok: true, ...(answer.requestId !== undefined ? { requestId: answer.requestId } : {}),
-    data: answer.output,
+    data: Object.keys(retiredBy).length > 0 ? { ...answer.output, retiredBy } : answer.output,
     human: () => {
       if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
       const reached = answeredRows(answer.output);
       console.log(`${act === "restore" ? "restored" : "removed"} ${reached.doneCount} carrier(s) (${String(answer.output["bag"])})`);
-      for (const line of removeReceiptLines(reached.done, [], new Map())) console.log(line);
+      for (const line of removeReceiptLines(reached.done, named, receipts)) console.log(line);
       if (reached.done.length < reached.doneCount) console.log(`  (the answer named ${reached.done.length} of them)`);
       for (const uri of reached.left) console.error(`  ⚠ still pending: ${uri}`);
       // A removal that unshadowed a lower copy: this bag let it go, and the meme still stands from that bag.
@@ -379,16 +400,42 @@ export function answeredRows(output: Readonly<Record<string, unknown>>): { done:
 
 /** The pending removals as `lares shore list` names them: the count, each row, and the answer. */
 export function shorePendingLines(pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): string[] {
-  void receipts;
   return [
     `${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`,
-    ...pending.map((p) => `  ${String(p["uri"])}  bag ${String(p["bagId"])}${p["island"] === "daemon" ? " (daemon island)" : ""}  ${String(p["path"])}`),
+    ...pending.flatMap((p) => {
+      const row = `  ${String(p["uri"])}  bag ${String(p["bagId"])}${p["island"] === "daemon" ? " (daemon island)" : ""}  ${String(p["path"])}`;
+      const r = receiptOf(p, receipts);
+      return r === undefined ? [row] : [row, `      ${retirementLine(r)}`];
+    }),
     "  answer: `lares shore restore <uri>` · `lares shore remove <uri>` · over all: `--all --count <n>` with the count one bag holds (and --bag where more than one bag stands pending)",
   ];
 }
 
 /** The carriers a remove answer reached, each named. */
 export function removeReceiptLines(done: readonly string[], pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): string[] {
-  void pending; void receipts;
-  return done.map((uri) => `  ${uri}`);
+  const byUri = retiredByUri(done, pending, receipts);
+  return done.flatMap((uri) => {
+    const r = byUri[uri];
+    return r === undefined ? [`  ${uri}`] : [`  ${uri}`, `      ${retirementLine(r)}`, `      ${otakiageLine(r)}`];
+  });
+}
+
+/** How long a remove waits on the pending read its receipt rides, before it answers with none. */
+const RECEIPT_LIST_BOUND_MS = 2000;
+
+/** One pending row's receipt, by the path the island named. */
+function receiptOf(row: Readonly<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): Retirement | undefined {
+  return typeof row["path"] === "string" ? receipts.get(row["path"]) : undefined;
+}
+
+/** The receipts of the carriers an answer reached, keyed by carrier (a URI many bags named reads its first row). */
+function retiredByUri(done: readonly string[], pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): Record<string, Retirement> {
+  const reached = new Set(done);
+  const out: Record<string, Retirement> = {};
+  for (const row of pending) {
+    const uri = String(row["uri"]);
+    const r = receiptOf(row, receipts);
+    if (reached.has(uri) && r !== undefined && out[uri] === undefined) out[uri] = r;
+  }
+  return out;
 }

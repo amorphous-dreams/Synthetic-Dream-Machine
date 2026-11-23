@@ -47,10 +47,10 @@ const PATHS_PER_WALK = 400;
 
 type Run = (args: readonly string[], cwd: string) => { readonly ok: boolean; readonly stdout: string };
 
-/** A walled git run that answers within what remains of `deadline`, or fails. */
+/** A walled git run that answers within what remains of `deadline` (a process-local monotonic budget), or fails. */
 function boundedGit(deadline: number): Run {
   return (args, cwd) => {
-    const left = deadline - Date.now();
+    const left = Math.floor(deadline - performance.now());
     if (left <= 0) return { ok: false, stdout: "" };
     const env: Record<string, string> = {};
     for (const [k, v] of Object.entries(process.env)) if (v !== undefined && !k.startsWith("GIT_")) env[k] = v;
@@ -112,8 +112,52 @@ function prFor(sha: string, subject: string, top: string, git: Run): number | un
  * commit names, or the bound outran, rides absent. Never throws.
  */
 export function retirementsFor(paths: readonly string[], options: { readonly boundMs?: number } = {}): Map<string, Retirement> {
-  void paths; void options; void relative; void sep; void resolve; void boundedGit; void standingDirAbove; void hasCheckoutAbove; void prFor; void trimSubject; void PATHS_PER_WALK;
-  return new Map();
+  const found = new Map<string, Retirement>();
+  try {
+    const git = boundedGit(performance.now() + (options.boundMs ?? RETIREMENT_BOUND_MS));
+    // Each path's checkout: its top and the path from there (the file left disk, so read from the dir that stands).
+    const byTop = new Map<string, Map<string, string>>(); // top -> rel -> path as given
+    const placeOf = new Map<string, { top: string; prefix: string } | null>();
+    for (const given of new Set(paths)) {
+      const abs = resolve(given);
+      const dir = standingDirAbove(abs);
+      if (dir === null || !hasCheckoutAbove(dir)) continue;
+      let place = placeOf.get(dir);
+      if (place === undefined) {
+        const r = git(["rev-parse", "--show-toplevel", "--show-prefix"], dir);
+        const [top, prefix] = r.stdout.split("\n");
+        place = r.ok && top ? { top, prefix: prefix ?? "" } : null;
+        placeOf.set(dir, place);
+      }
+      if (place === null) continue;
+      const rel = `${place.prefix}${relative(dir, abs).split(sep).join("/")}`;
+      const rels = byTop.get(place.top) ?? new Map<string, string>();
+      rels.set(rel, given);
+      byTop.set(place.top, rels);
+    }
+    const prs = new Map<string, number | undefined>();
+    for (const [top, rels] of byTop) {
+      const all = [...rels.keys()];
+      for (let i = 0; i < all.length; i += PATHS_PER_WALK) {
+        const walk = git(["--literal-pathspecs", "log", "--diff-filter=D", "--name-only", "--format=%x1e%h%x1f%s%x1f%B%x1d", "--", ...all.slice(i, i + PATHS_PER_WALK)], top);
+        if (!walk.ok) continue;
+        for (const record of walk.stdout.split("\x1e")) {
+          const [sha, subject, rest] = record.split("\x1f");
+          if (!sha || subject === undefined || rest === undefined) continue;
+          const [message, names] = rest.split("\x1d");
+          for (const rel of (names ?? "").split("\n").map((n) => n.trim()).filter((n) => n !== "")) {
+            const given = rels.get(rel);
+            if (given === undefined || found.has(given)) continue; // newest first: the first deletion named holds
+            if (!prs.has(sha)) prs.set(sha, prFor(sha, subject, top, git));
+            const pr = prs.get(sha);
+            const destination = destinationIn(message ?? "");
+            found.set(given, { sha, subject: trimSubject(subject), ...(pr !== undefined ? { pr } : {}), ashes: `${sha}^:${rel}`, ...(destination !== undefined ? { destination } : {}) });
+          }
+        }
+      }
+    }
+  } catch { /* a receipt never fails the answer */ }
+  return found;
 }
 
 /** One path's deleting commit, or undefined. */

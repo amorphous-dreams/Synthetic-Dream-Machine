@@ -66,7 +66,7 @@ describe("a shore receipt reads the checkout's retirement", () => {
   plain("many paths read in one pass: only a deleted carrier answers, a file never tracked and a standing one ride absent", () => {
     const c = checkout();
     const sha = standThenRetire(c, "bags/gone.mem", "gone\n", "the gone carrier leaves");
-    writeFileSync(c.at("bags", "standing.mem"), "here\n"); c.git("add", "."); c.git("commit", "-qm", "stand another");
+    mkdirSync(c.at("bags"), { recursive: true }); writeFileSync(c.at("bags", "standing.mem"), "here\n"); c.git("add", "."); c.git("commit", "-qm", "stand another");
     const read = retirementsFor([c.at("bags", "gone.mem"), c.at("bags", "never.mem"), c.at("bags", "standing.mem")]);
     expect([...read.keys()]).toEqual([c.at("bags", "gone.mem")]);
     expect(read.get(c.at("bags", "gone.mem"))).toMatchObject({ sha, subject: "the gone carrier leaves" });
