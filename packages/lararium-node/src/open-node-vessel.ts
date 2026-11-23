@@ -1053,6 +1053,9 @@ async function prepareNodeBootOn(
     if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
   const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
+  /** THE FACES WHOSE ISLAND LIGHT IS IN FLIGHT, by PersonaGroup: proved open by this light's own custody read, each takes its
+   *  Archive write while the island stands its hive (the sibling's archive floor rests after its card, before its session stands). */
+  const lightingCustody = new Set<string>();
   /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
    *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
   const siblingPlanes = siblingPlaneMounts();
@@ -2806,12 +2809,13 @@ async function prepareNodeBootOn(
   // holds. The lift alone seats it; at the floor none stands, so an island's ask answers unwritten.
   // EACH ARCHIVE NAMES ITS FACE (`faceNamedCustodyWrite`): the island names the PersonaGroup of the hive that exported the
   // bytes, and the write lands in that face's own row or nowhere; the vessel never picks a row for a faceless ask. The
-  // mounted face (`openDaemon` names it) and each lit sibling with a session stand open; any other face takes no write. The
+  // mounted face (`openDaemon` names it), each lit sibling with a session, and a face whose island light is in flight (its
+  // archive floor rests after its card, before its session stands) stand open; any other face takes no write. The
   // seal itself proves the bytes are that face's own identity (`persistVeilArchive`), so a misnamed ask writes nothing either.
   let mountedCustodyGroup: string | null = null;
   const liftCustodyWrite: CustodyWriter | undefined = sovereign
     ? faceNamedCustodyWrite({
-      opens: (face) => face === mountedCustodyGroup || (siblingFaces.has(face) && siblingSessions.has(face)),
+      opens: (face) => face === mountedCustodyGroup || lightingCustody.has(face) || (siblingFaces.has(face) && siblingSessions.has(face)),
       write: (bytes, face) => sovereign.writeVeilArchive(bytes, face),
     })
     : undefined;
@@ -3999,7 +4003,8 @@ async function prepareNodeBootOn(
       try {
         if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);
-        await daemonVm.lightFace(entry);
+        lightingCustody.add(entry.personaGroupId);
+        try { await daemonVm.lightFace(entry); } finally { lightingCustody.delete(entry.personaGroupId); }
       } catch (error) { dropSiblingPlanes(entry.personaGroupId); throw error; }
       faceEntries.set(ordinal, entry);
       const lit: FaceLit = { atomKey: entry.atom.key, custody };

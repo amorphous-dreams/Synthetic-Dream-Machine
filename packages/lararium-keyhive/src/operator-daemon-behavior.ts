@@ -351,6 +351,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     });
     try {
       for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag);
+      // THE SIBLING'S ARCHIVE FLOOR, as the mounted face's: its one card mints, then its Archive rests in its own row. Every
+      // later ask of this stand (a grant, a workbench seat, a revoke) presents that same card, so the Archive the next light
+      // restores holds the secret behind every prekey this stand presented. Without it the face's log runs ahead of its
+      // Archive, one card per light, until no prekey it holds stays live and its next light mints no Document.
+      const floor = await persistArchiveFloor({
+        archiveOpens: daemonAuth.archiveOpens,
+        writers: { ...(persistVeilArchive ? { persistVeilArchive } : {}) },
+        face: face.personaGroupId,
+        exportVeilArchive: () => joined.keyhive.exportArchiveAfterTheCard(),
+      });
+      for (const r of floor.refusals) console.warn(`[daemon] face ${key.slice(0, 12)}… ${r.carrier} archive export REFUSED: ${r.message}`);
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
