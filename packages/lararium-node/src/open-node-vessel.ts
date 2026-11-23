@@ -230,8 +230,8 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { islandAsk } from "./daemon-island-ask.js";
 import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
-import { islandAskRefusal, tapInboundDocs } from "./engine-watch.js";
-import { fallAwareProbeDoors, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
+import { islandAskRefusal, tapInboundDocs, ISOLATE_ENGINE } from "./engine-watch.js";
+import { fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
 import { flushEveryShore, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
@@ -1214,8 +1214,11 @@ async function prepareNodeBootOn(
   const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
+  // THE TRAP-NAMED DOCUMENTS HOLD ON EVERY LOAD PATH (`engine-fall`): each document a resting engine fall names in flight
+  // reaches the engine through no path, the storage source's included, until the hand clears the count.
+  const heldBack = heldInFlight(readEngineFalls(storageDir));
   const sealedRest = composeSealedRest<NodeSaveSession>({
-    inner: new DurableNodeFSStorageAdapter(storageDir),
+    inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
     bagOf: sealedBagOf,
     // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
     bagRow: (bagId) => sealedMap.bagRow(bagId),
@@ -1632,6 +1635,8 @@ async function prepareNodeBootOn(
   // wiki layers, the corpora) holds a sealed document read-only over its own id until its keyed load opens it. A load refused
   // on integrity evidence moves the bytes aside through the probe's own quarantine, held across boots.
   seatSealedRest(repo, {
+    // A HELD-BACK DOCUMENT (`engine-fall`) stands read-only and unread over its own id, never under a writable fallback.
+    heldBack: heldBackReason(heldBack),
     restsSealed: (documentId) => sealedRest.restsSealed(documentId),
     refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
     nameDocument: (documentId, bagId) => sealedRest.store.nameDocument(documentId, bagId),
@@ -1663,7 +1668,8 @@ async function prepareNodeBootOn(
   seatRepoWear(repo, wire);
   // THE DOCUMENT IN FLIGHT (`engine-watch`): each inbound message the Repo handles names its document to the isolate's watch,
   // so a trap met there rests with the document a boot probe can hold back (`engine-fall`).
-  tapInboundDocs(repo.networkSubsystem);
+  // A message naming a held-back document never reaches the engine.
+  tapInboundDocs(repo.networkSubsystem, ISOLATE_ENGINE, heldBack);
   // THE MINT CENSUS, seated on the same Repo: each document a cap creates while it builds and names under no pointer reads
   // as an unbound `cap-mint` once the composition stands (a compose mints nothing it cannot find again).
   seatMintCensus(repo);
@@ -2263,7 +2269,8 @@ async function prepareNodeBootOn(
   const corpusCasDir = corpusCasDirFromEnv();
   // THE HOUSE CANON SEATS HERE, off the checkout's disk-sourced holdings (`seatHouseCanonFromCheckout`), before any island
   // spawns: every island is handed the same slugs.
-  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout() };
+  // The documents a resting engine fall names in flight ride in too: the daemon island's own store holds them back.
+  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout(), heldBack };
   const hermShore = hermCasTransitFromEnv();
   const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
   // The floor stack carries `resolveCid` as the record's `cas` (below): a boot that refuses before it composes leaves no `cas` behind.

@@ -9,15 +9,19 @@ import { afterEach, describe, test, expect, vi } from "vitest";
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
   reply: {} as Record<string, unknown>,
+  offline: false,
 }));
-vi.mock("../src/verb-call.js", () => ({
-  DaemonUnreachable: class extends Error {},
+vi.mock("../src/verb-call.js", () => {
+  class DaemonUnreachable extends Error {}
+  return {
+  DaemonUnreachable,
   verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
+    if (h.offline) throw new DaemonUnreachable();
     return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.reply } } };
   },
-}));
+}; });
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),
   vesselDid: async () => "0x" + "ab".repeat(32),
@@ -43,7 +47,7 @@ async function run(args: ParsedArgs): Promise<{ exit: number; out: string; err: 
   finally { so.mockRestore(); lo.mockRestore(); le.mockRestore(); }
 }
 
-afterEach(() => { h.calls.length = 0; h.reply = {}; });
+afterEach(() => { h.calls.length = 0; h.reply = {}; h.offline = false; });
 
 describe("lares oracle cast", () => {
   test("RED: the verb stands in the command table, rides the vessel, and its help names the oracle's limit", () => {
@@ -79,7 +83,7 @@ describe("lares oracle cast", () => {
         { title: "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-15", absent: true },
       ],
     };
-    const r = await run(argv(["cast"], { recipe: "default", coins: "889688" }, { "no-json": true }));
+    const r = await run(argv(["cast"], { recipe: "default", coins: "889688" }, { json: false }));
     expect(r.exit).toBe(0);
     expect(h.calls[0]!.verb).toBe("oracle-cast");
     expect(r.out).toContain("Hexagram 15");
@@ -94,6 +98,35 @@ describe("lares oracle cast", () => {
     h.reply = { decision: "put", created: true, title: "t", note: ORACLE_WIDENS };
     const r = await run(argv(["cast"], { recipe: "default" }, { json: true }));
     expect(JSON.parse(r.out)).toMatchObject({ ok: true, data: h.reply });
+  });
+
+  test("a sleeping vessel answers with both sources and the operator's changing lines", async () => {
+    h.offline = true;
+    const r = await run(argv(["cast"], { recipe: "default", coins: "889688" }, { json: true }));
+    expect(r.exit).toBe(0);
+    const data = JSON.parse(r.out).data;
+    const expected = castFromCoins([8, 8, 9, 6, 8, 8], { caster: "operator", at: data.cast.at });
+    expect(data.offline).toBe(true);
+    expect(data.cast).toEqual(castRecord(expected));
+    expect(data.readings).toHaveLength(4);
+    for (const reading of data.readings) {
+      expect(reading.text).toContain("!");
+      expect(reading.attribution).toBeTruthy();
+      expect(reading.license).toBeTruthy();
+    }
+  });
+
+  test("a sleeping vessel draws through the platform door and prints its readings", async () => {
+    h.offline = true;
+    const json = await run(argv(["cast"], { recipe: "default" }, { json: true }));
+    const data = JSON.parse(json.out).data;
+    expect(data.cast.entropy).toBe("platform:crypto.getRandomValues");
+    expect(data.cast.lines).toHaveLength(6);
+    const plain = await run(argv(["cast"], { recipe: "default", coins: "889688" }, { json: false }));
+    expect(plain.exit).toBe(0);
+    expect(plain.out).toContain("Robert Shea");
+    expect(plain.out).toContain("Kopyleft");
+    expect(plain.out).toContain("no record was saved");
   });
 
   test("a bare `lares oracle` prints its help, the limit included", async () => {
