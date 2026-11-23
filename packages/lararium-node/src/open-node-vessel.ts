@@ -218,7 +218,7 @@ import { makeRecallHolder, type RecallHolder } from "./recall-holder.js";
 import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
-import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail, QUARANTINE_RELEASE_ACT } from "./doc-load-probe.js";
+import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
 import { listFaceOrdinals, listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
@@ -2983,12 +2983,10 @@ async function prepareNodeBootOn(
       const doors = fallAwareProbeDoors(readEngineFalls(storageDir), {
         probe: makeChildProcessDocLoadProbe(storageDir),
         recoverCleanTail: (verdict) => recoverCleanTail(storageDir, verdict),
-        quarantineDoc: (verdict) => {
-          const moved = quarantineDoc(storageDir, verdict);
-          console.warn(
-            `[lararium] DEGRADED plane — quarantined ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"})` +
-            ` → ${moved ?? "already gone"}; the plane mounts read-only at every boot until the hand releases it: ${QUARANTINE_RELEASE_ACT}`,
-          );
+        quarantineDoc: (verdict, bagId) => {
+          const moved = quarantineDoc(storageDir, verdict, { bagId });
+          // The move's own line: the boot's one DEGRADED line for the plane comes from the mount manifest (`heldPlaneLines`).
+          console.warn(`[lararium] QUARANTINED ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"}) → ${moved ?? "already gone"}`);
         },
       });
       return {

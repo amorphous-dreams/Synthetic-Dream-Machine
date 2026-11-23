@@ -151,7 +151,7 @@ export async function answerEngineFall(fall: EngineFall, ports: FallPorts): Prom
 export interface ProbeDoors {
   readonly docLoadProbe: DocLoadProbe;
   readonly recoverCleanTail: (verdict: ProbeResult) => Promise<ProbeResult | null>;
-  readonly quarantineDoc: (verdict: ProbeResult) => void;
+  readonly quarantineDoc: (verdict: ProbeResult, bagId: string) => void;
 }
 
 /** Why a held document stands pending. */
@@ -170,7 +170,7 @@ export const HELD_HAND_ACT = "the plane reads empty, read-only, while its bytes 
 export function fallAwareProbeDoors(falls: readonly RestingFall[], doors: {
   readonly probe: DocLoadProbe;
   readonly recoverCleanTail: (verdict: ProbeResult) => Promise<ProbeResult | null>;
-  readonly quarantineDoc: (verdict: ProbeResult) => void;
+  readonly quarantineDoc: (verdict: ProbeResult, bagId: string) => void;
 }): ProbeDoors {
   const held = new Set(heldInFlight(falls));
   return {
@@ -182,7 +182,7 @@ export function fallAwareProbeDoors(falls: readonly RestingFall[], doors: {
       },
     },
     recoverCleanTail: (verdict) => doors.recoverCleanTail(verdict),
-    quarantineDoc: (verdict) => doors.quarantineDoc(verdict),
+    quarantineDoc: (verdict, bagId) => doors.quarantineDoc(verdict, bagId),
   };
 }
 

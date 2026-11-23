@@ -98,7 +98,9 @@ export interface QuarantineManifest {
   readonly integrity?: StoreIntegrityReport;
   readonly quarantinedAt: string;
   readonly movedTo: string;
+  /** The plane the document mounted as, where the mount named it: a release reads it to tell a plane a sibling carries. */
+  readonly bagId?: string;
   /** The hand act that ended the hold: `restored` moved the bytes back into the store, `fresh` let the id start empty
-   *  while the bytes stay aside. Absent, the id stays held on every boot. */
-  readonly released?: { readonly at: string; readonly act: "restored" | "fresh" };
+   *  while the bytes stay aside, `kept` left whatever stands under the id. Absent, the id stays held on every boot. */
+  readonly released?: { readonly act: "restored" | "fresh" | "kept" };
 }

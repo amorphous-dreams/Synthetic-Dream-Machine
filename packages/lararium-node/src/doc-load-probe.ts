@@ -22,6 +22,7 @@ import { join, basename, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   emptyLarDoc,
+  isFaceScopedBag,
   isCondemned,
   isUnresolved,
   type DocLoadProbe,
@@ -326,8 +327,9 @@ export function moveTornTailAside(storageDir: string, documentId: string, tornPa
 export function quarantineDoc(
   storageDir: string,
   probe: ProbeResult,
-  quarantineDir?: string,
+  opts: { readonly bagId?: string; readonly quarantineDir?: string } = {},
 ): string | null {
+  const quarantineDir = opts.quarantineDir;
   const src = docStorePath(storageDir, probe.documentId);
   if (!existsSync(src)) return null;
 
@@ -345,6 +347,7 @@ export function quarantineDoc(
     status: probe.status,
     quarantinedAt: new Date().toISOString(),
     movedTo: dest,
+    ...(opts.bagId !== undefined ? { bagId: opts.bagId } : {}),
     ...(probe.reason !== undefined ? { reason: probe.reason } : {}),
     ...(probe.chunks !== undefined ? { chunks: probe.chunks } : {}),
     ...(probe.integrity !== undefined ? { integrity: probe.integrity } : {}),
@@ -414,7 +417,7 @@ export function quarantineHoldOf(storageDir: string, documentId: string): Quaran
 }
 
 /** The hand act that ends a hold, as the deep vessel lens takes it. */
-export const QUARANTINE_RELEASE_ACT = "with the vessel stopped, `lares vessel read vessel --release <documentId>` returns the bytes (the next stand probes them again), or `--release-fresh <documentId>` starts the id empty while the bytes stay aside";
+export const QUARANTINE_RELEASE_ACT = "with the vessel stopped, `lares vessel read vessel --release <documentId>` returns the bytes (the next stand probes them again), `--release-keep <documentId>` keeps what stands under the id, or `--release-fresh <documentId>` starts a plane no sibling carries empty while the bytes stay aside";
 
 function heldVerdict(hold: QuarantineHold): ProbeResult {
   const m = hold.manifest;
@@ -426,41 +429,64 @@ function heldVerdict(hold: QuarantineHold): ProbeResult {
   });
 }
 
+/** The three hand acts that end a hold. */
+export type QuarantineReleaseAct = "restored" | "fresh" | "kept";
+
 /** What a release did. */
 export type QuarantineRelease =
-  | { readonly ok: true; readonly documentId: string; readonly act: "restored" | "fresh"; readonly from: string | null; readonly released: number }
+  | { readonly ok: true; readonly documentId: string; readonly act: QuarantineReleaseAct; readonly from: string | null; readonly released: number }
   | { readonly ok: false; readonly documentId: string; readonly why: string };
 
 /**
- * THE HAND'S RELEASE OF A HELD ID. `restored` moves the newest quarantined bytes back into the store (the next boot probes
- * them again, so torn bytes condemn again); `fresh` leaves the bytes aside and seeds one empty document under the same id. Either act marks
- * every unreleased manifest for the id released, so no later boot reads it held. Run it with the vessel stopped: a live
- * Repo would not see bytes move under it. Refuses where no hold names the id, or where the store already holds bytes
- * under it (either act would write over them).
+ * Where the moved-aside bytes rest, read beside the manifest's own file: the vessel records its own absolute path (`/lar/…`),
+ * which a host shell reading the same store under another prefix cannot see, while the bytes always sit beside the manifest.
  */
-export function releaseQuarantinedDoc(storageDir: string, documentId: string, act: "restored" | "fresh"): QuarantineRelease {
+function movedBytesOf(hold: QuarantineHold): string {
+  return join(dirname(hold.manifestPath), basename(hold.manifest.movedTo));
+}
+
+/**
+ * THE HAND'S RELEASE OF A HELD ID. Run it with the vessel stopped: a live Repo would not see bytes move under it. Each act
+ * marks every unreleased manifest for the id released, so no later boot reads it held.
+ *   `restored` moves the newest quarantined bytes back into the store; the next boot probes them again, so torn bytes
+ *              condemn again.
+ *   `fresh`    leaves the bytes aside and seeds one empty document under the same id. It refuses for a plane a sibling
+ *              device carries (a face plane, `isFaceScopedBag`, the set the sibling gate governs) and for a plane the
+ *              manifest never named: a second history under the same id would hide the sibling's real copy once the two
+ *              merge. The daemon plane, which no sibling carries, takes it.
+ *   `kept`     marks the hold released and leaves whatever bytes stand under the id where they stand; the moved-aside copy
+ *              stays where it rests, for the hand. It frees an id a crash or a sibling's sync left held beside its bytes.
+ * `restored` and `fresh` refuse where bytes already stand under the id, naming `kept`.
+ */
+export function releaseQuarantinedDoc(storageDir: string, documentId: string, act: QuarantineReleaseAct): QuarantineRelease {
   const held = readQuarantineManifests(storageDir).filter((h) => h.manifest.documentId === documentId && !h.manifest.released);
   if (held.length === 0) return { ok: false, documentId, why: "no quarantine hold names this id" };
   const live = docStorePath(storageDir, documentId);
-  if (existsSync(live)) return { ok: false, documentId, why: `the store already holds bytes at ${live}; move them aside by hand first` };
   let from: string | null = null;
+  if (act !== "kept" && existsSync(live)) {
+    return { ok: false, documentId, why: `bytes already stand under this id at ${live}; \`--release-keep ${documentId}\` releases the hold and keeps them` };
+  }
   if (act === "fresh") {
+    const newest = held[held.length - 1]!.manifest;
+    if (newest.bagId === undefined || isFaceScopedBag(newest.bagId)) {
+      const plane = newest.bagId === undefined ? "the manifest names no plane, so a sibling may carry it" : `${newest.bagId} rides to this face's sibling devices`;
+      return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. \`--release ${documentId}\` returns the bytes, or \`--release-keep ${documentId}\` keeps what stands` };
+    }
     // THE ID STARTS EMPTY UNDER ITS OWN NAME. With no bytes the resolver would mint a blank under a NEW id, an orphan the
     // pointer never names; one empty snapshot under the held id keeps every write where the pointer reads.
     const empty = save(from_(emptyLarDoc() as unknown as Record<string, unknown>));
     const snapshotDir = join(live, "snapshot");
     mkdirSync(snapshotDir, { recursive: true });
     atomicWriteFileSync(join(snapshotDir, createHash("sha256").update(empty).digest("hex")), empty);
-  } else {
-    const source = [...held].reverse().find((h) => existsSync(h.manifest.movedTo));
-    if (!source) return { ok: false, documentId, why: "the quarantined bytes no longer rest where the manifest names them; release it --fresh instead" };
+  } else if (act === "restored") {
+    const source = [...held].reverse().map(movedBytesOf).find((p) => existsSync(p));
+    if (!source) return { ok: false, documentId, why: `the quarantined bytes no longer rest beside the manifest; \`--release-keep ${documentId}\` releases the hold` };
     mkdirSync(dirname(live), { recursive: true });
-    renameSync(source.manifest.movedTo, live);
-    from = source.manifest.movedTo;
+    renameSync(source, live);
+    from = source;
   }
-  const at = new Date().toISOString();
   for (const h of held) {
-    const released: QuarantineManifest = { ...h.manifest, released: { at, act } };
+    const released: QuarantineManifest = { ...h.manifest, released: { act } };
     atomicWriteFileSync(h.manifestPath, `${JSON.stringify(released, null, 2)}\n`);
   }
   return { ok: true, documentId, act, from, released: held.length };
