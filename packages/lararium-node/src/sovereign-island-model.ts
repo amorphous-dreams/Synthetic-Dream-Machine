@@ -193,7 +193,7 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
 /** The daemon island's own store, behind the rest guard (sealed-store#/owed, V2): a document the vessel's rest seals rests
  *  in the island's memory alone and reaches rest by sync, sealed in the vessel's store. A wiki island's manifest names no
  *  store, so the kernel never asks for one. */
-function _buildStorage(cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface | undefined {
+export function buildIslandStorage(cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>, _held: readonly string[] = [], _log: (line: string) => void = () => {}): StorageAdapterInterface | undefined {
   if (!cfg || cfg.type === "memory") return undefined;
   if (cfg.type === "nodefs") return islandRestGuard(new DurableNodeFSStorageAdapter(cfg.dir), restsAtVessel);
   return undefined;
@@ -236,7 +236,7 @@ export function runSovereignWorker(
     listen:  (onMessage) => port.on("message", onMessage),
     storage: (msg) => {
       if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
-      return _buildStorage(msg.storage, restsAtVessel);
+      return buildIslandStorage(msg.storage, restsAtVessel);
     },
     restsAtVessel,
     // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as

@@ -19,6 +19,15 @@
  *   H1  a fall naming a catalog document: the Repo never receives one chunk of it, its plane stands held and read-only over
  *       its own id (no writable stand-in), its bytes rest untouched, and every other document loads and takes writes.
  *   H2  an inbound sync message naming a held document never reaches the Repo.
+ *   H3  the daemon island's own store hands its engine no chunk of a held document either.
+ *   H4  a peer (the daemon island) that asks the vessel for a held document hears it unavailable at once, by name, never
+ *       silence it must wait out.
+ *   S1  a fall during boot, then the hand's stop: the count clears and the process exits 0, before any composition stands;
+ *       before a fall the same signal ends the boot as the signal's own exit would.
+ *   L1  a throw that cannot print itself still reads, as "<unprintable>".
+ *   L2  only the storage source's own line names a document; a line quoting it names none.
+ *   L5  wasm-bindgen's "recursive use … unsafe aliasing" (a JS re-entrancy fault, the engine still standing) met uncaught
+ *       before any fall exits 1, as any ordinary fault does.
  *
  * Every fall comes injected; no wasm instance runs out of anything, and no live vessel stands.
  */
@@ -27,6 +36,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EventEmitter } from "node:events";
+import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { emptyLarDoc, sealedUnopened, seatSealedRest, standsIn, waitHandle, type LarDoc } from "@lararium/mesh";
@@ -36,6 +46,7 @@ import {
   armFallKeeper, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, readEngineFalls, restEngineFall,
   ENGINE_FALL_EXIT,
 } from "../src/engine-fall.js";
+import { buildIslandStorage } from "../src/sovereign-island-model.js";
 import type { ShoreFlushReading } from "../src/shore-verb.js";
 
 let dir = "";
@@ -277,5 +288,89 @@ describe("the trap-named document holds on every load path", () => {
     subsystem.emit("message", { type: "sync", documentId: "held-doc" });
     subsystem.emit("message", { type: "sync", documentId: "light-doc" });
     expect(reached).toEqual(["light-doc"]);
+  });
+
+  test("H3 — the daemon island's own store hands its engine no chunk of a held document", async () => {
+    const storageDir = scratch();
+    const { catalogUrl, siblingUrl } = await storeWithTwoDocs(storageDir);
+    const catalogId = catalogUrl.replace(/^automerge:/, "");
+    const siblingId = siblingUrl.replace(/^automerge:/, "");
+    const lines: string[] = [];
+    const island = buildIslandStorage({ type: "nodefs", dir: storageDir }, async () => false, [catalogId], (line) => lines.push(line))!;
+    expect(await island.loadRange([catalogId])).toEqual([]);
+    expect(await island.loadRange([catalogId, "snapshot"])).toEqual([]);
+    expect((await island.loadRange([siblingId])).length).toBeGreaterThan(0);
+    expect(lines.join("\n")).toContain(catalogId);
+  }, 30_000);
+
+  test("H4 — a peer that asks for a held document hears it unavailable at once, never silence", async () => {
+    const vessel = new Repo({ network: [] });
+    const { port1, port2 } = new MessageChannel();
+    vessel.networkSubsystem.addNetworkAdapter(new MessageChannelNetworkAdapter(port1));
+    const lines: string[] = [];
+    tapInboundDocs(vessel.networkSubsystem, createEngineWatch(clock), ["4NMNnkMhL8jXrdJ9jamS58PAVdXu"], (line) => lines.push(line));
+    const island = new Repo({ network: [new MessageChannelNetworkAdapter(port2)] });
+    try {
+      const asked = island.find("automerge:4NMNnkMhL8jXrdJ9jamS58PAVdXu" as never).then(() => "found", (e: Error) => `unavailable: ${e.message}`);
+      const answer = await Promise.race([asked, new Promise<string>((r) => setTimeout(() => r("silence"), 5_000))]);
+      expect(answer).toMatch(/^unavailable/);
+      expect(lines.join("\n")).toMatch(/4NMNnkMhL8jXrdJ9jamS58PAVdXu.*unavailable/);
+    } finally {
+      port1.close(); port2.close();
+      await island.shutdown(); await vessel.shutdown();
+    }
+  }, 30_000);
+});
+
+describe("a boot-time fall clears on the hand's stop, and the keeper reads what it cannot print", () => {
+  test("S1 — a fall during boot, then the hand's stop: the count clears and the process exits 0", async () => {
+    const storageDir = scratch();
+    restEarlierFall(storageDir, "yn91-catalog-doc");
+    const watch = createEngineWatch(clock);
+    const p = keeperPorts(storageDir, "b".repeat(32));
+    const keeper = keepFallDown(watch, p.ports);
+    const proc = new EventEmitter();
+    const otherwise: string[] = [];
+    armFallKeeper(keeper, proc, (sig) => otherwise.push(sig));
+
+    // Before any fall, the signal reaches whatever answers it then (the boot's own stop).
+    proc.emit("SIGINT");
+    expect(otherwise).toEqual(["SIGINT"]);
+    expect(readEngineFalls(storageDir)).toHaveLength(1);
+
+    watch.note(trap(), "repo");
+    await settle();
+    expect(keeper.verdict()).toBe("stays-down");
+    proc.emit("SIGTERM");
+    expect(readEngineFalls(storageDir)).toEqual([]);
+    expect(p.acts).toContain("exit 0");
+    expect(otherwise).toEqual(["SIGINT"]);
+    expect(p.lines.join("\n")).toMatch(/clears the count/);
+  });
+
+  test("L1 — a throw that cannot print itself still reads", () => {
+    const storageDir = scratch();
+    const p = keeperPorts(storageDir, "a".repeat(32));
+    const keeper = keepFallDown(createEngineWatch(clock), p.ports);
+    const unprintable = { toString: () => { throw new Error("no"); } };
+    expect(() => keeper.uncaught(unprintable)).not.toThrow();
+    expect(p.acts).toEqual(["exit 1"]);
+    expect(p.lines.join("\n")).toContain("<unprintable>");
+  });
+
+  test("L2 — only the storage source's own line names a document", () => {
+    const watch = createEngineWatch(clock);
+    tapRepoLogs(watch, () => {})("automerge-repo:repo").error("a peer said: Error loading document quoted-doc from storage", trap());
+    expect(watch.fallen()?.inFlight).toBeNull();
+  });
+
+  test("L5 — a re-entrancy fault met uncaught before any fall exits 1 and names no fall", () => {
+    const storageDir = scratch();
+    const watch = createEngineWatch(clock);
+    const p = keeperPorts(storageDir, "a".repeat(32));
+    const keeper = keepFallDown(watch, p.ports);
+    keeper.uncaught(new Error("recursive use of an object detected which would lead to unsafe aliasing in rust"));
+    expect(watch.fallen()).toBeNull();
+    expect(p.acts).toEqual(["exit 1"]);
   });
 });

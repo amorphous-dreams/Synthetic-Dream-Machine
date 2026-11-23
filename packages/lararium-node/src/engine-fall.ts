@@ -215,6 +215,7 @@ export interface FallKeeper {
   uncaught(error: unknown): void;
   /** The boot's own rejection: true where the engine has fallen, so the fall's answer owns the end, never the boot's fault path. */
   absorbs(error: unknown): boolean;
+  handStop(signal: string): boolean;
 }
 
 /** What the keeper reaches: the fall's ports (the life read at the fall, when the store claim has minted it) and the hold. */
@@ -257,6 +258,7 @@ export function keepFallDown(watch: EngineWatch, ports: FallKeeperPorts): FallKe
       ports.log(`uncaught: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`);
       exitOnce(1);
     },
+    handStop: () => false,
     absorbs: (error) => {
       watch.note(error, "repo");
       if (watch.fallen() === null) return false;
