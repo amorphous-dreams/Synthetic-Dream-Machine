@@ -4,6 +4,10 @@
  *   lares shore [list]                                    what stands for a hand
  *   lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]
  *   lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore keep-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore keep-records <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore keep-both    <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore drafts       <uri>
  *   lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *   lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *   lares shore settle  --bag <bagUri|slug> --pending
@@ -17,6 +21,12 @@
  *     words in the records, `take-records` writes the records' render over the file. Saving in the wiki
  *     until both sides say the same thing settles it too. Where no base stands, `lares ingest` of the file
  *     names the same adoption `take-disk` does.
+ *   · A STAND-OFF COMES INSIDE AS DRAFTS (`standoff-drafts.ts`, @lararium/node): the file's side loads as drafts of its
+ *     targets in the worn face's draft layer, and the person's collapse rules (their daemon face's
+ *     `$:/config/lares/shore/collapse/<rule>`) settle what they can. What stays raises one awaiting alert naming four
+ *     actions: `keep-disk` lands the file's words whole (no merge), `keep-records` writes the records' render over the file
+ *     and lets the drafts go, `keep-both` writes the records' render and keeps the drafts as parallel drafts, and `drafts`
+ *     names the drafts by title (`lares tiddler get` reads each).
  *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
  *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
  *     carrier in the wiki, where the wiki shore lands the tombstone.
@@ -64,13 +74,17 @@ import { runMirrors } from "../seed-mirror-leg.js";
 import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, RETIREMENT_BOUND_MS, type Retirement } from "../shore-retirement.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
+export const SHORE_ACTS = ["list", "take-records", "take-disk", "keep-disk", "keep-records", "keep-both", "drafts", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
 
 function printUsage(): void {
   console.log("usage: lares shore [list]");
   console.log("       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]");
   console.log("       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]");
+  console.log("       lares shore keep-disk    <uri> --key <key> [--bag <bagUri>] [--yes]");
+  console.log("       lares shore keep-records <uri> --key <key> [--bag <bagUri>] [--yes]");
+  console.log("       lares shore keep-both    <uri> --key <key> [--bag <bagUri>] [--yes]");
+  console.log("       lares shore drafts       <uri>");
   console.log("       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
   console.log("       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
   console.log("       lares shore settle  --bag <bagUri|slug> --pending");
@@ -79,6 +93,10 @@ function printUsage(): void {
   console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
   console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
   console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
+  console.log("  keep-disk     land the file's words whole (no merge) for one standoff, and let its drafts go;");
+  console.log("  keep-records  write the records' render over the file of one standoff, and let its drafts go;");
+  console.log("  keep-both     write the records' render over the file, and keep the file's words as parallel drafts;");
+  console.log("  drafts        name the drafts a carrier's standoffs loaded (titles; `lares tiddler get` reads each);");
   console.log("  restore       write a vanished file back from the records;");
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
   console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
@@ -102,11 +120,18 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
     if (!bag || !args.flags["pending"]) return { usage: "settle resumes a stalled settle word from its record: lares shore settle --bag <bagUri|slug> --pending" };
     return { args: { op: "settle", bag, pending: true } };
   }
-  if (act === "take-records" || act === "take-disk") {
+  if (act === "take-records" || act === "take-disk" || act === "keep-disk" || act === "keep-records" || act === "keep-both") {
     const uri = args.positional[1];
     const key = args.options["key"];
     if (!uri || !key) return { usage: `${act} names a carrier and the standoff's key: lares shore ${act} <uri> --key <key>` };
-    return { args: { op: act, uri, key, ...withBag } };
+    // keep-records rides take-records; keep-disk rides take-disk, whole.
+    const op = act === "keep-records" ? "take-records" : act === "keep-disk" ? "take-disk" : act;
+    return { args: { op, uri, key, ...withBag, ...(act === "keep-disk" ? { whole: true } : {}) } };
+  }
+  if (act === "drafts") {
+    const uri = args.positional[1];
+    if (!uri) return { usage: "drafts names a carrier: lares shore drafts <uri>" };
+    return { args: { op: "drafts", uri } };
   }
   const uris = args.positional.slice(1);
   const all = Boolean(args.flags["all"]);
@@ -121,8 +146,10 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
 
 /** What a person confirms before an act that writes. */
 function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
-  if (act === "take-records") return `take-records ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
+  if (act === "take-records" || act === "keep-records") return `${act} ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
   if (act === "take-disk") return `take-disk ${String(shaped["uri"])}: the records give way to the file's present words. Proceed? [y/N] `;
+  if (act === "keep-disk") return `keep-disk ${String(shaped["uri"])}: the records give way to the file's present words, whole, with no merge. Proceed? [y/N] `;
+  if (act === "keep-both") return `keep-both ${String(shaped["uri"])}: the file's present bytes give way to the records' render, and the file's words stay as parallel drafts. Proceed? [y/N] `;
   const what = shaped["all"] === true ? `all ${String(shaped["count"])} pending carrier(s)` : (shaped["uris"] as string[]).join(", ");
   return act === "restore"
     ? `restore ${what}: each file returns from the records. Proceed? [y/N] `
@@ -144,7 +171,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
   }
 
   // An act that writes asks first (a person at a TTY), or carries `--yes` (an agent).
-  if (act !== "list" && act !== "settle" && act !== "flush" && !args.flags["yes"]) {
+  if (act !== "list" && act !== "settle" && act !== "flush" && act !== "drafts" && !args.flags["yes"]) {
     if (wantsJson(args)) {
       emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
       return exitFor("usage");
@@ -191,11 +218,11 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
 
   // TAKE-DISK rides the ingest leg, under the key (`shore-take-disk.ts`): the island names the standoff's
   // states, and the file lands only where the disk and the records still stand as the person read them.
-  if (act === "take-disk") {
+  if (act === "take-disk" || act === "keep-disk") {
     let taken;
     try {
       taken = await takeDisk(
-        { uri: String(shaped.args["uri"]), key: String(shaped.args["key"]), ...(typeof shaped.args["bag"] === "string" ? { bag: shaped.args["bag"] } : {}) },
+        { uri: String(shaped.args["uri"]), key: String(shaped.args["key"]), ...(typeof shaped.args["bag"] === "string" ? { bag: shaped.args["bag"] } : {}), ...(act === "keep-disk" ? { whole: true } : {}) },
         { ask: (shoreArgs) => askShore(shoreArgs, did), tree: openSyncedTree(), root: larRoot(), did },
       );
     } catch (err) {
@@ -212,14 +239,14 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       emit(args, {
         ok: false, ...(refused.requestId !== undefined ? { requestId: refused.requestId } : {}),
         error: { code: refused.refusal, message: refused.why },
-        human: () => console.error(`lares shore take-disk: ${refused.refusal}: ${refused.why}`),
+        human: () => console.error(`lares shore ${act}: ${refused.refusal}: ${refused.why}`),
       });
       return exitFor(refused.refusal === "standoff-key-moved" ? "conflict" : "verb-error");
     }
     const done = taken;
     emit(args, {
       ok: true, ...(done.requestId !== undefined ? { requestId: done.requestId } : {}),
-      data: { op: "take-disk", bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision, merge: done.merge },
+      data: { op: act, bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision, merge: done.merge },
       human: () => {
         console.log(done.merge.kind === "slots"
           ? `took the disk's side, merged with the records' slot by slot: ${done.uri} (${done.bag}); the merged words at ${done.path} stand in the records`
@@ -327,7 +354,19 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     ok: true, ...(answer.requestId !== undefined ? { requestId: answer.requestId } : {}),
     data: Object.keys(retiredBy).length > 0 ? { ...answer.output, retiredBy } : answer.output,
     human: () => {
-      if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
+      if (act === "take-records" || act === "keep-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
+      if (act === "keep-both") {
+        console.log(`kept both: the records' render stands in ${String(answer.output["uri"])}'s file (${String(answer.output["bag"])}), and ${String(answer.output["keptCount"] ?? 0)} draft(s) of the file's words stay`);
+        for (const t of Array.isArray(answer.output["kept"]) ? (answer.output["kept"] as string[]) : []) console.log(`  ${t}  (\`lares tiddler get "${t}"\`)`);
+        return;
+      }
+      if (act === "drafts") {
+        const rows = Array.isArray(answer.output["drafts"]) ? (answer.output["drafts"] as Array<Record<string, unknown>>) : [];
+        if (rows.length === 0) { console.log(`no stand-off of ${String(answer.output["uri"])} holds a draft`); return; }
+        console.log(`${String(answer.output["draftCount"] ?? rows.length)} draft(s) hold the file's side of ${String(answer.output["uri"])}'s stand-off(s):`);
+        for (const r of rows) console.log(`  ${String(r["title"])}  of ${String(r["of"])}  key ${String(r["standoff"])}${r["kept"] === true ? "  (kept)" : ""}\n      read it: \`lares tiddler get "${String(r["title"])}"\``);
+        return;
+      }
       const reached = answeredRows(answer.output);
       console.log(`${act === "restore" ? "restored" : "removed"} ${reached.doneCount} carrier(s) (${String(answer.output["bag"])})`);
       for (const line of removeReceiptLines(reached.done, answeredBag, named, receipts)) console.log(line);

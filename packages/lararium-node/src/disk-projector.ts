@@ -453,6 +453,12 @@ export interface StandingStandoff extends StandoffEntry {
 
 export class LarDiskProjector {
   /**
+   * THE STAND-OFF KEEPER the island wires beside this projector (`standoff-drafts.ts`): the shore verb reads a carrier's
+   * drafts through it and a person's `keep-both` marks them kept. Null where no keeper stands (a bare projector).
+   */
+  standoffKeeper: import("./standoff-drafts.js").StandoffKeeper | null = null;
+
+  /**
    * URIs currently being written to disk.
    * File watcher MUST check writing.has(uri) before ingesting — skip own writes.
    */

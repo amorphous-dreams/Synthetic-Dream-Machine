@@ -898,8 +898,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * discards it; its deletion uses the landed ledger's bag and heads.
    *
    * Nothing here decides: the live value stays the CRDT's merge, and the winner's own draft (every
-   * conflicted field live) is the live record, so it is never copied. A parallel draft never fuses
-   * with the projector's disk-conflict surface. A surfacing ON the draft bag itself persists nothing —
+   * conflicted field live) is the live record, so it is never copied. A disk stand-off's drafts arrive by
+   * another road (the keeper's own wiki writes, `@lararium/node` standoff-drafts). A surfacing ON the draft bag itself persists nothing —
    * a draft of a draft is two edit buffers racing, and copying it would mint drafts of drafts.
    */
   onParallelDrafts(change: ParallelDraftsChange): Promise<void> {

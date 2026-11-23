@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/island-behaviors
  */
 
-import { existsSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
 import { mkWikiVerbResult, wikiSlotUri } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
@@ -19,12 +19,14 @@ import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSe
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
-import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
+import { canonicalizeCarrierText, carrierRecords } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror, FACES_PROJECTION_DIR } from "./bag-paths.js";
 import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
 import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
-import { facePoolHeads } from "./pool-head.js";
+import { basePoolText, facePoolHeads } from "./pool-head.js";
+import { COLLAPSE_CONFIG_PREFIX, collapseConfigOf, rulesFor, type CollapseRule } from "./standoff-collapse.js";
+import { StandoffKeeper, keeperWikiOf, standoffAlertFields, standoffAlertTitle, type Tw5WikiLike } from "./standoff-drafts.js";
 import { checkoutTracking } from "./checkout-carriers.js";
 import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
 import { loadLaresConfig, tempExpiryDays, tempProjectionConsented } from "./lares-config.js";
@@ -114,9 +116,14 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  * `<projections>/faces/<pet name>/wikis/daemon/` much as a wiki's working layer projects to `<projections>/realms/<realm pet name>/wikis/<slug>/`.
  */
 export function mountDiskProjection(
-  manifest: Pick<IslandMsg_Manifest, "diskMirrors"> & Partial<Pick<IslandMsg_Manifest, "recipe">>,
+  manifest: Pick<IslandMsg_Manifest, "diskMirrors"> & Partial<Pick<IslandMsg_Manifest, "recipe" | "shoreCollapse">>,
   ctx: IslandContext,
-  opts: { readonly journal?: VesselJournal; readonly projected?: (projector: LarDiskProjector) => void } = {},
+  opts: {
+    readonly journal?: VesselJournal;
+    readonly projected?: (projector: LarDiskProjector) => void;
+    /** This island's wiki IS a face's daemon wiki: the person's collapse rules read from it, live. */
+    readonly rulesFromOwnWiki?: boolean;
+  } = {},
 ): (() => Promise<void>) | undefined {
   const allDefs = manifest.diskMirrors;
   if (!allDefs?.length) return undefined;
@@ -152,6 +159,17 @@ export function mountDiskProjection(
   // same file. mirrorRoot shape under the full-path-inside-bag ruling:
   // <root>/bags/<scope> → up two.
   const syncedTree = new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));   // runtime → <root>/hearth/checkpoints
+  // THE PERSON'S COLLAPSE RULES: the daemon face's own wiki where this island IS that face's daemon wiki, else the rules the
+  // vessel read from the worn face's daemon wiki into the manifest. A shared wiki's own config never enables a rule.
+  const manifestRules = collapseConfigOf((title) => {
+    const rule = title.slice(COLLAPSE_CONFIG_PREFIX.length);
+    const bags = manifest.shoreCollapse?.[rule];
+    return bags ? { bags: [...bags] } : null;
+  });
+  const collapseRules = (bag: string): ReadonlySet<CollapseRule> => rulesFor(opts.rulesFromOwnWiki
+    ? collapseConfigOf((title) => (ctx.tw5.$tw as unknown as Tw5WikiLike).wiki.getTiddler(title)?.fields ?? null)
+    : manifestRules, bag);
+  let keeper: StandoffKeeper | null = null;
   const projector = new LarDiskProjector({
   mirrors,
   // The ONE render shore: a carrier projects back to ITS OWN filetype
@@ -219,10 +237,26 @@ export function mountDiskProjection(
   // (the archive-floor write files here too) — and `wardKind` names the
   // mechanism that actually stood down, so an operator is never sent to the disk ward for
   // a conflict. The wire `kind`/`cause` stay Rail A's transport names, per that ruling.
-  onConflict: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:conflict", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff })),
+  //
+  // A STAND-OFF COMES INSIDE FIRST (`standoff-drafts.ts`): the keeper loads the disk side as drafts and runs the person's
+  // collapse rules. The rail hears the stand-off only where no rule collapsed it; where the bag holds no rule, it hears at
+  // once, as it always did, and the keeper's drafts and its awaiting alert follow.
+  onConflict: (info) => {
+    const post = (drafts?: readonly string[]): void => ctx.post(hostEvent(ctx.wikiUri, "confluence:conflict", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff, ...(drafts && drafts.length > 0 ? { drafts: drafts.join(" ") } : {}) }));
+    if (keeper === null) { post(); return; }
+    const ruled = collapseRules(info.bagId).size > 0;
+    if (!ruled) post();
+    void keeper.weigh(info).then(
+      (outcome) => { if (ruled && outcome.kind !== "collapsed") post(outcome.kind === "awaiting" ? outcome.drafts : []); },
+      (err: unknown) => { console.error(`[standoff] ${info.uri}: the keeper did not weigh the stand-off: ${err instanceof Error ? err.message : String(err)}`); if (ruled) post(); },
+    );
+  },
   // The standoff the projector surfaced stands resolved: the same rail carries its key with `resolved`,
   // and the alert that key raised clears. No audit row rides a resolution.
-  onConflictResolved: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true })),
+  onConflictResolved: (info) => {
+    ctx.post(hostEvent(ctx.wikiUri, "confluence:resolved", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true }));
+    void keeper?.resolved(info).catch((err: unknown) => console.error(`[standoff] ${info.uri}: the drafts of ${info.standoff} did not leave: ${err instanceof Error ? err.message : String(err)}`));
+  },
   // A file vanished from the path its base names: the projector wrote nothing back and tombstoned nothing.
   // ONE ALERT PER BAG names the count and rides the same rail under its own ward kind; the set's key names
   // the audit row and the live alert, and the set's end clears it.
@@ -257,6 +291,29 @@ export function mountDiskProjection(
     onBagProjected: (info: { bagId: string; path: string }) => ctx.post(bagProjectedEvent(ctx.wikiUri, info)),
   } : {}),
   });
+  // THE STAND-OFF KEEPER: the disk side of each stand-off loads as drafts in this island's wiki (the worn face's draft
+  // layer), the person's rules collapse what they can, and what stays raises one awaiting alert in this wiki's temp layer.
+  const tempBag = manifest.recipe?.wikiSlug ? wikiSlotUri(manifest.recipe.wikiSlug, "temp") : null;
+  const alertOrigin = (key: string) => ({ kind: "lares-verb" as const, requestId: `standoff-${key}` });
+  keeper = new StandoffKeeper({
+    wiki: keeperWikiOf(ctx.tw5.$tw as unknown as Tw5WikiLike),
+    standing: () => projector.standing(),
+    render: (bag, uri, key) => projector.standoffRender(bag, uri, key),
+    takeRecords: (bag, uri, key) => projector.takeRecords(bag, uri, key),
+    rules: collapseRules,
+    baseText: (path, baseDisk) => basePoolText(path, baseDisk).text,
+    readDisk: (path) => { try { return readFileSync(path, "utf8"); } catch { return null; } },
+    deserialize: carrierRecords,
+    canonical: canonicalizeCarrierText,
+    // ONE AUDIT ROW PER COLLAPSE, naming the rule, on the ward rail's durable ledger (no live alert rides it).
+    audit: (row) => ctx.post(hostEvent(ctx.wikiUri, "confluence:collapsed", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "standoff-collapsed", auditOnly: true, bagId: row.bagId, uri: row.uri, reason: `${row.rule} collapsed the stand-off toward ${row.toward === "merged" ? "a merge of both sides" : `the ${row.toward}`} (${row.path})`, standoff: row.standoff, rule: row.rule })),
+    alert: async (a) => {
+      if (tempBag === null) return;
+      if (a.clear === true) { await ctx.composite.tombstoneInBag(tempBag, standoffAlertTitle(a.standoff), alertOrigin(a.standoff)).catch(() => undefined); return; }
+      await ctx.composite.put({ tiddler: { ...standoffAlertFields(a), ts: new Date().toISOString() } }, alertOrigin(a.standoff), { bag: tempBag });
+    },
+  });
+  projector.standoffKeeper = keeper;
   const stop = projector.start(ctx.tw5);
   // The island's own projector takes the shore's seat; a lit face's projector (`mountLitFaceProjection`) names its own.
   if (opts.projected) opts.projected(projector); else mountedProjector = projector;
@@ -366,7 +423,7 @@ export function mountLitFaceProjection(
     }
   }
   const stop = mountDiskProjection({ diskMirrors: granted }, { ...ctx, tw5: engine.tw5, composite: engine.composite },
-    { ...(opts.journal ? { journal: opts.journal } : {}), projected: opts.projected ?? (() => {}) });
+    { ...(opts.journal ? { journal: opts.journal } : {}), projected: opts.projected ?? (() => {}), rulesFromOwnWiki: true });
   if (stop === undefined) return undefined;
   const roots = granted.map((def) => def.mirrorRoot);
   litFaceRoots.set(face.handleIndex, roots);

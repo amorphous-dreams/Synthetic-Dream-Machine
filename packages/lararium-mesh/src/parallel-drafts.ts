@@ -16,9 +16,10 @@
  * Automerge drops a conflict from `getConflicts` on the next write to that property, so a surfaced
  * draft lives only until then unless a reader keeps it. The READING wiki keeps it (operator ruling):
  * its island adaptor, registered as a `ParallelDraftsReader`, persists every draft off the live value
- * into the wiki's draft bag, where it stands as a quiet badge until a human discards it. A parallel
- * draft never fuses with the projector's disk-conflict surface: one reads concurrent CRDT values, the
- * other reads disk against records.
+ * into the wiki's draft bag, where it stands as a quiet badge until a human discards it. The disk shore
+ * drafts in the same shape: a projector stand-off loads the file's side as `Draft of '<title>' by disk`
+ * (`@lararium/node` standoff-drafts), so the two conflict surfaces meet as drafts beside their target. Each
+ * keeps its own source: this module reads concurrent CRDT values, the keeper reads disk against records.
  *
  * A draft's fields:
  *   - every field of the live record, overlaid with THIS actor's value for each conflicted field

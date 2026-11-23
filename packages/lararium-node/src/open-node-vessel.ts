@@ -86,7 +86,8 @@ import { readDocCensus, type DocCensusDoor } from "./doc-census-door.js";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatRepoWear, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, type ShareEntry } from "@lararium/mesh";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatRepoWear, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, plainValue, type ShareEntry } from "@lararium/mesh";
+import { collapseConfigOf } from "./standoff-collapse.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -2829,6 +2830,21 @@ async function prepareNodeBootOn(
     if (receipt && receipt.cut.length > 0) throw new IslandShutdownCut(`islands cut (${receipt.cut.join(", ")})`);
   } });
 
+  /** The worn face's stand-off collapse rules (rule → bags), from its daemon working documents; null where no face stands worn. */
+  const wornShoreCollapse = (): Readonly<Record<string, readonly string[]>> | null => {
+    if (wornDeviceGroup === null || wornDeviceRelation === null) return null;
+    const docs = deviceDocs.docsOf(DAEMON_WORKING_SLOT, [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: null }])
+      .map((id) => repo.handles[id as keyof typeof repo.handles]).filter((h): h is NonNullable<typeof h> => h !== undefined && h.isReady());
+    const config = collapseConfigOf((title) => {
+      for (const handle of docs) {
+        const record = ownEntry((handle.doc() as LarDoc | undefined)?.tiddlers, title) as { tiddler?: unknown; meta?: { deleted?: unknown } } | undefined;
+        if (record && record.meta?.deleted !== true) return plainValue(record.tiddler) as Record<string, unknown>;
+      }
+      return null;
+    });
+    return Object.keys(config).length > 0 ? config : null;
+  };
+
   // Read the daemon doc (idempotent re-resolve; openDaemonVm finds the same handle).
   const readDaemonDoc = async (): Promise<DocHandle<LarDoc>> =>
     resolveBootDoc<LarDoc>(repo, bootstrap.daemonUrl as AutomergeUrl,
@@ -5130,6 +5146,9 @@ async function prepareNodeBootOn(
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
       }),
       diskMirrorGrant,
+      // THE PERSON'S STAND-OFF COLLAPSE RULES, read afresh at each mount from the worn face's own daemon working layer
+      // (`$:/config/lares/shore/collapse/<rule>`), never from a wiki another writer shares; no worn face, no rule.
+      shoreCollapse: () => wornShoreCollapse(),
       onWorkerEvent: (wikiId, msg) => {
         if (msg.type !== "event") return;   // a camera's frame or answer from an island outside any session has no ring to ride on this vessel
         eventBus.enqueueToRing("vm-ring", "worker.event", { wikiId, listenable: msg.listenable, payload: msg.payload });

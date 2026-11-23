@@ -29,6 +29,10 @@
  *                  reconcile gate holds no window, so a flush crests no new wave: it drains what the queue owes now.
  *                  The teardown's flush phase and a fallen engine's exit ask it of every island (`flushEveryShore`);
  *                  `lares shore flush` asks it by hand
+ *   drafts         name the drafts the disk side of a carrier's stand-offs loaded (`standoff-drafts.ts`), each with its
+ *                  target, its stand-off's key and whether a person kept it; titles alone, never a draft's words
+ *   keep-both      a person keeps both sides of one stand-off, named by its key: its drafts stay past its end as parallel
+ *                  drafts, and the records' render writes over the file, as `take-records` writes it
  *
  * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
  * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
@@ -52,7 +56,7 @@ import type { LarDiskProjector } from "./disk-projector.js";
 export const SHORE_VERB = "shore";
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -415,6 +419,34 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     return render === null
       ? { ok: false, op, refusal: "standoff-render-unheld", why: `the standoff for ${uri} holds no text render a merge can read (a sidecar, a pointer or a binary body)` }
       : { ok: true, op, bag: named.bagId, uri, key, records: render.records, text: render.text };
+  }
+  if (op === "drafts") {
+    const uri = text(args["uri"]);
+    if (uri === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "drafts names a carrier (`uri`)" };
+    const keeper = projector.standoffKeeper;
+    if (keeper === null) return { ok: false, op, refusal: "no-standoff-keeper", why: "this island loads no stand-off as drafts" };
+    const drafts = keeper.draftsOf(uri);
+    return { ok: true, op, uri, drafts: drafts.slice(0, SHORE_LIST_PAGE), draftCount: drafts.length };
+  }
+  if (op === "keep-both") {
+    const uri = text(args["uri"]);
+    const key = text(args["key"]);
+    if (uri === null || key === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "keep-both names a carrier (`uri`) and the standoff's key (`key`)" };
+    const keeper = projector.standoffKeeper;
+    if (keeper === null) return { ok: false, op, refusal: "no-standoff-keeper", why: "this island loads no stand-off as drafts, so nothing stays to keep; `lares shore keep-records` takes the records' side" };
+    const stands = projector.standing().filter((s) => s.uri === uri && (text(args["bag"]) === null || s.bagId === args["bag"]));
+    const named = stands.find((s) => s.standoff === key);
+    if (named === undefined) {
+      return {
+        ok: false, op, refusal: stands.length === 0 ? "no-standoff-stands" : "standoff-key-moved",
+        why: stands.length === 0 ? `no standoff stands for ${uri} at this island's shore` : `the standoff for ${uri} stands under key ${stands.map((s) => s.standoff).join(", ")}; the answer names ${key}`,
+      };
+    }
+    const kept = await keeper.keep(uri, key);
+    const answer = await projector.takeRecords(named.bagId, uri, key);
+    return answer.took
+      ? { ok: true, op, bag: named.bagId, uri, key, took: "records", kept: kept.slice(0, SHORE_LIST_PAGE), keptCount: kept.length }
+      : { ok: false, op, refusal: "standoff-key-moved", why: answer.why ?? "the states moved while the answer travelled", kept: kept.slice(0, SHORE_LIST_PAGE), keptCount: kept.length };
   }
   if (op === "census") {
     const after = args["after"] === undefined ? null : text(args["after"]);

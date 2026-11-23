@@ -66,3 +66,14 @@ export function canonicalizeCarrierText(uri: string, diskText: string): string |
   for (const slot of declared) if (!rendered.has(slot)) return null;
   return canonical;
 }
+
+/**
+ * THE TIDDLERS a memetic carrier's words SAY — `parse(diskText)`, the same deserialize `render(parse(·))` reads above, so
+ * the disk side of a stand-off loads as drafts through the one congruence the gates weigh it by. Null where the parse
+ * grades `error` (the ingest leg refuses those bytes, and nothing here loads them either).
+ */
+export function carrierRecords(uri: string, diskText: string): ReadonlyArray<Readonly<Record<string, unknown>>> | null {
+  const { records, diagnostics } = memeticIngestOps.deserialize(uri, diskText, memeticVerdict(diskText));
+  if (memeticIngestOps.grade(diagnostics) === "error") return null;
+  return records as ReadonlyArray<Readonly<Record<string, unknown>>>;
+}

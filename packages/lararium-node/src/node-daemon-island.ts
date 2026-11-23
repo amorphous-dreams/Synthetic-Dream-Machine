@@ -85,7 +85,7 @@ runSovereignWorker((manifest) => {
     // The daemon wiki projects to `<projections>/faces/<pet name>/wikis/daemon/` through the same projector a wiki island mounts: its working
     // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
-    onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
+    onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal, rulesFromOwnWiki: true }),
     // EVERY LIT FACE PROJECTS ITS OWN WRITES: a sibling lit beside the worn face projects through its own engine into its own
     // root (`faces/<its pet name>/`), under the grants the vessel named for it, from its light to its drop.
     projectLitFace: (ctx: IslandContext) => (face, engine) => mountLitFaceProjection(manifest, face, engine, ctx, { journal, log: (line) => console.log(`[faces] ${line}`) }),
