@@ -9,32 +9,35 @@
  * face, so the new life re-wears with no re-unlock; the receipt ledger's `life` field settles each fact the fallen life left
  * `committed` as `interrupted`, since the new claim mints a new life (`vessel-life`).
  *
- * THE RESTART COUNT, NEVER A CLOCK. The house bounds a restart storm by a COUNT, cleared by a run that proved itself or by
- * a hand act (the island pool's mount-failure count, `vessel-island-pool-core`; Iris/aho's pacing resets on a standing
- * child). A process forgets its memory at exit, so the count rests beside the life id, at `<storageDir>/.engine-falls`,
- * one row per fall. A fall that finds `ENGINE_RESTART_CAP` falls already resting from earlier lives stays down: it flushes
- * and names the hand act, and does not exit, so `unless-stopped` has nothing to restart (Docker restarts on exit, never on
- * an unhealthy answer). A fall whose row cannot rest (a full or refusing disk) stays down too, so no count it cannot keep
- * feeds a loop. Three acts clear the rows: the risen vessel standing ready and staying up through its first full settle
- * (`clearOnceSettled`), so a vessel that ran healthy for weeks gets its one rise again; a clean stop; and a hand's stop of
- * a fallen vessel (a signal reaching a fallen engine reads as the hand having seen the named state, which grants one more
- * rise, bounded by the count again).
+ * THE RESTART COUNT, NEVER A CLOCK. The house bounds a restart storm by a COUNT (the island pool's mount-failure count,
+ * `vessel-island-pool-core`). A process forgets its memory at exit, so the count rests beside the life id, at
+ * `<storageDir>/.engine-falls`, one row per fall. A fall that finds `ENGINE_RESTART_CAP` falls already resting from earlier
+ * lives stays down: it flushes and names the hand act, and does not exit, so `unless-stopped` has nothing to restart (Docker
+ * restarts on exit, never on an unhealthy answer). A fall whose row cannot rest (a full or refusing disk) stays down too, so
+ * no count it cannot keep feeds a loop.
  *
- * WHAT STOPS A CRASH LOOP, NAMED. The count does: past it the vessel stays down at 503 and the container stays up. The boot
- * probe helps where it can: each document a resting fall named in flight (`EngineFall.inFlight`) reads condemned at the
- * composition's own social mount (`fallAwareProbeDoors`), so the clean-tail recovery runs, and where it cuts nothing the
- * whole-document quarantine moves the bytes aside (never a delete) and a read-only stand-in mounts degraded. THE RESIDUALS:
- * a trap whose document never reached a mount the probe guards passes it, and only the count stops a second fall of that
- * kind; and a trap that strikes after the first full settle clears the count first, so such a vessel rises once per settled
- * life, one restart each.
+ * ONLY TWO ACTS CLEAR THE COUNT: a clean stop (exit 0), and the hand's act (a signal reaching a fallen engine reads as the
+ * hand having seen the named state, which grants one more rise, bounded by the count again). No run clears it by itself: a
+ * trap outside the probe's guard (a peer's resync after any settle) would otherwise loop (fall, exit, boot, settle, clear,
+ * fall), and Docker's backoff resets after ten seconds up, so that loop would never slow. So a vessel that ran healthy for
+ * weeks stays down on its next fall and names the hand act. That fails safe, by design. While a held or degraded document
+ * stands, nothing clears the count but those same two acts.
+ *
+ * WHAT THE BOOT DOES WITH THE DOCUMENT IN FLIGHT. Each document a resting fall named in flight (`EngineFall.inFlight`) runs
+ * the REAL probe at the composition's own social mount (`fallAwareProbeDoors`). A torn one takes the existing path: the
+ * clean-tail recovery, then the whole-document quarantine and the degraded stand-in. One that loads clean stands HELD: it
+ * reads as the probe's `unresolved` class, so the mount takes its `pending` branch, read-only, no bytes moved and no writable
+ * stand-in, and the vessel names it and the hand act that releases it (`HELD_HAND_ACT`). Under an OOM the document in flight
+ * usually stands innocent, so no sound document's bytes ever move. THE RESIDUAL: a trap whose document never reached a mount
+ * the probe guards passes it, and only the count stops a second fall of that kind.
  *
  * Every fall in a suite comes injected; nothing here runs out of wasm memory.
  */
 import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { type DocLoadProbe, type ProbeResult } from "@lararium/mesh";
+import { isCondemned, type DocLoadProbe, type ProbeResult } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-import type { EngineFall, EngineWatch } from "./engine-watch.js";
+import type { EngineFall } from "./engine-watch.js";
 import { shoreFlushLines, type ShoreFlushReading } from "./shore-verb.js";
 
 /** The exit a fallen engine's vessel takes: sysexits' EX_SOFTWARE (an internal fault), apart from 0, 1, 2, 75 and 76. */
@@ -151,63 +154,39 @@ export interface ProbeDoors {
   readonly quarantineDoc: (verdict: ProbeResult) => void;
 }
 
-/** Why a held-back document reads condemned. */
-export const HELD_IN_FLIGHT = "held back: the document in flight at the last engine fall";
+/** Why a held document stands pending. */
+export const HELD_IN_FLIGHT = "held: the document in flight at the last engine fall loads clean, so it stands read-only, its bytes in place";
+
+/** The hand act that releases a held document. */
+export const HELD_HAND_ACT = "read the held plane read-only, then stop the vessel by hand (a clean stop clears the restart count) and stand it again: the document mounts writable";
 
 /**
- * THE KEEL'S PROBE DOORS, AWARE OF THE RESTING FALLS. Each document a resting fall named in flight reads condemned
- * (`aborted`, the trap's own class) before the child loads it, so the composition's social mount runs its own path: the
- * clean-tail recovery first, then, where that recovery cuts no torn tail (it moved nothing aside, so it held nothing back),
- * the whole-document quarantine and the read-only stand-in, degraded. Every other document reads through the doors unchanged.
- * Nothing moves before the composition stands: a store emptied ahead of it reads "fresh, not a tear" and mounts writable.
+ * THE KEEL'S PROBE DOORS, AWARE OF THE RESTING FALLS. Each document a resting fall named in flight runs the REAL probe. A
+ * condemned verdict passes through unchanged, so the social mount runs its own path (the clean-tail recovery, then the
+ * quarantine and the degraded stand-in). Any other verdict comes back as the probe's `unresolved` class, named held, so the
+ * mount takes its `pending` branch: read-only, no bytes moved, no writable stand-in. Every other document, and the recovery
+ * and quarantine doors, read through unchanged. Nothing moves before the composition stands.
  */
 export function fallAwareProbeDoors(falls: readonly RestingFall[], doors: {
   readonly probe: DocLoadProbe;
   readonly recoverCleanTail: (verdict: ProbeResult) => Promise<ProbeResult | null>;
   readonly quarantineDoc: (verdict: ProbeResult) => void;
 }): ProbeDoors {
-  const held = new Set(falls.map((f) => f.inFlight).filter((d): d is string => d !== null));
+  const held = new Set(heldInFlight(falls));
   return {
     docLoadProbe: {
-      probe: (documentId, options) => held.has(documentId)
-        ? Promise.resolve({ documentId, status: "aborted", reason: HELD_IN_FLIGHT })
-        : doors.probe.probe(documentId, options),
+      probe: async (documentId, options) => {
+        const verdict = await doors.probe.probe(documentId, options);
+        if (!held.has(documentId) || isCondemned(verdict)) return verdict;
+        return { documentId, status: "unresolved", reason: `${HELD_IN_FLIGHT}; hand act: ${HELD_HAND_ACT}` };
+      },
     },
-    recoverCleanTail: async (verdict) => {
-      const recovered = await doors.recoverCleanTail(verdict);
-      if (held.has(verdict.documentId) && recovered?.status === "ok" && (recovered.cleanTail?.movedAside.length ?? 0) === 0) return null;
-      return recovered;
-    },
+    recoverCleanTail: (verdict) => doors.recoverCleanTail(verdict),
     quarantineDoc: (verdict) => doors.quarantineDoc(verdict),
   };
 }
 
-/** What clearing the count after a settle reads: the storage dir, the engine, the ready word and the first full settle. */
-export interface SettleClearPorts {
-  readonly storageDir: string;
-  readonly engine: Pick<EngineWatch, "fallen">;
-  /** Resolves once the vessel stands ready (`markReadyOnceStanding`). */
-  readonly ready: Promise<unknown>;
-  /** The first full settle: true where every island drained its shore and the Repo flushed. */
-  readonly settle: () => Promise<boolean>;
-  readonly log: (line: string) => void;
-}
-
-/**
- * CLEAR THE COUNT ONCE THE RISEN VESSEL PROVES ITSELF: it stands ready, then stays up through its first full settle with
- * its engine standing. A settle that throws, leaves a shore unwritten, or meets a fall keeps the count. Answers whether it
- * cleared.
- */
-export async function clearOnceSettled(ports: SettleClearPorts): Promise<boolean> {
-  try {
-    await ports.ready;
-    const whole = await ports.settle();
-    if (!whole || ports.engine.fallen() !== null) return false;
-    clearEngineFalls(ports.storageDir);
-    ports.log("engine fall: the risen vessel stands and settled whole; the restart count clears");
-    return true;
-  } catch (err) {
-    ports.log(`engine fall: the first settle did not finish (${err instanceof Error ? err.message : String(err)}); the restart count holds`);
-    return false;
-  }
+/** The documents the resting falls name in flight: each one a boot holds where it loads clean. */
+export function heldInFlight(falls: readonly RestingFall[]): string[] {
+  return [...new Set(falls.map((f) => f.inFlight).filter((d): d is string => d !== null))];
 }

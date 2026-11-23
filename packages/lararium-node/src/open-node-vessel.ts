@@ -2960,8 +2960,8 @@ async function prepareNodeBootOn(
     // the whole boot. L3 — clean-tail recovery, tried AHEAD of quarantine: salvage the doc's
     // verified clean record-prefix and drop only the torn tail, so a torn-tail doc promotes to a
     // writable mount (a suffix of edits lost) instead of downgrading the vessel to degraded.
-    // THE DOCUMENT IN FLIGHT AT AN ENGINE FALL reads condemned (`fallAwareProbeDoors`), so it takes this same path: L3, then
-    // the quarantine and the read-only stand-in where L3 cuts nothing.
+    // THE DOCUMENT IN FLIGHT AT AN ENGINE FALL runs this same probe (`fallAwareProbeDoors`): a torn one takes this same path,
+    // and a clean one stands held in the pending branch, read-only, its bytes in place.
     ...((): ProbeDoors => {
       const doors = fallAwareProbeDoors(readEngineFalls(storageDir), {
         probe: makeChildProcessDocLoadProbe(storageDir),

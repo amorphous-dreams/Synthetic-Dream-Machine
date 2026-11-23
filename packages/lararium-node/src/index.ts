@@ -199,8 +199,8 @@ export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, So
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, tapInboundDocs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
-export { answerEngineFall, fallAwareProbeDoors, clearOnceSettled, HELD_IN_FLIGHT, readEngineFalls, restEngineFall, clearEngineFalls, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
-export type { RestingFall, FallAnswer, FallPorts, ProbeDoors, SettleClearPorts } from "./engine-fall.js";
+export { answerEngineFall, fallAwareProbeDoors, heldInFlight, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
+export type { RestingFall, FallAnswer, FallPorts, ProbeDoors } from "./engine-fall.js";
 export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";

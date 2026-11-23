@@ -1,5 +1,5 @@
 /**
- * THE DOCUMENT IN FLIGHT AT AN ENGINE FALL READS CONDEMNED AT THE NEXT BOOT, THROUGH THE COMPOSITION'S OWN PATH.
+ * THE DOCUMENT IN FLIGHT AT AN ENGINE FALL STANDS HELD AT THE NEXT BOOT, THROUGH THE COMPOSITION'S OWN PATH.
  *
  * A fall rests the document the Repo was handling (`EngineFall.inFlight`). The next boot hands that id to the keel's probe
  * doors (`fallAwareProbeDoors`), and the REAL probe reads it. A torn one takes the composition's own path (the clean-tail
@@ -65,7 +65,7 @@ let childStands = true;
 try { resolveChildPath(); } catch { childStands = false; }
 const d = childStands ? describe : describe.skip;
 
-d("the document in flight at a fall reads condemned at the next boot", () => {
+d("the document in flight at a fall stands held, or takes the torn path, at the next boot", () => {
   /** Rest a fall that names the daemon document in flight. */
   const restFallOn = (storageDir: string, daemonId: string): void => {
     const watch = createEngineWatch(() => new Date("2026-11-22T10:00:00.000Z"));
