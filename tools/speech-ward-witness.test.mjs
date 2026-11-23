@@ -14,6 +14,8 @@ import { wardCount, speechOfTs, speechOfPy } from './speech-ward-witness.mjs';
 
 const tools = dirname(fileURLToPath(import.meta.url));
 const COP = 'is'; // the planted token, named once
+/** The baseline a walk wrote back (a scratch JSON the test planted, never source). */
+const baselineOf = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
 /** A scratch tree with one package whose source speaks `body`, and a baseline holding `ceilings`. */
 function tree(files, ceilings = {}, rest = {}) {
@@ -46,7 +48,7 @@ test('the same planted copula reads green at a ceiling that holds it; a ceiling 
   assert.match(r.stdout, /p\s+1 copula\(s\), ceiling 3: STALE CEILING/);
   assert.equal(walk(t, '--write-baseline').status, 0);
   assert.equal(walk(t).status, 0, 'the lowered ceiling now holds');
-  assert.equal(JSON.parse(readFileSync(t.baseline, 'utf8')).ceilings.p, 1);
+  assert.equal(baselineOf(t.baseline).ceilings.p, 1);
 });
 
 test('the auxiliary tally holds its own ceiling, which also only falls', () => {
