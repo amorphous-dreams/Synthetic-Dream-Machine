@@ -367,6 +367,33 @@ function spellHelp(argv: readonly string[]): readonly string[] {
   return rest[0] === undefined || rest[0].startsWith("--") ? ["help", ...rest] : out;
 }
 
+/**
+ * EVERY SPELLING THAT LEFT THE FRONT DOOR, and the line that answers for it now. Alpha line: the old spelling never runs,
+ * yet it never answers `unknown command` either: an operator who types the name they learned meets the new seat by name.
+ * A row matches when its words lead the command line. `tests/laws/messages-name-live-doors.law.test.ts` reads every `lares …`
+ * cure here against the live registry, so a seat that moves again cannot leave a row pointing at nothing.
+ */
+export const MOVED: ReadonlyArray<{ readonly argv: readonly string[]; readonly to: string }> = [
+  { argv: ["promote"], to: "lares trust" },
+  { argv: ["nexus", "promote"], to: "lares nexus approve" },
+  // The second fold (fewer-front-doors): each verb rides the door that already owns its island.
+  { argv: ["receipt"], to: "lares vessel request <id>" },
+  { argv: ["cancel"], to: "lares vessel request <id> --cancel" },
+  { argv: ["watch"], to: "lares ingest --watch" },
+  { argv: ["draft"], to: "lares act --draft <uri>" },
+  { argv: ["raise"], to: "lares persona raise-sign <challenge-json-text>" },
+  { argv: ["wing-of"], to: "node tools/wing-of.mjs" },
+  { argv: ["test-quine"], to: "pnpm --filter @lararium/node test:quine" },
+];
+
+/** The line a retired spelling now answers at, or null where the command line names no retired spelling. */
+function movedTo(args: ParsedArgs): string | null {
+  const line = [args.command, ...args.positional];
+  const row = MOVED.find((m) => m.argv.every((w, i) => line[i] === w));
+  if (row) return row.to;
+  return args.command === "sense" && retiredSensePromote(args) ? "lares sense harden" : null;
+}
+
 export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   const argv = spellHelp(rawArgv);
   let args: ParsedArgs;
@@ -397,8 +424,8 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     printHelp(surface, execOnly);
     return args.command === null ? 1 : 0;
   }
-  const moved = args.command === "promote" ? "lares trust" : args.command === "nexus" && args.positional[0] === "promote" ? "lares nexus approve" : args.command === "sense" && retiredSensePromote(args) ? "lares sense harden" : null;
-  if (moved) { console.error(`usage: this command moved to ${moved}`); return 2; }
+  const moved = movedTo(args);
+  if (moved) { console.error(`usage: this command moved to \`${moved}\``); return 2; }
   const cmd = COMMANDS.find((c) => c.name === args.command);
   if (!cmd) {
     // A SHIM VERB'S HELP: the host shim answers `up|down|reset|found|logs|build|rebuild`, and a help ask stays on this machine,

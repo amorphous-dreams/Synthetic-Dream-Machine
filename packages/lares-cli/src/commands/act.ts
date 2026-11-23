@@ -189,16 +189,16 @@ async function actRepack(args: ParsedArgs): Promise<number> {
       } else {
         if (receipt?.state === "abandoned") {
           const hint = refusalHint("request-abandoned", undefined)!;
-          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
           return exitFor("request-abandoned");
         }
         if (receipt?.state === "interrupted") {
           const hint = refusalHint("request-interrupted", undefined)!;
-          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
           return exitFor("request-interrupted");
         }
         const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares vessel request ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
-        emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+        emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
     } else {
@@ -547,7 +547,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("request-abandoned", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "request-abandoned", message: msg, hint },
-          human: () => { console.error(`lares act: request abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: request abandoned. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("request-abandoned");
@@ -555,7 +555,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("request-interrupted", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "request-interrupted", message: msg, hint },
-          human: () => { console.error(`lares act: request interrupted. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: request interrupted. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("request-interrupted");
@@ -566,7 +566,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("retention-gap", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
-          human: () => { console.error(`lares act: retention gap. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: retention gap. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("retention-gap");
@@ -580,7 +580,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares vessel request ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
-          human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: outcome unknown. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("outcome-unknown");
