@@ -24,7 +24,7 @@ const cryptoStubForCodeUnderTest = {
 /**
  * THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle the
  * road"; the browser side gets a deep Mu from scratch later, lar:///ha.ka.ba/kahua/memory/project/browser-mu-from-scratch).
- * The default run is `browser-node` alone: the 44 files below run green in Node (isomorphic-by-intent code needs no real
+ * The default run is `browser-node` alone: the 45 files below run green in Node (isomorphic-by-intent code needs no real
  * browser). Every other test file here stays in the tree, untouched, and goes unrun until the browser Mu relights it. The
  * account of what went dark and how to relight stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM).
  *
@@ -38,6 +38,7 @@ const browserNode = {
     include: [
       "tests/admit-carriage.test.ts",
       "tests/alert-drop-diagnostics.test.ts",
+      "tests/browser-veil-archive-route.test.ts",
       "tests/browser-connection-state.test.ts",
       "tests/browser-device-daemon-seal.test.ts",
       "tests/browser-docstore-crash.test.ts",

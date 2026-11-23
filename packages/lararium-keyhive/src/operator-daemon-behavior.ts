@@ -61,6 +61,9 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** The veil identity's archive persistence — the same inversion, its own file. Absent → the veil's
    *  prekeys regenerate per boot, and material keyed to an earlier card stops opening. */
   persistVeilArchive?: (bytes: Uint8Array, face: string) => void | Promise<void>;
+  /** Whether `persistVeilArchive` routes this face's Archive at all (a browser vessel routes the worn face's alone). Absent:
+   *  every face routes, and the writer's own gate decides. A face it routes not exports nothing, so no card mints for it. */
+  routesVeilArchive?: (face: string) => boolean;
   /** `shore` — a person's answers at THIS island's disk shore (`lares shore`): the node entry injects the
    *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
    *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
@@ -170,7 +173,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   }
   return reader;
 }
-import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
+import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl, CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS } from "@lararium/mesh";
@@ -193,7 +196,7 @@ import { readSiblingFacePlanes, recheckSiblingPlanes, intentPlaneSelf, type Face
 import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
-import { KeyhiveProvider } from "./keyhive-provider.js";
+import { KeyhiveProvider, PrekeySecretAbsent } from "./keyhive-provider.js";
 import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 import { answerKahuaCap } from "./kahua-cap.js";
 import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
@@ -267,10 +270,34 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   };
   // The face archive writer stays on the island shore.
   const {
-    persistVeilArchive, shore, events, journalAppend, projectLitFace,
+    persistVeilArchive, routesVeilArchive, shore, events, journalAppend, projectLitFace,
     bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, docStoreDoor, freshBase, countedRaises, kahuCabal, charterSeat, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
+  /** The archive floor's writers, the mounted face's and each lit sibling's alike: the write and the face it routes. */
+  const archiveWriters = { ...(persistVeilArchive ? { persistVeilArchive } : {}), ...(routesVeilArchive ? { routesVeilArchive } : {}) };
+  /**
+   * THE ONE DOOR EVERY ARCHIVE FLOOR'S REFUSALS SURFACE THROUGH, the mounted face's and each lit sibling's alike: stdout for a
+   * person at a terminal, and the durable `@daemon` ward ledger (Rail A), naming the face where a sibling's floor refused. One
+   * call site, so none of them can go dead unnoticed (the seal-refusal weld counts it).
+   */
+  const surfaceFloorRefusals = async (ctx: IslandContext, floor: Awaited<ReturnType<typeof persistArchiveFloor>>, face: string | null): Promise<void> => {
+    const who = face ? `face ${face.slice(0, 12)}… ` : "";
+    for (const r of floor.refusals) {
+      console.warn(`[daemon] ${who}${r.carrier} archive export REFUSED: ${r.message}`);
+      try {
+        await fileWardRefusal(ctx.composite, controlOf(ctx), ctx.post, {
+          bagId:    DAEMON_BAG_ID,
+          uri:      `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
+          reason:   face ? `${who}${r.message}` : r.message,
+          wardKind: "archive-seal",
+        });
+      } catch (err) {
+        // The surfacing itself must never take the boot down — the refusal is already on stdout.
+        console.warn(`[daemon] archive-seal refusal could not be filed durably: ${(err as Error)?.message ?? err}`);
+      }
+    }
+  };
   let clearGate!: () => void;
   let refuseGate!: (reason: Error) => void;
   let gateCleared = false;
@@ -350,7 +377,18 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
     });
     try {
-      for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag);
+      await namingThePrekey(face.atom.key, async () => { for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag); });
+      // THE SIBLING'S ARCHIVE FLOOR, as the mounted face's: its one card mints, then its Archive rests in its own row. Every
+      // later ask of this stand (a grant, a workbench seat, a revoke) presents that same card, so the Archive the next light
+      // restores holds the secret behind every prekey this stand presented. Without it the face's log runs ahead of its
+      // Archive, one card per light, until no prekey it holds stays live and its next light mints no Document.
+      const floor = await persistArchiveFloor({
+        archiveOpens: daemonAuth.archiveOpens,
+        writers: archiveWriters,
+        face: face.personaGroupId,
+        exportVeilArchive: () => joined.keyhive.exportArchiveAfterTheCard(),
+      });
+      await surfaceFloorRefusals(ctx, floor, key);
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
@@ -898,6 +936,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // EACH ARCHIVE NAMES ITS FACE: the hive that exports names the row its bytes rest in, never a row the vessel holds
         // as its current one. A seat whose face names no PersonaGroup rests nothing, so its wrap seals nothing.
         if (!face.archiveFace) throw new Error("face-not-named: this seat's face names no PersonaGroup, so its Archive rests nowhere");
+        // A FACE THE WRITER ROUTES NOT EXPORTS NOTHING: the export mints the stand's card, which no row would keep.
+        if (routesVeilArchive && !routesVeilArchive(face.archiveFace)) throw new Error("face-archive-unrouted: this shore rests no Archive for this face, so a wrap could not open again");
         const archive = await keyhive.exportArchiveAfterTheCard();
         await write(archive, face.archiveFace);
       },
@@ -1031,15 +1071,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           }
         }
         const faceBags = daemonAuth.registerBags.filter((bag) => !isVesselGround(bag));
-        if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
-        else for (const bag of faceBags) await keyhive.registerBag(bag);
+        await namingThePrekey(daemonAuth.atom.key, async () => {
+          if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
+          else for (const bag of faceBags) await keyhive.registerBag(bag);
+        });
       }
       // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
       // The face archive carries the atom's prekeys and capability state. The write door reads
       // custody standing before export; a shut face writes nothing. A failed write surfaces below.
       const floor = await persistArchiveFloor({
         archiveOpens: daemonAuth.archiveOpens,
-        writers: { ...(persistVeilArchive ? { persistVeilArchive } : {}) },
+        writers: archiveWriters,
         // EACH ARCHIVE NAMES ITS FACE: the mounted hive's own PersonaGroup names the row, so the vessel never picks one.
         face: daemonAuth.personaGroupId ?? null,
         // EACH STAND'S CARD MINTS BEFORE ITS ARCHIVE LEAVES. Every later ask in this boot (a binding's
@@ -2314,22 +2356,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       // Archive refusal records and operator alerts use the attached daemon working layer. `wardKind`
       // identifies the refusing ward; keyhive stays fs-blind and the record names a `lar:` URI.
-      if (floor.refusals.length) {
-        for (const r of floor.refusals) {
-          console.warn(`[daemon] ${r.carrier} archive export REFUSED: ${r.message}`);
-          try {
-            await fileWardRefusal(ctx.composite, controlOf(ctx), ctx.post, {
-              bagId:    DAEMON_BAG_ID,
-              uri:      `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
-              reason:   r.message,
-              wardKind: "archive-seal",
-            });
-          } catch (err) {
-            // The surfacing itself must never take the boot down — the refusal is already on stdout.
-            console.warn(`[daemon] archive-seal refusal could not be filed durably: ${(err as Error)?.message ?? err}`);
-          }
-        }
-      }
+      await surfaceFloorRefusals(ctx, floor, null);
       providers.set(bareKey(daemonAuth.atom!.key), { provider: keyhive, group: daemonAuth.personaGroupId! });
       litInputs.set(bareKey(daemonAuth.atom!.key), faceInputsDigest(daemonAuth));
       for (const face of daemonAuth.joinedFaces ?? []) {
@@ -2487,4 +2514,13 @@ export function presenterFor(input: {
     return `0x${bareKey(atom)}`;
   }
   return `0x${auth.atom!.key}`;
+}
+
+/** A face's registration that meets `PrekeySecretAbsent` refuses by the face's public atom key (`FaceHoldsNoPrekeySecret`). */
+async function namingThePrekey(face: string, register: () => Promise<void>): Promise<void> {
+  try { await register(); }
+  catch (error) {
+    if (error instanceof PrekeySecretAbsent) throw new FaceHoldsNoPrekeySecret(face, error);
+    throw error;
+  }
 }

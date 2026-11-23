@@ -137,6 +137,23 @@ export class ArchiveIdentityMismatch extends Error {
   }
 }
 
+/**
+ * A stand that can mint no Document because it holds the secret of none of its own live prekeys (keyhive's
+ * `GenerateDocError::OwnerHoldsNoPrekeySecret`). The replayed cap events carry every prekey this identity presented,
+ * each card mint rotating one; the secrets ride only in the Archive taken after that mint. A stand restored from an
+ * Archive taken before its later cards finds the event log naming prekeys whose secrets it never held, and once the
+ * last archived prekey rotates out, no Document mints. The refusal names the bag it met and nothing secret.
+ */
+export class PrekeySecretAbsent extends Error {
+  override readonly name = "PrekeySecretAbsent";
+  constructor(readonly what: string, cause?: unknown) {
+    super(`holds no prekey secret: its Archive was absent or older than its latest card, so no Document mints for ${what}`, { cause });
+  }
+}
+
+/** keyhive's own words for `OwnerHoldsNoPrekeySecret` (document.rs), the one generation fault this shore renames. */
+const OWNER_HOLDS_NO_PREKEY_SECRET = "no secret key for the prekey the document's owner is added with";
+
 export class KeyhiveProvider implements CapabilityProvider {
   private kh:         KH.Keyhive | null = null;
   private eventStore: CapabilityProviderInitOpts["eventStore"] | null = null;
@@ -273,6 +290,18 @@ export class KeyhiveProvider implements CapabilityProvider {
     return this.kh;
   }
 
+  /** Mint a Document this identity owns; the owner-holds-no-prekey fault leaves renamed (`PrekeySecretAbsent`). */
+  private async generateOwned(contentRef: KH.ChangeId, what: string): Promise<KH.DocumentId> {
+    const kh = this.requireKh();
+    try {
+      return await kh.generateDocument([], contentRef, []);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes(OWNER_HOLDS_NO_PREKEY_SECRET)) throw new PrekeySecretAbsent(what, error);
+      throw error;
+    }
+  }
+
   /** CIV-3 — run a doc-scoped keyhive op with `_activeIsland` set to its Document, so the CGKA
    *  events it emits synchronously attribute to that island; the `finally` clears it so no later
    *  out-of-op CGKA/prekey mis-reads a stale scope. */
@@ -336,7 +365,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (cached) return { docId: cached };
 
     const cid = await changeIdForBag(bagUrl);
-    const docId = await this.requireKh().generateDocument([], cid, []);
+    const docId = await this.generateOwned(cid, bagUrl);
     const docIdHex = bytesToHex(docId.toBytes());
     this.bagToDocId.set(bagUrl, docIdHex);
     this.docIdToBag.set(docIdHex, bagUrl);
@@ -555,7 +584,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (!read) throw new Error("[keyhive] Access.tryFromString('read') returned undefined");
     await this.settleEvents();
     const failedBefore = this.failedWrites;
-    const docId = await kh.generateDocument([], new KH.ChangeId(args.contentRef), []);
+    const docId = await this.generateOwned(new KH.ChangeId(args.contentRef), "a lockbox");
     const docIdHex = bytesToHex(docId.toBytes());
     this.hydratedIslands.add(docIdHex);   // minted here: live in memory, never deferred
     const encrypted = await this.withActiveIsland(docIdHex, async () => {
@@ -709,7 +738,7 @@ export class KeyhiveProvider implements CapabilityProvider {
    */
   async createSentinelDoc(sentinelUri: string): Promise<{ docIdHex: string; agentIdHex: string }> {
     const cid = await changeIdForBag(sentinelUri);
-    const docId = await this.requireKh().generateDocument([], cid, []);
+    const docId = await this.generateOwned(cid, sentinelUri);
     const doc = await this.requireKh().getDocument(docId);
     if (!doc) throw new Error("[keyhive] generated sentinel document is not available");
     const docIdHex   = bytesToHex(docId.toBytes());
