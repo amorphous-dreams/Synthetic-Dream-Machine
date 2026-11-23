@@ -361,6 +361,9 @@ export const SEALED_CHECKPOINT_DOMAIN = mint("sealed-checkpoint");
 export const SEALED_RECORD_AUTHORSHIP_DOMAIN = mint("sealed-record-authorship");
 /** A LOCKBOX PAYLOAD's image: the bag's id, its locator, the key version id and the content key. */
 export const SEALED_LOCKBOX_DOMAIN = mint("sealed-lockbox");
+/** A CHAINED LOCKBOX PAYLOAD's image (cabal-realm#/the-workbench, Keyhive's Envelope idea): a lockbox payload, then each
+ *  earlier key of the same span the version's history declared shareable, so a late reader needs one box for the span. */
+export const SEALED_LOCKBOX_CHAIN_DOMAIN = mint("sealed-lockbox-chain");
 /** A LOCKBOX as it rests and travels: its clear part (locator, key version id, wrap) and its box. */
 export const SEALED_LOCKBOX_RECORD_DOMAIN = mint("sealed-lockbox-record");
 /** A lockbox's BOX: the wrap document's id and the Keyhive ciphertext, and nothing else. */

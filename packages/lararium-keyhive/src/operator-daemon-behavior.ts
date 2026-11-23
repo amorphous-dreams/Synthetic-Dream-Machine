@@ -1905,6 +1905,32 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // SHARING BY DELEGATION, NEVER A COPY: the owner face's hive delegates a bag it holds to a grantee face, both lit in this
       // island; the grantee's hive ingests the delegation's events. An owner or grantee that stands shut refuses by name, and the
       // vessel keeps the grant owed behind an opaque flag until both stand lit.
+      /**
+       * THE KEY HOLDER A LANDING HANDS A NEW SEAT ITS LOCKBOX THROUGH (u3): the realm owner's own seat, under the session of
+       * the ask, which must wear that owner face. A workbench whose rest holds no founding answers null (its first seal wraps
+       * for the roster); a seat that can hand nothing answers the cure by name.
+       */
+      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1]) => {
+        const bagId = wikiSlotUri(slug, "working");
+        const cure = { cure: `wear the realm's owner face (\`lares vault unlock --face ${owner.handleIndex}\`, then \`lares wear ${owner.handleIndex}\`) and land the share again (\`lares wiki share ${slug}\`)` };
+        const requestId = context.invocation?.requestId;
+        const ask = context.local === true && typeof requestId === "string" && requestId.length > 0 ? { requestId, verb: "share-apply" } : null;
+        let worn: Awaited<ReturnType<typeof faces.session>>;
+        try { worn = await faces.session("share-apply", ask, "lit"); } catch { return cure; }
+        const ownerEntry = owner.group === daemonAuth.personaGroupId ? mountedFace
+          : [...litSiblings].filter(([, f]) => f.personaGroupId === owner.group).map(([key]) => faces.lit(key)).find((e) => e !== undefined);
+        const seat = ownerEntry?.seat;
+        if (!seat || worn.face !== ownerEntry) return cure;
+        const reading = await seat.holder.reading(bagId);
+        if ("refusal" in reading) return cure;
+        if (reading.foundings.every((f) => f.heads.length === 0)) return null;
+        return {
+          handOver: async (agentHex: string) => {
+            const handed = await seat.holder.handOver({ bagId, reader: agentHex, signer: worn.signer, chained: true });
+            if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${cure.cure}`);
+          },
+        };
+      };
       const holderOf = (group: string | null) => {
         if (group === null) return null;
         if (kh && daemonAuth.personaGroupId === group) return kh;
@@ -1945,7 +1971,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       // The operator's hand names each face's handle index and pet-name (the CLI reads them off custody); the island adds what
       // it holds lit: each lit face's group and its own catalog half (the worn face's, and each sibling's by its own secret).
-      registry.register("share-apply", async (args) => {
+      registry.register("share-apply", async (args, context) => {
         const named = Array.isArray(args["faces"]) ? (args["faces"] as Array<Record<string, unknown>>) : [];
         // A FACE'S CATALOG HALF OPENS ONLY WHILE THAT FACE STANDS WORN (it rests sealed under the face's own content key, and
         // this island's holder carries the worn face's): the worn face names its half, a lit sibling names none, and the
@@ -2005,6 +2031,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const landed = await landWorkbench(row, seats.map(({ face, agentHex, access }) => ({ face, agentHex, access })), {
               provider: ownerHive, ledger: asLedgerDoc(await workbenchLedgerOf(ctx)), ownerFace: owner.group,
               checkoutSourced: isHouseCanonBag(meshBagUri(row.slug)),
+              keyholder: () => realmKeyholder(row.slug, owner, context),
             });
             const keyDoc = workbenchKeyDocs((await workbenchLedgerOf(ctx)).doc(), landed.realmId, row.slug)[0];
             for (const seat of seats) {

@@ -153,6 +153,12 @@ export interface ContentKeyHolderPorts {
    * cure a person runs (a `lares …` line), or null where this seat may found. Absent: every seat founds its own bags.
    */
   readonly foundingOwnedElsewhere?: (bagId: string) => Promise<string | null>;
+  /**
+   * EACH NEW LOCKBOX CHAINS THE PREVIOUS KEYS (a realm workbench, cabal-realm#/the-workbench): a version minted in a span declared
+   * shareable carries every earlier key of the span in its box, so a reader seated later needs the head's box alone. Absent
+   * or false: a box carries its own key, and the past reaches a reader only by an explicit hand-over.
+   */
+  readonly chainsKeys?: (bagId: string) => Promise<boolean>;
   evidenceOf(bagId: string): Promise<BagEvidence>;
   /** Does this vessel read a shadow over its own edge in the bag's scope? */
   ownEdgeShadowed(bagId: string): Promise<boolean>;
@@ -188,6 +194,8 @@ export interface FoundingReading {
   readonly forked:    boolean;
   /** Does this vessel write under this founding? */
   readonly written:   boolean;
+  /** The history its heads' span declared at its opening (`shareable` or `closed`); null where heads sit in unlike spans. */
+  readonly history:   HistoryDeclaration | null;
   /** The readers some counted version's mint could not serve. */
   readonly unserved:  readonly ReaderId[];
   /** Keys a lockbox delivered that no counted record names, with what stopped each record. */
@@ -440,12 +448,14 @@ export class ContentKeyHolder {
       for (const lockbox of await store.lockboxes()) {
         const opened = await openLockbox({ lockbox, shore });
         if (!("payload" in opened)) continue;
-        const { bagId, locator, keyVersion, key } = opened.payload;
+        const { bagId, locator, keyVersion, key, chain } = opened.payload;
         let bag = bags.get(bagId);
         if (!bag) { bag = { bagId, lines: new Map() }; bags.set(bagId, bag); }
         let line = bag.lines.get(locator);
         if (!line) { line = { locator, lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() }; bag.lines.set(locator, line); }
         if (line.keys.has(keyVersion)) key.fill(0); else line.keys.set(keyVersion, key);
+        // A CHAINED BOX (a span declared shareable) delivers each earlier key of its span too: the records count each alike.
+        for (const link of chain ?? []) { if (line.keys.has(link.keyVersion)) link.key.fill(0); else line.keys.set(link.keyVersion, link.key); }
       }
       const records = await store.records("key-version");
       for (const bag of bags.values()) {
@@ -571,7 +581,10 @@ export class ContentKeyHolder {
       const out = new Set(leaveOut.map(bare));
       const readers = (await this.#ports.readersOf(bag.bagId)).filter((reader) => !out.has(bare(reader)));
       if (this.#locked) return refuse("holder-locked");
-      const wrapped = await wrapLockbox({ payload: { bagId: bag.bagId, locator: line.locator, keyVersion, key }, readers, shore, ...(random ? { random } : {}) });
+      // EACH NEW LOCKBOX CHAINS THE PREVIOUS KEYS of a span declared shareable (Keyhive's Envelope idea): a version that
+      // continues such a span carries every earlier key of it this vessel holds, so a late reader needs the head's box alone.
+      const chain = (await this.#ports.chainsKeys?.(bag.bagId)) === true ? this.#chainOf(line, fact.span === keyVersion ? null : fact.span, keyVersion) : [];
+      const wrapped = await wrapLockbox({ payload: { bagId: bag.bagId, locator: line.locator, keyVersion, key, ...(chain.length > 0 ? { chain } : {}) }, readers, shore, ...(random ? { random } : {}) });
       if (!("lockbox" in wrapped)) return refuse("wrap-failed", wrapped.cause ?? wrapped.refusal);
       await this.#rest(() => store.putLockbox(wrapped.lockbox));
       const body: KeyVersionBody = { bag: line.locator, keyVersion, parents: fact.parents, span: fact.span };
@@ -686,6 +699,11 @@ export class ContentKeyHolder {
     heads.add(id);
   }
 
+  /** The earlier keys of a shareable span this vessel holds, for a box that chains them; none for a closed span or none named. */
+  #chainOf(line: Line, span: KeyVersionId | null, except: KeyVersionId): { readonly keyVersion: KeyVersionId; readonly key: ContentKey }[] {
+    if (span === null || line.lineage.historyOfSpan(span) !== "shareable") return [];
+    return line.lineage.versionsOfSpan(span).filter((version) => version !== except && line.keys.has(version)).sort(ascending).map((version) => ({ keyVersion: version, key: line.keys.get(version)! }));
+  }
   /** Found a bag: its first version, under a locator its own key derives. */
   async #found(bags: Map<string, Bag>, bagId: string, history: HistoryDeclaration, signer: RecordSigner): Promise<{ line: Line; minted: MintOutcome } | HolderRefusal> {
     const planned = planFounding(KeyLineage.empty(), history);
@@ -1221,7 +1239,10 @@ export class ContentKeyHolder {
    * span to that reader alone, signs a hand-over record under the head, and answers one parcel for each
    * version. `missing` names the versions of the span this vessel holds no key for.
    */
-  handOver(args: { readonly bagId: string; readonly reader: ReaderId; readonly from?: KeyVersionId; readonly signer: RecordSigner | null }):
+  handOver(args: { readonly bagId: string; readonly reader: ReaderId; readonly from?: KeyVersionId; readonly signer: RecordSigner | null;
+    /** ONE BOX FOR THE SPAN: the head's lockbox carries every earlier key of the span (a chained box), in place of one box per
+     *  version. The hand-over record names every version alike. */
+    readonly chained?: boolean }):
     Promise<{ readonly parcels: readonly KeyParcel[]; readonly record: SealedRecord<"hand-over">; readonly missing: readonly KeyVersionId[] } | HolderRefusal> {
     return this.#inTurn<{ readonly parcels: readonly KeyParcel[]; readonly record: SealedRecord<"hand-over">; readonly missing: readonly KeyVersionId[] }>(async () => {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
@@ -1252,8 +1273,9 @@ export class ContentKeyHolder {
       if (!(await this.#ports.readersOf(args.bagId)).some((one) => bare(one) === reader)) return refuse("reader-not-standing");
       const handed = planned.versions.filter((version) => usable.has(version));
       const lockboxes: { version: KeyVersionId; lockbox: LockboxRecord }[] = [];
-      for (const version of handed) {
-        const wrapped = await wrapLockbox({ payload: { bagId: args.bagId, locator: line.locator, keyVersion: version, key: line.keys.get(version)! }, readers: [args.reader], shore, ...(random ? { random } : {}) });
+      for (const version of args.chained === true ? [from!] : handed) {
+        const chain = args.chained === true ? handed.filter((one) => one !== version).sort(ascending).map((one) => ({ keyVersion: one, key: line.keys.get(one)! })) : [];
+        const wrapped = await wrapLockbox({ payload: { bagId: args.bagId, locator: line.locator, keyVersion: version, key: line.keys.get(version)!, ...(chain.length > 0 ? { chain } : {}) }, readers: [args.reader], shore, ...(random ? { random } : {}) });
         if (!("lockbox" in wrapped)) return refuse("wrap-failed", wrapped.cause ?? wrapped.refusal);
         // Nothing rests for a reader this vessel cannot seat: the first wrap says so, before any lockbox lands.
         if (wrapped.unreached.length > 0) return refuse("reader-unreached");
@@ -1516,6 +1538,7 @@ export class ContentKeyHolder {
     const foundings = [...bag.lines.values()].sort((a, b) => ascending(a.locator, b.locator)).map((line): FoundingReading => ({
       founding: line.locator, heads: line.lineage.heads(), held: [...this.#usable(line)].sort(ascending), forked: line.lineage.forked(),
       written: written === line.locator,
+      history: ((): HistoryDeclaration | null => { const spans = new Set(line.lineage.heads().map((head) => line.lineage.fact(head)!.span)); return spans.size === 1 ? line.lineage.historyOfSpan([...spans][0]!) : null; })(),
       unserved: [...new Set([...line.records.values()].flatMap((record) => [...record.private.unserved]))].sort(ascending),
       uncounted: [...line.why].filter(([version]) => !line.lineage.has(version)).map(([keyVersion, why]) => ({ keyVersion, why })).sort((a, b) => ascending(a.keyVersion, b.keyVersion)),
     }));

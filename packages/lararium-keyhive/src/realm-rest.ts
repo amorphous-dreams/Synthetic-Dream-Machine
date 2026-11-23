@@ -17,13 +17,26 @@
  */
 import {
   privateCabalRealmId, wikiSlotOf, workbenchSeats,
-  type LarDoc, type SessionOwnChain,
+  type HistoryDeclaration, type LarDoc, type SessionOwnChain,
 } from "@lararium/mesh";
 import type { RealmWriters } from "./island-session-proof.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 import { seatedWorkbenches } from "./workbench-realm.js";
 
 const bare = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
+
+/**
+ * THE SHAREABLE DEFAULT (u1, ruled 2026-11-23): a realm workbench bag founds with its history declared `shareable` while the
+ * roster holds one human's faces, so a face seated later reads the workbench's past from the head's one chained box. A span's
+ * declaration never changes once it opens, so the revisit when a second human joins lands here, at this ONE call site
+ * (`realmWorkbenchFounding`, read by the content-key seat alone), and a second human enters only as a from-now admission by the
+ * owner's act at the share door, never silently.
+ */
+export const REALM_WORKBENCH_HISTORY: HistoryDeclaration = "shareable";
+/** The founding a realm workbench bag's first seal declares. */
+export function realmWorkbenchFounding(): { readonly history: HistoryDeclaration } {
+  return { history: REALM_WORKBENCH_HISTORY };
+}
 
 /** A realm workbench bag as one face's seat reads it. */
 export interface RealmRestBag {

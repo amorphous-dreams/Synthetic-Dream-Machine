@@ -68,7 +68,9 @@ export type WorkbenchRefusalReason =
   /** A face the realm's Document does not hold writes nothing to its workbench. */
   | "workbench-not-a-member"
   /** A workspace name outside the name grammar. */
-  | "workbench-workspace-malformed";
+  | "workbench-workspace-malformed"
+  /** A face the landing would seat needs the workbench's key handed over, and no holder of that key stands lit to hand it. */
+  | "seat-needs-keyholder";
 
 export class WorkbenchRefusal extends Error {
   override readonly name = "WorkbenchRefusal";

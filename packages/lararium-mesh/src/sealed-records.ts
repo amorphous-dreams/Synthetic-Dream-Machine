@@ -29,7 +29,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJson, hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
 import {
   CONTENT_KEY_JOIN_PROOF_INFO, CONTENT_KEY_VERSION_DOMAIN, SEALED_BAG_LOCATOR_INFO, SEALED_CHECKPOINT_DOMAIN,
-  SEALED_ENTRY_LOCATOR_INFO, SEALED_HAND_OVER_DOMAIN, SEALED_LOCKBOX_DOMAIN, SEALED_MANIFEST_DOMAIN, SEALED_MEMORY_IMPORT_DOMAIN,
+  SEALED_ENTRY_LOCATOR_INFO, SEALED_HAND_OVER_DOMAIN, SEALED_LOCKBOX_CHAIN_DOMAIN, SEALED_LOCKBOX_DOMAIN, SEALED_MANIFEST_DOMAIN, SEALED_MEMORY_IMPORT_DOMAIN,
   SEALED_RECORD_AUTHORSHIP_DOMAIN, SEALED_RESEAL_DOMAIN,
 } from "./domains.js";
 import {
@@ -702,7 +702,12 @@ export function judgeReseal(record: VerifiedRecord<"re-seal">, held: {
 }
 
 // ── The lockbox payload ─────────────────────────────────────────────────────────────────────────
-export interface LockboxPayload { readonly bagId: string; readonly locator: BagLocator; readonly keyVersion: KeyVersionId; readonly key: ContentKey }
+export interface LockboxPayload {
+  readonly bagId: string; readonly locator: BagLocator; readonly keyVersion: KeyVersionId; readonly key: ContentKey;
+  /** THE CHAIN (a span declared shareable): each earlier key of the version's span, so one box opens the span's past. Each
+   *  key recomputes to the version it names under the payload's bag, or the payload refuses whole. Absent: the key alone. */
+  readonly chain?: readonly { readonly keyVersion: KeyVersionId; readonly key: ContentKey }[];
+}
 export const LOCKBOX_REFUSALS = ["lockbox-malformed", "lockbox-other-bag", "lockbox-other-locator", "lockbox-other-version", "key-mismatch"] as const;
 export type LockboxRefusalName = (typeof LOCKBOX_REFUSALS)[number];
 
@@ -711,7 +716,18 @@ export function encodeLockboxPayload(payload: LockboxPayload): Uint8Array {
   const key = readContentKey(payload.key);
   if (key === null || readBagLocator(payload.locator) === null || !isWellFormedText(payload.bagId)) throw new TypeError("sealed-records: a lockbox payload names a bag, a locator, a key version and a key");
   if (keyVersionIdOf(key, payload.bagId) !== payload.keyVersion) throw new TypeError("sealed-records: a lockbox payload's key stands as another key version");
-  return sealedImage(SEALED_LOCKBOX_DOMAIN, utf8Bytes(payload.bagId), hexToBytes(payload.locator), hexToBytes(payload.keyVersion), key);
+  const chain = payload.chain ?? [];
+  if (chain.length === 0) return sealedImage(SEALED_LOCKBOX_DOMAIN, utf8Bytes(payload.bagId), hexToBytes(payload.locator), hexToBytes(payload.keyVersion), key);
+  const links = new Uint8Array(chain.length * (32 + CONTENT_KEY_LEN));
+  try {
+    chain.forEach((link, i) => {
+      const linked = readContentKey(link.key);
+      if (linked === null || keyVersionIdOf(linked, payload.bagId) !== link.keyVersion || link.keyVersion === payload.keyVersion) throw new TypeError("sealed-records: a chained key stands as another key version");
+      links.set(hexToBytes(link.keyVersion), i * (32 + CONTENT_KEY_LEN));
+      links.set(linked, i * (32 + CONTENT_KEY_LEN) + 32);
+    });
+    return sealedImage(SEALED_LOCKBOX_CHAIN_DOMAIN, utf8Bytes(payload.bagId), hexToBytes(payload.locator), hexToBytes(payload.keyVersion), key, links);
+  } finally { links.fill(0); }
 }
 /**
  * Read an unwrapped lockbox payload against what the reader expects: the bag, the locator and the key version,
@@ -721,7 +737,8 @@ export function encodeLockboxPayload(payload: LockboxPayload): Uint8Array {
  */
 export function readLockboxPayload(bytes: unknown, expect: { readonly bagId?: string; readonly locator?: BagLocator; readonly keyVersion?: KeyVersionId }): { readonly payload: LockboxPayload } | { readonly refusal: LockboxRefusalName } {
   try {
-    const fields = readSealedImage(SEALED_LOCKBOX_DOMAIN, bytes, 4);
+    const chained = readSealedImage(SEALED_LOCKBOX_CHAIN_DOMAIN, bytes, 5);
+    const fields = chained ?? readSealedImage(SEALED_LOCKBOX_DOMAIN, bytes, 4);
     if (fields === null || fields[1]!.length !== 32 || fields[2]!.length !== 32 || fields[3]!.length !== CONTENT_KEY_LEN) return { refusal: "lockbox-malformed" };
     let bagId: string;
     try { bagId = new TextDecoder("utf-8", { fatal: true }).decode(fields[0]!); } catch { return { refusal: "lockbox-malformed" }; }
@@ -731,7 +748,20 @@ export function readLockboxPayload(bytes: unknown, expect: { readonly bagId?: st
     if (expect.locator !== undefined && locator !== expect.locator) return { refusal: "lockbox-other-locator" };
     if (expect.keyVersion !== undefined && keyVersion !== expect.keyVersion) return { refusal: "lockbox-other-version" };
     if (keyVersionIdOf(key, bagId) !== keyVersion) return { refusal: "key-mismatch" };
-    return { payload: { bagId, locator, keyVersion, key } };
+    if (chained === null) return { payload: { bagId, locator, keyVersion, key } };
+    // THE CHAIN: each link a version id and its key, and each key recomputes to its version under this bag.
+    const links = fields[4]!;
+    const width = 32 + CONTENT_KEY_LEN;
+    if (links.length === 0 || links.length % width !== 0) return { refusal: "lockbox-malformed" };
+    const chain: { keyVersion: KeyVersionId; key: ContentKey }[] = [];
+    for (let at = 0; at < links.length; at += width) {
+      const linkVersion = hex(links.subarray(at, at + 32)) as KeyVersionId;
+      const linkKey = readContentKey(links.slice(at + 32, at + width))!;
+      if (keyVersionIdOf(linkKey, bagId) !== linkVersion || linkVersion === keyVersion) { linkKey.fill(0); for (const l of chain) l.key.fill(0); return { refusal: "key-mismatch" }; }
+      chain.push({ keyVersion: linkVersion, key: linkKey });
+    }
+    links.fill(0);
+    return { payload: { bagId, locator, keyVersion, key, chain } };
   } catch { return { refusal: "lockbox-malformed" }; }
 }
 

@@ -493,6 +493,19 @@ describe("the lockbox payload", () => {
     expect(readLockboxPayload("text", { bagId: BAG })).toEqual({ refusal: "lockbox-malformed" });
     expect(() => encodeLockboxPayload({ ...payload, key: k3 })).toThrow(/another key version/);
   });
+  it("CHAIN: a chained payload carries each earlier key of its span, and a link whose key stands as another version refuses whole", () => {
+    const chained = encodeLockboxPayload({ ...payload, keyVersion: v3, key: k3, chain: [{ keyVersion: v1, key: k1 }, { keyVersion: v2, key: k2 }] });
+    const r = readLockboxPayload(chained, { bagId: BAG, keyVersion: v3 });
+    if (!("payload" in r)) throw new Error(r.refusal);
+    expect(r.payload.chain?.map((link) => [link.keyVersion, hex(link.key)])).toEqual([[v1, hex(k1)], [v2, hex(k2)]]);
+    // A forged link: version one's id over version two's key.
+    const forged = Uint8Array.from(chained);
+    forged.set(k2, forged.length - 64 - 32);
+    expect(readLockboxPayload(forged, { bagId: BAG, keyVersion: v3 })).toEqual({ refusal: "key-mismatch" });
+    expect(() => encodeLockboxPayload({ ...payload, chain: [{ keyVersion: v1, key: k2 }] })).toThrow(/another key version/);
+    // CONTROL: a payload with no chain reads as before, byte for byte.
+    expect(hex(encodeLockboxPayload({ ...payload, chain: [] }))).toBe(hex(bytes));
+  });
   it("a locator derives under the founding key and reads opaque", () => {
     expect(bagLocatorOf(k1, BAG)).toBe(LOCATOR);
     expect(bagLocatorOf(k2, BAG)).not.toBe(LOCATOR);

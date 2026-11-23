@@ -34,7 +34,7 @@ import {
   type SeatRoll, type SeatRollSink, type WriterStanding,
 } from "@lararium/mesh";
 import { keyhiveLockboxShore, type LockboxProvider } from "./keyhive-lockbox.js";
-import { WAIT_FOR_OWNER_CURE, type RealmRestPort } from "./realm-rest.js";
+import { WAIT_FOR_OWNER_CURE, realmWorkbenchFounding, type RealmRestPort } from "./realm-rest.js";
 import { subscribeSeatRolls } from "./seat-duty-executor.js";
 
 /** The slice of a `KeyhiveProvider` a content-key seat rides. */
@@ -183,6 +183,7 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
         const realm = await input.realm!.of(bagId);
         return realm === null || realm.owner ? null : (input.realm!.ownerCure?.(realm) ?? WAIT_FOR_OWNER_CURE);
       },
+      chainsKeys: async (bagId: string) => (await input.realm!.of(bagId)) !== null,
     } : {}),
     evidenceOf: async () => {
       const counted = input.countedRaises === undefined ? new Set<string>() : await input.countedRaises();
@@ -255,6 +256,9 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     return [...new Set([...[...owed.values()].filter((r) => bare(r.scope) === scope).flatMap((r) => [...r.raiseCids]), ...unanswered])].sort();
   };
   const unsubscribe = (input.subscribe ?? subscribeSeatRolls)(sink);
+  /** A realm workbench bag founds with the realm's declared history (`realmWorkbenchFounding`); every other bag as asked. */
+  const foundingOf = async (bagId: string): Promise<{ readonly founding: { readonly history: "shareable" | "closed" } } | Record<string, never>> =>
+    (input.realm !== undefined && (await input.realm.of(bagId)) !== null ? { founding: realmWorkbenchFounding() } : {});
 
   return {
     holder, sink,
@@ -262,12 +266,12 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       await refreshOwed();
       await settle(args.signer);
       // The holder reads the owed raises inside its own turn, so a roll that arrives after the settle still binds it.
-      return holder.sealBlob({ ...args, owedActs: () => owedActs(args.bagId) });
+      return holder.sealBlob({ ...(await foundingOf(args.bagId)), ...args, owedActs: () => owedActs(args.bagId) });
     },
     async sealValues(args) {
       await refreshOwed();
       await settle(args.signer);
-      return holder.sealValues({ ...args, owedActs: () => owedActs(args.bagId) });
+      return holder.sealValues({ ...(await foundingOf(args.bagId)), ...args, owedActs: () => owedActs(args.bagId) });
     },
     settle,
     owedFor: (bagId) => owedActs(bagId),
