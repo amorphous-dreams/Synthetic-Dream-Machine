@@ -27,13 +27,18 @@
  *       byte moves and nothing is held; the next boot, the session standing, mounts it writable.
  *   S12 a session wearing another face: the keyed load refuses `session-face-foreign`, the plane settles pending, never
  *       quarantined.
+ *   S13 a face plane lifted over the veil floor, still resting the floor's seals: with the vessel's key locked the load
+ *       waits on the holder and a stop leaves it pending, bytes in place; with the key in reach it mounts writable; under a
+ *       wrong key the load refuses by its own key refusal and the plane settles pending.
+ *   S14 a sealed value read under another reference (the commitment fails: `context-mismatch`) names custody or mapping as
+ *       much as torn bytes: the plane settles pending, never quarantined.
  *
  * Real doors throughout: the sealed document store over a real NodeFS store, the child probe, the doctor, the keel and the
  * real `waitHandle`. The pointer form's holder stands as a port that keeps each sealed value in memory and opens it, as the
  * holder does; no key reaches any probe.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocHandle, type StorageAdapterInterface } from "@automerge/automerge-repo";
@@ -48,7 +53,7 @@ import { fallAwareProbeDoors } from "../src/engine-fall.js";
 import { docStorePath } from "../src/store-integrity.js";
 
 let dir = "";
-afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } vault.clear(); faceUp = true; wornFace = FACE; });
+afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } vault.clear(); faceUp = true; wornFace = FACE; vesselKeyNow = null; });
 
 const TITLE = "lar:///ha.ka.ba/probe/sealed-intent";
 const MARKER = "SECRET-MARKER-heron-by-the-third-pond";
@@ -59,7 +64,9 @@ const POINTER = [...new TextEncoder().encode("lares-sealed-value:")];
 /** The boot window the real `waitHandle` takes here, short so a late session lands past it. */
 const WINDOW_MS = 300;
 
-type Form = "pointer" | "held";
+/** `lifted`: the document rests the veil floor's seals (written `held`) and its bag now maps to a face, opening them with
+ *  the vessel's own key while it stands in reach (`vesselKeyNow`). */
+type Form = "pointer" | "held" | "lifted";
 type Key = ReturnType<typeof mintHeldRestKey>;
 
 /** The pointer form's holder: each sealed value by its logical reference, as the holder keeps it. */
@@ -68,16 +75,20 @@ const vault = new Map<string, { readonly plaintext: Uint8Array; readonly address
 let faceUp = true;
 /** The face that session wears. */
 let wornFace = FACE;
+/** The vessel's own key as the lifted form's store reads it now: null while the custody stays locked. */
+let vesselKeyNow: Key | null = null;
 
 /** The sealed store's ports for one form, mapping `sealedId` (or every document while it stays unknown) to the bag. */
 function sealedStore(storageDir: string, form: Form, key: Key, sealedId: () => string | null, hydrates = false): SealedDocumentStore {
   const row: SealedBagRow = form === "held" ? { bagId: PLANES.intents, face: null, held: key } : { bagId: PLANES.intents, face: FACE };
+  const faced = form !== "held";
   const inner: StorageAdapterInterface = new NodeFSStorageAdapter(storageDir);
   return new SealedDocumentStore({
     inner,
     bagOf: (documentId) => (sealedId() === null || sealedId() === documentId ? row : null),
-    sessionFace: () => (form === "pointer" && faceUp ? wornFace : null),
-    sessionOf: () => (form === "pointer" && faceUp ? { id: "probe-session", subject: wornFace } : null),
+    sessionFace: () => (faced && faceUp ? wornFace : null),
+    sessionOf: () => (faced && faceUp ? { id: "probe-session", subject: wornFace } : null),
+    ...(form === "lifted" ? { vesselKey: () => vesselKeyNow } : {}),
     seal: async ({ values }) => ({
       values: values.map((v) => {
         const address = sealedAddressOf(v.plaintext);
@@ -402,5 +413,47 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     expect(booted.writable).toBe(false);
     expect(quarantined(storageDir)).toEqual([]);
     expect(existsSync(docStorePath(storageDir, s.sealedId))).toBe(true);
+  }, 120_000);
+
+  test("S13 — a lifted face plane resting the floor's seals: locked key waits (pending at a stop), key in reach mounts, wrong key pends", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "held");
+    const before = s.files.map((f) => readFileSync(f).toString("hex"));
+
+    // The vessel's key locked: the load waits on the holder, and the stop leaves the plane pending, nothing moved.
+    vesselKeyNow = null;
+    const locked = await boot(storageDir, "lifted", s, { hydrates: true, meanwhile: (store) => { store.endHydration(); } });
+    expect(locked.entry?.status).toBe("pending");
+    expect(locked.writable).toBe(false);
+    expect(quarantined(storageDir)).toEqual([]);
+    expect(filesOf(storageDir, s.sealedId).map((f) => readFileSync(f).toString("hex"))).toEqual(before);
+
+    // A wrong key in reach: its own key refusal, never a malformed pointer, and the plane pends.
+    vesselKeyNow = mintHeldRestKey();
+    const wrong = await boot(storageDir, "lifted", s, { hydrates: true });
+    expect(wrong.entry?.status).toBe("pending");
+    expect(wrong.entry?.reason).not.toMatch(/pointer-malformed/);
+    expect(quarantined(storageDir)).toEqual([]);
+
+    // The vessel's own key in reach: the floor's seals open for the face, and the plane mounts writable.
+    vesselKeyNow = s.key;
+    const opened = await boot(storageDir, "lifted", s, { hydrates: true });
+    expect(opened.entry?.status).toBe("mounted");
+    expect(opened.writable).toBe(true);
+    expect(opened.record?.tiddler.text).toBe(MARKER);
+  }, 120_000);
+
+  test("S14 — a sealed value read under another reference refuses context-mismatch: the plane settles pending, never quarantined", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "held");
+    // The value moves under another storage key: its logical reference changes, so the commitment fails under the same key.
+    for (const f of s.files) renameSync(f, `${f.slice(0, f.lastIndexOf("/") + 1)}${"f".repeat(64)}`);
+    expect((await probeDocLoad(storageDir, s.sealedId)).status).toBe("sealed");
+
+    const booted = await boot(storageDir, "held", s, { hydrates: true });
+    expect(booted.entry?.status).toBe("pending");
+    expect(booted.entry?.reason).toMatch(/context-mismatch/);
+    expect(booted.writable).toBe(false);
+    expect(quarantined(storageDir)).toEqual([]);
   }, 120_000);
 });
