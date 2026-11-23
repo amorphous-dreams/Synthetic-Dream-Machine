@@ -184,7 +184,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     );
 
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: bagId ?? "automerge" };
-    handle.on("change", ({ patches }) => {
+    this._onChange = ({ patches }) => {
       // Re-map ["tiddlers", title, ...] → [title, ...] before fan-out.
       // Patches that touch doc-level fields (blobs, etc.) are dropped here
       // since MemeProvider only tracks tiddler-keyed URIs.
@@ -196,8 +196,15 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const own = this._applying;
       this.provider.handleChange(remapped, own ?? remoteOrigin, own !== undefined);
       this._surfaceConflicts(remapped);
-    });
+    };
+    handle.on("change", this._onChange);
   }
+
+  /** The handle's change listener this store holds. */
+  private readonly _onChange: (payload: { patches?: readonly { path: unknown }[] }) => void;
+
+  /** Stop hearing the handle: a layer that leaves the cascade (a remount over the same handle) drops its listener. */
+  dispose(): void { this.handle.off("change", this._onChange as never); }
 
   /**
    * THE WORN FACE'S ACTOR for a write whose origin names one (undefined: the write names no face, and rides the engine's

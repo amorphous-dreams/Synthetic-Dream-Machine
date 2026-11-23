@@ -23,6 +23,7 @@ import type { LarOpenPhase } from "./lararium-vessel.js";
 import { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import { AutomergeDocStore, markStandIn, releaseStandIn } from "./automerge-doc-store.js";
+import { isIntegrityRefusal } from "./sealed-doc-store.js";
 import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
@@ -98,6 +99,10 @@ export interface VesselKeel {
    *  repo materializing it. Absent = skip the probe (the doc resolves straight through —
    *  the pre-hardening path). The node injects a child_process probe; a browser a Worker. */
   docLoadProbe?: DocLoadProbe;
+  /** The refusal a sealed document's latest keyed load ended on (`SealedDocumentStore#refusalOf`). A sealed plane whose load
+   *  ends quarantines only on integrity evidence (`isIntegrityRefusal`); any other ending, or none named (absent port),
+   *  leaves it pending: read-only, no bytes moved, nothing held. */
+  sealedRefusalOf?: (documentId: string) => string | null;
   /** L2: quarantine a condemned doc — the platform MOVES its bytes aside (nodefs rename /
    *  IndexedDB key-drop). Fires only when the probe condemns; names the plane it mounted as, so the record can tell a
    *  plane a sibling device carries. */
@@ -132,8 +137,9 @@ export interface MountEntry {
    *  bytes move, and a later re-probe (doctor, or an operator receipt) decides. Distinct from
    *  `degraded`, which only ever follows real integrity evidence.
    *  `sealed` — the probe read sound sealed envelopes and no inner byte: the plane mounts read-only over its OWN id until
-   *  the keyed load opens it (the entry then reads `mounted`, the plane writable over the same handle) or refuses (the
-   *  entry then reads `degraded`, the document quarantined). Never a writable blank. */
+   *  the keyed load opens it (the entry then reads `mounted`, the plane writable over the same handle), refuses on
+   *  integrity evidence (the entry then reads `degraded`, the document quarantined), or ends on liveness or a foreign
+   *  face (the entry then reads `pending`, no bytes moved). Never a writable blank. */
   readonly status: "mounted" | "promoted" | "degraded" | "pending" | "sealed";
   /** names the condemnation when status=degraded, the clean-tail cut when status=promoted, or
    *  the unresolved reason when status=pending. */
@@ -160,7 +166,8 @@ export interface VesselCoreAssembly {
   larariumHandle: DocHandle<LarDoc> | null;
   coreHash:      string;
   /** L2: which social planes mounted live vs degraded (read-only after a condemn). A `sealed` entry moves later, in place,
-   *  to `mounted` or `degraded` (and `degraded` turns true) as its keyed load opens or refuses. */
+   *  to `mounted`, `degraded` (and `degraded` turns true) or `pending` as its keyed load opens, refuses on integrity
+   *  evidence, or ends with none. */
   mountManifest: MountManifest;
   /** Settles once every `sealed` plane's keyed load opened or refused. A load waiting on a session that never stands
    *  keeps it open; nothing in the boot awaits it. */
@@ -252,8 +259,9 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
    * vouches that the document opens. The plane mounts read-only over its own id (the handle the keyed load fills), never
    * through the blank writable fallback: a stand-in under a fresh id would take the late merge and write it under an id
    * the bag map does not name. The keyed load that opens re-mounts the plane writable over the same handle; one that
-   * refuses (a value the holder does not hold, a sequence cut short) takes the condemn path: the quarantine, held
-   * across boots, and the read-only stand-in. The clean-tail cut is skipped there: its framing walk reads no byte inside
+   * refuses on integrity evidence (a value the holder does not hold, a sequence cut short) takes the condemn path: the
+   * quarantine, held across boots, and the read-only stand-in; a load that ends on liveness or a foreign face settles
+   * `pending`. The clean-tail cut is skipped there: its framing walk reads no byte inside
    * a sealed record, so it would keep the very record the key refused.
    */
   const mountSealed = (bagId: string, documentId: string, url: string, reason: string): void => {
@@ -261,12 +269,15 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     const own = (repo.handles as Record<DocumentId, DocHandle<LarDoc> | undefined>)[documentId as DocumentId];
     const reading = own ?? standIn(repo);
     markStandIn(reading);
-    composite.addLayer({ bagId, store: new AutomergeDocStore(reading, bagId, wearOf(repo)), writable: false });
     const at = entries.push({ bagId, documentId, status: "sealed", reason }) - 1;
-    const remount = (store: AutomergeDocStore, writable: boolean): void => {
+    let mounted = new AutomergeDocStore(reading, bagId, wearOf(repo));
+    composite.addLayer({ bagId, store: mounted, writable: false });
+    const mountWritable = (store: AutomergeDocStore): void => {
       const index = composite.layerIds.indexOf(bagId);
       composite.removeLayer(bagId);
-      composite.addLayer({ bagId, store, writable, ...(writable ? { defaultWritable: false } : {}) }, index);
+      mounted.dispose();
+      mounted = store;
+      composite.addLayer({ bagId, store, writable: true, defaultWritable: false }, index);
     };
     sealedSettling.push(new Promise<void>((settled) => {
       let done = false;
@@ -275,15 +286,23 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         done = true;
         if (state.state === "ready") {
           releaseStandIn(reading);
-          remount(new AutomergeDocStore(state.handle, bagId, wearOf(repo)), true);
+          mountWritable(new AutomergeDocStore(state.handle, bagId, wearOf(repo)));
           entries[at] = { bagId, documentId, status: "mounted" };
         } else {
-          const why = state.state === "failed" ? state.error.message : "no source could open it";
-          const verdict = { documentId, status: "load-error" as const, reason: `sealed: the keyed load refused (${why})` };
-          keel.quarantineDoc?.(verdict, bagId);
-          remount(new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), false);
-          entries[at] = { bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason}` };
-          manifest.degraded = true;
+          // ONLY INTEGRITY EVIDENCE MOVES BYTES. The store names the refusal the keyed load ended on; liveness (no session
+          // yet, the rest standing down at a stop), a foreign face, or no named refusal leaves the plane pending: read-only,
+          // nothing moved, nothing held, and the next boot probes it fresh. Either way the read-only layer over the real
+          // handle stays as it stands, still reading unknown: no write reaches it, and nothing mints a stand-in at a stop.
+          const refusal = keel.sealedRefusalOf?.(documentId) ?? null;
+          const why = refusal ?? (state.state === "failed" ? state.error.message : "no source could open it");
+          if (isIntegrityRefusal(refusal)) {
+            const verdict = { documentId, status: "load-error" as const, reason: `sealed: the keyed load refused (${why})` };
+            keel.quarantineDoc?.(verdict, bagId);
+            entries[at] = { bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason}` };
+            manifest.degraded = true;
+          } else {
+            entries[at] = { bagId, documentId, status: "pending", reason: `sealed: the keyed load ended with no integrity evidence (${why}); no bytes moved, the next boot probes it again` };
+          }
         }
         settled();
       };

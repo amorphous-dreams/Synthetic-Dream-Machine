@@ -54,6 +54,23 @@ export const SEALED_DOCUMENT_REFUSALS = [
 ] as const;
 export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number];
 
+/**
+ * THE REFUSALS THAT CARRY INTEGRITY EVIDENCE: the bytes at rest, or the value a pointer names, fail the keyed load itself (a
+ * pointer this store never wrote, a clear chunk in a held home, an envelope too short, bytes that hash to another address,
+ * an unknown format, a commitment or a segment tag that fails, a sequence cut on a whole segment, a value the holder does
+ * not hold). Every other refusal names liveness (no session yet, the door unanswered, the rest standing down) or a face
+ * that may not read here: neither says the document is torn.
+ */
+export const SEALED_INTEGRITY_REFUSALS: ReadonlySet<string> = new Set([
+  "pointer-malformed", "held-clear-at-rest",
+  "envelope-malformed", "address-mismatch", "format-unknown", "context-mismatch", "sequence-broken", "truncated",
+  "value-absent",
+]);
+/** Does this refusal name integrity evidence against the document (`SEALED_INTEGRITY_REFUSALS`)? */
+export function isIntegrityRefusal(refusal: string | null | undefined): boolean {
+  return typeof refusal === "string" && SEALED_INTEGRITY_REFUSALS.has(refusal);
+}
+
 /** What `onHeld` hears: the refusal that kept a save in memory, its document, and for a holder's refusal its name and cause. */
 export interface HeldNotice {
   readonly refusal: "save-unbooked" | "save-unmapped" | "save-unsealed";
@@ -243,7 +260,24 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   /** The waits already named, by document and refusal: each names itself once. */
   readonly #waitsNamed = new Set<string>();
 
+  /** The refusal each document's latest load ended on, by document; a load that answers clears it. */
+  readonly #refusals = new Map<string, string>();
+  /** The refusal the latest load of this document ended on (a `SealedDocumentRefusal` name), or null where its latest
+   *  load answered or none ran. A mount reads it to tell integrity evidence from liveness (`isIntegrityRefusal`). */
+  refusalOf(documentId: string): string | null { return this.#refusals.get(documentId) ?? null; }
+
   async #hydrating<T>(documentId: unknown, read: () => Promise<T>): Promise<T> {
+    try {
+      const out = await this.#hydratingRead(documentId, read);
+      if (typeof documentId === "string") this.#refusals.delete(documentId);
+      return out;
+    } catch (error) {
+      if (typeof documentId === "string" && error instanceof SealedDocumentRefusal) this.#refusals.set(documentId, error.refusal);
+      throw error;
+    }
+  }
+
+  async #hydratingRead<T>(documentId: unknown, read: () => Promise<T>): Promise<T> {
     for (;;) {
       const moved = this.#moved.promise;
       try { return await read(); }
