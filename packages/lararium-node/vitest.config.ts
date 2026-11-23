@@ -111,6 +111,7 @@ export const heavy = [
   "tests/pronaos-kindle.test.ts",
   "tests/pronaos-public-artifact.test.ts",
   "tests/readiness-face.test.ts",
+  "tests/held-planes-named.test.ts",
   "tests/flow-closed-door.test.ts",
   "tests/herm-answers-the-knock.test.ts",
   "tests/flow-read-face-shore.test.ts",
