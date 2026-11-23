@@ -419,7 +419,7 @@ function spellHelp(argv: readonly string[]): readonly string[] {
 /**
  * MOVED maps a spelling outside the front door to the line that answers for it. The spelling runs nothing, and it never
  * answers `unknown command` either: an operator who types it meets the seat that answers, by name.
- * A row matches when its words lead the command line. `tests/laws/messages-name-live-doors.law.test.ts` reads every `lares …`
+ * A row matches when its words lead the command line. `tools/door-names-witness.sh` reads every `lares …`
  * cure here against the live registry, so a seat that moves again cannot leave a row pointing at nothing.
  */
 export const MOVED: ReadonlyArray<{ readonly argv: readonly string[]; readonly to: string }> = [
