@@ -23,7 +23,8 @@ The rebuilt package differs from the published one only in the wasm bytes (and t
 Every JavaScript and type file reads the same. The published tarball also carries a stray `dist/mjs/index.d.ts` that a
 clean build does not emit; the package's `types` entry names `dist/index.d.ts`, which both carry.
 
-`tools/engine-retention-witness.sh` holds the pin: it checks the tarball against `SHA256SUMS`, reads that a loaded
+`tools/engine-retention-witness.sh` holds the pin: it checks the tarball against `SHA256SUMS`, reads the
+resolved engine's wasm against `WASM_SHA256`, reads that a loaded
 document's wasm memory holds steady across overwrites, and reads that a fixed op sequence yields the stock engine's
 change and save bytes, so swapping back to the published package changes no stored byte.
 
@@ -31,12 +32,13 @@ change and save bytes, so swapping back to the published package changes no stor
 
 - `automerge-3.5.0-split-capacity.tgz` — the `npm pack` output of the rebuilt package (about 15 MB).
 - `SHA256SUMS` — its sha256.
+- `WASM_SHA256` — the sha256 of `package/dist/cjs/automerge_wasm_bg.wasm` inside the tarball.
 - `0001-hexane-release-the-pre-split-capacity-when-splitting.patch` — the patch, in `git format-patch` form.
 - `Cargo.lock` — the crate set the build resolved (the upstream tag carries no lock).
 
 ## Rebuild
 
-Toolchain the tarball was built with: rustup nightly `rustc 1.102.0-nightly (137d1d494 2026-11-22)` with the `rust-src`
+Toolchain the tarball was built with: rustup `nightly-2026-11-23`, carrying `rustc 1.102.0-nightly (137d1d494 2026-11-22)` with the `rust-src`
 component and the `wasm32-unknown-unknown` target; `wasm-bindgen-cli 0.2.127` (it must match the `wasm-bindgen` crate in
 `Cargo.lock`); node `v24.15.0` with npm. No `wasm-opt` step runs.
 
@@ -46,7 +48,7 @@ git checkout -b split-capacity js/automerge-3.5.0
 GIT_COMMITTER_DATE="Mon, 23 Nov 2026 04:37:04 -0800" git -c user.name=local -c user.email=local@localhost \
   am --committer-date-is-author-date <repo>/third-party/automerge/0001-hexane-release-the-pre-split-capacity-when-splitting.patch
 cp <repo>/third-party/automerge/Cargo.lock rust/Cargo.lock
-cd javascript && npm install && npm run build && npm pack
+cd javascript && npm ci && WASM_TOOLCHAIN=nightly-2026-11-23 npm run build && npm pack
 ```
 
 The fixed committer date reproduces the patch commit `9590cde8`, so the stamped `JS_GIT_HEAD` matches. A different
@@ -56,4 +58,5 @@ nightly can emit different wasm bytes; the witness's byte and retention readings
 
 When an upstream release carries the fix, set the override in `pnpm-workspace.yaml` back to that published version,
 run `pnpm install`, delete this directory, and point the witness's pin reading at the published version (or retire the
-pin reading and keep the retention and byte readings). The byte reading already compares against the stock engine.
+pin reading and keep the retention and byte readings). `STOCK_BYTES_SHA256` pins the byte reading to 3.5.0 encoding;
+re-baseline it against the new upstream release when that release changes the encoding.

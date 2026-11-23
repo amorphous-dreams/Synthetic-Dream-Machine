@@ -9,7 +9,8 @@
 // that cures it (`third-party/automerge/README.md`).
 //
 // THREE READINGS, each through the engine `@automerge/automerge` resolves to from `packages/lararium-mesh`:
-//   pin        — the workspace override names the vendored tarball, and the tarball's sha256 matches `SHA256SUMS` beside it;
+//   pin        — the override names the vendored tarball, its sha256 matches `SHA256SUMS`, and the resolved engine's
+//                wasm matches `WASM_SHA256` beside it;
 //   retention  — a document of 4,000 records x 2 KB, saved and loaded, takes 50 overwrites; wasm memory may grow by no
 //                more than the bound below (the stock engine grows by hundreds of MB here);
 //   bytes      — a fixed op sequence under fixed actors and a zero clock (fresh edits, then edits into a loaded document)
@@ -52,7 +53,7 @@ const enginePath = engineAt >= 0 ? resolve(args[engineAt + 1] ?? "") : null;
 const problems = [];
 const say = (line) => process.stdout.write(`${line}\n`);
 
-function readPin() {
+function readPin(entry) {
   const ws = readFileSync(join(REPO, "pnpm-workspace.yaml"), "utf8");
   const m = /^\s*"@automerge\/automerge":\s*"([^"]+)"\s*$/m.exec(ws);
   if (!m) { problems.push("pin: pnpm-workspace.yaml carries no `@automerge/automerge` override"); return; }
@@ -66,6 +67,14 @@ function readPin() {
   const got = createHash("sha256").update(readFileSync(tarball)).digest("hex");
   if (want !== got) problems.push(`pin: ${spec} hashes ${got}; SHA256SUMS records ${want ?? "no row for it"}`);
   else say(`[engine-retention] pin: ${spec} sha256 ${got} matches SHA256SUMS`);
+  const wasm = join(dirname(entry), "automerge_wasm_bg.wasm");
+  const wasmSum = join(dirname(tarball), "WASM_SHA256");
+  if (!existsSync(wasmSum)) { problems.push("pin: no WASM_SHA256 stands beside the tarball"); return; }
+  if (!existsSync(wasm)) { problems.push(`pin: resolved engine has no wasm at ${wasm}`); return; }
+  const wasmWant = readFileSync(wasmSum, "utf8").trim().split(/\s+/)[0];
+  const wasmGot = createHash("sha256").update(readFileSync(wasm)).digest("hex");
+  if (wasmWant !== wasmGot) problems.push(`pin: resolved wasm hashes ${wasmGot}; WASM_SHA256 records ${wasmWant}`);
+  else say(`[engine-retention] pin: resolved wasm sha256 ${wasmGot} matches WASM_SHA256`);
 }
 
 const body = (i, round) => (`r${i}.${round} `).repeat(VALUE_BYTES).slice(0, VALUE_BYTES);
@@ -119,8 +128,8 @@ function readBytes(A) {
   else say(`[engine-retention] bytes: the fixed sequence hashes ${got}, the stock engine's own`);
 }
 
-if (enginePath === null) readPin();
 const entry = enginePath ?? createRequire(join(REPO, "packages/lararium-mesh/package.json")).resolve("@automerge/automerge");
+if (enginePath === null) readPin(entry);
 say(`[engine-retention] engine: ${entry}`);
 const mod = await import(pathToFileURL(entry).href);
 const A = mod.default && typeof mod.default.change === "function" ? mod.default : mod;
