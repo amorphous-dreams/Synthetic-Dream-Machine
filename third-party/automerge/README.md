@@ -66,7 +66,8 @@ docker run --rm -v "$PWD/third-party/automerge:/vendor:ro" -v /tmp/kiln-work:/wo
 ```
 
 Two details the recipe above leaves out. Upstream carries no `javascript/package-lock.json`, so the build runs
-`npm install` (the JS dependency ranges move the JS output not at all; the tarball still matches). The wasm embeds
+`npm install`, which resolves floating devDependency ranges: the 2026-11-23 run still matched byte for byte, and a
+later run may drift in the JS files while the wasm holds. The wasm embeds
 absolute toolchain and registry paths in its panic locations, so the bytes match only when the build home reads
 `/home/joshu/.cargo`, `/home/joshu/.rustup` and a toolchain directory named `nightly-x86_64-unknown-linux-gnu`; the
 Dockerfile seats exactly that. A build under any other path yields a wasm of the same behavior and different bytes.
