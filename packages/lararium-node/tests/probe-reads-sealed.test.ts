@@ -213,7 +213,11 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
       const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
       const s = await storeWithSealedDoc(storageDir, form);
 
-      const verdict = await probeDocLoad(storageDir, s.sealedId);
+      const shard = join(storageDir, s.sealedId.slice(0, 2));
+    const aside = readdirSync(shard).find((name) => name.startsWith("sync-state-aside-"));
+    expect(aside).toBeDefined();
+    expect(readFileSync(join(shard, aside!, "store", "sync-state", "peer"), "utf8")).toBe("held sync state");
+    const verdict = await probeDocLoad(storageDir, s.sealedId);
       expect(verdict.status).toBe("sealed");
       expect(isCondemned(verdict)).toBe(false);
       expect(verdict.sealed).toBe(s.files.length);
@@ -331,6 +335,13 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     const held = await boot(storageDir, "pointer", s, { hydrates: true });
     expect(held.entry?.status).toBe("degraded");
     expect(held.writable).toBe(false);
+
+    const syncDir = join(docStorePath(storageDir, s.sealedId), "sync-state");
+    mkdirSync(syncDir, { recursive: true });
+    writeFileSync(join(syncDir, "peer"), "held sync state");
+    const keep = releaseQuarantinedDoc(storageDir, s.sealedId, "kept");
+    expect(keep.ok).toBe(false);
+    if (!keep.ok) expect(keep.why).toContain("--release ");
 
     expect(releaseQuarantinedDoc(storageDir, s.sealedId, "restored")).toMatchObject({ ok: true, act: "restored" });
     const verdict = await probeDocLoad(storageDir, s.sealedId);

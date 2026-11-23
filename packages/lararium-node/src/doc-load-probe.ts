@@ -17,7 +17,7 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { from as from_, save } from "@automerge/automerge";
-import { mkdirSync, renameSync, existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, renameSync, existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join, basename, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -472,7 +472,11 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   if (held.length === 0) return { ok: false, documentId, why: "no quarantine hold names this id" };
   const live = docStorePath(storageDir, documentId);
   let from: string | null = null;
-  if (act !== "kept" && existsSync(live)) {
+  const hasBytes = ["snapshot", "incremental"].some((kind) => {
+    try { return readdirSync(join(live, kind), { withFileTypes: true }).some((entry) => entry.isFile()); }
+    catch (err) { if ((err as NodeJS.ErrnoException).code === "ENOENT") return false; throw err; }
+  });
+  if (act !== "kept" && hasBytes) {
     return { ok: false, documentId, why: `bytes already stand under this id at ${live}; \`--release-keep ${documentId}\` releases the hold and keeps them` };
   }
   const newest = held[held.length - 1]!.manifest;
@@ -483,7 +487,7 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   const noBytesAnywhere = freshLands
     ? `\`--release-fresh ${documentId}\` starts the id empty`
     : `this plane rides to sibling devices, so lay a known copy (from a sibling or a keep bundle) at ${live}, then \`--release-keep ${documentId}\``;
-  if (act === "kept" && !existsSync(live)) {
+  if (act === "kept" && !hasBytes) {
     return { ok: false, documentId, why: moved !== undefined
       ? `nothing stands under this id, so a keep would free a blank; \`--release ${documentId}\` returns the moved bytes`
       : `nothing stands under this id and the moved bytes no longer rest beside the manifest; ${noBytesAnywhere}` };
@@ -502,6 +506,10 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   } else if (act === "restored") {
     if (moved === undefined) return { ok: false, documentId, why: `the quarantined bytes no longer rest beside the manifest; ${noBytesAnywhere}` };
     mkdirSync(dirname(live), { recursive: true });
+    if (existsSync(live)) {
+      const aside = mkdtempSync(join(dirname(live), "sync-state-aside-"));
+      renameSync(live, join(aside, "store"));
+    }
     renameSync(moved, live);
     from = moved;
   }
