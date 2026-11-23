@@ -34,6 +34,7 @@ import {
   type SeatRoll, type SeatRollSink, type WriterStanding,
 } from "@lararium/mesh";
 import { keyhiveLockboxShore, type LockboxProvider } from "./keyhive-lockbox.js";
+import { WAIT_FOR_OWNER_CURE, type RealmRestPort } from "./realm-rest.js";
 import { subscribeSeatRolls } from "./seat-duty-executor.js";
 
 /** The slice of a `KeyhiveProvider` a content-key seat rides. */
@@ -85,6 +86,16 @@ export interface ContentKeySeatInput {
   readonly session?: SessionProof;
   /** What each founding of each bag did with a roll: for a door, a log line or a vector. It names no key. */
   readonly report?: (outcome: RollOutcome) => void;
+  /**
+   * THE REALM PORT (cabal-realm#/the-workbench): a bag that rests in a realm workbench reads its readers off the realm's
+   * roster, and founds only under the realm owner's seat. Absent: every bag reads the face's key group, as before.
+   */
+  readonly realm?: RealmRestPort;
+  /**
+   * Hand a wrap's public operations on to the readers that stand on this same vessel (a lit sibling face's hive), so a
+   * lockbox one face's holder wraps for another opens there with no member lane. Absent: the parcels carry them.
+   */
+  readonly handOn?: (served: readonly string[], wrapper: ContentKeyProvider) => Promise<void>;
   /** Where the roll subscribes. Absent: this island's own seat rolls (`subscribeSeatRolls`), the production
    *  seam. A vector that stands several vessels in one process hands each its own. */
   readonly subscribe?: (sink: SeatRollSink) => () => void;
@@ -122,11 +133,27 @@ const bare = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
 /** Seat the holder beside these identities and subscribe its roll. */
 export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
   const session = input.session ?? NO_PROOF;
-  const shore = keyhiveLockboxShore(input.providers, { restArchive: (provider) => input.restArchive(provider as ContentKeyProvider) });
+  let wrapper: ContentKeyProvider = input.providers[0]!;
+  const keyShore = keyhiveLockboxShore(input.providers, { restArchive: async (provider) => { wrapper = provider as ContentKeyProvider; await input.restArchive(provider as ContentKeyProvider); } });
+  // A wrap's operations reach the readers on this vessel before the lockbox rests: a sibling face opens it at its next read.
+  const shore: typeof keyShore = input.handOn === undefined ? keyShore : {
+    ...keyShore,
+    async wrap(args) {
+      const wrapped = await keyShore.wrap(args);
+      if (wrapped.served.length > 0) await input.handOn!(wrapped.served, wrapper);
+      return wrapped;
+    },
+  };
   /** Raises this island's own count answered: every roll the sink took, and every kept roll under a receipt. */
   const answered = new Set<string>();
 
-  const readersOf = async (): Promise<readonly string[]> => {
+  const readersOf = async (bagId: string): Promise<readonly string[]> => {
+    // READERS FOLLOW THE ROSTER: a realm workbench bag wraps for every hive its realm seats now, never the face's devices.
+    const realm = input.realm === undefined ? null : await input.realm.of(bagId);
+    if (realm !== null) {
+      const own = new Set((await shore.self()).map(bare));
+      return (await realm.readers()).map(bare).filter((id) => !own.has(id));
+    }
     if (input.group === null) return [];
     const own = new Set((await shore.self()).map(bare));
     for (const provider of input.providers) {
@@ -150,6 +177,13 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     shore,
     readersOf,
     standing: session.standing,
+    // ONE FOUNDER PER REALM BAG: the realm owner's seat founds the workbench's key; a seated face waits for its lockbox.
+    ...(input.realm ? {
+      foundingOwnedElsewhere: async (bagId: string) => {
+        const realm = await input.realm!.of(bagId);
+        return realm === null || realm.owner ? null : (input.realm!.ownerCure?.(realm) ?? WAIT_FOR_OWNER_CURE);
+      },
+    } : {}),
     evidenceOf: async () => {
       const counted = input.countedRaises === undefined ? new Set<string>() : await input.countedRaises();
       const admitted = input.verifiedAdmissions === undefined ? new Set<string>() : await input.verifiedAdmissions();

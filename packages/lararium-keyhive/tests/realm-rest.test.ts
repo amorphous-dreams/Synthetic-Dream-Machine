@@ -9,6 +9,13 @@
  * RT1 (A0 → A3) the two-face round trip: A saves, B saves, both seats stand again over the same rest (a reload), and A opens
  *     B's change: no `reference-unknown`, no `founding-forked`, and the rest holds ONE founding of the working bag.
  *
+ * A1 readers follow the roster, and founding stays owner-only:
+ *   R1 the owner's mint wraps for every hive the realm seats (the engineer's among them), never the face's PersonaGroup.
+ *   R2 the seated face's holder, holding no lockbox yet, refuses `founding-owned-elsewhere` (naming its cure) and rests no
+ *      rival founding.
+ *   R3 once the owner wraps, the seated face's holder opens the owner's value from the shared rest.
+ *   R4 a bag no realm binds keeps the face's own readers and founds under any seat, byte for byte as before.
+ *
  * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { describe, expect, test } from "vitest";
@@ -16,7 +23,7 @@ import {
   SealedStore, memorySealedStoreRest, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
-import { KeyhiveProvider, InMemoryEventStore, ownChainStanding, seatContentKeys, type ContentKeySeat } from "../src/index.js";
+import { KeyhiveProvider, InMemoryEventStore, ownChainStanding, realmRestPort, seatContentKeys, type ContentKeySeat } from "../src/index.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -25,6 +32,7 @@ const SLUG = "notes";
 const WORKING = wikiSlotUri(SLUG, "working");
 const NEXUS = "nexus-test-one";
 const text = (b: Uint8Array) => new TextDecoder().decode(b);
+const bare = (id: string) => id.trim().toLowerCase().replace(/^0x/, "");
 const said = (r: object): string => ("refusal" in r ? `${(r as { refusal: string }).refusal}${(r as { cause?: string }).cause ? `:${(r as { cause?: string }).cause}` : ""}` : "OK");
 
 /** One vessel's ledger, as every face of it reads the one document. */
@@ -78,6 +86,27 @@ function seatToday(v: Vessel, f: Omit<Face, "seat">, registers: readonly string[
   });
 }
 
+/**
+ * THE REALM COMPOSITION: each face's seat reads a realm workbench bag through the realm port (readers follow the roster,
+ * founding stays owner-only), and hands a wrap's operations to the sibling hives on this vessel. `standing` stands in for the
+ * writer standing until slice A2 composes the realm's.
+ */
+export function seatRealm(v: Vessel, f: Omit<Face, "seat">, standing: WriterStanding, siblings: readonly Omit<Face, "seat">[] = [], served?: string[][]): ContentKeySeat {
+  return seatContentKeys({
+    providers: [f.hive], rest: v.rest,
+    values: { read: async (a) => v.values.get(a) ?? null, write: async (a, b) => { v.values.set(a, Uint8Array.from(b)); } },
+    restArchive: async () => {}, group: null, bags: () => [],
+    session: { signer: () => null, standing },
+    subscribe: () => () => {},
+    realm: realmRestPort({ provider: () => f.hive, ledger: async () => v.ledger.d, face: `group-${f.name}` }),
+    handOn: async (readers, wrapper) => {
+      served?.push([...readers]);
+      for (const s of siblings) if (readers.map(bare).includes(bare(s.id))) await s.hive.ingestPeerEvents(await wrapper.eventsForPeer(`0x${bare(s.id)}`));
+    },
+  });
+}
+const EVERY_WRITER: WriterStanding = { holdsWrite: () => true };
+
 /** Stand a vessel where face A owns the workbench and face B holds a writer's seat by a share. */
 async function sharedWorkbench(fills: readonly [number, number]): Promise<{ v: Vessel; a: Omit<Face, "seat">; b: Omit<Face, "seat">; realmId: string }> {
   const v: Vessel = { rest: memorySealedStoreRest(), values: new Map(), ledger: memDoc() };
@@ -115,5 +144,38 @@ describe("RT1 — the two-face round trip over one vessel's rest", () => {
 
     const foundings = new Set((await new SealedStore(v.rest).records("key-version")).map((r) => r.body.bag));
     expect(foundings.size, "ONE founding of the working bag rests: no rival").toBe(1);
+  });
+});
+
+describe("A1 — readers follow the roster; founding stays owner-only", () => {
+  test("R1/R3: the owner's mint wraps for the engineer's hive, and the engineer opens the owner's value", async () => {
+    const { v, a, b } = await sharedWorkbench([0xb1, 0xb2]);
+    const served: string[][] = [];
+    const seatA = seatRealm(v, a, EVERY_WRITER, [b], served);
+    const seatB = seatRealm(v, b, EVERY_WRITER, [a]);
+    const first = change("the steward's first line");
+    expect(said(await seatA.sealValues({ bagId: WORKING, values: [first], signer: a.signer }))).toBe("OK");
+    expect(served.flat().map(bare), "the founding's lockbox seats the engineer's hive").toContain(bare(b.id));
+    const opened = await seatB.holder.openValue({ bagId: WORKING, role: "change", ref: first.ref });
+    expect(said(opened), "the engineer opens the owner's change").toBe("OK");
+    expect(text((opened as { plaintext: Uint8Array }).plaintext)).toBe("the steward's first line");
+  });
+
+  test("R2: the seated face's holder, holding no lockbox, refuses `founding-owned-elsewhere` and rests no rival founding", async () => {
+    const { v, a, b } = await sharedWorkbench([0xb3, 0xb4]);
+    const seatB = seatRealm(v, b, EVERY_WRITER, [a]);
+    const refused = await seatB.sealValues({ bagId: WORKING, values: [change("too early")], signer: b.signer });
+    expect(said(refused)).toMatch(/^founding-owned-elsewhere:.*`lares vault unlock --face/);
+    expect(await new SealedStore(v.rest).records("key-version"), "no founding rests").toEqual([]);
+    expect(await new SealedStore(v.rest).lockboxes(), "no lockbox rests").toEqual([]);
+  });
+
+  test("R4: a bag no realm binds keeps the face's own readers and founds under any seat", async () => {
+    const { v, a, b } = await sharedWorkbench([0xb5, 0xb6]);
+    const served: string[][] = [];
+    const seatB = seatRealm(v, b, EVERY_WRITER, [a], served);
+    const personal = wikiSlotUri(SLUG, "personal");
+    expect(said(await seatB.sealValues({ bagId: personal, values: [change("my own layer")], signer: b.signer })), "the engineer's personal layer founds under its own seat").toBe("OK");
+    expect(served.flat(), "its lockbox seats no other hive: a face with no key group wraps for itself").toEqual([]);
   });
 });

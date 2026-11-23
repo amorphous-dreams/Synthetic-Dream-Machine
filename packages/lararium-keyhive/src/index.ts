@@ -20,6 +20,8 @@ export type { BagDocLedger } from "./bag-doc-ledger.js";
 export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive-lockbox.js";
 export type { LockboxProvider } from "./keyhive-lockbox.js";
 export { seatContentKeys } from "./content-key-seat.js";
+export { realmRestBag, realmRestPort, rosterReaders, WAIT_FOR_OWNER_CURE } from "./realm-rest.js";
+export type { RealmRestBag, RealmRestPort } from "./realm-rest.js";
 export type { ContentKeySeat, ContentKeySeatInput, ContentKeyProvider, SessionProof } from "./content-key-seat.js";
 export { certificateUnderChain, ownChainStanding } from "./island-session-proof.js";
 export type { IslandSessionProof, SessionAsk, SessionReading } from "./island-session-proof.js";

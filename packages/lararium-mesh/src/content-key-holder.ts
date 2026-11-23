@@ -97,6 +97,7 @@ export const HOLDER_REFUSALS = [
   "bag-malformed",            // the bag id reads as no well-formed text
   "bag-unfounded",            // no founding of this bag stands here
   "founding-forked",          // rival foundings stand, and this vessel wrote under none: a person chooses
+  "founding-owned-elsewhere", // another seat founds this bag (a realm workbench's owner), and this seat holds no lockbox of it yet
   "head-ambiguous",           // several heads held, none written under: a person chooses
   "join-across-spans",        // every head held, in unlike spans: that join opens on a fresh base
   "no-head-held",             // this vessel holds no head's key
@@ -146,6 +147,12 @@ export interface ContentKeyHolderPorts {
   readersOf(bagId: string): Promise<readonly ReaderId[]>;
   /** This vessel's own reading of who may write a bag. */
   readonly standing: WriterStanding;
+  /**
+   * ANOTHER SEAT FOUNDS THIS BAG (cabal-realm#/the-workbench): a realm workbench's working bag founds under its realm owner's
+   * holder alone, so a seated face whose holder holds no lockbox of it yet refuses rather than found a rival key. Answers the
+   * cure a person runs (a `lares …` line), or null where this seat may found. Absent: every seat founds its own bags.
+   */
+  readonly foundingOwnedElsewhere?: (bagId: string) => Promise<string | null>;
   evidenceOf(bagId: string): Promise<BagEvidence>;
   /** Does this vessel read a shadow over its own edge in the bag's scope? */
   ownEdgeShadowed(bagId: string): Promise<boolean>;
@@ -764,6 +771,9 @@ export class ContentKeyHolder {
       if (line.refusal !== "bag-unfounded") return line;
       // A founding follows no removal: while a raise in the bag's scope stays owed, no first version mints.
       if ((owedActs?.() ?? []).length > 0) return refuse("roll-owed");
+      // ONE FOUNDER PER REALM BAG: a seat that does not found this bag waits for the founder's lockbox, never mints a rival.
+      const elsewhere = (await this.#ports.foundingOwnedElsewhere?.(bagId)) ?? null;
+      if (elsewhere !== null) return refuse("founding-owned-elsewhere", elsewhere);
       const made = await this.#found(bags, bagId, founding?.history ?? "closed", signer);
       if (isRefusal(made)) return made;
       line = made.line; founded = made.minted;
