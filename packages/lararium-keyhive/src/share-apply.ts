@@ -37,7 +37,7 @@
  */
 import {
   isHouseCanonBag, owedGrants, ownEntry, plainRecordOrNull, recipeUri, resolveShare, sha256HexBytesSync, sharePendingTitle, shareEntryBag, storedRecord,
-  type LarDoc, type LarTiddlerRecord, type OwedGrant, type ShareFace, type ShareEntry, type StoredLarRecord, type WrappedLarRecord,
+  type LarDoc, type LarTiddlerRecord, type OwedGrant, type ShareFace, type ShareEntry, type StoredLarRecord,
 } from "@lararium/mesh";
 
 /** A face of the vessel as the share door reads it: its handle index, its pet-name, and, while lit, its group and catalog half. */
@@ -167,9 +167,9 @@ export function rowDigest(row: StoredLarRecord | LarTiddlerRecord | undefined | 
   return sha256HexBytesSync(new TextEncoder().encode(canon));
 }
 
-/** The owner's row as a hand-over rests it: its fields unchanged, its meta stamped with the digest of what it handed. */
-export function handedRow(row: LarTiddlerRecord): WrappedLarRecord {
-  return storedRecord({ tiddler: row.tiddler, meta: { ...(row.meta ?? {}), shareHanded: rowDigest(row) } } as LarTiddlerRecord);
+/** The owner's row as a hand-over hands it (rest it through `storedRecord`): its fields unchanged, its meta stamped with the digest of what it handed. */
+export function handedRow(row: LarTiddlerRecord): LarTiddlerRecord {
+  return { tiddler: row.tiddler, meta: { ...(row.meta ?? {}), shareHanded: rowDigest(row) } } as LarTiddlerRecord;
 }
 
 /**
@@ -369,7 +369,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       const differs = owned.filter((t) => !sameRow(rowIn(granteeHalf.doc(), t.title), storedRecord(t.row!) as never));
       const owed = differs.filter((t) => copyStandsAsHanded(rowIn(granteeHalf.doc(), t.title)));
       for (const t of differs) if (!owed.includes(t)) kept.add(t.title);
-      if (owed.length > 0) { granteeHalf.change((d) => { for (const t of owed) d.tiddlers[t.title] = handedRow(t.row!) as never; }); wrote = true; }
+      if (owed.length > 0) { granteeHalf.change((d) => { for (const t of owed) d.tiddlers[t.title] = storedRecord(handedRow(t.row!)) as never; }); wrote = true; }
     }
     try {
       const delegated = house ? { fresh: false } : await deps.grant({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group });
@@ -378,7 +378,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       if (!granteeHalf && owned.length > 0) {
         const held = new Map((await deps.carry!.list(grantee.group)).map((c) => [c.bag, c.row] as const));
         if (owned.some((t) => !sameRow(held.get(t.title), storedRecord(t.row!) as never))) wrote = true;
-        for (const t of owned) await deps.carry!.put(grantee.group, t.title, handedRow(t.row!) as never);
+        for (const t of owned) await deps.carry!.put(grantee.group, t.title, storedRecord(handedRow(t.row!)) as never);
         carried++;
       }
       await deps.flag.clear(flag);

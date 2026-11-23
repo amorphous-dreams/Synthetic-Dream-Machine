@@ -375,7 +375,7 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
   // AN ALERT ANSWERS ONLY A READER OF WHAT IT NAMES: each open alert that names a record reads absent where that record stands
-  // in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki no longer holds names no bag
+  // in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki does not hold names no bag
   // the door can check, so it shuts). The alert holds no bag of its own, so `hidden` alone never reaches it.
   const shutAlerts = new Set<string>();
   for (const title of wiki.allTitles()) {
