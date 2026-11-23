@@ -306,21 +306,21 @@ function realRoot(path: string): string {
 }
 
 /** The face root (`…/faces/<segment>`) a resolved root rests under, or null where it rests under none. */
-function faceRootUnder(resolved: string): string | null {
-  const parts = resolved.split(sep);
-  const at = parts.lastIndexOf(FACES_PROJECTION_DIR);
-  return at < 0 || at + 1 >= parts.length ? null : parts.slice(0, at + 2).join(sep);
+function faceRootUnder(resolved: string, facesRoot: string | null): string | null {
+  if (facesRoot === null || !resolved.startsWith(facesRoot + sep)) return null;
+  const segment = resolved.slice(facesRoot.length + 1).split(sep)[0];
+  return segment ? joinPath(facesRoot, segment) : null;
 }
 
 /**
  * Whether two roots would share files, as the disk resolves both: one stands at or under the other, or both rest under one face
  * root (`faces/<segment>`), since a face's folder belongs to that face whole, whichever of its planes a list happens to name.
  */
-function rootsMeet(a: string, b: string): boolean {
+function rootsMeet(a: string, b: string, facesRoot: string | null): boolean {
   const x = realRoot(a), y = realRoot(b);
   if (x === y || x.startsWith(y + sep) || y.startsWith(x + sep)) return true;
-  const fx = faceRootUnder(x);
-  return fx !== null && fx === faceRootUnder(y);
+  const fx = faceRootUnder(x, facesRoot);
+  return fx !== null && fx === faceRootUnder(y, facesRoot);
 }
 
 /** THE ROOTS EACH LIT FACE'S PROJECTION HOLDS NOW, by handle index: one island runs per worker, so one table serves it. */
@@ -340,12 +340,13 @@ export function mountLitFaceProjection(
   face: { readonly handleIndex: number; readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"] },
   engine: Pick<IslandContext, "tw5" | "composite">,
   ctx: IslandContext,
-  opts: { readonly journal?: VesselJournal; readonly log?: (line: string) => void; readonly projected?: (projector: LarDiskProjector) => void } = {},
+  opts: { readonly journal?: VesselJournal; readonly log?: (line: string) => void; readonly projected?: (projector: LarDiskProjector) => void; readonly projectionsRoot?: string } = {},
 ): (() => Promise<void>) | undefined {
+  const facesRoot = (() => { try { return realRoot(joinPath(opts.projectionsRoot ?? larProjectionsHome(), FACES_PROJECTION_DIR)); } catch { return null; } })();
   const island = manifest.diskMirrors ?? [];
   const granted = (face.diskMirrors ?? []).filter((def) => {
     if (def.tempLayer) { opts.log?.(`face h${face.handleIndex}: the temp grant ${def.bagId} drops; a lit face projects no temp layer`); return false; }
-    const meets = island.find((own) => rootsMeet(own.mirrorRoot, def.mirrorRoot));
+    const meets = island.find((own) => rootsMeet(own.mirrorRoot, def.mirrorRoot, facesRoot));
     if (meets) { opts.log?.(`face h${face.handleIndex}: the grant ${def.bagId} at ${def.mirrorRoot} meets ${meets.mirrorRoot}, another projector's root; it drops`); return false; }
     return true;
   });
@@ -356,7 +357,7 @@ export function mountLitFaceProjection(
   for (const def of granted) {
     for (const [other, roots] of litFaceRoots) {
       if (other === face.handleIndex) continue;
-      const held = roots.find((root) => rootsMeet(root, def.mirrorRoot));
+      const held = roots.find((root) => rootsMeet(root, def.mirrorRoot, facesRoot));
       if (held === undefined) continue;
       const reason = `face h${face.handleIndex}'s grant ${def.bagId} at ${def.mirrorRoot} meets ${held}, which face h${other}'s projection holds; h${face.handleIndex} projects nothing until one face names another folder`;
       opts.log?.(reason);

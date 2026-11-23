@@ -17,12 +17,17 @@
  *   F8 — a hand-made link (`faces/h-alias -> faces/h-zero`) reads as the root it reaches: its grant drops, and the worn root
  *        takes nothing through it
  */
-import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { bootTestWiki, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { createRequire } from "node:module";
 import { afterEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CompositeStore, wikiSlotUri } from "@lararium/mesh";
+import { CompositeStore, wikiSlotUri, daemonFaceCanonBag, emptyLarDoc, type Repo as RepoType, type LarDoc } from "@lararium/mesh";
+import { faceEngines } from "../../lararium-tw5/src/face-engine.js";
+import { makeTiddlerPutReactor } from "../../lararium-tw5/src/tiddler-verbs.js";
+import { litFaceProjections } from "../../lararium-keyhive/src/lit-face-projections.js";
+import { faceEngineReactor } from "../../lararium-keyhive/src/face-lane.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { daemonDiskMirrors, faceRoot, litFaceDiskMirrors } from "../src/bag-paths.js";
@@ -82,13 +87,71 @@ async function wornIsland() {
     const engine = await faceEngine();
     let projector: LarDiskProjector | null = null;
     const stop = mountLitFaceProjection(manifest, { handleIndex, diskMirrors: litFaceDiskMirrors(projections, segment === null ? null : { relation: relationOf(handleIndex), segment }) },
-      engine, ctxOf(worn), { projected: (p) => { projector = p; } });
+      engine, ctxOf(worn), { projectionsRoot: projections, projected: (p) => { projector = p; } });
     return { engine, stop, idle: async () => { await projector?.idle(); }, root: segment === null ? null : faceRoot(projections, segment) };
   };
   return { projections, worn, stopWorn, wornProjector, wornRoot: faceRoot(projections, "h-zero"), light };
 }
 
 describe("every lit face projects its own writes", () => {
+  test("a face-lane put reaches disk after the lit sibling rebuilds for its arriving slot", async () => {
+    const house = await wornIsland();
+    const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { network: unknown[] }) => RepoType;
+    const repo = new Repo({ network: [] });
+    const canon = repo.create<LarDoc>(emptyLarDoc());
+    const working = repo.create<LarDoc>(emptyLarDoc());
+    const canonBag = daemonFaceCanonBag(relationOf(1));
+    let slotted = false;
+    const source = () => ({ boot: () => bootTestWiki(), recipe: { wikiSlug: "daemon", canonBag }, ready: [
+      { slot: canonBag, handle: canon }, ...(slotted ? [{ slot: WORKING, handle: working }] : []),
+    ] });
+    const order: string[] = [];
+    let projector: LarDiskProjector | undefined;
+    const engines = faceEngines(async () => source(), {
+      rebuilding: async (face) => { order.push("rebuilding"); await seats.rebuilding(face); },
+      rebuilt: (face) => { order.push("rebuilt"); void seats.rebuilt(face); },
+    });
+    const seats = litFaceProjections({
+      engine: (face) => engines.of(face),
+      mount: (face, engine) => {
+        order.push("mount");
+        const stop = mountLitFaceProjection({ diskMirrors: [] }, face, engine as never, ctxOf(house.worn), {
+          projectionsRoot: house.projections, projected: (p) => { projector = p; },
+        });
+        return stop && (async () => { await stop(); order.push("projector let go"); });
+      },
+    });
+    try {
+      await engines.of(1);
+      await seats.light("k1", { handleIndex: 1, diskMirrors: litFaceDiskMirrors(house.projections, { relation: relationOf(1), segment: "h-one" }) });
+      slotted = true;
+      const put = faceEngineReactor("tiddler-put", async () => ({}), (engine) => makeTiddlerPutReactor(engine as never), {
+        mountedKey: () => "worn", mountedOrdinal: () => 0, lit: (key) => key === "sibling" ? { handleIndex: 1 } : null,
+        engine: (face) => engines.of(face),
+      });
+      await put({ recipe: "default", title: "After slot", text: "landed after rebuild" }, { presenter: "sibling", daemon: {} as never, invocation: { requestId: "face-chain" } as never, cap: async () => ({ ok: true }) } as never);
+      const deadline = Date.now() + 5000;
+      while (order.filter((s) => s === "mount").length < 2 && Date.now() < deadline) await new Promise((r) => setTimeout(r, 10));
+      expect(order).toEqual(["mount", "rebuilding", "projector let go", "rebuilt", "mount"]);
+      while (!textsUnder(faceRoot(house.projections, "h-one")).includes("landed after rebuild") && Date.now() < deadline) {
+        await projector?.idle();
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      expect(textsUnder(join(faceRoot(house.projections, "h-one"), "wikis", "daemon"))).toContain("landed after rebuild");
+    } finally { await seats.drop("k1"); await engines.dropAll(); await repo.shutdown(); await house.stopWorn(); }
+  }, 60_000);
+  test("a pet named faces still owns its whole face root", async () => {
+    const house = await wornIsland();
+    const engine = await faceEngine();
+    const petRoot = faceRoot(house.projections, "faces");
+    const stop = mountLitFaceProjection(
+      { diskMirrors: [{ bagId: WORKING, mirrorRoot: join(petRoot, "other"), scope: "daemon" }] },
+      { handleIndex: 9, diskMirrors: [{ bagId: WORKING, mirrorRoot: join(petRoot, "wikis", "daemon"), scope: "daemon" }] },
+      engine, ctxOf(house.worn), { projectionsRoot: house.projections },
+    );
+    try { expect(stop).toBeUndefined(); }
+    finally { await stop?.(); await house.stopWorn(); }
+  }, 60_000);
   test("F1 · F2 — a lit sibling projects into its own root while h0 stands worn; the worn projection stands unchanged", async () => {
     const house = await wornIsland();
     const h1 = await house.light(1, "h-one");

@@ -44,7 +44,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { formatDigest, digestsEqual } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
-import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches } from "./heleuma-digest.js";
+import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches, stampSourceAnchor } from "./heleuma-digest.js";
 import { rootMetaFields } from "../src/root-meta.js";
 
 const root     = repoRoot;
@@ -695,6 +695,13 @@ if (COMMIT) {
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
   console.log("[heleuma] --commit: building plugin CJS tiddlers and patching anchor hashes…\n");
   execSync(`tsx ${resolve(scriptsDir, "build-plugin-tiddler.ts")}`, { stdio: "inherit" });
+  const waveContent = readFileSync(meshWaveAnchor, "utf8");
+  const waveSource = readFileSync(resolve(root, "packages/lararium-mesh/src/wave-crest.ts"), "utf8");
+  const waveDigest = formatDigest("sha256", sha256HexSync(waveSource));
+  if (!digestsEqual(waveDigest, asStr(rootMetaFields(waveContent)["source-sha256"]))) {
+    writeFileSync(meshWaveAnchor, stampSourceAnchor(waveContent, waveSource), "utf8");
+    console.log("[heleuma] patched mesh wave-crest source-sha256 and carrier check");
+  }
   console.log("\n[heleuma] --commit: checking #source windows (reference integrity — the code-file tiddler holds the source)\n");
 } else {
   console.log("[heleuma] dry-run (pass --commit to patch, --scan to find candidates, --scan-promote to find corpus candidates)\n");

@@ -49,6 +49,11 @@ export function applySourceSha256Patch(content: string, digest: string): string 
   return stampCarrier(content.slice(0, bodyStart) + alignMetaTomlColumns(next) + content.slice(bodyEnd));
 }
 
+/** Stamp a text source's bytes into its anchor and reseal the carrier. */
+export function stampSourceAnchor(content: string, source: string): string {
+  return applySourceSha256Patch(content, formatDigest(SHA256_ALGO, sha256HexSync(source)));
+}
+
 /** Check the source window's type, exact Git bytes and anchor digest. */
 export function sourceTiddlerMatches(source: string, tid: string, title: string, claimed: string): boolean {
   const split = tid.indexOf("\n\n");

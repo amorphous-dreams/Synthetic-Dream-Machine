@@ -32,6 +32,35 @@ function rig(opts: { engines?: Record<number, boolean>; slow?: Promise<void>; fa
 }
 
 describe("lit-face-projections", () => {
+  test("a light that triggers its own engine rebuild completes and can drop", async () => {
+    let closed = false;
+    let calls = 0;
+    const mounted: number[] = [];
+    const stopped: number[] = [];
+    const seat = litFaceProjections({
+      engine: async () => {
+        if (calls++ === 0) {
+          await Promise.resolve();
+          await seat.rebuilding(1);
+          closed = true;
+          void seat.rebuilt(1);
+          return engineOf(1);
+        }
+        return engineOf(1);
+      },
+      mount: () => { mounted.push(1); return async () => { stopped.push(1); }; },
+    });
+    const bounded = async (work: Promise<void>) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try { await Promise.race([work, new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("timed out")), 300); })]); }
+      finally { if (timer) clearTimeout(timer); }
+    };
+    await bounded(seat.light("k1", { handleIndex: 1, diskMirrors: grants("h-one") }));
+    expect(closed).toBe(true);
+    expect(mounted).toEqual([1]);
+    await bounded(seat.drop("k1"));
+    expect(stopped).toEqual([1]);
+  });
   test("P1 — a lit face mounts over its own engine, under its own grants", async () => {
     const { seat, mounted } = rig();
     await seat.light("k1", { handleIndex: 1, diskMirrors: grants("h-one") });
