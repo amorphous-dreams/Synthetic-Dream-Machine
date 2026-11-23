@@ -13,4 +13,4 @@
 export { resolveBootDoc, isStillJoining } from "@lararium/mesh";
 export type { Tideline, StillJoining, MeshScale } from "@lararium/mesh";
 
-export { waitHandle, LOCAL_READY_MS } from "@lararium/mesh";
+export { waitHandle, LOCAL_READY_MS, seatSealedRest } from "@lararium/mesh";

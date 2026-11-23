@@ -28,8 +28,12 @@
  * clean-tail recovery, then the whole-document quarantine and the degraded stand-in. One that loads clean stands HELD: it
  * reads as the probe's `unresolved` class, so the mount takes its `pending` branch, read-only, no bytes moved and no writable
  * stand-in, and the vessel names it and the hand act that releases it (`HELD_HAND_ACT`). Under an OOM the document in flight
- * usually stands innocent, so no sound document's bytes ever move. THE RESIDUAL: a trap whose document never reached a mount
- * the probe guards passes it, and only the count stops a second fall of that kind.
+ * usually stands innocent, so no sound document's bytes ever move. The probe reaches the social mounts alone, so the boot
+ * also holds every such document back from the engine on EVERY load path (`holdBackStorage`): the Repo's own storage
+ * answers none of its chunks, and its plane stands read-only over its own id (`heldBackReason`, read by `waitHandle`).
+ *
+ * STAY DOWN MEANS STAY DOWN (`keepFallDown`): from the fall on, a later throw from the dead module ends nothing; only the
+ * fall's own answer exits, once.
  *
  * Every fall in a suite comes injected; nothing here runs out of wasm memory.
  */
@@ -37,7 +41,8 @@ import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { isCondemned, type DocLoadProbe, type ProbeResult } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-import type { EngineFall } from "./engine-watch.js";
+import { engineFatalCauseOf, type EngineFall, type EngineWatch } from "./engine-watch.js";
+import type { StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo/slim";
 import { shoreFlushLines, type ShoreFlushReading } from "./shore-verb.js";
 
 /** The exit a fallen engine's vessel takes: sysexits' EX_SOFTWARE (an internal fault), apart from 0, 1, 2, 75 and 76. */
@@ -48,8 +53,9 @@ export const ENGINE_RESTART_CAP = 1;
 
 /** The hand act a vessel that stays down names. */
 export const ENGINE_DOWN_HAND_ACT =
-  "the vessel already rose once from an engine fall and fell again, so it stays down: preserve the hearth (copy it aside), "
-  + "then repair or restore from a keep bundle; stopping the vessel by hand clears the count, and the next stand may rise once more";
+  "the vessel already rose once from an engine fall and fell again, so it stays down: health answers 503 (after a fall during boot "
+  + "no verb reaches it); stop the vessel by hand (the stop clears the count and exits 0), preserve the hearth (copy it aside), then "
+  + "repair or restore from a keep bundle; the next stand may rise once more, and a document a fall named in flight stays held";
 
 const FALLS_FILE = ".engine-falls";
 
@@ -189,4 +195,156 @@ export function fallAwareProbeDoors(falls: readonly RestingFall[], doors: {
 /** The documents the resting falls name in flight: each one a boot holds where it loads clean. */
 export function heldInFlight(falls: readonly RestingFall[]): string[] {
   return [...new Set(falls.map((f) => f.inFlight).filter((d): d is string => d !== null))];
+}
+
+/**
+ * STAY DOWN MEANS STAY DOWN. Once the engine falls, the fall's answer alone owns the process's end: it exits
+ * `ENGINE_FALL_EXIT` once, or it stays down. A dead wasm module keeps throwing after that (`Module terminated` from every
+ * later call: the storage source's attach reads `getHeads`, a timer fires, a peer's sync arrives), and a throw no handler
+ * catches would end the process anyway, so `unless-stopped` raises again the vessel that decided to stay down: measured on
+ * a live house, a restart every few seconds. So the keeper stands on the process's own two events (`armFallKeeper`): from
+ * the fall on it absorbs every uncaught throw and rejection, names each distinct one once, and holds the process up once
+ * it stays down (`hold`), so health keeps answering 503 and every verb keeps refusing `engine-terminated`. A dead engine's
+ * throw that reaches the keeper before anything else names the fall. Before any fall an uncaught throw ends the process
+ * with 1, as Node's own default does. The process after a fall reads as a husk by design: it serves the named state and
+ * runs nothing else. A fall during boot leaves a thinner husk: the boot's own fault path has closed the verb socket, so
+ * health answers 503 over HTTP and no verb reaches it at all.
+ *
+ * THE HAND'S STOP REACHES A FALLEN VESSEL FROM THE FIRST MOMENT. The keeper arms the stop signals beside the throws, before
+ * any composition stands (`armFallKeeper`): a SIGINT or SIGTERM that reaches a fallen engine reads as the hand having seen
+ * the named state, so it clears the restart count and exits 0. Before a fall the signal passes to whatever answers it then.
+ *
+ * ONLY A DEAD ENGINE'S OWN SIGNATURES name a fall from an uncaught throw: `Module terminated` and the wasm trap. wasm-bindgen's
+ * "recursive use … unsafe aliasing" reports a JS re-entrancy fault with the engine still standing, so met uncaught before
+ * any fall it ends the process with 1, as any ordinary fault does.
+ */
+export interface FallKeeper {
+  /** Null while the engine stands, `answering` while the fall's answer runs, then that answer's verdict. */
+  verdict(): FallAnswer["verdict"] | "answering" | null;
+  /** An uncaught throw or unhandled rejection: absorbed from the fall on, else the process ends with 1. */
+  uncaught(error: unknown): void;
+  /** The boot's own rejection: true where the engine has fallen, so the fall's answer owns the end, never the boot's fault path. */
+  absorbs(error: unknown): boolean;
+  /** A stop signal: true where the engine has fallen (the count clears and the process exits 0); false passes it on. */
+  handStop(signal: string): boolean;
+}
+
+/** What the keeper reaches: the fall's ports (the life read at the fall, when the store claim has minted it) and the hold. */
+export interface FallKeeperPorts extends Omit<FallPorts, "life"> {
+  readonly life: () => string | null;
+  /** Keep the process up once it stays down: an emptied event loop would end it too, and the supervisor would raise it. */
+  readonly hold: () => void;
+}
+
+/** A throw as text, or "<unprintable>" where even printing it throws. */
+const printed = (error: unknown, stack: boolean): string => {
+  try { return error instanceof Error ? (stack ? (error.stack ?? error.message) : `${error.name}: ${error.message}`) : String(error); }
+  catch { return "<unprintable>"; }
+};
+const firstLine = (error: unknown): string => printed(error, false).split("\n")[0]!;
+/** The uncaught throws that name a fall: the dead engine's own two signatures, never the re-entrancy fault. */
+const namesFall = (error: unknown): boolean => { const cause = engineFatalCauseOf(error); return cause === "module-terminated" || cause === "wasm-unreachable"; };
+
+/** THE FALL'S KEEPER: answers the fall once (one exit at most, never beside an exit 1), and absorbs what the dead engine throws after it. */
+export function keepFallDown(watch: EngineWatch, ports: FallKeeperPorts): FallKeeper {
+  let verdict: FallAnswer["verdict"] | "answering" | null = null;
+  let exited = false;
+  const exitOnce = (code: number): void => { if (exited) return; exited = true; ports.exit(code); };
+  const absorbed = new Set<string>();
+  const absorb = (error: unknown, what: string): void => {
+    const line = firstLine(error);
+    if (absorbed.has(line)) return;
+    absorbed.add(line);
+    ports.log(`engine fall: ${what} absorbed (${line}); ${verdict === "stays-down"
+      ? "the vessel stays down: health answers 503 and every verb it still serves refuses `engine-terminated`"
+      : "the fall's answer alone decides the exit"}`);
+  };
+  watch.onFall((fall) => {
+    if (verdict !== null) return;
+    verdict = "answering";
+    const stayDown = (): void => { verdict = "stays-down"; ports.hold(); };
+    void answerEngineFall(fall, { ...ports, life: ports.life(), exit: exitOnce }).then(
+      (answer) => { if (answer.verdict === "stays-down") stayDown(); else verdict = answer.verdict; },
+      (err) => { ports.log(`engine fall: the answer threw (${firstLine(err)}); the vessel stays down`); stayDown(); },
+    );
+  });
+  return {
+    verdict: () => verdict,
+    uncaught: (error) => {
+      if (namesFall(error)) watch.note(error, "repo");
+      if (watch.fallen() !== null) { absorb(error, "a throw after the fall"); return; }
+      ports.log(`uncaught: ${printed(error, true)}`);
+      exitOnce(1);
+    },
+    handStop: (signal) => {
+      if (watch.fallen() === null) return false;
+      try { clearEngineFalls(ports.storageDir); }
+      catch (err) { ports.log(`engine fall: the count did not clear (${firstLine(err)})`); }
+      ports.log(`engine fall: ${signal} reached the fallen engine: the hand's stop clears the count; exiting 0`);
+      exitOnce(0);
+      return true;
+    },
+    absorbs: (error) => {
+      if (namesFall(error)) watch.note(error, "repo");
+      if (watch.fallen() === null) return false;
+      absorb(error, "the boot's rejection after the fall");
+      return true;
+    },
+  };
+}
+
+/** Arm the keeper on the process's own events (one listener each): the uncaught throw, the unhandled rejection, and the two
+ *  stop signals, which pass to `otherwise` where no fall stands. */
+export function armFallKeeper(
+  keeper: FallKeeper,
+  proc: { on(event: string, listener: (...args: unknown[]) => void): unknown },
+  otherwise: (signal: "SIGINT" | "SIGTERM") => void,
+): void {
+  proc.on("uncaughtException", (error) => keeper.uncaught(error));
+  proc.on("unhandledRejection", (error) => keeper.uncaught(error));
+  for (const signal of ["SIGINT", "SIGTERM"] as const) proc.on(signal, () => { if (!keeper.handStop(signal)) otherwise(signal); });
+}
+
+/** Why a held-back document stands read-only. */
+export const HELD_BACK = "held: a resting engine fall names this document in flight, so the Repo's storage hands the engine none of its chunks; its plane stands read-only and empty, its bytes in place";
+
+/**
+ * THE TRAP-NAMED DOCUMENT HOLDS ON EVERY LOAD PATH. The probe's hold (`fallAwareProbeDoors`) reaches the social planes only;
+ * a catalog bag's document loads through the Repo's storage source, from whichever caller asks (a corpus, a wiki island's
+ * sync request, the residency wiring). So the boot wraps the Repo's innermost storage: for each document a resting fall
+ * names in flight, a load answers nothing and a range lists none of its chunks, so the Repo reads it unavailable and never
+ * hands its bytes to the engine; a save or removal of it lands nothing, so its bytes rest exactly as they lay. Every other
+ * key reads through unchanged. The hand's clear of the count (a clean stop, or a stop of a fallen vessel) releases it at
+ * the next boot. With no fall resting, the inner adapter stands unwrapped.
+ */
+export function holdBackStorage<S extends StorageAdapterInterface>(inner: S, held: readonly string[], log: (line: string) => void): StorageAdapterInterface {
+  if (held.length === 0) return inner;
+  const holds = new Set(held);
+  const named = new Set<string>();
+  const isHeld = (key: StorageKey): boolean => {
+    const documentId = key[0];
+    if (documentId === undefined || !holds.has(documentId)) return false;
+    if (!named.has(documentId)) {
+      named.add(documentId);
+      log(`engine fall: ${documentId} held back from the engine (${HELD_BACK}); hand act: ${HELD_HAND_ACT}`);
+    }
+    return true;
+  };
+  return {
+    load: async (key) => (isHeld(key) ? undefined : inner.load(key)),
+    loadRange: async (prefix) => {
+      if (isHeld(prefix)) return [];
+      return (await inner.loadRange(prefix)).filter((chunk) => !isHeld(chunk.key));
+    },
+    save: async (key, data) => { if (!isHeld(key)) await inner.save(key, data); },
+    remove: async (key) => { if (!isHeld(key)) await inner.remove(key); },
+    removeRange: async (prefix) => { if (!isHeld(prefix)) await inner.removeRange(prefix); },
+    ...(inner.close ? { close: () => inner.close!() } : {}),
+  };
+}
+
+/** The seated door's answer for a held-back document (`SealedRestDoor.heldBack`): why it stands read-only, or null. */
+export function heldBackReason(held: readonly string[]): (documentId: string) => string | null {
+  const holds = new Set(held);
+  return (documentId) => (holds.has(documentId) ? `${HELD_BACK}; hand act: ${HELD_HAND_ACT}` : null);
 }

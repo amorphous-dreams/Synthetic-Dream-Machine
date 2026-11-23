@@ -89,7 +89,7 @@ When no masks are active, the thirteen Voices surface as the resident cast.
 
 !! Stage Panel
 
-Live stage positions — shift inline with `[Stage: mask-name 15]`; edits here persist for the session.
+Live stage positions — summon a seated mask with ``<<~ stage rank=`15` name=`mask-name`>>``; `[Stage: mask-name 15]` carries the older spelling. Edits here persist for the session.
 
 ```toml
 # [stage-panel]
@@ -110,6 +110,6 @@ Live stage positions — shift inline with `[Stage: mask-name 15]`; edits here p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fSXO8u0t5YGllwMMzT7M6WDouzol_p7NxbLojQp7E_g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j8LQ10djlKT9lU2YF9Da7LW_g00RytRvujO3i3Eo744`>>
 
 <<^ code=`&#x0004;` to=`?`>>

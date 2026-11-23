@@ -83,6 +83,7 @@ export { discoverHoldings, canonIsDisk } from "../holdings.js";
 /** The lay's word for a house canon holding on a face outside the Kahu cabal (action-handler `HOUSE_CANON_READS_FLOOR`). */
 export const HOUSE_CANON_FLOOR_REASON = "house canon, written by the Kahu steward (h0); this face reads the floor";
 import { canonIsDisk, discoverHoldings } from "../holdings.js";
+import { pendingReceipts, retirementLine, type Retirement } from "../shore-retirement.js";
 
 /**
  * Feed ONE holding into its canon. A disk-sourced holding: CREATE (applied runs only; it converges on the bag that
@@ -133,15 +134,29 @@ export async function layHolding(
  * stands pending at the shore. The lay counts what stands pending per bag it fed and prints the one batch answer per
  * bag, so a person answers once rather than carrier by carrier.
  */
-export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[]): string[] {
-  const counts = new Map<string, number>();
+export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[], receipts: ReadonlyMap<string, Retirement> = new Map()): string[] {
+  const rows = new Map<string, Array<Record<string, unknown>>>();
   for (const p of pending) {
     const bag = String(p["bagId"]);
-    if (bags.includes(bag)) counts.set(bag, (counts.get(bag) ?? 0) + 1);
+    if (bags.includes(bag)) rows.set(bag, [...(rows.get(bag) ?? []), p]);
   }
-  return [...counts].sort(([a], [b]) => (a < b ? -1 : 1)).map(([bag, n]) =>
-    `lay: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`);
+  return [...rows].sort(([a], [b]) => (a < b ? -1 : 1)).flatMap(([bag, held]) => {
+    const n = held.length;
+    // THE RECEIPT: each carrier a commit took from the checkout carries that commit beneath its bag's count, up to a few; `lares shore` names each.
+    const retired = held.flatMap((p) => {
+      const r = typeof p["path"] === "string" ? receipts.get(p["path"]) : undefined;
+      return r === undefined ? [] : [`lay:   ${String(p["uri"])}: ${retirementLine(r)}`];
+    });
+    return [
+      `lay: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`,
+      ...retired.slice(0, LAY_RECEIPT_NAMES),
+      ...(retired.length > LAY_RECEIPT_NAMES ? [`lay:   … ${retired.length - LAY_RECEIPT_NAMES} more retired carrier(s): \`lares shore\` names each`] : []),
+    ];
+  });
 }
+
+/** How many retired carriers a lay names beneath one bag's count before it counts the rest. */
+export const LAY_RECEIPT_NAMES = 8;
 
 /** How many fresher-canon titles a report names before it counts the rest. */
 export const SEED_FRESHER_NAMES = 8;
@@ -311,7 +326,7 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
     try {
       const did = await vesselDid();
       const listed = await readShoreList((a) => askShore(a, did), { op: "list" });
-      if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag))) console.log(line);
+      if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag), pendingReceipts(listed.pending))) console.log(line);
     } catch { /* the shore unread: the lay's own verdict stands; `lares shore` reads it */ }
   }
   const offDisk = ledger.filter((h) => h.gesture === "skip").length;

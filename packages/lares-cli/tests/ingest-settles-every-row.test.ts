@@ -19,8 +19,9 @@ import { join } from "node:path";
 import { VERB_RESULT_KEY, carrierHash, INGEST_WAVE_LIMITS } from "@lararium/mesh";
 import { SyncedTree, syncedTreeKey, bagsFileToUri } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
-import { INGEST_PAGE, scanFiles, candidatesOf, listCarriers, readCarrierAnswer, settleIngest, ingestVerdict, standingAfterWave, standingAfterFault, standsClean, NO_STANDING_ASKS, type StandingAsks, type ScanRow, type SubmitIngestOpts } from "../src/ingest-core.js";
+import { INGEST_PAGE, scanFiles, candidatesOf, listCarriers, readCarrierAnswer, settleIngest, ingestVerdict, standingAfterWave, standingAfterFault, standsClean, NO_STANDING_ASKS, type StandingAsks, type ScanRow, type SubmitIngestOpts, submitIngest, type IngestDoors } from "../src/ingest-core.js";
 import type { SubmitResult } from "../src/verb-result.js";
+import { LocalWaitExpired } from "../src/local-connector.js";
 
 const { boundOutcomeOutput, AUDIT_ARRAY_CAP } = await import(new URL("../../lararium-tw5/dist/verb-vm.js", import.meta.url).href) as {
   boundOutcomeOutput: (result: Record<string, unknown>) => Record<string, unknown>;
@@ -89,6 +90,50 @@ describe("the weld: a page rides under the outcome's row cap", () => {
 });
 
 describe("past the wave budget the first pass pages, and every page settles whole", () => {
+  test("a late receipt lets the remaining waves land without resubmission", async () => {
+    const { tree, candidates } = seed(120);
+    let sent = 0;
+    let reads = 0;
+    let late: Record<string, unknown> = {};
+    const doors: IngestDoors = {
+      run: async (verb, args, _did, options = {}) => {
+        sent++;
+        const carriers = (args["carriers"] as Array<{ uri: string }>).map((c) => ({ uri: c.uri, decision: "ingest", grade: "clean", landed: 1 }));
+        const results = { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput({ carriers }) } };
+        if (sent === 1) { late = results; throw new LocalWaitExpired(verb, options.timeoutMs ?? 0, options.requestId ?? ""); }
+        return { status: "done", requestId: options.requestId ?? "", results };
+      },
+      receipt: async (requestId) => ++reads === 1 ? { requestId, state: "unknown" } : { requestId, state: "done", results: late },
+    };
+    const result = await settleIngest(opts(candidates), tree, (wave) => submitIngest(wave, doors));
+    expect(result.landed.size).toBe(120);
+    expect(result.pageError).toBeUndefined();
+    expect(result.waves?.length).toBe(sent);
+    expect(sent).toBeGreaterThan(1);
+    expect(reads).toBe(2);
+  });
+
+  test("an unanswered later wave stops and keeps its carriers owed", async () => {
+    const { tree, candidates } = seed(120);
+    let sent = 0;
+    let reads = 0;
+    const doors: IngestDoors = {
+      run: async (verb, args, _did, options = {}) => {
+        sent++;
+        if (sent === 2) throw new LocalWaitExpired(verb, options.timeoutMs ?? 0, options.requestId ?? "");
+        const carriers = (args["carriers"] as Array<{ uri: string }>).map((c) => ({ uri: c.uri, decision: "ingest", grade: "clean", landed: 1 }));
+        return { status: "done", requestId: options.requestId ?? "", results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput({ carriers }) } } };
+      },
+      receipt: async (requestId) => { reads++; return { requestId, state: "unknown" }; },
+    };
+    const result = await settleIngest(opts(candidates), tree, (wave) => submitIngest(wave, doors));
+    expect(sent).toBe(2);
+    expect(reads).toBe(2);
+    expect(result.pageError?.outcome).toBe("unknown");
+    expect(result.pageError!.unread).toBeGreaterThan(0);
+    expect(result.landed.size).toBeLessThan(120);
+  });
+
   test("120 carriers with the settle's own budget ride several waves under the count limit, and every one lands and pins", async () => {
     const { tree, candidates } = seed(120);
     const isl = island(landed);

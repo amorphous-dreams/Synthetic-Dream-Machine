@@ -9,7 +9,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/working-procedures
  */
 
-import { taskContentId, digestsEqual } from "@lararium/mesh";
+import { taskContentId, digestsEqual, ingestWaveWeight } from "@lararium/mesh";
 import {
   syncedTreeKey, ingestWaveVerb, ingestWaitBudgetMs, listSourceFiles, scanFiles, fileToUriForSource, settleIngest as settleIngestVia,
   type SyncedTree, type ScanRow, type ScanStatus, type ScanResult, type PendingDeletion, type FileToUriFn, type SubmitIngestOpts, type IngestSettlement,
@@ -133,20 +133,18 @@ export interface IngestDoors {
   readonly run: typeof runVerb;
   readonly receipt: (requestId: string) => Promise<ReceiptAnswer>;
 }
-export const LIVE_INGEST_DOORS: IngestDoors = { run: runVerb, receipt: (id) => queryReceipt(id) };
+export const LIVE_INGEST_DOORS: IngestDoors = { run: runVerb, receipt: (id) => queryReceipt(id, { patienceMs: 2_000 }) };
 
 export async function submitIngest(opts: SubmitIngestOpts, doors: IngestDoors = LIVE_INGEST_DOORS): Promise<SubmitResult> {
-  const deletions = opts.deletions ?? [];
   const { verb: submitName, args: submitArgs } = ingestWaveVerb(opts, (r) => {
     const type = declaredType(r.meta);
     return stageBodyToCas(r.text, { ext: r.ext, flagged: carrierCasFlagged(r.text, r.meta), binary: r.binary ?? false, ...(type ? { type } : {}) });
   });
   const requestId = await taskContentId({ subject: opts.toBag, command: submitName, args: submitArgs, nonce: "" });
-  // THE WAIT SCALES WITH THE WAVE: its carriers and its encoded bytes, capped (`ingestWaitBudgetMs`).
-  const timeoutMs = ingestWaitBudgetMs({
-    carriers: opts.candidates.length + deletions.length + (opts.kapae?.length ?? 0),
-    bytes: Buffer.byteLength(JSON.stringify(submitArgs), "utf8"),
-  });
+  // THE WAIT SCALES WITH THE WAVE: count, bytes, and estimated operations, capped (`ingestWaitBudgetMs`).
+  const waveArgs = opts.inWiki ? submitArgs["args"] as Record<string, unknown> : submitArgs;
+  const weight = ingestWaveWeight(waveArgs);
+  const timeoutMs = ingestWaitBudgetMs({ carriers: weight.count, bytes: weight.bytes, ops: weight.ops });
   try {
     return await doors.run(submitName, submitArgs, opts.did, { requestId, timeoutMs });
   } catch (err) {
@@ -156,7 +154,7 @@ export async function submitIngest(opts: SubmitIngestOpts, doors: IngestDoors = 
 }
 
 /**
- * THE WAIT ENDED; THE RECEIPT SPEAKS. The same request's receipt, read once (a read, never a dispatch): an outcome that
+ * THE WAIT ENDED; THE RECEIPT SPEAKS. The same request's receipt, read again if still unknown (never a dispatch): an outcome that
  * landed answers as the wave's own (the settle reads it whole); `committed` throws `WaveWaitEnded` reading committed; every
  * other answer (no line back, a vessel that never arbitrated the id, a dead engine that cannot read it) keeps the outcome
  * unknown, with the id. A receipt the vessel refuses gives no verdict on the wave, so it never reads as the wave's error.
@@ -165,6 +163,11 @@ async function readBackAfterWait(verb: string, timeoutMs: number, requestId: str
   let receipt: ReceiptAnswer;
   try { receipt = await doors.receipt(requestId); }
   catch (err) { throw new WaveWaitEnded(verb, timeoutMs, requestId, "unknown", `its receipt read failed (${err instanceof Error ? err.message : String(err)})`); }
+  if (receipt.refusal === undefined && (receipt.state === "unknown" || receipt.state === "unanswered")) {
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    try { receipt = await doors.receipt(requestId); }
+    catch (err) { throw new WaveWaitEnded(verb, timeoutMs, requestId, "unknown", `its receipt re-read failed (${err instanceof Error ? err.message : String(err)})`); }
+  }
   if ((receipt.state === "done" || receipt.state === "error") && receipt.refusal === undefined) {
     return {
       status: receipt.state, requestId,
