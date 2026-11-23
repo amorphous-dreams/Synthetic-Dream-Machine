@@ -12,11 +12,10 @@
  *   2. the sessions  ON THE HOST: this device's Claude Code sessions mirror into `devices/<name>-<id8>/`
  *                    (`./keep-sessions.ts`), and the secret scan reads the mirror, a compressed transcript by its own bytes.
  *                    A dir another device owns, or a secret-shaped string, refuses here, before any return spends
- *   3. keep-cut      first the shore's flush (`lares shore flush`, through the bridge): the daemon island and the active wiki
- *                    write what they hold to their mirrors, and the rite says what each wrote or left. That door reaches those
- *                    two islands alone; every other resident wiki island stands outside it (the vessel's teardown flush reaches
- *                    them), and the line names that gap. A flush that leaves a carrier unwritten never stops the keep: the
- *                    bundle cuts from the records. Then IN THE VESSEL: the vessel half (`rite-keep.ts`): the lei's return, the
+ *   3. keep-cut      first the shore's flush (`lares shore flush`, through the bridge): the vessel flushes every island that
+ *                    mounts a disk shore (the daemon's with each lit face's, and every resident wiki's: the teardown's own
+ *                    flush), and the rite says what each wrote or left. A flush that leaves a carrier unwritten never stops
+ *                    the keep: the bundle cuts from the records. Then IN THE VESSEL: the vessel half (`rite-keep.ts`): the lei's return, the
  *                    cut, the guest half
  *   4. the guard     again over what the cut left: only `<into>` and the device's dir changed, the manifest the host reads
  *                    names the vessel's bundle id (the host's directory and the vessel's stand as one), and the secret scan
@@ -128,21 +127,20 @@ export interface KeepHostPorts {
   /** Where a spent keep lei is offered its refill inline (a real terminal); absent, the refusal stands and names the plain line. */
   refill?: RefillPort;
   /**
-   * The shore's flush before the cut, through the existing hand door (`lares shore flush`): the daemon island and the active
-   * wiki alone. Null where the door answered no reading; absent, the keep asks none.
+   * The shore's flush before the cut, through the hand door (`lares shore flush`): every island that mounts a disk shore. Null
+   * where the door answered no reading; absent, the keep asks none.
    */
   flush?: () => Promise<ShoreFlushReading | null>;
 }
 
-/** The keep's lines over the shore's flush: what each island wrote or left, and the reach the door stops at. */
+/** The keep's lines over the shore's flush: what each island wrote or left. */
 export function keepFlushLines(reading: ShoreFlushReading | null): string[] {
   if (reading === null) return ["keep: the shore's flush answered nothing (`lares shore flush` reads it); the keep goes on"];
   const lines = reading.islands.map((p) => !p.answered
     ? `keep: the shore's flush: ${p.island} did not answer: ${p.refusal}: ${p.why}`
     : `keep: the shore's flush: ${p.island} wrote ${p.writtenCount} owed carrier(s)${p.unwrittenCount > 0 ? `; ${p.unwrittenCount} left unwritten: ${p.unwritten.map((u) => `${String(u["state"])} ${String(u["uri"])} (${String(u["why"])})`).join("; ")}` : ""}`);
-  if (reading.islands.length === 0) lines.push("keep: the shore's flush: neither the daemon nor the active wiki mounts a disk shore");
+  if (reading.islands.length === 0) lines.push("keep: the shore's flush: no island mounts a disk shore");
   if (!reading.whole) lines.push("keep: the bundle cuts from the records, and those mirrors stay behind until a flush writes them; the keep goes on");
-  lines.push(`keep: the shore's flush reaches the daemon and the active wiki alone; ${reading.unasked}`);
   return lines;
 }
 

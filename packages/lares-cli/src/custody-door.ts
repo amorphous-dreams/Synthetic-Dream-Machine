@@ -25,6 +25,8 @@ export type CustodyFrame =
   | { readonly op: "census" }
   /** The document census: every document the stores hold and who names it, read-only (`vessel census --docs`). */
   | { readonly op: "doc-census" }
+  /** The shore's flush over every island the composition holds (`lares shore flush`): no credential; it places no record. */
+  | { readonly op: "shore-flush" }
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */
   | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }
   /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */

@@ -223,6 +223,16 @@ LAW_ROW_FIELDS = ("description", "role")
 HEARTH_VERBS = ("vessel_roster",)
 HEARTH_ROSTER_VERB = "hearth-roster"
 
+# THE DISK SHORE — `shore` reads what stands for a hand at the disk shore (each standoff with its key, each pending removal),
+# both islands as one shore, every page of each, through the same two lines `lares shore` rides: `wiki-act` carrying the `shore`
+# verb into the active wiki's island, and the `shore` verb into the daemon island. `face` names a lit sibling's shore, which its
+# own projector holds in the daemon island. `shore_flush` asks the vessel's whole-island flush (the custody door's `shore-flush`
+# frame, the one `lares shore flush` sends): every island that mounts a disk shore writes what it holds to its mirrors. The
+# answers (`take-records`, `take-disk`, `restore`, `remove`) stay a person's hand at `lares shore`, and hold no tool here.
+SHORE_VERBS = ("shore", "shore_flush")
+SHORE_VERB = "shore"
+SHORE_ISLANDS = ("wiki", "daemon")
+
 # What the seat tells a client at its first contact: read the house's law before acting.
 SEAT_INSTRUCTIONS = (
     "Read the house's law before you act: `law_index` lists the pinned law first (the boot seed, then the Mu family), "
@@ -242,8 +252,8 @@ SEAT_INSTRUCTIONS = (
 
 # Each tool declares its verb nature once; the seat and its weld derive hints from this table.
 TOOL_NATURE = {
-    **dict.fromkeys(('recall', 'status', 'worldline', 'flow', 'plane_record', 'meme_project', 'wiki_filter', 'tiddler_get', 'wiki_render', 'wiki_status', 'ddate', 'law_index', 'vessel_roster', 'meme_offer_show', 'kahua_get', 'roster'), 'reads'),
-    **dict.fromkeys(('kapae', 'un_kapae', 'wiki', 'law_pin', 'law_unpin', 'kahua_stage', 'reconcile', 'analyze'), 'patches'),
+    **dict.fromkeys(('recall', 'status', 'worldline', 'flow', 'plane_record', 'meme_project', 'wiki_filter', 'tiddler_get', 'wiki_render', 'wiki_status', 'ddate', 'law_index', 'vessel_roster', 'meme_offer_show', 'kahua_get', 'roster', 'shore'), 'reads'),
+    **dict.fromkeys(('kapae', 'un_kapae', 'wiki', 'law_pin', 'law_unpin', 'kahua_stage', 'reconcile', 'analyze', 'shore_flush'), 'patches'),
     **dict.fromkeys(('tiddler_delete',), 'removes'),
     **dict.fromkeys(('pour', 'oracle_cast', 'meme_offer', 'kahua_propose', 'build'), 'casts'),
     # A put replaces named text whole (destructive) and an append lands its words again on each call (never idempotent).
@@ -307,6 +317,10 @@ VERB_SEATS = {
     "law_pin": (True, False),           # add one `[[uri]]` run to the face's pin set — reversible, trusted → HOTL
     "law_unpin": (True, False),         # take a title out of the pin set — reversible, trusted → HOTL
     "vessel_roster": (True, False),     # who is home: the vessel's own reading of its seats, lanes and vota — a read → HOTL
+    # The disk shore — the list looks at the disk and names what stands, placing nothing; the flush writes owed mirrors from the
+    # records the vessel already holds, placing no record (a second flush writes nothing new) → HOTL.
+    "shore": (True, False),             # each standoff and pending removal, both islands or one lit face's — a read → HOTL
+    "shore_flush": (True, False),       # every island's owed mirror writes, now — places no record, trusted → HOTL
     "oracle_cast": (True, False),       # one cast written as one new tiddler in the working layer — reversible, trusted → HOTL
     "tiddler_put": (True, False),       # patch fields, tags, or named text in the working layer — reversible, trusted → HOTL
     "tiddler_delete": (True, False),    # remove one plain tiddler plainly, or a meme family where `family=True` names the act; a lower layer asks `mode` → HOTL
@@ -1672,6 +1686,70 @@ def build_mcp(coordinator: LaresCoordinator):
         if not isinstance(out, dict):
             raise uds.LaresVerbError(f"{HEARTH_ROSTER_VERB}: the vessel answered no roster")
         return out
+
+    # ── THE DISK SHORE — what stands for a hand, and the vessel's whole-island flush ──
+
+    @mcp.tool(annotations=_annotations("shore"))
+    def shore(face: "int | None" = None, bag: "str | None" = None) -> dict:
+        """Read the disk shore: each standoff and pending removal, as `lares shore` lists them.
+        Mirrors `lares shore [list] [--face N] [--bag B]`. The vessel looks at the disk, then names what stands for a hand: each STANDOFF (the file and the records say different things and nothing writes) with its `standoff`
+        key, and each PENDING REMOVAL (a file vanished where a base stands; nothing writes back, nothing tombstones). Both
+        islands read as one shore, every page of each, each row naming its `island` (`wiki`: the active wiki's mirrors;
+        `daemon`: the daemon wiki's and the crossroads). `face` names a LIT SIBLING's shore by handle index: its own projector
+        answers (in the daemon island) without a wear, and a face that stands no projection refuses `face-unprojected`. `bag`
+        narrows to one bag. Returns {standoffs, standoffCount, pending, pendingCount, face?}. The answers that settle a row
+        (`lares shore take-records|take-disk|restore|remove`) stay a person's hand at a terminal: name the command for the
+        operator."""
+        args: dict = {"op": "list"}
+        if face is not None:
+            if not isinstance(face, int) or isinstance(face, bool) or face < 0:
+                raise SeatArgumentRefused("shore: `face` names a handle index (a whole number from 0)")
+            args["face"] = face
+        if bag is not None:
+            args["bag"] = bag
+        islands = ("daemon",) if face is not None else SHORE_ISLANDS
+        standoffs: list = []
+        pending: list = []
+        for island in islands:
+            after = None
+            mark = None
+            while True:
+                page_args = {**args, **({"after": after} if after is not None else {})}
+                out = (_meme_wire("wiki-act", {"verb": SHORE_VERB, "args": page_args}) if island == "wiki"
+                       else _meme_wire(SHORE_VERB, page_args)) or {}
+                if out.get("ok") is False:
+                    if out.get("refusal") == "no-disk-shore":
+                        break
+                    raise uds.LaresVerbError(f"{out.get('refusal') or 'shore-refused'}: the {island} island: {out.get('why') or 'refused'}")
+                # Two pages under one mark read one shore; a mark that moves between pages names no one shore.
+                if mark is not None and out.get("mark") != mark:
+                    raise uds.LaresVerbError(f"shore-list-moved: the {island} island's shore moved while its pages were read; read it again")
+                mark = out.get("mark")
+                standoffs.extend({**r, "island": island} for r in out.get("standoffs") or [])
+                pending.extend({**r, "island": island} for r in out.get("pending") or [])
+                after = out.get("next")
+                if not after:
+                    break
+        return {"standoffs": standoffs, "standoffCount": len(standoffs), "pending": pending, "pendingCount": len(pending),
+                **({"face": face} if face is not None else {})}
+
+    @mcp.tool(annotations=_annotations("shore_flush"))
+    def shore_flush() -> dict:
+        """Run the vessel's whole-island flush: every shore writes what it owes, as `lares shore flush` does.
+        Mirrors `lares shore flush`. The vessel asks every island that mounts a disk shore (the daemon's,
+        with each lit face's own projector, and every resident wiki's) to write what it holds in memory to its mirrors now: the
+        same flush the teardown runs. It places no record and takes nothing. Returns {islands, whole}: each island's part names
+        what it `written`, what stayed `unwritten` (each with its state and why; a lit face's row names its `face`) and its
+        `fileWrites`, or `answered: false` with why; `whole` reads true where every island answered and left nothing
+        unwritten. No composition sitting refuses `flush-unavailable`."""
+        answer = uds.custody_frame({"op": "shore-flush"}, timeout=60.0)
+        if answer.get("status") == "error":
+            raise uds.LaresVerbError(str((answer.get("refusal") or {}).get("reason") or answer.get("errorMessage") or "shore-flush refused")
+                                     + (f": {answer.get('errorMessage')}" if answer.get("errorMessage") else ""))
+        reading = answer.get("reading")
+        if answer.get("op") != "shore-flush" or not isinstance(reading, dict):
+            raise uds.LaresVerbError("shore-flush: the vessel answered no flush reading")
+        return reading
 
     @mcp.tool(annotations=_annotations("tiddler_put"))
     def tiddler_put(title: str, recipe: "str | None" = None, fields: "dict | None" = None,

@@ -1,7 +1,7 @@
 /**
  * lares shore — a person's answers at the disk shore.
  *
- *   lares shore [list]                                    what stands for a hand
+ *   lares shore [list] [--face N]                         what stands for a hand (a lit sibling's shore by its face)
  *   lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]
  *   lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
  *   lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
@@ -43,10 +43,15 @@
  * mirror leg again, and lifts only where n equals the count the preview reads now; a wrong count refuses and lifts nothing.
  * `list` names each pending item (face, title, body digest) beside the shore's own rows.
  *
- * `flush` asks the active wiki's island and the daemon island to write what each holds in memory to its mirrors now, and
- * names what each wrote, what it could not and why (`askShoreFlush`). Other resident wiki islands stand outside its reach (the
- * vessel's teardown flush reaches them), and the reading says so. It takes nothing and asks no confirmation. Exit: 0 every
- * asked island wrote what it owed · 4 a carrier stayed unwritten · 3 an asked island could not answer.
+ * `flush` asks the vessel to flush EVERY island that mounts a disk shore (the daemon's with each lit sibling's projector, and
+ * every resident wiki's: the same flush the teardown runs, through the custody door's `shore-flush` frame), and names what each
+ * wrote, what it could not and why (`askShoreFlush`). It takes nothing and asks no confirmation. Exit: 0 every island wrote what
+ * it owed · 4 a carrier stayed unwritten · 3 an island, or the vessel, could not answer.
+ *
+ * `--face N` names a LIT SIBLING's shore: every lit face projects under its own root through its own projector in the daemon
+ * island, so `list`, `take-records`, `restore` and `remove` read and answer that face's standoffs without wearing it. A face
+ * that stands no projection refuses `face-unprojected`. `take-disk` rides the worn face's ingest leg, and `settle`, `flush` and
+ * `lift-kahua` read no face, so each refuses `--face` as usage.
  */
 
 import { createInterface } from "readline/promises";
@@ -66,9 +71,11 @@ import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, RETIREMEN
 /** The acts this door carries. */
 export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
+/** The acts a lit sibling's shore answers by its face (`--face N`); the rest read the worn face, or no face at all. */
+const FACE_ACTS: ReadonlySet<ShoreAct> = new Set(["list", "take-records", "restore", "remove"]);
 
 function printUsage(): void {
-  console.log("usage: lares shore [list]");
+  console.log("usage: lares shore [list] [--face N]");
   console.log("       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]");
   console.log("       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]");
   console.log("       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
@@ -76,6 +83,7 @@ function printUsage(): void {
   console.log("       lares shore settle  --bag <bagUri|slug> --pending");
   console.log("       lares shore lift-kahua --count <n>");
   console.log("       lares shore flush");
+  console.log("  --face N      list or answer a lit sibling's shore (its own projector) without wearing it;");
   console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
   console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
   console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
@@ -83,14 +91,19 @@ function printUsage(): void {
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
   console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
   console.log("  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);");
-  console.log("  flush         write what the active wiki's and the daemon's islands hold in memory to their mirrors now (other resident wikis stand outside its reach);");
+  console.log("  flush         write what every island holds in memory to its mirrors now: the daemon's with each lit face's, and every resident wiki's;");
   console.log("  an answer over more than one carrier names the count that stands pending (--count).");
 }
 
 /** The args one act sends, or the usage fault that stops it. */
 export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Record<string, unknown> } | { readonly usage: string } {
   const bag = args.options["bag"];
-  const withBag = bag ? { bag } : {};
+  const faceText = args.options["face"];
+  if (faceText !== undefined) {
+    if (!/^(?:0|[1-9][0-9]*)$/.test(faceText)) return { usage: `--face names a handle index (a whole number from 0); "${faceText}" names none` };
+    if (!FACE_ACTS.has(act)) return { usage: `${act} takes no --face: only ${[...FACE_ACTS].join(", ")} reach a lit sibling's shore` };
+  }
+  const withBag = { ...(bag ? { bag } : {}), ...(faceText !== undefined ? { face: Number(faceText) } : {}) };
   if (act === "list") return { args: { op: "list", ...withBag } };
   if (act === "flush") return { args: { op: "flush" } };
   if (act === "lift-kahua") {
@@ -158,17 +171,10 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
   // SETTLE --PENDING resumes the word a stalled settle left as the bag's record, over those carriers alone.
   if (act === "settle") return resumeSettle(args, String(shaped.args["bag"]));
 
-  let did: string;
-  try { did = await vesselDid(); } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares shore: ${msg}`) });
-    return exitFor("not-found");
-  }
-
-  // FLUSH asks every island that mounts a disk shore, and reads each answer as one (`askShoreFlush`).
+  // FLUSH asks the vessel's whole-island flush through the custody door, and reads each island's answer (`askShoreFlush`).
   if (act === "flush") {
     let reading: ShoreFlushReading;
-    try { reading = await askShoreFlush(did); } catch (err) {
+    try { reading = await askShoreFlush(); } catch (err) {
       const f = verbFailure(err);
       emit(args, { ok: false, error: { code: f.code, message: f.message }, human: () => console.error(`lares shore flush: ${f.message}`) });
       return exitFor(f.code);
@@ -177,16 +183,22 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: code === 0, data: { op: "flush", ...reading },
       human: () => {
-        if (reading.islands.length === 0) console.log("neither the active wiki's island nor the daemon island mounts a disk shore: nothing to flush");
+        if (reading.islands.length === 0) console.log("no island mounts a disk shore: nothing to flush");
         for (const part of reading.islands) {
           if (!part.answered) { console.log(`${part.island}: did not answer: ${part.refusal}: ${part.why}`); continue; }
           console.log(`${part.island}: wrote ${part.writtenCount} owed carrier(s) (${part.fileWrites} file write(s)); ${part.unwrittenCount} unwritten`);
-          for (const u of part.unwritten) console.log(`  ${String(u["state"])} ${String(u["uri"])}: ${String(u["why"])}`);
+          for (const u of part.unwritten) console.log(`  ${String(u["state"])} ${String(u["uri"])}${typeof u["face"] === "number" ? ` (h${u["face"]})` : ""}: ${String(u["why"])}`);
         }
-        console.log(`not asked: ${reading.unasked}`);
       },
     });
     return code;
+  }
+
+  let did: string;
+  try { did = await vesselDid(); } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares shore: ${msg}`) });
+    return exitFor("not-found");
   }
 
   // TAKE-DISK rides the ingest leg, under the key (`shore-take-disk.ts`): the island names the standoff's

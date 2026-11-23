@@ -28,7 +28,14 @@
  *                  (`unwritten`, each with its state and why) and how many files the flush wrote (`fileWrites`). The
  *                  reconcile gate holds no window, so a flush crests no new wave: it drains what the queue owes now.
  *                  The teardown's flush phase and a fallen engine's exit ask it of every island (`flushEveryShore`);
- *                  `lares shore flush` asks it by hand
+ *                  `lares shore flush` asks it by hand, through the vessel's own whole-island flush (the custody door's
+ *                  `shore-flush` frame), so a hand's flush reaches every island the teardown reaches
+ *
+ * A LIT SIBLING'S SHORE ANSWERS BY ITS FACE. The daemon island mounts one projector for the worn face and one for each lit
+ * sibling (`mountLitFaceProjection`), each over its own root. An act that names `face` (a handle index) answers at that
+ * face's projector (`answerShoreSeats`): the worn face's own, or a lit sibling's, so a sibling's standoffs read and answer
+ * without wearing it. A face that stands no projection here refuses `face-unprojected` by name. A flush that names no face
+ * reaches the worn projector and every lit sibling's, each unwritten row naming its face.
  *
  * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
  * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
@@ -292,6 +299,58 @@ export function shoreFlushLines(reading: ShoreFlushReading): string[] {
     ? `shore flush: the ${i.island} island wrote ${i.writtenCount} owed carrier(s) (${i.fileWrites} file write(s))`
       + (i.unwrittenCount > 0 ? `; ${i.unwrittenCount} unwritten: ${i.unwritten.map((u) => `${u.uri} (${u.state}: ${u.why})`).join("; ")}` : "")
     : `shore flush: the ${i.island} island did not answer: ${i.refusal !== undefined ? `${i.refusal}: ` : ""}${i.why}`);
+}
+
+/** The projectors one daemon island holds: the worn face's own, and each lit sibling's by its handle index. */
+export interface ShoreSeats {
+  /** The worn face's projector, or null where the island mounts none. */
+  readonly own: LarDiskProjector | null;
+  /** The worn face's handle index, or null where the island names none. */
+  readonly worn: number | null;
+  /** A lit sibling's projector, or null where that face stands no projection here. */
+  readonly lit: (face: number) => LarDiskProjector | null;
+  /** The handle index of each lit sibling whose projector stands now. */
+  readonly litFaces: () => readonly number[];
+}
+
+/**
+ * THE DAEMON ISLAND'S SHORE, FACE BY FACE. An act naming `face` answers at that face's projector, the worn one's or a lit
+ * sibling's, and its answer names the face; one naming no face answers at the worn projector, except a flush, which reaches
+ * the worn projector and every lit sibling's alike and answers as one, each unwritten row naming its face.
+ */
+export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<string, unknown>>): Promise<Record<string, unknown>> {
+  const op = text(args["op"]) ?? "list";
+  const noShore = { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" };
+  if (args["face"] !== undefined) {
+    const face = args["face"];
+    if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) return { ok: false, op, refusal: "shore-answer-incomplete", why: "`face` names a handle index (a whole number from 0)" };
+    const { face: _face, ...rest } = args;
+    const projector = face === seats.worn ? seats.own : seats.lit(face);
+    if (projector === null) {
+      return { ok: false, op, face, refusal: "face-unprojected", why: `face h${face} stands no projection on this vessel: it stands shut or unlit, or carries no folder (a lit face projects under its own root once it lights with one)` };
+    }
+    return { ...(await answerShore(projector, rest)), face };
+  }
+  if (op !== "flush") return seats.own === null ? noShore : answerShore(seats.own, args);
+  // Each projector drains side by side, so the island's answer waits one bounded drain, never one per face.
+  const asked: Array<{ readonly face: number | null; readonly projector: LarDiskProjector }> = [];
+  if (seats.own !== null) asked.push({ face: seats.worn, projector: seats.own });
+  for (const face of seats.litFaces()) {
+    const projector = face === seats.worn ? null : seats.lit(face);
+    if (projector !== null) asked.push({ face, projector });
+  }
+  const parts = await Promise.all(asked.map(async ({ face, projector }) => ({ face, flushed: await shoreFlush(projector) })));
+  if (parts.length === 0) return noShore;
+  const tagged = <T extends object>(face: number | null, rows: readonly T[]): T[] => face === null || face === seats.worn ? [...rows] : rows.map((r) => ({ ...r, face }));
+  const written = parts.flatMap((p) => tagged(p.face, p.flushed.written));
+  const unwritten = parts.flatMap((p) => tagged(p.face, p.flushed.unwritten));
+  return {
+    ok: true, op,
+    written: written.slice(0, SHORE_LIST_PAGE), writtenCount: parts.reduce((n, p) => n + p.flushed.writtenCount, 0),
+    unwritten: unwritten.slice(0, SHORE_LIST_PAGE), unwrittenCount: parts.reduce((n, p) => n + p.flushed.unwrittenCount, 0),
+    fileWrites: parts.reduce((n, p) => n + p.flushed.fileWrites, 0), drained: parts.every((p) => p.flushed.drained),
+    ...(parts.some((p) => p.face !== seats.worn) ? { faces: parts.map((p) => p.face).filter((f): f is number => f !== null) } : {}),
+  };
 }
 
 /**
