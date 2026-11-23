@@ -455,8 +455,10 @@ function movedBytesOf(hold: QuarantineHold): string {
  *              manifest never named: a second history under the same id would hide the sibling's real copy once the two
  *              merge. The daemon plane, which no sibling carries, takes it.
  *   `kept`     marks the hold released and leaves whatever bytes stand under the id where they stand; the moved-aside copy
- *              stays where it rests, for the hand. It frees an id a crash or a sibling's sync left held beside its bytes.
- * `restored` and `fresh` refuse where bytes already stand under the id, naming `kept`.
+ *              stays where it rests, for the hand. It frees an id a crash or a sibling's sync left held beside its bytes,
+ *              and refuses where nothing stands under the id, since the next boot would mount a writable blank.
+ * `restored` and `fresh` refuse where bytes already stand under the id, naming `kept`. Every refusal names only an act
+ * that can land from the state it finds.
  */
 export function releaseQuarantinedDoc(storageDir: string, documentId: string, act: QuarantineReleaseAct): QuarantineRelease {
   const held = readQuarantineManifests(storageDir).filter((h) => h.manifest.documentId === documentId && !h.manifest.released);
@@ -466,11 +468,23 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   if (act !== "kept" && existsSync(live)) {
     return { ok: false, documentId, why: `bytes already stand under this id at ${live}; \`--release-keep ${documentId}\` releases the hold and keeps them` };
   }
+  const newest = held[held.length - 1]!.manifest;
+  const freshLands = newest.bagId !== undefined && !isFaceScopedBag(newest.bagId);
+  const moved = [...held].reverse().map(movedBytesOf).find((p) => existsSync(p));
+  // NOTHING LEFT TO KEEP OR RETURN: name only the act that can land. Fresh for a plane no sibling carries; for one a sibling
+  // carries, a known copy laid back under the id by hand (from a sibling or a keep bundle), then keep.
+  const noBytesAnywhere = freshLands
+    ? `\`--release-fresh ${documentId}\` starts the id empty`
+    : `this plane rides to sibling devices, so lay a known copy (from a sibling or a keep bundle) at ${live}, then \`--release-keep ${documentId}\``;
+  if (act === "kept" && !existsSync(live)) {
+    return { ok: false, documentId, why: moved !== undefined
+      ? `nothing stands under this id, so a keep would free a blank; \`--release ${documentId}\` returns the moved bytes`
+      : `nothing stands under this id and the moved bytes no longer rest beside the manifest; ${noBytesAnywhere}` };
+  }
   if (act === "fresh") {
-    const newest = held[held.length - 1]!.manifest;
-    if (newest.bagId === undefined || isFaceScopedBag(newest.bagId)) {
+    if (!freshLands) {
       const plane = newest.bagId === undefined ? "the manifest names no plane, so a sibling may carry it" : `${newest.bagId} rides to this face's sibling devices`;
-      return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. \`--release ${documentId}\` returns the bytes, or \`--release-keep ${documentId}\` keeps what stands` };
+      return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. ${moved !== undefined ? `\`--release ${documentId}\` returns the moved bytes` : `Lay a known copy (from a sibling or a keep bundle) at ${live}, then \`--release-keep ${documentId}\``}` };
     }
     // THE ID STARTS EMPTY UNDER ITS OWN NAME. With no bytes the resolver would mint a blank under a NEW id, an orphan the
     // pointer never names; one empty snapshot under the held id keeps every write where the pointer reads.
@@ -479,11 +493,10 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
     mkdirSync(snapshotDir, { recursive: true });
     atomicWriteFileSync(join(snapshotDir, createHash("sha256").update(empty).digest("hex")), empty);
   } else if (act === "restored") {
-    const source = [...held].reverse().map(movedBytesOf).find((p) => existsSync(p));
-    if (!source) return { ok: false, documentId, why: `the quarantined bytes no longer rest beside the manifest; \`--release-keep ${documentId}\` releases the hold` };
+    if (moved === undefined) return { ok: false, documentId, why: `the quarantined bytes no longer rest beside the manifest; ${noBytesAnywhere}` };
     mkdirSync(dirname(live), { recursive: true });
-    renameSync(source, live);
-    from = source;
+    renameSync(moved, live);
+    from = moved;
   }
   for (const h of held) {
     const released: QuarantineManifest = { ...h.manifest, released: { act } };
