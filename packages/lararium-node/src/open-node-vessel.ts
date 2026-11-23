@@ -2992,7 +2992,7 @@ async function prepareNodeBootOn(
         ...doors,
         recoverCleanTail: async (verdict) => {
           const promoted = await doors.recoverCleanTail(verdict);
-          if (promoted?.status === "ok") {
+          if (promoted?.status === "ok" || promoted?.status === "sealed") {
             console.warn(
               `[lararium] PROMOTED plane — clean-tail recovered ${verdict.documentId} (${verdict.reason ?? "?"})` +
               ` → ${promoted.reason ?? "recovered"}; the torn tail sits in quarantine-torn-tail-*`,

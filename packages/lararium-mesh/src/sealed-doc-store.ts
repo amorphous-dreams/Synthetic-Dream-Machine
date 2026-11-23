@@ -34,6 +34,7 @@ import type { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/auto
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import type { BagLocator } from "./sealed-records.js";
+import { mergedSourceOf } from "./wait-handle.js";
 import { bearsSealedMark, namesSealedPointer, readSealedAddress, SEALED_VALUE_POINTER, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
 import { openPublished, sealPublished, type PublishedLookup } from "./published-bag-key.js";
 import { openHeld, sealHeld, type HeldRestKey } from "./held-rest-key.js";
@@ -420,6 +421,15 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   async save(key: StorageKey, data: Uint8Array): Promise<void> {
     const bag = this.#bagOf(key);
     if (bag === null) {
+      // A FALLBACK CARRYING A SEALED DOCUMENT'S MERGE LANDS NO CLEAR BYTE (`waitHandle`): its id names no bag, yet its history
+      // holds what rests sealed under the source's id. The save waits in memory (`save-unmapped`), never clear; the content
+      // rests sealed under the source's own id.
+      const source = typeof key[0] === "string" ? mergedSourceOf(key[0]) : undefined;
+      if (source !== undefined && (this.#ports.bagOf(source) !== null || this.#classedSealed.has(source))) {
+        this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unmapped" });
+        this.#ports.onHeld?.({ refusal: "save-unmapped", documentId: key[0]! });
+        return;
+      }
       if (typeof key[0] === "string" && key.length >= 2 && await this.#keepsSealedClass(key[0])) {
         if (this.#ports.waitOverSealed) {
           this.#swept.delete(key[0]);

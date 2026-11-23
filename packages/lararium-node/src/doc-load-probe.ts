@@ -183,7 +183,9 @@ export async function probeDocLoad(
       if (trimmed) { try { line = JSON.parse(trimmed.split("\n").pop() ?? "{}"); } catch { line = null; } }
 
       if (code === 0 && line?.ok) {
-        finish(result(documentId, "ok", { heads: line.heads ?? [], ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), ...(line.sealed !== undefined ? { sealed: line.sealed } : {}), ...(integrity ? { integrity } : {}) }));
+        // A doc with any sealed record reads `sealed`: the child loaded only its clear records, so nothing vouches for the rest.
+        const sealed = line.sealed ?? 0;
+        finish(result(documentId, sealed > 0 ? "sealed" : "ok", { heads: line.heads ?? [], ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), sealed, ...(integrity ? { integrity } : {}) }));
       } else if (code === 2 && line && line.ok === false) {
         finish(result(documentId, "load-error", { ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), ...(line.reason !== undefined ? { reason: line.reason } : {}), ...(integrity ? { integrity } : {}) }));
       } else if (isAbortSignature(code, signal, err)) {
@@ -259,7 +261,7 @@ function runCleanTailChild(storageDir: string, documentId: string, timeoutMs: nu
  * loads only the clean ones), then MOVES the torn tail files aside — a rename into a dated
  * `quarantine-torn-tail-<day>/` folder, never a delete, so the poisoned records stay for
  * forensics. With the tail gone, the on-disk store equals the verified prefix and the plane
- * mounts writable (PROMOTED). Returns a `status:"ok"` verdict carrying the cleanTail summary,
+ * mounts writable (PROMOTED). Returns a `status:"ok"` verdict (`"sealed"` where the prefix keeps sealed records) carrying the cleanTail summary,
  * or null when the base record is torn / the prefix rejects (unrecoverable → whole-doc
  * quarantine). When the recovery attempt itself never reaches a verdict (this door's own
  * patience spent, or the child dying with no abort signature), returns a `status:"unresolved"`
@@ -287,7 +289,8 @@ export async function recoverCleanTail(
 
   const moved = moveTornTailAside(storageDir, documentId, line.tornTail);
   const kept = line.chunks ?? 0;
-  return result(documentId, "ok", {
+  // A clean prefix that keeps sealed records reads `sealed`: the mount waits for the keyed load before it writes.
+  return result(documentId, (line.sealed ?? 0) > 0 ? "sealed" : "ok", {
     heads: line.heads ?? [],
     chunks: kept,
     ...(line.sealed !== undefined ? { sealed: line.sealed } : {}),
@@ -524,7 +527,12 @@ export function quarantineMoveLine(verdict: ProbeResult, moved: string | null): 
 export function heldPlaneLines(prefix: string, manifest: MountManifest): string[] {
   const lines: string[] = [];
   for (const e of manifest.entries) {
-    if (e.status === "pending") {
+    if (e.status === "sealed") {
+      lines.push(
+        `${prefix} SEALED plane — ${e.documentId} (${e.reason ?? "sealed at rest"}); mounted read-only over its own id ` +
+        "until its key opens it (writable then); a keyed load that refuses quarantines it",
+      );
+    } else if (e.status === "pending") {
       lines.push(
         `${prefix} PENDING plane — ${e.documentId} (unresolved: ${e.reason ?? "?"}); ` +
         "mounted read-only, no bytes moved; a clean stop (exit 0) and a fresh stand re-probe it",

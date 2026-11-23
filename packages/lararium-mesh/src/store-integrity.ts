@@ -29,6 +29,10 @@
  * itself (the `sealed-chunk` format mark, its header, its tagged segments). The gate holds no
  * key, so it reads the envelope alone: a well-formed one reads sealed (no WASM ever loads
  * those bytes here); an envelope whose framing breaks reads torn, as any garbled chunk does.
+ * What the key-less read catches: a cut or garbled pointer, a sealed value shorter than its
+ * header and one tag, and a last segment of 1 to 15 bytes. A sealed value carries no length
+ * field, so any other cut, and any bytes behind a whole mark and header, read sealed here: the
+ * keyed load at mount decides those (`sealed` never mounts writable on this word alone).
  */
 
 import { sha256BytesSync } from "./crypto.js";

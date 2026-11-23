@@ -31,17 +31,21 @@ import type { StoreIntegrityReport } from "./store-integrity.js";
  *
  * No status reads `timeout`: a probe the window closed on reads `unresolved`.
  *
- * A SEALED DOCUMENT READS `ok`, carrying `sealed`: its records rest sealed (a pointer the holder answers, or a sealed value
- * under a keyed bag), the probe holds no key, so it reads their envelopes and never their inner bytes, and names no heads
- * it cannot see. A broken envelope reads `torn`. The vessel opens each sealed record with its key at load.
+ *   sealed      — the doc's records rest sealed (a pointer the holder answers, or a sealed value under a keyed bag), and
+ *                 every envelope reads well-formed. The probe holds no key, so it never reads the inner bytes: this
+ *                 is NEITHER proof the doc opens NOR evidence against it. The key-less check catches a cut pointer,
+ *                 a short header and a last segment shorter than its tag; the KEYED LOAD at mount decides the rest.
+ *                 Never condemned; never mounted writable on its own word (the social mount waits for the keyed load).
+ *
+ * A broken sealed envelope reads `torn`.
  */
-export type ProbeStatus = "ok" | "torn" | "load-error" | "aborted" | "unresolved";
+export type ProbeStatus = "ok" | "sealed" | "torn" | "load-error" | "aborted" | "unresolved";
 
 /** A probe's verdict on one doc. */
 export interface ProbeResult {
   readonly documentId: string;
   readonly status: ProbeStatus;
-  /** the doc heads when status=ok, read off its clear records alone (a document resting wholly sealed names none). */
+  /** the doc heads when status=ok; a sealed doc names only its clear records' heads (none, resting wholly sealed). */
   readonly heads?: readonly string[];
   /** stored chunks seen (pre-check or boundary). */
   readonly chunks?: number;
@@ -72,6 +76,11 @@ export function isCondemned(r: ProbeResult): boolean {
  *  doc neither writable nor quarantined on this; a later re-probe decides. */
 export function isUnresolved(r: ProbeResult): boolean {
   return r.status === "unresolved";
+}
+
+/** The probe read sound envelopes and no inner byte: the keyed load at mount decides. Neither condemned nor unresolved. */
+export function isSealedVerdict(r: ProbeResult): boolean {
+  return r.status === "sealed";
 }
 
 /** Options a caller passes into a probe run. */

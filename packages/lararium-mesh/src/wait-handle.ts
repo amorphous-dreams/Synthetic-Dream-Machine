@@ -31,6 +31,14 @@ import { mergeGuarded } from "./prototype-key-shore.js";
 import { isVerbRefusal } from "./verb-refusal.js";
 import { markStandIn, releaseStandIn } from "./automerge-doc-store.js";
 
+/** Each fallback the late merge reached, by its id, with the id of the document merged into it. */
+const MERGED_FROM = new Map<string, string>();
+/**
+ * The document whose content a fallback carries by a late merge, or undefined. A store that rests a document sealed reads it
+ * at a save under the fallback's id, an id its bag map does not name, so the merged content never lands clear there.
+ */
+export function mergedSourceOf(documentId: string): string | undefined { return MERGED_FROM.get(documentId); }
+
 /** How long local readiness gets before the caller takes a fallback and boot moves on. */
 export const LOCAL_READY_MS = 3000;
 
@@ -61,6 +69,6 @@ export async function waitHandle<T>(
   markStandIn(fresh);
   // The remote stays alive past the fallback. A doc that lands after the window merges into the handle
   // the caller is already using, so a late peer costs latency rather than content.
-  progress.whenReady().then((h) => { mergeGuarded(fresh, h, "waitHandle"); releaseStandIn(fresh); }).catch((e) => { if (isVerbRefusal(e)) console.warn(`[waitHandle] ${(e as Error).message}`); /* else: the remote never came */ });
+  progress.whenReady().then((h) => { MERGED_FROM.set(fresh.documentId, h.documentId); mergeGuarded(fresh, h, "waitHandle"); releaseStandIn(fresh); }).catch((e) => { if (isVerbRefusal(e)) console.warn(`[waitHandle] ${(e as Error).message}`); /* else: the remote never came */ });
   return fresh;
 }

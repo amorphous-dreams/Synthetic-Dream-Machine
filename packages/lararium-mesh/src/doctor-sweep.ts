@@ -24,8 +24,8 @@ export interface DoctorReport {
   readonly total: number;
   /** sound documents with no sealed record. */
   readonly healthy: number;
-  /** sound documents that rest sealed: every envelope well-formed, the inner bytes left to the vessel that holds the key.
-   *  Counted APART from `healthy`, and never condemned. */
+  /** documents that rest sealed (status `sealed`): every envelope well-formed, the inner bytes left to the vessel that holds
+   *  the key. Counted APART from `healthy`, and never condemned: the sweep holds no key, so it vouches for neither. */
   readonly sealed: number;
   readonly condemned: number;
   /** H2 — counted APART from `condemned`: a probe that spent its own patience (or died with
@@ -76,7 +76,7 @@ export async function sweepDocs(
 
   const condemned  = entries.filter((e) => isCondemned({ documentId: e.documentId, status: e.status })).length;
   const unresolved = entries.filter((e) => isUnresolved({ documentId: e.documentId, status: e.status })).length;
-  const sealed     = entries.filter((e) => e.status === "ok" && (e.sealed ?? 0) > 0).length;
+  const sealed     = entries.filter((e) => e.status === "sealed").length;
   return {
     entries,
     total: entries.length,

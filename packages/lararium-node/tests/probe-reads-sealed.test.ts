@@ -19,7 +19,7 @@
  *       real id, and no plaintext rests anywhere on disk.
  *   S6  a sealed value cut ten bytes short passes the envelope check; the keyed load refuses it and the plane degrades,
  *       quarantined, never a writable blank.
- *   S7  a pointer whose sealed value the holder no longer holds: the keyed load refuses, the plane degrades, quarantined.
+ *   S7  a pointer whose sealed value the holder does not hold: the keyed load refuses, the plane degrades, quarantined.
  *   S8  a sealed plane an earlier probe quarantined: the hand's restore returns it, and the next boot mounts it writable.
  *   S9  a sealed document beside a torn clear tail: the recovery keeps every sealed record, moves the tail, reads sealed.
  *   S10 the late merge of a sealed document into a boot's stand-in never writes its content clear under the stand-in's id.
@@ -292,7 +292,7 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     expect(again.writable).toBe(false);
   }, 120_000);
 
-  test("S7 — a pointer whose sealed value the holder no longer holds: the keyed load refuses, the plane degrades, quarantined", async () => {
+  test("S7 — a pointer whose sealed value the holder does not hold: the keyed load refuses, the plane degrades, quarantined", async () => {
     const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
     const s = await storeWithSealedDoc(storageDir, "pointer");
     vault.clear();

@@ -18,11 +18,11 @@
  */
 
 import { wearOf } from "./repo-wear.js";
-import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
+import type { Repo, DocHandle, AutomergeUrl, DocumentId } from "@automerge/automerge-repo";
 import type { LarOpenPhase } from "./lararium-vessel.js";
 import { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
-import { AutomergeDocStore, markStandIn } from "./automerge-doc-store.js";
+import { AutomergeDocStore, markStandIn, releaseStandIn } from "./automerge-doc-store.js";
 import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
@@ -30,7 +30,7 @@ import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI } from "./lar-uris.js";
 import type { PersonaPlaneRef } from "./persona-planes.js";
 import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
-import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
+import { isCondemned, isSealedVerdict, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 import { storedLarRecord } from "./stored-record.js";
 import { resolveCatalogEntry } from "./catalog-entry.js";
 import { floorCanonAddress } from "./house-canon-doc.js";
@@ -130,8 +130,11 @@ export interface MountEntry {
   /** `pending` (H2) — the probe (or its clean-tail recovery) answered with NO verdict (its own
    *  patience spent, or a signal-less boundary death): the plane mounts read-only blank, no
    *  bytes move, and a later re-probe (doctor, or an operator receipt) decides. Distinct from
-   *  `degraded`, which only ever follows real integrity evidence. */
-  readonly status: "mounted" | "promoted" | "degraded" | "pending";
+   *  `degraded`, which only ever follows real integrity evidence.
+   *  `sealed` — the probe read sound sealed envelopes and no inner byte: the plane mounts read-only over its OWN id until
+   *  the keyed load opens it (the entry then reads `mounted`, the plane writable over the same handle) or refuses (the
+   *  entry then reads `degraded`, the document quarantined). Never a writable blank. */
+  readonly status: "mounted" | "promoted" | "degraded" | "pending" | "sealed";
   /** names the condemnation when status=degraded, the clean-tail cut when status=promoted, or
    *  the unresolved reason when status=pending. */
   readonly reason?: string;
@@ -156,8 +159,12 @@ export interface VesselCoreAssembly {
   /** The live lararium memetic corpus — its own doc, separate from oracle and lares. Null outside the Kahu cabal. */
   larariumHandle: DocHandle<LarDoc> | null;
   coreHash:      string;
-  /** L2: which social planes mounted live vs degraded (read-only after a condemn). */
+  /** L2: which social planes mounted live vs degraded (read-only after a condemn). A `sealed` entry moves later, in place,
+   *  to `mounted` or `degraded` (and `degraded` turns true) as its keyed load opens or refuses. */
   mountManifest: MountManifest;
+  /** Settles once every `sealed` plane's keyed load opened or refused. A load waiting on a session that never stands
+   *  keeps it open; nothing in the boot awaits it. */
+  sealedMounts: Promise<void>;
 }
 
 /** Strip the `automerge:` scheme, leaving the documentId the storage path shards on. */
@@ -238,7 +245,53 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   // doc resolves straight through, as before.
   const resolve = (url: AutomergeUrl) => waitHandle<LarDoc>(url, () => blankDoc(repo));
   const entries: MountEntry[] = [];
-  let degraded = false;
+  const manifest: { entries: MountEntry[]; degraded: boolean } = { entries, degraded: false };
+  const sealedSettling: Promise<void>[] = [];
+  /**
+   * A SEALED PLANE WAITS FOR ITS KEY, NEVER FOR A WINDOW. The probe read sound envelopes and no inner byte, so nothing
+   * vouches that the document opens. The plane mounts read-only over its own id (the handle the keyed load fills), never
+   * through the blank writable fallback: a stand-in under a fresh id would take the late merge and write it under an id
+   * the bag map does not name. The keyed load that opens re-mounts the plane writable over the same handle; one that
+   * refuses (a value the holder does not hold, a sequence cut short) takes the condemn path: the quarantine, held
+   * across boots, and the read-only stand-in. The clean-tail cut is skipped there: its framing walk reads no byte inside
+   * a sealed record, so it would keep the very record the key refused.
+   */
+  const mountSealed = (bagId: string, documentId: string, url: string, reason: string): void => {
+    const progress = repo.findWithProgress<LarDoc>(url as AutomergeUrl);
+    const own = (repo.handles as Record<DocumentId, DocHandle<LarDoc> | undefined>)[documentId as DocumentId];
+    const reading = own ?? standIn(repo);
+    markStandIn(reading);
+    composite.addLayer({ bagId, store: new AutomergeDocStore(reading, bagId, wearOf(repo)), writable: false });
+    const at = entries.push({ bagId, documentId, status: "sealed", reason }) - 1;
+    const remount = (store: AutomergeDocStore, writable: boolean): void => {
+      const index = composite.layerIds.indexOf(bagId);
+      composite.removeLayer(bagId);
+      composite.addLayer({ bagId, store, writable, ...(writable ? { defaultWritable: false } : {}) }, index);
+    };
+    sealedSettling.push(new Promise<void>((settled) => {
+      let done = false;
+      const settle = (state: ReturnType<typeof progress.peek>): void => {
+        if (done || state.state === "loading") return;
+        done = true;
+        if (state.state === "ready") {
+          releaseStandIn(reading);
+          remount(new AutomergeDocStore(state.handle, bagId, wearOf(repo)), true);
+          entries[at] = { bagId, documentId, status: "mounted" };
+        } else {
+          const why = state.state === "failed" ? state.error.message : "no source could open it";
+          const verdict = { documentId, status: "load-error" as const, reason: `sealed: the keyed load refused (${why})` };
+          keel.quarantineDoc?.(verdict, bagId);
+          remount(new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), false);
+          entries[at] = { bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason}` };
+          manifest.degraded = true;
+        }
+        settled();
+      };
+      const unsubscribe = progress.subscribe((state) => { settle(state); if (done) unsubscribe(); });
+      settle(progress.peek());
+      if (done) unsubscribe();
+    }));
+  };
   const mountSocial = async (bagId: string, url: string): Promise<void> => {
     const documentId = documentIdFromUrl(url);
     if (keel.docLoadProbe) {
@@ -247,9 +300,13 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // AN ID ALREADY IN QUARANTINE STAYS HELD. Its bytes rest aside from an earlier condemn, so the store holds none
         // under this id, and a load would read a fresh blank and mount writable over an orphan no pointer names. No
         // recovery, no second move: the degraded stand-in, read-only, until a hand act restores or releases the id.
-        degraded = true;
+        manifest.degraded = true;
         entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
+        return;
+      }
+      if (isSealedVerdict(verdict)) {
+        mountSealed(bagId, documentId, url, `sealed: ${verdict.sealed ?? "?"} record(s) rest sealed; the keyed load decides`);
         return;
       }
       if (isCondemned(verdict)) {
@@ -261,6 +318,11 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // a signal-less death) is NOT a promotion, and falls straight through to the ORIGINAL
         // condemn's quarantine (real integrity evidence already stands on the base verdict).
         const promoted = keel.recoverCleanTail ? await keel.recoverCleanTail(verdict) : null;
+        if (promoted && isSealedVerdict(promoted)) {
+          const cut = promoted.cleanTail;
+          mountSealed(bagId, documentId, url, `clean-tail: kept ${cut?.kept ?? "?"}, moved ${cut?.movedAside.length ?? "?"} aside; the kept records rest sealed, so the keyed load decides`);
+          return;
+        }
         if (promoted && promoted.status === "ok") {
           composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId, wearOf(repo)), writable: true, defaultWritable: false });
           const cut = promoted.cleanTail;
@@ -268,7 +330,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
           return;
         }
         keel.quarantineDoc?.(verdict, bagId);
-        degraded = true;
+        manifest.degraded = true;
         entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         // Read-only blank stands in — the plane reads empty until L4 rematerializes it,
         // and no write forks a placeholder the real doc will later reconcile against.
@@ -309,14 +371,15 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   if (bootstrap.personaBagId && bootstrap.personaUrl) {
     await mountSocial(bootstrap.personaBagId, bootstrap.personaUrl);
   }
-  const mountManifest: MountManifest = { entries, degraded };
+  const mountManifest: MountManifest = manifest;
+  const sealedMounts = Promise.all(sealedSettling).then(() => undefined);
 
   if (keel.loadCorpora) {
     await keel.loadCorpora(composite);
     emit("corpus-ready");
   }
 
-  return { repo, composite, catalogHandle, islandHandle, laresHandle, larariumHandle, coreHash, mountManifest };
+  return { repo, composite, catalogHandle, islandHandle, laresHandle, larariumHandle, coreHash, mountManifest, sealedMounts };
 }
 
 /**
