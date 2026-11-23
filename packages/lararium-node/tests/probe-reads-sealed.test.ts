@@ -1,69 +1,95 @@
 /**
- * THE PROBE READS A SEALED DOCUMENT AS SEALED, NEVER TORN.
+ * THE PROBE READS A SEALED DOCUMENT AS SEALED, NEVER TORN; THE KEYED LOAD AT MOUNT DECIDES THE REST.
  *
  * A document of a sealed bag rests no Automerge byte. Each stored value holds either the sealed document store's pointer
  * (`lares-sealed-value:blake3:<hex>`, the holder keeps the sealed bytes) or a sealed value itself (a keyed bag: the secret
- * home, the floor, a public bag). The probe child and the deep vessel lens hold no key, so they read the envelope alone:
- * a well-formed envelope reads sound and the document mounts; a broken envelope reads torn, as any garbled chunk does.
- * Measured live 2026-11-23: the lens read 55 of 115 documents condemned with "bad magic at offset 0", each a sealed
- * document, and a boot's probe had moved a face's sealed intents plane into quarantine.
+ * home, the floor, a public bag). The probe child and the deep vessel lens hold no key, so they read the envelope alone and
+ * answer `sealed`: never condemned, never proof the document opens. The key-less check catches a cut pointer, a short header
+ * and a last segment shorter than its tag; everything else waits for the keyed load at mount.
  *
- *   S1  a sealed document (each form) written through the real sealed store: the probe reads it ok, sealed, never torn.
+ * So the social mount never hands a `sealed` plane to the blank writable fallback. It mounts the plane read-only over its
+ * real id; the keyed load that opens re-mounts it writable over the same handle, and one that refuses takes the quarantine
+ * and the degraded stand-in, held across boots. A stand-in that carries a sealed document's merged content never lands clear.
+ *
+ *   S1  a sealed document (each form) written through the real sealed store: the probe reads it `sealed`, never torn.
  *   S2  the lens counts it sealed, not condemned, and says so in its line.
  *   S3  a broken envelope (a cut pointer, a sealed value cut short of its tag) reads torn; a plain torn chunk reads torn.
- *   S4  the boot (the keel's social mount through the fall-aware doors) mounts a sealed face plane and moves no byte.
- *   S5  a sealed plane an earlier probe quarantined: the hand's restore returns it, and the next boot mounts it, sealed-ok.
- *   S6  a sealed document beside a torn clear tail: the clean-tail recovery keeps the sealed records and moves the tail.
+ *   S4  a healthy sealed plane whose key stands at boot mounts writable over its real id, its record read back.
+ *   S5  a sealed plane whose session stands only after the boot window: read-only until it opens, then writable over the
+ *       real id, and no plaintext rests anywhere on disk.
+ *   S6  a sealed value cut ten bytes short passes the envelope check; the keyed load refuses it and the plane degrades,
+ *       quarantined, never a writable blank.
+ *   S7  a pointer whose sealed value the holder no longer holds: the keyed load refuses, the plane degrades, quarantined.
+ *   S8  a sealed plane an earlier probe quarantined: the hand's restore returns it, and the next boot mounts it writable.
+ *   S9  a sealed document beside a torn clear tail: the recovery keeps every sealed record, moves the tail, reads sealed.
+ *   S10 the late merge of a sealed document into a boot's stand-in never writes its content clear under the stand-in's id.
  *
- * Real doors throughout: the sealed document store over a real NodeFS store, the child probe, the doctor, the keel. The
- * pointer form's holder seal stands as a port that answers an address, as the holder does; no key reaches any probe.
+ * Real doors throughout: the sealed document store over a real NodeFS store, the child probe, the doctor, the keel and the
+ * real `waitHandle`. The pointer form's holder stands as a port that keeps each sealed value in memory and opens it, as the
+ * holder does; no key reaches any probe.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Repo, type StorageAdapterInterface } from "@automerge/automerge-repo";
+import { Repo, type DocHandle, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  assembleVessel, emptyLarDoc, isCondemned, mintHeldRestKey, personaScopedBagIds, sealedAddressOf, SealedDocumentStore,
+  assembleVessel, emptyLarDoc, isCondemned, mintHeldRestKey, personaScopedBagIds, sealedAddressOf, SealedDocumentStore, waitHandle,
   SEALED_CHUNK_MARK, SEALED_HEADER_LEN, DAEMON_BAG_ID, type LarDoc, type SealedBagRow,
 } from "@lararium/mesh";
-import { makeChildProcessDocLoadProbe, probeDocLoad, quarantineDoc, readQuarantineManifests, recoverCleanTail, releaseQuarantinedDoc, resolveChildPath } from "../src/doc-load-probe.js";
+import { makeChildProcessDocLoadProbe, probeDocLoad, quarantineDoc, quarantineHoldOf, readQuarantineManifests, recoverCleanTail, releaseQuarantinedDoc, resolveChildPath } from "../src/doc-load-probe.js";
 import { formatDoctorReport, runDoctor } from "../src/doctor.js";
 import { fallAwareProbeDoors } from "../src/engine-fall.js";
 import { docStorePath } from "../src/store-integrity.js";
 
 let dir = "";
-afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } });
+afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } vault.clear(); faceUp = true; });
 
 const TITLE = "lar:///ha.ka.ba/probe/sealed-intent";
+const MARKER = "SECRET-MARKER-heron-by-the-third-pond";
 const FACE = "probe-face";
 const PLANES = personaScopedBagIds("probe-sealed-group");
 const MAGIC = [0x85, 0x6f, 0x4a, 0x83];
 const POINTER = [...new TextEncoder().encode("lares-sealed-value:")];
+/** The boot window the real `waitHandle` takes here, short so a late session lands past it. */
+const WINDOW_MS = 300;
 
 type Form = "pointer" | "held";
+type Key = ReturnType<typeof mintHeldRestKey>;
+
+/** The pointer form's holder: each sealed value by its logical reference, as the holder keeps it. */
+const vault = new Map<string, { readonly plaintext: Uint8Array; readonly address: string }>();
+/** Whether the pointer form's face stands a session now. */
+let faceUp = true;
 
 /** The sealed store's ports for one form, mapping `sealedId` (or every document while it stays unknown) to the bag. */
-function sealedStore(storageDir: string, form: Form, key: ReturnType<typeof mintHeldRestKey>, sealedId: () => string | null): SealedDocumentStore {
+function sealedStore(storageDir: string, form: Form, key: Key, sealedId: () => string | null, hydrates = false): SealedDocumentStore {
   const row: SealedBagRow = form === "held" ? { bagId: PLANES.intents, face: null, held: key } : { bagId: PLANES.intents, face: FACE };
   const inner: StorageAdapterInterface = new NodeFSStorageAdapter(storageDir);
-  const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
   return new SealedDocumentStore({
     inner,
     bagOf: (documentId) => (sealedId() === null || sealedId() === documentId ? row : null),
-    sessionFace: () => (form === "pointer" ? FACE : null),
-    sessionOf: () => (form === "pointer" ? { id: "probe-session", subject: FACE } : null),
-    // The holder's seal answers each value's sealed address; the store rests the pointer to it.
-    seal: form === "pointer"
-      ? async ({ values }) => ({ values: values.map((v) => ({ role: v.role, ref: v.ref, address: sealedAddressOf(v.plaintext) })) })
-      : refuse,
-    open: refuse,
+    sessionFace: () => (form === "pointer" && faceUp ? FACE : null),
+    sessionOf: () => (form === "pointer" && faceUp ? { id: "probe-session", subject: FACE } : null),
+    seal: async ({ values }) => ({
+      values: values.map((v) => {
+        const address = sealedAddressOf(v.plaintext);
+        vault.set(v.ref, { plaintext: Uint8Array.from(v.plaintext), address });
+        return { role: v.role, ref: v.ref, address };
+      }),
+    }),
+    open: async ({ ref }) => {
+      const kept = vault.get(ref);
+      return kept
+        ? ({ plaintext: Uint8Array.from(kept.plaintext), address: kept.address, writer: FACE, changeWriter: "session:probe-session" }) as never
+        : ({ refusal: "value-absent" }) as never;
+    },
+    ...(hydrates ? { hydrates: true } : {}),
   });
 }
 
-/** Every stored file of one document. */
-function filesOf(storageDir: string, documentId: string): string[] {
+function walkFiles(root: string): string[] {
   const out: string[] = [];
   const walk = (p: string): void => {
     for (const name of readdirSync(p)) {
@@ -71,14 +97,18 @@ function filesOf(storageDir: string, documentId: string): string[] {
       if (statSync(child).isDirectory()) walk(child); else out.push(child);
     }
   };
-  walk(docStorePath(storageDir, documentId));
+  walk(root);
   return out.sort();
 }
-
+const filesOf = (storageDir: string, documentId: string): string[] => walkFiles(docStorePath(storageDir, documentId));
+/** Every file under the store that holds the sealed record's text in the clear. */
+const clearHits = (storageDir: string): string[] => walkFiles(storageDir).filter((f) => readFileSync(f).includes(Buffer.from(MARKER)));
 const startsWith = (bytes: Uint8Array, head: readonly number[]): boolean => head.every((b, i) => bytes[i] === b);
 
+interface SealedFixture { readonly daemonUrl: string; readonly sealedUrl: string; readonly sealedId: string; readonly key: Key; readonly files: string[] }
+
 /** A store holding a plain daemon document and one sealed document with a record in it, flushed and closed. */
-async function storeWithSealedDoc(storageDir: string, form: Form) {
+async function storeWithSealedDoc(storageDir: string, form: Form): Promise<SealedFixture> {
   const plain = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const daemon = plain.create<LarDoc>(emptyLarDoc());
   await plain.flush();
@@ -87,12 +117,12 @@ async function storeWithSealedDoc(storageDir: string, form: Form) {
   const key = mintHeldRestKey();
   const repo = new Repo({ storage: sealedStore(storageDir, form, key, () => null), network: [] });
   const handle = repo.create<LarDoc>(emptyLarDoc());
-  handle.change((doc) => { (doc.tiddlers as Record<string, unknown>)[TITLE] = { title: TITLE, text: "an intent" }; });
+  handle.change((doc) => { (doc.tiddlers as Record<string, unknown>)[TITLE] = { tiddler: { title: TITLE, text: MARKER } }; });
   await repo.flush();
   await repo.shutdown();
 
   const sealedId = handle.documentId as string;
-  // THE SETUP TOOK: every value of the sealed document rests in its sealed form, no Automerge byte among them.
+  // THE SETUP TOOK: every value of the sealed document rests in its sealed form, no Automerge byte and no text among them.
   const files = filesOf(storageDir, sealedId);
   expect(files.length).toBeGreaterThan(0);
   for (const f of files) {
@@ -100,12 +130,26 @@ async function storeWithSealedDoc(storageDir: string, form: Form) {
     expect(startsWith(bytes, MAGIC)).toBe(false);
     expect(startsWith(bytes, form === "pointer" ? POINTER : [...SEALED_CHUNK_MARK])).toBe(true);
   }
+  expect(clearHits(storageDir)).toEqual([]);
   return { daemonUrl: daemon.url, sealedUrl: handle.url, sealedId, key, files };
 }
 
-/** Boot the keel with the sealed document as the face's intents plane, through the real probe and the fall-aware doors. */
-async function boot(storageDir: string, form: Form, s: { daemonUrl: string; sealedUrl: string; sealedId: string; key: ReturnType<typeof mintHeldRestKey> }) {
-  const repo = new Repo({ storage: sealedStore(storageDir, form, s.key, () => s.sealedId), network: [] });
+/** Wait until `ready()` holds, or fail naming what never came. */
+async function until(ready: () => boolean, what: string, ms = 15_000): Promise<void> {
+  const end = Date.now() + ms;
+  while (!ready()) {
+    if (Date.now() > end) throw new Error(`never: ${what}`);
+    await new Promise((r) => setTimeout(r, 25));
+  }
+}
+
+/**
+ * Boot the keel with the sealed document as the worn face's intents plane, through the real probe, the fall-aware doors and
+ * the real `waitHandle`. `meanwhile` runs after the keel returns and before the store closes (a session standing late).
+ */
+async function boot(storageDir: string, form: Form, s: SealedFixture, opts: { hydrates?: boolean; meanwhile?: (store: SealedDocumentStore) => void; settle?: boolean } = {}) {
+  const store = sealedStore(storageDir, form, s.key, () => s.sealedId, opts.hydrates ?? false);
+  const repo = new Repo({ storage: store, network: [] });
   const doors = fallAwareProbeDoors([], {
     probe: makeChildProcessDocLoadProbe(storageDir),
     recoverCleanTail: (verdict) => recoverCleanTail(storageDir, verdict),
@@ -114,11 +158,7 @@ async function boot(storageDir: string, form: Form, s: { daemonUrl: string; seal
   const assembly = await assembleVessel({
     repo,
     catalogHandle: repo.create<LarDoc>(emptyLarDoc()),
-    // The pointer form's holder stands no open here, so its plane resolves the stand-in; the held form reads its record.
-    waitHandle: async (url, fallback) => {
-      if (form === "pointer" && url === s.sealedUrl) return fallback();
-      try { return (await repo.find(url as never)) as never; } catch { return fallback(); }
-    },
+    waitHandle: <T>(url: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback, WINDOW_MS),
     systemCanon: async () => ({}),
     loadGenesis: async () => ({
       islandHandle: repo.create<LarDoc>(emptyLarDoc()), coreHash: "probe-core",
@@ -127,13 +167,20 @@ async function boot(storageDir: string, form: Form, s: { daemonUrl: string; seal
     tempStore: () => ({}) as never,
     ...doors,
   });
-  const entry = assembly.mountManifest.entries.find((e) => e.bagId === PLANES.intents);
-  const daemon = assembly.mountManifest.entries.find((e) => e.bagId === DAEMON_BAG_ID);
-  const writable = assembly.composite.hasWritableBag(PLANES.intents);
-  const record = assembly.composite.get?.(TITLE) ?? null;
+  const entryNow = () => assembly.mountManifest.entries.find((e) => e.bagId === PLANES.intents);
+  const atBoot = { entry: entryNow(), writable: assembly.composite.hasWritableBag(PLANES.intents) };
+  opts.meanwhile?.(store);
+  if (opts.settle !== false) await assembly.sealedMounts;
+  const settled = {
+    entry: entryNow(),
+    daemon: assembly.mountManifest.entries.find((e) => e.bagId === DAEMON_BAG_ID),
+    writable: assembly.composite.hasWritableBag(PLANES.intents),
+    record: (await assembly.composite.get?.(TITLE)) ?? null,
+    degraded: assembly.mountManifest.degraded,
+  };
   await repo.flush();
   await repo.shutdown();
-  return { entry, daemon, writable, record };
+  return { atBoot, ...settled };
 }
 
 const quarantined = (storageDir: string): string[] => readdirSync(storageDir).filter((n) => n.startsWith("quarantine-torn-"));
@@ -142,14 +189,14 @@ let childStands = true;
 try { resolveChildPath(); } catch { childStands = false; }
 const d = childStands ? describe : describe.skip;
 
-d("the probe reads a sealed document as sealed, never torn", () => {
+d("the probe reads a sealed document as sealed; the keyed load at mount decides the rest", () => {
   for (const form of ["pointer", "held"] as const) {
-    test(`S1/S2 (${form}) — the probe reads it ok and sealed; the lens counts it sealed, not condemned`, async () => {
+    test(`S1/S2 (${form}) — the probe reads it sealed; the lens counts it sealed, not condemned`, async () => {
       const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
       const s = await storeWithSealedDoc(storageDir, form);
 
       const verdict = await probeDocLoad(storageDir, s.sealedId);
-      expect(verdict.status).toBe("ok");
+      expect(verdict.status).toBe("sealed");
       expect(isCondemned(verdict)).toBe(false);
       expect(verdict.sealed).toBe(s.files.length);
       expect(verdict.integrity?.sealed).toBe(s.files.length);
@@ -193,45 +240,95 @@ d("the probe reads a sealed document as sealed, never torn", () => {
   }, 120_000);
 
   for (const form of ["pointer", "held"] as const) {
-    test(`S4 (${form}) — the boot mounts the sealed face plane writable and moves no byte`, async () => {
+    test(`S4 (${form}) — a healthy sealed plane whose key stands at boot mounts writable over its real id`, async () => {
       const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
       const s = await storeWithSealedDoc(storageDir, form);
 
-      const booted = await boot(storageDir, form, s);
+      const booted = await boot(storageDir, form, s, { hydrates: true });
       expect(booted.entry?.status).toBe("mounted");
       expect(booted.writable).toBe(true);
       expect(booted.daemon?.status).toBe("mounted");
+      expect(booted.record?.tiddler.text).toBe(MARKER);
       expect(quarantined(storageDir)).toEqual([]);
-      expect(existsSync(docStorePath(storageDir, s.sealedId))).toBe(true);
-      // The held form opens under its key at the mount: the record reads back through the plane.
-      if (form === "held") expect(booted.record).not.toBeNull();
+      expect(clearHits(storageDir)).toEqual([]);
     }, 120_000);
   }
 
-  test("S5 — a sealed plane an earlier probe quarantined: the restore returns it, and the next boot mounts it sealed-ok", async () => {
+  test("S5 — a session standing past the boot window: read-only until it opens, then writable over the real id, no plaintext on disk", async () => {
     const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
     const s = await storeWithSealedDoc(storageDir, "pointer");
-    // The earlier life's verdict, as the boot of 2026-11-22 left it.
+    faceUp = false;
+
+    const booted = await boot(storageDir, "pointer", s, {
+      hydrates: true,
+      meanwhile: (store) => { setTimeout(() => { faceUp = true; store.mapMoved(); }, WINDOW_MS * 4); },
+    });
+    // At boot, past the window: no writable blank stands in for the plane.
+    expect(booted.atBoot.entry?.status).toBe("sealed");
+    expect(booted.atBoot.writable).toBe(false);
+    // The key stood late: the plane opens over its real id, writable, its record whole.
+    expect(booted.entry?.status).toBe("mounted");
+    expect(booted.writable).toBe(true);
+    expect(booted.record?.tiddler.text).toBe(MARKER);
+    expect(quarantined(storageDir)).toEqual([]);
+    expect(clearHits(storageDir)).toEqual([]);
+  }, 120_000);
+
+  test("S6 — a sealed value cut ten bytes short passes the envelope; the keyed load refuses and the plane degrades, quarantined", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "held");
+    for (const f of s.files) { const bytes = readFileSync(f); writeFileSync(f, bytes.subarray(0, bytes.length - 10)); }
+    // The key-less check cannot see this cut: it reads sealed, and the keyed load decides.
+    expect((await probeDocLoad(storageDir, s.sealedId)).status).toBe("sealed");
+
+    const booted = await boot(storageDir, "held", s, { hydrates: true });
+    expect(booted.entry?.status).toBe("degraded");
+    expect(booted.writable).toBe(false);
+    expect(booted.degraded).toBe(true);
+    expect(quarantineHoldOf(storageDir, s.sealedId)).not.toBeNull();
+    // Held across boots: the next boot reads the hold, never a writable blank.
+    const again = await boot(storageDir, "held", s, { hydrates: true });
+    expect(again.entry?.status).toBe("degraded");
+    expect(again.writable).toBe(false);
+  }, 120_000);
+
+  test("S7 — a pointer whose sealed value the holder no longer holds: the keyed load refuses, the plane degrades, quarantined", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "pointer");
+    vault.clear();
+    expect((await probeDocLoad(storageDir, s.sealedId)).status).toBe("sealed");
+
+    const booted = await boot(storageDir, "pointer", s, { hydrates: true });
+    expect(booted.entry?.status).toBe("degraded");
+    expect(booted.writable).toBe(false);
+    expect(quarantineHoldOf(storageDir, s.sealedId)).not.toBeNull();
+  }, 120_000);
+
+  test("S8 — a sealed plane an earlier probe quarantined: the restore returns it, and the next boot mounts it writable", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "pointer");
+    // An earlier probe's verdict, as a framing gate that read only Automerge magic left it.
     quarantineDoc(storageDir, { documentId: s.sealedId, status: "torn", reason: "snapshot: bad magic at offset 0 — not an automerge chunk / corrupt" }, { bagId: PLANES.intents });
 
-    const held = await boot(storageDir, "pointer", s);
+    const held = await boot(storageDir, "pointer", s, { hydrates: true });
     expect(held.entry?.status).toBe("degraded");
     expect(held.writable).toBe(false);
 
     expect(releaseQuarantinedDoc(storageDir, s.sealedId, "restored")).toMatchObject({ ok: true, act: "restored" });
     const verdict = await probeDocLoad(storageDir, s.sealedId);
-    expect(verdict.status).toBe("ok");
+    expect(verdict.status).toBe("sealed");
     expect(verdict.sealed).toBe(s.files.length);
 
-    const restored = await boot(storageDir, "pointer", s);
+    const restored = await boot(storageDir, "pointer", s, { hydrates: true });
     expect(restored.entry?.status).toBe("mounted");
     expect(restored.writable).toBe(true);
+    expect(restored.record?.tiddler.text).toBe(MARKER);
     // No second move: the one manifest stands released, and the bytes stand under the id.
     expect(readQuarantineManifests(storageDir).map((h) => h.manifest.released?.act)).toEqual(["restored"]);
     expect(existsSync(docStorePath(storageDir, s.sealedId))).toBe(true);
   }, 120_000);
 
-  test("S6 — a sealed document beside a torn clear tail: the recovery keeps every sealed record and moves the tail", async () => {
+  test("S9 — a sealed document beside a torn clear tail: the recovery keeps every sealed record and moves the tail", async () => {
     const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
     const s = await storeWithSealedDoc(storageDir, "held");
     mkdirSync(join(docStorePath(storageDir, s.sealedId), "incremental"), { recursive: true });
@@ -241,10 +338,27 @@ d("the probe reads a sealed document as sealed, never torn", () => {
     const condemned = await probeDocLoad(storageDir, s.sealedId);
     expect(condemned.status).toBe("torn");
     const promoted = await recoverCleanTail(storageDir, condemned);
-    expect(promoted?.status).toBe("ok");
+    expect(promoted?.status).toBe("sealed");
     expect(promoted?.cleanTail?.movedAside).toHaveLength(1);
     expect(existsSync(tail)).toBe(false);
     for (const f of s.files) expect(existsSync(f)).toBe(true);
-    expect((await probeDocLoad(storageDir, s.sealedId)).status).toBe("ok");
+    expect((await probeDocLoad(storageDir, s.sealedId)).status).toBe("sealed");
+  }, 120_000);
+
+  test("S10 — a sealed document merged late into a stand-in never lands clear under the stand-in's id", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "pointer");
+    faceUp = false;
+    const store = sealedStore(storageDir, "pointer", s.key, () => s.sealedId, true);
+    const repo = new Repo({ storage: store, network: [] });
+    const fresh = await waitHandle<LarDoc>(repo, s.sealedUrl, () => repo.create<LarDoc>(emptyLarDoc()), WINDOW_MS);
+    expect(fresh.documentId).not.toBe(s.sealedId);
+    faceUp = true;
+    store.mapMoved();
+    // The late merge reaches the fallback's save, and the store holds it in memory, never clear under the fallback's id.
+    await until(() => store.waiting(fresh.documentId) > 0, "the late merge's save, held");
+    await repo.flush();
+    await repo.shutdown();
+    expect(clearHits(storageDir)).toEqual([]);
   }, 120_000);
 });
