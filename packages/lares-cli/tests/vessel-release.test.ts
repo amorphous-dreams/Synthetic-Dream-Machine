@@ -13,7 +13,7 @@
  *   R7  a fallen vessel that let its claim go (a fall during boot frees the store's name) still holds the store: a resting
  *       fall whose process lives refuses the release by name, naming that pid and `lares vessel stop`. CONTROL: a fall whose
  *       process has ended lets the release land.
- *   R6  the old spelling on the read (`vessel read vessel --release*`) moved: it names the new door, exit 2, and reads nothing.
+ *   R6  `vessel read vessel --release*` answers the moved pointer to `lares vessel release`, exit 2, and reads nothing.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -107,7 +107,7 @@ describe("lares vessel release <documentId> [--keep|--fresh]", () => {
   });
 
   for (const flag of ["--release", "--release-keep", "--release-fresh"]) {
-    test(`R6 — the old spelling \`vessel read vessel ${flag}\` moved: it names the new door and reads nothing`, async () => {
+    test(`R6 — \`vessel read vessel ${flag}\` answers the moved pointer to \`lares vessel release\`, exit 2, and reads nothing`, async () => {
       const { root, storageDir } = house();
       held(storageDir);
       const s = said();
