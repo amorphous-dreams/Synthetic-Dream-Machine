@@ -24,8 +24,9 @@
  *
  * WHAT IT DOES NOT SEE (the residual, named): the daemon island runs as a `worker_threads` Worker with its own isolate and
  * so its own wasm engine (`open-daemon-vm.ts`), and INGEST executes there. This watch reads the MAIN isolate's engine only.
- * A worker engine that dies writes no outcome; the main side then reads every wait it holds as `committed` through the
- * receipt, by id, and never as done. Carrying the worker's fall here needs a new island-protocol message (the worker taps
+ * Its FIRST SYMPTOM: health keeps answering 200 when the worker's engine dies, since the main engine still stands. A worker
+ * engine that dies writes no outcome; the main side then reads every wait it holds as `committed` through the receipt, by
+ * id, and never as done. Carrying the worker's fall here needs a new island-protocol message (the worker taps
  * its own Repo logger and posts the fall); that rides with the bulkhead rung, which moves the engine into a supervised
  * process anyway.
  */

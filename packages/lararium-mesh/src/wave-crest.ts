@@ -70,11 +70,12 @@ export function scaleLimits(limits: WaveLimits, factor: number): WaveLimits {
  * One homeostatic servo step on a depth (the accumulate family's negative feedback, `adaptGate`): a wave slower than its
  * target shrinks the next depth, a faster one grows it, each step clamped to `maxStep`; the depth never falls below one.
  */
-export function adaptDepth(current: number, observedMs: number, targetMs: number, maxStep = 0.25): number {
+export function adaptDepth(current: number, observedMs: number, targetMs: number, maxStep = 0.25, ceiling = Number.POSITIVE_INFINITY): number {
   if (targetMs <= 0) return current;
   const error = (observedMs - targetMs) / targetMs; // >0 = too slow
   const factor = 1 - Math.max(-maxStep, Math.min(maxStep, error));
   const next = Math.max(1, Math.round(current * factor));
   // A SMALL DEPTH STILL CLIMBS: where rounding would hold a growing depth in place (one stays one), it grows by one.
-  return factor > 1 && next <= current ? current + 1 : next;
+  // THE CEILING HOLDS: a depth grows back up to the caller's budget, never past it.
+  return Math.min(Math.max(1, ceiling), factor > 1 && next <= current ? current + 1 : next);
 }

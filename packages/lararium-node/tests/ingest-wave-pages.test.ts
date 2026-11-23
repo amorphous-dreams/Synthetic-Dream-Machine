@@ -136,6 +136,24 @@ describe("settleIngest — the first pass crests in bounded waves", () => {
     expect(isl.waves.flatMap((w) => w.kapae ?? []).sort()).toEqual([...kapae].sort());
   });
 
+  test("WATCHER RENAMES: a deletion paired by content (no renameFrom) rides the same wave as its arrival", async () => {
+    // The watchers pair by content (`pairedDeletions`) and leave the arrivals unmarked; 100 such moves cross several waves.
+    const candidates = Array.from({ length: 100 }, (_, i) => row(i));
+    const deletions = candidates.map((c, i) => ({ uri: `lar:///moved-from/${i}`, syncedHash: c.diskHash }));
+    // CONTROL inside: two vanished files of one content pair with nothing (ambiguous), and ride apart.
+    const twin = row(500);
+    const ambiguous = [{ uri: "lar:///twin/a", syncedHash: twin.diskHash }, { uri: "lar:///twin/b", syncedHash: twin.diskHash }];
+    const isl = island();
+    await settleIngest(opts([...candidates, twin], { deletions: [...deletions, ...ambiguous] }), freshTree(), isl.submit);
+    expect(isl.waves.length).toBeGreaterThan(1);
+    for (const [i, d] of deletions.entries()) {
+      const wave = isl.waves.find((w) => (w.deletions ?? []).some((x) => x.uri === d.uri))!;
+      expect(wave.candidates.map((c) => c.uri), `deletion ${i} rides with its arrival`).toContain(candidates[i]!.uri);
+    }
+    const sentDeletions = isl.waves.flatMap((w) => (w.deletions ?? []).map((d) => d.uri));
+    expect(sentDeletions.sort()).toEqual([...deletions, ...ambiguous].map((d) => d.uri).sort());
+  });
+
   test("CONTROL: a light gesture still rides one wave, as before", async () => {
     const candidates = Array.from({ length: 8 }, (_, i) => row(i));
     const isl = island();

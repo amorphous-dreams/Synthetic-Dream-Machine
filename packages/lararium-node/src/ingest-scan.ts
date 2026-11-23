@@ -749,7 +749,7 @@ export async function settleIngest(
     }
     settled.push(s);
     waves.push({ requestId: s.first.requestId, carriers, deletions, status: "done" });
-    depth = Math.min(limits.count, Math.max(1, adaptDepth(depth, now() - t0, targetMs)));
+    depth = adaptDepth(depth, now() - t0, targetMs, 0.25, limits.count);
     if (queue.length > 0) await yieldFn();
   }
   const debt = owed.length > 0
@@ -788,15 +788,40 @@ interface IngestFamily {
   readonly kapae: readonly string[];
 }
 
-/** Each kāpae a family (first), each carrier a family with the deletion its rename names, each loose deletion a family. */
+/**
+ * Each kāpae a family (first), each carrier a family with the deletion its rename pairs, each loose deletion a family.
+ *
+ * TWO ROADS NAME A RENAME, AND THE CREST KEEPS BOTH. The whole-source scan marks the arrival (`renameFrom`, `resolveRenames`);
+ * the watchers pair by content and leave the arrival unmarked (`pairedDeletions`). So a deletion no `renameFrom` claims pairs
+ * with the arrival whose disk hash equals its synced hash, under `pairedDeletions`' own rule: the content stands unique among
+ * the vanished, one candidate holds it, and that candidate arrived. The island pairs a rename inside one wave only
+ * (`pairRenames`), so a pair the crest split would decline the vanish and land a fresh carrier.
+ */
 function familiesOf(opts: SubmitIngestOpts): IngestFamily[] {
   const deletions = opts.deletions ?? [];
-  const families: IngestFamily[] = (opts.kapae ?? []).map((k) => ({ candidates: [], deletions: [], kapae: [k] }));
+  const byUri = new Map(deletions.map((d) => [d.uri, d] as const));
+  const claimed = new Set<string>();
+  const marked = new Map<ScanRow, PendingDeletion[]>();
   for (const c of opts.candidates) {
-    families.push({ candidates: [c], deletions: c.renameFrom === undefined ? [] : deletions.filter((d) => d.uri === c.renameFrom), kapae: [] });
+    const d = c.renameFrom === undefined ? undefined : byUri.get(c.renameFrom);
+    if (d !== undefined && !claimed.has(d.uri)) { claimed.add(d.uri); marked.set(c, [d]); }
   }
-  const paired = new Set(families.flatMap((f) => f.deletions.map((d) => d.uri)));
-  for (const d of deletions) if (!paired.has(d.uri)) families.push({ candidates: [], deletions: [d], kapae: [] });
+  // The content road: `pairedDeletions`' uniqueness over what no mark claimed.
+  const gone = new Map<string, number>();
+  for (const d of deletions) if (!claimed.has(d.uri)) gone.set(d.syncedHash, (gone.get(d.syncedHash) ?? 0) + 1);
+  const holding = new Map<string, ScanRow[]>();
+  for (const c of opts.candidates) holding.set(c.diskHash, [...(holding.get(c.diskHash) ?? []), c]);
+  for (const d of deletions) {
+    if (claimed.has(d.uri) || gone.get(d.syncedHash) !== 1) continue;
+    const holders = holding.get(d.syncedHash) ?? [];
+    const arrival = holders.length === 1 ? holders[0]! : undefined;
+    if (arrival === undefined || (arrival.status !== "new" && arrival.status !== "renamed") || marked.has(arrival)) continue;
+    claimed.add(d.uri);
+    marked.set(arrival, [d]);
+  }
+  const families: IngestFamily[] = (opts.kapae ?? []).map((k) => ({ candidates: [], deletions: [], kapae: [k] }));
+  for (const c of opts.candidates) families.push({ candidates: [c], deletions: marked.get(c) ?? [], kapae: [] });
+  for (const d of deletions) if (!claimed.has(d.uri)) families.push({ candidates: [], deletions: [d], kapae: [] });
   return families;
 }
 

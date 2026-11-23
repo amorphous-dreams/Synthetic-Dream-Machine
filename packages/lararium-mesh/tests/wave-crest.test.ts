@@ -51,6 +51,8 @@ describe("adaptDepth — the accumulate servo's shrink, lifted", () => {
     expect(adaptDepth(1, 99_000, 10_000)).toBe(1);
     // A depth of one climbs back: a fast wave at depth one grows it to two, never pinned at the floor.
     expect(adaptDepth(1, 1_000, 10_000)).toBe(2);
+    // And it climbs to the caller's ceiling, never past it.
+    expect(adaptDepth(46, 1_000, 10_000, 0.25, 48)).toBe(48);
   });
 
   test("adaptGate reads the same servo: one shrink rule, two engines", () => {
