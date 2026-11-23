@@ -2979,6 +2979,8 @@ async function prepareNodeBootOn(
     // writable mount (a suffix of edits lost) instead of downgrading the vessel to degraded.
     // THE DOCUMENT IN FLIGHT AT AN ENGINE FALL runs this same probe (`fallAwareProbeDoors`): a torn one takes this same path,
     // and a clean one stands held in the pending branch, read-only, its bytes in place.
+    // A SEALED PLANE'S KEYED LOAD names the refusal it ended on: only integrity evidence quarantines it (`isIntegrityRefusal`).
+    sealedRefusalOf: (documentId: string) => sealedRest.store.refusalOf(documentId),
     ...((): ProbeDoors => {
       const doors = fallAwareProbeDoors(readEngineFalls(storageDir), {
         probe: makeChildProcessDocLoadProbe(storageDir),
@@ -2992,7 +2994,7 @@ async function prepareNodeBootOn(
         ...doors,
         recoverCleanTail: async (verdict) => {
           const promoted = await doors.recoverCleanTail(verdict);
-          if (promoted?.status === "ok") {
+          if (promoted?.status === "ok" || promoted?.status === "sealed") {
             console.warn(
               `[lararium] PROMOTED plane — clean-tail recovered ${verdict.documentId} (${verdict.reason ?? "?"})` +
               ` → ${promoted.reason ?? "recovered"}; the torn tail sits in quarantine-torn-tail-*`,

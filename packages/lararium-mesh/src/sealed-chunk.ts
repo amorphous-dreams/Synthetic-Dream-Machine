@@ -66,6 +66,18 @@ export const SEALED_ADDRESS_ALGO = "blake3" as const;
 
 /** The format mark, derived from the format's own name. */
 export const SEALED_CHUNK_MARK: Uint8Array = sha256(utf8Bytes(SEALED_CHUNK_DOMAIN)).slice(0, SEALED_MARK_LEN);
+/** What a sealed document store rests in place of a value its holder keeps: this prefix, then the value's sealed address,
+ *  and nothing after (`SealedDocumentStore`). */
+export const SEALED_VALUE_POINTER = "lares-sealed-value:";
+const SEALED_VALUE_POINTER_BYTES = utf8Bytes(SEALED_VALUE_POINTER);
+/** Do these bytes open as a sealed document store's pointer, well-formed or not? */
+export function namesSealedPointer(bytes: Uint8Array): boolean {
+  return bytes.length >= SEALED_VALUE_POINTER_BYTES.length && SEALED_VALUE_POINTER_BYTES.every((b, i) => bytes[i] === b);
+}
+/** Do these bytes open with the sealed value's format mark, well-formed or not? */
+export function bearsSealedMark(bytes: Uint8Array): boolean {
+  return bytes.length >= SEALED_MARK_LEN && SEALED_CHUNK_MARK.every((b, i) => bytes[i] === b);
+}
 
 // ── Names ───────────────────────────────────────────────────────────────────────────────────────
 /** What a sealed value stands as inside its bag. */

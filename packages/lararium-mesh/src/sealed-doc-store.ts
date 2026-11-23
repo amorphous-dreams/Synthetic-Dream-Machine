@@ -34,7 +34,8 @@ import type { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/auto
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import type { BagLocator } from "./sealed-records.js";
-import { readSealedAddress, SEALED_CHUNK_MARK, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
+import { mergedSourceOf } from "./wait-handle.js";
+import { bearsSealedMark, namesSealedPointer, readSealedAddress, SEALED_VALUE_POINTER, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
 import { openPublished, sealPublished, type PublishedLookup } from "./published-bag-key.js";
 import { openHeld, sealHeld, type HeldRestKey } from "./held-rest-key.js";
 import type { DocumentValue, FreshBase, HolderRefusal, OpenedValue, SealedValues } from "./content-key-holder.js";
@@ -52,6 +53,24 @@ export const SEALED_DOCUMENT_REFUSALS = [
   "holder-locked",           // a vessel-held home whose key has not opened (custody locked, no floor key): no byte opens until it does
 ] as const;
 export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number];
+
+/**
+ * THE REFUSALS THAT CARRY INTEGRITY EVIDENCE: the bytes at rest, or the value a pointer names, fail the keyed load itself (a
+ * pointer this store never wrote, a clear chunk in a held home, an envelope too short, bytes that hash to another address,
+ * an unknown format, a segment tag that fails, a sequence cut on a whole segment, a value the holder does not hold). Every
+ * other refusal names liveness (no session yet, the door unanswered, the holder locked, the rest standing down), a face
+ * that may not read here, or custody: `context-mismatch` (the commitment fails) reads the same for another bag, role or
+ * reference, or another key, as for altered bytes, so it never moves bytes on its own word.
+ */
+export const SEALED_INTEGRITY_REFUSALS: ReadonlySet<string> = new Set([
+  "pointer-malformed", "held-clear-at-rest",
+  "envelope-malformed", "address-mismatch", "format-unknown", "sequence-broken", "truncated",
+  "value-absent",
+]);
+/** Does this refusal name integrity evidence against the document (`SEALED_INTEGRITY_REFUSALS`)? */
+export function isIntegrityRefusal(refusal: string | null | undefined): boolean {
+  return typeof refusal === "string" && SEALED_INTEGRITY_REFUSALS.has(refusal);
+}
 
 /** What `onHeld` hears: the refusal that kept a save in memory, its document, and for a holder's refusal its name and cause. */
 export interface HeldNotice {
@@ -142,8 +161,9 @@ export interface SealedDocumentPorts {
   /**
    * THE VESSEL'S OWN HELD KEY, where it stands open (the-veil-ladder#/the-base-model, the Lift): a face's bag whose rest still
    * holds a value sealed under this key (a document the veil floor minted, lifted into the face with the same document id)
-   * opens that value with it, and `refileHeld` seals it again under the face. Absent or null: such a value refuses
-   * `pointer-malformed`, as any byte run this store never wrote.
+   * opens that value with it, and `refileHeld` seals it again under the face. Null (the custody locked): such a value
+   * refuses `holder-locked`, which a hydrating load waits out. A key that does not open it refuses by the open's own name.
+   * Absent: such a value refuses `pointer-malformed`, as any byte run this store never wrote.
    */
   vesselKey?(): HeldRestKey | null;
   /** Told once per save the store holds back unsealed, naming its document; a `save-unsealed` names the holder's own
@@ -170,11 +190,11 @@ export interface SealedDocumentPorts {
 const HYDRATION_WAITS: ReadonlySet<string> = new Set(["bag-unmapped", "session-absent", "chain-absent", "holder-locked", "sealed-store-unavailable", "signer-unavailable", "door-unanswered"]);
 
 const ROLES: Readonly<Record<string, DocumentValue["role"]>> = { incremental: "change", snapshot: "checkpoint" };
-const POINTER = "lares-sealed-value:";
+const POINTER = SEALED_VALUE_POINTER;
 /** The Automerge chunk magic: a value the engine itself wrote, clear, before its bag mapped sealed. */
 const AUTOMERGE_MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
 const readsClear = (bytes: Uint8Array): boolean => AUTOMERGE_MAGIC.every((b, i) => bytes[i] === b);
-const readsSealed = (bytes: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => bytes[i] === b);
+const readsSealed = bearsSealedMark;
 /** What the bag map names for one document: its bag, that bag's face, and the key a keyed bag rests under. */
 export interface SealedBagRow { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup; readonly held?: HeldRestKey; readonly locked?: true }
 type PublicBag = { readonly bagId: string; readonly published: PublishedLookup };
@@ -189,15 +209,14 @@ const nameOf = (key: StorageKey): string => key.join("\u0000");
 export function logicalRefOf(key: StorageKey): string {
   return hex(sha256(utf8Bytes(["lares-document-value", ...key].join("\u0000"))));
 }
-const POINTER_BYTES = utf8Bytes(POINTER);
 function readPointer(bytes: Uint8Array): SealedAddress | null {
-  if (bytes.length < POINTER_BYTES.length || POINTER_BYTES.some((b, i) => bytes[i] !== b)) return null;
+  if (!namesSealedPointer(bytes)) return null;
   let text: string;
   try { text = new TextDecoder("utf-8", { fatal: true }).decode(bytes); } catch { return null; }
   return text.startsWith(POINTER) ? readSealedAddress(text.slice(POINTER.length)) : null;
 }
 /** Does a byte run open as this store's pointer, well-formed or not? */
-const namesPointer = (bytes: Uint8Array): boolean => bytes.length >= POINTER_BYTES.length && POINTER_BYTES.every((b, i) => bytes[i] === b);
+const namesPointer = namesSealedPointer;
 function frontierOf(saved: Uint8Array): string[] {
   try { return [...A.getHeads(A.load(saved))].sort(); } catch { return []; }
 }
@@ -243,7 +262,24 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   /** The waits already named, by document and refusal: each names itself once. */
   readonly #waitsNamed = new Set<string>();
 
+  /** The refusal each document's latest load ended on, by document; a load that answers clears it. */
+  readonly #refusals = new Map<string, string>();
+  /** The refusal the latest load of this document ended on (a `SealedDocumentRefusal` name), or null where its latest
+   *  load answered or none ran. A mount reads it to tell integrity evidence from liveness (`isIntegrityRefusal`). */
+  refusalOf(documentId: string): string | null { return this.#refusals.get(documentId) ?? null; }
+
   async #hydrating<T>(documentId: unknown, read: () => Promise<T>): Promise<T> {
+    try {
+      const out = await this.#hydratingRead(documentId, read);
+      if (typeof documentId === "string") this.#refusals.delete(documentId);
+      return out;
+    } catch (error) {
+      if (typeof documentId === "string" && error instanceof SealedDocumentRefusal) this.#refusals.set(documentId, error.refusal);
+      throw error;
+    }
+  }
+
+  async #hydratingRead<T>(documentId: unknown, read: () => Promise<T>): Promise<T> {
     for (;;) {
       const moved = this.#moved.promise;
       try { return await read(); }
@@ -421,6 +457,15 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   async save(key: StorageKey, data: Uint8Array): Promise<void> {
     const bag = this.#bagOf(key);
     if (bag === null) {
+      // A FALLBACK CARRYING A SEALED DOCUMENT'S MERGE LANDS NO CLEAR BYTE (`waitHandle`): its id names no bag, yet its history
+      // holds what rests sealed under the source's id. The save waits in memory (`save-unmapped`), never clear; the content
+      // rests sealed under the source's own id.
+      const source = typeof key[0] === "string" ? mergedSourceOf(key[0]) : undefined;
+      if (source !== undefined && (this.#ports.bagOf(source) !== null || this.#classedSealed.has(source))) {
+        this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unmapped" });
+        this.#ports.onHeld?.({ refusal: "save-unmapped", documentId: key[0]! });
+        return;
+      }
       if (typeof key[0] === "string" && key.length >= 2 && await this.#keepsSealedClass(key[0])) {
         if (this.#ports.waitOverSealed) {
           this.#swept.delete(key[0]);
@@ -581,11 +626,14 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (readPointer(rested) === null) {
       if (readsClear(rested)) return rested;
       // A value the veil floor sealed under the vessel's own key, in a document a face lifted with the same id: it opens with
-      // that key while it stands in reach, and `refileHeld` moves its seal to the face.
-      const held = readsSealed(rested) ? this.#ports.vesselKey?.() ?? null : null;
-      if (held !== null) {
+      // that key while it stands in reach, and `refileHeld` moves its seal to the face. While the custody stays locked the
+      // read waits on the holder (`holder-locked`, a hydration wait); a key that does not open it refuses by its own name.
+      if (readsSealed(rested) && this.#ports.vesselKey !== undefined) {
+        const held = this.#ports.vesselKey();
+        if (held === null) throw new SealedDocumentRefusal("holder-locked", "a value sealed under the vessel's own key rests here, and that key is not in reach");
         const lifted = openHeld({ bagId: bag.bagId, held, role, ref: logicalRefOf(key), sealed: rested });
         if ("plaintext" in lifted) return lifted.plaintext;
+        throw new SealedDocumentRefusal(lifted.refusal);
       }
       throw new SealedDocumentRefusal("pointer-malformed");
     }
