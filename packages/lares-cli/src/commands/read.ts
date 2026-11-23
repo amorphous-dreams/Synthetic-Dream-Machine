@@ -221,7 +221,7 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
   // so it refuses by name rather than answering as the bare node read.
   const lens = args.positional[0];
   if (lens !== undefined && lens !== "vessel") {
-    console.error(`lares vessel read: unknown lens "${lens}" (the one lens reads \`vessel\`; bare \`read\` reads the node health)`);
+    console.error(`lares vessel read: unknown lens "${lens}" (the door answers one lens, \`vessel\`; bare \`read\` gives the node health reading)`);
     return 2;
   }
   // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).

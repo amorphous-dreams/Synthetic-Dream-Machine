@@ -62,7 +62,7 @@ function wearLine(a: CustodyDoorAnswer): string {
     const again = typeof a["wornAgain"] === "number" ? `h${String(a["wornAgain"])} worn again` : "no face worn";
     return `the composition wearing h${String(a["face"])} did not stand: h${String(a["face"])} did not stand (${a["switchRefused"]}); ${again}, and the vessel key stays held.`;
   }
-  return `wearing h${String(a["face"])}: the vessel stands as ${standing}. It asked for no route.`;
+  return `wearing h${String(a["face"])}: the vessel stands as ${standing}. This verb asked for no route.`;
 }
 
 export async function cmdWear(given: ParsedArgs): Promise<number> {

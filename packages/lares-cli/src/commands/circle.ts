@@ -61,7 +61,7 @@ function readCardFile(path: string): HandleCard {
   try { raw = readFileSync(path, "utf8"); }
   catch (err) { throw new UsageError(`cannot read --card file "${path}": ${err instanceof Error ? err.message : String(err)}`); }
   try { return JSON.parse(raw) as HandleCard; }
-  catch { throw new UsageError(`--card file "${path}" reads as no JSON`); }
+  catch { throw new UsageError(`--card file "${path}" holds no JSON that parses`); }
 }
 
 export async function cmdCircle(args: ParsedArgs): Promise<number> {

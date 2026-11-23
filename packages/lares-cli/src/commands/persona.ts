@@ -369,7 +369,7 @@ export async function routeForPersonaNew(index: number, standing: VesselStanding
   if (index !== 0 && listFaceOrdinals().includes(index)) {
     const faces = await houseFaces();
     if (faces.shut.includes(index)) {
-      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — it asked for no route`);
+      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — this verb asked for no route`);
     }
     // A ROSTER THAT CANNOT BE READ SETTLES NOTHING: the face's group reads unknown, so the existing route gets asked once (a ward
     // act under the route the face already binds), never a new one bound on an uncertain read.

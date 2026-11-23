@@ -1744,7 +1744,7 @@ async function prepareNodeBootOn(
   // that opens at that stand, through its seat's opener, stands the key too), so the island's floor gate, the host's working
   // layer and the floor verbs all read the key the control document read under.
   let floorKeyGrant = standFloorKey();
-  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
+  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand when the custody opened: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
   stood.push({ what: "the floor key watch", down: () => { stopFloorKeyOpened?.(); } });
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer

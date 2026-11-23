@@ -29,11 +29,19 @@
 //   · a reference-table row (a line opening on `|`) holds invariant form;
 //   · the namely-joint appositive (`X - Y`) carries no copula, so it never meets the count.
 // A form the auditor's pre-pass demotes to likely-auxiliary (a next token ending -ing or -ed: a progressive or a
-// passive, tense rather than identity) rides its own tally, shown and never ceilinged.
+// passive, tense rather than identity) rides its own tally under its own ceiling, named as debt.
+// The possessive contraction (`the door's shut`) counts where a predicate word follows the `'s`.
 //
 // Usage: tools/speech-ward-witness.mjs [--list] [--write-baseline] [--root <dir>] [--baseline <file>]
 //   --list            print every breach line (file:line and the spans), not only the counts
 //   --write-baseline  rewrite the baseline to this walk's counts (lowering only; a rise refuses)
+//
+// ── THE RATCHET ────────────────────────────────────────────────────────────────────────────────
+// Two ceilings per package, both only falling: `ceilings` (identity/predication) and `auxiliary` (the demoted forms,
+// carried as debt: "${copula} required"-shaped stative predications hide there). A count above a ceiling reads NEW DRIFT;
+// a count BELOW a ceiling reads STALE CEILING, red too, so a cure lowers its ceiling in the same PR and "only falls"
+// holds without a person remembering. A package whose walk collects no speech at all reads SILENT, red unless the
+// baseline names it under `silent` (a silent zero proves nothing).
 import { readdirSync, readFileSync, statSync, writeFileSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join, relative, resolve, dirname } from "node:path";
@@ -50,9 +58,21 @@ const QUOTE_RE = /"[^"\n]*"|“[^”\n]*”|‘[^’\n]*’|(?<=^|[\s(\[{:,=])'[
 // end in -ing or -ed reads as a likely auxiliary (a progressive or a passive: tense, not identity). It rides its own
 // tally, outside the ceiling. A few common words carry the ending without the participle.
 const NOT_PARTICIPLE = new Set(["nothing", "something", "anything", "everything", "string", "during", "morning", "hundred", "sacred", "kindred"]);
+const participle = (w) => w.length >= 5 && /(ing|ed)$/.test(w) && !NOT_PARTICIPLE.has(w);
 const auxiliary = (after) => after.trim().split(/\s+/).slice(0, 2)
   .map((w) => w.toLowerCase().replace(/[^a-z]/g, ""))
-  .some((w) => w.length >= 5 && /(ing|ed)$/.test(w) && !NOT_PARTICIPLE.has(w));
+  .some(participle);
+const POSS_RE = /(?<![\w'’\-./$])([A-Za-z][\w-]*)['’]s\s+([^\s]+)(?:[ \t]+([^\s]+))?/g;
+// Words that never open a possessed noun phrase, so after a noun's `'s` they always read as a predicate.
+const FUNCTION_AFTER_S = new Set(["not", "never", "no", "a", "an", "the", "already", "still", "now", "too", "always"]);
+// Words that close a clause: an adjective before one of them stands as the predicate.
+const CLAUSE = new Set(["and", "or", "but", "so", "for", "at", "in", "on", "to", "by", "from", "with", "since", "until", "yet", "—", "-", "than", "because", "when", "while"]);
+const PRONOUN_S = new Set(["it", "that", "there", "here", "what", "who", "he", "she", "let", "where", "how"]);
+// A reference table of the words that, right after a noun's `'s`, read as a predicate rather than a possessed noun.
+const PREDICATE_AFTER_S = new Set(["not", "never", "no", "a", "an", "the", "already", "still", "now", "here", "there",
+  "gone", "done", "past", "absent", "open", "shut", "ready", "empty", "missing", "stale", "fresh", "ok", "true", "false",
+  "off", "unknown", "unset", "live", "dead", "alive", "busy", "free", "full", "safe", "due", "over", "away", "too",
+  "only", "just", "always", "valid", "invalid", "wrong", "right", "held", "lost", "torn", "broken", "unreadable"]);
 
 /** The ward's read of one spoken text: breaches (identity/predication the text asserts), the quote tally, and the
  *  likely-auxiliary tally. */
@@ -66,6 +86,18 @@ export function wardCount(text) {
     for (const m of rest.matchAll(FORM_RE)) {
       if (auxiliary(rest.slice(m.index + m[0].length))) { aux++; continue; }
       breaches++; spans.push(m[1]);
+    }
+    // The possessive contraction (`the door's shut`): a noun's `'s` counts where a predicate word follows it; before a
+    // noun (`the door's lock`) it stays possessive. The pronoun contractions already ride FORMS.
+    // An adjective right after the `'s` reads attributive (`the vessel's held key`) unless the clause ends on it.
+    for (const m of rest.matchAll(POSS_RE)) {
+      if (PRONOUN_S.has(m[1].toLowerCase()) || !/^[A-Za-z]/.test(m[2])) continue;
+      const next = m[2].toLowerCase().replace(/[^a-z]/g, "");
+      const ends = /[,.;:!?)]$/.test(m[2]) || m[3] === undefined || CLAUSE.has(m[3].toLowerCase().replace(/[^a-z—-]/g, ""));
+      if (FUNCTION_AFTER_S.has(next)) { breaches++; spans.push(`${m[1]}'s`); continue; }
+      if (!ends) continue;
+      if (participle(next)) { aux++; continue; }
+      if (PREDICATE_AFTER_S.has(next)) { breaches++; spans.push(`${m[1]}'s`); }
     }
   }
   return { breaches, quoted, aux, spans };
@@ -259,12 +291,13 @@ export function walkTree(root) {
   for (const pkg of readdirSync(dir).sort()) {
     const base = join(dir, pkg);
     if (!statSync(base).isDirectory()) continue;
+    if (!existsSync(join(base, "package.json")) && !existsSync(join(base, "src"))) continue;
     const files = [...sources(join(base, "src")), ...sources(join(base, "scripts")).filter((f) => f.endsWith(".py"))];
-    if (files.length === 0) continue;
-    const row = { breaches: 0, quoted: 0, aux: 0, lines: [] };
+    const row = { spoken: 0, breaches: 0, quoted: 0, aux: 0, lines: [] };
     for (const file of files) {
       const src = readFileSync(file, "utf8");
       const spoken = file.endsWith(".py") ? speechOfPy(src) : speechOfTs(src);
+      row.spoken += spoken.length;
       for (const s of spoken) {
         const w = wardCount(s.text);
         row.quoted += w.quoted; row.aux += w.aux;
@@ -275,6 +308,15 @@ export function walkTree(root) {
   }
   return pkgs;
 }
+
+/** One tally against its ceiling: above reads new drift, below reads a stale ceiling, and both read red. */
+function verdict(count, ceiling, rise) {
+  if (count > ceiling) return { red: true, word: rise };
+  if (count < ceiling) return { red: true, word: "STALE CEILING (lower it: --write-baseline)" };
+  return { red: false, word: "at its ceiling" };
+}
+
+const NOTE = "Per-package ceilings of the speech the system emits (tools/speech-ward-witness.mjs; lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech). `ceilings` holds the identity/predication copulas, `auxiliary` the likely-auxiliary forms (debt: stative predications the demotion hides), `silent` the packages that speak nothing. A ceiling only lowers, and a count below its ceiling reads red until the ceiling lowers to it; the end state reads every ceiling 0.";
 
 function main(argv) {
   let list = false, write = false, root = resolve(dirname(fileURLToPath(import.meta.url)), ".."), baseline = null;
@@ -287,37 +329,55 @@ function main(argv) {
     else { console.error(`speech-ward-witness: unknown argument ${a}`); return 2; }
   }
   baseline ??= join(root, "tools/speech-ward-baseline.json");
-  let ceilings = {};
-  try { ceilings = JSON.parse(readFileSync(baseline, "utf8")).ceilings ?? {}; } catch { /* absent: every ceiling reads zero */ }
+  let b = {};
+  try { b = JSON.parse(readFileSync(baseline, "utf8")); } catch { /* absent: every ceiling reads zero, nothing reads silent */ }
+  const ceil = (table, name) => Number.isSafeInteger(b[table]?.[name]) ? b[table][name] : 0;
+  const silent = new Set(Array.isArray(b.silent) ? b.silent : []);
   const pkgs = walkTree(root);
   const names = Object.keys(pkgs);
   if (names.length === 0) {
     console.log("speech-ward-witness: no package source under packages/*/src — nothing was walked, so nothing reads clean.");
     return 1;
   }
-  let status = 0;
+  let rise = false, stale = false, unlisted = false;
   for (const name of names) {
-    const { breaches, quoted, aux, lines } = pkgs[name];
-    const ceiling = Number.isSafeInteger(ceilings[name]) ? ceilings[name] : 0;
-    const tally = (quoted > 0 ? ` · ⌜${quoted}⌝ quoted` : "") + (aux > 0 ? ` · ${aux} auxiliary` : "");
-    if (breaches > ceiling) { console.log(`  ${name.padEnd(26)} ${breaches} copula(s), ceiling ${ceiling}: NEW DRIFT${tally}`); status = 1; }
-    else if (breaches < ceiling) console.log(`  ${name.padEnd(26)} ${breaches} copula(s), ceiling ${ceiling}: lower the ceiling (--write-baseline)${tally}`);
-    else if (breaches === 0) console.log(`  ${name.padEnd(26)} ok${tally}`);
-    else console.log(`  ${name.padEnd(26)} ${breaches} copula(s), at its ceiling${tally}`);
-    if (list || (breaches > ceiling && breaches - ceiling <= 40)) {
+    const { spoken, breaches, quoted, aux, lines } = pkgs[name];
+    const pad = `  ${name.padEnd(26)}`;
+    // A RUN THAT COLLECTED NOTHING MUST NOT READ AS A RUN THAT FOUND NOTHING: a package that speaks nothing names itself.
+    if (spoken === 0) {
+      if (silent.has(name)) console.log(`${pad} silent (listed)`);
+      else { console.log(`${pad} SILENT: no speech collected — a collector gap, or name it under \`silent\` in the baseline`); unlisted = true; }
+      continue;
+    }
+    if (silent.has(name)) { console.log(`${pad} STALE SILENT: the baseline lists it silent, yet it speaks ${spoken} line(s)`); stale = true; }
+    const c = verdict(breaches, ceil("ceilings", name), "NEW DRIFT");
+    const x = verdict(aux, ceil("auxiliary", name), "NEW AUXILIARY DRIFT");
+    for (const v of [c, x]) if (v.red) { if (v.word.startsWith("STALE")) stale = true; else rise = true; }
+    const head = breaches === 0 && !c.red ? "ok" : `${breaches} copula(s), ceiling ${ceil("ceilings", name)}: ${c.word}`;
+    const auxPart = aux === 0 && !x.red ? "" : ` · ${aux} auxiliary, ceiling ${ceil("auxiliary", name)}: ${x.word}`;
+    console.log(`${pad} ${head}${auxPart}${quoted > 0 ? ` · ⌜${quoted}⌝ quoted` : ""}`);
+    if (list || (breaches > ceil("ceilings", name) && breaches - ceil("ceilings", name) <= 40)) {
       for (const l of lines) console.log(`      ${l.at}  [${l.spans.join(" ")}]  ${l.text.split("\n")[0].slice(0, 140)}`);
     }
   }
   if (write) {
-    if (status !== 0 && existsSync(baseline)) { console.log("speech-ward-witness: a ceiling would rise; the baseline only lowers. Cure the new drift first."); return 1; }
-    const out = { "//": "Per-package ceilings of copulas in the speech the system emits (tools/speech-ward-witness.mjs; lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech). A ceiling only lowers; the end state reads every ceiling 0.", ceilings: {} };
-    for (const name of names) if (pkgs[name].breaches > 0) out.ceilings[name] = pkgs[name].breaches;
+    if (rise && existsSync(baseline)) { console.log("speech-ward-witness: a ceiling would rise; the baseline only lowers. Cure the new drift first."); return 1; }
+    if (unlisted) { console.log("speech-ward-witness: a package speaks nothing; name it under `silent` by hand (an explicit act), then write again."); return 1; }
+    const out = { "//": NOTE, ceilings: {}, auxiliary: {}, silent: names.filter((n) => pkgs[n].spoken === 0 && silent.has(n)) };
+    for (const name of names) {
+      if (pkgs[name].breaches > 0) out.ceilings[name] = pkgs[name].breaches;
+      if (pkgs[name].aux > 0) out.auxiliary[name] = pkgs[name].aux;
+    }
     writeFileSync(baseline, JSON.stringify(out, null, 2) + "\n");
     console.log(`speech-ward-witness: baseline written (${relative(root, baseline)})`);
-    status = 0;
+    return 0;
   }
-  if (status === 0) console.log(`speech-ward-witness: no package rose above its ceiling (${names.length} package(s) walked)`);
-  return status;
+  if (rise || stale || unlisted) {
+    console.log(`speech-ward-witness: RED —${rise ? " new drift rose above a ceiling;" : ""}${stale ? " a ceiling stands above its count (lower it in this PR);" : ""}${unlisted ? " a package spoke nothing;" : ""} ${names.length} package(s) walked`);
+    return 1;
+  }
+  console.log(`speech-ward-witness: every package at its ceiling (${names.length} package(s) walked)`);
+  return 0;
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) process.exitCode = main(process.argv.slice(2));

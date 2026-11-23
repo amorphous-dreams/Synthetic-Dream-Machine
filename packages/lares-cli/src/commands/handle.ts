@@ -118,7 +118,7 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
 
   let parsed: unknown;
   try { parsed = JSON.parse(text); }
-  catch { return refuse(args, "the statement reads as no JSON — carry the object `lares handle attest` printed"); }
+  catch { return refuse(args, "the statement holds no JSON that parses — carry the object `lares handle attest` printed"); }
   const statement = asAttestation(parsed);
   if (!statement) {
     return refuse(args, "the statement lacks prefix · headEventCid · sig, or its claim does not read as a structured edge (a known surface + its subject) — such a statement verifies nothing");

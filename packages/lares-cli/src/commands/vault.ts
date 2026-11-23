@@ -300,7 +300,7 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
     // A DIAL THAT SETTLED WITH A SESSION STANDING: the unlock landed, and its answer rode the composition the dial tore down.
     if (probe?.["op"] === "custody" && (probe["pulama"] as { session?: unknown } | undefined)?.session === true) {
       const stood = typeof probe["standing"] === "string" ? probe["standing"] : "?";
-      emit(args, { ok: true, data: probe, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${stood}. It asked for no route.`) });
+      emit(args, { ok: true, data: probe, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${stood}. This verb asked for no route.`) });
       return 0;
     }
     emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before it asked its pūlama" }, human: () => console.error("lares vault unlock: the vessel stopped answering before it asked its pūlama") });
@@ -308,7 +308,7 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   }
   const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
   if (a["reading"] === "opens" || a["reading"] === "already-unlocked") {
-    emit(args, { ok: true, data: a, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${standing}. It asked for no route.`) });
+    emit(args, { ok: true, data: a, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${standing}. This verb asked for no route.`) });
     return 0;
   }
   const waits = typeof (a["pulama"] as { waits?: unknown } | undefined)?.waits === "string" ? (a["pulama"] as { waits: string }).waits : "unknown";
@@ -354,7 +354,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
     // `--all` and `--face N` still open faces under their own routes, so they still ask.
     if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] === undefined) {
       const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
-      emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. It asked for no route; to wear another face standing open, run \`lares wear N\`.`) });
+      emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. This verb asked for no route; to wear another face standing open, run \`lares wear N\`.`) });
       return 0;
     }
     // `--face N` ON A HELD KEY READS THE CENSUS BEFORE ANY PROMPT: N standing open takes the wear (no route), a face standing

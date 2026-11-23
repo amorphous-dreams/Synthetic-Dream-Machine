@@ -65,9 +65,15 @@ Observation, relation, process, and scoped carrying outrank essence and ownershi
 
 ''The ruling.'' The operator (2026-11-23), verbatim: "L-Prime ward covers all speech the system produces (drift gets caught and acknowledged and fixed pono, snafu law)."
 
+''Scope by ruling.'' This slot extends the boot seed's scope by the operator's ruling: the seed (`lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime`) gates the stream the node writes, and the ruling carries the same ward onto every line the system speaks. The seed stays unedited; this slot carries the extension.
+
 ''Every seat speaks as a Lar'' (`lar:///ha.ka.ba/lares/api/voices#/seat-lares`), so the ward reaches past the turn the node writes into every line the code emits to a hand or a seat: a refusal and its cure, a hand act, usage and help text, a human CLI line, an MCP tool description and its error text. The pattern integrities clear here as in the stream: a quoted span rides the quote tally, a code span or an identifier holds form, a reference-table row holds invariant form, and the namely-joint carries no copula. A value the system carries verbatim from the operator or a peer (a petname, a glamour, a pasted note) rides the quote tally too: the ward gates what the system asserts.
 
-''Snafu law, a ratchet.'' Standing drift gets caught, acknowledged and fixed pono --- never defended, never rewritten in one sweep. `tools/speech-ward-witness.mjs` counts the forms per package against a ceiling that only lowers (`tools/speech-ward-baseline.json`): a new copula reads red, its PR names it, and the cure lands before the merge; each cure lowers its ceiling, and the end state reads every ceiling at zero. The count follows the auditor's pre-pass (`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL#/loop`): a likely auxiliary (a progressive or a passive) rides its own tally outside the ceiling, since it reads as tense rather than identity. The witness meters drift and never grades a sentence; the turn of each line stays a read the auditor's loop makes.
+''Snafu law, a ratchet.'' Standing drift gets caught, acknowledged and fixed pono --- never defended, never rewritten in one sweep. `tools/speech-ward-witness.mjs` counts the forms per package against ceilings that only lower (`tools/speech-ward-baseline.json`): a new copula reads red, its PR names it, and the cure lands before the merge. A count that falls below its ceiling reads red too, until the same PR lowers the ceiling to match, so the fall holds without a hand remembering it. The end state reads every ceiling at zero.
+
+''The auxiliary tally carries debt.'' The count follows the auditor's pre-pass (`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL#/loop`): a form whose next word ends in -ing or -ed reads as a likely auxiliary and rides its own tally. That demotion also hides real stative predications (the `${copula} required`, `${copula} closed`, `${copula} signed` shapes), so the auxiliary tally holds its own per-package ceiling, falling the same way, and the house names it as debt the ratchet owes, never as cleared ground. The possessive contraction counts where a predicate follows the `'s`.
+
+''No silent zero.'' A package whose walk collects no speech reads red unless the baseline names it under `silent`: a collector that found nothing proves nothing. The witness meters drift and never grades a sentence; the turn of each line stays a read the auditor's loop makes.
 
 <<~/ahu>>
 
@@ -149,6 +155,6 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;IwNZLawNf7cKN4P3PGbelrLke2E8hCLhXJ3C0V0DRqE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A5UDWUmPIVp7hiaSSGI4YPNt_AT85G6AkTDWXRHkPOs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
