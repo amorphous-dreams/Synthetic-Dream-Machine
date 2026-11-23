@@ -135,6 +135,11 @@ export function chainName(c: SessionOwnChain | null): string | null {
  * a certificate stands under the chain of any face the realm seats as a writer on this vessel; a `read` seat signs nothing.
  * Every other bag reads the face's own chain over the bags it registers, exactly as `ownChainStanding`. `realmMark` names the
  * realm writer sets by their content, so a holder's reading gives way when a seat lands or leaves.
+ *
+ * STANDING KEYS TO THE KEY-VERSION LINEAGE (u2): a writer a removal left out still stands for a record under a version that
+ * follows none of the removals that left it, so a revoke never orphans its earlier writes; under any version that follows
+ * one, it stands nowhere. A former writer with no removal named, or a reader that hands no lineage, stands nowhere: the
+ * reading fails closed.
  */
 export function faceStanding(input: {
   readonly own: () => SessionOwnChain | null;
@@ -148,7 +153,10 @@ export function faceStanding(input: {
       if (base.holdsWrite(args)) return true;
       const realm = input.realmWriters?.(args.bagId) ?? null;
       if (realm === null) return false;
-      return realm.seated.some((c) => certificateUnderChain(args.certificate, c));
+      if (realm.seated.some((c) => certificateUnderChain(args.certificate, c))) return true;
+      const follows = args.followsRemoval;
+      if (follows === undefined) return false;
+      return realm.former.some((f) => f.removedBy.length > 0 && certificateUnderChain(args.certificate, f.chain) && !f.removedBy.some((act) => follows(act)));
     },
     chainOf: () => {
       const own = base.chainOf!();
