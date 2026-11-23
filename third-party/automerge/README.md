@@ -38,7 +38,7 @@ change and save bytes, so swapping back to the published package changes no stor
 
 ## Rebuild
 
-Toolchain the tarball was built with: rustup `nightly-2026-11-23`, carrying `rustc 1.102.0-nightly (137d1d494 2026-11-22)` with the `rust-src`
+Toolchain the tarball was built with: rustup `nightly-2026-11-23` (default toolchain directory name), carrying `rustc 1.102.0-nightly (137d1d494 2026-11-22)` with the `rust-src`
 component and the `wasm32-unknown-unknown` target; `wasm-bindgen-cli 0.2.127` (it must match the `wasm-bindgen` crate in
 `Cargo.lock`); node `v24.15.0` with npm. No `wasm-opt` step runs.
 
@@ -48,7 +48,9 @@ git checkout -b split-capacity js/automerge-3.5.0
 GIT_COMMITTER_DATE="Mon, 23 Nov 2026 04:37:04 -0800" git -c user.name=local -c user.email=local@localhost \
   am --committer-date-is-author-date <repo>/third-party/automerge/0001-hexane-release-the-pre-split-capacity-when-splitting.patch
 cp <repo>/third-party/automerge/Cargo.lock rust/Cargo.lock
-cd javascript && npm ci && WASM_TOOLCHAIN=nightly-2026-11-23 npm run build && npm pack
+cd javascript && npm install
+RUSTFLAGS="--remap-path-prefix=$CARGO_HOME=/cargo --remap-path-prefix=$RUSTUP_HOME=/rustup --remap-path-prefix=$PWD/..=/build" \
+  WASM_TOOLCHAIN=nightly-2026-11-23 npm run build && npm pack
 ```
 
 The fixed committer date reproduces the patch commit `9590cde8`, so the stamped `JS_GIT_HEAD` matches. A different
@@ -68,9 +70,11 @@ docker run --rm -v "$PWD/third-party/automerge:/vendor:ro" -v /tmp/kiln-work:/wo
 Two details the recipe above leaves out. Upstream carries no `javascript/package-lock.json`, so the build runs
 `npm install`, which resolves floating devDependency ranges: the 2026-11-23 run still matched byte for byte, and a
 later run may drift in the JS files while the wasm holds. The wasm embeds
-absolute toolchain and registry paths in its panic locations, so the bytes match only when the build home reads
-`/home/joshu/.cargo`, `/home/joshu/.rustup` and a toolchain directory named `nightly-x86_64-unknown-linux-gnu`; the
-Dockerfile seats exactly that. A build under any other path yields a wasm of the same behavior and different bytes.
+absolute toolchain, registry and build-directory paths in its panic locations. `rebuild.sh` passes
+`RUSTFLAGS="--remap-path-prefix=$CARGO_HOME=/cargo --remap-path-prefix=$RUSTUP_HOME=/rustup --remap-path-prefix=<build dir>=/build"`
+(`javascript/scripts/build.mjs` prepends `$RUSTFLAGS` to its own flags, so they reach the wasm build), and the Dockerfile
+seats the toolchain at `/opt/rustup` and `/opt/cargo`. The bytes then carry no home path and match across runs and
+across build homes that keep the same remaps; a build without the remaps yields a wasm of the same behavior and different bytes.
 
 ## Dropping it
 

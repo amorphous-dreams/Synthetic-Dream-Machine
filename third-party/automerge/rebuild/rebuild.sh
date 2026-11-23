@@ -14,12 +14,15 @@ cp "$V/Cargo.lock" rust/Cargo.lock
 cd javascript
 # upstream carries no javascript/package-lock.json, so `npm ci` refuses; install resolves the devDependency ranges
 npm install --no-audit --no-fund
-WASM_TOOLCHAIN=nightly-2026-11-23 npm run build
+# javascript/scripts/build.mjs prepends $RUSTFLAGS to its own flags, so the remaps reach the wasm build
+RUSTFLAGS="--remap-path-prefix=$CARGO_HOME=/cargo --remap-path-prefix=$RUSTUP_HOME=/rustup --remap-path-prefix=$W/automerge=/build" \
+  WASM_TOOLCHAIN=nightly-2026-11-23 npm run build
 npm pack --pack-destination "$W/out"
 cd "$W/out"
 tgz=$(ls ./*.tgz); mkdir x && tar -xzf "$tgz" -C x
 got_tgz=$(sha256sum "$tgz" | cut -d' ' -f1)
 got_wasm=$(sha256sum x/package/dist/cjs/automerge_wasm_bg.wasm | cut -d' ' -f1)
+if strings x/package/dist/cjs/automerge_wasm_bg.wasm | grep -q '/home/'; then echo "HOME PATH in wasm"; strings x/package/dist/cjs/automerge_wasm_bg.wasm | grep '/home/' | head; fi
 want_tgz=$(cut -d' ' -f1 "$V/SHA256SUMS"); want_wasm=$(tr -d ' \n' < "$V/WASM_SHA256" | cut -c1-64)
 head=$(sed -n 's/.*JS_GIT_HEAD = "\([0-9a-f]*\)".*/\1/p' x/package/dist/mjs/generated/release-info.js)
 echo "tgz   got $got_tgz"; echo "tgz   pin $want_tgz"
