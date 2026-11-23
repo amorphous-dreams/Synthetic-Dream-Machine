@@ -54,6 +54,23 @@ cd javascript && npm ci && WASM_TOOLCHAIN=nightly-2026-11-23 npm run build && np
 The fixed committer date reproduces the patch commit `9590cde8`, so the stamped `JS_GIT_HEAD` matches. A different
 nightly can emit different wasm bytes; the witness's byte and retention readings say whether such a build still holds.
 
+### Clean-runner rebuild
+
+`rebuild/` holds a Dockerfile and `rebuild.sh` that run the recipe above in a fresh `debian:bookworm` container and
+compare the packed tarball, its wasm and the `JS_GIT_HEAD` stamp against the pins (non-zero exit on any mismatch):
+
+```sh
+docker build -t kiln-automerge third-party/automerge/rebuild
+mkdir -p /tmp/kiln-work
+docker run --rm -v "$PWD/third-party/automerge:/vendor:ro" -v /tmp/kiln-work:/work kiln-automerge
+```
+
+Two details the recipe above leaves out. Upstream carries no `javascript/package-lock.json`, so the build runs
+`npm install` (the JS dependency ranges move the JS output not at all; the tarball still matches). The wasm embeds
+absolute toolchain and registry paths in its panic locations, so the bytes match only when the build home reads
+`/home/joshu/.cargo`, `/home/joshu/.rustup` and a toolchain directory named `nightly-x86_64-unknown-linux-gnu`; the
+Dockerfile seats exactly that. A build under any other path yields a wasm of the same behavior and different bytes.
+
 ## Dropping it
 
 When an upstream release carries the fix, set the override in `pnpm-workspace.yaml` back to that published version,
