@@ -327,7 +327,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
       const reached = answeredRows(answer.output);
       console.log(`${act === "restore" ? "restored" : "removed"} ${reached.doneCount} carrier(s) (${String(answer.output["bag"])})`);
-      for (const line of removeReceiptLines(reached.done, named, receipts)) console.log(line);
+      for (const line of removeReceiptLines(reached.done, typeof answer.output["bag"] === "string" ? answer.output["bag"] : undefined, named, receipts)) console.log(line);
       if (reached.done.length < reached.doneCount) console.log(`  (the answer named ${reached.done.length} of them)`);
       for (const uri of reached.left) console.error(`  ⚠ still pending: ${uri}`);
       // A removal that unshadowed a lower copy: this bag let it go, and the meme still stands from that bag.
@@ -412,7 +412,8 @@ export function shorePendingLines(pending: ReadonlyArray<Record<string, unknown>
 }
 
 /** The carriers a remove answer reached, each named. */
-export function removeReceiptLines(done: readonly string[], pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): string[] {
+export function removeReceiptLines(done: readonly string[], bag: string | undefined, pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): string[] {
+  void bag;
   const byUri = retiredByUri(done, pending, receipts);
   return done.flatMap((uri) => {
     const r = byUri[uri];
@@ -438,4 +439,9 @@ function retiredByUri(done: readonly string[], pending: ReadonlyArray<Record<str
     if (reached.has(uri) && r !== undefined && out[uri] === undefined) out[uri] = r;
   }
   return out;
+}
+
+/** The receipts of the carriers an answer reached, by bag and carrier. */
+export function retiredByCarrier(done: readonly string[], bag: string | undefined, pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): Record<string, Record<string, Retirement>> {
+  return { [bag ?? ""]: retiredByUri(done, pending, receipts) };
 }

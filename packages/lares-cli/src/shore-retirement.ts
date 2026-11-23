@@ -36,6 +36,9 @@ export interface Retirement {
   readonly destination?: string;
 }
 
+/** What bounds and walls one receipt read: its budget (`boundMs`, or a shared monotonic `deadline`) and the roots it trusts. */
+export interface ReceiptOptions { readonly boundMs?: number; readonly deadline?: number; readonly roots?: readonly string[] }
+
 /** The whole receipt read's bound, across every git run it makes. */
 export const RETIREMENT_BOUND_MS = 2000;
 
@@ -111,7 +114,7 @@ function prFor(sha: string, subject: string, top: string, git: Run): number | un
  * The deleting commit for each path a checkout holds, keyed by the path as given. A path no checkout holds, no deleting
  * commit names, or the bound outran, rides absent. Never throws.
  */
-export function retirementsFor(paths: readonly string[], options: { readonly boundMs?: number } = {}): Map<string, Retirement> {
+export function retirementsFor(paths: readonly string[], options: ReceiptOptions = {}): Map<string, Retirement> {
   const found = new Map<string, Retirement>();
   try {
     const git = boundedGit(performance.now() + (options.boundMs ?? RETIREMENT_BOUND_MS));
@@ -161,7 +164,7 @@ export function retirementsFor(paths: readonly string[], options: { readonly bou
 }
 
 /** One path's deleting commit, or undefined. */
-export async function retirementFor(path: string, options: { readonly boundMs?: number } = {}): Promise<Retirement | undefined> {
+export async function retirementFor(path: string, options: ReceiptOptions = {}): Promise<Retirement | undefined> {
   return retirementsFor([path], options).get(path);
 }
 
@@ -186,7 +189,7 @@ export function withRetiredBy(rows: ReadonlyArray<Record<string, unknown>>, rece
 }
 
 /** The pending rows' receipts, read once. */
-export function pendingReceipts(rows: ReadonlyArray<Record<string, unknown>>, options: { readonly boundMs?: number } = {}): Map<string, Retirement> {
+export function pendingReceipts(rows: ReadonlyArray<Record<string, unknown>>, options: ReceiptOptions = {}): Map<string, Retirement> {
   const paths = rows.map((row) => row["path"]).filter((p): p is string => typeof p === "string" && p !== "");
   return paths.length === 0 ? new Map() : retirementsFor(paths, options);
 }
