@@ -96,6 +96,12 @@ export interface StandReading {
   /** A vessel already runs the image. */
   readonly current: boolean;
   readonly pulama: "off" | "absent" | "level" | "closure-level" | "moved" | "unread";
+  /**
+   * THE KEEPER TALLY, where the pūlama's code moved and it stands lit: `vests` where a keeper commit the hand made names the
+   * closure the new image carries (the raise hands the living fire to a successor, unattended, and asks no route); `struck-due`
+   * where the handed run reached its count (the hand lights the successor). Absent, or null, the light rides as it did.
+   */
+  readonly keeper?: "vests" | "struck-due" | null;
   readonly lit: boolean | null;
   readonly admitted: boolean | null;
   /** A kukulu offer resting from an earlier run names the image. */
@@ -277,8 +283,8 @@ export function leiClearing(refusal: string, branch: string, face?: number): str
   return `read the refusal with \`${show}\` and clear what it names before the rite runs`;
 }
 
-/** Whether the day owes the pūlama a light: none runs, its code moved, or it stands unlit. */
-export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || r.pulama === "moved" || r.lit === false;
+/** Whether the day owes the pūlama a light: none runs, its code moved (unless a keeper commit vests it), or it stands unlit. */
+export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || (r.pulama === "moved" && !(r.keeper === "vests" && r.lit === true)) || r.lit === false;
 
 /**
  * `face` names the face the begin's and the offer's sessions act as where several faces stand open; each row still gathers
@@ -434,8 +440,10 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     return { code: 0, data: { ...base, ...extra, begun: false, awaits: "hand", hand: HAND_ACT } };
   };
   if (light && !tty) {
-    const why = r.pulama === "moved" ? "the pūlama's code closure moved" : r.pulama === "absent" ? "no pūlama runs" : "the pūlama stands unlit";
-    return awaitsHand(`${why}, and its light reads your route on a terminal, which this seat holds none of`);
+    const why = r.pulama === "moved" ? (r.keeper === "struck-due" ? "the pūlama's code closure moved and the keeper's handed run owes the struck fire" : "the pūlama's code closure moved") : r.pulama === "absent" ? "no pūlama runs" : "the pūlama stands unlit";
+    // A MOVED CLOSURE NAMES THE HANDED FIRE TOO: a keeper commit on a terminal lets the next run vest the successor with no route.
+    const handed = r.pulama === "moved" && r.lit === true && r.keeper !== "struck-due" ? " (or name its successor ahead on a terminal: lares pulama keeper-commit, and the next run hands it the living fire with no route)" : "";
+    return awaitsHand(`${why}, and its light reads your route on a terminal, which this seat holds none of${handed}`);
   }
   const tesseraeOf = (faces: readonly StandingBegin[]) => faces.map((f) => ({ face: f.face, tessera: f.tessera }));
   const resumeLine = (faces: readonly StandingBegin[]): string =>

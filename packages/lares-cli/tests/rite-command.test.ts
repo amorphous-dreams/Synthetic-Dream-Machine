@@ -122,6 +122,17 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     expect(t.calls).toEqual(["checkout", STAGE, BEGIN, OFFER, `raise ${HEAD}`, LAND]);
   });
 
+  it("RED: a moved closure a keeper commit names vests with no terminal: the raise hands the living fire and asks no route; CONTROL: a struck fire due, or an unlit keeper, still owes the light", async () => {
+    const f = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "vests" } });
+    expect((await riteKukulu(f.ports, {})).code).toBe(0);
+    expect(f.calls).toEqual(["checkout", STAGE, BEGIN, OFFER, `raise ${HEAD}`, LAND]);
+    for (const reading of [{ pulama: "moved" as const, lit: true, keeper: "struck-due" as const }, { pulama: "moved" as const, lit: false, keeper: "vests" as const }]) {
+      const g = fakes({ tty: false, reading });
+      expect(await riteKukulu(g.ports, {}), JSON.stringify(reading)).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });
+      expect(g.calls).toEqual(["checkout", STAGE]);
+    }
+  });
+
   it("RED: no lei and an image the pūlama never admitted, with no terminal, stops before the raise and names the hand act; CONTROL: an admission, or an offer resting from an earlier run, raises with no route", async () => {
     const f = fakes({ tty: false, begin: ABSENT, reading: LIT });
     expect(await riteKukulu(f.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });

@@ -760,7 +760,7 @@ image_digest() {
 }
 stand_pulama() {
   [ -n "$PULAMA_MODE" ] || return 0
-  compose --profile pulama up -d --no-recreate pulama || die "the pūlama did not stand; nothing raised"
+  compose --profile pulama up -d --no-recreate "$(pulama_svc)" || die "the pūlama did not stand; nothing raised"
   image_digest
   # THE IMAGE OFFERS ITS SEED BESIDE ITS DIGEST. A one-shot of the image itself reads the seed it carries (no house
   # mounted: the pūlama compares nothing, and the founding record reads at boot, inside the vessel) and prints the whole
@@ -768,12 +768,29 @@ stand_pulama() {
   # so a seed read never blocks a stand.
   frame=$(docker run --rm -e LAR_ROOT=/lar "$image" node "$CLI" vessel floor seed --genesis /app/genesis --image "$digest" 2>/dev/null | tail -n 1) || frame=""
   case "$frame" in '{'*) report=$frame ;; *) report=$digest ;; esac
-  compose --profile pulama exec -T pulama node "$PULAMA_MAIN" image "$report" || die "the pūlama refused the image report for $digest; nothing raised"
+  sp_svc=$(pulama_svc)
+  compose --profile pulama exec -T "$sp_svc" node "$PULAMA_MAIN" image "$report" || die "the pūlama refused the image report for $digest; nothing raised"
+  # THE KEEPER'S OWN CLOSURE, read off the container it runs (never the tag, which a build moved ahead of any restand).
+  sp_id=$(compose --profile pulama ps -q --status running "$sp_svc" 2>/dev/null) || sp_id=""
+  sp_closure=$(closure_label container "$sp_id")
+  [ -z "$sp_closure" ] || compose --profile pulama exec -T "$sp_svc" node "$PULAMA_MAIN" closure "$sp_closure" </dev/null >/dev/null || printf '%s\n' 'lares-container: the pūlama refused its closure report, so no keeper commit names what it hands from' >&2
 }
 # Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
 # unknown where the ps fails.
+# THE FIRE'S SERVICE (the keeper tally): two keeper services stand in the compose file, `pulama` and `pulama-b`, so a successor can
+# stand beside the lit keeper; exactly one holds the vessel socket. Outside a handoff one alone runs, and it holds the fire:
+# `pulama-b` where it runs and `pulama` does not, else `pulama`. `other_svc` names the one a successor stands in.
+pulama_svc() {
+  sv_b=$(compose --profile pulama ps -q --status running pulama-b 2>/dev/null) || sv_b=""
+  if [ -n "$sv_b" ]; then
+    sv_a=$(compose --profile pulama ps -q --status running pulama 2>/dev/null) || sv_a=unknown
+    if [ -z "$sv_a" ]; then printf pulama-b; return 0; fi
+  fi
+  printf pulama
+}
+other_svc() { if [ "$1" = pulama ]; then printf pulama-b; else printf pulama; fi; }
 pulama_state() {
-  p_id=$(compose --profile pulama ps -q --status running pulama) || { printf unknown; return 0; }
+  p_id=$(compose --profile pulama ps -q --status running "$(pulama_svc)") || { printf unknown; return 0; }
   if [ -n "$p_id" ]; then printf running; else printf absent; fi
 }
 
@@ -795,7 +812,7 @@ closure_label() { # $1 = image|container, $2 = the reference; a label that reads
 pr_state=unread; pr_ran=""; pr_stands=""; pr_closure=""
 pulama_reading() {
   pr_state=unread; pr_ran=""; pr_stands=""; pr_closure=""
-  pr_id=$(compose --profile pulama ps -q --status running pulama 2>/dev/null) || return 0
+  pr_id=$(compose --profile pulama ps -q --status running "$(pulama_svc)" 2>/dev/null) || return 0
   if [ -z "$pr_id" ]; then pr_state=absent; return 0; fi
   pr_ran=$(docker inspect --format '{{.Image}}' "$pr_id" 2>/dev/null) || pr_ran=""
   pr_stands=$(docker image inspect --format '{{.Id}}' "$IMAGE_REF" 2>/dev/null) || pr_stands=""
@@ -1100,10 +1117,15 @@ pulama_restand() {
   restand_state=$(pulama_state)
   [ "$restand_state" != unknown ] || die "pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated"
   ensure_house
+  restand_svc=$(pulama_svc)
   if [ "$restand_state" = running ]; then
-    compose --profile pulama exec -T pulama node "$PULAMA_MAIN" lock </dev/null || die "the pūlama refused the lock; nothing recreated"
+    compose --profile pulama exec -T "$restand_svc" node "$PULAMA_MAIN" lock </dev/null || die "the pūlama refused the lock; nothing recreated"
   fi
-  compose --profile pulama up -d --force-recreate pulama || die "the pūlama did not stand on the current image"
+  # A SUCCESSOR LEFT STANDING (a handoff that stopped) goes down first: the struck fire relights ONE keeper.
+  restand_other=$(other_svc "$restand_svc")
+  restand_left=$(compose --profile pulama ps -q --status running "$restand_other" 2>/dev/null) || restand_left=""
+  [ -z "$restand_left" ] || compose --profile pulama stop "$restand_other" >/dev/null || die "the successor keeper ($restand_other) did not stop; nothing recreated"
+  compose --profile pulama up -d --force-recreate "$restand_svc" || die "the pūlama did not stand on the current image"
   restand_image=$(value_of LARES_IMAGE); [ -n "$restand_image" ] || restand_image=lares-surface:local
   restand_digest=$(docker image inspect --format '{{.Id}}' "$restand_image" 2>/dev/null) || restand_digest=""
   restand_digest=$(printf '%s' "$restand_digest" | tr -d '\r')
@@ -1186,10 +1208,14 @@ resolve_image() { # $1 = a revision, or nothing for the prior image
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-ps_lit=""; ps_admitted=""
+ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""
 pulama_status_read() { # $1 = the image digest
-  ps_lit=""; ps_admitted=""
-  ps_flat=$(compose --profile pulama exec -T pulama node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
+  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""
+  ps_flat=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
+  # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
+  ps_vest=$(printf '%s' "$ps_flat" | sed -n 's/.*"vestReady":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
+  ps_pending=$(printf '%s' "$ps_flat" | sed -n 's/.*"pending":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
+  case "$ps_flat" in *'"struckDue":true'*) ps_struck=yes ;; esac
   case "$ps_flat" in *'"lit":true'*) ps_lit=yes ;; *'"lit":false'*) ps_lit=no; return 0 ;; *) return 0 ;; esac
   ps_list=$(printf '%s' "$ps_flat" | sed -n 's/.*"admitted":\[\([^]]*\)\].*/\1/p')
   ps_ended=$(printf '%s' "$ps_flat" | sed -n 's/.*"ended":\[\([^]]*\)\].*/\1/p')
@@ -1215,14 +1241,18 @@ print_reading() {
   rd_image=$(image_id) || rd_image=""
   if vessel_on_image; then rd_current=true; else rd_current=false; fi
   if [ -n "$vo_running" ]; then rd_vessel=standing; else rd_vessel=down; fi
-  rd_pulama=off; rd_lit=null; rd_admitted=null
+  rd_pulama=off; rd_lit=null; rd_admitted=null; rd_keeper=""
   if [ -n "$PULAMA_MODE" ]; then
     pulama_reading; rd_pulama=$pr_state
     case "$pr_state" in
       absent|unread) ;;
       *) pulama_status_read "$rd_image"
          case "$ps_lit" in yes) rd_lit=true ;; no) rd_lit=false ;; esac
-         case "$ps_admitted" in yes) rd_admitted=true ;; no) rd_admitted=false ;; esac ;;
+         case "$ps_admitted" in yes) rd_admitted=true ;; no) rd_admitted=false ;; esac
+         if [ "$pr_state" = moved ]; then
+           if [ -n "$ps_struck" ]; then rd_keeper=',"keeper":"struck-due"'
+           elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then rd_keeper=',"keeper":"vests"'; fi
+         fi ;;
     esac
   fi
   # An offer that rests names when it rested (its file's time, UTC), so a resumed rite names the begin it picks up.
@@ -1232,8 +1262,8 @@ print_reading() {
     rd_when=$(date -u -r "$HOUSE/config/kukulu-offer.json" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null) || rd_when=""
     if printf '%s' "$rd_when" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'; then rd_at=",\"offerAt\":\"$rd_when\""; fi
   else rd_offer=false; fi
-  printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s%s}\n' \
-    "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_at"
+  printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s%s%s}\n' \
+    "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_keeper" "$rd_at"
 }
 HAND_LINE='your hand: lares rite kukulu on a terminal'
 # THE KEEP AFTER THE RAISE: a keep a down left owed (`run/keep-owed`, this run's or an earlier one's) runs again once the new
@@ -1251,16 +1281,60 @@ keep_after_raise() {
     KEEP_SAID='deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean'
   fi
 }
+# THE HANDED FIRE (the keeper tally): a successor stands beside the lit keeper in the other keeper service, the host reports its
+# image and closure there, it offers a one-handoff key, the lit keeper vests to it (its closure must equal the committed D′), and
+# the successor opens the slot and lands the pair. A refusal or a red pair stops the successor, leaves the old fire burning and the
+# vessel as it stood, and names the hand's ways on. The slot crosses this pipe once, sealed to the successor's key; nothing rests.
+KV_OLD=""; KV_NEW=""
+keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\([a-z-]*\)".*/\1/p'; }
+keeper_vest() { # $1 = the image digest the successor serves
+  KV_OLD=$(pulama_svc); KV_NEW=$(other_svc "$KV_OLD")
+  command -v node >/dev/null 2>&1 || die "the keeper handoff reads the vest's answer with the host's node, and none answers here; nothing moved: light by hand with \`lares rite kukulu\` on a terminal (the struck fire)"
+  kv_fail() {
+    compose --profile pulama stop "$KV_NEW" >/dev/null 2>&1 || true
+    die "$1; the successor stopped, the old fire still burns and nothing moved: your hand: \`lares rite kukulu\` on a terminal lights it struck, or \`lares pulama keeper-commit\` names the successor again"
+  }
+  printf 'lares-container: rebuild: a keeper commit names this closure, so the living fire passes to a successor (%s) with no route\n' "$KV_NEW" >&2
+  compose --profile pulama up -d --force-recreate "$KV_NEW" || kv_fail "the successor keeper ($KV_NEW) did not stand"
+  kv_id=$(compose --profile pulama ps -q --status running "$KV_NEW" 2>/dev/null) || kv_id=""
+  kv_closure=$(closure_label container "$kv_id")
+  [ -n "$kv_closure" ] || kv_fail "the successor's container carries no pūlama closure label"
+  compose --profile pulama exec -T "$KV_NEW" node "$PULAMA_MAIN" image "$1" </dev/null >/dev/null || kv_fail "the successor refused the image report"
+  compose --profile pulama exec -T "$KV_NEW" node "$PULAMA_MAIN" closure "$kv_closure" </dev/null >/dev/null || kv_fail "the successor refused its closure report"
+  kv_offer=$(compose --profile pulama exec -T "$KV_NEW" node "$PULAMA_MAIN" keeper-offer </dev/null) || kv_fail "the successor offered no key ($(keeper_reading "$kv_offer"))"
+  kv_to=$(printf '%s' "$kv_offer" | tr -d ' \t\r\n' | sed -n 's/.*"to":"\([0-9a-f]\{64\}\)".*/\1/p')
+  [ -n "$kv_to" ] || kv_fail "the successor's offer named no key"
+  kv_vest=$(compose --profile pulama exec -T "$KV_OLD" node "$PULAMA_MAIN" keeper-vest "{\"to\":\"$kv_to\",\"closure\":\"$kv_closure\"}" </dev/null) || kv_fail "the lit keeper refused the vest ($(keeper_reading "$kv_vest"))"
+  kv_slot=$(printf '%s' "$kv_vest" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>{const a=JSON.parse(s);if(!a.slot)process.exit(1);process.stdout.write(JSON.stringify({slot:a.slot}))})') || kv_fail "the vest's answer carried no slot"
+  kv_land=$(compose --profile pulama exec -T "$KV_NEW" node "$PULAMA_MAIN" keeper-receive "$kv_slot" </dev/null) || kv_fail "the successor read the keeper pair red ($(keeper_reading "$kv_land")) and locked"
+  printf 'lares-container: rebuild: the keeper pair reads par; the successor (%s) stands lit by vest, and asked no route\n' "$KV_NEW" >&2
+}
+# After the down (the old keeper still served the vessel's keep and census): the old keeper locks and stops, then the successor
+# claims the vessel socket. Two keepers never both hold it: the claim refuses while the old one still answers.
+keeper_take_fire() {
+  compose --profile pulama exec -T "$KV_OLD" node "$PULAMA_MAIN" lock </dev/null >/dev/null || die "the old keeper ($KV_OLD) refused its lock; the successor stands lit beside it: read both with \`lares pulama status\`, then \`lares rite kukulu\` again"
+  compose --profile pulama stop "$KV_OLD" >/dev/null || die "the old keeper ($KV_OLD) did not stop; \`lares rite kukulu\` again picks up from here"
+  compose --profile pulama exec -T "$KV_NEW" node "$PULAMA_MAIN" take-fire </dev/null >/dev/null || die "the successor ($KV_NEW) could not take the vessel socket; \`lares rite kukulu\` on a terminal relights the fire struck"
+  printf 'lares-container: rebuild: the living fire passed to %s; it holds the vessel socket\n' "$KV_NEW" >&2
+}
 stand_house() {
   s_digest=$(image_id) || s_digest=""
-  s_restand=""; s_light=""; s_admit=""; s_stays=""; s_why=""
+  s_restand=""; s_light=""; s_admit=""; s_stays=""; s_why=""; s_vest=""
   if vessel_on_image; then s_stays=yes; fi
   if [ -n "$PULAMA_MODE" ]; then
     pulama_reading
     case "$pr_state" in
       unread) die "rebuild stops before anything moves: whether the pūlama stands, or what it runs, reads unknown (read it with \`tools/lares-container.sh pulama status\`)" ;;
       absent) s_restand=yes; s_light=yes; s_why="no pūlama runs" ;;
-      moved) s_restand=yes; s_light=yes; s_why="the pūlama's code closure moved" ;;
+      moved)
+         # THE HANDED FIRE: a lit keeper whose live commit names the closure the new image carries vests its successor with no
+         # route; else (no commit, another closure, the struck fire due, an unlit keeper) the struck fire relights by hand.
+         pulama_status_read "$s_digest"
+         if [ "$ps_lit" = yes ] && [ -z "$ps_struck" ] && [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then s_vest=yes
+         else
+           s_restand=yes; s_light=yes; s_why="the pūlama's code closure moved"
+           [ -z "$ps_struck" ] || s_why="the pūlama's code closure moved and the keeper's handed run owes the struck fire"
+         fi ;;
       *) pulama_status_read "$s_digest"
          case "$ps_lit" in
            yes) ;;
@@ -1268,7 +1342,7 @@ stand_house() {
            *) die "rebuild stops before anything moves: the pūlama answers no status, so whether it stands lit reads unknown (read it with \`tools/lares-container.sh pulama status\`)" ;;
          esac ;;
     esac
-    [ -z "$s_restand" ] || s_stays=""
+    [ -z "$s_restand" ] && [ -z "$s_vest" ] || s_stays=""
     if [ -z "$s_light" ] && [ -z "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest"; then s_admit=yes; fi
     # A CTRL+C AT THE ADMIT left the vessel standing on the image at the floor, the image unadmitted and no offer carrying it:
     # the admit it never took is owed again, never a bare unlock that cannot open.
@@ -1278,6 +1352,8 @@ stand_house() {
       [ -z "$s_admit" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)"
     fi
   fi
+  # THE VEST RUNS BEFORE THE DOWN: a red pair, or a crash, leaves the vessel standing on the old fire, and nothing moved.
+  [ -z "$s_vest" ] || keeper_vest "$s_digest"
   if [ -n "$s_stays" ]; then
     KEEP_SAID="the vessel stayed standing, so no keep ran"
     printf 'lares-container: rebuild: the vessel runs %s already and stays standing\n' "$s_digest" >&2
@@ -1285,19 +1361,31 @@ stand_house() {
     printf '%s\n' 'lares-container: rebuild: the down path (keep, census)' >&2
     down_vessel
   fi
+  [ -z "$s_vest" ] || keeper_take_fire
   [ -z "$s_restand" ] || pulama_restand
   if [ -n "$s_light" ]; then
+    # THE STRUCK FIRE IS ONE PROOF: where a new vessel rises on an image no offer carries, the light admits it under the same route.
+    s_light_admit=""
+    if [ -z "$s_stays" ] && ! offer_carries "$s_digest"; then s_light_admit=--admit; fi
     printf 'lares-container: rebuild: %s; the pūlama lights on this terminal (it reads your route, this shim never does)\n' "$s_why" >&2
-    compose --profile pulama exec pulama node "$PULAMA_MAIN" light || true
+    # shellcheck disable=SC2086
+    compose --profile pulama exec "$(pulama_svc)" node "$PULAMA_MAIN" light $s_light_admit || true
     pulama_status_read "$s_digest"
     [ "$ps_lit" = yes ] || die "the pūlama did not light (above); run \`lares rite kukulu\` again on a terminal, and it picks up from here"
+    # A LIVE KEEPER COMMIT LANDS STRUCK: the chain records the hand's relight, and a red pair stops loudly (it locks nothing).
+    if [ -n "$ps_pending" ]; then
+      kl_out=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null 2>/dev/null) || {
+        kl_why=$(printf '%s' "$kl_out" | tr -d ' \t\r\n' | sed -n 's/.*"red":"\([a-z-]*\)".*/\1/p')
+        die "the keeper pair reads red (${kl_why:-unread}) after the hand's light: the keeper stands lit and nothing locked; read it with \`lares pulama status\`, then \`lares rite kukulu\` picks up from here"
+      }
+    fi
     if [ -z "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest"; then s_admit=yes; fi
   fi
   if [ -z "$s_stays" ]; then REBUILDING=yes; up_verb; fi
   if [ -n "$PULAMA_MODE" ]; then
     if [ -n "$s_admit" ]; then
       printf '%s\n' 'lares-container: rebuild: the pūlama admits the image; it reads your route on this terminal' >&2
-      compose --profile pulama exec pulama node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock --all\`"
+      compose --profile pulama exec "$(pulama_svc)" node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock --all\`"
     fi
     if [ -n "$s_stays" ]; then unlock_or_name
     else
@@ -1372,16 +1460,57 @@ case "$verb" in
   pulama)
     [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"
     case "${1:-}" in
-      up) ensure_house; compose --profile pulama up -d --no-recreate pulama ;;
-      down) compose --profile pulama stop pulama ;;
+      up) ensure_house; compose --profile pulama up -d --no-recreate "$(pulama_svc)" ;;
+      down) compose --profile pulama stop pulama pulama-b ;;
       restand)
         [ "$#" -eq 1 ] || die "pulama restand takes no arguments"
         pulama_restand ;;
-      light|lock|status|tessera)
+      light)
+        # `light --admit`: one route lights the keeper and admits the reported image (the struck fire's one proof).
+        [ "$#" -eq 1 ] || { [ "$#" -eq 2 ] && [ "$2" = --admit ]; } || die "pulama light takes only --admit"
+        shift
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" light "$@" ;;
+      keeper-land)
+        [ "$#" -eq 1 ] || die "pulama keeper-land takes no arguments"
+        compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null ;;
+      keeper-commit)
+        # THE CONSENT SCREEN (the keeper tally, closure strength T1): the successor closure D′ of a revision, read on a clean
+        # archive of that commit (never the working tree), and the source tree it names; the clean-tree re-check archives it
+        # again and compares; then the pūlama proves the route on this terminal. Nothing here reads or types a route.
+        [ "$#" -le 2 ] || die "pulama keeper-commit takes at most one revision"
+        [ -n "$HAVE_TTY" ] || die "pulama keeper-commit reads your route on a terminal; run \`lares pulama keeper-commit\` on one (nothing committed)"
+        command -v node >/dev/null 2>&1 || die "pulama keeper-commit reads the closure with the host's node, and none answers here; nothing committed"
+        kc_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "pulama keeper-commit reads a revision from a checkout, and none answers at $SHIM_DIR"
+        kc_rev=$(git -C "$kc_top" rev-parse --verify --quiet "${2:-HEAD}^{commit}") || die "pulama keeper-commit: ${2:-HEAD} names no commit; nothing committed"
+        kc_tree=$(git -C "$kc_top" rev-parse "$kc_rev^{tree}") || die "pulama keeper-commit: the tree of $kc_rev reads nowhere; nothing committed"
+        kc_closure() {
+          ensure_house; mkdir -p -- "$HOUSE/cache" || return 1
+          kc_ctx=$(mktemp -d "$HOUSE/cache/keeper.XXXXXX") || return 1
+          git -C "$kc_top" archive --format=tar "$kc_rev" | tar -xf - -C "$kc_ctx" && node "$HERE/pulama-closure.mjs" "$kc_ctx" | tr -d '\r'
+          kc_rc=$?; rm -rf -- "$kc_ctx"; return "$kc_rc"
+        }
+        kc_d=$(kc_closure) || kc_d=""
+        printf '%s' "$kc_d" | grep -Eq '^sha256:[0-9a-f]{64}$' || die "pulama keeper-commit: no pūlama closure reads from a clean archive of $kc_rev; nothing committed"
+        printf 'lares-container: keeper-commit: the successor closure D′ = %s\n' "$kc_d" >&2
+        printf 'lares-container: keeper-commit: read from a clean archive of revision %s, source tree %s\n' "$kc_rev" "$kc_tree" >&2
+        printf 'lares-container: keeper-commit: the next `lares rite kukulu` that raises an image with this closure hands the living fire to it with no route\n' >&2
+        printf 'run the clean-tree re-check (tools/pulama-closure.mjs on a fresh archive of %s)? [Y/n] ' "$(printf '%s' "$kc_rev" | cut -c1-12)" >&2
+        kc_ans=""; read -r kc_ans || kc_ans=n
+        case "$kc_ans" in
+          ''|y|Y|yes)
+            kc_again=$(kc_closure) || kc_again=""
+            [ "$kc_again" = "$kc_d" ] || die "pulama keeper-commit: the re-check reads ${kc_again:-no closure}, not $kc_d; nothing committed"
+            printf '%s\n' 'lares-container: keeper-commit: the re-check reads the same closure' >&2 ;;
+          *) printf '%s\n' 'lares-container: keeper-commit: the re-check skipped by your word' >&2 ;;
+        esac
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" ;;
+      lock|status|tessera)
         [ "$1" != status ] || warn_pulama_skew
         # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.
         # shellcheck disable=SC2046
-        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" "$1" ;;
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" "$1" ;;
       admit)
         # admit reads the route the same way; the face ordinals name the lent set (none names every lit face).
         shift
@@ -1389,14 +1518,14 @@ case "$verb" in
           case "$face" in ''|*[!0-9]*) die "pulama admit takes face ordinals (numbers)" ;; esac
         done
         # shellcheck disable=SC2046
-        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" admit "$@" ;;
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" admit "$@" ;;
       rehive)
         # rehive stands a SHUT face's hive again from its own seed (its veil-archive row holds another identity's Archive): the
         # face's own route reads on a real terminal inside the pūlama, which holds its keys; `pulama lock` shuts every face first.
         [ "$#" -eq 2 ] || die "pulama rehive takes one face ordinal (a number)"
         case "$2" in ''|*[!0-9]*) die "pulama rehive takes one face ordinal (a number)" ;; esac
         # shellcheck disable=SC2046
-        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" rehive "$2" ;;
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" rehive "$2" ;;
       unadmit)
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
@@ -1405,7 +1534,7 @@ case "$verb" in
         case "$hex" in *[!0-9a-f]*|'') die "pulama unadmit takes one image digest (sha256:<64 hex>)" ;; esac
         [ "${#hex}" -eq 64 ] || die "pulama unadmit takes one image digest (sha256:<64 hex>)"
         # shellcheck disable=SC2046
-        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" unadmit "$2" ;;
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" unadmit "$2" ;;
       keep-seat)
         # THE KEEP SEAT ON A PŪLAMA HOUSE: the pūlama proves the steward's route on this terminal and answers the WRAPPED
         # seat plus the local signing seed on one stdout line; the shim writes that line VERBATIM as config/keep-seat.json
@@ -1423,7 +1552,7 @@ case "$verb" in
         # shim's line below stands as the prompt; the CRLF the pty writes strips before the one seat line is read, and the
         # capture clears at once (a key typed before the pūlama lifts echo lands there, never on screen or in a log).
         printf '%s\n' 'lares-container: the pūlama now reads the steward'"'"'s route to seat the keep: type it, then Enter (typed, unseen)' >&2
-        out=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" keep-seat) || true
+        out=$(compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" keep-seat) || true
         line=$(printf '%s\n' "$out" | tr -d '\r' | grep '^{"op":"keep-seat"' | tail -n 1)
         out=""
         case "$line" in
@@ -1437,7 +1566,7 @@ case "$verb" in
         tmp="$seat_file.$$.tmp"
         ( umask 077; printf '%s\n' "$file" > "$tmp" ) && chmod 600 "$tmp" && mv -f -- "$tmp" "$seat_file" || { rm -f -- "$tmp"; die "the seat could not be written to $seat_file"; }
         printf 'lares-container: the keep seat rests at %s (0600); a keep now seals under it\n' "$seat_file" >&2 ;;
-      *) die "pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera" ;;
+      *) die "pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, keep-seat, keeper-commit [<rev>], keeper-land, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"
@@ -1519,7 +1648,7 @@ case "$verb" in
           terms=$(compose exec $(pass_env) -T lares node "$CLI" lei terms "$@" </dev/null) || exit $?
           # The answer rides a pipe (tee, then the last printed object), and a captured stdout makes compose drop the pty, so the
           # exec forces one (`--no-TTY=false`): the pūlama reads the route on the operator's terminal.
-          answer=$(compose --profile pulama exec --no-TTY=false pulama node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
+          answer=$(compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
           [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
           # shellcheck disable=SC2046
           waited_exec $(pass_env) -T lares node "$CLI" lei land "$answer" </dev/null

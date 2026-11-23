@@ -1276,7 +1276,10 @@ function StandHouse {
   if ($restand) { PulamaRestand }
   if ($light) {
     [Console]::Error.WriteLine("lares-container: rebuild: $why; the pūlama lights on this terminal (it reads your route, this shim never does)")
-    & docker compose @Base --profile pulama exec pulama node $PulamaMain light
+    # THE STRUCK FIRE IS ONE PROOF: where a new vessel rises on an image no offer carries, the light admits it under the same route.
+    $lightArgs = @('light')
+    if (-not $stays -and -not (OfferCarries $digest)) { $lightArgs += '--admit' }
+    & docker compose @Base --profile pulama exec pulama node $PulamaMain @lightArgs
     PulamaStatusRead $digest
     if ($script:PsLit -ne 'yes') { Die 'the pūlama did not light (above); run `lares rite kukulu` again on a terminal, and it picks up from here' }
     if (-not $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest)) { $admit = $true }
@@ -1371,7 +1374,13 @@ switch ($verb) {
         if ($rest.Count -ne 1) { Die 'pulama restand takes no arguments' }
         PulamaRestand
       }
-      { $_ -in @('light', 'lock', 'status', 'tessera') } { if ($sub -eq 'status') { WarnPulamaSkew }; Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
+      'light' {
+        # `light --admit`: one route lights the keeper and admits the reported image (the struck fire's one proof).
+        $extra = @($rest | Select-Object -Skip 1)
+        if ($extra.Count -gt 1 -or ($extra.Count -eq 1 -and $extra[0] -ne '--admit')) { Die 'pulama light takes only --admit' }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'light') + $extra)
+      }
+      { $_ -in @('lock', 'status', 'tessera') } { if ($sub -eq 'status') { WarnPulamaSkew }; Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
       'admit' {
         # admit reads the route on a real terminal inside the pūlama; the face ordinals name the lent set (none names every lit face).
         $face = @($rest | Select-Object -Skip 1)
@@ -1421,7 +1430,7 @@ switch ($verb) {
         Move-Item -Force -LiteralPath $tmp -Destination $seatFile
         [Console]::Error.WriteLine("lares-container: the keep seat rests at $seatFile (0600); a keep now seals under it")
       }
-      default { Die 'pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera' }
+      default { Die 'pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, keep-seat, lock, status or tessera (the keeper handoff verbs ride tools/lares-container.sh)' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }

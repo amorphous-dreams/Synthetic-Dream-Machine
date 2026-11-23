@@ -72,6 +72,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" down --remove-orphans"*|*" stop "*lares*) : > "$CALL_LOG.down";; esac\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
+      // THE SUCCESSOR KEEPER (the keeper tally): the second keeper service, and its container's closure label.
+      `case " $* " in *" ps -q --status running pulama-b "*) [ -e "$CALL_LOG.b" ] && printf '%s' "\${FAKE_PULAMA_B_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *" up -d --force-recreate pulama-b "*) : > "$CALL_LOG.b"; exit 0;; esac\n` +
       `last=''; for a in "$@"; do last=$a; done\n` +
       // THE OUTGOING IMAGE (L4): its id and its revision label, one line, before a build moves the tag.
       `case " $* " in *"image inspect --format {{.Id}}|"*) [ -n "\${FAKE_NO_OUTGOING:-}" ] && exit 1; printf '%s|%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}" "\${FAKE_OUTGOING_REV:-}"; exit 0;; esac\n` +
@@ -79,7 +82,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" image ls --format {{.Tag}} "*) printf '%s\\n' "\${FAKE_IMAGE_TAGS:-}"; exit 0;; esac\n` +
       `case " $* " in *" ps -q --filter ancestor="*) id=\${last#ancestor=}; case " \${FAKE_RUNNING_IMAGES:-} " in *" $id "*) printf 'c1\\n';; esac; exit 0;; esac\n` +
       // THE PŪLAMA'S CODE CLOSURE: the image's label, and the label the running pūlama's container carries.
-      `case " $* " in *"lares.pulama.closure"*) case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}";; *) printf '%s\\n' "\${FAKE_PULAMA_CLOSURE:-}";; esac; exit 0;; esac\n` +
+      `case " $* " in *"lares.pulama.closure"*) case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}";; *) if [ -n "\${FAKE_PULAMA_B_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_B_ID}" ]; then printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}"; else printf '%s\\n' "\${FAKE_PULAMA_CLOSURE:-}"; fi;; esac; exit 0;; esac\n` +
       // A KEPT IMAGE (`<repo>:rev-<12 hex>`): its revision label, where a test names one; none stands otherwise.
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*":rev-"*) [ -n "\${FAKE_KEPT_LABEL:-}" ] || exit 1; printf '%s\\n' "\${FAKE_KEPT_LABEL}"; exit 0;; esac\n` +
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*) printf '%s\\n' "\${FAKE_IMAGE_REV_LABEL:-}"; exit 0;; esac\n` +
@@ -93,6 +96,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       // THE PŪLAMA'S STATUS (lit, the admitted set): lit and admitting nothing unless a test scripts another answer; a light
       // marks the run, and a status after it answers FAKE_PULAMA_STATUS_AFTER where a test names one.
       `case " $* " in *"pulama-main.js light"*) : > "$CALL_LOG.lit"; exit "\${FAKE_EXEC_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js keeper-offer"*) printf '%s\\n' '{"op":"keeper-offer","reading":"offered","to":"${"ab".repeat(32)}"}'; exit 0;; esac\n` +
+      `case " $* " in *"pulama-main.js keeper-vest"*) printf '%s\\n' "\${FAKE_VEST_ANSWER:-}"; exit "\${FAKE_VEST_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js keeper-receive"*) printf '%s\\n' "\${FAKE_RECEIVE_ANSWER:-{\\"reading\\":\\"landed\\"}}"; exit "\${FAKE_RECEIVE_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
@@ -1713,7 +1719,7 @@ test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama
   assert.equal(face.status, 0, face.stderr);
   assert.match(face.calls, /pulama-main\.js admit 2/);
   const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
-  assert.match(bad.stderr, /pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera/);
+  assert.match(bad.stderr, /pulama takes up, down, restand, light/);
 });
 test(`${name}: pulama-rehive-reaches-the-hand-door: rehive forwards one face ordinal to the pūlama's own verb; a bare or malformed ordinal refuses and sends nothing`, { skip }, async () => {
   const ok = await run(shim, ["pulama", "rehive", "1"], { envFile: PULAMA_ENV });
@@ -1810,18 +1816,57 @@ const CL = (h) => "sha256:" + h.repeat(64);
 const REBUILT = { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}', FAKE_CENSUS_JSON: '{"ok":true,"data":{"facesLit":[0,2],"worn":null}}' };
 const OFFER = { "config/kukulu-offer.json": '{"lei":[],"unstrung":[],"vouch":[{"body":{"image":"sha256:new"}}]}\n' };
 const ADMITTED = '{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[]}';
-test(`${name}: rebuild-lights-a-moved-closure-in-the-same-run: on a terminal, build, down, pulama restand, the light attached, up, the admit attached, unlock, wear, one closing line`, { skip: skip || !haveScript }, async () => {
-  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a") } });
+test(`${name}: rebuild-lights-a-moved-closure-in-the-same-run: on a terminal, build, down, pulama restand, ONE proof (the light attached admits the image), up, unlock, wear, one closing line`, { skip: skip || !haveScript }, async () => {
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_STATUS_AFTER: ADMITTED } });
   assert.equal(r.status, 0, r.stdout);
   const lines = r.calls.split("\n");
   const at = (re) => lines.findIndex((l) => re.test(l));
-  const build = at(/ build /), stop = at(/ stop lares$|down --remove-orphans/), lock = at(/pulama-main\.js lock$/), recreate = at(/up -d --force-recreate pulama/), light = at(/pulama-main\.js light$/), up = at(/up -d --wait lares/), admit = at(/pulama-main\.js admit$/), unlock = at(/ vault unlock --all$/), wear = at(/ wear 2 --yes$/);
-  assert.ok(build >= 0 && stop > build && lock > stop && recreate > lock && light > recreate && up > light && admit > up && unlock > admit && wear > unlock, `order build, down, lock, recreate, light, up, admit, unlock, wear:\n${r.calls}`);
+  const build = at(/ build /), stop = at(/ stop lares$|down --remove-orphans/), lock = at(/pulama-main\.js lock$/), recreate = at(/up -d --force-recreate pulama/), light = at(/pulama-main\.js light --admit$/), up = at(/up -d --wait lares/), unlock = at(/ vault unlock --all$/), wear = at(/ wear 2 --yes$/);
+  assert.ok(build >= 0 && stop > build && lock > stop && recreate > lock && light > recreate && up > light && unlock > up && wear > unlock, `order build, down, lock, recreate, light --admit, up, unlock, wear:\n${r.calls}`);
   assert.doesNotMatch(lines[light], / -T /, "the light reads the route on this terminal");
-  assert.doesNotMatch(lines[admit], / -T /, "the admit reads the route on this terminal");
+  // THE STRUCK FIRE ASKS THE PASSPHRASE ONCE: the light admitted the image, so no second admit reads a route.
+  assert.equal(at(/pulama-main\.js admit$/), -1, `no second route:\n${r.calls}`);
   assert.match(r.stdout, /the pūlama's code closure moved; the pūlama lights on this terminal/);
   assert.match(r.stdout, /the house stands on revision 0123456789ab, wearing h2/);
   assert.doesNotMatch(r.stdout, /rebuild --resume|light it by hand/);
+});
+test(`${name}: CONTROL rebuild-still-admits-what-the-light-did-not: a light that admitted nothing leaves the admit owed, attached`, { skip: skip || !haveScript }, async () => {
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a") } });
+  assert.equal(r.status, 0, r.stdout);
+  assert.match(r.calls, /pulama-main\.js light --admit\n[\s\S]*pulama-main\.js admit\n/);
+});
+const VESTS = { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_B_ID: "p2", FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"admitted":["sha256:new"],"keeper":{"pending":"${CL("b")}"},"vestReady":"${CL("b")}"}`, FAKE_VEST_ANSWER: '{"op":"keeper-vest","reading":"vested","slot":{"body":{"act":"keeper-slot"},"signer":"s","sig":"g"}}' };
+test(`${name}: RED rebuild-hands-the-living-fire: a keeper commit naming the new closure vests a successor in pulama-b with no route and no light, BEFORE the down; then the old keeper locks and stops, and the successor takes the fire`, { skip: skip || name !== "sh" }, async () => {
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, checkout: "clean", wornFace: 2, env: VESTS });
+  assert.equal(r.status, 0, r.stdout);
+  const lines = r.calls.split("\n");
+  const at = (re) => lines.findIndex((l) => re.test(l));
+  const stand = at(/up -d --force-recreate pulama-b/), closure = at(/exec -T pulama-b node \S+ closure sha256:b{64}$/), offer = at(/exec -T pulama-b node \S+ keeper-offer$/), vest = at(/exec -T pulama node \S+ keeper-vest \{"to":"(ab){32}","closure":"sha256:b{64}"\}$/), receive = at(/exec -T pulama-b node \S+ keeper-receive \{"slot":/), down = at(/ stop lares$|down --remove-orphans/), lock = at(/exec -T pulama node \S+ lock$/), stop = at(/ stop pulama$/), take = at(/exec -T pulama-b node \S+ take-fire$/), up = at(/up -d --wait lares/);
+  assert.ok(stand >= 0 && closure > stand && offer > closure && vest > offer && receive > vest && down > receive && lock > down && stop > lock && take > stop && up > take, `order:\n${r.calls}`);
+  assert.equal(at(/pulama-main\.js light/), -1, "a handed fire asks no route");
+  assert.equal(at(/up -d --force-recreate pulama$/), -1, "the lit keeper is never recreated");
+  assert.match(r.stderr, /the keeper pair reads par; the successor \(pulama-b\) stands lit by vest, and asked no route/);
+});
+test(`${name}: CONTROL rebuild-red-vest-leaves-the-old-fire: a refused vest (closure-differs) stops the successor, names the hand's ways on, and moves nothing: no down, no lock, no take-fire`, { skip: skip || name !== "sh" }, async () => {
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, checkout: "clean", wornFace: 2, env: { ...VESTS, FAKE_VEST_RC: "1", FAKE_VEST_ANSWER: '{"op":"keeper-vest","reading":"closure-differs"}' } });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /the lit keeper refused the vest \(closure-differs\); the successor stopped, the old fire still burns and nothing moved: your hand: `lares rite kukulu` on a terminal lights it struck, or `lares pulama keeper-commit` names the successor again/);
+  assert.match(r.calls, / stop pulama-b/);
+  assert.doesNotMatch(r.calls, /keeper-receive|take-fire|pulama-main\.js lock|down --remove-orphans/);
+});
+test(`${name}: CONTROL rebuild-red-pair-locks-the-successor: a receive that reads the pair red stops the successor, and the old keeper stays lit and serving`, { skip: skip || name !== "sh" }, async () => {
+  const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, checkout: "clean", wornFace: 2, env: { ...VESTS, FAKE_RECEIVE_RC: "1", FAKE_RECEIVE_ANSWER: '{"op":"keeper-receive","reading":"faces-short"}' } });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /the successor read the keeper pair red \(faces-short\) and locked; the successor stopped, the old fire still burns/);
+  assert.doesNotMatch(r.calls, /take-fire|pulama-main\.js lock/);
+});
+test(`${name}: rebuild-image-names-the-keeper: a moved closure a live commit names reads keeper vests; the struck fire due reads struck-due; CONTROL: no commit names no keeper`, { skip: skip || name !== "sh" }, async () => {
+  const vests = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: VESTS });
+  assert.match(vests.stdout, /"keeper":"vests"/);
+  const due = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"struckDue":true}}' } });
+  assert.match(due.stdout, /"keeper":"struck-due"/);
+  const none = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true}' } });
+  assert.doesNotMatch(none.stdout, /"keeper"/);
 });
 test(`${name}: rebuild-stops-before-the-down-with-no-terminal: a moved closure, an unlit pūlama, or an image neither admitted nor offered names the hand act and moves nothing`, { skip }, async () => {
   for (const [env, why] of [
@@ -1887,7 +1932,7 @@ test(`${name}: rebuild-picks-up-where-the-house-stands: after a stop, the image 
   const r = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...resumed, FAKE_PULAMA_STATUS_AFTER: '{"op":"status","lit":true}' } });
   assert.equal(r.status, 0, r.stdout);
   assert.doesNotMatch(r.calls, / build |--force-recreate|pulama-main\.js lock/);
-  assert.match(r.calls, /pulama-main\.js light\n[\s\S]*up -d --wait lares[\s\S]*pulama-main\.js admit[\s\S]* wear 2/);
+  assert.match(r.calls, /pulama-main\.js light --admit\n[\s\S]*up -d --wait lares[\s\S]*pulama-main\.js admit[\s\S]* wear 2/);
   assert.match(r.stdout, /the pūlama stands unlit; the pūlama lights on this terminal/);
   const dark = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", env: resumed });
   assert.notEqual(dark.status, 0);

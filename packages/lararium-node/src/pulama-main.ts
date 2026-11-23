@@ -56,7 +56,7 @@ import { rehiveShutFace } from "./face-rehive.js";
 import { readHand } from "./hand-act-gate.js";
 import { PulamaVerbUsage, handVerbExit, keepSeatLine, readRoute, runHandVerb } from "./pulama-verbs.js";
 import { servePulama } from "./pulama-server.js";
-import { listenPulama, socketPathFits } from "./pulama-socket.js";
+import { listenPulama, pulamaAnswers, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { wardCredential } from "./ward-credential.js";
@@ -93,10 +93,20 @@ async function serve(): Promise<void> {
   };
   // THE REHIVE runs over this pūlama's own holder and custody files: the face's key opens for the act alone (`openFaceForAct`).
   const rehive = (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => rehiveShutFace({ holder, io: new FsCustodyIo(homes), ordinal, credentials });
-  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, rehive, onLog: log });
+  // THE FIRE IS THE VESSEL SOCKET, and exactly one keeper holds it. A keeper that finds another already answering there stands
+  // as its SUCCESSOR: unlit, on its own hand door alone, until a vest (or the hand's light) lights it and `take-fire` claims the
+  // socket once the keeper before it let go. The claim itself refuses a second holder (`listenPulama`).
+  let listener: { close(): Promise<void> } | null = null;
+  const claim = async (): Promise<{ readonly taken: true } | { readonly refusal: string; readonly detail: string }> => {
+    if (listener !== null) return { taken: true };
+    try { listener = await listenPulama(socket, (channel) => server.accept(channel)); return { taken: true }; }
+    catch (err) { return { refusal: "fire-held", detail: err instanceof Error ? err.message : String(err) }; }
+  };
+  const fire = { holds: () => listener !== null, take: claim };
+  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, rehive, fire, worn: () => server.worn?.(), onLog: log });
 
-  // THE VESSEL SOCKET CLAIMS FIRST: a second pūlama over the same socket refuses here, before it touches a hand door.
-  const listener = await listenPulama(socket, (channel) => server.accept(channel));
+  const successor = await pulamaAnswers(socket);
+  if (!successor) { const first = await claim(); if ("refusal" in first) throw new Error(first.detail); }
   mkdirSync(dirname(hand), { recursive: true, mode: 0o700 });
   rmSync(hand, { force: true });
   const handServer = createServer((sock) => {
@@ -122,7 +132,9 @@ async function serve(): Promise<void> {
   });
   await new Promise<void>((resolve, reject) => { handServer.once("error", reject); handServer.listen(hand, resolve); });
   chmodSync(hand, 0o600);
-  log(`standing unlit at ${socket}; the operator lights it by hand: node dist/src/pulama-main.js light`);
+  log(successor
+    ? `standing unlit as a successor beside the keeper that holds ${socket}; a vest lights it (keeper-offer, keeper-receive), or the hand does, then take-fire`
+    : `standing unlit at ${socket}; the operator lights it by hand: node dist/src/pulama-main.js light`);
 
   let leaving = false;
   const leave = (signal: string): void => {
@@ -131,7 +143,7 @@ async function serve(): Promise<void> {
     log(`${signal}: locking before the process leaves`);
     void (async () => {
       try { await server.lock(); } finally {
-        await listener.close().catch(() => undefined);
+        await listener?.close().catch(() => undefined);
         handServer.close();
         rmSync(hand, { force: true });
         process.exit(0);
