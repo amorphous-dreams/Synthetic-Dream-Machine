@@ -24,7 +24,7 @@ export interface ReadinessState {
   readonly markReady: () => void;
   /** The engine's fall body where it has fallen (`engine-watch`), else null. */
   readonly fall?: () => Record<string, unknown> | null;
-  /** Count the planes the boot held back (`MountManifest`): pending and degraded, read-only. */
+  /** Keep the live manifest for counts of pending and degraded planes. */
   readonly notePlanes?: (manifest: MountManifest) => void;
   /** The planes held back, where any stand; null where none do. */
   readonly held?: () => { readonly pending: number; readonly degraded: number } | null;
@@ -41,17 +41,17 @@ export interface ReadinessFace {
  */
 export function createReadinessState(engine?: EngineWatch): ReadinessState & Required<Pick<ReadinessState, "held" | "notePlanes">> {
   let current: "starting" | "ready" = "starting";
-  let held: { pending: number; degraded: number } | null = null;
+  let planes: MountManifest | null = null;
   return {
     status: () => (engine?.fallen() ? "engine-terminated" : current),
     markReady: () => { current = "ready"; },
     fall: () => { const fall = engine?.fallen(); return fall ? engineFallBody(fall) : null; },
-    held: () => held,
-    notePlanes: (manifest) => {
-      const pending = manifest.entries.filter((e) => e.status === "pending").length;
-      const degraded = manifest.entries.filter((e) => e.status === "degraded").length;
-      held = pending + degraded > 0 ? { pending, degraded } : null;
+    held: () => {
+      const pending = planes?.entries.filter((e) => e.status === "pending").length ?? 0;
+      const degraded = planes?.entries.filter((e) => e.status === "degraded").length ?? 0;
+      return pending + degraded > 0 ? { pending, degraded } : null;
     },
+    notePlanes: (manifest) => { planes = manifest; },
   };
 }
 
