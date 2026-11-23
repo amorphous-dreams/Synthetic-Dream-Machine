@@ -43,7 +43,7 @@ import { isPromoteAct, promoteActEdge } from "./promote-act-gate.js";
 import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
-import { resolve }                       from "path";
+import { join, resolve }                 from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, floorCarriageBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
 import type { DocCensusReading, HeldSaves, MountManifest } from "@lararium/mesh";
@@ -87,7 +87,7 @@ import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
-import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
 import { mountReachFaceWatch, reachFaceBootNotice } from "./reach-face-watch.js";
@@ -267,8 +267,7 @@ async function main(): Promise<void> {
     interfaces:  networkInterfaces() as unknown as InterfaceTable,
   });
   // Marked scratch roots need no notice about optional reach; malformed declarations still warn.
-  const scratchNotice = testScratchNotice(rootDir);
-  const testScratch = scratchNotice !== null;
+  const testScratch = existsSync(join(rootDir, ".lar-test-scratch"));
   const reachNotice = reachFaceBootNotice(process.env["LAR_PUBLIC_URL"], `http://localhost:${port}`, testScratch);
   if (reachNotice !== null) console.log(`[lararium] ${reachNotice}`);
   // The composition reads the asked standing, so it runs only where its origins are read. A lararium
@@ -366,6 +365,7 @@ async function main(): Promise<void> {
   // THE ONE SEAT. Every sealed row this process reads or writes reaches the holder through it, and the seat
   // carries no opener: the key arrives on the custody door alone, and a row asked for at the floor refuses.
   seatCustody(holder);
+  const scratchNotice = testScratchNotice(rootDir);
   if (scratchNotice) console.log(scratchNotice);
   // Late-bound: the door's acts recompose, and the recomposition closes over what `main` builds below.
   let custodyDoor: CustodyDoor | null = null;
