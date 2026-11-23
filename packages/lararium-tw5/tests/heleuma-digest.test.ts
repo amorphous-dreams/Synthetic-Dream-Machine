@@ -18,7 +18,8 @@ import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
 import { frameCarrier, verifyBcc } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
-import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches } from "../scripts/heleuma-digest.js";
+import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches, stampSourceAnchor } from "../scripts/heleuma-digest.js";
+import { rootMetaFields } from "../src/root-meta.js";
 
 const MODULE = "lar:///ha.ka.ba/lararium/tw5/modules/probe";
 const CODE = 'exports.probe = function () { return "probe"; };';
@@ -59,6 +60,13 @@ describe("★ a patched anchor re-stamps its check ★", () => {
 });
 
 describe("mesh source window", () => {
+  test("commit stamps a stale source digest and dry-run reads it clean", () => {
+    const tid = `title: ${MODULE}\ntype: text/plain\n\n${CODE}`;
+    expect(sourceTiddlerMatches(CODE, tid, MODULE, String(rootMetaFields(anchor)["source-sha256"]))).toBe(false);
+    const stamped = stampSourceAnchor(anchor, CODE);
+    expect(verifyBcc(stamped)).toBe("ok");
+    expect(sourceTiddlerMatches(CODE, tid, MODULE, String(rootMetaFields(stamped)["source-sha256"]))).toBe(true);
+  });
   test("a stale digest reads as drift; the matching digest passes", () => {
     const tid = `title: ${MODULE}\ntype: text/plain\n\n${CODE}`;
     expect(sourceTiddlerMatches(CODE, tid, MODULE, `sha256:${sha("stale")}`)).toBe(false);

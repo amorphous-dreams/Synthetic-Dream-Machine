@@ -45,7 +45,7 @@ export interface LitFaceProjections {
 }
 
 type Stop = () => Promise<void>;
-interface Seat { readonly face: LitFaceProjectionEntry & { readonly handleIndex: number }; mounting: Promise<Stop | undefined>; rebuilding: boolean }
+interface Seat { readonly face: LitFaceProjectionEntry & { readonly handleIndex: number }; mounting: Promise<Stop | undefined>; rebuilding: boolean; awaitingEngine: boolean }
 
 export function litFaceProjections(ports: {
   readonly mount: LitFaceProjectionMount;
@@ -63,13 +63,14 @@ export function litFaceProjections(ports: {
     const handleIndex = entry.handleIndex;
     if (typeof handleIndex !== "number" || !entry.diskMirrors?.length) return;
     const face = { ...entry, handleIndex };
-    const seat: Seat = { face, mounting: Promise.resolve(undefined), rebuilding: false };
+    const seat: Seat = { face, mounting: Promise.resolve(undefined), rebuilding: false, awaitingEngine: true };
     held.set(key, seat);
     seat.mounting = (async () => {
       const engine = await ports.engine(handleIndex);
+      seat.awaitingEngine = false;
       if (engine === null) { log(`face h${handleIndex} composes no engine; it projects nothing`); return undefined; }
       // A drop that came while the engine composed leaves nothing to mount.
-      if (held.get(key) !== seat) return undefined;
+      if (held.get(key) !== seat || seat.rebuilding) return undefined;
       return await ports.mount(face, engine);
     })().catch((error: unknown) => {
       log(`face h${handleIndex}'s projection did not mount: ${error instanceof Error ? error.message : String(error)}`);
@@ -93,6 +94,8 @@ export function litFaceProjections(ports: {
       if (key === undefined) return;
       const seat = held.get(key)!;
       seat.rebuilding = true;
+      // The engine lookup itself can trigger this hook. Waiting for that mount would wait on this hook.
+      if (seat.awaitingEngine) return;
       const stop = await seat.mounting;
       seat.mounting = Promise.resolve(undefined);
       await stop?.();
