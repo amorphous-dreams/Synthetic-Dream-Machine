@@ -497,6 +497,10 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
       const plane = newest.bagId === undefined ? "the manifest names no plane, so a sibling may carry it" : `${newest.bagId} rides to this face's sibling devices`;
       return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. ${moved !== undefined ? `\`--release ${documentId}\` returns the moved bytes` : `Lay a known copy (from a sibling or a keep bundle) at ${live}, then \`--release-keep ${documentId}\``}` };
     }
+    if (existsSync(live)) {
+      const aside = mkdtempSync(join(dirname(live), "sync-state-aside-"));
+      renameSync(live, join(aside, "store"));
+    }
     // THE ID STARTS EMPTY UNDER ITS OWN NAME. With no bytes the resolver would mint a blank under a NEW id, an orphan the
     // pointer never names; one empty snapshot under the held id keeps every write where the pointer reads.
     const empty = save(from_(emptyLarDoc() as unknown as Record<string, unknown>));
