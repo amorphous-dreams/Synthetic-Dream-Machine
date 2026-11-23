@@ -15,13 +15,17 @@
  */
 
 import { spawn } from "node:child_process";
-import { mkdirSync, renameSync, writeFileSync, existsSync } from "node:fs";
-import { join, basename, sep } from "node:path";
+import { createHash } from "node:crypto";
+import { from as from_, save } from "@automerge/automerge";
+import { mkdirSync, renameSync, existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { join, basename, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  emptyLarDoc,
   isCondemned,
   isUnresolved,
   type DocLoadProbe,
+  type MountManifest,
   type ProbeOptions,
   type ProbeResult,
   type ProbeStatus,
@@ -29,6 +33,7 @@ import {
   type StoreIntegrityReport,
 } from "@lararium/mesh";
 import { docStorePath, precheckDocStore } from "./store-integrity.js";
+import { atomicWriteFileSync } from "./fs-atomic.js";
 
 export { isCondemned, isUnresolved };
 export type { DocLoadProbe, ProbeOptions, ProbeResult, ProbeStatus };
@@ -93,7 +98,7 @@ interface ChildLine {
 function result(
   documentId: string,
   status: ProbeStatus,
-  extra: { heads?: readonly string[]; chunks?: number; reason?: string; integrity?: StoreIntegrityReport; cleanTail?: ProbeResult["cleanTail"] },
+  extra: { heads?: readonly string[]; chunks?: number; reason?: string; integrity?: StoreIntegrityReport; cleanTail?: ProbeResult["cleanTail"]; held?: ProbeResult["held"] },
 ): ProbeResult {
   return {
     documentId,
@@ -103,6 +108,7 @@ function result(
     ...(extra.reason !== undefined ? { reason: extra.reason } : {}),
     ...(extra.integrity !== undefined ? { integrity: extra.integrity } : {}),
     ...(extra.cleanTail !== undefined ? { cleanTail: extra.cleanTail } : {}),
+    ...(extra.held !== undefined ? { held: extra.held } : {}),
   };
 }
 
@@ -118,6 +124,11 @@ export async function probeDocLoad(
   opts: ProbeOptions = {},
 ): Promise<ProbeResult> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+
+  // AN ID IN QUARANTINE READS HELD, NEVER BLANK. Its bytes rest aside, so the store holds none under this id, and the
+  // child would read zero chunks as a fresh document. The manifest the move wrote answers instead, on every boot.
+  const hold = quarantineHoldOf(storageDir, documentId);
+  if (hold) return heldVerdict(hold);
 
   let integrity: StoreIntegrityReport | undefined;
   if (!opts.skipPrecheck) {
@@ -259,6 +270,9 @@ export async function recoverCleanTail(
   opts: ProbeOptions = {},
 ): Promise<ProbeResult | null> {
   const documentId = condemned.documentId;
+  // An id already in quarantine holds no bytes to cut: a clean-tail child would read zero chunks as a clean prefix and
+  // promote a blank. The hold answers first.
+  if (condemned.held || quarantineHoldOf(storageDir, documentId)) return null;
   const outcome = await runCleanTailChild(storageDir, documentId, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   if (outcome.kind === "unresolved") {
     return result(documentId, "unresolved", { reason: "clean-tail recovery ran past its patience — no verdict" });
@@ -326,7 +340,6 @@ export function quarantineDoc(
   let n = 1;
   while (existsSync(dest)) dest = join(qroot, `${flat}.${n++}`);
 
-  renameSync(src, dest);
   const manifest: QuarantineManifest = {
     documentId: probe.documentId,
     status: probe.status,
@@ -336,8 +349,143 @@ export function quarantineDoc(
     ...(probe.chunks !== undefined ? { chunks: probe.chunks } : {}),
     ...(probe.integrity !== undefined ? { integrity: probe.integrity } : {}),
   };
+  // THE MANIFEST RESTS BEFORE THE MOVE. It carries the hold every later boot reads (`quarantineHoldOf`), so a move with no
+  // manifest beside it would return the id as a fresh blank. A move that fails takes its manifest back with it.
+  const manifestPath = join(qroot, `${dest.slice(qroot.length + 1)}.manifest.json`);
+  atomicWriteFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   try {
-    writeFileSync(join(qroot, `${flat}.manifest.json`), JSON.stringify(manifest, null, 2), "utf8");
-  } catch { /* the manifest stays best-effort — the move carries the durable act */ }
+    renameSync(src, dest);
+  } catch (err) {
+    rmSync(manifestPath, { force: true });
+    throw err;
+  }
   return dest;
+}
+
+const QUARANTINE_DIR_RE = /^quarantine-torn-snapshots-/;
+
+/** One quarantine manifest at rest, with the file it rests in. */
+export interface QuarantineHold {
+  readonly manifest: QuarantineManifest;
+  readonly manifestPath: string;
+}
+
+const isManifest = (v: unknown): v is QuarantineManifest => {
+  const r = v as Record<string, unknown> | null;
+  return r !== null && typeof r === "object" && typeof r["documentId"] === "string" && typeof r["status"] === "string"
+    && typeof r["quarantinedAt"] === "string" && typeof r["movedTo"] === "string";
+};
+
+/**
+ * Every quarantine manifest resting beside the store, held or released, oldest first. A manifest that does not parse
+ * names nothing and drops out (its bytes still sit aside, for the hand to read).
+ */
+export function readQuarantineManifests(storageDir: string): QuarantineHold[] {
+  const out: QuarantineHold[] = [];
+  let dirs: string[];
+  try { dirs = readdirSync(storageDir).filter((name) => QUARANTINE_DIR_RE.test(name)); } catch { return out; }
+  for (const dir of dirs.sort()) {
+    let names: string[];
+    try { names = readdirSync(join(storageDir, dir)).filter((name) => name.endsWith(".manifest.json")); } catch { continue; }
+    for (const name of names.sort()) {
+      const manifestPath = join(storageDir, dir, name);
+      try {
+        const parsed: unknown = JSON.parse(readFileSync(manifestPath, "utf8"));
+        if (isManifest(parsed)) out.push({ manifest: parsed, manifestPath });
+      } catch { /* unreadable: names nothing */ }
+    }
+  }
+  return out.sort((a, b) => a.manifest.quarantinedAt.localeCompare(b.manifest.quarantinedAt));
+}
+
+/** The ids the store holds in quarantine with no hand act yet released, each with its newest manifest. */
+export function quarantineHolds(storageDir: string): QuarantineHold[] {
+  const newest = new Map<string, QuarantineHold>();
+  for (const hold of readQuarantineManifests(storageDir)) {
+    if (hold.manifest.released) continue;
+    newest.set(hold.manifest.documentId, hold);
+  }
+  return [...newest.values()];
+}
+
+/** The hold on one id, or null where no unreleased manifest names it. */
+export function quarantineHoldOf(storageDir: string, documentId: string): QuarantineHold | null {
+  return quarantineHolds(storageDir).find((h) => h.manifest.documentId === documentId) ?? null;
+}
+
+/** The hand act that ends a hold, as the deep vessel lens takes it. */
+export const QUARANTINE_RELEASE_ACT = "with the vessel stopped, `lares vessel read vessel --release <documentId>` returns the bytes (the next stand probes them again), or `--release-fresh <documentId>` starts the id empty while the bytes stay aside";
+
+function heldVerdict(hold: QuarantineHold): ProbeResult {
+  const m = hold.manifest;
+  // The verdict keeps the condemn class the move recorded, so every door that reads `isCondemned` reads the id held back.
+  const status: ProbeStatus = isCondemned({ documentId: m.documentId, status: m.status }) ? m.status : "torn";
+  return result(m.documentId, status, {
+    reason: `held in quarantine since ${m.quarantinedAt} (${m.status}${m.reason ? `: ${m.reason}` : ""}); its bytes rest at ${m.movedTo}; hand act: ${QUARANTINE_RELEASE_ACT}`,
+    held: { movedTo: m.movedTo, quarantinedAt: m.quarantinedAt },
+  });
+}
+
+/** What a release did. */
+export type QuarantineRelease =
+  | { readonly ok: true; readonly documentId: string; readonly act: "restored" | "fresh"; readonly from: string | null; readonly released: number }
+  | { readonly ok: false; readonly documentId: string; readonly why: string };
+
+/**
+ * THE HAND'S RELEASE OF A HELD ID. `restored` moves the newest quarantined bytes back into the store (the next boot probes
+ * them again, so torn bytes condemn again); `fresh` leaves the bytes aside and seeds one empty document under the same id. Either act marks
+ * every unreleased manifest for the id released, so no later boot reads it held. Run it with the vessel stopped: a live
+ * Repo would not see bytes move under it. Refuses where no hold names the id, or where the store already holds bytes
+ * under it (either act would write over them).
+ */
+export function releaseQuarantinedDoc(storageDir: string, documentId: string, act: "restored" | "fresh"): QuarantineRelease {
+  const held = readQuarantineManifests(storageDir).filter((h) => h.manifest.documentId === documentId && !h.manifest.released);
+  if (held.length === 0) return { ok: false, documentId, why: "no quarantine hold names this id" };
+  const live = docStorePath(storageDir, documentId);
+  if (existsSync(live)) return { ok: false, documentId, why: `the store already holds bytes at ${live}; move them aside by hand first` };
+  let from: string | null = null;
+  if (act === "fresh") {
+    // THE ID STARTS EMPTY UNDER ITS OWN NAME. With no bytes the resolver would mint a blank under a NEW id, an orphan the
+    // pointer never names; one empty snapshot under the held id keeps every write where the pointer reads.
+    const empty = save(from_(emptyLarDoc() as unknown as Record<string, unknown>));
+    const snapshotDir = join(live, "snapshot");
+    mkdirSync(snapshotDir, { recursive: true });
+    atomicWriteFileSync(join(snapshotDir, createHash("sha256").update(empty).digest("hex")), empty);
+  } else {
+    const source = [...held].reverse().find((h) => existsSync(h.manifest.movedTo));
+    if (!source) return { ok: false, documentId, why: "the quarantined bytes no longer rest where the manifest names them; release it --fresh instead" };
+    mkdirSync(dirname(live), { recursive: true });
+    renameSync(source.manifest.movedTo, live);
+    from = source.manifest.movedTo;
+  }
+  const at = new Date().toISOString();
+  for (const h of held) {
+    const released: QuarantineManifest = { ...h.manifest, released: { at, act } };
+    atomicWriteFileSync(h.manifestPath, `${JSON.stringify(released, null, 2)}\n`);
+  }
+  return { ok: true, documentId, act, from, released: held.length };
+}
+
+/**
+ * THE BOOT'S LINES FOR EVERY PLANE IT HOLDS BACK, at every boot, each naming only the act that releases it. A PENDING plane
+ * (the probe answered no verdict, or a fall holds a sound document) mounted read-only with no bytes moved; the deep vessel
+ * probe reads no fall, so it releases nothing, and the line names the stop and the stand. A DEGRADED plane stands on a
+ * condemn; one held in quarantine names the release act, since no boot after the move releases it by itself.
+ */
+export function heldPlaneLines(prefix: string, manifest: MountManifest): string[] {
+  const lines: string[] = [];
+  for (const e of manifest.entries) {
+    if (e.status === "pending") {
+      lines.push(
+        `${prefix} PENDING plane — ${e.documentId} (unresolved: ${e.reason ?? "?"}); ` +
+        "mounted read-only, no bytes moved; a clean stop (exit 0) and a fresh stand re-probe it",
+      );
+    } else if (e.status === "degraded") {
+      lines.push(
+        `${prefix} DEGRADED plane — ${e.documentId} (${e.reason ?? "?"}); mounted read-only, the plane reads empty; ` +
+        `hand act: ${QUARANTINE_RELEASE_ACT}`,
+      );
+    }
+  }
+  return lines;
 }

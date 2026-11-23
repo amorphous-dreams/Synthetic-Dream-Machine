@@ -242,6 +242,15 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     const documentId = documentIdFromUrl(url);
     if (keel.docLoadProbe) {
       const verdict = await keel.docLoadProbe.probe(documentId);
+      if (verdict.held) {
+        // AN ID ALREADY IN QUARANTINE STAYS HELD. Its bytes rest aside from an earlier condemn, so the store holds none
+        // under this id, and a load would read a fresh blank and mount writable over an orphan no pointer names. No
+        // recovery, no second move: the degraded stand-in, read-only, until a hand act restores or releases the id.
+        degraded = true;
+        entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
+        return;
+      }
       if (isCondemned(verdict)) {
         // L3 — before condemning the whole doc, try a clean-tail recovery: verify the doc's
         // clean record-prefix loads in isolation, then drop only the torn tail. A promoted

@@ -3,7 +3,9 @@
  *
  * `/api/health` reports only whether this selected Node boot path completed its
  * required local setup. It carries no identity, authority, document, Oracle,
- * Pronaos, or causal-freshness claim.
+ * Pronaos, or causal-freshness claim. Where planes stand held back (pending or
+ * degraded, read-only), a `held` note counts them, never naming a document and
+ * never flipping liveness: a held plane leaves the vessel ready.
  *
  * It binds on a LARARIUM alone. A herm describes nothing to a stranger
  * (pronaos#/the-rung-ladder), and a readiness answer is a self-description, so on
@@ -11,6 +13,7 @@
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import type { MountManifest } from "@lararium/mesh";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { engineFallBody, type EngineWatch } from "./engine-watch.js";
 
@@ -21,6 +24,10 @@ export interface ReadinessState {
   readonly markReady: () => void;
   /** The engine's fall body where it has fallen (`engine-watch`), else null. */
   readonly fall?: () => Record<string, unknown> | null;
+  /** Count the planes the boot held back (`MountManifest`): pending and degraded, read-only. */
+  readonly notePlanes?: (manifest: MountManifest) => void;
+  /** The planes held back, where any stand; null where none do. */
+  readonly held?: () => { readonly pending: number; readonly degraded: number } | null;
 }
 
 export interface ReadinessFace {
@@ -32,12 +39,19 @@ export interface ReadinessFace {
  * boot reached, and the health answer names the cause, its time, the last settled wave, the document in flight and the one
  * hand act. Nothing here restarts anything: the vessel's entry answers the fall (`engine-fall`), flushing and exiting once.
  */
-export function createReadinessState(engine?: EngineWatch): ReadinessState {
+export function createReadinessState(engine?: EngineWatch): ReadinessState & Required<Pick<ReadinessState, "held" | "notePlanes">> {
   let current: "starting" | "ready" = "starting";
+  let held: { pending: number; degraded: number } | null = null;
   return {
     status: () => (engine?.fallen() ? "engine-terminated" : current),
     markReady: () => { current = "ready"; },
     fall: () => { const fall = engine?.fallen(); return fall ? engineFallBody(fall) : null; },
+    held: () => held,
+    notePlanes: (manifest) => {
+      const pending = manifest.entries.filter((e) => e.status === "pending").length;
+      const degraded = manifest.entries.filter((e) => e.status === "degraded").length;
+      held = pending + degraded > 0 ? { pending, degraded } : null;
+    },
   };
 }
 
@@ -59,7 +73,10 @@ function answer(res: ServerResponse, state: ReadinessState, method: string): voi
     "cache-control": "no-store",
   });
   if (method === "HEAD") res.end();
-  else res.end(JSON.stringify(state.fall?.() ?? { status: state.status() }));
+  else {
+    const held = state.held?.() ?? null;
+    res.end(JSON.stringify(state.fall?.() ?? { status: state.status(), ...(held !== null ? { held } : {}) }));
+  }
 }
 
 /** Mount the exact health route on an existing Node server — on a lararium; a herm mounts nothing. */

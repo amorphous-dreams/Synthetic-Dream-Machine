@@ -20,7 +20,7 @@ import { stopIncumbent, probePort } from "../port-control.js";
 import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile } from "@lararium/node";
+import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile, quarantineHolds, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT } from "@lararium/node";
 import { floorShadowLine } from "@lararium/mesh";
 import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
 import { homeItems } from "../reality-tunnel/catalog.js";
@@ -137,10 +137,27 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
  * disposable child-process boundary and charts MOUNTED vs CONDEMNED (a torn doc that would
  * abort the WASM runtime on load). Read-only; a condemned doc can be laid again from its disk holding with `lares vessel lay --apply --yes`.
  * Exits non-zero on a tear, so a boot/CI gate reads health off the exit code.
+ *
+ * THE HELD IDS, AND THE ONE HAND ACT THAT WRITES. The lens also names each id the store holds in quarantine: its bytes
+ * rest aside, and every boot mounts its plane read-only until the hand releases it. `--release <documentId>` moves the
+ * bytes back (the next boot probes them again); `--release-fresh <documentId>` seeds the id empty under its own name (the
+ * bytes stay aside). The act runs only with the vessel stopped, since a live Repo would not see bytes move; without either
+ * the lens writes nothing.
  */
 async function cmdReadVessel(args: ParsedArgs): Promise<number> {
   const storageDir = larDataDir();
+  const restore = args.options["release"];
+  const fresh = args.options["release-fresh"];
+  if (restore !== undefined && fresh !== undefined) {
+    console.error("lares vessel read vessel: name one act, --release <documentId> (the bytes return) or --release-fresh <documentId> (the id starts empty)");
+    return 2;
+  }
+  if (restore !== undefined) return releaseHeldDoc(args, storageDir, restore, "restored");
+  if (fresh !== undefined) return releaseHeldDoc(args, storageDir, fresh, "fresh");
   const report = await runDoctor(storageDir);
+  const held = quarantineHolds(storageDir).map((h) => ({
+    documentId: h.manifest.documentId, status: h.manifest.status, quarantinedAt: h.manifest.quarantinedAt, movedTo: h.manifest.movedTo,
+  }));
   emit(args, {
     ok: true,
     data: {
@@ -150,10 +167,38 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
       condemned: report.condemned,
       degraded: report.degraded,
       entries: report.entries,
+      held,
     },
-    human: () => console.log(formatDoctorReport(report, storageDir)),
+    human: () => {
+      console.log(formatDoctorReport(report, storageDir));
+      if (held.length > 0) {
+        console.log(`  held in quarantine (each plane mounts read-only at every boot until the hand releases it):`);
+        for (const h of held) console.log(`    ${h.documentId}  [${h.status}]  since ${h.quarantinedAt} · bytes at ${h.movedTo}`);
+        console.log(`  release: ${QUARANTINE_RELEASE_ACT}`);
+      }
+    },
   });
-  return report.degraded ? 1 : 0;
+  return report.degraded || held.length > 0 ? 1 : 0;
+}
+
+/** `read vessel --release <documentId>` / `--release-fresh <documentId>`: the hand's release of one held id, with the vessel stopped. */
+async function releaseHeldDoc(args: ParsedArgs, storageDir: string, documentId: string, act: "restored" | "fresh"): Promise<number> {
+  if (await udsAlive(storageDir, 300)) {
+    console.error("lares vessel read vessel --release: the vessel stands; stop it first (`lares vessel stop`), since a live Repo would not see the bytes move");
+    return 2;
+  }
+  const r = releaseQuarantinedDoc(storageDir, documentId, act);
+  emit(args, {
+    ok: r.ok,
+    data: r as unknown as Record<string, unknown>,
+    ...(r.ok ? {} : { error: { code: "refused", message: r.why } }),
+    human: () => r.ok
+      ? console.log(r.act === "restored"
+        ? `[lares] released ${documentId}: the bytes returned from ${r.from}; the next stand probes them again`
+        : `[lares] released ${documentId}: the id starts empty under its own name; the bytes stay aside`)
+      : console.error(`lares vessel read vessel --release: ${r.why}`),
+  });
+  return r.ok ? 0 : 2;
 }
 
 export async function cmdRead(given: ParsedArgs): Promise<number> {

@@ -158,7 +158,7 @@ export interface ProbeDoors {
 export const HELD_IN_FLIGHT = "held: the document in flight at the last engine fall loads clean, so it stands read-only, its bytes in place";
 
 /** The hand act that releases a held document. */
-export const HELD_HAND_ACT = "read the held plane read-only, then stop the vessel by hand (a clean stop clears the restart count) and stand it again: the document mounts writable";
+export const HELD_HAND_ACT = "the plane reads empty, read-only, while its bytes rest in place; stop the vessel by hand (a clean stop (exit 0) clears the restart count; an errored or killed stop keeps it) and stand it again: the document mounts writable";
 
 /**
  * THE KEEL'S PROBE DOORS, AWARE OF THE RESTING FALLS. Each document a resting fall named in flight runs the REAL probe. A
