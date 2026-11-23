@@ -78,7 +78,7 @@ import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, has
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { staysHome, withheldFromReads } from "./stay-home.js";
+import { isHouseAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -314,6 +314,14 @@ type Visible = (title: string, tiddler: EngineTiddler | undefined) => boolean;
  * lives for one verb call. The wiki's indexes (tags, fields, backlinks) still name hidden TITLES; the verb's answer
  * gate drops those and counts them `withheld`. Writes never ride the view.
  */
+/** A house alert as the view answers it: each secret-shaped string redacted (`redactedAlertFields`), else the alert itself. */
+function redactedAlert(tiddler: EngineTiddler): EngineTiddler {
+  const over = redactedAlertFields(tiddler.fields as Record<string, unknown>);
+  if (over === null) return tiddler;
+  const Make = (tiddler as unknown as { constructor: new (...fields: unknown[]) => EngineTiddler }).constructor;
+  return new Make(tiddler, over);
+}
+
 function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; document: { createElement(tag: string): unknown } } | null): EngineWiki {
   const view = Object.create(wiki) as EngineWiki & Record<string, unknown>;
   view["filterCache"] = Object.create(null);
@@ -321,12 +329,16 @@ function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; 
   view["caches"] = Object.create(null);
   view["globalCache"] = Object.create(null);
   const shown = (title: string): boolean => visible(title, wiki.getTiddler(title));
-  view.getTiddler = (title) => { const tiddler = wiki.getTiddler(title); return tiddler && visible(title, tiddler) ? tiddler : undefined; };
+  view.getTiddler = (title) => {
+    const tiddler = wiki.getTiddler(title);
+    if (!tiddler || !visible(title, tiddler)) return undefined;
+    return isHouseAlert(title) ? redactedAlert(tiddler) : tiddler;
+  };
   view.tiddlerExists = (title) => wiki.tiddlerExists(title) && shown(title);
-  view.each = (callback) => wiki.each((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachShadow = (callback) => wiki.eachShadow((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachTiddlerPlusShadows = (callback) => wiki.eachTiddlerPlusShadows((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
+  view.each = (callback) => wiki.each((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachShadow = (callback) => wiki.eachShadow((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachTiddlerPlusShadows = (callback) => wiki.eachTiddlerPlusShadows((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
   view.allTitles = () => wiki.allTitles().filter(shown);
   view.allShadowTitles = () => wiki.allShadowTitles().filter(shown);
   if (house) {
@@ -785,7 +797,8 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
       const withheld = wiki.allTitles().filter((t) => t.startsWith(prefix) && !staysHome(t) && !view.tiddlerExists(t)).length;
       return memeAnswer(engine, sink, { recipe: anchor.recipe, layer: bag, answered }, title, args, asked, opts.resolveByCid, placeIn, withheld);
     }
-    const tiddler = wiki.getTiddler(title);
+    // A HOUSE ALERT READS THROUGH THE VIEW, so it leaves redacted (`redactedAlert`); every other record reads as the engine holds it.
+    const tiddler = isHouseAlert(title) ? view.getTiddler(title) : wiki.getTiddler(title);
     if (!tiddler) return { ...answered, title, tiddler: null };
     const { fields, bag } = readRecord(tiddler);
     if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);

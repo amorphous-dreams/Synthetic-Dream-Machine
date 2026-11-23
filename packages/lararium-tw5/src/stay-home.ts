@@ -8,7 +8,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/tiddler-verbs
  */
 
-import { isVolatileVmUri, offerWithheldTitle } from "@lararium/mesh";
+import { isVolatileVmUri, offerWithheldTitle, redactSecretShapes } from "@lararium/mesh";
 import { localFilter } from "./record-port-projection.js";
 
 /** True for a title that stays home: it answers no read and takes no write at any door. */
@@ -27,3 +27,19 @@ export const isHouseAlert = (title: string): boolean => title.startsWith(HOUSE_A
 
 /** True for a title no READ answers: what stays home, the house's alerts aside. Writes still read `staysHome` whole. */
 export const withheldFromReads = (title: string): boolean => staysHome(title) && !isHouseAlert(title);
+
+/**
+ * AN ALERT LEAVES REDACTED: every string field of a house alert reads with each secret-shaped string redacted (the one scan,
+ * `@lararium/mesh` `redactSecretShapes`, the list the keep guards with). The prefix reads at the door, so a secret a raise
+ * quoted (a token in a fault, a key in a refused body) never crosses it; the engine keeps the alert as the house raised it.
+ * Answers the fields to stand in its place, or null where no field holds a shape.
+ */
+export function redactedAlertFields(fields: Readonly<Record<string, unknown>>): Record<string, string> | null {
+  const over: Record<string, string> = {};
+  for (const [name, value] of Object.entries(fields)) {
+    if (typeof value !== "string") continue;
+    const { text, redacted } = redactSecretShapes(value);
+    if (redacted > 0) over[name] = text;
+  }
+  return Object.keys(over).length > 0 ? over : null;
+}
