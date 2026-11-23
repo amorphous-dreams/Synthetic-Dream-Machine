@@ -37,3 +37,34 @@ export function faceNamedCustodyWrite(deps: FaceNamedCustodyWriteDeps): CustodyW
     }
   };
 }
+
+/** What the vessel reads to judge whether a face takes its Archive write. */
+export interface CustodyOpenings {
+  /** The mounted face's PersonaGroup (`openDaemon` names it), or null before it stands. */
+  readonly mounted: string | null;
+  /** Each face whose island light runs in flight, with that light's own `live()`. */
+  readonly lighting: ReadonlyMap<string, () => boolean>;
+  readonly siblingFaces: ReadonlyMap<string, unknown>;
+  readonly siblingSessions: ReadonlyMap<string, unknown>;
+}
+
+/**
+ * THE FACES THAT TAKE AN ARCHIVE WRITE: the mounted face, each lit sibling with a session, and a face whose island light
+ * runs in flight while that light still reads live (its archive floor rests after its card, before its session stands).
+ */
+export function custodyOpens(face: string, o: CustodyOpenings): boolean {
+  if (face === o.mounted) return true;
+  if (o.lighting.get(face)?.() === true) return true;
+  return o.siblingFaces.has(face) && o.siblingSessions.has(face);
+}
+
+/**
+ * Hold `face`'s light window open for the run of `light`, read through the light's own `live()`. The window shuts when the
+ * light settles or throws, and only the light that opened it shuts it: an overlapping light's window stands.
+ */
+export async function duringLight<T>(lighting: Map<string, () => boolean>, face: string, live: () => boolean, light: () => Promise<T>): Promise<T> {
+  const mine = (): boolean => live();
+  lighting.set(face, mine);
+  try { return await light(); }
+  finally { if (lighting.get(face) === mine) lighting.delete(face); }
+}
