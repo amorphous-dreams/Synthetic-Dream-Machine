@@ -1,5 +1,5 @@
 title: lar:///ha.ka.ba/lararium/mesh/source/wave-crest
-type: text/x-typescript
+type: text/plain
 
 /**
  * wave-crest — the nalu's slice rule, lifted out of the landing queue so every wave that lands in a shared engine crests

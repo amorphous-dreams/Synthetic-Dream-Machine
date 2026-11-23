@@ -55,7 +55,7 @@ export function sourceTiddlerMatches(source: string, tid: string, title: string,
   if (split < 0) return false;
   const head = tid.slice(0, split).split("\n");
   const body = tid.slice(split + 2);
-  return head.includes(`title: ${title}`) && head.includes("type: text/x-typescript")
+  return head.includes(`title: ${title}`) && head.includes("type: text/plain")
     && !head.some((field) => /^module-type:/.test(field)) && body === source
     && digestsEqual(formatDigest(SHA256_ALGO, sha256HexSync(body)), claimed);
 }

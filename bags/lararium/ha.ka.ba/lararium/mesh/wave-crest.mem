@@ -4,6 +4,7 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
+cacheable     = true
 heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/wave-crest"
 role          = "code-meme: the shared nalu crest slices whole families and adapts wave depth"
@@ -18,7 +19,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/wave-crest"
 
 !! The Crest
 
-`takeCrest` removes whole families from the queue head in order, weighing count, bytes and operations against the caller's limits. The first family always rides, even when it exceeds a limit, so the queue advances without splitting a family. `adaptDepth` shrinks or grows the next depth from observed and target duration, bounds each step, and respects the caller's ceiling. `scaleLimits` applies that depth across the axes. Callers use `yieldToHost` from `host-task.ts` between waves; this module reads no clock and schedules no host task.
+`takeCrest` removes whole families from the queue head in order, weighing count, bytes and operations against the caller's limits. The first family always rides, even when it exceeds a limit, so the queue advances without splitting a family. `adaptDepth` shrinks or grows the next depth from observed and target duration, bounds each step, and respects the caller's ceiling. `scaleLimits` applies a depth ratio across the axes. Callers use `yieldToHost` from `host-task.ts` between waves; this module reads no clock and schedules no host task.
 
 <<~/ahu>>
 
@@ -34,7 +35,7 @@ The crest enacts whole-family slicing and host pacing under <<~ loulou uri=`lar:
 
 !! Callers
 
-`WaveLanding` in lararium-tw5 slices changes on count; the lararium-node ingest settle slices carriers, encoded bytes and estimated objects and adapts depth. Flush and autosync remain next candidates, not current callers.
+`WaveLanding` in lararium-tw5 slices changes on count; the lararium-node ingest settle slices carriers, encoded bytes and estimated objects and adapts depth. `ingest-wave-budget.ts` consumes `fitsWave` and the weight types. `gate-tuning.ts#adaptGate` calls `adaptDepth` for the flush-gate servo. Capture flush slicing and the autosync wait remain next candidates.
 
 <<~/ahu>>
 
@@ -62,6 +63,6 @@ The caller supplies count, byte and operation caps; an oversized first family tr
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YdPNXDelfimQ4iWQi4zBN0Tm4egcs-fe3qaEkoo4bTY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S5aC8yu-YUZjPOZ7sBRu2UpD-LuouPCOMGgrZ9ZLrG0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

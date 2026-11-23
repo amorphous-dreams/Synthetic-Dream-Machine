@@ -60,7 +60,7 @@ describe("★ a patched anchor re-stamps its check ★", () => {
 
 describe("mesh source window", () => {
   test("a stale digest reads as drift; the matching digest passes", () => {
-    const tid = `title: ${MODULE}\ntype: text/x-typescript\n\n${CODE}`;
+    const tid = `title: ${MODULE}\ntype: text/plain\n\n${CODE}`;
     expect(sourceTiddlerMatches(CODE, tid, MODULE, `sha256:${sha("stale")}`)).toBe(false);
     expect(sourceTiddlerMatches(CODE, tid, MODULE, `sha256:${sha(CODE)}`)).toBe(true);
     expect(sourceTiddlerMatches(CODE, tid.replace("\n\n", "\nmodule-type: library\n\n"), MODULE, `sha256:${sha(CODE)}`)).toBe(false);
