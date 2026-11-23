@@ -166,10 +166,61 @@ export const SEALED_DOCUMENT_UNOPENED = "sealed-document-unopened";
  * name, and nothing waits in memory to drop at a stand-down. The keyed load that opens releases it (`openSealed`).
  */
 const SEALED_UNOPENED = new WeakMap<object, string>();
+/**
+ * THE HANDLE ITSELF HOLDS, NOT ONLY A STORE OVER IT. A held handle stands over an empty document while its keyed load waits, so
+ * a raw `change` that created `tiddlers` there would conflict with the loaded document's own and hide the sealed content
+ * behind the conflict once the load opened. While held, every mutator a caller reaches (`change`, `changeAt`, `merge`, `sub`
+ * and the sub-handles it would hand out, `remove`) refuses `sealed-document-unopened` before any byte moves, and a reader
+ * sees it held: `isReady()` answers false and `whenReady()` waits for the open. The engine's own `update` (the keyed load, a
+ * peer's sync) passes untouched, and the engine reads no handle's readiness.
+ *
+ * A DELETE BURNS THE WHOLE DOCUMENT, never a write into its held content: `Repo.delete` (a lift that burns its floor
+ * document) runs whole, the hold released first, so nothing refuses midway and leaves the repo half-deleted.
+ */
+const SEALED_GUARDS = new WeakMap<object, { readonly release: () => void }>();
+const SEALED_MUTATORS = ["change", "changeAt", "merge", "sub", "remove"] as const;
+function guardSealed(handle: DocHandle<unknown>): { readonly release: () => void } {
+  const own = handle as unknown as Record<string, unknown>;
+  const isReady = own["isReady"];
+  const whenReady = handle.whenReady.bind(handle);
+  let opened!: () => void;
+  const opens = new Promise<void>((resolve) => { opened = resolve; });
+  const refuse = (verb: string) => (): never => {
+    const why = SEALED_UNOPENED.get(handle) ?? "its keyed load has not opened";
+    throw new VerbRefusal(SEALED_DOCUMENT_UNOPENED, `${SEALED_DOCUMENT_UNOPENED}: ${handle.documentId} rests sealed and stands read-only over its own id (${why}); \`${verb}\` lands nothing, and lands once the keyed load opens the document`);
+  };
+  for (const verb of SEALED_MUTATORS) Object.defineProperty(handle, verb, { value: refuse(verb), configurable: true, writable: true });
+  Object.defineProperty(handle, "isReady", { value: () => false, configurable: true, writable: true });
+  Object.defineProperty(handle, "delete", {
+    value: () => { openSealed(handle); handle.delete(); },
+    configurable: true, writable: true,
+  });
+  Object.defineProperty(handle, "whenReady", {
+    value: (states?: Parameters<typeof handle.whenReady>[0]) => (states !== undefined && !states.includes("ready") ? whenReady(states) : opens.then(() => whenReady(states))),
+    configurable: true, writable: true,
+  });
+  return {
+    release: () => {
+      for (const verb of SEALED_MUTATORS) delete own[verb];
+      delete own["whenReady"];
+      delete own["delete"];
+      Object.defineProperty(handle, "isReady", { value: isReady, configurable: true, writable: true });
+      opened();
+    },
+  };
+}
 /** Hold a sealed document's handle read-only over its own id; `why` names what it waits on (or what ended its load). */
-export function holdSealedUnopened(handle: DocHandle<unknown>, why: string): void { SEALED_UNOPENED.set(handle, why); }
+export function holdSealedUnopened(handle: DocHandle<unknown>, why: string): void {
+  SEALED_UNOPENED.set(handle, why);
+  if (!SEALED_GUARDS.has(handle)) SEALED_GUARDS.set(handle, guardSealed(handle));
+}
 /** The keyed load opened the document: a write into it lands, under the real id, and seals there. */
-export function openSealed(handle: DocHandle<unknown>): void { SEALED_UNOPENED.delete(handle); }
+export function openSealed(handle: DocHandle<unknown>): void {
+  SEALED_UNOPENED.delete(handle);
+  const guard = SEALED_GUARDS.get(handle);
+  SEALED_GUARDS.delete(handle);
+  guard?.release();
+}
 /** Why a sealed document's handle stands read-only, or undefined where it takes writes. */
 export function sealedUnopened(handle: DocHandle<unknown>): string | undefined { return SEALED_UNOPENED.get(handle); }
 

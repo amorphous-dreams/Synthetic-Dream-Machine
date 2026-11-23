@@ -141,7 +141,7 @@ import {
 }                                            from "./open-browser-daemon-vm.js";
 import type { WikiRecipe }                   from "@lararium/mesh";
 
-import { seatSealedRest, waitHandle } from "@lararium/mesh";
+import { LOCAL_READY_MS, seatSealedRest, waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRecords } from "./browser-custody.js";
 import { nameFace, faceTreeStands } from "./browser-face-custody.js";
@@ -833,6 +833,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const sealedRest = composeSealedRest<BrowserSaveSession>({
     inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
     bagOf: sealedBagOf,
+    // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
+    bagRow: (bagId) => sealedMap.bagRow(bagId),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     door: docStoreDoor,
@@ -869,6 +871,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   seatSealedRest(repo, {
     restsSealed: (documentId) => sealedRest.restsSealed(documentId),
     refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
+    nameDocument: (documentId, bagId) => sealedRest.store.nameDocument(documentId, bagId),
     onSettled: ({ documentId, status, reason }) => { if (status !== "mounted") console.warn(`[sealed-rest] ${documentId.slice(0, 12)}… stands ${status}, read-only: ${reason ?? ""}`); },
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
@@ -1577,7 +1580,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     keel: {
       repo,
       catalogHandle,
-      waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback),
+      waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>, bagId?: string) => waitHandle<T>(repo, url, fallback, LOCAL_READY_MS, bagId),
       // THE SYSTEM CANON THE SHORE NAMES: this browser vessel reads no Kahu realm registration today, so it names none and
       // reads the floor through `@oracle`; a browser that stands the node's role later names its canon here.
       systemCanon: async () => ({}),

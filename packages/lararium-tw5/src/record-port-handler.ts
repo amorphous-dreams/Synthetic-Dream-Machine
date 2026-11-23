@@ -393,6 +393,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         if (!faceHolds(port)) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
       }
       const failed: string[] = [];
+      // THE REFUSAL A FAMILY ENDED ON TRAVELS WITH ITS ANSWER: a VerbRefusal names itself (`sealed-document-unopened` and kin),
+      // any other fault names `write-failed`, so a TW5 caller reads why its write did not land.
+      let failedReason: string | undefined;
       for (const family of begun.pending) {
         if (!faceHolds(port)) { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         const members = msg.records.filter(record => (record.bag ?? "(default)") === family);
@@ -406,7 +409,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
             { kind: "tw-local", instanceId: token },
             family === "(default)" ? undefined : { bag: family });
           port.ledger.recordApplied(msg.txId, family);
-        } catch { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
+        } catch (error) {
+          failedReason = isVerbRefusal(error) ? error.reason : "write-failed";
+          failed.push(...begun.pending.slice(begun.pending.indexOf(family)));
+          break;
+        }
         finally {
           tokens.delete(token);
           flush(ctx);
@@ -423,7 +430,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       const result = port.ledger.answer(msg.txId, failed);
       if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);
-      answer(result.status, [...result.applied], [...result.failed]);
+      answer(result.status, [...result.applied], [...result.failed], result.failed.length > 0 ? failedReason : undefined);
     } catch (error) {
       release(null);
       if (!familyStarted && port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId);
