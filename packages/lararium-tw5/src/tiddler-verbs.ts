@@ -78,7 +78,7 @@ import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, has
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { staysHome } from "./stay-home.js";
+import { staysHome, withheldFromReads } from "./stay-home.js";
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -275,8 +275,8 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
  */
 
 
-function refuseWithheld(title: string, verb: string): void {
-  if (staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
+function refuseWithheld(title: string, verb: string, read = false): void {
+  if (read ? withheldFromReads(title) : staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
 }
 
 /**
@@ -359,7 +359,7 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
   wiki.each((tiddler) => { const bag = tiddler.fields[ORIGIN_BAG]; if (typeof bag === "string" && bag !== "") bags.add(bag); });
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
-  const visible: Visible = (title, tiddler) => !staysHome(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
+  const visible: Visible = (title, tiddler) => !withheldFromReads(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
   const text = await canonFiltersText(opts.composite, wiki, mayRead);
   const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
   return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
@@ -768,7 +768,8 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
       return await bagGet(opts, container, title, args, ctx, asked);
     }
     const anchor = anchorOf(opts, args, "tiddler-get");
-    refuseWithheld(title, "tiddler-get");
+    // A HOUSE ALERT READS here (`withheldFromReads`): the wiki's own engine holds it; a bag's store never does.
+    refuseWithheld(title, "tiddler-get", true);
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const engine = anchor.engine;
     const wiki = engine.wiki;
@@ -847,7 +848,7 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
     const form = optionalStringArg(args, "form") ?? "text";
     const outputType = RENDER_FORMS[form];
     if (!outputType) throw new Error(`wiki-render: args.form reads "text" or "html"; got "${form}"`);
-    if (title !== null) refuseWithheld(title, "wiki-render");
+    if (title !== null) refuseWithheld(title, "wiki-render", true);
     const { view, mayRead, pragmas } = await viewFor(opts, anchor, ctx.cap);
     // THE HOUSE'S FUNCTIONS RIDE AFTER THE GLOBAL IMPORT, from canon alone: a working-layer `$:/tags/Global` tiddler never shadows one.
     const globals = pragmas === "" ? GLOBAL_IMPORT : `${GLOBAL_IMPORT}${pragmas}\n\n`;
