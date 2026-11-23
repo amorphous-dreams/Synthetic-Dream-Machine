@@ -30,7 +30,7 @@ import {
   SealedStore, contentKeyRollSink, memorySealedStoreRest, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
-import { KeyhiveProvider, InMemoryEventStore, faceStanding, ownChainStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
+import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, projectWorkbenchRoster, removeWorkbenchFace, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -78,22 +78,6 @@ export function change(body: string): DocumentValue {
 }
 
 /**
- * TODAY'S COMPOSITION (the island before the rest gate retires): each face's seat wraps for its own face alone, and its
- * standing reads its own chain over the bags it registers. A face that MOUNTS the wiki registers the working slot
- * (`wornFaceWikiBags`), so a seated face that mounts it reads the slot as its own.
- */
-function seatToday(v: Vessel, f: Omit<Face, "seat">, registers: readonly string[]): ContentKeySeat {
-  const standing: WriterStanding = ownChainStanding(() => f.own, () => registers);
-  return seatContentKeys({
-    providers: [f.hive], rest: v.rest,
-    values: { read: async (a) => v.values.get(a) ?? null, write: async (a, b) => { v.values.set(a, Uint8Array.from(b)); } },
-    restArchive: async () => {}, group: null, bags: () => [],
-    session: { signer: () => null, standing },
-    subscribe: () => () => {},
-  });
-}
-
-/**
  * THE REALM COMPOSITION: each face's seat reads a realm workbench bag through the realm port (readers follow the roster,
  * founding stays owner-only), and hands a wrap's operations to the sibling hives on this vessel. `standing` stands in for the
  * writer standing until slice A2 composes the realm's.
@@ -131,10 +115,18 @@ async function sharedWorkbench(fills: readonly [number, number]): Promise<{ v: V
 }
 
 describe("RT1 — the two-face round trip over one vessel's rest", () => {
-  test("RED A0: A saves, B (seated by share) saves, both stand again over the same rest, and A opens B's change from ONE founding", async () => {
+  test("A0 -> A3: A saves, B (seated by share) saves, both stand again over the same rest, and A opens B's change from ONE founding", async () => {
     const { v, a, b } = await sharedWorkbench([0xa1, 0xa2]);
-    let seatA = seatToday(v, a, [WORKING]);
-    let seatB = seatToday(v, b, [WORKING]);
+    // THE ISLAND'S COMPOSITION: the realm's writer book, read off the roster at the mount; each face's seat reads the realm
+    // port and the realm-aware standing (each face mounts the wiki, so each registers the working slot).
+    const book = new RealmWriterBook();
+    const faces = [{ agent: a.id, chain: () => a.own }, { agent: b.id, chain: () => b.own }];
+    const stand = async (): Promise<[ContentKeySeat, ContentKeySeat]> => {
+      await book.read(WORKING, [a.hive, b.hive], v.ledger.d, faces);
+      const standing = (f: Omit<Face, "seat">) => faceStanding({ own: () => f.own, bags: () => [WORKING], realmWriters: (bagId) => book.writers(bagId), realmMark: () => book.mark() });
+      return [seatRealm(v, a, standing(a), [b]), seatRealm(v, b, standing(b), [a])];
+    };
+    let [seatA, seatB] = await stand();
     const first = change("the steward's first line"), second = change("the engineer's reply");
 
     expect(said(await seatA.sealValues({ bagId: WORKING, values: [first], signer: a.signer })), "the owner seals its change").toBe("OK");
@@ -142,7 +134,7 @@ describe("RT1 — the two-face round trip over one vessel's rest", () => {
 
     // THE RELOAD: both seats stand again over the vessel's one rest.
     seatA.lock(); seatB.lock();
-    seatA = seatToday(v, a, [WORKING]); seatB = seatToday(v, b, [WORKING]);
+    [seatA, seatB] = await stand();
 
     const opened = await seatA.holder.openValue({ bagId: WORKING, role: "change", ref: second.ref });
     expect(said(opened), "A opens the engineer's change: no reference-unknown").toBe("OK");

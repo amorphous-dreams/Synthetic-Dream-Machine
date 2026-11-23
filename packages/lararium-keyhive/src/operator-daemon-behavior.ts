@@ -203,7 +203,8 @@ import { faceSeatTable, type FaceSeat } from "./face-seat-table.js";
 import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_LANE_VERBS, type CrossFacePorts, type FaceEnginePorts, type FaceLanePorts } from "./face-lane.js";
 /** The verbs a lit sibling reaches on its own lane (`face-lane`). */
 export { FACE_LANE_VERBS } from "./face-lane.js";
-import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
+import { faceStanding, type IslandSessionProof } from "./island-session-proof.js";
+import { RealmWriterBook, realmRestPort, type RealmFace } from "./realm-rest.js";
 // The island side of the session sign door, for an island entry that composes this behaviour.
 export { islandSessionDoor } from "./island-session-proof.js";
 import type { RecordSigner } from "@lararium/mesh";
@@ -678,6 +679,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const hive = provider();
     if (!hive) return null;
     const realmId = await faceWorkbenchRealm(hive, asLedgerDoc(await workbenchLedgerOf(ctx)), slug, face, mint);
+    // The mount reads the roster, so the realm's writer book follows it.
+    if (realmId !== null) await readRealmBook(ctx, slug);
     if (realmId !== null && hive === kh && restsUnderAnotherFace(slug, realmId, face)) {
       if (!restGateNamed.has(slug)) { restGateNamed.add(slug); console.log(`[workbench] ${slug}: this face holds a seat in realm ${realmId.slice(0, 12)}…, and the workbench's document rests sealed under its owner face on this vessel; this face mounts none of it and writes its personal layer`); }
       return null;
@@ -876,7 +879,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // in its own row. The mounted face and every lit sibling stand one each; none borrows another's.
   /** The context the mounted holder stood in; a sibling lit after it seats its own holder in the same. */
   let holderCtx: IslandContext | null = null;
-  const seatOfFace = (keyhive: KeyhiveProvider, entry: FaceSeat, face: {
+  // THE REALM'S WRITER BOOK (realm-rest): for each realm workbench bag, the faces of this vessel its roster seats as writers,
+  // read ahead at each mount and each landing; every face's writer standing reads it at the ask, with each face's chain.
+  const realmBook = new RealmWriterBook();
+  const readRealmBook = async (ctx: IslandContext, slug: string): Promise<void> => {
+    const hives: KeyhiveProvider[] = [];
+    const lit: RealmFace[] = [];
+    for (const [key, { provider }] of providers) {
+      const mounted = provider === kh;
+      hives.push(provider);
+      lit.push({ agent: await provider.vesselIdentifierHex(), chain: () => (mounted ? mountedFace.chain : faces.lit(key)?.chain ?? null) });
+    }
+    await realmBook.read(wikiSlotUri(slug, "working"), hives, (await workbenchLedgerOf(ctx)).doc(), lit);
+  };
+  /** A wrap one face's holder made for a realm's roster: each reader that stands lit on this vessel ingests its operations. */
+  const handRealmOpsOn = async (wrapperHive: KeyhiveProvider, served: readonly string[], wrapper: { eventsForPeer(id: string): Promise<Uint8Array[]> }): Promise<void> => {
+    const named = new Set(served.map((id) => id.trim().toLowerCase().replace(/^0x/, "")));
+    for (const { provider } of providers.values()) {
+      if (provider === wrapperHive) continue;
+      const id = (await provider.vesselIdentifierHex()).trim().toLowerCase().replace(/^0x/, "");
+      if (named.has(id)) await provider.ingestPeerEvents(await wrapper.eventsForPeer(`0x${id}`));
+    }
+  };
+  const seatOfFace = (ctx: IslandContext, keyhive: KeyhiveProvider, entry: FaceSeat, face: {
     readonly groupId: string | null; readonly fleetRoot: string | null; readonly atomKey: () => string;
     readonly bags: () => readonly string[]; readonly dyad: () => DyadReader | undefined;
     /** The face's PersonaGroup, whose own row its Archive rests in: the mounted face's and each lit sibling's alike. */
@@ -917,7 +942,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // THE SEAT'S STANDING READS THE VESSEL'S CHAIN OF THIS FACE, as its last reading carried it: before any session of
       // the face asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by name; a
       // session's own act signs through the door its verb reads (`faces.session`).
-      session: { signer: () => null, standing: ownChainStanding(() => entry.chain, face.bags) },
+      // A REALM WORKBENCH'S BAG reads the realm's writer book (realm-rest): any face the roster seats as a writer stands,
+      // and a revoked writer stands for the versions before its removal (u2). Every other bag reads the face's own chain.
+      session: { signer: () => null, standing: faceStanding({ own: () => entry.chain, bags: face.bags, realmWriters: (bagId) => realmBook.writers(bagId), realmMark: () => realmBook.mark() }) },
+      // THE REST SEALS FOR THE ROSTER (cabal-realm#/the-workbench): a realm workbench's working bag wraps for every hive its
+      // realm seats now, and founds only under the realm owner's seat; a wrap's operations reach each lit sibling's hive here.
+      ...(face.archiveFace ? { realm: realmRestPort({ provider: () => keyhive, ledger: async () => (await workbenchLedgerOf(ctx)).doc(), face: face.archiveFace }) } : {}),
+      handOn: (served, wrapper) => handRealmOpsOn(keyhive, served, wrapper),
       // A report names a result, a founding's opaque locator and a key version: no key, and no bag's name.
       report: (o) => console.log(`[daemon] content-key roll: ${o.result}${o.founding ? ` founding ${o.founding.slice(0, 12)}…` : ""}${o.keyVersion ? ` → version ${o.keyVersion.slice(0, 12)}…` : ""} (${o.raises.length} raise(s))`),
     });
@@ -926,7 +957,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const standSiblingSeat = (ctx: IslandContext, key: string, face: JoinedFaceAuth, keyhive: KeyhiveProvider): void => {
     if (!sealedStore || faces.lit(key)?.seat) return;
     const entry = faces.light(key, null);
-    entry.seat = seatOfFace(keyhive, entry, {
+    entry.seat = seatOfFace(ctx, keyhive, entry, {
       groupId: face.personaGroupId, fleetRoot: face.deviceEdge.personaRootDid, atomKey: () => face.atom.key,
       bags: () => face.registerBags, dyad: () => dyadReader(ctx, { ...daemonAuth, ...face }), archiveFace: face.personaGroupId,
     });
@@ -943,7 +974,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // vessel rests nothing, so it wraps nothing.
     if (sealedStore) {
       const fleetRoot = daemonAuth.deviceEdge?.personaRootDid;
-      mountedFace.seat = seatOfFace(keyhive, mountedFace, {
+      mountedFace.seat = seatOfFace(ctx, keyhive, mountedFace, {
         groupId: daemonAuth.personaGroupId ?? null, fleetRoot: fleetRoot ?? null, atomKey: () => faceAtom().key,
         bags: () => daemonAuth.registerBags, dyad: () => dyadReader(ctx), archiveFace: daemonAuth.personaGroupId ?? null,
       });
@@ -1980,6 +2011,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               await seat.hive.ingestPeerEvents(await ownerHive.eventsForPeer(seat.agentHex));
               if (keyDoc) adoptWorkbench(seat.hive, row.slug, keyDoc);
             }
+            // The landing moved the roster: the realm's writer book reads it again.
+            await readRealmBook(ctx, row.slug);
             // THE REST GATE, said at the door: a workbench of the wiki this vessel mounts rests sealed under its owner's key.
             const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
             return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };

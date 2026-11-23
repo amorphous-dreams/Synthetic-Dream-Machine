@@ -502,6 +502,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   /** The worn face's subject at another anchor of the vessel's own chain (`SealedDocumentPorts.wornAt`): true only for
    *  a bag of the face the vessel wears. */
   readonly wornAt?: (face: string, subject: string) => boolean;
+  /** THE REALM WORKBENCH (`SealedDocumentPorts.realm`): any face a realm seats saves into its workbench's bag. */
+  readonly realm?: { keeps(bagId: string): boolean; wears(bagId: string, subject: string): boolean };
   readonly door: Pick<ConstructorParameters<typeof SealedDocumentStore>[0], "seal" | "open"> & { lock?(): void };
   /** The Repo's own flush: every document, or the named ones alone (a face's drain names its own). */
   readonly flushRepo: (documentIds?: readonly string[]) => Promise<void>;
@@ -518,15 +520,15 @@ export function composeSealedRest<S extends SaveSession>(input: {
   const book = new SaveBook<S>();
   let watched: { readonly standing: (documentId: string) => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
   // A session wears a bag's face by its own subject, or by the worn face's subject at another anchor.
-  const wears = (face: string | null | undefined, subject: string): boolean =>
-    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false));
+  const wears = (face: string | null | undefined, subject: string, bagId?: string): boolean =>
+    typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false) || (bagId !== undefined && (input.realm?.wears(bagId, subject) ?? false)));
   // THE LIT SET: the session standing for one document is the one that wears ITS bag's face; a session of another face never
   // stands for it, so its save waits rather than seal under the wrong key.
   const standingFor = (documentId: string): S | null => {
     const session = watched?.standing(documentId) ?? null;
     if (session === null) return null;
     const bag = store.bagOf(documentId);
-    return bag === null || bag.held !== undefined || bag.face === null || wears(bag.face, session.subject) ? session : null;
+    return bag === null || bag.held !== undefined || bag.face === null || wears(bag.face, session.subject, bag.bagId) ? session : null;
   };
   // T4: the save reads its change's own writer off its bytes. A change this replica made books the session standing; a
   // peer's change books its peer writer, and its save rests as received under the session that holds the rest.
@@ -547,6 +549,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     ...(input.bagRow ? { bagRow: input.bagRow } : {}),
     ...(input.openFaces ? { openFaces: input.openFaces } : {}),
     ...(input.wornAt ? { wornAt: input.wornAt } : {}),
+    ...(input.realm ? { realm: input.realm } : {}),
     sessionOf,
     writerOf: (documentId) => book.writerOf(documentId),
     // P1: a vessel's rest keeps a document's sealed class across a map that drops; its save waits, never clear.
@@ -575,7 +578,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     async rebook(session) {
       for (const id of store.waitingDocuments()) {
         const bag = store.bagOf(id);
-        if (bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
+        if (bag !== null && wears(bag.face, session.subject, bag.bagId)) book.seal(id, session);
       }
       return store.reseal();
     },
@@ -583,7 +586,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
       const ids = new Set(documentIds);
       for (const id of store.waitingDocuments()) {
         const bag = store.bagOf(id);
-        if (ids.has(id) && bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
+        if (ids.has(id) && bag !== null && wears(bag.face, session.subject, bag.bagId)) book.seal(id, session);
       }
       await store.reseal(documentIds);
       await input.flushRepo(documentIds);
@@ -617,7 +620,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     restsSealed: (documentId) => store.holdsSealed(documentId),
     async sealMapped(documentId, session) {
       const bag = store.bagOf(documentId);
-      if (bag === null || !wears(bag.face, session.subject)) return false;
+      if (bag === null || !wears(bag.face, session.subject, bag.bagId)) return false;
       if (book.of(documentId) === null) book.seal(documentId, session);
       const sealed = await store.sealClearRest(documentId);
       // THE LIFT: a value still resting under the vessel's key re-files under the bag's face (`refileHeld`).

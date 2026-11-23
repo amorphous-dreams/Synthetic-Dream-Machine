@@ -17,8 +17,9 @@
  */
 import {
   privateCabalRealmId, wikiSlotOf, workbenchSeats,
-  type LarDoc,
+  type LarDoc, type SessionOwnChain,
 } from "@lararium/mesh";
+import type { RealmWriters } from "./island-session-proof.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 import { seatedWorkbenches } from "./workbench-realm.js";
 
@@ -85,4 +86,60 @@ export function realmRestPort(input: { readonly provider: () => KeyhiveProvider 
       return realmRestBag(hive, await input.ledger(), bagId, input.face);
     },
   };
+}
+
+/** One face of this vessel as the writer book reads it: its hive's agent id, and its chain as the vessel last read it. */
+export interface RealmFace {
+  readonly agent: string;
+  chain(): SessionOwnChain | null;
+}
+
+/**
+ * THE BOOK OF A REALM'S WRITERS ON THIS VESSEL (S4): for each realm workbench bag, the faces of this vessel the realm's key
+ * Document seats as writers (`admin`) now, read on a seated hive's replica. A writer standing reads it synchronously
+ * (`faceStanding`'s `realmWriters`), so the book reads the roster ahead (at a mount, a landing, a projection) and answers from
+ * what it last read; each face's chain resolves at the ask, so a face that lit since reads with it. `mark` names the book by
+ * its content: a holder's reading gives way when a seat lands or leaves.
+ */
+export class RealmWriterBook {
+  readonly #bags = new Map<string, { readonly seated: readonly RealmFace[]; readonly former: readonly { readonly face: RealmFace; readonly removedBy: readonly string[] }[] }>();
+  #mark = "";
+
+  /** Read one bag's writers afresh: the roster of the realm a seated hive among `hives` reads, over this vessel's faces. */
+  async read(bagId: string, hives: readonly KeyhiveProvider[], ledger: LarDoc | undefined | null, faces: readonly RealmFace[]): Promise<void> {
+    const slot = wikiSlotOf(bagId);
+    let found: { readonly hive: KeyhiveProvider; readonly keyDoc: string } | null = null;
+    if (slot !== null && slot.kind === "working") {
+      for (const hive of hives) {
+        const seated = await seatedWorkbenches(hive, ledger, slot.slug).catch(() => []);
+        if (seated.length === 1) { found = { hive, keyDoc: seated[0]!.keyDoc }; break; }
+      }
+    }
+    if (found === null) { this.#bags.delete(bagId); this.#remark(); return; }
+    const seated: RealmFace[] = [];
+    for (const face of faces) if ((await found.hive.accessInDoc(`0x${bare(face.agent)}`, found.keyDoc)) === "admin") seated.push(face);
+    this.#bags.set(bagId, { seated, former: [] });
+    this.#remark();
+  }
+
+  /** The writers one bag reads, as last read: null for a bag no realm keeps. */
+  writers(bagId: string): RealmWriters | null {
+    const bag = this.#bags.get(bagId);
+    if (bag === undefined) return null;
+    const chains = (faces: readonly RealmFace[]): SessionOwnChain[] => faces.map((f) => f.chain()).filter((c): c is SessionOwnChain => c !== null);
+    return {
+      seated: chains(bag.seated),
+      former: bag.former.flatMap(({ face, removedBy }) => { const chain = face.chain(); return chain === null ? [] : [{ chain, removedBy }]; }),
+    };
+  }
+
+  /** Does the realm keep this bag, as last read? */
+  keeps(bagId: string): boolean { return this.#bags.has(bagId); }
+
+  /** The book named by its content. */
+  mark(): string { return this.#mark; }
+
+  #remark(): void {
+    this.#mark = JSON.stringify([...this.#bags].sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0)).map(([bagId, b]) => [bagId, b.seated.map((f) => bare(f.agent)).sort(), b.former.map((f) => [bare(f.face.agent), [...f.removedBy].sort()])]));
+  }
 }
