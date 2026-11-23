@@ -7,12 +7,15 @@
  *   P4 — a light over a standing projection keeps the one that stands
  *   P5 — a drop that lands while the engine composes leaves nothing mounted
  *   P6 — a mount that faults never holds the light: the face stands unprojected
+ *   P7 — THE RECOMPOSE: the engine rebuilds (its working slot bound late); the projector stops over the old engine first, the
+ *        face stays lit, and the projection mounts again over the new engine
  */
 import { describe, expect, test } from "vitest";
 import { litFaceProjections } from "../src/lit-face-projections.js";
 
 const grants = (segment: string) => [{ bagId: "lar:///ha.ka.ba/wikis/daemon/working", mirrorRoot: `/lar/projections/faces/${segment}/wikis/daemon`, scope: "daemon" }];
-const engineOf = (face: number) => ({ tw5: { face } as never, composite: { face } as never });
+let generation = 0;
+const engineOf = (face: number) => ({ tw5: { face, generation } as never, composite: { face } as never });
 
 function rig(opts: { engines?: Record<number, boolean>; slow?: Promise<void>; fault?: boolean } = {}) {
   const mounted: { face: number; engine: unknown; roots: string[] }[] = [];
@@ -87,5 +90,30 @@ describe("lit-face-projections", () => {
     await expect(seat.light("k1", { handleIndex: 1, diskMirrors: grants("h-one") })).resolves.toBeUndefined();
     expect(mounted).toEqual([]);
     expect(seat.standing()).toEqual([]);
+  });
+
+  test("P7 — a rebuild stops the old projector first, keeps the face lit, and mounts over the new engine", async () => {
+    generation = 0;
+    const order: string[] = [];
+    const { seat, mounted, stopped } = rig();
+    await seat.light("k1", { handleIndex: 1, diskMirrors: grants("h-one") });
+    expect(mounted.map((m) => m.engine)).toEqual([{ tw5: { face: 1, generation: 0 }, composite: { face: 1 } }]);
+    await seat.rebuilding(1);
+    order.push(`stopped ${stopped.length}`);
+    expect(stopped, "the projector stops before the old engine closes").toEqual([1]);
+    expect(seat.standing(), "the face stays lit through the rebuild").toEqual(["k1"]);
+    generation = 1;
+    await seat.rebuilt(1);
+    expect(mounted.map((m) => m.engine)).toEqual([
+      { tw5: { face: 1, generation: 0 }, composite: { face: 1 } },
+      { tw5: { face: 1, generation: 1 }, composite: { face: 1 } },
+    ]);
+    expect(seat.standing()).toEqual(["k1"]);
+    await seat.drop("k1");
+    expect(stopped, "the drop stops the new projector once, never the old one again").toEqual([1, 1]);
+    await seat.rebuilding(9);
+    await seat.rebuilt(9);
+    expect(mounted).toHaveLength(2);
+    expect(order).toEqual(["stopped 1"]);
   });
 });

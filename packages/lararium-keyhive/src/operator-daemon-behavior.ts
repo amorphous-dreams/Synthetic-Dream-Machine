@@ -579,6 +579,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       open: async (url, bag) => await findOrThrow(ctx.repo, url, `${bag} (h${handleIndex}'s own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never,
       ...(wear ? { wear } : {}),
     });
+  }, {
+    // THE REBUILD REACHES THE PROJECTION: a face's projector lets go of the engine it stood on before that engine closes, and mounts on the rebuilt one.
+    rebuilding: (handleIndex) => litProjections?.rebuilding(handleIndex) ?? Promise.resolve(),
+    rebuilt: (handleIndex) => { void litProjections?.rebuilt(handleIndex); },
   }));
   /**
    * EVERY LIT FACE PROJECTS ITS OWN WRITES: one projection per lit sibling, over its own engine, under the grants the vessel named
@@ -2435,7 +2439,7 @@ const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/,
  * One digest of what a face's provider boots from: its atom key, group, anchor, KEL, device edge, signer, cabal, bags,
  * veil archive and address secret. Byte fields enter as their own digests, so the digest carries no secret.
  */
-function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags" | "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">): string {
+function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags" | "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret"> & Pick<JoinedFaceAuth, "diskMirrors">): string {
   const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
   // Bytes anywhere enter as their digest; key order and the bag list's order carry no meaning.
   const plain = (v: unknown): unknown => v instanceof Uint8Array ? sha256HexBytesSync(v)
@@ -2447,6 +2451,8 @@ function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"
     bags: [...new Set(face.registerBags)].sort(),
     veil: face.veilArchiveBytes ? sha256HexBytesSync(face.veilArchiveBytes) : null,
     address: face.faceAddressSecret ? sha256HexBytesSync(encode(face.faceAddressSecret)) : null,
+    // A face's mirror grants follow its pet name: a renamed face lights from other inputs, so its grants never go stale.
+    mirrors: (face.diskMirrors ?? []).map((m) => `${m.bagId} ${m.mirrorRoot}`).sort(),
   };
   return sha256HexBytesSync(canonicalJsonBytes(fields));
 }

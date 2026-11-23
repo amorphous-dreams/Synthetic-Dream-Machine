@@ -12,10 +12,14 @@
  *   F4 — a shut sibling projects nothing: no folder makes no grant, and a grant with no root of its own mounts nothing
  *   F5 — the face boundary: a grant whose root meets the worn face's root drops, and a temp grant drops
  *   F6 — a face that drops stops its projection: a write after the stop reaches no disk
+ *   F7 — SIBLING AGAINST SIBLING: two lit faces wearing one pet name (one folder): the second never mounts, a named alert
+ *        rides the ward rail, and nothing of its reaches the first's root
+ *   F8 — a hand-made link (`faces/h-alias -> faces/h-zero`) reads as the root it reaches: its grant drops, and the worn root
+ *        takes nothing through it
  */
 import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CompositeStore, wikiSlotUri } from "@lararium/mesh";
@@ -61,7 +65,9 @@ function textsUnder(dir: string): string {
   return out.join("\n");
 }
 
-const ctxOf = (engine: { tw5: TW5Engine; composite: CompositeStore }) => ({ tw5: engine.tw5, composite: engine.composite, post: () => {}, wikiUri: "daemon" }) as never;
+/** Every message the island posted (the ward rail's alerts among them). */
+const posted: Array<{ listenable?: string; payload?: Record<string, unknown> }> = [];
+const ctxOf = (engine: { tw5: TW5Engine; composite: CompositeStore }) => ({ tw5: engine.tw5, composite: engine.composite, post: (msg: never) => { posted.push(msg); }, wikiUri: "daemon" }) as never;
 
 /** A vessel wearing h0, its island mounted over h0's engine with the worn list (`daemonDiskMirrors`). */
 async function wornIsland() {
@@ -153,6 +159,47 @@ describe("every lit face projects its own writes", () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
       expect(textsUnder(h1.root!)).toContain("landed while lit");
       expect(textsUnder(h1.root!)).not.toContain("written after the drop");
+    } finally { await house.stopWorn(); }
+  }, 60_000);
+
+  test("F7 — two lit faces sharing one folder: the second never mounts, the alert names it, and its writes reach no root", async () => {
+    const house = await wornIsland();
+    posted.length = 0;
+    const first = await house.light(1, "h-shared");
+    const second = await house.light(2, "h-shared");
+    try {
+      expect(first.stop).toBeTypeOf("function");
+      expect(second.stop, "the second face's projection never mounts over a root the first holds").toBeUndefined();
+      const alert = posted.find((m) => m.listenable === "lit-face:root-shared");
+      expect(alert?.payload).toMatchObject({ verb: "ward-alert", wardKind: "lit-face-root-shared" });
+      expect(String(alert?.payload?.["reason"])).toContain("h1");
+      await first.engine.write("First", "the first face holds this folder");
+      await second.engine.write("Second", "the second face shares a name");
+      await first.idle();
+      expect(textsUnder(first.root!)).toContain("the first face holds this folder");
+      expect(textsUnder(house.projections)).not.toContain("the second face shares a name");
+    } finally { await first.stop?.(); await house.stopWorn(); }
+  }, 60_000);
+
+  test("F7b — once the first face drops, the folder frees: a later light of the second mounts", async () => {
+    const house = await wornIsland();
+    const first = await house.light(1, "h-shared");
+    await first.stop!();
+    const second = await house.light(2, "h-shared");
+    try { expect(second.stop).toBeTypeOf("function"); }
+    finally { await second.stop?.(); await house.stopWorn(); }
+  }, 60_000);
+
+  test("F8 — a link to the worn root reads as the worn root: its grant drops", async () => {
+    const house = await wornIsland();
+    mkdirSync(house.wornRoot, { recursive: true });
+    symlinkSync(house.wornRoot, faceRoot(house.projections, "h-alias"));
+    const alias = await house.light(5, "h-alias");
+    try {
+      expect(alias.stop, "a link into the worn root mounts nothing").toBeUndefined();
+      await alias.engine.write("Alias", "through the link");
+      await house.wornProjector.idle();
+      expect(textsUnder(house.wornRoot)).not.toContain("through the link");
     } finally { await house.stopWorn(); }
   }, 60_000);
 });

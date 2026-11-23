@@ -36,9 +36,16 @@ export interface LitFaceProjections {
   light(key: string, face: LitFaceProjectionEntry): Promise<void>;
   /** Stop the face's projection, if one stands. */
   drop(key: string): Promise<void>;
+  /** THE ENGINE REBUILDS (`faceEngines`' hooks): the face's projector stops before the engine it stood on closes; the face stays lit. */
+  rebuilding(handleIndex: number): Promise<void>;
+  /** The rebuilt engine composed: the face's projection mounts again over it. */
+  rebuilt(handleIndex: number): Promise<void>;
   /** The faces whose projection stands now, by bare atom key. */
   standing(): readonly string[];
 }
+
+type Stop = () => Promise<void>;
+interface Seat { readonly face: LitFaceProjectionEntry & { readonly handleIndex: number }; mounting: Promise<Stop | undefined>; rebuilding: boolean }
 
 export function litFaceProjections(ports: {
   readonly mount: LitFaceProjectionMount;
@@ -47,36 +54,57 @@ export function litFaceProjections(ports: {
   readonly log?: (line: string) => void;
 }): LitFaceProjections {
   const log = ports.log ?? (() => {});
-  /** Each face's mount by its key: the token names this light's own mount, so a drop during it reads as a drop. */
-  const held = new Map<string, { readonly mounting: Promise<(() => Promise<void>) | undefined> }>();
+  /** Each face's mount by its key: the seat names this light's own mount, so a drop during it reads as a drop. */
+  const held = new Map<string, Seat>();
+  const keyOf = (handleIndex: number): string | undefined => { for (const [key, seat] of held) if (seat.face.handleIndex === handleIndex) return key; return undefined; };
+  const light = async (key: string, entry: LitFaceProjectionEntry): Promise<void> => {
+    const standing = held.get(key);
+    if (standing !== undefined) { await standing.mounting; return; }
+    const handleIndex = entry.handleIndex;
+    if (typeof handleIndex !== "number" || !entry.diskMirrors?.length) return;
+    const face = { ...entry, handleIndex };
+    const seat: Seat = { face, mounting: Promise.resolve(undefined), rebuilding: false };
+    held.set(key, seat);
+    seat.mounting = (async () => {
+      const engine = await ports.engine(handleIndex);
+      if (engine === null) { log(`face h${handleIndex} composes no engine; it projects nothing`); return undefined; }
+      // A drop that came while the engine composed leaves nothing to mount.
+      if (held.get(key) !== seat) return undefined;
+      return await ports.mount(face, engine);
+    })().catch((error: unknown) => {
+      log(`face h${handleIndex}'s projection did not mount: ${error instanceof Error ? error.message : String(error)}`);
+      return undefined;
+    });
+    const stop = await seat.mounting;
+    if (stop === undefined && held.get(key) === seat && !seat.rebuilding) held.delete(key);
+    else if (stop !== undefined) log(`face h${handleIndex} projects its own writes under its own root`);
+  };
   return {
-    light: async (key, face) => {
-      const standing = held.get(key);
-      if (standing !== undefined) { await standing.mounting; return; }
-      const handleIndex = face.handleIndex;
-      if (typeof handleIndex !== "number" || !face.diskMirrors?.length) return;
-      const seat: { mounting: Promise<(() => Promise<void>) | undefined> } = { mounting: Promise.resolve(undefined) };
-      held.set(key, seat);
-      seat.mounting = (async () => {
-        const engine = await ports.engine(handleIndex);
-        if (engine === null) { log(`face h${handleIndex} composes no engine; it projects nothing`); return undefined; }
-        // A drop that came while the engine composed leaves nothing to mount.
-        if (held.get(key) !== seat) return undefined;
-        return await ports.mount({ ...face, handleIndex }, engine);
-      })().catch((error: unknown) => {
-        log(`face h${handleIndex}'s projection did not mount: ${error instanceof Error ? error.message : String(error)}`);
-        return undefined;
-      });
-      const stop = await seat.mounting;
-      if (stop === undefined && held.get(key) === seat) held.delete(key);
-      else if (stop !== undefined) log(`face h${handleIndex} projects its own writes under its own root`);
-    },
+    light,
     drop: async (key) => {
       const seat = held.get(key);
       if (seat === undefined) return;
       held.delete(key);
       const stop = await seat.mounting;
       await stop?.();
+    },
+    rebuilding: async (handleIndex) => {
+      const key = keyOf(handleIndex);
+      if (key === undefined) return;
+      const seat = held.get(key)!;
+      seat.rebuilding = true;
+      const stop = await seat.mounting;
+      seat.mounting = Promise.resolve(undefined);
+      await stop?.();
+      log(`face h${handleIndex}'s engine rebuilds; its projector let go of the engine it stood on`);
+    },
+    rebuilt: async (handleIndex) => {
+      const key = keyOf(handleIndex);
+      if (key === undefined) return;
+      const seat = held.get(key)!;
+      if (!seat.rebuilding) return;
+      held.delete(key);
+      await light(key, seat.face);
     },
     standing: () => [...held.keys()],
   };

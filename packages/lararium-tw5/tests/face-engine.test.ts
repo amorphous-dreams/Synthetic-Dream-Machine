@@ -8,6 +8,7 @@
  *   E3  RED: the engines cache one engine per face; a drop closes it and the next ask composes afresh; a face with no source
  *       composes nothing
  *   E4  RED: an engine composed before its face recorded a working slot rebuilds over the slot on its arrival, and lands a put there
+ *   E4b RED: the rebuild says itself aloud: `rebuilding` resolves before the old engine closes, and `rebuilt` names the new one
  *   E5  RED (a lit face receives visits): the CROSS-FACE VIEW of a face reads its daemon canon and working layer, and its
  *       personal layer never appears: a title only there reads absent to a get, a filter and a transclusion, and a title
  *       there that shadows a working record reads the working record; the view never asks for a private slot
@@ -118,6 +119,35 @@ describe.skipIf(wikiSkip)(`a lit face's own engine answers the tiddler door${ski
     expect(put).toMatchObject({ decision: "put", bag: WORKING });
     expect(holds(h1.working, "Note of h1"), "the put lands in the working document the slot named").toBe(true);
     expect(composed).toBeGreaterThanOrEqual(3);
+  }, 60_000);
+});
+
+describe.skipIf(wikiSkip)(`a face engine's rebuild reaches its readers${skipNote}`, () => {
+  test("E4b RED: rebuilding resolves before the old engine closes, and rebuilt follows once the new one composed", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const h1 = faceDocs(repo, R1, "Canon of h1");
+    const bare: FaceEngineSource = { ...h1.source, ready: h1.source.ready.filter((r) => r.slot !== WORKING) };
+    let slotRecorded = false;
+    const said: string[] = [];
+    let old: { close(): Promise<void> } | null = null;
+    const engines = faceEngines(async () => slotRecorded ? h1.source : bare, {
+      rebuilding: async (face) => { said.push(`rebuilding h${face}`); },
+      rebuilt: (face) => { said.push(`rebuilt h${face}`); },
+    });
+    downs.push(() => engines.dropAll());
+    const before = await engines.of(1);
+    old = before;
+    const close = before!.close.bind(before);
+    (before as { close: () => Promise<void> }).close = async () => { said.push("old closes"); await close(); };
+    expect(await engines.of(1)).toBe(before);
+    expect(said, "no rebuild while the slot stands absent").toEqual([]);
+    slotRecorded = true;
+    const after = await engines.of(1);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(after).not.toBe(old);
+    expect(said).toEqual(["rebuilding h1", "old closes", "rebuilt h1"]);
+    await engines.of(1);
+    expect(said, "a rebuild says itself once").toHaveLength(3);
   }, 60_000);
 });
 

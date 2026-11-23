@@ -200,7 +200,12 @@ const bindsWorking = (source: FaceEngineSource): boolean =>
  * One engine per face, composed on its first ask. An engine composed before its face recorded a working slot holds no write
  * layer, so each ask re-reads the source while that stands and rebuilds on the slot's arrival, never at the face's drop.
  */
-export function faceEngines(sourceOf: (face: number) => Promise<FaceEngineSource | null>): FaceEngines {
+export function faceEngines(
+  sourceOf: (face: number) => Promise<FaceEngineSource | null>,
+  /** THE REBUILD SAID ALOUD: whoever reads a face's engine (its projection) lets go of the engine it stood on before that engine closes
+   *  (`rebuilding`, awaited), and takes the new one once it composed (`rebuilt`). */
+  hooks: { readonly rebuilding?: (face: number) => Promise<void>; readonly rebuilt?: (face: number) => void } = {},
+): FaceEngines {
   const unslotted = new Set<number>();
   const pool = enginePool<number, FaceEngine>(async (face) => {
     const source = await sourceOf(face);
@@ -212,7 +217,14 @@ export function faceEngines(sourceOf: (face: number) => Promise<FaceEngineSource
     of: async (face) => {
       if (unslotted.has(face)) {
         const fresh = await sourceOf(face);
-        if (fresh !== null && bindsWorking(fresh)) await pool.drop(face);
+        if (fresh !== null && bindsWorking(fresh) && unslotted.has(face)) {
+          unslotted.delete(face);
+          await hooks.rebuilding?.(face).catch(() => {});
+          await pool.drop(face);
+          const rebuilt = pool.of(face);
+          void rebuilt.then((engine) => { if (engine !== null) hooks.rebuilt?.(face); }, () => {});
+          return rebuilt;
+        }
       }
       return pool.of(face);
     },
