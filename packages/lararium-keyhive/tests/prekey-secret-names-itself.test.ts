@@ -44,7 +44,9 @@ describe("a stand whose Archive lags its own log", () => {
     const store = new InMemoryEventStore();
     const ledger = ledgerOf();
     let archive: Uint8Array | null = null;
-    for (let i = 0; i < 12; i++) archive = await stand(seed, store, ledger, archive, i, "before-the-card");
+    // THE SETUP NEVER REFUSES BY CONSTRUCTION: an after-the-card lineage holds every prekey its log names, so its twelve
+    // stands leave twelve cards of rotations in the log (a before-the-card walk could refuse inside the setup itself).
+    for (let i = 0; i < 12; i++) archive = await stand(seed, store, ledger, archive, i, "after-the-card");
     const recorded = ledger.rows.get(BAG);
     expect(recorded).toBeTruthy();
     const p = new KeyhiveProvider();

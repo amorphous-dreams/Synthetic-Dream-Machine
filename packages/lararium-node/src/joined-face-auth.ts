@@ -100,15 +100,20 @@ async function oneJoinedFace(ports: JoinedFaceAuthPorts, ordinal: number): Promi
 /**
  * THE SUPERVISOR'S REOPEN, ARCHIVES FRESH: each lit face composes again from the entry its light proved, with its Archive read
  * again from its own row through that face's holder (`read`, the lit face's own open custody), because a lit sibling rests a
- * newer Archive after its card than the one its light restored. A row that reads nothing keeps the entry's bytes; a row that
- * fails to read keeps them too, says so by the face's handle, and refuses nothing.
+ * newer Archive after its card than the one its light restored (`read` waits on that face's queued write). A row that reads
+ * none drops the entry's bytes (a rehive's marker means stand from the seed); a row that fails to read keeps them, says so by
+ * the face's handle, and refuses nothing.
  */
 export async function refreshLitArchives(faces: readonly JoinedFaceAuth[], read: (group: string) => Promise<Uint8Array | null>,
   log: (line: string) => void): Promise<JoinedFaceAuth[]> {
   return Promise.all(faces.map(async (face) => {
     try {
       const bytes = await read(face.personaGroupId);
-      return bytes ? { ...face, veilArchiveBytes: bytes } : face;
+      if (bytes) return { ...face, veilArchiveBytes: bytes };
+      // A ROW THAT READS NONE (no row, or a rehive's marker: stand from the seed) drops the held bytes, so the reopen stands
+      // as the face's next boot would.
+      const { veilArchiveBytes: _dropped, ...rest } = face;
+      return rest;
     } catch (e) {
       log(`[lit-set] the face h${face.handleIndex ?? "?"} reopens on the Archive its light restored: its row did not read (${e instanceof Error ? e.message : String(e)})`);
       return face;

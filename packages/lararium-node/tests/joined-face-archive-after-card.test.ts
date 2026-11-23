@@ -129,7 +129,7 @@ test("a supervisor reopen refreshes the sibling's Archive from its row: a reopen
   } finally { await Promise.all(stale.providers.map((p) => p.dispose().catch(() => {}))); }
 });
 
-test("a reopen whose row fails to read keeps the in-memory Archive, names the face, and refuses nothing new", async () => {
+test("a reopen whose row fails to read keeps the in-memory Archive, names the face, and refuses nothing new; a row that reads none drops it", async () => {
   const held = new Uint8Array([1, 2, 3]);
   const face = { personaGroupId: "group-of-a-lit-face", handleIndex: 2, veilArchiveBytes: held } as never;
   const unheld = { personaGroupId: "group-with-no-row", handleIndex: 3, veilArchiveBytes: held } as never;
@@ -138,7 +138,10 @@ test("a reopen whose row fails to read keeps the in-memory Archive, names the fa
     if (group === "group-of-a-lit-face") throw new Error("the row would not open");
     return null;
   }, (line) => logs.push(line));
-  expect(out.map((f) => (f as { veilArchiveBytes?: Uint8Array }).veilArchiveBytes)).toEqual([held, held]);
+  // The row that fails keeps the held bytes; the row that reads none (no row, or a rehive's marker: stand from the seed)
+  // drops them, so the reopen stands as that face's next boot would.
+  expect(out.map((f) => (f as { veilArchiveBytes?: Uint8Array }).veilArchiveBytes)).toEqual([held, undefined]);
+  expect("veilArchiveBytes" in (out[1] as object)).toBe(false);
   expect(logs).toHaveLength(1);
   expect(logs[0]).toContain("h2");
   expect(logs[0]).toContain("the row would not open");
