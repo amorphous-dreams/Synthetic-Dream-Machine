@@ -99,11 +99,11 @@ async function oracleCast(args: ParsedArgs): Promise<number> {
 }
 
 /** The one verb the oracle door answers. */
-export const ORACLE_VERBS = ["cast"] as const;
+export const CAST_DOOR_VERBS = ["cast"] as const;
 
 export async function cmdOracle(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
-  if (sub !== ORACLE_VERBS[0]) {
+  if (sub !== CAST_DOOR_VERBS[0]) {
     if (sub) console.error(`lares oracle: unknown sub-verb "${sub}"`);
     for (const line of helpLines("oracle")) console.error(line);
     return 2;

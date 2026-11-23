@@ -164,7 +164,7 @@ describe("L2 · every `lares …` command a message names is a door the CLI answ
     expect(branchWords(`const raw = args.positional[0];\nif (typeof raw === "string") return 2;`)).toEqual([]);
   });
 
-  test("CONTROL: a retired verb, an unknown door and an undeclared sub-verb each read as dead", () => {
+  test("CONTROL: a door outside the table, an unknown door and an undeclared sub-verb each read as dead", () => {
     expect(deadDoor("lares receipt req-1")).not.toBeNull();
     expect(deadDoor("lares zz-no-such-name")).not.toBeNull();
     expect(deadDoor("lares vessel zz-no-such-name")).not.toBeNull();

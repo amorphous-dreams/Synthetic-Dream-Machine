@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const tools = dirname(fileURLToPath(import.meta.url));
 
 // A stand-in built CLI: `help` lists the top verbs, `help --json` lists the doors with each row's own verb table
-// (or crashes, on JSON_CRASH). VERBS_JSON swaps the tables, so a case can plant a door the rows no longer answer.
+// (or crashes, on JSON_CRASH). VERBS_JSON swaps the tables, so a case can plant a sub-door its row's table does not name.
 const TABLES = { nexus: ["admit"], seal: { open: ["now"] }, ghost: null };
 const BIN = `const a = process.argv.slice(2);
 const tables = process.env.VERBS_JSON ? JSON.parse(process.env.VERBS_JSON) : ${JSON.stringify(TABLES)};

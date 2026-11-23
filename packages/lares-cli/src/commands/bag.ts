@@ -114,7 +114,7 @@ export async function cmdBag(args: ParsedArgs): Promise<number> {
     printBagHelp();
     return verb ? 0 : 2;
   }
-  // The retired spellings (`bag pin`, `bag list`, …) answer at the dispatcher's one MOVED table before this door runs.
+  // The dispatcher's one MOVED table answers `bag pin`, `bag list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares bag: unknown verb "${verb}"`);

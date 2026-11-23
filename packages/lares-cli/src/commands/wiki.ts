@@ -1037,7 +1037,7 @@ export async function cmdWiki(args: ParsedArgs): Promise<number> {
     printWikiHelp();
     return verb ? 0 : 2;
   }
-  // The retired spellings (`wiki open`, `wiki list`, …) answer at the dispatcher's one MOVED table before this door runs.
+  // The dispatcher's one MOVED table answers `wiki open`, `wiki list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
     console.error(`lares wiki: unknown verb "${verb}"`);
