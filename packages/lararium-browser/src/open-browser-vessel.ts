@@ -27,6 +27,7 @@ import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
+import { browserRoutesVeilArchive } from "./browser-veil-archive-route.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
 import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
@@ -2132,7 +2133,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // EACH ARCHIVE NAMES ITS FACE, and the seal proves it (`saveBrowserVeilArchive`): a write naming another face than the
         // worn one refuses, and bytes that restore another identity than the worn face's own atom refuse with the row unchanged.
         const lift = browserSessionLift(unlocked.session, async (_carrier, bytes, face) => {
-          if (face !== wornGroup) throw new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive");
+          if (!browserRoutesVeilArchive(wornGroup)(face)) throw new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive");
           await saveBrowserVeilArchive(idbName, wornGroup, bytes);
         });
         const lifted = await composeVessel(islandLiftStack(islandVessel, lift.lift));

@@ -18,7 +18,7 @@
  *
  */
 
-import { KeyhiveProvider } from "./keyhive-provider.js";
+import { KeyhiveProvider, PrekeySecretAbsent } from "./keyhive-provider.js";
 import { registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
 import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
@@ -86,6 +86,18 @@ export interface BootDaemonKeyhiveResult {
   /** What the Binding Gate's fold set aside — persona-KEL events that do not verify and so move nothing — or null
    *  when every event it met verified. The boot also says it on the log. */
   readonly unreadable: string | null;
+}
+
+/**
+ * A face whose stand holds no prekey secret, by the face's public atom key: its Archive came in absent or older than its
+ * latest card (`PrekeySecretAbsent`). The boot refuses the face whole (fail-closed): the fault reads identity-wide, every
+ * Document this stand would mint meets it, and a face lit without its own hand would present a door it cannot seal behind.
+ */
+export class FaceHoldsNoPrekeySecret extends Error {
+  override readonly name = "FaceHoldsNoPrekeySecret";
+  constructor(readonly face: string, cause: PrekeySecretAbsent) {
+    super(`[daemon-keyhive] face ${face.slice(0, 16)}… ${cause.message}`, { cause });
+  }
 }
 
 export class FacelessKeyhiveRefused extends Error {
@@ -206,8 +218,13 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // dance + the affiliation layer; boot itself proves identity only and does not read them.
 
   // Register the operator's writable bags so cap checks resolve against lar: URIs.
-  if (input.ledger) await registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger });
-  else for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
+  try {
+    if (input.ledger) await registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger });
+    else for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
+  } catch (error) {
+    if (error instanceof PrekeySecretAbsent) throw new FaceHoldsNoPrekeySecret(input.faceVerifyingKey, error);
+    throw error;
+  }
 
   return { keyhive, did, unreadable };
   } catch (error) {

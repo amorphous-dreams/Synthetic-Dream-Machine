@@ -257,7 +257,7 @@ The naming law carries over unchanged: `Lares (Seat)` by default, `EarnedName (O
 
 ''A refusal speaks in the voice that refused,'' and a relay chain reads as a call trace: `Iris-Sprite (Messenger) → Lares (Hearth) → Pūlama (Vestal): refused · light-needed`.
 
-<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/research/seat-lares`>>
+Research: `lar:///ha.ka.ba/kahua/memory/research/seat-lares` in the steward's daemon wiki.
 
 <<~/ahu>>
 
@@ -486,6 +486,6 @@ One compact turn --- ``<<~ set lares=`aim` from=`lar:///operator.intent.lands` t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;I6q_CUXB2-o3w5sVFIYUISLUWMAX5gerc4Y1Y7jUUgA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HbZRx1tePT76pr0cV6HOeCotOyen2u3MdEER9d48-x4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
