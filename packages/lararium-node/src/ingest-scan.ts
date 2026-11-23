@@ -20,7 +20,9 @@ import { readFileSync, readdirSync, statSync, existsSync, lstatSync } from "node
 import { dirname, join, resolve, sep, extname, relative } from "node:path";
 import {
   newChangeId, newRequestId, carrierHash, digestsEqual, BAG_MANIFEST_FILE, VERB_RESULT_KEY,
-  ridesAsPointer, mediaTypeFromExt, isOversizedBody, wikiSlotUri,
+  ridesAsPointer, mediaTypeFromExt, isOversizedBody, wikiSlotUri, type WaveLimits, type WaveWeight,
+  takeCrest, scaleLimits, adaptDepth, addWeight, fitsWave, yieldToHost,
+  INGEST_WAVE_LIMITS, INGEST_WAVE_OVER_BUDGET, RECORD_OBJECTS, ingestCarrierWeight,
 } from "@lararium/mesh";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { SyncedTree, syncedTreeKey, syncedTreeDir } from "./synced-tree.js";
@@ -517,7 +519,27 @@ export interface IngestSettlement {
    *  projection after exactly these (`settle`, `shore-verb.ts`). */
   readonly rendered: ReadonlyArray<{ readonly uri: string; readonly records: string; readonly heads?: readonly string[] }>;
   /** A later wave that ended in an error: the gesture stops there and names what stays unread. */
-  readonly pageError?: { readonly message: string; readonly unread: number };
+  readonly pageError?: { readonly message: string; readonly unread: number; readonly requestId?: string; readonly outcome?: "committed" | "unknown" };
+  /** Every first-pass wave the gesture crested, in order: its request id, what it carried, and how it ended. */
+  readonly waves?: ReadonlyArray<IngestWaveRecord>;
+  /** What no wave reached: the carriers and deletions a stopped gesture still owes, by address. */
+  readonly debt?: { readonly carriers: readonly string[]; readonly deletions: readonly string[] };
+}
+
+/** One crested wave of a paged gesture. */
+export interface IngestWaveRecord {
+  readonly requestId: string;
+  readonly carriers: number;
+  readonly deletions: number;
+  readonly status: "done" | "error" | "committed" | "unknown";
+}
+
+/** How a gesture crests its first pass (`wave-crest`): the per-wave limits, the servo's target and its clock. */
+export interface IngestPacing {
+  readonly limits?: WaveLimits;
+  readonly targetMs?: number;
+  readonly now?: () => number;
+  readonly yieldFn?: () => Promise<void>;
 }
 
 /** What a settled gesture says of itself: whether the run took everything it was handed, and why it did not. */
@@ -537,7 +559,12 @@ export interface IngestVerdict {
  */
 export function ingestVerdict(s: IngestSettlement): IngestVerdict {
   if (s.pageError !== undefined) {
-    return { failed: true, message: `INGEST read ${s.refused.length} refusal(s) and then a later wave failed (${s.pageError.message}); ${s.pageError.unread} carrier(s) stay unread: run the ingest again` };
+    const id = s.pageError.requestId !== undefined && s.pageError.requestId !== "" ? ` (request ${s.pageError.requestId})` : "";
+    // A WAIT THAT ENDED IS NO FAILURE: the wave's own receipt names what the vessel holds, and the run owes the rest.
+    if (s.pageError.outcome !== undefined) {
+      return { failed: true, message: `INGEST stopped at a wave whose outcome reads ${s.pageError.outcome}${id}: read it with \`lares vessel request ${s.pageError.requestId ?? ""}\`; ${s.pageError.unread} carrier(s) stay owed past it: run the ingest again once it settles (diff-gated)` };
+    }
+    return { failed: true, message: `INGEST read ${s.refused.length} refusal(s) and then a later wave${id} failed (${s.pageError.message}); ${s.pageError.unread} carrier(s) stay unread: run the ingest again` };
   }
   if (s.refused.length > 0) {
     return { failed: true, message: `INGEST refused ${s.refused.length} of ${s.submitted} carrier(s): ${s.refused.map((r) => r.uri).join(", ")}` };
@@ -640,6 +667,235 @@ function recordsSideOf(uri: string, text: string, meta: string | undefined, bina
 }
 
 /**
+ * THE FIRST PASS CRESTS AS A NALU (lar:///ha.ka.ba/lares/api/pono/nalu#/the-wave-shape, `wave-crest`).
+ *
+ * One INGEST of 194 lares carriers took the daemon's shared Automerge engine down on 2026-11-22: the engine holds every
+ * object a wave writes at once, and upstream bounds no sync batch. So the gesture hands the daemon bounded waves:
+ *
+ *   · FAMILIES: a renamed carrier rides with the deletion of the file it left (the island pairs a rename inside one wave);
+ *     each kāpae and each deletion no carrier pairs stands as a family of its own, so a mass delete or a mass set-aside
+ *     crests across waves too. The kāpae queue first, so a handful of them still ride the first wave.
+ *   · THE CREST: whole families off the head of the queue while the wave still fits every limit of the per-document wave
+ *     budget (`INGEST_WAVE_LIMITS`: carriers, encoded bytes, estimated objects); a family heavier than the limits rides alone.
+ *   · BACKPRESSURE: a wave the daemon refuses `ingest-wave-over-budget` returns to the head of the queue and crests again at
+ *     half the depth; a lone family the daemon still refuses stops the gesture by name.
+ *   · THE SERVO: each wave's duration steps the next depth (`adaptDepth`, the accumulate family's shrink): a wave slower
+ *     than `INGEST_WAVE_TARGET_MS` shrinks the next, a fast one grows it back up to the budget.
+ *   · THE BREATH: the gesture yields to the host between waves.
+ *
+ * Each wave settles whole (`settleWave`: its own audit-cap re-asks, its own pins), so a reader never meets half a wave.
+ * A wave that fails, or whose wait ended, stops the gesture: the settlement names every wave it sent (`waves`, each with its
+ * request id and how it ended), the stop (`pageError`, with the wave's id and a read-back's `committed`/`unknown`), and what
+ * no wave reached (`debt`). A later run passes the diff gate: what landed reads unchanged and rides no wave again.
+ *
+ * A gesture that fits one wave rides one wave, exactly as before.
+ */
+export async function settleIngest(
+  opts: SubmitIngestOpts,
+  tree: SyncedTree,
+  submit: IngestSubmit,
+  pacing: IngestPacing = {},
+): Promise<IngestSettlement> {
+  const limits = pacing.limits ?? INGEST_WAVE_LIMITS;
+  const families = familiesOf(opts);
+  const whole = families.reduce<WaveWeight>((w, f) => addWeight(w, familyWeight(f)), { count: 0 });
+  if (families.length <= 1 || fitsWave(whole, limits)) {
+    const s = await settleWave(opts, tree, submit);
+    return { ...s, waves: [{ requestId: s.first.requestId, carriers: opts.candidates.length, deletions: opts.deletions?.length ?? 0, status: s.first.status }] };
+  }
+
+  const now = pacing.now ?? (() => performance.now());
+  const targetMs = pacing.targetMs ?? INGEST_WAVE_TARGET_MS;
+  const yieldFn = pacing.yieldFn ?? yieldToHost;
+  const queue = [...families];
+  const settled: IngestSettlement[] = [];
+  const waves: IngestWaveRecord[] = [];
+  let depth = limits.count;
+  let pageError: IngestSettlement["pageError"];
+  let firstError: IngestSettlement | undefined;
+  let owed: IngestFamily[] = [];
+  while (queue.length > 0) {
+    const crest = takeCrest(queue, familyWeight, scaleLimits(limits, depth / limits.count));
+    const page = pageOpts(opts, crest, waves.length);
+    const carriers = page.candidates.length;
+    const deletions = page.deletions?.length ?? 0;
+    const t0 = now();
+    let s: IngestSettlement;
+    try {
+      s = await settleWave(page, tree, submit);
+    } catch (err) {
+      // The first wave's own fault reads as it always did; a later one stops the gesture and names what it knows.
+      if (settled.length === 0) throw err;
+      const told = err as { requestId?: unknown; receiptState?: unknown };
+      const requestId = typeof told.requestId === "string" ? told.requestId : undefined;
+      const outcome = told.receiptState === "committed" ? "committed" as const : "unknown" as const;
+      waves.push({ requestId: requestId ?? "", carriers, deletions, status: outcome });
+      owed = [...crest, ...queue];
+      pageError = { message: err instanceof Error ? err.message : String(err), unread: carriersOf(owed), ...(requestId !== undefined ? { requestId } : {}), outcome };
+      break;
+    }
+    if (s.first.status === "error") {
+      // BACKPRESSURE: the daemon's own budget answered; the same families crest again at half the depth.
+      if (s.first.refusal?.reason === INGEST_WAVE_OVER_BUDGET && crest.length > 1) {
+        queue.unshift(...crest);
+        depth = Math.max(1, Math.floor(Math.min(depth, crest.length) / 2));
+        continue;
+      }
+      waves.push({ requestId: s.first.requestId, carriers, deletions, status: "error" });
+      owed = [...crest, ...queue];
+      if (settled.length === 0) firstError = s;
+      else pageError = { message: s.first.errorMessage ?? "the daemon refused and named no reason", unread: carriersOf(owed), requestId: s.first.requestId };
+      break;
+    }
+    settled.push(s);
+    waves.push({ requestId: s.first.requestId, carriers, deletions, status: "done" });
+    depth = adaptDepth(depth, now() - t0, targetMs, 0.25, limits.count);
+    if (queue.length > 0) await yieldFn();
+  }
+  const debt = owed.length > 0
+    ? { carriers: owed.flatMap((f) => f.candidates.map((c) => c.uri)), deletions: owed.flatMap((f) => f.deletions.map((d) => d.uri)) }
+    : undefined;
+  const asked = opts.candidates.map((c) => c.uri);
+  const askedDeletions = (opts.deletions ?? []).map((d) => d.uri);
+  if (firstError !== undefined) {
+    return { ...firstError, submitted: asked.length, asked, askedDeletions, unanswered: asked, waves, ...(debt ? { debt } : {}) };
+  }
+  return mergeSettlements(settled, opts, waves, pageError, debt);
+}
+
+/** How long one INGEST wave may run before the servo shrinks the next: a wave that fits the budget lands in seconds on a
+ *  warm vessel, and twenty seconds leaves room for a cold one while still catching a wave that drags the engine. */
+export const INGEST_WAVE_TARGET_MS = 20_000;
+
+/**
+ * THE CALLER'S WAIT FOR ONE WAVE, scaled by what it sends and capped. The floor and the per-carrier step keep the prior
+ * budget (10 s + 400 ms per carrier); each MiB adds 4 s, since encoding and applying a large body costs past its count; the
+ * cap (5 min) bounds how long a caller waits before it reads the wave's receipt instead.
+ */
+export const INGEST_WAIT_FLOOR_MS = 10_000;
+export const INGEST_WAIT_PER_CARRIER_MS = 400;
+export const INGEST_WAIT_PER_MIB_MS = 4_000;
+export const INGEST_WAIT_CAP_MS = 300_000;
+export function ingestWaitBudgetMs(w: { readonly carriers: number; readonly bytes: number }): number {
+  const budget = INGEST_WAIT_FLOOR_MS + w.carriers * INGEST_WAIT_PER_CARRIER_MS + Math.ceil((w.bytes / (1024 * 1024)) * INGEST_WAIT_PER_MIB_MS);
+  return Math.min(INGEST_WAIT_CAP_MS, Math.max(INGEST_WAIT_FLOOR_MS, budget));
+}
+
+/** One grain of the first pass: a carrier with the deletion its rename pairs, a loose deletion, or one kāpae. */
+interface IngestFamily {
+  readonly candidates: readonly ScanRow[];
+  readonly deletions: readonly PendingDeletion[];
+  readonly kapae: readonly string[];
+}
+
+/**
+ * Each kāpae a family (first), each carrier a family with the deletion its rename pairs, each loose deletion a family.
+ *
+ * TWO ROADS NAME A RENAME, AND THE CREST KEEPS BOTH. The whole-source scan marks the arrival (`renameFrom`, `resolveRenames`);
+ * the watchers pair by content and leave the arrival unmarked (`pairedDeletions`). So a deletion no `renameFrom` claims pairs
+ * with the arrival whose disk hash equals its synced hash, under `pairedDeletions`' own rule: the content stands unique among
+ * the vanished, one candidate holds it, and that candidate arrived. The island pairs a rename inside one wave only
+ * (`pairRenames`), so a pair the crest split would decline the vanish and land a fresh carrier.
+ */
+function familiesOf(opts: SubmitIngestOpts): IngestFamily[] {
+  const deletions = opts.deletions ?? [];
+  const byUri = new Map(deletions.map((d) => [d.uri, d] as const));
+  const claimed = new Set<string>();
+  const marked = new Map<ScanRow, PendingDeletion[]>();
+  for (const c of opts.candidates) {
+    const d = c.renameFrom === undefined ? undefined : byUri.get(c.renameFrom);
+    if (d !== undefined && !claimed.has(d.uri)) { claimed.add(d.uri); marked.set(c, [d]); }
+  }
+  // The content road: `pairedDeletions`' uniqueness over what no mark claimed.
+  const gone = new Map<string, number>();
+  for (const d of deletions) if (!claimed.has(d.uri)) gone.set(d.syncedHash, (gone.get(d.syncedHash) ?? 0) + 1);
+  const holding = new Map<string, ScanRow[]>();
+  for (const c of opts.candidates) holding.set(c.diskHash, [...(holding.get(c.diskHash) ?? []), c]);
+  for (const d of deletions) {
+    if (claimed.has(d.uri) || gone.get(d.syncedHash) !== 1) continue;
+    const holders = holding.get(d.syncedHash) ?? [];
+    const arrival = holders.length === 1 ? holders[0]! : undefined;
+    if (arrival === undefined || (arrival.status !== "new" && arrival.status !== "renamed") || marked.has(arrival)) continue;
+    claimed.add(d.uri);
+    marked.set(arrival, [d]);
+  }
+  const families: IngestFamily[] = (opts.kapae ?? []).map((k) => ({ candidates: [], deletions: [], kapae: [k] }));
+  for (const c of opts.candidates) families.push({ candidates: [c], deletions: marked.get(c) ?? [], kapae: [] });
+  for (const d of deletions) if (!claimed.has(d.uri)) families.push({ candidates: [], deletions: [d], kapae: [] });
+  return families;
+}
+
+/** A family's weight as the daemon will read it (`ingest-wave-budget`): every row counts, each deletion and kāpae one record. */
+function familyWeight(f: IngestFamily): WaveWeight {
+  let w: WaveWeight = { count: f.deletions.length + f.kapae.length };
+  for (const c of f.candidates) {
+    w = addWeight(w, ingestCarrierWeight({ uri: c.uri, file: c.file, diskHash: c.diskHash, syncedHash: c.syncedHash, ext: c.ext, text: c.text, ...(c.meta !== undefined ? { meta: c.meta } : {}) }));
+  }
+  for (const d of f.deletions) w = addWeight(w, { count: 0, bytes: JSON.stringify(d).length, ops: RECORD_OBJECTS });
+  for (const k of f.kapae) w = addWeight(w, { count: 0, bytes: JSON.stringify(k).length, ops: RECORD_OBJECTS });
+  return w;
+}
+
+const carriersOf = (families: readonly IngestFamily[]): number => families.reduce((n, f) => n + f.candidates.length, 0);
+
+/** One crest's own opts: its carriers, deletions and kāpae; each later wave its own change id. */
+function pageOpts(opts: SubmitIngestOpts, crest: readonly IngestFamily[], sent: number): SubmitIngestOpts {
+  const { deletions: _d, kapae: _k, changeId, ...rest } = opts;
+  const deletions = crest.flatMap((f) => f.deletions);
+  const kapae = crest.flatMap((f) => f.kapae);
+  // THE EFFECT INDEX KEYS ON THE CHANGE ID: a later wave under the first wave's id would read as that wave's effect.
+  const pageChangeId = changeId === undefined ? undefined : sent === 0 ? changeId : `${changeId}.p${sent + 1}`;
+  return {
+    ...rest,
+    candidates: crest.flatMap((f) => f.candidates),
+    ...(deletions.length > 0 ? { deletions } : {}),
+    ...(kapae.length > 0 ? { kapae } : {}),
+    ...(pageChangeId !== undefined ? { changeId: pageChangeId } : {}),
+  };
+}
+
+/** The settlements of every crest that landed, read as one gesture's. */
+function mergeSettlements(
+  all: readonly IngestSettlement[], opts: SubmitIngestOpts, waves: readonly IngestWaveRecord[],
+  pageError: IngestSettlement["pageError"], debt: IngestSettlement["debt"],
+): IngestSettlement {
+  const asked = opts.candidates.map((c) => c.uri);
+  const askedDeletions = (opts.deletions ?? []).map((d) => d.uri);
+  const landed = new Set<string>();
+  const named = new Map<string, Record<string, unknown>>();
+  const tallies: Record<string, number> = {};
+  const renames: unknown[] = [];
+  const absent: unknown[] = [];
+  let deletions: Record<string, unknown> | undefined;
+  for (const s of all) {
+    for (const uri of s.landed) landed.add(uri);
+    for (const [uri, row] of s.named) named.set(uri, row);
+    for (const [k, v] of Object.entries(s.tallies)) tallies[k] = (tallies[k] ?? 0) + v;
+    if (s.deletions !== undefined) {
+      deletions = { ...s.deletions, ...(deletions ?? {}) };
+      if (Array.isArray(s.deletions["renames"])) renames.push(...(s.deletions["renames"] as unknown[]));
+      if (Array.isArray(s.deletions["absent"])) absent.push(...(s.deletions["absent"] as unknown[]));
+    }
+  }
+  if (deletions !== undefined) deletions = { ...deletions, renames, absent };
+  const refused = all.flatMap((s) => s.refused);
+  const conflicts = all.flatMap((s) => s.conflicts);
+  const asking = new Set([...refused, ...conflicts].map((r) => r.uri));
+  return {
+    first: all[0]!.first,
+    pages: all.flatMap((s, i) => (i === 0 ? [...s.pages] : [s.first, ...s.pages])),
+    submitted: asked.length, asked, askedDeletions, landed,
+    unanswered: asked.filter((uri) => !landed.has(uri) && !asking.has(uri)),
+    named, refused, conflicts, derived: all.flatMap((s) => s.derived), tallies, deletions,
+    recorded: all.reduce((n, s) => n + s.recorded, 0),
+    rendered: all.flatMap((s) => s.rendered),
+    waves,
+    ...(pageError !== undefined ? { pageError } : {}),
+    ...(debt !== undefined ? { debt } : {}),
+  };
+}
+
+/**
  * THE WHOLE GESTURE: submit, read every row a person or the base needs, pin what landed.
  *
  * One wave carries every candidate. Under the audit cap its outcome names every row and the gesture ends
@@ -655,7 +911,7 @@ function recordsSideOf(uri: string, text: string, meta: string | undefined, bina
  * A carrier asked again reads against the records the first wave left: a landed one answers `noop` and its
  * render, a refused one answers its refusal again. Nothing lands twice. Deletions ride the first wave alone.
  */
-export async function settleIngest(
+async function settleWave(
   opts: SubmitIngestOpts,
   tree: SyncedTree,
   submit: IngestSubmit,

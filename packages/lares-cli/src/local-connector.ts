@@ -288,6 +288,8 @@ export interface ReceiptAnswer {
   readonly refusal?: { readonly reason: string };
   /** The chore's receipt mark the outcome rests with: the acting face, the asker's hand (`seat`, `cli`, `tab`), its session. */
   readonly chore?: { readonly acting: number; readonly asker: string; readonly session: string | null };
+  /** The engine's fall (`engine-watch` on the vessel), where the receipt came from the settled ledger after the engine stopped. */
+  readonly engine?: { readonly status?: string; readonly cause?: string; readonly [k: string]: unknown };
 }
 
 /** This READ's own patience ended with no line back — mirrors `LocalWaitExpired` for the dispatch

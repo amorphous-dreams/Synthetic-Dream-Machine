@@ -82,6 +82,9 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // reading a committed act as a failure (4's). `outcome-unknown` is raised from `local-connector.ts`'s
   // `LocalWaitExpired` alone (M3).
   "outcome-unknown":   6,
+  // THE SAME EXIT FAMILY (6), outcome-unknown's read-back kin: the wait ended, the receipt read `committed`, so the vessel
+  // admitted the act and its outcome had not landed. Never a failure (4): a re-run passes the diff gate, a read-back names it.
+  "outcome-committed": 6,
   // THE SAME EXIT FAMILY AS outcome-unknown (6), BUT A DISTINCT CODE. An `abandoned` receipt names a
   // request THIS vessel arbitrated and refused BEFORE commit — never ran, never will under this id.
   // That is a sharper, more actionable answer than "outcome unknown" ("it may have committed"), so it

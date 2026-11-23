@@ -1,6 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "../src/readiness-face.js";
+import { createEngineWatch, ENGINE_HAND_ACT } from "../src/engine-watch.js";
 
 const servers: Server[] = [];
 afterEach(async () => {
@@ -88,5 +89,33 @@ describe("Node readiness face", () => {
     const state = createReadinessState();
     await expect(markReadyOnceStanding(state, Promise.reject(new Error("daemon island fault")))).rejects.toThrow(/daemon island fault/);
     expect(state.status()).toBe("starting");
+  });
+
+  test("a dead engine takes health down: 503 naming the cause, its time and the last settled wave, never a restart", async () => {
+    const server = createServer(); servers.push(server);
+    const engine = createEngineWatch(() => new Date("2026-11-22T10:34:00.000Z"));
+    const state = createReadinessState(engine);
+    mountReadinessFace({ httpServer: server, state, standing: "lararium" });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("readiness test did not bind");
+    const origin = `http://127.0.0.1:${address.port}`;
+    state.markReady();
+    engine.settled(["4f2a"]);
+    expect((await fetch(`${origin}/api/health`)).status).toBe(200);
+
+    // An injected fault, the shape the incident's repo logged: no wasm instance runs out of anything here.
+    engine.note(new Error("Module terminated"), "repo");
+    const fallen = await fetch(`${origin}/api/health`);
+    expect(fallen.status).toBe(503);
+    expect(fallen.headers.get("cache-control")).toBe("no-store");
+    const body = await fallen.json() as Record<string, unknown>;
+    expect(body).toMatchObject({
+      status: "engine-terminated", cause: "module-terminated", path: "repo", since: "2026-11-22T10:34:00.000Z",
+      lastSettled: { at: "2026-11-22T10:34:00.000Z", heads: ["4f2a"] }, hand: ENGINE_HAND_ACT,
+    });
+    expect(state.status()).toBe("engine-terminated");
+    // A HEAD probe (the container's) reads the same verdict.
+    expect((await fetch(`${origin}/api/health`, { method: "HEAD" })).status).toBe(503);
   });
 });

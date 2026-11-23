@@ -229,7 +229,8 @@ import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { islandAsk } from "./daemon-island-ask.js";
 import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
-import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
+import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
+import { islandAskRefusal } from "./engine-watch.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
@@ -5151,6 +5152,9 @@ async function prepareNodeBootOn(
       // stand-down runs the same as a down. A face that holds no writer's seat in the workbench lands nothing: the island refuses
       // the wave by name and the shore weighs its carriers.
       const inWiki = async (slug: string, verb: string, args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+        // The same gate as the socket and `askIslandVerb`: a fallen engine or an overweight wave places nothing.
+        const gated = islandAskRefusal(verb, args);
+        if (gated !== null) throw new IslandVerbRefused(verb, gated.message, gated.refusal);
         const activation = await wikiActivation.ensureActive(slug);
         if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
         return vmManager.placeWikiVerb(slug, { verb, args, requestedBy });

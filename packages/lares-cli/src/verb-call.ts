@@ -53,7 +53,7 @@ export class DaemonUnreachable extends Error {
  * and simply took longer to answer than this process waited.
  */
 export interface VerbFailure {
-  readonly code:    "outcome-unknown" | "daemon-unreachable" | "verb-error";
+  readonly code:    "outcome-unknown" | "outcome-committed" | "daemon-unreachable" | "verb-error";
   readonly message: string;
   readonly requestId?: string;
   readonly hint?: string;
@@ -152,6 +152,24 @@ export function refusalHint(code: string, changeId: string | undefined): string 
 }
 
 export function verbFailure(err: unknown): VerbFailure {
+  // A WAVE'S WAIT THAT READ ITS RECEIPT BACK (`WaveWaitEnded`, duck-read so this door imports no ingest machinery).
+  const read = err instanceof LocalWaitExpired ? (err as LocalWaitExpired & { receiptState?: unknown; detail?: unknown }) : null;
+  if (read && read.receiptState === "committed") {
+    return {
+      code: "outcome-committed", requestId: read.requestId,
+      message: typeof read.detail === "string"
+        ? `request ${read.requestId} reads ${read.detail}`
+        : `the vessel holds request ${read.requestId} committed: it admitted the wave before this process stopped waiting, and its outcome had not landed yet`,
+      hint: `read it with \`lares vessel request ${read.requestId}\`; a re-run passes the diff gate and carries only what did not land.`,
+    };
+  }
+  if (read && read.receiptState === "unknown") {
+    return {
+      code: "outcome-unknown", requestId: read.requestId,
+      message: `${read.message}${typeof read.detail === "string" ? ` (${read.detail})` : ""}`,
+      hint: `the outcome of request ${read.requestId} stays unknown; read it later with \`lares vessel request ${read.requestId}\` before running it again.`,
+    };
+  }
   if (err instanceof LocalWaitExpired) {
     return {
       code: "outcome-unknown", message: err.message, requestId: err.requestId,

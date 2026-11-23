@@ -188,7 +188,11 @@ describe.skipIf(coreBlobSkip)(
         const args = { "source-uri": `file://${scratch}/bags/${bag}`, "to-bag": o.toBag, "change-id": `seed-${bag}-${wave}`, carriers: wireCarriers(o.candidates) };
         const result = await table.get("INGEST")!(args, ctx(composite, args, requestId)) as Record<string, unknown>;
         const rows = result["carriers"] as Array<Record<string, unknown>>;
-        if (wave === 1) firstWaveRows.set(bag, rows);
+        // THE FIRST PASS CRESTS IN WAVES (`settleIngest`): each carrier's first row names its landing; a later re-ask
+        // under the row cap reads `noop` over a carrier the first pass already landed, so the first row seen stands.
+        const seen = new Map((firstWaveRows.get(bag) ?? []).map((r) => [String(r["uri"]), r] as const));
+        for (const r of rows) if (!seen.has(String(r["uri"]))) seen.set(String(r["uri"]), r);
+        firstWaveRows.set(bag, [...seen.values()]);
         return { status: "done", requestId, results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput(result) } } } as SubmitResult;
       };
       const settled = await settleIngest({ source: path.join(scratch, "bags", bag), toBag: bagUri(bag), candidates, did: "did:test" }, tree, submit);
