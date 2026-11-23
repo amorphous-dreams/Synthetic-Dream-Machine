@@ -19,8 +19,14 @@
  * answers from what settled (the receipt ledger's cache holds only facts whose flush landed), names those heads, or
  * refuses.
  *
- * NO RESTART LOOP. A restart may re-trap while it loads the same documents (CatColab #1461), so the watch names one hand
- * act and never restarts anything itself.
+ * THE DOCUMENT IN FLIGHT. The Repo handles each inbound message synchronously inside the network subsystem's `message`
+ * emit (`tapInboundDocs` wraps it), so a trap met there knows the document that message named: the fall carries it as
+ * `inFlight`, and the next boot's probe reads it (`engine-fall`). A trap met anywhere else (the ledger's write, a storage
+ * save) names none, and says so with null.
+ *
+ * NO RESTART LOOP. A restart may re-trap while it loads the same documents (CatColab #1461), so the watch itself never
+ * restarts anything. The vessel's entry answers the fall (`engine-fall`): it flushes what it can and exits once, so the
+ * supervisor raises a fresh process with a fresh engine; a second fall inside the house's restart count keeps it down.
  *
  * WHAT IT DOES NOT SEE (the residual, named): the daemon island runs as a `worker_threads` Worker with its own isolate and
  * so its own wasm engine (`open-daemon-vm.ts`), and INGEST executes there. This watch reads the MAIN isolate's engine only.
@@ -56,6 +62,8 @@ export interface EngineFall {
   /** The first trap's own first line, for the log. */
   readonly detail: string;
   readonly lastSettled: EngineSettled | null;
+  /** The document the Repo was handling when the trap struck (`tapInboundDocs`), or null where the watch cannot know it. */
+  readonly inFlight: string | null;
 }
 
 export interface EngineWatch {
@@ -67,11 +75,16 @@ export interface EngineWatch {
   settled(heads: readonly string[]): void;
   /** Hear the fall once, when it happens. */
   onFall(listener: (fall: EngineFall) => void): () => void;
+  /** Run `work` with `documentId` named as the document in flight: a fall it meets carries that id as `inFlight`. */
+  carrying<T>(documentId: string, work: () => T): T;
 }
 
 /** THE ISOLATE'S OWN WATCH: one engine per isolate, so one watch, read by health, the verb socket and the vessel's own
  *  island asks (`askIslandVerb`). A suite stands its own with `createEngineWatch`. */
-export const ISOLATE_ENGINE: EngineWatch = { fallen: () => isolate().fallen(), note: (e, p) => isolate().note(e, p), settled: (h) => isolate().settled(h), onFall: (l) => isolate().onFall(l) };
+export const ISOLATE_ENGINE: EngineWatch = {
+  fallen: () => isolate().fallen(), note: (e, p) => isolate().note(e, p), settled: (h) => isolate().settled(h), onFall: (l) => isolate().onFall(l),
+  carrying: (d, w) => isolate().carrying(d, w),
+};
 let isolateWatch: EngineWatch | null = null;
 function isolate(): EngineWatch { return (isolateWatch ??= createEngineWatch()); }
 
@@ -107,6 +120,7 @@ export function engineFatalCauseOf(error: unknown): EngineFatalCause | null {
 export function createEngineWatch(clock: () => Date = () => new Date()): EngineWatch {
   let fall: EngineFall | null = null;
   let lastSettled: EngineSettled | null = null;
+  let inFlight: string | null = null;
   const listeners = new Set<(fall: EngineFall) => void>();
   return {
     fallen: () => fall,
@@ -115,7 +129,7 @@ export function createEngineWatch(clock: () => Date = () => new Date()): EngineW
       if (cause === null) return false;
       if (fall !== null) return true;
       const detail = error instanceof Error ? error.message.split("\n")[0]! : String(error);
-      fall = { cause, path, since: clock().toISOString(), detail, lastSettled };
+      fall = { cause, path, since: clock().toISOString(), detail, lastSettled, inFlight };
       for (const listener of listeners) {
         try { listener(fall); } catch { /* a listener's fault never hides the fall */ }
       }
@@ -126,8 +140,34 @@ export function createEngineWatch(clock: () => Date = () => new Date()): EngineW
       lastSettled = { at: clock().toISOString(), heads: [...heads] };
     },
     onFall: (listener) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
+    carrying: (documentId, work) => {
+      const outer = inFlight;
+      inFlight = documentId;
+      try { return work(); } finally { inFlight = outer; }
+    },
   };
 }
+
+/**
+ * NAME THE DOCUMENT IN FLIGHT on every inbound message: wrap the Repo's network subsystem `emit`, so each `message` it hands
+ * the Repo runs inside `watch.carrying(documentId)`. The Repo catches a handler's throw and logs it (`tapRepoLogs`) inside
+ * that same synchronous emit, so a trap read there names the message's document. Every other event passes untouched.
+ * Idempotent per emitter. Answers the emitter.
+ */
+export function tapInboundDocs<T extends object>(emitter: T, watch: EngineWatch = ISOLATE_ENGINE): T {
+  if (TAPPED.has(emitter)) return emitter;
+  TAPPED.add(emitter);
+  const target = emitter as unknown as { emit: (event: string, ...args: unknown[]) => boolean };
+  const emit = target.emit.bind(emitter);
+  target.emit = (event: string, ...args: unknown[]): boolean => {
+    const documentId = event === "message" ? (args[0] as { documentId?: unknown } | undefined)?.documentId : undefined;
+    return typeof documentId === "string" && documentId !== ""
+      ? watch.carrying(documentId, () => emit(event, ...args))
+      : emit(event, ...args);
+  };
+  return emitter;
+}
+const TAPPED = new WeakSet<object>();
 
 /** What a caller hears from a fallen engine: the code, the cause, the last settled wave and the hand act. */
 export function engineTerminatedRefusal(fall: EngineFall): { readonly message: string; readonly refusal: typeof ENGINE_TERMINATED } {
@@ -143,7 +183,7 @@ export function engineTerminatedRefusal(fall: EngineFall): { readonly message: s
 
 /** The answer health gives for a fall (`readiness-face`). */
 export function engineFallBody(fall: EngineFall): Record<string, unknown> {
-  return { status: ENGINE_TERMINATED, cause: fall.cause, path: fall.path, since: fall.since, lastSettled: fall.lastSettled, hand: ENGINE_HAND_ACT };
+  return { status: ENGINE_TERMINATED, cause: fall.cause, path: fall.path, since: fall.since, lastSettled: fall.lastSettled, inFlight: fall.inFlight, hand: ENGINE_HAND_ACT };
 }
 
 /** The logger shape automerge-repo's `setLoggerFactory` takes. */

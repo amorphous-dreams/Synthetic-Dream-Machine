@@ -23,6 +23,12 @@
  *                  (`lares vessel census`, read before a stop); its first page also names, by path, each file a
  *                  mirror's checkout never tracked (`untracked`, an owed commit) and each checkout git could not
  *                  read (`untrackedUnread`)
+ *   flush          write what this island holds in memory to its mirrors now: retry each carrier whose reconcile threw,
+ *                  wait (bounded) for the queue to drain, then answer what reached disk (`written`), what did not
+ *                  (`unwritten`, each with its state and why) and how many files the flush wrote (`fileWrites`). The
+ *                  reconcile gate holds no window, so a flush crests no new wave: it drains what the queue owes now.
+ *                  The teardown's flush phase and a fallen engine's exit ask it of every island (`flushEveryShore`);
+ *                  `lares shore flush` asks it by hand
  *
  * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
  * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
@@ -45,7 +51,7 @@ import type { LarDiskProjector } from "./disk-projector.js";
 export const SHORE_VERB = "shore";
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -159,6 +165,116 @@ export async function shoreCensus(
     ...(owed.files.length > 0 ? { untracked: owed.files } : {}),
     ...(owed.unread.length > 0 ? { untrackedUnread: owed.unread } : {}),
   };
+}
+
+/** One carrier a flush could not write, with its state and why. */
+export interface FlushUnwritten { readonly state: "pending" | "failed"; readonly uri: string; readonly bagId: string | null; readonly why: string }
+
+/** What one island's flush answers: what reached disk, what did not and why, and how many files it wrote. */
+export interface ShoreFlush {
+  readonly written: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }>;
+  readonly writtenCount: number;
+  readonly unwritten: readonly FlushUnwritten[];
+  readonly unwrittenCount: number;
+  readonly fileWrites: number;
+  readonly drained: boolean;
+}
+
+/**
+ * THE FLUSH: write what this island's projector owes its mirrors, now. Each carrier whose reconcile threw marks again (one
+ * retry); the queue gets up to `settleMs` to drain; then the answer reads the projector as it stands. A carrier owed before
+ * the flush that now neither waits nor fails reads `written`; each still owed reads `unwritten`, with why. Rows ride at most a
+ * page each (the outcome's row cap), and the counts name every row.
+ */
+export async function shoreFlush(projector: LarDiskProjector, settleMs = CENSUS_SETTLE_MS): Promise<ShoreFlush> {
+  const owedBefore = projector.unsettled();
+  const writesBefore = projector.fileWrites();
+  projector.retryFailed();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const bound = new Promise<false>((resolve) => { timer = setTimeout(() => resolve(false), settleMs); });
+  const drained = await Promise.race([projector.idle().then(() => true as const), bound]).finally(() => { if (timer) clearTimeout(timer); });
+  const { pending, failed } = projector.unsettled();
+  const left = new Set([...pending, ...failed].map((r) => r.uri));
+  const seen = new Set<string>();
+  const written = [...owedBefore.failed, ...owedBefore.pending]
+    .filter((r) => !left.has(r.uri) && !seen.has(r.uri) && seen.add(r.uri))
+    .sort((a, b) => byCode(a.uri, b.uri));
+  const failedUris = new Set(failed.map((f) => f.uri));
+  const unwritten: FlushUnwritten[] = [
+    ...failed.map((f) => ({ state: "failed" as const, ...f, why: "its reconcile threw again on the retry; the file stands as the failure left it" })),
+    ...pending.filter((p) => !failedUris.has(p.uri)).map((p) => ({ state: "pending" as const, ...p, why: `the queue still owed it when the ${settleMs}ms wait ended` })),
+  ].sort((a, b) => byCode(JSON.stringify([a.state, a.uri]), JSON.stringify([b.state, b.uri])));
+  return {
+    written: written.slice(0, SHORE_LIST_PAGE), writtenCount: written.length,
+    unwritten: unwritten.slice(0, SHORE_LIST_PAGE), unwrittenCount: unwritten.length,
+    fileWrites: projector.fileWrites() - writesBefore, drained,
+  };
+}
+
+/** One island a vessel asks to flush: its name, and the ask that reaches its shore. */
+export interface ShoreIslandAsk { readonly island: string; readonly ask: () => Promise<unknown> }
+
+/** One island's part of a vessel-wide flush: its own answer, or why it gave none. */
+export type ShoreFlushIsland =
+  | ({ readonly island: string; readonly answered: true } & ShoreFlush)
+  | { readonly island: string; readonly answered: false; readonly why: string; readonly refusal?: string };
+
+/** What a vessel-wide flush reads: each island that mounts a disk shore, and whether every carrier reached disk. */
+export interface ShoreFlushReading {
+  readonly islands: readonly ShoreFlushIsland[];
+  /** True where every island answered and none left a carrier unwritten. */
+  readonly whole: boolean;
+}
+
+/** How long a vessel-wide flush waits for one island before it names that island unanswered. */
+export const FLUSH_ISLAND_BOUND_MS = 15_000;
+
+/**
+ * ASK EVERY ISLAND THAT MOUNTS A DISK SHORE TO FLUSH, each on its own road, side by side. An island that mounts no projection
+ * (`no-disk-shore`) drops out of the reading; one that refuses, throws, answers a shape this reader cannot read, or stays
+ * silent past `boundMs` reads `answered: false`, by name, and never as written. Nothing here throws.
+ */
+export async function flushEveryShore(asks: readonly ShoreIslandAsk[], boundMs = FLUSH_ISLAND_BOUND_MS): Promise<ShoreFlushReading> {
+  const one = async ({ island, ask }: ShoreIslandAsk): Promise<ShoreFlushIsland | null> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const silent = new Promise<{ readonly silent: true }>((resolve) => { timer = setTimeout(() => resolve({ silent: true }), boundMs); });
+    try {
+      const answer = await Promise.race([ask(), silent]);
+      if (answer !== null && typeof answer === "object" && "silent" in answer && (answer as { silent?: unknown }).silent === true) {
+        return { island, answered: false, why: `the island gave no answer within ${boundMs}ms` };
+      }
+      const o = (answer ?? {}) as Record<string, unknown>;
+      if (o["ok"] === false) {
+        if (o["refusal"] === "no-disk-shore") return null;
+        return { island, answered: false, why: typeof o["why"] === "string" ? o["why"] : "refused, naming no reason", ...(typeof o["refusal"] === "string" ? { refusal: o["refusal"] } : {}) };
+      }
+      if (!Array.isArray(o["written"]) || !Array.isArray(o["unwritten"]) || typeof o["fileWrites"] !== "number") {
+        return { island, answered: false, why: "the island answered no flush (a vessel older than this op)" };
+      }
+      return {
+        island, answered: true,
+        written: o["written"] as ShoreFlush["written"], writtenCount: Number(o["writtenCount"] ?? (o["written"] as unknown[]).length),
+        unwritten: o["unwritten"] as ShoreFlush["unwritten"], unwrittenCount: Number(o["unwrittenCount"] ?? (o["unwritten"] as unknown[]).length),
+        fileWrites: o["fileWrites"] as number, drained: o["drained"] === true,
+      };
+    } catch (err) {
+      const reason = (err as { reason?: unknown } | null)?.reason;
+      return { island, answered: false, why: err instanceof Error ? err.message : String(err), ...(typeof reason === "string" ? { refusal: reason } : {}) };
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+  const islands = (await Promise.all(asks.map(one))).filter((i): i is ShoreFlushIsland => i !== null);
+  return { islands, whole: islands.every((i) => i.answered && i.unwrittenCount === 0) };
+}
+
+/** One line per island, for a log: what each flush wrote and what it left. */
+export function shoreFlushLines(reading: ShoreFlushReading): string[] {
+  if (reading.islands.length === 0) return ["shore flush: no island mounts a disk shore"];
+  return reading.islands.map((i) => i.answered
+    ? `shore flush: the ${i.island} island wrote ${i.writtenCount} owed carrier(s) (${i.fileWrites} file write(s))`
+      + (i.unwrittenCount > 0 ? `; ${i.unwrittenCount} unwritten: ${i.unwritten.map((u) => `${u.uri} (${u.state}: ${u.why})`).join("; ")}` : "")
+    : `shore flush: the ${i.island} island did not answer: ${i.refusal !== undefined ? `${i.refusal}: ` : ""}${i.why}`);
 }
 
 /**
@@ -288,5 +404,6 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     if (args["after"] !== undefined && after === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "census names the page behind by the cursor the page before answered (`after`), or none for the first page" };
     return { ok: true, op, ...(await shoreCensus(projector, after)) };
   }
+  if (op === "flush") return { ok: true, op, ...(await shoreFlush(projector)) };
   return { ok: false, op, refusal: "shore-op-unknown", why: `the shore verb carries ${SHORE_OPS.join(", ")}; it names no "${op}"` };
 }
