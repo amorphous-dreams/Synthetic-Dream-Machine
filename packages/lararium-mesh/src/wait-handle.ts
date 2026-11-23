@@ -73,9 +73,9 @@ export interface SealedRestDoor {
    */
   nameDocument?(documentId: string, bagId: string): boolean;
   /**
-   * THE ROSTER'S LOCAL HALF: told each document a local caller of the Repo opens (`find`, `findWithProgress`, `findClassic`,
-   * `create`, `import`, `clone`), before or as its first byte moves. A peer's push reaches the Repo by none of these, so a
-   * document no local caller opened and no registry names stays unnamed, and its bytes wait (`SealedDocumentStore#solicited`).
+   * THE ROSTER'S LOCAL HALF: told each document this vessel mints over the Repo (`create`, `import`, `clone`). A mint is born
+   * here, never pushed by a peer. A find names nothing by itself: a caller that opens a bag's document names its bag
+   * (`waitHandle`, `nameDocumentFor`), and a peer's push reaches the Repo by none of these (`SealedDocumentStore#solicited`).
    */
   solicited?(documentId: string): void;
 }
@@ -102,10 +102,20 @@ export function seatSealedRest(repo: Repo, door: SealedRestDoor): void {
 const HEARD = new WeakMap<Repo, (documentId: string) => void>();
 
 /**
- * THE REPO'S LOCAL CALL SURFACE NAMES WHAT THE VESSEL ASKED FOR. Every public door that opens a document (`find`,
- * `findWithProgress`, `findClassic` by id; `create`, `import`, `clone` by the handle they answer) tells `solicited` its id. The
- * Repo's own inbound path (a peer's sync, `#ensureQuery`) passes through none of them, so it names nothing. A later seat over
- * the same Repo re-points the roster; the surface is wrapped once.
+ * NAME A DOCUMENT FOR ITS BAG over a seated Repo, outside `waitHandle` (a caller that finds or mints a bag's document by its
+ * own road): a sealed bag's document maps sealed from its first byte, a clear bag's joins the clear-name roster. A Repo that
+ * seats no sealed rest names nothing. Answers whether the bag rests sealed.
+ */
+export function nameDocumentFor(repo: Repo, documentId: string, bagId: string): boolean {
+  return SEALED_DOORS.get(repo)?.nameDocument?.(documentIdOf(documentId), bagId) ?? false;
+}
+
+/**
+ * THE REPO'S MINTS NAME WHAT THE VESSEL MADE. Each public door that mints a document (`create`, `import`, `clone`) tells
+ * `solicited` the id of the handle it answers. A find names nothing: it opens a document that may belong to a sealed bag the
+ * map has not named yet, so only its caller's bag names it (`waitHandle`, `nameDocumentFor`). The Repo's inbound path (a
+ * peer's sync, `#ensureQuery`) passes through none of these. A later seat over the same Repo re-points the roster; the
+ * surface is wrapped once.
  */
 function hearSolicitations(repo: Repo, solicited: (documentId: string) => void): void {
   const first = !HEARD.has(repo);
@@ -115,11 +125,6 @@ function hearSolicitations(repo: Repo, solicited: (documentId: string) => void):
     try { if (typeof id === "string" && id.length > 0) HEARD.get(repo)?.(documentIdOf(id)); } catch { /* a roster's fault never holds a find */ }
   };
   const target = repo as unknown as Record<string, (...args: unknown[]) => unknown>;
-  for (const by of ["find", "findWithProgress", "findClassic"] as const) {
-    const own = target[by];
-    if (typeof own !== "function") continue;
-    target[by] = function (this: unknown, id: unknown, ...rest: unknown[]) { tell(String(id)); return own.call(repo, id, ...rest); };
-  }
   for (const by of ["create", "import", "clone"] as const) {
     const own = target[by];
     if (typeof own !== "function") continue;
@@ -227,22 +232,23 @@ export const LOCAL_READY_MS = 3000;
  * knows its own peer is far. Zero and negative read as "do not wait" rather than as an error — a caller
  * asking for no window means it, and the late-merge still stands behind the fallback.
  *
- * `bagId` names the bag the document belongs to, where the caller knows it: over a Repo that seats its sealed rest, the
- * document is named for that bag before any byte of it moves (`SealedRestDoor.nameDocument`, the map before the bytes).
+ * `bagId` names the bag the document belongs to; every caller names it. Over a Repo that seats its sealed rest, the document
+ * is named for that bag before any byte of it moves (`SealedRestDoor.nameDocument`, the map before the bytes), and so is a
+ * fallback it mints: a sealed bag's document maps sealed from its first byte, a clear bag's joins the clear-name roster.
  */
 export async function waitHandle<T>(
   repo: Repo,
   url: AutomergeUrl | string,
+  bagId: string,
   fallbackFn: () => DocHandle<T>,
   readyMs: number = LOCAL_READY_MS,
-  bagId?: string,
 ): Promise<DocHandle<T>> {
   const door = SEALED_DOORS.get(repo);
   // Only a Repo that seats its sealed rest reads the document's id here.
   const documentId = door === undefined ? null : documentIdOf(String(url));
   // THE MAP BEFORE THE BYTES: named ahead of the find, so a byte that lands in the window (a local read, a peer's sync) already
   // rests by the bag's own class.
-  if (door !== undefined && documentId !== null && bagId !== undefined) door.nameDocument?.(documentId, bagId);
+  if (door !== undefined && documentId !== null) door.nameDocument?.(documentId, bagId);
   const progress = repo.findWithProgress<T>(url as AutomergeUrl);
   // A HELD-BACK DOCUMENT MOUNTS NO WRITABLE FALLBACK: the storage hands the engine none of its bytes, so it stands read-only
   // and unread over its own id at once, and a write into it refuses naming why; nothing lands under a fresh id.
@@ -264,6 +270,8 @@ export async function waitHandle<T>(
   }
 
   const fresh = fallbackFn();
+  // THE FALLBACK NAMES ITS BAG: a mint stands under the caller's bag, so its class reads by that bag's row, never by a guess.
+  door?.nameDocument?.(fresh.documentId, bagId);
   // THE FALLBACK STANDS IN, UNREAD: until the real doc merges, its emptiness says nothing of what the doc holds, so a store
   // over it reads `unknown()` and a delete above it raises a kāpae rather than trusting the blank.
   markStandIn(fresh);

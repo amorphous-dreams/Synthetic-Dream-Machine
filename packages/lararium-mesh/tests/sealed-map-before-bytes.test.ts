@@ -14,11 +14,14 @@
  *   M3  the clear-name roster reads the same registry: a document a known bag carries (a public catalog row, a house canon bag)
  *       reads named and saves clear; a document no bag carries reads unknown, and its save waits in memory (`save-unnamed`)
  *       until a bag names it, then lands clear.
+ *   M4  a catalog row alone names a held document at once: the catalog's own change moves the map (`watchCatalogNames`), so
+ *       the held save lands clear with no other event.
  */
 import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";
-import type { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo";
-import { composeSealedRest, sealedBagMap } from "../src/sealed-rest.js";
+import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { composeSealedRest, documentIdOfUrl, sealedBagMap, watchCatalogNames } from "../src/sealed-rest.js";
+import { tiddlerText } from "../src/base-doc.js";
 import { bagUri } from "../src/lar-uris.js";
 import { storedLarRecord } from "../src/stored-record.js";
 import { houseCanonBagsSeated } from "../src/kahu-canon-reach.js";
@@ -110,5 +113,36 @@ describe("a document named for a sealed bag before its first byte maps as the ba
     await f.rest.store.reseal();
     expect(f.bytes.has(join(["an-unsolicited-push", "incremental", "first"]))).toBe(true);
     expect(f.rest.store.held()).toEqual([]);
+  });
+
+  test("M4 — a catalog row alone names a held document at once: the catalog's change moves the map, and the held save lands clear", async () => {
+    const bytes = new Map<string, Uint8Array>();
+    const inner: StorageAdapterInterface = {
+      async load(k) { return bytes.get(join(k)); },
+      async save(k, data) { bytes.set(join(k), Uint8Array.from(data)); },
+      async remove(k) { bytes.delete(join(k)); },
+      async loadRange(prefix): Promise<Chunk[]> { return [...bytes].filter(([k]) => under(k, prefix)).map(([k, data]) => ({ key: k.split("\0"), data })); },
+      async removeRange(prefix) { for (const k of [...bytes.keys()]) if (under(k, prefix)) bytes.delete(k); },
+    };
+    const repo = new Repo({ network: [] });
+    const catalog = repo.create<LarDoc>({ tiddlers: {} } as unknown as LarDoc);
+    const map = sealedBagMap({
+      face: () => null, bags: () => [], catalog: () => catalog.doc() as LarDoc | undefined,
+      docsOf: (bagId) => [documentIdOfUrl(tiddlerText(catalog.doc()?.tiddlers?.[bagId]))],
+    });
+    const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+    const rest = composeSealedRest({ inner, bagOf: map.bagOf, bagRow: map.bagRow, namesClear: map.names, sessionFace: () => null, door: { seal: refuse, open: refuse }, flushRepo: async () => {} });
+    const unwatch = watchCatalogNames(catalog, () => rest.store.mapMoved());
+    try {
+      const HELD = "named-by-a-row-alone";
+      await rest.store.save([HELD, "incremental", "first"], A.save(A.from({ note: "a-row-names-me" })));
+      expect(rest.store.held().map((h) => h.refusal)).toEqual(["save-unnamed"]);
+      // A PUBLIC ROW NAMES IT: no `mapMoved`, no reseal; the catalog's own change carries the release.
+      catalog.change((doc) => { (doc.tiddlers as Record<string, unknown>)[PUBLIC_BAG] = storedLarRecord(PUBLIC_BAG, { text: `automerge:${HELD}`, "cap-tier": "public" }, "test"); });
+      const end = Date.now() + 5_000;
+      while (!bytes.has(join([HELD, "incremental", "first"])) && Date.now() < end) await new Promise((r) => setTimeout(r, 10));
+      expect(bytes.has(join([HELD, "incremental", "first"]))).toBe(true);
+      expect(rest.store.held()).toEqual([]);
+    } finally { unwatch(); await repo.shutdown(); }
   });
 });

@@ -28,7 +28,7 @@ import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, clearRosterOf, watchCatalogNames, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { standBrowserFloorKey } from "./browser-floor-key.js";
 import { browserSeatKept, type SeatVerifyGround } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
@@ -773,6 +773,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const filing = browserDeviceFiling({ repo: () => repo, litDevices });
   const deviceDocs = filing.deviceDocs;
   const secretHomes = filing.secretHomes;
+  /** The release of the catalog watch that moves the map (`watchCatalogNames`), re-seated with each face's mount. */
+  let unwatchCatalogNames: () => void = () => {};
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
@@ -837,7 +839,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     bagRow: (bagId) => sealedMap.bagRow(bagId),
     // UNKNOWN MEANS HOLD: the clear-name roster reads the same bag registry the map reads (`sealedBagMap.names`); a document
     // no bag carries and no local caller opened (an unsolicited peer push) waits in memory until a name arrives.
-    namesClear: (documentId) => sealedMap.names(documentId),
+    // The federatable shelf names too: a public board an admitted peer pushes rests clear and survives a restart (`clearRosterOf`).
+    namesClear: clearRosterOf({ names: (documentId) => sealedMap.names(documentId), shelf: () => fedGate }),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     door: docStoreDoor,
@@ -1585,7 +1588,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     keel: {
       repo,
       catalogHandle,
-      waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>, bagId?: string) => waitHandle<T>(repo, url, fallback, LOCAL_READY_MS, bagId),
+      waitHandle: <T>(url: AutomergeUrl, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, LOCAL_READY_MS),
       // THE SYSTEM CANON THE SHORE NAMES: this browser vessel reads no Kahu realm registration today, so it names none and
       // reads the floor through `@oracle`; a browser that stands the node's role later names its canon here.
       systemCanon: async () => ({}),
@@ -1643,7 +1646,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // Corpus capability (parity — browser syncs corpus bags too; shared loader).
       loadCorpora: (composite) => loadCatalogCorpora({
         repo, catalogHandle,
-        mintLocalHandle: (docUrl) => waitHandle<LarDoc>(repo, docUrl, () => repo.create<LarDoc>(emptyLarDoc())),
+        mintLocalHandle: (docUrl, bagId) => waitHandle<LarDoc>(repo, docUrl, bagId, () => repo.create<LarDoc>(emptyLarDoc())),
         source: "browser-boot",
       }, composite),
 
@@ -2157,6 +2160,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         }).sealed;
         sealedCells.catalog = () => catalogHandle.doc() as LarDoc | undefined;
         sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
+        // A CATALOG ROW NAMES A DOCUMENT AT ONCE: each catalog change moves the map, so a held save a new row alone names lands then.
+        unwatchCatalogNames();
+        unwatchCatalogNames = watchCatalogNames(catalogHandle, () => sealedRest.store.mapMoved());
         sealedCells.hold = (ask, verb) => lift.hold(ask, verb);
         sealedCells.session = session;
         sealedRest.store.mapMoved();

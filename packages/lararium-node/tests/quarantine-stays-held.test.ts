@@ -67,7 +67,7 @@ async function boot(storageDir: string, daemonUrl: string) {
   const assembly = await assembleVessel({
     repo,
     catalogHandle: repo.create<LarDoc>(emptyLarDoc()),
-    waitHandle: async (url, fallback) => {
+    waitHandle: async (url, _bagId, fallback) => {
       try { return (await repo.find(url as never)) as never; } catch { return fallback(); }
     },
     systemCanon: async () => ({}),

@@ -257,8 +257,8 @@ describe("the trap-named document holds on every load path", () => {
 
     let fallbacks = 0;
     const blank = () => { fallbacks++; return repo.create<LarDoc>(emptyLarDoc()); };
-    const plane = await waitHandle<LarDoc>(repo, catalogUrl, blank, 50);
-    const sound = await waitHandle<LarDoc>(repo, siblingUrl, blank, 2000);
+    const plane = await waitHandle<LarDoc>(repo, catalogUrl, "lar:///ha.ka.ba/bags/fall-stays-down", blank, 50);
+    const sound = await waitHandle<LarDoc>(repo, siblingUrl, "lar:///ha.ka.ba/bags/fall-stays-down", blank, 2000);
 
     expect(rec.handed.has(catalogId)).toBe(false);
     expect(plane.documentId).toBe(catalogId);

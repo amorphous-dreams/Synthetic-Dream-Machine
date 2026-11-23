@@ -19,7 +19,7 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
  */
 import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
+import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, clearRosterOf, watchCatalogNames, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
 import { wikiIslandWithholds, vesselDocBags, refuseTw5DocsWrite, type WikiIslandMount } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
@@ -967,6 +967,8 @@ async function prepareNodeBootOn(
   // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
   // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
+  /** The release of the catalog watch that moves the map (`watchCatalogNames`), re-seated with each daemon mount. */
+  let unwatchCatalogNames: () => void = () => {};
   const sealedCells: { face: () => string | null; wornAt: (face: string, subject: string) => boolean; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
     face: () => null, wornAt: () => false, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
   };
@@ -1224,7 +1226,8 @@ async function prepareNodeBootOn(
     bagRow: (bagId) => sealedMap.bagRow(bagId),
     // UNKNOWN MEANS HOLD: the clear-name roster reads the same bag registry the map reads (`sealedBagMap.names`); a document
     // no bag carries and no local caller opened (an unsolicited peer push) waits in memory until a name arrives.
-    namesClear: (documentId) => sealedMap.names(documentId),
+    // The federatable shelf names too: a public board an admitted peer pushes rests clear and survives a restart (`clearRosterOf`).
+    namesClear: clearRosterOf({ names: (documentId) => sealedMap.names(documentId), shelf: () => selfSlotFedGate }),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
@@ -2899,7 +2902,7 @@ async function prepareNodeBootOn(
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
     catalogHandle,
-    waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>, bagId?: string) => waitHandle<T>(repo, url, fallback, LOCAL_READY_MS, bagId),
+    waitHandle: <T>(url: AutomergeUrl, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, LOCAL_READY_MS),
 
     // Genesis island (required) + the social-plane bootstrap it carries.
     loadGenesis: async () => {
@@ -3074,7 +3077,7 @@ async function prepareNodeBootOn(
     // Corpus capability piece — one top-level bag per catalog corpus entry (shared loader).
     loadCorpora: (composite) => loadCatalogCorpora({
       repo, catalogHandle,
-      mintLocalHandle: (docUrl) => waitHandle<LarDoc>(repo, docUrl as AutomergeUrl, blankMemeStore(repo)),
+      mintLocalHandle: (docUrl, bagId) => waitHandle<LarDoc>(repo, docUrl as AutomergeUrl, bagId, blankMemeStore(repo)),
       source: "lararium-seed",
     }, composite),
 
@@ -3113,6 +3116,9 @@ async function prepareNodeBootOn(
     // R1: the daemon mount's wiki bags rest sealed, each document by the catalog's name for it.
     sealedCells.catalog = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
+    // A CATALOG ROW NAMES A DOCUMENT AT ONCE: each catalog change moves the map, so a held save a new row alone names lands then.
+    unwatchCatalogNames();
+    unwatchCatalogNames = watchCatalogNames(assembly.catalogHandle, () => sealedRest.store.mapMoved());
     sealedRest.store.mapMoved();
     catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();

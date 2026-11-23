@@ -150,7 +150,7 @@ export interface SealedDocumentPorts {
    * mapped sealed (`bagOf`), named clear here, nor opened by a local caller (`solicited`): its saves wait in memory
    * (`save-unnamed`) and land once a name arrives. Absent: an unmapped document rests as the engine wrote it.
    */
-  namesClear?(documentId: string): boolean;
+  namesClear?(documentId: string): boolean | Promise<boolean>;
   /** The face the session wears (`faceProofSubjectRef`); null where no session stands. */
   sessionFace(): string | null;
   /**
@@ -273,7 +273,11 @@ export class SealedDocumentStore implements StorageAdapterInterface {
    * not lit (`save-unmapped`), never clear. Answers whether the bag rests sealed; a clear bag names nothing.
    */
   nameDocument(documentId: string, bagId: string): boolean {
-    if ((this.#ports.bagRow?.(bagId) ?? null) === null) return false;
+    if ((this.#ports.bagRow?.(bagId) ?? null) === null) {
+      // A CLEAR BAG'S DOCUMENT JOINS THE CLEAR-NAME ROSTER: the caller named its bag, so its saves land as the engine wrote them.
+      this.#solicit(documentId);
+      return false;
+    }
     this.#named.set(documentId, bagId);
     this.#classedSealed.add(documentId);
     return true;
@@ -286,7 +290,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
    * A LOCAL CALLER ASKED FOR THIS DOCUMENT (a find, a create, an import over the Repo this store stands under): the vessel knows
    * it, so it never waits as an unsolicited push. Saves of it held `save-unnamed` land now, by the rule its map reads.
    */
-  solicited(documentId: string): void {
+  solicited(documentId: string): void { this.#solicit(documentId); }
+
+  #solicit(documentId: string): void {
     if (this.#solicited.has(documentId)) return;
     this.#solicited.add(documentId);
     void this.#releaseNamed().catch(() => { /* a release that faults keeps its saves waiting by name */ });
@@ -294,9 +300,10 @@ export class SealedDocumentStore implements StorageAdapterInterface {
 
   /** Does the roster name this document: the vessel's registry names it, or a local caller opened it? True where no roster
    *  stands (the store reads unmapped documents as clear). */
-  #namedClear(documentId: string): boolean {
+  async #namedClear(documentId: string): Promise<boolean> {
     if (this.#ports.namesClear === undefined || this.#solicited.has(documentId)) return true;
-    try { return this.#ports.namesClear(documentId); } catch { return false; }
+    // FAIL-CLOSED: a roster that faults, or answers anything but true, names nothing.
+    try { return (await this.#ports.namesClear(documentId)) === true; } catch { return false; }
   }
 
   /**
@@ -309,7 +316,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     for (const [name, w] of [...this.#waiting]) {
       if (w.refusal !== "save-unnamed") continue;
       const documentId = w.key[0]!;
-      if (this.bagOf(documentId) !== null || this.#classedSealed.has(documentId) || !this.#namedClear(documentId)) continue;
+      if (this.bagOf(documentId) !== null || this.#classedSealed.has(documentId) || !(await this.#namedClear(documentId))) continue;
       if (this.#waiting.get(name) !== w) continue;
       this.#waiting.delete(name);
       try { await this.#ports.inner.save(w.key, w.data); landed++; }
@@ -567,7 +574,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       }
       // UNKNOWN MEANS HOLD: a document neither the map nor the roster names (an unsolicited peer push) waits in memory, never clear.
       // A key of one part (the Repo's own `storage-adapter-id`) names no document, and rests as written.
-      if (typeof key[0] === "string" && key.length >= 2 && !this.#namedClear(key[0])) {
+      if (typeof key[0] === "string" && key.length >= 2 && !(await this.#namedClear(key[0]))) {
         const first = this.waiting(key[0]) === 0;
         this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unnamed" });
         if (first) this.#ports.onHeld?.({ refusal: "save-unnamed", documentId: key[0] });

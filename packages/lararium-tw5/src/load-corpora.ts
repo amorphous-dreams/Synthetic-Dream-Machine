@@ -25,7 +25,8 @@ export interface CorpusLoaderDeps {
   readonly repo: Repo;
   readonly catalogHandle: DocHandle<LarDoc>;
   /** Per-vessel local mint: each vessel's `waitHandle` bound to its blank-doc factory. */
-  readonly mintLocalHandle: (docUrl: string) => Promise<DocHandle<LarDoc>>;
+  /** The corpus's own bag rides with its URL: the mint names the document for that bag before any byte moves. */
+  readonly mintLocalHandle: (docUrl: string, bagId: string) => Promise<DocHandle<LarDoc>>;
   /** Provenance stamped on the corpus + registry records (`"lararium-seed"` / `"browser-boot"`). */
   readonly source: string;
 }
@@ -54,7 +55,7 @@ export async function loadCatalogCorpora(deps: CorpusLoaderDeps, composite: Comp
       if (isStillJoining(resolved)) return;
       h = resolved;
     } else {
-      h = await mintLocalHandle(entry.docUrl);
+      h = await mintLocalHandle(entry.docUrl, corpusBagId(entry.id));
     }
     addReadOnlyLayer(composite, corpusBagId(entry.id), h);
 
