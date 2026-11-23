@@ -1,7 +1,8 @@
 /**
  * floor-status-lines -- `lares vessel floor status` prints both truths for every place: the founding record beside the
  * seed (offered) and the floor pin, ratchet by ratchet (D1, shore recommendation 8). A place in no Nexus charter prints
- * that part and names the Nexus refusal on its own line; the read still answers.
+ * that part and names the Nexus refusal on its own line; the read still answers. The status names the floor's drift behind live
+ * canon on its own line, by carrier; an unread drift says so, never a silent zero.
  */
 import { describe, expect, test } from "vitest";
 import type { GenesisRatchet, RatchetDifference } from "@lararium/mesh";
@@ -55,5 +56,23 @@ describe("an unread founding record", () => {
     });
     expect(lines).toContain("  founding record: unread here (the fold refused a blob row)");
     expect(lines.some((l) => l.startsWith("  seed (offered):"))).toBe(false);
+  });
+
+  test("RED: the status names the floor's drift by carrier; CONTROL: an unread drift says so, never a silent zero", () => {
+    const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";
+    const ROSTER = "lar:///ha.ka.ba/lararium/mesh/hearth-roster";
+    const PLAN = "lar:///ha.ka.ba/lararium/mesh/founding-runbook";
+    const base = {
+      genesis: { record, seed: null, floorPin: null, line: "" },
+      nexusRefused: { refusal: "floor-no-charter", message: "no charter" },
+    };
+    const lines = floorStatusLines({
+      ...base,
+      floorDrift: { manifest: "f".repeat(64), count: 3, carriers: [PLAN, ROSTER, CREST].sort(), slugs: [{ slug: "lararium", missing: [ROSTER, CREST].sort(), older: [PLAN] }, { slug: "lares", missing: [], older: [] }], unread: ["sdm"] },
+    });
+    expect(lines).toContain("  floor drift:     3 carrier(s) behind live canon · lararium 2 missing, 1 older · lares 0 missing, 0 older · unread sdm");
+    expect(lines).toContain(`    missing: ${[ROSTER, CREST].sort().join(", ")}`);
+    expect(lines).toContain(`    older:   ${PLAN}`);
+    expect(floorStatusLines({ ...base, floorDrift: null })).toContain("  floor drift:     unread (no live canon reads beside this floor)");
   });
 });

@@ -38,7 +38,7 @@
 
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { houseCanonSlugs, namesTw5Docs } from "@lararium/mesh";
+import { houseCanonSlugs, namesTw5Docs, type FloorDrift } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";
@@ -84,6 +84,9 @@ export { discoverHoldings, canonIsDisk } from "../holdings.js";
 export const HOUSE_CANON_FLOOR_REASON = "house canon, written by the Kahu steward (h0); this face reads the floor";
 import { canonIsDisk, discoverHoldings } from "../holdings.js";
 import { pendingReceipts, retirementLine, type Retirement } from "../shore-retirement.js";
+import { storeVerb } from "../store-door.js";
+import { udsAlive } from "../local-connector.js";
+import { floorDriftNames, floorDriftTally } from "./floor.js";
 
 /**
  * Feed ONE holding into its canon. A disk-sourced holding: CREATE (applied runs only; it converges on the bag that
@@ -268,17 +271,37 @@ export async function readHouseLag(doors: MirrorDoors = LIVE_MIRROR_DOORS, bagsD
   };
 }
 
-export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
+/**
+ * THE FLOOR'S DRIFT, as the standing vessel reads it (`floor-status`'s `floorDrift`): each live public-canon carrier the floor it
+ * serves misses or serves with older bytes. Asked of a standing vessel alone, since the lag reads off disk and opens no store; null
+ * where no vessel stands, the vessel reads none, or the ask fails. Never a zero it did not count.
+ */
+export async function liveFloorDrift(): Promise<FloorDrift | null> {
+  if (!(await udsAlive())) return null;
+  const { output } = await storeVerb("floor-status", {});
+  const drift = output["floorDrift"];
+  return drift !== null && typeof drift === "object" ? drift as FloorDrift : null;
+}
+
+export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS, floorDrift: () => Promise<FloorDrift | null> = liveFloorDrift): Promise<number> {
   const bagsDir = larBagsDir();
   if (args.flags["lag"]) {
     const lag = await readHouseLag(mirrorDoors, bagsDir);
+    // THE FLOOR'S DRIFT RIDES BESIDE THE LAG, never inside it: lag counts disk against live canon, the drift live canon against
+    // the floor every recipe outside the cabal's `lares` stack reads.
+    const drift = await floorDrift().catch(() => null);
     emit(args, {
       ok: true,
-      data: lag as unknown as Record<string, unknown>,
+      data: { ...lag, floorDrift: drift } as unknown as Record<string, unknown>,
       human: () => {
         for (const h of lag.holdings) console.log(`canon ${h.holding}: ${h.new.length} new, ${h.changed.length} changed`);
         for (const b of lag.benches) console.log(`workbench ${b.slug}: ${b.planned.length} new or moved${b.mounts === true ? "" : ` · does not mount (${b.why ?? "unread"})`}`);
         console.log(`lay: canon lags ${lag.source} by ${lag.lag} carrier(s)${lag.wikis === null ? "" : ` · the workbenches lag ${lag.wikis} by ${lag.benchLag}`}${lag.checkout ? "" : " · the source stands in no checkout"}`);
+        if (drift === null) console.log("floor: drift unread (no standing vessel, or no live canon reads beside its floor)");
+        else {
+          console.log(`floor: the floor this vessel serves trails live canon by ${drift.count} carrier(s) · ${floorDriftTally(drift)}`);
+          for (const line of floorDriftNames(drift, "  ")) console.log(line);
+        }
       },
     });
     return 0;
