@@ -12,23 +12,32 @@
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
+import { engineFallBody, type EngineWatch } from "./engine-watch.js";
 
-export type NodeReadiness = "starting" | "ready";
+export type NodeReadiness = "starting" | "ready" | "engine-terminated";
 
 export interface ReadinessState {
   readonly status: () => NodeReadiness;
   readonly markReady: () => void;
+  /** The engine's fall body where it has fallen (`engine-watch`), else null. */
+  readonly fall?: () => Record<string, unknown> | null;
 }
 
 export interface ReadinessFace {
   readonly dispose: () => void;
 }
 
-export function createReadinessState(): ReadinessState {
-  let current: NodeReadiness = "starting";
+/**
+ * A DEAD ENGINE TAKES HEALTH DOWN. With an `engine` watch, a fall (`engine-watch`) reads `engine-terminated` whatever the
+ * boot reached, and the health answer names the cause, its time, the last settled wave and the one hand act. Nothing here
+ * restarts anything: a restart may re-trap while it loads, so the hand decides.
+ */
+export function createReadinessState(engine?: EngineWatch): ReadinessState {
+  let current: "starting" | "ready" = "starting";
   return {
-    status: () => current,
+    status: () => (engine?.fallen() ? "engine-terminated" : current),
     markReady: () => { current = "ready"; },
+    fall: () => { const fall = engine?.fallen(); return fall ? engineFallBody(fall) : null; },
   };
 }
 
@@ -50,7 +59,7 @@ function answer(res: ServerResponse, state: ReadinessState, method: string): voi
     "cache-control": "no-store",
   });
   if (method === "HEAD") res.end();
-  else res.end(JSON.stringify({ status: state.status() }));
+  else res.end(JSON.stringify(state.fall?.() ?? { status: state.status() }));
 }
 
 /** Mount the exact health route on an existing Node server — on a lararium; a herm mounts nothing. */

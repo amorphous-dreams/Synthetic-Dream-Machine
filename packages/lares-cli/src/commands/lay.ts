@@ -45,7 +45,7 @@ import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } 
 import { fileToUriForSource, openSyncedTree, scanSource } from "../ingest-core.js";
 import type { HouseLag, LagHolding } from "../rite-kukulu.js";
 import { askShore, readShoreList } from "../shore-core.js";
-import { cmdIngest, type FresherCanonReading } from "./ingest.js";
+import { cmdIngest, type FresherCanonReading, type IngestSink } from "./ingest.js";
 import { cmdAct } from "./act.js";
 import { LIVE_MIRROR_DOORS, readBenchLag, type MirrorDoors } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
@@ -58,6 +58,24 @@ export interface LayHolding {
   readonly exitCode: number;              // the gesture's verdict for this holding
   readonly reason?: string;               // why a holding took no road
   readonly fresher?: FresherCanonReading; // working copies that shadow a canon record this lay moved past their base
+  readonly outcome?: { readonly state: "committed" | "unknown"; readonly requestId: string }; // a wave whose wait ended, read back
+}
+
+/** The one line a laid holding prints. */
+/**
+ * The one line a laid holding prints. A WAIT THAT ENDED IS NO FAILURE: a wave whose receipt read `committed` prints
+ * committed with its request id and the read-back, one that read nothing prints unknown with its id; ✗ stays for a
+ * gesture that failed.
+ */
+export function layHoldingLine(row: LayHolding, carriers: number, elapsed: string): string {
+  if (row.outcome !== undefined) {
+    const said = row.outcome.state === "committed"
+      ? "committed; its outcome had not landed when the wait ended"
+      : "outcome unknown";
+    return `◐ ${row.holding}: ${carriers} files · ${elapsed} · ${said} · read \`lares vessel request ${row.outcome.requestId}\` · retry safe (diff-gated)`;
+  }
+  const retry = row.exitCode === 0 ? "retry safe" : "retry safe (diff-gated)";
+  return `${row.exitCode === 0 ? "✓" : "✗"} ${row.holding}: ${carriers} files · ${elapsed} · ${retry}`;
 }
 
 export { discoverHoldings, canonIsDisk } from "../holdings.js";
@@ -100,14 +118,14 @@ export async function layHolding(
   }
   // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
   // relayed approval) passes through.
-  const sink: { fresher?: FresherCanonReading } = {};
+  const sink: IngestSink = {};
   const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
     command: "ingest",
     positional: [],
     options: { ...args.options, source: h.source, to: h.toBag },
     flags: args.flags,
   }, sink));
-  return { ...h, gesture: "ingest", exitCode, ...(sink.fresher ? { fresher: sink.fresher } : {}) };
+  return { ...h, gesture: "ingest", exitCode, ...(sink.fresher ? { fresher: sink.fresher } : {}), ...(exitCode !== 0 && sink.outcome ? { outcome: sink.outcome } : {}) };
 }
 
 /**
@@ -272,11 +290,14 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
     ledger.push(row);
     if (row.gesture === "skip") { console.log(`- ${h.holding}: no road · ${row.reason}`); continue; }
     if (row.gesture === "floor") { console.log(`· ${h.holding}: ${row.reason}`); continue; }
-    const retry = row.exitCode === 0 ? "retry safe" : "retry safe (diff-gated)";
-    console.log(`${row.exitCode === 0 ? "✓" : "✗"} ${h.holding}: ${carriers} files · ${elapsedText(performance.now() - holdingStarted)} · ${retry}`);
+    console.log(layHoldingLine(row, carriers, elapsedText(performance.now() - holdingStarted)));
   }
   const failed = ledger.filter((h) => h.exitCode !== 0);
-  for (const h of failed) console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
+  // A WAVE WHOSE WAIT ENDED READS ITS RECEIPT'S STATE, NEVER "failed": committed or unknown, with its request id.
+  for (const h of failed) {
+    if (h.outcome !== undefined) console.error(`  ${h.holding}: ${h.gesture} ${h.outcome.state} (request ${h.outcome.requestId}); read it with \`lares vessel request ${h.outcome.requestId}\` before a re-run`);
+    else console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
+  }
   // THE FRESHER CANON: working copies keep shadowing the canon this lay moved; the word names them, nothing writes.
   const fresher = ledger.flatMap((h) => (h.fresher?.titles ?? []).map((t) => `${h.holding}:${t}`));
   const fresherCount = ledger.reduce((n, h) => n + (h.fresher?.count ?? 0), 0);

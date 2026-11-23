@@ -54,7 +54,7 @@ import {
   RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
   verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
   faceScopedId, type SessionReceipt, type DurabilityReceipt,
-  type ReceiptFact, type ReceiptFactDraft, switchSession,
+  type ReceiptFact, type ReceiptFactDraft, switchSession, ingestWaveRefusal,
 } from "@lararium/mesh";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
@@ -67,6 +67,7 @@ import { adaptiveTimeoutMs, recordMineDuration, verbBudgetMs } from "@lararium/m
 import type { StoreClaim } from "./owned-store.js";
 import type { FaceLives, VisitTicket, WorkTicket } from "./face-lifecycle.js";
 import type { SessionSignBook } from "./session-sign-door.js";
+import { ENGINE_TERMINATED, engineFallBody, engineTerminatedRefusal, type EngineFall, type EngineWatch } from "./engine-watch.js";
 
 export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
@@ -187,6 +188,13 @@ export interface UdsChannelOptions {
   readonly ringBytes?: number;
   /** Per-verb await budget (default 30s — recall cold-starts chromadb). */
   readonly timeoutMs?: number;
+  /**
+   * WHETHER THIS ISOLATE'S AUTOMERGE ENGINE STILL STANDS (`engine-watch`). A ledger fault that carries the engine's fatal
+   * signature sets the fall and answers `engine-terminated`; from the fall on, every verb, act and cancel refuses
+   * `engine-terminated` before any handler runs, and a receipt answers from the settled ledger alone or refuses by name.
+   * Each admission that settles durably marks the last settled wave. Absent: no watch, the prior behavior.
+   */
+  readonly engine?: EngineWatch;
   readonly onLog?: (line: string) => void;
 }
 
@@ -310,6 +318,8 @@ export interface ReceiptAnswer {
   readonly chore?: ChoreReceiptMark;
   /** A VISIT's outcome (a read of another lit face, `seat-hand`): its body answered its caller once, and a receipt withholds it. */
   readonly visit?: { readonly withheld: true };
+  /** The engine's fall (`engine-watch`), where the answer came from the settled ledger after the engine stopped. */
+  readonly engine?: Record<string, unknown>;
 }
 
 /** True where an outcome answers a VISIT: its output carries `visit: true` (keyhive `crossFaceReactor`). */
@@ -526,6 +536,16 @@ export class FactLedger {
       await this.tend();
     })();
     return this.seeded;
+  }
+
+  /**
+   * THE SETTLED LEDGER ALONE: the fact this ledger's cache holds for `requestId`, with no store read. The cache takes a fact
+   * only once its write and flush landed, so it never holds a half-settled one; `undefined` where the cache holds nothing
+   * (never seeded, or never seen this boot), which a caller reads as "unread", never as "unknown".
+   */
+  cached(requestId: string): ReceiptFact | "torn" | undefined {
+    if (this.torn.has(requestId)) return "torn";
+    return this.cache.get(requestId);
   }
 
   /** Read-through: cache first, then the durable fact store. Never arbitrates, never dispatches.
@@ -1065,6 +1085,23 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   };
 
   /**
+   * A RECEIPT AFTER THE ENGINE FELL reads the settled ledger alone (`FactLedger.cached`): no store read reaches the dead
+   * engine, and no half-applied wave answers. A fact the cache holds answers its state, named with the fall; its outcome
+   * body rests in the document the dead engine cannot read, so none rides. An id the cache never held refuses
+   * `engine-terminated`: the dead engine cannot say whether it ran, and an `unknown` would invite a re-run.
+   */
+  const settledReceipt = (requestId: string, fall: EngineFall): ReceiptAnswer => {
+    const engine = engineFallBody(fall);
+    const fact = ledger.cached(requestId);
+    if (fact === "torn") return { requestId, state: "error", errorMessage: `this vessel's receipt for request ${requestId} is unreadable — mint a fresh request id`, refusal: { reason: "receipt-fact-torn" }, engine };
+    if (fact === undefined) {
+      const refused = engineTerminatedRefusal(fall);
+      return { requestId, state: "error", errorMessage: refused.message, refusal: { reason: refused.refusal }, engine };
+    }
+    return { requestId, state: fact.state === "evicted" ? "evicted" : fact.terminal ?? fact.state, engine };
+  };
+
+  /**
    * The outcomes of acts that RAN while the ledger failed to record them, by face-scoped id: a retry or a receipt under
    * that id records the outcome again and, until a record stands, reads it from here, never `pending`. Held in this
    * process alone: the acts' answers never rest, and a fault here is rare enough to hold no bound but the faults.
@@ -1119,7 +1156,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     void Promise.resolve().then(() => ledger.observeOutcome(requestId, status, inputDigest, outcomeBytesOf(fields),
       typeof fields["face"] === "string" ? fields["face"] : undefined,
       typeof fields["verb"] === "string" ? fields["verb"] : undefined)).catch(
-      (e) => log(`receipt-fact observation failed for ${requestId}: ${e instanceof Error ? e.message : String(e)}`),
+      (e) => { opts.engine?.note(e, "ledger"); log(`receipt-fact observation failed for ${requestId}: ${e instanceof Error ? e.message : String(e)}`); },
     );
   });
 
@@ -1305,6 +1342,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         frame["op"] !== "session:receipt" && frame["op"] !== "session:cancel") return sessionRefuse(sock, "unknown-op", requestId);
     const checked = table.checkBound(frame, state.binding);
     if (!checked.ok) return sessionRefuse(sock, checked.refusal, requestId);
+    // A DEAD ENGINE REFUSES BY NAME before any session verb, act, receipt or cancel reaches the ledger; a close still closes.
+    const sessionFall = opts.engine?.fallen();
+    if (sessionFall && frame["op"] !== "session:close") return sessionRefuse(sock, ENGINE_TERMINATED, requestId, engineTerminatedRefusal(sessionFall).message);
     if (frame["op"] !== "session:close" && await anchorLeft(sock, state, requestId)) return;
     if (frame["op"] === "session:close") {
       table.close(checked.session.sessionId);
@@ -1431,6 +1471,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       try {
         verdict = await ledger.arbitrate(scoped, digest, face, action);
       } catch (error) {
+        opts.engine?.note(error, "ledger");
         log(`receipt-fact ledger failed for act ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
         return sessionRefuse(sock, "session-fault", requestId);
       }
@@ -1452,6 +1493,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       } catch (error) {
         // THE ACT RAN: a ledger that fails to record its outcome answers act-faulted with the receipt, never session-fault
         // (which says nothing ran). The outcome stays owed in this process, so a retry under the id reads it.
+        opts.engine?.note(error, "ledger");
         log(`receipt-fact ledger failed to record act ${requestId} after it ran: ${error instanceof Error ? error.message : String(error)}`);
         unrecorded.set(scoped, { status, digest, action });
         return sessionReply(sock, { kind: "session:act-result", requestId, answer: { status: "error", reason: "act-faulted" },
@@ -1627,6 +1669,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         queueSession(parsed, sock);
         return;
       }
+      // A DEAD ENGINE REFUSES BY NAME, BEFORE ANY HANDLER RUNS (`engine-watch`). A receipt answers from the settled ledger
+      // alone; every other line (a verb, a cancel, the roster's plane reads) refuses `engine-terminated` and nothing runs.
+      const fall = opts.engine?.fallen();
+      if (fall) {
+        if (isReceiptQuery(parsed)) { respond(settledReceipt(parsed.requestId, fall) as unknown as Record<string, unknown>); return; }
+        const refused = engineTerminatedRefusal(fall);
+        if (sessionRequestId !== undefined) { refuseSession(refused.refusal); onSessionReply?.(); return; }
+        return fail(refused.message, refused.refusal);
+      }
       // THE HEARTH ROSTER READS WHAT THIS CHANNEL HOLDS (`hearth-roster-read`): the sessions bound on this socket, the worn slot
       // and the worn faces' intent planes. A read, so it never reaches `placeVerb` and writes no fact, and it answers a locked
       // vessel too: the sessions stand whatever custody holds, and a plane that cannot read says why.
@@ -1700,6 +1751,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       delete oneShot.chore;
       const inv: Invocation = sessionRequestId === undefined ? oneShot : { ...(parsed as Invocation), ...(mark ? { chore: mark } : {}) };
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
+      // THE DAEMON BOUNDS THE WAVE IT HANDS ITS ENGINE (`ingest-wave-budget`): an INGEST past one document's wave budget
+      // refuses by name before arbitration, so a direct client that skips the gestures' paging meets the bound too.
+      const overweight = ingestWaveRefusal(inv.verb, inv.args);
+      if (overweight) return fail(overweight.message, overweight.reason);
       // A ROW THAT ACTS AS A FACE RIDES THAT FACE'S SESSION: the maintenance frame carries no face, so it serves none.
       if (sessionRequestId === undefined && opts.sessionVerbs?.has(inv.verb)) {
         return fail(`"${inv.verb}" acts as a face, and rides a session of that face`, "face-row-rides-a-session");
@@ -1820,6 +1875,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // THE LEDGER FAILED BEFORE ANY DISPATCH (a flush that rejects mid-arbitration): nothing ran, and the caller
           // hears a fixed code under its own requestId; the detail stays in this vessel's log.
           log(`receipt-fact ledger failed for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
+          // THE ENGINE'S DEATH NEVER READS AS A LEDGER FAULT: a fatal signature sets the fall and the caller hears its name.
+          if (opts.engine?.note(error, "ledger")) {
+            const refused = engineTerminatedRefusal(opts.engine.fallen()!);
+            if (sessionRequestId !== undefined) { refuseSession(refused.refusal); onSessionReply?.(); }
+            else fail(refused.message, refused.refusal);
+            return;
+          }
           const named = error instanceof ControlHomeUnavailable ? error.refusal : null;
           if (sessionRequestId !== undefined) { refuseSession(named ?? "session-fault"); onSessionReply?.(); }
           else fail(named ? (error as Error).message : "this vessel could not record the request durably; nothing ran", named ?? "ledger-unwritten");
@@ -1851,6 +1913,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           settled();
           return fail(why, verdict.reason);
         }
+        // THE ADMISSION SETTLED DURABLY (its committed fact flushed): the last settled wave a fall names.
+        try { opts.engine?.settled(controlHandle.heads()); } catch { /* heads unread: the admission still landed */ }
         // The work releases when the verb itself settles, never when this caller's wait gives up.
         const running = runVerb(inv, requestId);
         releaseWhenSettled(running, requestId);
@@ -1866,6 +1930,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // caller hears a fixed code under its own requestId, and the detail stays in this vessel's log.
         log(`invocation ${requestId} faulted before dispatch: ${error instanceof Error ? error.message : String(error)}`);
         settled();
+        if (opts.engine?.note(error, "ledger")) {
+          const refused = engineTerminatedRefusal(opts.engine.fallen()!);
+          if (sessionRequestId !== undefined) { refuseSession(refused.refusal); onSessionReply?.(); }
+          else fail(refused.message, refused.refusal);
+          return;
+        }
         if (sessionRequestId !== undefined) { refuseSession("session-fault"); onSessionReply?.(); }
         else fail("this vessel faulted before dispatch; nothing ran", "ledger-unwritten");
       }).finally(() => { arbitrating -= 1; if (idle()) drained?.(); }); }));

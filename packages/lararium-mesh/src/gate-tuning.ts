@@ -9,6 +9,7 @@
 
 import { PONO_FLUSH_GATE } from "./capture-nalu.js";
 import type { FlushGate } from "./capture-nalu.js";
+import { adaptDepth } from "./wave-crest.js";
 
 /** Measured inputs for the Economic-Batch-Quantity derivation. */
 export interface GateInputs {
@@ -57,9 +58,8 @@ export function adaptGate(
   maxStep = 0.25,
 ): FlushGate {
   if (targetLatencyMs <= 0) return current;
-  const error = (observedLatencyMs - targetLatencyMs) / targetLatencyMs; // >0 = too slow
-  const factor = 1 - Math.max(-maxStep, Math.min(maxStep, error));
-  const depth = Math.max(1, Math.round(current.depth * factor));
+  // ONE SHRINK RULE, TWO ENGINES: the INGEST settle servos its wave depth through the same step (`wave-crest`).
+  const depth = adaptDepth(current.depth, observedLatencyMs, targetLatencyMs, maxStep);
   return { ...current, depth, maxDepth: Math.max(current.maxDepth, depth * 2) };
 }
 

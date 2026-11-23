@@ -192,6 +192,10 @@
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
     },
+    "./wave-crest": {
+      "import": "./dist/wave-crest.js",
+      "types": "./dist/wave-crest.d.ts"
+    },
     "./tiddler-store": {
       "import": "./dist/tiddler-store.js",
       "types": "./dist/tiddler-store.d.ts"
