@@ -30,12 +30,14 @@ const READING: StandReading = { revision: HEAD, image: IMAGE, how: "built", vess
 const LIT: Partial<StandReading> = { pulama: "closure-level", lit: true, admitted: false };
 
 /** Ports that record every call in order and answer from a script. */
-function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean } = {}) {
+function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean; keeper?: { to: string; closure: string } | null; leiStands?: boolean | string } = {}) {
   const calls: string[] = [], said: string[] = [];
   const ports: RitePorts = {
     checkout: async () => { calls.push("checkout"); return { head: HEAD, branch: "main" }; },
     stage: async (target) => { calls.push(`stage ${JSON.stringify(target)}`); return { code: over.stage ?? 0, reading: { ...READING, ...over.reading } }; },
-    raise: async (rev) => { calls.push(`raise ${rev}`); return over.raise ?? 0; },
+    raise: async (rev, keeper) => { calls.push(`raise ${rev}${keeper ? ` --keeper-to ${keeper.to}` : ""}`); return over.raise ?? 0; },
+    ...(over.keeper === undefined ? {} : { keeperStand: async () => { calls.push("keeper-stand"); return over.keeper ?? null; } }),
+    ...(over.leiStands === undefined ? {} : { leiStands: async () => over.leiStands as boolean | string }),
     ...(over.tty === undefined ? {} : { tty: () => over.tty as boolean }),
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
@@ -122,15 +124,29 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     expect(t.calls).toEqual(["checkout", STAGE, BEGIN, OFFER, `raise ${HEAD}`, LAND]);
   });
 
-  it("RED: a moved closure a keeper commit names vests with no terminal: the raise hands the living fire and asks no route; CONTROL: a struck fire due, or an unlit keeper, still owes the light", async () => {
-    const f = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "vests" } });
+  it("RED: a moved closure a keeper commit names vests with no terminal: the successor stands before the offer, the vouches name the move, and the raise carries its key; CONTROL: a struck fire due, an unlit keeper, no lei to ride, or no keeper-stand still owes the light", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const f = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "vests" }, keeper: { to, closure } });
     expect((await riteKukulu(f.ports, {})).code).toBe(0);
-    expect(f.calls).toEqual(["checkout", STAGE, BEGIN, OFFER, `raise ${HEAD}`, LAND]);
-    for (const reading of [{ pulama: "moved" as const, lit: true, keeper: "struck-due" as const }, { pulama: "moved" as const, lit: false, keeper: "vests" as const }]) {
-      const g = fakes({ tty: false, reading });
-      expect(await riteKukulu(g.ports, {}), JSON.stringify(reading)).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });
-      expect(g.calls).toEqual(["checkout", STAGE]);
+    const offer = `rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE, keeperTo: to, keeperNext: closure })}`;
+    expect(f.calls).toEqual(["checkout", STAGE, BEGIN, "keeper-stand", offer, `raise ${HEAD} --keeper-to ${to}`, LAND]);
+    for (const over of [
+      { reading: { pulama: "moved" as const, lit: true, keeper: "struck-due" as const }, keeper: { to, closure } },
+      { reading: { pulama: "moved" as const, lit: false, keeper: "vests" as const }, keeper: { to, closure } },
+      { reading: { pulama: "moved" as const, lit: true, keeper: "vests" as const }, keeper: { to, closure }, leiStands: "absent" },
+      { reading: { pulama: "moved" as const, lit: true, keeper: "vests" as const } },
+    ]) {
+      const g = fakes({ tty: false, ...over });
+      expect(await riteKukulu(g.ports, {}), JSON.stringify(over)).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });
+      expect(g.calls.filter((c) => c.startsWith("raise") || c === "keeper-stand")).toEqual([]);
     }
+  });
+
+  it("RED: a successor that stands no key leaves the rite with no keeper move: the offer names none and the raise carries none (it relights struck)", async () => {
+    const f = fakes({ tty: true, reading: { pulama: "moved", lit: true, keeper: "vests" }, keeper: null });
+    expect((await riteKukulu(f.ports, {})).code).toBe(0);
+    expect(f.calls).toEqual(["checkout", STAGE, BEGIN, "keeper-stand", OFFER, `raise ${HEAD}`, LAND]);
+    expect(f.said.join("\n")).toMatch(/no successor keeper stood beside the lit one/);
   });
 
   it("RED: no lei and an image the pūlama never admitted, with no terminal, stops before the raise and names the hand act; CONTROL: an admission, or an offer resting from an earlier run, raises with no route", async () => {

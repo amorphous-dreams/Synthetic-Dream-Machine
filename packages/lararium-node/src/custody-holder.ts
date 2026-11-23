@@ -310,14 +310,14 @@ export interface CustodyHolder {
    * ephemeral key. The caller zero-fills every copy once sealed. Null while no key stands. Never a passphrase, a slot or a ward key:
    * those never rest in a holder's memory to hand.
    */
-  handOver?(): { readonly treeKey: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array }> } | null;
+  handOver?(): { readonly treeKey: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }> } | null;
   /**
    * THE HANDED FIRE, INCOMING: seat one face's key a vest carried, as `adopt` seats the node key. The key must answer the floor
    * index as an unlock's would (`face-owner`, anchors), or nothing seats and the copy zero-fills. Spends no attempt.
    */
   adoptFace?(fcid: string, fck: Uint8Array): Promise<FaceUnlock>;
-  /** THE BUDGET CARRIES: raise the spent unlock count to what the keeper before spent (never lower it). */
-  seedSpent?(spent: number): void;
+  /** THE BUDGET CARRIES: raise the spent unlock count, and each named face's, to what the keeper before spent (never lower one). */
+  seedSpent?(spent: number, faces?: ReadonlyArray<{ readonly fcid: string; readonly spent: number }>): void;
 }
 
 /** A key handed to `adopt` that the custody root does not open under. */
@@ -802,14 +802,19 @@ export function makeCustodyHolder(a: {
     },
     handOver() {
       if (treeKey === null || !accepting) return null;
-      return { treeKey: Uint8Array.from(treeKey), faces: [...faces].map(([fcid, seat]) => ({ fcid, ordinal: seat.ordinal, fck: Uint8Array.from(seat.fck) })) };
+      return { treeKey: Uint8Array.from(treeKey), faces: [...faces].map(([fcid, seat]) => ({ fcid, ordinal: seat.ordinal, fck: Uint8Array.from(seat.fck), spent: faceSpent.get(fcid) ?? 0 })) };
     },
     adoptFace(fcid, handed) {
       const run = unlockChain.then(() => doAdoptFace(fcid, handed), () => doAdoptFace(fcid, handed));
       unlockChain = run.catch(() => undefined);
       return run;
     },
-    seedSpent(n) { if (Number.isSafeInteger(n) && n > spent) spent = Math.min(n, UNLOCK_ATTEMPTS_PER_BOOT); },
+    seedSpent(n, carried) {
+      if (Number.isSafeInteger(n) && n > spent) spent = Math.min(n, UNLOCK_ATTEMPTS_PER_BOOT);
+      for (const f of carried ?? []) {
+        if (typeof f.fcid === "string" && Number.isSafeInteger(f.spent) && f.spent > (faceSpent.get(f.fcid) ?? 0)) faceSpent.set(f.fcid, Math.min(f.spent, UNLOCK_ATTEMPTS_PER_BOOT));
+      }
+    },
     isUnlocked: () => treeKey !== null,
     attemptsLeft: () => UNLOCK_ATTEMPTS_PER_BOOT - spent,
     openedSlot: () => slot,

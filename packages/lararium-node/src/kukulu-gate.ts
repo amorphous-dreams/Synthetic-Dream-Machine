@@ -240,3 +240,54 @@ export function kukuluGate(a: {
     },
   };
 }
+
+/**
+ * THE LIVE RITE A KEEPER'S VEST RIDES (the keeper tally): the kūkulu offer the standing vessel rested, read as the gate reads it, and
+ * bound to ONE keeper move. Each vouch verifies under the house's vouch key, walked the image the host reports, and names this move
+ * (the successor's one-handoff key and the committed closure); then the vest begins the kūkulu rite over the pūlama's records for each
+ * lit face, claiming one return of a lei the hand strung. The new vessel's hello finds that begun half and lands it, spending no
+ * second return. A bare frame with no such offer, or a lei with no return left, begins nothing, and the vest refuses by name. The
+ * reading names the faces' device count off the vouches (0 where a vouch read none, so the vest fails closed).
+ */
+export function keeperRiteOver(a: {
+  readonly holder: CustodyHolder;
+  readonly hand: (ordinal: number) => Promise<string | null | undefined>;
+  readonly rite: KukuluRitePort;
+  readonly image: () => string | null | Promise<string | null>;
+}): (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<{ readonly ok: true; readonly rite: readonly string[]; readonly devices: number } | { readonly ok: false; readonly refusal: string; readonly detail: string }> {
+  return async (offer, keeper) => {
+    const no = (refusal: string, detail: string) => ({ ok: false as const, refusal, detail: `${detail}; nothing vests, and the old fire still burns: light the successor by hand with \`lares rite kukulu\` on a terminal` });
+    const o = (typeof offer === "object" && offer !== null && !Array.isArray(offer) ? offer : null) as { lei?: unknown; unstrung?: unknown; vouch?: unknown } | null;
+    if (o === null || !Array.isArray(o.vouch) || o.vouch.length === 0) return no("vest-rite-absent", "a vest rides a live kūkulu rite, and this frame carries no offer with a vouch");
+    if ((o.lei !== undefined && !Array.isArray(o.lei)) || (o.unstrung !== undefined && !Array.isArray(o.unstrung))) return no("vest-rite-absent", "the offer's lei and unstrung rows read as arrays");
+    const lei: readonly unknown[] = (o.lei as unknown[] | undefined) ?? [], unstrung: readonly unknown[] = (o.unstrung as unknown[] | undefined) ?? [];
+    const vouchKey = await vouchKeyOf(a.holder);
+    const raised = await a.image();
+    if (raised === null) return no("kukulu-image-unreported", "the host reported no image at this keeper's hand door");
+    const by = await pulamaSignerOf(a.holder);
+    const tesserae: string[] = [];
+    let devices = Number.POSITIVE_INFINITY, most = 0, first: string | null = null;
+    for (const raw of o.vouch.slice(0, 64)) {
+      const vouched = verifyKukuluVouch(raw, vouchKey);
+      if (!vouched.ok) return no(`kukulu-vouch-${vouched.refusal}`, "a vouch the offer carries verifies under no key this house's custody root derives");
+      const body = vouched.vouch.body;
+      // THE VOUCH NAMES THIS KEEPER MOVE, or the vest rides another rite (or none).
+      if (body.keeper === undefined || body.keeper.to !== keeper.to || body.keeper.next !== keeper.next) return no("vest-rite-unbound", "a vouch the offer carries names no keeper move, or another successor key or closure, than this vest");
+      if (body.image !== raised) return no("kukulu-image-mismatch", "a vouch walked another image than the one the host raises");
+      devices = Math.min(devices, body.keeper.devices); most = Math.max(most, body.keeper.devices);
+      const face = await a.holder.faceStanding({ group: personaGroupDigest(body.group) });
+      if (face === null || !face.unlocked) { first ??= "kukulu-face-locked"; continue; }
+      const handKey = (await a.hand(face.ordinal))?.toLowerCase();
+      if (!handKey) { first ??= "kukulu-hand-absent"; continue; }
+      const at: KukuluRiteAt = { group: body.group, branch: body.branch, head: body.head, tree: body.tree, image: raised, hand: (key) => key.toLowerCase() === handKey, by };
+      // THE RETURN CLAIMS HERE: the vest is this rite's begin, and the next vessel's hello lands the half it rests.
+      const begun = await a.rite.begin({ lei, unstrung }, at);
+      if (begun.ok) tesserae.push(begun.tessera);
+      else if (begun.refusal === "swarm-lei-absent") first ??= begun.refusal;
+      else return no(begun.refusal, "the rite this vest rides begins nothing");
+    }
+    if (tesserae.length === 0) return no("vest-rite-absent", `no lit face's kukulu lei began a rite for this vest (${first ?? "no face"})`);
+    // THE FEWEST READ WINS where a face read none (0 fails closed); else the most any face holds.
+    return { ok: true, rite: tesserae, devices: devices === 0 ? 0 : most };
+  };
+}

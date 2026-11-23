@@ -207,7 +207,7 @@ async function riteFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: n
   const vesselKey = fold.signer.key.toLowerCase();
   const trust: SwarmTrust = { hand: (key) => fold.face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
   const vessel: SwarmSignerPort = { key: fold.signer.key, sign: (bytes) => fold.signer.sign(bytes) };
-  try { return { group: fold.group, trust, vessel, ward: cosignPortWitness(await nodeWardCosignPortOf(repo, fold)) }; }
+  try { return { group: fold.group, trust, vessel, ward: cosignPortWitness(await nodeWardCosignPortOf(repo, fold)), devices: fold.projection.devices.length }; }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
 }
 
@@ -232,9 +232,15 @@ export async function runRiteVerb(opts: {
     if (!str("branch") || !str("head") || !str("image")) throw new SwarmRefused("rite-offer-malformed", "an offer names its branch, its head and the image the host built");
     const offerTree = await (opts.treeOf ?? gitTreeOf)(str("head"));
     const faces = await lentOfferFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), (ordinal) => riteFaceOf(opts.repo, opts.catalogUrl, ordinal));
+    // THE KEEPER MOVE rides the vouches where the host names one (`keeperTo`, `keeperNext`): the pūlama vests only inside it.
+    const keeperTo = str("keeperTo"), keeperNext = str("keeperNext");
+    if ((keeperTo === "") !== (keeperNext === "") || (keeperTo !== "" && (!/^[0-9a-f]{64}$/.test(keeperTo) || !/^sha256:[0-9a-f]{64}$/.test(keeperNext)))) {
+      throw new SwarmRefused("rite-offer-malformed", "a keeper move names the successor's key (64 hex) and the committed closure (sha256:<64 hex>) together");
+    }
     return { ...await writeKukuluOffer({
       wiki: opts.wiki, faces, branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
       holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
+      ...(keeperTo !== "" ? { keeper: { to: keeperTo, next: keeperNext } } : {}),
     }) };
   }
   const wiki = opts.wiki;

@@ -142,8 +142,15 @@ export interface RitePorts {
   sync?(): Promise<SyncAnswer>;
   /** The shim's image step and its reading of the house (`rebuild --image`); the answer carries its exit code. */
   stage(target: StageTarget): Promise<{ readonly code: number; readonly reading: StandReading | null }>;
-  /** The shim's restand onto the image of the revision (`rebuild --at <rev>`); the answer carries its exit code. */
-  raise(revision: string): Promise<number>;
+  /** The shim's restand onto the image of the revision (`rebuild --at <rev>`, `--keeper-to <key>` where this rite carries a keeper
+   *  move); the answer carries its exit code. */
+  raise(revision: string, keeper?: { readonly to: string }): Promise<number>;
+  /**
+   * THE KEEPER MOVE (the keeper tally): stand the successor keeper beside the lit one and read the one-handoff key it offers and the
+   * closure its host reads (`keeper-stand`), before the offer, so the vouches name the move; null where none stood. Absent, no rite
+   * carries a keeper move and a moved closure relights struck.
+   */
+  keeperStand?(): Promise<{ readonly to: string; readonly closure: string } | null>;
   /** A terminal on both ends, where a route can be typed; absent, the rite reads one. */
   tty?(): boolean;
   /** One store row, answered by the vessel that stands. */
@@ -381,15 +388,16 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   const forward = opts.rollback === undefined;
   // THE LEI READS FIRST, before the fetch, the image step, the tag and the seed: where none stands the rite offers to string one
   // on the spot (as the unlock offers the keep lei), and a no names the plain line before anything slow runs.
-  let absentSaid = false;
+  let absentSaid = false, leiGone = false;
   if (ports.leiStands) {
     const line = opts.branch ?? (await ports.checkout()).branch;
     const stands = await ports.leiStands(line, opts.face).catch(() => null);
     if (stands === false || stands === "absent") {
       const offer = ports.refill ? await ports.refill({ rite: "kukulu", branch: line, absent: true, returns: KUKULU_LEI_RETURNS, ...(opts.face === undefined ? { all: true } : { face: opts.face }) }) : null;
       if (offer?.strung === true) ports.say(`kūkulu: a kukulu lei of ${KUKULU_LEI_RETURNS} returns per lent face stands on ${line}; the rite goes on`);
-      else { absentSaid = true; ports.say(`kūkulu: no kukulu lei stands on ${line}, so the restand goes on with no rite${offer ? `; string one by hand first: ${offer.remedy}` : ""}`); }
+      else { absentSaid = true; leiGone = true; ports.say(`kūkulu: no kukulu lei stands on ${line}, so the restand goes on with no rite${offer ? `; string one by hand first: ${offer.remedy}` : ""}`); }
     } else if (typeof stands === "string" && stands !== RETURNS_SPENT_REFUSAL) {
+      leiGone = true;
       // A LEI THAT STANDS NOT FOR ANOTHER CAUSE names its own clearing line and asks nothing: stringing over a fork or a ward
       // refusal would answer a question nobody asked. A spent lei waits for the begin's own refill prompt, so the person hears it once.
       ports.say(`kūkulu: the kukulu lei on ${line} stands not (${stands}); ${leiClearing(stands, line, opts.face)}`);
@@ -434,7 +442,8 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     ports.say("kūkulu: whether the pūlama stands lit, or what it runs, reads unknown; read it with `tools/lares-container.sh pulama status`; nothing spent, nothing moved");
     return { code: 1, data: { ...base, begun: false, stopped: "pulama", refusal: "kukulu-pulama-unread" } };
   }
-  const light = owesLight(r);
+  // A KEEPER MOVE RIDES A LIVE RITE: with no lei to begin one, a moved closure relights struck, so the light stays owed.
+  const light = owesLight(leiGone || !ports.keeperStand ? { ...r, keeper: r.keeper === "vests" ? null : r.keeper ?? null } : r);
   const awaitsHand = (why: string, extra: Record<string, unknown> = {}) => {
     ports.say(`kūkulu: ${why}; the house stands as it stood, the image waits built, and nothing spent; your hand: ${HAND_ACT} on a terminal`);
     return { code: 0, data: { ...base, ...extra, begun: false, awaits: "hand", hand: HAND_ACT } };
@@ -642,6 +651,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   }
   const landCall = landCallOf(begunFaces);
   let offered = false;
+  let keeperMove: { readonly to: string; readonly closure: string } | null = null;
   if (begun) {
     // BEFORE THE LOWERING, the standing vessel writes what the next one carries to the pūlama, over the image the host made. A
     // resumed begin reuses the resting offer only where its vouches match every pending half (group, line, head, image); any
@@ -651,7 +661,13 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       ports.say(`kūkulu: the offer the begin rested still vouches for each pending face over ${r.image}; reused, none written`);
     } else if (r.image === "") ports.say("kūkulu: the host names no digest for the image, so no offer rests for a pūlama; the rite goes on, and a vessel standing by a pūlama will wake at the floor.");
     else {
-      const offer = await ports.row("rite-offer", { branch, head, image: r.image, ...asFace });
+      // THE KEEPER MOVE rides this rite's vouches: the successor stands now and offers its key, before the offer is signed.
+      if (r.keeper === "vests" && r.lit === true && ports.keeperStand) {
+        const stood = await ports.keeperStand().catch(() => null);
+        if (stood === null) ports.say("kūkulu: no successor keeper stood beside the lit one, so this rite carries no keeper move and the raise relights the pūlama struck (your passphrase on a terminal)");
+        else { keeperMove = stood; ports.say(`kūkulu: the successor keeper stands and offers its one-handoff key; the vouches name the move to closure ${stood.closure.slice(0, 19)}`); }
+      }
+      const offer = await ports.row("rite-offer", { branch, head, image: r.image, ...asFace, ...(keeperMove ? { keeperTo: keeperMove.to, keeperNext: keeperMove.closure } : {}) });
       if (!offer.ok) {
         ports.say(`kūkulu: the standing vessel wrote no offer (${offer.message}); it still stands, the lei's return stays spent, and the begun half reads red until a vessel at ${head} lands it (${landCall}); \`${HAND_ACT}\` resumes it and spends no lei.`);
         return { code: 1, data: { ...base, ...spent, begun: true, landed: false, stopped: "offer", refusal: offer.code } };
@@ -664,7 +680,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     }
   }
   if (restandStops(r)) ports.say(STOP_FLUSHES_LINE);
-  const raised = await ports.raise(head);
+  const raised = await ports.raise(head, keeperMove ? { to: keeperMove.to } : undefined);
   if (raised !== 0) {
     // A CTRL+C at a prompt the restand asks (accept-loss, the light, the admit) ends the shim by the signal: the begun halves and
     // the offer rest where they stood, and the next run reads them and resumes.

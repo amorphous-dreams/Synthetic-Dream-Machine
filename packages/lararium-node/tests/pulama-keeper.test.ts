@@ -4,13 +4,14 @@
  * mismatch, replay and unnamed key refuses by name; no answer and no log line carries a route or a key; two keepers never both hold
  * the fire; the budget carries.
  */
-import { mkdtempSync, rmSync } from "node:fs";
+import { linkSync, mkdtempSync, rmSync, statSync, unlinkSync } from "node:fs";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signKukuluVouch } from "@lararium/mesh";
+import { keeperRiteOver, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { UNLOCK_ATTEMPTS_PER_BOOT, makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
-import { pulamaSignerOf } from "../src/kukulu-gate.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaAdmissions } from "../src/pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "../src/pulama-hand.js";
@@ -20,6 +21,8 @@ import { listenPulama, pulamaAnswers } from "../src/pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { handVerbExit, runHandVerb } from "../src/pulama-verbs.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
+import { createHash } from "node:crypto";
+const sha = (s: string): string => createHash("sha256").update(s).digest("hex");
 import { SESSION_DERIVES, fixtureRoute, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -36,26 +39,33 @@ async function house(label: string) {
   const face = await fx.kept.foundFace({ group: personaGroupDigest(`group-${label}`), ordinal: 0, slots: fixtureSlots });
   const state = scratch(), records = pulamaRecords(state), image = pulamaImage(state);
   const lines: string[] = [], answers: PulamaHandAnswer[] = [];
+  /** THE LIVE RITE, faked at its port (`keeperRiteOver` reads it for real below): an offer of "rite" begins one, at `riteDevices`. */
+  const live = { devices: 1, begun: 0 };
+  const keeperRite = async (offer: unknown, keeper: { readonly to: string; readonly next: string }) => {
+    if (offer !== "rite") return { ok: false as const, refusal: "vest-rite-absent", detail: "a vest rides a live kūkulu rite, and this frame carries no offer with a vouch" };
+    live.begun++;
+    return { ok: true as const, rite: [sha(`${keeper.to}${keeper.next}${live.begun}`)], devices: live.devices };
+  };
   const watch = (door: (f: unknown) => Promise<PulamaHandAnswer>) => async (frame: unknown) => { const a = await door(frame); answers.push(a); return a; };
-  const old = watch(pulamaHandDoor({ holder: fx.kept, server: fx.server, image, records, admissions: pulamaAdmissions(records), worn: () => 0, onLog: (l) => lines.push(l) }));
+  const old = watch(pulamaHandDoor({ holder: fx.kept, server: fx.server, image, records, admissions: pulamaAdmissions(records), keeperRite, worn: () => 0, onLog: (l) => lines.push(l) }));
   await old({ op: "image", digest: IMAGE, closure: D });
   const successor = (closure = D2) => {
     const holder: CustodyHolder = makeCustodyHolder({ io: new FsCustodyIo(fx!.seat.homes), homes: fx!.seat.homes });
     const server = servePulama({ holder, gate: openGate({ faces: lend(0), coldReads: [] }), derives: SESSION_DERIVES });
-    const door = watch(pulamaHandDoor({ holder, server, image, records, admissions: pulamaAdmissions(records), onLog: (l) => lines.push(l) }));
+    const door = watch(pulamaHandDoor({ holder, server, image, records, admissions: pulamaAdmissions(records), keeperRite, onLog: (l) => lines.push(l) }));
     return { holder, door, report: () => door({ op: "closure", digest: closure }) };
   };
   /** A commit as the shim sends it: the device count the vessel read, or (null) none read. */
   const commit = (next = D2, devices: number | null = 1) => old({ op: "keeper-commit", next, ...(devices === null ? {} : { devices }), credentials: fixtureRoute });
-  return { face, records, old, successor, commit, lines, answers };
+  return { face, records, image, old, successor, commit, lines, answers, live };
 }
 
 /** Offer, vest and receive: the whole unattended handoff over one successor. */
-async function handoff(h: Awaited<ReturnType<typeof house>>, from: (f: unknown) => Promise<PulamaHandAnswer>, closure = D2) {
+async function handoff(h: Awaited<ReturnType<typeof house>>, from: (f: unknown) => Promise<PulamaHandAnswer>, closure = D2, riteOffer: unknown = "rite") {
   const next = h.successor(closure);
   await next.report();
   const offer = await next.door({ op: "keeper-offer" });
-  const vest = await from({ op: "keeper-vest", to: offer["to"], closure });
+  const vest = await from({ op: "keeper-vest", to: offer["to"], closure, offer: riteOffer });
   const landed = vest["reading"] === "vested" ? await next.door({ op: "keeper-receive", slot: vest["slot"] }) : null;
   return { next, offer, vest, landed };
 }
@@ -107,35 +117,57 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect(fold.pairs).toEqual([expect.objectContaining({ par: true, vest: true })]);
     // THE OLD KEEPER PASSES THE FIRE: every write act refuses until the shim locks it.
     expect(await h.old({ op: "admit", credentials: fixtureRoute })).toMatchObject({ reading: "fire-passing" });
-    expect(await h.old({ op: "keeper-commit", next: D3, credentials: fixtureRoute })).toMatchObject({ reading: "fire-passing" });
+    for (const frame of [{ op: "keeper-commit", next: D3, credentials: fixtureRoute }, { op: "keeper-land" }, { op: "close", face: 0 }, { op: "rehive", face: 0, credentials: fixtureRoute }, { op: "unadmit", image: IMAGE, credentials: fixtureRoute }]) {
+      expect(await h.old(frame), JSON.stringify(frame.op)).toMatchObject({ reading: "fire-passing", detail: expect.stringContaining("lares rite kukulu") });
+    }
     // NO SECRET IN ANY LOG OR ANSWER: the route, the node key and the face key never appear; the slot carries only ciphertext.
     const said = JSON.stringify([h.lines, h.answers]);
     for (const secret of [FIXTURE_PASSPHRASE, ...secrets]) expect(said).not.toContain(secret);
   });
 
-  test("CONTROL: a vest with no committed D′ refuses `commit-absent`; a closure mismatch refuses `closure-differs` and spends nothing; the old fire still burns", async () => {
+  test("RED a bare frame vests nothing: a vest with no live rite's offer refuses `vest-rite-absent`, sends no key, and spends the commit; a retry with the rite then finds no live commit", async () => {
+    const h = await house("keeper-vest-bare");
+    await h.commit();
+    const bare = await handoff(h, h.old, D2, null);
+    expect(bare.vest).toMatchObject({ reading: "vest-rite-absent" });
+    expect(bare.vest).not.toHaveProperty("slot");
+    expect(bare.next.holder.isUnlocked()).toBe(false);
+    expect(await h.old({ op: "status" })).not.toHaveProperty("vestReady");
+    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "commit-absent" });
+    // A new commit, ridden by a live rite, vests.
+    await h.commit();
+    expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
+  });
+
+  test("CONTROL: a vest with no committed D′ refuses `commit-absent`; a closure mismatch refuses `closure-differs`, the old fire still burns, and the commit lapses (one rite attempt per commit)", async () => {
     const h = await house("keeper-vest-controls");
     const none = await handoff(h, h.old);
-    expect(none.vest).toMatchObject({ reading: "commit-absent" });
+    expect(none.vest).toMatchObject({ reading: "commit-absent", detail: expect.stringContaining("lares pulama keeper-commit") });
     await h.commit(D2);
     const wrong = await handoff(h, h.old, D3);
     expect(wrong.vest).toMatchObject({ reading: "closure-differs" });
     expect(wrong.landed).toBeNull();
     expect(fx!.kept.isUnlocked()).toBe(true);
-    expect((await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"))).toEqual([]);
-    // The match then vests: nothing the refusals did spent the commit.
+    expect(h.live.begun).toBe(0);
+    // THE COMMIT SPENT ITS ONE ATTEMPT: the right closure now finds no live commit, and a fresh commit vests.
+    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "commit-absent" });
+    await h.commit(D2);
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
   });
 
-  test("RED the co-sign fails closed: a commit naming a face of two devices refuses `vest-cosign-owed`, and one whose vessel read no count refuses `vest-devices-unread`; each names the struck fire and spends nothing", async () => {
+  test("RED the co-sign fails closed: a commit or a rite's vouch naming a face of two devices refuses `vest-cosign-owed`, and a count read nowhere refuses `vest-devices-unread`; each names the struck fire; vestReady reads only a one-device commit", async () => {
     const h = await house("keeper-vest-cosign");
     await h.commit(D2, 2);
-    const two = await handoff(h, h.old);
-    expect(two.vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringContaining("lares rite kukulu") });
+    expect(await h.old({ op: "status" })).not.toHaveProperty("vestReady");
+    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringContaining("lares rite kukulu") });
     await h.commit(D2, null);
-    const unread = await handoff(h, h.old);
-    expect(unread.vest).toMatchObject({ reading: "vest-devices-unread", detail: expect.stringContaining("lares pulama keeper-commit") });
-    expect((await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"))).toEqual([]);
+    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-devices-unread", detail: expect.stringContaining("lares rite kukulu") });
+    await h.commit(D2, 1);
+    expect(await h.old({ op: "status" })).toMatchObject({ vestReady: D2 });
+    h.live.devices = 2;
+    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringContaining("the rite's vouch") });
+    expect((await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"))).toHaveLength(3);
+    h.live.devices = 1;
     await h.commit(D2, 1);
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
   });
@@ -154,9 +186,10 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect(await other.door({ op: "keeper-receive", slot: first.vest["slot"] })).toMatchObject({ reading: "slot-names-another" });
     expect(other.holder.isUnlocked()).toBe(false);
     // A second vest from the old keeper refuses (it passes the fire), and a new lit keeper vesting the landed commit finds none live.
-    expect(await h.old({ op: "keeper-vest", to: "ab".repeat(32), closure: D2 })).toMatchObject({ reading: "fire-passing" });
-    expect(await first.next.door({ op: "keeper-vest", to: "ab".repeat(32), closure: D2 })).toMatchObject({ reading: "commit-absent" });
-    expect(await first.next.door({ op: "keeper-land" })).toMatchObject({ reading: "begun-absent" });
+    expect(await h.old({ op: "keeper-vest", to: "ab".repeat(32), closure: D2, offer: "rite" })).toMatchObject({ reading: "fire-passing" });
+    expect(await first.next.door({ op: "keeper-vest", to: "ab".repeat(32), closure: D2, offer: "rite" })).toMatchObject({ reading: "commit-absent" });
+    // A REPLAYED LAND NEVER SPENDS A SUCCESSOR'S LANDING: a keeper lit by a vest lands nothing struck.
+    expect(await first.next.door({ op: "keeper-land" })).toMatchObject({ reading: "keeper-not-struck" });
   });
 
   test("CONTROL: a slot opens once: a second receive on the same offer refuses `offer-spent`, and a tampered slot locks the successor", async () => {
@@ -165,7 +198,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     const next = h.successor();
     await next.report();
     const offer = await next.door({ op: "keeper-offer" });
-    const vest = await h.old({ op: "keeper-vest", to: offer["to"], closure: D2 });
+    const vest = await h.old({ op: "keeper-vest", to: offer["to"], closure: D2, offer: "rite" });
     const slot = vest["slot"] as { body: { box: { c: string } } };
     const tampered = { ...slot, body: { ...slot.body, box: { ...slot.body.box, c: (slot.body.box.c[0] === "0" ? "1" : "0") + slot.body.box.c.slice(1) } } };
     expect(await next.door({ op: "keeper-receive", slot: tampered })).toMatchObject({ reading: "slot-unopened" });
@@ -184,6 +217,39 @@ describe("RED the struck fire and the budget", () => {
     expect(await lit.door({ op: "keeper-land" })).toMatchObject({ reading: "red", red: "closure-differs", pair: { par: false, vest: false } });
     expect(lit.holder.isUnlocked()).toBe(true);
     expect(await lit.door({ op: "keeper-land" })).toMatchObject({ reading: "begun-absent" });
+  });
+
+  test("RED a red link never becomes the tip: after a vest (v1, one handed link) a struck land that reads red leaves the tip and the handed count where they stood, and the next commit links past it", async () => {
+    const h = await house("keeper-red-link");
+    await h.commit();
+    const first = await handoff(h, h.old);
+    expect(first.landed).toMatchObject({ reading: "landed", vestings: 1 });
+    await first.next.door({ op: "image", digest: IMAGE, closure: D2 });
+    expect(await first.next.door({ op: "keeper-commit", next: D3, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: 2 });
+    const struck = h.successor(D2);
+    await struck.report();
+    expect(await struck.door({ op: "light", credentials: fixtureRoute })).toMatchObject({ reading: "opens" });
+    expect(await struck.door({ op: "keeper-land" })).toMatchObject({ reading: "red", red: "closure-differs" });
+    const by = await pulamaSignerOf(struck.holder);
+    expect(await keeperFold(h.records, by)).toMatchObject({ v: 1, vestings: 1, pending: null, fork: false });
+    // The next commit links to v1's tip again, and a par vest extends the run to two.
+    expect(await first.next.door({ op: "keeper-commit", next: D3, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: 2 });
+    expect((await handoff(h, first.next.door, D3)).landed).toMatchObject({ reading: "landed", vestings: 2 });
+    await struck.holder.lock();
+  });
+
+  test("RED a keeper not lit by the hand lands nothing struck (`keeper-not-struck`); each face's spent budget carries with the vest", async () => {
+    const h = await house("keeper-land-struck-only");
+    await h.commit();
+    const [face] = fx!.kept.handOver!()!.faces;
+    fx!.kept.seedSpent!(1, [{ fcid: face!.fcid, spent: 2 }]);
+    const moved = await handoff(h, h.old);
+    expect(moved.landed).toMatchObject({ reading: "landed" });
+    const carried = moved.next.holder.handOver!()!;
+    expect(carried.faces).toEqual([expect.objectContaining({ fcid: face!.fcid, spent: 2 })]);
+    expect(moved.next.holder.attemptsLeft()).toBe(UNLOCK_ATTEMPTS_PER_BOOT - 1);
+    carried.treeKey.fill(0); for (const f of carried.faces) f.fck.fill(0);
+    expect(await moved.next.door({ op: "keeper-land" })).toMatchObject({ reading: "keeper-not-struck" });
   });
 
   test("RED the struck fire is ONE proof: `light --admit` lights and admits the reported image under one route; CONTROL: an admitted image stays as it stands", async () => {
@@ -235,5 +301,51 @@ describe("RED two keepers never both hold the fire", () => {
     expect(await door({ op: "take-fire" })).toMatchObject({ reading: "taken", fire: true });
     expect(await door({ op: "take-fire" })).toMatchObject({ reading: "fire-held-here" });
     await (held as { close(): Promise<void> } | null)?.close();
+  });
+
+  test("RED the claim links then checks: a dead leftover gives way, a live keeper keeps its claim, and a claim another keeper displaced reads `owns` false", async () => {
+    const dir = scratch(), path = join(dir, "q.sock");
+    // A DEAD LEFTOVER: a socket whose listener left without its file going.
+    const dead = await listenPulama(path, () => {});
+    const leftover = join(dir, "left.sock");
+    linkSync(path, leftover);
+    await dead.close();
+    linkSync(leftover, path);
+    expect(await pulamaAnswers(path)).toBe(false);
+    const live = await listenPulama(path, () => {});
+    expect(live.owns()).toBe(true);
+    await expect(listenPulama(path, () => {})).rejects.toMatchObject({ reading: "pulama-already-stands" });
+    // DISPLACED: the path now names another file; this claim reads it holds no fire, and its close leaves the other file standing.
+    unlinkSync(path); linkSync(leftover, path);
+    expect(live.owns()).toBe(false);
+    await live.close();
+    expect(statSync(path).ino).toBe(statSync(leftover).ino);
+  });
+});
+
+describe("RED the live rite a vest rides (`keeperRiteOver`)", () => {
+  test("a vouch under the house's key naming this keeper move begins the rite; CONTROL: no vouch, another key, another closure, no keeper move, another image, or another signer each refuse and begin nothing", async () => {
+    const h = await house("keeper-rite-over");
+    const group = "group-keeper-rite-over", to = "cd".repeat(32);
+    const begun: string[] = [];
+    const rite = { begin: async () => { begun.push("x"); return { ok: true as const, tessera: "ef".repeat(32), lei: "11".repeat(32), n: 1 }; }, land: async () => ({ par: true }) };
+    const over = keeperRiteOver({ holder: fx!.kept, hand: async () => "aa".repeat(32), rite, image: () => h.image.raised() });
+    const signer = await vouchSignerOf(fx!.kept);
+    const vouch = (keeper: Record<string, unknown> | undefined, image = IMAGE, by = signer) => signKukuluVouch({ group, branch: "main", head: "a".repeat(40), tree: "b".repeat(40), image, ...(keeper === undefined ? {} : { keeper: keeper as never }) }, by);
+    const offer = async (v: unknown) => ({ lei: [], unstrung: [], vouch: [v] });
+    const stranger = { key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(7)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(7)) };
+    for (const [why, raw, reading] of [
+      ["no offer", null, "vest-rite-absent"],
+      ["another key", await offer(await vouch({ to: "ee".repeat(32), next: D2, devices: 1 })), "vest-rite-unbound"],
+      ["another closure", await offer(await vouch({ to, next: D3, devices: 1 })), "vest-rite-unbound"],
+      ["no keeper move", await offer(await vouch(undefined)), "vest-rite-unbound"],
+      ["another image", await offer(await vouch({ to, next: D2, devices: 1 }, "sha256:" + "77".repeat(32))), "kukulu-image-mismatch"],
+      ["another signer", await offer(await vouch({ to, next: D2, devices: 1 }, IMAGE, stranger)), "kukulu-vouch-signer"],
+    ] as const) {
+      expect(await over(raw, { to, next: D2 }), why).toMatchObject({ ok: false, refusal: reading, detail: expect.stringContaining("lares rite kukulu") });
+    }
+    expect(begun).toEqual([]);
+    expect(await over(await offer(await vouch({ to, next: D2, devices: 1 })), { to, next: D2 })).toEqual({ ok: true, rite: ["ef".repeat(32)], devices: 1 });
+    expect(await over(await offer(await vouch({ to, next: D2, devices: 0 })), { to, next: D2 })).toMatchObject({ ok: true, devices: 0 });
   });
 });

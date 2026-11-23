@@ -68,7 +68,7 @@ export type PulamaAdmitBody =
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-begun"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-landed"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string; readonly begun: string }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-unadmitted"; readonly image: string; readonly ends: string }
-  | KeeperBegunBody | KeeperVestedBody | KeeperLandedBody | KeeperSlotBody;
+  | KeeperBegunBody | KeeperVestedBody | KeeperLapsedBody | KeeperLandedBody | KeeperSlotBody;
 
 /** THE KEEPER TALLY's records (`pulama-keeper`): the budget a keeper spent, carried down the chain. */
 export interface KeeperBudget { readonly spent: number }
@@ -87,6 +87,12 @@ export interface KeeperBegunBody {
 export interface KeeperVestedBody {
   readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-vested"; readonly tessera: string; readonly begun: string; readonly next: string;
   readonly to: string; readonly node: boolean; readonly faces: readonly string[]; readonly nonce: string;
+  /** The live kūkulu rite this vest rode: each lent face's rite tessera the vest's own begin claimed a lei return for. */
+  readonly rite: readonly string[];
+}
+/** THE COMMIT LAPSES after one rite attempt that refused: the mark rests where a vest's would, so the commit never vests later. */
+export interface KeeperLapsedBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-lapsed"; readonly tessera: string; readonly begun: string; readonly reason: string; readonly nonce: string;
 }
 /** The host half: the successor, lit by vest or by the hand, names what it stands on and what it received. */
 export interface KeeperLandedBody {
