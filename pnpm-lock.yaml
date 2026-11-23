@@ -447,7 +447,7 @@ packages:
     engines: {node: '>=22.13'}
 
   '@automerge/automerge@file:third-party/automerge/automerge-3.5.0-split-capacity.tgz':
-    resolution: {integrity: sha512-I6Yx6qB+DzkHpOnK+2z/HfkpibszWozxLbxT8jQ64qr5IdzZBHnPSYXGf3caT3lX0wsh4O/eCIDk0vY/D6VNng==, tarball: file:third-party/automerge/automerge-3.5.0-split-capacity.tgz}
+    resolution: {integrity: sha512-2ACu+WZfv3zrKeJDZqRi8tbbJbBUiSIMDxGRqGc+0SsVwcpytD5N/2CHS2vDajAzrR5YpSwQGCHZ889ct7qwAg==, tarball: file:third-party/automerge/automerge-3.5.0-split-capacity.tgz}
     version: 3.5.0
 
   '@blazediff/core@1.10.0':
