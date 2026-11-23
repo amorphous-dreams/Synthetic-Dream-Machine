@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/cli/reality-tunnel"
 
 ! Reality tunnel ~ one door per radius, one declared tunnel beneath them
 
-An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the tunnel they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, floor, TOML table, lifted line, git config key) stand in code (`packages/lares-cli/src/reality-tunnel/`).
+An operator's machine holds what the operator declares, through one door per RADIUS: `lares repo` for the checkout, `lares home` for every operator home the device carries, `lares vessel` for `LAR_ROOT` alone. The doors read, tend, verify and undo; the tunnel they converge on stands here as data, and the engine's kinds (link, owned file, JSON key, JSON list, floor, TOML table, lifted line, git config key) stand in code (`packages/lares-cli/src/reality-tunnel/`).
 
 ''The name.'' The boot seed seeds a reality tunnel (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/set-and-setting`>>): the frame a session reads within. This carrier declares the machine's half of that tunnel, the set every host wakes into, and the doors keep the setting true to it. ''Intent'' names the wiki daemon's intent plane, a different relation; the CLI never borrows the word.
 
@@ -44,7 +44,7 @@ An operator's machine holds what the operator declares, through one door per RAD
 
 !! The declared tunnel
 
-Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A `git-config` item keeps one key in the clone's shared git config through `git config --local`, so a tend from any worktree seats every worktree of the clone; `read` names the key unset, set to another value, or set, `tend` says `set` or `already set` beside the key and its value, and `undo` puts the prior value back. A commit carries no git config, so `lares repo read --staged` (the commit gate) and a tree outside any repository read these items absent. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. `hooks` names the house's hooks folder: every script a home item names stands under it, and the catalog refuses a carrier where one stands outside. The house owns that folder's name in each host's hook file. A `*-hooks-owned` item keeps one hook file (Claude's `settings.json`, Codex's `config.toml`, Copilot's `hooks/lares.json`) free of every command that names a script under the folder which no `[[home]]` item declares for that host and file: `read` answers drift and names each such script, `lares home read --brief` (the wake's homes line) names the item beside the act that cures it, and `tend` lifts each such command under any event, keeps each other hand's command, and says `lifted <scripts> from <path> (<id>)`. The set derives from the `[[home]]` items alone, so a second `tend` writes nothing, a home that carries no such command takes nothing, and a command that names no script under the folder never moves. A Codex block that carries such a script beside another command reads foreign.
+Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A `git-config` item keeps one key in the clone's shared git config through `git config --local`, so a tend from any worktree seats every worktree of the clone; `read` names the key unset, set to another value, or set, `tend` says `set` or `already set` beside the key and its value, and `undo` puts the prior value back. A commit carries no git config, so `lares repo read --staged` (the commit gate) and a tree outside any repository read these items absent. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. A `json-includes` item keeps one JSON list, in either radius: `key` names the list by a dotted path (`permissions.allow`), `values` names every member it keeps, a `tend` appends each missing value in the order named and leaves every member another hand put there in its place, so one item per list holds the whole set and a second `tend` writes nothing. A path that holds another shape (a value where an object belongs on the way, anything but a list at its end) reads foreign and moves no byte. `hooks` names the house's hooks folder: every script a home item names stands under it, and the catalog refuses a carrier where one stands outside. The house owns that folder's name in each host's hook file. A `*-hooks-owned` item keeps one hook file (Claude's `settings.json`, Codex's `config.toml`, Copilot's `hooks/lares.json`) free of every command that names a script under the folder which no `[[home]]` item declares for that host and file: `read` answers drift and names each such script, `lares home read --brief` (the wake's homes line) names the item beside the act that cures it, and `tend` lifts each such command under any event, keeps each other hand's command, and says `lifted <scripts> from <path> (<id>)`. The set derives from the `[[home]]` items alone, so a second `tend` writes nothing, a home that carries no such command takes nothing, and a command that names no script under the folder never moves. A Codex block that carries such a script beside another command reads foreign.
 
 ```toml reality-tunnel
 seed = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem"
@@ -106,7 +106,7 @@ host = "claude"
 kind = "json-includes"
 file = ".claude/settings.json"
 key = "claudeMdExcludes"
-value = "**/.claude/rules/lares-seed-seat.md"
+values = ["**/.claude/rules/lares-seed-seat.md"]
 what = "inside the clone a session seats its own tree's seed, never the operator rule's beside it"
 
 [[repo]]
@@ -160,6 +160,26 @@ file = ".claude/settings.json"
 key = "cleanupPeriodDays"
 floor = 99999
 what = "Claude keeps every session file: the conversation store seeds the operator's memory"
+
+[[home]]
+id = "claude.doors-allow"
+host = "claude"
+homes = "all"
+kind = "json-includes"
+file = ".claude/settings.json"
+key = "permissions.allow"
+values = ["Bash(lares:*)", "mcp__lares__*"]
+what = "every AI the operator brings enters through the house's doors, the CLI and the MCP seat, and the house's own gates decide what it may do there (the guest knocks; the house answers)"
+
+[[home]]
+id = "claude.host-acts-deny"
+host = "claude"
+homes = "all"
+kind = "json-includes"
+file = ".claude/settings.json"
+key = "permissions.deny"
+values = ["Bash(lares reset:*)", "Bash(lares found:*)"]
+what = "the two acts that clear or re-seed the hearth stay the operator's: `reset` empties a stopped hearth on a typed word, and `found` over a stopped hearth whose custody tree stands asks no route and re-seeds its bootstrap under `--force`; neither reads the hand behind the terminal. Every other host act rides the doors' allow and the house's own gates: a lei's returns, a route-proved custody act, a hand read"
 
 [[home]]
 id = "claude.wake-hook"
@@ -346,10 +366,12 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 * ''Native Windows on the path.'' The `bin.lares` item links a POSIX path and reads absent on native Windows; a `.cmd`/`.ps1` owned-file item and a native probe settle it.
 * ''Compaction beyond Claude.'' The load log reads a Claude compact (`load_reason = "compact"`); Codex and Copilot carry their instructions as context a compact may summarize. A hash probe after each host's compact.
 * ''VS Code agent mode and Copilot's cloud surfaces.'' Whether each reads CLAUDE.md's include, and whether code review cuts an instruction file short; a probe for the seed's final hash on each.
+* ''The doors beyond Claude.'' `claude.doors-allow` and `claude.host-acts-deny` keep Claude's permission lists; Codex's approval policy and sandbox rules and Copilot's tool allow and deny lists carry no item yet. A probe of each host's permission file names the keys an item would keep.
+* ''A door beside the deny list.'' The deny list holds the `lares` spelling alone: `tools/lares-container.sh <verb>` and `docker` reach the same acts unread, and `lares home undo` restores a settings file the list rests in. The shim's acting verbs (`up`, `down`, `vessel stop`, `vessel stand`, `build`, `rebuild`) read neither a hand nor a lei today; an AI's stop, stand, up or down spending a kūkulu lei return the way a rite does, and a hand needing none, closes what a permission list cannot.
 * ''Seats outside the clone for Codex and Copilot.'' Each loads a home file beside the project's with no exclude, so their homes stay seedless; the item opens again when a host offers an exclude or a per-directory scope.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bOsFq_GMqxlVqsZjNdW_ul9GstrB_MRrpWnLM9tH4ZI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qm8mfKwZZJ7YBzFtcIBzK9sTruCfDI_eY2ks3LgJwE0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
