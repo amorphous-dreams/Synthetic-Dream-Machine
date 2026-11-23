@@ -119,7 +119,7 @@ function ttyAsk(): ((prompt: string) => Promise<string>) | null {
 
 export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promise<string>) | null = ttyAsk()): Promise<number> {
   const [act, target] = args.positional;
-  if (!act || !ACTS.has(act)) return refuseUsage(args, "kahua", helpLines("kahua"));
+  if (!act || !ACTS.has(act)) return refuseUsage(args, "kahua", helpLines("kahua"), act ? `unknown sub-verb "${act}"` : "name a sub-verb");
   try {
     const face = faceOf(args);
     const need = (what: string): string => { if (!target) throw new Error(`${act}: name ${what}`); return target; };

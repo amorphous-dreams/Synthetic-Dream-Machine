@@ -46,4 +46,17 @@ describe("the bin shim names which piece went missing", () => {
     expect(r.err).toContain("@lararium/no-such-link-anywhere");
     expect(r.err).toContain("a workspace link broke: run `pnpm install` in this checkout");
   });
+
+  test("RED: a built entry that imports a missing dist file names a stale or partial build, never a relink", () => {
+    const r = stage((root) => {
+      mkdirSync(join(root, "dist", "src", "bin"), { recursive: true });
+      writeFileSync(join(root, "dist", "src", "bin", "lares.js"), `import "../no-such-module.js";\nexport function runCli() {}\n`);
+    });
+    expect(r.code).toBe(1);
+    expect(r.err).toContain("no-such-module.js");
+    expect(r.err).toContain("stale or partial");
+    expect(r.err).toContain("`pnpm -r build`");
+    expect(r.err).not.toContain("pnpm install");
+    expect(r.err).not.toContain("not built yet");
+  });
 });

@@ -88,6 +88,34 @@ export function deadDoor(line: string): string | null {
   return null;
 }
 
+/** The command module each handler comes from, read off the CLI table's own imports. */
+function moduleOfHandler(): Map<string, string> {
+  const src = readFileSync(join(REPO, "packages/lares-cli/src/bin/lares.ts"), "utf8");
+  const out = new Map<string, string>();
+  for (const m of src.matchAll(/import\s*\{([^}]*)\}\s*from\s*"\.\.\/commands\/([A-Za-z0-9_-]+)\.js"/g)) {
+    for (const name of m[1]!.split(",").map((n) => n.trim().split(" as ").at(-1)!.trim()).filter(Boolean)) out.set(name, m[2]!);
+  }
+  return out;
+}
+
+/** The words a module branches on at its first positional: compared to a variable bound from it, switched on, or matched. */
+export function branchWords(src: string): string[] {
+  const bound = [
+    ...[...src.matchAll(/\b(?:const|let)\s+([A-Za-z_]\w*)\s*=\s*args\.positional\[0\]/g)].map((m) => m[1]!),
+    ...[...src.matchAll(/\b(?:const|let)\s+\[\s*([A-Za-z_]\w*)[^\]]*\]\s*=\s*args\.positional\b/g)].map((m) => m[1]!),
+  ];
+  const subjects = ["args\\.positional\\[0\\]", ...bound];
+  const words = new Set<string>();
+  for (const s of subjects) {
+    // A `typeof x === "string"` reads the value's type, never a word the door answers.
+    for (const m of src.matchAll(new RegExp(`(?<!typeof\\s+)\\b${s}\\s*[=!]==?\\s*"([a-z][a-z0-9-]*)"`, "g"))) words.add(m[1]!);
+    for (const sw of src.matchAll(new RegExp(`switch\\s*\\(\\s*${s}\\s*\\)\\s*\\{([\\s\\S]*?)\\n\\s*\\}`, "g"))) {
+      for (const c of sw[1]!.matchAll(/case\s+"([a-z][a-z0-9-]*)"\s*:/g)) words.add(c[1]!);
+    }
+  }
+  return [...words].sort();
+}
+
 const named = [
   ...ROOTS.flatMap(({ dir, ext }) => sources(join(REPO, dir), ext))
     .flatMap((file) => namedCommands(readFileSync(file, "utf8")).map((line) => ({ file: relative(REPO, file), line }))),
@@ -111,6 +139,29 @@ describe("L2 · every `lares …` command a message names is a door the CLI answ
   test("★ every named command answers ★", () => {
     const dead = named.map((n) => ({ ...n, why: deadDoor(n.line) })).filter((n) => n.why !== null);
     expect(dead).toEqual([]);
+  });
+
+  test("★ the tables exist: every row declares its verbs, and a door declared to take arguments branches on no sub-verb ★", () => {
+    // The row's `verbs` is required (a table, or `null` for an argument door), so the typecheck already refuses a row that
+    // says neither. The other side reads the source: an argument door whose module compares its first positional to a
+    // word, or switches on it, answers a sub-verb its row hides from every law.
+    const imports = moduleOfHandler();
+    const hidden = COMMANDS.filter((c) => c.verbs === null).flatMap((c) => {
+      const mod = imports.get(c.handler.name);
+      expect(mod, `${c.name}: the handler's module resolves`).toBeDefined();
+      const words = branchWords(readFileSync(join(REPO, "packages/lares-cli/src/commands", `${mod}.ts`), "utf8"));
+      return words.length > 0 ? [{ door: c.name, words }] : [];
+    });
+    expect(hidden).toEqual([]);
+    expect(COMMANDS.filter((c) => c.verbs === null).length, "argument doors stand, so the scan reads something").toBeGreaterThan(3);
+  });
+
+  test("CONTROL: the branch scan reads a first-positional word compared, switched or destructured", () => {
+    expect(branchWords(`const sub = args.positional[0];\nif (sub === "roll") return 1;`)).toEqual(["roll"]);
+    expect(branchWords(`switch (args.positional[0]) {\n  case "join": return 1;\n}`)).toEqual(["join"]);
+    expect(branchWords(`const [act, file] = args.positional;\nif (act !== "land") return 2;`)).toEqual(["land"]);
+    expect(branchWords(`const dest = args.positional[0];\nif (!dest) return 2;`)).toEqual([]);
+    expect(branchWords(`const raw = args.positional[0];\nif (typeof raw === "string") return 2;`)).toEqual([]);
   });
 
   test("CONTROL: a retired verb, an unknown door and an undeclared sub-verb each read as dead", () => {

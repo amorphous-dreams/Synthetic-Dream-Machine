@@ -16,14 +16,19 @@ try {
   }
 } catch (err) {
   if (err?.code === "ERR_MODULE_NOT_FOUND") {
-    // TWO BREAKS THROW ONE CODE. A missing dist entry means the tree never built; an entry that stands but imports a
-    // package the workspace no longer links means `pnpm install` owes this checkout a relink, and a rebuild never cures it.
+    // THREE BREAKS THROW ONE CODE. A missing dist entry means the tree never built. An entry that stands but imports a
+    // PACKAGE the workspace no longer links (a bare specifier: Node says "Cannot find package") means `pnpm install` owes
+    // this checkout a relink, and a rebuild never cures it. An entry that imports a missing FILE (a relative dist path)
+    // means a stale or partial build, and a rebuild cures it.
     const { existsSync } = await import("node:fs");
     if (!existsSync(new URL("../dist/src/bin/lares.js", import.meta.url))) {
       console.error("lares: not built yet — run `pnpm -r build` first.");
-    } else {
+    } else if (/Cannot find package /.test(String(err.message))) {
       console.error(`lares: ${err.message}`);
       console.error("lares: a workspace link broke: run `pnpm install` in this checkout.");
+    } else {
+      console.error(`lares: ${err.message}`);
+      console.error("lares: the build stands stale or partial (a dist file is missing): run `pnpm -r build` in this checkout.");
     }
     process.exit(1);
   }

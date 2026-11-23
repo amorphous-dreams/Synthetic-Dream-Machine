@@ -36,8 +36,8 @@ import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
 import { tableCovers } from "../verb-table.js";
 
-function usage(args: ParsedArgs): number {
-  return refuseUsage(args, "fleet", helpLines("fleet"));
+function usage(args: ParsedArgs, group: string | undefined): number {
+  return refuseUsage(args, "fleet", helpLines("fleet"), group === undefined ? "name a group: join" : `unknown group "${group}"`);
 }
 
 function readJson(path: string | undefined, what: string): unknown {
@@ -79,8 +79,8 @@ export const FLEET_VERBS = { join: ["offer", "request", "answer", "land", "aband
 export async function cmdFleet(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
   const [group, act, file] = args.positional;
-  if (group !== "join") return usage(args);
-  if (act === undefined) return refuseUsage(args, "fleet join", helpLines("fleet join"));
+  if (group !== "join") return usage(args, group);
+  if (act === undefined) return refuseUsage(args, "fleet join", helpLines("fleet join"), "name an act");
   try {
     const v = act as (typeof FLEET_VERBS.join)[number];
     switch (v) {

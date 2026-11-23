@@ -50,7 +50,7 @@ describe("the table projects onto surfaces it declares", () => {
 
 test("the projection carries each row's own verb table, so a witness outside the CLI reads the doors from here", () => {
   const byName = new Map(projectCommands("cli").map((e) => [e.name, e.verbs]));
-  for (const c of COMMANDS) if (byName.has(c.name)) expect(byName.get(c.name), c.name).toBe(c.verbs ?? null);
+  for (const c of COMMANDS) if (byName.has(c.name)) expect(byName.get(c.name), c.name).toBe(c.verbs);
   expect(byName.get("vessel")).toEqual(expect.arrayContaining(["request", "lay"]));
 });
 

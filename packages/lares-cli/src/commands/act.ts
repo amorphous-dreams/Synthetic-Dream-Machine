@@ -98,25 +98,35 @@ function addressTitleForLoad(source: string, file: string, toBag: string): strin
   return rel ? `${base}/${rel}` : base;
 }
 
+/** Every ACTION verb the act door answers (INGEST names its own door, `lares ingest`), and REPACK. */
+export const ACT_VERBS: readonly string[] = [...ACTION_VERBS.filter((v) => v !== "INGEST"), "REPACK"];
+
+/** The act door's own account: `lares act --help` prints it, and a refusal ends with it. */
+export function actHelpLines(): string[] {
+  return [
+    "usage: lares act <VERB> [flags...]",
+    "",
+    `  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`,
+    "",
+    "  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]",
+    "  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)",
+    "  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]",
+    "                     carries the delete down into a bag that holds the title; with no --to the",
+    "                     holders print as candidates; --shadow hides the title from a bag that holds none",
+    "  CLEAR / DROP       --bag <bag> [--change-id <id>]",
+    "  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]",
+    "  LOAD               --source-uri <u> --to <bag> [--change-id <id>]",
+    "  REPACK             --source <bundle-file> --from <bag> [--out <file>]",
+    "  --draft <uri>      pull a tiddler from a lower bag into a writable draft [--to <bag>] (no tombstone)",
+    "",
+    "  --yes              skip confirmation prompt",
+    "  --dry-run          preview the effect without committing it",
+    "  --in-wiki          run any act in the active wiki",
+  ];
+}
+
 function printUsage(): void {
-  console.error("usage: lares act <VERB> [flags...]");
-  console.error("");
-  console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
-  console.error("");
-  console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
-  console.error("  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)");
-  console.error("  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]");
-  console.error("                     carries the delete down into a bag that holds the title; with no --to the");
-  console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
-  console.error("  CLEAR / DROP       --bag <bag> [--change-id <id>]");
-  console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
-  console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
-  console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>]");
-  console.error("  --draft <uri>      pull a tiddler from a lower bag into a writable draft [--to <bag>] (no tombstone)");
-  console.error("");
-  console.error("  --yes              skip confirmation prompt");
-  console.error("  --dry-run          preview the effect without committing it");
-  console.error("  --in-wiki          run any act in the active wiki");
+  for (const line of actHelpLines()) console.error(line);
 }
 
 /**
@@ -259,7 +269,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   if (verbRaw === "REPACK") return await actRepack(args);
   if (!isActionVerb(verbRaw)) {
     console.error(`lares act: "${verbRaw}" is not an ACTION verb`);
-    console.error(`  ACTION verbs: ${ACTION_VERBS.join(", ")}, REPACK`);
+    printUsage();
     return 2;
   }
   if (verbRaw === "INGEST") {

@@ -10,7 +10,7 @@ export const KAPAE_VERBS = ["raise", "lower", "flag"] as const;
 export async function promotionDoor(args: ParsedArgs, command: "trust" | "kapae"): Promise<number> {
   const [act, digest] = args.positional;
   const acts: readonly string[] = command === "trust" ? TRUST_VERBS : KAPAE_VERBS;
-  if (!act || !acts.includes(act)) return refuseUsage(args, command, helpLines(command));
+  if (!act || !acts.includes(act)) return refuseUsage(args, command, helpLines(command), act ? `unknown sub-verb "${act}"` : "name a sub-verb");
   try {
     const payload: Record<string, unknown> = {};
     if (act !== "list") {

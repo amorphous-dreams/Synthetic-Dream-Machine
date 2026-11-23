@@ -41,7 +41,7 @@ export const flagReadingCommands = (): readonly Command[] => COMMANDS.filter((c)
  * `meme offer`), and the verbs it answers. A door with no table takes arguments, never sub-verbs.
  */
 export const verbTables = (): ReadonlyArray<{ door: string; verbs: readonly string[] }> =>
-  COMMANDS.flatMap((c) => (c.verbs === undefined ? [] : flattenVerbs(c.name, c.verbs)));
+  COMMANDS.flatMap((c) => (c.verbs === null ? [] : flattenVerbs(c.name, c.verbs)));
 
 /** Every help registry key: a door, or a `"<door> <sub>"` sub-door. */
 export const helpKeys = (): readonly string[] => Object.keys(COMMAND_HELP);

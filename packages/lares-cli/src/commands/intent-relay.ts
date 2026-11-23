@@ -9,7 +9,7 @@ export const INTENT_RELAY_VERBS = ["enable", "disable", "status", "rotate"] as c
 
 export async function cmdIntentRelay(args: ParsedArgs): Promise<number> {
   const action = args.positional[0] as (typeof INTENT_RELAY_VERBS)[number] | undefined;
-  if (action === undefined || !(INTENT_RELAY_VERBS as readonly string[]).includes(action)) return refuseUsage(args, "intent-relay", helpLines("intent-relay"));
+  if (action === undefined || !(INTENT_RELAY_VERBS as readonly string[]).includes(action)) return refuseUsage(args, "intent-relay", helpLines("intent-relay"), action === undefined ? "name a sub-verb" : `unknown sub-verb "${action}"`);
   try {
     const raw = args.options["face"];
     if (args.flags["face"] !== undefined || (raw !== undefined && (!/^(?:0|[1-9][0-9]*)$/.test(raw) || !Number.isSafeInteger(Number(raw))))) throw new Error("face-malformed: --face needs a whole persona index");

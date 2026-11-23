@@ -17,7 +17,7 @@ function faceOf(args: ParsedArgs): { face?: number } {
 
 export async function cmdIntent(args: ParsedArgs): Promise<number> {
   const [act, target] = args.positional;
-  if (!act || !acts.has(act)) return refuseUsage(args, "intent", helpLines("intent"));
+  if (!act || !acts.has(act)) return refuseUsage(args, "intent", helpLines("intent"), act ? `unknown sub-verb "${act}"` : "name a sub-verb");
   try {
     const face = faceOf(args);
     const root = act === "cancel" || act === "supersede" || act === "release-root" || act === "delegate" || act === "delegate-revoke";
