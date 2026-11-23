@@ -1,0 +1,56 @@
+From 9590cde8db3cf6ac32f5a4ffa496a8415a1c218e Mon Sep 17 00:00:00 2001
+From: local <local@localhost>
+Date: Mon, 23 Nov 2026 04:37:04 -0800
+Subject: [PATCH] hexane: release the pre-split capacity when splitting an
+ oversize raw slab
+
+A loaded value column is one oversize slab. splice_slab split it with
+split_off + truncate, and truncate keeps the allocation, so every
+splice left a short slab owning a column-sized buffer. Loaded documents
+grew by roughly the value-column size per edit.
+---
+ rust/hexane/src/raw.rs | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/rust/hexane/src/raw.rs b/rust/hexane/src/raw.rs
+index 46ed3b881..c8701749e 100644
+--- a/rust/hexane/src/raw.rs
++++ b/rust/hexane/src/raw.rs
+@@ -550,6 +550,12 @@ fn splice_slab(
+         suffix
+     };
+ 
++    // `truncate` keeps the allocation: without this the left half would
++    // hold the whole pre-split capacity.  A loaded column starts as one
++    // oversize slab, so every splice into it would otherwise leave behind
++    // a short slab still owning a document-sized buffer.
++    slab.data.shrink_to_fit();
++
+     (vec![RawSlab { data: right_data }], overflow_del)
+ }
+ 
+@@ -686,6 +692,21 @@ mod tests {
+         assert_eq!(col.save(), Vec::<u8>::new());
+     }
+ 
++    #[test]
++    fn split_of_loaded_slab_releases_capacity() {
++        // A loaded column is one oversize slab; repeated splices near its
++        // front must not leave short slabs holding the full buffer.
++        let data = vec![7u8; 1 << 20];
++        let mut col = RawColumn::load(&data).unwrap();
++        for i in 0..64 {
++            // splice points sit further apart than a slab budget, so the
++            // short left halves stay unmerged (as values of a few KiB do).
++            col.splice(i * 5_000, 0, [&[1u8, 2, 3][..]]);
++        }
++        let cap: usize = col.slabs.iter().map(|s| s.data.capacity()).sum();
++        assert!(cap < 4 * col.len(), "capacity {cap} vs len {}", col.len());
++    }
++
+     #[test]
+     fn single_slab_append() {
+         let mut col = RawColumn::with_max_segments(32);
+-- 
+2.43.0
+
