@@ -57,13 +57,14 @@ export type SealedDocumentRefusalName = (typeof SEALED_DOCUMENT_REFUSALS)[number
 /**
  * THE REFUSALS THAT CARRY INTEGRITY EVIDENCE: the bytes at rest, or the value a pointer names, fail the keyed load itself (a
  * pointer this store never wrote, a clear chunk in a held home, an envelope too short, bytes that hash to another address,
- * an unknown format, a commitment or a segment tag that fails, a sequence cut on a whole segment, a value the holder does
- * not hold). Every other refusal names liveness (no session yet, the door unanswered, the rest standing down) or a face
- * that may not read here: neither says the document is torn.
+ * an unknown format, a segment tag that fails, a sequence cut on a whole segment, a value the holder does not hold). Every
+ * other refusal names liveness (no session yet, the door unanswered, the holder locked, the rest standing down), a face
+ * that may not read here, or custody: `context-mismatch` (the commitment fails) reads the same for another bag, role or
+ * reference, or another key, as for altered bytes, so it never moves bytes on its own word.
  */
 export const SEALED_INTEGRITY_REFUSALS: ReadonlySet<string> = new Set([
   "pointer-malformed", "held-clear-at-rest",
-  "envelope-malformed", "address-mismatch", "format-unknown", "context-mismatch", "sequence-broken", "truncated",
+  "envelope-malformed", "address-mismatch", "format-unknown", "sequence-broken", "truncated",
   "value-absent",
 ]);
 /** Does this refusal name integrity evidence against the document (`SEALED_INTEGRITY_REFUSALS`)? */
@@ -160,8 +161,9 @@ export interface SealedDocumentPorts {
   /**
    * THE VESSEL'S OWN HELD KEY, where it stands open (the-veil-ladder#/the-base-model, the Lift): a face's bag whose rest still
    * holds a value sealed under this key (a document the veil floor minted, lifted into the face with the same document id)
-   * opens that value with it, and `refileHeld` seals it again under the face. Absent or null: such a value refuses
-   * `pointer-malformed`, as any byte run this store never wrote.
+   * opens that value with it, and `refileHeld` seals it again under the face. Null (the custody locked): such a value
+   * refuses `holder-locked`, which a hydrating load waits out. A key that does not open it refuses by the open's own name.
+   * Absent: such a value refuses `pointer-malformed`, as any byte run this store never wrote.
    */
   vesselKey?(): HeldRestKey | null;
   /** Told once per save the store holds back unsealed, naming its document; a `save-unsealed` names the holder's own
@@ -624,11 +626,14 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (readPointer(rested) === null) {
       if (readsClear(rested)) return rested;
       // A value the veil floor sealed under the vessel's own key, in a document a face lifted with the same id: it opens with
-      // that key while it stands in reach, and `refileHeld` moves its seal to the face.
-      const held = readsSealed(rested) ? this.#ports.vesselKey?.() ?? null : null;
-      if (held !== null) {
+      // that key while it stands in reach, and `refileHeld` moves its seal to the face. While the custody stays locked the
+      // read waits on the holder (`holder-locked`, a hydration wait); a key that does not open it refuses by its own name.
+      if (readsSealed(rested) && this.#ports.vesselKey !== undefined) {
+        const held = this.#ports.vesselKey();
+        if (held === null) throw new SealedDocumentRefusal("holder-locked", "a value sealed under the vessel's own key rests here, and that key is not in reach");
         const lifted = openHeld({ bagId: bag.bagId, held, role, ref: logicalRefOf(key), sealed: rested });
         if ("plaintext" in lifted) return lifted.plaintext;
+        throw new SealedDocumentRefusal(lifted.refusal);
       }
       throw new SealedDocumentRefusal("pointer-malformed");
     }
