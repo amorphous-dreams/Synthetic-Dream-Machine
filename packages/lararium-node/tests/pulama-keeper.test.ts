@@ -23,6 +23,7 @@ import { handVerbExit, runHandVerb } from "../src/pulama-verbs.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { createHash } from "node:crypto";
 const sha = (s: string): string => createHash("sha256").update(s).digest("hex");
+import { cosignedCommit, selfCosigned } from "../../lararium-mesh/tests/keeper-cosign-fixture.js";
 import { SESSION_DERIVES, fixtureRoute, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -159,7 +160,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     const h = await house("keeper-vest-cosign");
     await h.commit(D2, 2);
     expect(await h.old({ op: "status" })).not.toHaveProperty("vestReady");
-    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringContaining("lares rite kukulu") });
+    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringMatching(/lares pulama keeper-commit[\s\S]*lares rite kukulu/) });
     await h.commit(D2, null);
     expect((await handoff(h, h.old)).vest).toMatchObject({ reading: "vest-devices-unread", detail: expect.stringContaining("lares rite kukulu") });
     await h.commit(D2, 1);
@@ -170,6 +171,54 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     h.live.devices = 1;
     await h.commit(D2, 1);
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
+  });
+
+  test("RED the carried co-sign: a two-device commit carrying a second device's spent `ward-keeper-vest` vests and lands par; CONTROL: a one-device face vests with none", async () => {
+    const h = await house("keeper-vest-cosigned");
+    const nonce = "a1".repeat(32);
+    const cosign = await cosignedCommit({ next: D2, prev: null, nonce });
+    expect(await h.old({ op: "keeper-commit", next: D2, devices: 2, cosign: { nonce, faces: [cosign] }, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: 1 });
+    // A co-signed commit reads vest-ready, and the rite's vessel-signed vouch counts the same two devices the co-sign's roster binds.
+    expect(await h.old({ op: "status" })).toMatchObject({ vestReady: D2 });
+    h.live.devices = 2;
+    const done = await handoff(h, h.old);
+    expect(done.vest).toMatchObject({ reading: "vested" });
+    expect(done.landed).toMatchObject({ reading: "landed" });
+    // A rite's vouch that counts a device the co-signed roster lacks (one admitted after the co-sign) refuses and spends the commit.
+    const moved = await house("keeper-vest-cosign-roster-moved");
+    const n2 = "a2".repeat(32);
+    await moved.old({ op: "keeper-commit", next: D2, devices: 2, cosign: { nonce: n2, faces: [await cosignedCommit({ next: D2, prev: null, nonce: n2 })] }, credentials: fixtureRoute });
+    moved.live.devices = 3;
+    expect((await handoff(moved, moved.old)).vest).toMatchObject({ reading: "vest-cosign-refused", detail: expect.stringContaining("lares pulama keeper-commit") });
+    expect((await handoff(moved, moved.old)).vest).toMatchObject({ reading: "commit-absent" });
+    const one = await house("keeper-vest-one-device");
+    await one.commit(D2, 1);
+    expect((await handoff(one, one.old)).landed).toMatchObject({ reading: "landed" });
+  });
+
+  test("RED a co-sign that does not answer THIS commit from ANOTHER device refuses and rests nothing: the same device, another digest, a short face, a replay", async () => {
+    const h = await house("keeper-vest-cosign-reds");
+    const nonce = "b2".repeat(32);
+    const commit = (cosign: unknown, devices = 2) => h.old({ op: "keeper-commit", next: D2, devices, cosign, credentials: fixtureRoute });
+    // The vessel answered its own ask: the keeper reads the approve's signer as the issuer.
+    const self = await selfCosigned({ next: D2, prev: null, nonce });
+    expect(await commit({ nonce, faces: [self] })).toMatchObject({ reading: "vest-cosign-refused", detail: expect.stringMatching(/same-device[\s\S]*lares pulama keeper-commit/) });
+    // A co-sign over another commit: another successor closure, and another nonce than the one it rides with.
+    const other = await cosignedCommit({ next: D3, prev: null, nonce });
+    expect(await commit({ nonce, faces: [other] })).toMatchObject({ reading: "vest-cosign-refused", detail: expect.stringContaining("digest-mismatch") });
+    const good = await cosignedCommit({ next: D2, prev: null, nonce });
+    expect(await commit({ nonce: "c3".repeat(32), faces: [good] })).toMatchObject({ reading: "vest-cosign-refused", detail: expect.stringContaining("digest-mismatch") });
+    // The committed face carries no co-sign of its own, or the count disagrees with the rosters.
+    expect(await commit({ nonce, faces: [{ ...good, ordinal: 1 }] })).toMatchObject({ reading: "vest-cosign-refused" });
+    expect(await commit({ nonce, faces: [good] }, 3)).toMatchObject({ reading: "vest-cosign-refused" });
+    expect(await h.records.list(pulamaKeeperPrefix())).toEqual([]);
+    // A SPENT CO-SIGN NEVER RE-SPENDS: it rode one commit; a second commit under it refuses, and so does a second vest.
+    expect(await commit({ nonce, faces: [good] })).toMatchObject({ reading: "committed" });
+    expect(await commit({ nonce, faces: [good] })).toMatchObject({ reading: "vest-cosign-spent", detail: expect.stringContaining("lares pulama keeper-commit") });
+    h.live.devices = 2;
+    expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
+    // The spent commit never vests twice: the old keeper passed its fire, and no live commit stands.
+    expect((await handoff(h, h.old)).vest).toMatchObject({ reading: expect.stringMatching(/^(commit-absent|vest-spent|pulama-locked|fire-passing)$/) });
   });
 
   test("CONTROL: a replayed vest refuses `vest-spent`; a replayed slot refuses at the successor; a slot to another key refuses; a replayed land refuses", async () => {

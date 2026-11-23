@@ -1600,11 +1600,45 @@ switch ($verb) {
         $devArgs = @()
         if ($unread -or $most -lt 1) { [Console]::Error.WriteLine('lares-container: keeper-commit: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended') }
         else {
-          $past = if ($most -gt 1) { '; past one the vest refuses until a co-sign path stands (vest-cosign-owed)' } else { '' }
-          [Console]::Error.WriteLine("lares-container: keeper-commit: the lit faces hold at most $most device(s)$past")
+          [Console]::Error.WriteLine("lares-container: keeper-commit: the lit faces hold at most $most device(s)")
           $devArgs = @('--devices', "$most")
         }
-        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'keeper-commit', $d) + $devArgs)
+        # THE CARRIED CO-SIGN (keeper-tessera#/vesting), as the sh twin carries it: past one device each lit face asks
+        # `ward-keeper-vest` over (D′, the chain head, the commit's nonce), and the commit carries the spends. The nonce rests in the
+        # house cache while the ask waits, so the re-run after the approve asks over the same commit.
+        $cosignArgs = @(); $held = $null
+        if ($devArgs.Count -gt 0 -and $most -gt 1) {
+          $status = (($null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status 2>$null) -join '') -replace '\s', ''
+          if ($status -notmatch '"keeper":\{') { Die 'pulama keeper-commit: the lit keeper answered no chain head, so no co-sign can name the commit; read `lares pulama status`, then `lares pulama keeper-commit` again (nothing committed)' }
+          $tip = [regex]::Match($status, '"keeper":\{[^}]*"tip":"([0-9a-f]{64})"')
+          $prev = if ($tip.Success) { $tip.Groups[1].Value } else { 'none' }
+          New-Item -ItemType Directory -Force -Path (Join-Path $House 'cache') | Out-Null
+          $held = Join-Path $House "cache/keeper-cosign-$($d.Substring(7))-$prev"
+          if (-not (Test-Path $held) -or -not (Get-Content -Raw $held)) {
+            $bytes = [byte[]]::new(32); [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+            Set-Content -NoNewline -Path $held -Value (($bytes | ForEach-Object { $_.ToString('x2') }) -join '')
+          }
+          $nonce = (Get-Content -Raw $held).Trim()
+          $faces = @()
+          foreach ($face in ($lit -split ',' | Where-Object { $_ })) {
+            $errFile = Join-Path $House 'cache/keeper-cosign.err'
+            $one = $null | & docker compose @Base exec -T lares node $Cli intent keeper-cosign $d --prev $prev --nonce $nonce --face $face 2>$errFile
+            $text = ($one -join '')
+            if ($LASTEXITCODE -ne 0) {
+              $why = if (Test-Path $errFile) { ((Get-Content -Raw $errFile) -replace '\s+', ' ').Trim() } else { '' }
+              Remove-Item -Force -ErrorAction SilentlyContinue $errFile
+              $text = $why
+              if ($text -match 'ward-awaiting-cosign: ([0-9a-f]{64})') { Die "pulama keeper-commit: face h$face asks a second device to co-sign the vest ($($Matches[1])); approve it on another device of the face (its ward dialog, or ``lares intent answer <ask> --face $face --executor <this vessel's atom>`` on a node), then run ``lares pulama keeper-commit`` again (nothing committed)" }
+              Die "pulama keeper-commit: the co-sign of face h$face refused ($text); nothing committed: read it with ``lares intent show --face $face``, or light the successor by hand: ``lares rite kukulu``"
+            }
+            $faces += $text.Trim()
+          }
+          Remove-Item -Force -ErrorAction SilentlyContinue (Join-Path $House 'cache/keeper-cosign.err')
+          $cosignArgs = @('--cosign', "{""nonce"":""$nonce"",""faces"":[$($faces -join ',')]}")
+          [Console]::Error.WriteLine('lares-container: keeper-commit: a second device of each face co-signed the vest; the commit carries the spends')
+        }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'keeper-commit', $d) + $devArgs + $cosignArgs)
+        if ($LASTEXITCODE -eq 0 -and $held) { Remove-Item -Force $held }
       }
       'lock' {
         # THE OPERATOR'S LOCK REACHES EVERY KEEPER THAT STANDS: the one holding the fire, and a successor lit beside it.

@@ -105,7 +105,7 @@ import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaeParti
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
-import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
+import { runIntentCommand, runKeeperCosign, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { runIntentRelayCommand } from "./commands/intent-relay.js";
 import { runKahuaCommand, KahuaRefused, type KahuaAction } from "./commands/kahua.js";
 import { FaceNotNamed, faceVerbArgs } from "./face-selector.js";
@@ -489,7 +489,11 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
-    "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),
+    // THE KEEPER VEST'S CO-SIGN rides the ask door: it issues (or reads back) one ward ask over a keeper commit.
+    "intent-ask": (args) => answer("intent-ask", () => args["action"] === "keeper-cosign"
+      ? runKeeperCosign({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), next: String(args["next"] ?? ""),
+        prev: args["prev"] === "none" ? null : String(args["prev"] ?? ""), nonce: String(args["nonce"] ?? "") })
+      : intent("ask", args)),
     "intent-answer": (args) => answer("intent-answer", () => intent("answer", args)),
     "intent-steer": (args) => answer("intent-steer", () => {
       const action = args["action"];

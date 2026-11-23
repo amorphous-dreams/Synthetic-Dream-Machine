@@ -1584,11 +1584,41 @@ case "$verb" in
           printf '%s\n' 'lares-container: keeper-commit: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended' >&2
           kc_dev=""
         else
-          printf 'lares-container: keeper-commit: the lit faces hold at most %s device(s)%s\n' "$kc_most" "$([ "$kc_most" -gt 1 ] && printf '; past one the vest refuses until a co-sign path stands (vest-cosign-owed)')" >&2
+          printf 'lares-container: keeper-commit: the lit faces hold at most %s device(s)\n' "$kc_most" >&2
           kc_dev="--devices $kc_most"
         fi
+        # THE CARRIED CO-SIGN (keeper-tessera#/vesting): past one device the vessel asks `ward-keeper-vest` over (D′, the chain head,
+        # the commit's nonce) on each lit face, a second device approves it in its own ward dialog, and the commit carries the spends.
+        # The nonce rests in the house cache while the ask waits, so the re-run after the approve asks over the same commit.
+        kc_cosign=""
+        if [ -n "$kc_dev" ] && [ "$kc_most" -gt 1 ]; then
+          kc_status=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n')
+          kc_prev=$(printf '%s' "$kc_status" | sed -n 's/.*"keeper":{[^}]*"tip":"\([0-9a-f]\{64\}\)".*/\1/p'); [ -n "$kc_prev" ] || kc_prev=none
+          printf '%s' "$kc_status" | grep -q '"keeper":{' || die "pulama keeper-commit: the lit keeper answered no chain head, so no co-sign can name the commit; read \`lares pulama status\`, then \`lares pulama keeper-commit\` again (nothing committed)"
+          kc_held="$HOUSE/cache/keeper-cosign-${kc_d#sha256:}-$kc_prev"
+          [ -s "$kc_held" ] || { mkdir -p "$HOUSE/cache" && od -An -tx1 -N32 /dev/urandom | tr -d ' \n' > "$kc_held"; } || die "pulama keeper-commit: the house cache took no nonce; nothing committed"
+          kc_nonce=$(cat "$kc_held")
+          kc_faces=""
+          for kc_face in $kc_lit; do
+            kc_one=$(compose exec -T lares node "$CLI" intent keeper-cosign "$kc_d" --prev "$kc_prev" --nonce "$kc_nonce" --face "$kc_face" </dev/null 2>"$HOUSE/cache/keeper-cosign.err") || {
+              kc_why=$(tr '\n' ' ' < "$HOUSE/cache/keeper-cosign.err"); rm -f "$HOUSE/cache/keeper-cosign.err"
+              case "$kc_why" in
+                *ward-awaiting-cosign*) die "pulama keeper-commit: face h$kc_face asks a second device to co-sign the vest (${kc_why##*ward-awaiting-cosign: }); approve it on another device of the face (its ward dialog, or \`lares intent answer <ask> --face $kc_face --executor <this vessel's atom>\` on a node), then run \`lares pulama keeper-commit\` again (nothing committed)" ;;
+                *) die "pulama keeper-commit: the co-sign of face h$kc_face refused ($kc_why); nothing committed: read it with \`lares intent show --face $kc_face\`, or light the successor by hand: \`lares rite kukulu\`" ;;
+              esac
+            }
+            kc_faces="${kc_faces:+$kc_faces,}$kc_one"
+          done
+          rm -f "$HOUSE/cache/keeper-cosign.err"
+          kc_cosign="{\"nonce\":\"$kc_nonce\",\"faces\":[$kc_faces]}"
+          printf '%s\n' 'lares-container: keeper-commit: a second device of each face co-signed the vest; the commit carries the spends' >&2
+        fi
         # shellcheck disable=SC2046,SC2086
-        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev ;;
+        if [ -n "$kc_cosign" ]; then
+          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev --cosign "$kc_cosign" && rm -f "$kc_held"
+        else
+          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev
+        fi ;;
       lock)
         # THE OPERATOR'S LOCK REACHES EVERY KEEPER THAT STANDS: the one holding the fire, and a successor lit beside it.
         [ "$#" -eq 1 ] || die "pulama lock takes no arguments"

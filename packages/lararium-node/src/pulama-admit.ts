@@ -36,6 +36,7 @@
  * No route and no key rests in any row: each holds digests, faces' custody ids and a signature.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
+import type { KeeperCosign } from "@lararium/mesh";
 import { randomUUID } from "node:crypto";
 import { PULAMA_TESSERA_DOMAIN, canonicalJsonBytes, sha256HexBytesSync, verifyEd25519, type SwarmWikiPort } from "@lararium/mesh";
 import { lentFacesOf, lentFacesWire, type LentFacesRefusal } from "@lararium/mesh/lent-faces";
@@ -82,6 +83,9 @@ export interface KeeperBegunBody {
   /** The most devices any committed face holds, as the vessel read its signed admission fold at commit time; null where it read
    *  none. The vest fails closed on either side of one: a face of two devices owes a co-sign path that does not stand yet. */
   readonly devices: number | null;
+  /** THE CARRIED CO-SIGN (one per committed face, `KeeperCosign`): the face's roster as the vessel read it and, past one device, the
+   *  spent `ward-keeper-vest` co-sign over (`next`, `prev`, `nonce`). Null where the commit carries none (a one-device house). */
+  readonly cosigns?: readonly KeeperCosign[] | null;
 }
 /** The vest's spend mark: the lit keeper sealed the house's end of the bond to ONE successor key, once per commit. No key rests in it. */
 export interface KeeperVestedBody {

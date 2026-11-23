@@ -50,20 +50,43 @@
  *
  * THE CO-SIGN FAILS CLOSED (operator ruling, 2026-11-23). Each vouch the vest rides names its face's device count as the standing
  * vessel read the face's signed admission fold, and the commit carries the count the vessel read at commit time (so `status` and the
- * rite read it early). Past one device a vest owes a co-sign that no path carries yet, so it refuses `vest-cosign-owed`; a count read
- * nowhere refuses `vest-devices-unread`. Both name the struck fire as the cure. Each per-face budget carries with the vest too.
+ * rite read it early). A count read nowhere refuses `vest-devices-unread`. Each per-face budget carries with the vest too.
+ * PAST ONE DEVICE THE COMMIT CARRIES THE CO-SIGN: the vessel runs `ward-keeper-vest` through the ward co-sign gate over (D′, the chain
+ * head, the commit's nonce, the face's roster) BEFORE the commit, a second device of the face approves it in its own ward, and the
+ * commit carries the spent co-sign (`cosigns`, one per committed face: its roster, the issuer's ask, the approve, the outcome). The
+ * keeper opens no document, so it reads that proof offline (`keeperCosignRefusal`) at the commit and again at the vest: each entry
+ * verifies under its signer, the approve comes from ANOTHER device of the face under its ward signature, and the digest names this
+ * commit and this roster (so the count stands under two devices' signatures). The rite's vouch must count no device the co-signed
+ * roster lacks. A commit with none refuses `vest-cosign-owed`; a proof that does not answer it refuses `vest-cosign-refused`. The
+ * nonce rides the tessera, so one proof rides one commit: a second commit under it refuses `vest-cosign-spent`.
  *
  * THE SCHEDULED STRUCK FIRE: after `KEEPER_STRUCK_EVERY` handed links in a row, the vest refuses `struck-due` and the hand lights the
  * successor by passphrase, which keeps the human's route practiced. Count-based down the chain, no clock.
  * Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting
  */
 import { randomUUID } from "node:crypto";
-import { canonicalJsonBytes, mintSealedBoxRecipient, openFromSender, sealToRecipient, sha256HexBytesSync, type SwarmWikiPort } from "@lararium/mesh";
+import { KEEPER_NONCE, canonicalJsonBytes, keeperCosignRefusal, mintSealedBoxRecipient, openFromSender, sealToRecipient, sha256HexBytesSync, type KeeperCosign, type SwarmWikiPort } from "@lararium/mesh";
 import type { KukuluSigner } from "./kukulu-gate.js";
 import {
   pulamaRecordCid, signPulamaRecord, verifiedPulamaRecord,
   type AdmittedFace, type KeeperBegunBody, type KeeperLandedBody, type KeeperSlotBody, type KeeperVest, type KeeperVestedBody, type SignedPulamaAdmit,
 } from "./pulama-admit.js";
+
+/** Why a commit's carried co-signs do not cover its faces, or null where they do (or where none is owed and none rides). */
+function cosignsRefusal(at: { readonly next: string; readonly prev: string | null; readonly nonce: string; readonly faces: readonly AdmittedFace[]; readonly devices: number | null }, cosigns: readonly KeeperCosign[] | null | undefined): KeeperRefusal | null {
+  if (cosigns === null || cosigns === undefined) return null;
+  const cure = "ask the co-sign again from the vessel and commit with it: lares pulama keeper-commit (a second device of the face approves in its ward dialog)";
+  if (!Array.isArray(cosigns)) return refuse("vest-cosign-refused", `the carried co-sign reads malformed; ${cure}`);
+  for (const face of at.faces) {
+    const mine = cosigns.filter((c) => c !== null && typeof c === "object" && c.ordinal === face.ordinal);
+    if (mine.length !== 1) return refuse("vest-cosign-refused", `committed face h${face.ordinal} carries ${mine.length} co-signs, and it takes one; ${cure}`);
+    const why = keeperCosignRefusal(mine[0], { next: at.next, prev: at.prev, nonce: at.nonce });
+    if (why !== null) return refuse("vest-cosign-refused", `the co-sign of face h${face.ordinal} refuses (${why}); ${cure}`);
+  }
+  const most = Math.max(0, ...cosigns.map((c) => (Array.isArray(c?.devices) ? c.devices.length : 0)));
+  if (at.devices !== null && most !== at.devices) return refuse("vest-cosign-refused", `the co-signs name at most ${most} device(s), and the commit counts ${at.devices}; ${cure}`);
+  return null;
+}
 
 /** Handed links in a row before the vest refuses and the hand strikes the fire anew (the lei's explicit-confirm threshold). */
 export const KEEPER_STRUCK_EVERY = 12;
@@ -83,7 +106,7 @@ export interface KeeperFold {
   readonly v: number;
   readonly tip: string | null;
   readonly pairs: readonly KeeperPair[];
-  readonly pending: { readonly tessera: string; readonly v: number; readonly next: string; readonly begun: string; readonly devices: number | null } | null;
+  readonly pending: { readonly tessera: string; readonly v: number; readonly next: string; readonly begun: string; readonly devices: number | null; readonly body: KeeperBegunBody } | null;
   readonly vestings: number;
   readonly struckDue: boolean;
   readonly fork: boolean;
@@ -153,7 +176,7 @@ export async function keeperFold(records: SwarmWikiPort, by: KukuluSigner): Prom
   const superseded = new Set([...rows.begun.values()].flatMap((b) => (b !== "refused" && b.body.supersedes !== null ? [b.body.supersedes] : [])));
   const live = open.filter((b) => !superseded.has(b.cid));
   if (live.length > 1) fork = true;
-  const pending = live.length === 1 ? { tessera: live[0]!.body.tessera, v: live[0]!.body.v, next: live[0]!.body.next, begun: live[0]!.cid, devices: typeof live[0]!.body.devices === "number" ? live[0]!.body.devices : null } : null;
+  const pending = live.length === 1 ? { tessera: live[0]!.body.tessera, v: live[0]!.body.v, next: live[0]!.body.next, begun: live[0]!.cid, devices: typeof live[0]!.body.devices === "number" ? live[0]!.body.devices : null, body: live[0]!.body } : null;
   const vestings = tip?.body.vestings ?? 0;
   const spentBy = [...rows.begun].flatMap(([t, b]) => (b !== "refused" && !rows.landed.has(t) && linked(b) && rows.vested.get(t)?.begun === b.cid ? [b] : []));
   const vested = spentBy.length === 1 ? { tessera: spentBy[0]!.body.tessera, v: spentBy[0]!.body.v, next: spentBy[0]!.body.next, begun: spentBy[0]!.cid } : null;
@@ -181,16 +204,27 @@ export interface KeeperStanding { readonly closure: string | null; readonly imag
  * KEEPER-COMMIT (the caller proved the operator's route first): rest the guest half naming `next` at the chain's next link. A live
  * commit there is superseded by this one. The keeper's own closure must stand reported, and `next` must read as a closure.
  */
-export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at: KeeperStanding & { readonly next: string; readonly devices: number | null }): Promise<{ readonly tessera: string; readonly v: number; readonly next: string; readonly supersedes: string | null } | KeeperRefusal> {
+export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at: KeeperStanding & { readonly next: string; readonly devices: number | null; readonly cosign?: unknown }): Promise<{ readonly tessera: string; readonly v: number; readonly next: string; readonly supersedes: string | null } | KeeperRefusal> {
   if (!CLOSURE.test(at.next)) return refuse("next-malformed", "the successor's closure reads `sha256:<64 hex>`, as tools/pulama-closure.mjs prints it");
   if (at.closure === null) return refuse("closure-unreported", "the host reported no closure for this keeper, so the chain cannot name what it hands from");
   const fold = await keeperFold(records, by);
   if (fold.fork) return refuse("fork", "the keeper chain reads a fork (two commits or two landings at one link); read `pulama status`, and the hand settles it before a new commit");
-  const v = fold.v + 1, nonce = randomUUID();
+  // THE CARRIED CO-SIGN names the commit's nonce (the co-sign's digest binds it), so the nonce comes with it; else the keeper mints one.
+  const carried = at.cosign === undefined || at.cosign === null ? null : at.cosign as { readonly nonce?: unknown; readonly faces?: unknown };
+  if (carried !== null && (typeof carried !== "object" || typeof carried.nonce !== "string" || !KEEPER_NONCE.test(carried.nonce) || !Array.isArray(carried.faces)))
+    return refuse("vest-cosign-refused", "the carried co-sign reads `{nonce: <64 hex>, faces: [...]}` as `lares intent keeper-cosign` prints it; ask it again: lares pulama keeper-commit");
+  const v = fold.v + 1, nonce = carried !== null ? carried.nonce as string : randomUUID();
+  const cosigns = carried !== null ? carried.faces as KeeperCosign[] : null;
+  // The carried rosters count the devices where the shim passed no count: the co-sign read each face's fold already.
+  const devices = at.devices ?? (cosigns !== null ? Math.max(0, ...cosigns.map((c) => (Array.isArray(c?.devices) ? c.devices.length : 0))) || null : null);
+  const wrong = cosignsRefusal({ next: at.next, prev: fold.tip, nonce, faces: at.faces, devices }, cosigns);
+  if (wrong !== null) return wrong;
   const tessera = sha256HexBytesSync(canonicalJsonBytes({ v, prev: fold.tip, next: at.next, nonce }));
   const supersedes = fold.pending?.begun ?? null;
-  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, nonce, devices: at.devices }, by);
-  if (!(await records.writeNew(pulamaKeeperTitle(tessera, "guest"), JSON.stringify(act)))) return refuse("keeper-begun-stands", `a guest half already rests for tessera ${tessera}`);
+  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, nonce, devices, cosigns }, by);
+  if (!(await records.writeNew(pulamaKeeperTitle(tessera, "guest"), JSON.stringify(act)))) return cosigns !== null
+    ? refuse("vest-cosign-spent", "this co-sign rode a commit already (its nonce names that commit's tessera), and a co-sign spends once; ask a fresh one: lares pulama keeper-commit")
+    : refuse("keeper-begun-stands", `a guest half already rests for tessera ${tessera}`);
   return { tessera, v, next: at.next, supersedes };
 }
 
@@ -206,12 +240,13 @@ export type KeeperRiteReading = { readonly ok: true; readonly rite: readonly str
 /** The keys a vest seals, copied out of the lit holder for one seal (the caller's copies zero-fill after). */
 export type KeeperKeys = { readonly treeKey: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent?: number }> };
 
-const coSignRefusal = (devices: number | null, where: string): KeeperRefusal | null =>
-  devices === null || devices < 1
-    ? refuse("vest-devices-unread", `${where} carries no device count, so the vest cannot tell whether a co-sign is owed; light the successor by hand (the struck fire): lares rite kukulu on a terminal`)
-    : devices > 1
-      ? refuse("vest-cosign-owed", `${where} names a face of ${devices} devices, and a vest of a face of two devices co-signs, which no path carries yet; light the successor by hand (the struck fire): lares rite kukulu on a terminal`)
-      : null;
+/** Past one device the commit owes its carried co-sign, read offline against the commit it rides and the count `where` names. */
+const coSignRefusal = (devices: number | null, where: string, body: KeeperBegunBody): KeeperRefusal | null => {
+  if (devices === null || devices < 1) return refuse("vest-devices-unread", `${where} carries no device count, so the vest cannot tell whether a co-sign is owed; commit again with the vessel standing: lares pulama keeper-commit, or light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
+  if (devices < 2) return null;
+  if (body.cosigns === null || body.cosigns === undefined) return refuse("vest-cosign-owed", `${where} names a face of ${devices} devices, and the commit carries no co-sign; commit again while a second device of the face approves the ask in its ward dialog: lares pulama keeper-commit, or light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
+  return cosignsRefusal({ next: body.next, prev: body.prev, nonce: body.nonce, faces: body.faces, devices }, body.cosigns);
+};
 
 /**
  * THE VEST, OUTGOING (the lit keeper, no route: the human's consent rode the commit). It proceeds only inside a live kūkulu rite
@@ -239,12 +274,12 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
     return (await records.writeNew(pulamaKeeperTitle(tessera, "vest"), JSON.stringify(mark))) ? why : refuse("vest-spent", "this commit already spent its one rite attempt; commit again on a terminal (`lares pulama keeper-commit`), or light the successor by hand: lares rite kukulu");
   };
   if (fold.struckDue) return lapse(refuse("struck-due", `${fold.vestings} handed links stand in a row; light this successor by passphrase (the struck fire): lares rite kukulu on a terminal, and the run starts over`));
-  const early = coSignRefusal(fold.pending.devices, "the commit");
+  const early = coSignRefusal(fold.pending.devices, "the commit", fold.pending.body);
   if (early !== null) return lapse(early);
   if (at.closure !== next) return lapse(refuse("closure-differs", `the successor reports closure ${at.closure}, and the commit names ${next}; nothing vests and the old fire still burns: commit the closure you mean (\`lares pulama keeper-commit\`), or light the successor by hand: lares rite kukulu`));
   const rite = await at.rite({ to: at.to, next });
   if (!rite.ok) return lapse(refuse(rite.refusal, rite.detail));
-  const late = coSignRefusal(rite.devices, "the rite's vouch");
+  const late = coSignRefusal(rite.devices, "the rite's vouch", fold.pending.body);
   if (late !== null) return lapse(late);
   const keys = at.keys();
   if (keys === null) return lapse(refuse("pulama-locked", "this keeper holds no key to vest; light the successor by hand: lares rite kukulu on a terminal"));

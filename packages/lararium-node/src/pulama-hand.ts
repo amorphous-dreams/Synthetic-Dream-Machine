@@ -198,9 +198,10 @@ export function pulamaHandDoor(a: {
     const fold = await keeperFold(a.records, await pulamaSignerOf(holder));
     const last = fold.pairs.at(-1);
     return {
-      keeper: { v: fold.v, vestings: fold.vestings, struckDue: fold.struckDue, fork: fold.fork, ...(fold.pending ? { pending: fold.pending.next } : {}), ...(last ? { last: last.par ? "par" : last.red } : {}) },
-      // VEST-READY ONLY WHERE A VEST COULD PROCEED: a live commit, no struck fire due, and a face of one device as the commit read it.
-      ...(fold.pending && !fold.struckDue && !passing && fold.pending.devices === 1 ? { vestReady: fold.pending.next } : {}),
+      keeper: { v: fold.v, vestings: fold.vestings, struckDue: fold.struckDue, fork: fold.fork, tip: fold.tip, ...(fold.pending ? { pending: fold.pending.next } : {}), ...(last ? { last: last.par ? "par" : last.red } : {}) },
+      // VEST-READY ONLY WHERE A VEST COULD PROCEED: a live commit, no struck fire due, and a face of one device as the commit read it,
+      // or a face of two whose commit carries its co-sign.
+      ...(fold.pending && !fold.struckDue && !passing && (fold.pending.devices === 1 || (fold.pending.devices !== null && fold.pending.devices > 1 && Array.isArray(fold.pending.body.cosigns))) ? { vestReady: fold.pending.next } : {}),
     };
   };
   /** The admitted digests and the ended ones, read under the pūlama's key: an unlit pūlama names none. */
@@ -394,7 +395,9 @@ export function pulamaHandDoor(a: {
         if (proof.reading !== "proves") { log(`keeper-commit: ${proof.reading}`); return { op: "keeper-commit", ...proof, ...status() }; }
         // THE DEVICE COUNT the vessel read at commit time rides the commit's own body; none read rides as null, and the vest fails closed on it.
         const devices = typeof f["devices"] === "number" && Number.isSafeInteger(f["devices"]) && f["devices"] >= 1 ? f["devices"] : null;
-        const out = await keeperCommit(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices });
+        // THE CARRIED CO-SIGN (`lares intent keeper-cosign`): the commit's nonce and each face's spent co-sign, read once at the vest.
+        const cosign = f["cosign"] === undefined ? null : f["cosign"];
+        const out = await keeperCommit(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, cosign });
         if ("refusal" in out) return { op: "keeper-commit", reading: out.refusal, detail: out.detail };
         log(`keeper committed: v${out.v} names the successor closure${out.supersedes !== null ? ", superseding the commit before it" : ""}`);
         return { op: "keeper-commit", reading: "committed", ...out };

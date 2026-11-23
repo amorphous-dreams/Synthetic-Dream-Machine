@@ -10,7 +10,7 @@ import {
   readIntentEntry, intentIdTakenBy, intentIdTakenAdvice,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
-  WardRefused, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
+  WardRefused, KEEPER_NONCE, keeperCosignGate, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "@lararium/tw5";
 import { existsSync, readFileSync } from "node:fs";
@@ -251,6 +251,20 @@ export async function loadNodeWardCosignPort(repo: Repo, catalogUrl: string | un
   try { fold = await loadFaceFold(repo, catalogUrl, selector); }
   catch (e) { if (e instanceof IntentRefused) throw new WardRefused("ward-cosign-fold-unread", e.message); throw e; }
   return nodeWardCosignPortOf(repo, fold);
+}
+
+/**
+ * THE KEEPER VEST'S CO-SIGN, VESSEL SIDE (`lares intent keeper-cosign`): run `ward-keeper-vest` over one keeper commit (the successor
+ * closure D′, the chain head it links to, its nonce) through this face's ward co-sign gate, and answer what the commit carries: the
+ * face's roster and, past one device, the spent co-sign (`keeperCosignGate`). An unanswered ask refuses `ward-awaiting-cosign`.
+ */
+export async function runKeeperCosign(opts: { readonly repo: Repo; readonly catalogUrl?: string; readonly face?: number; readonly next: string; readonly prev: string | null; readonly nonce: string }): Promise<Record<string, unknown>> {
+  if (!/^sha256:[0-9a-f]{64}$/.test(opts.next)) throw new IntentRefused("keeper-cosign-next-malformed: the successor closure reads `sha256:<64 hex>`");
+  if (opts.prev !== null && !/^[0-9a-f]{64}$/.test(opts.prev)) throw new IntentRefused("keeper-cosign-prev-malformed: the chain head reads 64 hex, or `none` at the founding link");
+  if (!KEEPER_NONCE.test(opts.nonce)) throw new IntentRefused("keeper-cosign-nonce-malformed: the commit's nonce reads 64 hex");
+  const fold = await loadFaceFold(opts.repo, opts.catalogUrl, { index: opts.face });
+  const port = await nodeWardCosignPortOf(opts.repo, fold);
+  return { cosign: await keeperCosignGate(port, { ordinal: fold.index, next: opts.next, prev: opts.prev, nonce: opts.nonce }) };
 }
 
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {
