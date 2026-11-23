@@ -23,6 +23,10 @@
  *   S8  a sealed plane an earlier probe quarantined: the hand's restore returns it, and the next boot mounts it writable.
  *   S9  a sealed document beside a torn clear tail: the recovery keeps every sealed record, moves the tail, reads sealed.
  *   S10 the late merge of a sealed document into a boot's stand-in never writes its content clear under the stand-in's id.
+ *   S11 a sealed plane whose face never lights before a clean stop: the stop ends its wait, the plane settles pending, no
+ *       byte moves and nothing is held; the next boot, the session standing, mounts it writable.
+ *   S12 a session wearing another face: the keyed load refuses `session-face-foreign`, the plane settles pending, never
+ *       quarantined.
  *
  * Real doors throughout: the sealed document store over a real NodeFS store, the child probe, the doctor, the keel and the
  * real `waitHandle`. The pointer form's holder stands as a port that keeps each sealed value in memory and opens it, as the
@@ -44,7 +48,7 @@ import { fallAwareProbeDoors } from "../src/engine-fall.js";
 import { docStorePath } from "../src/store-integrity.js";
 
 let dir = "";
-afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } vault.clear(); faceUp = true; });
+afterEach(() => { if (dir) { rmSync(dir, { recursive: true, force: true }); dir = ""; } vault.clear(); faceUp = true; wornFace = FACE; });
 
 const TITLE = "lar:///ha.ka.ba/probe/sealed-intent";
 const MARKER = "SECRET-MARKER-heron-by-the-third-pond";
@@ -62,6 +66,8 @@ type Key = ReturnType<typeof mintHeldRestKey>;
 const vault = new Map<string, { readonly plaintext: Uint8Array; readonly address: string }>();
 /** Whether the pointer form's face stands a session now. */
 let faceUp = true;
+/** The face that session wears. */
+let wornFace = FACE;
 
 /** The sealed store's ports for one form, mapping `sealedId` (or every document while it stays unknown) to the bag. */
 function sealedStore(storageDir: string, form: Form, key: Key, sealedId: () => string | null, hydrates = false): SealedDocumentStore {
@@ -70,8 +76,8 @@ function sealedStore(storageDir: string, form: Form, key: Key, sealedId: () => s
   return new SealedDocumentStore({
     inner,
     bagOf: (documentId) => (sealedId() === null || sealedId() === documentId ? row : null),
-    sessionFace: () => (form === "pointer" && faceUp ? FACE : null),
-    sessionOf: () => (form === "pointer" && faceUp ? { id: "probe-session", subject: FACE } : null),
+    sessionFace: () => (form === "pointer" && faceUp ? wornFace : null),
+    sessionOf: () => (form === "pointer" && faceUp ? { id: "probe-session", subject: wornFace } : null),
     seal: async ({ values }) => ({
       values: values.map((v) => {
         const address = sealedAddressOf(v.plaintext);
@@ -165,6 +171,7 @@ async function boot(storageDir: string, form: Form, s: SealedFixture, opts: { hy
       bootstrap: { daemonUrl: s.daemonUrl, personaBagId: PLANES.persona, intentsUrl: s.sealedUrl, personaPlanes: [] },
     }),
     tempStore: () => ({}) as never,
+    sealedRefusalOf: (documentId) => store.refusalOf(documentId),
     ...doors,
   });
   const entryNow = () => assembly.mountManifest.entries.find((e) => e.bagId === PLANES.intents);
@@ -360,5 +367,40 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     await repo.flush();
     await repo.shutdown();
     expect(clearHits(storageDir)).toEqual([]);
+  }, 120_000);
+
+  test("S11 — no session before a clean stop: the stop ends the wait, the plane settles pending, no byte moves, nothing held", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "pointer");
+    const before = s.files.map((f) => readFileSync(f).toString("hex"));
+    faceUp = false;
+
+    // The stop ends every hydrating wait (`endHydration`, as the composition's close does) before the face lights.
+    const stopped = await boot(storageDir, "pointer", s, { hydrates: true, meanwhile: (store) => { store.endHydration(); } });
+    expect(stopped.atBoot.entry?.status).toBe("sealed");
+    expect(stopped.entry?.status).toBe("pending");
+    expect(stopped.writable).toBe(false);
+    expect(stopped.degraded).toBe(false);
+    expect(quarantined(storageDir)).toEqual([]);
+    expect(readQuarantineManifests(storageDir)).toEqual([]);
+    expect(filesOf(storageDir, s.sealedId).map((f) => readFileSync(f).toString("hex"))).toEqual(before);
+
+    faceUp = true;
+    const next = await boot(storageDir, "pointer", s, { hydrates: true });
+    expect(next.entry?.status).toBe("mounted");
+    expect(next.writable).toBe(true);
+    expect(next.record?.tiddler.text).toBe(MARKER);
+  }, 120_000);
+
+  test("S12 — a session wearing another face: the keyed load refuses session-face-foreign, the plane settles pending", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-probe-sealed-")));
+    const s = await storeWithSealedDoc(storageDir, "pointer");
+    wornFace = "another-face";
+
+    const booted = await boot(storageDir, "pointer", s, { hydrates: true });
+    expect(booted.entry?.status).toBe("pending");
+    expect(booted.writable).toBe(false);
+    expect(quarantined(storageDir)).toEqual([]);
+    expect(existsSync(docStorePath(storageDir, s.sealedId))).toBe(true);
   }, 120_000);
 });
