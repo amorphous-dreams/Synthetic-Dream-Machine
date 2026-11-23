@@ -10,18 +10,23 @@
  *   Q2  a hand's restore returns the bytes; the next boot mounts the document writable with its record.
  *   Q3  a hand's fresh release lets the id start empty; the bytes stay aside, and no later boot reads it held.
  *   Q4  a release refuses where no hold names the id.
+ *   Q5  a fresh release refuses for a plane a sibling device carries (a face plane): a second history under the old id
+ *       would hide the sibling's real copy; it names restore or keep instead.
+ *   Q6  an id held beside bytes standing under it (a crash between the manifest and the move, or between a restore's move
+ *       and its marking) releases with keep; restore and fresh name keep, never a move by hand.
+ *   Q7  a restore reads the moved bytes beside the manifest, so a store read under another root prefix still restores.
  *
  * Real doors throughout: the child probe, the clean-tail child and the quarantine, over a real NodeFS store. The tear
  * comes by hand; nothing runs out of wasm memory.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { assembleVessel, emptyLarDoc, DAEMON_BAG_ID, type LarDoc } from "@lararium/mesh";
-import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail, releaseQuarantinedDoc, resolveChildPath } from "../src/doc-load-probe.js";
+import { assembleVessel, emptyLarDoc, personaScopedBagIds, DAEMON_BAG_ID, type LarDoc } from "@lararium/mesh";
+import { makeChildProcessDocLoadProbe, quarantineDoc, readQuarantineManifests, recoverCleanTail, releaseQuarantinedDoc, resolveChildPath } from "../src/doc-load-probe.js";
 import { docStorePath } from "../src/store-integrity.js";
 
 let dir = "";
@@ -68,7 +73,7 @@ async function boot(storageDir: string, daemonUrl: string) {
     tempStore: () => ({}) as never,
     docLoadProbe: makeChildProcessDocLoadProbe(storageDir),
     recoverCleanTail: (verdict) => recoverCleanTail(storageDir, verdict),
-    quarantineDoc: (verdict) => { quarantineDoc(storageDir, verdict); },
+    quarantineDoc: (verdict, bagId) => { quarantineDoc(storageDir, verdict, { bagId }); },
   });
   const entry = assembly.mountManifest.entries.find((e) => e.bagId === DAEMON_BAG_ID);
   const writable = assembly.composite.hasWritableBag(DAEMON_BAG_ID);
@@ -93,6 +98,8 @@ d("a quarantined document stays held across boots until a hand act releases it",
     expect(first.entry?.status).toBe("degraded");
     expect(first.writable).toBe(false);
     expect(existsSync(docStorePath(storageDir, daemonId))).toBe(false);
+    // The move records the plane it held, so a later release can tell a plane a sibling carries.
+    expect(readQuarantineManifests(storageDir).map((h) => h.manifest.bagId)).toEqual([DAEMON_BAG_ID]);
 
     for (const _ of [2, 3]) {
       const later = await boot(storageDir, daemonUrl);
@@ -132,7 +139,7 @@ d("a quarantined document stays held across boots until a hand act releases it",
     const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-quarantine-held-")));
     const daemonUrl = await storeWithDaemonDoc(storageDir);
     const daemonId = daemonUrl.replace(/^automerge:/, "");
-    const movedTo = quarantineDoc(storageDir, { documentId: daemonId, status: "torn", reason: "an earlier life's verdict" });
+    const movedTo = quarantineDoc(storageDir, { documentId: daemonId, status: "torn", reason: "an earlier life's verdict" }, { bagId: DAEMON_BAG_ID });
 
     expect(releaseQuarantinedDoc(storageDir, daemonId, "fresh")).toMatchObject({ ok: true, act: "fresh" });
     const fresh = await boot(storageDir, daemonUrl);
@@ -147,4 +154,63 @@ d("a quarantined document stays held across boots until a hand act releases it",
     const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-quarantine-held-")));
     expect(releaseQuarantinedDoc(storageDir, "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", "restored")).toMatchObject({ ok: false });
   });
+
+  test("Q5 — a fresh release refuses for a face plane a sibling carries, and names restore or keep", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-quarantine-held-")));
+    const daemonUrl = await storeWithDaemonDoc(storageDir);
+    const docId = daemonUrl.replace(/^automerge:/, "");
+    const circles = personaScopedBagIds("probe-group").circles;
+    quarantineDoc(storageDir, { documentId: docId, status: "torn", reason: "an earlier life's verdict" }, { bagId: circles });
+
+    const refused = releaseQuarantinedDoc(storageDir, docId, "fresh");
+    expect(refused).toMatchObject({ ok: false });
+    expect(refused.ok === false && refused.why).toMatch(/sibling/);
+    expect(refused.ok === false && refused.why).toMatch(/--release <|--release-keep/);
+    expect(existsSync(docStorePath(storageDir, docId))).toBe(false);
+    // A plane whose bag the manifest never named refuses too: fail-closed.
+    const unnamed = mkdtempSync(join(tmpdir(), "lar-quarantine-held-"));
+    try {
+      const url2 = await storeWithDaemonDoc(unnamed);
+      const id2 = url2.replace(/^automerge:/, "");
+      quarantineDoc(unnamed, { documentId: id2, status: "torn" });
+      expect(releaseQuarantinedDoc(unnamed, id2, "fresh")).toMatchObject({ ok: false });
+    } finally { rmSync(unnamed, { recursive: true, force: true }); }
+  }, 120_000);
+
+  test("Q6 — an id held beside bytes standing under it releases with keep; restore and fresh name keep", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-quarantine-held-")));
+    const daemonUrl = await storeWithDaemonDoc(storageDir);
+    const daemonId = daemonUrl.replace(/^automerge:/, "");
+    // A restore that moved the bytes back and fell before it marked the manifest: the bytes stand, the hold stands.
+    const movedTo = quarantineDoc(storageDir, { documentId: daemonId, status: "aborted" }, { bagId: DAEMON_BAG_ID })!;
+    renameSync(movedTo, docStorePath(storageDir, daemonId));
+
+    const held = await boot(storageDir, daemonUrl);
+    expect(held.entry?.status).toBe("degraded");
+    for (const act of ["restored", "fresh"] as const) {
+      const r = releaseQuarantinedDoc(storageDir, daemonId, act);
+      expect(r).toMatchObject({ ok: false });
+      expect(r.ok === false && r.why).toMatch(/--release-keep/);
+      expect(r.ok === false && r.why).not.toMatch(/by hand/);
+    }
+    expect(releaseQuarantinedDoc(storageDir, daemonId, "kept")).toMatchObject({ ok: true, act: "kept" });
+    const kept = await boot(storageDir, daemonUrl);
+    expect(kept.entry?.status).toBe("mounted");
+    expect(kept.writable).toBe(true);
+  }, 120_000);
+
+  test("Q7 — a restore reads the moved bytes beside the manifest, under another root prefix", async () => {
+    const first = mkdtempSync(join(tmpdir(), "lar-quarantine-held-"));
+    const daemonUrl = await storeWithDaemonDoc(first);
+    const daemonId = daemonUrl.replace(/^automerge:/, "");
+    quarantineDoc(first, { documentId: daemonId, status: "aborted" }, { bagId: DAEMON_BAG_ID });
+    // The vessel recorded its own path; the hand reads the same store from another prefix.
+    const storageDir = (dir = `${first}-seen-from-the-host`);
+    renameSync(first, storageDir);
+
+    expect(releaseQuarantinedDoc(storageDir, daemonId, "restored")).toMatchObject({ ok: true, act: "restored" });
+    const restored = await boot(storageDir, daemonUrl);
+    expect(restored.entry?.status).toBe("mounted");
+    expect(restored.writable).toBe(true);
+  }, 120_000);
 });
