@@ -2,19 +2,22 @@
  * THE DOCUMENT IN FLIGHT AT AN ENGINE FALL READS CONDEMNED AT THE NEXT BOOT, THROUGH THE COMPOSITION'S OWN PATH.
  *
  * A fall rests the document the Repo was handling (`EngineFall.inFlight`). The next boot hands that id to the keel's probe
- * doors (`fallAwareProbeDoors`), so the social mount reads it condemned: the clean-tail recovery (L3) runs, and where it cuts
- * nothing it holds nothing back, so the whole-document quarantine moves the bytes aside and a read-only stand-in mounts.
- * Quarantining ahead of the composition instead left the probe a store with no bytes, which reads "fresh, not a tear", and the
- * plane mounted writable over a new blank document: that life's writes landed in an orphan while health read fine.
+ * doors (`fallAwareProbeDoors`), and the REAL probe reads it. A torn one takes the composition's own path (the clean-tail
+ * recovery, then the quarantine and the degraded stand-in). One that loads clean stands HELD: read-only in the `pending`
+ * branch, its bytes where they rest, no writable stand-in, until the hand releases it. Under an OOM the document in flight
+ * usually stands innocent, so no sound document's bytes ever move.
  *
- *   H1  a fall naming the daemon document: the plane mounts degraded, read-only, the manifest says degraded, and the bytes
- *       rest in quarantine. Real doors: the child probe, the clean-tail child and the quarantine, over a real store.
+ *   H1  a sound held daemon document mounts pending and read-only, its bytes in place, nothing quarantined.
+ *   H2  a torn held daemon document still takes L3 or the quarantine, never the pending hold.
  *   H1 CONTROL  with no fall resting, the same store mounts writable.
+ *
+ * Real doors throughout: the child probe, the clean-tail child and the quarantine, over a real store; no blank document
+ * mounts writable in any case.
  *
  * No wasm runs out of anything: the fall rests by hand, as a fallen life leaves it.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
@@ -63,22 +66,48 @@ try { resolveChildPath(); } catch { childStands = false; }
 const d = childStands ? describe : describe.skip;
 
 d("the document in flight at a fall reads condemned at the next boot", () => {
-  test("H1 — a fall naming the daemon document mounts its plane degraded and read-only; its bytes rest in quarantine", async () => {
-    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-fall-holds-back-")));
-    const daemonUrl = await storeWithDaemonDoc(storageDir);
-    const daemonId = daemonUrl.replace(/^automerge:/, "");
+  /** Rest a fall that names the daemon document in flight. */
+  const restFallOn = (storageDir: string, daemonId: string): void => {
     const watch = createEngineWatch(() => new Date("2026-11-22T10:00:00.000Z"));
     watch.carrying(daemonId, () => watch.note(new WebAssembly.RuntimeError("unreachable"), "repo"));
     restEngineFall(storageDir, watch.fallen()!, "a".repeat(32));
+  };
+  const quarantined = (storageDir: string): boolean => readdirSync(storageDir).some((name) => name.startsWith("quarantine-torn-snapshots-"));
+
+  test("H1 — a sound held document mounts pending and read-only, its bytes in place", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-fall-holds-back-")));
+    const daemonUrl = await storeWithDaemonDoc(storageDir);
+    const daemonId = daemonUrl.replace(/^automerge:/, "");
+    restFallOn(storageDir, daemonId);
 
     const { repo, assembly } = await boot(storageDir, daemonUrl);
     const entry = assembly.mountManifest.entries.find((e) => e.documentId === daemonId);
-    expect(entry?.status).toBe("degraded");
-    expect(entry?.reason).toMatch(/engine fall/);
-    expect(assembly.mountManifest.degraded).toBe(true);
+    expect(entry?.status).toBe("pending");
+    expect(entry?.reason).toMatch(/held/);
     expect(assembly.composite.hasWritableBag(DAEMON_BAG_ID)).toBe(false);
-    expect(existsSync(docStorePath(storageDir, daemonId))).toBe(false);
-    expect(readdirSync(storageDir).some((name) => name.startsWith("quarantine-torn-snapshots-"))).toBe(true);
+    expect(existsSync(docStorePath(storageDir, daemonId))).toBe(true);
+    expect(quarantined(storageDir)).toBe(false);
+    await repo.shutdown();
+  }, 60_000);
+
+  test("H2 — a torn held document still takes L3 or the quarantine", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-fall-holds-back-")));
+    const daemonUrl = await storeWithDaemonDoc(storageDir);
+    const daemonId = daemonUrl.replace(/^automerge:/, "");
+    const torn = join(docStorePath(storageDir, daemonId), "incremental");
+    mkdirSync(torn, { recursive: true });
+    writeFileSync(join(torn, "zz-torn-tail"), Buffer.from([0x85, 0x6f, 0x4a, 0x83, 0x01, 0x02]));
+    restFallOn(storageDir, daemonId);
+
+    const { repo, assembly } = await boot(storageDir, daemonUrl);
+    const entry = assembly.mountManifest.entries.find((e) => e.documentId === daemonId);
+    expect(["promoted", "degraded"]).toContain(entry?.status);
+    if (entry?.status === "degraded") {
+      expect(assembly.composite.hasWritableBag(DAEMON_BAG_ID)).toBe(false);
+      expect(quarantined(storageDir)).toBe(true);
+    } else {
+      expect(readdirSync(storageDir).some((name) => name.startsWith("quarantine-torn-tail-"))).toBe(true);
+    }
     await repo.shutdown();
   }, 60_000);
 

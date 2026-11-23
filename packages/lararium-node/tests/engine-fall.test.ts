@@ -14,8 +14,8 @@
  *   F4  a flush that throws or stands absent never holds the exit back.
  *   F6  the document in flight: a trap met inside a tapped inbound message names its document; one met outside names none.
  *   F7  a fall that cannot rest stays down: a disk that refuses the record never feeds a loop of exits.
- *   F8  the count clears once the risen vessel stands ready and stays up through its first full settle; a fall during the
- *       settle, or a settle that leaves a shore unwritten, keeps it.
+ *   F8  no run clears the count by itself: a fall after any span of healthy running stays down and names the hand act; only
+ *       a clean stop or the hand's act clears it (`clearEngineFalls`).
  *
  * The boot's hold-back of the document in flight reads through the real probe wiring (`engine-fall-holds-back.test.ts`).
  *
@@ -28,8 +28,9 @@ import { join } from "node:path";
 import { EventEmitter } from "node:events";
 import { createEngineWatch, tapInboundDocs, tapRepoLogs, type EngineFall } from "../src/engine-watch.js";
 import { createReadinessState } from "../src/readiness-face.js";
+import * as engineFall from "../src/engine-fall.js";
 import {
-  answerEngineFall, clearEngineFalls, clearOnceSettled, engineFallsPath, readEngineFalls, restEngineFall,
+  answerEngineFall, clearEngineFalls, engineFallsPath, readEngineFalls, restEngineFall,
   ENGINE_DOWN_HAND_ACT, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP,
 } from "../src/engine-fall.js";
 import type { ShoreFlushReading } from "../src/shore-verb.js";
@@ -156,27 +157,13 @@ describe("an engine that falls flushes, stops and rises once", () => {
     expect(p.lines.join("\n")).toMatch(/stays down/);
   });
 
-  test("F8 — the count clears once the risen vessel stands and settles; a fall or a short settle keeps it", async () => {
+  test("F8 — no run clears the count by itself; a fall after a healthy span stays down", async () => {
     const storageDir = scratch();
-    const lines: string[] = [];
+    expect("clearOnceSettled" in engineFall).toBe(false);
     restEngineFall(storageDir, fallen(null).fall, "a".repeat(32));
-    const standing = createEngineWatch(clock);
-    expect(await clearOnceSettled({ storageDir, engine: standing, ready: Promise.resolve(), settle: async () => true, log: (l) => lines.push(l) })).toBe(true);
-    expect(readEngineFalls(storageDir)).toEqual([]);
-    expect(lines.join("\n")).toMatch(/count clears/);
-
-    restEngineFall(storageDir, fallen(null).fall, "a".repeat(32));
-    const short = await clearOnceSettled({ storageDir, engine: standing, ready: Promise.resolve(), settle: async () => false, log: () => {} });
-    expect(short).toBe(false);
-    expect(readEngineFalls(storageDir)).toHaveLength(1);
-
-    const fallsMidSettle = createEngineWatch(clock);
-    const kept = await clearOnceSettled({ storageDir, engine: fallsMidSettle, ready: Promise.resolve(), settle: async () => { fallsMidSettle.note(trap(), "repo"); return true; }, log: () => {} });
-    expect(kept).toBe(false);
-    expect(readEngineFalls(storageDir)).toHaveLength(1);
-
-    const thrown = await clearOnceSettled({ storageDir, engine: standing, ready: Promise.resolve(), settle: async () => { throw new Error("the shore went quiet"); }, log: () => {} });
-    expect(thrown).toBe(false);
-    expect(readEngineFalls(storageDir)).toHaveLength(1);
+    const p = ports(storageDir, "b".repeat(32));
+    const answer = await answerEngineFall(fallen(null).fall, p.ports);
+    expect(answer.verdict).toBe("stays-down");
+    expect(p.lines.join("\n")).toContain(ENGINE_DOWN_HAND_ACT);
   });
 });
