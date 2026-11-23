@@ -266,7 +266,7 @@ async function main(): Promise<void> {
     declaredUrl: process.env["LAR_PUBLIC_URL"] ?? null,
     interfaces:  networkInterfaces() as unknown as InterfaceTable,
   });
-  // Scratch and explicitly loopback vessels need no notice about optional reach; malformed declarations still warn.
+  // Marked scratch roots need no notice about optional reach; malformed declarations still warn.
   const scratchNotice = testScratchNotice(rootDir);
   const testScratch = scratchNotice !== null;
   const reachNotice = reachFaceBootNotice(process.env["LAR_PUBLIC_URL"], `http://localhost:${port}`, testScratch);
@@ -309,7 +309,7 @@ async function main(): Promise<void> {
   const houseOrigins = houseOriginsOf(reachFaces, originCompositions);
   const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding, houseOrigins });
   // A vessel claiming external reach names a missing Web shore.
-  const shoreNotice = pronaosShoreBootNotice(askedStanding, pronaos, process.env["LAR_PUBLIC_URL"], testScratch);
+  const shoreNotice = pronaosShoreBootNotice(askedStanding, pronaos, testScratch);
   if (shoreNotice !== null) console.log(`[lararium] ${shoreNotice}`);
   // THE RUNG LADDER (pronaos#/the-rung-ladder). A herm stands SILENT by default: it hands over its bulb by CID and
   // describes nothing. `herm.waymark` in the node config lifts it to the WAYMARK rung — one unsigned descriptor at
