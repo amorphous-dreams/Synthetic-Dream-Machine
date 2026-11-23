@@ -13,7 +13,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, awaitRendezvous, vesselStorageDir, openStaged, foundStagedHearth, stageDir, stagedFaceRoot, type CliResult, type LarInstance } from "../harness/instance.js";
+import { targetInstance, awaitRendezvous, vesselStorageDir, openStaged, foundStagedHearth, stageDir, type CliResult, type LarInstance } from "../harness/instance.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
 const URI = "lar:///ha.ka.ba/t/session/absent";
@@ -162,8 +162,18 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
   }, 180_000);
 
   test("W1b RED: face 1's write reaches plaintext under its own face root while face 0 stands worn, and never the worn root", async () => {
-    const faces = join(walk.root, "projections", "faces");
-    const worn = stagedFaceRoot(walk.root);
+    const projections = join(walk.root, "projections");
+    const faces = join(projections, "faces");
+    /** Each face's root by handle index, read off the face labels (`face-labels/<relation>.json`, beside `faces/`). */
+    const rootOf = (handleIndex: number): string => {
+      const dir = join(projections, "face-labels");
+      for (const name of readdirSync(dir)) {
+        if (!name.endsWith(".json") || name.endsWith(".bases.json")) continue;
+        const label = JSON.parse(readFileSync(join(dir, name), "utf8")) as { petname?: unknown; handleIndex?: unknown };
+        if (label.handleIndex === handleIndex && typeof label.petname === "string") return join(faces, label.petname);
+      }
+      throw new Error(`no face label names h${handleIndex}`);
+    };
     /** The face roots under `faces/` whose files hold `word`. */
     const holding = (word: string): string[] => {
       if (!existsSync(faces)) return [];
@@ -179,8 +189,8 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
       roots = holding("Sibling stands in its own layer");
       if (roots.length === 0) await new Promise((r) => setTimeout(r, 1000));
     }
-    expect(roots, "face 1's write reached no plaintext while face 0 stood worn").toHaveLength(1);
-    expect(roots[0], "face 1's write projected into the worn face's root").not.toBe(worn);
+    expect(roots, "face 1's write reached plaintext under face 1's own root alone, while face 0 stood worn").toEqual([rootOf(1)]);
+    expect(rootOf(1)).not.toBe(rootOf(0));
   }, 120_000);
 
   test("W2: a tiddler put as face 1 (its engine) lands in face 1's layer, face 1 reads it back, the worn face reads absent", async () => {
