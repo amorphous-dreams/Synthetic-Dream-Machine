@@ -23,7 +23,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
+import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames, type IngestSettlement } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
@@ -61,6 +61,42 @@ export function readFresherCanon(summary: Readonly<Record<string, unknown>>): Fr
 export interface IngestSink {
   fresher?: FresherCanonReading;
   outcome?: { readonly state: "committed" | "unknown"; readonly requestId: string };
+}
+
+/** What one run's settlement reads as: the envelope's verdict, its code, its exit and the headline a person reads. */
+export interface IngestRunReading {
+  readonly ok: boolean;
+  readonly code?: string;
+  readonly message?: string;
+  readonly exit: number;
+  readonly headline: string;
+}
+
+export function ingestRunReading(settled: IngestSettlement, o: { readonly candidates: number; readonly requestId: string; readonly kapaeFault: string | null }): IngestRunReading {
+  const verdict = ingestVerdict(settled);
+  const { refused, conflicts, pageError } = settled;
+  const failed = verdict.failed || o.kapaeFault !== null;
+  const stoodOff = !failed && conflicts.length > 0;
+  const req = o.requestId.slice(0, 8);
+  const headline = pageError !== undefined
+    ? `INGEST ✗ ${refused.length} refusal(s) read, then a later wave failed; ${pageError.unread} carrier(s) stay unread (req ${req})`
+    : stoodOff
+    ? `INGEST ✗ ${conflicts.length} of ${o.candidates} carrier(s) stand in a conflict and landed nothing; the rest applied locally (req ${req})`
+    : refused.length === 0
+    ? `INGEST ✓ applied locally — ${o.candidates} carrier(s) submitted (req ${req})`
+    : `INGEST ✗ ${refused.length} of ${o.candidates} carrier(s) refused; the rest applied locally (req ${req})`;
+  // A LATER WAVE WHOSE WAIT ENDED READS ITS RECEIPT'S STATE, NEVER A FAILURE: committed or unknown, exit 6, ◐ with its id.
+  if (pageError?.outcome !== undefined && refused.length === 0 && o.kapaeFault === null) {
+    const id = pageError.requestId ?? "";
+    return {
+      ok: false, code: `outcome-${pageError.outcome}`, message: verdict.message ?? `a later wave reads ${pageError.outcome}`,
+      exit: exitFor(`outcome-${pageError.outcome}`),
+      headline: `INGEST ◐ ${settled.landed.size} carrier(s) landed; a later wave reads ${pageError.outcome} (req ${id}); ${pageError.unread} carrier(s) stay owed: read \`lares vessel request ${id}\`, then run the ingest again (diff-gated)`,
+    };
+  }
+  if (failed) return { ok: false, code: "verb-error", message: verdict.message ?? o.kapaeFault ?? "INGEST refused", exit: exitFor("verb-error"), headline };
+  if (stoodOff) return { ok: false, code: "conflict", message: "conflict", exit: exitFor("conflict"), headline };
+  return { ok: true, exit: 0, headline };
 }
 
 export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<number> {
@@ -274,9 +310,8 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   const kapaeFault = refusedShadows.length > 0 || kapaeRefused.length > 0
     ? `INGEST set aside no title for ${refusedShadows.length + kapaeRefused.length} kāpae shadow(s): ${[...refusedShadows.map((r) => `${r.file} (${r.refusal})`), ...kapaeRefused.map((r) => `${String(r["uri"])} (${String(r["code"])})`)].join(", ")}`
     : null;
-  const failed = verdict.failed || kapaeFault !== null;
+  const reading = ingestRunReading(settled, { candidates: candidates.length, requestId: result.requestId, kapaeFault });
   const refusedMessage = verdict.message ?? kapaeFault;
-  const stoodOff = !failed && conflicts.length > 0;
   const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
   const data = {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
@@ -286,21 +321,13 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
     audit: auditUri,
   };
   emit(args, {
-    ...(failed
-      ? { ok: false as const, error: { code: "verb-error", message: refusedMessage ?? "INGEST refused" } }
-      : stoodOff
-      ? { ok: false as const, error: { code: "conflict", message: conflictMessage } }
-      : { ok: true as const }),
+    ...(reading.ok
+      ? { ok: true as const }
+      : { ok: false as const, error: { code: reading.code ?? "verb-error", message: reading.code === "conflict" ? conflictMessage : reading.message ?? "INGEST refused" } }),
     requestId: result.requestId,
     data,
     human: () => {
-      console.log(pageError !== undefined
-        ? `INGEST ✗ ${refused.length} refusal(s) read, then a later wave failed; ${pageError.unread} carrier(s) stay unread (req ${result.requestId.slice(0, 8)})`
-        : stoodOff
-        ? `INGEST ✗ ${conflicts.length} of ${candidates.length} carrier(s) stand in a conflict and landed nothing; the rest applied locally (req ${result.requestId.slice(0, 8)})`
-        : refused.length === 0
-        ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
-        : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
+      console.log(reading.headline);
       for (const [decision, n] of Object.entries(settled.tallies)) console.log(`  ${decision.toUpperCase().padEnd(10)} × ${n}`);
       for (const t of Array.isArray(kapaeAnswer?.raised) ? (kapaeAnswer.raised as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (raised)`);
       for (const t of Array.isArray(kapaeAnswer?.standing) ? (kapaeAnswer.standing as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (already set aside)`);
@@ -342,5 +369,5 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
       console.log(`\n  audit: ${auditUri}`);
     },
   });
-  return failed ? exitFor("verb-error") : stoodOff ? exitFor("conflict") : 0;
+  return reading.exit;
 }

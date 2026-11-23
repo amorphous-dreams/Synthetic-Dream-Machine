@@ -16,7 +16,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { VERB_RESULT_KEY, carrierHash } from "@lararium/mesh";
+import { VERB_RESULT_KEY, carrierHash, INGEST_WAVE_LIMITS } from "@lararium/mesh";
 import { SyncedTree, syncedTreeKey, bagsFileToUri } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { INGEST_PAGE, scanFiles, candidatesOf, listCarriers, readCarrierAnswer, settleIngest, ingestVerdict, standingAfterWave, standingAfterFault, standsClean, NO_STANDING_ASKS, type StandingAsks, type ScanRow, type SubmitIngestOpts } from "../src/ingest-core.js";
@@ -85,6 +85,19 @@ describe("the weld: a page rides under the outcome's row cap", () => {
     expect(Array.isArray(boundOutcomeOutput({ carriers: rows })["carriers"])).toBe(true);
     // CONTROL: one row past the cap rides as a summary.
     expect(Array.isArray(boundOutcomeOutput({ carriers: [...rows, ...Array.from({ length: AUDIT_ARRAY_CAP - INGEST_PAGE + 1 }, () => ({ uri: "x", decision: "ingest" }))] })["carriers"])).toBe(false);
+  });
+});
+
+describe("past the wave budget the first pass pages, and every page settles whole", () => {
+  test("120 carriers with the settle's own budget ride several waves under the count limit, and every one lands and pins", async () => {
+    const { tree, candidates } = seed(120);
+    const isl = island(landed);
+    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    expect(isl.waves.length).toBeGreaterThan(1);
+    for (const wave of isl.waves) expect(wave.candidates.length).toBeLessThanOrEqual(INGEST_WAVE_LIMITS.count);
+    expect(s.landed.size).toBe(120);
+    expect(s.waves?.length).toBe(isl.waves.length);
+    for (const c of candidates) expect(tree.base(syncedTreeKey(BAG, c.uri))).not.toBeNull();
   });
 });
 

@@ -673,7 +673,8 @@ function recordsSideOf(uri: string, text: string, meta: string | undefined, bina
  * object a wave writes at once, and upstream bounds no sync batch. So the gesture hands the daemon bounded waves:
  *
  *   · FAMILIES: a renamed carrier rides with the deletion of the file it left (the island pairs a rename inside one wave);
- *     a deletion no carrier pairs and the kāpae ride the first wave, as they always did.
+ *     each kāpae and each deletion no carrier pairs stands as a family of its own, so a mass delete or a mass set-aside
+ *     crests across waves too. The kāpae queue first, so a handful of them still ride the first wave.
  *   · THE CREST: whole families off the head of the queue while the wave still fits every limit of the per-document wave
  *     budget (`INGEST_WAVE_LIMITS`: carriers, encoded bytes, estimated objects); a family heavier than the limits rides alone.
  *   · BACKPRESSURE: a wave the daemon refuses `ingest-wave-over-budget` returns to the head of the queue and crests again at
@@ -697,8 +698,7 @@ export async function settleIngest(
 ): Promise<IngestSettlement> {
   const limits = pacing.limits ?? INGEST_WAVE_LIMITS;
   const families = familiesOf(opts);
-  const kapaeWeight: WaveWeight = { count: 0, ops: (opts.kapae?.length ?? 0) * RECORD_OBJECTS };
-  const whole = families.reduce<WaveWeight>((w, f) => addWeight(w, familyWeight(f)), kapaeWeight);
+  const whole = families.reduce<WaveWeight>((w, f) => addWeight(w, familyWeight(f)), { count: 0 });
   if (families.length <= 1 || fitsWave(whole, limits)) {
     const s = await settleWave(opts, tree, submit);
     return { ...s, waves: [{ requestId: s.first.requestId, carriers: opts.candidates.length, deletions: opts.deletions?.length ?? 0, status: s.first.status }] };
@@ -716,7 +716,7 @@ export async function settleIngest(
   let owed: IngestFamily[] = [];
   while (queue.length > 0) {
     const crest = takeCrest(queue, familyWeight, scaleLimits(limits, depth / limits.count));
-    const page = pageOpts(opts, crest, settled.length === 0, waves.length);
+    const page = pageOpts(opts, crest, waves.length);
     const carriers = page.candidates.length;
     const deletions = page.deletions?.length ?? 0;
     const t0 = now();
@@ -781,50 +781,50 @@ export function ingestWaitBudgetMs(w: { readonly carriers: number; readonly byte
   return Math.min(INGEST_WAIT_CAP_MS, Math.max(INGEST_WAIT_FLOOR_MS, budget));
 }
 
-/** One grain of the first pass: a carrier and the deletions it pairs (a rename's vanished source). */
+/** One grain of the first pass: a carrier with the deletion its rename pairs, a loose deletion, or one kāpae. */
 interface IngestFamily {
   readonly candidates: readonly ScanRow[];
   readonly deletions: readonly PendingDeletion[];
+  readonly kapae: readonly string[];
 }
 
-/** Each carrier a family of its own, with the deletion its rename names; a deletion no carrier pairs rides the first. */
+/** Each kāpae a family (first), each carrier a family with the deletion its rename names, each loose deletion a family. */
 function familiesOf(opts: SubmitIngestOpts): IngestFamily[] {
   const deletions = opts.deletions ?? [];
-  const families: IngestFamily[] = opts.candidates.map((c) => ({
-    candidates: [c], deletions: c.renameFrom === undefined ? [] : deletions.filter((d) => d.uri === c.renameFrom),
-  }));
-  const paired = new Set(families.flatMap((f) => f.deletions.map((d) => d.uri)));
-  const loose = deletions.filter((d) => !paired.has(d.uri));
-  if (loose.length > 0) {
-    if (families.length > 0) families[0] = { candidates: families[0]!.candidates, deletions: [...families[0]!.deletions, ...loose] };
-    else families.push({ candidates: [], deletions: loose });
+  const families: IngestFamily[] = (opts.kapae ?? []).map((k) => ({ candidates: [], deletions: [], kapae: [k] }));
+  for (const c of opts.candidates) {
+    families.push({ candidates: [c], deletions: c.renameFrom === undefined ? [] : deletions.filter((d) => d.uri === c.renameFrom), kapae: [] });
   }
+  const paired = new Set(families.flatMap((f) => f.deletions.map((d) => d.uri)));
+  for (const d of deletions) if (!paired.has(d.uri)) families.push({ candidates: [], deletions: [d], kapae: [] });
   return families;
 }
 
-/** A family's weight as the daemon will read it (`ingest-wave-budget`): its carriers, and one record per deletion. */
+/** A family's weight as the daemon will read it (`ingest-wave-budget`): every row counts, each deletion and kāpae one record. */
 function familyWeight(f: IngestFamily): WaveWeight {
-  let w: WaveWeight = { count: 0 };
+  let w: WaveWeight = { count: f.deletions.length + f.kapae.length };
   for (const c of f.candidates) {
     w = addWeight(w, ingestCarrierWeight({ uri: c.uri, file: c.file, diskHash: c.diskHash, syncedHash: c.syncedHash, ext: c.ext, text: c.text, ...(c.meta !== undefined ? { meta: c.meta } : {}) }));
   }
   for (const d of f.deletions) w = addWeight(w, { count: 0, bytes: JSON.stringify(d).length, ops: RECORD_OBJECTS });
+  for (const k of f.kapae) w = addWeight(w, { count: 0, bytes: JSON.stringify(k).length, ops: RECORD_OBJECTS });
   return w;
 }
 
 const carriersOf = (families: readonly IngestFamily[]): number => families.reduce((n, f) => n + f.candidates.length, 0);
 
-/** One crest's own opts: its carriers and deletions; the kāpae ride the first wave; each later wave its own change id. */
-function pageOpts(opts: SubmitIngestOpts, crest: readonly IngestFamily[], first: boolean, sent: number): SubmitIngestOpts {
-  const { deletions: _d, kapae, changeId, ...rest } = opts;
+/** One crest's own opts: its carriers, deletions and kāpae; each later wave its own change id. */
+function pageOpts(opts: SubmitIngestOpts, crest: readonly IngestFamily[], sent: number): SubmitIngestOpts {
+  const { deletions: _d, kapae: _k, changeId, ...rest } = opts;
   const deletions = crest.flatMap((f) => f.deletions);
+  const kapae = crest.flatMap((f) => f.kapae);
   // THE EFFECT INDEX KEYS ON THE CHANGE ID: a later wave under the first wave's id would read as that wave's effect.
   const pageChangeId = changeId === undefined ? undefined : sent === 0 ? changeId : `${changeId}.p${sent + 1}`;
   return {
     ...rest,
     candidates: crest.flatMap((f) => f.candidates),
     ...(deletions.length > 0 ? { deletions } : {}),
-    ...(first && kapae !== undefined && kapae.length > 0 ? { kapae } : {}),
+    ...(kapae.length > 0 ? { kapae } : {}),
     ...(pageChangeId !== undefined ? { changeId: pageChangeId } : {}),
   };
 }

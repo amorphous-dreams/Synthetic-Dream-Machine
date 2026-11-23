@@ -74,5 +74,7 @@ export function adaptDepth(current: number, observedMs: number, targetMs: number
   if (targetMs <= 0) return current;
   const error = (observedMs - targetMs) / targetMs; // >0 = too slow
   const factor = 1 - Math.max(-maxStep, Math.min(maxStep, error));
-  return Math.max(1, Math.round(current * factor));
+  const next = Math.max(1, Math.round(current * factor));
+  // A SMALL DEPTH STILL CLIMBS: where rounding would hold a growing depth in place (one stays one), it grows by one.
+  return factor > 1 && next <= current ? current + 1 : next;
 }

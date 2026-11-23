@@ -65,4 +65,24 @@ describe("the daemon's per-doc wave budget", () => {
     expect(ingestWaveRefusal("PUT", wave(194))).toBeNull();
     expect(ingestWaveRefusal("wiki-act", { verb: "PUT", args: wave(194) })).toBeNull();
   });
+
+  test("HOLE: one carrier beside 5,000 deletions refuses; only a lone family rides free", () => {
+    const deletions = Array.from({ length: 5_000 }, (_, i) => ({ uri: `lar:///gone/${i}`, syncedHash: "sha256:g" }));
+    expect(ingestWaveRefusal("INGEST", { ...wave(1), deletions })?.reason).toBe(INGEST_WAVE_OVER_BUDGET);
+    expect(ingestWaveRefusal("INGEST", { ...wave(1), deletions: deletions.slice(0, 1) })).toBeNull();
+  });
+
+  test("HOLE: no carriers, 5,000 deletions and 5,000 kāpae refuse", () => {
+    const deletions = Array.from({ length: 5_000 }, (_, i) => ({ uri: `lar:///gone/${i}`, syncedHash: "sha256:g" }));
+    const kapae = Array.from({ length: 5_000 }, (_, i) => `lar:///shade/${i}`);
+    expect(ingestWaveRefusal("INGEST", { "to-bag": "lar:///ha.ka.ba/bags/lares", carriers: [], deletions, kapae })?.reason).toBe(INGEST_WAVE_OVER_BUDGET);
+  });
+
+  test("HOLE: CAS-pointer carriers weigh their staged size, since a framed body lands inline", () => {
+    const pointer = (i: number) => ({ uri: `lar:///t/p${i}`, file: `/b/p${i}.mem`, size: 8 * 1024 * 1024, diskHash: "sha256:a", syncedHash: null, ext: ".mem", textCid: `cid${i}` });
+    expect(ingestCarrierWeight(pointer(0)).bytes).toBeGreaterThanOrEqual(8 * 1024 * 1024);
+    expect(ingestCarrierWeight(pointer(0)).ops).toBeGreaterThan(ingestCarrierWeight({ ...pointer(0), size: 100 }).ops);
+    expect(ingestWaveRefusal("INGEST", { "to-bag": "lar:///ha.ka.ba/bags/lares", carriers: Array.from({ length: 48 }, (_, i) => pointer(i)) })?.reason).toBe(INGEST_WAVE_OVER_BUDGET);
+  });
 });
+

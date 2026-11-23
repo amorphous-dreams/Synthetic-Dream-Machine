@@ -157,7 +157,9 @@ export function verbFailure(err: unknown): VerbFailure {
   if (read && read.receiptState === "committed") {
     return {
       code: "outcome-committed", requestId: read.requestId,
-      message: `the vessel holds request ${read.requestId} committed: it admitted the wave before this process stopped waiting, and its outcome had not landed yet`,
+      message: typeof read.detail === "string"
+        ? `request ${read.requestId} reads ${read.detail}`
+        : `the vessel holds request ${read.requestId} committed: it admitted the wave before this process stopped waiting, and its outcome had not landed yet`,
       hint: `read it with \`lares vessel request ${read.requestId}\`; a re-run passes the diff gate and carries only what did not land.`,
     };
   }

@@ -124,6 +124,18 @@ describe("settleIngest — the first pass crests in bounded waves", () => {
     expect(ingestVerdict(s).message).not.toMatch(/failed/);
   });
 
+  test("HOLE: a mass delete and a mass kāpae spread across waves that each fit the budget", async () => {
+    const candidates = Array.from({ length: 3 }, (_, i) => row(i));
+    const deletions = Array.from({ length: 900 }, (_, i) => ({ uri: `lar:///gone/${i}`, syncedHash: "sha256:g" }));
+    const kapae = Array.from({ length: 900 }, (_, i) => `lar:///shade/${i}`);
+    const isl = island();
+    await settleIngest(opts(candidates, { deletions, kapae }), freshTree(), isl.submit);
+    expect(isl.waves.length).toBeGreaterThan(2);
+    for (const w of isl.waves) expect(ingestWaveRefusal("INGEST", ingestWaveArgs(w))).toBeNull();
+    expect(isl.waves.flatMap((w) => (w.deletions ?? []).map((d) => d.uri)).sort()).toEqual(deletions.map((d) => d.uri).sort());
+    expect(isl.waves.flatMap((w) => w.kapae ?? []).sort()).toEqual([...kapae].sort());
+  });
+
   test("CONTROL: a light gesture still rides one wave, as before", async () => {
     const candidates = Array.from({ length: 8 }, (_, i) => row(i));
     const isl = island();

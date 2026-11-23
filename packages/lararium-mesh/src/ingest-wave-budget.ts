@@ -22,9 +22,12 @@
  * and 3,800 objects: the three axes bind at nearly the same place for that holding. Constants, not configuration: a
  * vessel that needs other numbers needs a measured reason first.
  *
- * A LONE CARRIER ALWAYS RIDES. A wave of one cannot split further, and a body past the inline wall already rides the CAS
- * as a pointer, so the budget refuses only a wave that a caller could have paged. This mirrors the landing queue's grain:
- * a family heavier than the quota crests alone (`wave-crest`).
+ * A LONE FAMILY RIDES FREE. A wave of one row, or one carrier with the deletion its rename pairs, cannot split further,
+ * so the budget refuses only a wave that a caller could have paged; deletions, kāpae and a pointer carrier's staged size
+ * all weigh in. This mirrors the landing queue's grain: a family heavier than the quota crests alone (`wave-crest`).
+ *
+ * WHAT IT BOUNDS: the rows and bytes one INGEST hands one document. It does not bound a LOAD (its size lives in the source,
+ * not the args), a whole-layer MOVE, or the inbound sync a Repo applies.
  */
 
 import type { WaveLimits, WaveWeight } from "./wave-crest.js";
@@ -33,11 +36,18 @@ import { fitsWave } from "./wave-crest.js";
 /** The refusal the daemon names before dispatch when one wave weighs past the budget. */
 export const INGEST_WAVE_OVER_BUDGET = "ingest-wave-over-budget";
 
-/** The per-document wave budget (see the module header for how the house chose each). */
+/** The per-document wave budget (see the module header for how the house chose each). `count` reads rows: carriers,
+ *  deletions and kāpae alike. */
 export const INGEST_WAVE_LIMITS: WaveLimits = { count: 48, bytes: 1024 * 1024, ops: 4096 };
 
 /** The objects one record writes: its map, and about a dozen scalar fields (title, text, type, tags, the meta envelope). */
 export const RECORD_OBJECTS = 12;
+
+/**
+ * A body that rides the CAS (`textCid`) carries no text to count slots in, yet a framed memetic body lands inline all the
+ * same, so its staged `size` stands in: one slot per this many bytes, the lares holding's average (9.9 MB over 3,483 slots).
+ */
+export const BYTES_PER_SLOT = 2_850;
 
 /** Each ahu slot a carrier's body opens lands as a record of its own. */
 const SLOT_MARK = /<<~\s*ahu\b/g;
@@ -53,20 +63,57 @@ const bytesOf = (value: unknown): number => encoder.encode(JSON.stringify(value)
 
 /** One carrier's weight: one carrier, its encoded bytes, and the objects its root and slot records write. */
 export function ingestCarrierWeight(carrier: Readonly<Record<string, unknown>>): IngestWaveWeight {
-  const text = typeof carrier["text"] === "string" ? carrier["text"] : "";
-  const slots = text.match(SLOT_MARK)?.length ?? 0;
   const meta = typeof carrier["meta"] === "string" ? carrier["meta"].split("\n").filter((l) => l.trim() !== "").length : 0;
-  return { count: 1, bytes: bytesOf(carrier), ops: (1 + slots) * RECORD_OBJECTS + meta };
+  if (typeof carrier["text"] === "string") {
+    const slots = carrier["text"].match(SLOT_MARK)?.length ?? 0;
+    return { count: 1, bytes: bytesOf(carrier), ops: (1 + slots) * RECORD_OBJECTS + meta };
+  }
+  // A POINTER WEIGHS WHAT IT POINTS AT: the staged body's size joins the bytes, and its slots read from that size.
+  const size = typeof carrier["size"] === "number" && Number.isFinite(carrier["size"]) && carrier["size"] > 0 ? carrier["size"] : 0;
+  return { count: 1, bytes: bytesOf(carrier) + size, ops: (1 + Math.floor(size / BYTES_PER_SLOT)) * RECORD_OBJECTS + meta };
 }
 
-/** A whole wave's weight (the INGEST args): its carriers summed, each deletion and kāpae one record more. */
+/** The rows a wave carries: its carriers, its deletions and its kāpae. */
+export interface IngestWaveRows {
+  readonly carriers: number;
+  readonly deletions: number;
+  readonly kapae: number;
+}
+
+export function ingestWaveRows(args: Readonly<Record<string, unknown>>): IngestWaveRows {
+  return {
+    carriers: Array.isArray(args["carriers"]) ? args["carriers"].length : 0,
+    deletions: Array.isArray(args["deletions"]) ? args["deletions"].length : 0,
+    kapae: Array.isArray(args["kapae"]) ? args["kapae"].length : 0,
+  };
+}
+
+/**
+ * A whole wave's weight (the INGEST args). `count` reads every row (a carrier, a deletion, a kāpae), each deletion and kāpae
+ * writes one record, a pointer carrier weighs its staged size.
+ */
 export function ingestWaveWeight(args: Readonly<Record<string, unknown>>): IngestWaveWeight {
+  const rows = ingestWaveRows(args);
   const carriers = Array.isArray(args["carriers"]) ? (args["carriers"] as Array<Record<string, unknown>>) : [];
-  const deletions = Array.isArray(args["deletions"]) ? args["deletions"].length : 0;
-  const kapae = Array.isArray(args["kapae"]) ? args["kapae"].length : 0;
-  let ops = (deletions + kapae) * RECORD_OBJECTS;
-  for (const c of carriers) ops += c !== null && typeof c === "object" ? ingestCarrierWeight(c).ops : RECORD_OBJECTS;
-  return { count: carriers.length, bytes: bytesOf(args), ops };
+  let ops = (rows.deletions + rows.kapae) * RECORD_OBJECTS;
+  let pointed = 0;
+  for (const c of carriers) {
+    if (c === null || typeof c !== "object") { ops += RECORD_OBJECTS; continue; }
+    const w = ingestCarrierWeight(c);
+    ops += w.ops;
+    if (typeof c["text"] !== "string") pointed += w.bytes - bytesOf(c);
+  }
+  return { count: rows.carriers + rows.deletions + rows.kapae, bytes: bytesOf(args) + pointed, ops };
+}
+
+/**
+ * A LONE FAMILY RIDES FREE, AND NOTHING ELSE DOES: a wave of at most one row, or one carrier with the one deletion its
+ * rename pairs (the gestures' family, `settleIngest`). A wave that cannot split further past that bound has no caller that
+ * could have paged it; any other wave meets the budget on every axis.
+ */
+export function isLoneFamily(rows: IngestWaveRows): boolean {
+  const total = rows.carriers + rows.deletions + rows.kapae;
+  return total <= 1 || (rows.carriers === 1 && rows.deletions === 1 && rows.kapae === 0);
 }
 
 /** The INGEST args a verb carries: INGEST's own, or the INGEST a `wiki-act` wraps; null for any other verb. */
@@ -95,11 +142,13 @@ export function ingestWaveRefusal(verb: string, args: unknown, limits: WaveLimit
   const wave = ingestWaveOf(verb, args);
   if (wave === null) return null;
   const weight = ingestWaveWeight(wave);
-  if (weight.count <= 1 || fitsWave(weight, limits)) return null;
+  const rows = ingestWaveRows(wave);
+  if (isLoneFamily(rows) || fitsWave(weight, limits)) return null;
+  const extra = rows.deletions + rows.kapae > 0 ? ` (+${rows.deletions} deletions, ${rows.kapae} kāpae)` : "";
   return {
     reason: INGEST_WAVE_OVER_BUDGET, weight, limits,
-    message: `${INGEST_WAVE_OVER_BUDGET}: this INGEST wave weighs ${weight.count} carriers · ${mib(weight.bytes)} · ~${weight.ops} objects, `
-      + `past one document's wave budget of ${limits.count} carriers · ${mib(limits.bytes)} · ${limits.ops} objects; nothing ran. `
+    message: `${INGEST_WAVE_OVER_BUDGET}: this INGEST wave weighs ${rows.carriers} carriers${extra} · ${mib(weight.bytes)} · ~${weight.ops} objects, `
+      + `past one document's wave budget of ${limits.count} rows · ${mib(limits.bytes)} · ${limits.ops} objects; nothing ran. `
       + "Send it in pages (`lares ingest` and `lares vessel lay` page by themselves).",
   };
 }

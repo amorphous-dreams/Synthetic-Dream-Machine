@@ -13,6 +13,8 @@ import { submitIngest, WaveWaitEnded, type IngestDoors } from "../src/ingest-cor
 import { LocalWaitExpired, type ReceiptAnswer } from "../src/local-connector.js";
 import { verbFailure } from "../src/verb-call.js";
 import { layHoldingLine, type LayHolding } from "../src/commands/lay.js";
+import { ingestRunReading } from "../src/commands/ingest.js";
+import type { IngestSettlement } from "../src/ingest-core.js";
 
 const row = (i: number, bytes = 200): ScanRow => ({ file: `/b/c${i}.mem`, uri: `lar:///ha.ka.ba/t/c${i}`, text: "x".repeat(bytes), diskHash: `sha256:${i}`, syncedHash: null, status: "new", ext: ".mem" });
 const opts = (n: number, bytes?: number) => ({ source: "/b", toBag: "lar:///ha.ka.ba/bags/t", candidates: Array.from({ length: n }, (_, i) => row(i, bytes)), did: "did:key:test" });
@@ -69,6 +71,16 @@ describe("submitIngest — the receipt speaks after the wait", () => {
     expect(verbFailure(err).message).toMatch(/engine-terminated/);
   });
 
+  test("committed on a fallen vessel names the fall: the outcome lands only after the hand restarts it", async () => {
+    const d = doors((requestId) => ({ requestId, state: "committed", engine: { status: "engine-terminated", cause: "module-terminated" } } as ReceiptAnswer));
+    const err = await submitIngest(opts(2), d).catch((e: unknown) => e);
+    expect((err as WaveWaitEnded).receiptState).toBe("committed");
+    const f = verbFailure(err);
+    expect(f.code).toBe("outcome-committed");
+    expect(f.message).toMatch(/committed, but the engine stopped \(module-terminated\)/);
+    expect(f.message).toMatch(/will not land until the hand restarts the vessel/);
+  });
+
   test("the wait scales with the carriers and the bytes a wave sends, and stops at its cap", async () => {
     const small = doors((requestId) => ({ requestId, state: "committed" }));
     await submitIngest(opts(2), small).catch(() => {});
@@ -100,3 +112,40 @@ describe("the lay's holding line tells committed from failed", () => {
     expect(layHoldingLine({ ...h, exitCode: 0 }, 5, "3s")).toMatch(/^✓/);
   });
 });
+
+describe("lares ingest — a committed later wave reads committed in the envelope and the exit", () => {
+  /** A settlement whose first wave landed and whose second wave's wait ended with its receipt read back. */
+  const stopped = (outcome: "committed" | "unknown"): IngestSettlement => ({
+    first: { status: "done", requestId: "req-first-wave" }, pages: [], submitted: 96, asked: [], askedDeletions: [],
+    landed: new Set(Array.from({ length: 48 }, (_, i) => `lar:///t/c${i}`)), unanswered: [], named: new Map(), refused: [], conflicts: [], derived: [],
+    tallies: { ingest: 48 }, deletions: undefined, recorded: 48, rendered: [],
+    pageError: { message: "stopped waiting", unread: 48, requestId: "req-second-wave", outcome },
+    waves: [{ requestId: "req-first-wave", carriers: 48, deletions: 0, status: "done" }, { requestId: "req-second-wave", carriers: 48, deletions: 0, status: outcome }],
+  });
+
+  test("committed: code outcome-committed, exit 6, a ◐ headline naming the wave's id; never ✗ or verb-error", () => {
+    const r = ingestRunReading(stopped("committed"), { candidates: 96, requestId: "req-first-wave", kapaeFault: null });
+    expect(r.ok).toBe(false);
+    expect(r.code).toBe("outcome-committed");
+    expect(r.exit).toBe(6);
+    expect(r.headline).toMatch(/^INGEST ◐/);
+    expect(r.headline).toContain("req-second-wave");
+    expect(r.headline).not.toMatch(/✗|failed/);
+  });
+
+  test("unknown: code outcome-unknown, exit 6, ◐ with the id", () => {
+    const r = ingestRunReading(stopped("unknown"), { candidates: 96, requestId: "req-first-wave", kapaeFault: null });
+    expect(r.code).toBe("outcome-unknown");
+    expect(r.exit).toBe(6);
+    expect(r.headline).toMatch(/^INGEST ◐.*unknown.*req-second-wave/);
+  });
+
+  test("CONTROL: a later wave the island refused still fails as verb-error with ✗", () => {
+    const s = { ...stopped("committed"), pageError: { message: "the island refused", unread: 48, requestId: "req-second-wave" } };
+    const r = ingestRunReading(s, { candidates: 96, requestId: "req-first-wave", kapaeFault: null });
+    expect(r.code).toBe("verb-error");
+    expect(r.exit).toBe(4);
+    expect(r.headline).toMatch(/^INGEST ✗/);
+  });
+});
+

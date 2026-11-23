@@ -198,7 +198,7 @@ export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
-export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
+export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
 export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";

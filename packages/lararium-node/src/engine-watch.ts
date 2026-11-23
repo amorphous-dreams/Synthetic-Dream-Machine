@@ -21,15 +21,24 @@
  *
  * NO RESTART LOOP. A restart may re-trap while it loads the same documents (CatColab #1461), so the watch names one hand
  * act and never restarts anything itself.
+ *
+ * WHAT IT DOES NOT SEE (the residual, named): the daemon island runs as a `worker_threads` Worker with its own isolate and
+ * so its own wasm engine (`open-daemon-vm.ts`), and INGEST executes there. This watch reads the MAIN isolate's engine only.
+ * A worker engine that dies writes no outcome; the main side then reads every wait it holds as `committed` through the
+ * receipt, by id, and never as done. Carrying the worker's fall here needs a new island-protocol message (the worker taps
+ * its own Repo logger and posts the fall); that rides with the bulkhead rung, which moves the engine into a supervised
+ * process anyway.
  */
+
+import { ingestWaveRefusal } from "@lararium/mesh";
 
 /** The refusal every write verb answers once the engine has fallen. */
 export const ENGINE_TERMINATED = "engine-terminated";
 
 /** The three signatures of a dead engine. */
 export type EngineFatalCause = "module-terminated" | "wasm-unreachable" | "unsafe-aliasing";
-/** Which path met the fall first. */
-export type EnginePath = "repo" | "ledger" | "storage";
+/** Which path met the fall first: the Repo's own logged error (the network path), or the receipt ledger's write. */
+export type EnginePath = "repo" | "ledger";
 
 /** The last write that settled durably before the fall: its document heads and when it landed. */
 export interface EngineSettled {
@@ -58,6 +67,12 @@ export interface EngineWatch {
   /** Hear the fall once, when it happens. */
   onFall(listener: (fall: EngineFall) => void): () => void;
 }
+
+/** THE ISOLATE'S OWN WATCH: one engine per isolate, so one watch, read by health, the verb socket and the vessel's own
+ *  island asks (`askIslandVerb`). A suite stands its own with `createEngineWatch`. */
+export const ISOLATE_ENGINE: EngineWatch = { fallen: () => isolate().fallen(), note: (e, p) => isolate().note(e, p), settled: (h) => isolate().settled(h), onFall: (l) => isolate().onFall(l) };
+let isolateWatch: EngineWatch | null = null;
+function isolate(): EngineWatch { return (isolateWatch ??= createEngineWatch()); }
 
 /** The one hand act a fall names. */
 export const ENGINE_HAND_ACT =
@@ -157,4 +172,16 @@ export function tapRepoLogs(watch: EngineWatch, print: (...args: unknown[]) => v
       },
     };
   };
+}
+
+/**
+ * THE GATE EVERY ISLAND ASK MEETS, whichever road it rides (the verb socket, `askIslandVerb`, a wiki island's ask): a fallen
+ * engine refuses `engine-terminated`, and an INGEST past one document's wave budget refuses `ingest-wave-over-budget`, each
+ * before anything places. Null where the ask may go.
+ */
+export function islandAskRefusal(verb: string, args: unknown, engine: EngineWatch = ISOLATE_ENGINE): { readonly message: string; readonly refusal: string } | null {
+  const fall = engine.fallen();
+  if (fall) return engineTerminatedRefusal(fall);
+  const overweight = ingestWaveRefusal(verb, args);
+  return overweight ? { message: overweight.message, refusal: overweight.reason } : null;
 }

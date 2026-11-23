@@ -98,7 +98,7 @@ import { mountHermWaymark } from "./bulb-read-face.js";
 import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
-import { createEngineWatch, tapRepoLogs } from "./engine-watch.js";
+import { ISOLATE_ENGINE, tapRepoLogs } from "./engine-watch.js";
 import { setLoggerFactory } from "@automerge/automerge-repo";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanDatagramSocket } from "./lan-discovery.js";
@@ -224,7 +224,7 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
  * ONE ENGINE PER ISOLATE, ONE WATCH (`engine-watch`): this process's Automerge wasm instance backs every document its Repo
  * holds, so one watch stands for all of them. Health, the verb channel and the Repo's own logger read it.
  */
-const engineWatch = createEngineWatch();
+const engineWatch = ISOLATE_ENGINE;
 engineWatch.onFall((fall) => console.error(`[lararium] engine stopped: ${fall.cause} on the ${fall.path} path (${fall.detail}); health now answers 503 and every verb refuses \`engine-terminated\`. No restart follows by itself.`));
 
 async function main(): Promise<void> {

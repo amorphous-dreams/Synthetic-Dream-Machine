@@ -172,7 +172,13 @@ async function readBackAfterWait(verb: string, timeoutMs: number, requestId: str
       ...(receipt.errorMessage !== undefined ? { errorMessage: receipt.errorMessage } : {}),
     };
   }
-  if (receipt.state === "committed") throw new WaveWaitEnded(verb, timeoutMs, requestId, "committed");
+  if (receipt.state === "committed") {
+    // A COMMITTED FACT ON A FALLEN VESSEL NAMES THE FALL: no outcome lands until a fresh engine runs.
+    const fell = receipt.engine !== undefined
+      ? `committed, but the engine stopped (${String(receipt.engine.cause ?? "engine-terminated")}); the outcome will not land until the hand restarts the vessel`
+      : undefined;
+    throw new WaveWaitEnded(verb, timeoutMs, requestId, "committed", fell);
+  }
   const detail = receipt.refusal !== undefined ? `its receipt read refused: ${receipt.errorMessage ?? receipt.refusal.reason}` : `its receipt reads ${receipt.state}`;
   throw new WaveWaitEnded(verb, timeoutMs, requestId, "unknown", detail);
 }
