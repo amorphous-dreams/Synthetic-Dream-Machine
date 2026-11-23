@@ -143,7 +143,7 @@ export class RealmWriterBook {
     if (found === null || slot === null) { this.#bags.delete(bagId); this.#remark(); return; }
     const seated: RealmFace[] = [];
     for (const face of faces) if ((await found.hive.accessInDoc(`0x${bare(face.agent)}`, found.keyDoc)) === "admin") seated.push(face);
-    // A FORMER WRITER: a face of this vessel the ledger noted a removal for and the roster no longer seats; it stands for the
+    // A FORMER WRITER: a face of this vessel the ledger noted a removal for and the roster seats nowhere now; it stands for the
     // versions that precede its removals (u2).
     const removals = workbenchRemovals(ledger, found.realmId, slot.slug);
     const former = faces.filter((face) => !seated.includes(face)).flatMap((face) => {

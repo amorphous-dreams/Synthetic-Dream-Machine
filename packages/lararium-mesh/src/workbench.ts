@@ -240,10 +240,10 @@ const removalPrefix = (realm: string, slug: string): string => `${EDGE_LEDGER_PR
 export interface WorkbenchRemoval { readonly face: string; readonly agent: string; readonly act: string }
 
 /**
- * NOTE A REMOVAL (the rest seals for the roster): the roster's projection drops a seat row the realm's key Document no longer
- * holds, and notes ONE removal row beside it, naming the act a content-key roll of the workbench's bag answers (a digest of
+ * NOTE A REMOVAL (the rest seals for the roster): the roster's projection drops a seat row the realm's key Document
+ * holds nowhere now, and notes ONE removal row beside it, naming the act a content-key roll of the workbench's bag answers (a digest of
  * the realm, the slug, the agent and how many removals of that agent this ledger already holds, so a face seated again and
- * removed again owes a roll of its own). The vessel's own ledger counts it: it is the evidence a removal version counts by.
+ * removed again owes a roll of its own). The vessel's own ledger counts it: it carries the evidence a removal version counts by.
  * Call INSIDE `handle.change()`. Answers the act.
  */
 export function noteWorkbenchRemoval(draft: LarDoc, realmId: string, slug: string, face: string, agentHex: string): string {

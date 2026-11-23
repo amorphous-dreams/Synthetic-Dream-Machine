@@ -250,7 +250,7 @@ export async function workbenchWriterSeat(provider: KeyhiveProvider, ledger: Lar
  * it. The reading asks the key Document the ledger names that seats this hive, else (a replica that adopted the key and
  * noted no row of it) the Document the hive maps the slot to. Rows whose face no candidate names read again through the
  * agent they carry. Returns the faces the projection holds. On the owner's replica (`notesRemovals`) a seat the ledger held that
- * the Document no longer holds leaves ONE removal row beside its dropped seat row (the rest seals for the roster).
+ * the Document holds nowhere now leaves ONE removal row beside its dropped seat row (the rest seals for the roster).
  */
 export async function projectWorkbenchRoster(
   provider: KeyhiveProvider, ledger: LedgerDoc, realmId: string, slug: string, candidates: ReadonlyMap<string, string> = new Map(),

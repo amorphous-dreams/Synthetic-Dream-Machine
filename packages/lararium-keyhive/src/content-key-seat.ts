@@ -196,7 +196,7 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       const removed = new Set(realm === null ? [] : (await realm.removals()).map((r) => r.act));
       return { raiseCounts: (act) => answered.has(act) || counted.has(act) || removed.has(act), admissionVerifies: (act) => admitted.has(act) };
     },
-    // A face a realm no longer seats performs no key act in its workbench's bag (the roster's own shadow).
+    // A face the realm seats nowhere performs no key act in its workbench's bag (the roster's own shadow).
     ownEdgeShadowed: async (bagId) => (input.ownEdgeShadowed !== undefined && (await input.ownEdgeShadowed()) === true) || (await input.realm?.shadowed?.(bagId)) === true,
     ownSeat: async () => {
       if (input.group === null) return null;
@@ -263,7 +263,7 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     return [...new Set([...[...owed.values()].filter((r) => bare(r.scope) === scope).flatMap((r) => [...r.raiseCids]), ...unanswered])].sort();
   };
   const unsubscribe = (input.subscribe ?? subscribeSeatRolls)(sink);
-  /** A FACE THE REALM NO LONGER SEATS seals nothing more into its workbench, under any head it still holds: its earlier writes
+  /** A FACE THE REALM SEATS NOWHERE seals nothing into its workbench, under any head it still holds: its earlier writes
    *  keep standing by the lineage (u2), and nothing it signs after the revoke joins them. */
   const realmShadow = async (bagId: string): Promise<{ readonly refusal: "own-edge-shadowed"; readonly cause: string } | null> =>
     ((await input.realm?.shadowed?.(bagId)) === true
