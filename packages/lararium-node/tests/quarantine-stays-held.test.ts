@@ -22,7 +22,7 @@
  * comes by hand; nothing runs out of wasm memory.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
@@ -143,7 +143,15 @@ d("a quarantined document stays held across boots until a hand act releases it",
     const daemonId = daemonUrl.replace(/^automerge:/, "");
     const movedTo = quarantineDoc(storageDir, { documentId: daemonId, status: "torn", reason: "an earlier life's verdict" }, { bagId: DAEMON_BAG_ID });
 
+    const syncDir = join(docStorePath(storageDir, daemonId), "sync-state");
+    mkdirSync(syncDir, { recursive: true });
+    writeFileSync(join(syncDir, "peer"), "old sync state");
     expect(releaseQuarantinedDoc(storageDir, daemonId, "fresh")).toMatchObject({ ok: true, act: "fresh" });
+    const shard = join(storageDir, daemonId.slice(0, 2));
+    const aside = readdirSync(shard).find((name) => name.startsWith("sync-state-aside-"));
+    expect(aside).toBeDefined();
+    expect(readFileSync(join(shard, aside!, "store", "sync-state", "peer"), "utf8")).toBe("old sync state");
+    expect(existsSync(syncDir)).toBe(false);
     const fresh = await boot(storageDir, daemonUrl);
     expect(fresh.entry?.status).toBe("mounted");
     expect(fresh.writable).toBe(true);

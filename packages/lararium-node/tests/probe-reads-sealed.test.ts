@@ -332,7 +332,18 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     expect(held.entry?.status).toBe("degraded");
     expect(held.writable).toBe(false);
 
+    const syncDir = join(docStorePath(storageDir, s.sealedId), "sync-state");
+    mkdirSync(syncDir, { recursive: true });
+    writeFileSync(join(syncDir, "peer"), "held sync state");
+    const keep = releaseQuarantinedDoc(storageDir, s.sealedId, "kept");
+    expect(keep.ok).toBe(false);
+    if (!keep.ok) expect(keep.why).toContain("--release ");
+
     expect(releaseQuarantinedDoc(storageDir, s.sealedId, "restored")).toMatchObject({ ok: true, act: "restored" });
+    const shard = join(storageDir, s.sealedId.slice(0, 2));
+    const aside = readdirSync(shard).find((name) => name.startsWith("sync-state-aside-"));
+    expect(aside).toBeDefined();
+    expect(readFileSync(join(shard, aside!, "store", "sync-state", "peer"), "utf8")).toBe("held sync state");
     const verdict = await probeDocLoad(storageDir, s.sealedId);
     expect(verdict.status).toBe("sealed");
     expect(verdict.sealed).toBe(s.files.length);

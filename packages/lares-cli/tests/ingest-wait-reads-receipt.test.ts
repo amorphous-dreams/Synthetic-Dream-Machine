@@ -39,6 +39,16 @@ describe("submitIngest — the receipt speaks after the wait", () => {
     expect(r.results?.[VERB_RESULT_KEY]?.ok).toBe(true);
   });
 
+  test("a wave that answers on the second receipt read continues with its result", async () => {
+    let reads = 0;
+    const d = doors((requestId) => ++reads === 1
+      ? { requestId, state: "unknown" }
+      : { requestId, state: "done", results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: [] } } } });
+    const result = await submitIngest(opts(3), d);
+    expect(result.status).toBe("done");
+    expect(d.reads).toEqual([result.requestId, result.requestId]);
+  });
+
   test("committed reads committed, by its id, and never as failed", async () => {
     const d = doors((requestId) => ({ requestId, state: "committed" }));
     const err = await submitIngest(opts(3), d).catch((e: unknown) => e);
@@ -90,6 +100,11 @@ describe("submitIngest — the receipt speaks after the wait", () => {
     await submitIngest(opts(48), many).catch(() => {});
     const huge = doors((requestId) => ({ requestId, state: "committed" }));
     await submitIngest(opts(4_000), huge).catch(() => {});
+    const complex = doors((requestId) => ({ requestId, state: "committed" }));
+    const complexOpts = opts(2);
+    complexOpts.candidates[0] = { ...complexOpts.candidates[0]!, text: "<<~ ahu slot=`x`>>".repeat(80) };
+    await submitIngest(complexOpts, complex).catch(() => {});
+    expect(complex.asked[0]!).toBeGreaterThan(small.asked[0]!);
     expect(heavy.asked[0]!).toBeGreaterThan(small.asked[0]!);
     expect(many.asked[0]!).toBeGreaterThan(small.asked[0]!);
     expect(huge.asked[0]!).toBe(INGEST_WAIT_CAP_MS);

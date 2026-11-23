@@ -772,14 +772,14 @@ export const INGEST_WAVE_TARGET_MS = 20_000;
 /**
  * THE CALLER'S WAIT FOR ONE WAVE, scaled by what it sends and capped. The floor and the per-carrier step keep the prior
  * budget (10 s + 400 ms per carrier); each MiB adds 4 s, since encoding and applying a large body costs past its count; the
- * cap (5 min) bounds how long a caller waits before it reads the wave's receipt instead.
+ * estimated operation adds 10 ms; the cap bounds how long a caller waits before it reads the wave's receipt instead.
  */
 export const INGEST_WAIT_FLOOR_MS = 10_000;
 export const INGEST_WAIT_PER_CARRIER_MS = 400;
 export const INGEST_WAIT_PER_MIB_MS = 4_000;
 export const INGEST_WAIT_CAP_MS = 300_000;
-export function ingestWaitBudgetMs(w: { readonly carriers: number; readonly bytes: number }): number {
-  const budget = INGEST_WAIT_FLOOR_MS + w.carriers * INGEST_WAIT_PER_CARRIER_MS + Math.ceil((w.bytes / (1024 * 1024)) * INGEST_WAIT_PER_MIB_MS);
+export function ingestWaitBudgetMs(w: { readonly carriers: number; readonly bytes: number; readonly ops?: number }): number {
+  const budget = INGEST_WAIT_FLOOR_MS + w.carriers * INGEST_WAIT_PER_CARRIER_MS + Math.ceil((w.bytes / (1024 * 1024)) * INGEST_WAIT_PER_MIB_MS) + (w.ops ?? 0) * 10;
   return Math.min(INGEST_WAIT_CAP_MS, Math.max(INGEST_WAIT_FLOOR_MS, budget));
 }
 
