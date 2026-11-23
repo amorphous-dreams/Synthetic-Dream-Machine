@@ -43,10 +43,10 @@ import { isPromoteAct, promoteActEdge } from "./promote-act-gate.js";
 import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
-import { join, resolve }                 from "path";
+import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, floorCarriageBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
-import type { DocCensusReading, HeldSaves, MountManifest } from "@lararium/mesh";
+import type { DocCensusReading, HeldSaves } from "@lararium/mesh";
 import { bootFaultReport }                 from "./boot-fault.js";
 import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, floorCardCarriageText } from "@lararium/mesh";
 import { hearthFloorProof } from "./hearth-floor-claims.js";
@@ -69,7 +69,8 @@ import { floorVerbsFor } from "./floor-verbs.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
 import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_VERBS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
-import { testScratchNotice } from "./test-scratch-notice.js";
+import { isTestScratchRoot, testScratchNotice } from "./test-scratch-notice.js";
+import { heldPlaneLines } from "./doc-load-probe.js";
 import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
 import { custodyFrameHandler, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
@@ -87,7 +88,7 @@ import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
-import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
 import { mountReachFaceWatch, reachFaceBootNotice } from "./reach-face-watch.js";
@@ -199,23 +200,6 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
   } catch { /* a vessel that cannot publish still stands */ }
 }
 
-/**
- * Name every PENDING social plane — one the probe (or its clean-tail recovery) answered with NO
- * verdict at all, mounted read-only blank with no bytes moved. `MountManifest` carries the `pending`
- * status; this prints it. A `degraded` plane logs its own line live (`quarantineDoc`, open-node-vessel.ts),
- * and a `pending` one logs here, so a boot log reader tells "this plane is fine, just unresolved" from
- * "nothing noticed it at all". Remounting stays out of path: a restart or `lares vessel doctor` re-probes.
- */
-function logPendingPlanes(prefix: string, manifest: MountManifest): void {
-  for (const e of manifest.entries) {
-    if (e.status !== "pending") continue;
-    console.log(
-      `${prefix} PENDING plane — ${e.documentId} (unresolved: ${e.reason ?? "?"}); ` +
-      `mounted read-only, no bytes moved; re-probe with \`lares vessel doctor\` or restart`,
-    );
-  }
-}
-
 /** The `receipts.ring {ratePerMin, horizonDays, burst, bytesPerOutcome}` shape an operator may override in
  *  `<root>/config/config.json` — read loosely here rather than widening `LaresConfig`'s own
  *  interface, so this one pass-through site in `main.ts` carries it to `uds-channel.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
@@ -294,7 +278,7 @@ async function main(): Promise<void> {
     interfaces:  networkInterfaces() as unknown as InterfaceTable,
   });
   // Marked scratch roots need no notice about optional reach; malformed declarations still warn.
-  const testScratch = existsSync(join(rootDir, ".lar-test-scratch"));
+  const testScratch = isTestScratchRoot(rootDir);
   const reachNotice = reachFaceBootNotice(process.env["LAR_PUBLIC_URL"], `http://localhost:${port}`, testScratch);
   if (reachNotice !== null) console.log(`[lararium] ${reachNotice}`);
   // The composition reads the asked standing, so it runs only where its origins are read. A lararium
@@ -709,7 +693,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
   console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
   console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
   console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${FLOW_SOCKET_ROUTE} socket`);
-  logPendingPlanes("[herm]", herm.mountManifest);
+  for (const line of heldPlaneLines("[herm]", herm.mountManifest)) console.log(line);
 
   // ── THE RAISE DOOR — the third path onto caps, beside the archive and the asked standing ────────
   // `standAs` above answers what this vessel stands as ALONE. A recognised operator may raise it for the
@@ -883,7 +867,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   console.log(`[lararium] oracle:   ${result.oracleDocUrl ?? "(none)"}`);
   console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
   console.log(`[lararium] daemon:   ${result.daemon.daemonHandle.url}`);
-  logPendingPlanes("[lararium]", result.mountManifest);
+  for (const line of heldPlaneLines("[lararium]", result.mountManifest)) console.log(line);
+  readinessState.notePlanes(result.mountManifest);
   const bootDocFragment = result.oracleDocUrl ?? result.catalogHandleUrl ?? "";
   for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 

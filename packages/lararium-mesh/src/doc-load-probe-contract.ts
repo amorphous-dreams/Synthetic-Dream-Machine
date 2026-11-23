@@ -49,6 +49,10 @@ export interface ProbeResult {
    *  torn tail files moved aside. A `status:"ok"` result carrying this names a PROMOTION
    *  (the doc reconstitutes from its verified clean prefix). */
   readonly cleanTail?: { readonly kept: number; readonly movedAside: readonly string[] };
+  /** Present when the id rests in quarantine from an earlier condemn: its bytes sit aside, so no load ran and the id
+   *  never reads as a fresh blank. The mount holds it read-only with no recovery and no second move, on every boot,
+   *  until a hand act restores the bytes or releases the id. */
+  readonly held?: { readonly movedTo: string; readonly quarantinedAt: string };
 }
 
 /** A doc counts as condemned only when the evidence is INTEGRITY evidence — torn bytes, a
@@ -94,4 +98,9 @@ export interface QuarantineManifest {
   readonly integrity?: StoreIntegrityReport;
   readonly quarantinedAt: string;
   readonly movedTo: string;
+  /** The plane the document mounted as, where the mount named it: a release reads it to tell a plane a sibling carries. */
+  readonly bagId?: string;
+  /** The hand act that ended the hold: `restored` moved the bytes back into the store, `fresh` let the id start empty
+   *  while the bytes stay aside, `kept` left whatever stands under the id. Absent, the id stays held on every boot. */
+  readonly released?: { readonly act: "restored" | "fresh" | "kept" };
 }

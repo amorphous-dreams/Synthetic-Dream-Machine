@@ -367,7 +367,9 @@ export function scanFiles(
     rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), ...(head !== null ? { headBase: true as const } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
   }
   // REMOVE-WINS INSIDE ONE EXPORT: a carrier standing beside the shadow of its own title carries nothing.
-  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;  return {
+  // `familiesOf` leans on this strip: see its note.
+  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;
+  return {
     rows: kept, skipped,
     ...(shadows.size > 0 ? { shadows: [...shadows].sort() } : {}),
     ...(refusedShadows.length > 0 ? { refusedShadows } : {}),
@@ -796,6 +798,12 @@ interface IngestFamily {
  * with the arrival whose disk hash equals its synced hash, under `pairedDeletions`' own rule: the content stands unique among
  * the vanished, one candidate holds it, and that candidate arrived. The island pairs a rename inside one wave only
  * (`pairRenames`), so a pair the crest split would decline the vanish and land a fresh carrier.
+ *
+ * A KĀPAE AND ITS CARRIER NEVER RIDE APART. The island executor's kāpae remove-wins check reads only the wave it runs, and
+ * the families split across waves here, so a kāpae and a carrier for one title in different waves would both land. The
+ * check holds because the scan already strips every carrier that stands beside its own shadow (`scanFiles`, REMOVE-WINS
+ * INSIDE ONE EXPORT): no candidate reaches this split under a title a kāpae in the same submit names. A scan change that
+ * kept such a carrier would break the executor's check unseen; `scan-strips-shadowed-carrier.test.ts` pins the strip.
  */
 function familiesOf(opts: SubmitIngestOpts): IngestFamily[] {
   const deletions = opts.deletions ?? [];

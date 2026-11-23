@@ -99,8 +99,9 @@ export interface VesselKeel {
    *  the pre-hardening path). The node injects a child_process probe; a browser a Worker. */
   docLoadProbe?: DocLoadProbe;
   /** L2: quarantine a condemned doc — the platform MOVES its bytes aside (nodefs rename /
-   *  IndexedDB key-drop). Fires only when the probe condemns. */
-  quarantineDoc?: (result: ProbeResult) => void;
+   *  IndexedDB key-drop). Fires only when the probe condemns; names the plane it mounted as, so the record can tell a
+   *  plane a sibling device carries. */
+  quarantineDoc?: (result: ProbeResult, bagId: string) => void;
   /** L3: attempt a clean-tail recovery of a condemned doc AHEAD of quarantine — the platform
    *  verifies the doc's clean record-prefix loads in isolation, MOVES only the torn tail aside
    *  (keeping the verified prefix), and returns the re-verified `status:"ok"` verdict. Returns
@@ -242,6 +243,15 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     const documentId = documentIdFromUrl(url);
     if (keel.docLoadProbe) {
       const verdict = await keel.docLoadProbe.probe(documentId);
+      if (verdict.held) {
+        // AN ID ALREADY IN QUARANTINE STAYS HELD. Its bytes rest aside from an earlier condemn, so the store holds none
+        // under this id, and a load would read a fresh blank and mount writable over an orphan no pointer names. No
+        // recovery, no second move: the degraded stand-in, read-only, until a hand act restores or releases the id.
+        degraded = true;
+        entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
+        return;
+      }
       if (isCondemned(verdict)) {
         // L3 — before condemning the whole doc, try a clean-tail recovery: verify the doc's
         // clean record-prefix loads in isolation, then drop only the torn tail. A promoted
@@ -257,7 +267,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
           entries.push({ bagId, documentId, status: "promoted", reason: cut ? `clean-tail: kept ${cut.kept}, moved ${cut.movedAside.length} aside` : "clean-tail recovery" });
           return;
         }
-        keel.quarantineDoc?.(verdict);
+        keel.quarantineDoc?.(verdict, bagId);
         degraded = true;
         entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         // Read-only blank stands in — the plane reads empty until L4 rematerializes it,
