@@ -299,6 +299,25 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/]]" }, ctx()))["titles"]).toEqual([ALERT]);
   });
 
+  test("RED: a house alert carrying a secret-shaped string reads redacted through every read (get, filter, render); CONTROL: an alert with none reads whole, and an allowed fixture stands", async () => {
+    const r = await rig();
+    const TOKEN = "ghp_" + "Zx9".repeat(10);
+    const ALERT = "$:/temp/lares/alert/boot-fault/1";
+    r.engine.wiki.addTiddler({ title: ALERT, tags: "$:/tags/Alert", text: `a fetch failed with Authorization: token ${TOKEN}`, detail: `retry with ${TOKEN}` });
+    const fields = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx()))["tiddler"] as { fields: Record<string, string> }).fields;
+    expect(JSON.stringify(fields)).not.toContain(TOKEN);
+    expect(fields["text"]).toBe("a fetch failed with Authorization: token [redacted: secret-shaped]");
+    expect(fields["detail"]).toBe("retry with [redacted: secret-shaped]");
+    const rows = await makeWikiFilterReactor(r.opts)({ ...A, filter: `[[${ALERT}]get[text]]` }, ctx());
+    expect(JSON.stringify(rows)).not.toContain(TOKEN);
+    expect(JSON.stringify(await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))).not.toContain(TOKEN);
+    // CONTROL: the engine still holds the alert as the house raised it; only what leaves through the door reads redacted.
+    expect(r.engine.wiki.getTiddler(ALERT)!.fields["text"]).toContain(TOKEN);
+    const PLAIN = "$:/temp/lares/alert/unsaved/x";
+    r.engine.wiki.addTiddler({ title: PLAIN, text: "unsaved: x (key AKIAIOSFODNN7EXAMPLE)" });
+    expect(((await makeTiddlerGetReactor(r.opts)({ ...A, title: PLAIN }, ctx()))["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBe("unsaved: x (key AKIAIOSFODNN7EXAMPLE)");
+  });
+
   test("tiddler-get: a plain tiddler answers its fields (today's meme get drops them); fields-only leaves the text home", async () => {
     const r = await rig();
     const get = makeTiddlerGetReactor(r.opts);
