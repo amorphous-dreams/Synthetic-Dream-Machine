@@ -98,4 +98,13 @@ describe("the lift's custody write names its face, over the real sealed row", ()
     await door.write("veil", b.bytes, "group-b");
     expect(same(await loadVeilArchive("group-b"), b.bytes)).toBe(true);
   });
+
+  test("N4 a read of a face's row waits on that face's write already queued, so a reopen never reads one card behind", async () => {
+    const first = await faceArchive("group-q");
+    await persistVeilArchive(first.bytes, "group-q");
+    const next = await faceArchive("group-q");
+    const writing = persistVeilArchive(next.bytes, "group-q");   // queued, not awaited
+    expect(same(await loadVeilArchive("group-q"), next.bytes), "the read lands after the queued write").toBe(true);
+    await writing;
+  });
 });
