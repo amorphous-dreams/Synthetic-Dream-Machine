@@ -24,6 +24,12 @@ describe("the unlock line climbs", () => {
     }
   });
 
+  test("an answer naming no count reads unknown, never a full budget", () => {
+    const line = unlockLine({ op: "unlock", reading: "no-slot-opens", standing: "herm" });
+    expect(line).toMatch(/named no count of tries left/);
+    expect(line).not.toMatch(/of 5 tries remain/);
+  });
+
   test("the spent reading names zero tries left; CONTROL: a face refusal with no count stays plain", () => {
     expect(unlockLine({ op: "unlock", reading: "attempts-spent", attemptsLeft: 0, standing: "herm" })).toMatch(/SPENT: 0 of 5 tries remain/);
     expect(unlockLine({ op: "unlock", reading: "face-refused", face: 1, faceReading: "no-slot-opens", standing: "herm" })).not.toMatch(/tries remain/);

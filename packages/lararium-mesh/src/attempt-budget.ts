@@ -9,8 +9,11 @@
  *     face's and each ward's bound, the browser page's ward bound, the browser boot's stand and every read-back rite derive from it.
  *   · THE CLIMB. Misses one and two read calm; the third raises the alarm; the fourth names the last try; the fifth reads spent.
  *     Every line names the tries left, what the burn does, and the road back (`ATTEMPT_STAKES`, one row per door).
- *   · NAMES HOLD. A refusal keeps its reading (`no-slot-opens`, `attempts-spent`, `ward-no-slot-opens`, `ward-attempts-spent`);
- *     the count rides beside it as `attemptsLeft`, and these words ride as its detail.
+ *   · NAMES HOLD. A refusal keeps the reading its door gave before the count moved (`no-slot-opens`, `attempts-spent`,
+ *     `ward-no-slot-opens`, `ward-attempts-spent`); the count rides beside it as `attemptsLeft`, and these words ride as its
+ *     detail. One difference stands between the two ward doors, named: the node's ward reads its spending miss (the fifth)
+ *     `ward-attempts-spent`, while the browser page's ward reads every miss `ward-no-slot-opens` (the fifth with
+ *     `attemptsLeft: 0`) and reads `ward-attempts-spent` only at the act past the bound, which runs nothing.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/waking-floor (the custody door's bound)
  */
@@ -34,39 +37,37 @@ export interface AttemptStakes {
   readonly recovery: string;
 }
 
-const VESSEL_RECOVERY = "restart the vessel (`lares vessel stand --restart`) to restore the tries; a forgotten passphrase returns through the paper card or a backup (`lares vault restore`)";
-
 /** One row per door that spends tries. */
 export const ATTEMPT_STAKES = {
   vessel: {
     burn: "shuts this vessel's unlock door until the vessel restarts",
     spent: "this vessel refuses every unlock until it restarts",
-    recovery: VESSEL_RECOVERY,
+    recovery: "restart the vessel (`lares vessel stand --restart`) to restore the tries; where the vessel's tree binds a paper pin (`lares vault status` lists its slots), `lares vault unlock --paper` opens it under the sheet",
   },
   face: {
     burn: "shuts this face's unlock and ward until the vessel restarts",
     spent: "this face refuses every unlock and ward act until the vessel restarts",
-    recovery: "restart the vessel (`lares vessel stand --restart`) to restore the face's tries; a forgotten face route returns through its paper card or its backup bundle (`lares vault restore`)",
+    recovery: "restart the vessel (`lares vessel stand --restart`) to restore the face's tries; where the face binds a paper pin, `lares vault unlock --face <N> --paper` opens it under the sheet; a face beyond its routes returns from its backup bundle (`lares vault restore <file>`) or its split cards (`lares vault restore --cards --face <root-key> --as <N>`)",
   },
   "page-ward": {
     burn: "shuts this page's ward until the page reloads",
     spent: "this page refuses every ward act until it reloads",
-    recovery: "reload the page to restore the tries; a forgotten route returns through the face's paper card or its backup bundle",
+    recovery: "reload the page to restore the tries; where the face binds a paper pin, its sheet opens the ward too",
   },
   "browser-stand": {
     burn: "ends this unlock, and the browser's custody stays shut until the page reloads",
     spent: "this unlock stopped asking, and the browser's custody stays shut",
-    recovery: "reload the page to try again; a forgotten passphrase returns through the paper card, and the reset ceremony returns this browser to its anon floor",
+    recovery: "reload the page to try again; where this browser binds a paper pin, its sheet opens the custody too; a browser beyond its routes returns to its anon floor through the reset ceremony (the console's `vessel reset`), which burns what it holds",
   },
   "offline-run": {
     burn: "ends this command's run with nothing opened",
     spent: "this run stopped asking and opened nothing",
-    recovery: "run the command again; a forgotten passphrase returns through the paper card or a backup (`lares vault restore`)",
+    recovery: "run the command again; where the vessel's tree binds a paper pin (`lares vault status` lists its slots), choose the sheet at the route question",
   },
   "read-back": {
-    burn: "ends the rite with nothing written",
-    spent: "the rite stopped with nothing written",
-    recovery: "run the rite again: a new run prints new cards, so discard these and write down the new ones",
+    burn: "ends the rite with nothing written or bound",
+    spent: "the rite stopped with nothing written or bound",
+    recovery: "run the rite again: a new run prints new words (a new card, a new sheet), so discard these and write down the new ones",
   },
 } as const satisfies Record<string, AttemptStakes>;
 

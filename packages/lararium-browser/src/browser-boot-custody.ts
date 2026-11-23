@@ -78,14 +78,45 @@ export async function standBrowserCustody(opts: StandBrowserCustodyOptions): Pro
   }
   if (status.unlocked) return { reading: "held" };
 
+  const asked = await askRoutes({
+    attempts,
+    ask: (q) => opts.ask({ kind: "unlock", ...q }),
+    open: async (route) => {
+      const opened = await unlockBrowserCustody(opts.idbName, [route]);
+      return opened.reading === "opens" ? { opened: true, value: opened } : { opened: false, notes: opened.notes };
+    },
+  });
+  if (asked.reading !== "opens") return asked;
+  return { reading: "opens", slot: asked.value.slot, unsettled: asked.value.unsettled };
+}
+
+/** One unlock ask of a browser stand: the attempt (from 1), the budget, the last miss's notes, and from the second ask the
+ *  attempt budget's climbing words for the misses so far. */
+export interface RouteAsk { readonly attempt: number; readonly of: number; readonly notes: readonly string[]; readonly warning?: string }
+
+/** What the asks came to: the route that opened (and what it opened), a decline, or the budget spent. */
+export type RoutesAsked<R> =
+  | { readonly reading: "opens"; readonly route: Credential; readonly value: R }
+  | { readonly reading: "declined" }
+  | { readonly reading: "no-slot-opens"; readonly attempts: number; readonly attemptsLeft: 0; readonly warning: string; readonly notes: readonly string[] };
+
+/**
+ * THE ONE ASK LOOP of every browser unlock (the boot's stand, a session's own unlock, a face's own unlock): up to `attempts`
+ * routes (default `ATTEMPT_BUDGET`, five), each ask after a miss carrying the tries left in the climbing words, and the spent
+ * reading carrying `attemptsLeft: 0` and the spent words.
+ */
+export async function askRoutes<R>(opts: {
+  readonly attempts?: number;
+  readonly ask: (question: RouteAsk) => Promise<Credential | null>;
+  readonly open: (route: Credential) => Promise<{ readonly opened: true; readonly value: R } | { readonly opened: false; readonly notes: readonly string[] }>;
+}): Promise<RoutesAsked<R>> {
+  const attempts = opts.attempts ?? ATTEMPT_BUDGET;
   let notes: readonly string[] = [];
   for (let attempt = 1; attempt <= attempts; attempt++) {
-    const route = await opts.ask({ kind: "unlock", attempt, of: attempts, notes, ...(attempt > 1 ? { warning: attemptWarning(attempts - attempt + 1, "browser-stand", attempts) } : {}) });
+    const route = await opts.ask({ attempt, of: attempts, notes, ...(attempt > 1 ? { warning: attemptWarning(attempts - attempt + 1, "browser-stand", attempts) } : {}) });
     if (route === null) return { reading: "declined" };
-    const opened = await unlockBrowserCustody(opts.idbName, [route]);
-    if (opened.reading === "opens") {
-      return { reading: "opens", slot: opened.slot, unsettled: opened.unsettled };
-    }
+    const opened = await opts.open(route);
+    if (opened.opened) return { reading: "opens", route, value: opened.value };
     notes = opened.notes;
   }
   return { reading: "no-slot-opens", attempts, attemptsLeft: 0, warning: attemptWarning(0, "browser-stand", attempts), notes };

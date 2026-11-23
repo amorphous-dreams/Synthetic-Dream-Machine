@@ -87,7 +87,7 @@ describe("the browser ward spends attempts (S2 cold read, P3)", () => {
     await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-attempts-spent" });
     const other = await wardedBrowser();
     expect((await browserWardSign(other.idbName, 0, PASS, new Uint8Array([1]), spawnCore(other.idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
-  });
+  }, 180_000);   // five ward misses and a sign beside two foundings
 });
 
 describe("the browser ward burns on the fifth miss, never the fourth", () => {
@@ -96,7 +96,7 @@ describe("the browser ward burns on the fifth miss, never the fourth", () => {
     const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
     for (let i = 0; i < 4; i++) await expect(browserWardSign(idbName, 0, `wrong ${i}`, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-no-slot-opens" });
     expect((await browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
-  });
+  }, 180_000);   // four ward derivations and a sign beside one founding
 });
 
 /** The runtime imports an entry evaluates before its own body (type-only imports erase). */

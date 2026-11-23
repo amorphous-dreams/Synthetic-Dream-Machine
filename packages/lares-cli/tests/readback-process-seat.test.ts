@@ -91,7 +91,7 @@ test("a line that cannot be a card row ends the attempt at once; five such attem
   // a 30-character first line: no second prompt inside that attempt
   for (const c of "abcde") secret.mockResolvedValueOnce(c.repeat(30));
   await expect(readBack({ command: null, positional: [], options: {}, flags: {} }, [{ chair: "place", seed: new Uint8Array(32).fill(7), digest: "x" }], 0, ""))
-    .rejects.toThrow(/SPENT: 0 of 5 tries remain.*a new run prints new cards/);
+    .rejects.toThrow(/SPENT: 0 of 5 tries remain.*a new run prints new words/);
   expect(secret).toHaveBeenCalledTimes(5);
   const said = output.mock.calls.map((c) => String(c[0])).join("");
   expect(said).toContain("30 of 72 characters");

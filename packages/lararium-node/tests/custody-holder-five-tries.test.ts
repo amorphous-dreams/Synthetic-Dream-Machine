@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ATTEMPT_BUDGET, WardRefused, type Credential } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, WardRefused, type Credential, type PinSpec, type SlotSpec } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder, UNLOCK_ATTEMPTS_PER_BOOT } from "../src/custody-holder.js";
@@ -23,6 +23,7 @@ import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fi
 vi.setConfig({ testTimeout: 240_000 });
 
 const pass = (passphrase: string): Credential => ({ kind: "passphrase", passphrase });
+const pin = (passphrase: string): PinSpec => ({ kind: "passphrase", passphrase });
 const RIGHT = "five-tries-passphrase";
 const roots: string[] = [];
 
@@ -32,10 +33,10 @@ async function found() {
   const homes: CustodyHomes = { identity: join(dir, "identity"), storage: join(dir, "vessel"), seal: join(dir, "nexus") };
   mkdirSync(homes.identity, { recursive: true });
   const io = new FsCustodyIo(homes);
-  await foundCustody({ homes, io, slots: [{ t: 1, pins: [pass(RIGHT)] }] });
+  await foundCustody({ homes, io, slots: [{ t: 1, pins: [pin(RIGHT)] }] });
   return makeCustodyHolder({ homes, io });
 }
-beforeEach(() => seatFaceAutoFounder(() => [{ t: 1, pins: [pass(RIGHT)] }]));
+beforeEach(() => seatFaceAutoFounder((): readonly SlotSpec[] => [{ t: 1, pins: [pin(RIGHT)] }]));
 let seat: SeatedScratchCustody | null = null;
 afterEach(async () => {
   await seat?.drop(); seat = null;
@@ -66,20 +67,23 @@ describe("five tries", () => {
   test("F2 a face unlock burns on its own 5th miss, not the 4th", async () => {
     seat = await seatScratchCustody("five-tries-face");
     const { holder } = seat;
-    const a = await holder.foundFace({ group: personaGroupDigest("group-five-a"), slots: [{ t: 1, pins: [pass("route-a")] }] });
+    const a = await holder.foundFace({ group: personaGroupDigest("group-five-a"), slots: [{ t: 1, pins: [pin("route-a")] }] });
     await holder.lockFace(a.fcid);
     for (let miss = 1; miss <= 4; miss++) {
       expect(await holder.unlockFace({ fcid: a.fcid }, [pass(`wrong-${miss}`)])).toEqual({ reading: "no-slot-opens", fcid: a.fcid, attemptsLeft: 5 - miss });
     }
     expect((await holder.unlockFace({ fcid: a.fcid }, [pass("route-a")])).reading).toBe("opens");
     await holder.lockFace(a.fcid);
-    expect((await holder.unlockFace({ fcid: a.fcid }, [pass("wrong-5")])).reading).toBe("no-slot-opens");
+    expect(await holder.unlockFace({ fcid: a.fcid }, [pass("wrong-5")])).toEqual({ reading: "no-slot-opens", fcid: a.fcid, attemptsLeft: 0 });
+    // The sixth try, the right route among it, meets a spent bound: refused before any derivation, 0 left.
+    expect(await holder.unlockFace({ fcid: a.fcid }, [pass("route-a")])).toEqual({ reading: "attempts-spent", fcid: a.fcid, attemptsLeft: 0 });
+    expect(holder.attemptsLeft()).toBe(ATTEMPT_BUDGET);   // the face's count stands apart from the vessel's
   });
 
   test("F3 a ward miss carries attemptsLeft and the climbing words; the 5th reads spent", async () => {
     seat = await seatScratchCustody("five-tries-ward");
     const { holder } = seat;
-    const a = await holder.foundFace({ group: personaGroupDigest("group-five-w"), slots: [{ t: 1, pins: [pass("route-w")] }] });
+    const a = await holder.foundFace({ group: personaGroupDigest("group-five-w"), slots: [{ t: 1, pins: [pin("route-w")] }] });
     const refusals: WardRefused[] = [];
     for (let miss = 1; miss <= 5; miss++) {
       const e = await holder.withWardKey({ fcid: a.fcid }, [pass(`wrong-${miss}`)], async () => "signed").catch((x: unknown) => x);

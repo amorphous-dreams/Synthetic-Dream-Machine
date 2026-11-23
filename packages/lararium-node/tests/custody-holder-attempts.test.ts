@@ -90,7 +90,7 @@ describe("one attempt per distinct passphrase", () => {
     const a = await holder.foundFace({ group: personaGroupDigest("group-attempts-a"), slots: [{ t: 1, pins: [pass("route-a")] }] });
     await holder.lockFace(a.fcid);
     const offered = [...Array.from({ length: BOUND }, (_, i) => pass(`wrong-${i + 1}`)), pass("route-a")];
-    expect(await holder.unlockFace({ fcid: a.fcid }, offered)).toEqual({ reading: "attempts-spent", fcid: a.fcid });
+    expect(await holder.unlockFace({ fcid: a.fcid }, offered)).toEqual({ reading: "attempts-spent", fcid: a.fcid, attemptsLeft: 0 });
     expect((await holder.unlockFace({ fcid: a.fcid }, [pass("route-a")])).reading).toBe("attempts-spent");
   });
 });

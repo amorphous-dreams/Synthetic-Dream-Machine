@@ -145,7 +145,7 @@ export type FaceUnlock =
   | { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string }
   | { readonly reading: "already-unlocked"; readonly fcid: string; readonly ordinal: number }
   | { readonly reading: "no-slot-opens"; readonly fcid: string; readonly attemptsLeft: number }
-  | { readonly reading: "attempts-spent"; readonly fcid: string }
+  | { readonly reading: "attempts-spent"; readonly fcid: string; readonly attemptsLeft: 0 }
   | { readonly reading: "face-absent" }
   | { readonly reading: "tree-absent"; readonly fcid: string }
   | { readonly reading: "tree-unreadable"; readonly fcid: string; readonly why: string }
@@ -598,13 +598,13 @@ export function makeCustodyHolder(a: {
     if (!found) return { reading: "face-absent" };
     const { fcid, ordinal } = found;
     if (faces.has(fcid)) return { reading: "already-unlocked", fcid, ordinal };
-    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid };
+    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid, attemptsLeft: 0 };
     // CHARGE FIRST, against the face's own count: a throw or a miss keeps it; anything else refunds it.
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
     const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
     if (opened.reading === "no-slot-opens") {
-      return charge.short ? { reading: "attempts-spent", fcid } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
+      return charge.short ? { reading: "attempts-spent", fcid, attemptsLeft: 0 } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
     }
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
     if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };
