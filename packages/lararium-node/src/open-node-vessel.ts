@@ -232,7 +232,7 @@ import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
 import { islandAskRefusal, tapInboundDocs } from "./engine-watch.js";
 import { fallAwareProbeDoors, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
-import { flushEveryShore, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
+import { flushEveryShore, shoreFlushStandDown, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
@@ -5159,13 +5159,7 @@ async function prepareNodeBootOn(
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", phase: "producers", down: stopPromoteWatch });
     // THE TEARDOWN'S FLUSH PHASE ASKS EVERY SHORE FIRST: pushed after the Repo's own flush entries, it runs ahead of them (the
     // registry stands down in reverse), so what the islands hold reaches the mirrors while the islands still stand.
-    stood.push({ what: "the shore's flush", phase: "flush", down: async () => {
-      const reading = await flushShores();
-      for (const part of reading.islands) {
-        if (!part.answered) console.warn(`[lararium] teardown: the shore's flush: the ${part.island} island did not answer: ${part.why}`);
-        else if (part.unwrittenCount > 0) console.warn(`[lararium] teardown: the shore's flush: the ${part.island} island left ${part.unwrittenCount} carrier(s) unwritten`);
-      }
-    } });
+    stood.push(shoreFlushStandDown(flushShores));
     // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer

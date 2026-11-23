@@ -44,6 +44,7 @@
  * no answer ever lands on a state its giver never saw.
  */
 
+import type { ShutdownEntry } from "./composition-shutdown.js";
 import { sha256HexBytesSync } from "@lararium/mesh";
 import type { LarDiskProjector } from "./disk-projector.js";
 
@@ -266,6 +267,22 @@ export async function flushEveryShore(asks: readonly ShoreIslandAsk[], boundMs =
   };
   const islands = (await Promise.all(asks.map(one))).filter((i): i is ShoreFlushIsland => i !== null);
   return { islands, whole: islands.every((i) => i.answered && i.unwrittenCount === 0) };
+}
+
+/**
+ * THE TEARDOWN'S SHORE FLUSH, as one entry of the composition's stand-down registry (`shutdownComposition`), in its `flush`
+ * phase. Pushed after the Repo's own flush entries it runs ahead of them (the registry stands down in reverse), and always before
+ * the `islands` phase stands any island down: so a graceful stop (SIGTERM, a lock, a wear's recompose) writes what every island
+ * holds to its mirrors while the islands still stand. Each island that gave no answer, or left carriers unwritten, warns by name.
+ */
+export function shoreFlushStandDown(flush: () => Promise<ShoreFlushReading>, warn: (line: string) => void = console.warn): ShutdownEntry {
+  return { what: "the shore's flush", phase: "flush", down: async () => {
+    const reading = await flush();
+    for (const part of reading.islands) {
+      if (!part.answered) warn(`[lararium] teardown: the shore's flush: the ${part.island} island did not answer: ${part.why}`);
+      else if (part.unwrittenCount > 0) warn(`[lararium] teardown: the shore's flush: the ${part.island} island left ${part.unwrittenCount} carrier(s) unwritten`);
+    }
+  } };
 }
 
 /** One line per island, for a log: what each flush wrote and what it left. */

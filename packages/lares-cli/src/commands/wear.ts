@@ -9,11 +9,18 @@
  * lift into its own catalog half, the face already worn among them (its mount stood before the grant landed), and the wear
  * names what moved and what still waits on a shut face.
  *
+ * A WEAR THAT TURNS THE FACE FLUSHES EVERY SHORE FIRST, inside the vessel (the composition's whole-island flush, the one its
+ * teardown runs), while the face it leaves still stands mounted, and its answer carries the reading (`shore`), printed here one
+ * line per island. Where the flush leaves a record unwritten, or an island gives no answer, the vessel refuses
+ * `shore-unwritten` and names each one; a person at a terminal is asked whether to turn anyway, and an agent carries `--yes`
+ * (the frame's `yes: true`), as every confirm in this CLI reads.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house
  */
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { helpLines } from "../command-help.js";
-import { emit, proseFirst, refuseUsage } from "../render.js";
+import { createInterface } from "node:readline/promises";
+import { emit, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 
@@ -31,6 +38,17 @@ function faceNamed(args: ParsedArgs): number | null {
   if (typeof raw !== "string" || !/^\d+$/.test(raw)) return null;
   const n = Number(raw);
   return Number.isSafeInteger(n) ? n : null;
+}
+
+/** One line per island of the shore's flush the wear asked: what each wrote, and each record it left unwritten. */
+export function shoreLines(shore: unknown): string[] {
+  const islands = (shore as { islands?: unknown } | null)?.islands;
+  if (!Array.isArray(islands)) return [];
+  return (islands as Array<Record<string, unknown>>).map((p) => p["answered"] !== true
+    ? `shore: ${String(p["island"])} did not answer: ${typeof p["refusal"] === "string" ? `${p["refusal"]}: ` : ""}${String(p["why"])}`
+    : `shore: ${String(p["island"])} wrote ${Number(p["writtenCount"] ?? 0)} owed carrier(s)${Number(p["unwrittenCount"] ?? 0) > 0
+      ? `; ${Number(p["unwrittenCount"])} left unwritten: ${(Array.isArray(p["unwritten"]) ? (p["unwritten"] as Array<Record<string, unknown>>) : []).map((u) => `${String(u["state"])} ${String(u["uri"])} (${String(u["why"])})`).join("; ")}`
+      : ""}`);
 }
 
 /** What a wear's answer means to a person. */
@@ -75,7 +93,22 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
     emit(args, { ok: false, error: { code, message }, ...(data ? { data } : {}), human: () => console.error(`lares ${verb}: ${message}`) });
     return 1;
   };
-  const a = await sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}) });
+  const send = (yes: boolean): Promise<CustodyDoorAnswer | null> => sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}), ...(yes ? { yes: true as const } : {}) });
+  let a = await send(args.flags["yes"] === true);
+  // THE SHORE'S FLUSH LEFT RECORDS UNWRITTEN: a person at a terminal answers whether to turn anyway; an agent carries --yes.
+  if (a !== null && a["status"] === "error" && (a["refusal"] as { reason?: unknown } | undefined)?.reason === "shore-unwritten") {
+    const named = shoreLines((a["refusal"] as { shore?: unknown }).shore).join("\n  ");
+    if (!wantsJson(args) && process.stdin.isTTY === true && process.stdout.isTTY === true) {
+      console.error(`lares ${verb}: the shore's flush left records unwritten on the face this wear turns away from:\n  ${named}`);
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      const word = await rl.question("they rest in the store, and their mirrors stay behind until that face is worn again; turn anyway? [y/N] ");
+      rl.close();
+      if (!/^y(es)?$/i.test(word.trim())) { console.log("aborted; the face worn stays worn"); return 1; }
+      a = await send(true);
+    } else {
+      return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until that face is worn again:\n  ${named}\nturn anyway: lares wear ${face} --yes`, a);
+    }
+  }
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the wear landed — check `lares vault status`, then wear again");
   const refusal = a["refusal"] as { reason?: unknown } | undefined;
   if (a["status"] === "error") {
@@ -92,6 +125,7 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
     ok: true, data: { ...a, ...(shares.landed ? { shares: shares.landed } : {}), ...(shares.waits ? { sharesWait: shares.waits } : {}) },
     human: () => {
       console.log(wearLine(a));
+      for (const line of shoreLines(a["shore"])) console.log(line);
       for (const line of sharesLines(shares.landed, face)) console.log(line);
       if (shares.waits) console.error(`shares: the share config waits (${shares.waits}); \`lares wiki share --list\` reads it`);
     },

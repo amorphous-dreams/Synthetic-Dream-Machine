@@ -40,6 +40,7 @@ import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
 import { houseFaces } from "../custody-door.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
+import type { ShoreFlushReading } from "../shore-core.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS } from "./house-bundle.js";
@@ -207,6 +208,23 @@ const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promis
     try { answer = JSON.parse(text.trim().split("\n").at(-1) ?? ""); } catch { answer = null; }
     if (answer?.ok === true && answer.data) resolve({ ok: true, output: answer.data });
     else resolve({ ok: false, code: answer?.error?.code ?? "rite-row-unreached", message: answer?.error?.message ?? `the row answered no reading (exit ${code ?? "none"})` });
+  });
+});
+
+/**
+ * The shore's flush through the existing hand door (`lares shore flush --json`, forwarded into the vessel by the bridge): its
+ * reading rides the envelope's `data` whether every island wrote (exit 0) or one fell short (3, 4); null where no reading came.
+ */
+const shoreFlushRow = (): Promise<ShoreFlushReading | null> => new Promise((resolve) => {
+  const child = spawn(process.execPath, [BIN, "shore", "flush", "--json"], { stdio: ["ignore", "pipe", "inherit"] });
+  let text = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
+  child.once("error", () => resolve(null));
+  child.once("close", () => {
+    try {
+      const data = (JSON.parse(text.trim().split("\n").at(-1) ?? "") as { data?: { islands?: unknown } }).data;
+      resolve(data !== undefined && Array.isArray(data.islands) ? data as unknown as ShoreFlushReading : null);
+    } catch { resolve(null); }
   });
 });
 
@@ -569,6 +587,8 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
     row: (verb, rowArgs) => cliVerb(["rite", verb, ...flagsOf(rowArgs)]),
     git: gitIn,
     say: (line) => console.error(line),
+    // THE SHORE'S FLUSH BEFORE THE CUT rides the hand door that stands (daemon and active wiki alone); no reach widens for it.
+    flush: shoreFlushRow,
     // The down path's `--if-due` keep asks nobody; a keep the operator runs by hand offers a spent lei's refill.
     ...(plan.ifDue === true ? {} : { refill: liveRefill }),
   };
