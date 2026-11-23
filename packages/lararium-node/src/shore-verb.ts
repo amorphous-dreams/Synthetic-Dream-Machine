@@ -331,8 +331,27 @@ export const SHORE_HAND_CODE = "shore-needs-hand";
 /** The hand code a call's shore op reads, or null where the call settles nothing: per op, never per verb. */
 export function shoreHandCode(verb: string, args: unknown): string | null {
   const a = (args ?? {}) as Record<string, unknown>;
+  // THE GATE READS THE ROUTING FIELDS AS THE HANDLER DOES (`routing-arg`): a string, or a refusal. An inner verb, an op or an
+  // inner argument object of any other shape refuses here, so no wrapping (`verb: ["shore"]`) routes past the gate.
+  if (verb === "wiki-act" && ((a["verb"] !== undefined && typeof a["verb"] !== "string") || (a["args"] !== undefined && (typeof a["args"] !== "object" || a["args"] === null || Array.isArray(a["args"]))))) return "routing-arg-malformed";
   const shore = verb === SHORE_VERB ? a : verb === "wiki-act" && a["verb"] === SHORE_VERB ? (a["args"] ?? {}) as Record<string, unknown> : null;
-  return shore !== null && typeof shore["op"] === "string" && SHORE_HAND_OPS.has(shore["op"]) ? SHORE_HAND_CODE : null;
+  if (shore === null) return null;
+  if (shore["op"] !== undefined && typeof shore["op"] !== "string") return "routing-arg-malformed";
+  return typeof shore["op"] === "string" && SHORE_HAND_OPS.has(shore["op"]) ? SHORE_HAND_CODE : null;
+}
+
+/**
+ * AN INGEST NO PERSON ASKED RIDES UNATTENDED: a wave a seat or an unread peer sends (`INGEST`, or `wiki-act` carrying one) takes
+ * `unattended: true` before it places, whatever it claims, so the gate's no-base verdict stands off and never adopts a file over
+ * records that say something else. A stand-off settles by a person, on the ingest leg as at the shore. Answers the args to place.
+ */
+export function stampUnattendedIngest(verb: string, args: unknown): unknown {
+  const a = (args ?? {}) as Record<string, unknown>;
+  if (verb === "INGEST") return { ...a, unattended: true };
+  if (verb === "wiki-act" && a["verb"] === "INGEST" && typeof a["args"] === "object" && a["args"] !== null && !Array.isArray(a["args"])) {
+    return { ...a, args: { ...(a["args"] as Record<string, unknown>), unattended: true } };
+  }
+  return args;
 }
 
 /** The projectors one daemon island holds: the worn face's own, and each lit sibling's by its handle index. */
