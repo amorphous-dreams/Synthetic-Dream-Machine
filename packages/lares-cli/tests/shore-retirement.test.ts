@@ -77,6 +77,15 @@ describe("a shore receipt reads the checkout's retirement", () => {
     expect(await retirementFor(c.at("bags", "docs", "voices", "masks.mem"), roots(c))).toMatchObject({ sha, ashes: `${sha}^:bags/docs/voices/masks.mem`, destination: "bags/api/voices.mem" });
   });
 
+  plain("the PR merge still names its PR where HEAD's first-parent line runs through a lane that merged it in and fast-forwarded", async () => {
+    const c = checkout();
+    const sha = retireThroughPr(c, "bags/voice.mem", "retire voice", 419);
+    c.git("checkout", "-qb", "lane", "main^1"); c.git("commit", "-q", "--allow-empty", "-m", "lane work");
+    c.git("merge", "-q", "--no-ff", "-m", "merge main into the lane", "main");
+    c.git("checkout", "-q", "main"); c.git("merge", "-q", "--ff-only", "lane");
+    expect(await retirementFor(c.at("bags", "voice.mem"), roots(c))).toMatchObject({ sha, pr: 419 });
+  });
+
   plain("a direct push names no PR: not from a later unrelated PR merge, not from a `(#N)` its own subject carries", async () => {
     const c = checkout();
     const sha = standThenRetire(c, "bags/voice.mem", "v\n", "retire voice (#12)");

@@ -61,7 +61,7 @@ import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
 import { readKahuaPending, LIVE_MIRROR_DOORS } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
-import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, type Retirement } from "../shore-retirement.js";
+import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, RETIREMENT_BOUND_MS, type Retirement } from "../shore-retirement.js";
 
 /** The acts this door carries. */
 export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
@@ -282,17 +282,19 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return 0;
   }
 
-  // A REMOVE names what it lets go: the pending rows read first (a read alone, bounded; an unread shore names no receipt),
-  // and each carrier the answer reached carries its retiring commit and where its substance went.
+  // A REMOVE names what it lets go: the pending rows read first (a read alone; an unread shore names no receipt), and
+  // each carrier the answer reached carries its retiring commit and where its substance went. The read and the receipt
+  // spend one budget (RETIREMENT_BOUND_MS), so the receipt adds at most that much before the answer is asked.
   let named: ReadonlyArray<Record<string, unknown>> = [];
   let receipts: ReadonlyMap<string, Retirement> = new Map();
   if (act === "remove") {
+    const deadline = performance.now() + RETIREMENT_BOUND_MS;
     try {
       const listed = await Promise.race([
         readShoreList((a) => askShore(a, did), typeof shaped.args["bag"] === "string" ? { bag: shaped.args["bag"] } : {}),
-        new Promise<null>((resolve) => { const t = setTimeout(() => resolve(null), RECEIPT_LIST_BOUND_MS); t.unref(); }),
+        new Promise<null>((resolve) => { const t = setTimeout(() => resolve(null), RETIREMENT_BOUND_MS); t.unref(); }),
       ]);
-      if (listed !== null && listed.ok) { named = listed.pending; receipts = pendingReceipts(named); }
+      if (listed !== null && listed.ok) { named = listed.pending; receipts = pendingReceipts(named, { deadline }); }
     } catch { /* the receipt stays unread; the answer stands */ }
   }
 
@@ -319,7 +321,8 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return exitFor("verb-error");
   }
 
-  const retiredBy = retiredByUri(answeredRows(answer.output).done, named, receipts);
+  const answeredBag = typeof answer.output["bag"] === "string" ? answer.output["bag"] : undefined;
+  const retiredBy = retiredByCarrier(answeredRows(answer.output).done, answeredBag, named, receipts);
   emit(args, {
     ok: true, ...(answer.requestId !== undefined ? { requestId: answer.requestId } : {}),
     data: Object.keys(retiredBy).length > 0 ? { ...answer.output, retiredBy } : answer.output,
@@ -327,7 +330,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
       const reached = answeredRows(answer.output);
       console.log(`${act === "restore" ? "restored" : "removed"} ${reached.doneCount} carrier(s) (${String(answer.output["bag"])})`);
-      for (const line of removeReceiptLines(reached.done, typeof answer.output["bag"] === "string" ? answer.output["bag"] : undefined, named, receipts)) console.log(line);
+      for (const line of removeReceiptLines(reached.done, answeredBag, named, receipts)) console.log(line);
       if (reached.done.length < reached.doneCount) console.log(`  (the answer named ${reached.done.length} of them)`);
       for (const uri of reached.left) console.error(`  ⚠ still pending: ${uri}`);
       // A removal that unshadowed a lower copy: this bag let it go, and the meme still stands from that bag.
@@ -411,37 +414,36 @@ export function shorePendingLines(pending: ReadonlyArray<Record<string, unknown>
   ];
 }
 
-/** The carriers a remove answer reached, each named. */
+/** The carriers a remove answer reached, each named, with the receipt of the bag the answer reached. */
 export function removeReceiptLines(done: readonly string[], bag: string | undefined, pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): string[] {
-  void bag;
-  const byUri = retiredByUri(done, pending, receipts);
+  const byBag = retiredByCarrier(done, bag, pending, receipts);
   return done.flatMap((uri) => {
-    const r = byUri[uri];
+    // Where the answer names no bag, a carrier reads its receipt only when one bag alone names it.
+    const held = Object.values(byBag).map((rows) => rows[uri]).filter((r): r is Retirement => r !== undefined);
+    const r = held.length === 1 ? held[0] : undefined;
     return r === undefined ? [`  ${uri}`] : [`  ${uri}`, `      ${retirementLine(r)}`, `      ${otakiageLine(r)}`];
   });
 }
-
-/** How long a remove waits on the pending read its receipt rides, before it answers with none. */
-const RECEIPT_LIST_BOUND_MS = 2000;
 
 /** One pending row's receipt, by the path the island named. */
 function receiptOf(row: Readonly<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): Retirement | undefined {
   return typeof row["path"] === "string" ? receipts.get(row["path"]) : undefined;
 }
 
-/** The receipts of the carriers an answer reached, keyed by carrier (a URI many bags named reads its first row). */
-function retiredByUri(done: readonly string[], pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): Record<string, Retirement> {
+/**
+ * The receipts of the carriers an answer reached, keyed by bag, then carrier: a carrier two bags name keeps each bag's
+ * own receipt. Where the answer names its bag, only that bag's rows read.
+ */
+export function retiredByCarrier(done: readonly string[], bag: string | undefined, pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): Record<string, Record<string, Retirement>> {
   const reached = new Set(done);
-  const out: Record<string, Retirement> = {};
+  const out: Record<string, Record<string, Retirement>> = {};
   for (const row of pending) {
     const uri = String(row["uri"]);
+    const rowBag = String(row["bagId"]);
     const r = receiptOf(row, receipts);
-    if (reached.has(uri) && r !== undefined && out[uri] === undefined) out[uri] = r;
+    if (!reached.has(uri) || r === undefined || (bag !== undefined && rowBag !== bag)) continue;
+    const inBag = (out[rowBag] ??= {});
+    inBag[uri] ??= r;
   }
   return out;
-}
-
-/** The receipts of the carriers an answer reached, by bag and carrier. */
-export function retiredByCarrier(done: readonly string[], bag: string | undefined, pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): Record<string, Record<string, Retirement>> {
-  return { [bag ?? ""]: retiredByUri(done, pending, receipts) };
 }
