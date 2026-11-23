@@ -154,7 +154,7 @@ export function createEngineWatch(clock: () => Date = () => new Date()): EngineW
  * that same synchronous emit, so a trap read there names the message's document. Every other event passes untouched.
  * Idempotent per emitter. Answers the emitter.
  */
-export function tapInboundDocs<T extends object>(emitter: T, watch: EngineWatch = ISOLATE_ENGINE): T {
+export function tapInboundDocs<T extends object>(emitter: T, watch: EngineWatch = ISOLATE_ENGINE, _held: readonly string[] = []): T {
   if (TAPPED.has(emitter)) return emitter;
   TAPPED.add(emitter);
   const target = emitter as unknown as { emit: (event: string, ...args: unknown[]) => boolean };

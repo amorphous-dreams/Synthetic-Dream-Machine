@@ -37,7 +37,8 @@ import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { isCondemned, type DocLoadProbe, type ProbeResult } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-import type { EngineFall } from "./engine-watch.js";
+import type { EngineFall, EngineWatch } from "./engine-watch.js";
+import type { StorageAdapterInterface } from "@automerge/automerge-repo/slim";
 import { shoreFlushLines, type ShoreFlushReading } from "./shore-verb.js";
 
 /** The exit a fallen engine's vessel takes: sysexits' EX_SOFTWARE (an internal fault), apart from 0, 1, 2, 75 and 76. */
@@ -190,3 +191,22 @@ export function fallAwareProbeDoors(falls: readonly RestingFall[], doors: {
 export function heldInFlight(falls: readonly RestingFall[]): string[] {
   return [...new Set(falls.map((f) => f.inFlight).filter((d): d is string => d !== null))];
 }
+
+/** The fall's keeper (red stub: today's behaviour, every uncaught throw ends the process). */
+export interface FallKeeper {
+  verdict(): FallAnswer["verdict"] | "answering" | null;
+  uncaught(error: unknown): void;
+  absorbs(error: unknown): boolean;
+}
+export interface FallKeeperPorts extends FallPorts { readonly hold: () => void }
+export function keepFallDown(watch: EngineWatch, ports: FallKeeperPorts): FallKeeper {
+  let verdict: FallAnswer["verdict"] | "answering" | null = null;
+  watch.onFall((fall) => { verdict = "answering"; void answerEngineFall(fall, ports).then((a) => { verdict = a.verdict; }); });
+  return { verdict: () => verdict, uncaught: () => ports.exit(1), absorbs: () => false };
+}
+export function armFallKeeper(keeper: FallKeeper, proc: { on(event: string, listener: (...args: unknown[]) => void): unknown }): void {
+  proc.on("uncaughtException", (e) => keeper.uncaught(e));
+  proc.on("unhandledRejection", (e) => keeper.uncaught(e));
+}
+export function holdBackStorage<S extends StorageAdapterInterface>(inner: S, _held: readonly string[], _log: (line: string) => void): StorageAdapterInterface { return inner; }
+export function heldBackReason(_held: readonly string[]): (documentId: string) => string | null { return () => null; }
