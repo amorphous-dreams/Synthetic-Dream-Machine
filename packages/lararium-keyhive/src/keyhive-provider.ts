@@ -146,8 +146,8 @@ export class ArchiveIdentityMismatch extends Error {
  */
 export class PrekeySecretAbsent extends Error {
   override readonly name = "PrekeySecretAbsent";
-  constructor(readonly what: string) {
-    super(`holds no prekey secret: its Archive was absent or older than its latest card, so no Document mints for ${what}`);
+  constructor(readonly what: string, cause?: unknown) {
+    super(`holds no prekey secret: its Archive was absent or older than its latest card, so no Document mints for ${what}`, { cause });
   }
 }
 
@@ -297,7 +297,7 @@ export class KeyhiveProvider implements CapabilityProvider {
       return await kh.generateDocument([], contentRef, []);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (message.includes(OWNER_HOLDS_NO_PREKEY_SECRET)) throw new PrekeySecretAbsent(what);
+      if (message.includes(OWNER_HOLDS_NO_PREKEY_SECRET)) throw new PrekeySecretAbsent(what, error);
       throw error;
     }
   }

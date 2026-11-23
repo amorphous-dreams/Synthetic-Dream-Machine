@@ -71,6 +71,9 @@ describe("a stand whose Archive lags its own log", () => {
     expect(message).toContain("holds no prekey secret: its Archive was absent or older than its latest card");
     expect(message).not.toMatch(/GenerateDocError/);
     expect(message).not.toMatch(/[0-9a-f]{40}/);   // no key material and no identity hex rides the line
+    // KEYHIVE'S OWN WORDS, pinned: the rename keys on this text (document.rs `OwnerHoldsNoPrekeySecret`); a wasm bump that
+    // rewords it reads red here instead of passing the raw fault through unnamed.
+    expect(String((refusal as Error).cause)).toContain("no secret key for the prekey the document's owner is added with");
   });
 
   test("AFTER THE CARD: every stand of the same walk opens, and the recorded bag keeps its Document", async () => {

@@ -52,6 +52,8 @@ runBrowserSovereignWorker((manifest) => {
     persistVeilArchive: (bytes: Uint8Array, face: string) => face === manifest.daemonAuth?.personaGroupId
       ? custodyOnVessel("veil", bytes, face)
       : Promise.reject(new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive")),
+    // AND IT SAYS SO BEFORE ANY EXPORT: a sibling's Archive export would mint that stand's card, which no row here keeps.
+    routesVeilArchive: (face: string) => face === manifest.daemonAuth?.personaGroupId,
     // ONE SEED SITE: `makeDaemonBehavior` runs the cap-gated `seedDaemonProtocol` in onEa, so the daemon
     // protocol seed (Ui+Persona+Circle+Flow) stands identically on either boot. This ts-only browser vessel
     // passes HULLS_TS_ONLY → it seeds crystal alone, and its onBoot carries the projection mount.

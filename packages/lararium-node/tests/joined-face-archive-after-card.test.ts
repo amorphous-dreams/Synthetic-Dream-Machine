@@ -53,7 +53,7 @@ test("a lit sibling rests its Archive after its card, and a face that cards at e
   for (let i = 0; i < 24; i++) {
     const { sibling: lit, providers, warns } = await standOnce(a, sibling(rows.get(siblingGroup) ?? founded), siblingKey, write);
     try {
-      expect(warns.filter((w) => w.includes("refused")), `stand ${i}`).toEqual([]);
+      expect(warns.filter((w) => w.toLowerCase().includes("refused")), `stand ${i}`).toEqual([]);
       expect(lit, `stand ${i}: the sibling lit`).not.toBeNull();
       // THE FLOOR LANDED IN THE SIBLING'S OWN ROW at its light.
       expect(rows.has(siblingGroup), `stand ${i}: the sibling's Archive rested`).toBe(true);
@@ -71,7 +71,7 @@ test("a sibling whose Archive lags its log refuses by name: the face, and the ca
   for (let i = 0; i < STANDS && refused.length === 0; i++) {
     const { sibling: lit, providers, warns } = await standOnce(a, sibling(founded), siblingKey);
     try {
-      refused = warns.filter((w) => w.includes("refused"));
+      refused = warns.filter((w) => w.toLowerCase().includes("refused"));
       if (refused.length === 0) { expect(lit, `stand ${i}`).not.toBeNull(); await lit!.contactCard(); }
       else expect(lit, `stand ${i}`).toBeNull();
     } finally { await Promise.all(providers.map((p) => p.dispose().catch(() => {}))); }

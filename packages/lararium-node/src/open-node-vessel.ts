@@ -115,7 +115,7 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { faceNamedCustodyWrite } from "./face-named-custody-write.js";
+import { custodyOpens, duringLight, faceNamedCustodyWrite } from "./face-named-custody-write.js";
 import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
@@ -1053,9 +1053,10 @@ async function prepareNodeBootOn(
     if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
   const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
-  /** THE FACES WHOSE ISLAND LIGHT IS IN FLIGHT, by PersonaGroup: proved open by this light's own custody read, each takes its
-   *  Archive write while the island stands its hive (the sibling's archive floor rests after its card, before its session stands). */
-  const lightingCustody = new Set<string>();
+  /** THE FACES WHOSE ISLAND LIGHT IS IN FLIGHT, by PersonaGroup, each with its light's own `live()`: proved open by that light's
+   *  custody read, the face takes its Archive write while the island stands its hive and the light still reads live (the
+   *  sibling's archive floor rests after its card, before its session stands). Only the light that opened a window shuts it. */
+  const lightingCustody = new Map<string, () => boolean>();
   /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
    *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
   const siblingPlanes = siblingPlaneMounts();
@@ -2815,7 +2816,7 @@ async function prepareNodeBootOn(
   let mountedCustodyGroup: string | null = null;
   const liftCustodyWrite: CustodyWriter | undefined = sovereign
     ? faceNamedCustodyWrite({
-      opens: (face) => face === mountedCustodyGroup || lightingCustody.has(face) || (siblingFaces.has(face) && siblingSessions.has(face)),
+      opens: (face) => custodyOpens(face, { mounted: mountedCustodyGroup, lighting: lightingCustody, siblingFaces, siblingSessions }),
       write: (bytes, face) => sovereign.writeVeilArchive(bytes, face),
     })
     : undefined;
@@ -4003,8 +4004,7 @@ async function prepareNodeBootOn(
       try {
         if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);
-        lightingCustody.add(entry.personaGroupId);
-        try { await daemonVm.lightFace(entry); } finally { lightingCustody.delete(entry.personaGroupId); }
+        await duringLight(lightingCustody, entry.personaGroupId, live, () => daemonVm.lightFace(entry));
       } catch (error) { dropSiblingPlanes(entry.personaGroupId); throw error; }
       faceEntries.set(ordinal, entry);
       const lit: FaceLit = { atomKey: entry.atom.key, custody };
