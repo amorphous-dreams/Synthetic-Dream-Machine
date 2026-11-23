@@ -49,6 +49,7 @@ import {
 import type { IslandBehavior } from "@lararium/tw5";
 import { islandSessionDoor, type IslandSessionProof } from "@lararium/keyhive";
 import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
+import { holdBackStorage } from "./engine-fall.js";
 
 /**
  * THE CAS CAPABILITY, worker side — a `CasTransitTransport` over the parent port. The worker holds no socket; the
@@ -191,11 +192,16 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
 }
 
 /** The daemon island's own store, behind the rest guard (sealed-store#/owed, V2): a document the vessel's rest seals rests
- *  in the island's memory alone and reaches rest by sync, sealed in the vessel's store. A wiki island's manifest names no
- *  store, so the kernel never asks for one. */
-function _buildStorage(cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface | undefined {
+ *  in the island's memory alone and reaches rest by sync, sealed in the vessel's store. A document a resting engine fall
+ *  names in flight (handed in `workerData`, `IslandCasData.heldBack`) holds back from the island's engine as from the
+ *  vessel's. A wiki island's manifest names no store, so the kernel never asks for one. */
+export function buildIslandStorage(
+  cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>,
+  held: readonly string[] = [], log: (line: string) => void = (line) => console.warn(`[sovereign-island] ${line}`),
+): StorageAdapterInterface | undefined {
   if (!cfg || cfg.type === "memory") return undefined;
-  if (cfg.type === "nodefs") return islandRestGuard(new DurableNodeFSStorageAdapter(cfg.dir), restsAtVessel);
+  // THE TRAP-NAMED DOCUMENTS HOLD HERE TOO (`engine-fall`): the island's own engine never meets their chunks.
+  if (cfg.type === "nodefs") return holdBackStorage(islandRestGuard(new DurableNodeFSStorageAdapter(cfg.dir), restsAtVessel), held, log);
   return undefined;
 }
 
@@ -236,7 +242,7 @@ export function runSovereignWorker(
     listen:  (onMessage) => port.on("message", onMessage),
     storage: (msg) => {
       if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
-      return _buildStorage(msg.storage, restsAtVessel);
+      return buildIslandStorage(msg.storage, restsAtVessel, Array.isArray(handed.heldBack) ? handed.heldBack : []);
     },
     restsAtVessel,
     // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as

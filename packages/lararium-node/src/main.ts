@@ -100,7 +100,7 @@ import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 import { ISOLATE_ENGINE, tapRepoLogs } from "./engine-watch.js";
-import { answerEngineFall, clearEngineFalls, heldInFlight, readEngineFalls, HELD_HAND_ACT } from "./engine-fall.js";
+import { armFallKeeper, clearEngineFalls, heldInFlight, keepFallDown, readEngineFalls, HELD_HAND_ACT, type FallKeeper } from "./engine-fall.js";
 import { readVesselLife } from "./vessel-life.js";
 import type { ShoreFlushReading } from "./shore-verb.js";
 import { setLoggerFactory } from "@automerge/automerge-repo";
@@ -213,6 +213,10 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
  * fall (`engine-fall`): flush, then exit once, or stay down past the house's restart count.
  */
 const engineWatch = ISOLATE_ENGINE;
+/** The fall's keeper, armed at the top of `main`; the boot's own rejection asks it first. */
+let fallKeeper: FallKeeper | null = null;
+/** The hold's tick: the longest a Node timer takes. It decides nothing; it only keeps a stayed-down process's loop open. */
+const HOLD_TICK_MS = 2 ** 31 - 1;
 
 async function main(): Promise<void> {
   // The Repo catches an inbound message's throw and logs it; the tap hands that error to the watch (the network path).
@@ -222,15 +226,21 @@ async function main(): Promise<void> {
   // mounts a disk shore flushes, then the process exits `ENGINE_FALL_EXIT` so the supervisor raises a fresh engine; past the
   // house's restart count it stays down. The life reads at the fall (the store claim mints it), and the flush reaches the
   // composition standing then (none before the first one stands).
+  // STAY DOWN MEANS STAY DOWN (`keepFallDown`): from the fall on, a throw the dead module raises anywhere (an uncaught
+  // exception or rejection) ends nothing; the fall's own answer exits once, or the hold keeps the vessel up, down.
   let flushOnFall: () => Promise<ShoreFlushReading | null> = () => Promise.resolve(null);
-  engineWatch.onFall((fall) => {
-    void answerEngineFall(fall, {
-      storageDir, life: readVesselLife(storageDir),
-      flush: () => flushOnFall(),
-      exit: (code) => process.exit(code),
-      log: (line) => console.error(`[lararium] ${line}`),
-    });
+  fallKeeper = keepFallDown(engineWatch, {
+    storageDir, life: () => readVesselLife(storageDir),
+    flush: () => flushOnFall(),
+    exit: (code) => process.exit(code),
+    hold: () => { setInterval(() => {}, HOLD_TICK_MS); },
+    log: (line) => console.error(`[lararium] ${line}`),
   });
+  // THE STOP SIGNALS ARM HERE TOO, before any composition stands: the hand's stop of a fallen vessel clears the count and
+  // exits 0 even when the fall came during boot. Before a fall a signal passes to `onStop`: until a composition stands, it
+  // ends the boot as the signal itself would; once one stands, the composition's own graceful shutdown answers it.
+  let onStop: (sig: "SIGINT" | "SIGTERM") => void = (sig) => process.exit(sig === "SIGINT" ? 130 : 143);
+  armFallKeeper(fallKeeper, process, (sig) => onStop(sig));
   // The seed witness names this boot's seed beside the founding seed: a differing seed reads as an offer, never a refusal (genesis-resolve).
   console.log(checkGenesisPin(storageDir, genesis));
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
@@ -566,14 +576,9 @@ async function main(): Promise<void> {
   if (!byPulama && await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
     console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");
   }
-  // ONE pair of handlers for the process: a signal reaches whichever composition stands when it lands.
-  // A SIGNAL REACHING A FALLEN ENGINE READS AS THE HAND'S STOP: the hand has seen the named state, so the restart count clears.
-  const onSignal = (sig: string): void => {
-    if (engineWatch.fallen()) clearEngineFalls(storageDir);
-    if (composition) composition.onSignal(sig); else signalHeld = sig;
-  };
-  process.on("SIGINT",  () => onSignal("SIGINT"));
-  process.on("SIGTERM", () => onSignal("SIGTERM"));
+  // ONE pair of handlers for the process (armed with the keeper): a signal reaches whichever composition stands when it
+  // lands. A signal reaching a fallen engine never arrives here: the keeper reads it as the hand's stop (`handStop`).
+  onStop = (sig) => { if (composition) composition.onSignal(sig); else signalHeld = sig; };
 }
 
 
@@ -1064,6 +1069,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
 }
 
 main().catch((err) => {
+  // A boot that rejects after the engine fell (the dead module threw into the composition) ends nothing: the fall's answer
+  // owns the process's end.
+  if (fallKeeper?.absorbs(err)) return;
   if (err instanceof OriginCustodyRefusal) {
     // The refusal still carries the `fatal:` marker: a supervisor reading the boot log (`lares herm`) attests a
     // fault on it, and a refusal without it reads as a stall.
