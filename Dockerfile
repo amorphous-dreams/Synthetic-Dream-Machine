@@ -46,6 +46,9 @@ COPY packages/lararium-sensorium/package.json           packages/lararium-sensor
 COPY packages/lararium-tw5/package.json     packages/lararium-tw5/
 COPY packages/lararium-node/package.json    packages/lararium-node/
 COPY packages/lararium-web/package.json     packages/lararium-web/
+# The automerge engine installs from the vendored tarball the workspace override names (third-party/automerge/README.md);
+# the lock pins its integrity, so the install fetches no engine from the registry and needs no Rust toolchain.
+COPY third-party/automerge/automerge-3.5.0-split-capacity.tgz third-party/automerge/
 
 RUN pnpm install --frozen-lockfile
 

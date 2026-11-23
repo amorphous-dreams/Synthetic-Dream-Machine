@@ -28,8 +28,9 @@ d = A.change(d, (x) => { for (let i = 0; i < 4000; i++) x.t["k" + i] = { title: 
 d = A.load(A.save(d));
 const before = mb();
 for (let k = 1; k <= 50; k++) d = A.change(d, (x) => { x.t["k" + k].text = new A.ImmutableString(body(k, k)); });
+const grewMB = mb() - before;
 const loadedBack = A.load(A.save(d));
-process.stdout.write(JSON.stringify({ instances: insts.length, grewMB: mb() - before, text: String(loadedBack.t.k50.text) === body(50, 50) }));
+process.stdout.write(JSON.stringify({ instances: insts.length, grewMB, text: String(loadedBack.t.k50.text) === body(50, 50) }));
 `;
 
 describe("a loaded document lets its buffers go", () => {
