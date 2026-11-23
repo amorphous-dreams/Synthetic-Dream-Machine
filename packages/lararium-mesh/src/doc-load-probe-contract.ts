@@ -119,3 +119,30 @@ export interface QuarantineManifest {
    *  while the bytes stay aside, `kept` left whatever stands under the id. Absent, the id stays held on every boot. */
   readonly released?: { readonly act: "restored" | "fresh" | "kept" };
 }
+
+/**
+ * THE FOLD SENDS A DOUBLE. A document whose history would cost the live engine too much (`fold-gate`) loads FOLDED: the
+ * same disposable boundary replays its clear records in an engine of its own and hands back one compacted snapshot and its
+ * heads, so the replay's memory lands on the double and dies with it. A fold changes how a document LOADS, never what
+ * rests: the boundary reads the bytes it is given and writes nothing.
+ *
+ *   folded    — `snapshot` loads to exactly `heads` (the boundary checked it by loading the snapshot back); `spentBytes`
+ *               names what the replay cost the double's engine, the sample the fold gate learns from.
+ *   unfolded  — the boundary crashed, ran past its patience, or refused; `reason` names which. The caller loads the
+ *               document as it rests and names the fall-back.
+ */
+export type FoldVerdict =
+  | {
+    readonly status: "folded";
+    readonly snapshot: Uint8Array;
+    readonly heads: readonly string[];
+    /** the records the boundary folded, and those it passed over as sealed (a caller folds none such). */
+    readonly chunks: number;
+    readonly spentBytes: number;
+  }
+  | { readonly status: "unfolded"; readonly reason: string };
+
+/** The isomorphic fold shore: the node daemon folds in a child process, a browser vessel in a Worker. */
+export interface DocFold {
+  fold(documentId: string, records: readonly Uint8Array[]): Promise<FoldVerdict>;
+}

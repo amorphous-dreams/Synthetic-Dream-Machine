@@ -618,6 +618,7 @@ export * from "./sensorium-lifecycle.js";
 export * from "./store-integrity.js";
 
 export * from "./doc-load-probe-contract.js";
+export * from "./fold-gate.js";
 
 export * from "./doctor-sweep.js";
 export * from "./pack-provenance.js";

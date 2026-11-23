@@ -33,6 +33,23 @@
  *
  * It overrides every method that reads or writes; it borrows the base's disk listing (`loadRange`) and disk
  * removal, and holds its own copy of the base directory to recompute the shard path the base derives privately.
+ *
+ * A HEAVY DOCUMENT LOADS FOLDED (`fold`). Automerge's engine keeps memory for every change it replays onto a loaded
+ * document and returns none of it inside one engine, so a document with a long history past its snapshot can carry the
+ * live engine toward wasm32's ceiling at load. With a fold door seated, the Repo's own load of a document (its
+ * `[id, "snapshot"]` range, then its `[id, "incremental"]` range) meets the fold gate (`fold-gate`): a document the gate
+ * weighs heavy is replayed in the double (the doc-load-probe child's `--fold`), and the snapshot range answers ONE chunk,
+ * the compacted snapshot, while the incremental range lists none of the records that snapshot covers. Records the fold
+ * did not cover (a save landing after it) list as ever. A sealed or torn record, a light document, or a fold that fails
+ * (a crash, its patience spent, heads that differ) loads the document as it rests, and a failure names itself
+ * (`onFold`). Folds run one at a time, so two heavy documents never stand two doubles together.
+ *
+ * THE FOLD CHANGES HOW A DOCUMENT LOADS, NEVER WHAT RESTS (lararium/api/residency-model #/non-residency-verbs). The
+ * folded chunk carries a key no file holds (`[id, "snapshot", "folded-<digest>"]`), and every stored record stays out of
+ * the Repo's chunk accounting, so the Repo can never remove one: its first save after the load writes one incremental
+ * beside them (a snapshot of a megabyte never compacts against no incrementals), and a later compaction of its own
+ * removes only the folded key (nothing rests there) and the incrementals it wrote since. A rewrite of the stored records
+ * belongs to a separate, receipted EPOCH act.
  */
 
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
@@ -40,8 +57,9 @@ import type { Chunk, StorageKey } from "@automerge/automerge-repo/slim";
 import { mkdir } from "node:fs/promises";
 import { dirname, join, sep } from "node:path";
 
+import { createHash } from "node:crypto";
 import { atomicWriteFile } from "./fs-atomic.js";
-import { shoreStorage } from "@lararium/mesh";
+import { foldsAt, foldWeightOf, PONO_FOLD_GATE, shoreStorage, teachFold, type DocFold, type FoldGate, type FoldWeight } from "@lararium/mesh";
 
 /** The temp spellings `fs-atomic` stages beside a target: `<target>.<pid>.<suffix>.tmp` and `<target>.<pid>.tmp`. */
 const STAGED_TEMP = /^(.+)\.(\d+)\.(?:[^./]+\.)?tmp$/;
@@ -49,7 +67,25 @@ const STAGED_TEMP = /^(.+)\.(\d+)\.(?:[^./]+\.)?tmp$/;
 export interface DurableStorageOptions {
   /** Hears each stranded temp an opener passes over, by path, once. Absent, the adapter names it on stderr. */
   readonly onStrandedTemp?: (path: string) => void;
+  /** Seats the fold at load: a heavy document reaches the Repo as one snapshot the double folded. Absent, none folds. */
+  readonly fold?: FoldSeat;
 }
+
+/** What one fold at load came to. */
+export type FoldEvent =
+  | { readonly documentId: string; readonly outcome: "folded"; readonly weight: FoldWeight; readonly chunks: number; readonly snapshotBytes: number; readonly spentBytes: number }
+  | { readonly documentId: string; readonly outcome: "unfolded"; readonly weight: FoldWeight; readonly reason: string };
+
+/** The fold's seat in the store: the double, the gate it starts from, and who hears each fold. */
+export interface FoldSeat {
+  readonly door: DocFold;
+  /** The gate the store starts from; it learns from every fold that lands. Absent, `PONO_FOLD_GATE`. */
+  readonly gate?: FoldGate;
+  /** Hears each fold, landed or fallen back. Absent, the store names each on stdout, a fall-back on stderr. */
+  readonly onFold?: (event: FoldEvent) => void;
+}
+
+const MIB = 2 ** 20;
 
 /** One key's bytes while a save of it stays in flight: the latest bytes asked for, and how many saves still run. */
 interface PendingSave { readonly key: StorageKey; binary: Uint8Array; saves: number }
@@ -62,10 +98,18 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
   readonly #pending = new Map<string, PendingSave>();
   readonly #onStranded: (path: string) => void;
   readonly #named = new Set<string>();
+  readonly #fold: FoldSeat | undefined;
+  #gate: FoldGate;
+  /** Per document, the record paths its latest fold covered: its incremental range lists none of them. */
+  readonly #covered = new Map<string, ReadonlySet<string>>();
+  /** The fold running now: the next waits on it. */
+  #folding: Promise<unknown> = Promise.resolve();
 
   constructor(baseDirectory: string, opts: DurableStorageOptions = {}) {
     super(baseDirectory);
     this.#root = baseDirectory;
+    this.#fold = opts.fold;
+    this.#gate = opts.fold?.gate ?? PONO_FOLD_GATE;
     this.#onStranded = opts.onStrandedTemp
       ?? ((path) => console.warn(`[store] a stranded temp stands at ${path} — a writer died before its rename; ignored, never read as a chunk`));
     // THE LOCAL STORAGE SHORE: a stored chunk carrying a prototype key refuses by name before it materializes.
@@ -98,6 +142,46 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
   }
 
   override async loadRange(keyPrefix: StorageKey): Promise<Chunk[]> {
+    const chunks = await this.#listed(keyPrefix);
+    if (this.#fold === undefined || keyPrefix.length !== 2) return chunks;
+    const [documentId, role] = keyPrefix as [string, string];
+    if (role === "incremental") {
+      const covered = this.#covered.get(documentId);
+      return covered === undefined ? chunks : chunks.filter((chunk) => !covered.has(this.#pathOf(chunk.key)));
+    }
+    if (role !== "snapshot") return chunks;
+    this.#covered.delete(documentId);
+    const folded = await this.#foldOf(documentId, this.#fold, chunks, await this.#listed([documentId, "incremental"]));
+    return folded === null ? chunks : [folded];
+  }
+
+  /** The folded snapshot chunk for a heavy document, or null where it loads as it rests. */
+  async #foldOf(documentId: string, seat: FoldSeat, snapshots: Chunk[], incrementals: Chunk[]): Promise<Chunk | null> {
+    const records = [
+      ...snapshots.flatMap((c) => (c.data === undefined ? [] : [{ kind: "snapshot" as const, key: c.key, data: c.data }])),
+      ...incrementals.flatMap((c) => (c.data === undefined ? [] : [{ kind: "incremental" as const, key: c.key, data: c.data }])),
+    ];
+    const weighing = foldWeightOf(records);
+    if (!("weight" in weighing) || !foldsAt(this.#gate, weighing.weight)) return null;
+    const { weight } = weighing;
+    const turn = this.#folding.then(() => seat.door.fold(documentId, records.map((r) => r.data)));
+    this.#folding = turn.catch(() => { /* the verdict below names it */ });
+    const verdict = await turn.catch((e: unknown) => ({ status: "unfolded" as const, reason: `the double's door threw: ${e instanceof Error ? e.message : String(e)}` }));
+    const hear = seat.onFold ?? namedFold;
+    if (verdict.status === "unfolded") {
+      hear({ documentId, outcome: "unfolded", weight, reason: verdict.reason });
+      return null;
+    }
+    // Only a fold that landed teaches the gate (completions-only-teach).
+    this.#gate = teachFold(this.#gate, weight, verdict.spentBytes);
+    this.#covered.set(documentId, new Set(records.map((r) => this.#pathOf(r.key))));
+    hear({ documentId, outcome: "folded", weight, chunks: records.length, snapshotBytes: verdict.snapshot.length, spentBytes: verdict.spentBytes });
+    const digest = createHash("sha256").update(verdict.snapshot).digest("hex");
+    return { key: [documentId, "snapshot", `folded-${digest}`], data: verdict.snapshot };
+  }
+
+  /** The records under `keyPrefix`: the disk's, staged temps passed over, beside the bytes of every save in flight. */
+  async #listed(keyPrefix: StorageKey): Promise<Chunk[]> {
     // The pending set is read BEFORE the disk walk: a save that settles during the walk has landed on disk by
     // then, so the walk lists it; one read after the walk could miss a key that was neither on disk when the
     // walk passed nor still pending afterwards.
@@ -193,5 +277,15 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     for (const path of paths) this.#inFlight.set(path, gone);
     try { await gone; }
     finally { for (const path of paths) if (this.#inFlight.get(path) === gone) this.#inFlight.delete(path); }
+  }
+}
+
+/** The store's own voice for a fold: a landed fold on stdout, a fall-back on stderr. */
+function namedFold(event: FoldEvent): void {
+  const weighs = `${event.weight.changes} change(s) past the snapshot on ${(event.weight.bytes / MIB).toFixed(1)} MiB`;
+  if (event.outcome === "folded") {
+    console.log(`[store] fold: ${event.documentId} loads folded (${weighs}); the double spent ${(event.spentBytes / MIB).toFixed(0)} MiB replaying it, the engine reads one ${(event.snapshotBytes / MIB).toFixed(1)} MiB snapshot`);
+  } else {
+    console.warn(`[store] fold: ${event.documentId} loads unfolded (${weighs}): ${event.reason}`);
   }
 }

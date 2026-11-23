@@ -41,11 +41,11 @@ const fold = mode === "plain" ? undefined : {
 const storage = new DurableNodeFSStorageAdapter(storeDir, fold ? { fold } : {});
 const repo = new Repo({ storage, network: [] });
 const before = engineBytes();
-const handle = await repo.find<{ t: Record<string, { text: unknown }> }>(`automerge:${documentId}` as never);
-const heads = A.getHeads(handle.doc());
+const handle = await repo.find<Record<string, unknown>>(`automerge:${documentId}` as never);
+const heads = A.getHeads(handle.doc()!);
 const growthBytes = engineBytes() - before;
 if (after === "write") {
-  handle.change((d) => { d.t["k0"] = { text: "one write after the load" }; });
+  handle.change((d) => { d["fold-meter"] = "one write after the load"; });
   await repo.flush();
 }
 await repo.shutdown();

@@ -218,7 +218,7 @@ import { makeRecallHolder, type RecallHolder } from "./recall-holder.js";
 import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc, seatSealedRest } from "./repo-helpers.js";
-import { makeChildProcessDocLoadProbe, quarantineDoc, quarantineMoveLine, recoverCleanTail } from "./doc-load-probe.js";
+import { makeChildProcessDocFold, makeChildProcessDocLoadProbe, quarantineDoc, quarantineMoveLine, recoverCleanTail } from "./doc-load-probe.js";
 import { listFaceOrdinals, listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
@@ -1218,7 +1218,9 @@ async function prepareNodeBootOn(
   // reaches the engine through no path, the storage source's included, until the hand clears the count.
   const heldBack = heldInFlight(readEngineFalls(storageDir));
   const sealedRest = composeSealedRest<NodeSaveSession>({
-    inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
+    // A HEAVY DOCUMENT LOADS FOLDED: the double (the probe child's `--fold`) replays its history and the engine reads one
+    // snapshot; what rests never moves (`DurableNodeFSStorageAdapter#fold`).
+    inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir, { fold: { door: makeChildProcessDocFold() } }), heldBack, (line) => console.warn(`[lararium] ${line}`)),
     bagOf: sealedBagOf,
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),

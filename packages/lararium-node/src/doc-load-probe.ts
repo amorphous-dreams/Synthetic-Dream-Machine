@@ -25,7 +25,9 @@ import {
   isFaceScopedBag,
   isCondemned,
   isUnresolved,
+  type DocFold,
   type DocLoadProbe,
+  type FoldVerdict,
   type MountManifest,
   type ProbeOptions,
   type ProbeResult,
@@ -211,6 +213,66 @@ export async function probeDocLoad(
 /** The node child_process boundary, packaged as the isomorphic `DocLoadProbe`. */
 export function makeChildProcessDocLoadProbe(storageDir: string): DocLoadProbe {
   return { probe: (documentId, o) => probeDocLoad(storageDir, documentId, o ?? {}) };
+}
+
+/** The fold child's one line. */
+interface FoldLine { ok?: boolean; heads?: string[]; chunks?: number; spentBytes?: number; snapshot?: string; reason?: string }
+
+/**
+ * THE DOUBLE: fold one document's records in the disposable child (`--fold`). The records travel on the child's stdin, each
+ * a big-endian u32 length and its bytes; the child answers one compacted snapshot and its heads, or a reason. Every way the
+ * child can fail (a crash, an abort, this door's patience spent, a refusal) answers `unfolded` with the reason named, so
+ * the caller loads the document as it rests. Patience: the probe's own window.
+ */
+export function foldDocInChild(documentId: string, records: readonly Uint8Array[], opts: { readonly timeoutMs?: number } = {}): Promise<FoldVerdict> {
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const childPath = resolveChildPath();
+  return new Promise<FoldVerdict>((resolve) => {
+    const child = spawn(process.execPath, [childPath, "--fold", documentId], { stdio: ["pipe", "pipe", "pipe"] });
+    const out: Buffer[] = [];
+    let err = "";
+    let settled = false;
+    const finish = (v: FoldVerdict) => { if (!settled) { settled = true; resolve(v); } };
+    const unfolded = (reason: string) => finish({ status: "unfolded", reason });
+    const timer = setTimeout(() => { child.kill("SIGKILL"); unfolded(`the double ran past its patience (${timeoutMs}ms)`); }, timeoutMs);
+    timer.unref?.();
+    child.stdout.on("data", (d: Buffer) => { out.push(d); });
+    child.stderr.on("data", (d: Buffer) => { err += d.toString(); });
+    child.stdin.on("error", () => { /* a child that died early closes its stdin; its exit names why */ });
+    child.on("error", (e) => { clearTimeout(timer); unfolded(`the double never started: ${e.message}`); });
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      if (settled) return;
+      let line: FoldLine | null = null;
+      const trimmed = Buffer.concat(out).toString().trim();
+      if (trimmed) { try { line = JSON.parse(trimmed.split("\n").pop() ?? "{}") as FoldLine; } catch { line = null; } }
+      if (code === 0 && line?.ok === true && typeof line.snapshot === "string" && Array.isArray(line.heads)) {
+        finish({
+          status: "folded",
+          snapshot: new Uint8Array(Buffer.from(line.snapshot, "base64")),
+          heads: line.heads,
+          chunks: line.chunks ?? records.length,
+          spentBytes: line.spentBytes ?? 0,
+        });
+        return;
+      }
+      if (line?.ok === false && line.reason) return unfolded(`the double refused: ${line.reason}`);
+      const how = signal ? `signal ${signal}` : `exit ${code}`;
+      unfolded(`the double died (${how})${err.trim() ? ` — ${err.trim().split("\n").pop()}` : ""}`);
+    });
+    for (const record of records) {
+      const length = Buffer.alloc(4);
+      length.writeUInt32BE(record.length, 0);
+      child.stdin.write(length);
+      child.stdin.write(record);
+    }
+    child.stdin.end();
+  });
+}
+
+/** The node child_process double, packaged as the isomorphic `DocFold`. */
+export function makeChildProcessDocFold(opts: { readonly timeoutMs?: number } = {}): DocFold {
+  return { fold: (documentId, records) => foldDocInChild(documentId, records, opts) };
 }
 
 /** `runCleanTailChild`'s tagged outcome — so a patience-spent (or signal-less) death reads
