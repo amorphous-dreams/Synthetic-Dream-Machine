@@ -258,11 +258,26 @@ last_worn_face() {
   printf '%s' "$worn"
 }
 NO_FACE_REMEMBERED='no face rests remembered (config/last-worn-face reads empty), so the shim wears none and the vessel'"'"'s own mount stands; another face: wear N'
+# THE SHIM'S OWN WEAR TURNS OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first, and refuses
+# `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
+# carries `--yes`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
+# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. $1 = the face; sets SW_WHY on a refusal.
+shim_wear() {
+  SW_WHY=""
+  # shellcheck disable=SC2046
+  if sw_out=$(waited_exec $(pass_env) -T lares node "$CLI" wear "$1" --yes </dev/null 2>&1); then sw_rc=0; else sw_rc=$?; fi
+  [ -z "$sw_out" ] || printf '%s\n' "$sw_out" >&2
+  [ "$sw_rc" -eq 0 ] && return 0
+  case "$sw_out" in
+    *shore-unwritten*|*"the shore's flush left records unwritten"*) SW_WHY="h$1 did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with \`lares-container.sh wear $1 --yes\`, or read them with \`lares-container.sh shore\`" ;;
+    *) SW_WHY="h$1 stands outside the lent set or locked; wear another face with \`lares-container.sh wear N\`" ;;
+  esac
+  return "$sw_rc"
+}
 # After an unlock that landed: wear the face last worn, or, with none remembered, say the vessel's own mount stands.
 wear_after_unlock() {
   if [ -z "$wear" ]; then printf 'lares-container: the vessel opened; %s\n' "$NO_FACE_REMEMBERED" >&2; return 0; fi
-  # shellcheck disable=SC2046
-  waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null || printf 'lares-container: the vessel opened, but h%s stands outside the lent set or locked; wear another face with `lares-container.sh wear N`\n' "$wear" >&2
+  shim_wear "$wear" || printf 'lares-container: the vessel opened, but %s\n' "$SW_WHY" >&2
 }
 remember_worn_face() { # the argv of a `vault unlock` that landed
   face=""
@@ -292,8 +307,8 @@ wear_last_face() {
   fi
   printf 'lares-container: faces stand lent and none worn; wearing h%s, the face last worn\n' "$wear" >&2
   # shellcheck disable=SC2046
-  if waited_exec $(pass_env) -T lares node "$CLI" wear "$wear" </dev/null; then WORE="h$wear"
-  else WORE=""; printf 'lares-container: h%s stands outside the lent set or locked; wear another face with `lares-container.sh wear N`\n' "$wear" >&2; fi
+  if shim_wear "$wear"; then WORE="h$wear"
+  else WORE=""; printf 'lares-container: %s\n' "$SW_WHY" >&2; fi
 }
 WORE=""
 

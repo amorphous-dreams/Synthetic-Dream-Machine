@@ -167,10 +167,10 @@ describe("RED lares wear N", () => {
     expect(landings).toEqual([]);
   });
 
-  it("the command table seats `wear`, accepting `face` alone", () => {
+  it("the command table seats `wear`, accepting `face` and `yes` (turn over records the shore's flush left unwritten) alone", () => {
     const row = COMMANDS.find((c) => c.name === "wear");
     expect(row).toBeDefined();
-    expect(row!.accepts).toEqual(["face"]);
+    expect(row!.accepts).toEqual(["face", "yes"]);
   });
 });
 
@@ -235,5 +235,34 @@ describe("RED a seat wears on word (the command)", () => {
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
     expect(await wear("1")).toBe(0);
     expect(frames.at(-1)).toEqual({ op: "wear", face: 1 });
+  });
+});
+
+describe("RED a wear flushes every shore before it turns the face (the vessel asks it in-process)", () => {
+  const STRANDS = { whole: false, islands: [
+    { island: "daemon", answered: true, written: [], writtenCount: 2, unwritten: [], unwrittenCount: 0, fileWrites: 2, drained: true },
+    { island: "wiki:sdm", answered: true, written: [], writtenCount: 0, unwritten: [{ state: "failed", uri: "lar:///a.b.c/stuck", why: "its reconcile threw again on the retry" }], unwrittenCount: 1, fileWrites: 0, drained: true },
+  ] };
+  const refused = { op: "wear", status: "error", errorMessage: "the shore's flush left records unwritten", refusal: { reason: "shore-unwritten", shore: STRANDS } };
+
+  it("WS1 a wear the vessel refuses over unwritten records names each record and the --yes that turns anyway, and sends no second frame", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : refused;
+    expect(await wear("1")).toBe(1);
+    expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1 }]);
+    const a = answer();
+    expect(a).toMatchObject({ ok: false, error: { code: "shore-unwritten" } });
+    expect(a.error!.message).toContain("lar:///a.b.c/stuck");
+    expect(a.error!.message).toContain("wiki:sdm");
+    expect(a.error!.message).toContain("lares wear 1 --yes");
+  });
+
+  it("WS2 `--yes` carries `yes: true` on the wear frame, and the wear prints the flush's reading beside its line", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth", shore: STRANDS };
+    expect(await cmdWear(parseArgs(["wear", "1", "--yes"]))).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, yes: true }]);
+    const text = out.join("\n");
+    expect(text).toContain("wearing h1: the vessel stands as hearth.");
+    expect(text).toMatch(/shore: daemon wrote 2 owed carrier\(s\)/);
+    expect(text).toMatch(/shore: wiki:sdm wrote 0 owed carrier\(s\); 1 left unwritten: failed lar:\/\/\/a\.b\.c\/stuck \(its reconcile threw again on the retry\)/);
   });
 });

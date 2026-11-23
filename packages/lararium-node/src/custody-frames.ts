@@ -59,13 +59,14 @@ import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.j
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
 import { readHand } from "./hand-act-gate.js";
 import type { PeerKind } from "./uds-peer.js";
+import { shoreFlushLines, type ShoreFlushReading } from "./shore-verb.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
   | { readonly op: "lock"; readonly face?: number }
   /** Wear face `face`: the session's choice among the faces standing open. No credential rides it; `seat: "ai"` marks a frame
    *  an AI seat sent, which the door answers as it answers the operator's own. */
-  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai" }
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai"; readonly yes?: true }
   | { readonly op: "custody" }
   /** The census of saves held in memory, read before a stop: no credential, no act, no chain. */
   | { readonly op: "census" }
@@ -101,7 +102,7 @@ export type CustodyAnswer =
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[]; readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }> }
   /** A wear that stood: the face it wears, or (`switchRefused`) the face it named, why, and the face worn again. */
-  | ({ readonly op: "wear"; readonly face: number; readonly held: boolean; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number } & Partial<CustodyStanding>)
+  | ({ readonly op: "wear"; readonly face: number; readonly held: boolean; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number; readonly shore?: ShoreFlushReading } & Partial<CustodyStanding>)
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly pulama?: { readonly session: boolean; readonly waits: string | null }; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
@@ -189,6 +190,12 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
   /** Rehive one SHUT face under its own route (`rehiveShutFace`). Absent, every `rehive` frame refuses `rehive-unavailable`. */
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
+  /**
+   * Ask every island of the standing composition that mounts a disk shore to flush (`flushEveryShore`, the same flush the
+   * teardown's flush phase runs). A wear that turns the face asks it first, in this process. Absent, or null while no
+   * composition sits, a wear turns with no flush reading.
+   */
+  readonly shoreFlush?: () => Promise<ShoreFlushReading> | null;
   /** Who sent a hand act's frame (`hand-act-gate`); the test seam alone replaces it. */
   readonly peerOf?: (sock: Socket) => Promise<PeerKind>;
 }
@@ -197,7 +204,7 @@ const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "
 /** The keys a `rehive` frame may carry: the face's own route and the face, nothing beside them. */
 const REHIVE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
-const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat"]);
+const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat", "yes"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots", "purpose", "argsDigest"]);
@@ -428,8 +435,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * Under a pūlama, a wear that stands (or finds the face worn already) tells the pūlama the ordinal, which it keeps in
    * memory and hands back to this vessel's next session. The wear answers without waiting on the tell, so a pūlama that
    * never answers holds no custody act behind it; a tell the pūlama refuses names itself and leaves the wear standing.
+   *
+   * A WEAR THAT TURNS THE FACE FLUSHES EVERY SHORE FIRST (`shoreFlush`), while the face it leaves still stands mounted. Where
+   * the flush leaves a carrier unwritten, or an island gives no answer, the wear refuses `shore-unwritten` and names each one:
+   * those records rest in the store, and their mirrors stay behind until the face is worn again. The same frame carrying
+   * `yes: true` turns anyway. Either answer carries the flush's reading (`shore`).
    */
-  const wear = composing(async (face: number): Promise<CustodyAnswer> => {
+  const wear = composing(async (face: number, yes = false): Promise<CustodyAnswer> => {
     const tellWorn = (): void => {
       if (!deps.pulama) return;
       deps.pulama.tellWorn(face).catch((e: unknown) => deps.onLog(`wear h${face}: the pūlama did not keep the worn face (${(e as { reading?: unknown }).reading ?? (e instanceof Error ? e.name : "refused")}); a restart wears the lowest face served`));
@@ -453,6 +465,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A wear that names the face already worn names it by choice: the mount reads as named, and a lock of that face never slides it on as an opening's mount slides.
     if (before === face) { mountByOpening = false; tellWorn(); return { op: "wear", face, held: true, already: true, standing: deps.standing() }; }
     // THE ROLLBACK RESTORES THE MOUNT EXACTLY: a named face, the default rule, or NO MOUNT (never the default rule in NO MOUNT's place).
+    const shore = (await deps.shoreFlush?.()) ?? undefined;
+    if (shore !== undefined) {
+      for (const line of shoreFlushLines(shore)) deps.onLog(`wear h${face}: ${line}`);
+      if (!shore.whole && !yes) {
+        const strands = shoreFlushLines(shore).filter((_, i) => { const part = shore.islands[i]!; return !part.answered || part.unwrittenCount > 0; });
+        return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until that face is worn again: wear again with --yes to turn anyway`, { shore });
+      }
+    }
     const priorMount = daemonMountState();
     const byOpeningBefore = mountByOpening;
     setMountedFace(face);
@@ -462,7 +482,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A RECOMPOSE THAT THROWS puts the mount back on the face it left before the fault names itself to the caller.
     try { stood = await deps.recompose(true); }
     catch (e) { restoreDaemonMount(priorMount); mountByOpening = byOpeningBefore; throw e; }
-    if (stood.refused === undefined) { tellWorn(); return { op: "wear", face, held: true, ...stood }; }
+    const read = shore !== undefined ? { shore } : {};
+    if (stood.refused === undefined) { tellWorn(); return { op: "wear", face, held: true, ...stood, ...read }; }
     restoreDaemonMount(priorMount);
     mountByOpening = byOpeningBefore;
     const back = await deps.recompose(true);
@@ -472,10 +493,10 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       clearDaemonMount();
       const floor = await deps.recompose(true);
       deps.onLog(`the composition wearing h${face} did not stand, nor ${before !== undefined ? `h${before} again` : "the mount before it"}; the vessel stands at the floor, every key held`);
-      return { op: "wear", face, held: true, ...floor, switchRefused: stood.refused };
+      return { op: "wear", face, held: true, ...floor, switchRefused: stood.refused, ...read };
     }
     deps.onLog(`the composition wearing h${face} did not stand; ${before !== undefined ? `h${before} worn again` : "no face named"}, the node key held`);
-    return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}) };
+    return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}), ...read };
   });
 
   /**
@@ -703,14 +724,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     } else if (op === "wear") {
       const frame = parsed as Record<string, unknown>;
       const face = frame["face"];
-      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0 || (frame["seat"] !== undefined && frame["seat"] !== "ai")) {
+      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0 || (frame["seat"] !== undefined && frame["seat"] !== "ai") || (frame["yes"] !== undefined && frame["yes"] !== true)) {
         deps.onLog("wear: refused (bad-custody-frame)");
-        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) and at most `seat: \"ai\"`, and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
+        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) at most `seat: \"ai\"` and `yes: true` (turn over records the shore's flush left unwritten), and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
       // A WEAR MOVES THE MOUNT FOR ANY SEAT: it asks no route and carries no key, and reaches only a face already standing open;
       // unlock and custody stay the operator's own acts.
-      act = () => wear(face as number);
+      act = () => wear(face as number, frame["yes"] === true);
     } else if (op === "unlock" && deps.pulama) {
       // A PŪLAMA HOLDS THIS VESSEL'S CUSTODY: the frame's credentials go unread (no route opens anything here), the vessel
       // dials the pūlama again, and the answer names a session or what the pūlama waits on.

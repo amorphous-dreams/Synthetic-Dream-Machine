@@ -1105,13 +1105,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "(under a pūlama, one the pūlama lends), and the vessel composes again on it. A wear asks no route and carries none, and an AI seat wears on the operator's word as the operator's own terminal does. " +
       "A vessel holding no key refuses `custody-locked` and names `lares vault unlock`; a composition that refuses wears " +
       "the face it left, and the vessel key stays held. A wear that lands replays the share landing, as an unlock does: rows a " +
-      "grant carried for the face now worn lift into its catalog (the face already worn among them), and the wear names what still waits on a shut face.",
+      "grant carried for the face now worn lift into its catalog (the face already worn among them), and the wear names what still waits on a shut face. " +
+      "A wear that turns the face flushes every shore first, inside the vessel (the whole-island flush its teardown runs), and prints what each island wrote; " +
+      "where a record stays unwritten, or an island gives no answer, it refuses `shore-unwritten` and names each one: a terminal asks whether to turn anyway, and `--yes` turns anyway.",
     examples: [
       "lares wear 1                           # move the mount to face h1, a face already standing open",
       "lares wear --face 0                    # the same move, the face named by flag",
     ],
     flags: [
       "--face <N>         the face to wear, read where no positional names one",
+      "--yes              turn the face even where the shore's flush left records unwritten (they rest in the store; their mirrors wait)",
       "--json             the door's answer as one object, the form a caller parses; a pipe reads the one prose line",
     ],
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],

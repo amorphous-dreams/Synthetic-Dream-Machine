@@ -564,6 +564,8 @@ async function main(): Promise<void> {
     heldSaves: () => composition?.heldSaves?.() ?? null,
     // THE DOCUMENT CENSUS of the standing composition's stores: null while none sits, so a read never names an empty house.
     docCensus: () => composition?.docCensus?.() ?? null,
+    // THE SHORE'S FLUSH a wear asks before it turns the face: the standing composition's whole-island flush, in this process.
+    shoreFlush: () => composition?.shoreFlush?.() ?? null,
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 

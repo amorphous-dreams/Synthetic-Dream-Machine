@@ -29,7 +29,10 @@
  *   6. rite-offer   IN THE STANDING VESSEL, over the image the host made: one vouch per face, rested for the next vessel to
  *                   carry to the pūlama (`kukulu-offer.json`), so the pūlama lends on it with no admit
  *   7. raise        the shim's restand: down (keep, census), the pūlama re-stood and lit ATTACHED on this terminal where its
- *                   code moved, up, its admit attached where owed, the vessel's unlock and the face last worn
+ *                   code moved, up, its admit attached where owed, the vessel's unlock and the face last worn. The down stops a
+ *                   standing vessel gracefully (SIGTERM under Docker's stop grace), and the node's teardown flushes every shore
+ *                   (every resident island with a mirror) before any island goes down; the rite names that before the raise
+ *                   ({@link STOP_FLUSHES_LINE})
  *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par
  *   9. lag          after a raise that stood, the lag reads aloud on every raise: the canon bag behind the canon source (the
  *                   carriers in `bags/` the canon layers lack; canon fills through promote and the floor's sealed cut, never
@@ -217,6 +220,15 @@ export function priorImageRef(imageRef: string, revision: string, id: string): P
     ? { revision, tag: `${repo}:rev-${revision.slice(0, 12)}` }
     : { revision: "unlabeled", tag: `${repo}:rev-unlabeled-${id.replace(/^sha256:/, "").slice(0, 12)}` };
 }
+
+/**
+ * Whether the restand stops the standing vessel: the shim's down runs where a vessel stands on another image, or where the
+ * pūlama re-stands (absent, or its code moved); a vessel already on the image under a pūlama that only owes its light stays.
+ */
+export const restandStops = (r: StandReading): boolean => r.vessel === "standing" && (!r.current || r.pulama === "absent" || r.pulama === "moved");
+
+/** What the rite says before a raise that stops the standing vessel: the graceful stop's shore flush, and the cure past its grace. */
+export const STOP_FLUSHES_LINE = "kūkulu: the restand stops the standing vessel gracefully (compose stop, SIGTERM): its teardown flushes every shore (every resident island with a mirror) before any island goes down. A stop that runs past Docker's stop grace (20s) ends by SIGKILL, and an island that had not answered leaves its mirrors behind its records (they rest in the store): once the house stands, `lares shore flush` writes what the daemon and the active wiki owe (it reaches those two alone), and `lares shore` lists what stands";
 
 /** The one command that raises a replaced image again with no rebuild: the rite itself, rolled back to its revision. */
 export const wayBackCommand = (prior: PriorImage): string =>
@@ -643,6 +655,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       for (const face of waits) ports.say(`kūkulu: ${face} carries no lei on this line and waits at the pūlama by name; the other faces' lend stands`);
     }
   }
+  if (restandStops(r)) ports.say(STOP_FLUSHES_LINE);
   const raised = await ports.raise(head);
   if (raised !== 0) {
     // A CTRL+C at a prompt the restand asks (accept-loss, the light, the admit) ends the shim by the signal: the begun halves and

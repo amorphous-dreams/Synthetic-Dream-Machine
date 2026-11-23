@@ -11,6 +11,23 @@ afterEach(async () => {
 });
 
 describe("Node readiness face", () => {
+  test("health counts planes that settle degraded after boot without exposing their names", async () => {
+    const server = createServer(); servers.push(server);
+    const state = createReadinessState();
+    const entries: Array<{ bagId: string; documentId: string; status: "sealed" | "degraded" | "pending" }> = [{ bagId: "private-plane", documentId: "private-document", status: "sealed" }];
+    state.notePlanes({ entries, degraded: false });
+    state.markReady();
+    mountReadinessFace({ httpServer: server, state, standing: "lararium" });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("readiness test did not bind");
+    const url = `http://127.0.0.1:${address.port}/api/health`;
+    expect(await (await fetch(url)).json()).toEqual({ status: "ready" });
+    entries[0]!.status = "degraded";
+    const response = await fetch(url);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: "ready", held: { pending: 0, degraded: 1 } });
+  });
   test("answers 503 before setup, 200 after injected setup, and 405 for unsupported methods", async () => {
     const server = createServer(); servers.push(server);
     const state = createReadinessState();

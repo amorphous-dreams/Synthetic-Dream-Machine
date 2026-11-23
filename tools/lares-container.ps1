@@ -320,10 +320,28 @@ function DetachedWear([string]$face) {
   $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face
   return $LASTEXITCODE
 }
+# THE SHIM'S OWN WEAR TURNS OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first, and refuses
+# `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
+# carries `--yes`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
+# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. Sets $script:ShimWearWhy on a refusal.
+function ShimWear([string]$face) {
+  $script:ShimWearWhy = ''
+  $out = @($null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face --yes 2>&1)
+  $rc = $LASTEXITCODE
+  foreach ($line in $out) { [Console]::Error.WriteLine("$line") }
+  if ($rc -eq 0) { return 0 }
+  $said = ($out | ForEach-Object { "$_" }) -join "`n"
+  if ($said -match "shore-unwritten|the shore's flush left records unwritten") {
+    $script:ShimWearWhy = "h$face did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with ``lares-container.ps1 wear $face --yes``, or read them with ``lares-container.ps1 shore``"
+  } else {
+    $script:ShimWearWhy = "h$face stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``"
+  }
+  return $rc
+}
 # After an unlock that landed: wear the face last worn, or, with none remembered, say the vessel's own mount stands.
 function WearAfterUnlock([string]$wear) {
   if (-not $wear) { [Console]::Error.WriteLine("lares-container: the vessel opened; $NoFaceRemembered"); return }
-  if ((DetachedWear "$wear") -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened, but h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
+  if ((ShimWear "$wear") -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened, but $script:ShimWearWhy") }
 }
 function UnlockOrName {
   if (KeyHeld) {
@@ -569,8 +587,8 @@ function WearLastFace {
     return
   }
   [Console]::Error.WriteLine("lares-container: faces stand lent and none worn; wearing h$wear, the face last worn")
-  if ((DetachedWear "$wear") -eq 0) { $script:Wore = "h$wear" }
-  else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
+  if ((ShimWear "$wear") -eq 0) { $script:Wore = "h$wear" }
+  else { $script:Wore = ''; [Console]::Error.WriteLine("lares-container: $script:ShimWearWhy") }
 }
 # A CENSUS OF HELD SAVES ALONE says so plainly before the accept-loss offer: how many documents, that each waits in memory for a
 # session in this vessel, and that no carrier and no untracked file waits, so accept-loss drops exactly these. Under a restand it
