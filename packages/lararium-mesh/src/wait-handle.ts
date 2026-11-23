@@ -29,7 +29,7 @@
 import { interpretAsDocumentId, isValidAutomergeUrl, parseAutomergeUrl, type AutomergeUrl, type DocHandle, type DocumentId, type DocumentProgress, type QueryState, type Repo } from "@automerge/automerge-repo";
 import { mergeGuarded } from "./prototype-key-shore.js";
 import { isVerbRefusal } from "./verb-refusal.js";
-import { holdSealedUnopened, markStandIn, openSealed, releaseStandIn } from "./automerge-doc-store.js";
+import { holdSealedUnopened, markStandIn, openSealed, releaseStandIn, sealedUnopened } from "./automerge-doc-store.js";
 import { isIntegrityRefusal } from "./sealed-doc-store.js";
 
 /** Each fallback the late merge reached, by its id, with the id of the document merged into it. An entry lives as long as
@@ -58,8 +58,17 @@ export interface SealedRestDoor {
   refusalOf?(documentId: string): string | null;
   /** Move a document's bytes aside on integrity evidence (the probe's quarantine, held across boots); absent: nothing moves. */
   quarantine?(documentId: string, why: string): void;
-  /** Told once when a sealed document held read-only settles: opened, refused on integrity evidence, or pending. */
+  /** Told when a sealed document held read-only settles: opened, refused on integrity evidence, or pending. A pending one
+   *  whose bytes arrive later (a peer's sync) settles again, `mounted`. */
   onSettled?(settled: SealedSettlement): void;
+  /**
+   * THE MAP BEFORE THE BYTES: a caller that knows the bag a document belongs to names it here before any byte of it moves
+   * (`waitHandle`'s `bagId`), so a sealed bag's document the map has not named yet (a sibling's draft, a slot ahead of its
+   * announcement) maps sealed from the first byte: it stands held over its own id, never under a clear fallback, and its
+   * bytes arriving by sync rest sealed, or wait in memory while the bag's face has not lit, never clear. Answers whether the
+   * bag rests sealed (`SealedDocumentStore#nameDocument`); a clear bag names nothing.
+   */
+  nameDocument?(documentId: string, bagId: string): boolean;
 }
 
 /** How a sealed document held read-only over its own id settled. */
@@ -130,6 +139,15 @@ function holdSealed<T>(repo: Repo, progress: DocumentProgress<T>, documentId: st
       const reason = `sealed: the keyed load ended with no integrity evidence (${ending.why}); no bytes moved, the next boot reads it again`;
       holdSealedUnopened(own, reason);
       settled = { documentId, status: "pending", reason };
+      // BYTES THAT ARRIVE LATER OPEN IT: a document none of whose sources held it (its bytes live on a sibling) reads ready once
+      // a peer's sync lands them, through the same sealed rest; the hold then opens over the same id.
+      const unsubscribe = progress.subscribe((state) => {
+        if (state.state !== "ready" || sealedUnopened(own) === undefined) return;
+        unsubscribe();
+        releaseStandIn(own);
+        openSealed(own);
+        try { door.onSettled?.({ documentId, status: "mounted" }); } catch { /* a listener's fault never holds the document */ }
+      });
     }
     try { door.onSettled?.(settled); } catch { /* a listener's fault never holds the document */ }
   });
@@ -148,13 +166,23 @@ export const LOCAL_READY_MS = 3000;
  * `readyMs` overrides the window for a test; a caller in a causal island may also shorten it where it
  * knows its own peer is far. Zero and negative read as "do not wait" rather than as an error — a caller
  * asking for no window means it, and the late-merge still stands behind the fallback.
+ *
+ * `bagId` names the bag the document belongs to, where the caller knows it: over a Repo that seats its sealed rest, the
+ * document is named for that bag before any byte of it moves (`SealedRestDoor.nameDocument`, the map before the bytes).
  */
 export async function waitHandle<T>(
   repo: Repo,
   url: AutomergeUrl | string,
   fallbackFn: () => DocHandle<T>,
   readyMs: number = LOCAL_READY_MS,
+  bagId?: string,
 ): Promise<DocHandle<T>> {
+  const door = SEALED_DOORS.get(repo);
+  // Only a Repo that seats its sealed rest reads the document's id here.
+  const documentId = door === undefined ? null : documentIdOf(String(url));
+  // THE MAP BEFORE THE BYTES: named ahead of the find, so a byte that lands in the window (a local read, a peer's sync) already
+  // rests by the bag's own class.
+  if (door !== undefined && documentId !== null && bagId !== undefined) door.nameDocument?.(documentId, bagId);
   const progress = repo.findWithProgress<T>(url as AutomergeUrl);
   const ready = await Promise.race([
     progress.whenReady().then((h) => h).catch(() => null),
@@ -164,9 +192,7 @@ export async function waitHandle<T>(
   if (ready) return ready;
 
   // A SEALED BAG MOUNTS NO WRITABLE FALLBACK: its document stands read-only over its own id until the keyed load opens it.
-  const door = SEALED_DOORS.get(repo);
-  if (door !== undefined) {
-    const documentId = documentIdOf(String(url));
+  if (door !== undefined && documentId !== null) {
     if (await door.restsSealed(documentId)) {
       const held = holdSealed(repo, progress, documentId, door);
       if (held !== null) return held;

@@ -217,7 +217,7 @@ import {
 import { makeRecallHolder, type RecallHolder } from "./recall-holder.js";
 import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
-import { waitHandle, resolveBootDoc, seatSealedRest } from "./repo-helpers.js";
+import { waitHandle, resolveBootDoc, seatSealedRest, LOCAL_READY_MS } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, quarantineMoveLine, recoverCleanTail } from "./doc-load-probe.js";
 import { listFaceOrdinals, listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
@@ -1217,6 +1217,8 @@ async function prepareNodeBootOn(
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: new DurableNodeFSStorageAdapter(storageDir),
     bagOf: sealedBagOf,
+    // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
+    bagRow: (bagId) => sealedMap.bagRow(bagId),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
@@ -1632,6 +1634,7 @@ async function prepareNodeBootOn(
   seatSealedRest(repo, {
     restsSealed: (documentId) => sealedRest.restsSealed(documentId),
     refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
+    nameDocument: (documentId, bagId) => sealedRest.store.nameDocument(documentId, bagId),
     quarantine: (documentId, reason) => {
       const verdict = { documentId, status: "load-error" as const, reason };
       const bagId = sealedBagOf(documentId)?.bagId;
@@ -2884,7 +2887,7 @@ async function prepareNodeBootOn(
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
     catalogHandle,
-    waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback),
+    waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>, bagId?: string) => waitHandle<T>(repo, url, fallback, LOCAL_READY_MS, bagId),
 
     // Genesis island (required) + the social-plane bootstrap it carries.
     loadGenesis: async () => {

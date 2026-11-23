@@ -84,8 +84,11 @@ export interface VesselKeel {
    *
    *  ⚠ NOT `allowableStates` — that option carries an upstream deprecation tag and takes no effect in the
    *  pinned automerge-repo, so a strategy resting on it rests on nothing. Progress reads through
-   *  `findWithProgress`, which reports per-source state rather than one collapsed verdict. */
-  waitHandle:    <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => Promise<DocHandle<T>>;
+   *  `findWithProgress`, which reports per-source state rather than one collapsed verdict.
+   *
+   *  `bagId` names the bag the document belongs to where the caller knows it: the map before the bytes
+   *  (`waitHandle`'s own `bagId`), so a sealed bag's document the map names nothing for yet never rests clear. */
+  waitHandle:    <T>(url: AutomergeUrl, fallback: () => DocHandle<T>, bagId?: string) => Promise<DocHandle<T>>;
   /** Genesis island piece → handle + coreHash + the social-plane bootstrap it carries.
    *  Genesis REQUIRED (coreless boot deleted) — the vessel derives bootstrap from the
    *  island (or the init JSON) here, so it resolves together with genesis, not before. */
@@ -250,7 +253,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   // doc gets quarantined and mounts as a read-only blank (writable:false, so no write forks
   // into the placeholder), and the manifest marks the vessel degraded. Absent a probe, the
   // doc resolves straight through, as before.
-  const resolve = (url: AutomergeUrl) => waitHandle<LarDoc>(url, () => blankDoc(repo));
+  const resolve = (url: AutomergeUrl, bagId: string) => waitHandle<LarDoc>(url, () => blankDoc(repo), bagId);
   const entries: MountEntry[] = [];
   const manifest: { entries: MountEntry[]; degraded: boolean } = { entries, degraded: false };
   const sealedSettling: Promise<void>[] = [];
@@ -330,7 +333,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
           return;
         }
         if (promoted && promoted.status === "ok") {
-          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId, wearOf(repo)), writable: true, defaultWritable: false });
+          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl, bagId), bagId, wearOf(repo)), writable: true, defaultWritable: false });
           const cut = promoted.cleanTail;
           entries.push({ bagId, documentId, status: "promoted", reason: cut ? `clean-tail: kept ${cut.kept}, moved ${cut.movedAside.length} aside` : "clean-tail recovery" });
           return;
@@ -354,7 +357,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         return;
       }
     }
-    const handle = await resolve(url as AutomergeUrl);
+    const handle = await resolve(url as AutomergeUrl, bagId);
     composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: true, defaultWritable: false });
     if (sealedUnopened(handle) === undefined) { entries.push({ bagId, documentId, status: "mounted" }); return; }
     // A SEALED PLANE PAST THE WINDOW, WITH NO PROBE AHEAD OF IT: `waitHandle` held it read-only over its own id (a write
@@ -436,7 +439,7 @@ export async function mountWikiSlot(
   // registry entry, not the canon-doc lookup.
   const wikiHandle = presetWikiHandle ?? (isHouseCanonBag(slot.wikiBagId) ? null : await resolveCatalogEntry(
     catalogHandle, slot.wikiBagId,
-    (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, () => blankDoc(repo)) : blankDoc(repo),
+    (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, () => blankDoc(repo), slot.wikiBagId) : blankDoc(repo),
     "vessel-boot",
   ));
   const canonAddress = wikiHandle?.url ?? floorCanonAddress(slot.wikiBagId);
@@ -451,7 +454,7 @@ export async function mountWikiSlot(
   if (wikiHandle) composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId, wearOf(repo)), ...flags(slot.wikiBagId) });
   if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot, wearOf(repo)), ...flags(workingSlot) });
 
-  const draftHandle = await waitHandle<LarDoc>(await resolveDraft(canonAddress) as AutomergeUrl, () => blankDoc(repo));
+  const draftHandle = await waitHandle<LarDoc>(await resolveDraft(canonAddress) as AutomergeUrl, () => blankDoc(repo), slot.draftBagId);
   composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId, wearOf(repo)), ...flags(slot.draftBagId) });
 
   const tempSlot = wikiSlotUri(slot.wikiSlug, "temp");

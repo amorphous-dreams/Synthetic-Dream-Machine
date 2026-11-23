@@ -36,6 +36,7 @@ import type { LarDoc } from "./base-doc.js";
 import { catalogRowHalf } from "./catalog-view.js";
 import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { isBagId } from "./lar-uris.js";
+import { ownEntry } from "./stored-value.js";
 
 // ── The book ────────────────────────────────────────────────────────────────────────────────────
 /** What a booking reads: the session whose seal a document's next save signs under, and who wrote its latest change. */
@@ -493,6 +494,8 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
 export function composeSealedRest<S extends SaveSession>(input: {
   readonly inner: StorageAdapterInterface;
   readonly bagOf: (documentId: string) => SealedBag | null;
+  /** The map before the bytes (`SealedDocumentPorts.bagRow`): the row a document of a bag maps to, read by the bag alone. */
+  readonly bagRow?: (bagId: string) => SealedBag | null;
   readonly sessionFace: () => string | null;
   /** THE LIT SET (`SealedDocumentPorts.openFaces`): every face open on this vessel now; absent, the worn face alone. */
   readonly openFaces?: () => readonly string[];
@@ -522,7 +525,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   const standingFor = (documentId: string): S | null => {
     const session = watched?.standing(documentId) ?? null;
     if (session === null) return null;
-    const bag = input.bagOf(documentId);
+    const bag = store.bagOf(documentId);
     return bag === null || bag.held !== undefined || bag.face === null || wears(bag.face, session.subject) ? session : null;
   };
   // T4: the save reads its change's own writer off its bytes. A change this replica made books the session standing; a
@@ -541,6 +544,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   };
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
+    ...(input.bagRow ? { bagRow: input.bagRow } : {}),
     ...(input.openFaces ? { openFaces: input.openFaces } : {}),
     ...(input.wornAt ? { wornAt: input.wornAt } : {}),
     sessionOf,
@@ -555,7 +559,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   });
   return {
     store, book,
-    wrote(documentId, session) { if (input.bagOf(documentId) !== null) book.book(documentId, session); },
+    wrote(documentId, session) { if (store.bagOf(documentId) !== null) book.book(documentId, session); },
     watch(repo, standing) {
       // The Repo's handle table reads fresh at each ask: the getter answers a new record each time.
       const handleOf = (documentId: string) => (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId];
@@ -570,7 +574,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     },
     async rebook(session) {
       for (const id of store.waitingDocuments()) {
-        const bag = input.bagOf(id);
+        const bag = store.bagOf(id);
         if (bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
       }
       return store.reseal();
@@ -578,12 +582,12 @@ export function composeSealedRest<S extends SaveSession>(input: {
     async drain(session, documentIds) {
       const ids = new Set(documentIds);
       for (const id of store.waitingDocuments()) {
-        const bag = input.bagOf(id);
+        const bag = store.bagOf(id);
         if (ids.has(id) && bag !== null && wears(bag.face, session.subject)) book.seal(id, session);
       }
       await store.reseal(documentIds);
       await input.flushRepo(documentIds);
-      await store.flush(documentIds.flatMap((id) => { const bag = input.bagOf(id); return bag !== null ? [bag.bagId] : []; }));
+      await store.flush(documentIds.flatMap((id) => { const bag = store.bagOf(id); return bag !== null ? [bag.bagId] : []; }));
       book.drop(session.id);
       return documentIds.reduce((n, id) => n + store.waiting(id), 0);
     },
@@ -594,7 +598,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     },
     async standDown(standing) {
       for (const id of store.waitingDocuments()) {
-        const face = input.bagOf(id)?.face;
+        const face = store.bagOf(id)?.face;
         const session = standing.find((s) => wears(face, s.subject));
         if (session) book.seal(id, session);
       }
@@ -612,7 +616,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     },
     restsSealed: (documentId) => store.holdsSealed(documentId),
     async sealMapped(documentId, session) {
-      const bag = input.bagOf(documentId);
+      const bag = store.bagOf(documentId);
       if (bag === null || !wears(bag.face, session.subject)) return false;
       if (book.of(documentId) === null) book.seal(documentId, session);
       const sealed = await store.sealClearRest(documentId);
@@ -647,7 +651,7 @@ export function sealedBagMap(input: {
   readonly docsOf: (bagId: string) => readonly (string | null | undefined)[];
   /** The catalog the vessel reads (the floor's, with a lit face's laid over it), or undefined before it stands. */
   readonly catalog?: () => LarDoc | undefined;
-}): { bagOf(documentId: string): SealedBag | null; docOf(bagId: string): string | null } {
+}): { bagOf(documentId: string): SealedBag | null; bagRow(bagId: string): SealedBag | null; docOf(bagId: string): string | null } {
   const ids = (bagId: string): string[] => input.docsOf(bagId).filter((id): id is string => typeof id === "string" && id.length > 0);
   return {
     bagOf(documentId) {
@@ -664,6 +668,14 @@ export function sealedBagMap(input: {
         if (isBagId(title) && catalogRowHalf(title, row) === "face" && ids(title).includes(documentId)) return { bagId: title, face: null };
       }
       return null;
+    },
+    // THE MAP BEFORE THE BYTES: the row a document of `bagId` takes by the bag alone, by the same law `bagOf` reads, so a
+    // document named for the bag ahead of its first byte (`nameDocument`) maps as the map would once it names it.
+    bagRow(bagId) {
+      const face = input.face();
+      if (face !== null) return !isHouseCanonBag(bagId) && input.bags().includes(bagId) ? { bagId, face } : null;
+      const row = ownEntry(input.catalog?.()?.tiddlers, bagId);
+      return row !== undefined && isBagId(bagId) && catalogRowHalf(bagId, row) === "face" ? { bagId, face: null } : null;
     },
     docOf: (bagId) => ids(bagId)[0] ?? null,
   };
