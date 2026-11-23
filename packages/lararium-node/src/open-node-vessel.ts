@@ -218,7 +218,7 @@ import { makeRecallHolder, type RecallHolder } from "./recall-holder.js";
 import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
-import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
+import { makeChildProcessDocLoadProbe, quarantineDoc, quarantineMoveLine, recoverCleanTail } from "./doc-load-probe.js";
 import { listFaceOrdinals, listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
@@ -2985,8 +2985,7 @@ async function prepareNodeBootOn(
         recoverCleanTail: (verdict) => recoverCleanTail(storageDir, verdict),
         quarantineDoc: (verdict, bagId) => {
           const moved = quarantineDoc(storageDir, verdict, { bagId });
-          // The move's own line: the boot's one DEGRADED line for the plane comes from the mount manifest (`heldPlaneLines`).
-          console.warn(`[lararium] QUARANTINED ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"}) → ${moved ?? "already gone"}`);
+          console.warn(quarantineMoveLine(verdict, moved));
         },
       });
       return {

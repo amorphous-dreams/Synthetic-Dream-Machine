@@ -492,6 +492,12 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   return { ok: true, documentId, act, from, released: held.length };
 }
 
+/** The line the boot that moves a document's bytes prints for the move alone; the plane's one DEGRADED line comes from
+ *  the mount manifest (`heldPlaneLines`). */
+export function quarantineMoveLine(verdict: ProbeResult, moved: string | null): string {
+  return `[lararium] QUARANTINED ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"}) → ${moved ?? "already gone"}`;
+}
+
 /**
  * THE BOOT'S LINES FOR EVERY PLANE IT HOLDS BACK, at every boot, each naming only the act that releases it. A PENDING plane
  * (the probe answered no verdict, or a fall holds a sound document) mounted read-only with no bytes moved; the deep vessel

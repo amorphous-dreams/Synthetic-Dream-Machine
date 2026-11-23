@@ -9,12 +9,11 @@
  *   W4  health names held planes as a note, never flipping liveness: 200 and `ready` stand while a plane stays held.
  *   W5  the boot that moves the bytes prints one DEGRADED line per held plane: the move's own line names the move alone.
  */
-import { readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
 import type { MountManifest } from "@lararium/mesh";
 import { HELD_HAND_ACT } from "../src/engine-fall.js";
-import { heldPlaneLines, QUARANTINE_RELEASE_ACT } from "../src/doc-load-probe.js";
+import { heldPlaneLines, quarantineMoveLine, QUARANTINE_RELEASE_ACT } from "../src/doc-load-probe.js";
 import { createReadinessState, mountReadinessFace } from "../src/readiness-face.js";
 
 const servers: Server[] = [];
@@ -71,8 +70,11 @@ describe("held planes name themselves truly", () => {
   });
 
   test("W5 — the quarantine's own boot line names the move, never a second DEGRADED line", () => {
-    const keel = readFileSync(new URL("../src/open-node-vessel.ts", import.meta.url), "utf8");
-    expect(keel).not.toMatch(/DEGRADED plane/);
-    expect(keel).toMatch(/QUARANTINED/);
+    const line = quarantineMoveLine({ documentId: "heldDoc", status: "torn", reason: "a tear" }, "/store/quarantine-torn-snapshots-x/he__ldDoc");
+    expect(line).toMatch(/QUARANTINED heldDoc/);
+    expect(line).toContain("/store/quarantine-torn-snapshots-x/he__ldDoc");
+    expect(line).not.toMatch(/DEGRADED/);
+    // The boot's one DEGRADED line for that plane comes from the mount manifest.
+    expect(heldPlaneLines("[lararium]", manifest).filter((l) => l.includes("heldDoc") && /DEGRADED/.test(l))).toHaveLength(1);
   });
 });
