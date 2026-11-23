@@ -276,6 +276,28 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const daemonAuth = manifest.daemonAuth;
   /** The archive floor's writers, the mounted face's and each lit sibling's alike: the write and the face it routes. */
   const archiveWriters = { ...(persistVeilArchive ? { persistVeilArchive } : {}), ...(routesVeilArchive ? { routesVeilArchive } : {}) };
+  /**
+   * THE ONE DOOR EVERY ARCHIVE FLOOR'S REFUSALS SURFACE THROUGH, the mounted face's and each lit sibling's alike: stdout for a
+   * person at a terminal, and the durable `@daemon` ward ledger (Rail A), naming the face where a sibling's floor refused. One
+   * call site, so none of them can go dead unnoticed (the seal-refusal weld counts it).
+   */
+  const surfaceFloorRefusals = async (ctx: IslandContext, floor: Awaited<ReturnType<typeof persistArchiveFloor>>, face: string | null): Promise<void> => {
+    const who = face ? `face ${face.slice(0, 12)}… ` : "";
+    for (const r of floor.refusals) {
+      console.warn(`[daemon] ${who}${r.carrier} archive export REFUSED: ${r.message}`);
+      try {
+        await fileWardRefusal(ctx.composite, controlOf(ctx), ctx.post, {
+          bagId:    DAEMON_BAG_ID,
+          uri:      `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
+          reason:   face ? `${who}${r.message}` : r.message,
+          wardKind: "archive-seal",
+        });
+      } catch (err) {
+        // The surfacing itself must never take the boot down — the refusal is already on stdout.
+        console.warn(`[daemon] archive-seal refusal could not be filed durably: ${(err as Error)?.message ?? err}`);
+      }
+    }
+  };
   let clearGate!: () => void;
   let refuseGate!: (reason: Error) => void;
   let gateCleared = false;
@@ -366,15 +388,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         face: face.personaGroupId,
         exportVeilArchive: () => joined.keyhive.exportArchiveAfterTheCard(),
       });
-      for (const r of floor.refusals) {
-        console.warn(`[daemon] face ${key.slice(0, 12)}… ${r.carrier} archive export REFUSED: ${r.message}`);
-        try {
-          await fileWardRefusal(ctx.composite, controlOf(ctx), ctx.post, {
-            bagId: DAEMON_BAG_ID, uri: `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
-            reason: `face ${key.slice(0, 12)}…: ${r.message}`, wardKind: "archive-seal",
-          });
-        } catch (err) { console.warn(`[daemon] archive-seal refusal could not be filed durably: ${(err as Error)?.message ?? err}`); }
-      }
+      await surfaceFloorRefusals(ctx, floor, key);
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
@@ -2342,22 +2356,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       // Archive refusal records and operator alerts use the attached daemon working layer. `wardKind`
       // identifies the refusing ward; keyhive stays fs-blind and the record names a `lar:` URI.
-      if (floor.refusals.length) {
-        for (const r of floor.refusals) {
-          console.warn(`[daemon] ${r.carrier} archive export REFUSED: ${r.message}`);
-          try {
-            await fileWardRefusal(ctx.composite, controlOf(ctx), ctx.post, {
-              bagId:    DAEMON_BAG_ID,
-              uri:      `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
-              reason:   r.message,
-              wardKind: "archive-seal",
-            });
-          } catch (err) {
-            // The surfacing itself must never take the boot down — the refusal is already on stdout.
-            console.warn(`[daemon] archive-seal refusal could not be filed durably: ${(err as Error)?.message ?? err}`);
-          }
-        }
-      }
+      await surfaceFloorRefusals(ctx, floor, null);
       providers.set(bareKey(daemonAuth.atom!.key), { provider: keyhive, group: daemonAuth.personaGroupId! });
       litInputs.set(bareKey(daemonAuth.atom!.key), faceInputsDigest(daemonAuth));
       for (const face of daemonAuth.joinedFaces ?? []) {
