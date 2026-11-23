@@ -1,45 +1,40 @@
 /**
- * `lares shore flush` — a hand asks the two islands this door reaches (the active wiki's and the daemon's) to write what
- * each holds in memory to its mirrors now, and reads what each wrote, what it could not, and why. Other resident wiki
- * islands stand outside its reach (the vessel's own teardown flush reaches them), and the reading says so.
+ * `lares shore flush` — a hand asks the vessel to flush EVERY island that mounts a disk shore (the daemon's with each lit
+ * sibling's projector, and every resident wiki's), the same whole-island flush the teardown runs, through the custody door's
+ * `shore-flush` frame, and reads what each island wrote, what it could not, and why.
  *
  *   D1  the door shapes `{ op: "flush" }` and asks no confirmation (a flush moves memory toward disk and takes nothing).
- *   D2  both islands answer as one reading, each part naming its island; an island that mounts no projection drops out;
- *       a refusing island reads unanswered by name, never as written.
- *   D3  the exit reads the reading: 0 every asked island wrote, 4 a carrier stayed unwritten, 3 an island could not answer;
- *       none of them reads as usage (2).
- *   D4  the reading names its reach and what it leaves unasked, so a clean exit never claims every island.
+ *   D2  the vessel's reading crosses whole: every island it asked, each part naming its island (a resident wiki beyond the
+ *       active one among them); a part that did not answer reads unanswered by name, never as written.
+ *   D3  the exit reads the reading: 0 every island wrote, 4 a carrier stayed unwritten, 3 an island could not answer or no
+ *       vessel answered; none of them reads as usage (2).
+ *   D4  the one frame rides the custody door, and no reach caveat rides the reading: no island stands outside it.
+ *   D5  `--face N` names a lit sibling's shore: list and the answers carry the face, and the act reaches the daemon island
+ *       alone (where every lit face's projector stands); a flush and a settle take no face.
  */
 import { describe, expect, test } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
-import { askShoreFlush, shoreFlushExit } from "../src/shore-core.js";
+import { askShore, askShoreFlush, shoreFlushExit } from "../src/shore-core.js";
 import { shoreArgs, SHORE_ACTS } from "../src/commands/shore.js";
+import type { CustodyDoorAnswer } from "../src/custody-door.js";
 import type { SubmitResult } from "../src/verb-result.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
-type Island = (args: Record<string, unknown>) => Record<string, unknown> | "error";
-
-function vessel(wiki: Island, daemon: Island) {
-  const sent: Array<{ island: string; op: unknown }> = [];
-  const run = async (name: string, args: Record<string, unknown>): Promise<SubmitResult> => {
-    const island = name === "wiki-act" ? "wiki" : "daemon";
-    const shoreArgs = island === "wiki" ? (args["args"] as Record<string, unknown>) : args;
-    sent.push({ island, op: shoreArgs["op"] });
-    const output = (island === "wiki" ? wiki : daemon)(shoreArgs);
-    if (output === "error") return { status: "error", requestId: "req", errorMessage: "engine-terminated: this vessel's Automerge engine stopped" } as SubmitResult;
-    return { status: "done", requestId: `req-${island}`, results: { [VERB_RESULT_KEY]: { ok: true, output } } } as SubmitResult;
-  };
-  return { run, sent };
-}
-
-const flushed = (written: string[], unwritten: Array<{ uri: string; state: string; why: string }> = []): Record<string, unknown> => ({
-  ok: true, op: "flush",
+const flushed = (island: string, written: string[], unwritten: Array<{ uri: string; state: string; why: string }> = []): Record<string, unknown> => ({
+  island, answered: true,
   written: written.map((uri) => ({ uri, bagId: "b" })), writtenCount: written.length,
   unwritten: unwritten.map((u) => ({ ...u, bagId: "b" })), unwrittenCount: unwritten.length,
   fileWrites: written.length, drained: unwritten.length === 0,
 });
-const NO_SHORE = { ok: false, refusal: "no-disk-shore", why: "this island mounts no disk projection" };
-const parsed = (positional: string[]): ParsedArgs => ({ positional, flags: {}, options: {} } as unknown as ParsedArgs);
+const vessel = (islands: Array<Record<string, unknown>>) => {
+  const sent: unknown[] = [];
+  const line = async (frame: unknown): Promise<CustodyDoorAnswer | null> => {
+    sent.push(frame);
+    return { op: "shore-flush", reading: { islands, whole: islands.every((i) => i["answered"] === true && i["unwrittenCount"] === 0) }, standing: "hearth" };
+  };
+  return { line, sent };
+};
+const parsed = (positional: string[], options: Record<string, string> = {}): ParsedArgs => ({ positional, flags: {}, options } as unknown as ParsedArgs);
 
 describe("lares shore flush", () => {
   test("D1 — the door shapes the op and asks no confirmation", () => {
@@ -47,29 +42,53 @@ describe("lares shore flush", () => {
     expect(shoreArgs("flush", parsed(["flush"]))).toEqual({ args: { op: "flush" } });
   });
 
-  test("D2 — both islands answer as one reading; none that fails reads as written", async () => {
-    const v = vessel(() => flushed(["lar:///a/w"]), () => flushed(["lar:///a/d"], [{ uri: "lar:///a/x", state: "failed", why: "its reconcile threw again" }]));
-    const reading = await askShoreFlush("did:test", v.run);
-    expect(v.sent).toEqual([{ island: "wiki", op: "flush" }, { island: "daemon", op: "flush" }]);
-    expect(reading.islands.map((i) => [i.island, i.answered])).toEqual([["wiki", true], ["daemon", true]]);
-    expect(reading.islands[1]).toMatchObject({ unwritten: [{ uri: "lar:///a/x", state: "failed", why: "its reconcile threw again" }], unwrittenCount: 1 });
+  test("RED D2 — the vessel's reading crosses whole: every resident wiki, the daemon and its lit siblings; none that fails reads as written", async () => {
+    const v = vessel([
+      flushed("daemon", ["lar:///a/d"], [{ uri: "lar:///a/x", state: "failed", why: "its reconcile threw again" }]),
+      flushed("wiki:home", ["lar:///a/w"]),
+      flushed("wiki:notes", ["lar:///a/n"]),
+      { island: "wiki:silent", answered: false, why: "the island gave no answer within 15000ms" },
+    ]);
+    const reading = await askShoreFlush(v.line);
+    expect(reading.islands.map((i) => [i.island, i.answered])).toEqual([["daemon", true], ["wiki:home", true], ["wiki:notes", true], ["wiki:silent", false]]);
+    expect(reading.islands[0]).toMatchObject({ unwritten: [{ uri: "lar:///a/x", state: "failed", why: "its reconcile threw again" }], unwrittenCount: 1 });
+    expect(reading.islands[3]).toEqual({ island: "wiki:silent", answered: false, refusal: "unanswered", why: "the island gave no answer within 15000ms" });
     expect(reading.whole).toBe(false);
-
-    const quiet = vessel(() => NO_SHORE, () => "error");
-    const down = await askShoreFlush("did:test", quiet.run);
-    expect(down.islands).toEqual([{ island: "daemon", answered: false, refusal: "verb-error", why: expect.stringMatching(/engine-terminated/) }]);
-    expect(down.whole).toBe(false);
   });
 
-  test("D3 — the exit reads the reading", async () => {
-    expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => flushed(["w"]), () => NO_SHORE).run))).toBe(0);
-    expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => flushed([], [{ uri: "u", state: "pending", why: "w" }]), () => NO_SHORE).run))).toBe(4);
-    expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => "error", () => flushed(["d"])).run))).toBe(3);
+  test("RED D3 — the exit reads the reading; no vessel, or a refusal, reads unanswered", async () => {
+    expect(shoreFlushExit(await askShoreFlush(vessel([flushed("wiki:home", ["w"]), flushed("wiki:other", ["o"])]).line))).toBe(0);
+    expect(shoreFlushExit(await askShoreFlush(vessel([flushed("wiki:other", [], [{ uri: "u", state: "pending", why: "w" }])]).line))).toBe(4);
+    expect(shoreFlushExit(await askShoreFlush(vessel([{ island: "daemon", answered: false, why: "engine-terminated", refusal: "engine-terminated" }]).line))).toBe(3);
+    const none = await askShoreFlush(async () => null);
+    expect(none.islands).toEqual([{ island: "vessel", answered: false, refusal: "unanswered", why: expect.stringMatching(/no vessel answered/) }]);
+    expect(shoreFlushExit(none)).toBe(3);
+    const refused = await askShoreFlush(async () => ({ op: "shore-flush", status: "error", errorMessage: "no composition sits", refusal: { reason: "flush-unavailable" } }));
+    expect(refused.islands).toEqual([{ island: "vessel", answered: false, refusal: "flush-unavailable", why: "no composition sits" }]);
   });
 
-  test("D4 — the reading names its reach and what it leaves unasked", async () => {
-    const reading = await askShoreFlush("did:test", vessel(() => flushed(["w"]), () => flushed(["d"])).run);
-    expect(reading.reach).toEqual(["wiki", "daemon"]);
-    expect(reading.unasked).toMatch(/other resident wiki islands/);
+  test("RED D4 — one custody frame, and no reach caveat: no island stands outside the door", async () => {
+    const v = vessel([flushed("daemon", ["d"])]);
+    const reading = await askShoreFlush(v.line);
+    expect(v.sent).toEqual([{ op: "shore-flush" }]);
+    expect(Object.keys(reading).sort()).toEqual(["islands", "whole"]);
+  });
+
+  test("RED D5 — `--face N` names a lit sibling's shore and reaches the daemon island alone; a flush and a settle take no face", async () => {
+    expect(shoreArgs("list", parsed(["list"], { face: "2" }))).toEqual({ args: { op: "list", face: 2 } });
+    expect(shoreArgs("take-records", parsed(["take-records", "lar:///a/x"], { key: "k1", face: "2" }))).toEqual({ args: { op: "take-records", uri: "lar:///a/x", key: "k1", face: 2 } });
+    expect(shoreArgs("restore", parsed(["restore", "lar:///a/x"], { face: "1" }))).toEqual({ args: { op: "restore", uris: ["lar:///a/x"], face: 1 } });
+    expect(shoreArgs("list", parsed(["list"], { face: "h2" }))).toMatchObject({ usage: expect.stringMatching(/--face names a handle index/) });
+    expect(shoreArgs("flush", parsed(["flush"], { face: "2" }))).toMatchObject({ usage: expect.stringMatching(/flush takes no --face/) });
+    expect(shoreArgs("take-disk", parsed(["take-disk", "lar:///a/x"], { key: "k", face: "2" }))).toMatchObject({ usage: expect.stringMatching(/take-disk takes no --face/) });
+    // The face's list reaches the daemon island alone, and each row names its island.
+    const asked: string[] = [];
+    const run = async (name: string, args: Record<string, unknown>): Promise<SubmitResult> => {
+      asked.push(`${name} ${JSON.stringify(args)}`);
+      return { status: "done", requestId: "r", results: { [VERB_RESULT_KEY]: { ok: true, output: { ok: true, op: "list", face: 2, standoffs: [{ uri: "lar:///a/s", bagId: "b", standoff: "k1" }], standoffCount: 1, pending: [], pendingCount: 0, mark: "m1", next: null } } } } as SubmitResult;
+    };
+    const listed = await askShore({ op: "list", face: 2 }, "did:test", run);
+    expect(asked).toEqual([`shore ${JSON.stringify({ op: "list", face: 2 })}`]);
+    expect(listed.output["standoffs"]).toEqual([{ uri: "lar:///a/s", bagId: "b", standoff: "k1", island: "daemon" }]);
   });
 });

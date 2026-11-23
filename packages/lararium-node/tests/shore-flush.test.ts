@@ -7,8 +7,10 @@
  *   S2  the flush rides the shore verb as its own op, beside census.
  *   S3  every island at once (`flushEveryShore`): each island answers for itself; an island that mounts no projection
  *       drops out; one that refuses, throws or stays silent reads unanswered, by name, and never as written.
- *   S4  a seat's reach stays where it stood: the op joins the shore verb under its old name, and the MCP seat mirrors no
- *       shore tool (shore stays not yet mirrored there).
+ *   S4  the op joins the shore verb under its old name, and the MCP seat mirrors the shore (`shore`, `shore_flush`).
+ *   S5  a lit sibling's shore answers by its face (`answerShoreSeats`): an act naming `face` reaches that face's projector (the
+ *       worn one's or a sibling's) and names the face; a face with no projector refuses `face-unprojected`; a flush naming no
+ *       face reaches the worn projector and every lit sibling's, each sibling row naming its face.
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -18,11 +20,12 @@ import { fileURLToPath } from "node:url";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
-import { answerShore, flushEveryShore, shoreFlush, SHORE_OPS, SHORE_VERB } from "../src/shore-verb.js";
+import { answerShore, answerShoreSeats, flushEveryShore, shoreFlush, SHORE_OPS, SHORE_VERB } from "../src/shore-verb.js";
 import type { TW5Engine } from "@lararium/tw5";
 
 let root = "";
-afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
+const roots: string[] = [];
+afterEach(() => { for (const r of [root, ...roots.splice(0)]) if (r) rmSync(r, { recursive: true, force: true }); root = ""; });
 
 const BAG = "lares";
 const LANDS = "lar:///ha.ka.ba/probe/flush-lands";
@@ -31,6 +34,7 @@ const FAILS = "lar:///ha.ka.ba/probe/flush-throws";
 const HANGS = "lar:///ha.ka.ba/probe/flush-waits";
 
 function stand(uris: string[], fileOf: (uri: string) => Promise<{ ext: string; body: string; encoding: "utf8" }>): LarDiskProjector {
+  if (root) roots.push(root);
   root = mkdtempSync(join(tmpdir(), "lar-shore-flush-"));
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: BAG, mirrorRoot: root }],
@@ -104,12 +108,34 @@ describe("the shore's flush", () => {
     expect((await flushEveryShore([{ island: "daemon", ask: async () => answered }])).whole).toBe(true);
   });
 
-  test("S4 — a seat's reach stays where it stood", () => {
+  test("RED S4 — the op keeps its verb, and the MCP seat mirrors the shore", () => {
     expect(SHORE_VERB).toBe("shore");
     expect(SHORE_OPS).toEqual(["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush"]);
     const here = dirname(fileURLToPath(import.meta.url));
     const fixture = JSON.parse(readFileSync(join(here, "../../lararium-sensorium/scripts/fixtures/cli-verbs.json"), "utf8")) as { mirrored: string[]; not_yet_mirrored: string[] };
-    expect(fixture.mirrored.some((tool) => /shore|flush/.test(tool))).toBe(false);
-    expect(fixture.not_yet_mirrored).toContain("shore");
+    expect(fixture.mirrored).toEqual(expect.arrayContaining(["shore", "shore_flush"]));
+    expect(fixture.not_yet_mirrored).not.toContain("shore");
+  });
+
+  test("RED S5 — a lit sibling's shore answers by its face; a flush naming no face reaches every face's projector", async () => {
+    let siblingThrows = true;
+    const worn = stand([LANDS], renders);
+    const sibling = stand([RETRIES], async (uri) => { if (siblingThrows) throw new Error("not yet"); return renders(uri); });
+    await Promise.all([worn.idle(), sibling.idle()]);
+    const seats = { own: worn, worn: 0, lit: (face: number) => (face === 2 ? sibling : null), litFaces: () => [2] };
+    expect(await answerShoreSeats(seats, { op: "list", face: 2 })).toMatchObject({ ok: true, op: "list", face: 2 });
+    expect(await answerShoreSeats(seats, { op: "list", face: 0 })).toMatchObject({ ok: true, op: "list", face: 0 });
+    expect(await answerShoreSeats(seats, { op: "list", face: 1 })).toMatchObject({ ok: false, refusal: "face-unprojected", face: 1 });
+    expect(await answerShoreSeats(seats, { op: "list", face: "h2" })).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    // The sibling's failed carrier reads through its face, and a flush naming no face reaches it beside the worn one.
+    expect((await answerShoreSeats(seats, { op: "census", face: 2 }))["carriers"]).toEqual([{ state: "failed", uri: RETRIES, bagId: BAG }]);
+    siblingThrows = false;
+    const flushed = await answerShoreSeats(seats, { op: "flush" });
+    expect(flushed).toMatchObject({ ok: true, op: "flush", written: [{ uri: RETRIES, bagId: BAG, face: 2 }], writtenCount: 1, unwrittenCount: 0, faces: [0, 2] });
+    // CONTROL: an island with no projector of any face holds no shore; a list naming no face reads the worn one.
+    expect(await answerShoreSeats({ own: null, worn: null, lit: () => null, litFaces: () => [] }, { op: "flush" })).toMatchObject({ ok: false, refusal: "no-disk-shore" });
+    expect(await answerShoreSeats(seats, { op: "list" })).toMatchObject({ ok: true, op: "list" });
+    expect((await answerShoreSeats(seats, { op: "list" }))["face"]).toBeUndefined();
+    await worn.stop(); await sibling.stop();
   });
 });

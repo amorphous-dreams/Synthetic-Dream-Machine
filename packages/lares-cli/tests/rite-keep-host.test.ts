@@ -629,16 +629,17 @@ describe("the keep rite, host half", () => {
   });
 });
 
-describe("the keep rite flushes the shores its door reaches before the cut", () => {
+describe("the keep rite flushes every shore before the cut", () => {
   const reading = (over: Partial<ShoreFlushReading> = {}): ShoreFlushReading => ({
     islands: [
       { island: "daemon", answered: true, written: [{ uri: "lar:///a.b.c/one" }], writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true },
-      { island: "wiki", answered: true, written: [], writtenCount: 0, unwritten: [], unwrittenCount: 0, fileWrites: 0, drained: true },
+      { island: "wiki:home", answered: true, written: [], writtenCount: 0, unwritten: [], unwrittenCount: 0, fileWrites: 0, drained: true },
+      { island: "wiki:notes", answered: true, written: [{ uri: "lar:///a.b.c/two" }], writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true },
     ],
-    whole: true, reach: ["wiki", "daemon"], unasked: "other resident wiki islands (beyond the active wiki) stand outside this door's reach", ...over,
+    whole: true, ...over,
   });
 
-  test("KF1 RED: the keep asks `lares shore flush` before the vessel cuts, says what it wrote, and names the islands the door never reaches", async () => {
+  test("KF1 RED: the keep asks `lares shore flush` before the vessel cuts and says what every island wrote, a resident wiki beyond the active one among them; no reach gap rides the lines", async () => {
     const r = rig();
     const order: string[] = [];
     const row = r.ports.row;
@@ -647,7 +648,8 @@ describe("the keep rite flushes the shores its door reaches before the cut", () 
     expect(order.slice(0, 2)).toEqual(["flush", "keep-cut"]);
     const said = r.said.join("\n");
     expect(said).toMatch(/keep: the shore's flush: daemon wrote 1 owed carrier\(s\)/);
-    expect(said).toMatch(/keep: the shore's flush reaches the daemon and the active wiki alone; other resident wiki islands .* stand outside this door's reach/);
+    expect(said).toMatch(/keep: the shore's flush: wiki:notes wrote 1 owed carrier\(s\)/);
+    expect(said).not.toMatch(/outside this door's reach|active wiki alone/);
     expect(out.data["shore"]).toMatchObject({ whole: true });
   });
 
