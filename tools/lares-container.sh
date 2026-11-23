@@ -496,6 +496,7 @@ route_cli() {
 host_read() { # $1 = why docker reaches no CLI
   hr_store="$HOUSE/hearth/vessel"
   printf 'lares-container: %s, so the read runs on the host over %s (no verb, nothing opened)\n' "$1" "$hr_store" >&2
+  if [ ! -d "$hr_store" ]; then printf 'store absent: %s (no vessel founded at this house)\n' "$hr_store"; return 0; fi
   if [ -f "$hr_store/.engine-falls" ]; then
     printf 'engine falls (%s):\n' "$hr_store/.engine-falls"
     sed 's/^/  /' "$hr_store/.engine-falls"
@@ -505,11 +506,18 @@ host_read() { # $1 = why docker reaches no CLI
   else
     printf 'engine falls: none resting\n'
   fi
+  # One line per held id: an id held across several manifests names the last one the glob reads (dated dirs, oldest first).
+  hr_seen=""
   for hr_m in "$hr_store"/quarantine-torn-snapshots-*/*.manifest.json; do
     [ -f "$hr_m" ] || continue
     if grep -q '"released"' "$hr_m"; then continue; fi
     hr_id=$(sed -n 's/.*"documentId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$hr_m" | head -n 1)
-    printf 'held in quarantine: %s (%s)\n' "$hr_id" "$hr_m"
+    hr_seen=$(printf '%s\n' "$hr_seen" | awk -F= -v id="$hr_id" 'NF && $1 != id')
+    hr_seen=$(printf '%s\n%s=%s' "$hr_seen" "$hr_id" "$hr_m")
+  done
+  printf '%s\n' "$hr_seen" | while IFS= read -r hr_row; do
+    [ -n "$hr_row" ] || continue
+    printf 'held in quarantine: %s (%s)\n' "${hr_row%%=*}" "${hr_row#*=}"
   done
   printf '%s\n' 'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand'"'"'s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
 }
@@ -1546,7 +1554,8 @@ case "$verb" in
       # THE RELEASE HOLDS THE STORE: a standing container refuses here, naming the stop, before anything execs; a stopped
       # one hands the act to the offline door, whose CLI claims the store for it.
       release)
-        if running_vessel; then die "vessel release holds the store, and a vessel stands; stop it first with \`lares vessel stop\`, then release again"; fi
+        # A PAUSED container still holds the store (its process stands frozen mid-act), so it reads as standing here.
+        if running_vessel || [ -n "$(compose ps -q --status paused lares 2>/dev/null)" ]; then die "vessel release holds the store, and a vessel stands; stop it first with \`lares vessel stop\`, then release again"; fi
         route_cli "$verb" "$@" ;;
       rite) route_cli "$verb" "$@" ;;
       *) route_cli "$verb" "$@" ;;

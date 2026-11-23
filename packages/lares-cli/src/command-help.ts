@@ -1287,6 +1287,28 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
   },
 
+  "vessel release": {
+    usage: "usage: lares vessel release <documentId> [--keep|--fresh]",
+    synopsis:
+      "THE HAND'S RELEASE OF ONE QUARANTINED ID, with the vessel stopped. It claims the store for its act and refuses by name " +
+      "where a holder answers (a standing vessel, a command mid-act, or a fallen vessel whose process still lives), naming " +
+      "`lares vessel stop`. `lares vessel read` lists the held ids with no verb, a fallen vessel's included.",
+    examples: [
+      "lares vessel read                               # the held ids, and why each one holds",
+      "lares vessel stop                               # the release runs with the vessel stopped",
+      "lares vessel release <documentId>               # the quarantined bytes return; the next stand probes them again",
+      "lares vessel release <documentId> --keep        # end the hold, keep what stands under the id",
+      "lares vessel release <documentId> --fresh       # a plane no sibling carries starts empty; the bytes stay aside",
+    ],
+    flags: [
+      "(bare)     the quarantined bytes return under the id",
+      "--keep     end the hold and keep what stands under the id; the moved-aside copy rests where it lies",
+      "--fresh    start the id empty under its own name (refused for a plane a sibling device carries); the bytes stay aside",
+    ],
+    next: ["lares vessel read", "lares vessel stand"],
+    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+  },
+
   "vessel rite": {
     usage: "usage: lares vessel rite <founding|refresh|rebuild>",
     synopsis:

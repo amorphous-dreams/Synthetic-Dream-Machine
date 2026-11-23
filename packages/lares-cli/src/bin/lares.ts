@@ -258,13 +258,13 @@ export const COMMANDS: readonly Command[] = [
   { name: "handle",        brief: "Publish and manage a persona's Handle.", summary: "The Handle's verb family — a persona's public \"here I am\" note, its lifecycle on the handle-KEL. `publish \"<glamour>\" [--persona <index>]` (LIVE) mints a self-certifying card and announces it onto the Nexus WHO board the relay syncs; the face ANCHORS to its persona (the persona-KEL prefix owns it), so a lost presentation key recovers THROUGH the persona and a vessel with no founded persona refuses rather than self-owns. `rotate` seats a fresh presentation key under the same name, `burn` ends it terminally (self · `--from-persona`), `attest \"<claim>\"` signs a claim under the current head, and `verify-attestation <statement> [--card <file>]` runs the RECOGNISER's half — a reader-local CHAIN-verify (the chain verifies, stands unburned, seats the head that signed) that touches no network: it proves THE HANDLE SAID IT, never that the claim is TRUE, and the SURFACE-verify (asking DNS) stays a separate act. `graft` declares its shape and awaits its vessel-side pass. This is the deliberate outward act `persona --handle` only DECLARES as intent — a separate cap, never folded into persona.", handler: cmdHandle, accepts: ["card", "face", "from-persona", "glamour", "persona", "return-locator", "subject", "surface"], signs: true /* mints + signs a HandleCard */ },
 ];
 
-/** The door rows a sub-path narrows (`pathAccepts`), read off the table itself so the two never drift. */
 /** THE RELEASE LEFT THE READ: `vessel read vessel --release*` names its new door, and reads nothing. */
 function movedRelease(args: ParsedArgs): boolean {
   if (args.command !== "vessel" || args.positional[0] !== "read") return false;
   return ["release", "release-keep", "release-fresh"].some((n) => n in args.options || n in args.flags);
 }
 
+/** The door rows a sub-path narrows (`pathAccepts`), read off the table itself so the two never drift. */
 function rowOf(name: string): readonly string[] { return COMMANDS.find((c) => c.name === name)?.accepts ?? []; }
 const VESSEL_ROW  = { filter: (f: (n: string) => boolean) => rowOf("vessel").filter(f) };
 const INGEST_ROW  = { filter: (f: (n: string) => boolean) => rowOf("ingest").filter(f) };

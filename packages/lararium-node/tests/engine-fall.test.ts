@@ -24,7 +24,7 @@
  * Every fall comes injected: no wasm instance runs out of anything, and no live vessel stands.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EventEmitter } from "node:events";
@@ -179,9 +179,12 @@ describe("an engine that falls flushes, stops and rises once", () => {
     expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/stays held/);
     expect(ENGINE_DOWN_HAND_ACT).toMatch(/mounts writable/);
     expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/repair or restore from a keep bundle;/);
-    // The restore names the road the keep drill walks (house-keep.test.mjs H4): a brand-new house imports the keep. A face's
-    // backup bundle (`found --hearth --restore`) restores one face, never a house, and a reset would clear the damaged hearth.
-    expect(ENGINE_DOWN_HAND_ACT).toContain("`lares import <keep checkout>/house --apply`");
+    // The restore names runbook 11a, the road the keep drill walks (house-keep.test.mjs H4), in the form the host bridge runs:
+    // the keep binds as a workspace and the import reads it at its /lar path (a host path outside LARES_HOUSE refuses). A
+    // face's backup bundle (`found --hearth --restore`) restores one face, never a house, and a reset clears the damaged hearth.
+    expect(ENGINE_DOWN_HAND_ACT).toContain("founding runbook 11a");
+    expect(ENGINE_DOWN_HAND_ACT).toContain("`lares up --workspace house-backup=<keep checkout>`");
+    expect(ENGINE_DOWN_HAND_ACT).toContain("`lares import /lar/workspaces/house-backup/house --apply`");
     expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/--restore|`lares reset`/);
 
     // The code: a vessel that stays down, holding a document in flight, takes the hand's stop; the count and the hold clear.
@@ -200,5 +203,23 @@ describe("an engine that falls flushes, stops and rises once", () => {
     expect(keeper.handStop("SIGTERM")).toBe(true);
     expect(acts).toEqual(["hold", "exit 0"]);
     expect(heldInFlight(readEngineFalls(storageDir))).toEqual([]);
+  });
+
+  test("F10 — a row rested before falls named their pid reads whole, its pid null: the hold it names stands across the upgrade", () => {
+    const storageDir = scratch();
+    writeFileSync(engineFallsPath(storageDir), JSON.stringify({ falls: [
+      { life: "a".repeat(32), cause: "wasm-unreachable", path: "repo", since: "2026-11-22T10:00:00.000Z", inFlight: "doc-held" },
+    ] }));
+    expect(readEngineFalls(storageDir)).toEqual([
+      { life: "a".repeat(32), pid: null, cause: "wasm-unreachable", path: "repo", since: "2026-11-22T10:00:00.000Z", inFlight: "doc-held" },
+    ]);
+    expect(heldInFlight(readEngineFalls(storageDir))).toEqual(["doc-held"]);
+    // The next rest writes the cap beside the count, its one owner, for every reader outside this process.
+    restEngineFall(storageDir, fallen(null).fall, "b".repeat(32));
+    expect(JSON.parse(readFileSync(engineFallsPath(storageDir), "utf8"))).toMatchObject({ cap: ENGINE_RESTART_CAP });
+    expect(readEngineFalls(storageDir).map((f) => f.inFlight)).toEqual(["doc-held", null]);
+    // CONTROL: a pid of the wrong kind still reads the file torn, never a clean run.
+    writeFileSync(engineFallsPath(storageDir), JSON.stringify({ falls: [{ life: null, pid: "7", cause: "x", path: "repo", since: "s", inFlight: null }] }));
+    expect(readEngineFalls(storageDir)).toEqual([{ life: null, pid: null, cause: "unknown", path: "unknown", since: "unknown", inFlight: null }]);
   });
 });

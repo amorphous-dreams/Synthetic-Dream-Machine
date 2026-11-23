@@ -71,6 +71,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" down --remove-orphans"*|*" stop "*lares*) : > "$CALL_LOG.down";; esac\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
+      `case " $* " in *" ps -q --status paused lares "*) printf '%s' "\${FAKE_PAUSED_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status restarting lares "*) printf '%s' "\${FAKE_RESTARTING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `last=''; for a in "$@"; do last=$a; done\n` +
@@ -775,6 +776,27 @@ for (const [name, shim] of shims) {
   test(`${name}: vessel read whose exec docker cannot run (126) reads the falls on the host`, async () => {
     const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "126" }, houseFiles: fallen });
     hostRead(r, /exit 126/);
+  });
+
+  test(`${name}: the host read names one line per held id, however many manifests hold it`, async () => {
+    const again = JSON.stringify({ documentId: "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", status: "torn", quarantinedAt: "2026-11-23T05:00:00.000Z", movedTo: "/lar/z" });
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_PS_RC: "1" }, houseFiles: { ...fallen, "hearth/vessel/quarantine-torn-snapshots-2026-11-23/4N__MNnk.1.manifest.json": again } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.match(/^held in quarantine: 4NMNnkMhL8jXrdJ9jamS2rUEaQDq /gm)?.length, 1, r.stdout);
+  });
+
+  test(`${name}: the host read over a house with no store says the store stands absent, never "none resting"`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_PS_RC: "1" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /^store absent: \S+\/hearth\/vessel/m);
+    assert.doesNotMatch(r.stdout, /none resting/);
+  });
+
+  test(`${name}: vessel release refuses while the vessel stands paused, naming the stop`, async () => {
+    const r = await run(shim, ["vessel", "release", "4NMNnkMhL8jXrdJ9jamS2rUEaQDq"], { env: { ...MOUNTS, FAKE_PAUSED_ID: "cid" } });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /`lares vessel stop`/);
+    assert.doesNotMatch(r.calls, /offline|compose .*exec/);
   });
 
   test(`${name}: CONTROL a CLI refusal (exit 2) from the read stays the CLI's, and no host read runs`, async () => {

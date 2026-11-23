@@ -296,9 +296,10 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
           ? `    hand act: ${ENGINE_DOWN_HAND_ACT}`
           : "    the vessel rose once; a clean stop (`lares vessel stop`) clears the count, and a second fall before one keeps it down");
       }
-      for (const h of held) {
-        console.log(`  held:        ${h.documentId} (${h.why === "in-flight" ? `in flight at a fall; ${HELD_HAND_ACT}` : `quarantine; ${QUARANTINE_RELEASE_ACT}`})`);
-      }
+      for (const h of held) console.log(`  held:        ${h.documentId} (${h.why === "in-flight" ? "in flight at a fall" : "quarantine"})`);
+      // Each hand act once, under the ids it frees.
+      if (held.some((h) => h.why === "in-flight")) console.log(`    in flight: ${HELD_HAND_ACT}`);
+      if (held.some((h) => h.why === "quarantine")) console.log(`    quarantine: ${QUARANTINE_RELEASE_ACT}`);
       console.log(guards === null
         ? `  memory:      the retention guards read nowhere: ${guardsUnread ?? "unread"}`
         : guardsHeld

@@ -15,11 +15,20 @@ import os
 
 FALLS_FILE = ".engine-falls"
 QUARANTINE_PREFIX = "quarantine-torn-snapshots-"
-# `ENGINE_RESTART_CAP` (engine-fall.ts): more falls than this rest only on a vessel that stays down.
-RESTART_CAP = 1
 HAND_ACT = ("`lares vessel read` names the falls and held ids with no verb; `lares vessel stop` stops the vessel by hand "
             "(the stop clears the count and frees each document a fall named in flight), then `lares vessel stand`")
 RELEASE_ACT = "with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]`"
+
+
+def _cap(data_dir: str) -> "int | None":
+    """The restart cap the vessel wrote beside its count (`ENGINE_RESTART_CAP` in engine-fall.ts, its one owner), or None
+    where the file carries none: more falls than the cap rest only on a vessel that stays down."""
+    try:
+        with open(os.path.join(data_dir, FALLS_FILE), encoding="utf-8") as f:
+            cap = json.load(f).get("cap")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return cap if isinstance(cap, int) and not isinstance(cap, bool) else None
 
 
 def _falls(data_dir: str) -> list:
@@ -81,8 +90,9 @@ def line(data_dir: str) -> "str | None":
     parts = []
     if r["engineFalls"]:
         last = r["engineFalls"][-1]
-        down = "the vessel stays down" if len(r["engineFalls"]) > RESTART_CAP else "the vessel rose once"
-        parts.append(f"{len(r['engineFalls'])} engine fall(s) resting ({down}; the last {last.get('cause')} on the "
+        cap = _cap(data_dir)
+        down = "" if cap is None else ("the vessel stays down; " if len(r["engineFalls"]) > cap else "the vessel rose once; ")
+        parts.append(f"{len(r['engineFalls'])} engine fall(s) resting ({down}the last {last.get('cause')} on the "
                      f"{last.get('path')} path since {last.get('since')})")
     if r["held"]:
         parts.append("held: " + ", ".join(f"{h['documentId']} ({h['why']})" for h in r["held"]))

@@ -15,6 +15,9 @@
 //   H4  THE RESTORE DRILL: the exporting house goes down; a brand-new scratch house founds under the same pet-name, imports the
 //       bundle out of a FRESH CLONE of the remote, and `census-drill` reads par against the census taken before the down. A
 //       clone with one byte flipped refuses first (`bundle-hash-mismatch`), and nothing of it lands.
+//       The engine fall's hand act (`ENGINE_DOWN_HAND_ACT`) names this same road (founding runbook 11a) in the form the host
+//       bridge runs: the keep bound as a workspace, then `lares import /lar/workspaces/house-backup/house --apply`; this
+//       drill runs it with no container, so it reads the clone at its scratch path.
 //
 // Each house stands under its own marked scratch LAR_ROOT through the test custody doors; no LAR_BAGS, no docker, and the
 // only remote a bare repo under the scratch dir.

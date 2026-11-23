@@ -26,7 +26,7 @@ def _plant(store: str) -> None:
         {"life": "b" * 32, "cause": "module-terminated", "path": "ledger", "since": "2026-11-23T02:00:00.000Z", "inFlight": None},
     ]
     with open(os.path.join(store, ".engine-falls"), "w", encoding="utf-8") as f:
-        json.dump({"falls": falls}, f)
+        json.dump({"cap": 1, "falls": falls}, f)
     q = os.path.join(store, "quarantine-torn-snapshots-2026-11-23")
     os.makedirs(q)
     with open(os.path.join(q, "4N__MNnk.manifest.json"), "w", encoding="utf-8") as f:
@@ -112,3 +112,14 @@ def test_a_torn_falls_file_reads_as_one_fall_never_a_clean_run(tmp_path):
     (tmp_path / ".engine-falls").write_text("{torn")
     assert step_in.reading(str(tmp_path))["engineFalls"] == [
         {"life": None, "pid": None, "cause": "unknown", "path": "unknown", "since": "unknown", "inFlight": None}]
+
+
+def test_the_cap_comes_from_the_file_the_vessel_wrote_never_a_copy(tmp_path):
+    # The vessel writes its own cap beside the count; a file that names none reads neither "down" nor "rose".
+    falls = [{"life": "a", "pid": None, "cause": "c", "path": "repo", "since": "s", "inFlight": None}] * 2
+    (tmp_path / ".engine-falls").write_text(json.dumps({"cap": 5, "falls": falls}))
+    assert "the vessel rose once" in step_in.line(str(tmp_path))
+    (tmp_path / ".engine-falls").write_text(json.dumps({"falls": falls}))
+    assert "stays down" not in step_in.line(str(tmp_path)) and "rose once" not in step_in.line(str(tmp_path))
+    assert not hasattr(step_in, "RESTART_CAP")
+

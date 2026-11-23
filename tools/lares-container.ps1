@@ -413,6 +413,7 @@ function LiftVessel([string[]]$output) {
 function HostRead([string]$why) {
   $store = Join-Path (Join-Path $House 'hearth') 'vessel'
   [Console]::Error.WriteLine("lares-container: $why, so the read runs on the host over $store (no verb, nothing opened)")
+  if (-not (Test-Path -LiteralPath $store -PathType Container)) { "store absent: $store (no vessel founded at this house)"; return }
   $falls = Join-Path $store '.engine-falls'
   if (Test-Path -LiteralPath $falls -PathType Leaf) {
     $text = [System.IO.File]::ReadAllText($falls)
@@ -421,13 +422,16 @@ function HostRead([string]$why) {
     $ids = [regex]::Matches($text, '"inFlight"\s*:\s*"([^"]*)"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
     foreach ($id in $ids) { "held in flight: $id" }
   } else { 'engine falls: none resting' }
+  # One line per held id: an id held across several manifests names the last one read (dated dirs, oldest first).
+  $held = [ordered]@{}
   foreach ($dir in @(Get-ChildItem -LiteralPath $store -Directory -Filter 'quarantine-torn-snapshots-*' -ErrorAction SilentlyContinue | Sort-Object Name)) {
     foreach ($m in @(Get-ChildItem -LiteralPath $dir.FullName -File -Filter '*.manifest.json' | Sort-Object Name)) {
       $body = [System.IO.File]::ReadAllText($m.FullName)
       if ($body -match '"released"') { continue }
-      if ($body -match '"documentId"\s*:\s*"([^"]*)"') { "held in quarantine: $($Matches[1]) ($($m.FullName))" }
+      if ($body -match '"documentId"\s*:\s*"([^"]*)"') { $id = $Matches[1]; if ($held.Contains($id)) { $held.Remove($id) }; $held[$id] = $m.FullName }
     }
   }
+  foreach ($id in $held.Keys) { "held in quarantine: $id ($($held[$id]))" }
   'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand''s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
 }
 
@@ -1498,7 +1502,9 @@ switch ($verb) {
     elseif ($sub -eq 'read') { VesselRead $rest }
     # The release holds the store: a standing container refuses here, naming the stop; a stopped one takes the offline door.
     elseif ($sub -eq 'release') {
-      if (HasRunningVessel) { Die 'vessel release holds the store, and a vessel stands; stop it first with `lares vessel stop`, then release again' }
+      # A paused container still holds the store (its process stands frozen mid-act), so it reads as standing here.
+      $paused = & docker compose @Base ps -q --status paused lares
+      if ((HasRunningVessel) -or -not [string]::IsNullOrWhiteSpace(($paused -join ''))) { Die 'vessel release holds the store, and a vessel stands; stop it first with `lares vessel stop`, then release again' }
       RouteCli (@($verb) + $rest) $true
     }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
