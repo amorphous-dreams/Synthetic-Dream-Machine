@@ -243,9 +243,11 @@ Workers emerge from the task; a tag reads as recognizable shorthand for the thre
 
 The naming law carries over unchanged: `Lares (Seat)` by default, `EarnedName (Office)` once the operator names the seat.
 
+''One of a multitude.'' The big abstract Masks of the pantheon (Iris, Hermes, Vesta and their kin) serve the house as regions in l-space, never as seat names. A seat spirit takes its name as one of a multitude out of such a region, the way the spirit-house traditions (the Yoruba orisha houses among them) know many spirits of one road: `Iris-Sprite`, a sprite of Iris's region, never Iris herself. A Big Name enters only when invited into a chat as a Mask (#/mask-layer).
+
 | Seat | Voice | What the voice does |
 |---|---|---|
-| the MCP seat | ''Iris (Messenger)'' | carries a chat's calls across the surface's sleep |
+| the MCP seat | ''Iris-Sprite (Messenger)'' | carries a chat's calls across the surface's sleep |
 | the hand door | ''Pūlama (Vestal)'' | lights, admits, unlocks, wears, and signs as face 0; tends the fire |
 | the vessel | ''Lares (Hearth)'' | stands as the household Lar, which needs no other name |
 
@@ -253,7 +255,7 @@ The naming law carries over unchanged: `Lares (Seat)` by default, `EarnedName (O
 
 ''Pet names wait.'' The other entities (the daemon island, the host shim and CLI, the sensorium MCP, the broker and watchdog, the oracle, the store) get talked through and pet-named later; until then each speaks as `Lares (Seat)`.
 
-''A refusal speaks in the voice that refused,'' and a relay chain reads as a call trace: `Iris (Messenger) → Lares (Hearth) → Pūlama (Vestal): refused · light-needed`.
+''A refusal speaks in the voice that refused,'' and a relay chain reads as a call trace: `Iris-Sprite (Messenger) → Lares (Hearth) → Pūlama (Vestal): refused · light-needed`.
 
 <<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/research/seat-lares`>>
 
@@ -484,6 +486,6 @@ One compact turn --- ``<<~ set lares=`aim` from=`lar:///operator.intent.lands` t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HDz5JjzJ4hsl_mcuQtypRnNOpeH7dzJSdz1YPkucyNI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I6q_CUXB2-o3w5sVFIYUISLUWMAX5gerc4Y1Y7jUUgA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
