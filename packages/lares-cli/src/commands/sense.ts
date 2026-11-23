@@ -119,6 +119,9 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   purge:       cmdSensePurge,
 };
 
+/** Every verb the sense door answers: the four plane reads and the lifecycle verbs. */
+export const SENSE_VERBS: readonly string[] = [...VERBS, ...Object.keys(LIFECYCLE)];
+
 /**
  * A FOLD READS ONLY ITS OWN FLAGS — the door's `pathAccepts`. The `sense` row is the union over every verb, so a path
  * folded beneath it names the narrower list it reads and the dispatcher refuses any other flag by name before the

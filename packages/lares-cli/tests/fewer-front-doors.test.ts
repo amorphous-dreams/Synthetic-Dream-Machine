@@ -24,16 +24,27 @@ async function run(argv: string[]): Promise<{ code: number; out: string; err: st
 }
 afterEach(() => vi.restoreAllMocks());
 
-const FOLDED = ["receipt", "cancel", "watch", "draft", "raise", "wing-of", "test-quine"] as const;
+/** Each folded spelling and the door its refusal points at (an old name answers with its new seat, never a bare unknown). */
+const FOLDED: ReadonlyArray<readonly [argv: readonly string[], cure: string]> = [
+  [["receipt"], "lares vessel request <id>"],
+  [["cancel"], "lares vessel request <id> --cancel"],
+  [["watch"], "lares ingest --watch"],
+  [["draft"], "lares act --draft <uri>"],
+  [["raise", "sign"], "lares persona raise-sign <challenge-json-text>"],
+  [["wing-of"], "node tools/wing-of.mjs"],
+  [["test-quine"], "pnpm --filter @lararium/node test:quine"],
+];
 
 describe("fewer front doors", () => {
-  test("★ the folded spellings leave the table and refuse by name ★", async () => {
+  test("★ the folded spellings leave the table and refuse by name, pointing at their new seat ★", async () => {
     const names = COMMANDS.map((c) => c.name);
-    for (const old of FOLDED) {
+    for (const [argv, cure] of FOLDED) {
+      const old = argv[0]!;
       expect(names, old).not.toContain(old);
-      const r = await run([old]);
+      const r = await run([...argv]);
       expect(r.code, old).toBe(2);
-      expect(r.err, old).toContain(`unknown command "${old}"`);
+      expect(r.err, old).not.toContain("unknown command");
+      expect(r.err, old).toContain(`\`${cure}\``);
     }
   });
 
@@ -93,7 +104,7 @@ describe("fewer front doors", () => {
 
   test("the folded spellings leave every help line, and the folded doors name their new motion", async () => {
     const h = await run(["help"]);
-    for (const old of FOLDED) expect(h.out, old).not.toMatch(new RegExp(`^\\s+(✍ )?${old}\\s`, "m"));
+    for (const [[old]] of FOLDED) expect(h.out, old).not.toMatch(new RegExp(`^\\s+(✍ )?${old}\\s`, "m"));
     const vessel = await run(["vessel", "--help"]);
     expect(vessel.out).toContain("request");
     const ingest = await run(["ingest", "--help"]);

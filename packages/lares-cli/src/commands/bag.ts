@@ -96,6 +96,9 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   "share":         { handler: cmdShare("bag"), summary: "Who reads and writes a bag, by face pet-name (--read <names> --write <names> --note <why> --face N). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer per bag; --remove unshares it. A wiki row standing for the slug refuses (share-kind-standing). Sharing rides by reference and delegation, never a copy." },
 };
 
+/** Every verb the bag door answers (`help` prints this table). */
+export const BAG_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS)];
+
 function printBagHelp(): void {
   console.log("lares bag <verb> [args...]\n");
   console.log("Verbs:");
