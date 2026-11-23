@@ -8,8 +8,9 @@
  * BEFORE its bags, so every Document it mints rides a prekey whose secret it holds, and its Archive rests after that card.
  *
  * WHAT IT KEEPS: the face's identity (its atom key, PersonaGroup, KEL and edges), and every seal it can still reach by replay.
- * WHAT IT CANNOT RECOVER: content a peer sealed to a card whose prekey secret no kept Archive held (`ContentKeyNotHeld`), and
- * content under a recorded Document the stand could not hold (reminted; `SealedUnderLostDocument`). The vessel's log names each.
+ * WHAT IT CANNOT RECOVER: content a peer sealed to a card whose prekey secret no kept Archive held, and content under a recorded
+ * Document the recard reminted (`SealedUnderLostDocument`; the vessel's log names each bag). keyhive's `Key not found` reads
+ * `ContentKeyNotHeld`, which claims no permanent loss: the same answer covers a key that has not arrived by sync yet.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/custody
  */
@@ -26,7 +27,7 @@ export function recardLines(face: number): string[] {
   return [
     `face h${face} recarded: it lit again under its own identity, its card minted before its bags and its Archive rests after that card.`,
     "  kept: the face's identity and every seal its stand still reaches.",
-    "  lost: content a peer sealed to a card whose secret no kept Archive held (ContentKeyNotHeld) and content under any Document the stand reminted; the vessel's log names each bag. The stand that holds such content shares it anew (`lares bag share <bag> --read <this face>` there).",
+    "  may not open: content that reads ContentKeyNotHeld is unreadable for now (its key may still arrive by sync, or a peer sealed it to a card whose secret no kept Archive held), and content under a Document the recard reminted (SealedUnderLostDocument; the vessel's log names each bag). The stand that holds such content shares it anew (`lares bag share <bag> --read <this face>` there).",
     `  next: \`lares vault status\` reads face h${face} lit.`,
   ];
 }

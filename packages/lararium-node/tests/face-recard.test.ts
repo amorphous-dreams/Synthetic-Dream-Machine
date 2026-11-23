@@ -95,7 +95,7 @@ async function walkStale(f: Awaited<ReturnType<typeof twoFaces>>) {
   throw new Error("the face never walked stale within the bound");
 }
 
-test("R1-R3, R6: a stale face recards under its own identity; content after reads, content under the lost Document reads unreadable by name, and no key reaches a log", async () => {
+test("R1-R3, R6: a stale face recards under its own identity; its own seals and content after read, a peer's seal to a lost prekey reads unreadable by name, and no key reaches a log", async () => {
   const f = await twoFaces();
   const { refusal, lateSeal, keptSeal, peerShare } = await walkStale(f);
   expect(peerShare).toBeTruthy();

@@ -253,6 +253,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
     return { reminted: [] };
   };
   let recard: BootDaemonKeyhiveRecard | undefined;
+  if (input.recard) keyhive.markRecard();
   try {
     const registered = await register();
     if (input.recard) recard = { stale: false, ...registered };

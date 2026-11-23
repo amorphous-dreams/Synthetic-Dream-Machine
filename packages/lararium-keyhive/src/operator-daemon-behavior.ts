@@ -414,7 +414,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (recard) {
         // THE RECARD LANDS ONLY WITH ITS ARCHIVE: a stale stand's card and its fresh Documents live in this Archive alone.
         if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
-          throw new FaceRecardRefused("archive-unrested", `face ${handle}'s Archive did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark. Read \`lares vault status\`, then \`${recardCommand(face.handleIndex)}\` again`);
+          throw new FaceRecardRefused("archive-unrested", `face ${handle}'s Archive did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard's arm is spent. Unlock the vessel's custody so its Archive rows take writes (\`lares vault unlock\`), then \`${recardCommand(face.handleIndex)}\` again`);
         }
         console.warn(recardLine(handle, recard));
       }
@@ -2564,5 +2564,5 @@ export function recardLine(handle: string, recard: BootDaemonKeyhiveRecard): str
   const lost = recard.reminted.length === 0
     ? "every recorded Document it held stays readable"
     : `${recard.reminted.length} bag Document(s) it held no hand in took fresh Documents, and content sealed under the old ones stays unreadable to this face (share it anew from a stand that holds it): ${recard.reminted.join(", ")}`;
-  return `[daemon] face ${handle} recarded: its identity holds, its card minted before its bags and its Archive rests after that card; ${lost}; content a peer sealed to a card whose secret no kept Archive held stays unreadable (ContentKeyNotHeld) until that peer shares it anew`;
+  return `[daemon] face ${handle} recarded: its identity holds, its card minted before its bags and its Archive rests after that card; ${lost}; content a peer sealed to a card whose secret no kept Archive held reads unreadable (ContentKeyNotHeld: its key may still arrive by sync, or its prekey secret was lost, and then that peer shares it anew)`;
 }

@@ -212,8 +212,9 @@ export interface CustodyFrameDeps {
 const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "act", "backup", "face-route", "ward", "prove", "rehive", "recard"]);
 /** The keys a `recard` frame may carry: the vessel's own route and the face, nothing beside them. */
 const RECARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
-/** The words a light refused for want of a prekey secret carries (`FaceHoldsNoPrekeySecret`): the one dark a recard cures. */
-export const STALE_LIGHT = "holds no prekey secret";
+/** A light refused for want of a prekey secret, read by the refusal's NAME (`FaceHoldsNoPrekeySecret`, as `String(error)` leads
+ *  with it), never by its prose: the one dark a recard cures. */
+export const STALE_LIGHT = /\bFaceHoldsNoPrekeySecret:/;
 /** The keys a `rehive` frame may carry: the face's own route and the face, nothing beside them. */
 const REHIVE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
@@ -686,7 +687,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const dark = deps.refusedLights().find((r) => r.ordinal === face);
     if (!at.unlocked) return refuse("face-shut", `face h${face} stands shut: open it (\`lares vault unlock --face ${face}\`); a face whose Archive fell behind its cards refuses its light by name, and the recard follows; nothing moved`);
     if (dark === undefined) return refuse("face-not-stale", `face h${face}'s last light here did not refuse for want of a prekey secret (it stands lit, or still lighting): there is nothing to recard. Read it with \`lares vault status\`; nothing moved`);
-    if (!dark.cause.includes(STALE_LIGHT)) return refuse("face-not-stale", `face h${face} stands dark for another cause (${dark.cause}): a recard cures only a face that holds no prekey secret; clear it with \`lares vault unlock\`; nothing moved`);
+    if (!STALE_LIGHT.test(dark.cause)) return refuse("face-not-stale", `face h${face} stands dark for another cause (${dark.cause}): a recard cures only a face that holds no prekey secret; clear it with \`lares vault unlock\`; nothing moved`);
     const proof = await holder.proves(credentials);
     if (proof.reading !== "proves") {
       if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing moved (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
@@ -697,7 +698,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     try { await deps.replayLend(); }
     catch (e) { return refuse("recard-failed", `the lend did not replay (${e instanceof Error ? e.message : String(e)}): the recard stands armed for face h${face}'s next light; \`lares vault unlock\` replays it`); }
     const after = deps.refusedLights().find((r) => r.ordinal === face);
-    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark: ${after.cause}`);
+    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and the recard's arm is spent: ${after.cause}. Clear what that names, then \`lares vault recard --face ${face}\` again (read the face with \`lares vault status\`)`);
     deps.onLog(`recard h${face}: lit`);
     return { op: "recard", face, recarded: true };
   };

@@ -13,6 +13,7 @@ describe("the recard's answer", () => {
     const text = recardLines(4).join("\n");
     expect(text).toContain("face h4 recarded: it lit again under its own identity");
     expect(text).toContain("ContentKeyNotHeld");
+    expect(text).toContain("may still arrive by sync");
     expect(text).toContain("lares bag share <bag> --read <this face>");
     expect(text).toContain("lares vault status");
   });

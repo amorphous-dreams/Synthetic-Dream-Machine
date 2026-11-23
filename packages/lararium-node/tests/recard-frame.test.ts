@@ -67,13 +67,16 @@ describe("the custody door's recard frame", () => {
     expect(String(a["errorMessage"])).toContain("lares vault status");
     const other = door({ refused: [{ ordinal: 2, cause: "the edge reads aside" }] });
     expect(await other.send(frame(2))).toMatchObject({ refusal: { reason: "face-not-stale" } });
+    // THE GUARD READS THE REFUSAL'S NAME, never its prose: another refusal that quotes the words reads not stale.
+    const prose = door({ refused: [{ ordinal: 2, cause: "Error: face 0xabc refused: SomeOtherRefusal: it holds no prekey secret, it says" }] });
+    expect(await prose.send(frame(2))).toMatchObject({ refusal: { reason: "face-not-stale" } });
     const shut = door({ faces: { 2: { unlocked: false } }, refused: [] });
     const b = await shut.send(frame(2));
     expect(b).toMatchObject({ refusal: { reason: "face-shut" } });
     expect(String(b["errorMessage"])).toContain("lares vault unlock --face 2");
     const absent = door({ faces: {} });
     expect(await absent.send(frame(2))).toMatchObject({ refusal: { reason: "face-not-standing" } });
-    for (const d of [lit, other, shut, absent]) { expect(d.armed).toEqual([]); expect(d.proved).toEqual([]); }
+    for (const d of [lit, other, prose, shut, absent]) { expect(d.armed).toEqual([]); expect(d.proved).toEqual([]); }
   });
 
   test("C3 a route that opens no slot refuses and arms nothing", async () => {
@@ -87,6 +90,7 @@ describe("the custody door's recard frame", () => {
     const a = await d.send(frame(2));
     expect(a).toMatchObject({ refusal: { reason: "recard-refused" } });
     expect(String(a["errorMessage"])).toContain("archive-unrested");
+    expect(String(a["errorMessage"])).toContain("lares vault recard --face 2");
   });
 
   test("C5 an AI seat, a stray key and a pūlama each refuse, and nothing arms", async () => {

@@ -4,8 +4,10 @@
  *
  *   CARD FIRST          a before-the-card lineage that refuses `PrekeySecretAbsent` registers again once its stand mints its
  *                       card first, keeping its identity, and the Archive after that card opens the next ordinary stand.
- *   PEER SEAL           content a peer sealed to a card whose secret no kept Archive held reads `ContentKeyNotHeld`, by bag.
- *   LOST DOCUMENT       content under a Document this stand reminted reads `SealedUnderLostDocument`, by bag.
+ *   PEER SEAL           content a peer sealed to a card whose secret no kept Archive held reads `ContentKeyNotHeld`, by bag,
+ *                       claiming no permanent loss (the same keyhive answer covers a key that has not arrived by sync).
+ *   LOST DOCUMENT       a key-not-found seal under a Document a RECARD's stand reminted reads `SealedUnderLostDocument`, by bag;
+ *                       the same remint on an ordinary stand reads `ContentKeyNotHeld`, and a tampered seal keeps its own name.
  */
 import { describe, expect, test } from "vitest";
 import { ContentKeyNotHeld, InMemoryEventStore, KeyhiveProvider, PrekeySecretAbsent, SealedUnderLostDocument, registerBagsDurably, type BagDocLedger } from "../src/index.js";
@@ -110,11 +112,13 @@ describe("the recard's keyhive floor", () => {
       expect(refused).toBeInstanceOf(ContentKeyNotHeld);
       expect((refused as ContentKeyNotHeld).bag).toBe("lar:///peer.bag");
       expect((refused as Error).message).toContain("Key not found");
+      expect((refused as Error).message).toContain("for now");
+      expect((refused as Error).message).toContain("may still arrive by sync");
       expect((refused as Error).message).not.toMatch(/[0-9a-f]{40}/);
     } finally { await s2.dispose(); }
   });
 
-  test("LOST DOCUMENT: a bag this stand reminted names its lost Document when a seal under the old one does not open", async () => {
+  test("LOST DOCUMENT: a bag a recard reminted names its lost Document on key-not-found; an ordinary stand and a tampered seal keep other names", async () => {
     const seed = new Uint8Array(32).fill(0x74);
     const store = new InMemoryEventStore();
     const ledger = ledgerOf();
@@ -127,15 +131,30 @@ describe("the recard's keyhive floor", () => {
       await s0.settleEvents();
     } finally { await s0.dispose(); }
     // No Archive of s0 rests: the next stand holds no hand in the recorded Document and remints it.
-    const s1 = new KeyhiveProvider();
-    await s1.init({ seed, eventStore: store });
-    try {
-      await s1.hydrateFromEventStore();
-      const { reminted } = await registerBagsDurably({ provider: s1, bags: [BAG], ledger });
-      expect(reminted).toEqual([BAG]);
-      const refused = await s1.decryptContent(BAG, seal!).then(() => null, (e: unknown) => e);
-      expect(refused).toBeInstanceOf(SealedUnderLostDocument);
-      expect((refused as SealedUnderLostDocument).bag).toBe(BAG);
-    } finally { await s1.dispose(); }
+    const stand = async (recard: boolean): Promise<{ refused: unknown; tampered: unknown }> => {
+      const p = new KeyhiveProvider();
+      await p.init({ seed, eventStore: store });
+      try {
+        await p.hydrateFromEventStore();
+        if (recard) p.markRecard();
+        const { reminted } = await registerBagsDurably({ provider: p, bags: [BAG], ledger });
+        expect(reminted).toEqual([BAG]);
+        const refused = await p.decryptContent(BAG, seal!).then(() => null, (e: unknown) => e);
+        // A seal under the CURRENT Document, one byte flipped: a tamper, never a missing key.
+        const fresh = await p.encryptContent(BAG, text("under the new Document"));
+        const bent = Uint8Array.from(fresh); bent[bent.length - 1] = bent[bent.length - 1]! ^ 0x01;
+        const tampered = await p.decryptContent(BAG, bent).then(() => null, (e: unknown) => e);
+        return { refused, tampered };
+      } finally { await p.dispose(); }
+    };
+    const recarded = await stand(true);
+    expect(recarded.refused).toBeInstanceOf(SealedUnderLostDocument);
+    expect((recarded.refused as SealedUnderLostDocument).bag).toBe(BAG);
+    expect(recarded.tampered).toBeTruthy();
+    expect(recarded.tampered).not.toBeInstanceOf(SealedUnderLostDocument);
+    expect(recarded.tampered).not.toBeInstanceOf(ContentKeyNotHeld);
+    // An ordinary stand fills no remint record: the same seal reads ContentKeyNotHeld.
+    const ordinary = await stand(false);
+    expect(ordinary.refused).toBeInstanceOf(ContentKeyNotHeld);
   });
 });
