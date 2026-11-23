@@ -248,6 +248,8 @@ services:
         target: /pulama/socket
     command: ["--root", "/lar", "--genesis", "/app/genesis"]
     init: true
+    # A fallen Automerge engine exits 70 after its shore flush, and this policy raises a fresh engine once; a second fall
+    # before a clean stop keeps the vessel down at 503 without exiting, so the policy has nothing to restart (`engine-fall`).
     restart: unless-stopped
     stop_grace_period: 20s
     ports:
@@ -329,6 +331,8 @@ services:
       LAR_SAME_ORIGIN: "true"
     command: ["--root", "/lar", "--genesis", "/app/genesis"]
     init: true
+    # A fallen Automerge engine exits 70 after its shore flush, and this policy raises a fresh engine once; a second fall
+    # before a clean stop keeps the vessel down at 503 without exiting, so the policy has nothing to restart (`engine-fall`).
     restart: unless-stopped
     stop_grace_period: 20s
     ports:

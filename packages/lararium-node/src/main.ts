@@ -99,6 +99,10 @@ import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 import { ISOLATE_ENGINE, tapRepoLogs } from "./engine-watch.js";
+import { answerEngineFall, clearEngineFalls, holdBackFallenDocs, readEngineFalls } from "./engine-fall.js";
+import { probeDocLoad, quarantineDoc } from "./doc-load-probe.js";
+import { readVesselLife } from "./vessel-life.js";
+import type { ShoreFlushReading } from "./shore-verb.js";
 import { setLoggerFactory } from "@automerge/automerge-repo";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanDatagramSocket } from "./lan-discovery.js";
@@ -222,15 +226,28 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
 
 /**
  * ONE ENGINE PER ISOLATE, ONE WATCH (`engine-watch`): this process's Automerge wasm instance backs every document its Repo
- * holds, so one watch stands for all of them. Health, the verb channel and the Repo's own logger read it.
+ * holds, so one watch stands for all of them. Health, the verb channel and the Repo's own logger read it; `main` answers its
+ * fall (`engine-fall`): flush, then exit once, or stay down past the house's restart count.
  */
 const engineWatch = ISOLATE_ENGINE;
-engineWatch.onFall((fall) => console.error(`[lararium] engine stopped: ${fall.cause} on the ${fall.path} path (${fall.detail}); health now answers 503 and every verb refuses \`engine-terminated\`. No restart follows by itself.`));
 
 async function main(): Promise<void> {
   // The Repo catches an inbound message's throw and logs it; the tap hands that error to the watch (the network path).
   setLoggerFactory(tapRepoLogs(engineWatch));
   const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
+  // A FALLEN ENGINE FLUSHES, STOPS AND RISES ONCE (`engine-fall`), armed before anything loads a document: every island that
+  // mounts a disk shore flushes, then the process exits `ENGINE_FALL_EXIT` so the supervisor raises a fresh engine; past the
+  // house's restart count it stays down. The life reads at the fall (the store claim mints it), and the flush reaches the
+  // composition standing then (none before the first one stands).
+  let flushOnFall: () => Promise<ShoreFlushReading | null> = () => Promise.resolve(null);
+  engineWatch.onFall((fall) => {
+    void answerEngineFall(fall, {
+      storageDir, life: readVesselLife(storageDir),
+      flush: () => flushOnFall(),
+      exit: (code) => process.exit(code),
+      log: (line) => console.error(`[lararium] ${line}`),
+    });
+  });
   // The seed witness names this boot's seed beside the founding seed: a differing seed reads as an offer, never a refusal (genesis-resolve).
   console.log(checkGenesisPin(storageDir, genesis));
   // LAN discovery stays OFF unless the operator turns it. An empty value reads as unset, so a compose file may
@@ -366,6 +383,17 @@ async function main(): Promise<void> {
   // ── THE FLOOR: the store's claim, the verb socket's front, and the custody door ahead of every verb ──────────
   // The holder starts empty: a boot holds no vessel key. The custody door stands on the front from the first
   // caller on, so an unlock frame never reaches a verb seat (its credential would ride a receipt digest there).
+  // THE FALLEN LIFE'S DOCUMENT IN FLIGHT GOES THROUGH THE PROBE FIRST (`engine-fall`): before the live Repo touches the store,
+  // each document a resting fall named in flight loads in the disposable child, and a condemned one moves aside.
+  const fallsAtBoot = readEngineFalls(storageDir);
+  if (fallsAtBoot.length > 0) {
+    console.error(`[lararium] ${fallsAtBoot.length} engine fall(s) rest uncleared at ${storageDir} (the restart count reads them)`);
+    await holdBackFallenDocs(fallsAtBoot, {
+      probe: (documentId) => probeDocLoad(storageDir, documentId),
+      quarantine: (verdict) => quarantineDoc(storageDir, verdict),
+      log: (line) => console.error(`[lararium] ${line}`),
+    });
+  }
   const floor = await standNodeFloor(storageDir);
   const custodyHomes = vesselCustodyHomes();
   // WHO HOLDS CUSTODY FOR THIS VESSEL: a pūlama, where the environment names one (the vessel then keeps no key and asks
@@ -448,6 +476,8 @@ async function main(): Promise<void> {
   // and names the fault ONCE, so a supervisor that restarts on exit never loops on a fault no restart cures. Only
   // a floor that itself refuses ends the process.
   let composition: StandingComposition | null = null;
+  // The fall's flush reaches whichever composition stands when the engine falls (`engine-fall`, armed at the top of `main`).
+  flushOnFall = () => composition?.shoreFlush?.() ?? Promise.resolve(null);
   /** A floor that itself refuses ends the process: nothing lower stands to fall back to. */
   const floorRefused = async (err: unknown): Promise<never> => {
     await front.close();
@@ -556,7 +586,11 @@ async function main(): Promise<void> {
     console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");
   }
   // ONE pair of handlers for the process: a signal reaches whichever composition stands when it lands.
-  const onSignal = (sig: string): void => { if (composition) composition.onSignal(sig); else signalHeld = sig; };
+  // A SIGNAL REACHING A FALLEN ENGINE READS AS THE HAND'S STOP: the hand has seen the named state, so the restart count clears.
+  const onSignal = (sig: string): void => {
+    if (engineWatch.fallen()) clearEngineFalls(storageDir);
+    if (composition) composition.onSignal(sig); else signalHeld = sig;
+  };
   process.on("SIGINT",  () => onSignal("SIGINT"));
   process.on("SIGTERM", () => onSignal("SIGTERM"));
 }
@@ -617,6 +651,8 @@ interface StandingComposition {
   readonly closeFaces?: () => Promise<unknown>;
   /** Hear the mounted face close at its custody's word: the vessel stands again. Absent at the floor. */
   readonly onMountClosed?: (listener: () => void) => () => void;
+  /** Ask every island that mounts a disk shore to flush (`shore` op `flush`). Absent where the composition mounts none. */
+  readonly shoreFlush?: () => Promise<ShoreFlushReading>;
   /** Stop the PROCESS gracefully: flush, tear down, exit. */
   readonly onSignal: (sig: string) => void;
   /** Tear this composition down and leave the process and its floor standing. */
@@ -791,6 +827,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
       dispatcher.dispose();
       await herm.dispose();          // read-face + daemon island flush, then the composed vessel
       await herm.repo.flush();
+      clearEngineFalls(storageDir);
       console.log("[herm] shutdown complete — state flushed durably");
     } catch (e) {
       console.error("[herm] shutdown error:", e instanceof Error ? e.message : String(e));
@@ -1014,6 +1051,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       await step("goodbye", () => goodbye(closed));
       await floor.release();
       clearTimeout(pastBudget);
+      // A CLEAN STOP CLEARS THE RESTART COUNT (`engine-fall`): this life ran and closed whole.
+      clearEngineFalls(storageDir);
       console.log(`[lararium] shutdown complete — composition closed durably (${spans.join(" · ")})`);
       process.exit(0);
     } catch (e) {
@@ -1037,6 +1076,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     backup: result.backupDoor,
     heldSaves: result.heldSaves,
     docCensus: result.docCensus,
+    shoreFlush: result.shoreFlush,
     wikiAwaits: result.wikiAwaitsFace?.message ?? null,
   };
 }

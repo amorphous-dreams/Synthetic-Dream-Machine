@@ -505,3 +505,58 @@ export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promi
   }
   return { carriers, ...(untracked.length > 0 ? { untracked } : {}), unanswered };
 }
+
+/** How long one island's flush may take: the island's own drain wait (five seconds) and the answer beside it. */
+export const FLUSH_ASK_MS = 15_000;
+
+/** One island's part of a hand's flush: its own answer, or why it gave none. */
+export type ShoreFlushPart =
+  | {
+    readonly island: ShoreIsland; readonly answered: true;
+    readonly written: ReadonlyArray<Record<string, unknown>>; readonly writtenCount: number;
+    readonly unwritten: ReadonlyArray<Record<string, unknown>>; readonly unwrittenCount: number;
+    readonly fileWrites: number; readonly drained: boolean;
+  }
+  | { readonly island: ShoreIsland; readonly answered: false; readonly refusal: string; readonly why: string };
+
+/** What a hand's flush reads: each island that mounts a disk shore, and whether every carrier reached disk. */
+export interface ShoreFlushReading { readonly islands: readonly ShoreFlushPart[]; readonly whole: boolean }
+
+/**
+ * THE HAND'S FLUSH: ask every island that mounts a disk shore to write what it holds in memory to its mirrors now (`shore`
+ * op `flush`), and read each answer as one. An island that mounts no projection drops out; one that refuses, throws or
+ * answers a shape this door cannot read lands `answered: false`, by name, and never reads as written.
+ */
+export async function askShoreFlush(did: string, run: RunVerb = runVerb): Promise<ShoreFlushReading> {
+  const islands: ShoreFlushPart[] = [];
+  for (const island of SHORE_ISLANDS) {
+    let answer: ShoreAnswer;
+    try {
+      answer = readShoreAnswer(island === "wiki"
+        ? await run("wiki-act", { verb: SHORE_VERB, args: { op: "flush" } }, did, { timeoutMs: FLUSH_ASK_MS })
+        : await run(SHORE_VERB, { op: "flush" }, did, { timeoutMs: FLUSH_ASK_MS }));
+    } catch (e) { islands.push({ island, answered: false, refusal: "unanswered", why: e instanceof Error ? e.message : String(e) }); continue; }
+    if (!answer.ok) {
+      if (!holdsNoShore(answer)) islands.push({ island, answered: false, refusal: answer.refusal ?? "refused", why: answer.why ?? "named no reason" });
+      continue;
+    }
+    const o = answer.output;
+    if (!Array.isArray(o["written"]) || !Array.isArray(o["unwritten"]) || typeof o["fileWrites"] !== "number") {
+      islands.push({ island, answered: false, refusal: "shore-answer-unread", why: "the island answered no flush (a vessel older than this door)" });
+      continue;
+    }
+    islands.push({
+      island, answered: true,
+      written: o["written"] as Array<Record<string, unknown>>, writtenCount: Number(o["writtenCount"] ?? (o["written"] as unknown[]).length),
+      unwritten: o["unwritten"] as Array<Record<string, unknown>>, unwrittenCount: Number(o["unwrittenCount"] ?? (o["unwritten"] as unknown[]).length),
+      fileWrites: o["fileWrites"] as number, drained: o["drained"] === true,
+    });
+  }
+  return { islands, whole: islands.every((i) => i.answered && i.unwrittenCount === 0) };
+}
+
+/** The exit a hand's flush takes: 0 every carrier reached disk · 3 a carrier stayed unwritten · 2 an island could not answer. */
+export function shoreFlushExit(reading: ShoreFlushReading): 0 | 2 | 3 {
+  if (reading.islands.some((i) => !i.answered)) return 2;
+  return reading.whole ? 0 : 3;
+}

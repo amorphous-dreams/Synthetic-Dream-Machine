@@ -8,6 +8,7 @@
  *   lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *   lares shore settle  --bag <bagUri|slug> --pending
  *   lares shore lift-kahua --count <n>
+ *   lares shore flush
  *
  * The disk projector decides nothing a person owns.
  *
@@ -36,6 +37,10 @@
  * `lift-kahua --count <n>` lifts the kahua items a lay previewed and left pending (`seed-mirrors.ts`): it runs the lay's
  * mirror leg again, and lifts only where n equals the count the preview reads now; a wrong count refuses and lifts nothing.
  * `list` names each pending item (face, title, body digest) beside the shore's own rows.
+ *
+ * `flush` asks every island that mounts a disk shore to write what it holds in memory to its mirrors now, and names what each
+ * wrote, what it could not and why (`askShoreFlush`). It takes nothing and asks no confirmation. Exit: 0 every carrier reached
+ * disk · 3 a carrier stayed unwritten · 2 an island could not answer.
  */
 
 import { createInterface } from "readline/promises";
@@ -44,7 +49,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
-import { askShore, askSettle, readShoreList, readSettlePending, type ShoreAnswer } from "../shore-core.js";
+import { askShore, askSettle, askShoreFlush, readShoreList, readSettlePending, shoreFlushExit, type ShoreAnswer, type ShoreFlushReading } from "../shore-core.js";
 import { takeDisk } from "../shore-take-disk.js";
 import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
@@ -52,7 +57,7 @@ import { readKahuaPending, LIVE_MIRROR_DOORS } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua"] as const;
+export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
 
 function printUsage(): void {
@@ -63,6 +68,7 @@ function printUsage(): void {
   console.log("       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
   console.log("       lares shore settle  --bag <bagUri|slug> --pending");
   console.log("       lares shore lift-kahua --count <n>");
+  console.log("       lares shore flush");
   console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
   console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
   console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
@@ -70,6 +76,7 @@ function printUsage(): void {
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
   console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
   console.log("  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);");
+  console.log("  flush         write what every island holds in memory to its mirrors now, naming what each wrote and what it could not;");
   console.log("  an answer over more than one carrier names the count that stands pending (--count).");
 }
 
@@ -78,6 +85,7 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   const bag = args.options["bag"];
   const withBag = bag ? { bag } : {};
   if (act === "list") return { args: { op: "list", ...withBag } };
+  if (act === "flush") return { args: { op: "flush" } };
   if (act === "lift-kahua") {
     const countText = args.options["count"];
     if (countText === undefined || !/^(?:0|[1-9][0-9]*)$/.test(countText)) return { usage: "lift-kahua names the count of pending kahua items `lares shore` lists: lares shore lift-kahua --count <n>" };
@@ -129,7 +137,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
   }
 
   // An act that writes asks first (a person at a TTY), or carries `--yes` (an agent).
-  if (act !== "list" && act !== "settle" && !args.flags["yes"]) {
+  if (act !== "list" && act !== "settle" && act !== "flush" && !args.flags["yes"]) {
     if (wantsJson(args)) {
       emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
       return exitFor("usage");
@@ -148,6 +156,29 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     const msg = err instanceof Error ? err.message : String(err);
     emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares shore: ${msg}`) });
     return exitFor("not-found");
+  }
+
+  // FLUSH asks every island that mounts a disk shore, and reads each answer as one (`askShoreFlush`).
+  if (act === "flush") {
+    let reading: ShoreFlushReading;
+    try { reading = await askShoreFlush(did); } catch (err) {
+      const f = verbFailure(err);
+      emit(args, { ok: false, error: { code: f.code, message: f.message }, human: () => console.error(`lares shore flush: ${f.message}`) });
+      return exitFor(f.code);
+    }
+    const code = shoreFlushExit(reading);
+    emit(args, {
+      ok: code === 0, data: { op: "flush", ...reading },
+      human: () => {
+        if (reading.islands.length === 0) { console.log("no island mounts a disk shore: nothing to flush"); return; }
+        for (const part of reading.islands) {
+          if (!part.answered) { console.log(`${part.island}: did not answer: ${part.refusal}: ${part.why}`); continue; }
+          console.log(`${part.island}: wrote ${part.writtenCount} owed carrier(s) (${part.fileWrites} file write(s)); ${part.unwrittenCount} unwritten`);
+          for (const u of part.unwritten) console.log(`  ${String(u["state"])} ${String(u["uri"])}: ${String(u["why"])}`);
+        }
+      },
+    });
+    return code;
   }
 
   // TAKE-DISK rides the ingest leg, under the key (`shore-take-disk.ts`): the island names the standoff's

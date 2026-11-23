@@ -29,8 +29,8 @@ export interface ReadinessFace {
 
 /**
  * A DEAD ENGINE TAKES HEALTH DOWN. With an `engine` watch, a fall (`engine-watch`) reads `engine-terminated` whatever the
- * boot reached, and the health answer names the cause, its time, the last settled wave and the one hand act. Nothing here
- * restarts anything: a restart may re-trap while it loads, so the hand decides.
+ * boot reached, and the health answer names the cause, its time, the last settled wave, the document in flight and the one
+ * hand act. Nothing here restarts anything: the vessel's entry answers the fall (`engine-fall`), flushing and exiting once.
  */
 export function createReadinessState(engine?: EngineWatch): ReadinessState {
   let current: "starting" | "ready" = "starting";

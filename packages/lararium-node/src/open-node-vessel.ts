@@ -230,7 +230,8 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { islandAsk } from "./daemon-island-ask.js";
 import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
-import { islandAskRefusal } from "./engine-watch.js";
+import { islandAskRefusal, tapInboundDocs } from "./engine-watch.js";
+import { flushEveryShore, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
@@ -680,6 +681,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   heldSaves: () => readonly HeldSaves[];
   /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
   docCensus: () => Promise<DocCensusReading>;
+  /** Ask every island that mounts a disk shore to flush (`shore` op `flush`), each on its own road (`flushEveryShore`). */
+  shoreFlush: () => Promise<ShoreFlushReading>;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -784,6 +787,8 @@ interface NodeBootPrep {
   facePoolStandDown: () => Promise<void>;
   /** The census of saves the sealed rest holds in memory, by document and never by body. */
   heldSaves: () => readonly HeldSaves[];
+  /** Ask every island that mounts a disk shore to flush (`shore` op `flush`): the daemon island and each resident wiki island. */
+  shoreFlush: () => Promise<ShoreFlushReading>;
   /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
   docCensus: () => Promise<DocCensusReading>;
   /** The floor's rest key as this composition began with it (`standFloorKey`). */
@@ -1622,6 +1627,9 @@ async function prepareNodeBootOn(
   // THE COMPOSITION'S ACTOR DOOR, seated on its Repo: every store over this Repo's documents (`wearOf(repo)`) writes a worn
   // face's change under the actor the wire identity derives, and the daemon island's own Repo asks for its actors here.
   seatRepoWear(repo, wire);
+  // THE DOCUMENT IN FLIGHT (`engine-watch`): each inbound message the Repo handles names its document to the isolate's watch,
+  // so a trap met there rests with the document a boot probe can hold back (`engine-fall`).
+  tapInboundDocs(repo.networkSubsystem);
   // THE MINT CENSUS, seated on the same Repo: each document a cap creates while it builds and names under no pointer reads
   // as an unbound `cap-mint` once the composition stands (a compose mints nothing it cannot find again).
   seatMintCensus(repo);
@@ -5091,6 +5099,26 @@ async function prepareNodeBootOn(
   };
 
   // After live: settle boot pinning after every island has reached live.
+  /**
+   * THE SHORE'S FLUSH, ASKED OF EVERY ISLAND THAT MOUNTS A DISK SHORE (`shore` op `flush`). The daemon island answers on the
+   * island-ask road, through the control document; each resident wiki island whose recipe grants a mirror answers on the
+   * pool's direct verb road (`placeWikiVerb`), which crosses no main-thread document. So after the main engine falls the wiki
+   * islands still flush, and the daemon island's part names `engine-terminated` (its answer rides the document the fallen
+   * engine holds). A flush places no record: it writes what an island already holds to its mirrors.
+   */
+  const flushShores = (): Promise<ShoreFlushReading> => {
+    const requestedBy = `0x${activeAtom?.key ?? ""}`;
+    const asks: ShoreIslandAsk[] = [];
+    if (daemonHolder) {
+      asks.push({ island: "daemon", ask: () => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb: "shore", args: { op: "flush" }, requestedBy, requestId: newRequestId() })).answer });
+    }
+    for (const { wikiId } of vmManager?.inspect() ?? []) {
+      if ((vmManager.mirrorBagsOf(wikiId) ?? []).length === 0) continue;
+      asks.push({ island: `wiki:${wikiId}`, ask: () => vmManager.placeWikiVerb(wikiId, { verb: "shore", args: { op: "flush" }, requestedBy }) });
+    }
+    return flushEveryShore(asks);
+  };
+
   const afterLive: VesselOrchestration<VesselIslandPool>["afterLive"] = ({ wikiHandle: _wikiHandle }) => {
     // Boot DEMOTED to a pin. The daemon island stays always-live on its own (never
     // pooled, never collected — the "daemon bag always there"). The home wiki (the ONE
@@ -5102,6 +5130,15 @@ async function prepareNodeBootOn(
     void pushPromoteSnapshot?.().catch(console.warn);
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", phase: "producers", down: stopPromoteWatch });
+    // THE TEARDOWN'S FLUSH PHASE ASKS EVERY SHORE FIRST: pushed after the Repo's own flush entries, it runs ahead of them (the
+    // registry stands down in reverse), so what the islands hold reaches the mirrors while the islands still stand.
+    stood.push({ what: "the shore's flush", phase: "flush", down: async () => {
+      const reading = await flushShores();
+      for (const part of reading.islands) {
+        if (!part.answered) console.warn(`[lararium] teardown: the shore's flush: the ${part.island} island did not answer: ${part.why}`);
+        else if (part.unwrittenCount > 0) console.warn(`[lararium] teardown: the shore's flush: the ${part.island} island left ${part.unwrittenCount} carrier(s) unwritten`);
+      }
+    } });
     // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
@@ -5217,6 +5254,7 @@ async function prepareNodeBootOn(
     },
     facePoolStandDown: async () => { await facePoolWatch?.down("down"); await Promise.all([...workspaceWatches].map((w) => w.down("down"))); },
     heldSaves: () => sealedRest.store.held(),
+    shoreFlush: flushShores,
     // THE DOCUMENT CENSUS reads this vessel's own stores, read-only: the pointers this composition reads back, the roles
     // it knows its documents by, and the sealed rest under the worn session for a sealed document no handle holds.
     docCensus: () => {
@@ -5465,6 +5503,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,
     docCensus:       p.docCensus,
+    shoreFlush:      p.shoreFlush,
     floorKey:        p.floorKey,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
