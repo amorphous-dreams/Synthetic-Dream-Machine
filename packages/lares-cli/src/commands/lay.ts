@@ -83,6 +83,7 @@ export { discoverHoldings, canonIsDisk } from "../holdings.js";
 /** The lay's word for a house canon holding on a face outside the Kahu cabal (action-handler `HOUSE_CANON_READS_FLOOR`). */
 export const HOUSE_CANON_FLOOR_REASON = "house canon, written by the Kahu steward (h0); this face reads the floor";
 import { canonIsDisk, discoverHoldings } from "../holdings.js";
+import type { Retirement } from "../shore-retirement.js";
 
 /**
  * Feed ONE holding into its canon. A disk-sourced holding: CREATE (applied runs only; it converges on the bag that
@@ -133,7 +134,8 @@ export async function layHolding(
  * stands pending at the shore. The lay counts what stands pending per bag it fed and prints the one batch answer per
  * bag, so a person answers once rather than carrier by carrier.
  */
-export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[]): string[] {
+export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[], receipts: ReadonlyMap<string, Retirement> = new Map()): string[] {
+  void receipts;
   const counts = new Map<string, number>();
   for (const p of pending) {
     const bag = String(p["bagId"]);

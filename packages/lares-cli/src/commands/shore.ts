@@ -56,6 +56,7 @@ import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
 import { readKahuaPending, LIVE_MIRROR_DOORS } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
+import type { Retirement } from "../shore-retirement.js";
 
 /** The acts this door carries. */
 export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
@@ -248,6 +249,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       return exitFor("verb-error");
     }
     const { standoffs, pending } = listed;
+    const receipts = new Map<string, Retirement>();
     const kahua = readKahuaPending();
     emit(args, {
       ok: true, ...(listed.requestId !== undefined ? { requestId: listed.requestId } : {}),
@@ -268,11 +270,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
           for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}${s["island"] === "daemon" ? " (daemon island)" : ""}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
           console.log("  settle one under its key: `lares shore take-disk <uri> --key <key>` lands the file's words · `lares shore take-records <uri> --key <key>` writes the records' render · or save in the wiki until both say the same");
         }
-        if (pending.length > 0) {
-          console.log(`${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`);
-          for (const p of pending) console.log(`  ${String(p["uri"])}  bag ${String(p["bagId"])}${p["island"] === "daemon" ? " (daemon island)" : ""}  ${String(p["path"])}`);
-          console.log(`  answer: \`lares shore restore <uri>\` · \`lares shore remove <uri>\` · over all: \`--all --count <n>\` with the count one bag holds (and --bag where more than one bag stands pending)`);
-        }
+        if (pending.length > 0) for (const line of shorePendingLines(pending, receipts)) console.log(line);
       },
     });
     return 0;
@@ -308,7 +306,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
       const reached = answeredRows(answer.output);
       console.log(`${act === "restore" ? "restored" : "removed"} ${reached.doneCount} carrier(s) (${String(answer.output["bag"])})`);
-      for (const uri of reached.done) console.log(`  ${uri}`);
+      for (const line of removeReceiptLines(reached.done, [], new Map())) console.log(line);
       if (reached.done.length < reached.doneCount) console.log(`  (the answer named ${reached.done.length} of them)`);
       for (const uri of reached.left) console.error(`  ⚠ still pending: ${uri}`);
       // A removal that unshadowed a lower copy: this bag let it go, and the meme still stands from that bag.
@@ -377,4 +375,20 @@ export function answeredRows(output: Readonly<Record<string, unknown>>): { done:
   const done = rows("done");
   const left = rows("left");
   return { done, doneCount: counted("doneCount", done.length), left, leftCount: counted("leftCount", left.length) };
+}
+
+/** The pending removals as `lares shore list` names them: the count, each row, and the answer. */
+export function shorePendingLines(pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): string[] {
+  void receipts;
+  return [
+    `${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`,
+    ...pending.map((p) => `  ${String(p["uri"])}  bag ${String(p["bagId"])}${p["island"] === "daemon" ? " (daemon island)" : ""}  ${String(p["path"])}`),
+    "  answer: `lares shore restore <uri>` · `lares shore remove <uri>` · over all: `--all --count <n>` with the count one bag holds (and --bag where more than one bag stands pending)",
+  ];
+}
+
+/** The carriers a remove answer reached, each named. */
+export function removeReceiptLines(done: readonly string[], pending: ReadonlyArray<Record<string, unknown>>, receipts: ReadonlyMap<string, Retirement>): string[] {
+  void pending; void receipts;
+  return done.map((uri) => `  ${uri}`);
 }
