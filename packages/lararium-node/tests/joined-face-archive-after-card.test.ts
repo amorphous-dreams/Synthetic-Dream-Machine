@@ -7,6 +7,7 @@
  */
 import { afterEach, expect, test, vi } from "vitest";
 import { KeyhiveProvider } from "@lararium/keyhive";
+import { refreshLitArchives } from "../src/joined-face-auth.js";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { DAEMON_BAG_ID } from "@lararium/mesh";
 import { standFoundedIsland } from "./stand-founded-island.js";
@@ -25,6 +26,20 @@ async function twoFaces() {
     // A bag the sibling owns past the vessel ground mints its Document at every light (no plane ledger stands for a sibling).
     veilArchiveBytes: archive, faceAddressSecret, registerBags: [DAEMON_BAG_ID, OWN_BAG] });
   return { a, b, sibling, siblingKey: atom.key, siblingGroup: personaGroupId, founded: veilArchiveBytes };
+}
+
+/** The prekey a contact card presents (its rotation's new key), as hex. */
+function cardPrekeyHex(card: Uint8Array): string {
+  const op = JSON.parse(new TextDecoder().decode(card)) as { Rotate?: { payload: { new: number[] } }; Add?: { payload: { key: number[] } } };
+  const key = op.Rotate?.payload.new ?? op.Add?.payload.key;
+  if (!key) throw new Error("the card presents no prekey");
+  return Buffer.from(key).toString("hex");
+}
+
+/** Whether a stand holds the secret behind a prekey: its exported prekey secrets carry the public key beside each secret. */
+async function holdsSecretFor(p: KeyhiveProvider, prekeyHex: string): Promise<boolean> {
+  const kh = (p as unknown as { requireKh: () => { exportPrekeySecrets: () => Promise<Uint8Array> } }).requireKh();
+  return Buffer.from(await kh.exportPrekeySecrets()).toString("hex").includes(prekeyHex);
 }
 
 /** One stand of the composition; answers the sibling's provider (null where it did not light) and the warn lines. */
@@ -80,4 +95,51 @@ test("a sibling whose Archive lags its log refuses by name: the face, and the ca
   expect(refused[0]).toContain(`face ${siblingKey}`);
   expect(refused[0]).toContain("holds no prekey secret: its Archive was absent or older than its latest card");
   expect(refused[0]).not.toMatch(/GenerateDocError/);
+});
+
+test("a supervisor reopen refreshes the sibling's Archive from its row: a reopen after a card-minting stand still opens and keeps that card's secret", async () => {
+  const { a, sibling, siblingKey, siblingGroup, founded } = await twoFaces();
+  const rows = new Map<string, Uint8Array>();
+  const write = (bytes: Uint8Array, face: string) => { rows.set(face, Uint8Array.from(bytes)); };
+  // STAND ONE: the sibling lights from its founding Archive and rests the Archive after its card in its own row.
+  const entry = sibling(founded);
+  const first = await standOnce(a, entry, siblingKey, write);
+  let cardKey: string;
+  try {
+    expect(first.sibling).not.toBeNull();
+    cardKey = cardPrekeyHex(await first.sibling!.contactCard());
+    expect(await holdsSecretFor(first.sibling!, cardKey), "CONTROL: the stand that minted the card holds its secret").toBe(true);
+  } finally { await Promise.all(first.providers.map((p) => p.dispose().catch(() => {}))); }
+  expect(rows.has(siblingGroup)).toBe(true);
+  // THE SUPERVISOR'S REOPEN composes from the entry the light proved, held in memory, asking the lit face's own holder for its row.
+  const logs: string[] = [];
+  const [reopened] = await refreshLitArchives([entry], async (group) => rows.get(group) ?? null, (line) => logs.push(line));
+  expect(reopened!.veilArchiveBytes).toEqual(rows.get(siblingGroup));
+  expect(logs).toEqual([]);
+  const again = await standOnce(a, reopened, siblingKey, write);
+  try {
+    expect(again.warns.filter((w) => w.toLowerCase().includes("refused"))).toEqual([]);
+    expect(again.sibling).not.toBeNull();
+    expect(await holdsSecretFor(again.sibling!, cardKey), "the reopen keeps the newest card's secret").toBe(true);
+  } finally { await Promise.all(again.providers.map((p) => p.dispose().catch(() => {}))); }
+  // CONTROL: the in-memory entry (the Archive its light restored, before its card) holds no secret for that card.
+  const stale = await standOnce(a, entry, siblingKey);
+  try {
+    expect(stale.sibling ? await holdsSecretFor(stale.sibling, cardKey) : false).toBe(false);
+  } finally { await Promise.all(stale.providers.map((p) => p.dispose().catch(() => {}))); }
+});
+
+test("a reopen whose row fails to read keeps the in-memory Archive, names the face, and refuses nothing new", async () => {
+  const held = new Uint8Array([1, 2, 3]);
+  const face = { personaGroupId: "group-of-a-lit-face", handleIndex: 2, veilArchiveBytes: held } as never;
+  const unheld = { personaGroupId: "group-with-no-row", handleIndex: 3, veilArchiveBytes: held } as never;
+  const logs: string[] = [];
+  const out = await refreshLitArchives([face, unheld], async (group) => {
+    if (group === "group-of-a-lit-face") throw new Error("the row would not open");
+    return null;
+  }, (line) => logs.push(line));
+  expect(out.map((f) => (f as { veilArchiveBytes?: Uint8Array }).veilArchiveBytes)).toEqual([held, held]);
+  expect(logs).toHaveLength(1);
+  expect(logs[0]).toContain("h2");
+  expect(logs[0]).toContain("the row would not open");
 });

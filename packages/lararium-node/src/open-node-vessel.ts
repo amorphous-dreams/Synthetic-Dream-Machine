@@ -178,7 +178,7 @@ import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from 
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
-import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { joinedFaceAuth, refreshLitArchives, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed } from "./face-lifecycle.js";
 import { adoptFirstLit, faceLend } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
@@ -3960,10 +3960,14 @@ async function prepareNodeBootOn(
       composedOnce = true;
       const ordinals = first ? siblingPorts.ordinals() : faceLife.lit().filter((o) => o !== mountedFace);
       const litNow = (ordinal: number): boolean => faceLife.state(ordinal).kind === "lit";
-      // THE SUPERVISOR'S OPEN READS NO CUSTODY: each lit face composes again from the entry its light proved, held in memory.
+      // THE SUPERVISOR'S OPEN READS NO CUSTODY OF ITS OWN: each lit face composes again from the entry its light proved, held
+      // in memory, with its Archive read again through that lit face's own holder (`refreshLitArchives`): the face rested a
+      // newer Archive after its card, and the one its light restored would bring back the lag that card cured.
       const faces = first
         ? await Promise.all((await joinedFaceAuth({ ...siblingPorts, ordinals: () => ordinals, current: () => true })).filter((face) => typeof face.handleIndex === "number").map(withFaceMirrors))
-        : ordinals.flatMap((ordinal) => { const entry = faceEntries.get(ordinal); return entry !== undefined && litNow(ordinal) ? [entry] : []; });
+        : await refreshLitArchives(ordinals.flatMap((ordinal) => { const entry = faceEntries.get(ordinal); return entry !== undefined && litNow(ordinal) ? [entry] : []; }),
+          siblingPorts.veilArchive, (line) => console.warn(line));
+      if (!first) for (const face of faces) if (faceEntries.has(face.handleIndex!) && litNow(face.handleIndex!)) faceEntries.set(face.handleIndex!, face);
       classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
       const open = new Set(faces.map((f) => f.handleIndex!));
       // A face whose actor reads lit that did not compose again closes through its actor.
