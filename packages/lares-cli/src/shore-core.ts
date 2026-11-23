@@ -519,13 +519,26 @@ export type ShoreFlushPart =
   }
   | { readonly island: ShoreIsland; readonly answered: false; readonly refusal: string; readonly why: string };
 
-/** What a hand's flush reads: each island that mounts a disk shore, and whether every carrier reached disk. */
-export interface ShoreFlushReading { readonly islands: readonly ShoreFlushPart[]; readonly whole: boolean }
+/** What a hand's flush reads: each island it asked, whether each asked carrier reached disk, and what it never asked. */
+export interface ShoreFlushReading {
+  readonly islands: readonly ShoreFlushPart[];
+  /** True where every ASKED island answered and none left a carrier unwritten; it says nothing of an island never asked. */
+  readonly whole: boolean;
+  /** The islands this door reaches. */
+  readonly reach: readonly ShoreIsland[];
+  /** What stands outside its reach, named, so a clean reading never claims every island. */
+  readonly unasked: string;
+}
+
+/** What a hand's flush leaves unasked: the vessel's own teardown flush reaches every resident island; this door reaches two. */
+export const FLUSH_UNASKED = "other resident wiki islands (beyond the active wiki) stand outside this door's reach; the vessel's teardown flush and a fallen engine's flush reach every resident island";
 
 /**
- * THE HAND'S FLUSH: ask every island that mounts a disk shore to write what it holds in memory to its mirrors now (`shore`
- * op `flush`), and read each answer as one. An island that mounts no projection drops out; one that refuses, throws or
- * answers a shape this door cannot read lands `answered: false`, by name, and never reads as written.
+ * THE HAND'S FLUSH: ask the two islands this door reaches (the active wiki's island and the daemon island, `SHORE_ISLANDS`)
+ * to write what each holds in memory to its mirrors now (`shore` op `flush`), and read each answer as one. An island that
+ * mounts no projection drops out; one that refuses, throws or answers a shape this door cannot read lands `answered: false`,
+ * by name, and never reads as written. Other resident wiki islands stand outside this door's reach, and the reading names
+ * them unasked.
  */
 export async function askShoreFlush(did: string, run: RunVerb = runVerb): Promise<ShoreFlushReading> {
   const islands: ShoreFlushPart[] = [];
@@ -552,11 +565,12 @@ export async function askShoreFlush(did: string, run: RunVerb = runVerb): Promis
       fileWrites: o["fileWrites"] as number, drained: o["drained"] === true,
     });
   }
-  return { islands, whole: islands.every((i) => i.answered && i.unwrittenCount === 0) };
+  return { islands, whole: islands.every((i) => i.answered && i.unwrittenCount === 0), reach: SHORE_ISLANDS, unasked: FLUSH_UNASKED };
 }
 
-/** The exit a hand's flush takes: 0 every carrier reached disk · 3 a carrier stayed unwritten · 2 an island could not answer. */
-export function shoreFlushExit(reading: ShoreFlushReading): 0 | 2 | 3 {
-  if (reading.islands.some((i) => !i.answered)) return 2;
-  return reading.whole ? 0 : 3;
+/** The exit a hand's flush takes, never usage's 2: 0 every asked island wrote what it owed · 4 a carrier stayed unwritten
+ *  (the work fell short) · 3 an asked island could not answer (nothing answered for it). */
+export function shoreFlushExit(reading: ShoreFlushReading): 0 | 3 | 4 {
+  if (reading.islands.some((i) => !i.answered)) return 3;
+  return reading.whole ? 0 : 4;
 }

@@ -99,8 +99,7 @@ import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 import { ISOLATE_ENGINE, tapRepoLogs } from "./engine-watch.js";
-import { answerEngineFall, clearEngineFalls, holdBackFallenDocs, readEngineFalls } from "./engine-fall.js";
-import { probeDocLoad, quarantineDoc } from "./doc-load-probe.js";
+import { answerEngineFall, clearEngineFalls, clearOnceSettled, readEngineFalls } from "./engine-fall.js";
 import { readVesselLife } from "./vessel-life.js";
 import type { ShoreFlushReading } from "./shore-verb.js";
 import { setLoggerFactory } from "@automerge/automerge-repo";
@@ -383,17 +382,10 @@ async function main(): Promise<void> {
   // ── THE FLOOR: the store's claim, the verb socket's front, and the custody door ahead of every verb ──────────
   // The holder starts empty: a boot holds no vessel key. The custody door stands on the front from the first
   // caller on, so an unlock frame never reaches a verb seat (its credential would ride a receipt digest there).
-  // THE FALLEN LIFE'S DOCUMENT IN FLIGHT GOES THROUGH THE PROBE FIRST (`engine-fall`): before the live Repo touches the store,
-  // each document a resting fall named in flight loads in the disposable child, and a condemned one moves aside.
+  // THE RESTING FALLS: the composition's own social mount reads each document a fall named in flight as condemned
+  // (`fallAwareProbeDoors`, in the node keel), and the count clears once this life stands and settles whole.
   const fallsAtBoot = readEngineFalls(storageDir);
-  if (fallsAtBoot.length > 0) {
-    console.error(`[lararium] ${fallsAtBoot.length} engine fall(s) rest uncleared at ${storageDir} (the restart count reads them)`);
-    await holdBackFallenDocs(fallsAtBoot, {
-      probe: (documentId) => probeDocLoad(storageDir, documentId),
-      quarantine: (verdict) => quarantineDoc(storageDir, verdict),
-      log: (line) => console.error(`[lararium] ${line}`),
-    });
-  }
+  if (fallsAtBoot.length > 0) console.error(`[lararium] ${fallsAtBoot.length} engine fall(s) rest uncleared at ${storageDir}; the restart count reads them until this life stands and settles whole`);
   const floor = await standNodeFloor(storageDir);
   const custodyHomes = vesselCustodyHomes();
   // WHO HOLDS CUSTODY FOR THIS VESSEL: a pūlama, where the environment names one (the vessel then keeps no key and asks
@@ -986,6 +978,20 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
   console.log(`[lararium] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, result.daemon.workerEa);
+  // A RISEN VESSEL THAT PROVES ITSELF CLEARS THE RESTART COUNT (`engine-fall`): ready, then its first full settle (the daemon
+  // island's sync leg met, every island's shore flushed whole, the Repo flushed) with its engine standing.
+  if (readEngineFalls(storageDir).length > 0) {
+    void clearOnceSettled({
+      storageDir, engine: ISOLATE_ENGINE, ready: Promise.resolve(),
+      settle: async () => {
+        await result.daemon.syncLegReady();
+        const flushed = await result.shoreFlush();
+        await result.repo.flush();
+        return flushed.whole;
+      },
+      log: (line) => console.log(`[lararium] ${line}`),
+    });
+  }
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
   // the ~8s cold chromadb start (the pool then stays warm for the daemon's life).

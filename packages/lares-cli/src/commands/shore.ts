@@ -38,9 +38,10 @@
  * mirror leg again, and lifts only where n equals the count the preview reads now; a wrong count refuses and lifts nothing.
  * `list` names each pending item (face, title, body digest) beside the shore's own rows.
  *
- * `flush` asks every island that mounts a disk shore to write what it holds in memory to its mirrors now, and names what each
- * wrote, what it could not and why (`askShoreFlush`). It takes nothing and asks no confirmation. Exit: 0 every carrier reached
- * disk · 3 a carrier stayed unwritten · 2 an island could not answer.
+ * `flush` asks the active wiki's island and the daemon island to write what each holds in memory to its mirrors now, and
+ * names what each wrote, what it could not and why (`askShoreFlush`). Other resident wiki islands stand outside its reach (the
+ * vessel's teardown flush reaches them), and the reading says so. It takes nothing and asks no confirmation. Exit: 0 every
+ * asked island wrote what it owed · 4 a carrier stayed unwritten · 3 an asked island could not answer.
  */
 
 import { createInterface } from "readline/promises";
@@ -76,7 +77,7 @@ function printUsage(): void {
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
   console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
   console.log("  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);");
-  console.log("  flush         write what every island holds in memory to its mirrors now, naming what each wrote and what it could not;");
+  console.log("  flush         write what the active wiki's and the daemon's islands hold in memory to their mirrors now (other resident wikis stand outside its reach);");
   console.log("  an answer over more than one carrier names the count that stands pending (--count).");
 }
 
@@ -170,12 +171,13 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: code === 0, data: { op: "flush", ...reading },
       human: () => {
-        if (reading.islands.length === 0) { console.log("no island mounts a disk shore: nothing to flush"); return; }
+        if (reading.islands.length === 0) console.log("neither the active wiki's island nor the daemon island mounts a disk shore: nothing to flush");
         for (const part of reading.islands) {
           if (!part.answered) { console.log(`${part.island}: did not answer: ${part.refusal}: ${part.why}`); continue; }
           console.log(`${part.island}: wrote ${part.writtenCount} owed carrier(s) (${part.fileWrites} file write(s)); ${part.unwrittenCount} unwritten`);
           for (const u of part.unwritten) console.log(`  ${String(u["state"])} ${String(u["uri"])}: ${String(u["why"])}`);
         }
+        console.log(`not asked: ${reading.unasked}`);
       },
     });
     return code;

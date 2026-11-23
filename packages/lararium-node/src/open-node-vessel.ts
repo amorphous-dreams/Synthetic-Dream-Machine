@@ -231,6 +231,7 @@ import { islandAsk } from "./daemon-island-ask.js";
 import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
 import { islandAskRefusal, tapInboundDocs } from "./engine-watch.js";
+import { fallAwareProbeDoors, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
 import { flushEveryShore, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
@@ -2956,28 +2957,37 @@ async function prepareNodeBootOn(
     // storageDir. Each social-plane doc materializes in a disposable process before the
     // live repo touches it; a condemned doc gets MOVED aside (never deleted) and its plane
     // mounts read-only, so a torn doc downgrades the vessel to degraded instead of aborting
-    // the whole boot.
-    docLoadProbe: makeChildProcessDocLoadProbe(storageDir),
-    // L3 — clean-tail recovery, tried AHEAD of quarantine: salvage the doc's verified clean
-    // record-prefix and drop only the torn tail, so a torn-tail doc promotes to a writable
-    // mount (a suffix of edits lost) instead of downgrading the vessel to degraded.
-    recoverCleanTail: async (verdict) => {
-      const promoted = await recoverCleanTail(storageDir, verdict);
-      if (promoted) {
-        console.warn(
-          `[lararium] PROMOTED plane — clean-tail recovered ${verdict.documentId} (${verdict.reason ?? "?"})` +
-          ` → ${promoted.reason ?? "recovered"}; the torn tail sits in quarantine-torn-tail-*`,
-        );
-      }
-      return promoted;
-    },
-    quarantineDoc: (verdict) => {
-      const moved = quarantineDoc(storageDir, verdict);
-      console.warn(
-        `[lararium] DEGRADED plane — quarantined ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"})` +
-        ` → ${moved ?? "already gone"}; the plane mounts read-only until a known-good document is restored`,
-      );
-    },
+    // the whole boot. L3 — clean-tail recovery, tried AHEAD of quarantine: salvage the doc's
+    // verified clean record-prefix and drop only the torn tail, so a torn-tail doc promotes to a
+    // writable mount (a suffix of edits lost) instead of downgrading the vessel to degraded.
+    // THE DOCUMENT IN FLIGHT AT AN ENGINE FALL reads condemned (`fallAwareProbeDoors`), so it takes this same path: L3, then
+    // the quarantine and the read-only stand-in where L3 cuts nothing.
+    ...((): ProbeDoors => {
+      const doors = fallAwareProbeDoors(readEngineFalls(storageDir), {
+        probe: makeChildProcessDocLoadProbe(storageDir),
+        recoverCleanTail: (verdict) => recoverCleanTail(storageDir, verdict),
+        quarantineDoc: (verdict) => {
+          const moved = quarantineDoc(storageDir, verdict);
+          console.warn(
+            `[lararium] DEGRADED plane — quarantined ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"})` +
+            ` → ${moved ?? "already gone"}; the plane mounts read-only until a known-good document is restored`,
+          );
+        },
+      });
+      return {
+        ...doors,
+        recoverCleanTail: async (verdict) => {
+          const promoted = await doors.recoverCleanTail(verdict);
+          if (promoted?.status === "ok") {
+            console.warn(
+              `[lararium] PROMOTED plane — clean-tail recovered ${verdict.documentId} (${verdict.reason ?? "?"})` +
+              ` → ${promoted.reason ?? "recovered"}; the torn tail sits in quarantine-torn-tail-*`,
+            );
+          }
+          return promoted;
+        },
+      };
+    })(),
 
     // THE KAHU REALM'S LIVE CANON: the documents the cabal's registrations name, held only where the board carries a
     // counted admission for this vessel's group. A vessel outside the cabal names none and reads the floor.
