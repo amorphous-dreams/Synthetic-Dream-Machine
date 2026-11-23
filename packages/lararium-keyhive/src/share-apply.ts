@@ -27,6 +27,10 @@
  * carries the canon's row beside it and delegates the bag. Either waits behind its flag while its grantee stands shut, a
  * replay moves nothing, and an unshare or a retraction takes a carry its grantee never wore back out of the control document.
  *
+ * A HANDED ROW IS NO SNAPSHOT: where the owner's row changed since the grantee took it (a recipe that gained a layer, a bag row
+ * that names a new document), the next landing hands it over again, into the grantee's open half or by the carry its next wear
+ * lifts over the stale copy. A row that still reads the same writes nothing.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
@@ -143,6 +147,14 @@ export interface ShareApplied {
  * every share landing runs it for the half it holds open. A row the half already names writes nothing; a replay lifts none.
  * Answers how many carries left.
  */
+/** True where two catalog rows say the same thing, field by field (key order aside): a handed row that reads so needs no refresh. */
+export function sameRow(a: StoredLarRecord | undefined, b: StoredLarRecord | undefined): boolean {
+  if (a === undefined || b === undefined) return a === b;
+  const canon = (v: unknown): string => JSON.stringify(v, (_k, x: unknown) => x !== null && typeof x === "object" && !Array.isArray(x)
+    ? Object.fromEntries(Object.entries(x as Record<string, unknown>).sort(([p], [q]) => (p < q ? -1 : p > q ? 1 : 0))) : x);
+  return canon(plainRecordOrNull(a)?.tiddler) === canon(plainRecordOrNull(b)?.tiddler);
+}
+
 export async function liftCarriedShares(input: {
   readonly group: string; readonly handleIndex?: number;
   readonly half: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void };
@@ -151,7 +163,9 @@ export async function liftCarriedShares(input: {
 }): Promise<number> {
   let lifted = 0;
   for (const waitingRow of await input.carry.list(input.group)) {
-    if (ownEntry(input.half.doc()?.tiddlers, waitingRow.bag) === undefined) input.half.change((d) => { d.tiddlers[waitingRow.bag] = storedRecord(waitingRow.row as never) as never; });
+    // A ROW THE HALF HOLDS ALREADY TAKES THE CARRIED ONE where they differ: the owner changed it since this face last took it.
+    const held = ownEntry(input.half.doc()?.tiddlers, waitingRow.bag) as StoredLarRecord | undefined;
+    if (!sameRow(held, waitingRow.row)) input.half.change((d) => { d.tiddlers[waitingRow.bag] = storedRecord(waitingRow.row as never) as never; });
     await input.carry.clear(input.group, waitingRow.bag);
     lifted++;
     input.log?.(`[share-apply] a carried row landed in ${input.handleIndex === undefined ? "the worn face" : `h${input.handleIndex}`}'s catalog half`);
@@ -317,7 +331,8 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     const owned = titles.map((title) => ({ title, row: plainRecordOrNull(rowIn(ownerHalf.doc(), title) as never) })).filter((t) => t.row !== null);
     let wrote = false;
     if (granteeHalf) {
-      const owed = owned.filter((t) => rowIn(granteeHalf.doc(), t.title) === undefined);
+      // A row the grantee lacks, or holds stale (the owner changed it since), takes the owner's row now.
+      const owed = owned.filter((t) => !sameRow(rowIn(granteeHalf.doc(), t.title), storedRecord(t.row!) as never));
       if (owed.length > 0) { granteeHalf.change((d) => { for (const t of owed) d.tiddlers[t.title] = storedRecord(t.row!) as never; }); wrote = true; }
     }
     try {
@@ -325,8 +340,8 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       const fresh = !(delegated && delegated.fresh === false);
       // THE ROWS CARRY where the grantee's half stays shut to this island: its own wear lifts them (above).
       if (!granteeHalf && owned.length > 0) {
-        const held = new Set((await deps.carry!.list(grantee.group)).map((c) => c.bag));
-        if (owned.some((t) => !held.has(t.title))) wrote = true;
+        const held = new Map((await deps.carry!.list(grantee.group)).map((c) => [c.bag, c.row] as const));
+        if (owned.some((t) => !sameRow(held.get(t.title), storedRecord(t.row!) as never))) wrote = true;
         for (const t of owned) await deps.carry!.put(grantee.group, t.title, storedRecord(t.row!) as never);
         carried++;
       }
