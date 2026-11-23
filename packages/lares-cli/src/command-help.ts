@@ -343,6 +343,59 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: ["lares nexus offering inspect sha256:<offering-cid>"],
   },
 
+  "meme offer": {
+    usage: "usage: lares meme offer <show|promote> [<cid>]  ·  lares meme offer <lar:uri…> --bag <slug>",
+    synopsis:
+      "THE OFFERING DOOR: the lit face offers records from its working layer toward a house-canon bag, and the Kahu steward lands one. " +
+      "A moved base warns (\"canon is fresher\") in every listing; only a promotion over it takes the explicit `--over-fresher`. " +
+      "A release after a promotion carries it to every face: `lares nexus release <manifest-file> --cut`.",
+    details: [
+      "  <lar:uri…> --bag <slug>          offer these records toward a house-canon bag",
+      "  show [--bag <slug>] [--all]      the open offers (every one with --all), each record's freshness now",
+      "  show <cid>                       one offer's field diff against canon now",
+      "  promote <cid> [--over-fresher]   the steward, on a vessel holding a charter seat, writes the offered bytes into canon",
+    ],
+    examples: [
+      "lares meme offer lar:///ha.ka.ba/lares/api/pono/meme --bag lares",
+      "lares meme offer show",
+      "lares meme offer promote <cid>",
+    ],
+    next: ["lares nexus release <manifest-file> --cut"],
+  },
+  "persona recovery-contact": {
+    usage: "usage: lares persona recovery-contact <offer|show|enrol|view> …",
+    synopsis:
+      "A face's RECOVERY CONTACTS: three people each hold a recovery key for one face, and two of the three, together, restore its Handle. " +
+      "No one of the three can do it alone, and none of them opens the face's memory.",
+    details: [
+      "  show <index>                                  the face's prefix (what an offer names) and the set it holds",
+      "  offer --prefix <persona-…>                    the contact's half: mint a fresh recovery key for one face, print its card and offer line",
+      "  enrol <index> --threshold <k> <offer>…        the face enrols its FIRST set: its own key signs one typed event",
+      "  view --prefix <persona-…>                     a contact signs its own view of the face with its card",
+    ],
+    examples: [
+      "lares persona recovery-contact show 0",
+      "lares persona recovery-contact offer --prefix <persona-…>",
+      "lares persona recovery-contact enrol 0 --threshold 2 <offer> <offer> <offer>",
+    ],
+  },
+  "fleet join": {
+    usage: "usage: lares fleet join <offer|request|answer|land|abandon> …",
+    synopsis:
+      "One face's fleet takes a new vessel of the same human, by three files carried by hand: the offer, the request, and the answer.",
+    details: [
+      "  offer [--face N] [--out FILE]          on the root holder: the face, its root key, a nonce, the scopes it stands at",
+      "  request <offer-file> [--out FILE]      on the joining place: its face-scoped keys mint; the join stays pending",
+      "  answer <request-file> [--face N] [--out FILE] [--sync-url URL] [--doc-url URL]   on the root holder: the signed answer",
+      "  land <answer-file>                     on the joining place: the face lands",
+      "  abandon                                on the joining place: the pending join leaves",
+    ],
+    examples: [
+      "lares fleet join offer --out offer.json",
+      "lares fleet join request offer.json --out request.json",
+      "lares fleet join land answer.json",
+    ],
+  },
   "nexus approve": {
     usage: "usage: lares nexus approve <open | sign | check>",
     synopsis: "the seats' approval of ONE promotion's exact bytes, carried between vaults as a file. The approval holds public material alone; each signature comes from a seat key held in this vault.",

@@ -79,7 +79,8 @@ export const FLEET_VERBS = { join: ["offer", "request", "answer", "land", "aband
 export async function cmdFleet(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
   const [group, act, file] = args.positional;
-  if (group !== "join" || act === undefined) return usage(args);
+  if (group !== "join") return usage(args);
+  if (act === undefined) return refuseUsage(args, "fleet join", helpLines("fleet join"));
   try {
     const v = act as (typeof FLEET_VERBS.join)[number];
     switch (v) {
@@ -118,8 +119,7 @@ export async function cmdFleet(args: ParsedArgs): Promise<number> {
         return 0;
       }
       default:
-        tableCovers(v);
-        return usage(args);
+        return refuseUsage(args, "fleet join", helpLines("fleet join"), `unknown act "${tableCovers(v)}"`);
     }
   } catch (err) {
     if (err instanceof FleetJoinRefused || err instanceof StoreDoorRefusal) { console.error(`[lares fleet join] refused: ${err.message}`); return 1; }

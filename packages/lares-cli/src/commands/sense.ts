@@ -154,7 +154,7 @@ export function sensePathAccepts(args: ParsedArgs): readonly string[] | null {
 export async function cmdSense(args: ParsedArgs): Promise<number> {
   // SENSORIUM ADDRESSING — `lares sense <sensorium> <verb>`: a leading KNOWN sensorium name (resolved
   // against the on-disk registry/manifest) selects the TARGET; the rest is the verb. `lares sense <verb>`
-  // keeps the `memory` default. So `lares sense <sensorium> pour --all` (`memory` among them) addresses its sensorium by manifest, and the
+  // keeps the `memory` default. So `lares sense memory pour --all` addresses memory by manifest, and the
   // SAME door opens any stream sensorium (the root threads to the capture/refresh holder). Verb names and
   // sensorium names never collide, so a leading token resolves unambiguously.
   let positional = args.positional;

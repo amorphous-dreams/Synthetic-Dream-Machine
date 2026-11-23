@@ -11,7 +11,7 @@
 #
 # So the reading is derived rather than trusted:
 #   · every FIRST word must appear in the live `lares help` projection
-#   · every SUB-DOOR must appear in its command module's dispatch
+#   · every SUB-DOOR must appear in its door's verb table, as `lares help --json` projects the rows
 #
 # It reads the BUILT binary, never the source — the same discipline the surface-parity witness keeps,
 # because a typecheck agrees with itself while a stale sibling dist ships a door that cannot load.
@@ -25,8 +25,6 @@ cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
 import os, re, json, pathlib, subprocess, sys
-sys.path.insert(0, str(pathlib.Path("tools").resolve()))
-from code_scan import mask_non_code
 
 # EVERY RITE, not only the founding one. A rite states commands as CLAIMS a reader resolves the next
 # move from, and that property belongs to the tending rite too — it asks to be walked end to end, each
@@ -51,7 +49,7 @@ live = set(re.findall(r'^\s{2,4}(?:\S+ )?([a-z][a-z0-9-]+)\s', help_out.stdout, 
 rite = "\n".join(r.read_text() for r in RITES)
 
 cmds = {m.group(1) for m in re.finditer(
-    r'(?m)^\s*lares ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite)}
+    r'(?m)^\s*lares ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*){0,2})', rite)}
 
 # THE HOST `lares` ANSWERS THE SHIM'S OWN VERBS. With the container house standing, the host's `lares <verb>` hands
 # a vessel verb to the shim with the same argv (`packages/lares-cli/src/host-bridge.ts`), and the bridge names the
@@ -112,85 +110,40 @@ for m in re.finditer(
     cmds.add("vessel found" if words[0] == "found" else m.group(1))
 cmds = sorted(cmds)
 
-CMDS_DIR = pathlib.Path("packages/lares-cli/src/commands")
-
-# THE VERB'S MODULE DERIVES FROM THE CLI'S OWN TABLE. The binary dispatches each verb to its row's `handler`, and the
-# handler names the module it imports from (`home` and `repo` both answer through `commands/tunnel-door.ts`). So the
-# module a sub-door must dispatch in reads off the row and the import, never off the verb's spelling; a verb whose row
-# names no imported handler falls to `commands/<verb>.ts`, and a module absent there still reads red by name.
-_BIN_SRC = pathlib.Path("packages/lares-cli/src/bin/lares.ts").read_text()
-if not re.search(r'(?m)^\s*\{\s*name:\s*"[a-z][a-z0-9-]*",.*\bhandler:', _BIN_SRC):
-    print("[rite-commands] packages/lares-cli/src/bin/lares.ts PARSED TO NO COMMAND ROW — the probe binds `{ name: \"<verb>\", … handler:` rows.")
+# ── THE DOOR TABLES COME FROM THE CLI'S OWN ROWS ────────────────────────────────────────────────
+# Each command row carries the sub-verbs its dispatcher reads (`verbs`, packages/lares-cli/src/verb-table.ts),
+# and `lares help --json` projects them. The witness reads that projection off the BUILT binary, so it keeps no
+# derivation of its own: the same tables every CLI law reads (tests/laws/harness.ts#verbTables). A table is a
+# flat list or a tree (`meme offer promote`); a door with no table takes arguments, never sub-verbs.
+# A CENSUS THAT CRASHED READS NO SURFACE, never a surface of zero doors.
+doors_json = subprocess.run(["node", BIN, "help", "--json"], capture_output=True, text=True)
+try:
+    doors = json.loads(doors_json.stdout)["data"]["entries"] if doors_json.returncode == 0 else []
+except (ValueError, KeyError, TypeError):
+    doors = []
+if not doors:
+    print(f"[rite-commands] the built binary's `help --json` did not answer a door census (exit {doors_json.returncode}) — "
+          "the door tables and the surface figure are underivable.")
     sys.exit(1)
-_IMPORTED = {}
-for _m in re.finditer(r'import\s*\{([^}]*)\}\s*from\s*["\']\.\./commands/([A-Za-z0-9_-]+)\.js["\']', _BIN_SRC):
-    for _name in _m.group(1).split(","):
-        _name = _name.strip().split(" as ")[-1].strip()
-        if _name:
-            _IMPORTED[_name] = _m.group(2)
 
-def module_of(verb: str) -> pathlib.Path:
-    row = re.search(rf'(?m)^\s*\{{\s*name:\s*"{re.escape(verb)}",.*?\bhandler:\s*[^,]*?\b(cmd[A-Z][A-Za-z0-9_]*)', _BIN_SRC)
-    if row and row.group(1) in _IMPORTED:
-        return CMDS_DIR / f"{_IMPORTED[row.group(1)]}.ts"
-    return CMDS_DIR / f"{verb}.ts"
+def flatten(path, table, out):
+    """Every level of a door's table, keyed by its path (`meme`, `meme offer`)."""
+    if table is None:
+        return
+    if isinstance(table, list):
+        out[path] = set(table); return
+    out[path] = set(table)
+    for verb, sub in table.items():
+        flatten(f"{path} {verb}", sub, out)
+TABLES = {}
+for d in doors:
+    flatten(d["name"], d.get("verbs"), TABLES)
+if not TABLES:
+    print("[rite-commands] the door census carries NO verb table — `help --json` entries name no `verbs`; nothing could check a sub-door.")
+    sys.exit(1)
+
 fail, subs_checked = list(shim_fail), 0
 
-# ── A SUB-DOOR READS AT A DISPATCH POSITION, NEVER AS A LOOSE STRING ────────────────────────────
-# Three shapes carry every dispatch in this CLI, and the VALUE side is half of each:
-#   · a `switch` case                         — `case "seal":`
-#   · a dispatch-map entry                    — `found: { summary … }` · `refresh: cmdRiteRefresh`
-#   · a comparison against the sub-door name  — `if (sub !== "sign")`
-#
-# Matching a quoted literal ANYWHERE in the module is what a substring test does, and it passes on the
-# very line that disproves it: `case "contract": return await cmdContract(args, "admit")` carries the
-# word `admit` as an ARGUMENT, so a rite instructing `nexus admit` (no such verb) read GREEN against a door that
-# answers `unknown verb "admit"`.
-#
-# The value side matters just as much when COUNTING. `emit()` payloads write `data:`, `human:` and
-# `error:` in every module alive, so a key-shaped match with no value test reports the CLI's object
-# vocabulary and calls it a surface — 220 verbs where the doors answer far fewer. Requiring a handler
-# or a dispatch record on the right of the colon is what keeps the figure a reading rather than a proxy.
-_HANDLER = r'(?:cmd[A-Za-z]|run[A-Z]|\{\s*(?:summary|composes|run|handler)\b)'
-# The comparison form binds to the sub-door VARIABLE, never to any `=== "x"` in the file: `nexus.ts`
-# carries `action === "admit"` over an INTERNAL parameter, and a loose comparison test waved the same
-# ghost door through that the substring test did.
-_SUBVAR  = r'(?:sub|subverb|subcmd|verb|op)'
-
-# THE SUB-DOOR VARIABLE ALSO DERIVES FROM THE MODULE ITSELF: whatever name the module binds from the first positional
-# word (`const act = args.positional[0]` in rite.ts, its `if (act === "receipts")` the dispatch) carries the sub-door
-# there, beside the conventional names above. A name bound from any other place stays an internal parameter, so
-# nexus.ts's `action === "admit"` still names no door.
-def _subvar(body: str) -> str:
-    bound = set(re.findall(r'\b(?:const|let)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*positional\[0\]', body))
-    return _SUBVAR if not bound else rf'(?:{_SUBVAR[3:-1]}|\b(?:{"|".join(sorted(map(re.escape, bound)))})\b)'
-
-# ── AND IT READS AT A CODE POSITION, NEVER IN PROSE ─────────────────────────────────────────────
-# A `case "admit":` left in a comment over a retired branch, or a usage string that spells `admit: cmdAdmit`, reads
-# exactly like a live dispatch to a regex over raw text. Each shape matches the raw body (its key sits inside quotes)
-# and counts only where the same span, with comments and strings masked (tools/code_scan.py), still carries the
-# shape's code half: the `case` keyword, the colon and its handler, the comparison against the sub-door variable.
-def dispatch_keys(body: str) -> set:
-    """Every sub-door a module answers, read at dispatch positions in code alone."""
-    code = mask_non_code(body)
-    subvar = _subvar(code)
-    shapes = (
-        (r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', r'\bcase\s+:'),
-        (rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', rf':\s*{_HANDLER}'),
-        (rf'{subvar}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', rf'{subvar}\s*[=!]==?'),
-    )
-    found = set()
-    for pattern, code_half in shapes:
-        for m in re.finditer(pattern, body):
-            if re.search(code_half, code[m.start():m.end()]):
-                found.add(m.group(1))
-    return found
-
-def dispatches(body: str, sub: str) -> bool:
-    return sub in dispatch_keys(body)
-
-# AN EMPTY CENSUS CHECKS NOTHING. Rites that parse to zero instructed commands (a re-laid fence, a moved prefix) would
-# walk the loop below zero times and print "every instructed command resolves" over a reading of nothing.
 if not cmds:
     print("[rite-commands] the rites instruct NO command — the census reads `lares <verb>` and shim lines; nothing was checked.")
     sys.exit(1)
@@ -200,18 +153,15 @@ for c in cmds:
     verb  = parts[0]
     if verb not in live:
         fail.append(f"{c!r} — no top-level verb `{verb}` answers"); continue
-    if len(parts) < 2:
-        continue
-    sub = parts[1]
-    module = module_of(verb)
-    if not module.exists():
-        # A SUB-DOOR WITH NO MODULE READS RED BY NAME. The skip that stood here waved through every sub-word of a verb
-        # whose module moved or vanished, so the rite's `ghost walk` (no such door) read green while nothing read `walk`.
-        fail.append(f"{c!r} — commands/{module.name} is absent; `{sub}` has no mapped module")
-        continue
-    subs_checked += 1
-    if not dispatches(module.read_text(), sub):
-        fail.append(f"{c!r} — `{sub}` names no dispatch branch in commands/{module.name}")
+    path = verb
+    for sub in parts[1:]:
+        table = TABLES.get(path)
+        if table is None:
+            break                                   # a door with no table reads its next word as an argument
+        subs_checked += 1
+        if sub not in table:
+            fail.append(f"{c!r} — `{sub}` names no verb in the `{path}` table"); break
+        path = f"{path} {sub}"
 
 # ── AND EVERY CODE SYMBOL THE RITE CITES MUST EXIST ─────────────────────────────────────────────
 # The rite explains itself by pointing at functions — `provisionThresholdRecoveryAtFounding`,
@@ -257,21 +207,8 @@ for g in ghosts:
 # ── THE SURFACE READS AT THE VERB, NEVER AT THE DOOR ────────────────────────────────────────────
 # A door count reports a collapse an operator cannot feel: the fan-out lives one level below the
 # number, so a surface halved by doors may not have moved at all. Both figures ride together — either
-# alone flatters — and both DERIVE, so neither can go stale in a file somebody has to remember.
-# A CENSUS THAT CRASHED READS NO SURFACE, never a surface of zero doors.
-doors_json = subprocess.run(["node", BIN, "help", "--json"], capture_output=True, text=True)
-try:
-    doors = json.loads(doors_json.stdout)["data"]["entries"] if doors_json.returncode == 0 else []
-except (ValueError, KeyError, TypeError):
-    doors = []
-if not doors:
-    print(f"[rite-commands] the built binary's `help --json` did not answer a door census (exit {doors_json.returncode}) — "
-          "the surface figure is underivable.")
-    sys.exit(1)
-addressable = 0
-for d in doors:
-    module = module_of(d['name'])
-    addressable += 1 + (len(dispatch_keys(module.read_text())) if module.exists() else 0)
+# alone flatters — and both DERIVE from the census above, so neither can go stale in a file somebody has to remember.
+addressable = sum(1 + len(TABLES.get(d["name"], ())) for d in doors)
 
 print(f"[rite-commands] {len(cmds)} commands instructed, {subs_checked} sub-doors checked, "
       f"{len(cited)} symbols cited")

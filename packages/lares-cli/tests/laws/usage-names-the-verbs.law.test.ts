@@ -8,7 +8,7 @@
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/L2
  */
 import { describe, expect, test } from "vitest";
-import { helpLines } from "../../src/command-help.js";
+import { COMMAND_HELP, helpLines } from "../../src/command-help.js";
 import { COMMANDS } from "../../src/bin/lares.js";
 import { MEMPALACE_OWN_VERBS } from "../../src/commands/mempalace.js";
 import { verbTables } from "./harness.js";
@@ -26,10 +26,11 @@ const spineVerbs = (door: string): string[] => {
 };
 
 /** A door's whole account: its registry help, and the sub-verb table it prints where it keeps one (`wiki`, `bag`). */
-const account = (door: string): string => [...helpLines(door), ...(COMMANDS.find((c) => c.name === door)?.help?.() ?? [])].join("\n");
+const account = (door: string): string => [...helpLines(door), ...(door.includes(" ") ? [] : COMMANDS.find((c) => c.name === door)?.help?.() ?? [])].join("\n");
 const names = (text: string, verb: string): boolean => new RegExp(`(^|[^a-z_-])${verb}([^a-z_-]|$)`).test(text);
 
-const tables = verbTables().filter((t) => !t.door.includes(" "))
+// A door, and each sub-door that holds its own registry row (`nexus approve`, `meme offer`), answers for its spine.
+const tables = verbTables().filter((t) => !t.door.includes(" ") || t.door in COMMAND_HELP)
   .map((t) => (t.door === "mempalace" ? { door: t.door, verbs: MEMPALACE_OWN_VERBS.filter((v) => v !== "help") } : t))
   .map((t) => ({ door: t.door, verbs: t.verbs.filter((v) => v !== "help") }));
 const spined = tables.filter((t) => spineVerbs(t.door).length > 1);

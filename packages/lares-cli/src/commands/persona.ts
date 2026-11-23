@@ -354,7 +354,7 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     });
     return 0;
   }
-  return usage(args, `recovery-contact ${verb ?? ""}`.trim());
+  return refuseUsage(args, "persona recovery-contact", helpLines("persona recovery-contact"), verb ? `unknown sub-verb "${verb}"` : undefined);
 }
 
 /** The recovery contact's card, read hidden on a terminal; a test installs its own. */

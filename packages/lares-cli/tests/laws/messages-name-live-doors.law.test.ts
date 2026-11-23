@@ -60,6 +60,8 @@ const tables = new Map<string, ReadonlySet<string>>(verbTables().map((t) => [t.d
 const doors = new Set<string>([...COMMAND_NAMES, ...SHIM_VERBS, "help"]);
 /** A door that hands its sub-verbs to another program's grammar (`mempalace <vendored verb>`) holds no sub-verb to check. */
 const passes = new Set(COMMANDS.filter((c) => c.passesThrough !== undefined).map((c) => c.name));
+/** A door whose row names an argument that may lead its verb (`sense <sensorium> <verb>`). */
+const leads = new Set(COMMANDS.filter((c) => c.leads !== undefined).map((c) => c.name));
 const isWord = (w: string | undefined): w is string => w !== undefined && /^[a-z][a-z0-9_-]*$/.test(w);
 
 /**
@@ -74,7 +76,10 @@ export function deadDoor(line: string): string | null {
   if (!doors.has(door)) return `no door "${door}"`;
   if (passes.has(door)) return null;
   let path = door;
-  for (const word of words.slice(1)) {
+  const rest = words.slice(1);
+  // The row's leading argument stands before the verb only where the word after it is a verb the door answers.
+  if (leads.has(door) && isWord(rest[0]) && !tables.get(door)?.has(rest[0]) && tables.get(door)?.has(rest[1] ?? "")) rest.shift();
+  for (const word of rest) {
     const table = tables.get(path);
     if (table === undefined || !isWord(word)) return null;
     if (!table.has(word)) return `"${path}" declares no verb "${word}"`;
@@ -120,6 +125,10 @@ describe("L2 · every `lares …` command a message names is a door the CLI answ
     expect(namedCommands("a `zz-no-such-name` verb, not yet a door")).toEqual([]);
     expect(deadDoor("lares meme offer zz-no-such-name")).not.toBeNull();
     expect(deadDoor("lares meme offer promote <cid>")).toBeNull();
+    // The sense row's leading `<sensorium>` reads through to the verb, and only where a verb follows it.
+    expect(deadDoor("lares sense memory pour --all")).toBeNull();
+    expect(deadDoor("lares sense memory zz-no-such-name")).not.toBeNull();
+    expect(deadDoor("lares sense zz-no-such-name")).not.toBeNull();
     expect(namedCommands("x = `run \\`lares vessel request ${id}\\` now`")).toEqual(["lares vessel request ${id}"]);
   });
 });

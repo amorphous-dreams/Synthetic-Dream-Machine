@@ -106,7 +106,7 @@ import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
-import { helpLines } from "../command-help.js";
+import { helpDoor, helpLines } from "../command-help.js";
 import {
   bccOffset, duplicateKeyOffsets, frameFaultOffset, headOffset, postEotOffset, problemLine, type ProblemSeverity,
 } from "../problems.js";
@@ -190,7 +190,7 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
       const msg = err.message;
       const code = msg.startsWith("face-malformed:") ? "face-malformed" : "usage";
       // A usage refusal ends with the door's own lines, so the cure sits under the fault (help-is-the-refusal).
-      emit(args, { ok: false, error: { code, message: msg }, human: () => { console.error(`lares meme ${sub}: ${msg}`); if (code === "usage") usage(); } });
+      emit(args, { ok: false, error: { code, message: msg }, human: () => { console.error(`lares meme ${sub}: ${msg}`); if (code === "usage") for (const line of helpLines(helpDoor("meme", args.positional))) console.error(line); } });
       return exitFor("usage");
     }
     // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in
