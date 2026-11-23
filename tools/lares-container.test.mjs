@@ -112,6 +112,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       (refuseInput ? `case " $* " in *" tiddler put "*) printf "lares tiddler put: usage refusal\\n" >&2; exit 2;; esac\n` : "") +
       `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*) cat > "$CALL_LOG.stdin";; esac\n` +
+      // A WEAR the vessel answers as a test scripts (its prose and its exit); unscripted, it answers as any exec does.
+      `case " $* " in *" wear "*) if [ -n "\${FAKE_WEAR_OUT:-}" ]; then printf '%s\\n' "\${FAKE_WEAR_OUT}" >&2; exit "\${FAKE_WEAR_RC:-0}"; fi;; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
@@ -490,7 +492,7 @@ for (const [name, shim] of shims) {
     const attached = await run(shim, ["up"], { wornFace: "", tty: "", env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: LOCKED } });
     assert.equal(attached.status, 0, attached.stdout);
     assert.match(attached.calls, /lares node \S+ vault unlock --all/);
-    assert.doesNotMatch(attached.calls, / wear \d+$/m);
+    assert.doesNotMatch(attached.calls, / wear \d+(?: --yes)?$/m);
     assert.match(attached.stdout, /no face rests remembered \(config\/last-worn-face reads empty\), so the shim wears none and the vessel's own mount stands/);
   });
 
@@ -1590,16 +1592,16 @@ test(`${name}: rewear-after-up: under a pūlama, a held key with faces lent and 
   const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ vessel census --json/);
-  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ wear 2$/m);
+  assert.match(r.calls, /exec (?:-e \S+ )*-T lares node \S+ wear 2 --yes$/m);
   assert.match(r.stderr, /faces stand lent and none worn; wearing h2, the face last worn/);
   const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
   assert.equal(worn.status, 0, worn.stderr);
-  assert.doesNotMatch(worn.calls, / wear 2$/m);
+  assert.doesNotMatch(worn.calls, / wear 2(?: --yes)?$/m);
 });
 test(`${name}: rewear-after-vault-unlock: under a pūlama, an unlock that names no face and leaves none worn wears the face last worn`, { skip }, async () => {
   const r = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.calls, /vault unlock --all[\s\S]*vessel census --json[\s\S]*-T lares node \S+ wear 1$/m);
+  assert.match(r.calls, /vault unlock --all[\s\S]*vessel census --json[\s\S]*-T lares node \S+ wear 1 --yes$/m);
 });
 // AN EMPTY MEMORY TELLS THE PŪLAMA NOTHING. A `wear` writes the pūlama's `face.worn`, which it wears again after every
 // restart: a house whose config/last-worn-face reads empty sends no `wear 0` (a face it never saw worn), so the vessel's
@@ -1608,16 +1610,16 @@ test(`${name}: empty-worn-face-tells-the-pulama-nothing: a held key over none wo
   const held = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: "", env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(held.status, 0, held.stderr);
   assert.match(held.calls, /vessel census --json/);
-  assert.doesNotMatch(held.calls, / wear \d+$/m);
+  assert.doesNotMatch(held.calls, / wear \d+(?: --yes)?$/m);
   assert.match(held.stderr, /faces stand lent and none worn, and no face rests remembered \(config\/last-worn-face reads empty\); the shim wears none/);
   const shut = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: "", env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
   assert.equal(shut.status, 0, shut.stderr);
   assert.match(shut.calls, /-T lares node \S+ vault unlock --all/);
-  assert.doesNotMatch(shut.calls, / wear \d+$/m);
+  assert.doesNotMatch(shut.calls, / wear \d+(?: --yes)?$/m);
   assert.match(shut.stderr, /no face rests remembered \(config\/last-worn-face reads empty\), so the shim wears none and the vessel's own mount stands/);
   const bare = await run(shim, ["vault", "unlock", "--all"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_CENSUS_JSON: NONE_WORN_JSON } });
   assert.equal(bare.status, 0, bare.stderr);
-  assert.doesNotMatch(bare.calls, / wear \d+$/m);
+  assert.doesNotMatch(bare.calls, / wear \d+(?: --yes)?$/m);
 });
 // THE UNLOCK'S FACE REACHES THE PŪLAMA. The pūlama keeps the face worn in its memory (`standing.worn`) and re-wears it
 // after a restart, and only `wear` writes it, never the unlock: an unlock naming --face N that landed draws `wear N`,
@@ -1631,8 +1633,30 @@ test(`${name}: unlock-face-tells-the-pulama: under a pūlama, a vault unlock --f
   }
   const refused = await run(shim, ["vault", "unlock", "--face", "2"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "1" } });
   assert.notEqual(refused.status, 0);
-  assert.doesNotMatch(refused.calls, / wear \d+$/m);
+  assert.doesNotMatch(refused.calls, / wear \d+(?: --yes)?$/m);
   assert.equal(refused.worn, "1");
+});
+// THE SHIM'S OWN WEARS TURN OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first and refuses
+// `shore-unwritten` where records stay unwritten; the shim's post-unlock wears turn a face that was just opened (no hand
+// edited it), so they carry `--yes`. Should the refusal ever surface, the shim names it truly with the flush's reading,
+// never "outside the lent set or locked".
+const SHORE_UNWRITTEN = "lares wear: the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until that face is worn again:\n  shore: wiki:sdm wrote 0 owed carrier(s); 1 left unwritten: failed lar:///a.b.c/stuck (its reconcile threw)\nturn anyway: lares wear 2 --yes";
+test(`${name}: RED shim-wears-turn-over-the-shore: the post-unlock wears carry --yes, and a shore-unwritten refusal reads as itself with the flush's reading`, { skip }, async () => {
+  const shut = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
+  assert.equal(shut.status, 0, shut.stderr);
+  assert.match(shut.calls, /-T lares node \S+ vault unlock --all[\s\S]*-T lares node \S+ wear 2 --yes$/m);
+  for (const env of [
+    { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON },
+    { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' },
+  ]) {
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { ...env, FAKE_WEAR_OUT: SHORE_UNWRITTEN, FAKE_WEAR_RC: "1" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /h2 did not turn: the shore's flush left records unwritten/);
+    assert.match(r.stderr, /shore: wiki:sdm wrote 0 owed carrier\(s\); 1 left unwritten: failed lar:\/\/\/a\.b\.c\/stuck/);
+    assert.doesNotMatch(r.stderr, /outside the lent set or locked/);
+  }
+  const lent = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: NONE_WORN_JSON, FAKE_WEAR_OUT: "lares wear: the pūlama lends this vessel h0, and h2 stands outside that set", FAKE_WEAR_RC: "1" } });
+  assert.match(lent.stderr, /h2 stands outside the lent set or locked/);
 });
 test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });
@@ -1791,7 +1815,7 @@ test(`${name}: rebuild-lights-a-moved-closure-in-the-same-run: on a terminal, bu
   assert.equal(r.status, 0, r.stdout);
   const lines = r.calls.split("\n");
   const at = (re) => lines.findIndex((l) => re.test(l));
-  const build = at(/ build /), stop = at(/ stop lares$|down --remove-orphans/), lock = at(/pulama-main\.js lock$/), recreate = at(/up -d --force-recreate pulama/), light = at(/pulama-main\.js light$/), up = at(/up -d --wait lares/), admit = at(/pulama-main\.js admit$/), unlock = at(/ vault unlock --all$/), wear = at(/ wear 2$/);
+  const build = at(/ build /), stop = at(/ stop lares$|down --remove-orphans/), lock = at(/pulama-main\.js lock$/), recreate = at(/up -d --force-recreate pulama/), light = at(/pulama-main\.js light$/), up = at(/up -d --wait lares/), admit = at(/pulama-main\.js admit$/), unlock = at(/ vault unlock --all$/), wear = at(/ wear 2 --yes$/);
   assert.ok(build >= 0 && stop > build && lock > stop && recreate > lock && light > recreate && up > light && admit > up && unlock > admit && wear > unlock, `order build, down, lock, recreate, light, up, admit, unlock, wear:\n${r.calls}`);
   assert.doesNotMatch(lines[light], / -T /, "the light reads the route on this terminal");
   assert.doesNotMatch(lines[admit], / -T /, "the admit reads the route on this terminal");
@@ -1852,7 +1876,7 @@ test(`${name}: rebuild-keeps-a-lit-pulama-on-a-vessel-only-build: no restand, no
   const up = lines.findIndex((l) => /up -d --wait lares/.test(l));
   const admit = lines.findIndex((l) => /pulama-main\.js admit$/.test(l));
   const unlock = lines.findIndex((l) => / vault unlock --all$/.test(l));
-  const wear = lines.findIndex((l) => / wear 2$/.test(l));
+  const wear = lines.findIndex((l) => / wear 2 --yes$/.test(l));
   assert.ok(up >= 0 && admit > up && unlock > admit && wear > unlock, `order up, admit, unlock, wear:\n${r.calls}`);
   assert.doesNotMatch(lines[admit], / -T /, "the admit reads the route on this terminal");
   assert.match(lines[unlock], / -T /, "the vessel's unlock reads nothing");
