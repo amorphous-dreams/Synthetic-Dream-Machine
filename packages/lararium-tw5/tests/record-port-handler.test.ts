@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
-import { CompositeStore, type IslandToVesselMsg } from "@lararium/mesh";
-import type { PortMsg_Open, PortMsg_Write, PortMsg_Ask } from "@lararium/mesh/record-port";
+import { CompositeStore, VerbRefusal, type IslandToVesselMsg } from "@lararium/mesh";
+import { readPortIslandMsg, type PortMsg_Open, type PortMsg_Write, type PortMsg_Ask } from "@lararium/mesh/record-port";
 import { AtomicMemoryStore as MemoryTiddlerStore } from "./atomic-memory-store.js";
 import { hasRecordPort } from "../src/record-port-handler.js";
 import { shapeId } from "../src/record-port-projection.js";
@@ -812,6 +812,40 @@ describe("record port handler", () => {
     expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "txid-payload-mismatch" });
     await r.send(writeMsg("new", "New"));
     expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "refused", reason: "edits-not-granted" });
+    await r.close();
+  });
+
+  test("port-family-refusal-carries-reason: a family refused by name answers that name, whole or partial; CONTROL: a plain fault names write-failed, a landed write names none", async () => {
+    const r = await rig();
+    const second = new MemoryTiddlerStore("second");
+    r.composite.addLayer({ bagId: "second", store: second, writable: true, defaultWritable: false });
+    await r.send(openMsg());
+    const original = r.composite.writeFamily.bind(r.composite);
+    let fault: "sealed-default" | "sealed-second" | "plain" | null = "sealed-default";
+    r.composite.writeFamily = async (...args) => {
+      const bag = args[3]?.bag ?? "(default)";
+      if (fault === "sealed-default" && bag === "(default)") throw new VerbRefusal("sealed-document-unopened", "sealed-document-unopened: the working layer stands read-only");
+      if (fault === "sealed-second" && bag === "second") throw new VerbRefusal("sealed-document-unopened", "sealed-document-unopened: the second bag stands read-only");
+      if (fault === "plain" && bag === "(default)") throw new Error("transient");
+      return original(...args);
+    };
+    await r.send(writeMsg("whole", "Whole"));
+    const whole = ofType(r.messages, "port:written").at(-1)!;
+    expect(whole).toMatchObject({ applied: [], failed: ["(default)"], reason: "sealed-document-unopened" });
+    // The answer a TW5 caller reads crosses the wire: the answer naming its reason passes the port's own reader.
+    expect(readPortIslandMsg(JSON.parse(JSON.stringify(whole)))).not.toBeNull();
+    fault = "sealed-second";
+    await r.send({ type: "port:write", portId: "p", txId: "partial", records: [
+      { title: "First", fields: { text: "one" } }, { title: "Second", fields: { text: "two" }, bag: "second" },
+    ] });
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "partial", applied: ["(default)"], failed: ["second"], reason: "sealed-document-unopened" });
+    fault = "plain";
+    await r.send(writeMsg("plain", "Plain"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ applied: [], failed: ["(default)"], reason: "write-failed" });
+    fault = null;
+    await r.send(writeMsg("landed", "Landed"));
+    expect(ofType(r.messages, "port:written").at(-1)).toMatchObject({ status: "applied", applied: ["(default)"] });
+    expect(ofType(r.messages, "port:written").at(-1)).not.toHaveProperty("reason");
     await r.close();
   });
 
