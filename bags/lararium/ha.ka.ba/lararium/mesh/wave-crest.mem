@@ -1,0 +1,67 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/wave-crest`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/mesh/source/wave-crest"
+role          = "code-meme: the shared nalu crest slices whole families and adapts wave depth"
+source-file   = "packages/lararium-mesh/src/wave-crest.ts"
+source-sha256 = "sha256:3cd2322b39e4b51ee7d57078f87824f1713665145f8482627c1fd7f11a95e53b"
+title         = "lar:///ha.ka.ba/lararium/mesh/wave-crest"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/mesh/wave-crest"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+!! The Crest
+
+`takeCrest` removes whole families from the queue head in order, weighing count, bytes and operations against the caller's limits. The first family always rides, even when it exceeds a limit, so the queue advances without splitting a family. `adaptDepth` shrinks or grows the next depth from observed and target duration, bounds each step, and respects the caller's ceiling. `scaleLimits` applies that depth across the axes. Callers use `yieldToHost` from `host-task.ts` between waves; this module reads no clock and schedules no host task.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/law`>>
+
+!! Nalu Law
+
+The crest enacts whole-family slicing and host pacing under <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-wave-shape`>>. The wiki's own dispatch still decides the observer delivery boundary.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/callers`>>
+
+!! Callers
+
+`WaveLanding` in lararium-tw5 slices changes on count; the lararium-node ingest settle slices carriers, encoded bytes and estimated objects and adapts depth. Flush and autosync remain next candidates, not current callers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/caps-cost`>>
+
+!! Caps and Cost
+
+The caller supplies count, byte and operation caps; an oversized first family travels alone. The servo clamps its step and ceiling, and depth stays at least one. Slicing weighs each examined family and shifts the queue; array shifts can move remaining entries. The module carries no dependencies or clock, and callers pay for weighing, applying and yielding.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+!! Source
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-mesh/src/wave-crest.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/mesh/source/wave-crest"/>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-wave-shape`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YdPNXDelfimQ4iWQi4zBN0Tm4egcs-fe3qaEkoo4bTY`>>
+
+<<^ code=`&#x0004;` to=`?`>>
