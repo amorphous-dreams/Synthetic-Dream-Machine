@@ -8,10 +8,12 @@
  *
  * THE ACT HOLDS THE STORE. A live Repo would never see bytes move beneath it, so the release claims the store for its moment
  * (`claimStore`, the one claim a standing vessel also holds, and the one a container vessel's presence answers for) and
- * refuses by name where a holder answers, naming the stop that frees it. Through the host shim a standing container refuses
+ * refuses by name where a holder answers, naming the stop that frees it. A fall during boot frees the claim while its husk
+ * stays up, so the release also reads the resting falls (`fallenHolder`): a fall whose process still lives holds the store
+ * too, and refuses the same way, naming its pid. Through the host shim a standing container refuses
  * before anything execs, and a stopped one hands the act to the offline door.
  */
-import { claimStore, releaseQuarantinedDoc, StoreHeld, type QuarantineReleaseAct } from "@lararium/node";
+import { claimStore, fallenHolder, releaseQuarantinedDoc, StoreHeld, type QuarantineReleaseAct } from "@lararium/node";
 import { larDataDir } from "../env.js";
 import { emit, proseFirst } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -44,7 +46,14 @@ export async function cmdRelease(given: ParsedArgs): Promise<number> {
     return 2;
   }
   let r: ReturnType<typeof releaseQuarantinedDoc>;
-  try { r = releaseQuarantinedDoc(storageDir, documentId, act); }
+  try {
+    const husk = fallenHolder(storageDir);
+    if (husk !== null) {
+      console.error(`lares vessel release: a fallen vessel (pid ${husk.pid}, fell ${husk.cause} on the ${husk.path} path at ${husk.since}) still stands over the store though its claim let go; stop the vessel first with \`lares vessel stop\`, then release again (a pid the kernel has since reused reads as living too: \`ps -p ${husk.pid}\` shows which process holds it)`);
+      return 2;
+    }
+    r = releaseQuarantinedDoc(storageDir, documentId, act);
+  }
   finally { await claim.release(); }
   emit(args, {
     ok: r.ok,

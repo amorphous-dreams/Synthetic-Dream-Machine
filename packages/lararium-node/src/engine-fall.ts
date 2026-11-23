@@ -63,14 +63,17 @@ export const ENGINE_DOWN_HAND_ACT =
   + "verb; `lares vessel stop` stops it by hand (the stop clears the count, and with it the hold on each document a fall named in "
   + "flight, and exits 0); preserve the hearth (copy it aside); `lares vessel read vessel` probes every document, and "
   + "`lares vessel lay --apply --yes` lays a torn one again from its disk holding; then `lares vessel stand`: the vessel may rise "
-  + "once more, and each document a fall named in flight mounts writable. A hearth past repair restores from a keep bundle: "
-  + "`lares reset`, then `lares found --hearth --restore <bundle>`";
+  + "once more, and each document a fall named in flight mounts writable. A hearth past repair restores from its keep onto a "
+  + "brand-new house, the damaged one kept aside and never reset (founding runbook 11a): under a new `LARES_HOUSE`, "
+  + "`lares found --hearth --name <pet>`, `lares up`, then `lares import <keep checkout>/house --apply` for each face";
 
 const FALLS_FILE = ".engine-falls";
 
-/** One fall at rest: the life it ended, its cause, path and time, and the document in flight where the watch knew it. */
+/** One fall at rest: the life it ended, its cause, path and time, the document in flight where the watch knew it, and the
+ *  process that fell (`pid`, null where unknown), so a hand act can tell a husk that still stands from a fall long past. */
 export interface RestingFall {
   readonly life: string | null;
+  readonly pid: number | null;
   readonly cause: string;
   readonly path: string;
   readonly since: string;
@@ -86,7 +89,8 @@ const isRestingFall = (v: unknown): v is RestingFall => {
   const r = v as Record<string, unknown> | null;
   return r !== null && typeof r === "object" && typeof r["cause"] === "string" && typeof r["path"] === "string"
     && typeof r["since"] === "string" && (r["life"] === null || typeof r["life"] === "string")
-    && (r["inFlight"] === null || typeof r["inFlight"] === "string");
+    && (r["inFlight"] === null || typeof r["inFlight"] === "string")
+    && (r["pid"] === null || (typeof r["pid"] === "number" && Number.isSafeInteger(r["pid"]) && r["pid"] > 0));
 };
 
 /** The falls resting in a storage dir, oldest first; none where the file stands absent. A torn file reads as one fall of
@@ -98,12 +102,12 @@ export function readEngineFalls(storageDir: string): RestingFall[] {
     const parsed = JSON.parse(raw) as { falls?: unknown };
     if (Array.isArray(parsed.falls) && parsed.falls.every(isRestingFall)) return parsed.falls;
   } catch { /* torn: read below */ }
-  return [{ life: null, cause: "unknown", path: "unknown", since: "unknown", inFlight: null }];
+  return [{ life: null, pid: null, cause: "unknown", path: "unknown", since: "unknown", inFlight: null }];
 }
 
-/** Rest one more fall (atomic: a reader never sees a torn file). Answers every fall now resting. */
-export function restEngineFall(storageDir: string, fall: EngineFall, life: string | null): RestingFall[] {
-  const falls = [...readEngineFalls(storageDir), { life, cause: fall.cause, path: fall.path, since: fall.since, inFlight: fall.inFlight }];
+/** Rest one more fall (atomic: a reader never sees a torn file), naming the process that fell. Answers every fall now resting. */
+export function restEngineFall(storageDir: string, fall: EngineFall, life: string | null, pid: number = process.pid): RestingFall[] {
+  const falls = [...readEngineFalls(storageDir), { life, pid, cause: fall.cause, path: fall.path, since: fall.since, inFlight: fall.inFlight }];
   atomicWriteFileSync(engineFallsPath(storageDir), `${JSON.stringify({ falls }, null, 2)}\n`);
   return falls;
 }
@@ -111,6 +115,27 @@ export function restEngineFall(storageDir: string, fall: EngineFall, life: strin
 /** Clear the count: a clean stop, or a hand's stop of a vessel that stays down. */
 export function clearEngineFalls(storageDir: string): void {
   rmSync(engineFallsPath(storageDir), { force: true });
+}
+
+/** Whether a process lives: signal 0 asks the kernel and delivers nothing; EPERM names a process that lives under another uid. */
+const processLives = (pid: number): boolean => {
+  try { process.kill(pid, 0); return true; }
+  catch (err) { return (err as NodeJS.ErrnoException).code === "EPERM"; }
+};
+
+/**
+ * THE FALLEN HOLDER. A fall during boot closes the verb socket and frees the store's claimed name, yet the husk process
+ * stays up (it serves 503 and holds the named state), so the claim alone reads the store free beside it. The newest
+ * resting fall whose process still lives, other than this one, answers that husk; null where none lives. A pid the
+ * kernel reused after the fall reads as living too: the refusal names the pid, so a hand can check it.
+ */
+export function fallenHolder(storageDir: string, lives: (pid: number) => boolean = processLives): RestingFall | null {
+  const falls = readEngineFalls(storageDir);
+  for (let i = falls.length - 1; i >= 0; i--) {
+    const f = falls[i]!;
+    if (f.pid !== null && f.pid !== process.pid && lives(f.pid)) return f;
+  }
+  return null;
 }
 
 /** What the vessel did with one fall. */

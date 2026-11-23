@@ -7,11 +7,14 @@
  *   SF2  the prose names the falls, the held ids and the stop by its exact command.
  *   SF3  a quarantined id reads held, naming `lares vessel release`.
  *   CONTROL  a house with no fall reads none, and the prose adds no line.
+ *   WELD  the MCP seat's own reading (`step_in.py`, which a refusal from a fallen vessel carries) answers the same
+ *         `engineFalls` and `held` this read answers, from the same files.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 import { dispatch } from "../src/bin/lares.js";
 import { quarantineDoc, restEngineFall } from "@lararium/node";
 
@@ -63,7 +66,7 @@ describe("vessel read names the falls and the held ids with no daemon standing",
     const { root, store } = house();
     fell(store);
     const { data } = await readJson(root);
-    expect(data["engineFalls"]).toEqual([{ life: "a".repeat(32), cause: "wasm-unreachable", path: "repo", since: "2026-11-23T01:00:00.000Z", inFlight: IN_FLIGHT }]);
+    expect(data["engineFalls"]).toEqual([{ life: "a".repeat(32), pid: process.pid, cause: "wasm-unreachable", path: "repo", since: "2026-11-23T01:00:00.000Z", inFlight: IN_FLIGHT }]);
     expect(data["held"]).toEqual([{ documentId: IN_FLIGHT, why: "in-flight" }]);
   });
 
@@ -94,5 +97,21 @@ describe("vessel read names the falls and the held ids with no daemon standing",
     expect(data["engineFalls"]).toEqual([]);
     expect(data["held"]).toEqual([]);
     expect((await readProse(root)).join("\n")).not.toMatch(/engine falls|held:/);
+  });
+
+  test("WELD — the seat's step-in reading (python) answers the same falls and held ids as this read", async () => {
+    const { root, store } = house();
+    fell(store);
+    restEngineFall(store, { cause: "module-terminated", path: "ledger", detail: "x", since: "2026-11-23T02:00:00.000Z", lastSettled: null, inFlight: null }, "b".repeat(32));
+    const live = join(store, QUARANTINED.slice(0, 2), QUARANTINED.slice(2), "snapshot");
+    mkdirSync(live, { recursive: true });
+    writeFileSync(join(live, "chunk"), "torn");
+    quarantineDoc(store, { documentId: QUARANTINED, status: "torn" });
+    const { data } = await readJson(root);
+    const py = spawnSync(process.env["LARES_PYTHON"] || "python3", ["-c", "import json, sys, step_in\nprint(json.dumps(step_in.reading(sys.argv[1])))", store], {
+      env: { ...process.env, PYTHONPATH: resolve(process.cwd(), "../lararium-sensorium/scripts") }, encoding: "utf8",
+    });
+    expect(py.status, py.stderr).toBe(0);
+    expect(JSON.parse(py.stdout)).toEqual({ engineFalls: data["engineFalls"], held: data["held"] });
   });
 });

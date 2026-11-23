@@ -71,7 +71,7 @@ describe("createEngineWatch — one fall, the first trap, the last settled wave"
     expect(r.message).toMatch(/nothing ran/);
     expect(r.message).toContain(ENGINE_HAND_ACT);
     expect(ENGINE_HAND_ACT).toMatch(/restart the vessel once/);
-    expect(ENGINE_HAND_ACT).toMatch(/keep bundle/);
+    expect(ENGINE_HAND_ACT).toMatch(/restore from the keep onto a new house \(`lares import <keep checkout>\/house --apply`\)/);
   });
 });
 

@@ -337,7 +337,7 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     writeFileSync(join(syncDir, "peer"), "held sync state");
     const keep = releaseQuarantinedDoc(storageDir, s.sealedId, "kept");
     expect(keep.ok).toBe(false);
-    if (!keep.ok) expect(keep.why).toContain("--release ");
+    if (!keep.ok) expect(keep.why).toContain(`\`lares vessel release ${s.sealedId}\``);
 
     expect(releaseQuarantinedDoc(storageDir, s.sealedId, "restored")).toMatchObject({ ok: true, act: "restored" });
     const shard = join(storageDir, s.sealedId.slice(0, 2));

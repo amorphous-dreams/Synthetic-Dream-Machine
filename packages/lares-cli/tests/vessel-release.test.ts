@@ -10,6 +10,9 @@
  *   R3  an id no hold names refuses by name.
  *   R4  a held store (a standing vessel, a command mid-act) refuses, naming `lares vessel stop`, and moves nothing.
  *   R5  a release lands: the bytes return under the id, the manifest reads released, and the store claim lets go.
+ *   R7  a fallen vessel that let its claim go (a fall during boot frees the store's name) still holds the store: a resting
+ *       fall whose process lives refuses the release by name, naming that pid and `lares vessel stop`. CONTROL: a fall whose
+ *       process has ended lets the release land.
  *   R6  the old spelling on the read (`vessel read vessel --release*`) moved: it names the new door, exit 2, and reads nothing.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -17,7 +20,8 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { dispatch } from "../src/bin/lares.js";
-import { claimStore, quarantineDoc, quarantineHolds } from "@lararium/node";
+import { spawn } from "node:child_process";
+import { claimStore, quarantineDoc, quarantineHolds, restEngineFall } from "@lararium/node";
 
 const roots: string[] = [];
 const savedRoot = process.env["LAR_ROOT"];
@@ -112,4 +116,30 @@ describe("lares vessel release <documentId> [--keep|--fresh]", () => {
       expect(quarantineHolds(storageDir).map((h) => h.manifest.documentId)).toEqual([DOC]);
     });
   }
+
+  test("R7 — a fallen process that let its claim go still holds the store: the release refuses, naming its pid and the stop", async () => {
+    const { root, storageDir } = house();
+    held(storageDir);
+    const husk = spawn("sleep", ["60"], { stdio: "ignore" });
+    try {
+      restEngineFall(storageDir, { cause: "wasm-unreachable", path: "repo", detail: "x", since: "2026-11-23T01:00:00.000Z", lastSettled: null, inFlight: null }, "a".repeat(32), husk.pid!);
+      const s = said();
+      expect(await dispatch(["vessel", "release", DOC, "--root", root, "--skip-build"])).toBe(2);
+      const err = s.err.join("\n");
+      expect(err).toContain(`pid ${husk.pid}`);
+      expect(err).toMatch(/`lares vessel stop`/);
+      expect(quarantineHolds(storageDir).map((h) => h.manifest.documentId)).toEqual([DOC]);
+    } finally { husk.kill(); }
+  });
+
+  test("R7 CONTROL — a fall whose process ended lets the release land", async () => {
+    const { root, storageDir } = house();
+    held(storageDir);
+    const gone = spawn("true", [], { stdio: "ignore" });
+    await new Promise((r) => gone.once("exit", r));
+    restEngineFall(storageDir, { cause: "wasm-unreachable", path: "repo", detail: "x", since: "2026-11-23T01:00:00.000Z", lastSettled: null, inFlight: null }, "a".repeat(32), gone.pid!);
+    said();
+    expect(await dispatch(["vessel", "release", DOC, "--root", root, "--skip-build"])).toBe(0);
+    expect(quarantineHolds(storageDir)).toEqual([]);
+  });
 });

@@ -489,6 +489,45 @@ route_cli() {
   fi
 }
 
+# THE STEP-IN READ ON THE HOST. A fallen engine answers no verb, and docker itself may reach no CLI (the daemon wedged, the
+# container mid-restart, an exec docker refuses). The fall rests its count beside the store and each quarantined id rests a
+# manifest, both plain files under the hearth bind, so the shim reads them here with no container: the falls file as the
+# vessel wrote it, the ids held in flight, the ids held in quarantine, and the hand act. It opens no store and writes nothing.
+host_read() { # $1 = why docker reaches no CLI
+  hr_store="$HOUSE/hearth/vessel"
+  printf 'lares-container: %s, so the read runs on the host over %s (no verb, nothing opened)\n' "$1" "$hr_store" >&2
+  if [ -f "$hr_store/.engine-falls" ]; then
+    printf 'engine falls (%s):\n' "$hr_store/.engine-falls"
+    sed 's/^/  /' "$hr_store/.engine-falls"
+    sed -n 's/.*"inFlight"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$hr_store/.engine-falls" | sort -u | while IFS= read -r hr_id; do
+      printf 'held in flight: %s\n' "$hr_id"
+    done
+  else
+    printf 'engine falls: none resting\n'
+  fi
+  for hr_m in "$hr_store"/quarantine-torn-snapshots-*/*.manifest.json; do
+    [ -f "$hr_m" ] || continue
+    if grep -q '"released"' "$hr_m"; then continue; fi
+    hr_id=$(sed -n 's/.*"documentId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$hr_m" | head -n 1)
+    printf 'held in quarantine: %s (%s)\n' "$hr_id" "$hr_m"
+  done
+  printf '%s\n' 'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand'"'"'s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
+}
+
+# `vessel read`: inside the container where docker reaches one, on the host where it reaches none. A fallen engine answers
+# no standing verdict, so the read asks none after it.
+vessel_read() {
+  follow_up=""
+  if ! vr_running=$(compose ps -q --status running lares 2>/dev/null); then host_read "docker compose ps failed"; return 0; fi
+  vr_restarting=$(compose ps -q --status restarting lares 2>/dev/null) || vr_restarting=""
+  if [ -z "$vr_running" ] && [ -n "$vr_restarting" ]; then host_read "the vessel container restarts, so no command reaches it"; return 0; fi
+  if route_cli vessel "$@"; then return 0; else vr_rc=$?; fi
+  case "$vr_rc" in
+    125|126|127) host_read "docker could not run the read (exit $vr_rc)"; return 0 ;;
+  esac
+  return "$vr_rc"
+}
+
 # THE CENSUS BEFORE A STOP, bounded: the census itself waits on its own lines (ten seconds for the custody door, fifteen
 # per island page), and this bound stands over the whole exec, so a wedged vessel never hangs `down`.
 CENSUS_WAIT_SECONDS=60
@@ -1503,7 +1542,7 @@ case "$verb" in
       # stop: it clears the restart count (and the holds it carries) and exits 0.
       stop) [ "$#" -eq 1 ] || die "vessel stop takes no option through this shim"; compose stop lares ;;
       # THE STEP-IN READ asks no standing verdict after it: a fallen engine answers none, and the read reads its files.
-      read) follow_up=""; route_cli "$verb" "$@" ;;
+      read) vessel_read "$@" ;;
       # THE RELEASE HOLDS THE STORE: a standing container refuses here, naming the stop, before anything execs; a stopped
       # one hands the act to the offline door, whose CLI claims the store for it.
       release)

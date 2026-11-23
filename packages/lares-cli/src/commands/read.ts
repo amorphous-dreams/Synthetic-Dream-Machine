@@ -242,7 +242,7 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
   // THE STEP-IN READING (`engine-fall`): a fallen vessel answers no verbs, so the falls resting beside the store and every id a
   // boot holds (in flight at a fall, or in quarantine) read from the files themselves, the same whether the vessel stands, has
   // fallen, or rests stopped.
-  const falls = readEngineFalls(storage).map((f) => ({ life: f.life, cause: f.cause, path: f.path, since: f.since, inFlight: f.inFlight }));
+  const falls = readEngineFalls(storage).map((f) => ({ life: f.life, pid: f.pid, cause: f.cause, path: f.path, since: f.since, inFlight: f.inFlight }));
   const held = [
     ...heldInFlight(falls).map((documentId) => ({ documentId, why: "in-flight" as const })),
     ...quarantineHolds(storage).map((h) => ({ documentId: h.manifest.documentId, why: "quarantine" as const })),

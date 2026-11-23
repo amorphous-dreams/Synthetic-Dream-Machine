@@ -86,7 +86,7 @@ describe("an engine that falls flushes, stops and rises once", () => {
     expect(p.lines.join("\n")).toMatch(/wasm-unreachable/);
     expect(p.lines.join("\n")).toMatch(/doc-in-flight/);
     expect(p.lines.join("\n")).toMatch(/daemon island wrote 0 owed carrier\(s\) \(3 file write\(s\)\)/);
-    expect(readEngineFalls(storageDir)).toEqual([{ life: "a".repeat(32), cause: "wasm-unreachable", path: "repo", since: fall.since, inFlight: "doc-in-flight" }]);
+    expect(readEngineFalls(storageDir)).toEqual([{ life: "a".repeat(32), pid: process.pid, cause: "wasm-unreachable", path: "repo", since: fall.since, inFlight: "doc-in-flight" }]);
   });
 
   test("F2 — a second fall within the count stays down and names the hand act", async () => {
@@ -179,6 +179,10 @@ describe("an engine that falls flushes, stops and rises once", () => {
     expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/stays held/);
     expect(ENGINE_DOWN_HAND_ACT).toMatch(/mounts writable/);
     expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/repair or restore from a keep bundle;/);
+    // The restore names the road the keep drill walks (house-keep.test.mjs H4): a brand-new house imports the keep. A face's
+    // backup bundle (`found --hearth --restore`) restores one face, never a house, and a reset would clear the damaged hearth.
+    expect(ENGINE_DOWN_HAND_ACT).toContain("`lares import <keep checkout>/house --apply`");
+    expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/--restore|`lares reset`/);
 
     // The code: a vessel that stays down, holding a document in flight, takes the hand's stop; the count and the hold clear.
     const storageDir = scratch();
