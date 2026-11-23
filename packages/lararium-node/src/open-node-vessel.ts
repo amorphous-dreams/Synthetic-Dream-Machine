@@ -632,6 +632,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now: every served face neither mounted, lit nor closing at its source lights (the served-but-dark clearing line). */
   replayLend: () => Promise<void>;
+  /** Arm face `ordinal`'s next light as a recard (`face-recard`): one use, consumed by that light whether it stands or refuses. */
+  armRecard: (ordinal: number) => void;
   /** Hear the mounted face close at its custody's word (a pūlama's close, a forced lock): the vessel stands again. Returns the unsubscribe. */
   onMountClosed: (listener: () => void) => () => void;
   /** The bare atom key of the lit sibling a verified presenter names (its place session stands), or undefined. */
@@ -846,6 +848,7 @@ interface NodeBootPrep {
   holdFaces: () => boolean;
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   replayLend: () => Promise<void>;
+  armRecard: (ordinal: number) => void;
   onMountClosed: (listener: () => void) => () => void;
   siblingFaceOf: (presenter: string) => string | undefined;
   daemonVm:         () => DaemonVmCore;
@@ -1057,6 +1060,8 @@ async function prepareNodeBootOn(
    *  custody read, the face takes its Archive write while the island stands its hive and the light still reads live (the
    *  sibling's archive floor rests after its card, before its session stands). Only the light that opened a window shuts it. */
   const lightingCustody = new Map<string, () => boolean>();
+  /** THE FACES WHOSE NEXT LIGHT RECARDS (`lares vault recard --face N`, the custody door arms it): one use, taken by that light. */
+  const recardArmed = new Set<number>();
   /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
    *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
   const siblingPlanes = siblingPlaneMounts();
@@ -4008,7 +4013,9 @@ async function prepareNodeBootOn(
       try {
         if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);
-        await duringLight(lightingCustody, entry.personaGroupId, live, () => daemonVm.lightFace(entry));
+        // A RECARD RIDES THIS LIGHT ALONE: the entry the face keeps (`faceEntries`) never carries it, so no reopen recards again.
+        const recard = recardArmed.delete(ordinal);
+        await duringLight(lightingCustody, entry.personaGroupId, live, () => daemonVm.lightFace(recard ? { ...entry, recard: true } : entry));
       } catch (error) { dropSiblingPlanes(entry.personaGroupId); throw error; }
       faceEntries.set(ordinal, entry);
       const lit: FaceLit = { atomKey: entry.atom.key, custody };
@@ -5403,6 +5410,7 @@ async function prepareNodeBootOn(
     holdFaces: () => faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal)).every(Boolean),
     refusedLights: () => faceLife.refusedLights(),
     replayLend: () => replayLendNow(),
+    armRecard: (ordinal) => { recardArmed.add(ordinal); },
     onMountClosed: (listener) => { mountClosedListeners.add(listener); return () => { mountClosedListeners.delete(listener); }; },
     siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
@@ -5539,7 +5547,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, replayLend: p.replayLend, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, replayLend: p.replayLend, armRecard: p.armRecard, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

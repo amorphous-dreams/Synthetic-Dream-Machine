@@ -19,7 +19,7 @@
  */
 
 import { KeyhiveProvider, PrekeySecretAbsent } from "./keyhive-provider.js";
-import { registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
+import { registerBagsDurably, type BagDocLedger, type DurableRegistration } from "./bag-doc-ledger.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
 import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
 
@@ -75,7 +75,19 @@ export interface BootDaemonKeyhiveInput {
   /** Durable rest for the Keyhive chunks this identity tracks per bag (`KeyhiveProvider` `chunkRest`). Absent:
    *  they rest in memory alone, and a restart finds none. */
   readonly chunkRest?: ProviderChunkRest;
+  /** The face's handle-index on this vessel, where the caller knows it: a refusal names the command for that face. */
+  readonly handle?: number;
+  /**
+   * THE RECARD (`lares vault recard --face N`): where this stand meets `PrekeySecretAbsent`, it mints its card FIRST and
+   * registers again, so every Document it mints rides the fresh prekey whose secret it holds. A face that registers without
+   * the fault stands as an ordinary boot would (`recard.stale` false). The caller rests the Archive after that card, or the
+   * recard keeps nothing.
+   */
+  readonly recard?: true;
 }
+
+/** What a recard did: whether the stand met the fault at all, and each bag whose recorded Document it could not hold. */
+export interface BootDaemonKeyhiveRecard extends DurableRegistration { readonly stale: boolean }
 
 export interface BootDaemonKeyhiveResult {
   /** The booted provider — serves as the island VerbDispatcher verifier and the
@@ -86,7 +98,12 @@ export interface BootDaemonKeyhiveResult {
   /** What the Binding Gate's fold set aside — persona-KEL events that do not verify and so move nothing — or null
    *  when every event it met verified. The boot also says it on the log. */
   readonly unreadable: string | null;
+  /** Present where the input asked a recard: what it did. */
+  readonly recard?: BootDaemonKeyhiveRecard;
 }
+
+/** The command that recards a face, by its handle where known. */
+export const recardCommand = (handle?: number): string => `lares vault recard --face ${handle ?? "<N>"}`;
 
 /**
  * A face whose stand holds no prekey secret, by the face's public atom key: its Archive came in absent or older than its
@@ -95,8 +112,20 @@ export interface BootDaemonKeyhiveResult {
  */
 export class FaceHoldsNoPrekeySecret extends Error {
   override readonly name = "FaceHoldsNoPrekeySecret";
-  constructor(readonly face: string, cause: PrekeySecretAbsent) {
-    super(`[daemon-keyhive] face ${face.slice(0, 16)}… ${cause.message}`, { cause });
+  constructor(readonly face: string, cause: PrekeySecretAbsent, readonly handle?: number) {
+    super(`[daemon-keyhive] face ${face.slice(0, 16)}… ${cause.message}; recard it, keeping its identity: \`${recardCommand(handle)}\``, { cause });
+  }
+}
+
+/**
+ * A recard that kept nothing, by name: the face's Archive could not rest after its card (`archive-unrouted`,
+ * `archive-unrested`), or the stand still held no prekey secret after it (`still-refuses`). The face stays dark; the message
+ * names the act that clears it.
+ */
+export class FaceRecardRefused extends Error {
+  override readonly name = "FaceRecardRefused";
+  constructor(readonly reason: "archive-unrouted" | "archive-unrested" | "still-refuses", message: string) {
+    super(`[daemon-keyhive] recard refused (${reason}): ${message}`);
   }
 }
 
@@ -218,15 +247,29 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // dance + the affiliation layer; boot itself proves identity only and does not read them.
 
   // Register the operator's writable bags so cap checks resolve against lar: URIs.
+  const register = async (): Promise<DurableRegistration> => {
+    if (input.ledger) return registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger });
+    for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
+    return { reminted: [] };
+  };
+  let recard: BootDaemonKeyhiveRecard | undefined;
   try {
-    if (input.ledger) await registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger });
-    else for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
+    const registered = await register();
+    if (input.recard) recard = { stale: false, ...registered };
   } catch (error) {
-    if (error instanceof PrekeySecretAbsent) throw new FaceHoldsNoPrekeySecret(input.faceVerifyingKey, error);
-    throw error;
+    if (!(error instanceof PrekeySecretAbsent)) throw error;
+    if (!input.recard) throw new FaceHoldsNoPrekeySecret(input.faceVerifyingKey, error, input.handle);
+    // THE RECARD: the card mints FIRST, rotating in a prekey whose secret this stand holds, and the registration runs again;
+    // every Document it mints now rides that prekey. Nothing minted in the refused pass (the fault meets the first mint).
+    await keyhive.contactCard();
+    try { recard = { stale: true, ...(await register()) }; }
+    catch (again) {
+      if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${input.faceVerifyingKey.slice(0, 16)}… held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
+      throw again;
+    }
   }
 
-  return { keyhive, did, unreadable };
+  return { keyhive, did, unreadable, ...(recard ? { recard } : {}) };
   } catch (error) {
     try { await keyhive.dispose(); } catch (disposeError) { console.warn(`[daemon-keyhive] disposal failed: ${String(disposeError)}`); }
     throw error;

@@ -358,6 +358,12 @@ export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemo
      * to the worn composition's own list.
      */
     readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"];
+    /**
+     * THE RECARD (`lares vault recard --face N`), asked for this light alone: where the face's stand holds no prekey secret, it
+     * mints its card before it registers its bags and rests the Archive after that card, keeping the face's identity. A light
+     * that never meets the fault stands as it would. Never part of what the face lit from (`faceInputsDigest`).
+     */
+    readonly recard?: true;
   };
 
 /**

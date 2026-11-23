@@ -151,6 +151,35 @@ export class PrekeySecretAbsent extends Error {
   }
 }
 
+/**
+ * Content this face can no longer open: it was sealed under a bag's Document that this stand held no hand in, so a fresh
+ * Document took the bag (`remintBag`, a recard's or a boot's durable registration). The secrets that Document's key agreement
+ * reached rested only in an Archive nobody kept, so no stand of this face opens it again; a peer that still holds the content
+ * can share it anew. The refusal names the bag and nothing secret.
+ */
+export class SealedUnderLostDocument extends Error {
+  override readonly name = "SealedUnderLostDocument";
+  constructor(readonly bag: string, cause?: unknown) {
+    super(`content of ${bag} sealed under a Document this face lost (its Archive was never kept) stays unreadable: share it anew from a stand that holds it`, { cause });
+  }
+}
+
+/**
+ * Content sealed to a key this face holds none of (keyhive's `Key not found`): a peer sealed it to a prekey whose secret rested
+ * only in an Archive nobody kept (a face whose Archive fell behind its cards: a recard does not bring that secret back), or it
+ * was sealed at an epoch before this face's seat. Unreadable here, by name; the stand that holds it shares it anew. The message
+ * keeps keyhive's own words and names the bag, nothing secret.
+ */
+export class ContentKeyNotHeld extends Error {
+  override readonly name = "ContentKeyNotHeld";
+  constructor(readonly bag: string, cause?: unknown) {
+    super(`content of ${bag} stays unreadable to this face (Key not found): it was sealed to a key this face holds none of, a prekey no kept Archive held or an epoch before its seat; the stand that holds it shares it anew (\`lares bag share <bag> --read <this face>\` there)`, { cause });
+  }
+}
+
+/** keyhive's `DecryptError` for a key this stand does not hold. */
+const KEY_NOT_FOUND = "Key not found";
+
 /** keyhive's own words for `OwnerHoldsNoPrekeySecret` (document.rs), the one generation fault this shore renames. */
 const OWNER_HOLDS_NO_PREKEY_SECRET = "no secret key for the prekey the document's owner is added with";
 
@@ -196,6 +225,8 @@ export class KeyhiveProvider implements CapabilityProvider {
   /** The one contact card this stand mints (see `contactCard`): the mint itself, in flight or settled; null until
    *  the first ask. */
   private standCard: Promise<Uint8Array> | null = null;
+  /** Each bag whose Document this stand replaced (`remintBag`): a seal that fails on it names the lost Document. */
+  private readonly remintedBags = new Set<string>();
   /** CIV-2b — islands whose events already sit in keyhive memory: the self slice seeded eagerly at boot,
    *  every island this vessel minted/adopted live, plus any foreign island a first-access materialized.
    *  A resident island's lazy-load noops. */
@@ -407,7 +438,9 @@ export class KeyhiveProvider implements CapabilityProvider {
     // the chunk cache through the bag's CURRENT document and would refuse on every one of them.
     this.bagChunks.delete(bagUrl);
     if (prior && this.chunkRest) await this.chunkRest.drop(await this.chunkShelf(bagUrl, prior));
-    return this.registerBag(bagUrl);
+    const minted = await this.registerBag(bagUrl);
+    if (prior) this.remintedBags.add(bagUrl);
+    return minted;
   }
 
   /**
@@ -613,7 +646,14 @@ export class KeyhiveProvider implements CapabilityProvider {
    */
   async decryptContent(bagUrl: string, encryptedBytes: Uint8Array): Promise<Uint8Array> {
     const doc = await this.requireDoc(bagUrl);
-    return this.requireKh().tryDecrypt(doc.docId, KH.Encrypted.fromBytes(encryptedBytes));
+    try {
+      return await this.requireKh().tryDecrypt(doc.docId, KH.Encrypted.fromBytes(encryptedBytes));
+    } catch (error) {
+      // A BAG THIS STAND REMINTED names its lost Document: the seal most likely belongs to the Document that left.
+      if (this.remintedBags.has(bagUrl)) throw new SealedUnderLostDocument(bagUrl, error);
+      if (String(error instanceof Error ? error.message : error).includes(KEY_NOT_FOUND)) throw new ContentKeyNotHeld(bagUrl, error);
+      throw error;
+    }
   }
 
   /**

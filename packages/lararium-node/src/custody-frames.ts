@@ -28,6 +28,9 @@
  *   rehive   stand a SHUT face's hive again from its own seed, where its veil-archive row holds another identity's Archive
  *            (`face-rehive`). The frame carries the face's own route and the face; the door refuses a face worn or lit
  *            (`face-open`) and opens the face's key for this act alone, outside the holder, so no composition hears it.
+ *   recard   light a face whose Archive fell behind its own cards (its last light here refused `FaceHoldsNoPrekeySecret`)
+ *            with its card minted before its bags, keeping its identity (`face-recard`). The frame carries the vessel's own
+ *            route and the face; the door refuses any face whose last light did not refuse for want of a prekey secret.
  *
  * ── A BACKUP ASKS THE VESSEL'S ROUTE AGAIN ──────────────────────────────────────────────────────
  * An unlocked vessel's door answers any process of its own user, and no act of the table hands out a root. A
@@ -77,6 +80,8 @@ export type CustodyFrame =
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
   /** Rehive SHUT face `face` from its own seed, under that face's own route (`credentials`). */
   | { readonly op: "rehive"; readonly credentials: readonly Credential[]; readonly face: number }
+  /** Recard face `face`, served here and dark for want of a prekey secret, once `credentials` prove the vessel's own route. */
+  | { readonly op: "recard"; readonly credentials: readonly Credential[]; readonly face: number }
   /** Park the human route a NEW face will ask for, for the next face this vessel founds (one use). */
   | { readonly op: "face-route"; readonly slots: readonly SlotSpec[]; readonly purpose: "persona-new" | "bundle.restore"; readonly argsDigest: string }
   /** One ward act's route: the door parks it under a one-use ticket a store verb then names (`ward-credential`). */
@@ -115,6 +120,8 @@ export type CustodyAnswer =
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
   | ({ readonly op: "rehive"; readonly face: number } & RehiveOutcome)
+  /** A recard whose light stood: the face lit again under its own identity. What it reminted reads on the vessel's log. */
+  | { readonly op: "recard"; readonly face: number; readonly recarded: true }
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
 /** A face its custody serves that stands dark here: its last light refused. The note names the cause and the clearing line. */
@@ -190,6 +197,8 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
   /** Rehive one SHUT face under its own route (`rehiveShutFace`). Absent, every `rehive` frame refuses `rehive-unavailable`. */
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
+  /** Arm face `ordinal`'s NEXT light as a recard (`face-recard`), one use. Absent, every `recard` frame refuses `recard-unavailable`. */
+  readonly armRecard?: (ordinal: number) => void;
   /**
    * Ask every island of the standing composition that mounts a disk shore to flush (`flushEveryShore`, the same flush the
    * teardown's flush phase runs). A wear that turns the face asks it first, in this process. Absent, or null while no
@@ -200,7 +209,11 @@ export interface CustodyFrameDeps {
   readonly peerOf?: (sock: Socket) => Promise<PeerKind>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "act", "backup", "face-route", "ward", "prove", "rehive"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "act", "backup", "face-route", "ward", "prove", "rehive", "recard"]);
+/** The keys a `recard` frame may carry: the vessel's own route and the face, nothing beside them. */
+const RECARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
+/** The words a light refused for want of a prekey secret carries (`FaceHoldsNoPrekeySecret`): the one dark a recard cures. */
+export const STALE_LIGHT = "holds no prekey secret";
 /** The keys a `rehive` frame may carry: the face's own route and the face, nothing beside them. */
 const REHIVE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
@@ -652,13 +665,61 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     }
   };
 
+  /**
+   * One recard, run on the door's one chain. THE FACE STANDS SERVED AND DARK for want of a prekey secret: its last light here
+   * refused `FaceHoldsNoPrekeySecret`. A face lit, shut, or dark for another cause refuses before anything moves. The vessel's
+   * own route proves a person stands here; the door arms the face's next light as a recard and replays the lend, which lights it.
+   */
+  const runRecard = (credentials: readonly Credential[], face: number, sock: Socket) => async (): Promise<CustodyAnswer> => {
+    const refuse = (reason: string, errorMessage: string, extra: { attemptsLeft?: number } = {}): CustodyAnswer => {
+      deps.onLog(`recard h${face}: refused (${reason})`);
+      return { op: "recard", status: "error", errorMessage, refusal: { reason, ...extra } };
+    };
+    const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
+    if ("refusal" in hand) return refuse(hand.refusal, "a recard is a person's own act at their terminal: a detected AI seat refuses, and the vessel's own route is the gate; nothing moved");
+    if (!deps.armRecard || !deps.refusedLights || !deps.replayLend) return refuse("recard-unavailable", "this vessel's custody door recards no face; nothing moved");
+    if (deps.pulama) return refuse("recard-under-pulama", `this vessel's custody rests with its pūlama, which lights faces on its own hand; nothing moved. Read the face there: tools/lares-container.sh pulama status`);
+    if (!holder.isUnlocked()) return refuse("custody-locked", `${new CustodyLocked().message}: unlock it (\`lares vault unlock\`), then \`lares vault recard --face ${face}\`; nothing moved`);
+    const at = await holder.faceStanding({ ordinal: face });
+    if (at === null) return refuse("face-not-standing", `no face h${face} stands on this vessel (\`lares vessel roster\` names each face); nothing moved`);
+    // THE NO-OP GUARD: only a face whose last light here refused for want of a prekey secret recards.
+    const dark = deps.refusedLights().find((r) => r.ordinal === face);
+    if (!at.unlocked) return refuse("face-shut", `face h${face} stands shut: open it (\`lares vault unlock --face ${face}\`); a face whose Archive fell behind its cards refuses its light by name, and the recard follows; nothing moved`);
+    if (dark === undefined) return refuse("face-not-stale", `face h${face}'s last light here did not refuse for want of a prekey secret (it stands lit, or still lighting): there is nothing to recard. Read it with \`lares vault status\`; nothing moved`);
+    if (!dark.cause.includes(STALE_LIGHT)) return refuse("face-not-stale", `face h${face} stands dark for another cause (${dark.cause}): a recard cures only a face that holds no prekey secret; clear it with \`lares vault unlock\`; nothing moved`);
+    const proof = await holder.proves(credentials);
+    if (proof.reading !== "proves") {
+      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing moved (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
+      if (proof.reading === "attempts-spent") return refuse("attempts-spent", "this vessel's unlock attempts for this boot stand spent; nothing moved. Stand the vessel again (`lares vessel stand`)");
+      return refuse(proof.reading, `the vessel's slot tree reads ${proof.reading}; nothing moved. Read it with \`lares vault status\``);
+    }
+    deps.armRecard(face);
+    try { await deps.replayLend(); }
+    catch (e) { return refuse("recard-failed", `the lend did not replay (${e instanceof Error ? e.message : String(e)}): the recard stands armed for face h${face}'s next light; \`lares vault unlock\` replays it`); }
+    const after = deps.refusedLights().find((r) => r.ordinal === face);
+    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark: ${after.cause}`);
+    deps.onLog(`recard h${face}: lit`);
+    return { op: "recard", face, recarded: true };
+  };
+
   const handler = (parsed: unknown, sock: Socket): boolean => {
     if (!isCustodyFrame(parsed)) return false;
     const op = parsed.op;
     let act: () => Promise<CustodyAnswer>;
     /** A close that runs ahead of the line, before the act takes its turn (a lock), or none. */
     let ahead: (() => Promise<void>) | null = null;
-    if (op === "rehive") {
+    if (op === "recard") {
+      const frame = parsed as Record<string, unknown>;
+      const stray = Object.keys(frame).find((k) => !RECARD_FRAME_KEYS.has(k));
+      const credentials = credentialsOf(frame["credentials"]);
+      const face = frame["face"];
+      if (stray !== undefined || !credentials || !Number.isSafeInteger(face) || (face as number) < 0) {
+        deps.onLog("recard: refused (bad-custody-frame)");
+        answer(sock, { op, status: "error", errorMessage: "a recard frame carries `op`, the vessel's own `credentials` and the `face` (a handle-index), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = runRecard(credentials, face as number, sock);
+    } else if (op === "rehive") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !REHIVE_FRAME_KEYS.has(k));
       const credentials = credentialsOf(frame["credentials"]);

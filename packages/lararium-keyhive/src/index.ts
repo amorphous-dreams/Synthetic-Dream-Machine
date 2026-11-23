@@ -10,12 +10,13 @@ export type {
   PeerDID, KeyhiveAccess, EventStoreRef,
 } from "./capability-provider.js";
 
-export { KeyhiveProvider, ArchiveIdentityMismatch, PrekeySecretAbsent, ensureKeyhiveWasm, setKeyhiveWasmBytes, KEYHIVE_TRACE_ENV, keyhiveTraceAsked } from "./keyhive-provider.js";
+export { KeyhiveProvider, ArchiveIdentityMismatch, PrekeySecretAbsent, SealedUnderLostDocument, ContentKeyNotHeld, ensureKeyhiveWasm, setKeyhiveWasmBytes, KEYHIVE_TRACE_ENV, keyhiveTraceAsked } from "./keyhive-provider.js";
 export { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 export type { FaceBagDoor } from "./face-bag-door.js";
 export { answerKahuaCap } from "./kahua-cap.js";
 export { proposeDraftsToKahua, pageTitleList, KahuaProposeRefused, type PageProposeInput } from "./kahua-page-propose.js";
 export { registerBagsDurably, daemonBagDocLedger, planeBagDocLedger } from "./bag-doc-ledger.js";
+export type { DurableRegistration } from "./bag-doc-ledger.js";
 export type { BagDocLedger } from "./bag-doc-ledger.js";
 export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive-lockbox.js";
 export type { LockboxProvider } from "./keyhive-lockbox.js";
@@ -50,8 +51,8 @@ export type { EventStore, EventRecord } from "./event-store.js";
 export { DaemonEventStore, capEventTitle } from "./daemon-event-store.js";
 export type { DaemonEventStoreOptions, SecretRestCapability } from "./daemon-event-store.js";
 
-export { bootDaemonKeyhive, FacelessKeyhiveRefused, FaceHoldsNoPrekeySecret } from "./boot-daemon-keyhive.js";
-export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult } from "./boot-daemon-keyhive.js";
+export { bootDaemonKeyhive, FacelessKeyhiveRefused, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand } from "./boot-daemon-keyhive.js";
+export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult, BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 // THE ONE ROAD a daemon island reads its lease frontier by — its own daemon layer, two verdicts never merged.
 export { readLeaseFrontier, controlLayerOf } from "./lease-frontier.js";
 export type { LeaseFrontier, ControlLayerHolder } from "./lease-frontier.js";
