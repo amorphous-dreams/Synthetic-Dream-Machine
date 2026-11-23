@@ -204,6 +204,21 @@ describe("a held sealed handle refuses every write, and bytes wait for their map
     expect(hitsOf(storageDir, MARKER)).toEqual([]);
   }, 120_000);
 
+  test("H1b — a held handle's document deletes whole: the repo's delete runs to its end, nothing refuses midway, and the held bytes leave rest", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-sealed-handles-")));
+    const s = await storeWithSealedDoc(storageDir);
+    faceUp = false;
+    const { repo } = seatedRepo(storageDir, () => [s.id]);
+    const held = await waitHandle<LarDoc>(repo, s.url, () => repo.create<LarDoc>(emptyLarDoc()), WINDOW_MS);
+    expect(held.documentId).toBe(s.id);
+    expect(await refusalOf(() => held.change(() => {}))).toBe("sealed-document-unopened");
+    // A DELETE IS NO WRITE INTO THE HELD CONTENT: it burns the whole document, so it runs whole, never half.
+    expect(await refusalOf(() => repo.delete(s.url as never))).toBeNull();
+    expect(held.isDeleted()).toBe(true);
+    expect((repo.handles as Record<string, unknown>)[s.id]).toBeUndefined();
+    await until(() => filesOf(storageDir, s.id).length === 0, "the deleted document's bytes leave rest");
+  }, 120_000);
+
   test("H2 — a sealed draft the map names no document for yet: held over its real id; its bytes arriving by sync rest nowhere until the face lights, then seal and land", async () => {
     const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-sealed-handles-")));
     // THE BYTES LIVE ELSEWHERE: a sibling holds the draft, and this store holds nothing of it.
