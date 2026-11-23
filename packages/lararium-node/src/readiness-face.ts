@@ -5,7 +5,9 @@
  * required local setup. It carries no identity, authority, document, Oracle,
  * Pronaos, or causal-freshness claim. Where planes stand held back (pending or
  * degraded, read-only), a `held` note counts them, never naming a document and
- * never flipping liveness: a held plane leaves the vessel ready.
+ * never flipping liveness: a held plane leaves the vessel ready. Where the vessel
+ * arms its engine meter, an `engine` note reads its memory (`engine-meter`): sizes
+ * alone, never a document.
  *
  * It binds on a LARARIUM alone. A herm describes nothing to a stranger
  * (pronaos#/the-rung-ladder), and a readiness answer is a self-description, so on
@@ -28,6 +30,9 @@ export interface ReadinessState {
   readonly notePlanes?: (manifest: MountManifest) => void;
   /** The planes held back, where any stand; null where none do. */
   readonly held?: () => { readonly pending: number; readonly degraded: number } | null;
+  /** The body health answers on GET: the fall's, or the status with any held planes; each carries the engine meter's reading
+   *  where a meter stands (`engine-meter`). */
+  readonly body?: () => Record<string, unknown>;
 }
 
 export interface ReadinessFace {
@@ -38,20 +43,35 @@ export interface ReadinessFace {
  * A DEAD ENGINE TAKES HEALTH DOWN. With an `engine` watch, a fall (`engine-watch`) reads `engine-terminated` whatever the
  * boot reached, and the health answer names the cause, its time, the last settled wave, the document in flight and the one
  * hand act. Nothing here restarts anything: the vessel's entry answers the fall (`engine-fall`), flushing and exiting once.
+ *
+ * With a `meter`, every GET body (the status, or the fall's) carries its reading as `engine`: the engine's wasm memory and
+ * node's heap (`engine-meter`). A HEAD probe reads no body and so costs the meter nothing.
  */
-export function createReadinessState(engine?: EngineWatch): ReadinessState & Required<Pick<ReadinessState, "held" | "notePlanes">> {
+export function createReadinessState(engine?: EngineWatch, meter?: () => unknown): ReadinessState & Required<Pick<ReadinessState, "held" | "notePlanes" | "body">> {
   let current: "starting" | "ready" = "starting";
   let planes: MountManifest | null = null;
+  const status = (): NodeReadiness => (engine?.fallen() ? "engine-terminated" : current);
+  const fall = (): Record<string, unknown> | null => { const fallen = engine?.fallen(); return fallen ? engineFallBody(fallen) : null; };
+  const held = (): { pending: number; degraded: number } | null => {
+    const pending = planes?.entries.filter((e) => e.status === "pending").length ?? 0;
+    const degraded = planes?.entries.filter((e) => e.status === "degraded").length ?? 0;
+    return pending + degraded > 0 ? { pending, degraded } : null;
+  };
+  /** THE ENGINE METER RIDES HEALTH (`engine-meter`): a reading that throws costs the answer nothing, it just goes unsaid. */
+  const reading = (): Record<string, unknown> => {
+    if (!meter) return {};
+    try { return { engine: meter() }; } catch { return {}; }
+  };
   return {
-    status: () => (engine?.fallen() ? "engine-terminated" : current),
+    status,
     markReady: () => { current = "ready"; },
-    fall: () => { const fall = engine?.fallen(); return fall ? engineFallBody(fall) : null; },
-    held: () => {
-      const pending = planes?.entries.filter((e) => e.status === "pending").length ?? 0;
-      const degraded = planes?.entries.filter((e) => e.status === "degraded").length ?? 0;
-      return pending + degraded > 0 ? { pending, degraded } : null;
-    },
+    fall,
+    held,
     notePlanes: (manifest) => { planes = manifest; },
+    body: () => {
+      const h = held();
+      return { ...(fall() ?? { status: status(), ...(h !== null ? { held: h } : {}) }), ...reading() };
+    },
   };
 }
 
@@ -73,6 +93,7 @@ function answer(res: ServerResponse, state: ReadinessState, method: string): voi
     "cache-control": "no-store",
   });
   if (method === "HEAD") res.end();
+  else if (state.body) res.end(JSON.stringify(state.body()));
   else {
     const held = state.held?.() ?? null;
     res.end(JSON.stringify(state.fall?.() ?? { status: state.status(), ...(held !== null ? { held } : {}) }));
