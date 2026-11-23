@@ -87,7 +87,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -177,14 +177,19 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     return { op: "lei", act, reading: "signed", faces };
   }
   if (verb === "keeper-commit") {
-    if (typeof arg !== "string" || !/^sha256:[0-9a-f]{64}$/.test(arg)) throw new PulamaVerbUsage();
+    // `keeper-commit <sha256:…> [--devices <n>]`: the host shim names the most devices any lit face holds, as the vessel read it.
+    const words = typeof arg === "string" ? [arg] : Array.isArray(arg) ? [...arg] : [];
+    const digest = words[0];
+    if (typeof digest !== "string" || !/^sha256:[0-9a-f]{64}$/.test(digest)) throw new PulamaVerbUsage();
+    if (words.length !== 1 && (words.length !== 3 || words[1] !== "--devices" || !/^[1-9]\d{0,3}$/.test(words[2]!))) throw new PulamaVerbUsage();
+    const devices = words.length === 3 ? { devices: Number(words[2]) } : {};
     // THE DOOR READS FIRST: an unlit, unreported or passing keeper refuses here, before anybody types a route.
     const standing = await ports.ask({ op: "status" });
     if (standing["lit"] !== true) return { op: "keeper-commit", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then commit its successor" };
     if (standing["passing"] === true) return { op: "keeper-commit", reading: "fire-passing", detail: "this keeper vested its fire already" };
     if (typeof standing["closure"] !== "string") return { op: "keeper-commit", reading: "closure-unreported", detail: "the host reported no closure for this keeper; `tools/lares-container.sh up` reports it" };
-    const passphrase = await ports.route(`pūlama route, to hand this keeper's fire to the successor closure ${arg}: `, "a keeper commit");
-    return ports.ask({ op: "keeper-commit", next: arg, credentials: [{ kind: "passphrase", passphrase }] });
+    const passphrase = await ports.route(`pūlama route, to hand this keeper's fire to the successor closure ${digest}: `, "a keeper commit");
+    return ports.ask({ op: "keeper-commit", next: digest, ...devices, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "closure" && typeof arg === "string") return ports.ask({ op: "closure", digest: arg });
   if ((verb === "keeper-vest" || verb === "keeper-receive") && typeof arg === "string") {

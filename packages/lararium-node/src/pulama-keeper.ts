@@ -30,6 +30,16 @@
  * `landed-names-another`, `version-skew`, `closure-differs`, `faces-short`, `vest-unwitnessed`, `fork` (two live commits, or two
  * landings, at one link). Red is loud and never auto-accepted, and it never locks: the hand's light stays under every red.
  *
+ * THE BUDGET CARRIES ON A HANDED MOVE, AND A RESTART RESETS IT (operator ruling, 2026-11-23). The vest seals the unlock attempts the
+ * old keeper spent beside the keys, and the successor seats that count (`seedSpent`) under the one bound every door shares
+ * (`UNLOCK_ATTEMPTS_PER_BOOT`, the attempt budget). A forced move (a crash, a restart, no vest) starts a fresh count, by design: a
+ * thief who can restart the keeper's container already holds host access, and with it the sealed state to try routes against
+ * offline, so a count kept on disk would guard nothing that thief needs while it would brick the owner who mistyped their own route.
+ *
+ * THE CO-SIGN FAILS CLOSED (operator ruling, 2026-11-23). The commit carries the most devices any committed face holds, as the
+ * vessel read the face's signed admission fold at commit time. Past one device a vest owes a co-sign that no path carries yet, so it
+ * refuses `vest-cosign-owed`; a commit whose vessel read no count refuses `vest-devices-unread`. Both name the struck fire as the cure.
+ *
  * THE SCHEDULED STRUCK FIRE: after `KEEPER_STRUCK_EVERY` handed links in a row, the vest refuses `struck-due` and the hand lights the
  * successor by passphrase, which keeps the human's route practiced. Count-based down the chain, no clock.
  * Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting
@@ -60,7 +70,7 @@ export interface KeeperFold {
   readonly v: number;
   readonly tip: string | null;
   readonly pairs: readonly KeeperPair[];
-  readonly pending: { readonly tessera: string; readonly v: number; readonly next: string; readonly begun: string } | null;
+  readonly pending: { readonly tessera: string; readonly v: number; readonly next: string; readonly begun: string; readonly devices: number | null } | null;
   readonly vestings: number;
   readonly struckDue: boolean;
   readonly fork: boolean;
@@ -112,7 +122,7 @@ export async function keeperFold(records: SwarmWikiPort, by: KukuluSigner): Prom
   const superseded = new Set(open.map((b) => b.body.supersedes).filter((s): s is string => s !== null));
   const live = open.filter((b) => !superseded.has(b.cid));
   if (live.length > 1) fork = true;
-  const pending = live.length === 1 ? { tessera: live[0]!.body.tessera, v: live[0]!.body.v, next: live[0]!.body.next, begun: live[0]!.cid } : null;
+  const pending = live.length === 1 ? { tessera: live[0]!.body.tessera, v: live[0]!.body.v, next: live[0]!.body.next, begun: live[0]!.cid, devices: typeof live[0]!.body.devices === "number" ? live[0]!.body.devices : null } : null;
   const vestings = tip?.body.vestings ?? 0;
   return { v: tip?.body.v ?? 0, tip: tip?.cid ?? null, pairs, pending: fork ? null : pending, vestings, struckDue: vestings >= KEEPER_STRUCK_EVERY, fork };
 }
@@ -139,7 +149,7 @@ export interface KeeperStanding { readonly closure: string | null; readonly imag
  * KEEPER-COMMIT (the caller proved the operator's route first): rest the guest half naming `next` at the chain's next link. A live
  * commit there is superseded by this one. The keeper's own closure must stand reported, and `next` must read as a closure.
  */
-export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at: KeeperStanding & { readonly next: string }): Promise<{ readonly tessera: string; readonly v: number; readonly next: string; readonly supersedes: string | null } | KeeperRefusal> {
+export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at: KeeperStanding & { readonly next: string; readonly devices: number | null }): Promise<{ readonly tessera: string; readonly v: number; readonly next: string; readonly supersedes: string | null } | KeeperRefusal> {
   if (!CLOSURE.test(at.next)) return refuse("next-malformed", "the successor's closure reads `sha256:<64 hex>`, as tools/pulama-closure.mjs prints it");
   if (at.closure === null) return refuse("closure-unreported", "the host reported no closure for this keeper, so the chain cannot name what it hands from");
   const fold = await keeperFold(records, by);
@@ -147,7 +157,7 @@ export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at:
   const v = fold.v + 1, nonce = randomUUID();
   const tessera = sha256HexBytesSync(canonicalJsonBytes({ v, prev: fold.tip, next: at.next, nonce }));
   const supersedes = fold.pending?.begun ?? null;
-  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, nonce }, by);
+  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, nonce, devices: at.devices }, by);
   if (!(await records.writeNew(pulamaKeeperTitle(tessera, "guest"), JSON.stringify(act)))) return refuse("keeper-begun-stands", `a guest half already rests for tessera ${tessera}`);
   return { tessera, v, next: at.next, supersedes };
 }
@@ -170,6 +180,10 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
   if (fold.fork) return refuse("fork", "the keeper chain reads a fork; nothing vests");
   if (fold.pending === null) return refuse("commit-absent", "no keeper commit names a successor closure, so no key vests: the hand commits first (`keeper-commit`), or lights the successor by hand");
   if (fold.struckDue) return refuse("struck-due", `${fold.vestings} handed links stand in a row; the hand lights this successor by passphrase (the struck fire), and the run starts over`);
+  // THE CO-SIGN FAILS CLOSED (operator ruling, 2026-11-23): a face of two devices owes a co-sign on the vest, and no co-sign path
+  // stands yet, so the vest refuses; a commit whose vessel read no device count refuses the same way, never guessing one.
+  if (fold.pending.devices === null) return refuse("vest-devices-unread", "the commit carries no device count (the vessel read none at commit time), so the vest cannot tell whether a co-sign is owed; commit again with the vessel standing: lares pulama keeper-commit, or light the successor by hand: lares rite kukulu");
+  if (fold.pending.devices > 1) return refuse("vest-cosign-owed", `a committed face holds ${fold.pending.devices} devices, and a vest of a face of two devices co-signs, which no path carries yet; light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
   if (at.closure !== fold.pending.next) return refuse("closure-differs", `the successor reports closure ${at.closure}, and the commit names ${fold.pending.next}; nothing vests, the old fire still burns`);
   const keys = at.keys();
   if (keys === null) return refuse("pulama-locked", "this keeper holds no key to vest");

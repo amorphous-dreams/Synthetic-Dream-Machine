@@ -82,6 +82,8 @@ A ''bond'' is a relation between two roots, enacted by an act each end signs dow
 
 ''Law 7 — the floor holds no custody key.'' It holds its own named place signer, scoped to an allowlist of floor duties, under a KEL whose next key rests offline.
 
+''The keeper's succession enacts the bond, never a derivation.'' A pūlama keeper hands its fire to a successor by vest (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-keeper-tally`>>): the human's end of the bond, the passphrase root that derives the slot tree, never crosses; the house's end alone moves, the node key and each face's FCK, keys the house minted at random and the human's slots wrap. They move within one place's custody, sealed to the successor's one-handoff key and bound to the closure the hand committed, and never across roots (Laws 1, 2, 4). A dead fire relights only from the passphrase (the struck fire).
+
 A session wears one face: each browser tab asks that face's unlock, the human lights a node's faces at its pūlama once and each boot draws a lend of them with no route, each CLI, MCP or watcher run proves its face at the gate, the asker seals, and the last session of a face rests its keys.
 
 !!!! The grammar enacts the same law
@@ -381,6 +383,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bTG2AunsxKf_xzFs3-vuXb0TahmGW1-xeh321cc8jW4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vGN4vFnCLaleaPZ5TLbJB0hzNjj0YBMgjqaSe5namEk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

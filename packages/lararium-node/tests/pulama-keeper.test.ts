@@ -45,7 +45,8 @@ async function house(label: string) {
     const door = watch(pulamaHandDoor({ holder, server, image, records, admissions: pulamaAdmissions(records), onLog: (l) => lines.push(l) }));
     return { holder, door, report: () => door({ op: "closure", digest: closure }) };
   };
-  const commit = (next = D2) => old({ op: "keeper-commit", next, credentials: fixtureRoute });
+  /** A commit as the shim sends it: the device count the vessel read, or (null) none read. */
+  const commit = (next = D2, devices: number | null = 1) => old({ op: "keeper-commit", next, ...(devices === null ? {} : { devices }), credentials: fixtureRoute });
   return { face, records, old, successor, commit, lines, answers };
 }
 
@@ -78,8 +79,11 @@ describe("RED keeper-commit names one successor under the hand's route", () => {
   test("the verb reads the door first and prompts with the successor closure; a refused commit exits 1", async () => {
     const h = await house("keeper-commit-verb");
     const labels: string[] = [];
-    const answer = await runHandVerb("keeper-commit", D2, { ask: (f) => h.old(f), route: async (label) => { labels.push(label); return FIXTURE_PASSPHRASE; } });
+    const frames: Array<Readonly<Record<string, unknown>>> = [];
+    const answer = await runHandVerb("keeper-commit", [D2, "--devices", "1"], { ask: (f) => { frames.push(f); return h.old(f); }, route: async (label) => { labels.push(label); return FIXTURE_PASSPHRASE; } });
     expect(answer).toMatchObject({ reading: "committed", next: D2 });
+    expect(frames.at(-1)).toMatchObject({ op: "keeper-commit", devices: 1 });
+    await expect(runHandVerb("keeper-commit", [D2, "--devices", "0"], { ask: (f) => h.old(f), route: async () => FIXTURE_PASSPHRASE })).rejects.toThrow(/usage/);
     expect(labels).toEqual([expect.stringContaining(D2)]);
     expect(handVerbExit("keeper-commit", answer)).toBe(0);
     expect(handVerbExit("keeper-vest", { op: "keeper-vest", reading: "closure-differs" })).toBe(1);
@@ -120,6 +124,19 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect(fx!.kept.isUnlocked()).toBe(true);
     expect((await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"))).toEqual([]);
     // The match then vests: nothing the refusals did spent the commit.
+    expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
+  });
+
+  test("RED the co-sign fails closed: a commit naming a face of two devices refuses `vest-cosign-owed`, and one whose vessel read no count refuses `vest-devices-unread`; each names the struck fire and spends nothing", async () => {
+    const h = await house("keeper-vest-cosign");
+    await h.commit(D2, 2);
+    const two = await handoff(h, h.old);
+    expect(two.vest).toMatchObject({ reading: "vest-cosign-owed", detail: expect.stringContaining("lares rite kukulu") });
+    await h.commit(D2, null);
+    const unread = await handoff(h, h.old);
+    expect(unread.vest).toMatchObject({ reading: "vest-devices-unread", detail: expect.stringContaining("lares pulama keeper-commit") });
+    expect((await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"))).toEqual([]);
+    await h.commit(D2, 1);
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
   });
 
@@ -189,7 +206,7 @@ describe("RED the struck fire and the budget", () => {
     let keeper = h.old, holder: CustodyHolder = fx!.kept;
     for (let n = 1; n <= KEEPER_STRUCK_EVERY; n++) {
       await keeper({ op: "image", digest: IMAGE, closure: n === 1 ? D : D2 });
-      expect(await keeper({ op: "keeper-commit", next: D2, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: n });
+      expect(await keeper({ op: "keeper-commit", next: D2, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: n });
       const step = await handoff(h, keeper);
       expect(step.landed).toMatchObject({ reading: "landed", vestings: n });
       expect(step.next.holder.attemptsLeft()).toBe(UNLOCK_ATTEMPTS_PER_BOOT - 1);
@@ -197,7 +214,7 @@ describe("RED the struck fire and the budget", () => {
       keeper = step.next.door; holder = step.next.holder;
     }
     expect(await keeper({ op: "status" })).toMatchObject({ keeper: { v: KEEPER_STRUCK_EVERY, vestings: KEEPER_STRUCK_EVERY, struckDue: true } });
-    await keeper({ op: "keeper-commit", next: D2, credentials: fixtureRoute });
+    await keeper({ op: "keeper-commit", next: D2, devices: 1, credentials: fixtureRoute });
     expect((await handoff(h, keeper)).vest).toMatchObject({ reading: "struck-due" });
     await holder.lock();
   });

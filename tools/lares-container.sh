@@ -1504,8 +1504,27 @@ case "$verb" in
             printf '%s\n' 'lares-container: keeper-commit: the re-check reads the same closure' >&2 ;;
           *) printf '%s\n' 'lares-container: keeper-commit: the re-check skipped by your word' >&2 ;;
         esac
-        # shellcheck disable=SC2046
-        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" ;;
+        # THE DEVICE COUNT rides the commit's own body (the co-sign fails closed): the standing vessel reads each lit face's signed
+        # admission fold (`lares intent show --face N`), and the most any face holds goes in. A vessel down, or a face unread, sends
+        # none, and the vest then refuses until a commit carries a count.
+        kc_most=""; kc_unread=""
+        if run_census --json >/dev/null 2>&1; then
+          kc_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
+          [ -n "$kc_lit" ] || kc_unread=yes
+          for kc_face in $kc_lit; do
+            kc_n=$(compose exec -T lares node "$CLI" intent show --face "$kc_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
+            if [ -z "$kc_n" ]; then kc_unread=yes; elif [ -z "$kc_most" ] || [ "$kc_n" -gt "$kc_most" ]; then kc_most=$kc_n; fi
+          done
+        else kc_unread=yes; fi
+        if [ -n "$kc_unread" ] || [ -z "$kc_most" ]; then
+          printf '%s\n' 'lares-container: keeper-commit: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended' >&2
+          kc_dev=""
+        else
+          printf 'lares-container: keeper-commit: the lit faces hold at most %s device(s)%s\n' "$kc_most" "$([ "$kc_most" -gt 1 ] && printf '; past one the vest refuses until a co-sign path stands (vest-cosign-owed)')" >&2
+          kc_dev="--devices $kc_most"
+        fi
+        # shellcheck disable=SC2046,SC2086
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev ;;
       lock|status|tessera)
         [ "$1" != status ] || warn_pulama_skew
         # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.

@@ -79,6 +79,9 @@ export interface KeeperBegunBody {
   readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-begun"; readonly tessera: string; readonly v: number; readonly prev: string | null;
   readonly closure: string; readonly next: string; readonly image: string | null; readonly faces: readonly AdmittedFace[]; readonly worn: number | null;
   readonly budget: KeeperBudget; readonly supersedes: string | null; readonly nonce: string;
+  /** The most devices any committed face holds, as the vessel read its signed admission fold at commit time; null where it read
+   *  none. The vest fails closed on either side of one: a face of two devices owes a co-sign path that does not stand yet. */
+  readonly devices: number | null;
 }
 /** The vest's spend mark: the lit keeper sealed the house's end of the bond to ONE successor key, once per commit. No key rests in it. */
 export interface KeeperVestedBody {

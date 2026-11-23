@@ -379,7 +379,9 @@ export function pulamaHandDoor(a: {
         // THE ROUTE PROVES A PERSON STANDS HERE, as an admission's does: the human's consent names ONE successor closure.
         const proof = await holder.proves(credentials);
         if (proof.reading !== "proves") { log(`keeper-commit: ${proof.reading}`); return { op: "keeper-commit", ...proof, ...status() }; }
-        const out = await keeperCommit(a.records, await pulamaSignerOf(holder), { ...await standing(), next });
+        // THE DEVICE COUNT the vessel read at commit time rides the commit's own body; none read rides as null, and the vest fails closed on it.
+        const devices = typeof f["devices"] === "number" && Number.isSafeInteger(f["devices"]) && f["devices"] >= 1 ? f["devices"] : null;
+        const out = await keeperCommit(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices });
         if ("refusal" in out) return { op: "keeper-commit", reading: out.refusal, detail: out.detail };
         log(`keeper committed: v${out.v} names the successor closure${out.supersedes !== null ? ", superseding the commit before it" : ""}`);
         return { op: "keeper-commit", reading: "committed", ...out };

@@ -269,7 +269,9 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
       outcomes: reading.intents.flatMap((state) => state.slots.flatMap((slot) => [slot.winner, ...slot.duplicates].filter((r) => r !== null)
         .map((r) => ({ cause: state.id, signer: r!.entry.signer, winner: slot.winner === r, result: r!.entry.body["result"] })))),
       strayAnswers: reading.strayAnswers.map((r) => r.cid), refused: reading.refused,
-      standing: standing(atom.key), delegations: reading.delegations };
+      standing: standing(atom.key), delegations: reading.delegations,
+      // THE FACE'S DEVICE COUNT, off its signed admission fold: the keeper tally's commit carries it (a vest fails closed past one).
+      devices: projection.devices.length };
   }
   const target = opts.target;
   const intentNamedBy = (name: string): string => {
