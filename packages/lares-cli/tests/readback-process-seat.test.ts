@@ -83,15 +83,18 @@ test("one attempt gathers the card's three lines, typed or pasted one per line, 
   expect(secret).toHaveBeenCalledTimes(1);
 });
 
-test("a line that cannot be a card row ends the attempt at once, and a refusal says the next run prints new cards", async () => {
+test("a line that cannot be a card row ends the attempt at once; five such attempts refuse, the notes climbing from the third, and the refusal says the next run prints new cards", async () => {
   seatReadBackStandIn(false);
   vi.spyOn(prompt, "canPromptSecret").mockReturnValue(true);
   const secret = vi.spyOn(prompt, "promptSecret");
   const output = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
   // a 30-character first line: no second prompt inside that attempt
-  secret.mockResolvedValueOnce("a".repeat(30)).mockResolvedValueOnce("b".repeat(30)).mockResolvedValueOnce("c".repeat(30));
+  for (const c of "abcde") secret.mockResolvedValueOnce(c.repeat(30));
   await expect(readBack({ command: null, positional: [], options: {}, flags: {} }, [{ chair: "place", seed: new Uint8Array(32).fill(7), digest: "x" }], 0, ""))
-    .rejects.toThrow(/A new run prints new cards/);
-  expect(secret).toHaveBeenCalledTimes(3);
-  expect(output.mock.calls.map((c) => String(c[0])).join("")).toContain("30 of 72 characters");
+    .rejects.toThrow(/SPENT: 0 of 5 tries remain.*a new run prints new cards/);
+  expect(secret).toHaveBeenCalledTimes(5);
+  const said = output.mock.calls.map((c) => String(c[0])).join("");
+  expect(said).toContain("30 of 72 characters");
+  expect(said).toMatch(/CAREFUL: 3 misses now/);
+  expect(said).toMatch(/LAST TRY!! 4 misses/);
 });

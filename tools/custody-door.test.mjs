@@ -9,8 +9,8 @@
 //   K2  a wrong credential answers `no-slot-opens`, holds nothing, and moves no private row.
 //                                                            control: the right one opens
 //   K3  unlock, lock, unlock: each unlock stands a fresh composition and the vessel answers a verb after each.
-//   K4  three wrong credentials spend the boot's attempts: the right one then reads `attempts-spent`, and only a
-//       restart opens the door again.                        control: a fresh boot opens on the first right try
+//   K4  five wrong credentials spend the boot's attempts (four never do), each miss carrying the tries left: the right one
+//       then reads `attempts-spent` with 0 left, and only a restart opens the door again.                        control: a fresh boot opens on the first right try
 //   K6  the door reads an unlock whose composition refused (`reading: "opens"`, `held: false`) as a refusal.
 //                                                            control: the same answer with `held: true` lands
 //   K5  the harness door refuses an unmarked root (rc 2) before any socket opens.
@@ -205,13 +205,15 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     assert.match(log, /\[custody\] unlocked: slot \S+ opened the node key/, "K1 control: the door logged the slot that opened");
     assert.match(log, /\[custody\] unlock: no-slot-opens/, "the miss logged its reading and nothing of what was sent");
 
-    // ── K4: three misses spend the boot's attempts; a restart opens the door again ───────────────────────────
+    // ── K4: five misses spend the boot's attempts; a restart opens the door again ────────────────────────────
     vessel = await stand(root);
-    for (const left of [2, 1, 0]) {
+    for (const left of [4, 3, 2, 1, 0]) {
       const m = await sendCustodyFrame(root, { op: "unlock", credentials: [{ kind: "passphrase", passphrase: `${WRONG}-${left}` }] });
       assert.deepEqual({ reading: m.reading, attemptsLeft: m.attemptsLeft }, { reading: "no-slot-opens", attemptsLeft: left });
     }
-    assert.equal((await unlockTestCustody(root)).reading, "attempts-spent", "K4: the right credential meets a spent bound");
+    const spentAnswer = await unlockTestCustody(root);
+    assert.equal(spentAnswer.reading, "attempts-spent", "K4: the right credential meets a spent bound");
+    assert.equal(spentAnswer.attemptsLeft, 0, "K4: the spent reading carries the count");
     assert.equal((await unlockTestCustody(root, "status")).unlocked, false);
     await vessel.stop();
     vessel = await stand(root);

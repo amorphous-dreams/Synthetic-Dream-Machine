@@ -112,7 +112,7 @@ test("a standing vessel cuts one face's backup bundle through its custody door",
 
     // ── B2: the vessel's own route gets asked again ─────────────────────────────────────────────────────────
     const missed = await backupTestCustody(root, { face: 0, out: join(outDir, "missed.bundle"), vesselPassphrase: "a-wrong-route-for-the-cut" });
-    assert.deepEqual({ ok: missed.ok, reason: missed.reason, attemptsLeft: missed.attemptsLeft }, { ok: false, reason: "no-slot-opens", attemptsLeft: 2 });
+    assert.deepEqual({ ok: missed.ok, reason: missed.reason, attemptsLeft: missed.attemptsLeft }, { ok: false, reason: "no-slot-opens", attemptsLeft: 4 });
     assert.equal(existsSync(join(outDir, "missed.bundle")), false);
 
     // ── B4: a face this vessel holds no root for ────────────────────────────────────────────────────────────
