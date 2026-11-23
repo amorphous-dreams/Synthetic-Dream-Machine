@@ -171,6 +171,7 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
       storageDir,
       total: report.total,
       healthy: report.healthy,
+      sealed: report.sealed,
       condemned: report.condemned,
       degraded: report.degraded,
       entries: report.entries,

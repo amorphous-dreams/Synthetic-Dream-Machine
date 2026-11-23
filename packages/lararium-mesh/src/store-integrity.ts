@@ -22,9 +22,17 @@
  * varint, and automerge trusts it into `Vec::with_capacity(huge)`. This gate refuses it.
  * The checksum verification rides as a second gate — a mismatch gets reported, never used
  * to relax the bounds verdict.
+ *
+ * A SEALED VALUE AT REST READS SEALED, NEVER TORN. A document of a sealed bag rests no
+ * Automerge byte: each stored value holds either the sealed document store's pointer
+ * (`lares-sealed-value:` and the value's `blake3:` address, nothing after) or a sealed value
+ * itself (the `sealed-chunk` format mark, its header, its tagged segments). The gate holds no
+ * key, so it reads the envelope alone: a well-formed one reads sealed (no WASM ever loads
+ * those bytes here); an envelope whose framing breaks reads torn, as any garbled chunk does.
  */
 
 import { sha256BytesSync } from "./crypto.js";
+import { bearsSealedMark, namesSealedPointer, readSealedAddress, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN, SEALED_VALUE_POINTER } from "./sealed-chunk.js";
 
 const MAGIC = Uint8Array.from([0x85, 0x6f, 0x4a, 0x83]);
 const MAGIC_LEN = 4;
@@ -40,6 +48,37 @@ export interface IntegrityVerdict {
   readonly reason?: string;
   /** flags a chunk whose stored checksum disagreed with the recomputed one. */
   readonly checksumMismatch?: boolean;
+  /** present when the file holds one well-formed sealed value at rest (pointer or sealed value): sound framing, inner
+   *  bytes unread, since the gate holds no key. */
+  readonly sealed?: true;
+}
+
+/** The sealed forms a stored value takes at rest. */
+export type SealedAtRestForm = "pointer" | "sealed-value";
+
+/**
+ * Read one stored value's sealed-at-rest envelope with no key. Null: the bytes open with neither sealed form. A form
+ * whose framing holds names itself; one whose framing breaks names why.
+ *   pointer       the whole value reads as UTF-8 `lares-sealed-value:blake3:<64 hex>`, nothing after.
+ *   sealed-value  the format mark, the whole header, and segments that close on a tag: every segment but the last
+ *                 carries a full body and its tag, and the last carries at least its tag.
+ */
+export function readSealedAtRest(buf: Uint8Array): { readonly form: SealedAtRestForm } | { readonly malformed: string } | null {
+  if (namesSealedPointer(buf)) {
+    let text: string;
+    try { text = new TextDecoder("utf-8", { fatal: true }).decode(buf); } catch { return { malformed: "sealed pointer does not read as UTF-8 — torn" }; }
+    return readSealedAddress(text.slice(SEALED_VALUE_POINTER.length)) !== null
+      ? { form: "pointer" }
+      : { malformed: `sealed pointer names no sealed address (${buf.length} bytes) — torn` };
+  }
+  if (bearsSealedMark(buf)) {
+    if (buf.length < SEALED_HEADER_LEN + SEALED_TAG_LEN) return { malformed: `sealed value of ${buf.length} bytes holds no whole header and tag — torn` };
+    const last = (buf.length - SEALED_HEADER_LEN) % (SEALED_SEGMENT_LEN + SEALED_TAG_LEN);
+    return last === 0 || last >= SEALED_TAG_LEN
+      ? { form: "sealed-value" }
+      : { malformed: `sealed value's last segment holds ${last} bytes, short of its tag — torn` };
+  }
+  return null;
 }
 
 /**
@@ -80,6 +119,8 @@ function hasMagic(buf: Uint8Array, off: number): boolean {
  */
 export function precheckChunkBytes(buf: Uint8Array): IntegrityVerdict {
   if (buf.length === 0) return { ok: false, chunks: 0, reason: "empty file (zero bytes) — torn write" };
+  const sealed = readSealedAtRest(buf);
+  if (sealed !== null) return "form" in sealed ? { ok: true, chunks: 1, sealed: true } : { ok: false, chunks: 0, reason: sealed.malformed };
 
   let off = 0;
   let chunks = 0;
@@ -147,6 +188,8 @@ export interface StoreIntegrityReport {
   readonly ok: boolean;
   readonly snapshots: number;
   readonly incrementals: number;
+  /** files that hold a well-formed sealed value at rest (counted among the snapshots and incrementals). */
+  readonly sealed: number;
   readonly torn: readonly TornFile[];
 }
 
@@ -160,14 +203,16 @@ export function precheckBlobs(documentId: string, blobs: readonly BlobRef[]): St
   const torn: TornFile[] = [];
   let snapshots = 0;
   let incrementals = 0;
+  let sealed = 0;
 
   for (const blob of blobs) {
     if (blob.kind === "snapshot") snapshots++; else incrementals++;
     const v = precheckChunkBytes(blob.data);
     if (!v.ok) torn.push({ kind: blob.kind, name: blob.name, reason: v.reason ?? "torn" });
+    else if (v.sealed) sealed++;
   }
 
-  return { documentId, ok: torn.length === 0, snapshots, incrementals, torn };
+  return { documentId, ok: torn.length === 0, snapshots, incrementals, sealed, torn };
 }
 
 /**

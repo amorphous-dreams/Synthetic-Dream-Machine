@@ -18,12 +18,17 @@
  * first record) leaves an empty prefix → unrecoverable, reported ok:false.
  *   { ok: true, heads, chunks: kept, tornTail: [paths] }   → exit 0   (clean prefix loads)
  *   { ok: false, reason }                                   → exit 2   (base torn / prefix rejects)
+ *
+ * A RECORD THAT RESTS SEALED NEVER LOADS HERE. A sealed bag's records hold a pointer or a sealed value, no Automerge byte,
+ * and this child holds no key. Each record whose envelope reads well-formed (the mesh framing gate) counts in `sealed` and
+ * stays out of every load; the clear records alone load, so a clear chunk that would abort still aborts here. A document
+ * resting wholly sealed loads nothing and names no heads: `{ ok: true, heads: [], chunks, sealed }`.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { init, load, loadIncremental, getHeads } from "@automerge/automerge";
-import { partitionCleanTail } from "@lararium/mesh";
+import { partitionCleanTail, precheckChunkBytes } from "@lararium/mesh";
 
 function listBlobs(dir: string): string[] {
   try {
@@ -57,6 +62,7 @@ function main(): number {
   // order the whole-doc concat below uses, so the clean-tail cut names the true tail.
   const files = [...snapshots, ...incrementals].map((path) => ({ path, data: readFileSync(path) }));
   const chunks = files.length;
+  const restsSealed = (data: Uint8Array): boolean => precheckChunkBytes(data).sealed === true;
 
   if (chunks === 0) {
     // No stored bytes — a fresh/blank doc materializes empty. Not a tear.
@@ -74,10 +80,11 @@ function main(): number {
       emit({ ok: false, chunks, reason: "torn base record — no clean prefix to recover" });
       return 2;
     }
+    const sealed = keep.filter((b) => restsSealed(b.data)).length;
     try {
       let doc = init();
-      for (const blob of keep) doc = loadIncremental(doc, blob.data);
-      emit({ ok: true, heads: getHeads(doc), chunks: keep.length, tornTail: tornTail.map((b) => b.name) });
+      for (const blob of keep) if (!restsSealed(blob.data)) doc = loadIncremental(doc, blob.data);
+      emit({ ok: true, heads: getHeads(doc), chunks: keep.length, tornTail: tornTail.map((b) => b.name), ...(sealed > 0 ? { sealed } : {}) });
       return 0;
     } catch (e) {
       emit({ ok: false, chunks, reason: `clean prefix rejected: ${(e as Error)?.message ?? e}` });
@@ -85,7 +92,13 @@ function main(): number {
     }
   }
 
-  const blobs = files.map((f) => f.data);
+  const sealed = files.filter((f) => restsSealed(f.data)).length;
+  const blobs = files.map((f) => f.data).filter((data) => !restsSealed(data));
+  const sealedLine = sealed > 0 ? { sealed } : {};
+  if (blobs.length === 0) {
+    emit({ ok: true, heads: [], chunks, ...sealedLine });
+    return 0;
+  }
 
   // Concatenate snapshot(s)+incrementals and load — the shape automerge-repo persists.
   // Below this line a torn doc may abort the WASM runtime; that abort is the SIGNAL the
@@ -93,7 +106,7 @@ function main(): number {
   const merged = Buffer.concat(blobs);
   try {
     const doc = load(merged);
-    emit({ ok: true, heads: getHeads(doc), chunks });
+    emit({ ok: true, heads: getHeads(doc), chunks, ...sealedLine });
     return 0;
   } catch (loadErr) {
     // `load` rejected the concatenation — retry progressively (snapshot as base, then each
@@ -101,7 +114,7 @@ function main(): number {
     try {
       let doc = init();
       for (const blob of blobs) doc = loadIncremental(doc, blob);
-      emit({ ok: true, heads: getHeads(doc), chunks });
+      emit({ ok: true, heads: getHeads(doc), chunks, ...sealedLine });
       return 0;
     } catch (incErr) {
       emit({

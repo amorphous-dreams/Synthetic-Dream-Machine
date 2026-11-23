@@ -30,6 +30,10 @@ import type { StoreIntegrityReport } from "./store-integrity.js";
  *                 timer, and a timer must never mint a safety verdict (H2). NEVER condemned.
  *
  * No status reads `timeout`: a probe the window closed on reads `unresolved`.
+ *
+ * A SEALED DOCUMENT READS `ok`, carrying `sealed`: its records rest sealed (a pointer the holder answers, or a sealed value
+ * under a keyed bag), the probe holds no key, so it reads their envelopes and never their inner bytes, and names no heads
+ * it cannot see. A broken envelope reads `torn`. The vessel opens each sealed record with its key at load.
  */
 export type ProbeStatus = "ok" | "torn" | "load-error" | "aborted" | "unresolved";
 
@@ -37,10 +41,12 @@ export type ProbeStatus = "ok" | "torn" | "load-error" | "aborted" | "unresolved
 export interface ProbeResult {
   readonly documentId: string;
   readonly status: ProbeStatus;
-  /** the doc heads when status=ok. */
+  /** the doc heads when status=ok, read off its clear records alone (a document resting wholly sealed names none). */
   readonly heads?: readonly string[];
   /** stored chunks seen (pre-check or boundary). */
   readonly chunks?: number;
+  /** the stored records that rest sealed, each with a well-formed envelope; present when any does. */
+  readonly sealed?: number;
   /** names why the doc was condemned (torn / load-error / aborted / timeout). */
   readonly reason?: string;
   /** the L5b framing report — rides along whenever the pre-check ran. */

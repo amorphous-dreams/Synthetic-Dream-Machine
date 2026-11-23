@@ -34,7 +34,7 @@ import type { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/auto
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import type { BagLocator } from "./sealed-records.js";
-import { readSealedAddress, SEALED_CHUNK_MARK, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
+import { bearsSealedMark, namesSealedPointer, readSealedAddress, SEALED_VALUE_POINTER, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
 import { openPublished, sealPublished, type PublishedLookup } from "./published-bag-key.js";
 import { openHeld, sealHeld, type HeldRestKey } from "./held-rest-key.js";
 import type { DocumentValue, FreshBase, HolderRefusal, OpenedValue, SealedValues } from "./content-key-holder.js";
@@ -170,11 +170,11 @@ export interface SealedDocumentPorts {
 const HYDRATION_WAITS: ReadonlySet<string> = new Set(["bag-unmapped", "session-absent", "chain-absent", "holder-locked", "sealed-store-unavailable", "signer-unavailable", "door-unanswered"]);
 
 const ROLES: Readonly<Record<string, DocumentValue["role"]>> = { incremental: "change", snapshot: "checkpoint" };
-const POINTER = "lares-sealed-value:";
+const POINTER = SEALED_VALUE_POINTER;
 /** The Automerge chunk magic: a value the engine itself wrote, clear, before its bag mapped sealed. */
 const AUTOMERGE_MAGIC = [0x85, 0x6f, 0x4a, 0x83] as const;
 const readsClear = (bytes: Uint8Array): boolean => AUTOMERGE_MAGIC.every((b, i) => bytes[i] === b);
-const readsSealed = (bytes: Uint8Array): boolean => SEALED_CHUNK_MARK.every((b, i) => bytes[i] === b);
+const readsSealed = bearsSealedMark;
 /** What the bag map names for one document: its bag, that bag's face, and the key a keyed bag rests under. */
 export interface SealedBagRow { readonly bagId: string; readonly face: string | null; readonly published?: PublishedLookup; readonly held?: HeldRestKey; readonly locked?: true }
 type PublicBag = { readonly bagId: string; readonly published: PublishedLookup };
@@ -189,15 +189,14 @@ const nameOf = (key: StorageKey): string => key.join("\u0000");
 export function logicalRefOf(key: StorageKey): string {
   return hex(sha256(utf8Bytes(["lares-document-value", ...key].join("\u0000"))));
 }
-const POINTER_BYTES = utf8Bytes(POINTER);
 function readPointer(bytes: Uint8Array): SealedAddress | null {
-  if (bytes.length < POINTER_BYTES.length || POINTER_BYTES.some((b, i) => bytes[i] !== b)) return null;
+  if (!namesSealedPointer(bytes)) return null;
   let text: string;
   try { text = new TextDecoder("utf-8", { fatal: true }).decode(bytes); } catch { return null; }
   return text.startsWith(POINTER) ? readSealedAddress(text.slice(POINTER.length)) : null;
 }
 /** Does a byte run open as this store's pointer, well-formed or not? */
-const namesPointer = (bytes: Uint8Array): boolean => bytes.length >= POINTER_BYTES.length && POINTER_BYTES.every((b, i) => bytes[i] === b);
+const namesPointer = namesSealedPointer;
 function frontierOf(saved: Uint8Array): string[] {
   try { return [...A.getHeads(A.load(saved))].sort(); } catch { return []; }
 }

@@ -93,19 +93,22 @@ interface ChildLine {
   reason?: string;
   /** L3 --clean-tail: the torn tail files the child excluded from the clean prefix. */
   tornTail?: string[];
+  /** the records resting sealed, which the child read by envelope and never loaded. */
+  sealed?: number;
 }
 
 /** Build a ProbeResult, omitting undefined optionals (exactOptionalPropertyTypes). */
 function result(
   documentId: string,
   status: ProbeStatus,
-  extra: { heads?: readonly string[]; chunks?: number; reason?: string; integrity?: StoreIntegrityReport; cleanTail?: ProbeResult["cleanTail"]; held?: ProbeResult["held"] },
+  extra: { heads?: readonly string[]; chunks?: number; sealed?: number; reason?: string; integrity?: StoreIntegrityReport; cleanTail?: ProbeResult["cleanTail"]; held?: ProbeResult["held"] },
 ): ProbeResult {
   return {
     documentId,
     status,
     ...(extra.heads !== undefined ? { heads: extra.heads } : {}),
     ...(extra.chunks !== undefined ? { chunks: extra.chunks } : {}),
+    ...(extra.sealed !== undefined && extra.sealed > 0 ? { sealed: extra.sealed } : {}),
     ...(extra.reason !== undefined ? { reason: extra.reason } : {}),
     ...(extra.integrity !== undefined ? { integrity: extra.integrity } : {}),
     ...(extra.cleanTail !== undefined ? { cleanTail: extra.cleanTail } : {}),
@@ -180,7 +183,7 @@ export async function probeDocLoad(
       if (trimmed) { try { line = JSON.parse(trimmed.split("\n").pop() ?? "{}"); } catch { line = null; } }
 
       if (code === 0 && line?.ok) {
-        finish(result(documentId, "ok", { heads: line.heads ?? [], ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), ...(integrity ? { integrity } : {}) }));
+        finish(result(documentId, "ok", { heads: line.heads ?? [], ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), ...(line.sealed !== undefined ? { sealed: line.sealed } : {}), ...(integrity ? { integrity } : {}) }));
       } else if (code === 2 && line && line.ok === false) {
         finish(result(documentId, "load-error", { ...(line.chunks !== undefined ? { chunks: line.chunks } : {}), ...(line.reason !== undefined ? { reason: line.reason } : {}), ...(integrity ? { integrity } : {}) }));
       } else if (isAbortSignature(code, signal, err)) {
@@ -287,6 +290,7 @@ export async function recoverCleanTail(
   return result(documentId, "ok", {
     heads: line.heads ?? [],
     chunks: kept,
+    ...(line.sealed !== undefined ? { sealed: line.sealed } : {}),
     reason: `clean-tail: kept ${kept} record(s), moved ${moved.length} torn aside`,
     cleanTail: { kept, movedAside: moved },
   });

@@ -83,7 +83,7 @@ describe("sweepDocs", () => {
           { documentId: "aaa1", status: "aborted", reason: "wasm poison" },
           { documentId: "bbb2", status: "unresolved", reason: "load exceeded 30000ms — no verdict" },
         ],
-        total: 2, healthy: 0, condemned: 1, unresolved: 1, degraded: true,
+        total: 2, healthy: 0, sealed: 0, condemned: 1, unresolved: 1, degraded: true,
       },
       "/tmp/store",
     );
