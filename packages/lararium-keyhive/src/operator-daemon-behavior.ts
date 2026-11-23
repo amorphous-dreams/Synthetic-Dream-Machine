@@ -47,6 +47,7 @@ import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sh
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
+import { litFaceProjections, type LitFaceProjectionMount, type LitFaceProjections } from "./lit-face-projections.js";
 import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTiddlerStore } from "@lararium/mesh";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
@@ -120,6 +121,10 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  it), read by name and never opened. `offer-promote` asks it before canon moves: the retire that closes an offer seals
    *  under that seat alone. Absent → the verb refuses `offer-retire-unseated` for every caller (a browser page holds no seat row). */
   charterSeat?: () => Promise<import("@lararium/mesh").OfferSeat | null>;
+  /** `projectLitFace` — EVERY LIT FACE PROJECTS ITS OWN WRITES: the shore's mount of one projector over a lit sibling's own engine,
+   *  under the grants the vessel named for that face (`JoinedFaceAuth.diskMirrors`). keyhive stays fs-blind: the node entry
+   *  mounts it (`mountLitFaceProjection`). Absent (a browser vessel) → a sibling projects nothing. */
+  projectLitFace?: (ctx: IslandContext) => LitFaceProjectionMount;
 };
 
 /** What a shore injects so the content-key holder can stand in the daemon island. */
@@ -262,7 +267,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   };
   // The face archive writer stays on the island shore.
   const {
-    persistVeilArchive, shore, events, journalAppend,
+    persistVeilArchive, shore, events, journalAppend, projectLitFace,
     bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, docStoreDoor, freshBase, countedRaises, kahuCabal, charterSeat, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
@@ -574,7 +579,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       open: async (url, bag) => await findOrThrow(ctx.repo, url, `${bag} (h${handleIndex}'s own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never,
       ...(wear ? { wear } : {}),
     });
+  }, {
+    // THE REBUILD REACHES THE PROJECTION: a face's projector lets go of the engine it stood on before that engine closes, and mounts on the rebuilt one.
+    rebuilding: (handleIndex) => litProjections?.rebuilding(handleIndex) ?? Promise.resolve(),
+    rebuilt: (handleIndex) => { void litProjections?.rebuilt(handleIndex); },
   }));
+  /**
+   * EVERY LIT FACE PROJECTS ITS OWN WRITES: one projection per lit sibling, over its own engine, under the grants the vessel named
+   * for it; mounted at its light (off the light's own path) and stopped at its drop, before its engine closes.
+   */
+  let litProjections: LitFaceProjections | null = null;
+  const litProjectionsOf = (ctx: IslandContext): LitFaceProjections | null => projectLitFace
+    ? (litProjections ??= litFaceProjections({ mount: projectLitFace(ctx), engine: (handleIndex) => siblingEnginesOf(ctx).of(handleIndex), log: (line) => console.log(`[faces] ${line}`) }))
+    : null;
   /**
    * A LIT FACE RECEIVES VISITS: each lit face's CROSS-FACE VIEW (`composeCrossFaceView`), composed on the first visit over that
    * face's daemon canon and working layer and the shared slots (never its personal layer, never a draft), laid read-only, and
@@ -2068,6 +2085,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (msg.type === "daemon:face-lit") {
           try { await lightJoinedFace(msg.entry, ctx); }
           catch (error) { throw new Error(`face ${msg.entry.atom.key} refused: ${String(error)}`); }
+          void litProjectionsOf(ctx)?.light(face, msg.entry);
           try { await standSiblingDoor(msg.entry, ctx); }
           catch (error) { console.log(`[daemon] face ${face.slice(0, 12)}… stands no intent door: ${String(error)}`); }
           intentDoors.turn(face);
@@ -2086,6 +2104,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             litInputs.delete(key);
             const dropped = litSiblings.get(key);
             litSiblings.delete(key);
+            // Its projection stops first: nothing reads its engine past the drop.
+            await litProjections?.drop(key).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s projection stopped with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // Its own engine closes with it: owed saves drain, the bridge detaches, the VM releases.
             if (typeof dropped?.handleIndex === "number") await siblingEngines?.drop(dropped.handleIndex).catch((error: unknown) => console.warn(`[daemon] face ${key.slice(0, 12)}…'s own engine closed with a fault: ${error instanceof Error ? error.message : String(error)}`));
             // Its cross-face view closes with it: a shut face receives no visit, cached or fresh.
@@ -2317,6 +2337,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); continue; }
         // A SIBLING LIT WITH THE COMPOSITION takes its lit pass here: its door stands on its own queue, never holding the boot.
         const key = bareKey(face.atom.key);
+        void litProjectionsOf(ctx)?.light(key, face);
         void onFaceQueue(key, async () => {
           if (!litSiblings.has(key)) return;
           try { await standSiblingDoor(face, ctx); }
@@ -2418,7 +2439,7 @@ const bareKey = (did: string): string => did.trim().toLowerCase().replace(/^0x/,
  * One digest of what a face's provider boots from: its atom key, group, anchor, KEL, device edge, signer, cabal, bags,
  * veil archive and address secret. Byte fields enter as their own digests, so the digest carries no secret.
  */
-function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags" | "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret">): string {
+function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags" | "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret"> & Pick<JoinedFaceAuth, "diskMirrors">): string {
   const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
   // Bytes anywhere enter as their digest; key order and the bag list's order carry no meaning.
   const plain = (v: unknown): unknown => v instanceof Uint8Array ? sha256HexBytesSync(v)
@@ -2430,6 +2451,8 @@ function faceInputsDigest(face: Pick<NonNullable<IslandMsg_Manifest["daemonAuth"
     bags: [...new Set(face.registerBags)].sort(),
     veil: face.veilArchiveBytes ? sha256HexBytesSync(face.veilArchiveBytes) : null,
     address: face.faceAddressSecret ? sha256HexBytesSync(encode(face.faceAddressSecret)) : null,
+    // A face's mirror grants follow its pet name: a renamed face lights from other inputs, so its grants never go stale.
+    mirrors: (face.diskMirrors ?? []).map((m) => `${m.bagId} ${m.mirrorRoot}`).sort(),
   };
   return sha256HexBytesSync(canonicalJsonBytes(fields));
 }

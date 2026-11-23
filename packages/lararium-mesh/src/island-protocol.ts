@@ -349,7 +349,16 @@ export interface IslandMsg_Manifest {
 /** Authentication material carried by one unlocked joined face. */
 export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
   "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
-  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation" | "facePlanes">;
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation" | "facePlanes"> & {
+    /**
+     * EVERY LIT FACE PROJECTS ITS OWN WRITES: the mirror grants the vessel names for this face alone, each under that face's own
+     * root (`<projections>/faces/<pet name>/`): its daemon working top, its daemon canon, its kahua stage. The daemon island
+     * mounts one projector over the face's own engine while the face stands lit, and stops it when the face drops. Absent (no
+     * pet name, or a face that makes no folder), the face projects nothing. Never a crossroads or a temp layer: those belong
+     * to the worn composition's own list.
+     */
+    readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"];
+  };
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread

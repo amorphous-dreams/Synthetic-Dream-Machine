@@ -118,7 +118,7 @@ import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { faceNamedCustodyWrite } from "./face-named-custody-write.js";
 import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
+import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms } from "@lararium/mesh";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
@@ -1014,6 +1014,23 @@ async function prepareNodeBootOn(
     if ("refused" in read) { console.warn(`[faces] the face ${relation} makes no folder under ${FACES_PROJECTION_DIR}/ (${read.refused.code}: ${read.refused.why}); its private planes project nowhere until it does`); return null; }
     shelveFace(projections, read.site.segment);
     return read.site.segment;
+  };
+  /**
+   * EVERY LIT FACE PROJECTS ITS OWN WRITES: a sibling's light carries the mirror grants for its own root alone
+   * (`litFaceDiskMirrors`, `faces/<its pet name>/`), so the daemon island projects its writes while another face stands worn.
+   * A face that makes no folder carries none and projects nothing; only an unlocked face ever lights, so a shut one never does.
+   */
+  const withFaceMirrors = async (entry: JoinedFaceAuth): Promise<JoinedFaceAuth> => {
+    const relation = entry.faceRelation ?? null;
+    if (relation === null || typeof entry.handleIndex !== "number") return entry;
+    const segment = await faceSegmentOf(relation, entry.handleIndex).catch(() => null);
+    try {
+      const diskMirrors = litFaceDiskMirrors(larProjectionsHome(), segment === null ? null : { relation, segment });
+      return diskMirrors.length > 0 ? { ...entry, diskMirrors } : entry;
+    } catch (e) {
+      console.warn(`[faces] face h${entry.handleIndex} carries no mirror of its own (${e instanceof Error ? e.message : String(e)}); its writes rest unprojected until it is worn`);
+      return entry;
+    }
   };
   /** EVERY SHELF BEFORE ANY MIRROR (operator, 2026-11-20, "Approve model B"): a face root standing in the older shape (`wiki/`,
    *  `canon/`, `stage/`) moves onto its shelves before a mirror composes over it, its Synced tree bases moving with each folder,
@@ -3900,7 +3917,7 @@ async function prepareNodeBootOn(
       const litNow = (ordinal: number): boolean => faceLife.state(ordinal).kind === "lit";
       // THE SUPERVISOR'S OPEN READS NO CUSTODY: each lit face composes again from the entry its light proved, held in memory.
       const faces = first
-        ? (await joinedFaceAuth({ ...siblingPorts, ordinals: () => ordinals, current: () => true })).filter((face) => typeof face.handleIndex === "number")
+        ? await Promise.all((await joinedFaceAuth({ ...siblingPorts, ordinals: () => ordinals, current: () => true })).filter((face) => typeof face.handleIndex === "number").map(withFaceMirrors))
         : ordinals.flatMap((ordinal) => { const entry = faceEntries.get(ordinal); return entry !== undefined && litNow(ordinal) ? [entry] : []; });
       classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
       const open = new Set(faces.map((f) => f.handleIndex!));
@@ -3935,8 +3952,9 @@ async function prepareNodeBootOn(
     lightSlow = async (ordinal, _opening, live) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const custody = await noteCustody(ordinal);
-      const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal], current: () => live() });
-      if (!entry) throw new Error(`face h${ordinal} stands shut, or proves nothing here`);
+      const [proved] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal], current: () => live() });
+      if (!proved) throw new Error(`face h${ordinal} stands shut, or proves nothing here`);
+      const entry = await withFaceMirrors(proved);
       // A LIGHT THAT REFUSES DROPS THE MOUNT ITS PROOF LANDED: a refused light reaches no close, so no teardown would.
       try {
         if (!live()) throw new Error(`face h${ordinal} closed while it lit`);

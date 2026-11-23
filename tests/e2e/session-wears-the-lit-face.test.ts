@@ -11,7 +11,7 @@
  *   S2      CONTROL: a claim naming a stranger's DID stays that stranger, and the verifier refuses it
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { targetInstance, awaitRendezvous, vesselStorageDir, openStaged, foundStagedHearth, stageDir, type CliResult, type LarInstance } from "../harness/instance.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
@@ -56,6 +56,8 @@ describe("e2e/session-wears-the-lit-face", () => {
  *   W2  a tiddler put (the sibling's own TW5 engine) as face 1 lands there; face 1 reads it back; the worn face reads absent
  *   W3  the worn face's own write lands in its own layer, and face 1 reads it absent
  *   W4  CONTROL: a face that stands shut refuses `face-not-open`, and nothing writes
+ *   W1b EVERY LIT FACE PROJECTS ITS OWN WRITES (course item sibling-writes-wait-unprojected): face 1's lane write reaches
+ *       plaintext under face 1's own root while face 0 stands worn, with no wear of face 1, and nothing of it reaches the worn root
  *   W5  a read of every face's names (`persona list`, the custody door's `selves.read`) leaves no save held in memory: the
  *       census reads no `held-save`, since the lit sibling's selves record seals under that sibling's own hive
  *   W6  EACH FACE LIVES ONE LIFE: a lock of the lit sibling closes it through its actor before its key locks; it then
@@ -158,6 +160,38 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     expect(out(worn), "the worn face never sees the sibling's working layer").not.toContain("Sibling stands in its own layer");
     expect(worn.code, out(worn)).not.toBe(0);
   }, 180_000);
+
+  test("W1b RED: face 1's write reaches plaintext under its own face root while face 0 stands worn, and never the worn root", async () => {
+    const projections = join(walk.root, "projections");
+    const faces = join(projections, "faces");
+    /** Each face's root by handle index, read off the face labels (`face-labels/<relation>.json`, beside `faces/`). */
+    const rootOf = (handleIndex: number): string => {
+      const dir = join(projections, "face-labels");
+      for (const name of readdirSync(dir)) {
+        if (!name.endsWith(".json") || name.endsWith(".bases.json")) continue;
+        const label = JSON.parse(readFileSync(join(dir, name), "utf8")) as { petname?: unknown; handleIndex?: unknown };
+        if (label.handleIndex === handleIndex && typeof label.petname === "string") return join(faces, label.petname);
+      }
+      throw new Error(`no face label names h${handleIndex}`);
+    };
+    /** The face roots under `faces/` whose files hold `word`. */
+    const holding = (word: string): string[] => {
+      if (!existsSync(faces)) return [];
+      const holds = (dir: string): boolean => readdirSync(dir).some((name) => {
+        if (name === ".git") return false;
+        const p = join(dir, name);
+        return statSync(p).isDirectory() ? holds(p) : readFileSync(p, "utf8").includes(word);
+      });
+      return readdirSync(faces).map((name) => join(faces, name)).filter((dir) => statSync(dir).isDirectory() && holds(dir));
+    };
+    let roots: string[] = [];
+    for (let look = 0; look < 60 && roots.length === 0; look++) {
+      roots = holding("Sibling stands in its own layer");
+      if (roots.length === 0) await new Promise((r) => setTimeout(r, 1000));
+    }
+    expect(roots, "face 1's write reached plaintext under face 1's own root alone, while face 0 stood worn").toEqual([rootOf(1)]);
+    expect(rootOf(1)).not.toBe(rootOf(0));
+  }, 120_000);
 
   test("W2: a tiddler put as face 1 (its engine) lands in face 1's layer, face 1 reads it back, the worn face reads absent", async () => {
     const put = await walk.cli(["tiddler", "put", TID, "--recipe", "default", "--text", "sibling engine word", "--create", "--face", "1", "--json"]);

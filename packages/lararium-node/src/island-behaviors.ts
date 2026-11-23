@@ -10,7 +10,8 @@
  * Meme: lar:///ha.ka.ba/lararium/node/island-behaviors
  */
 
-import { resolve as resolvePath, sep } from "node:path";
+import { existsSync, realpathSync } from "node:fs";
+import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
 import { mkWikiVerbResult, wikiSlotUri } from "@lararium/mesh";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import type { VesselJournal } from "@lararium/mesh";
@@ -20,7 +21,7 @@ import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
-import { namedBagMirror } from "./bag-paths.js";
+import { namedBagMirror, FACES_PROJECTION_DIR } from "./bag-paths.js";
 import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
 import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
 import { facePoolHeads } from "./pool-head.js";
@@ -113,9 +114,9 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  * `<projections>/faces/<pet name>/wikis/daemon/` much as a wiki's working layer projects to `<projections>/realms/<realm pet name>/wikis/<slug>/`.
  */
 export function mountDiskProjection(
-  manifest: IslandMsg_Manifest,
+  manifest: Pick<IslandMsg_Manifest, "diskMirrors"> & Partial<Pick<IslandMsg_Manifest, "recipe">>,
   ctx: IslandContext,
-  opts: { readonly journal?: VesselJournal } = {},
+  opts: { readonly journal?: VesselJournal; readonly projected?: (projector: LarDiskProjector) => void } = {},
 ): (() => Promise<void>) | undefined {
   const allDefs = manifest.diskMirrors;
   if (!allDefs?.length) return undefined;
@@ -257,7 +258,8 @@ export function mountDiskProjection(
   } : {}),
   });
   const stop = projector.start(ctx.tw5);
-  mountedProjector = projector;
+  // The island's own projector takes the shore's seat; a lit face's projector (`mountLitFaceProjection`) names its own.
+  if (opts.projected) opts.projected(projector); else mountedProjector = projector;
   bindRecoveryAtRest(ctx.tw5, (bag, title, fields) => projector.recoveryAtRest(bag, title, fields));
   // HOUSEKEEPING per temp mirror: once the first pass settles, then once a day; each run reads the consent row and the
   // expiry window afresh from `<root>/config/config.json`.
@@ -283,6 +285,92 @@ export function mountDiskProjection(
     for (const h of housekeepers) await h.stop();
     bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
+    await stop();
+  };
+}
+
+/**
+ * A root as the disk resolves it: the nearest folder that stands, through its links, joined with the rest of the path. A hand-made
+ * link (`faces/h-alias -> faces/h-zero`) reads as the root it reaches, so it never passes for a root of its own.
+ */
+function realRoot(path: string): string {
+  let head = resolvePath(path);
+  const rest: string[] = [];
+  while (!existsSync(head)) {
+    const up = dirname(head);
+    if (up === head) return resolvePath(path);
+    rest.unshift(basename(head));
+    head = up;
+  }
+  try { return joinPath(realpathSync(head), ...rest); } catch { return resolvePath(path); }
+}
+
+/** The face root (`…/faces/<segment>`) a resolved root rests under, or null where it rests under none. */
+function faceRootUnder(resolved: string): string | null {
+  const parts = resolved.split(sep);
+  const at = parts.lastIndexOf(FACES_PROJECTION_DIR);
+  return at < 0 || at + 1 >= parts.length ? null : parts.slice(0, at + 2).join(sep);
+}
+
+/**
+ * Whether two roots would share files, as the disk resolves both: one stands at or under the other, or both rest under one face
+ * root (`faces/<segment>`), since a face's folder belongs to that face whole, whichever of its planes a list happens to name.
+ */
+function rootsMeet(a: string, b: string): boolean {
+  const x = realRoot(a), y = realRoot(b);
+  if (x === y || x.startsWith(y + sep) || y.startsWith(x + sep)) return true;
+  const fx = faceRootUnder(x);
+  return fx !== null && fx === faceRootUnder(y);
+}
+
+/** THE ROOTS EACH LIT FACE'S PROJECTION HOLDS NOW, by handle index: one island runs per worker, so one table serves it. */
+const litFaceRoots = new Map<number, readonly string[]>();
+
+/**
+ * EVERY LIT FACE PROJECTS ITS OWN WRITES. A face that stands lit beside the worn one composes its own engine over its own daemon
+ * documents (`face-engine`), and its writes land there; this mounts one projector over THAT engine, through the same mount the
+ * island's own projection takes (`mountDiskProjection`), under the mirror grants the vessel named for that face alone
+ * (`JoinedFaceAuth.diskMirrors`, each under the face's own root). The face boundary holds twice: a grant that is a temp layer,
+ * or whose root meets any root the island's own composition projects into (the worn face's, the crossroads), drops before the
+ * projector learns of it, so a face's records never reach another face's root; and the projector reads the face's own engine,
+ * never the worn composition. The island's shore keeps its own projector. Returns the stop, or undefined where no grant stands.
+ */
+export function mountLitFaceProjection(
+  manifest: Pick<IslandMsg_Manifest, "diskMirrors">,
+  face: { readonly handleIndex: number; readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"] },
+  engine: Pick<IslandContext, "tw5" | "composite">,
+  ctx: IslandContext,
+  opts: { readonly journal?: VesselJournal; readonly log?: (line: string) => void; readonly projected?: (projector: LarDiskProjector) => void } = {},
+): (() => Promise<void>) | undefined {
+  const island = manifest.diskMirrors ?? [];
+  const granted = (face.diskMirrors ?? []).filter((def) => {
+    if (def.tempLayer) { opts.log?.(`face h${face.handleIndex}: the temp grant ${def.bagId} drops; a lit face projects no temp layer`); return false; }
+    const meets = island.find((own) => rootsMeet(own.mirrorRoot, def.mirrorRoot));
+    if (meets) { opts.log?.(`face h${face.handleIndex}: the grant ${def.bagId} at ${def.mirrorRoot} meets ${meets.mirrorRoot}, another projector's root; it drops`); return false; }
+    return true;
+  });
+  if (granted.length === 0) return undefined;
+  // SIBLING AGAINST SIBLING: a root another lit face's projection holds now refuses this face's whole mount, never a share. Two
+  // faces may wear one pet name, and so one folder; the face that mounted first keeps it, and this one stands unprojected under
+  // a named alert until the clash clears.
+  for (const def of granted) {
+    for (const [other, roots] of litFaceRoots) {
+      if (other === face.handleIndex) continue;
+      const held = roots.find((root) => rootsMeet(root, def.mirrorRoot));
+      if (held === undefined) continue;
+      const reason = `face h${face.handleIndex}'s grant ${def.bagId} at ${def.mirrorRoot} meets ${held}, which face h${other}'s projection holds; h${face.handleIndex} projects nothing until one face names another folder`;
+      opts.log?.(reason);
+      ctx.post(hostEvent(ctx.wikiUri, "lit-face:root-shared", { verb: "ward-alert", requestedBy: "lit-face-projection", wardKind: "lit-face-root-shared", bagId: def.bagId, uri: def.mirrorRoot, reason }));
+      return undefined;
+    }
+  }
+  const stop = mountDiskProjection({ diskMirrors: granted }, { ...ctx, tw5: engine.tw5, composite: engine.composite },
+    { ...(opts.journal ? { journal: opts.journal } : {}), projected: opts.projected ?? (() => {}) });
+  if (stop === undefined) return undefined;
+  const roots = granted.map((def) => def.mirrorRoot);
+  litFaceRoots.set(face.handleIndex, roots);
+  return async () => {
+    if (litFaceRoots.get(face.handleIndex) === roots) litFaceRoots.delete(face.handleIndex);
     await stop();
   };
 }
