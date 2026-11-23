@@ -143,6 +143,7 @@ describe("processWasmOf — every wasm memory the process holds, off /proc/self/
 
   test("reads each reservation's linear and resident bytes, and their sums", () => {
     const read = processWasmOf(smaps);
+    if (read === null) throw new Error("the fixture's two reservations read as none");
     expect(read.memories).toEqual([
       { bytes: Number(linear) * 1024, residentBytes: 636_416 * 1024 },
       { bytes: 18_432 * 1024, residentBytes: 17_203 * 1024 },
