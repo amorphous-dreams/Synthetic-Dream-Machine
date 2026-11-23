@@ -365,6 +365,21 @@ export function daemonDiskMirrors(opts: {
   ];
 }
 
+/**
+ * A LIT FACE'S OWN MIRRORS, the grants a face that stands lit but unworn projects through: its daemon working top, its daemon
+ * canon and its kahua stage, each under ITS OWN face root, never another face's. The crossroads and the temp layer stay with the
+ * worn composition's list (`daemonDiskMirrors`), so no file answers two projectors. With no face site (no pet name, or one the
+ * segment rule refuses) the face projects nothing.
+ */
+export function litFaceDiskMirrors(projectionRoot: string, face: FaceSite | null): readonly DaemonDiskMirror[] {
+  if (face === null) return [];
+  return [
+    { ...daemonWorkingMirror(projectionRoot, face), scope: "daemon" },
+    { ...daemonCanonMirror(projectionRoot, face), scope: "daemon-canon" },
+    { ...kahuaStageMirror(projectionRoot, face), scope: "kahua" },
+  ];
+}
+
 /** The mirror-relative base a title sites at by its own path, or null for a title that owns none by this rule. */
 export function titleRelPath(title: string): string | null {
   if (title.startsWith("lar:") || title.startsWith("$:/") || title.length === 0) return null;

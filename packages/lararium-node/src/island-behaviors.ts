@@ -113,9 +113,9 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  * `<projections>/faces/<pet name>/wikis/daemon/` much as a wiki's working layer projects to `<projections>/realms/<realm pet name>/wikis/<slug>/`.
  */
 export function mountDiskProjection(
-  manifest: IslandMsg_Manifest,
+  manifest: Pick<IslandMsg_Manifest, "diskMirrors"> & Partial<Pick<IslandMsg_Manifest, "recipe">>,
   ctx: IslandContext,
-  opts: { readonly journal?: VesselJournal } = {},
+  opts: { readonly journal?: VesselJournal; readonly projected?: (projector: LarDiskProjector) => void } = {},
 ): (() => Promise<void>) | undefined {
   const allDefs = manifest.diskMirrors;
   if (!allDefs?.length) return undefined;
@@ -257,7 +257,8 @@ export function mountDiskProjection(
   } : {}),
   });
   const stop = projector.start(ctx.tw5);
-  mountedProjector = projector;
+  // The island's own projector takes the shore's seat; a lit face's projector (`mountLitFaceProjection`) names its own.
+  if (opts.projected) opts.projected(projector); else mountedProjector = projector;
   bindRecoveryAtRest(ctx.tw5, (bag, title, fields) => projector.recoveryAtRest(bag, title, fields));
   // HOUSEKEEPING per temp mirror: once the first pass settles, then once a day; each run reads the consent row and the
   // expiry window afresh from `<root>/config/config.json`.
@@ -285,6 +286,40 @@ export function mountDiskProjection(
     if (mountedProjector === projector) mountedProjector = null;
     await stop();
   };
+}
+
+/** Whether one absolute root stands at or under another, or the other at or under it: two such roots would share files. */
+function rootsMeet(a: string, b: string): boolean {
+  const x = resolvePath(a), y = resolvePath(b);
+  return x === y || x.startsWith(y + sep) || y.startsWith(x + sep);
+}
+
+/**
+ * EVERY LIT FACE PROJECTS ITS OWN WRITES. A face that stands lit beside the worn one composes its own engine over its own daemon
+ * documents (`face-engine`), and its writes land there; this mounts one projector over THAT engine, through the same mount the
+ * island's own projection takes (`mountDiskProjection`), under the mirror grants the vessel named for that face alone
+ * (`JoinedFaceAuth.diskMirrors`, each under the face's own root). The face boundary holds twice: a grant that is a temp layer,
+ * or whose root meets any root the island's own composition projects into (the worn face's, the crossroads), drops before the
+ * projector learns of it, so a face's records never reach another face's root; and the projector reads the face's own engine,
+ * never the worn composition. The island's shore keeps its own projector. Returns the stop, or undefined where no grant stands.
+ */
+export function mountLitFaceProjection(
+  manifest: Pick<IslandMsg_Manifest, "diskMirrors">,
+  face: { readonly handleIndex: number; readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"] },
+  engine: Pick<IslandContext, "tw5" | "composite">,
+  ctx: IslandContext,
+  opts: { readonly journal?: VesselJournal; readonly log?: (line: string) => void; readonly projected?: (projector: LarDiskProjector) => void } = {},
+): (() => Promise<void>) | undefined {
+  const island = manifest.diskMirrors ?? [];
+  const granted = (face.diskMirrors ?? []).filter((def) => {
+    if (def.tempLayer) { opts.log?.(`face h${face.handleIndex}: the temp grant ${def.bagId} drops; a lit face projects no temp layer`); return false; }
+    const meets = island.find((own) => rootsMeet(own.mirrorRoot, def.mirrorRoot));
+    if (meets) { opts.log?.(`face h${face.handleIndex}: the grant ${def.bagId} at ${def.mirrorRoot} meets ${meets.mirrorRoot}, another projector's root; it drops`); return false; }
+    return true;
+  });
+  if (granted.length === 0) return undefined;
+  return mountDiskProjection({ diskMirrors: granted }, { ...ctx, tw5: engine.tw5, composite: engine.composite },
+    { ...(opts.journal ? { journal: opts.journal } : {}), projected: opts.projected ?? (() => {}) });
 }
 
 export function makeWikiPrimaryBehavior(manifest: IslandMsg_Manifest, journal?: VesselJournal): IslandBehavior {

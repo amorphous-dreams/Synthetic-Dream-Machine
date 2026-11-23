@@ -1,0 +1,158 @@
+/**
+ * lit-face-projection — EVERY LIT FACE PROJECTS ITS OWN WRITES (course item sibling-writes-wait-unprojected).
+ *
+ * After a vessel restart the worn face moved h1 → h0, and writes to h1 (lit, unworn) read back from the vessel but reached no
+ * plaintext until h1 was worn again: the daemon island's mirror list named the worn face alone. The cure widens what stands: a
+ * lit sibling carries its own mirror grants (`litFaceDiskMirrors`, under its own face root), and the island mounts one projector
+ * over that face's own engine (`mountLitFaceProjection`) while the face stands lit.
+ *
+ *   F1 — a lit sibling's write projects into its own root while another face stands worn, and nothing of it reaches the worn root
+ *   F2 — the worn face's projection stands unchanged: its write reaches its own root, and nothing of it reaches the sibling's
+ *   F3 — two lit siblings each project only into their own root
+ *   F4 — a shut sibling projects nothing: no folder makes no grant, and a grant with no root of its own mounts nothing
+ *   F5 — the face boundary: a grant whose root meets the worn face's root drops, and a temp grant drops
+ *   F6 — a face that drops stops its projection: a write after the stop reaches no disk
+ */
+import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { afterEach, describe, expect, test } from "vitest";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { CompositeStore, wikiSlotUri } from "@lararium/mesh";
+import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
+import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
+import { daemonDiskMirrors, faceRoot, litFaceDiskMirrors } from "../src/bag-paths.js";
+import { mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "../src/island-behaviors.js";
+import type { LarDiskProjector } from "../src/disk-projector.js";
+
+const WORKING = wikiSlotUri("daemon", "working");
+const origin = { kind: "operator-import", sessionId: "lit-face-projection" } as const;
+/** A face's founding relation, as its verified record names one (a v4 uuid), by handle index. */
+const relationOf = (face: number): string => `0000000${face}-0000-4000-8000-00000000000${face}`;
+
+let root = "";
+afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
+
+/** One face's own engine: its own working document under the one daemon working bag id, as `face-engine` composes it. */
+async function faceEngine() {
+  const working = new MemoryTiddlerStore("working");
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+  const tw5 = new TW5Engine();
+  await tw5.boot(vendoredCore());
+  const write = async (title: string, text: string): Promise<void> => {
+    await working.put({ tiddler: { title, text } }, origin);
+    tw5.$tw.wiki.addTiddler(new tw5.$tw.Tiddler({ title, text, "$origin-bag": WORKING }));
+  };
+  return { tw5, composite, write };
+}
+
+/** Every file's text under a folder, recursively; empty where the folder stands absent. */
+function textsUnder(dir: string): string {
+  if (!existsSync(dir)) return "";
+  const out: string[] = [];
+  const walk = (d: string): void => {
+    for (const name of readdirSync(d)) {
+      const p = join(d, name);
+      if (statSync(p).isDirectory()) walk(p); else out.push(readFileSync(p, "utf8"));
+    }
+  };
+  walk(dir);
+  return out.join("\n");
+}
+
+const ctxOf = (engine: { tw5: TW5Engine; composite: CompositeStore }) => ({ tw5: engine.tw5, composite: engine.composite, post: () => {}, wikiUri: "daemon" }) as never;
+
+/** A vessel wearing h0, its island mounted over h0's engine with the worn list (`daemonDiskMirrors`). */
+async function wornIsland() {
+  root = mkdtempSync(join(tmpdir(), "lar-lit-face-"));
+  const projections = join(root, "projections");
+  const worn = await faceEngine();
+  const manifest = { diskMirrors: daemonDiskMirrors({ projectionRoot: projections, canonBags: join(root, "bags"), face: { relation: relationOf(0), segment: "h-zero" } }) } as never;
+  const stopWorn = mountDiskProjection(manifest, ctxOf(worn))!;
+  const wornProjector = mountedDiskProjector()!;
+  /** Light a sibling: its own engine, its own grants, its own projector. */
+  const light = async (handleIndex: number, segment: string | null) => {
+    const engine = await faceEngine();
+    let projector: LarDiskProjector | null = null;
+    const stop = mountLitFaceProjection(manifest, { handleIndex, diskMirrors: litFaceDiskMirrors(projections, segment === null ? null : { relation: relationOf(handleIndex), segment }) },
+      engine, ctxOf(worn), { projected: (p) => { projector = p; } });
+    return { engine, stop, idle: async () => { await projector?.idle(); }, root: segment === null ? null : faceRoot(projections, segment) };
+  };
+  return { projections, worn, stopWorn, wornProjector, wornRoot: faceRoot(projections, "h-zero"), light };
+}
+
+describe("every lit face projects its own writes", () => {
+  test("F1 · F2 — a lit sibling projects into its own root while h0 stands worn; the worn projection stands unchanged", async () => {
+    const house = await wornIsland();
+    const h1 = await house.light(1, "h-one");
+    try {
+      expect(h1.stop).toBeTypeOf("function");
+      await h1.engine.write("Sibling note", "written to h1 while h0 stands worn");
+      await h1.idle();
+      expect(textsUnder(join(h1.root!, "wikis", "daemon"))).toContain("written to h1 while h0 stands worn");
+      expect(textsUnder(house.wornRoot)).not.toContain("written to h1");
+      await house.worn.write("Worn note", "written to h0, the worn face");
+      await house.wornProjector.idle();
+      expect(textsUnder(join(house.wornRoot, "wikis", "daemon"))).toContain("written to h0, the worn face");
+      expect(textsUnder(h1.root!)).not.toContain("written to h0");
+    } finally { await h1.stop?.(); await house.stopWorn(); }
+  }, 60_000);
+
+  test("F3 — two lit siblings each project only into their own root", async () => {
+    const house = await wornIsland();
+    const h1 = await house.light(1, "h-one");
+    const h2 = await house.light(2, "h-two");
+    try {
+      await h1.engine.write("One", "only h1 holds this");
+      await h2.engine.write("Two", "only h2 holds this");
+      await Promise.all([h1.idle(), h2.idle()]);
+      expect(textsUnder(h1.root!)).toContain("only h1 holds this");
+      expect(textsUnder(h1.root!)).not.toContain("only h2");
+      expect(textsUnder(h2.root!)).toContain("only h2 holds this");
+      expect(textsUnder(h2.root!)).not.toContain("only h1");
+      expect(textsUnder(house.wornRoot)).not.toMatch(/only h[12]/);
+    } finally { await h1.stop?.(); await h2.stop?.(); await house.stopWorn(); }
+  }, 60_000);
+
+  test("F4 — a face that makes no folder carries no grant and mounts no projector", async () => {
+    expect(litFaceDiskMirrors("/lar/projections", null)).toEqual([]);
+    const house = await wornIsland();
+    const shut = await house.light(3, null);
+    try {
+      expect(shut.stop).toBeUndefined();
+      await shut.engine.write("Shut", "never reaches disk");
+      expect(textsUnder(house.projections)).not.toContain("never reaches disk");
+    } finally { await house.stopWorn(); }
+  }, 60_000);
+
+  test("F5 — the face boundary: a grant meeting the worn root drops, and so does a temp grant", async () => {
+    const house = await wornIsland();
+    const intruder = await faceEngine();
+    try {
+      const stop = mountLitFaceProjection({ diskMirrors: daemonDiskMirrors({ projectionRoot: house.projections, canonBags: join(root, "bags"), face: { relation: relationOf(0), segment: "h-zero" } }) },
+        { handleIndex: 4, diskMirrors: [
+          { bagId: WORKING, mirrorRoot: join(house.wornRoot, "wikis", "daemon"), scope: "daemon" },
+          { bagId: wikiSlotUri("daemon", "temp"), mirrorRoot: join(faceRoot(house.projections, "h-four"), "wikis", "daemon", "temp"), scope: "daemon-temp", tempLayer: true },
+        ] }, intruder, ctxOf(house.worn));
+      expect(stop).toBeUndefined();
+      await intruder.write("Intruder", "h4 reaches for h0's root");
+      await house.wornProjector.idle();
+      expect(textsUnder(house.projections)).not.toContain("h4 reaches");
+    } finally { await house.stopWorn(); }
+  }, 60_000);
+
+  test("F6 — a face that drops stops its projection", async () => {
+    const house = await wornIsland();
+    const h1 = await house.light(1, "h-one");
+    try {
+      await h1.engine.write("Before", "landed while lit");
+      await h1.idle();
+      await h1.stop!();
+      await h1.engine.write("After", "written after the drop");
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(textsUnder(h1.root!)).toContain("landed while lit");
+      expect(textsUnder(h1.root!)).not.toContain("written after the drop");
+    } finally { await house.stopWorn(); }
+  }, 60_000);
+});

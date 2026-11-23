@@ -8,7 +8,7 @@
 import { parentPort } from "worker_threads";
 import { runSovereignWorker, vesselReceiptAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
-import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js";
+import { mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "./island-behaviors.js";
 import { answerShore } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
@@ -80,6 +80,9 @@ runSovereignWorker((manifest) => {
     // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
+    // EVERY LIT FACE PROJECTS ITS OWN WRITES: a sibling lit beside the worn face projects through its own engine into its own
+    // root (`faces/<its pet name>/`), under the grants the vessel named for it, from its light to its drop.
+    projectLitFace: (ctx: IslandContext) => (face, engine) => mountLitFaceProjection(manifest, face, engine, ctx, { journal, log: (line) => console.log(`[faces] ${line}`) }),
     ...(receiptFromVessel ? { askReceipt: receiptFromVessel } : {}),
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     // THE KAHU PREDICATE'S BOARD: this vessel's charter and the admission acts its carriage board carries, read at
