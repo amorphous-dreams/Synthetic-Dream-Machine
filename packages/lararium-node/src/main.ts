@@ -266,9 +266,10 @@ async function main(): Promise<void> {
     declaredUrl: process.env["LAR_PUBLIC_URL"] ?? null,
     interfaces:  networkInterfaces() as unknown as InterfaceTable,
   });
-  // NO SETTING EARNS A LOUD NOTICE AT BOOT (secure-context#/behind-the-terminator). A vessel that names itself
-  // by loopback says so before any face listens, so a household learns of the gap from the log.
-  const reachNotice = reachFaceBootNotice(process.env["LAR_PUBLIC_URL"], `http://localhost:${port}`);
+  // Scratch and explicitly loopback vessels need no notice about optional reach; malformed declarations still warn.
+  const scratchNotice = testScratchNotice(rootDir);
+  const testScratch = scratchNotice !== null;
+  const reachNotice = reachFaceBootNotice(process.env["LAR_PUBLIC_URL"], `http://localhost:${port}`, testScratch);
   if (reachNotice !== null) console.log(`[lararium] ${reachNotice}`);
   // The composition reads the asked standing, so it runs only where its origins are read. A lararium
   // composes relay + read + Web per face before listen, because its crossing banner speaks all three.
@@ -307,8 +308,8 @@ async function main(): Promise<void> {
   // standing — so the descriptor refuses a mirror that would share an origin with the house.
   const houseOrigins = houseOriginsOf(reachFaces, originCompositions);
   const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher, standing: askedStanding, houseOrigins });
-  // NO SHORE EARNS A LOUD NOTICE AT BOOT, as no reach face does: a lararium whose Web origin answers no page says so.
-  const shoreNotice = pronaosShoreBootNotice(askedStanding, pronaos);
+  // A vessel claiming external reach names a missing Web shore.
+  const shoreNotice = pronaosShoreBootNotice(askedStanding, pronaos, process.env["LAR_PUBLIC_URL"], testScratch);
   if (shoreNotice !== null) console.log(`[lararium] ${shoreNotice}`);
   // THE RUNG LADDER (pronaos#/the-rung-ladder). A herm stands SILENT by default: it hands over its bulb by CID and
   // describes nothing. `herm.waymark` in the node config lifts it to the WAYMARK rung — one unsigned descriptor at
@@ -365,8 +366,6 @@ async function main(): Promise<void> {
   // THE ONE SEAT. Every sealed row this process reads or writes reaches the holder through it, and the seat
   // carries no opener: the key arrives on the custody door alone, and a row asked for at the floor refuses.
   seatCustody(holder);
-  const scratchNotice = testScratchNotice(rootDir);
-  const testScratch = scratchNotice !== null;
   if (scratchNotice) console.log(scratchNotice);
   // Late-bound: the door's acts recompose, and the recomposition closes over what `main` builds below.
   let custodyDoor: CustodyDoor | null = null;

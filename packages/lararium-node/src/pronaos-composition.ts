@@ -1,3 +1,4 @@
+import { declaredAuthority, isLoopback } from "./reach-face-watch.js";
 /**
  * Node's explicit Pronaos composition seam.
  *
@@ -97,7 +98,9 @@ function readArtifactRecord(pathname: string): PronaosArtifactRecord {
  * 404 and logged nothing of the shore). A herm composes none by law and gets no notice; a composed shore
  * gets none.
  */
-export function pronaosShoreBootNotice(standing: OriginStanding, pronaos: PronaosComposition | null): string | null {
+export function pronaosShoreBootNotice(standing: OriginStanding, pronaos: PronaosComposition | null, declaredUrl?: string | null, testScratch = false): string | null {
+  const authority = declaredAuthority(declaredUrl);
+  if (testScratch || (authority !== null && isLoopback(authority))) return null;
   if (standing === "herm" || pronaos !== null) return null;
   return `⚠ NO PRONAOS SHORE — this lararium declares no prepared Web root, so its Web origin answers no page (GET / reads 404): set ${WEB_ROOT}=<the built lararium-web/dist> and ${ARTIFACT_RECORD}=<its pronaos-artifact.json> (the product image names both; a desk build writes the record at .pronaos-build/pronaos-artifact.json).`;
 }

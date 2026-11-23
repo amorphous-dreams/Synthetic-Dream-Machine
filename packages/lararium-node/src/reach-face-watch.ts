@@ -8,9 +8,8 @@
  * This module holds the two lines that guard the crossing from the desk to the house network, where a wrong
  * or missing setting first shows:
  *   · THE BOOT NOTICE. A vessel standing without the setting says so once at boot, in one loud line that
- *     names the loopback address it prints in the setting's place. A setting that names a loopback host
- *     leaves the same gap (a phone cannot dial it), and a setting that names no bare http origin (another
- *     scheme, a path, a query, credentials) names nothing a browser dials; each earns a line of its own.
+ *     names the loopback address it prints in the setting's place, except on a marked scratch root. An explicit
+ *     loopback declaration stays quiet; a malformed origin still earns a line.
  *   · THE MISMATCH LINE. A request that arrives under a host other than the one the setting names logs once
  *     per boot. The vessel keeps serving under the setting; the line tells the operator that a resolver, a
  *     terminator or the setting itself fell out of step. A loopback host reads as no mismatch: the vessel
@@ -45,26 +44,25 @@ export function declaredAuthority(declaredUrl: string | null | undefined): strin
 }
 
 /**
- * The boot notice: one loud line where no setting stands, null where one does. `loopbackOrigin` names the
- * address the vessel prints in the setting's place.
+ * The boot notice names missing reach outside scratch and malformed declarations everywhere.
+ * `loopbackOrigin` names the address printed when no setting stands.
  */
-export function reachFaceBootNotice(declaredUrl: string | null | undefined, loopbackOrigin: string): string | null {
+export function reachFaceBootNotice(declaredUrl: string | null | undefined, loopbackOrigin: string, testScratch = false): string | null {
   if (declaredUrl?.trim()) {
     const authority = declaredAuthority(declaredUrl);
     if (authority === null) {
       return `⚠ ${REACH_FACE_SETTING} NAMES NO BARE HTTP ORIGIN (${JSON.stringify(declaredUrl)}) — every URL this vessel prints about itself carries that value as written; set it to the one http(s) origin a browser or a peer dials: a scheme, a host, an optional port.`;
     }
-    if (isLoopback(authority)) {
-      return `⚠ ${REACH_FACE_SETTING} NAMES LOOPBACK (${JSON.stringify(authority)}) — every URL this vessel prints about itself carries that name, and a phone or a peer on another machine cannot dial it: set ${REACH_FACE_SETTING} to the one origin they reach.`;
-    }
+    if (isLoopback(authority)) return null;
     return null;
   }
+  if (testScratch) return null;
   return `⚠ NO ${REACH_FACE_SETTING} — this vessel declares no reach face: its mesh standing names ${loopbackOrigin}, its banner lists loopback beside each interface address, and an admit carries no relay address. ` +
     `A phone or a peer on another machine holds no declared name to dial: set ${REACH_FACE_SETTING} to the one origin they reach.`;
 }
 
 /** Whether an authority names this machine's own loopback face. */
-function isLoopback(authority: string): boolean {
+export function isLoopback(authority: string): boolean {
   const host = authority.replace(/:\d+$/, "").replace(/^\[|\]$/g, "");
   return host === "localhost" || host.endsWith(".localhost") || /^127(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(host) || host === "::1";
 }

@@ -5,8 +5,8 @@
  *
  * Proven:
  *   · NO SETTING EARNS A LOUD NOTICE: an absent or blank setting yields one line that names the setting and the
- *     loopback address printed in its place; a setting that names a loopback host, and one that names no http
- *     origin, each yield a line of their own; CONTROL: a sound setting yields none;
+ *     loopback address printed in its place; a loopback declaration stays quiet and a malformed origin warns;
+ *     CONTROL: a sound setting yields none;
  *   · A MISMATCH LOGS ONCE: the first request under another host yields one line naming both hosts, and no
  *     later request yields another, whatever host it names; CONTROL: a request under the declared host, in any
  *     letter case and with or without its default port, yields none and spends nothing;
@@ -57,15 +57,10 @@ describe("the boot notice", () => {
     expect(reachFaceBootNotice("http://192.168.1.20:4321/", "http://localhost:4321")).toBeNull();
   });
 
-  test("a setting that names a loopback host earns a line of its own: the same gap, a setting's wording", () => {
+  test("a loopback declaration stays quiet for a desk vessel", () => {
     for (const loopback of ["http://localhost:4321", "http://127.0.0.1:4321/", "http://[::1]:4321", "https://vessel.localhost"]) {
-      const line = reachFaceBootNotice(loopback, "http://localhost:4321");
-      expect(line, loopback).toContain("NAMES LOOPBACK");
-      expect(line, loopback).toContain(REACH_FACE_SETTING);
-      expect(line!.split("\n")).toHaveLength(1);
+      expect(reachFaceBootNotice(loopback, "http://localhost:4321"), loopback).toBeNull();
     }
-    expect(reachFaceBootNotice("http://192.168.1.20:4321", "http://localhost:4321")).toBeNull();   // CONTROL: a LAN name stays quiet
-    expect(reachFaceBootNotice("https://localhost.house.example", "http://localhost:4321")).toBeNull();
   });
 
   test("a setting that names no http origin earns a line of its own, and never the absent-setting line", () => {
