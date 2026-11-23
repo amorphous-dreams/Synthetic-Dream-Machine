@@ -1499,8 +1499,16 @@ case "$verb" in
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi
         fi ;;
-      # Stopping the daemon stops the container's main process: a host act.
+      # Stopping the daemon stops the container's main process: a host act. A fallen engine reads the signal as the hand's
+      # stop: it clears the restart count (and the holds it carries) and exits 0.
       stop) [ "$#" -eq 1 ] || die "vessel stop takes no option through this shim"; compose stop lares ;;
+      # THE STEP-IN READ asks no standing verdict after it: a fallen engine answers none, and the read reads its files.
+      read) follow_up=""; route_cli "$verb" "$@" ;;
+      # THE RELEASE HOLDS THE STORE: a standing container refuses here, naming the stop, before anything execs; a stopped
+      # one hands the act to the offline door, whose CLI claims the store for it.
+      release)
+        if running_vessel; then die "vessel release holds the store, and a vessel stands; stop it first with \`lares vessel stop\`, then release again"; fi
+        route_cli "$verb" "$@" ;;
       rite) route_cli "$verb" "$@" ;;
       *) route_cli "$verb" "$@" ;;
     esac ;;

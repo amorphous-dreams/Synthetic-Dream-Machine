@@ -715,6 +715,31 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.calls, /compose .*exec/);
   });
 
+  // THE RELEASE HOLDS THE STORE, SO IT RUNS ONLY WITH THE VESSEL STOPPED: a standing container refuses by name, naming the
+  // exact stop, and nothing execs; a stopped one hands the act to the offline door, which claims the store for it.
+  test(`${name}: vessel release refuses while a vessel stands, naming the stop, and execs nothing`, async () => {
+    const r = await run(shim, ["vessel", "release", "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", "--keep"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /`lares vessel stop`/);
+    assert.doesNotMatch(r.calls, /compose .*exec/);
+    assert.doesNotMatch(r.calls, /offline/);
+  });
+
+  test(`${name}: CONTROL vessel release with no vessel standing runs through the offline door`, async () => {
+    const r = await run(shim, ["vessel", "release", "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", "--fresh"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline vessel release 4NMNnkMhL8jXrdJ9jamS2rUEaQDq --fresh/);
+  });
+
+  // THE STEP-IN READ ANSWERS ON A FALLEN VESSEL: a fallen engine answers no standing verdict, so the read asks none; it
+  // reads its files inside the container and returns what it read.
+  test(`${name}: vessel read on a standing vessel asks no standing verdict after it`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read$/m);
+    assert.doesNotMatch(r.calls, /vessel stand --observe/);
+  });
+
   test(`${name}: unknown vessel sub-doors are handed to the CLI`, async () => {
     for (const argv of [["vessel", "clear", "--force"], ["vessel", "rite", "rebirth"]]) {
       const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });

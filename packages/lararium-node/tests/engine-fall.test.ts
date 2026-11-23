@@ -16,6 +16,8 @@
  *   F7  a fall that cannot rest stays down: a disk that refuses the record never feeds a loop of exits.
  *   F8  no run clears the count by itself: a fall after any span of healthy running stays down and names the hand act; only
  *       a clean stop or the hand's act clears it (`clearEngineFalls`).
+ *   F9  the hand act's words match what the code does: it names the read that works with the engine down, the stop and the
+ *       stand by their exact commands, and the document in flight mounts writable after the hand's stop, never "stays held".
  *
  * The boot's hold-back of the document in flight reads through the real probe wiring (`engine-fall-holds-back.test.ts`).
  *
@@ -30,8 +32,8 @@ import { createEngineWatch, tapInboundDocs, tapRepoLogs, type EngineFall } from 
 import { createReadinessState } from "../src/readiness-face.js";
 import * as engineFall from "../src/engine-fall.js";
 import {
-  answerEngineFall, clearEngineFalls, engineFallsPath, readEngineFalls, restEngineFall,
-  ENGINE_DOWN_HAND_ACT, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP,
+  answerEngineFall, clearEngineFalls, engineFallsPath, heldInFlight, keepFallDown, readEngineFalls, restEngineFall,
+  ENGINE_DOWN_HAND_ACT, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, HELD_HAND_ACT,
 } from "../src/engine-fall.js";
 import type { ShoreFlushReading } from "../src/shore-verb.js";
 
@@ -165,5 +167,34 @@ describe("an engine that falls flushes, stops and rises once", () => {
     const answer = await answerEngineFall(fallen(null).fall, p.ports);
     expect(answer.verdict).toBe("stays-down");
     expect(p.lines.join("\n")).toContain(ENGINE_DOWN_HAND_ACT);
+  });
+
+  test("F9 — the hand act names its commands, and its words match the code: the hand's stop frees the document in flight", async () => {
+    // The words: the read that answers with the engine down, the stop and the stand, each by its exact command.
+    for (const command of ["`lares vessel read`", "`lares vessel stop`", "`lares vessel stand`", "`lares vessel read vessel`"]) {
+      expect(ENGINE_DOWN_HAND_ACT).toContain(command);
+    }
+    expect(HELD_HAND_ACT).toContain("`lares vessel stop`");
+    expect(HELD_HAND_ACT).toContain("`lares vessel stand`");
+    expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/stays held/);
+    expect(ENGINE_DOWN_HAND_ACT).toMatch(/mounts writable/);
+    expect(ENGINE_DOWN_HAND_ACT).not.toMatch(/repair or restore from a keep bundle;/);
+
+    // The code: a vessel that stays down, holding a document in flight, takes the hand's stop; the count and the hold clear.
+    const storageDir = scratch();
+    restEngineFall(storageDir, fallen("doc-held").fall, "a".repeat(32));
+    expect(heldInFlight(readEngineFalls(storageDir))).toEqual(["doc-held"]);
+    const watch = createEngineWatch(clock);
+    const acts: string[] = [];
+    const keeper = keepFallDown(watch, {
+      storageDir, life: () => "b".repeat(32), flush: async () => FLUSHED,
+      exit: (code) => { acts.push(`exit ${code}`); }, log: () => {}, hold: () => { acts.push("hold"); },
+    });
+    watch.carrying("doc-held", () => watch.note(trap(), "repo"));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(keeper.verdict()).toBe("stays-down");
+    expect(keeper.handStop("SIGTERM")).toBe(true);
+    expect(acts).toEqual(["hold", "exit 0"]);
+    expect(heldInFlight(readEngineFalls(storageDir))).toEqual([]);
   });
 });
