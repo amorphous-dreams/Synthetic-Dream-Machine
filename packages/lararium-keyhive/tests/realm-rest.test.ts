@@ -16,15 +16,22 @@
  *   R3 once the owner wraps, the seated face's holder opens the owner's value from the shared rest.
  *   R4 a bag no realm binds keeps the face's own readers and founds under any seat, byte for byte as before.
  *
+ * A2 writer standing follows the realm's seat, keyed to the key-version lineage:
+ *   S1 a certificate stands over a realm bag under any chain the realm seats as a writer; a reader's seat or no seat signs
+ *      nothing; a bag no realm keeps reads the face's own chain alone.
+ *   S3 the owner's holder counts the engineer's manifest, and a reading taken before the engineer's seat gives way after it.
+ *   S4 (u2) a revoke never orphans the revoked writer's earlier writes: after the removal's roll lands, the owner still opens
+ *      the engineer's pre-removal change, and refuses a manifest the engineer's session signs under the new version.
+ *
  * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { describe, expect, test } from "vitest";
 import {
-  SealedStore, memorySealedStoreRest, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
+  SealedStore, contentKeyRollSink, memorySealedStoreRest, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
-import { KeyhiveProvider, InMemoryEventStore, ownChainStanding, realmRestPort, seatContentKeys, type ContentKeySeat } from "../src/index.js";
-import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, type LedgerDoc } from "../src/workbench-realm.js";
+import { KeyhiveProvider, InMemoryEventStore, faceStanding, ownChainStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
+import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, projectWorkbenchRoster, removeWorkbenchFace, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -91,8 +98,9 @@ function seatToday(v: Vessel, f: Omit<Face, "seat">, registers: readonly string[
  * founding stays owner-only), and hands a wrap's operations to the sibling hives on this vessel. `standing` stands in for the
  * writer standing until slice A2 composes the realm's.
  */
-export function seatRealm(v: Vessel, f: Omit<Face, "seat">, standing: WriterStanding, siblings: readonly Omit<Face, "seat">[] = [], served?: string[][]): ContentKeySeat {
+export function seatRealm(v: Vessel, f: Omit<Face, "seat">, standing: WriterStanding, siblings: readonly Omit<Face, "seat">[] = [], served?: string[][], counted: () => ReadonlySet<string> = () => new Set()): ContentKeySeat {
   return seatContentKeys({
+    countedRaises: counted,
     providers: [f.hive], rest: v.rest,
     values: { read: async (a) => v.values.get(a) ?? null, write: async (a, b) => { v.values.set(a, Uint8Array.from(b)); } },
     restArchive: async () => {}, group: null, bags: () => [],
@@ -108,7 +116,7 @@ export function seatRealm(v: Vessel, f: Omit<Face, "seat">, standing: WriterStan
 const EVERY_WRITER: WriterStanding = { holdsWrite: () => true };
 
 /** Stand a vessel where face A owns the workbench and face B holds a writer's seat by a share. */
-async function sharedWorkbench(fills: readonly [number, number]): Promise<{ v: Vessel; a: Omit<Face, "seat">; b: Omit<Face, "seat">; realmId: string }> {
+async function sharedWorkbench(fills: readonly [number, number]): Promise<{ v: Vessel; a: Omit<Face, "seat">; b: Omit<Face, "seat">; realmId: string; bOnA: string }> {
   const v: Vessel = { rest: memorySealedStoreRest(), values: new Map(), ledger: memDoc() };
   const a = await face("steward", fills[0]), b = await face("engineer", fills[1]);
   const realmId = (await faceWorkbenchRealm(a.hive, v.ledger, SLUG, "group-steward", true))!;
@@ -119,7 +127,7 @@ async function sharedWorkbench(fills: readonly [number, number]): Promise<{ v: V
   await landWorkbench({ slug: SLUG }, [{ face: "group-engineer", agentHex: bOnA, access: "write" }], { provider: a.hive, ledger: v.ledger, ownerFace: "group-steward" });
   await b.hive.ingestPeerEvents(await a.hive.eventsForPeer(bOnA));
   adoptWorkbench(b.hive, SLUG, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!);
-  return { v, a, b, realmId };
+  return { v, a, b, realmId, bOnA };
 }
 
 describe("RT1 — the two-face round trip over one vessel's rest", () => {
@@ -177,5 +185,83 @@ describe("A1 — readers follow the roster; founding stays owner-only", () => {
     const personal = wikiSlotUri(SLUG, "personal");
     expect(said(await seatB.sealValues({ bagId: personal, values: [change("my own layer")], signer: b.signer })), "the engineer's personal layer founds under its own seat").toBe("OK");
     expect(served.flat(), "its lockbox seats no other hive: a face with no key group wraps for itself").toEqual([]);
+  });
+});
+
+/** A realm writer set one test moves by hand, named by its content (`realmMark`), as the island's book of the roster does. */
+function writerBook(initial: RealmWriters) {
+  let writers = initial;
+  return {
+    set(next: RealmWriters) { writers = next; },
+    standing(f: Omit<Face, "seat">, registers: readonly string[] = []): WriterStanding {
+      return faceStanding({
+        own: () => f.own, bags: () => registers,
+        realmWriters: (bagId) => (bagId === WORKING ? writers : null),
+        realmMark: () => JSON.stringify(writers),
+      });
+    },
+  };
+}
+
+describe("A2 — writer standing follows the realm's seat, keyed to the lineage", () => {
+  test("S1: any seated writer's chain stands over the realm bag; a reader, a stranger and another bag stand nowhere", async () => {
+    const a = await face("steward", 0xc1), b = await face("engineer", 0xc2), r = await face("referee", 0xc3);
+    const book = writerBook({ seated: [a.own, b.own], former: [] });
+    const standing = book.standing(a, [WORKING]);
+    expect(standing.holdsWrite({ certificate: b.signer.certificate, bagId: WORKING }), "a writer's seat stands").toBe(true);
+    expect(standing.holdsWrite({ certificate: r.signer.certificate, bagId: WORKING }), "a reader's seat (never in the writer set) signs nothing").toBe(false);
+    expect(standing.holdsWrite({ certificate: b.signer.certificate, bagId: wikiSlotUri("garden", "working") }), "another bag reads the face's own chain alone").toBe(false);
+    expect(standing.holdsWrite({ certificate: a.signer.certificate, bagId: WORKING }), "the owner's own chain stands as before").toBe(true);
+    book.set({ seated: [a.own], former: [] });
+    expect(standing.holdsWrite({ certificate: b.signer.certificate, bagId: WORKING }), "an unseated face stands nowhere").toBe(false);
+  });
+
+  test("S3: the owner's holder counts the engineer's manifest; a reading taken before the seat gives way after it", async () => {
+    const { v, a, b } = await sharedWorkbench([0xc4, 0xc5]);
+    const book = writerBook({ seated: [a.own], former: [] });
+    const seatA = seatRealm(v, a, book.standing(a, [WORKING]), [b]);
+    const bWrites = writerBook({ seated: [a.own, b.own], former: [] });
+    const seatB = seatRealm(v, b, bWrites.standing(b), [a]);
+    expect(said(await seatA.sealValues({ bagId: WORKING, values: [change("one")], signer: a.signer }))).toBe("OK");
+    const reply = change("the engineer's reply");
+    expect(said(await seatB.sealValues({ bagId: WORKING, values: [reply], signer: b.signer }))).toBe("OK");
+    expect(said(await seatA.holder.openValue({ bagId: WORKING, role: "change", ref: reply.ref })), "before A's book seats B: no writer stands behind the manifest").toBe("reference-unknown");
+    book.set({ seated: [a.own, b.own], former: [] });
+    expect(said(await seatA.holder.openValue({ bagId: WORKING, role: "change", ref: reply.ref })), "the seat landed: the reading gives way and counts B's manifest").toBe("OK");
+  });
+
+  test("S4 (u2): after the revoke's roll, the owner still opens the engineer's earlier change and refuses its session under the new version", async () => {
+    const { v, a, b, realmId, bOnA } = await sharedWorkbench([0xc6, 0xc7]);
+    const ACT = "workbench-removal-act-one";
+    const book = writerBook({ seated: [a.own, b.own], former: [] });
+    let seatA = seatRealm(v, a, book.standing(a, [WORKING]), [b], undefined, () => new Set([ACT]));
+    let seatB = seatRealm(v, b, book.standing(b), [a], undefined, () => new Set([ACT]));
+    const first = change("before the revoke: the steward"), reply = change("before the revoke: the engineer");
+    expect(said(await seatA.sealValues({ bagId: WORKING, values: [first], signer: a.signer }))).toBe("OK");
+    const before = await seatB.sealValues({ bagId: WORKING, values: [reply], signer: b.signer });
+    expect(said(before)).toBe("OK");
+
+    // THE REVOKE: the owner's hive revokes the engineer's seat; the roster's projection reads it; the roll lands.
+    await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    book.set({ seated: [a.own], former: [{ chain: b.own, removedBy: [ACT] }] });
+    const roll = contentKeyRollSink(seatA.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => a.signer }));
+    await roll({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
+
+    seatA.lock(); seatB.lock();
+    seatA = seatRealm(v, a, book.standing(a, [WORKING]), [b], undefined, () => new Set([ACT]));
+    seatB = seatRealm(v, b, book.standing(b), [a], undefined, () => new Set([ACT]));
+    const kept = await seatA.holder.openValue({ bagId: WORKING, role: "change", ref: reply.ref });
+    expect(said(kept), "the revoked writer's earlier change still opens for the owner").toBe("OK");
+    expect(text((kept as { plaintext: Uint8Array }).plaintext)).toBe("before the revoke: the engineer");
+
+    const after = change("after the revoke");
+    const sealed = await seatA.sealValues({ bagId: WORKING, values: [after], signer: a.signer });
+    expect(said(sealed), "the owner seals under the successor").toBe("OK");
+    expect((sealed as { keyVersion: string }).keyVersion, "a new version").not.toBe((before as { keyVersion: string }).keyVersion);
+    expect(said(await seatA.sealValues({ bagId: WORKING, values: [change("forged")], signer: b.signer })), "the revoked writer's session stands under no version after its removal").toMatch(/^record-refused:writer-not-capable/);
+
+    expect(said(await seatB.holder.openValue({ bagId: WORKING, role: "change", ref: after.ref })), "the revoked face opens nothing sealed after its removal").not.toBe("OK");
+    expect(said(await seatB.holder.openValue({ bagId: WORKING, role: "change", ref: first.ref })), "and keeps what it held").toBe("OK");
   });
 });

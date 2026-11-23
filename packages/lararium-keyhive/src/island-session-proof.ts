@@ -114,6 +114,50 @@ export function ownChainStanding(chain: () => SessionOwnChain | null, bags: () =
   };
 }
 
+/** The writers a realm workbench bag reads on this vessel (cabal-realm#/the-workbench). */
+export interface RealmWriters {
+  /** The chain of every face the realm's roster seats as a writer (`admin`) now, as this vessel last read each face. */
+  readonly seated: readonly SessionOwnChain[];
+  /** Each face the roster seated as a writer once and a removal since left out, with the removal acts that left it. */
+  readonly former: readonly { readonly chain: SessionOwnChain; readonly removedBy: readonly string[] }[];
+}
+
+/** A chain named by its content: the reading a holder took under one set of writers gives way when the set moves. */
+export function chainName(c: SessionOwnChain | null): string | null {
+  if (c === null) return null;
+  const nexus = "scope" in c ? `${bare(c.scope.faceKey)}|${c.scope.nexus}|${bare(c.vesselFaceKey)}` : "";
+  const place = c.place ? `${bare(c.place.atomKey)}@${c.place.place}` : "";
+  return `${nexus}|${place}`;
+}
+
+/**
+ * THE WRITER STANDING OF ONE FACE'S SEAT, REALM-AWARE (S4). For a bag a realm workbench keeps (`realmWriters` answers a set),
+ * a certificate stands under the chain of any face the realm seats as a writer on this vessel; a `read` seat signs nothing.
+ * Every other bag reads the face's own chain over the bags it registers, exactly as `ownChainStanding`. `realmMark` names the
+ * realm writer sets by their content, so a holder's reading gives way when a seat lands or leaves.
+ */
+export function faceStanding(input: {
+  readonly own: () => SessionOwnChain | null;
+  readonly bags: () => readonly string[];
+  readonly realmWriters?: (bagId: string) => RealmWriters | null;
+  readonly realmMark?: () => string;
+}): WriterStanding {
+  const base = ownChainStanding(input.own, input.bags);
+  return {
+    holdsWrite: (args) => {
+      if (base.holdsWrite(args)) return true;
+      const realm = input.realmWriters?.(args.bagId) ?? null;
+      if (realm === null) return false;
+      return realm.seated.some((c) => certificateUnderChain(args.certificate, c));
+    },
+    chainOf: () => {
+      const own = base.chainOf!();
+      return own === null ? null : `${own}#${input.realmMark?.() ?? ""}`;
+    },
+    registeredOf: base.registeredOf!,
+  };
+}
+
 /**
  * THE SESSION SIGN DOOR, island side, over any port onto the vessel's thread (a `worker_threads` port, a Web Worker's
  * own scope). The island names the invocation a session placed; the vessel answers from that session: its certificate,

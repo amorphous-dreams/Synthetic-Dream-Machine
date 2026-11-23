@@ -482,7 +482,16 @@ export async function signRecord<K extends RecordKind>(args: {
 /** The reader's own reading of who may write a bag. It answers for the face certificate beneath the session
  *  certificate, for the face's withdrawal history, and for the face's standing in the bag. */
 export interface WriterStanding {
-  holdsWrite(args: { readonly certificate: RecordCertificate; readonly bagId: string }): boolean;
+  /**
+   * Does the certificate's face hold write standing in the bag? A record names the key version it rests under
+   * (`keyVersion`), and the reader hands its own lineage's reading of that version (`followsRemoval`: does it descend from
+   * a successor minted for the removal `act`?), so a standing may key a writer to the lineage: a writer a removal left out
+   * stands for the versions that precede that removal and for none after it (cabal-realm#/the-workbench).
+   */
+  holdsWrite(args: {
+    readonly certificate: RecordCertificate; readonly bagId: string;
+    readonly keyVersion?: KeyVersionId; readonly followsRemoval?: (act: string) => boolean;
+  }): boolean;
   /** The chain this standing reads writers under, named, or null where none stands yet: a reading taken then counts
    *  no writer, so a holder takes no reading and settles no roll on it. Absent: the standing reads alike always. */
   readonly chainOf?: () => string | null;
@@ -513,6 +522,8 @@ export interface ReadRecordRefusal { readonly refusal: ReadRecordRefusalName; re
 export function readRecord<K extends RecordKind>(kind: K, carried: unknown, reader: {
   readonly bagId: string; readonly locator: BagLocator; readonly key: ContentKey;
   readonly standing: WriterStanding; readonly apart?: KeysHeldApart;
+  /** The reader's lineage: does `keyVersion` descend from a successor minted for the removal `act`? Absent: no reading. */
+  readonly followsRemoval?: (keyVersion: KeyVersionId, act: string) => boolean;
 }): { readonly record: VerifiedRecord<K> } | ReadRecordRefusal {
   try {
     if (!(RECORD_KINDS as readonly string[]).includes(kind) || !isRecord(carried) || !exactKeys(carried, ["kind", "body", "sealed"]) || carried["kind"] !== kind) return { refusal: "record-malformed" };
@@ -541,7 +552,9 @@ export function readRecord<K extends RecordKind>(kind: K, carried: unknown, read
       ? readPlaceSessionSignature(certificate.read, "act", authorship, part["signature"])
       : readSessionSignature(certificate.read, "act", authorship, part["signature"]);
     if (!own(signature, "read")) return { refusal: "signature-refused", cause: signature.refusal };
-    if (reader.standing.holdsWrite({ certificate: certificate.read, bagId: reader.bagId }) !== true) return { refusal: "writer-not-capable" };
+    const follows = reader.followsRemoval;
+    const asked = { certificate: certificate.read, bagId: reader.bagId, keyVersion: body.keyVersion, ...(follows ? { followsRemoval: (act: string) => follows(body.keyVersion, act) } : {}) };
+    if (reader.standing.holdsWrite(asked) !== true) return { refusal: "writer-not-capable" };
     // The readers built `body` and `secret` afresh from what they read, so no caller holds a way into them;
     // frozen through, a verified record stays as its reader verified it.
     const record = Object.freeze({ kind, id, body: deepFreeze(body), private: deepFreeze(secret), certificate: deepFreeze(certificate.read) });

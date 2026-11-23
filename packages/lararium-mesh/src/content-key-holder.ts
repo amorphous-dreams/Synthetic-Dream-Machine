@@ -464,7 +464,7 @@ export class ContentKeyHolder {
 
   /** Count one founding's records, parents before children, until a pass counts none. */
   #count(bag: Bag, line: Line, records: readonly SealedRecord<"key-version">[], evidence: BagEvidence): void {
-    const reader = (key: ContentKey) => ({ bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+    const reader = (key: ContentKey) => ({ bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
     // Verify each record once, under the key its own lockbox delivered.
     const pending: { carried: SealedRecord<"key-version">; verified: VerifiedRecord<"key-version"> }[] = [];
     for (const carried of records) {
@@ -524,6 +524,13 @@ export class ContentKeyHolder {
     for (const version of [...line.records.keys()]) if (!lineage.has(version)) { line.records.delete(version); line.carried.delete(version); line.why.set(version, "version-conflict"); }
     line.lineage = lineage;
   }
+
+  /** THE LINEAGE A STANDING READS (`WriterStanding.holdsWrite`): does `keyVersion` descend from a successor minted for the
+   *  removal `act`, in whichever founding this vessel counted it? A version no founding counted yet follows none. */
+  readonly #follows = (keyVersion: KeyVersionId, act: string): boolean => {
+    for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) if (line.lineage.has(keyVersion)) return line.lineage.followsRemoval(keyVersion, act);
+    return false;
+  };
 
   /** The versions of one founding this vessel may seal or open under: counted, with the key in hand. */
   #usable(line: Line): Set<KeyVersionId> {
@@ -601,7 +608,7 @@ export class ContentKeyHolder {
     Promise<{ carried: SealedRecord<K>; verified: VerifiedRecord<K> } | HolderRefusal> {
     const signed = await signRecord({ kind, body, private: secret, bagId, key, signer, ...(this.#ports.random ? { random: this.#ports.random } : {}) });
     if (!("record" in signed)) return refuse("record-refused", signed.cause ? `${signed.refusal}:${signed.cause}` : signed.refusal);
-    const read = readRecord(kind, signed.record, { bagId, locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+    const read = readRecord(kind, signed.record, { bagId, locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
     if (!("record" in read)) return refuse("record-refused", read.cause ? `${read.refusal}:${read.cause}` : read.refusal);
     return { carried: signed.record, verified: read.record };
   }
@@ -641,7 +648,7 @@ export class ContentKeyHolder {
     for (const carried of await this.#ports.store.records("checkpoint")) {
       const { body } = carried;
       if (body.bag !== line.locator || body.keyVersion !== span || body.span !== span || body.base !== "fresh") continue;
-      const read = readRecord("checkpoint", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+      const read = readRecord("checkpoint", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
       if ("record" in read && (await this.#ports.values.read(body.address)) !== null) return true;
     }
     return false;
@@ -885,7 +892,7 @@ export class ContentKeyHolder {
     const known = line.manifests.get(id);
     if (known) return known;
     for (const carried of await this.#ports.store.record("manifest", id)) {
-      const read = readRecord("manifest", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+      const read = readRecord("manifest", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
       if ("record" in read) { line.manifests.set(id, read.record); return read.record; }
     }
     return null;
@@ -989,7 +996,7 @@ export class ContentKeyHolder {
         if (carried.body.bag !== written.locator || !this.#usable(written).has(under)) continue;
         if (under !== roll.keyVersion && !lineage.descends(under, roll.keyVersion)) continue;
         const underKey = written.keys.get(under)!;
-        const read = readRecord("re-seal", carried, { bagId: args.bagId, locator: written.locator, key: underKey, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+        const read = readRecord("re-seal", carried, { bagId: args.bagId, locator: written.locator, key: underKey, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
         if (!("record" in read) || read.record.private.ref !== args.ref || read.record.private.role !== "blob") continue;
         const rested = await this.#ports.values.read(carried.body.to);
         if (rested === null) return refuse("value-absent");
@@ -1066,7 +1073,7 @@ export class ContentKeyHolder {
         const counted = new Map([...this.#usable(line)].map((version) => [version, line.keys.get(version)!] as const));
         const key = counted.get(carried.body.keyVersion);
         if (key === undefined) { out.push({ id, verdict: "unverified", missing: ["successor", "replaced", "from", "to"] }); continue; }
-        const read = readRecord("re-seal", carried, { bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+        const read = readRecord("re-seal", carried, { bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
         if (!("record" in read)) { out.push({ id, verdict: "refused", refusal: read.refusal }); continue; }
         const manifests: VerifiedRecord<"manifest">[] = [];
         for (const version of [carried.body.replaced, carried.body.keyVersion]) {
