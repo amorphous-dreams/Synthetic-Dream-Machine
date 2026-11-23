@@ -28,6 +28,7 @@ import { cmdPalaceTeardown } from "./palace-teardown.js";
 import { cmdRecall } from "./recall.js";
 import { cmdRefresh } from "./refresh.js";
 import { cmdMeta } from "./meta.js";
+import { helpLines } from "../command-help.js";
 import { cmdSenseAnalyze, resolveLens, SENSE_LENSES } from "./sense-analyze.js";
 import { cmdPlaneRecord } from "./plane-record.js";
 import { runQuiesce, runResume, runTopology, type DoorScope } from "./mempalace.js";
@@ -153,7 +154,7 @@ export function sensePathAccepts(args: ParsedArgs): readonly string[] | null {
 export async function cmdSense(args: ParsedArgs): Promise<number> {
   // SENSORIUM ADDRESSING — `lares sense <sensorium> <verb>`: a leading KNOWN sensorium name (resolved
   // against the on-disk registry/manifest) selects the TARGET; the rest is the verb. `lares sense <verb>`
-  // keeps the `memory` default. So `lares sense memory pour --all` addresses memory by manifest, and the
+  // keeps the `memory` default. So `lares sense <sensorium> pour --all` (`memory` among them) addresses its sensorium by manifest, and the
   // SAME door opens any stream sensorium (the root threads to the capture/refresh holder). Verb names and
   // sensorium names never collide, so a leading token resolves unambiguously.
   let positional = args.positional;
@@ -201,12 +202,9 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
       error: { code: "usage", message: `name a verb: read (${VERBS.join(" · ")}) or lifecycle (${Object.keys(LIFECYCLE).join(" · ")})`,
                hint: `lares sense search "<query>" --lens <${known.join("|")}>` },
       human: () => {
-        console.error("lares sense — the SOVEREIGN sensorium's one door (the guest lives at `lares mempalace`)\n");
-        console.error("  read (plane as a parameter):");
-        for (const v of VERBS) console.error(`    lares sense ${v.padEnd(10)} --lens <plane>`);
-        console.error("\n  lifecycle (tend the planes):");
-        for (const v of Object.keys(LIFECYCLE)) console.error(`    lares sense ${v}`);
-        console.error(`\n  planes: ${known.join(" · ")}`);
+        if (verb) console.error(`lares sense: unknown verb "${verb}"`);
+        console.error(`  planes: ${known.join(" · ")}\n`);
+        for (const line of helpLines("sense")) console.error(line);
       },
     });
     return exitFor("usage");

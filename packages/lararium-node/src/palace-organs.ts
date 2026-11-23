@@ -1,6 +1,6 @@
 /**
  * palace-organs — the ONE shared enumerator for the local palace organs (the durable stores the
- * operator's vessel stands), so setup (`lares sense setup`) and teardown (`lares palace-teardown`)
+ * operator's vessel stands), so setup (`lares sense setup`) and teardown (`lares sense teardown`)
  * read the SAME list and can never drift.
  *
  * SOVEREIGN ORGANS ONLY. Every organ this registry stands lives inside the lararium's own tree. Each

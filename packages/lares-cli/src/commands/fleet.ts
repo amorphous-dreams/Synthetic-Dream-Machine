@@ -34,6 +34,7 @@ import { refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
+import { tableCovers } from "../verb-table.js";
 
 function usage(args: ParsedArgs): number {
   return refuseUsage(args, "fleet", helpLines("fleet"));
@@ -72,12 +73,16 @@ function refuseFaceOnJoinee(args: ParsedArgs, act: string): void {
   throw new FleetJoinRefused("face-joinee", `\`lares fleet join ${act}\` takes no --face: the joinee never names a face — the face rides the offer, and \`--face N\` belongs to \`offer\` and \`answer\` on the root holder.`);
 }
 
+/** The fleet door answers one group, `join`, and the group its acts. */
+export const FLEET_VERBS = { join: ["offer", "request", "answer", "land", "abandon"] } as const;
+
 export async function cmdFleet(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
   const [group, act, file] = args.positional;
   if (group !== "join" || act === undefined) return usage(args);
   try {
-    switch (act) {
+    const v = act as (typeof FLEET_VERBS.join)[number];
+    switch (v) {
       case "offer": {
         const { offer } = (await storeVerb("fleet-join-offer", { ...faceOf(args) })).output as { offer: unknown };
         emitFile(args, offer, "offer");
@@ -113,6 +118,7 @@ export async function cmdFleet(args: ParsedArgs): Promise<number> {
         return 0;
       }
       default:
+        tableCovers(v);
         return usage(args);
     }
   } catch (err) {

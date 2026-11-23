@@ -37,6 +37,7 @@ import { keepSlotAtBind, provedRoutes, reseatKeepPair, seatKeepAtUnlock, type Cu
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { canPromptSecret } from "../prompt-secret.js";
 import { storeFailure, storeVerb } from "../store-door.js";
+import { tableCovers } from "../verb-table.js";
 
 function usage(args: ParsedArgs, typed?: string): number {
   return refuseUsage(args, "vault", helpLines("vault"), typed ? `unknown sub-verb "${typed}"` : undefined);
@@ -62,6 +63,9 @@ const RELATION_LINE =
 /** The vault reads that answer a pipe in prose (render.ts `proseFirst`): the custody reading and the unlock the shim chains. */
 const PROSE_FIRST_SUBS: ReadonlySet<string> = new Set(["status", "unlock"]);
 
+/** Every verb the vault door answers. */
+export const VAULT_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "reseat", "rehive"] as const;
+
 export async function cmdVault(given: ParsedArgs): Promise<number> {
   const sub = given.positional[0];
   // The refusals below render through the same args, so a piped unlock refuses in prose too.
@@ -70,7 +74,8 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
   const daemonUp = await udsAlive();
 
   try {
-    switch (sub) {
+    const v = sub as (typeof VAULT_VERBS)[number];
+    switch (v) {
       case "status":     return await vaultStatus(args, daemonUp);
       case "unlock":     return await vaultUnlock(args, daemonUp);
       case "lock":       return await vaultLock(args, daemonUp);
@@ -81,7 +86,7 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
       case "reseat":     return await vaultReseat(args, daemonUp);
       case "rehive":     return await vaultRehive(args);
       default:
-        console.error(`lares vault: unknown sub-verb "${sub}"`);
+        console.error(`lares vault: unknown sub-verb "${tableCovers(v)}"`);
         return usage(args, sub);
     }
   } catch (err) {

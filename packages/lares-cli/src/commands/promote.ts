@@ -3,9 +3,13 @@ import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
 import { storeVerb } from "../store-door.js";
 
+/** Every verb the trust door answers, and every verb its brake (`kapae`) answers. */
+export const TRUST_VERBS = ["list", "prepare", "commit", "drop", "orphan"] as const;
+export const KAPAE_VERBS = ["raise", "lower", "flag"] as const;
+
 export async function promotionDoor(args: ParsedArgs, command: "trust" | "kapae"): Promise<number> {
   const [act, digest] = args.positional;
-  const acts = command === "trust" ? ["list", "prepare", "commit", "drop", "orphan"] : ["raise", "lower", "flag"];
+  const acts: readonly string[] = command === "trust" ? TRUST_VERBS : KAPAE_VERBS;
   if (!act || !acts.includes(act)) return refuseUsage(args, command, helpLines(command));
   try {
     const payload: Record<string, unknown> = {};

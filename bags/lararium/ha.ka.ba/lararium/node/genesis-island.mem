@@ -61,7 +61,7 @@ themes, and the floor's plugins offering, whose bytes derive from those blobs al
 stays in genesis as the fallback an offline founding stands on and the vessel pin's starting point (no pin record reads as the
 genesis floor), and it moves only at a `main` release (local-first: a founding with no network still stands on house canon).
 
-* ''The develop bake'' (`pnpm --filter @lararium/node build:genesis`, the default, and every staged bake `lares vessel bake` runs)
+* ''The develop bake'' (`pnpm --filter @lararium/node build:genesis`, the default, and every staged bake a vessel runs)
 re-cuts the code and CARRIES the floor (`carryGenesisFloor`, `packages/lararium-node/src/genesis-floor.ts`): it reads the
 snapshots the checkout's tracked `genesis/` names, each checked against its CID, carries their bytes forward unchanged, and reads
 no carrier. A canon edit on develop therefore moves no genesis byte.
@@ -156,6 +156,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xc5pEFwWWHjdnRhoCuRSerck1akhb7PnDFPjKvuI5fQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;e8UkiPtnAeHgHVUE2iBb5ctlSXmHAy2blj7JFdJXyv0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

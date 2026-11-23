@@ -144,7 +144,7 @@ fail, subs_checked = list(shim_fail), 0
 #
 # Matching a quoted literal ANYWHERE in the module is what a substring test does, and it passes on the
 # very line that disproves it: `case "contract": return await cmdContract(args, "admit")` carries the
-# word `admit` as an ARGUMENT, so a rite instructing `lares nexus admit` read GREEN against a door that
+# word `admit` as an ARGUMENT, so a rite instructing `nexus admit` (no such verb) read GREEN against a door that
 # answers `unknown verb "admit"`.
 #
 # The value side matters just as much when COUNTING. `emit()` payloads write `data:`, `human:` and
@@ -206,7 +206,7 @@ for c in cmds:
     module = module_of(verb)
     if not module.exists():
         # A SUB-DOOR WITH NO MODULE READS RED BY NAME. The skip that stood here waved through every sub-word of a verb
-        # whose module moved or vanished, so the rite's `lares ghost walk` read green while nothing read `walk`.
+        # whose module moved or vanished, so the rite's `ghost walk` (no such door) read green while nothing read `walk`.
         fail.append(f"{c!r} — commands/{module.name} is absent; `{sub}` has no mapped module")
         continue
     subs_checked += 1

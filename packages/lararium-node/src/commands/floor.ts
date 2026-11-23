@@ -1,5 +1,5 @@
 /**
- * floor — `lares floor status|accept`: the node vessel's binding of the ONE floor pin seam (`@lararium/mesh` `floor-pin`).
+ * floor — `lares vessel floor status|accept`: the node vessel's binding of the ONE floor pin seam (`@lararium/mesh` `floor-pin`).
  *
  * The vessel pins the floor (operator ruling 2026-11-11): one pin per (vessel, Nexus), resting in the vessel's control home,
  * moved only by this vessel's own accept along `prior`. The decisions (status, the accept, the remount) live in the mesh;
@@ -121,7 +121,7 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   };
 }
 
-/** What `lares floor status` answers: the Nexus part where a charter stands, and both truths always. */
+/** What `lares vessel floor status` answers: the Nexus part where a charter stands, and both truths always. */
 export type FloorStatusRead = Partial<FloorStatus> & {
   /** The founding record beside the seed (offered) and the floor pin, ratchet by ratchet, and its one line. */
   readonly genesis: FoundingRecordTruths & { readonly line: string };
@@ -143,7 +143,7 @@ function pinnedFloorOf(manifestCid: string, casDir: string): FloorPinLike | null
   return { manifestCid, manifest: read.manifest, offering: offering && "offering" in offering ? offering.offering : null };
 }
 
-/** `lares floor status`: both truths for every place, and the Nexus part where a charter stands. */
+/** `lares vessel floor status`: both truths for every place, and the Nexus part where a charter stands. */
 export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatusRead> {
   let status: FloorStatus | null = null;
   let nexusRefused: FloorRefused | null = null;
@@ -165,7 +165,7 @@ export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatu
     : { ...status!, genesis };
 }
 
-/** `lares floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */
+/** `lares vessel floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */
 export async function runFloorAccept(opts: NodeFloorOptions & { readonly target?: string }): Promise<FloorAcceptOutcome & { readonly alerted: readonly string[] }> {
   const ports = await nodeFloorPorts(opts);
   const out = await acceptFloorRelease(ports, opts.target);

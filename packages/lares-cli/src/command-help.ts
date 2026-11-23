@@ -567,7 +567,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   sense: {
-    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense analyze --lens <lens>  ·  lares sense <lifecycle verb> …",
+    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense analyze --lens <lens>  ·  lares sense <trial-run|setup|recall|refresh|capture|pour|teardown|worldline|telemetry|meta|plane-record|quiesce|resume|holders|roster|reconcile|build|harden|retire|un-retire|purge> …",
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +

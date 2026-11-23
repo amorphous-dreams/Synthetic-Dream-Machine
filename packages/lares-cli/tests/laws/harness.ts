@@ -9,8 +9,7 @@
 import { vi } from "vitest";
 import { COMMANDS, dispatch, type Command } from "../../src/bin/lares.js";
 import { COMMAND_HELP } from "../../src/command-help.js";
-import { VESSEL_SUBS } from "../../src/commands/vessel.js";
-import { TUNNEL_VERBS } from "../../src/commands/tunnel-door.js";
+import { flattenVerbs } from "../../src/verb-table.js";
 
 export interface DoorRun {
   readonly code: number;
@@ -37,12 +36,12 @@ export async function door(argv: readonly string[]): Promise<DoorRun> {
 export const commands = (): readonly Command[] => COMMANDS;
 export const flagReadingCommands = (): readonly Command[] => COMMANDS.filter((c) => c.passesThrough === undefined);
 
-/** Every door whose verbs stand in a declared table: the door, and the verbs it answers. */
-export const verbTables = (): ReadonlyArray<{ door: string; verbs: readonly string[] }> => [
-  { door: "vessel", verbs: VESSEL_SUBS },
-  { door: "repo", verbs: TUNNEL_VERBS },
-  { door: "home", verbs: TUNNEL_VERBS },
-];
+/**
+ * Every door whose verbs stand in a declared table, read off the command rows' own `verbs`: the door (or a sub-door path,
+ * `meme offer`), and the verbs it answers. A door with no table takes arguments, never sub-verbs.
+ */
+export const verbTables = (): ReadonlyArray<{ door: string; verbs: readonly string[] }> =>
+  COMMANDS.flatMap((c) => (c.verbs === undefined ? [] : flattenVerbs(c.name, c.verbs)));
 
 /** Every help registry key: a door, or a `"<door> <sub>"` sub-door. */
 export const helpKeys = (): readonly string[] => Object.keys(COMMAND_HELP);

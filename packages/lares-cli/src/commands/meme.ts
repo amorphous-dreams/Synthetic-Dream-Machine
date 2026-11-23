@@ -131,8 +131,10 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["normalize", "check", "sitting", "project", "promote", "offer"] as const;
-type Sub = typeof SUBS[number];
+/** Every verb the meme door answers; `offer` names its own (bare `offer <uri…>` makes one). */
+export const MEME_VERBS = { normalize: null, check: null, sitting: null, project: null, promote: null, offer: ["show", "promote"] } as const;
+const SUBS = Object.keys(MEME_VERBS) as ReadonlyArray<keyof typeof MEME_VERBS>;
+type Sub = keyof typeof MEME_VERBS;
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
 
@@ -187,7 +189,8 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     if (err instanceof UsageError) {
       const msg = err.message;
       const code = msg.startsWith("face-malformed:") ? "face-malformed" : "usage";
-      emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
+      // A usage refusal ends with the door's own lines, so the cure sits under the fault (help-is-the-refusal).
+      emit(args, { ok: false, error: { code, message: msg }, human: () => { console.error(`lares meme ${sub}: ${msg}`); if (code === "usage") usage(); } });
       return exitFor("usage");
     }
     // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in

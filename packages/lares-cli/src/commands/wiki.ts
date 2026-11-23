@@ -1018,6 +1018,9 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "act":        { handler: cmdWikiAction, summary: "Run one admitted native action: `wiki act sidebar-layout --recipe <wiki> --expected fixed-fluid --resulting fluid-fixed`." },
 };
 
+/** Every verb the wiki door answers (`help` prints this table). */
+export const WIKI_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS)];
+
 /** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */
 export function wikiHelpLines(): string[] {
   const width = Math.max(...Object.keys(SUBCOMMANDS).map((v) => v.length));
@@ -1034,11 +1037,11 @@ export async function cmdWiki(args: ParsedArgs): Promise<number> {
     printWikiHelp();
     return verb ? 0 : 2;
   }
-  const moved: Record<string, string> = { open: "wiki switch <slug> --next-boot", hold: "wiki pin <slug> --rotate", release: "wiki pin <slug> --rotate --release", unpin: "wiki pin <slug> --release", list: "wiki status", active: "wiki status" };
-  if (moved[verb]) { console.error(`lares wiki: moved to \`lares ${moved[verb]}\`.`); return 2; }
+  // The retired spellings (`wiki open`, `wiki list`, …) answer at the dispatcher's one MOVED table before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
-    console.error(`lares wiki: unknown verb "${verb}". Run \`lares wiki help\` for the list.`);
+    console.error(`lares wiki: unknown verb "${verb}"`);
+    for (const line of wikiHelpLines()) console.error(line);
     return 2;
   }
   const inner: ParsedArgs = {

@@ -13,7 +13,7 @@
  * flag, `persona raise-sign` signs under the persona door's own `signs` seat.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { dispatch, COMMANDS } from "../src/bin/lares.js";
+import { dispatch, COMMANDS, MOVED } from "../src/bin/lares.js";
 
 async function run(argv: string[]): Promise<{ code: number; out: string; err: string }> {
   const out: string[] = []; const err: string[] = [];
@@ -45,6 +45,15 @@ describe("fewer front doors", () => {
       expect(r.code, old).toBe(2);
       expect(r.err, old).not.toContain("unknown command");
       expect(r.err, old).toContain(`\`${cure}\``);
+    }
+  });
+
+  test("★ every row of the one MOVED table answers at its cure, the door-local folds (`bag pin`, `wiki list`) among them ★", async () => {
+    expect(MOVED.map((m) => m.argv.join(" "))).toEqual(expect.arrayContaining(["bag pin", "bag list", "wiki open", "wiki list"]));
+    for (const { argv, to } of MOVED) {
+      const r = await run([...argv]);
+      expect(r.code, argv.join(" ")).toBe(2);
+      expect(r.err, argv.join(" ")).toContain(`\`${to}\``);
     }
   });
 

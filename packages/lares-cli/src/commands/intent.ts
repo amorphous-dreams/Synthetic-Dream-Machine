@@ -4,7 +4,9 @@ import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
 import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 
-const acts = new Set(["issue", "show", "ask", "answer", "claim", "takeover", "release", "cancel", "supersede", "release-root", "delegate", "delegate-revoke", "delegations"]);
+/** Every verb the intent door answers. */
+export const INTENT_VERBS = ["issue", "show", "ask", "answer", "claim", "takeover", "release", "cancel", "supersede", "release-root", "delegate", "delegate-revoke", "delegations"] as const;
+const acts: ReadonlySet<string> = new Set(INTENT_VERBS);
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
   if (args.flags["face"] !== undefined) throw new Error("face-malformed: --face needs a whole persona index");
