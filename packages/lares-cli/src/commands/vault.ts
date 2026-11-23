@@ -300,7 +300,7 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
     // A DIAL THAT SETTLED WITH A SESSION STANDING: the unlock landed, and its answer rode the composition the dial tore down.
     if (probe?.["op"] === "custody" && (probe["pulama"] as { session?: unknown } | undefined)?.session === true) {
       const stood = typeof probe["standing"] === "string" ? probe["standing"] : "?";
-      emit(args, { ok: true, data: probe, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${stood}. No route was asked.`) });
+      emit(args, { ok: true, data: probe, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${stood}. It asked for no route.`) });
       return 0;
     }
     emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before it asked its pūlama" }, human: () => console.error("lares vault unlock: the vessel stopped answering before it asked its pūlama") });
@@ -308,7 +308,7 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   }
   const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
   if (a["reading"] === "opens" || a["reading"] === "already-unlocked") {
-    emit(args, { ok: true, data: a, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${standing}. No route was asked.`) });
+    emit(args, { ok: true, data: a, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${standing}. It asked for no route.`) });
     return 0;
   }
   const waits = typeof (a["pulama"] as { waits?: unknown } | undefined)?.waits === "string" ? (a["pulama"] as { waits: string }).waits : "unknown";
@@ -354,7 +354,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
     // `--all` and `--face N` still open faces under their own routes, so they still ask.
     if (door?.["op"] === "custody" && door["unlocked"] === true && args.flags["all"] !== true && args.options["face"] === undefined) {
       const standing = typeof door["standing"] === "string" ? door["standing"] : "?";
-      emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. No route was asked; to wear another face standing open, run \`lares wear N\`.`) });
+      emit(args, { ok: true, data: { reading: "already-unlocked", standing, next: "lares wear N" }, human: () => console.log(`already unlocked: the vessel holds its key and stands as ${standing}. It asked for no route; to wear another face standing open, run \`lares wear N\`.`) });
       return 0;
     }
     // `--face N` ON A HELD KEY READS THE CENSUS BEFORE ANY PROMPT: N standing open takes the wear (no route), a face standing
@@ -482,7 +482,7 @@ async function vaultLockFace(args: ParsedArgs, daemonUp: boolean, face: number):
 async function openFaceOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes, io: FsCustodyIo, face: number, creds: readonly Credential[]) {
   const entry = readFaceIndexSync(homes.identity).faces[face];
   if (entry === undefined || !("fcid" in entry)) {
-    emit(args, { ok: false, error: { code: "face-not-named", message: `no face h${face} stands in the floor index` }, human: () => console.error(`lares vault ${verb}: no face h${face} stands in the floor index — nothing was changed`) });
+    emit(args, { ok: false, error: { code: "face-not-named", message: `no face h${face} stands in the floor index` }, human: () => console.error(`lares vault ${verb}: no face h${face} stands in the floor index — nothing changed`) });
     return null;
   }
   const o = await openFaceTree({ io, homes, fcid: entry.fcid, credentials: creds });
@@ -607,7 +607,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
     if (!f) return 1;
     const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
     const out = await bindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, spec });
-    emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`) });
+    emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree stands untouched.`) });
     // A PAPER SHEET JUST READ BACK joins the keep pair too, opened by the route this bind took (`../keep-seat.ts`).
     await keepSlotAtBind(faceCreds, spec, keepSay(args));
     return 0;
@@ -633,7 +633,7 @@ async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCust
   const entry = readFaceIndexSync(homes.identity).faces[face];
   const treeBytes = await io.read(`${homes.identity}/faces/${f.fcid}/fk-slots.bin`);
   const tree = decodeSlotTree(treeBytes);
-  if (tree.reading !== "readable") throw new UsageError(`the slot tree of face h${face} is not readable; nothing was changed`);
+  if (tree.reading !== "readable") throw new UsageError(`the slot tree of face h${face} does not read; nothing changed`);
   if (!tree.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in face h${face}'s tree`);
   let staying: SlotSpec[] | undefined;
   if (rotate) {
@@ -641,14 +641,14 @@ async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCust
     for (const sl of tree.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot({ id: sl.id, t: sl.t, pins: sl.pins.map((p) => p.kind) });
       const proof = await openTreeKey(tree.tree, got.credentials, nativeKdf);
-      if (proof.reading !== "opens" || proof.slot !== sl.id) throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
+      if (proof.reading !== "opens" || proof.slot !== sl.id) throw new UsageError(`what the hand typed for slot ${sl.id} does not open it; nothing changed`);
       staying.push(got.spec);
     }
   }
   const out = await unbindFaceSlot({ io, homes, fcid: f.fcid, fck: f.fck, slotId, ...(staying ? { rotate: staying } : {}) });
   void entry;
   const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
-  say(`unbound: slot ${slotId} no longer opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`);
+  say(`unbound: slot ${slotId} no longer opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree stands untouched.`);
   say(out.rotated ? "rotated: a new face key seals this face's rows; the removed route opens nothing." : "not rotated: a copy of the face tree taken before this unbind still opens the face key through the removed slot. `--rotate` ends that route.");
   emit(args, { ok: true, data: { face, slotId, rotated: out.rotated, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
@@ -671,7 +671,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
   let staying: SlotSpec[] | undefined;
   if (rotate) {
     const status = await custodyStatus({ io, homes });
-    if (status.tree.reading !== "readable") throw new UsageError("the slot tree is not readable; nothing was changed");
+    if (status.tree.reading !== "readable") throw new UsageError("the slot tree does not read; nothing changed");
     if (!status.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in the tree`);
     const tree = decodeSlotTree(await io.read(`${homes.identity}/s-slots.bin`));
     staying = [];
@@ -679,7 +679,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
       const got = await gatherStayingSlot(sl);
       const proof = tree.reading === "readable" ? await openTreeKey(tree.tree, got.credentials, nativeKdf) : null;
       if (!proof || proof.reading !== "opens" || proof.slot !== sl.id) {
-        throw new UsageError(`what was typed for slot ${sl.id} does not open it; nothing was changed`);
+        throw new UsageError(`what the hand typed for slot ${sl.id} does not open it; nothing changed`);
       }
       staying.push(got.spec);
     }

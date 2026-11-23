@@ -62,7 +62,7 @@ function wearLine(a: CustodyDoorAnswer): string {
     const again = typeof a["wornAgain"] === "number" ? `h${String(a["wornAgain"])} worn again` : "no face worn";
     return `the composition wearing h${String(a["face"])} did not stand: h${String(a["face"])} did not stand (${a["switchRefused"]}); ${again}, and the vessel key stays held.`;
   }
-  return `wearing h${String(a["face"])}: the vessel stands as ${standing}. No route was asked.`;
+  return `wearing h${String(a["face"])}: the vessel stands as ${standing}. It asked for no route.`;
 }
 
 export async function cmdWear(given: ParsedArgs): Promise<number> {
@@ -106,7 +106,7 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
       if (!/^y(es)?$/i.test(word.trim())) { console.log("aborted; the face worn stays worn"); return 1; }
       a = await send(true);
     } else {
-      return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until that face is worn again:\n  ${named}\nturn anyway: lares wear ${face} --yes`, a);
+      return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until a hand wears that face again:\n  ${named}\nturn anyway: lares wear ${face} --yes`, a);
     }
   }
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the wear landed — check `lares vault status`, then wear again");

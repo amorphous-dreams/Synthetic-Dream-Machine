@@ -95,7 +95,7 @@ describe("RED lares wear N", () => {
     } finally {
       delete (process.stdout as { isTTY?: boolean }).isTTY;
     }
-    expect(out).toEqual(["wearing h1: the vessel stands as hearth. No route was asked."]);
+    expect(out).toEqual(["wearing h1: the vessel stands as hearth. It asked for no route."]);
   });
 
   it("`--face N` names the face as well as the positional", async () => {
@@ -159,7 +159,7 @@ describe("RED lares wear N", () => {
     expect(out.join("\n")).toMatch(/shares: 1 grant\(s\) wait for a shut face/);
     out = []; landed = { granted: 0, lifted: 0, pending: 0 };
     expect(await cmdWear(parseArgs(["wear", "1", "--no-json"]))).toBe(0);
-    expect(out).toEqual(["wearing h1: the vessel stands as hearth. No route was asked."]);
+    expect(out).toEqual(["wearing h1: the vessel stands as hearth. It asked for no route."]);
     // CONTROL: a refused switch takes no landing.
     landings.length = 0;
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth", switchRefused: "h1 would not stand", wornAgain: 0 };

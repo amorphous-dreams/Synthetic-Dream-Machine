@@ -77,7 +77,7 @@ export function vesselCeiling(env: NodeJS.ProcessEnv = process.env): { cls: Vess
  * ceiling) and THIS VESSEL's slot ceiling (an operator turn, raisable, and the refusal says so).
  */
 export function parseIndex(raw: string | undefined, env: NodeJS.ProcessEnv = process.env): number {
-  if (raw === undefined) throw new UsageError("a handle-index is required (e.g. `lares persona new 1 --name '…'`)");
+  if (raw === undefined) throw new UsageError("new needs a handle-index (e.g. `lares persona new 1 --name '…'`)");
   const n = Number(raw);
   if (!Number.isSafeInteger(n) || n < 0 || n >= HANDLE_INDEX_CEILING) {
     throw new UsageError(`handle-index out of range: "${raw}" (expected 0 ≤ n < 0x80000000)`);
@@ -308,7 +308,7 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     // The threshold is the law's two: absent, it reads two; named, the vessel's refusal answers any other (`threshold-not-two`).
     const raw = args.options["threshold"];
     const threshold = typeof raw === "string" ? Number(raw) : RECOVERY_CONTACT_THRESHOLD;
-    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule is two");
+    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule asks for two");
     const offers = args.positional.slice(3);
     if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes the three recovery contacts' offer lines");
     const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold, ward: await gatherWardRoute(`lares persona recovery-contact enrol ${index}`, index) });
@@ -369,7 +369,7 @@ export async function routeForPersonaNew(index: number, standing: VesselStanding
   if (index !== 0 && listFaceOrdinals().includes(index)) {
     const faces = await houseFaces();
     if (faces.shut.includes(index)) {
-      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — no route was asked`);
+      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — it asked for no route`);
     }
     // A ROSTER THAT CANNOT BE READ SETTLES NOTHING: the face's group reads unknown, so the existing route gets asked once (a ward
     // act under the route the face already binds), never a new one bound on an uncertain read.

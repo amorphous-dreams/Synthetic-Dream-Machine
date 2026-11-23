@@ -53,7 +53,7 @@ export class RouteNotGiven extends Error {
   constructor(readonly typed: boolean) {
     super(typed
       ? "the route reading stopped (Ctrl-C or Ctrl-D) before Enter, so what you typed never reached the pūlama: it opened nothing and spent no attempt; run it again and end the route with Enter"
-      : "no route was given, so nothing reached the pūlama: it opened nothing and spent no attempt; run it again and type the route, then Enter");
+      : "no route came, so nothing reached the pūlama: it opened nothing and spent no attempt; run it again and type the route, then Enter");
   }
 }
 

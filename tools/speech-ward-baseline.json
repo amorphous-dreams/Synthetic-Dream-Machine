@@ -1,0 +1,14 @@
+{
+  "//": "Per-package ceilings of copulas in the speech the system emits (tools/speech-ward-witness.mjs; lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech). A ceiling only lowers; the end state reads every ceiling 0.",
+  "ceilings": {
+    "lararium-browser": 34,
+    "lararium-keyhive": 13,
+    "lararium-memetic-frame": 1,
+    "lararium-mesh": 106,
+    "lararium-node": 134,
+    "lararium-sensorium": 50,
+    "lararium-tw5": 15,
+    "lararium-web": 1,
+    "lares-cli": 94
+  }
+}

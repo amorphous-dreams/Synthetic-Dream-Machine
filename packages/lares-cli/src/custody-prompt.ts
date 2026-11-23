@@ -65,9 +65,9 @@ export async function askYesNo(question: string): Promise<boolean> {
     const a = (await promptLine(`${question} [y/n]: `)).trim().toLowerCase();
     if (a === "y" || a === "yes") return true;
     if (a === "n" || a === "no") return false;
-    say("  (answer y or n; there is no default)");
+    say("  (answer y or n; the prompt holds no default)");
   }
-  throw new Error("no answer after three tries; nothing was founded");
+  throw new Error("no answer after three tries; nothing founded");
 }
 
 /** Read the sheets of a paper pin, one line each, hidden; a blank line ends the list. */
@@ -141,7 +141,7 @@ export async function gatherCards(verb: string): Promise<Array<{ readonly code: 
 async function newPaperPin(): Promise<PinSpec> {
   const draft = draftPaperPin({ threshold: 1, count: 1 });
   say();
-  say("  PAPER PIN — write these words on paper, in order. They are shown once and kept nowhere:");
+  say("  PAPER PIN — write these words on paper, in order. They show once, and nothing keeps them:");
   say("  Never paste these words anywhere: no chat, no notes app, no screenshot.");
   say();
   draft.sheets.forEach((sheet, i) => say(`    sheet ${i + 1}: ${sheet}`));
@@ -152,7 +152,7 @@ async function newPaperPin(): Promise<PinSpec> {
     try { return { kind: "paper", confirmed: confirmPaperPin(draft, typed) }; }
     catch (err) { say(`  ${(err as Error).message}`); }
   }
-  throw new Error("the paper pin did not read back after three tries; nothing was bound");
+  throw new Error("the paper pin did not read back after three tries; nothing bound");
 }
 
 /** One new pin of the chosen route: a passphrase (double entry) or a drafted, read-back paper pin. */
