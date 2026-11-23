@@ -16,7 +16,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import {
-  privateCabalRealmId, wikiSlotOf, workbenchSeats,
+  ledgerWorkbenchRealms, privateCabalRealmId, wikiSlotOf, workbenchRemovals, workbenchSeats,
   type HistoryDeclaration, type LarDoc, type SessionOwnChain,
 } from "@lararium/mesh";
 import type { RealmWriters } from "./island-session-proof.js";
@@ -48,11 +48,15 @@ export interface RealmRestBag {
   readonly owner: boolean;
   /** The roster's readers: every hive the realm's key Document seats now, as the reading hive's replica reads it. */
   readers(): Promise<readonly string[]>;
+  /** The removals the vessel's ledger noted for the realm (`projectWorkbenchRoster`): each act a roll answers, and its reader. */
+  removals(): Promise<readonly { readonly act: string; readonly reader: string }[]>;
 }
 
 /** The realm port one face's content-key seat reads: the realm a bag rests in for this face, or null for any other bag. */
 export interface RealmRestPort {
   of(bagId: string): Promise<RealmRestBag | null>;
+  /** Does a realm keep this bag while it seats this face's hive nowhere (a revoked face)? Its holder performs no key act there. */
+  shadowed?(bagId: string): Promise<boolean>;
   /** The line a seated face's refusal names, where it waits on the owner's holder to found the bag. */
   readonly ownerCure?: (bag: RealmRestBag) => string;
 }
@@ -74,6 +78,7 @@ export async function realmRestBag(provider: KeyhiveProvider, ledger: LarDoc | u
   return {
     realmId, slug: slot.slug, keyDoc, owner: realmId === privateCabalRealmId(face, slot.slug),
     readers: () => rosterReaders(provider, ledger, realmId, slot.slug, keyDoc),
+    removals: async () => workbenchRemovals(ledger, realmId, slot.slug).map((r) => ({ act: r.act, reader: r.agent })),
   };
 }
 
@@ -98,6 +103,13 @@ export function realmRestPort(input: { readonly provider: () => KeyhiveProvider 
       if (!hive) return null;
       return realmRestBag(hive, await input.ledger(), bagId, input.face);
     },
+    async shadowed(bagId) {
+      const hive = input.provider();
+      const slot = wikiSlotOf(bagId);
+      if (!hive || slot === null || slot.kind !== "working") return false;
+      const ledger = await input.ledger();
+      return ledgerWorkbenchRealms(ledger, slot.slug).length > 0 && (await seatedWorkbenches(hive, ledger, slot.slug)).length === 0;
+    },
   };
 }
 
@@ -121,17 +133,24 @@ export class RealmWriterBook {
   /** Read one bag's writers afresh: the roster of the realm a seated hive among `hives` reads, over this vessel's faces. */
   async read(bagId: string, hives: readonly KeyhiveProvider[], ledger: LarDoc | undefined | null, faces: readonly RealmFace[]): Promise<void> {
     const slot = wikiSlotOf(bagId);
-    let found: { readonly hive: KeyhiveProvider; readonly keyDoc: string } | null = null;
+    let found: { readonly hive: KeyhiveProvider; readonly keyDoc: string; readonly realmId: string } | null = null;
     if (slot !== null && slot.kind === "working") {
       for (const hive of hives) {
         const seated = await seatedWorkbenches(hive, ledger, slot.slug).catch(() => []);
-        if (seated.length === 1) { found = { hive, keyDoc: seated[0]!.keyDoc }; break; }
+        if (seated.length === 1) { found = { hive, keyDoc: seated[0]!.keyDoc, realmId: seated[0]!.realmId }; break; }
       }
     }
-    if (found === null) { this.#bags.delete(bagId); this.#remark(); return; }
+    if (found === null || slot === null) { this.#bags.delete(bagId); this.#remark(); return; }
     const seated: RealmFace[] = [];
     for (const face of faces) if ((await found.hive.accessInDoc(`0x${bare(face.agent)}`, found.keyDoc)) === "admin") seated.push(face);
-    this.#bags.set(bagId, { seated, former: [] });
+    // A FORMER WRITER: a face of this vessel the ledger noted a removal for and the roster no longer seats; it stands for the
+    // versions that precede its removals (u2).
+    const removals = workbenchRemovals(ledger, found.realmId, slot.slug);
+    const former = faces.filter((face) => !seated.includes(face)).flatMap((face) => {
+      const removedBy = removals.filter((r) => r.agent === bare(face.agent)).map((r) => r.act);
+      return removedBy.length > 0 ? [{ face, removedBy }] : [];
+    });
+    this.#bags.set(bagId, { seated, former });
     this.#remark();
   }
 

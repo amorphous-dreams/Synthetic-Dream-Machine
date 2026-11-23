@@ -35,7 +35,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
 import {
-  dropWorkbench, ledgerWorkbenchRealms, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
+  dropWorkbench, ledgerWorkbenchRealms, noteWorkbenchRemoval, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
   wikiSlotUri, noteWorkbenchSeat, dropWorkbenchSeat, workbenchKeyDocs, workbenchSeats, WorkbenchRefusal,
   type AutomergeUrl, type CabalRealm, type LarDoc,
 } from "@lararium/mesh";
@@ -258,11 +258,18 @@ export async function projectWorkbenchRoster(
   let rosterDoc: string | null = null;
   for (const keyDoc of workbenchKeyDocs(ledger.doc(), realmId, slug)) if (await provider.seatedInDoc(self, keyDoc)) { rosterDoc = keyDoc; break; }
   rosterDoc ??= provider.docIdOfBag(wikiSlotUri(slug, "working"));
-  const all = new Map<string, string>([...workbenchSeats(ledger.doc(), realmId, slug), ...candidates]);
+  const noted = workbenchSeats(ledger.doc(), realmId, slug);
+  const all = new Map<string, string>([...noted, ...candidates]);
   const held: string[] = [];
   for (const [face, agentHex] of all) {
     const seated = rosterDoc !== null && await provider.seatedInDoc(agentHex, rosterDoc);
     if (seated) { held.push(face); ledger.change((d) => noteWorkbenchSeat(d, realmId, slug, face, agentHex)); }
+    else if (noted.has(face)) {
+      // A SEAT THE LEDGER HELD LEFT: its row drops, and ONE removal row names the act the workbench's content-key roll answers
+      // (the rest seals for the roster), so a revoke always rotates the workbench's key.
+      const was = noted.get(face)!;
+      ledger.change((d) => { dropWorkbenchSeat(d, realmId, slug, face); noteWorkbenchRemoval(d, realmId, slug, face, was); });
+    }
     else ledger.change((d) => dropWorkbenchSeat(d, realmId, slug, face));
   }
   return held.sort();

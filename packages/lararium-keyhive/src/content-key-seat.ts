@@ -120,6 +120,8 @@ export interface ContentKeySeat {
   sealValues(args: Omit<Parameters<ContentKeyHolder["sealValues"]>[0], "owedActs">): ReturnType<ContentKeyHolder["sealValues"]>;
   /** Settle the rolls still owed with `signer`, the signer of the session whose act runs now. */
   settle(signer: RecordSigner | null): Promise<void>;
+  /** ROLL NOW: the roll a realm's roster owes one bag's head, at once, under `signer` (the revoke's own act). */
+  rollNow(bagId: string, signer: RecordSigner | null): ReturnType<ContentKeyHolder["rollRoster"]>;
   /** The raises still owed in one bag's scope, as last read (a vector reads it). */
   owedFor(bagId: string): readonly string[];
   /** The same, after reading the vessel's durable unanswered raises afresh. */
@@ -184,13 +186,18 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
         return realm === null || realm.owner ? null : (input.realm!.ownerCure?.(realm) ?? WAIT_FOR_OWNER_CURE);
       },
       chainsKeys: async (bagId: string) => (await input.realm!.of(bagId)) !== null,
+      realmRemovals: async (bagId: string) => { const realm = await input.realm!.of(bagId); return realm === null ? null : realm.removals(); },
     } : {}),
-    evidenceOf: async () => {
+    evidenceOf: async (bagId) => {
       const counted = input.countedRaises === undefined ? new Set<string>() : await input.countedRaises();
       const admitted = input.verifiedAdmissions === undefined ? new Set<string>() : await input.verifiedAdmissions();
-      return { raiseCounts: (act) => answered.has(act) || counted.has(act), admissionVerifies: (act) => admitted.has(act) };
+      // A REALM'S REMOVAL COUNTS on the vessel's own ledger (the roster's projection noted it): the evidence its roll counts by.
+      const realm = input.realm === undefined ? null : await input.realm.of(bagId);
+      const removed = new Set(realm === null ? [] : (await realm.removals()).map((r) => r.act));
+      return { raiseCounts: (act) => answered.has(act) || counted.has(act) || removed.has(act), admissionVerifies: (act) => admitted.has(act) };
     },
-    ownEdgeShadowed: async () => (input.ownEdgeShadowed === undefined ? false : (await input.ownEdgeShadowed()) === true),
+    // A face a realm no longer seats performs no key act in its workbench's bag (the roster's own shadow).
+    ownEdgeShadowed: async (bagId) => (input.ownEdgeShadowed !== undefined && (await input.ownEdgeShadowed()) === true) || (await input.realm?.shadowed?.(bagId)) === true,
     ownSeat: async () => {
       if (input.group === null) return null;
       const own = (await shore.self()).map(bare);
@@ -256,6 +263,12 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     return [...new Set([...[...owed.values()].filter((r) => bare(r.scope) === scope).flatMap((r) => [...r.raiseCids]), ...unanswered])].sort();
   };
   const unsubscribe = (input.subscribe ?? subscribeSeatRolls)(sink);
+  /** A FACE THE REALM NO LONGER SEATS seals nothing more into its workbench, under any head it still holds: its earlier writes
+   *  keep standing by the lineage (u2), and nothing it signs after the revoke joins them. */
+  const realmShadow = async (bagId: string): Promise<{ readonly refusal: "own-edge-shadowed"; readonly cause: string } | null> =>
+    ((await input.realm?.shadowed?.(bagId)) === true
+      ? { refusal: "own-edge-shadowed", cause: "this face holds no seat in the workbench's realm now; the realm's owner seats it again (`lares wiki share <wiki> --write <this face's name>`)" }
+      : null);
   /** A realm workbench bag founds with the realm's declared history (`realmWorkbenchFounding`); every other bag as asked. */
   const foundingOf = async (bagId: string): Promise<{ readonly founding: { readonly history: "shareable" | "closed" } } | Record<string, never>> =>
     (input.realm !== undefined && (await input.realm.of(bagId)) !== null ? { founding: realmWorkbenchFounding() } : {});
@@ -263,17 +276,22 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
   return {
     holder, sink,
     async seal(args) {
+      const shadow = await realmShadow(args.bagId);
+      if (shadow !== null) return shadow;
       await refreshOwed();
       await settle(args.signer);
       // The holder reads the owed raises inside its own turn, so a roll that arrives after the settle still binds it.
       return holder.sealBlob({ ...(await foundingOf(args.bagId)), ...args, owedActs: () => owedActs(args.bagId) });
     },
     async sealValues(args) {
+      const shadow = await realmShadow(args.bagId);
+      if (shadow !== null) return shadow;
       await refreshOwed();
       await settle(args.signer);
       return holder.sealValues({ ...(await foundingOf(args.bagId)), ...args, owedActs: () => owedActs(args.bagId) });
     },
     settle,
+    rollNow: (bagId, signer) => holder.rollRoster({ bagId, signer }),
     owedFor: (bagId) => owedActs(bagId),
     async owedNow(bagId) { await refreshOwed(); return owedActs(bagId); },
     async catchUp(rolls, vesselKey) {

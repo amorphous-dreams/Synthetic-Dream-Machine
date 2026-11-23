@@ -32,11 +32,20 @@
  *   U3 a landing that would seat a face while no holder of the key stands lit refuses `seat-needs-keyholder`, names the cure,
  *      and seats nobody.
  *
+ * A5 a roll derives from state, and a revoke rolls now:
+ *   Y1 a revoke the roster's projection reads notes ONE removal, and `rollNow` mints a successor at once: the owner seals and
+ *      opens under it, the revoked face opens nothing new and keeps what it held, and its earlier writes still open (u2).
+ *   Y2 the order: while the revoke stands unprojected nothing rolls; once projected, the very next seal rolls first and never
+ *      seals under the head the revoked face holds.
+ *   Y3 a revoke and a seat in one landing converge: the successor serves the newcomer, never the revoked face.
+ *   Y4 idempotence: a second projection notes no second removal, and a second `rollNow` mints nothing.
+ *   Y5 own shadow: the revoked face's holder founds, rolls and mints nothing.
+ *
  * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { describe, expect, test } from "vitest";
 import {
-  SealedStore, contentKeyRollSink, memorySealedStoreRest, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
+  SealedStore, contentKeyRollSink, memorySealedStoreRest, workbenchRemovals, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
@@ -62,6 +71,7 @@ function memDoc(): LedgerDoc & { readonly d: LarDoc } {
 export interface Face {
   readonly name: string;
   readonly hive: KeyhiveProvider;
+  readonly events: InMemoryEventStore;
   readonly id: string;
   readonly signer: RecordSigner;
   readonly own: SessionOwnChain;
@@ -76,10 +86,11 @@ export interface Vessel {
 }
 
 export async function face(name: string, fill: number): Promise<Omit<Face, "seat">> {
+  const events = new InMemoryEventStore();
   const hive = new KeyhiveProvider();
-  await hive.init({ seed: new Uint8Array(32).fill(fill), eventStore: new InMemoryEventStore() });
+  await hive.init({ seed: new Uint8Array(32).fill(fill), eventStore: events });
   const c = await chain(`${name}-${fill}`, NEXUS);
-  return { name, hive, id: await hive.vesselIdentifierHex(), signer: signerOf(c), own: { scope: { faceKey: c.scope.faceKey, nexus: c.scope.nexus }, vesselFaceKey: c.sessionCertificate.vesselFaceKey } };
+  return { name, hive, events, id: await hive.vesselIdentifierHex(), signer: signerOf(c), own: { scope: { faceKey: c.scope.faceKey, nexus: c.scope.nexus }, vesselFaceKey: c.sessionCertificate.vesselFaceKey } };
 }
 
 /** One change of the working document, as the document store hands a write batch to the holder. */
@@ -337,5 +348,127 @@ describe("A4 — shareable history by default; chained boxes; the late seat", ()
       provider: a.hive, ledger: v.ledger, ownerFace: "group-steward", keyholder: async () => ({ cure }),
     })).rejects.toThrow(/seat-needs-keyholder: .*`lares vault unlock --face 1`/);
     expect(await workbenchFaceHolds(a.hive, SLUG, cOnA, "read"), "no seat moved").toBe(false);
+  });
+});
+
+/** THE ISLAND'S COMPOSITION over any faces of the vessel: the writer book reads the roster (and the ledger's removals), and each
+ *  face's seat reads the realm port and the realm-aware standing. `stand` re-reads the book and seats every face afresh. */
+function islandOf(v: Vessel, all: readonly Omit<Face, "seat">[]) {
+  const book = new RealmWriterBook();
+  const faces = all.map((f) => ({ agent: f.id, chain: () => f.own }));
+  const seats = new Map<string, ContentKeySeat>();
+  return {
+    book,
+    async stand(): Promise<Map<string, ContentKeySeat>> {
+      for (const seat of seats.values()) seat.lock();
+      await book.read(WORKING, all.map((f) => f.hive), v.ledger.d, faces);
+      for (const f of all) {
+        const standing = faceStanding({ own: () => f.own, bags: () => [WORKING], realmWriters: (bagId) => book.writers(bagId), realmMark: () => book.mark() });
+        seats.set(f.name, seatRealm(v, f, standing, all.filter((o) => o !== f)));
+      }
+      return seats;
+    },
+  };
+}
+const keyOf = (r: object): string => (r as { keyVersion: string }).keyVersion;
+
+describe("A5 — a roll derives from state; a revoke rolls now", () => {
+  test("Y1: a projected revoke notes one removal; rollNow mints at once; the revoked face keeps the past and opens nothing new", async () => {
+    const { v, a, b, realmId, bOnA } = await sharedWorkbench([0xe1, 0xe2]);
+    const island = islandOf(v, [a, b]);
+    let seats = await island.stand();
+    const w1 = change("y1 one"), w2 = change("y1 two by the engineer");
+    const s1 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [w1], signer: a.signer });
+    expect(said(await seats.get("engineer")!.sealValues({ bagId: WORKING, values: [w2], signer: b.signer }))).toBe("OK");
+
+    await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    expect(workbenchRemovals(v.ledger.d, realmId, SLUG).map((r) => r.face), "ONE removal noted").toEqual(["group-engineer"]);
+    await b.hive.ingestPeerEvents(await a.hive.eventsForPeer(bOnA));
+    seats = await island.stand();
+    const now = await seats.get("steward")!.rollNow(WORKING, a.signer);
+    expect("rolled" in now && now.rolled !== null, `roll-now mints a successor (${said(now)})`).toBe(true);
+
+    const w3 = change("y1 three after the revoke");
+    const s3 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [w3], signer: a.signer });
+    expect(said(s3)).toBe("OK");
+    expect(keyOf(s3), "sealed under the successor").not.toBe(keyOf(s1));
+    seats = await island.stand();
+    expect(said(await seats.get("steward")!.holder.openValue({ bagId: WORKING, role: "change", ref: w2.ref })), "u2: the engineer's earlier write still opens").toBe("OK");
+    expect(said(await seats.get("engineer")!.holder.openValue({ bagId: WORKING, role: "change", ref: w3.ref })), "the revoked face opens nothing new").not.toBe("OK");
+    expect(said(await seats.get("engineer")!.holder.openValue({ bagId: WORKING, role: "change", ref: w1.ref })), "and keeps what it held").toBe("OK");
+  });
+
+  test("Y2: an unprojected revoke rolls nothing; once projected, the next seal rolls first", async () => {
+    const { v, a, b, realmId, bOnA } = await sharedWorkbench([0xe3, 0xe4]);
+    const island = islandOf(v, [a, b]);
+    let seats = await island.stand();
+    const s1 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 one")], signer: a.signer });
+    await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
+    const s2 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 two")], signer: a.signer });
+    expect(keyOf(s2), "no removal noted yet: the seal rides the same head").toBe(keyOf(s1));
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    seats = await island.stand();
+    const s3 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 three")], signer: a.signer });
+    expect(said(s3)).toBe("OK");
+    expect(keyOf(s3), "the seal rolled first: never under the head the revoked face holds").not.toBe(keyOf(s1));
+    const records = await new SealedStore(v.rest).records("key-version");
+    expect(records.length, "the founding and ONE removal successor").toBe(2);
+    void b;
+  });
+
+  test("Y3: a revoke and a seat in one landing converge: the successor serves the newcomer, never the revoked face", async () => {
+    const { v, a, b } = await sharedWorkbench([0xe5, 0xe6]);
+    const c = await face("referee", 0xe7);
+    const cOnA = (await a.hive.receiveContactCard(await c.hive.contactCard())).id;
+    await c.hive.receiveContactCard(await a.hive.contactCard());
+    const island = islandOf(v, [a, b, c]);
+    let seats = await island.stand();
+    const w1 = change("y3 one");
+    expect(said(await seats.get("steward")!.sealValues({ bagId: WORKING, values: [w1], signer: a.signer }))).toBe("OK");
+    // ONE LANDING: the row stops naming the engineer and names the referee.
+    const landed = await landWorkbench({ slug: SLUG }, [{ face: "group-referee", agentHex: cOnA, access: "write" }], {
+      provider: a.hive, ledger: v.ledger, ownerFace: "group-steward",
+      keyholder: async () => ({ handOver: async (agentHex: string) => { const out = await seats.get("steward")!.holder.handOver({ bagId: WORKING, reader: agentHex, signer: a.signer, chained: true }); if ("refusal" in out) throw new Error(said(out)); } }),
+    });
+    expect(landed.removed).toEqual(["group-engineer"]);
+    // THE NEWCOMER TAKES THE OWNER'S WHOLE LOG: after a revoke on the key Document, the events Keyhive hands one peer
+    // (`eventsForPeer`) leave the newcomer's own replica reading no seat (measured here; a course item for the share door).
+    await a.hive.settleEvents();
+    await c.hive.ingestPeerEvents((await a.events.list()).map((r) => r.bytes));
+    adoptWorkbench(c.hive, SLUG, workbenchKeyDocs(v.ledger.d, landed.realmId, SLUG)[0]!);
+    seats = await island.stand();
+    expect(said(await seats.get("steward")!.rollNow(WORKING, a.signer))).toBe("OK");
+    const w2 = change("y3 two after the landing");
+    expect(said(await seats.get("steward")!.sealValues({ bagId: WORKING, values: [w2], signer: a.signer }))).toBe("OK");
+    seats = await island.stand();
+    expect(said(await seats.get("referee")!.holder.openValue({ bagId: WORKING, role: "change", ref: w2.ref })), "the newcomer opens the successor").toBe("OK");
+    expect(said(await seats.get("referee")!.holder.openValue({ bagId: WORKING, role: "change", ref: w1.ref })), "and the past it was handed").toBe("OK");
+    expect(said(await seats.get("engineer")!.holder.openValue({ bagId: WORKING, role: "change", ref: w2.ref })), "the revoked face opens nothing new").not.toBe("OK");
+  });
+
+  test("Y4/Y5: a second projection and a second roll-now move nothing; the revoked face's holder performs no key act", async () => {
+    const { v, a, b, realmId, bOnA } = await sharedWorkbench([0xe8, 0xe9]);
+    const island = islandOf(v, [a, b]);
+    let seats = await island.stand();
+    expect(said(await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y4 one")], signer: a.signer }))).toBe("OK");
+    await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG);
+    expect(workbenchRemovals(v.ledger.d, realmId, SLUG).length, "Y4: one removal, however often the roster projects").toBe(1);
+    seats = await island.stand();
+    expect(said(await seats.get("steward")!.rollNow(WORKING, a.signer))).toBe("OK");
+    const again = await seats.get("steward")!.rollNow(WORKING, a.signer);
+    expect("rolled" in again && again.rolled, "Y4: a second roll-now mints nothing").toBe(null);
+    const versions = (await new SealedStore(v.rest).records("key-version")).length;
+
+    // Y5: the engineer's hive hears its revoke; its holder performs no key act in the workbench.
+    await b.hive.ingestPeerEvents(await a.hive.eventsForPeer(bOnA));
+    seats = await island.stand();
+    const refused = await seats.get("engineer")!.sealValues({ bagId: WORKING, values: [change("after my revoke")], signer: b.signer });
+    expect(said(refused), "the revoked face seals nothing, and names its cure").toMatch(/^own-edge-shadowed:.*`lares wiki share/);
+    const rolled = await seats.get("engineer")!.rollNow(WORKING, b.signer);
+    expect("rolled" in rolled ? rolled.rolled : rolled, "and rolls nothing").toBe(null);
+    expect((await new SealedStore(v.rest).records("key-version")).length, "no version minted by the revoked face").toBe(versions);
   });
 });

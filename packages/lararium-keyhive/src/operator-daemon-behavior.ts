@@ -1910,23 +1910,31 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
        * the ask, which must wear that owner face. A workbench whose rest holds no founding answers null (its first seal wraps
        * for the roster); a seat that can hand nothing answers the cure by name.
        */
-      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1]) => {
-        const bagId = wikiSlotUri(slug, "working");
-        const cure = { cure: `wear the realm's owner face (\`lares vault unlock --face ${owner.handleIndex}\`, then \`lares wear ${owner.handleIndex}\`) and land the share again (\`lares wiki share ${slug}\`)` };
+      const ownerCure = (slug: string, owner: { readonly handleIndex: number }) =>
+        ({ cure: `wear the realm's owner face (\`lares vault unlock --face ${owner.handleIndex}\`, then \`lares wear ${owner.handleIndex}\`) and land the share again (\`lares wiki share ${slug}\`)` });
+      /** The realm owner's own seat under the session of the ask, which must wear that owner face; null where it does not. */
+      const ownerUnderSession = async (owner: { readonly group: string }, context: Parameters<typeof sessionOf>[1]) => {
         const requestId = context.invocation?.requestId;
         const ask = context.local === true && typeof requestId === "string" && requestId.length > 0 ? { requestId, verb: "share-apply" } : null;
         let worn: Awaited<ReturnType<typeof faces.session>>;
-        try { worn = await faces.session("share-apply", ask, "lit"); } catch { return cure; }
+        try { worn = await faces.session("share-apply", ask, "lit"); } catch { return null; }
         const ownerEntry = owner.group === daemonAuth.personaGroupId ? mountedFace
           : [...litSiblings].filter(([, f]) => f.personaGroupId === owner.group).map(([key]) => faces.lit(key)).find((e) => e !== undefined);
         const seat = ownerEntry?.seat;
-        if (!seat || worn.face !== ownerEntry) return cure;
+        return seat && worn.face === ownerEntry ? { seat, signer: worn.signer } : null;
+      };
+      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1]) => {
+        const bagId = wikiSlotUri(slug, "working");
+        const cure = ownerCure(slug, owner);
+        const under = await ownerUnderSession(owner, context);
+        if (under === null) return cure;
+        const { seat, signer } = under;
         const reading = await seat.holder.reading(bagId);
         if ("refusal" in reading) return cure;
         if (reading.foundings.every((f) => f.heads.length === 0)) return null;
         return {
           handOver: async (agentHex: string) => {
-            const handed = await seat.holder.handOver({ bagId, reader: agentHex, signer: worn.signer, chained: true });
+            const handed = await seat.holder.handOver({ bagId, reader: agentHex, signer, chained: true });
             if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${cure.cure}`);
           },
         };
@@ -2040,6 +2048,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             }
             // The landing moved the roster: the realm's writer book reads it again.
             await readRealmBook(ctx, row.slug);
+            // ROLL NOW (a revoke rotates at once, not at the next write): the owner's seat rolls the head the removed faces
+            // held, under the share's own session; where none can sign here, the next seal derives the same roll from state.
+            if (landed.removed.length > 0) {
+              const under = await ownerUnderSession(owner, context);
+              const rolled = under === null ? null : await under.seat.rollNow(wikiSlotUri(row.slug, "working"), under.signer);
+              if (rolled === null || "refusal" in rolled) console.log(`[workbench] ${row.slug}: ${landed.removed.length} seat(s) left the realm; the workbench's key rolls at its next seal${rolled !== null && "refusal" in rolled ? ` (roll-now refused: ${rolled.refusal})` : " (no owner session signs here)"}`);
+            }
             // THE REST GATE, said at the door: a workbench of the wiki this vessel mounts rests sealed under its owner's key.
             const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
             return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
