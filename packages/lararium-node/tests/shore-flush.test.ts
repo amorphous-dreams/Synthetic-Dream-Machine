@@ -106,7 +106,8 @@ describe("the shore's flush", () => {
 
   test("S4 — a seat's reach stays where it stood", () => {
     expect(SHORE_VERB).toBe("shore");
-    expect(SHORE_OPS).toEqual(["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush"]);
+    // `drafts` reads titles alone; `keep-both` settles a stand-off and rides a person's hand like `take-records`.
+    expect(SHORE_OPS).toEqual(["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both"]);
     const here = dirname(fileURLToPath(import.meta.url));
     const fixture = JSON.parse(readFileSync(join(here, "../../lararium-sensorium/scripts/fixtures/cli-verbs.json"), "utf8")) as { mirrored: string[]; not_yet_mirrored: string[] };
     expect(fixture.mirrored.some((tool) => /shore|flush/.test(tool))).toBe(false);
