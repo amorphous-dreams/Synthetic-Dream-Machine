@@ -1,11 +1,14 @@
 /**
- * `lares shore flush` — a hand asks every island that mounts a disk shore to write what it holds in memory to its
- * mirrors now, and reads what each wrote, what it could not, and why.
+ * `lares shore flush` — a hand asks the two islands this door reaches (the active wiki's and the daemon's) to write what
+ * each holds in memory to its mirrors now, and reads what each wrote, what it could not, and why. Other resident wiki
+ * islands stand outside its reach (the vessel's own teardown flush reaches them), and the reading says so.
  *
  *   D1  the door shapes `{ op: "flush" }` and asks no confirmation (a flush moves memory toward disk and takes nothing).
  *   D2  both islands answer as one reading, each part naming its island; an island that mounts no projection drops out;
  *       a refusing island reads unanswered by name, never as written.
- *   D3  the exit reads the reading: 0 whole, 3 a carrier stayed unwritten, 2 an island could not answer.
+ *   D3  the exit reads the reading: 0 every asked island wrote, 4 a carrier stayed unwritten, 3 an island could not answer;
+ *       none of them reads as usage (2).
+ *   D4  the reading names its reach and what it leaves unasked, so a clean exit never claims every island.
  */
 import { describe, expect, test } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
@@ -60,7 +63,13 @@ describe("lares shore flush", () => {
 
   test("D3 — the exit reads the reading", async () => {
     expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => flushed(["w"]), () => NO_SHORE).run))).toBe(0);
-    expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => flushed([], [{ uri: "u", state: "pending", why: "w" }]), () => NO_SHORE).run))).toBe(3);
-    expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => "error", () => flushed(["d"])).run))).toBe(2);
+    expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => flushed([], [{ uri: "u", state: "pending", why: "w" }]), () => NO_SHORE).run))).toBe(4);
+    expect(shoreFlushExit(await askShoreFlush("did:test", vessel(() => "error", () => flushed(["d"])).run))).toBe(3);
+  });
+
+  test("D4 — the reading names its reach and what it leaves unasked", async () => {
+    const reading = await askShoreFlush("did:test", vessel(() => flushed(["w"]), () => flushed(["d"])).run);
+    expect(reading.reach).toEqual(["wiki", "daemon"]);
+    expect(reading.unasked).toMatch(/other resident wiki islands/);
   });
 });
