@@ -157,6 +157,22 @@ export function releaseStandIn(handle: DocHandle<unknown>): void { STAND_INS.del
 /** Whether a handle still stands in for a document it has not read. */
 export function standsIn(handle: DocHandle<unknown>): boolean { return STAND_INS.has(handle); }
 
+/** A write into a sealed document held read-only over its own id (`waitHandle`): it refuses by this name, and lands nothing. */
+export const SEALED_DOCUMENT_UNOPENED = "sealed-document-unopened";
+/**
+ * THE SEALED DOCUMENTS HELD READ-ONLY OVER THEIR OWN IDS, each with why it stands so: a document of a sealed bag that missed
+ * the boot window waits for its keyed load under the real id (`waitHandle`), never under a writable fallback. A write into
+ * one refuses `sealed-document-unopened` naming why, so nothing lands clear, nothing lands under an id the bag map does not
+ * name, and nothing waits in memory to drop at a stand-down. The keyed load that opens releases it (`openSealed`).
+ */
+const SEALED_UNOPENED = new WeakMap<object, string>();
+/** Hold a sealed document's handle read-only over its own id; `why` names what it waits on (or what ended its load). */
+export function holdSealedUnopened(handle: DocHandle<unknown>, why: string): void { SEALED_UNOPENED.set(handle, why); }
+/** The keyed load opened the document: a write into it lands, under the real id, and seals there. */
+export function openSealed(handle: DocHandle<unknown>): void { SEALED_UNOPENED.delete(handle); }
+/** Why a sealed document's handle stands read-only, or undefined where it takes writes. */
+export function sealedUnopened(handle: DocHandle<unknown>): string | undefined { return SEALED_UNOPENED.get(handle); }
+
 export class AutomergeDocStore implements LarTiddlerStore {
   readonly notifiesSynchronously = true;
   /** True while the handle stands in for a document the vessel has not read (`markStandIn`). */
@@ -222,6 +238,13 @@ export class AutomergeDocStore implements LarTiddlerStore {
       throw new VerbRefusal(WORN_FACE_UNWRITABLE, `${WORN_FACE_UNWRITABLE}: a write names ${who}, and the store of ${this.bagId ?? "this document"} holds no actor door to write under the face's actor; it refuses rather than land under the engine's actor`);
     }
     return wear.actor(origin.face, this.handle.documentId);
+  }
+
+  /** A SEALED DOCUMENT HELD READ-ONLY (`holdSealedUnopened`) takes no write: it refuses by name before any byte moves. */
+  private _refuseSealedUnopened(): void {
+    const why = sealedUnopened(this.handle);
+    if (why === undefined) return;
+    throw new VerbRefusal(SEALED_DOCUMENT_UNOPENED, `${SEALED_DOCUMENT_UNOPENED}: ${this.bagId ?? "this document"} rests sealed and stands read-only over its own id (${why}); the write lands nothing, and it lands once the keyed load opens the document`);
   }
 
   private _own<T>(origin: ChangeOrigin, apply: () => T): T {
@@ -425,6 +448,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     // refuses by name before any byte moves (`title-law.ts`).
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
+    this._refuseSealedUnopened();
     const requestedBase = options?.base;
     // THE FACE'S ACTOR SETTLES FIRST, ahead of every read: no await stands between the read of the doc and the change,
     // and a write that names no face awaits nothing here (the store notifies synchronously).
@@ -595,6 +619,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   /** HARD-remove: delete the key so `get` returns null (ABSENT — falls through
    *  the cascade), never a kāpae tombstone. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
+    this._refuseSealedUnopened();
     let removed = true;
     const faceActor = origin?.face === undefined ? undefined : await this._faceActor(origin, undefined);
     const removal = (doc: LarDoc) => {

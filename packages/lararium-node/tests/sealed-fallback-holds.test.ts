@@ -270,7 +270,7 @@ describe("a sealed bag never mounts a writable fallback under an id its map does
         bootstrap: { daemonUrl, personaBagId: PLANES.persona, intentsUrl: s.url, personaPlanes: [] },
       }),
       tempStore: () => ({}) as never,
-      sealedRefusalOf: (documentId) => store.refusalOf(documentId),
+      sealedRefusalOf: (documentId: string) => store.refusalOf(documentId),
     } as never);
     const entry = () => assembly.mountManifest.entries.find((e) => e.bagId === PLANES.intents);
     expect(entry()?.status).toBe("sealed");

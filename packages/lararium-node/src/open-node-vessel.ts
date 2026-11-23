@@ -217,7 +217,7 @@ import {
 import { makeRecallHolder, type RecallHolder } from "./recall-holder.js";
 import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
-import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
+import { waitHandle, resolveBootDoc, seatSealedRest } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, quarantineMoveLine, recoverCleanTail } from "./doc-load-probe.js";
 import { listFaceOrdinals, listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
@@ -1625,6 +1625,19 @@ async function prepareNodeBootOn(
         protectedDocs,
       });
     }, wireProbe ?? undefined),
+  });
+  // A SEALED BAG MOUNTS NO WRITABLE FALLBACK (`seatSealedRest`): every `waitHandle` over this Repo (the social planes, the
+  // wiki layers, the corpora) holds a sealed document read-only over its own id until its keyed load opens it. A load refused
+  // on integrity evidence moves the bytes aside through the probe's own quarantine, held across boots.
+  seatSealedRest(repo, {
+    restsSealed: (documentId) => sealedRest.restsSealed(documentId),
+    refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
+    quarantine: (documentId, reason) => {
+      const verdict = { documentId, status: "load-error" as const, reason };
+      const bagId = sealedBagOf(documentId)?.bagId;
+      console.warn(quarantineMoveLine(verdict, quarantineDoc(storageDir, verdict, bagId !== undefined ? { bagId } : {})));
+    },
+    onSettled: ({ documentId, status, reason }) => { if (status !== "mounted") console.warn(`[sealed-rest] ${documentId.slice(0, 12)}… stands ${status}, read-only: ${reason ?? ""}`); },
   });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", phase: "repo", down: () => closeCompositionRepo({

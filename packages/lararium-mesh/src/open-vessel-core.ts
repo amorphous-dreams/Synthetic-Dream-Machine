@@ -22,8 +22,8 @@ import type { Repo, DocHandle, AutomergeUrl, DocumentId } from "@automerge/autom
 import type { LarOpenPhase } from "./lararium-vessel.js";
 import { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
-import { AutomergeDocStore, markStandIn, releaseStandIn } from "./automerge-doc-store.js";
-import { isIntegrityRefusal } from "./sealed-doc-store.js";
+import { AutomergeDocStore, markStandIn, releaseStandIn, sealedUnopened } from "./automerge-doc-store.js";
+import { sealedLoadEnding } from "./wait-handle.js";
 import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
@@ -279,36 +279,23 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
       mounted = store;
       composite.addLayer({ bagId, store, writable: true, defaultWritable: false }, index);
     };
-    sealedSettling.push(new Promise<void>((settled) => {
-      let done = false;
-      const settle = (state: ReturnType<typeof progress.peek>): void => {
-        if (done || state.state === "loading") return;
-        done = true;
-        if (state.state === "ready") {
-          releaseStandIn(reading);
-          mountWritable(new AutomergeDocStore(state.handle, bagId, wearOf(repo)));
-          entries[at] = { bagId, documentId, status: "mounted" };
-        } else {
-          // ONLY INTEGRITY EVIDENCE MOVES BYTES. The store names the refusal the keyed load ended on; liveness (no session
-          // yet, the rest standing down at a stop), a foreign face, or no named refusal leaves the plane pending: read-only,
-          // nothing moved, nothing held, and the next boot probes it fresh. Either way the read-only layer over the real
-          // handle stays as it stands, still reading unknown: no write reaches it, and nothing mints a stand-in at a stop.
-          const refusal = keel.sealedRefusalOf?.(documentId) ?? null;
-          const why = refusal ?? (state.state === "failed" ? state.error.message : "no source could open it");
-          if (isIntegrityRefusal(refusal)) {
-            const verdict = { documentId, status: "load-error" as const, reason: `sealed: the keyed load refused (${why})` };
-            keel.quarantineDoc?.(verdict, bagId);
-            entries[at] = { bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason}` };
-            manifest.degraded = true;
-          } else {
-            entries[at] = { bagId, documentId, status: "pending", reason: `sealed: the keyed load ended with no integrity evidence (${why}); no bytes moved, the next boot probes it again` };
-          }
-        }
-        settled();
-      };
-      const unsubscribe = progress.subscribe((state) => { settle(state); if (done) unsubscribe(); });
-      settle(progress.peek());
-      if (done) unsubscribe();
+    sealedSettling.push(sealedLoadEnding(progress, documentId, keel.sealedRefusalOf).then((ending) => {
+      if (ending.status === "opened") {
+        releaseStandIn(reading);
+        mountWritable(new AutomergeDocStore(ending.handle, bagId, wearOf(repo)));
+        entries[at] = { bagId, documentId, status: "mounted" };
+      } else if (ending.status === "refused") {
+        // ONLY INTEGRITY EVIDENCE MOVES BYTES (`sealedLoadEnding`): the quarantine, held across boots, and the read-only layer
+        // over the real handle stays as it stands, still reading unknown, so no write reaches it.
+        const verdict = { documentId, status: "load-error" as const, reason: `sealed: the keyed load refused (${ending.why})` };
+        keel.quarantineDoc?.(verdict, bagId);
+        entries[at] = { bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason}` };
+        manifest.degraded = true;
+      } else {
+        // Liveness (no session yet, the rest standing down at a stop), a foreign face, custody, or no named refusal: read-only,
+        // nothing moved, nothing held, nothing minted at a stop, and the next boot probes it fresh.
+        entries[at] = { bagId, documentId, status: "pending", reason: `sealed: the keyed load ended with no integrity evidence (${ending.why}); no bytes moved, the next boot probes it again` };
+      }
     }));
   };
   const mountSocial = async (bagId: string, url: string): Promise<void> => {
@@ -367,8 +354,22 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         return;
       }
     }
-    composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId, wearOf(repo)), writable: true, defaultWritable: false });
-    entries.push({ bagId, documentId, status: "mounted" });
+    const handle = await resolve(url as AutomergeUrl);
+    composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: true, defaultWritable: false });
+    if (sealedUnopened(handle) === undefined) { entries.push({ bagId, documentId, status: "mounted" }); return; }
+    // A SEALED PLANE PAST THE WINDOW, WITH NO PROBE AHEAD OF IT: `waitHandle` held it read-only over its own id (a write
+    // refuses by name until the keyed load opens it, and its door moves the bytes aside on integrity evidence). The entry
+    // reads `sealed` and moves, in place, as the load ends.
+    const at = entries.push({ bagId, documentId, status: "sealed", reason: "sealed: past the boot window, read-only over its own id; the keyed load decides" }) - 1;
+    sealedSettling.push(sealedLoadEnding(repo.findWithProgress<LarDoc>(url as AutomergeUrl), documentId, keel.sealedRefusalOf).then((ending) => {
+      if (ending.status === "opened") { entries[at] = { bagId, documentId, status: "mounted" }; return; }
+      if (ending.status === "refused") {
+        entries[at] = { bagId, documentId, status: "degraded", reason: `load-error: sealed: the keyed load refused (${ending.why})` };
+        manifest.degraded = true;
+        return;
+      }
+      entries[at] = { bagId, documentId, status: "pending", reason: `sealed: the keyed load ended with no integrity evidence (${ending.why}); no bytes moved, the next boot reads it again` };
+    }));
   };
   // A PLACE names no social plane, so each mount rides its own url standing. A faceless vessel carries
   // and serves with these absent — the waking floor, reached by founding rather than by falling.

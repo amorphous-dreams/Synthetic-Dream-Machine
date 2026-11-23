@@ -141,7 +141,7 @@ import {
 }                                            from "./open-browser-daemon-vm.js";
 import type { WikiRecipe }                   from "@lararium/mesh";
 
-import { waitHandle } from "@lararium/mesh";
+import { seatSealedRest, waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRecords } from "./browser-custody.js";
 import { nameFace, faceTreeStands } from "./browser-face-custody.js";
@@ -862,6 +862,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
     }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }, { has: (peerId) => wikiIslands.has(peerId) }, { has: (id) => deviceDocs.floorWiki(id) }, hearthDaemonDocs),
+  });
+  // A SEALED BAG MOUNTS NO WRITABLE FALLBACK (`seatSealedRest`): every `waitHandle` over this Repo holds a sealed document
+  // read-only over its own id until its keyed load opens it. This browser keeps no quarantine door: a load refused on
+  // integrity evidence stays read-only, its bytes in place, and the line names it.
+  seatSealedRest(repo, {
+    restsSealed: (documentId) => sealedRest.restsSealed(documentId),
+    refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
+    onSettled: ({ documentId, status, reason }) => { if (status !== "mounted") console.warn(`[sealed-rest] ${documentId.slice(0, 12)}… stands ${status}, read-only: ${reason ?? ""}`); },
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
