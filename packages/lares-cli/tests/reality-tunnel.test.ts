@@ -582,9 +582,12 @@ describe("json-includes keeps every member of a list at a dotted key path, and e
     expect(readFileSync(join(native, ".claude/settings.json"), "utf8")).toBe(held);
   });
 
-  it("the live carrier's deny list holds the two hearth acts alone: every other host act rides the doors and the house's own gates", () => {
+  it("the live carrier's deny list holds the two hearth acts, their shim spellings and the undo that would drop them: every other host act rides the doors and the house's own gates", () => {
     const valuesOf = (id: string): string[] => declared(REPO).home.find((s) => s.id === id)!["values"] as string[];
-    expect(valuesOf("claude.host-acts-deny")).toEqual(["Bash(lares reset:*)", "Bash(lares found:*)"]);
+    expect(valuesOf("claude.host-acts-deny")).toEqual([
+      "Bash(lares reset:*)", "Bash(lares found:*)", "Bash(lares home undo:*)",
+      "Bash(tools/lares-container.sh reset:*)", "Bash(./tools/lares-container.sh reset:*)", "Bash(*lares-container.sh reset*)",
+    ]);
     expect(valuesOf("claude.doors-allow")).toEqual(["Bash(lares:*)", "mcp__lares__*"]);
   });
 });

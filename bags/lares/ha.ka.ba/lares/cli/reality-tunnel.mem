@@ -178,8 +178,11 @@ homes = "all"
 kind = "json-includes"
 file = ".claude/settings.json"
 key = "permissions.deny"
-values = ["Bash(lares reset:*)", "Bash(lares found:*)"]
-what = "the two acts that clear or re-seed the hearth stay the operator's: `reset` empties a stopped hearth on a typed word, and `found` over a stopped hearth whose custody tree stands asks no route and re-seeds its bootstrap under `--force`; neither reads the hand behind the terminal. Every other host act rides the doors' allow and the house's own gates: a lei's returns, a route-proved custody act, a hand read"
+values = [
+  "Bash(lares reset:*)", "Bash(lares found:*)", "Bash(lares home undo:*)",
+  "Bash(tools/lares-container.sh reset:*)", "Bash(./tools/lares-container.sh reset:*)", "Bash(*lares-container.sh reset*)",
+]
+what = "the two acts that clear or re-seed the hearth stay the operator's: `reset` empties a stopped hearth on a typed word, and `found` over a stopped hearth whose custody tree stands asks no route and re-seeds its bootstrap under `--force`; neither reads the hand behind the terminal. The shim's own `reset` spellings close the side door to the same act, and `lares home undo` stays shut, since an undo restores a settings file from before these entries stood (`tend` only appends, so it never drops one). Every other host act rides the doors' allow and the house's own gates: a lei's returns, a route-proved custody act, a hand read. `docker` itself stands outside what these rules govern: the trusted host, whose engine the shim drives"
 
 [[home]]
 id = "claude.wake-hook"
@@ -367,11 +370,11 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 * ''Compaction beyond Claude.'' The load log reads a Claude compact (`load_reason = "compact"`); Codex and Copilot carry their instructions as context a compact may summarize. A hash probe after each host's compact.
 * ''VS Code agent mode and Copilot's cloud surfaces.'' Whether each reads CLAUDE.md's include, and whether code review cuts an instruction file short; a probe for the seed's final hash on each.
 * ''The doors beyond Claude.'' `claude.doors-allow` and `claude.host-acts-deny` keep Claude's permission lists; Codex's approval policy and sandbox rules and Copilot's tool allow and deny lists carry no item yet. A probe of each host's permission file names the keys an item would keep.
-* ''A door beside the deny list.'' The deny list holds the `lares` spelling alone: `tools/lares-container.sh <verb>` and `docker` reach the same acts unread, and `lares home undo` restores a settings file the list rests in. The shim's acting verbs (`up`, `down`, `vessel stop`, `vessel stand`, `build`, `rebuild`) read neither a hand nor a lei today; an AI's stop, stand, up or down spending a kūkulu lei return the way a rite does, and a hand needing none, closes what a permission list cannot.
+* ''A door beside the deny list.'' A permission list reads spellings, never acts: the shim's `reset` and `lares home undo` stand denied by name, and `docker` stays the trusted host no rule here governs. The shim's acting verbs (`up`, `down`, `vessel stop`, `vessel stand`, `build`, `rebuild`) read neither a hand nor a lei today; an AI's stop, stand, up or down spending a kūkulu lei return the way a rite does, and a hand needing none, closes what a permission list cannot.
 * ''Seats outside the clone for Codex and Copilot.'' Each loads a home file beside the project's with no exclude, so their homes stay seedless; the item opens again when a host offers an exclude or a per-directory scope.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qm8mfKwZZJ7YBzFtcIBzK9sTruCfDI_eY2ks3LgJwE0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lcYg8H1KFYq6etom0EwZJSI4DK1Ks0lmGSbgXGKckNs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
