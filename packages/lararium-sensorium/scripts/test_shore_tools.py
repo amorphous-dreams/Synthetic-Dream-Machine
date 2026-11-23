@@ -16,7 +16,7 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import SHORE_VERBS, DaemonCoordinator, build_mcp, seat_of
+from lares_mcp import SEAT_INSTRUCTIONS, SHORE_VERBS, DaemonCoordinator, build_mcp, seat_of
 
 
 def _list(rows_standoff, rows_pending, nxt=None, **extra):
@@ -118,3 +118,10 @@ def test_red_shore_flush_sends_the_one_frame_and_returns_the_vessels_reading(dae
     out = _fn("shore_flush")()
     assert daemon.lines == [{"op": "shore-flush"}]
     assert out == daemon.reading
+
+
+def test_red_the_seat_instructions_name_both_shore_tools_and_the_hand_that_settles():
+    assert "shore()" in SEAT_INSTRUCTIONS and "shore_flush()" in SEAT_INSTRUCTIONS
+    assert "lares shore" in SEAT_INSTRUCTIONS
+    readme = open(os.path.join(os.path.dirname(__file__), "..", "..", "lares-cli", ".claude-plugin", "README.md"), encoding="utf-8").read()
+    assert "shore_flush()" in readme and "shore(face=N)" in readme

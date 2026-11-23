@@ -247,6 +247,7 @@ SEAT_INSTRUCTIONS = (
     "the command for the operator to run on their own terminal, since no value a seat fills approves it."
     " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"pin\", slug=..., rotate=True, release=True)` releases a rotate hold (omit release to hold). Bag pins, ordinary wiki pins, and next boot stay outside this seat. "
     " `wiki_status()` surveys catalog, activation and vessel residency; name `recipe` for layer write reach."
+    " `shore()` lists what stands for a hand at the disk shore (each standoff with its key, each pending removal; `face=N` reads a lit sibling's shore) and `shore_flush()` asks the vessel to write every island's owed mirrors now; settling a row stays the operator's `lares shore` at a terminal, so name that command."
     " The `wiki` tool's `verb=\"act\"` runs one named admitted action (today `sidebar-layout`) in the wiki `recipe` names, with the `expected` and `resulting` values checked; it takes no action text, and a stale `expected` answers `conflict` and writes nothing."
 )
 
