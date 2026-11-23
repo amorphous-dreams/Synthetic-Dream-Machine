@@ -248,7 +248,11 @@ export function engineMeterLine(r: EngineMeterReading): string {
     `external ${size(r.node.external)}`,
     `rss ${size(r.node.rss)} (peak ${size(r.node.maxRss)})`,
   ];
-  if (r.process !== null) parts.push(`process wasm ${size(r.process.bytes)} in ${r.process.memories.length} memories, ${size(r.process.residentBytes)} resident`);
+  if (r.process !== null) {
+    parts.push("unread" in r.process
+      ? `process wasm unread (${r.process.unread})`
+      : `process wasm ${size(r.process.bytes)} in ${r.process.memories.length} memories, ${r.process.residentBytes === null ? "resident unread" : `${size(r.process.residentBytes)} resident`}`);
+  }
   return parts.join(" · ");
 }
 

@@ -11,7 +11,7 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { describe, expect, test } from "vitest";
 import {
-  createEngineMeter, findEngineMemories, processWasmOf, ENGINE_METER_MARKS, ENGINE_WASM_CEILING_BYTES, WASM_PAGE_BYTES,
+  createEngineMeter, findEngineMemories, processWasmOf, readProcessWasm, ENGINE_METER_MARKS, ENGINE_WASM_CEILING_BYTES, WASM_PAGE_BYTES,
 } from "../src/engine-meter.js";
 
 const ENGINE = pathToFileURL(createRequire(import.meta.url).resolve("@automerge/automerge")).href;
@@ -42,6 +42,22 @@ describe("findEngineMemories — this isolate's Automerge engine memory", () => 
       expect(typeof reading.node[key]).toBe("number");
       expect(reading.node[key]).toBeGreaterThan(0);
     }
+  });
+
+  test("a find that answers none retries after a doubling wait of reads, and keeps the first memories it finds", () => {
+    let finds = 0;
+    const size = { n: 64 * MiB };
+    let loaded = false;
+    const meter = createEngineMeter({ isolate: "main", usage, maxRssBytes: () => 0, find: () => { finds++; return loaded ? [memoryOf(size)] : []; } });
+    const reads = (n: number) => { for (let i = 0; i < n; i++) meter.read(); };
+    reads(1); expect(finds).toBe(1);            // miss: wait 1
+    reads(2); expect(finds).toBe(2);            // skip 1, then miss: wait 2
+    reads(3); expect(finds).toBe(3);            // skip 2, then miss: wait 4
+    loaded = true;
+    reads(4); expect(finds).toBe(3);            // still waiting
+    expect(meter.read().wasm?.bytes).toBe(64 * MiB);
+    expect(finds).toBe(4);
+    reads(10); expect(finds).toBe(4);           // found: kept, never walked again
   });
 
   test("an isolate that finds no engine memory reads wasm null and still reads node's heap", () => {
@@ -136,12 +152,55 @@ describe("processWasmOf — every wasm memory the process holds, off /proc/self/
     expect(read.processResidentBytes).toBe((109_875 + 636_416 + 65_536 + 17_203 + 30_617) * 1024);
   });
 
-  test("text with no reservation reads none", () => {
-    expect(processWasmOf("")).toEqual({ memories: [], bytes: 0, residentBytes: 0, processResidentBytes: 0 });
+  test("NO SILENT ZERO: text with no reservation reads null, never zero memories", () => {
+    expect(processWasmOf("")).toBeNull();
+    // mappings stand, but no pair spans a reservation: the rule recognises nothing, so it says nothing
+    expect(processWasmOf(vma(0x7e4000000000n, 65_536n, "rw-p", 65_536) + vma(0x7e4000000000n + 65_536n * 1024n, 1_024n, "---p", 0))).toBeNull();
   });
 
-  test("the meter carries the process reading where one stands", () => {
-    const reading = createEngineMeter({ isolate: "main", memories: () => [], usage, maxRssBytes: () => 0, processWasm: () => processWasmOf(smaps) }).read();
-    expect(reading.process?.memories).toHaveLength(2);
+  test("NO SILENT ZERO: a reservation whose Rss line reads nowhere reads its resident bytes null, and so do the sums", () => {
+    const noRss = `${base.toString(16)}-${(base + linear * 1024n).toString(16)} rw-p 00000000 00:00 0 \nSize: ${linear} kB\n`
+      + vma(base + linear * 1024n, 8n * 1024n * 1024n - linear, "---p", 0);
+    expect(processWasmOf(noRss)).toEqual({ memories: [{ bytes: Number(linear) * 1024, residentBytes: null }], bytes: Number(linear) * 1024, residentBytes: null, processResidentBytes: null });
+  });
+
+  test("readProcessWasm answers a reading or names why it reads none, never a zero", () => {
+    const read = readProcessWasm();
+    if ("unread" in read) expect(["smaps-unreadable", "no-wasm-reservation"]).toContain(read.unread);
+    else expect(read.memories.length).toBeGreaterThan(0);
+  });
+
+  test("the meter carries the process reading where one stands, reused within its cache and read afresh after", () => {
+    let parses = 0;
+    let t = 0;
+    const meter = createEngineMeter({ isolate: "main", memories: () => [], usage, maxRssBytes: () => 0, now: () => t, processCacheMs: 5_000,
+      processWasm: () => { parses++; return processWasmOf(smaps)!; } });
+    const reading = meter.read();
+    expect(reading.process && "memories" in reading.process ? reading.process.memories : []).toHaveLength(2);
+    t = 4_999; meter.read(); meter.read();
+    expect(parses).toBe(1);
+    t = 5_000; meter.read();
+    expect(parses).toBe(2);
+  });
+
+  test("the ceiling check reads the isolate alone, never smaps", () => {
+    let parses = 0;
+    const size = { n: 3 * GiB };
+    const meter = createEngineMeter({ isolate: "main", memories: () => [memoryOf(size)], usage, maxRssBytes: () => 0, log: () => {},
+      processWasm: () => { parses++; return processWasmOf(smaps)!; } });
+    meter.check(); meter.check();
+    expect(parses).toBe(0);
+  });
+
+  test("a large map parses inside a few tens of milliseconds", () => {
+    const parts: string[] = [];
+    for (let i = 0n; i < 20_000n; i++) parts.push(vma(0x10000000n + i * 0x200000n, 1_024n, i % 2n === 0n ? "rw-p" : "r--p", 512));
+    parts.push(smaps);
+    const text = parts.join("");
+    const t0 = performance.now();
+    const read = processWasmOf(text);
+    const ms = performance.now() - t0;
+    expect(read?.memories).toHaveLength(2);
+    expect(ms).toBeLessThan(500); // measured ~25 ms on the desk for 20,000 mappings; the bound catches a pathology, not jitter
   });
 });

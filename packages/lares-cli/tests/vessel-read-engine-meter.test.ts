@@ -82,6 +82,8 @@ describe("vessel read names the engine meter", () => {
     expect(engineMeterLine(READING)).toBe(
       "main engine 679 MiB of 4 GiB (17%, 10,864 pages) · heap 400 MiB of 520 MiB · external 700 MiB · rss 2.84 GiB (peak 3.38 GiB) · process wasm 1.16 GiB in 2 memories, 1.03 GiB resident",
     );
+    expect(engineMeterLine({ ...READING, process: { unread: "no-wasm-reservation", why: "no pair" } })).toContain(" · process wasm unread (no-wasm-reservation)");
+    expect(engineMeterLine({ ...READING, process: { ...READING.process, residentBytes: null } })).toContain("process wasm 1.16 GiB in 2 memories, resident unread");
     expect(engineMeterLine({ ...READING, wasm: null, process: null })).toBe(
       "main engine unread · heap 400 MiB of 520 MiB · external 700 MiB · rss 2.84 GiB (peak 3.38 GiB)",
     );

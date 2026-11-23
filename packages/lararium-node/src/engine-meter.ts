@@ -6,7 +6,7 @@
  * fails inside the engine and the engine falls (`rust_oom`, `engine-watch`). A linear memory only grows while its instance
  * lives, so its size reads as its own high water; the meter keeps the most it saw anyway, so a reading names that mark plainly.
  *
- * WHERE THE MEMORY STANDS. The binding keeps its instance private, so the meter finds it once, at arming, through the
+ * WHERE THE MEMORY STANDS. The binding keeps its instance private, so the meter finds it at arming (and, while it finds none, again after a doubling wait) through the
  * isolate's own inspector session (`Runtime.queryObjects` over `WebAssembly.Instance.prototype`, picking the instance whose
  * exports carry the engine's `wasmReleaseInfo` and a memory). That walk visits the heap once, so the vessel arms the meter
  * early, while the heap stays small; every later read touches `buffer.byteLength` alone. An isolate where no engine loaded
@@ -21,6 +21,8 @@
  * wasm32 memory (10 GiB on older builds), commits the linear size read-write and leaves the rest inaccessible, so each memory
  * reads as an anonymous `rw-p` mapping followed at once by a `---p` one, the pair one reservation long. The reading lists each
  * memory's linear and resident bytes; it cannot name which engine owns which (the meter's own isolate reading can, for its own).
+ * Text where no pair matches reads as unread with its reason, never as zero memories. A read reuses one process reading for a
+ * few seconds, and the ceiling check never reads smaps at all.
  *
  * THE CEILING LINES. Each isolate's meter checks on an unref'd tick and logs one line the first time its engine crosses each
  * named fraction of the ceiling (`ENGINE_METER_MARKS`), naming the size and the heap beside it. It decides nothing.
@@ -51,16 +53,28 @@ export interface EngineWasmReading {
   readonly fraction: number;
 }
 
-/** Every wasm memory the process holds, off `/proc/self/smaps`. */
+/** Every wasm memory the process holds, off `/proc/self/smaps`. A resident count reads null where smaps named no `Rss:` for a
+ *  mapping it sums, never a zero standing in for an unread line. */
 export interface ProcessWasmReading {
-  readonly memories: ReadonlyArray<{ readonly bytes: number; readonly residentBytes: number }>;
+  readonly memories: ReadonlyArray<{ readonly bytes: number; readonly residentBytes: number | null }>;
   /** The linear bytes of every memory together. */
   readonly bytes: number;
-  /** How many of those bytes stand resident. */
-  readonly residentBytes: number;
-  /** Every mapping's resident bytes together: the process's rss as smaps sums it, for the split. */
-  readonly processResidentBytes: number;
+  /** How many of those bytes stand resident; null where any memory's `Rss:` read nowhere. */
+  readonly residentBytes: number | null;
+  /** Every mapping's resident bytes together: the process's rss as smaps sums it, for the split; null where any `Rss:` read nowhere. */
+  readonly processResidentBytes: number | null;
 }
+
+/** NO SILENT ZERO: the process reading that did not land says why, never `bytes: 0`. */
+export interface ProcessWasmUnread {
+  readonly unread: "smaps-unreadable" | "no-wasm-reservation";
+  readonly why: string;
+}
+
+/** How long one process reading answers every read after it: health's GET probes reuse it instead of parsing smaps each time. */
+export const ENGINE_METER_PROCESS_CACHE_MS = 5_000;
+/** The most reads an isolate that found no engine memory waits before it looks again (the wait doubles from one). */
+const FIND_BACKOFF_CAP = 64;
 
 export interface EngineMeterReading {
   /** Which isolate read: `main`, `daemon island`. */
@@ -76,13 +90,13 @@ export interface EngineMeterReading {
     /** The process's peak resident bytes. */
     readonly maxRss: number;
   };
-  /** The whole process's wasm memories; null where the meter reads none (off Linux, or no process reader given). */
-  readonly process: ProcessWasmReading | null;
+  /** The whole process's wasm memories, or why they read nowhere; null where no process reader was given. */
+  readonly process: ProcessWasmReading | ProcessWasmUnread | null;
 }
 
 export interface EngineMeter {
   read(): EngineMeterReading;
-  /** Read once, and log a line for each mark the engine has crossed since the last check. */
+  /** Read this isolate's engine alone (never smaps), and log a line for each mark the engine has crossed since the last check. */
   check(): void;
   /** Check now and on every tick after; idempotent. */
   arm(): EngineMeter;
@@ -92,13 +106,20 @@ export interface EngineMeter {
 
 export interface EngineMeterOptions {
   readonly isolate: string;
-  /** This isolate's engine memories; default: found once through the inspector (`findEngineMemories`). */
+  /** This isolate's engine memories, asked on every read; default: `find` until it finds some, then those. */
   readonly memories?: () => readonly WebAssembly.Memory[];
+  /** The finder behind the default `memories`; default `findEngineMemories`. A find that answers none retries with a doubling
+   *  wait of reads (capped at 64), since an engine may load after the meter arms; one that answers some is kept. */
+  readonly find?: () => readonly WebAssembly.Memory[];
   readonly usage?: () => NodeJS.MemoryUsage;
   /** The process's peak resident bytes; default `process.resourceUsage().maxRSS` (KiB) in bytes. */
   readonly maxRssBytes?: () => number;
-  /** The whole process's wasm memories; absent, the reading carries `process: null`. */
-  readonly processWasm?: () => ProcessWasmReading | null;
+  /** The whole process's wasm memories, or why they read nowhere; absent, the reading carries `process: null`. Its answer is
+   *  reused for `processCacheMs`. */
+  readonly processWasm?: () => ProcessWasmReading | ProcessWasmUnread;
+  readonly processCacheMs?: number;
+  /** A monotonic clock for the process cache; default `performance.now`. */
+  readonly now?: () => number;
   readonly log?: (line: string) => void;
   readonly marks?: readonly number[];
   readonly ceilingBytes?: number;
@@ -152,42 +173,50 @@ export function findEngineMemories(): WebAssembly.Memory[] {
   }
 }
 
-/** Every wasm memory a `/proc/<pid>/smaps` text names: each `rw-p` + `---p` anonymous pair one V8 reservation long. */
-export function processWasmOf(smaps: string): ProcessWasmReading {
-  interface Vma { start: bigint; end: bigint; perm: string; anon: boolean; rssKiB: number }
+/** Every wasm memory a `/proc/<pid>/smaps` text names: each `rw-p` + `---p` anonymous pair one V8 reservation long. Null where
+ *  no pair matches: the text holds no wasm memory this rule recognises, which a zero would misreport as an empty one. */
+export function processWasmOf(smaps: string): ProcessWasmReading | null {
+  interface Vma { start: bigint; end: bigint; perm: string; anon: boolean; rssKiB: number | null }
   const vmas: Vma[] = [];
   let at: Vma | null = null;
   for (const line of smaps.split("\n")) {
     // Most lines name a field (`Size:`, `Pss:`, ...); only a mapping's head and its `Rss:` line count here.
     const c = line.charCodeAt(0);
     if (c >= 65 && c <= 90) {
-      if (at && line.startsWith("Rss:")) at.rssKiB = Number(/(\d+)/.exec(line)?.[1] ?? 0);
+      if (at && line.startsWith("Rss:")) { const kib = /^Rss:\s+(\d+) kB/.exec(line)?.[1]; at.rssKiB = kib === undefined ? null : Number(kib); }
       continue;
     }
     const head = /^([0-9a-f]+)-([0-9a-f]+) (\S{4}) \S+ \S+ \S+\s*(.*)$/.exec(line);
     if (head) {
-      at = { start: BigInt(`0x${head[1]}`), end: BigInt(`0x${head[2]}`), perm: head[3]!, anon: head[4]!.trim() === "", rssKiB: 0 };
+      at = { start: BigInt(`0x${head[1]}`), end: BigInt(`0x${head[2]}`), perm: head[3]!, anon: head[4]!.trim() === "", rssKiB: null };
       vmas.push(at);
     }
   }
-  const memories: Array<{ bytes: number; residentBytes: number }> = [];
+  const memories: Array<{ bytes: number; residentBytes: number | null }> = [];
   for (let i = 0; i + 1 < vmas.length; i++) {
     const a = vmas[i]!, b = vmas[i + 1]!;
     if (a.perm === "rw-p" && b.perm === "---p" && a.anon && b.anon && b.start === a.end && WASM_RESERVATIONS.includes(b.end - a.start)) {
-      memories.push({ bytes: Number(a.end - a.start), residentBytes: a.rssKiB * 1024 });
+      memories.push({ bytes: Number(a.end - a.start), residentBytes: a.rssKiB === null ? null : a.rssKiB * 1024 });
     }
   }
+  if (memories.length === 0) return null;
+  const sum = (xs: ReadonlyArray<number | null>): number | null => (xs.some((x) => x === null) ? null : xs.reduce<number>((s, x) => s + x!, 0));
   return {
     memories,
     bytes: memories.reduce((s, m) => s + m.bytes, 0),
-    residentBytes: memories.reduce((s, m) => s + m.residentBytes, 0),
-    processResidentBytes: vmas.reduce((s, v) => s + v.rssKiB * 1024, 0),
+    residentBytes: sum(memories.map((m) => m.residentBytes)),
+    processResidentBytes: sum(vmas.map((v) => (v.rssKiB === null ? null : v.rssKiB * 1024))),
   };
 }
 
-/** This process's wasm memories, off `/proc/self/smaps`; null where that file reads nowhere (off Linux). */
-export function readProcessWasm(): ProcessWasmReading | null {
-  try { return processWasmOf(readFileSync("/proc/self/smaps", "utf8")); } catch { return null; }
+/** This process's wasm memories off `/proc/self/smaps`, or why they read nowhere: the file unreadable (off Linux), or no
+ *  reservation in it this rule recognises. */
+export function readProcessWasm(): ProcessWasmReading | ProcessWasmUnread {
+  let text: string;
+  try { text = readFileSync("/proc/self/smaps", "utf8"); } catch (e) {
+    return { unread: "smaps-unreadable", why: `/proc/self/smaps reads nowhere: ${e instanceof Error ? e.message : String(e)}` };
+  }
+  return processWasmOf(text) ?? { unread: "no-wasm-reservation", why: "no rw-p + ---p pair in /proc/self/smaps spans one V8 wasm reservation (8 or 10 GiB)" };
 }
 
 const MiB = 1024 * 1024;
@@ -197,8 +226,28 @@ const size = (bytes: number): string => (bytes >= GiB ? `${Number((bytes / GiB).
 export function createEngineMeter(opts: EngineMeterOptions): EngineMeter {
   const ceiling = opts.ceilingBytes ?? ENGINE_WASM_CEILING_BYTES;
   const marks = [...(opts.marks ?? ENGINE_METER_MARKS)].sort((a, b) => a - b);
-  let found: readonly WebAssembly.Memory[] | null = null;
-  const memories = opts.memories ?? (() => (found ??= findEngineMemories()));
+  // THE FIND RETRIES UNTIL IT FINDS: a meter armed before the engine loads (or a walk that failed) asks again after a doubling
+  // wait of reads, so a later read still finds the engine while an isolate holding none pays one heap walk per 64 reads at most.
+  const find = opts.find ?? findEngineMemories;
+  let found: readonly WebAssembly.Memory[] = [];
+  let wait = 0;
+  let backoff = 1;
+  const memories = opts.memories ?? ((): readonly WebAssembly.Memory[] => {
+    if (found.length > 0) return found;
+    if (wait > 0) { wait--; return found; }
+    found = find();
+    if (found.length === 0) { wait = backoff; backoff = Math.min(backoff * 2, FIND_BACKOFF_CAP); }
+    return found;
+  });
+  const now = opts.now ?? (() => performance.now());
+  const cacheMs = opts.processCacheMs ?? ENGINE_METER_PROCESS_CACHE_MS;
+  let cached: { at: number; reading: ProcessWasmReading | ProcessWasmUnread } | null = null;
+  const processReading = (): ProcessWasmReading | ProcessWasmUnread | null => {
+    if (!opts.processWasm) return null;
+    const t = now();
+    if (cached === null || t - cached.at >= cacheMs) cached = { at: t, reading: opts.processWasm() };
+    return cached.reading;
+  };
   const usage = opts.usage ?? (() => process.memoryUsage());
   const maxRssBytes = opts.maxRssBytes ?? (() => process.resourceUsage().maxRSS * 1024);
   const tick = opts.tick ?? ((fn) => { const t = setInterval(fn, ENGINE_METER_TICK_MS); t.unref(); return () => clearInterval(t); });
@@ -206,7 +255,8 @@ export function createEngineMeter(opts: EngineMeterOptions): EngineMeter {
   let crossed = 0;
   let stop: (() => void) | null = null;
 
-  const read = (): EngineMeterReading => {
+  /** This isolate's engine and node's heap: cheap, every check reads it. */
+  const isolateReading = (): Omit<EngineMeterReading, "process"> => {
     const held = memories();
     const sizes = held.map((m) => m.buffer.byteLength);
     const bytes = sizes.reduce((s, n) => s + n, 0);
@@ -216,13 +266,13 @@ export function createEngineMeter(opts: EngineMeterOptions): EngineMeter {
       isolate: opts.isolate,
       wasm: held.length === 0 ? null : { bytes, pages: bytes / WASM_PAGE_BYTES, highWaterBytes: highWater, ceilingBytes: ceiling, fraction: Math.max(...sizes) / ceiling },
       node: { heapUsed: u.heapUsed, heapTotal: u.heapTotal, external: u.external, arrayBuffers: u.arrayBuffers, rss: u.rss, maxRss: maxRssBytes() },
-      process: opts.processWasm?.() ?? null,
     };
   };
+  const read = (): EngineMeterReading => ({ ...isolateReading(), process: processReading() });
 
   const check = (): void => {
     if (crossed >= marks.length) return;
-    const r = read();
+    const r = isolateReading();
     if (r.wasm === null) return;
     while (crossed < marks.length && r.wasm.fraction >= marks[crossed]!) {
       const mark = marks[crossed++]!;

@@ -153,7 +153,25 @@ describe("Node readiness face", () => {
     const fallen = await fetch(url);
     expect(fallen.status).toBe(503);
     expect(await fallen.json()).toMatchObject({ status: "engine-terminated", cause: "module-terminated", engine: reading });
-    // A meter that throws costs health nothing: the status answers without it.
+    // A meter that throws costs health nothing: the status answers without it, over the wire and inside a fall's body.
+    const brokenServer = createServer(); servers.push(brokenServer);
+    const brokenEngine = createEngineWatch(() => new Date("2026-11-23T19:25:00.000Z"));
+    const broken = createReadinessState(brokenEngine, () => { throw new Error("smaps unreadable"); });
+    mountReadinessFace({ httpServer: brokenServer, state: broken, standing: "lararium" });
+    await new Promise<void>((resolve) => brokenServer.listen(0, "127.0.0.1", resolve));
+    const brokenAddress = brokenServer.address();
+    if (!brokenAddress || typeof brokenAddress === "string") throw new Error("readiness test did not bind");
+    const brokenUrl = `http://127.0.0.1:${brokenAddress.port}/api/health`;
+    broken.markReady();
+    const steady = await fetch(brokenUrl);
+    expect(steady.status).toBe(200);
+    expect(await steady.json()).toEqual({ status: "ready" });
+    brokenEngine.note(new Error("Module terminated"), "repo");
+    const fallenBroken = await fetch(brokenUrl);
+    expect(fallenBroken.status).toBe(503);
+    const fallenBody = await fallenBroken.json() as Record<string, unknown>;
+    expect(fallenBody).toMatchObject({ status: "engine-terminated", cause: "module-terminated" });
+    expect(fallenBody).not.toHaveProperty("engine");
     const shaky = createReadinessState(undefined, () => { throw new Error("smaps unreadable"); });
     shaky.markReady();
     expect(shaky.body()).toEqual({ status: "ready" });
