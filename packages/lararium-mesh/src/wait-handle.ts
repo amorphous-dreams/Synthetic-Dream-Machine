@@ -72,6 +72,12 @@ export interface SealedRestDoor {
    * bag rests sealed (`SealedDocumentStore#nameDocument`); a clear bag names nothing.
    */
   nameDocument?(documentId: string, bagId: string): boolean;
+  /**
+   * THE ROSTER'S LOCAL HALF: told each document a local caller of the Repo opens (`find`, `findWithProgress`, `findClassic`,
+   * `create`, `import`, `clone`), before or as its first byte moves. A peer's push reaches the Repo by none of these, so a
+   * document no local caller opened and no registry names stays unnamed, and its bytes wait (`SealedDocumentStore#solicited`).
+   */
+  solicited?(documentId: string): void;
 }
 
 /** How a sealed document held read-only over its own id settled. */
@@ -85,8 +91,45 @@ export interface SealedSettlement {
 }
 
 const SEALED_DOORS = new WeakMap<Repo, SealedRestDoor>();
-/** Seat the sealed rest `repo` stands on: `waitHandle` over this Repo then mints no writable fallback for a sealed document. */
-export function seatSealedRest(repo: Repo, door: SealedRestDoor): void { SEALED_DOORS.set(repo, door); }
+/** Seat the sealed rest `repo` stands on: `waitHandle` over this Repo then mints no writable fallback for a sealed document,
+ *  and every document a local caller opens over it reaches the door's roster (`solicited`). */
+export function seatSealedRest(repo: Repo, door: SealedRestDoor): void {
+  SEALED_DOORS.set(repo, door);
+  if (door.solicited !== undefined) hearSolicitations(repo, door.solicited);
+}
+
+/** The Repos whose local callers already reach a roster: each is heard once, by the first door seated over it. */
+const HEARD = new WeakMap<Repo, (documentId: string) => void>();
+
+/**
+ * THE REPO'S LOCAL CALL SURFACE NAMES WHAT THE VESSEL ASKED FOR. Every public door that opens a document (`find`,
+ * `findWithProgress`, `findClassic` by id; `create`, `import`, `clone` by the handle they answer) tells `solicited` its id. The
+ * Repo's own inbound path (a peer's sync, `#ensureQuery`) passes through none of them, so it names nothing. A later seat over
+ * the same Repo re-points the roster; the surface is wrapped once.
+ */
+function hearSolicitations(repo: Repo, solicited: (documentId: string) => void): void {
+  const first = !HEARD.has(repo);
+  HEARD.set(repo, solicited);
+  if (!first) return;
+  const tell = (id: unknown): void => {
+    try { if (typeof id === "string" && id.length > 0) HEARD.get(repo)?.(documentIdOf(id)); } catch { /* a roster's fault never holds a find */ }
+  };
+  const target = repo as unknown as Record<string, (...args: unknown[]) => unknown>;
+  for (const by of ["find", "findWithProgress", "findClassic"] as const) {
+    const own = target[by];
+    if (typeof own !== "function") continue;
+    target[by] = function (this: unknown, id: unknown, ...rest: unknown[]) { tell(String(id)); return own.call(repo, id, ...rest); };
+  }
+  for (const by of ["create", "import", "clone"] as const) {
+    const own = target[by];
+    if (typeof own !== "function") continue;
+    target[by] = function (this: unknown, ...args: unknown[]) {
+      const handle = own.call(repo, ...args) as { readonly documentId?: unknown } | undefined;
+      tell(handle?.documentId);
+      return handle;
+    };
+  }
+}
 
 /** How a sealed document's keyed load ended: it opened, or it refused on integrity evidence, or it ended with none. */
 export type SealedLoadEnding<T> =

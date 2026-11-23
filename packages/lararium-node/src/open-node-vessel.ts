@@ -1222,6 +1222,9 @@ async function prepareNodeBootOn(
     bagOf: sealedBagOf,
     // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
     bagRow: (bagId) => sealedMap.bagRow(bagId),
+    // UNKNOWN MEANS HOLD: the clear-name roster reads the same bag registry the map reads (`sealedBagMap.names`); a document
+    // no bag carries and no local caller opened (an unsolicited peer push) waits in memory until a name arrives.
+    namesClear: (documentId) => sealedMap.names(documentId),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
@@ -1640,6 +1643,8 @@ async function prepareNodeBootOn(
     restsSealed: (documentId) => sealedRest.restsSealed(documentId),
     refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
     nameDocument: (documentId, bagId) => sealedRest.store.nameDocument(documentId, bagId),
+    // THE ROSTER'S LOCAL HALF: every document a local caller of this Repo opens counts as named (`solicited`).
+    solicited: (documentId) => sealedRest.store.solicited(documentId),
     quarantine: (documentId, reason) => {
       const verdict = { documentId, status: "load-error" as const, reason };
       const bagId = sealedBagOf(documentId)?.bagId;

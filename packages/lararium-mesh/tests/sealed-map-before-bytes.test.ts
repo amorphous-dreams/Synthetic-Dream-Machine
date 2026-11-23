@@ -11,6 +11,9 @@
  *       none. At the floor, a face-half catalog row takes `face: null`; a public row takes none.
  *   M2  a document named for a sealed bag at the floor: its save waits in memory and lands no byte at rest; once the face
  *       lights it maps under that face. A document named for a clear bag names nothing and saves clear (control).
+ *   M3  the clear-name roster reads the same registry: a document a known bag carries (a public catalog row, a house canon bag)
+ *       reads named and saves clear; a document no bag carries reads unknown, and its save waits in memory (`save-unnamed`)
+ *       until a bag names it, then lands clear.
  */
 import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";
@@ -30,7 +33,7 @@ const SECRET = "the-heron-nests-by-the-third-pond";
 const join = (k: StorageKey): string => k.join("\0");
 const under = (k: string, prefix: StorageKey): boolean => k.split("\0").slice(0, prefix.length).join("\0") === join(prefix);
 
-function fixture() {
+function fixture(docs: Record<string, string[]> = {}) {
   const bytes = new Map<string, Uint8Array>();
   const inner: StorageAdapterInterface = {
     async load(k) { return bytes.get(join(k)); },
@@ -46,9 +49,9 @@ function fixture() {
   } } as unknown as LarDoc;
   let face: string | null = null;
   let bags: string[] = [];
-  const map = sealedBagMap({ face: () => face, bags: () => bags, catalog: () => catalog, docsOf: () => [] });
+  const map = sealedBagMap({ face: () => face, bags: () => bags, catalog: () => catalog, docsOf: (bagId) => docs[bagId] ?? [] });
   const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
-  const rest = composeSealedRest({ inner, bagOf: map.bagOf, bagRow: map.bagRow, sessionFace: () => face, door: { seal: refuse, open: refuse }, flushRepo: async () => {} });
+  const rest = composeSealedRest({ inner, bagOf: map.bagOf, bagRow: map.bagRow, namesClear: map.names, sessionFace: () => face, door: { seal: refuse, open: refuse }, flushRepo: async () => {} });
   return { map, rest, bytes, light() { face = "face:one"; bags = [SEALED_BAG, ...houseCanonBagsSeated()]; rest.store.mapMoved(); } };
 }
 
@@ -76,10 +79,36 @@ describe("a document named for a sealed bag before its first byte maps as the ba
     f.light();
     expect(f.rest.store.bagOf(NAMED_DOC)).toEqual({ bagId: SEALED_BAG, face: "face:one" });
 
-    // CONTROL: a clear bag names nothing, and its document rests as the engine wrote it.
+    // CONTROL: a clear bag names nothing, and its document rests as the engine wrote it once a local caller opens it.
     expect(f.rest.store.nameDocument(CLEAR_DOC, PUBLIC_BAG)).toBe(false);
+    f.rest.store.solicited(CLEAR_DOC);
     expect(f.rest.store.bagOf(CLEAR_DOC)).toBeNull();
     await f.rest.store.save([CLEAR_DOC, "incremental", "first"], A.save(A.from({ note: "the-market-opens" })));
     expect(f.bytes.has(join([CLEAR_DOC, "incremental", "first"]))).toBe(true);
+  });
+
+  test("M3 — the clear-name roster reads the bag registry: a carried document saves clear, an unknown one waits in memory until a bag names it", async () => {
+    const docs: Record<string, string[]> = { [PUBLIC_BAG]: [CLEAR_DOC] };
+    const f = fixture(docs);
+    const canon = houseCanonBagsSeated()[0]!;
+    expect(f.map.names(CLEAR_DOC)).toBe(true);
+    expect(f.map.names("an-unsolicited-push")).toBe(false);
+    await f.rest.store.save([CLEAR_DOC, "incremental", "first"], A.save(A.from({ note: "the-market-opens" })));
+    expect(f.bytes.has(join([CLEAR_DOC, "incremental", "first"]))).toBe(true);
+
+    // UNKNOWN MEANS HOLD: no bag carries it, no caller opened it.
+    await f.rest.store.save(["an-unsolicited-push", "incremental", "first"], A.save(A.from({ note: SECRET })));
+    expect([...f.bytes.keys()].filter((k) => k.startsWith("an-unsolicited-push"))).toEqual([]);
+    expect(f.rest.store.held()).toEqual([{ documentId: "an-unsolicited-push", refusal: "save-unnamed", saves: 1, bagId: null }]);
+    expect(await f.rest.store.load(["an-unsolicited-push", "incremental", "first"])).toBeDefined();
+
+    // A HOUSE CANON BAG CARRIES IT under a lit face: it maps no seal, the roster names it, and it lands clear at the next move.
+    f.light();
+    docs[canon] = ["an-unsolicited-push"];
+    expect(f.rest.store.bagOf("an-unsolicited-push")).toBeNull();
+    expect(f.map.names("an-unsolicited-push")).toBe(true);
+    await f.rest.store.reseal();
+    expect(f.bytes.has(join(["an-unsolicited-push", "incremental", "first"]))).toBe(true);
+    expect(f.rest.store.held()).toEqual([]);
   });
 });

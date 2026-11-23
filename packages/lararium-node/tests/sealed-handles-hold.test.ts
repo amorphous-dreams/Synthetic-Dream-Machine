@@ -15,6 +15,12 @@
  *       the store's `nameDocument`): the document stands held over its real id, bytes arriving by sync rest nowhere while
  *       the bag's face has not lit (in memory, `save-unmapped`), and seal and land once it lights.
  *   H3  a clear bag still falls back and writes clear (control).
+ *   H4  AN UNSOLICITED PEER PUSH. A peer can push a document no local caller asked for and no map names (a sibling's slot
+ *       ahead of its announcement). The store held no name for it and saved its bytes clear. Now the store reads a roster of
+ *       documents named clear (`namesClear`, plus every document a local caller of the Repo opened, `solicited`), and a
+ *       document neither mapped sealed nor named clear holds in memory (`save-unnamed`): unknown means hold. A rostered
+ *       document saves clear, a mapped one seals, and a held one lands by whichever name arrives first: the roster releases
+ *       it clear, the map seals it.
  *
  * Real doors throughout: the sealed document store over a real NodeFS store, the real `waitHandle`, the keel's
  * `mountWikiSlot`, and a sibling Repo across a real MessageChannel. The holder stands as a port that keeps each sealed value
@@ -62,10 +68,12 @@ let faceLit = true;
 
 /** The sealed store: `mapped()` names the documents the bag map names (every one while it answers null); a document a caller
  *  names for the draft bag (`nameDocument`) maps by the bag's own row. */
-function sealedStore(storageDir: string, mapped: () => readonly string[] | null, hydrates = true): SealedDocumentStore {
+function sealedStore(storageDir: string, mapped: () => readonly string[] | null, hydrates = true, roster?: () => readonly string[]): SealedDocumentStore {
   const inner: StorageAdapterInterface = new NodeFSStorageAdapter(storageDir);
   return new SealedDocumentStore({
     inner,
+    // THE CLEAR-NAME ROSTER: present, it turns the store fail-closed for a document neither mapped nor named.
+    ...(roster ? { namesClear: (documentId: string) => roster().includes(documentId) } : {}),
     bagOf: (documentId) => { const ids = mapped(); return ids === null || ids.includes(documentId) ? { bagId: SLOT.draftBagId, face: FACE } : null; },
     bagRow: (bagId): SealedBagRow | null => (bagId === SLOT.draftBagId ? { bagId, face: faceLit ? FACE : null } : null),
     sessionFace: () => (faceUp ? FACE : null),
@@ -132,14 +140,15 @@ async function refusalOf(act: Promise<unknown> | (() => unknown)): Promise<strin
 }
 
 /** A Repo over the sealed store with the sealed rest seated, the way each vessel seats it: the map before the bytes too. */
-function seatedRepo(storageDir: string, mapped: () => readonly string[] | null) {
-  const store = sealedStore(storageDir, mapped);
+function seatedRepo(storageDir: string, mapped: () => readonly string[] | null, roster: () => readonly string[] = () => []) {
+  const store = sealedStore(storageDir, mapped, true, roster);
   const repo = new Repo({ storage: store, network: [] });
   const settled: SealedSettlement[] = [];
   seatSealedRest(repo, {
     restsSealed: (documentId) => store.holdsSealed(documentId),
     refusalOf: (documentId) => store.refusalOf(documentId),
     nameDocument: (documentId, bagId) => store.nameDocument(documentId, bagId),
+    solicited: (documentId) => store.solicited(documentId),
     onSettled: (s) => { settled.push(s); },
   });
   closers.push(() => repo.shutdown());
@@ -287,6 +296,121 @@ describe("a held sealed handle refuses every write, and bytes wait for their map
     await repo.flush();
     expect(hitsOf(storageDir, BEFORE).length).toBeGreaterThan(0);
     expect(settled).toEqual([]);
+    expect(store.held()).toEqual([]);
+  }, 120_000);
+});
+
+/** A sibling Repo holding one document with `text` in it, and a channel that connects it to `repo`: the sibling pushes the
+ *  document unsolicited, since no local caller of `repo` asked for it. */
+function siblingPushes(repo: Repo, text: string): { readonly id: string; readonly connect: () => void } {
+  const sibling = new Repo({ network: [] });
+  closers.push(() => sibling.shutdown());
+  const pushed = sibling.create<LarDoc>(emptyLarDoc());
+  pushed.change((doc) => { (doc.tiddlers as Record<string, unknown>)[TITLE] = { tiddler: { title: TITLE, text } }; });
+  return {
+    id: pushed.documentId as string,
+    connect: () => {
+      const { port1, port2 } = new MessageChannel();
+      closers.push(() => { port1.close(); port2.close(); });
+      sibling.networkSubsystem.addNetworkAdapter(new MessageChannelNetworkAdapter(port1));
+      repo.networkSubsystem.addNetworkAdapter(new MessageChannelNetworkAdapter(port2));
+    },
+  };
+}
+/** The pushed document reads `text` on this Repo: its bytes arrived by the sibling's push. */
+const arrived = (repo: Repo, id: string, text: string): boolean => {
+  const handle = (repo.handles as Record<string, DocHandle<unknown> | undefined>)[id];
+  try { return handle !== undefined && handle.isReady() && textOf(handle, TITLE) === text; } catch { return false; }
+};
+const PUSHED = "PUSHED-UNSOLICITED-otter-under-the-bridge";
+
+describe("an unsolicited peer push waits for a name: unknown means hold", () => {
+  test("H4a — unsolicited-unnamed-holds: a document no caller asked for, no map names and no roster names holds in memory; nothing rests on disk", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const { store, repo } = seatedRepo(storageDir, () => [], () => []);
+    const push = siblingPushes(repo, PUSHED);
+    push.connect();
+    await until(() => arrived(repo, push.id, PUSHED), "the sibling's push arrives");
+    await repo.flush();
+    expect(hitsOf(storageDir, PUSHED)).toEqual([]);
+    expect(filesOf(storageDir, push.id).filter((f) => !f.includes("sync-state"))).toEqual([]);
+    expect(store.held().filter((h) => h.documentId === push.id).map((h) => [h.refusal, h.bagId])).toEqual([["save-unnamed", null]]);
+  }, 120_000);
+
+  test("H4b — rostered-clear-saves: a document the roster names clear saves clear, as the engine wrote it", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const roster: string[] = [];
+    const { store, repo } = seatedRepo(storageDir, () => [], () => roster);
+    const push = siblingPushes(repo, PUSHED);
+    roster.push(push.id);
+    push.connect();
+    await until(() => arrived(repo, push.id, PUSHED), "the sibling's push arrives");
+    await repo.flush();
+    expect(hitsOf(storageDir, PUSHED).length).toBeGreaterThan(0);
+    expect(store.held()).toEqual([]);
+  }, 120_000);
+
+  test("H4c — sealed-mapped-seals: a document the map names sealed seals; no clear byte rests", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const mapped: string[] = [];
+    const { store, repo } = seatedRepo(storageDir, () => mapped, () => []);
+    const push = siblingPushes(repo, PUSHED);
+    mapped.push(push.id);
+    push.connect();
+    await until(() => arrived(repo, push.id, PUSHED), "the sibling's push arrives");
+    await repo.flush();
+    await store.flush();
+    expect(hitsOf(storageDir, PUSHED)).toEqual([]);
+    expect(restsAsPointers(filesOf(storageDir, push.id))).toBe(true);
+    expect(store.held()).toEqual([]);
+  }, 120_000);
+
+  test("H4d — roster-later-releases-clear: a held document the roster names later lands clear, and leaves memory", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const roster: string[] = [];
+    const { store, repo } = seatedRepo(storageDir, () => [], () => roster);
+    const push = siblingPushes(repo, PUSHED);
+    push.connect();
+    await until(() => arrived(repo, push.id, PUSHED), "the sibling's push arrives");
+    await repo.flush();
+    expect(hitsOf(storageDir, PUSHED)).toEqual([]);
+    expect(store.held().some((h) => h.documentId === push.id && h.refusal === "save-unnamed")).toBe(true);
+    // THE ROSTER NAMES IT: the map moves, and the held bytes land clear.
+    roster.push(push.id);
+    store.mapMoved();
+    await until(() => hitsOf(storageDir, PUSHED).length > 0, "the roster releases the held bytes clear");
+    await until(() => store.held().length === 0, "the held saves leave memory");
+  }, 120_000);
+
+  test("H4e — map-later-seals-held: a held document the map names later seals and lands; no clear byte ever rests", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const mapped: string[] = [];
+    const { store, repo } = seatedRepo(storageDir, () => mapped, () => []);
+    const push = siblingPushes(repo, PUSHED);
+    push.connect();
+    await until(() => arrived(repo, push.id, PUSHED), "the sibling's push arrives");
+    await repo.flush();
+    expect(store.held().some((h) => h.documentId === push.id && h.refusal === "save-unnamed")).toBe(true);
+    // THE MAP NAMES IT: the waiting bytes seal under the real id.
+    mapped.push(push.id);
+    store.mapMoved();
+    await store.reseal();
+    await store.flush();
+    expect(store.held()).toEqual([]);
+    expect(restsAsPointers(filesOf(storageDir, push.id))).toBe(true);
+    expect(hitsOf(storageDir, PUSHED)).toEqual([]);
+  }, 120_000);
+
+  test("H4f — solicited-saves-clear: a document a local caller of the Repo asks for counts as named, so its pushed bytes save clear", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const { store, repo } = seatedRepo(storageDir, () => [], () => []);
+    const push = siblingPushes(repo, PUSHED);
+    // THE LOCAL CALLER ASKS FIRST, then the sibling connects and pushes.
+    repo.findWithProgress<LarDoc>(`automerge:${push.id}` as never);
+    push.connect();
+    await until(() => arrived(repo, push.id, PUSHED), "the asked-for document arrives");
+    await repo.flush();
+    await until(() => hitsOf(storageDir, PUSHED).length > 0, "the solicited document rests clear");
     expect(store.held()).toEqual([]);
   }, 120_000);
 });
