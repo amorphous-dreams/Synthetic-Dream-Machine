@@ -78,7 +78,7 @@ import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, has
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { isHouseAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
+import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -314,12 +314,15 @@ type Visible = (title: string, tiddler: EngineTiddler | undefined) => boolean;
  * lives for one verb call. The wiki's indexes (tags, fields, backlinks) still name hidden TITLES; the verb's answer
  * gate drops those and counts them `withheld`. Writes never ride the view.
  */
-/** A house alert as the view answers it: each secret-shaped string redacted (`redactedAlertFields`), else the alert itself. */
+/**
+ * A house alert as the view answers it: its open fields alone, each secret shape redacted (`redactedAlertFields`). The view's
+ * `visible` already shut every alert whose kind stays home, or that names a record this reader may not read.
+ */
 function redactedAlert(tiddler: EngineTiddler): EngineTiddler {
-  const over = redactedAlertFields(tiddler.fields as Record<string, unknown>);
-  if (over === null) return tiddler;
+  const title = String(tiddler.fields["title"] ?? "");
+  const fields = redactedAlertFields(title, tiddler.fields as Record<string, unknown>) ?? { title };
   const Make = (tiddler as unknown as { constructor: new (...fields: unknown[]) => EngineTiddler }).constructor;
-  return new Make(tiddler, over);
+  return new Make(fields);
 }
 
 function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; document: { createElement(tag: string): unknown } } | null): EngineWiki {
@@ -371,7 +374,19 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
   wiki.each((tiddler) => { const bag = tiddler.fields[ORIGIN_BAG]; if (typeof bag === "string" && bag !== "") bags.add(bag); });
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
-  const visible: Visible = (title, tiddler) => !withheldFromReads(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
+  // AN ALERT ANSWERS ONLY A READER OF WHAT IT NAMES: each open alert that names a record reads absent where that record stands
+  // in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki no longer holds names no bag
+  // the door can check, so it shuts). The alert holds no bag of its own, so `hidden` alone never reaches it.
+  const shutAlerts = new Set<string>();
+  for (const title of wiki.allTitles()) {
+    if (!isOpenAlert(title)) continue;
+    for (const named of alertNamedTitles(title, wiki.getTiddler(title)?.fields ?? {})) {
+      const record = wiki.getTiddler(named);
+      const bag = record ? record.fields[ORIGIN_BAG] : undefined;
+      if (!record || (typeof bag === "string" && bag !== "" && hidden.has(bag))) { shutAlerts.add(title); break; }
+    }
+  }
+  const visible: Visible = (title, tiddler) => !withheldFromReads(title) && !shutAlerts.has(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
   const text = await canonFiltersText(opts.composite, wiki, mayRead);
   const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
   return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
@@ -780,8 +795,9 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
       return await bagGet(opts, container, title, args, ctx, asked);
     }
     const anchor = anchorOf(opts, args, "tiddler-get");
-    // A HOUSE ALERT READS here (`withheldFromReads`): the wiki's own engine holds it; a bag's store never does.
-    refuseWithheld(title, "tiddler-get", true);
+    // AN OPEN HOUSE ALERT READS here (`withheldFromReads`): the wiki's own engine holds it; a bag's store never does. The meme
+    // lens never reads one: an alert holds no meme, so the lens keeps the door's whole stay-home law.
+    refuseWithheld(title, "tiddler-get", !lens);
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const engine = anchor.engine;
     const wiki = engine.wiki;
@@ -868,7 +884,8 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
     const wiki = anchor.engine.wiki;
     let rendered: string;
     if (title !== null) {
-      const tiddler = wiki.getTiddler(title);
+      // An alert renders through the view, so one this reader may not read stands absent here too.
+      const tiddler = isHouseAlert(title) ? view.getTiddler(title) : wiki.getTiddler(title);
       if (!tiddler) throw new VerbRefusal("tiddler-absent", `tiddler-absent: no tiddler stands at "${title}" in wiki "${anchor.recipe}"; wiki-render renders a title that stands, or a span passed as args.text.`);
       const { bag } = readRecord(tiddler);
       if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);

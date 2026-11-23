@@ -10,7 +10,9 @@
  * GitHub token, an AWS access key id, a Slack token. A PEM private key reads apart (`KEEP_KEY_HEADER`): its header alone
  * names no secret, and a transcript that discusses one names it in prose.
  */
-export const KEEP_SECRET_PATTERN = /(sk-ant-[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,})/g;
+export const KEEP_SECRET_PATTERN = /(sk-ant-[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{22,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}|(?:aws_secret_access_key|secret_access_key|SecretAccessKey)["']?\s*[:=]\s*["']?[A-Za-z0-9/+]{40})/g;
+/** A PGP private key block, header through END: no body test, since its armor names the secret by itself. */
+export const PGP_PRIVATE_BLOCK = /-----BEGIN PGP PRIVATE KEY BLOCK-----[\s\S]{0,16384}?-----END PGP PRIVATE KEY BLOCK-----/g;
 /**
  * A PEM private key's header. It trips the guard only where key material follows it: within `KEEP_KEY_BODY_LINES` lines,
  * before any END line, a run of body lines holding at least `KEEP_KEY_BODY_MIN` characters (a real key's body runs to
@@ -58,34 +60,60 @@ export const KEEP_SECRET_ALLOW: readonly string[] = ["AKIAIOSFODNN7EXAMPLE", "PL
  * follows it, and reads as the header without its closing dashes.
  */
 export function secretShapes(text: string): string[] {
-  const keys = [...text.matchAll(KEEP_KEY_HEADER)].filter((m) => keyBodyFollows(text.slice(m.index + m[0].length))).map((m) => m[0].slice(0, -5));
-  return [...keys, ...[...text.matchAll(KEEP_SECRET_PATTERN)].map((m) => m[0])].filter((m) => !KEEP_SECRET_ALLOW.some((a) => m.includes(a)));
+  // Each header reads its body inside the scan window alone, never a copy of the whole text behind it.
+  const keys = [...text.matchAll(KEEP_KEY_HEADER)].filter((m) => keyBodyFollows(windowAfter(text, m.index + m[0].length))).map((m) => m[0].slice(0, -5));
+  const pgp = [...text.matchAll(PGP_PRIVATE_BLOCK)].map(() => "-----BEGIN PGP PRIVATE KEY BLOCK");
+  return [...keys, ...pgp, ...[...text.matchAll(KEEP_SECRET_PATTERN)].map((m) => m[0])].filter((m) => !KEEP_SECRET_ALLOW.some((a) => m.includes(a)));
 }
+
+/** The scan window after an offset: at most `KEY_BODY_WINDOW` characters, sliced before any scan reads them. */
+function windowAfter(text: string, at: number): string {
+  return text.slice(at, at + KEY_BODY_WINDOW);
+}
+
+/**
+ * THE HEX A HOUSE MINT READS AS: 32 random bytes or more, bare (a face route's ref, a ward ticket, an invite token's `n` and
+ * `y`). A digest the house names by its scheme (`sha256:`, `sha256-`, `ni:///sha-256;`, a path segment) stands: the guard
+ * reads only a run no scheme, word or path joins.
+ */
+export const MINTED_HEX = /(?<![0-9A-Za-z:;\-_/.])[0-9a-fA-F]{64,}(?![0-9A-Za-z])/g;
 
 /** What a redaction stands in place of each secret-shaped string. */
 export const SECRET_REDACTED = "[redacted: secret-shaped]";
 
+/** How a redaction reads: the fixtures it lets stand, and whether it takes the house's bare minted hex too. */
+export interface RedactOptions {
+  /** Fixtures a match may hold and still stand; the keep's list where absent. A read door passes none. */
+  readonly allow?: readonly string[];
+  /** Take every bare run of 64+ hex characters (`MINTED_HEX`): the read door's strict reading. */
+  readonly mintedHex?: boolean;
+  /** Take every private-key block, body test or none (a 32-wide wrap, a short body): the read door's strict reading. */
+  readonly everyKeyBlock?: boolean;
+}
+
 /**
- * THE TEXT WITH EVERY SECRET SHAPE REDACTED, and how many it took out. A token reads redacted whole; a private key whose body
- * follows its header reads redacted from the header through its END line (or the scan window, where none closes it). An
- * allowed fixture stands. Text with no shape returns unchanged, with a count of zero.
+ * THE TEXT WITH EVERY SECRET SHAPE REDACTED, and how many it took out. A token reads redacted whole; a private key reads
+ * redacted from its header through its END line (or the scan window, where none closes it), where its body follows it, or
+ * always under `everyKeyBlock`; a PGP private block reads redacted whole. An allowed fixture stands. Text with no shape returns
+ * unchanged, with a count of zero.
  */
-export function redactSecretShapes(text: string): { readonly text: string; readonly redacted: number } {
+export function redactSecretShapes(text: string, opts: RedactOptions = {}): { readonly text: string; readonly redacted: number } {
+  const allow = opts.allow ?? KEEP_SECRET_ALLOW;
   let redacted = 0;
-  const tokens = (piece: string): string => piece.replace(KEEP_SECRET_PATTERN, (m: string) => {
-    if (KEEP_SECRET_ALLOW.some((a) => m.includes(a))) return m;
-    redacted++;
-    return SECRET_REDACTED;
-  });
+  const take = (): string => { redacted++; return SECRET_REDACTED; };
+  const tokens = (piece: string): string => {
+    let out = piece.replace(PGP_PRIVATE_BLOCK, take).replace(KEEP_SECRET_PATTERN, (m: string) => (allow.some((a) => m.includes(a)) ? m : take()));
+    if (opts.mintedHex) out = out.replace(MINTED_HEX, take);
+    return out;
+  };
   let out = "", from = 0;
   for (const m of text.matchAll(KEEP_KEY_HEADER)) {
     const at = m.index, after = at + m[0].length;
-    if (at < from || !keyBodyFollows(text.slice(after))) continue;
-    const window = text.slice(after, after + KEY_BODY_WINDOW);
+    const window = windowAfter(text, after);
+    if (at < from || (!opts.everyKeyBlock && !keyBodyFollows(window))) continue;
     const end = /-----END [A-Z ]*PRIVATE KEY-----/.exec(window);
     const to = end === null ? after + window.length : after + end.index + end[0].length;
-    out += tokens(text.slice(from, at)) + SECRET_REDACTED;
-    redacted++;
+    out += tokens(text.slice(from, at)) + take();
     from = to;
   }
   return { text: out + tokens(text.slice(from)), redacted };

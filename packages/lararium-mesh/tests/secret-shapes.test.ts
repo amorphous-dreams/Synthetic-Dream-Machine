@@ -21,4 +21,26 @@ describe("the secret-shape scan", () => {
     const prose = `the header ${begin} then prose`;
     expect(redactSecretShapes(prose)).toEqual({ text: prose, redacted: 0 });
   });
+
+  test("RED R3 — the missed shapes: a fine-grained GitHub token, a PGP private block, an AWS secret key by its name; the strict reading takes fixtures, bare minted hex and a 32-wide key block, and leaves a digest its scheme names", () => {
+    const pat = "github_pat_" + "A1b2".repeat(8);
+    const pgp = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n\nlQOYBF...\n-----END PGP PRIVATE KEY BLOCK-----";
+    const aws = "aws_secret_access_key = " + "wJalrXUtnFEMI/K7MDENG/bPxRfiCY" + "EXAMPLEKEY";
+    for (const shape of [pat, pgp, aws]) {
+      expect(secretShapes(shape), shape.slice(0, 20)).not.toEqual([]);
+      expect(redactSecretShapes(`x ${shape} y`).text, shape.slice(0, 20)).toBe(`x ${SECRET_REDACTED} y`);
+    }
+    const hex = "cd".repeat(32);
+    const strict = { allow: [], mintedHex: true, everyKeyBlock: true } as const;
+    expect(redactSecretShapes(`ref ${hex} and sha256:${hex} and AKIAIOSFODNN7EXAMPLE`, strict).text).toBe(`ref ${SECRET_REDACTED} and sha256:${hex} and ${SECRET_REDACTED}`);
+    const narrow = `-----BEGIN PRIVATE KEY-----\n${"MIIBVgIBADANBgkqhkiG9w0BAQEFAASCAUAwggE8".slice(0, 32)}\n-----END PRIVATE KEY-----`;
+    expect(redactSecretShapes(narrow).redacted, "the keep's body test passes a 32-wide wrap").toBe(0);
+    expect(redactSecretShapes(narrow, strict).text).toBe(SECRET_REDACTED);
+  });
+
+  test("R4 — a header far from its body reads within the 16 KB window alone", () => {
+    const begin = "-----BEGIN OPENSSH PRIVATE KEY-----";
+    const line = "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAAB0Q";
+    expect(secretShapes(`${begin}${" ".repeat(20_000)}\n${line}\n${line}`)).toEqual([]);
+  });
 });
