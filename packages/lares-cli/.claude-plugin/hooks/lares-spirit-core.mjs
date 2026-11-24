@@ -316,19 +316,18 @@ export function stopStep(state, every = state.every ?? TRUE_UP_EVERY) {
 }
 
 /** The true-up's words: the doors that true and fold the record, and why they ask now. */
-export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null, body = null) {
+export function trueUpText(pet, step, body = null) {
   const why = step.fire === "unfiled"
     ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
   const self = typeof body === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(body) ? ` --body ${body}` : "";
-  const stamp = Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : "";
   const open = digestsOf(step?.state?.digests)["#/open"];
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/voice${self}${stamp}; ` +
-      `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}${stamp}` +
+    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/voice${self}; ` +
+      `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}` +
       `${open ? " (the digest as of this session's wake; a later ah hands back the newer one)" : ""}; ` +
-      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' lists each line's digest; --line <n> --expect <digest>${self}${stamp}). The budget refuses growth; you choose what folds.`,
+      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' lists each line's digest; --line <n> --expect <digest>${self}). The budget refuses growth; you choose what folds.`,
   ].join("\n");
 }
 
