@@ -73,9 +73,10 @@ export interface SealedRestDoor {
    */
   nameDocument?(documentId: string, bagId: string): boolean;
   /**
-   * THE ROSTER'S LOCAL HALF: told each document this vessel mints over the Repo (`create`, `import`, `clone`). A mint is born
-   * here, never pushed by a peer. A find names nothing by itself: a caller that opens a bag's document names its bag
-   * (`waitHandle`, `nameDocumentFor`), and a peer's push reaches the Repo by none of these (`SealedDocumentStore#solicited`).
+   * THE ROSTER'S LOCAL HALF: told each document this vessel mints over the Repo (`create`, `import`, `clone`), and each derived
+   * board it opens (`nameDerivedDocument`). A mint is born here, never pushed by a peer; a derived address names its owner. A
+   * find names nothing by itself: a caller that opens a bag's document names its bag (`waitHandle`, `nameDocumentFor`), and a
+   * peer's push reaches the Repo by none of these (`SealedDocumentStore#solicited`).
    */
   solicited?(documentId: string): void;
 }
@@ -108,6 +109,16 @@ const HEARD = new WeakMap<Repo, (documentId: string) => void>();
  */
 export function nameDocumentFor(repo: Repo, documentId: string, bagId: string): boolean {
   return SEALED_DOORS.get(repo)?.nameDocument?.(documentIdOf(documentId), bagId) ?? false;
+}
+
+/**
+ * NAME A DERIVED DOCUMENT AT ITS OPEN (`materializeSharedLarDoc`): a shared board whose address derives from its owner's key
+ * (a fleet root's edge board, a realm's vouch and edge boards, a Nexus's boards, a vessel's own edge ledger) is known by that
+ * derivation, so a copy a peer pushes first rests and survives a restart. A derived address never names a sealed bag's
+ * document (a private plane carries a random id no derivation reaches), and the map still decides any document it names.
+ */
+export function nameDerivedDocument(repo: Repo, url: string): void {
+  try { SEALED_DOORS.get(repo)?.solicited?.(documentIdOf(url)); } catch { /* a roster's fault never holds an open */ }
 }
 
 /**

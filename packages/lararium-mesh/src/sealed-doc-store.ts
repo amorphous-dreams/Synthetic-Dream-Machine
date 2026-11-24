@@ -56,6 +56,7 @@ export const SEALED_DOCUMENT_REFUSALS = [
   "save-unmapped",           // the document rests sealed and the map names no bag for it now: the save waits in memory, never clear
   "save-unsealed",           // the holder refused or never answered the seal: the save waits in memory, and the next reseal tries again
   "save-unnamed",            // neither the map nor the clear-name roster names the document (an unsolicited peer push): the save waits in memory, never clear
+  "unnamed-bound",           // the saves held unnamed already fill their bound (count or bytes): this one neither waits nor rests, and the engine keeps it
   "held-clear-at-rest",      // a held bag (the vessel's secret home) found a clear chunk at rest: a fault, never read as the document
   "holder-locked",           // a vessel-held home whose key has not opened (custody locked, no floor key): no byte opens until it does
 ] as const;
@@ -210,6 +211,11 @@ export interface SealedDocumentPorts {
 /** The refusals a hydrating load waits out: each names a piece that stands later in a vessel's boot. */
 const HYDRATION_WAITS: ReadonlySet<string> = new Set(["bag-unmapped", "session-absent", "chain-absent", "holder-locked", "sealed-store-unavailable", "signer-unavailable", "door-unanswered"]);
 
+/** THE BOUND ON SAVES HELD UNNAMED: a peer's unsolicited pushes wait in memory, so their count and bytes stay bounded. Past
+ *  either, a further unnamed save refuses by name (`unnamed-bound`): nothing rests, and the engine keeps the change in memory. */
+export const UNNAMED_HELD_MAX_SAVES = 4096;
+export const UNNAMED_HELD_MAX_BYTES = 64 * 1024 * 1024;
+
 const ROLES: Readonly<Record<string, DocumentValue["role"]>> = { incremental: "change", snapshot: "checkpoint" };
 const POINTER = SEALED_VALUE_POINTER;
 /** The Automerge chunk magic: a value the engine itself wrote, clear, before its bag mapped sealed. */
@@ -275,7 +281,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   nameDocument(documentId: string, bagId: string): boolean {
     if ((this.#ports.bagRow?.(bagId) ?? null) === null) {
       // A CLEAR BAG'S DOCUMENT JOINS THE CLEAR-NAME ROSTER: the caller named its bag, so its saves land as the engine wrote them.
-      this.#solicit(documentId);
+      void this.#solicit(documentId);
       return false;
     }
     this.#named.set(documentId, bagId);
@@ -287,15 +293,16 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   readonly #solicited = new Set<string>();
 
   /**
-   * A LOCAL CALLER ASKED FOR THIS DOCUMENT (a find, a create, an import over the Repo this store stands under): the vessel knows
-   * it, so it never waits as an unsolicited push. Saves of it held `save-unnamed` land now, by the rule its map reads.
+   * THE VESSEL KNOWS THIS DOCUMENT (it minted it over the Repo this store stands under, or a derivation named it at its open), so
+   * it never waits as an unsolicited push. Saves of it held `save-unnamed` land now, by the rule its map reads.
    */
-  solicited(documentId: string): void { this.#solicit(documentId); }
+  solicited(documentId: string): Promise<number> { return this.#solicit(documentId); }
 
-  #solicit(documentId: string): void {
-    if (this.#solicited.has(documentId)) return;
+  /** Name the document, and answer the release of its held saves (a fault keeps them waiting by name, and answers 0). */
+  #solicit(documentId: string): Promise<number> {
+    if (this.#solicited.has(documentId)) return Promise.resolve(0);
     this.#solicited.add(documentId);
-    void this.#releaseNamed().catch(() => { /* a release that faults keeps its saves waiting by name */ });
+    return this.#releaseNamed().catch(() => 0);
   }
 
   /** Does the roster name this document: the vessel's registry names it, or a local caller opened it? True where no roster
@@ -317,12 +324,26 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       if (w.refusal !== "save-unnamed") continue;
       const documentId = w.key[0]!;
       if (this.bagOf(documentId) !== null || this.#classedSealed.has(documentId) || !(await this.#namedClear(documentId))) continue;
-      if (this.#waiting.get(name) !== w) continue;
+      // THE CLASS READS AGAIN AFTER THE ROSTER'S ANSWER: a map that named the document sealed meanwhile keeps it for `reseal`.
+      if (!this.#landsClear(documentId) || this.#waiting.get(name) !== w) continue;
       this.#waiting.delete(name);
       try { await this.#ports.inner.save(w.key, w.data); landed++; }
       catch (error) { if (!this.#waiting.has(name)) this.#waiting.set(name, w); throw error; }
     }
     return landed;
+  }
+
+  /** May a clear byte of this document rest now: no bag maps it and it never mapped sealed this process? Read right before
+   *  each clear write, after every await. */
+  #landsClear(documentId: string): boolean {
+    return this.bagOf(documentId) === null && !this.#classedSealed.has(documentId);
+  }
+
+  /** The refusal holding a save of this document in memory (the first that waits), or null where none waits. A receipt reads
+   *  it: a save held here has not reached rest, so it acknowledges nothing (`receiptInStore`). */
+  heldRefusalOf(documentId: string): HeldRefusal | null {
+    for (const w of this.#waiting.values()) if (w.key[0] === documentId) return w.refusal;
+    return null;
   }
 
   /** The bag a document maps to: the map's row for it, else the row of the bag a caller named it for (`nameDocument`). */
@@ -517,12 +538,15 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       this.#waiting.delete(name);
       sealed++;
     }
-    if (this.#ports.namesClear !== undefined) await this.#releaseNamed();
+    // A RELEASE THAT FAULTS NEVER SKIPS THE DEFERRED REMOVALS: they run, then the fault rises.
+    let releaseFault: unknown = null;
+    if (this.#ports.namesClear !== undefined) { try { await this.#releaseNamed(); } catch (error) { releaseFault = error ?? new Error("release faulted"); } }
     for (const [documentId, keys] of [...this.#deferred]) {
       if (this.waiting(documentId) > 0 || this.bagOf(documentId) === null) continue;
       this.#deferred.delete(documentId);
       for (const key of keys) await this.remove(key);
     }
+    if (releaseFault !== null) throw releaseFault;
     return sealed;
   }
 
@@ -575,9 +599,24 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       // UNKNOWN MEANS HOLD: a document neither the map nor the roster names (an unsolicited peer push) waits in memory, never clear.
       // A key of one part (the Repo's own `storage-adapter-id`) names no document, and rests as written.
       if (typeof key[0] === "string" && key.length >= 2 && !(await this.#namedClear(key[0]))) {
+        const name = nameOf(key);
+        if (!this.#waiting.has(name)) {
+          const unnamed = [...this.#waiting.values()].filter((w) => w.refusal === "save-unnamed");
+          const bytes = unnamed.reduce((n, w) => n + w.data.byteLength, 0);
+          if (unnamed.length >= UNNAMED_HELD_MAX_SAVES || bytes + data.byteLength > UNNAMED_HELD_MAX_BYTES) {
+            throw new SealedDocumentRefusal("unnamed-bound", `${unnamed.length} save(s), ${bytes} byte(s) already wait unnamed`);
+          }
+        }
         const first = this.waiting(key[0]) === 0;
-        this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unnamed" });
+        this.#waiting.set(name, { key: [...key], data: Uint8Array.from(data), refusal: "save-unnamed" });
         if (first) this.#ports.onHeld?.({ refusal: "save-unnamed", documentId: key[0] });
+        return;
+      }
+      // THE CLASS READS AGAIN RIGHT BEFORE THE CLEAR WRITE: a map that named the document sealed across the awaits above keeps
+      // this save in memory for `reseal`, never clear.
+      if (typeof key[0] === "string" && key.length >= 2 && !this.#landsClear(key[0])) {
+        this.#waiting.set(nameOf(key), { key: [...key], data: Uint8Array.from(data), refusal: "save-unmapped" });
+        this.#ports.onHeld?.({ refusal: "save-unmapped", documentId: key[0] });
         return;
       }
       return this.#ports.inner.save(key, data);
@@ -662,8 +701,9 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   async #load(key: StorageKey): Promise<Uint8Array | undefined> {
     const bag = this.#bagOf(key);
     if (bag === null) {
+      // AN UNNAMED SAVE READS BACK FROM MEMORY; a sealed-class save that waits unmapped never reads here as if it were clear.
       const waiting = this.#waiting.get(nameOf(key));
-      return waiting ? Uint8Array.from(waiting.data) : this.#unmapped(await this.#ports.inner.load(key));
+      return waiting?.refusal === "save-unnamed" ? Uint8Array.from(waiting.data) : this.#unmapped(await this.#ports.inner.load(key));
     }
     if (isPublic(bag)) return this.#openPublic(bag, key, await this.#ports.inner.load(key));
     if (isHeld(bag)) return this.#openHeld(bag, key, await this.#ports.inner.load(key));

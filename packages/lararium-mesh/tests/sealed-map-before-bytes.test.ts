@@ -14,6 +14,8 @@
  *   M3  the clear-name roster reads the same registry: a document a known bag carries (a public catalog row, a house canon bag)
  *       reads named and saves clear; a document no bag carries reads unknown, and its save waits in memory (`save-unnamed`)
  *       until a bag names it, then lands clear.
+ *   M5  the saves held unnamed stay bounded: past the bound a further unnamed save refuses by name (`unnamed-bound`).
+ *   M6  an unmapped load reads back an unnamed save alone, never a sealed-class save that waits unmapped.
  *   M4  a catalog row alone names a held document at once: the catalog's own change moves the map (`watchCatalogNames`), so
  *       the held save lands clear with no other event.
  */
@@ -21,6 +23,7 @@ import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { composeSealedRest, documentIdOfUrl, sealedBagMap, watchCatalogNames } from "../src/sealed-rest.js";
+import { SealedDocumentStore, UNNAMED_HELD_MAX_SAVES } from "../src/sealed-doc-store.js";
 import { tiddlerText } from "../src/base-doc.js";
 import { bagUri } from "../src/lar-uris.js";
 import { storedLarRecord } from "../src/stored-record.js";
@@ -144,5 +147,43 @@ describe("a document named for a sealed bag before its first byte maps as the ba
       expect(bytes.has(join([HELD, "incremental", "first"]))).toBe(true);
       expect(rest.store.held()).toEqual([]);
     } finally { unwatch(); await repo.shutdown(); }
+  });
+
+  test("M5 — the saves held unnamed stay bounded: past the bound a further unnamed save refuses by name, and nothing rests", async () => {
+    const f = fixture();
+    const tiny = Uint8Array.of(1);
+    for (let i = 0; i < UNNAMED_HELD_MAX_SAVES; i++) await f.rest.store.save([`push-${i}`, "incremental", "x"], tiny);
+    let refusal: string | null = null;
+    try { await f.rest.store.save(["one-too-many", "incremental", "x"], tiny); } catch (error) { refusal = (error as { refusal?: string }).refusal ?? null; }
+    expect(refusal).toBe("unnamed-bound");
+    expect(f.bytes.size).toBe(0);
+    expect(f.rest.store.waiting()).toBe(UNNAMED_HELD_MAX_SAVES);
+  });
+
+  test("M6 — an unmapped load reads an unnamed save back from memory, never a sealed-class save that waits unmapped", async () => {
+    const bytes = new Map<string, Uint8Array>();
+    const inner: StorageAdapterInterface = {
+      async load(k) { return bytes.get(join(k)); },
+      async save(k, data) { bytes.set(join(k), Uint8Array.from(data)); },
+      async remove(k) { bytes.delete(join(k)); },
+      async loadRange(prefix): Promise<Chunk[]> { return [...bytes].filter(([k]) => under(k, prefix)).map(([k, data]) => ({ key: k.split("\0"), data })); },
+      async removeRange(prefix) { for (const k of [...bytes.keys()]) if (under(k, prefix)) bytes.delete(k); },
+    };
+    let mapped = true;
+    const store = new SealedDocumentStore({
+      inner, namesClear: () => false, waitOverSealed: true,
+      bagOf: (id) => (mapped && id === "sealed-then-dropped" ? { bagId: SEALED_BAG, face: null } : null),
+      sessionFace: () => null, sessionOf: () => null,
+      seal: async () => ({ refusal: "signer-unavailable" }) as never, open: async () => ({ refusal: "value-absent" }) as never,
+    });
+    // A SEALED-CLASS DOCUMENT whose map drops: its save waits unmapped, and an unmapped load never hands it back as clear.
+    await store.save(["sealed-then-dropped", "incremental", "a"], A.save(A.from({ note: SECRET })));
+    mapped = false;
+    await store.save(["sealed-then-dropped", "incremental", "b"], A.save(A.from({ note: SECRET })));
+    expect(store.heldRefusalOf("sealed-then-dropped")).toBe("save-unmapped");
+    expect(await store.load(["sealed-then-dropped", "incremental", "b"])).toBeUndefined();
+    // AN UNNAMED SAVE reads back from memory.
+    await store.save(["an-unnamed-push", "incremental", "a"], Uint8Array.of(7));
+    expect(await store.load(["an-unnamed-push", "incremental", "a"])).toEqual(Uint8Array.of(7));
   });
 });

@@ -37,7 +37,7 @@ import { interpretAsDocumentId, Repo, type DocHandle, type StorageAdapterInterfa
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  AutomergeDocStore, clearRosterOf, CompositeStore, crossroadsDocUrl, DeterministicFederationGate, emptyLarDoc, mountWikiSlot, nameDocumentFor, sealedAddressOf, SealedDocumentStore, seatSealedRest, waitHandle,
+  AutomergeDocStore, clearRosterOf, CompositeStore, crossroadsDocUrl, DeterministicFederationGate, emptyLarDoc, fleetEdgeBoardDocUrl, materializeSharedLarDoc, mountWikiSlot, nameDocumentFor, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, receiptInStore, sealedAddressOf, SealedDocumentStore, seatSealedRest, waitHandle,
   type ChangeOrigin, type LarDoc, type LarTiddlerRecord, type SealedBagRow, type SealedSettlement,
 } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
@@ -484,5 +484,67 @@ describe("an unsolicited peer push waits for a name: unknown means hold", () => 
     expect(store.held().some((h) => h.documentId === push.id && h.refusal === "save-unnamed")).toBe(true);
     await repo.shutdown();
     expect(filesOf(storageDir, push.id).filter((f) => !f.includes("sync-state"))).toEqual([]);
+  }, 120_000);
+});
+
+describe("a named open keeps what a peer pushed first: announced slots and derived boards survive a restart", () => {
+  /** Push `url`'s document from a sibling (or an island), then let `name` name it on this vessel; flush, restart, read back. */
+  async function survivesRestart(url: string, name: (repo: Repo, store: SealedDocumentStore, id: string) => Promise<void> | void): Promise<{ readonly before: string[]; readonly after: string | undefined }> {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const { store, repo } = seatedRepo(storageDir, () => [], namesIn(() => []));
+    const pushed = siblingPushesAt(repo, url, PUSHED);
+    pushed.connect();
+    await until(() => arrived(repo, pushed.id, PUSHED), "the push arrives");
+    await repo.flush();
+    // HELD UNTIL NAMED: the push alone names nothing.
+    const before = store.held().filter((h) => h.documentId === pushed.id).map((h) => h.refusal);
+    await name(repo, store, pushed.id);
+    await until(() => hitsOf(storageDir, PUSHED).length > 0, "the named document rests");
+    await repo.flush();
+    await repo.shutdown();
+    const again = new Repo({ storage: sealedStore(storageDir, () => [], true, () => false), network: [] });
+    closers.push(() => again.shutdown());
+    const read = await again.find<LarDoc>(`automerge:${pushed.id}` as never);
+    return { before: [...new Set(before)], after: textOf(read, TITLE) };
+  }
+
+  test("H5a — announced-clear-slot-survives-restart: an island mints a clear working slot on its own Repo; the vessel holds its bytes until the announcement names it, then they rest and read back after a restart", async () => {
+    const slot = new Repo({ network: [] }).create<LarDoc>(emptyLarDoc()).url;
+    const out = await survivesRestart(slot, (_repo, store, id) => { expect(store.nameDocument(id, SLOT.wikiBagId)).toBe(false); });
+    expect(out.before).toEqual(["save-unnamed"]);
+    expect(out.after).toBe(PUSHED);
+  }, 120_000);
+
+  test("H5b — receipt-refuses-unnamed: a receipt that names nothing refuses a save held unnamed; the house island's own ask names its mint, and the receipt issues", async () => {
+    const storageDir = (dir = mkdtempSync(join(tmpdir(), "lar-clear-roster-")));
+    const { store, repo } = seatedRepo(storageDir, () => [], namesIn(() => []));
+    const push = siblingPushes(repo, PUSHED);
+    push.connect();
+    await until(() => arrived(repo, push.id, PUSHED), "the push arrives");
+    const heldOf = (id: string) => store.heldRefusalOf(id);
+    // A RECEIPT THAT NAMES NOTHING (a peer's push, no house island asking) refuses by name: a flush into memory is no rest.
+    expect(await refusalOf(receiptInStore(repo, [push.id], undefined, undefined, { heldOf }))).toMatch(/^save-unnamed/);
+    // THE HOUSE ISLAND'S OWN ASK names its mint first: the held saves land, and the receipt issues.
+    expect(await refusalOf(receiptInStore(repo, [push.id], undefined, undefined, { name: (id) => store.solicited(id), heldOf }))).toBeNull();
+    expect(store.heldRefusalOf(push.id)).toBeNull();
+    expect(hitsOf(storageDir, PUSHED).length).toBeGreaterThan(0);
+  }, 120_000);
+
+  test("H5c — fleet-edge-board-survives-restart: a non-root device's fleet edge board, pushed first, rests once its open derives it and reads back offline", async () => {
+    const out = await survivesRestart(fleetEdgeBoardDocUrl("did:key:z6MkFleetRootForTheRosterTest"), async (repo) => { await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl("did:key:z6MkFleetRootForTheRosterTest"), "board:edge-kapae"); });
+    expect(out.before).toEqual(["save-unnamed"]);
+    expect(out.after).toBe(PUSHED);
+  }, 120_000);
+
+  test("H5d — realm-vouch-board-survives-restart: a realm's vouch board, pushed first, rests once its open derives it and reads back offline", async () => {
+    const out = await survivesRestart(realmVouchBoardDocUrl("realm-of-the-roster"), async (repo) => { await materializeSharedLarDoc(repo, realmVouchBoardDocUrl("realm-of-the-roster"), "board:vouch-registry"); });
+    expect(out.before).toEqual(["save-unnamed"]);
+    expect(out.after).toBe(PUSHED);
+  }, 120_000);
+
+  test("H5e — realm-edge-board-survives-restart: a realm's edge board, pushed first, rests once its open derives it and reads back offline", async () => {
+    const out = await survivesRestart(realmEdgeBoardDocUrl("realm-of-the-roster"), async (repo) => { await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl("realm-of-the-roster"), "board:edge-kapae"); });
+    expect(out.before).toEqual(["save-unnamed"]);
+    expect(out.after).toBe(PUSHED);
   }, 120_000);
 });

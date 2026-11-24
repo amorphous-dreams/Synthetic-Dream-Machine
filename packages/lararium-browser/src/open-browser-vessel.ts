@@ -720,6 +720,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // The wiki islands among them (the pool marks each): they render pages and receive no custody document.
   let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
   let   fedGate: FederationGate | null = null;
+  /** The public boards and the admitted hearth canon alone (`hearthCrossingOf().clearShelf`): what the clear-name roster reads. */
+  let   clearShelf: FederationGate | null = null;
   // THE SIBLINGS — peers this face's sibling channel PROVED (below, once the KEL is walked). A sibling holds
   // standing, never the house: it never shares freely, and only `siblingGate` (the ring's sibling path over the
   // public boards) decides what reaches it. Null denies every doc.
@@ -812,6 +814,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       if (named.has(documentId)) return;
       named.add(documentId);
       slotDocsNamed.set(bagId, named);
+      // THE ANNOUNCEMENT NAMES THE DOCUMENT FOR ITS BAG (the node's one order): a clear bag's slot joins the clear-name roster.
+      sealedRest.store.nameDocument(documentId, bagId);
       sealedRest.store.mapMoved();
       const session = sealedCells.session;
       if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
@@ -840,7 +844,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // UNKNOWN MEANS HOLD: the clear-name roster reads the same bag registry the map reads (`sealedBagMap.names`); a document
     // no bag carries and no local caller opened (an unsolicited peer push) waits in memory until a name arrives.
     // The federatable shelf names too: a public board an admitted peer pushes rests clear and survives a restart (`clearRosterOf`).
-    namesClear: clearRosterOf({ names: (documentId) => sealedMap.names(documentId), shelf: () => fedGate }),
+    namesClear: clearRosterOf({ names: (documentId) => sealedMap.names(documentId), shelf: () => clearShelf }),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     door: docStoreDoor,
@@ -1418,6 +1422,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // Arm the deny-by-default gate for the pinned crossing: the Nexus's deterministic crossroads doc and WHO board are
     // the public surface, widened at the face's own hearth by exactly the canon its admit names (`hearthCrossingOf`).
     fedGate = crossing.gate;
+    // THE CLEAR SHELF never widens with the face's planes or the hearth's daemon working document (`hearthCrossingOf`).
+    clearShelf = crossing.clearShelf;
     // CANON CROSSES HEARTH TO LEAF ALONE. The gate above decides which documents this leaf FETCHES from its
     // hearth; it says nothing about which way a change travels. The leg reads every sync message this Repo
     // sends toward the hearth and keeps back any that carries a change to a canon document the admit named.
@@ -2095,7 +2101,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         receipt: browserIslandReceipt(repo, {
           ready: daemonIslandStood.then(() => daemon.syncLegReady()),
           onClose: (fn) => { receiptClosers.add(fn); return () => { receiptClosers.delete(fn); }; },
-        }),
+        }, { name: (documentId) => sealedRest.store.solicited(documentId), heldOf: (documentId) => sealedRest.store.heldRefusalOf(documentId) }),
         cas: readCasBlobFromOpfs,
         docStore: (port) => docStorePort.attach(port),
         // V2: the daemon island's own store rests no document this rest seals (`islandRestGuard`).

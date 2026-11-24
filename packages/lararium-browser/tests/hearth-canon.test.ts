@@ -258,3 +258,24 @@ describe("hearthCrossingOf — the vessel's crossing wears the widened gate for 
     expect(at({ pinnedGatePubKey: undefined }).gate).toBeNull();
   });
 });
+
+describe("hearthCrossingOf — the clear shelf never widens with a face's planes", () => {
+  test("clear-shelf-refuses-planes: the public boards and the admitted canon read clear; a face plane and the hearth's daemon working document never do, though the fetch gate opens them", () => {
+    const HEARTH = "cd".repeat(32);
+    const crossing = hearthCrossingOf({ pinnedGatePubKey: HEARTH, hearthGatePubKey: HEARTH, holdsDeviceEdge: true, hearthCanonDocs: { [LARES_DOC_URI]: LARES_URL }, nexusPubkey: NEXUS });
+    const PLANE_URL = generateAutomergeUrl();
+    const WORKING_URL = generateAutomergeUrl();
+    expect(crossing.openFacePlanes([PLANE_URL])).toBe(true);
+    expect(crossing.openHearthDaemon(WORKING_URL)).toBe(id(WORKING_URL));
+    // THE FETCH GATE widened to both: they cross to fetch.
+    expect(crossing.gate!.mayFederate(id(PLANE_URL))).toBe(true);
+    expect(crossing.gate!.mayFederate(id(WORKING_URL))).toBe(true);
+    // THE CLEAR SHELF did not: each rests sealed under the face, never clear on a fresh browser.
+    expect(crossing.clearShelf!.mayFederate(id(PLANE_URL))).toBe(false);
+    expect(crossing.clearShelf!.mayFederate(id(WORKING_URL))).toBe(false);
+    expect(crossing.clearShelf!.mayFederate(id(LARES_URL))).toBe(true);
+    expect(crossing.clearShelf!.mayFederate(id(crossroadsDocUrl(NEXUS)))).toBe(true);
+    // A crossing with no pin stands no shelf.
+    expect(hearthCrossingOf({ pinnedGatePubKey: null, hearthGatePubKey: HEARTH, holdsDeviceEdge: true, hearthCanonDocs: {}, nexusPubkey: NEXUS }).clearShelf).toBeNull();
+  });
+});
