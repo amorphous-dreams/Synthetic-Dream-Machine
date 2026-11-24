@@ -23,7 +23,7 @@ import { handVerbExit, runHandVerb } from "../src/pulama-verbs.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { createHash } from "node:crypto";
 const sha = (s: string): string => createHash("sha256").update(s).digest("hex");
-import { cosignedCommit, selfCosigned } from "../../lararium-mesh/tests/keeper-cosign-fixture.js";
+import { KEEPER_FACE, cosignedCommit, selfCosigned } from "../../lararium-mesh/tests/keeper-cosign-fixture.js";
 import { SESSION_DERIVES, fixtureRoute, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -41,11 +41,11 @@ async function house(label: string) {
   const state = scratch(), records = pulamaRecords(state), image = pulamaImage(state);
   const lines: string[] = [], answers: PulamaHandAnswer[] = [];
   /** THE LIVE RITE, faked at its port (`keeperRiteOver` reads it for real below): an offer of "rite" begins one, at `riteDevices`. */
-  const live = { devices: 1, begun: 0 };
+  const live = { devices: 1, begun: 0, faces: [] as { ordinal: number; group: string; devices: number }[] };
   const keeperRite = async (offer: unknown, keeper: { readonly to: string; readonly next: string }) => {
     if (offer !== "rite") return { ok: false as const, refusal: "vest-rite-absent", detail: "a vest rides a live kūkulu rite, and this frame carries no offer with a vouch" };
     live.begun++;
-    return { ok: true as const, rite: [sha(`${keeper.to}${keeper.next}${live.begun}`)], devices: live.devices };
+    return { ok: true as const, rite: [sha(`${keeper.to}${keeper.next}${live.begun}`)], devices: live.devices, faces: live.faces };
   };
   const watch = (door: (f: unknown) => Promise<PulamaHandAnswer>) => async (frame: unknown) => { const a = await door(frame); answers.push(a); return a; };
   const old = watch(pulamaHandDoor({ holder: fx.kept, server: fx.server, image, records, admissions: pulamaAdmissions(records), keeperRite, worn: () => 0, onLog: (l) => lines.push(l) }));
@@ -181,6 +181,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     // A co-signed commit reads vest-ready, and the rite's vessel-signed vouch counts the same two devices the co-sign's roster binds.
     expect(await h.old({ op: "status" })).toMatchObject({ vestReady: D2 });
     h.live.devices = 2;
+    h.live.faces = [{ ordinal: 0, group: KEEPER_FACE, devices: 2 }];
     const done = await handoff(h, h.old);
     expect(done.vest).toMatchObject({ reading: "vested" });
     expect(done.landed).toMatchObject({ reading: "landed" });
@@ -189,6 +190,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     const n2 = "a2".repeat(32);
     await moved.old({ op: "keeper-commit", next: D2, devices: 2, cosign: { nonce: n2, faces: [await cosignedCommit({ next: D2, prev: null, nonce: n2 })] }, credentials: fixtureRoute });
     moved.live.devices = 3;
+    moved.live.faces = [{ ordinal: 0, group: KEEPER_FACE, devices: 3 }];
     expect((await handoff(moved, moved.old)).vest).toMatchObject({ reading: "vest-cosign-refused", detail: expect.stringContaining("lares pulama keeper-commit") });
     expect((await handoff(moved, moved.old)).vest).toMatchObject({ reading: "commit-absent" });
     const one = await house("keeper-vest-one-device");
@@ -216,9 +218,28 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect(await commit({ nonce, faces: [good] })).toMatchObject({ reading: "committed" });
     expect(await commit({ nonce, faces: [good] })).toMatchObject({ reading: "vest-cosign-spent", detail: expect.stringContaining("lares pulama keeper-commit") });
     h.live.devices = 2;
+    h.live.faces = [{ ordinal: 0, group: KEEPER_FACE, devices: 2 }];
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
     // The spent commit never vests twice: the old keeper passed its fire, and no live commit stands.
     expect((await handoff(h, h.old)).vest).toMatchObject({ reading: expect.stringMatching(/^(commit-absent|vest-spent|pulama-locked|fire-passing)$/) });
+  });
+
+  test("RED the vessel's signed vouch maps each ordinal to its face's group: a co-sign over another face's group, or an ordinal no vouch names, refuses and spends the commit; CONTROL: the vouched group vests", async () => {
+    const run = async (label: string, vouched: { ordinal: number; group: string; devices: number }[], group = KEEPER_FACE) => {
+      const h = await house(label);
+      const nonce = sha(label);
+      expect(await h.old({ op: "keeper-commit", next: D2, devices: 2, cosign: { nonce, faces: [await cosignedCommit({ next: D2, prev: null, nonce }, 0, group)] }, credentials: fixtureRoute })).toMatchObject({ reading: "committed" });
+      h.live.devices = 2; h.live.faces = vouched;
+      return handoff(h, h.old);
+    };
+    // A co-sign spent on ANOTHER face of the operator's (its own two devices, its own group) answers nothing for this ordinal.
+    const other = await run("keeper-vest-cosign-other-face", [{ ordinal: 0, group: KEEPER_FACE, devices: 2 }], "another-face");
+    expect(other.vest).toMatchObject({ reading: "vest-cosign-refused", detail: expect.stringMatching(/group[\s\S]*lares pulama keeper-commit/) });
+    // The vouch names no face at the co-sign's ordinal.
+    const unnamed = await run("keeper-vest-cosign-unvouched", [{ ordinal: 1, group: KEEPER_FACE, devices: 2 }]);
+    expect(unnamed.vest).toMatchObject({ reading: "vest-cosign-refused", detail: expect.stringContaining("h0") });
+    const control = await run("keeper-vest-cosign-vouched", [{ ordinal: 0, group: KEEPER_FACE, devices: 2 }]);
+    expect(control.landed).toMatchObject({ reading: "landed" });
   });
 
   test("CONTROL: a replayed vest refuses `vest-spent`; a replayed slot refuses at the successor; a slot to another key refuses; a replayed land refuses", async () => {
@@ -394,7 +415,7 @@ describe("RED the live rite a vest rides (`keeperRiteOver`)", () => {
       expect(await over(raw, { to, next: D2 }), why).toMatchObject({ ok: false, refusal: reading, detail: expect.stringContaining("lares rite kukulu") });
     }
     expect(begun).toEqual([]);
-    expect(await over(await offer(await vouch({ to, next: D2, devices: 1 })), { to, next: D2 })).toEqual({ ok: true, rite: ["ef".repeat(32)], devices: 1 });
+    expect(await over(await offer(await vouch({ to, next: D2, devices: 1 })), { to, next: D2 })).toEqual({ ok: true, rite: ["ef".repeat(32)], devices: 1, faces: [{ ordinal: 0, group, devices: 1 }] });
     expect(await over(await offer(await vouch({ to, next: D2, devices: 0 })), { to, next: D2 })).toMatchObject({ ok: true, devices: 0 });
   });
 });

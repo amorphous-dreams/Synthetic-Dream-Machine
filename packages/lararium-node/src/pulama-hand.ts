@@ -85,7 +85,7 @@ import { nativeKdf } from "@lararium/mesh/node";
 import { UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import { pulamaRecordCid } from "./pulama-admit.js";
-import { CLOSURE, keeperCommit, keeperEphemeral, keeperFold, keeperLand, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperStanding } from "./pulama-keeper.js";
+import { CLOSURE, keeperCommit, keeperEphemeral, keeperFold, keeperLand, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding } from "./pulama-keeper.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaServer } from "./pulama-server.js";
 import type { RehiveOutcome } from "./face-rehive.js";
@@ -164,7 +164,7 @@ export function pulamaHandDoor(a: {
   /** The face the vessel last wore here (`face.worn`); absent, the chain carries none. */
   readonly worn?: () => number | undefined;
   /** THE LIVE RITE a vest rides (`keeperRiteOver`): the offer read and bound to this keeper move, its return claimed. Absent, `keeper-vest` refuses `vest-rite-unavailable`. */
-  readonly keeperRite?: (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<{ readonly ok: true; readonly rite: readonly string[]; readonly devices: number } | { readonly ok: false; readonly refusal: string; readonly detail: string }>;
+  readonly keeperRite?: (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<KeeperRiteReading>;
   readonly onLog?: (line: string) => void;
 }): (frame: unknown) => Promise<PulamaHandAnswer> {
   const { holder, server } = a;

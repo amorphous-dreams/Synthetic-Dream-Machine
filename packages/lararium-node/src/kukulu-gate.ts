@@ -58,6 +58,7 @@
  * and conferre then reads the pair `par`. A kūkulu that never composed leaves the guest half alone, which reads red.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
+import type { KeeperRiteReading, KeeperVouchedFace } from "./pulama-keeper.js";
 import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, lentFacesOf, lentFacesWire, renderLentFaces, verifyKukuluVouch, type LentFaces } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import { personaGroupDigest } from "./persona-group-file.js";
@@ -254,7 +255,7 @@ export function keeperRiteOver(a: {
   readonly hand: (ordinal: number) => Promise<string | null | undefined>;
   readonly rite: KukuluRitePort;
   readonly image: () => string | null | Promise<string | null>;
-}): (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<{ readonly ok: true; readonly rite: readonly string[]; readonly devices: number } | { readonly ok: false; readonly refusal: string; readonly detail: string }> {
+}): (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<KeeperRiteReading> {
   return async (offer, keeper) => {
     const no = (refusal: string, detail: string) => ({ ok: false as const, refusal, detail: `${detail}; nothing vests, and the old fire still burns: light the successor by hand with \`lares rite kukulu\` on a terminal` });
     const o = (typeof offer === "object" && offer !== null && !Array.isArray(offer) ? offer : null) as { lei?: unknown; unstrung?: unknown; vouch?: unknown } | null;
@@ -266,6 +267,8 @@ export function keeperRiteOver(a: {
     if (raised === null) return no("kukulu-image-unreported", "the host reported no image at this keeper's hand door");
     const by = await pulamaSignerOf(a.holder);
     const tesserae: string[] = [];
+    // THE VOUCH MAPS ORDINAL TO GROUP: each vouch the vessel signed names its face's group; this keeper's own holder names the ordinal.
+    const faces: KeeperVouchedFace[] = [];
     let devices = Number.POSITIVE_INFINITY, most = 0, first: string | null = null;
     for (const raw of o.vouch.slice(0, 64)) {
       const vouched = verifyKukuluVouch(raw, vouchKey);
@@ -278,6 +281,7 @@ export function keeperRiteOver(a: {
       const face = await a.holder.faceStanding({ group: personaGroupDigest(body.group) });
       if (face === null || !face.unlocked) { first ??= "kukulu-face-locked"; continue; }
       const handKey = (await a.hand(face.ordinal))?.toLowerCase();
+      faces.push({ ordinal: face.ordinal, group: body.group, devices: body.keeper.devices });
       if (!handKey) { first ??= "kukulu-hand-absent"; continue; }
       const at: KukuluRiteAt = { group: body.group, branch: body.branch, head: body.head, tree: body.tree, image: raised, hand: (key) => key.toLowerCase() === handKey, by };
       // THE RETURN CLAIMS HERE: the vest is this rite's begin, and the next vessel's hello lands the half it rests.
@@ -288,6 +292,6 @@ export function keeperRiteOver(a: {
     }
     if (tesserae.length === 0) return no("vest-rite-absent", `no lit face's kukulu lei began a rite for this vest (${first ?? "no face"})`);
     // THE FEWEST READ WINS where a face read none (0 fails closed); else the most any face holds.
-    return { ok: true, rite: tesserae, devices: devices === 0 ? 0 : most };
+    return { ok: true, rite: tesserae, devices: devices === 0 ? 0 : most, faces };
   };
 }

@@ -47,8 +47,8 @@ export async function awaitingAsk(port: WardCosignPort, terms: KeeperVestTerms &
 }
 
 /** The whole co-sign over one commit on a face of two devices: ask, the second device's approve, the spend. */
-export async function cosignedCommit(terms: KeeperVestTerms, ordinal = 0): Promise<KeeperCosign> {
-  const f = await keeperFace(2);
+export async function cosignedCommit(terms: KeeperVestTerms, ordinal = 0, group = KEEPER_FACE): Promise<KeeperCosign> {
+  const f = await keeperFace(2, group);
   const ask = await awaitingAsk(f.port, { ...terms, ordinal });
   await f.answer(f.b, ask, terms);
   return keeperCosignGate(f.port, { ...terms, ordinal });

@@ -236,9 +236,30 @@ interface VestPayload {
 }
 
 /** The live rite a vest rides, as the pūlama reads the offer: each lent face's rite tessera it began, and the faces' device count. */
-export type KeeperRiteReading = { readonly ok: true; readonly rite: readonly string[]; readonly devices: number } | { readonly ok: false; readonly refusal: string; readonly detail: string };
+/** One face a rite's vouch names, as the keeper maps it: its ordinal (off this keeper's own holder), the group the vessel signed,
+ *  and the device count the vouch carries. */
+export interface KeeperVouchedFace { readonly ordinal: number; readonly group: string; readonly devices: number }
+export type KeeperRiteReading = { readonly ok: true; readonly rite: readonly string[]; readonly devices: number; readonly faces?: readonly KeeperVouchedFace[] } | { readonly ok: false; readonly refusal: string; readonly detail: string };
 /** The keys a vest seals, copied out of the lit holder for one seal (the caller's copies zero-fill after). */
 export type KeeperKeys = { readonly treeKey: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent?: number }> };
+
+/**
+ * THE VOUCH MAPS EACH ORDINAL TO ITS GROUP (coordinator ruling, 2026-11-23): a carried co-sign answers its face only where the rite's
+ * vessel-signed vouch names a face at that ordinal under the same group and the same device count the co-signed roster binds. So a
+ * co-sign spent on another of the operator's faces never answers this one.
+ */
+function vouchedCosignRefusal(faces: readonly KeeperVouchedFace[], body: KeeperBegunBody): KeeperRefusal | null {
+  if (!Array.isArray(body.cosigns)) return null;
+  const cure = "commit again with each face's own co-sign: lares pulama keeper-commit, or light the successor by hand: lares rite kukulu on a terminal";
+  for (const c of body.cosigns) {
+    const vouched = faces.filter((f) => f.ordinal === c.ordinal);
+    if (vouched.length !== 1) return refuse("vest-cosign-refused", `the rite's vouch names ${vouched.length === 0 ? "no face" : "two faces"} at h${c.ordinal}, which a co-sign answers; ${cure}`);
+    if (vouched[0]!.group !== c.group) return refuse("vest-cosign-refused", `the co-sign of h${c.ordinal} answers another group than the face the rite's vouch names there; ${cure}`);
+    if (vouched[0]!.devices !== c.devices.length) return refuse("vest-cosign-refused", `the rite's vouch counts ${vouched[0]!.devices} device(s) at h${c.ordinal}, and its co-sign's roster binds ${c.devices.length}; ${cure}`);
+  }
+  for (const f of faces) if (f.devices > 1 && !body.cosigns.some((c) => c.ordinal === f.ordinal)) return refuse("vest-cosign-owed", `the rite's vouch names h${f.ordinal} with ${f.devices} devices, and the commit carries no co-sign for it; ${cure}`);
+  return null;
+}
 
 /** Past one device the commit owes its carried co-sign, read offline against the commit it rides and the count `where` names. */
 const coSignRefusal = (devices: number | null, where: string, body: KeeperBegunBody): KeeperRefusal | null => {
@@ -281,6 +302,8 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
   if (!rite.ok) return lapse(refuse(rite.refusal, rite.detail));
   const late = coSignRefusal(rite.devices, "the rite's vouch", fold.pending.body);
   if (late !== null) return lapse(late);
+  const mapped = vouchedCosignRefusal(rite.faces ?? [], fold.pending.body);
+  if (mapped !== null) return lapse(mapped);
   const keys = at.keys();
   if (keys === null) return lapse(refuse("pulama-locked", "this keeper holds no key to vest; light the successor by hand: lares rite kukulu on a terminal"));
   try {
