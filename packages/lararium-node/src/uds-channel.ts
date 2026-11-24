@@ -1796,8 +1796,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           if (seat !== null) inv.asker = "seat";
           else if (peer === "unknown") {
             delete inv.asker;
-            if (opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand, and this line's peer reads nothing to attest one`, "hand-unattested");
-            if (opts.handOnlyOp?.(inv.verb, inv.args) != null) return fail(`"${inv.verb}" settles a standoff, a person's hand alone, and this line's peer reads nothing to attest one`, "hand-unattested");
+            if (opts.handOnlyActs?.has(inv.verb) || opts.handOnlyOp?.(inv.verb, inv.args) != null) return fail(`"${inv.verb}" runs on a person's hand, and this line's peer reads nothing to attest one`, "hand-unattested");
           } else inv.asker = "cli";
         }
         const named = namedFaceOf(inv.args);
