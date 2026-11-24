@@ -285,7 +285,7 @@ published Claude Code escapes land at the ''argument'' layer, never the verb.
 | Fork | Ruling |
 |---|---|
 | Tier cap | 1/3/5 adopted; ''this lararium stands at Temple'' — 5 items surfaced at boot |
-| Seat | ''its own verb'' — `lares kairos` stands alone; the wake hook calls it ''beside'' `vessel stand --observe`, so boot carries both frames |
+| Seat | ''its own verb'' — `kairos` stands alone (not yet a door); the wake hook calls it ''beside'' `vessel stand --observe`, so boot carries both frames |
 | Scope | ''wider posture sweep'' — permissions, sandbox and deny floor, repo and config drift, MCP topology, hook paths |
 | Exec-shaped allow-rules | ''cut'' — five wildcarded interpreter grants plus the stdin-fed `Bash(python -)` that carried no wildcard for any glob check to catch |
 
@@ -317,6 +317,6 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;O5UjTa3SHF5nb9D4TYQIKgpRI-Akeg8K6eWB45rLTQE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SimLlq2wVIBFvV9hxLbehI9UqGyLMqtqbkOQzZi2ivU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

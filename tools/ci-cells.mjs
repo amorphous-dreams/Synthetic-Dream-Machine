@@ -57,7 +57,7 @@ const dealt = (name, dir, part, parts) => pkg(name, dir, null, { deal: "node-uni
  * all stay in the tree, untouched, for the browser Mu to relight.
  *
  * What still runs from the browser packages is the node-environment slice (isomorphic-by-intent code needs no real browser):
- *   - `@lararium/browser`  `packages/lararium-browser/vitest.config.ts`: project `browser-node`, 45 of 110 files.
+ *   - `@lararium/browser`  `packages/lararium-browser/vitest.config.ts`: project `browser-node`, 47 of 112 files.
  *   - `@lararium/web`      `packages/lararium-web/vitest.config.ts`: project `web-node`, 13 of 53 files.
  *   - `@lararium/tw5`      `packages/lararium-tw5/vitest.config.ts`: every node suite; meme-routes.e2e keeps its node contact (its one
  *                          Chromium describe skips loudly without an engine).

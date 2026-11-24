@@ -650,7 +650,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by
     // the accept, which walks `prior` from the pin. Both rows answer the mesh's own decision; a refusal rides as data.
     "floor-status": (args) => answer("floor-status", async () => ({
-      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])) })),
+      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])), ...opt("catalogUrl", deps.catalogUrl) })),
     })),
     "floor-accept": (args) => answer("floor-accept", async () => ({
       ...(await runFloorAccept({

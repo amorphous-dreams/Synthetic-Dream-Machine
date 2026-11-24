@@ -8,9 +8,12 @@ vi.mock("@lararium/tw5", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@lararium/tw5")>();
   return { ...actual, carrierFiles: () => [...fixtureFiles] };
 });
-import { forgetCarrierFiles } from "@lararium/tw5";
+import { forgetCarrierFiles, rootMetaFields, storeMemeSink } from "@lararium/tw5";
+// The one placement function every INGEST door lays through (the tw5 barrel keeps it host-internal).
+import { placeMeme } from "../../lararium-tw5/src/place-meme.js";
 import { carryGenesisFloor, cutGenesisFloor } from "../src/genesis-floor.js";
-import { openFloorSnapshot } from "@lararium/mesh";
+import { AutomergeDocStore, bagUri, emptyLarDoc, openFloorSnapshot, readFloorDriftReading, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
+import { Repo } from "@automerge/automerge-repo";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 const opts = (repoRoot: string) => ({ repoRoot, engine: "engine", plugins: "b".repeat(64) });
@@ -206,5 +209,46 @@ describe("genesis floor carry", () => {
     const carried = carryGenesisFloor({ genesisDir: join(REPO, "genesis"), engine: "engine", plugins: "b".repeat(64) });
     const seed = JSON.parse(readFileSync(join(REPO, "genesis", "seed.json"), "utf8")) as { blobs: Record<string, { sha256: string }> };
     for (const [slug, cid] of Object.entries(carried.manifest.snapshots)) expect(seed.blobs[`floor-${slug}`]!.sha256).toBe(cid);
+  });
+});
+
+describe("the genesis floor against live canon INGEST laid from the same carriers", () => {
+  const crest = readFileSync(join(REPO, "bags/lararium/ha.ka.ba/lararium/mesh/wave-crest.mem"), "utf8");
+  const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";
+
+  /** One slug's live canon: its own canon document, each carrier laid through the Confluence gate into the bag's store skin. */
+  async function layLive(repo: Repo, slug: string, texts: readonly string[]): Promise<AutomergeDocStore> {
+    const bag = bagUri(slug);
+    const store = new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), bag);
+    const sink = storeMemeSink(store, bag, { kind: "lares-verb", requestId: `lay-${slug}` });
+    for (const text of texts) expect((await placeMeme({ uri: String(rootMetaFields(text).title), text }, sink)).decision).toBe("ingest");
+    return store;
+  }
+  async function rowsOf(store: AutomergeDocStore): Promise<Record<string, LarTiddlerRecord>> {
+    const rows: Record<string, LarTiddlerRecord> = {};
+    for (const title of await store.listVisible()) { const r = await store.get(title); if (r) rows[title] = r; }
+    return rows;
+  }
+
+  test("CONTROL: live canon laid from the carriers the genesis floor was baked from reads drift 0, a code-meme among them; RED: a moved slot reads older", async () => {
+    fixture([realA], [crest, realC]);
+    const cut = cutGenesisFloor(opts(root));
+    const blobs = new Map<string, Uint8Array>([[cut.manifestCid, cut.manifestBytes], ...Object.values(cut.snapshots).map((s) => [s.cid, s.bytes] as [string, Uint8Array])]);
+    const blob = async (cid: string) => blobs.get(cid) ?? null;
+    const repo = new Repo({ network: [] });
+    try {
+      const lares = await layLive(repo, "lares", [realA]);
+      const lararium = await layLive(repo, "lararium", [crest, realC]);
+      const level = await readFloorDriftReading({ manifestCid: cut.manifestCid, blob, canonRows: async (slug) => slug === "lares" ? rowsOf(lares) : slug === "lararium" ? rowsOf(lararium) : null });
+      expect(level.why).toBeUndefined();
+      expect(level.drift).toMatchObject({ count: 0, carriers: [], unread: [] });
+      // RED: the crest's purpose slot moves in live canon after the bake; the floor now serves it older, the carrier counted once.
+      const moved = crest.replace("`takeCrest` removes whole families", "`takeCrest` lifts whole families");
+      expect(moved).not.toBe(crest);
+      const relaid = await layLive(repo, "lararium", [moved, realC]);
+      const drifted = await readFloorDriftReading({ manifestCid: cut.manifestCid, blob, canonRows: async (slug) => slug === "lares" ? rowsOf(lares) : slug === "lararium" ? rowsOf(relaid) : null });
+      expect(drifted.drift).toMatchObject({ count: 1, carriers: [CREST] });
+      expect(drifted.drift!.slugs.find((s) => s.slug === "lararium")).toEqual({ slug: "lararium", missing: [], older: [CREST] });
+    } finally { await repo.shutdown(); }
   });
 });

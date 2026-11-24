@@ -216,7 +216,7 @@ For each break, a ladder: ''refuse before acting'' -> ''act and repair'' -> ''ke
 
 ''Where the flag lives.'' One alert per root, beside the existing rail: `$:/temp/lares/alert/meme-orphan/<root>` (tagged as the house's alert tag, fields `root`, `orphans`, `seen-at` naming a log cursor, never a clock; the existing rail's `ts: new Date()` at `place-meme.ts:119` stands as a no-global-now tension worth its own road item). The `$:/temp` layer keeps it per device, so each device raises its own from its own view; node and browser raise it from the same predicate, run where the projector runs on node and where the mirror runs in the browser.
 
-''How each UX shows it.'' The page: the alert in the wiki's alert list, with `keep as plain`, `re-root` and `drop` buttons, each a previewed act. The CLI: `lares wiki orphans --recipe <slug>` lists them; `lares wiki status` names the count. The MCP seat: `wiki_orphans(recipe)` and the count in every `consequence`. The console door: `lares("wiki", "orphans", …)`. Disk: the `.orphans/` folder beside the root's stem.
+''How each UX shows it.'' The page: the alert in the wiki's alert list, with `keep as plain`, `re-root` and `drop` buttons, each a previewed act. The CLI: a `wiki orphans --recipe <slug>` (not yet a door) lists them; `lares wiki status` names the count. The MCP seat: `wiki_orphans(recipe)` and the count in every `consequence`. The console door: `lares("wiki", "orphans", …)`. Disk: the `.orphans/` folder beside the root's stem.
 
 !!! Caps versus family integrity
 
@@ -360,7 +360,7 @@ A spirit fetched each page below; a fetch hands back a summary of the page, so d
 # ''Soft delete with live children.'' Harm: a soft-deleted parent defeats the key and leaves children live (https://brandur.org/soft-deletion).
 # ''A preview that executes, or a plan re-derived at apply.'' Harm: `EXPLAIN ANALYZE` runs its side effects (https://www.postgresql.org/docs/current/sql-explain.html); a stale saved plan refuses only because Terraform binds it to a state serial; an approval resumed without bound state runs twice (https://openai.github.io/openai-agents-python/human_in_the_loop/).
 # ''Collecting what a concurrent peer may still rescue.'' Harm: early tombstone collection resurrects state on a late replica ([snippet] https://velobot-wiki.pages.dev/article/software/crdt-tombstone-garbage-collection-compaction-playbook/); Kleppmann's tree keeps trashed subtrees until causal stability for this reason (https://martin.kleppmann.com/papers/move-op.pdf).
-# ''A name the house already spent.'' `lares meme act` beside `lares act` (the residency verbs, `commands/act.ts`) [measured]: two meanings of `act` at one CLI breaks one name, one relation.
+# ''A name the house already spent.'' A `meme act` verb (proposed here, never built, and no `lares meme` sub-verb) beside `lares act` (the residency verbs, `commands/act.ts`) [measured]: two meanings of `act` at one CLI breaks one name, one relation.
 
 <<~/ahu>>
 
@@ -424,7 +424,7 @@ The Mu sort drives all four: class (a) operations live at a tiddler door, class 
 
 !!! The naming proposal
 
-Base operations stop wearing `meme_*`. ''`tiddler_*`'' names acts on one record (get, put, delete). ''`wiki_*`'' names acts on a wiki's engine (filter, render, act, catalog) and keeps the switcher's `wiki` tool as `wiki_switch`, `wiki_hold`, `wiki_release`, `wiki_active` (one namespace, never top-level twins, as the switcher's own docstring asks). ''`meme_*`'' keeps only family verbs. The CLI mirrors it: `lares tiddler …`, `lares wiki filter|render|act|catalog …`, `lares meme …`. `lares meme act` never lands; `wiki act` names the action-string verb, and the residency verbs keep `lares act` (the collision noted in `#/anti-patterns` stays open in `#/open`). A deprecation leaves `meme_get` answering a plain tiddler for one release with a warning that names `tiddler_get` (the retirement law: deprecate, never redefine).
+Base operations stop wearing `meme_*`. ''`tiddler_*`'' names acts on one record (get, put, delete). ''`wiki_*`'' names acts on a wiki's engine (filter, render, act, catalog) and keeps the switcher's `wiki` tool as `wiki_switch`, `wiki_hold`, `wiki_release`, `wiki_active` (one namespace, never top-level twins, as the switcher's own docstring asks). ''`meme_*`'' keeps only family verbs. The CLI mirrors it: `lares tiddler …`, `lares wiki filter|render|act|catalog …`, `lares meme …`. A `meme act` never lands; `wiki act` names the action-string verb, and the residency verbs keep `lares act` (the collision noted in `#/anti-patterns` stays open in `#/open`). A deprecation leaves `meme_get` answering a plain tiddler for one release with a warning that names `tiddler_get` (the retirement law: deprecate, never redefine).
 
 <<~/ahu>>
 
@@ -610,6 +610,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-fuVQRJxFzGr-1g32QCfxgZHQR3eHWr52B2FBZz3NXU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qz8_MJzhZI8Vf2L8Rha8LtSVC6KnF0zZCoDJ01ccOg8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

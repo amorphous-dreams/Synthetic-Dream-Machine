@@ -4903,7 +4903,7 @@ async function prepareNodeBootOn(
     }
     void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
     // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
-    // idle-cool tick. Recovers whatever `lares pin` persisted under the daemon doc across a
+    // idle-cool tick. Recovers whatever `lares wiki pin` persisted under the daemon doc across a
     // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
     void replayPinsFromDaemonDoc(daemonVm.daemonHandle, residency);
     residency.startSweeper();

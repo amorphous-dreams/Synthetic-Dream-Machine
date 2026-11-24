@@ -170,7 +170,7 @@ moved.
   argues it out.
 # ''THE FOUNDING RUNBOOK.'' It instructs substrate verbs directly, and as the operator-instruction source a
   stale command there fails at the worst moment a command can fail. `tools/rite-commands-witness.sh` reads
-  each instructed command at its dispatch position.
+  each instructed command against its door's verb table, as the built binary's `help --json` projects the rows.
 # ''THE REHEARSAL HARNESS.'' `tools/rehearse-founding.sh` walks the rite by name; its preflight, its founding
   step and its lay step all name the door.
 # ''THE CONTAINER BOOT + THE WITNESS SCRIPTS.'' They found and stand vessels by verb name.
@@ -245,10 +245,12 @@ because a verification an operator has to remember to run is a verification that
   the reading, either alone flatters'', and a figure transcribed into prose ages silently.
 # ''The rehearsal walks its cycles green'' (`tools/rehearse-founding.sh`) — which also proves the founding
   rite composes correctly, since the harness performs the rite rather than describing it.
-# ''The founding runbook reads end to end'' (`tools/rite-commands-witness.sh`), every instructed sub-door resolving at a DISPATCH POSITION. A
+# ''The founding runbook reads end to end'' (`tools/rite-commands-witness.sh`), every instructed sub-door resolving in its door's VERB TABLE. A
   substring test reads the vocabulary of a file rather than its dispatch, and passes on the very line that
   disproves it — `case "contract": … cmdContract(args, "admit")` waved a rite instructing `nexus admit`
-  straight through. A rite amended by many hands drifts fastest at exactly the commands nobody re-typed.
+  straight through. So each command row carries the table its dispatcher reads (`verbs`), the typecheck welds a
+  switch to it, and the witness reads that table from the built binary: one owner of the door tables, which every CLI
+  law reads too. A rite amended by many hands drifts fastest at exactly the commands nobody re-typed.
 
 <<~/ahu>>
 
@@ -273,6 +275,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;M2vAnI8BPgsQR-u50M3cVsGLcWdOBHFK7q1m65yg_Iw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;heGa31wNi10ZKb4jjbpEbAJSRLiduD_-VdM6jf6vzck`>>
 
 <<^ code=`&#x0004;` to=`?`>>

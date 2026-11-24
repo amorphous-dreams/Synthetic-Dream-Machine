@@ -19,17 +19,24 @@ import { spawn } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
 import { rotateRelayGateSeed, fatalLine } from "@lararium/node";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir } from "../env.js";
-import { emit } from "../render.js";
+import { emit, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { awaitBootPhase } from "../stand-socket-wait.js";
 
 // PACING: attestation or its silence bound ends the wait; sleep spaces the polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
+/** The one verb the herm door answers (bare, it stands the herm). */
+export const HERM_VERBS = ["relay-rotate"] as const;
+
 export async function cmdHerm(args: ParsedArgs): Promise<number> {
   const port      = Number(args.options["port"]       ?? process.env["LAR_PORT"] ?? "8080");     // http FLOW-map read-face
   const relayPort = Number(args.options["relay-port"] ?? process.env["LAR_HERM_RELAY_PORT"] ?? "8090"); // Socket B crossroads
-  if (args.positional[0] === "relay-rotate") {
+  const sub = args.positional[0];
+  // A word the herm does not answer refuses before anything stands: a typo never raises a herm.
+  if (sub !== undefined && !(HERM_VERBS as readonly string[]).includes(sub)) return refuseUsage(args, "herm", helpLines("herm"), `unknown sub-verb "${sub}"`);
+  if (sub === HERM_VERBS[0]) {
     const gateKey = rotateRelayGateSeed();
     emit(args, { ok: true, data: { gateKey }, human: () => console.log(`relay gate rotated — hand hearths the new pin ${gateKey}; restart the herm to stand it`) });
     return 0;

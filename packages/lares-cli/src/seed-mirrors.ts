@@ -371,7 +371,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const kahuaElsewhere = kahuaPreview.filter((p) => !liftsHere(p));
   const liftKahua = opts.liftKahua ?? null;
   if (apply && liftKahua !== null && liftKahua !== kahuaLiftable.length) {
-    throw new MirrorRefused("seed-kahua-count", `--lift-kahua ${liftKahua} names ${liftKahua} item(s) and the preview counts ${kahuaLiftable.length} this wear lifts${kahuaElsewhere.length > 0 ? ` (${kahuaElsewhere.length} more wait for their own face's wear)` : ""}; nothing lifted and nothing wrote: read the preview (\`lares vessel seed\`) and name its count`);
+    throw new MirrorRefused("seed-kahua-count", `--lift-kahua ${liftKahua} names ${liftKahua} item(s) and the preview counts ${kahuaLiftable.length} this wear lifts${kahuaElsewhere.length > 0 ? ` (${kahuaElsewhere.length} more wait for their own face's wear)` : ""}; nothing lifted and nothing wrote: read the preview (\`lares vessel lay\`) and name its count`);
   }
 
   const layers: MirrorLayerTally[] = [];

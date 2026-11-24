@@ -49,11 +49,15 @@ async function walkDoor(act: "walk.state" | "walk.take" | "walk.invite", args: R
   }
 }
 
+/** Every verb the walk door answers (bare, it reads the walk's state). */
+export const WALK_VERBS = ["take", "invite"] as const;
+
 export async function cmdWalk(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (sub === undefined) return walkState(args);
-  if (sub === "take") return walkTake(args);
-  if (sub === "invite") return walkInvite(args);
+  const v = sub as (typeof WALK_VERBS)[number];
+  if (v === "take") return walkTake(args);
+  if (v === "invite") return walkInvite(args);
   return refuseUsage(args, "walk", helpLines("walk"), `unknown sub-verb "${sub}"`);
 }
 

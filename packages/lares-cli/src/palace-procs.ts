@@ -177,7 +177,7 @@ function shortCmd(args: string, max = 140): string {
 
 /**
  * Shorten a SPAWNER command, keeping the TAIL — the informative bit of a parent is
- * the end (the script's file name, the `lares capture … --wing w`),
+ * the end (the script's file name, the `lares sense capture … --wing w`),
  * never the leading `bash /very/long/path`. So front-elide when over `max`.
  */
 function shortSpawner(args: string, max = 80): string {
@@ -284,7 +284,7 @@ export function isUnderPath(dir: string, root: string): boolean {
  * store-HOLDER (write-daemon · recall holder · one-shot mine · chroma · capture
  * holder) pins an absolute store path — `serves` carries it — so it counts only
  * when that path sits UNDER `root`. The daemon-MINTING legs
- * (`lares capture/subagents/telemetry`) carry a WING, not a path, and mint the
+ * (`lares sense capture` and `lares sense telemetry`) carry a WING, not a path, and mint the
  * SOVEREIGN memory capture; a caller owns them only when it says `spawners: true`
  * (the sovereign memory door), never the guest. Everything else (the node vessel)
  * belongs to no island's drain. This is the predicate that keeps `lares mempalace`

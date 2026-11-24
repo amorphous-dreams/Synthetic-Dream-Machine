@@ -61,9 +61,19 @@ import { cmdKapae, cmdUnKapae } from "./nexus-kapae-cmd.js";
 import { partialOutOrRefuse, writePartialFile, type PartialWritten } from "./partial-file.js";
 import { cmdSeal, runQuorumRite } from "./nexus-seal.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { tableCovers } from "../verb-table.js";
+import { NEXUS_APPROVE_VERBS } from "./nexus-promote.js";
+
+/** Every verb the nexus door answers; `approve` names its own. */
+export const NEXUS_VERBS = {
+  seal: null, kapae: null, un_kapae: null, contract: null, revoke: null, carry: null, uncarry: null, members: null,
+  "accept-carriage": null, "admit-take": null, "carry-for": null, "carry-take": null, posture: null, rite: null, kahuli: null,
+  publish: null, offering: null, approve: NEXUS_APPROVE_VERBS, cabal: null, release: null, "realm-bag": null, "realm-bags": null,
+} as const;
+type NexusVerb = keyof typeof NEXUS_VERBS;
 
 export async function cmdNexus(args: ParsedArgs): Promise<number> {
-  const verb = args.positional[0];
+  const verb = args.positional[0] as NexusVerb | undefined;
   switch (verb) {
     case "seal":            return await cmdSeal(args);
     case "kapae":           return await cmdKapae(args);
@@ -88,7 +98,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "realm-bag":       return await cmdRealmBag(args);
     case "realm-bags":      return await cmdRealmBags(args);
     default:
-      return refuseUsage(args, "nexus", helpLines("nexus"), verb ? `unknown verb "${verb}"` : undefined);
+      return refuseUsage(args, "nexus", helpLines("nexus"), verb ? `unknown verb "${tableCovers(verb)}"` : undefined);
   }
 }
 
