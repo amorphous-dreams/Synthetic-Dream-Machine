@@ -115,10 +115,24 @@ describe("the narrow rules", () => {
   });
 
   test("whitespace-only lands the file's words", () => {
-    const spaced = bareSeal(disk).replace("! \\tick\n", "! \\tick   \n\n\n");
+    const spaced = bareSeal(disk).replace("! \\tick\n", "! \\tick \n\n\n");
     expect(foldWhitespace(spaced)).toBe(foldWhitespace(bareSeal(disk)));
     const v = decideCollapse(input(on("whitespace-only"), { records: disk, disk: spaced }));
     expect(v).toMatchObject({ collapsed: true, rule: "whitespace-only", toward: "disk" });
+  });
+
+  test("whitespace-only never folds a trailing double space: the hard break carries meaning", () => {
+    const broken = bareSeal(disk).replace("! \\tick\n", "! \\tick  \n");
+    expect(broken).not.toBe(bareSeal(disk));
+    expect(decideCollapse(input(on("whitespace-only"), { records: disk, disk: broken })).collapsed).toBe(false);
+  });
+
+  test("whitespace-only never folds inside fenced code: a blank line or a trailing space there moves the words", () => {
+    const fenced = (body: string): string => bareSeal(disk).replace("! \\tick\n", `! \\tick\n\n\`\`\`text\n${body}\n\`\`\`\n`);
+    const one = fenced("a\n\nb");
+    expect(decideCollapse(input(on("whitespace-only"), { records: one, disk: fenced("a\n\n\n\nb") })).collapsed, "a blank-line run inside a fence").toBe(false);
+    expect(decideCollapse(input(on("whitespace-only"), { records: one, disk: fenced("a \n\nb") })).collapsed, "a trailing space inside a fence").toBe(false);
+    expect(decideCollapse(input(on("whitespace-only"), { records: one, disk: `${one}\n\n` })).collapsed, "the final newline outside every fence").toBe(true);
   });
 
   test("canonical-equivalent reads the memetic congruence", () => {

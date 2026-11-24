@@ -158,7 +158,7 @@ describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk und
     const uri = rig.uris[1]!;
     await rig.projector.sense([uri]);
     const key = rig.projector.standing().find((s) => s.uri === uri)!.standoff;
-    expect(await answerShore(rig.projector, { op: "take-records", uri, key })).toMatchObject({ ok: true, took: "records" });
+    expect(await answerShore(rig.projector, { op: "take-records", uri, key }, "cli")).toMatchObject({ ok: true, took: "records" });
     expect(rig.read(uri)).toContain(LATER_LINE);
     expect(rig.read(uri)).not.toContain(HAND_LINE);
     expect(rig.projector.standing().filter((s) => s.uri === uri)).toEqual([]);
