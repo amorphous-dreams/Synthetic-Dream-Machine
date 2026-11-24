@@ -5,7 +5,7 @@
  *
  * A SessionEnd hook holds a short budget and a keep cuts, commits and pushes, so the hook STARTS the keep and leaves: the
  * keep runs on in its own session, and its lines land in the state home's log (`$XDG_STATE_HOME/lares/keep-hook.log`, the
- * last run alone). A keep that refuses (no return left on the lei, the vessel down, a secret-shaped string) writes its reading
+ * last run alone). A keep that refuses (no return left on the lei, the vessel down, a secret-shaped string in the bundle) writes its reading
  * there, and the next wake names the lei's count. `--if-due` keeps nothing where neither the house nor the sessions moved,
  * and where the house config names no keep workspace. A fault names its cause and exits 0: a session's end never stops for
  * the house.

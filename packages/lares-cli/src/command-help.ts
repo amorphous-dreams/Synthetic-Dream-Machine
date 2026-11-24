@@ -191,7 +191,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
       "bundle replaces the one an earlier keep left), commits `keep <bundleId>`, rebases, pushes, and lands the tessera at the bundle " +
       "id the pushed tree holds. A push that fails names the cure: mend the remote and run keep again. " +
-      "keep also carries this device's Claude Code sessions under devices/<name>-<id8>/ in the same commit and push; " +
+      "keep also carries this device's Claude Code sessions under devices/<name>-<id8>/ in the same commit and push (with --no-sessions it mirrors nothing new and commits what already stands there); a secret-shaped device file stays out of the commit, in place, and the keep names it; " +
       "--no-sessions (or LARES_KEEP_SESSIONS=0) keeps the house alone. " +
       "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
     examples: [

@@ -22,7 +22,7 @@
  *   KH11 one commit carries `house/` and `devices/<name>-<id8>/`, and one push carries that commit;
  *   KH12 the guard allows exactly `<into>` and this device's dir: another device's dir, changed, refuses before the vessel half
  *        runs, and so does this device's dir where its DEVICE.json names another uuid;
- *   KH13 a secret-shaped string in the mirror refuses the commit BEFORE the vessel half runs (no return spends), in a plain
+ *   KH13 a secret-shaped file in the mirror stays out of the commit (in place, named with its cure), in a plain
  *        file and inside a compressed transcript; a PLANTED fixture passes;
  *   KH14 with the vessel down the keep names where the lei lives, exits non-zero, commits nothing and pushes nothing (the
  *        mirror rests in the workspace for the keep that follows the `up`);
@@ -370,28 +370,62 @@ describe("the keep rite, host half", () => {
     expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
   });
 
-  test("KH13 RED: a secret-shaped string in the mirror refuses the commit before any return spends, plain or inside a compressed transcript; CONTROL: a PLANTED fixture passes", async () => {
+  test("KH13 RED: a secret-shaped file in the mirror stays out of the commit, in place and named with its cure; the clean device files commit and push, and a later keep does not refuse on it", async () => {
     const r = rig();
     const n = r.commits();
     r.sessions.put("projects/-home-me-proj/memory/token.md", `the token ${"ghp_"}${"y".repeat(30)}\n`);
-    const plain = await riteKeepHost(r.ports, { workspace: "backup" });
-    expect(plain).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
-    expect(String(plain.data["message"])).toContain(`${r.device}/projects/-home-me-proj/memory/token.md (ghp_yyyy…)`);
-    expect(r.commits()).toBe(n);
-    rmSync(join(r.sessions.claude, "projects/-home-me-proj/memory/token.md"));
     r.sessions.put("projects/-home-me-proj/bbbb.jsonl", `{"type":"user","text":"${"sk-ant-"}${"z".repeat(20)}"}\n`);
-    const packed = await riteKeepHost(r.ports, { workspace: "backup" });
-    expect(packed).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
-    expect(String(packed.data["message"])).toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst (sk-ant-z…)`);
-    expect(r.commits()).toBe(n);
-    // The scan over the mirror runs ahead of the vessel half: a refused mirror spends no return.
-    expect(r.calls).toEqual([]);
-    expect(r.state.returns).toBe(12);
+    const plain = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(plain.data, JSON.stringify(plain.data)).toMatchObject({ kept: true, committed: true, pushed: true, par: true });
+    expect(plain.code).toBe(0);
+    expect(r.commits()).toBe(n + 1);
+    const line = r.said.filter((l) => /withheld from the commit/.test(l));
+    expect(line).toHaveLength(1);
+    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/memory/token.md (ghp_yyyy…)`);
+    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst (sk-ant-z…)`);
+    expect(line[0]).toContain(r.sessions.claude);
+    const carried = must(r.remote, "show", "--name-only", "--format=", "main").split("\n");
+    expect(carried).toContain(`${r.device}/config/CLAUDE.md`);
+    expect(carried).not.toContain(`${r.device}/projects/-home-me-proj/memory/token.md`);
+    expect(carried).not.toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst`);
+    // In place, untracked: the workspace holds them and no later keep refuses on them (with the sessions or without).
+    expect(existsSync(join(r.ws, r.device, "projects/-home-me-proj/memory/token.md"))).toBe(true);
+    expect(must(r.ws, "status", "--porcelain")).toContain("token.md");
+    r.state.notes = { heron: "remember the heron\n", pond: "the pond at dusk\n" };
+    const again = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(again.code, JSON.stringify(again.data)).toBe(0);
+    const bare = await riteKeepHost(r.ports, { workspace: "backup", sessions: false });
+    expect(bare.code, JSON.stringify(bare.data)).toBe(0);
+    expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).not.toContain("token.md");
+    // CLEARED at the source: the mirror follows (the workspace file stays until the hand removes it), and the keep carries no complaint.
+    rmSync(join(r.sessions.claude, "projects/-home-me-proj/memory/token.md"));
+    rmSync(join(r.ws, r.device, "projects/-home-me-proj/memory/token.md"));
     // CONTROL: the house's own planted fixtures pass, as they pass the script's scan.
-    r.sessions.put("projects/-home-me-proj/bbbb.jsonl", `{"type":"user","text":"${"ghp_"}PLANTED${"a".repeat(20)} and AKIAIOSFODNN7EXAMPLE"}\n`, 1800);
-    rmSync(join(r.ws, r.device, "projects/-home-me-proj/sessions/bbbb.jsonl.zst"));
+    r.sessions.put("projects/-home-me-proj/cccc.jsonl", `{"type":"user","text":"${"ghp_"}PLANTED${"a".repeat(20)} and AKIAIOSFODNN7EXAMPLE"}\n`, 1800);
     const passed = await riteKeepHost(r.ports, { workspace: "backup" });
-    expect(passed.data, JSON.stringify(passed.data)).toMatchObject({ committed: true, pushed: true, par: true });
+    expect(passed.data, JSON.stringify(passed.data)).toMatchObject({ pushed: true, par: true });
+    expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).toContain("cccc.jsonl.zst");
+  });
+
+  test("KH13b RED: a --no-sessions keep commits the device changes already standing in this device's dir (mirroring nothing), and still refuses changes outside house/ and this dir", async () => {
+    const r = rig();
+    expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
+    // A refused earlier keep left mirror files standing; a later --no-sessions keep carries the clean ones, never the secret one.
+    writeFileSync(join(r.ws, r.device, "config", "left-behind.md"), "mirrored once, never committed\n");
+    writeFileSync(join(r.ws, r.device, "config", "secret.md"), `${"ghp_"}${"q".repeat(30)}\n`);
+    r.state.notes = { heron: "remember the heron\n" };
+    const out = await riteKeepHost(r.ports, { workspace: "backup", sessions: false });
+    expect(out.code, JSON.stringify(out.data)).toBe(0);
+    const tree = must(r.remote, "ls-tree", "-r", "--name-only", "main");
+    expect(tree).toContain(`${r.device}/config/left-behind.md`);
+    expect(tree).not.toContain("secret.md");
+    expect(r.said.some((l) => /withheld from the commit/.test(l) && l.includes("secret.md"))).toBe(true);
+    // Changes elsewhere outside house/ still refuse.
+    writeFileSync(join(r.ws, "stray.txt"), "not the keep's\n");
+    const calls = r.calls.length;
+    const stray = await riteKeepHost(r.ports, { workspace: "backup", sessions: false });
+    expect(stray).toMatchObject({ code: 1, data: { refusal: "keep-tree-unclean", outside: ["stray.txt"] } });
+    expect(r.calls.length).toBe(calls);
   });
 
   test("KH17 a private-key header trips the guard only with key material after it: a header named in prose passes, a header with a base64 body refuses, in real lines, CRLF, escaped \\n and doubly escaped \\\\n", () => {
@@ -465,17 +499,14 @@ describe("the keep rite, host half", () => {
     r.state.notes = { heron: `the guard reads ${BEGIN} in discussion\nno key follows\n${MIRROR_SAMPLES.join("\n")}\n` };
     const kept = await riteKeepHost(r.ports, { workspace: "backup" });
     expect(kept.data, JSON.stringify(kept.data)).toMatchObject({ committed: true, pushed: true, par: true });
-    // SESSIONS, planted: a transcript carrying the header and its body, escaped inside JSONL, refuses before any return spends.
-    const n = r.commits();
-    const returns = r.state.returns;
-    r.calls.length = 0;
+    // SESSIONS, planted: a transcript carrying the header and its body, escaped inside JSONL, stays out of the commit and is named; the keep goes on.
     r.sessions.put("projects/-home-me-proj/dddd.jsonl", `{"type":"user","text":"${BEGIN}\\n${body.join("\\n")}\\n${END}\\n"}\n`, 1800);
+    r.state.notes = { heron: "remember the heron\n", pond: "the pond at dusk\n" };
+    r.said.length = 0;
     const planted = await riteKeepHost(r.ports, { workspace: "backup" });
-    expect(planted).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
-    expect(String(planted.data["message"])).toContain(`${r.device}/projects/-home-me-proj/sessions/dddd.jsonl.zst (-----BEG…)`);
-    expect(r.commits()).toBe(n);
-    expect(r.calls).toEqual([]);
-    expect(r.state.returns).toBe(returns);
+    expect(planted.code, JSON.stringify(planted.data)).toBe(0);
+    expect(r.said.some((l) => l.includes(`${r.device}/projects/-home-me-proj/sessions/dddd.jsonl.zst (-----BEG…)`))).toBe(true);
+    expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).not.toContain("dddd.jsonl.zst");
     // BUNDLE, planted: a record carrying the header and its body refuses at the bundle guard and commits nothing.
     const b = rig({ at: join(scratch, "bundle") });
     const m = b.commits();
