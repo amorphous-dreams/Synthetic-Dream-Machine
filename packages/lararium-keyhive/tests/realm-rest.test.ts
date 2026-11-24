@@ -52,6 +52,9 @@
  *      history and the act its closed parents derive open a span.
  *   C4 a stop between the admission's record and its fresh base strands nothing: the next landing cuts the base.
  *   C5 each hand-over refusal names its own cure.
+ *   C6 a write-seated member's own roll under the realm's state-roll prefix counts on no seat but its own: the owner alone rolls.
+ *   C7 the `sealed-admit` door opens no realm-derived act; a member's cure names its handle; `no-head-held` names its own cure.
+ *   C8 the realm's owner reads as the lit face whose PersonaGroup derives the realm, never by the ledger's one seat row per face.
  *
  * A6 the rest seals for the roster:
  *   G3 a face seated `admin` in another face's realm mounts it and writes `working`; a face seated `read` mounts it, reads it,
@@ -62,11 +65,11 @@
 import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";
 import {
-  REALM_ADMISSION_ACT, SealedStore, contentKeyRollSink, freshBasePort, memorySealedStoreRest, workbenchRemovals, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
+  REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, SealedStore, noteWorkbenchSeat, contentKeyRollSink, freshBasePort, memorySealedStoreRest, workbenchRemovals, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type ContentKeySeatInput, type RealmWriters } from "../src/index.js";
-import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, landsUnderAHand, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, sealedAdmitRefusal, landsUnderAHand, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -588,7 +591,9 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
     await b.hive.ingestPeerEvents(await a.hive.eventsForPeer(bOnA));
     adoptWorkbench(b.hive, SLUG, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!);
     const book = new RealmWriterBook();
-    await book.read(WORKING, [a.hive, b.hive], v.ledger.d, [{ agent: a.id, chain: () => a.own }, { agent: b.id, chain: () => b.own }]);
+    // THE ISLAND'S FACES carry their PersonaGroup: the owner reads as the lit face whose group derives the realm.
+    const readBook = () => book.read(WORKING, [a.hive, b.hive], v.ledger.d, [{ agent: a.id, group: "group-steward", chain: () => a.own }, { agent: b.id, group: "group-engineer", chain: () => b.own }]);
+    await readBook();
     const standing = (f: Omit<Face, "seat">) => faceStanding({ own: () => f.own, bags: () => [WORKING], realmWriters: (bagId) => book.writers(bagId), realmMark: () => book.mark() });
     const stop = { next: false };
     const values = {
@@ -605,7 +610,7 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
     });
     const landAgain = (owner: ContentKeySeat) => landWorkbench({ slug: SLUG }, members, { provider: a.hive, ledger: v.ledger, ownerFace: "group-steward", keyholder: keyholder(owner) });
     const versions = async () => (await new SealedStore(v.rest).records("key-version")).length;
-    return { v, a, b, bOnA, w0, seat, landAgain, stop, versions };
+    return { v, a, b, bOnA, w0, seat, landAgain, stop, versions, realmId, readBook };
   }
 
   test("C1: founded closed, then bound and shared: the owner admits from now; the seated face opens and saves; the closed past stays closed", async () => {
@@ -674,7 +679,41 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
     const owner = "wear the realm's owner face (`lares vault unlock --face 0`, then `lares wear 0`) and land the share again (`lares wiki share lares`)";
     expect(handOverCure("lares", "fresh-base-unavailable", owner)).toMatch(/live working document stands \(`lares wiki switch lares`\).*`lares wiki share lares`/);
     for (const refusal of ["wrap-failed", "reader-unreached"]) expect(handOverCure("lares", refusal, owner), refusal).toMatch(/light the member face \(`lares vault unlock --face N`\)/);
-    expect(handOverCure("lares", "no-head-held", owner)).toBe(owner);
+    expect(handOverCure("lares", "seal-refused", owner)).toBe(owner);
+  });
+
+  test("C6: a write-seated member's own roll under the realm's state-roll prefix counts nowhere: the owner alone rolls the key", async () => {
+    const { a, b, landAgain, seat, versions } = await closedThenSeated([0xd9, 0xda]);
+    expect((await landAgain(seat(a, b))).unhanded).toEqual([]);
+    const ownerBefore = await seat(a, b).holder.reading(WORKING);
+    const heads = "foundings" in ownerBefore ? [...ownerBefore.foundings[0]!.heads].sort() : [];
+    // THE MEMBER FORGES A ROLL: a removal version under the realm's state-roll prefix, counted on its own seat alone.
+    const ACT = `${REALM_STATE_ROLL_ACT}forged-by-the-member`;
+    const forger = seat(b, a, { countedRaises: () => new Set([ACT]) });
+    const before = await versions();
+    await contentKeyRollSink(forger.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => b.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
+    expect(await versions(), "the forged roll mints on the forger's seat and rests where the owner reads").toBe(before + 1);
+    const read = await seat(a, b).holder.reading(WORKING);
+    expect("foundings" in read && [...read.foundings[0]!.heads].sort(), "the owner counts no roll the member signed").toEqual(heads);
+    expect("foundings" in read && read.foundings[0]!.uncounted.map((u) => u.why), "it reads unverified").toContain("cause-unverified");
+  });
+
+  test("C7: the sealed-admit door opens no realm-derived act; a member's cure names its handle; no-head-held names its own cure", () => {
+    for (const act of [`${REALM_ADMISSION_ACT}abc`, `${REALM_STATE_ROLL_ACT}abc`]) expect(sealedAdmitRefusal(act)?.refusal, act).toBe("realm-act-reserved");
+    expect(sealedAdmitRefusal("an-operator-admission-act"), "CONTROL: any other act passes to the holder").toBe(null);
+    const owner = "wear the realm's owner face (`lares vault unlock --face 0`, then `lares wear 0`) and land the share again (`lares wiki share lares`)";
+    expect(handOverCure("lares", "wrap-failed", owner, 2)).toMatch(/`lares vault unlock --face 2`/);
+    expect(handOverCure("lares", "no-head-held", owner)).not.toBe(owner);
+    expect(handOverCure("lares", "no-head-held", owner)).toMatch(/holds no key of the workbench's head.*`lares wiki share lares`/);
+  });
+
+  test("C8: the realm's owner reads as the lit face whose group derives the realm, whatever agent the ledger's seat row names", async () => {
+    const { v, a, b, landAgain, seat, realmId, readBook } = await closedThenSeated([0xdb, 0xdc]);
+    // ANOTHER DEVICE OF THE OWNER FACE overwrote the face's one seat row with its own agent.
+    noteWorkbenchSeat(v.ledger.d, realmId, SLUG, "group-steward", "ab".repeat(32));
+    await readBook();
+    expect((await landAgain(seat(a, b))).unhanded, "the owner's admission still counts under its own chain").toEqual([]);
+    void b;
   });
 
   test("C2: a seated member's refused hand-over reads on the landing by name, never as landed", async () => {

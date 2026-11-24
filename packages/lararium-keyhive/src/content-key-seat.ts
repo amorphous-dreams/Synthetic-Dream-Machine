@@ -224,7 +224,10 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       // A REALM'S FROM-NOW ADMISSION verifies from the realm and the version itself: the realm's OWNER signed it, its span
       // declares `shareable`, and its act derives from the very parents it cites. A member's own admission counts nowhere.
       return {
-        raiseCounts: (act) => answered.has(act) || counted.has(act) || removed.has(act) || (realm !== null && act.startsWith(REALM_STATE_ROLL_ACT)),
+        // A ROLL THE REALM DERIVES FROM STATE counts only under its owner's hand, as the owner's holder alone derives one: a
+        // member's own roll under the prefix counts nowhere, so it never becomes a head the owner holds no key for.
+        raiseCounts: (act, by) => answered.has(act) || counted.has(act) || removed.has(act)
+          || (realm !== null && act.startsWith(REALM_STATE_ROLL_ACT) && by !== undefined && session.standing.signedByRealmOwner?.({ certificate: by.certificate, bagId }) === true),
         admissionVerifies: (act, by) => admitted.has(act) || (realm !== null && by !== undefined && realmAdmissionStands(bagId, act, by)),
       };
     },
