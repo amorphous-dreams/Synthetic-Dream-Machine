@@ -31,7 +31,7 @@
 import {
   ContentKeyHolder, REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, SealedStore, contentKeyRollSink, readsAsFreshBase, sha256HexBytesSync,
   utf8Bytes, verifiedSeatRoll,
-  type ContentKeyHolderPorts, type EdgeStanding, type HolderRefusal, type RecordSigner, type RollOutcome, type SealedStoreRest,
+  type AdmissionEvidence, type ContentKeyHolderPorts, type EdgeStanding, type HolderRefusal, type RecordSigner, type RollOutcome, type SealedStoreRest,
   type SeatRoll, type SeatRollSink, type WriterStanding,
 } from "@lararium/mesh";
 import { keyhiveLockboxShore, type LockboxProvider } from "./keyhive-lockbox.js";
@@ -132,7 +132,9 @@ export interface ContentKeySeat {
    * A REALM BAG FOUNDED CLOSED OPENS FROM NOW: where the realm this seat OWNS keeps `bagId` and the head span reads `closed`, the
    * holder mints a from-now admission (`admitFromNow`) whose span declares `shareable`, wrapped for the realm's roster now, on a
    * fresh base of the current document. Its act derives from the closed heads it follows (`REALM_ADMISSION_ACT`), so the same
-   * landing entered again mints nothing more. Null: nothing owed (no realm, not the owner, no closed head).
+   * landing entered again mints nothing more; a head span such an admission opened re-enters under its own act, which cuts a
+   * base a stop left uncut (sealed-store#/the-store's repair). Null: nothing owed (no realm, not the owner, no head span either
+   * reads).
    */
   admitRealmFromNow(bagId: string, signer: RecordSigner | null): Promise<Awaited<ReturnType<ContentKeyHolder["admitFromNow"]>> | null>;
   /** ROLL NOW: the roll a realm's roster owes one bag's head, at once, under `signer` (the revoke's own act). */
@@ -146,6 +148,8 @@ export interface ContentKeySeat {
 }
 
 const bare = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
+/** The act a realm's from-now admission names: the realm's prefix over the closed heads it follows, ascending (no clock). */
+const realmAdmissionAct = (parents: readonly string[]): string => `${REALM_ADMISSION_ACT}${sha256HexBytesSync(utf8Bytes([...parents].sort().join("\n")))}`;
 
 /** Seat the holder beside these identities and subscribe its roll. */
 export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
@@ -189,6 +193,12 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     return [];
   };
 
+  /** Does a version citing a realm admission act stand: owner-signed, shareable, its act derived from its own parents? */
+  const realmAdmissionStands = (bagId: string, act: string, by: AdmissionEvidence): boolean =>
+    by.history === "shareable"
+    && act === realmAdmissionAct(by.parents)
+    && session.standing.signedByRealmOwner?.({ certificate: by.certificate, bagId }) === true;
+
   const holder = new ContentKeyHolder({
     store: new SealedStore(input.rest),
     shore,
@@ -211,11 +221,11 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       // A REALM'S REMOVAL COUNTS on the vessel's own ledger (the roster's projection noted it): the evidence its roll counts by.
       const realm = input.realm === undefined ? null : await input.realm.of(bagId);
       const removed = new Set(realm === null ? [] : (await realm.removals()).map((r) => r.act));
-      // A REALM'S FROM-NOW ADMISSION verifies from the realm alone, as its derived roll counts: the owner opens a shareable span
-      // past a closed founding, and every seat the realm seats counts it.
+      // A REALM'S FROM-NOW ADMISSION verifies from the realm and the version itself: the realm's OWNER signed it, its span
+      // declares `shareable`, and its act derives from the very parents it cites. A member's own admission counts nowhere.
       return {
         raiseCounts: (act) => answered.has(act) || counted.has(act) || removed.has(act) || (realm !== null && act.startsWith(REALM_STATE_ROLL_ACT)),
-        admissionVerifies: (act) => admitted.has(act) || (realm !== null && act.startsWith(REALM_ADMISSION_ACT)),
+        admissionVerifies: (act, by) => admitted.has(act) || (realm !== null && by !== undefined && realmAdmissionStands(bagId, act, by)),
       };
     },
     // A face the realm seats nowhere performs no key act in its workbench's bag (the roster's own shadow).
@@ -301,21 +311,25 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     if (realm === null || !realm.owner) return null;
     const reading = await holder.reading(bagId);
     if ("refusal" in reading) return reading;
-    const closed = [...new Set(reading.foundings.filter((f) => f.history === "closed").flatMap((f) => f.heads))].sort();
-    if (closed.length === 0) return null;
-    const act = `${REALM_ADMISSION_ACT}${sha256HexBytesSync(utf8Bytes(closed.join("\n")))}`;
-    return holder.admitFromNow({ bagId, act, history: "shareable", signer });
+    const standing = reading.foundings.filter((f) => f.heads.length > 0);
+    if (standing.length === 0) return null;
+    if (standing.length > 1) return { refusal: "founding-forked" };
+    const [f] = standing as [typeof standing[number]];
+    // A SPAN AN ADMISSION OPENED re-enters under its own act: where a stop left it without its fresh base, the base cuts now;
+    // where the base stands, the holder answers the version that act opened and mints nothing.
+    if (f.history === "shareable" && f.openedBy?.startsWith(REALM_ADMISSION_ACT) === true) return holder.admitFromNow({ bagId, act: f.openedBy, history: "shareable", signer });
+    if (f.history !== "closed") return null;
+    const parents = f.heads.filter((head) => f.held.includes(head));
+    return holder.admitFromNow({ bagId, act: realmAdmissionAct(parents), history: "shareable", signer });
   };
 
   return {
     holder, sink,
     admitRealmFromNow,
     async handOverRealm(bagId, reader, signer) {
-      const handed = await holder.handOver({ bagId, reader, signer, chained: true });
-      if (!("refusal" in handed) || handed.refusal !== "history-closed") return handed;
+      // THE OWNER'S SPAN OPENS FIRST: a closed head admits from now, and an admission a stop left baseless cuts its base.
       const admitted = await admitRealmFromNow(bagId, signer);
-      if (admitted === null) return handed;
-      if ("refusal" in admitted) return admitted as HolderRefusal;
+      if (admitted !== null && "refusal" in admitted) return admitted as HolderRefusal;
       return holder.handOver({ bagId, reader, signer, chained: true });
     },
     async seal(args) {

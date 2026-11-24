@@ -40,7 +40,7 @@ import {
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
-import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, landsUnderAHand, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, landsUnderAHand, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
 import { daemonRetiredHome, faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
 import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
@@ -2005,10 +2005,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if ("refusal" in reading) return cure;
         if (reading.foundings.every((f) => f.heads.length === 0)) return null;
         return {
-          // A WORKBENCH FOUNDED CLOSED (before its realm bound it) admits the roster from now here, under this same hand.
+          // A WORKBENCH FOUNDED CLOSED (before its realm bound it) admits the roster from now here, under this same hand. The
+          // writer book reads the landed roster and its owner first: the admission counts only under the owner's own chain.
           handOver: async (agentHex: string) => {
+            await readRealmBook(ctx, slug);
             const handed = await seat.handOverRealm(bagId, agentHex, signer);
-            if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${cure.cure}`);
+            if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${handOverCure(slug, handed.refusal, cure.cure)}`);
           },
         };
       };

@@ -368,3 +368,13 @@ export async function landWorkbench(
 export function landsUnderAHand(context: { readonly asker?: string }): boolean {
   return context.asker === "cli";
 }
+
+/**
+ * EACH HAND-OVER REFUSAL NAMES ITS OWN CURE (a runnable `lares …` line): a span with no live document to open on, a member the
+ * owner's hive cannot wrap for; any other refusal reads `ownerLine`, the owner's cure (wear the owner face, land again).
+ */
+export function handOverCure(slug: string, refusal: string, ownerLine: string): string {
+  if (refusal === "fresh-base-unavailable") return `open the wiki under the realm's owner face so its live working document stands (\`lares wiki switch ${slug}\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  if (refusal === "wrap-failed" || refusal === "reader-unreached") return `the owner's hive holds no contact card it can wrap for that member: light the member face (\`lares vault unlock --face N\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  return ownerLine;
+}

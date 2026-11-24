@@ -81,7 +81,7 @@ import {
   type BundleDiskManifest, type BundleFaceKey, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
   type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
 } from "../bundle-manifest.js";
-import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
+import { LIVE_SHARE_DOORS, landShares, shareSetArgs, unhandedLine } from "../share-doors.js";
 import { KeepSeatRefused, adoptKeepSeat, isTestRoute, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut, signCut } from "../keep-seat.js";
 import { verifyKeepCut, type Credential } from "@lararium/mesh";
 
@@ -847,7 +847,7 @@ export interface HouseImportResult {
   /** Each bundle face whose daemon rows (working, face canon) the island opened no layer for under this wear: they land at its own. */
   readonly daemonWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
   /** The share rows the bundle carried that this vessel's file held none of (written on apply), and the landing's answer. */
-  readonly shares: { readonly written: readonly string[]; readonly landed: boolean };
+  readonly shares: { readonly written: readonly string[]; readonly landed: boolean; readonly unhanded?: string };
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
   readonly minted: readonly string[];
   readonly skipped: readonly string[];
@@ -1287,12 +1287,17 @@ export async function houseImport(src: string, opts: { readonly apply: boolean; 
   }
   // THE SHARES LAND AGAIN: each shared wiki's seats come back by pet-name, once its owner's wear stood it.
   let sharesLanded = false;
-  if (apply && allShares.length > 0 && doors.landShares !== undefined) sharesLanded = (await doors.landShares().catch(() => null)) !== null;
+  let sharesUnhanded: string | null = null;
+  if (apply && allShares.length > 0 && doors.landShares !== undefined) {
+    const applied = await doors.landShares().catch(() => null);
+    sharesLanded = applied !== null;
+    sharesUnhanded = unhandedLine(applied);
+  }
 
   // THE PAIR SEATS LAST: only a whole apply seats the bundle's keep pair where this house rests none, so a restore that refused
   // anywhere above leaves the house's config as it stood.
   if (apply) adoptKeepSeat(seat, adoptSeed, isTestRoute(route));
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded, ...(sharesUnhanded !== null ? { unhanded: sharesUnhanded } : {}) } };
   } finally { adoptSeed.fill(0); }
 }
 

@@ -143,7 +143,7 @@ export interface RealmFace {
  * its content: a holder's reading gives way when a seat lands or leaves.
  */
 export class RealmWriterBook {
-  readonly #bags = new Map<string, { readonly seated: readonly RealmFace[]; readonly former: readonly { readonly face: RealmFace; readonly removedBy: readonly string[] }[] }>();
+  readonly #bags = new Map<string, { readonly seated: readonly RealmFace[]; readonly former: readonly { readonly face: RealmFace; readonly removedBy: readonly string[] }[]; readonly owner: RealmFace | null }>();
   #mark = "";
 
   /** Read one bag's writers afresh: the roster of the realm a seated hive among `hives` reads, over this vessel's faces. */
@@ -166,7 +166,10 @@ export class RealmWriterBook {
       const removedBy = removals.filter((r) => r.agent === bare(face.agent)).map((r) => r.act);
       return removedBy.length > 0 ? [{ face, removedBy }] : [];
     });
-    this.#bags.set(bagId, { seated, former });
+    // THE OWNER: the face whose own derived cabal of one the realm reads as (its seat row), where the roster seats it a writer.
+    const ownerAgent = [...workbenchSeats(ledger, found.realmId, slot.slug)].find(([face]) => privateCabalRealmId(face, slot.slug) === found!.realmId)?.[1];
+    const owner = ownerAgent === undefined ? null : seated.find((face) => bare(face.agent) === bare(ownerAgent)) ?? null;
+    this.#bags.set(bagId, { seated, former, owner });
     this.#remark();
   }
 
@@ -178,6 +181,7 @@ export class RealmWriterBook {
     return {
       seated: chains(bag.seated),
       former: bag.former.flatMap(({ face, removedBy }) => { const chain = face.chain(); return chain === null ? [] : [{ chain, removedBy }]; }),
+      owner: bag.owner?.chain() ?? null,
     };
   }
 
@@ -188,6 +192,6 @@ export class RealmWriterBook {
   mark(): string { return this.#mark; }
 
   #remark(): void {
-    this.#mark = JSON.stringify([...this.#bags].sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0)).map(([bagId, b]) => [bagId, b.seated.map((f) => bare(f.agent)).sort(), b.former.map((f) => [bare(f.face.agent), [...f.removedBy].sort()])]));
+    this.#mark = JSON.stringify([...this.#bags].sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0)).map(([bagId, b]) => [bagId, b.seated.map((f) => bare(f.agent)).sort(), b.former.map((f) => [bare(f.face.agent), [...f.removedBy].sort()]), b.owner === null ? null : bare(b.owner.agent)]));
   }
 }

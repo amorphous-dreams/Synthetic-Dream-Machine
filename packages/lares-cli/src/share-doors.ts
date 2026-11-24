@@ -198,3 +198,22 @@ export const LIVE_SHARE_DOORS: ShareDoors = {
 export async function landShares(doors: Pick<ShareDoors, "verb">, faces: readonly ShareFace[], extra?: Record<string, unknown>): Promise<Record<string, unknown> | null> {
   return doors.verb("share-apply", { faces: faces.map((f) => ({ handleIndex: f.handleIndex, petname: f.petname })), ...(extra ?? {}) });
 }
+
+/**
+ * THE SEATS A LANDING LEFT WITHOUT A LOCKBOX, in ONE line every door that lands the shares prints (`share-apply`'s
+ * `workbenches[].unhanded`): each by face and wiki, with the refusal and its cure the owner's holder named. Null where every
+ * seat took its box.
+ */
+export function unhandedLine(applied: Record<string, unknown> | null, faces: readonly ShareFace[] = []): string | null {
+  if (applied === null) return null;
+  const parts: string[] = [];
+  for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
+    for (const u of Array.isArray(w["unhanded"]) ? w["unhanded"] as Array<{ handleIndex?: unknown; cause?: unknown }> : []) {
+      const at = typeof u.handleIndex === "number" ? u.handleIndex : null;
+      const pet = at === null ? undefined : faces.find((f) => f.handleIndex === at)?.petname;
+      parts.push(`${at === null ? "a seated face" : pet ? `${pet} (h${at})` : `h${at}`} in ${String(w["slug"])}: ${String(u.cause ?? "refused")}`);
+    }
+  }
+  return parts.length === 0 ? null : `shares: ${parts.length} seated face(s) took no workbench lockbox: ${parts.join("; ")}`;
+}
+
