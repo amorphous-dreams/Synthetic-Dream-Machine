@@ -12,6 +12,8 @@
  *   SA10 — while the ledger binds no workbench, only a NAMED owner (the row's, or the canon row's minter) hands the recipe
  *         on or founds the realm: a grantee's replay does neither
  *   SA11 — an unshare drops the carry of every face the row names, the recipe's holder worn or not
+ *   SA12 — a carried row refreshes: a landing replayed after the owner changed the row hands the grantee the new row (the
+ *         grantee's open half takes it, or its next wear lifts it over the stale copy); an unchanged row moves nothing
  */
 import { describe, expect, test } from "vitest";
 import { bagUri, recipeUri, emptyLarDoc, seatHouseCanon, storedLarRecord, SHARE_PENDING_PREFIX, type LarDoc, type ShareEntry } from "@lararium/mesh";
@@ -329,5 +331,84 @@ describe("the share config lands", () => {
       expect(r.carried.size, "every face the row names loses its carry").toBe(0);
       expect(await r.run(2), "the grantee's next wear lifts nothing the share took back").toMatchObject({ lifted: 0 });
     } finally { seatHouseCanon([]); }
+  });
+  test("RED SA12 — a carried row is no snapshot: the owner changes the wiki's recipe row after the grantee lifted it, and the next landing hands the grantee the new row (its next wear lifts it over the stale copy); CONTROL: both halves open, the stale copy refreshes in place, and a replay over an unchanged row moves nothing", async () => {
+    const RECIPE = recipeUri("catalog", "notes");
+    const recipeRow = (bags: string) => storedLarRecord(RECIPE, { text: JSON.stringify({ bags: [bags] }), kind: "recipe" }, "test") as never;
+    const ownerHalf = half({ [NOTES]: "automerge:notesDoc" });
+    ownerHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow("first"); });
+    const granteeHalf = half();
+    const carried = new Map<string, { group: string; bag: string; row: unknown }>();
+    const carry = {
+      put: async (group: string, bag: string, row: unknown) => { carried.set(`${group}\n${bag}`, { group, bag, row }); },
+      list: async (group: string) => [...carried.values()].filter((c) => c.group === group).map((c) => ({ bag: c.bag, row: c.row as never })),
+      clear: async (group: string, bag: string) => { carried.delete(`${group}\n${bag}`); },
+    };
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "wiki", read: "reader", write: "" }];
+    const run = (worn: 0 | 1 | "both") => applyShares({
+      rows: async () => rows, salt: "salt", ...(worn === "both" ? {} : { carry }),
+      faces: [
+        { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => (worn !== 1 ? ownerHalf : null) },
+        { handleIndex: 1, petname: "reader", group: "g1", catalog: async () => (worn !== 0 ? granteeHalf : null) },
+      ],
+      grant: async () => ({ fresh: false }),
+      flag: { set: async () => {}, clear: async () => {} },
+    });
+    const granteeRecipe = () => JSON.stringify(granteeHalf.doc().tiddlers[RECIPE]);
+    await run(0);
+    await run(1);
+    expect(granteeRecipe()).toContain("first");
+    // The owner changes its recipe row; the landing replays under its wear, and the grantee's next wear lifts the new row.
+    ownerHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow("second"); });
+    await run(0);
+    expect(await run(1)).toMatchObject({ lifted: 2 });
+    expect(granteeRecipe(), "the lift refreshed the stale copy").toContain("second");
+    // CONTROL: both halves open in one landing: the stale copy refreshes in place and counts as a move.
+    ownerHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow("third"); });
+    expect(await run("both")).toMatchObject({ granted: 1, moved: 1 });
+    expect(granteeRecipe()).toContain("third");
+    expect(await run("both"), "a replay over an unchanged row moves nothing").toMatchObject({ granted: 1, moved: 0 });
+  });
+
+  test("RED SA13 — a grantee's own edit stands: a refresh writes only over a copy that still reads as handed; an edited copy stays and the landing names it, and an older carry never overwrites a newer edit; CONTROL: an untouched copy refreshes", async () => {
+    const RECIPE = recipeUri("catalog", "notes");
+    const recipeRow = (bags: string) => storedLarRecord(RECIPE, { text: JSON.stringify({ bags: [bags] }), kind: "recipe" }, "test") as never;
+    const ownerHalf = half({ [NOTES]: "automerge:notesDoc" });
+    ownerHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow("first"); });
+    const granteeHalf = half();
+    const carried = new Map<string, { group: string; bag: string; row: unknown }>();
+    const carry = {
+      put: async (group: string, bag: string, row: unknown) => { carried.set(`${group}\n${bag}`, { group, bag, row }); },
+      list: async (group: string) => [...carried.values()].filter((c) => c.group === group).map((c) => ({ bag: c.bag, row: c.row as never })),
+      clear: async (group: string, bag: string) => { carried.delete(`${group}\n${bag}`); },
+    };
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "wiki", read: "reader", write: "reader" }];
+    const run = (worn: 0 | 1 | "both") => applyShares({
+      rows: async () => rows, salt: "salt", ...(worn === "both" ? {} : { carry }),
+      faces: [
+        { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => (worn !== 1 ? ownerHalf : null) },
+        { handleIndex: 1, petname: "reader", group: "g1", catalog: async () => (worn !== 0 ? granteeHalf : null) },
+      ],
+      grant: async () => ({ fresh: false }),
+      flag: { set: async () => {}, clear: async () => {} },
+    });
+    const granteeRecipe = () => JSON.stringify(granteeHalf.doc().tiddlers[RECIPE]);
+    await run(0); await run(1);
+    expect(granteeRecipe()).toContain("first");
+    // The owner's row moves and carries; meanwhile the grantee edits its own copy (a layer of its own, `lares wiki add-bag`).
+    ownerHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow("second"); });
+    await run(0);
+    granteeHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow("grantee-own"); });
+    // The older carry lifts at the grantee's wear: the newer edit stands, and the landing names the row.
+    expect(await run(1)).toMatchObject({ kept: [RECIPE] });
+    expect(granteeRecipe()).toContain("grantee-own");
+    // Both halves open: the edit still stands over the owner's newer row, named.
+    ownerHalf.change((d) => { d.tiddlers[RECIPE] = recipeRow("third"); });
+    expect(await run("both")).toMatchObject({ kept: [RECIPE] });
+    expect(granteeRecipe()).toContain("grantee-own");
+    // CONTROL: the bag row the grantee never touched still refreshes when its owner moves it.
+    ownerHalf.change((d) => { d.tiddlers[NOTES] = storedLarRecord(NOTES, { text: "automerge:notesDocTwo", kind: "oracle" }, "test") as never; });
+    await run("both");
+    expect(JSON.stringify(granteeHalf.doc().tiddlers[NOTES])).toContain("automerge:notesDocTwo");
   });
 });

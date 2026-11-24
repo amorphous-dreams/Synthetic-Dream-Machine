@@ -10,23 +10,29 @@ observer reads the transcript PROVENANCE and feeds worldline_io the edges that r
   · the SPAWN fork      — a session's `<session>/subagents/agent-<id>.jsonl` names a spirit's whole
     worldline. Each spirit forks `run -> <run>.<agentId>` (the handle deriveHandle mints); the spirit's
     own turns chain UNDER that handle, so a spirit turn climbs handle -> run -> the session root.
-  · the HANDBACK close  — the twin-reunion joins `<run>.<agentId> -> run` and closes the fork interval.
+  · the ROUND close     — a REAL report in the main transcript joins `<run>.<agentId>` into the main turn
+    that received it; the fork stays open, since the spirit persists past its round. A report reads as
+    a `<task-notification>` reporting `completed` with a `<result>` report, an `<agent-message>`
+    carrying `[Subagent hand-back]`, or an Agent tool result reporting `completed`. A notification
+    whose result says the agent has not reported yet (or relays to the agent-message) closes nothing,
+    and a readable spirit transcript proves no handback.
+  · the END             — a notification reporting killed, failed or stopped ends a round without a
+    report: the summary names it, and no edge moves history.
+  · the MESSAGE         — a SendMessage whose tool result reports success rides an `inform` edge from
+    the sending turn to the recipient spirit's handle (the main resuming a spirit, or a spirit reaching
+    its sibling); a `queued` delivery lands at the agent's next tool round, and the record places it at
+    the send. An undelivered message, or one naming an agent with no transcript, records nothing.
+  · RETIREMENT          — no Claude transcript carries a retirement act, so the observer closes no fork.
 
-PORTED from worldline-observe.ts (`deriveSubagentEdges` / `observeSubagentWorldlines`): the law holds —
-SPAWN keys to the spirit's first turn, HANDBACK closes at its last turn. TWO ports diverge by design:
+SPAWN keys to the spirit's first turn. TWO choices shape this observer:
 
-  1. NODE SPACE. The TS observer emits prov:Delegation triples for the KG (handle-space, valid_from =
-     ISO ts). This port lives in worldline_io's TURN-KEY space so `worldline_of` / `roots` / kapae read
+  1. NODE SPACE. The compare feed (`capture_session.subagent_edges`) emits prov triples in handle-space.
+     This observer lives in worldline_io's TURN-KEY space so `worldline_of` / `roots` / kapae read
      the SAME keys content_io lands under (lar_turn_key). The fork still runs `run -> handle` (the task's
      edge); the spirit's own turns then chain under the handle so the demux reaches them.
-  2. CLOCK. The TS observer stamps valid_from = first ts, ended = last ts. This port rides worldline_io's
-     tick discipline: a caller LOGICAL ORDINAL, monotonic in transcript read-order. NO host wall-time
+  2. CLOCK. This observer rides worldline_io's tick discipline: a caller LOGICAL ORDINAL, monotonic in transcript read-order. NO host wall-time
      touches the edge path (clock-purity, the sighting ward) — this module imports no clock, and the
      transcript's own timestamps never reach an edge.
-
-INJECT (prov:Communication) stays UNBUILT — the one-handoff / run-to-completion subagent model carries
-no reliable mid-flight injection signal (see the TS note). The hook (`_derive_injections`) stands ready;
-it returns nothing until a SendMessage-continue lifecycle lands a distinguishable signal.
 
 The worldline stays LOCAL — a py-local worldline_io fork-DAG, never a federated/meshed doc.
 
@@ -143,11 +149,127 @@ def derive_subagent_edges(transcript: str, run: str) -> list:
     return out
 
 
-def _derive_injections(run: str, handle: str, chain: list) -> list:
-    """INJECT hook (prov:Communication) — UNBUILT. The one-handoff / run-to-completion model carries no
-    reliable mid-flight injection signal, so this returns nothing. It stands ready for the day a
-    SendMessage-continue lifecycle lands a distinguishable re-entry mark."""
+_TASK_ID = re.compile(r"<task-id>\s*([^<\s]+)\s*</task-id>")
+_TASK_STATUS = re.compile(r"<status>\s*([^<]+?)\s*</status>")
+_TASK_RESULT = re.compile(r"<result>(.*?)</result>", re.S)
+_AGENT_MESSAGE = re.compile(r'<agent-message from="([^"]+)">\s*\[Subagent hand-back\]')
+# A finished notification whose <result> carries no report: the agent still waits on its own background
+# work, or its report reached the session as an agent-message (which counts once, where it lands).
+_NO_REPORT = ("This agent has not reported yet", "This agent's report was delivered to you as a message")
+# A notification status that ends a round without a report: an end, never a message.
+_END_STATUSES = ("killed", "failed", "stopped")
+
+
+def _texts(content) -> list:
+    """The plain-text spans of a message body (a bare string, or the `text` blocks of a list)."""
+    if isinstance(content, str):
+        return [content]
+    if isinstance(content, list):
+        return [b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text"]
     return []
+
+
+def _notification_event(text: str, known: set, turn: str) -> "dict | None":
+    """Read one `<task-notification>` for a known agent: a round close where it carries a real report, an
+    end where it reports killed/failed/stopped, and nothing where the result says no report came."""
+    m = _TASK_ID.search(text)
+    if not m or m.group(1) not in known:
+        return None
+    st = _TASK_STATUS.search(text)
+    status = st.group(1) if st else ""
+    if status in _END_STATUSES:
+        return {"kind": "end", "agent": m.group(1), "turn": turn, "status": status}
+    res = _TASK_RESULT.search(text)
+    if status != "completed" or not res or res.group(1).lstrip().startswith(_NO_REPORT):
+        return None
+    return {"kind": "handback", "agent": m.group(1), "turn": turn, "status": "completed"}
+
+
+def read_spirit_events(path: str, agents) -> list:
+    """Read the REAL launch, handback, end and message events a transcript records for the known `agents`
+    (agent ids with a spirit transcript), in file order — PURE, clock-free, deduped.
+
+      {"kind": "launch", "agent": id, "turn": <assistant row holding the Agent tool_use>}
+        · an Agent tool_use whose tool result names `agentId: id` (launched async, or completed inline).
+      {"kind": "handback", "agent": id, "turn": <receiving row uuid>, "status": "completed"}
+        · a `<task-notification>` reporting `completed` with a `<result>` report (not the "has not
+          reported yet" wait, not the "delivered to you as a message" relay), or
+        · an `<agent-message from="id">` carrying `[Subagent hand-back]` (a SubagentHandback delivery), or
+        · a user row whose `toolUseResult` reports `status: completed` with `agentId: id`.
+      {"kind": "end", "agent": id, "turn": <row uuid>, "status": "killed" | "failed" | "stopped"}
+        · a notification reporting that status: the round ends without a report, and no message moves.
+      {"kind": "message", "agent": id, "turn": <sending row uuid>, "delivery": "resumed" | "queued"}
+        · an assistant SendMessage tool_use whose tool result reports `success: true`; the recipient reads
+          from `resumedAgentId` / `pin.id`, else the tool input's `to`. `queued` names a message the harness
+          holds for the agent's next tool round: the record places its receive at the send.
+
+    An event naming an agent outside `agents` records nothing — the observer never invents a spirit."""
+    known = set(agents)
+    sends: dict = {}
+    launches: dict = {}
+    seen: set = set()
+    out: list = []
+
+    def emit(key, event) -> None:
+        if key not in seen:
+            seen.add(key)
+            out.append(event)
+
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                uuid = row.get("uuid")
+                if not uuid or row.get("type") not in ("user", "assistant"):
+                    continue
+                uuid = str(uuid)
+                msg = row.get("message") if isinstance(row.get("message"), dict) else {}
+                content = msg.get("content")
+                if row.get("type") == "assistant":
+                    for b in content if isinstance(content, list) else []:
+                        if not (isinstance(b, dict) and b.get("type") == "tool_use"):
+                            continue
+                        if b.get("name") == "SendMessage":
+                            to = (b.get("input") or {}).get("to")
+                            sends.setdefault(b.get("id"), (uuid, str(to) if to else ""))
+                        elif b.get("name") in ("Agent", "Task"):
+                            launches.setdefault(b.get("id"), uuid)
+                    continue
+                result = row.get("toolUseResult") if isinstance(row.get("toolUseResult"), dict) else {}
+                for b in content if isinstance(content, list) else []:
+                    if not (isinstance(b, dict) and b.get("type") == "tool_result"):
+                        continue
+                    tid = b.get("tool_use_id")
+                    if tid in launches and result.get("agentId") in known:
+                        emit(("launch", result["agentId"]), {"kind": "launch", "agent": result["agentId"], "turn": launches[tid]})
+                    if tid in sends and result.get("success") is True:
+                        turn, to = sends[tid]
+                        agent = result.get("resumedAgentId") or (result.get("pin") or {}).get("id") or to
+                        if agent in known:
+                            queued = "queued for delivery" in str(result.get("message") or "")
+                            emit(("message", tid), {"kind": "message", "agent": agent, "turn": turn,
+                                                    "delivery": "queued" if queued else "resumed"})
+                if result.get("status") == "completed" and result.get("agentId") in known:
+                    emit(("handback", result["agentId"], uuid),
+                         {"kind": "handback", "agent": result["agentId"], "turn": uuid, "status": "completed"})
+                for text in _texts(content):
+                    if "<task-notification>" in text:
+                        ev = _notification_event(text, known, uuid)
+                        if ev:
+                            emit((ev["kind"], ev["agent"], uuid), ev)
+                    for m in _AGENT_MESSAGE.finditer(text):
+                        if m.group(1) in known:
+                            emit(("handback", m.group(1), uuid),
+                                 {"kind": "handback", "agent": m.group(1), "turn": uuid, "status": "completed"})
+    except OSError:
+        return []
+    return out
 
 
 # --- the wire: feed the derived shape into worldline_io ---------------------
@@ -181,12 +303,14 @@ def observe_worldline(store, transcript: str, *, tick0: int = 1, veil_secret: "b
     session basename — so the graph carries an opaque, owner-recomputable root. `veil_secret` injects the
     local secret (a witness passes an explicit test salt; None resolves the on-disk persona/worldline-salt).
 
-    Order: the main linear chain (rooted at the RUN node) · then per spirit — the SPAWN fork
-    (`run -> handle`), the spirit's own chain (rooted at the HANDLE), the HANDBACK close. Every edge
+    Order: the main linear chain (rooted at the RUN node) · per spirit — the SPAWN fork (`run -> handle`)
+    and the spirit's own chain (rooted at the HANDLE) · then the main transcript's real handback and
+    message events · then each spirit's messages to its siblings. Every edge
     takes a caller LOGICAL ORDINAL tick (monotonic in read-order), so a re-run mints the identical
     (frm, to, relation, tick) tuples and worldline_io's sink-idempotence dedups them — no duplicate edges.
 
-    Returns a summary: the veiled run-root, the main-chain length, and the observed spirit handles."""
+    Returns a summary: the veiled run-root, the main-chain length, the observed spirit handles, the
+    round closes (handle, receipt turn, reported status) and the messages (sending turn, recipient)."""
     tick = itertools.count(tick0)  # the pure logical ordinal — no host clock rides the edge path
     run = veiled_root(run_id_of(transcript), veil_context, secret=veil_secret, identity_dir=identity_dir)
 
@@ -194,16 +318,39 @@ def observe_worldline(store, transcript: str, *, tick0: int = 1, veil_secret: "b
     main_chain = read_chain(transcript)
     main_edges = _add_chain(store, main_chain, run, tick)
 
-    # 2. per spirit — the SPAWN fork, the spirit chain under the handle, the HANDBACK close.
-    observed: list = []
-    for spirit in derive_subagent_edges(transcript, run):
+    # 2. per spirit — the SPAWN fork and the spirit chain under the handle.
+    spirits = derive_subagent_edges(transcript, run)
+    handles = {s.agent_id: s.handle for s in spirits}
+    for spirit in spirits:
         store.fork(run, spirit.handle, next(tick))            # SPAWN: run -> <run>.<agentId>
         _add_chain(store, spirit.chain, spirit.handle, tick)  # the spirit's turns chain under the handle
-        _derive_injections(run, spirit.handle, spirit.chain)  # INJECT hook — unbuilt (one-handoff model)
-        store.handback(run, spirit.handle, next(tick))        # HANDBACK: join handle->run + close the fork
-        observed.append(spirit.handle)
 
-    return {"run": run, "main_turns": main_edges, "spirits": observed}
+    # 3. the main transcript's REAL events — a round close joins the spirit into the receiving turn and
+    #    leaves its fork open; a delivered message informs the spirit from the sending turn.
+    rounds: list = []
+    messages: list = []
+    ends: list = []
+    for ev in read_spirit_events(transcript, handles):
+        handle = handles[ev["agent"]]
+        if ev["kind"] == "handback":
+            store.handback(run, handle, next(tick), receipt=ev["turn"])
+            rounds.append({"handle": handle, "receipt": ev["turn"], "status": ev["status"]})
+        elif ev["kind"] == "message":
+            store.inform(ev["turn"], handle, next(tick))
+            messages.append({"from": ev["turn"], "to": handle, "delivery": ev["delivery"]})
+        elif ev["kind"] == "end":
+            ends.append({"handle": handle, "turn": ev["turn"], "status": ev["status"]})
+
+    # 4. each spirit's delivered messages to its siblings.
+    for spirit in spirits:
+        for ev in read_spirit_events(spirit.agent_file, handles):
+            if ev["kind"] != "message" or ev["agent"] == spirit.agent_id:
+                continue
+            store.inform(ev["turn"], handles[ev["agent"]], next(tick))
+            messages.append({"from": ev["turn"], "to": handles[ev["agent"]], "delivery": ev["delivery"]})
+
+    return {"run": run, "main_turns": main_edges, "spirits": [s.handle for s in spirits],
+            "rounds": rounds, "messages": messages, "ends": ends}
 
 
 def detect_rewind(store, drawers) -> "str | None":

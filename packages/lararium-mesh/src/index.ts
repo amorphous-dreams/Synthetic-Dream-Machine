@@ -38,6 +38,7 @@ export * from "./stored-value.js";
 export * from "./stored-record.js";
 export * from "./catalog-entry.js";
 export * from "./floor-manifest.js";
+export * from "./floor-drift.js";
 export * from "./floor-offering.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
@@ -85,6 +86,7 @@ export * from "./hearth-roster.js";
 export * from "./intent-issue.js";
 export * from "./ward-cosign.js";
 export * from "./ward-cosign-gate.js";
+export * from "./keeper-cosign.js";
 export * from "./ward-answer.js";
 export * from "./vessel-face-tag.js";
 export * from "./kahua-stage.js";
@@ -301,6 +303,7 @@ export * from "./face-scoped-id.js";
 export * from "./durability-receipt.js";
 export * from "./session-receipt.js";
 export * from "./residency-actions.js";
+export { watchStandoffs, standoffOf, type StandoffWatch } from "./standoff-watch.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
 export * from "./effect-record.js";
@@ -624,7 +627,7 @@ export * from "./pack-provenance.js";
 
 // One boot-time doc resolver for both vessels — races local readiness, then MERGES a late remote
 // into the fallback rather than dropping it.
-export { waitHandle, LOCAL_READY_MS, seatSealedRest, sealedLoadEnding, type SealedRestDoor, type SealedSettlement, type SealedLoadEnding } from "./wait-handle.js";
+export { waitHandle, nameDocumentFor, nameDerivedDocument, LOCAL_READY_MS, seatSealedRest, sealedLoadEnding, type SealedRestDoor, type SealedSettlement, type SealedLoadEnding } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
@@ -721,3 +724,5 @@ export * from "./promote-panel-api.js";
 export * from "./promote-main-verbs.js";
 export * from "./share-config.js";
 export * from "./face-label.js";
+export * from "./secret-shapes.js";
+export * from "./attempt-budget.js";

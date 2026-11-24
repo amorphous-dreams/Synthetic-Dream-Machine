@@ -1,7 +1,8 @@
 """Phase-4 witness — the WORLDLINE RHIZOME (fork-DAG) + FULL kapae across the pinned sensoria.
 
 Proves, over REAL content_io palaces + the two PINNED sensoria (Memory=immutable-ground ⊥ Dream):
-  · fork-DAG      — spawn->fork, handback->join (fork interval closes), concurrent siblings->∥;
+  · fork-DAG      — spawn->fork, handback->join (a round closes, the fork stays open), retire->the
+                    fork interval closes, concurrent siblings->∥;
                     a real multi-turn shape replays correctly.
   · kapae-cascade — kapae a BRANCH (root + subtree) EXCLUDES its entries from recall across BOTH
                     sensoria; the other turns stay intact.
@@ -25,11 +26,12 @@ def _embed(_text):
 
 
 def _build_rhizome(store):
-    """A real multi-turn shape:  root forks A and B (A ∥ B); B forks B1 (B's subtree); A hands back."""
+    """A real multi-turn shape:  root forks A and B (A ∥ B); B forks B1 (B's subtree); A hands back, then retires."""
     store.fork("t-root", "t-A", tick=1)
     store.fork("t-root", "t-B", tick=2)      # B forked while A still runs -> A ∥ B
     store.fork("t-B", "t-B1", tick=3)        # B1 rides B's subtree
-    store.handback("t-root", "t-A", tick=4)  # child A hands back to parent root: join + close the fork
+    store.handback("t-root", "t-A", tick=4)  # child A hands back to parent root: a join closes the round
+    store.retire("t-root", "t-A", tick=5)    # A retires: its fork interval closes
 
 
 def test_graph_walks_ride_the_frm_to_indexes(tmp_path):
@@ -109,8 +111,8 @@ def test_add_edge_refuses_a_second_distinct_open_fork_parent(tmp_path):
     assert not any((e["frm"], e["to"]) == ("p2", "child") for e in store.dag()["edges"])
     assert store.worldline_of("child") == "p1"
 
-    # after handback closes the first fork, the child re-forks free (only OPEN parents block)
-    store.handback("p1", "child", tick=3)
+    # after retirement closes the first fork, the child re-forks free (only OPEN parents block)
+    store.retire("p1", "child", tick=3)
     reforked = store.fork("p2", "child", tick=4)
     assert reforked["added"] is True
 
@@ -125,9 +127,10 @@ def test_fork_dag_spawn_handback_concurrent_replays(tmp_path):
     assert rels[("t-root", "t-A")]["relation"] == "fork"
     assert rels[("t-root", "t-B")]["relation"] == "fork"
     assert rels[("t-B", "t-B1")]["relation"] == "fork"
-    # handback -> a join edge (child->parent) AND the fork interval closed (bitemporal valid_to)
+    # handback -> a join edge (child->parent); retirement closes the fork interval (bitemporal valid_to)
     assert rels[("t-A", "t-root")]["relation"] == "join"
-    assert rels[("t-root", "t-A")]["valid_to"] == 4          # closed at handback
+    assert rels[("t-A", "t-root")]["valid_from"] == 4
+    assert rels[("t-root", "t-A")]["valid_to"] == 5          # closed at retirement
     assert rels[("t-root", "t-B")]["valid_to"] is None       # B still open
 
     # concurrent -> ∥ : the two siblings of one fork read concurrent; parent/child read ordered

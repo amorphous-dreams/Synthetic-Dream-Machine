@@ -274,6 +274,13 @@ export interface IslandMsg_Manifest {
    */
   diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
+   * THE PERSON'S STAND-OFF COLLAPSE RULES, read from the worn face's daemon wiki (`$:/config/lares/shore/collapse/<rule>`,
+   * each naming the bags it may collapse in) as the vessel mints this manifest: rule → bags. A wiki island reads its
+   * rules here alone, never from its own wiki, which another writer may share; absent = no rule enabled anywhere.
+   * The daemon island reads its own wiki, the daemon face itself (`@lararium/node` standoff-collapse).
+   */
+  shoreCollapse?: Readonly<Record<string, readonly string[]>>;
+  /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
    * `bootDaemonKeyhive` with this + its daemon CompositeStore (the cap-event
@@ -358,6 +365,12 @@ export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemo
      * to the worn composition's own list.
      */
     readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"];
+    /**
+     * THE RECARD (`lares vault recard --face N`), asked for this light alone: where the face's stand holds no prekey secret, it
+     * mints its card before it registers its bags and rests the Archive after that card, keeping the face's identity. A light
+     * that never meets the fault stands as it would. Never part of what the face lit from (`faceInputsDigest`).
+     */
+    readonly recard?: true;
   };
 
 /**
@@ -527,9 +540,9 @@ export interface DaemonMsg_WorldlineCompareRequest {
   requestId: string;
   a: string;
   b: string;
-  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication inject), plain objects. */
+  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication message or round-closing handback), plain objects. */
   opens: readonly WorldlineEdgeTriple[];
-  /** The edge-DAG closes (prov:Delegation handback) — absent when no handback edges stand. */
+  /** The edge-DAG closes (prov:Delegation retirement) — absent when no retirement edges stand. */
   closes?: readonly WorldlineEdgeClose[];
   /** The run-root / common-cause handle the registry seeds from (default "operator"). */
   root?: string;
@@ -541,6 +554,8 @@ export interface DaemonMsg_WorldlineCompareResult {
   requestId: string;
   /** "before" | "after" | "concurrent" | "equal" — the ItcOrder, carried as a plain string (GP-2). */
   order?: string;
+  /** Handles whose stamps rest on an incomplete record (the replay's `uncertain`); a verdict naming one reads partial. */
+  uncertain?: readonly string[];
   error?: string;
 }
 
@@ -1157,6 +1172,9 @@ export interface WikiMsg_PlaceVerb {
   targets?:       string[];
   batchMode?:     string;
   requestId?:     string;
+  /** The asker's hand as the vessel's own door read it (`DaemonMsg_PlaceVerb.asker`); never read off args. Absent where no
+   *  door read one (a verb the vessel places by itself). */
+  asker?:         Hand;
 }
 
 /**
@@ -1327,6 +1345,7 @@ export function mkManifest(
     floorCid?:       string | null;
     view?:           IslandViewStanding;
     resolved?:       Readonly<Record<string, string>>;
+    shoreCollapse?:  Readonly<Record<string, readonly string[]>>;
   },
 ): IslandMsg_Manifest {
   const msg: IslandMsg_Manifest = {
@@ -1345,6 +1364,7 @@ export function mkManifest(
   if (opts?.floorCid)            msg.floorCid    = opts.floorCid;
   if (opts?.view)                msg.view        = opts.view;
   if (opts?.resolved)            msg.resolved    = opts.resolved;
+  if (opts?.shoreCollapse && Object.keys(opts.shoreCollapse).length > 0) msg.shoreCollapse = opts.shoreCollapse;
   return msg;
 }
 
@@ -1454,6 +1474,7 @@ export function mkDaemonWorldlineCompareRequest(opts: {
 export function mkDaemonWorldlineCompareResult(opts: {
   requestId: string;
   order?: string;
+  uncertain?: readonly string[];
   error?: string;
 }): DaemonMsg_WorldlineCompareResult {
   const msg: DaemonMsg_WorldlineCompareResult = {
@@ -1461,6 +1482,7 @@ export function mkDaemonWorldlineCompareResult(opts: {
     requestId: opts.requestId,
   };
   if (opts.order !== undefined) msg.order = opts.order;
+  if (opts.uncertain !== undefined) msg.uncertain = opts.uncertain;
   if (opts.error !== undefined) msg.error = opts.error;
   return msg;
 }
@@ -1650,6 +1672,7 @@ export function mkWikiPlaceVerb(opts: {
   targets?: string[];
   batchMode?: string;
   requestId?: string;
+  asker?: Hand;
 }): WikiMsg_PlaceVerb {
   const msg: WikiMsg_PlaceVerb = {
     type: "wiki:place-verb",
@@ -1660,6 +1683,7 @@ export function mkWikiPlaceVerb(opts: {
   if (opts.targets?.length)  msg.targets   = opts.targets;
   if (opts.batchMode)        msg.batchMode = opts.batchMode;
   if (opts.requestId)        msg.requestId = opts.requestId;
+  if (opts.asker)            msg.asker     = opts.asker;
   return msg;
 }
 

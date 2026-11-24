@@ -2,8 +2,8 @@
 """kg_io — the WORLDLINE edge-DAG side of the mempalace knowledge graph.
 
 The durable projection of the agent worldline's happened-before (agent-worldline
-#attribution): spawn → a prov:Delegation triple, inject → a prov:Communication
-triple, handback → the spawn edge's valid-interval closed, kapae (rewind) → every
+#attribution): spawn → a prov:Delegation triple, a message or a round-closing handback →
+a prov:Communication triple, retirement → the spawn edge's valid-interval closed, kapae (rewind) → every
 edge of a retracted turn closed (valid_to set, never deleted — history kept).
 
 This is OUR script (packages/lararium-sensorium/scripts), NOT the vendored submodule:
@@ -16,9 +16,9 @@ edit mempalace/.
                           SINK-idempotent over the WHOLE lifecycle: an identical S/P/O
                           triple with the SAME valid_from — open (add_triple's own
                           still-open dedup) or already CLOSED (a re-observed
-                          spawn->handback pair) — skips, so a re-run re-adds nothing.
+                          spawn->retirement pair) — skips, so a re-run re-adds nothing.
   invalidate PATCHFILE <- NDJSON {subject,predicate,object,ended?} ; one kg.invalidate
-                          each — closes a triple's valid_to by S/P/O (the handback close).
+                          each — closes a triple's valid_to by S/P/O (the retirement close).
                           SINK-idempotent: close-of-already-closed no-ops (only a row
                           with an OPEN valid_to closes; the count reports real closes).
   kapae --turn-key K --ended T   (--ended = a logical close-mark; required, clock-purity)
@@ -142,7 +142,7 @@ def cmd_add(args):
             # SINK-side idempotence — the SPAWN law (add_triple dedups an identical
             # still-open triple) extended over the whole lifecycle: the same S/P/O with
             # the SAME interval start already stands, open OR closed (a re-observed
-            # spawn->handback pair), so a re-run mints no duplicate row. `IS ?` compares
+            # spawn->retirement pair), so a re-run mints no duplicate row. `IS ?` compares
             # NULL-safe (a dateless edge dedups too).
             existing = conn.execute(
                 "SELECT 1 FROM triples WHERE subject=? AND predicate=? AND object=? AND valid_from IS ?",

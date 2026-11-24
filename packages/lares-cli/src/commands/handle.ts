@@ -30,6 +30,7 @@ import {
 import { storeVerb } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { tableCovers } from "../verb-table.js";
 
 /** A recognized-but-unwired verb reports its shape and where its ahu waits, then declines to act. */
 function declared(verb: string, willDo: string, mint: string): number {
@@ -118,7 +119,7 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
 
   let parsed: unknown;
   try { parsed = JSON.parse(text); }
-  catch { return refuse(args, "the statement is not valid JSON — carry the object `lares handle attest` printed"); }
+  catch { return refuse(args, "the statement holds no JSON that parses — carry the object `lares handle attest` printed"); }
   const statement = asAttestation(parsed);
   if (!statement) {
     return refuse(args, "the statement lacks prefix · headEventCid · sig, or its claim does not read as a structured edge (a known surface + its subject) — such a statement verifies nothing");
@@ -231,7 +232,7 @@ async function handleAttest(args: ParsedArgs): Promise<number> {
   }
   const claim = handleClaimFrom(surface, subject, typeof args.options["return-locator"] === "string" ? args.options["return-locator"] : undefined);
   if (!claim) {
-    return refuse(args, `no adapter answers surface "${surface}" with subject "${subject}" — the surfaces are ${HANDLE_CLAIM_SURFACES.join(" · ")}`);
+    return refuse(args, `no adapter answers surface "${surface}" with subject "${subject}" — the surfaces it answers: ${HANDLE_CLAIM_SURFACES.join(" · ")}`);
   }
   const statement = (await storeVerb("handle-attest", { claim, ...personaOf(args) })).output["statement"] as HandleAttestation;
   // A standalone signed statement the operator carries out-of-band; a reader verifies it against the surface.
@@ -239,8 +240,11 @@ async function handleAttest(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
+/** Every verb the handle door answers. */
+export const HANDLE_VERBS = ["publish", "rotate", "graft", "burn", "verify-attestation", "attest"] as const;
+
 export async function cmdHandle(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+  const sub = args.positional[0] as (typeof HANDLE_VERBS)[number] | undefined;
   switch (sub) {
     case "publish": return await handlePublish(args);
     case "rotate": {
@@ -256,12 +260,12 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
         ...(args.flags["from-persona"] === true ? { fromPersona: true } : {}),   // owner-burn (from above)
       })).output["card"] as HandleCard;
       const hand = args.flags["from-persona"] === true ? "the persona buried it from above" : "the seated key buried it";
-      console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… is terminal, readers refuse it (${hand})`);
+      console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… ends here, and readers refuse it (${hand})`);
       return 0;
     }
     case "verify-attestation": return await handleVerifyAttestation(args);
     case "attest": return await handleAttest(args);
     default:
-      return refuse(args, sub ? `unknown sub-verb "${sub}"` : "name a sub-verb");
+      return refuse(args, sub ? `unknown sub-verb "${tableCovers(sub)}"` : "name a sub-verb");
   }
 }

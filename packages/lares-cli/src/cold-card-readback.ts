@@ -8,7 +8,7 @@
  * card's code. With no seat the answer carries the digest and the confirm phrase alone.
  * Every seed zero-fills before the printer returns.
  */
-import { COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning, COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
 import type { ParsedArgs } from "./parse-args.js";
 import { readBackStandsIn } from "./sealed-records.js";
 import { canPromptSecret, promptSecret } from "./prompt-secret.js";
@@ -117,8 +117,9 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
           const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
           back?.fill(0);
           if (same) break;
-          if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again. A new run prints new cards: discard these and write down the new ones`);
-          say(`  ${reason} — try again`);
+          const left = ATTEMPT_BUDGET - tries - 1;
+          if (left <= 0) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}. ${attemptWarning(0, "read-back")}`);
+          say(`  ${reason}. ${attemptWarning(left, "read-back")}`);
         }
       } finally { tap?.stop(); }
       if (standIn || json) continue;

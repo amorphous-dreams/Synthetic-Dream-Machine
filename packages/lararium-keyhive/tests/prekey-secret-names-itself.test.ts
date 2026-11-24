@@ -70,7 +70,7 @@ describe("a stand whose Archive lags its own log", () => {
     }
     expect(refusal).toBeInstanceOf(PrekeySecretAbsent);
     const message = (refusal as Error).message;
-    expect(message).toContain("holds no prekey secret: its Archive was absent or older than its latest card");
+    expect(message).toContain("holds no prekey secret: its Archive stood absent or older than its latest card");
     expect(message).not.toMatch(/GenerateDocError/);
     expect(message).not.toMatch(/[0-9a-f]{40}/);   // no key material and no identity hex rides the line
     // KEYHIVE'S OWN WORDS, pinned: the rename keys on this text (document.rs `OwnerHoldsNoPrekeySecret`); a wasm bump that

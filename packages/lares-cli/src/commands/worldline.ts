@@ -4,12 +4,13 @@
  *
  * Reads the mempalace knowledge graph READ-ONLY (`<palace>/knowledge_graph.sqlite3`,
  * `mode=ro` — never a write, never through the python shore): the `lares-worldline`
- * adapter rows worldline-kg.ts projects — `prov:Delegation` (spawn → handback interval,
- * `source_drawer_id` = the spawn turn key) and `prov:Communication` (mid-flight inject).
+ * adapter rows worldline-kg.ts projects — `prov:Delegation` (spawn → retirement interval,
+ * `source_drawer_id` = the spawn turn key) and `prov:Communication` (messages and round-closing
+ * handbacks; a spirit persists past each handback until its retirement closes the interval).
  *
  * Sub-forms:
  *   lares sense worldline <run|handle>        the braid (tree, default) — spawn=fork ·
- *                                       handback=join · concurrent siblings marked ∥
+ *                                       retire=join · concurrent siblings marked ∥
  *   lares sense worldline tree <run>          the same, spelled
  *   lares sense worldline <run> --as-of <ts>  the braid AS-OF a valid-time frontier — a
  *                                       pure READ refinement (rows spawned after <ts>
@@ -76,13 +77,13 @@ export interface WorldlineNode {
   readonly agentId: string | null;
   readonly parent: string | null;
   readonly spawn: string | null;
-  /** The handback close (valid_to), or null while the interval stands OPEN. */
-  readonly handback: string | null;
+  /** The retirement close (valid_to), or null while the spirit stands OPEN (live, across its rounds). */
+  readonly retired: string | null;
   readonly turnKey: string | null;
   readonly open: boolean;
   /** Edge-DAG replay verdict vs the sibling before it — the ∥ mark (see module doc). */
   readonly concurrentWithPreviousSibling: boolean;
-  /** prov:Communication edges landing on this worldline (mid-flight injects). */
+  /** prov:Communication edges landing on this worldline (messages and handbacks it received). */
   readonly injects: number;
   readonly children: WorldlineNode[];
 }
@@ -155,7 +156,7 @@ export function buildWorldlineTree(
       agentId,
       parent,
       spawn: row?.valid_from ?? null,
-      handback: row?.valid_to ?? null,
+      retired: row?.valid_to ?? null,
       turnKey: row?.turn_key ?? null,
       open: row !== null && row.valid_to === null,
       concurrentWithPreviousSibling: false,
@@ -223,7 +224,7 @@ function shortTs(ts: string | null): string {
 function renderNode(n: WorldlineNode, indent: string, isLast: boolean, lines: string[]): void {
   const tee = isLast ? "└─" : "├─";
   const par = n.concurrentWithPreviousSibling ? "∥ " : "";
-  const span = `${shortTs(n.spawn)} → ${n.open ? "OPEN" : shortTs(n.handback)}`;
+  const span = `${shortTs(n.spawn)} → ${n.open ? "OPEN" : shortTs(n.retired)}`;
   const inj = n.injects > 0 ? ` · injects ${n.injects}` : "";
   const key = n.turnKey ? ` · turnKey ${n.turnKey.slice(0, 8)}` : "";
   lines.push(`${indent}${tee} ${par}${n.agentId ?? n.handle}  ${span}${inj}${key}`);
@@ -333,8 +334,8 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
     const msg = `no knowledge graph at ${kgPath}`;
     emit(args, {
       ok: false,
-      error: { code: "not-found", message: msg, hint: "Worldline edges project when a session's spirits are observed — run `lares sense subagents <transcript>` first." },
-      human: () => { console.error(`lares sense worldline: ${msg}`); console.error("  Worldline edges project when a session's spirits are observed — run `lares sense subagents <transcript>` first."); },
+      error: { code: "not-found", message: msg, hint: "Worldline edges project when a session's spirits are observed — run `lares sense capture <transcript>` first." },
+      human: () => { console.error(`lares sense worldline: ${msg}`); console.error("  Worldline edges project when a session's spirits are observed — run `lares sense capture <transcript>` first."); },
     });
     return exitFor("not-found");
   }
@@ -357,7 +358,7 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
     const msg = `no worldline edges match "${runArg}" (adapter lares-worldline)`;
     emit(args, {
       ok: false,
-      error: { code: "not-found", message: msg, hint: "Edges land when a session's spirits are observed — `lares sense subagents <transcript>`." },
+      error: { code: "not-found", message: msg, hint: "Edges land when a session's spirits are observed — `lares sense capture <transcript>`." },
       human: () => console.error(`lares sense worldline: ${msg}`),
     });
     return exitFor("not-found");

@@ -269,7 +269,12 @@ services:
   # (`tools/lares-container.sh pulama light`, a real terminal); a restart of the pūlama comes up unlit. It keeps no network
   # and no writable root; its private state rests in LARES_HOUSE/pulama/state, which no vessel mounts. Profiled: it stands
   # only when the shim's LARES_PULAMA=1 asks.
-  pulama:
+  #
+  # TWO KEEPER SERVICES, ONE FIRE (the keeper tally, lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting): `pulama` and
+  # `pulama-b` share one stanza, so a successor stands beside the lit keeper over the same socket volume and state dir. Exactly
+  # one holds the vessel socket (an exclusive claim); the other stands as its successor on its own hand door until a vest lights
+  # it and `take-fire` claims the socket the fire-holder let go. Outside a handoff one alone runs.
+  pulama: &pulama-keeper
     image: ${LARES_IMAGE:-lares-surface:local}
     profiles: [pulama]
     user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
@@ -301,6 +306,7 @@ services:
     stdin_open: true
     restart: unless-stopped
     stop_grace_period: 10s
+  pulama-b: *pulama-keeper
 
   # The offline CLI door owns the store for one act and refuses by name while a vessel stands.
   offline:

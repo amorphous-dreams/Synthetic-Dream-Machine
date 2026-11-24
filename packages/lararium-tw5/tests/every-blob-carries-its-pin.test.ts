@@ -38,6 +38,8 @@ describe("the core blob carries its pin", () => {
   test("a blob whose bytes hash elsewhere refuses by name and never evaluates; CONTROL: the pinned blob evaluates", async () => {
     const wrong = sha256HexBytesSync(new TextEncoder().encode("other bytes"));
     await expect(prepareHostBootInstance({ bytes, sha256: wrong })).rejects.toThrow(new RegExp(CORE_BLOB_PIN_MISMATCH));
+    // The refusal names its cure: the vendor bake writes the core and its pin in one pass, then the tree rebuilds over it.
+    expect(() => verifyCoreBootBlob({ bytes, sha256: wrong })).toThrow(/pnpm --filter @lararium\/tw5 run build:tw5-vendor/);
     expect(g[flag]).toBeUndefined();
     await prepareHostBootInstance({ bytes, sha256: sha256HexBytesSync(bytes).toUpperCase() });
     expect(g[flag], "CONTROL: the pinned blob evaluated").toBe(true);

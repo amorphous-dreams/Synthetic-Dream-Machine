@@ -63,7 +63,7 @@ import {
   floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
   type FloorShadowStore, type FloorShadowTally,
 } from "./floor-shadow.js";
-import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
+import { isCapabilityProfile, type CapabilityProfile, type Hand } from "./session-contract.js";
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
@@ -327,6 +327,11 @@ export interface VesselIslandPoolCoreOptions {
   mainRepo?: Repo | null;
   /** Held disk-write capability — bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: DiskMirrorGrant;
+  /**
+   * The person's stand-off collapse rules (rule → bags), read afresh from the worn face's daemon wiki at each mount and
+   * carried in the manifest (`IslandMsg_Manifest.shoreCollapse`). Absent or null = no rule enabled.
+   */
+  shoreCollapse?: () => Readonly<Record<string, readonly string[]>> | null | Promise<Readonly<Record<string, readonly string[]>> | null>;
   /** Called when an island OUTSIDE any session emits a verse-event reaction, a camera frame, a control
    *  result or a host-door ask. */
   onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
@@ -422,6 +427,7 @@ export class VesselIslandPoolCore {
   private _restState: VesselRestState = { asked: 0, rested: 0, stalled: 0 };
   private readonly _onRest: ((state: VesselRestState) => void) | null;
   private readonly _diskMirrorGrant: DiskMirrorGrant;
+  private readonly _shoreCollapse: VesselIslandPoolCoreOptions["shoreCollapse"] | null;
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
@@ -470,6 +476,7 @@ export class VesselIslandPoolCore {
     this._host            = opts.host;
     this._mainRepo        = opts.mainRepo ?? null;
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
+    this._shoreCollapse   = opts.shoreCollapse ?? null;
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
     this._onRest          = opts.onRest ?? null;
     this._onSurfaceEvent  = opts.onSurfaceEvent ?? null;
@@ -856,11 +863,14 @@ export class VesselIslandPoolCore {
     // vessel's Repo rests every document once (single-owner law), and the island relays through it. A session island
     // carries no disk mirror either.
     const diskMirrors = plan.surface ? [] : resolveDiskMirrors(this._diskMirrorGrant, plan.recipe.mirrorBags, plan.recipe.wikiSlug);
+    // THE PERSON'S COLLAPSE RULES ride only with a mirror: an island that projects nothing weighs no stand-off.
+    const shoreCollapse = diskMirrors.length > 0 && this._shoreCollapse !== null ? await (async () => this._shoreCollapse!())().catch(() => null) : null;
 
     const manifestMsg = mkManifest(
       plan.wikiUri, syncPort, plan.recipe, plan.grants, plan.coreHash,
       {
         ...(diskMirrors.length ? { diskMirrors } : {}),
+        ...(shoreCollapse ? { shoreCollapse } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
         ...(floorCid ? { floorCid } : {}),
         ...(plan.surface && view ? { view: { peerId: view.peerId }, resolved: resolvedSlotsOf(plan.surface.mount.recipe) } : {}),
@@ -1025,7 +1035,7 @@ export class VesselIslandPoolCore {
   /** Place a wiki-scope job into a live island and await the result. */
   placeWikiVerb(
     wikiId: string,
-    opts: { verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string },
+    opts: { verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string; asker?: Hand },
     session?: PlacingSession,
   ): Promise<Record<string, unknown>> {
     const slot = this._placeable(wikiId, session);

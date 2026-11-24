@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """worldline_io — the WORLDLINE RHIZOME (a fork-DAG over turns) + FULL kapae.
 
-The agent worldline READS as a rhizome: a turn SPAWNS a fork, a HANDBACK joins the fork back,
-and concurrent siblings of one spawn (no join between them) run ∥. This holder persists that
+The agent worldline READS as a rhizome: a turn SPAWNS a fork, a HANDBACK closes a round with a join
+into the parent's receiving turn (the spirit persists), a message rides an `inform` edge, RETIREMENT
+closes the fork interval, and concurrent siblings of one spawn run ∥. This holder persists that
 fork-DAG durably and drives the FULL kapae — branch-mute that CASCADES across the sensoria's
 palaces so recall EXCLUDES a muted fork-path, reversibly, move-not-delete.
 
@@ -10,10 +11,15 @@ TWO append-only sqlite tables BESIDE the palace (the raw-sqlite-beside-chroma id
 structurepalace already ride):
 
   worldline_edges  — the rhizome STRUCTURE + the bitemporal spawn-interval.
-      Each edge points CAUSE -> EFFECT (happened-before): a `fork` runs parent->child, a
-      `linear` runs prev->next, a `join` (handback) runs child->parent (the reunion — the
-      parent's post-handback acts stand AFTER the child). `valid_from` opens the interval on a
-      caller LOGICAL tick; `valid_to` closes it at handback (bitemporal, kg_io's idiom).
+      The spawn tree points CAUSE -> EFFECT (happened-before): a `fork` runs parent->child, a
+      `linear` runs prev->next. Two evidence rows ride beside it: a `join` records a round's
+      handback (the spirit's handle -> the main turn that received it) and an `inform` records a
+      message (the sending turn -> the recipient's handle). One handle node stands for a spirit's
+      whole worldline across every round, so a join and an inform read as evidence of an exchange,
+      never as a happened-before order: across rounds they can close a loop through the handle.
+      Only the fork/linear walks (descendants, worldline_of, are_concurrent, relation_of, kapae)
+      read order. `valid_from` opens the interval on a caller LOGICAL tick; `valid_to` closes the
+      fork at retirement (bitemporal, kg_io's idiom).
       History stays: a close sets `valid_to`, never a DELETE.
 
   worldline_kapae  — the MUTE polarity-log (persistence_io's move-not-delete idiom).
@@ -37,7 +43,9 @@ Protocol — NDJSON over stdin/stdout, one JSON object per line (only JSON to st
     <- {"id":1,"ok":true,"result":{"ready":true}}
 
     -> {"id":2,"op":"add_edge","parent":P,"child":C,"relation":"fork","tick":N}
-    -> {"id":2,"op":"handback","parent":P,"child":C,"tick":N}      # join + close the fork interval
+    -> {"id":2,"op":"handback","parent":P,"child":C,"tick":N,"receipt":R?}  # round close: join, fork stays open
+    -> {"id":2,"op":"retire","parent":P,"child":C,"tick":N}        # close the fork interval
+    -> {"id":2,"op":"inform","frm":S,"to":R,"tick":N}              # a message sender -> recipient
     -> {"id":3,"op":"dag","as_of":N?}                              # the rhizome (bitemporal read)
     -> {"id":4,"op":"descendants","node":X,"as_of":N?}            # the branch subtree (fork+linear)
     -> {"id":5,"op":"are_concurrent","a":X,"b":Y}                 # ∥ verdict (spawn-tree incomparable)
@@ -66,14 +74,17 @@ from holder_caps import (
     run_holder,
 )
 
-# The three rhizome relations — each stored CAUSE -> EFFECT so happened-before reads as reachability.
+# The rhizome relations. fork and linear store CAUSE -> EFFECT, so happened-before reads as reachability over
+# them alone; join and inform record exchanges against a spirit's one handle node and carry no order.
 REL_FORK = "fork"      # spawn: parent -> child
 REL_LINEAR = "linear"  # sequential: prev -> next
-REL_JOIN = "join"      # handback: child -> parent (the reunion; parent stands after child)
+REL_JOIN = "join"      # handback evidence: spirit handle -> the main turn that received the round's report
+REL_INFORM = "inform"  # message evidence: sending turn -> the recipient's handle
 REL_CONTAINS = "contains"  # declared static topology; never temporal or branch lineage
 
 # The spawn-tree relations — the DOWNWARD branch. kapae mutes a subtree over these; the ∥ verdict
-# reads incomparability over these. A `join` runs UPWARD (back to main) and rides NEITHER walk.
+# reads incomparability over these. A `join` runs UPWARD (back to main) and an `inform` runs ACROSS
+# (sender to recipient); neither rides either walk, so a message never widens a kapae branch.
 _SPAWN_TREE = (REL_FORK, REL_LINEAR)
 
 _DB_NAME = "worldline.sqlite3"
@@ -122,8 +133,8 @@ def _db_path(palace_path: str) -> str:
 
 
 class WorldlineStore:
-    """One rhizome fork-DAG over a palace dir: add the structure edges, close a spawn-interval at
-    handback, walk the branch subtree, read the ∥ verdict, and drive the move-not-delete kapae
+    """One rhizome fork-DAG over a palace dir: add the structure edges, join a round's handback, record
+    messages, close a spawn-interval at retirement, walk the branch subtree, read the ∥ verdict, and drive the move-not-delete kapae
     polarity-log. Pure sqlite BESIDE the chroma palaces — no LLM, no vectors, no host clock."""
 
     def __init__(self, palace_path: str) -> None:
@@ -148,10 +159,10 @@ class WorldlineStore:
             "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "  frm TEXT NOT NULL,"           # cause endpoint
             "  to_node TEXT NOT NULL,"       # effect endpoint
-            "  relation TEXT NOT NULL,"      # fork | linear | join
+            "  relation TEXT NOT NULL,"      # fork | linear | join | inform | contains
             "  basis TEXT NOT NULL DEFAULT 'given',"  # source fact | declared corpus relation
             "  valid_from,"                  # caller logical tick (opens the interval)
-            "  valid_to"                     # caller logical tick or NULL-open (closes at handback)
+            "  valid_to"                     # caller logical tick or NULL-open (closes at retirement)
             ")"
         )
         self._conn.execute(
@@ -225,10 +236,10 @@ class WorldlineStore:
         pick a spawner arbitrarily among two — non-deterministic worldline membership on malformed lineage.
         So a distinct open fork-parent is REJECTED legibly (`added:False, fork_conflict:True, held_parent`),
         mirroring the cycle-reject; a re-add of the SAME fork-parent stays idempotent (falls through to the
-        exact-match drop below). Only OPEN forks (valid_to NULL) count — a handed-back child re-forks free."""
+        exact-match drop below). Only OPEN forks (valid_to NULL) count — a retired child re-forks free."""
         if not frm or not to_node:
             raise ValueError("add_edge: frm and to_node required")
-        if relation not in (REL_FORK, REL_LINEAR, REL_JOIN, REL_CONTAINS):
+        if relation not in (REL_FORK, REL_LINEAR, REL_JOIN, REL_INFORM, REL_CONTAINS):
             raise ValueError(f"add_edge: unknown relation {relation!r}")
         if not basis.strip():
             raise ValueError("add_edge: basis is required")
@@ -269,23 +280,29 @@ class WorldlineStore:
         """A linear turn->turn step (prev happened-before next)."""
         return self.add_edge(prev, nxt, REL_LINEAR, tick, basis=basis)
 
-    def handback(self, parent: str, child: str, tick) -> dict:
-        """HANDBACK — the twin-reunion: add the JOIN edge (child->parent, the parent stands after
-        the child) AND CLOSE the still-open fork interval (bitemporal valid_to; move-not-delete —
-        the fork row stays, only its interval closes). Idempotent: a re-handback closes nothing new."""
-        # TWO transactions, not one: `add_edge` opens its own `BEGIN IMMEDIATE`, and sqlite does not
-        # nest. Each leg is individually atomic and BOTH are idempotent, so a crash between them
-        # leaves a join added with the fork still open — and a re-handback closes it. The interval
-        # never tears; it can only lag, and the re-run is the cure (the same crash-cure discipline
-        # the rest of the capture wire carries).
-        join = self.add_edge(child, parent, REL_JOIN, tick)
+    def handback(self, parent: str, child: str, tick, *, receipt: "str | None" = None) -> dict:
+        """HANDBACK — a ROUND closes: add the JOIN evidence row child -> `receipt` (the parent's receiving
+        turn; the parent node itself when no receipt turn stands). The fork stays OPEN: the spirit persists and a later round resumes it. Retirement takes its own act
+        (`retire`). Idempotent per (child, receipt, tick)."""
+        join = self.add_edge(child, receipt or parent, REL_JOIN, tick)
+        return {"join": join["added"]}
+
+    def retire(self, parent: str, child: str, tick) -> dict:
+        """RETIRE — the explicit end of a continuing spirit: CLOSE its still-open fork interval
+        (bitemporal valid_to; move-not-delete — the fork row stays, only its interval closes).
+        Idempotent: a re-retire closes nothing new."""
         with self._write():
             cur = self._conn.execute(
                 "UPDATE worldline_edges SET valid_to=? WHERE frm=? AND to_node=? AND relation=? AND valid_to IS NULL",
                 (tick, parent, child, REL_FORK),
             )
             closed = cur.rowcount
-        return {"join": join["added"], "fork_closed": closed}
+        return {"fork_closed": closed}
+
+    def inform(self, sender: str, recipient: str, tick) -> dict:
+        """MESSAGE — record that the sender's turn reached the recipient. Evidence, never order: rides no
+        spawn-tree walk, so kapae and the ∥ verdict keep their branch reach."""
+        return self.add_edge(sender, recipient, REL_INFORM, tick)
 
     # -- reads: the bitemporal rhizome + the branch subtree + the ∥ verdict ------------------
 
@@ -528,7 +545,9 @@ def _build_ops(store: WorldlineStore) -> dict:
         "add_edge": lambda req: store.add_edge(req["frm"], req["to"], req["relation"], req.get("tick")),
         "fork": lambda req: store.fork(req["parent"], req["child"], req.get("tick")),
         "linear": lambda req: store.linear(req["prev"], req["next"], req.get("tick")),
-        "handback": lambda req: store.handback(req["parent"], req["child"], req.get("tick")),
+        "handback": lambda req: store.handback(req["parent"], req["child"], req.get("tick"), receipt=req.get("receipt")),
+        "retire": lambda req: store.retire(req["parent"], req["child"], req.get("tick")),
+        "inform": lambda req: store.inform(req["frm"], req["to"], req.get("tick")),
         "dag": lambda req: store.dag(req.get("as_of")),
         "descendants": lambda req: {"branch": store.descendants(req["node"], req.get("as_of"))},
         "are_concurrent": lambda req: {"concurrent": store.are_concurrent(req["a"], req["b"], req.get("as_of"))},

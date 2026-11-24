@@ -18,9 +18,10 @@ import {
   dissolveSensorium, dissolveAllSensoria, reapOrphans, listOrphans,
   acceptPetName, attachPetName, listPetNames, proposePetName, sensoriumDir, sensoriumNames,
 } from "@lararium/node";
-import { emit } from "../render.js";
-import { renderCommandHelp } from "../command-help.js";
+import { emit, refuseUsage } from "../render.js";
+import { helpLines, renderCommandHelp } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { tableCovers } from "../verb-table.js";
 
 /** `sensorium run <path> [-- <analysis>] [--keep] [--name <n>]` — ephemeral-default open/ingest/dissolve. */
 async function runVerb(args: ParsedArgs): Promise<number> {
@@ -190,10 +191,15 @@ function acceptNameVerb(args: ParsedArgs): number {
   return entry ? 0 : 3;
 }
 
+/** Every verb the sensorium door answers. */
+export const SENSORIUM_VERBS = ["help", "run", "open", "query", "ls", "keep", "dissolve", "name", "propose-name", "names", "accept-name"] as const;
+
 export async function cmdSensorium(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (!sub || sub === "help" || args.flags["help"]) { renderCommandHelp("sensorium"); return sub ? 0 : 1; }
-  switch (sub) {
+  const v = sub as (typeof SENSORIUM_VERBS)[number];
+  switch (v) {
+    case "help":     renderCommandHelp("sensorium"); return 0;
     case "run":      return await runVerb(args);
     case "open":     return openVerb(args);
     case "query":    return await queryVerb(args);
@@ -205,7 +211,6 @@ export async function cmdSensorium(args: ParsedArgs): Promise<number> {
     case "names": return namesVerb(args);
     case "accept-name": return acceptNameVerb(args);
     default:
-      console.error(`lares sensorium: unknown subcommand "${sub}".  Run \`lares sensorium help\`.`);
-      return 2;
+      return refuseUsage(args, "sensorium", helpLines("sensorium"), `unknown sub-verb "${tableCovers(v)}"`);
   }
 }

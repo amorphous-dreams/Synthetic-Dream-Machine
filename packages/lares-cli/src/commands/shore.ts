@@ -1,9 +1,13 @@
 /**
  * lares shore — a person's answers at the disk shore.
  *
- *   lares shore [list]                                    what stands for a hand
+ *   lares shore [list] [--face N]                         what stands for a hand (a lit sibling's shore by its face)
  *   lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]
  *   lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore keep-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore keep-records <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore keep-both    <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore drafts       <uri>
  *   lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *   lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *   lares shore settle  --bag <bagUri|slug> --pending
@@ -17,6 +21,15 @@
  *     words in the records, `take-records` writes the records' render over the file. Saving in the wiki
  *     until both sides say the same thing settles it too. Where no base stands, `lares ingest` of the file
  *     names the same adoption `take-disk` does.
+ *   · A STAND-OFF COMES INSIDE AS DRAFTS (`standoff-drafts.ts`, @lararium/node): the file's side loads as drafts of its
+ *     targets in the worn face's draft layer, and the person's collapse rules (their daemon face's
+ *     `$:/config/lares/shore/collapse/<rule>`) settle what they can. What stays raises one awaiting alert naming its
+ *     actions: `keep-disk` lands the file's words whole (no merge), `keep-records` writes the records' render over the file
+ *     and lets the drafts go, and, where drafts stand, `keep-both` writes the records' render and keeps the drafts as
+ *     parallel drafts, and `drafts` names the drafts by title (`lares tiddler get` reads each).
+ *   · SETTLING STAYS A HAND ACT: `take-records`, `take-disk` and the keep acts read the hand behind this command
+ *     (`readOwnHand`) before anything else; an AI harness on its branch refuses `hand-act-only`, an unreadable branch
+ *     `hand-unattested`, each naming the command the operator runs, and `--yes` approves nothing by itself.
  *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
  *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
  *     carrier in the wiki, where the wiki shore lands the tombstone.
@@ -43,14 +56,20 @@
  * mirror leg again, and lifts only where n equals the count the preview reads now; a wrong count refuses and lifts nothing.
  * `list` names each pending item (face, title, body digest) beside the shore's own rows.
  *
- * `flush` asks the active wiki's island and the daemon island to write what each holds in memory to its mirrors now, and
- * names what each wrote, what it could not and why (`askShoreFlush`). Other resident wiki islands stand outside its reach (the
- * vessel's teardown flush reaches them), and the reading says so. It takes nothing and asks no confirmation. Exit: 0 every
- * asked island wrote what it owed · 4 a carrier stayed unwritten · 3 an asked island could not answer.
+ * `flush` asks the vessel to flush EVERY island that mounts a disk shore (the daemon's with each lit sibling's projector, and
+ * every resident wiki's: the same flush the teardown runs, through the custody door's `shore-flush` frame), and names what each
+ * wrote, what it could not and why (`askShoreFlush`). It takes nothing and asks no confirmation. Exit: 0 every island wrote what
+ * it owed · 4 a carrier stayed unwritten · 3 an island, or the vessel, could not answer.
+ *
+ * `--face N` names a LIT SIBLING's shore: every lit face projects under its own root through its own projector in the daemon
+ * island, so `list`, `take-records`, `restore` and `remove` read and answer that face's standoffs without wearing it. A face
+ * that stands no projection refuses `face-unprojected`. `take-disk` rides the worn face's ingest leg, and `settle`, `flush` and
+ * `lift-kahua` read no face, so each refuses `--face` as usage.
  */
 
 import { createInterface } from "readline/promises";
 import { stdin, stdout } from "process";
+import { readOwnHand, type HandReading } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
@@ -64,33 +83,57 @@ import { runMirrors } from "../seed-mirror-leg.js";
 import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, RETIREMENT_BOUND_MS, type Retirement } from "../shore-retirement.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
+export const SHORE_ACTS = ["list", "take-records", "take-disk", "keep-disk", "keep-records", "keep-both", "drafts", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
+/** The acts a lit sibling's shore answers by its face (`--face N`); the rest read the worn face, or no face at all. */
+const FACE_ACTS: ReadonlySet<ShoreAct> = new Set(["list", "take-records", "restore", "remove"]);
+
+/** The shore door's own account: `lares shore --help` prints it, and a refusal ends with it. */
+export function shoreHelpLines(): string[] {
+  return [
+    "usage: lares shore [list] [--face N]",
+    "       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]",
+    "       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]",
+    "       lares shore keep-disk    <uri> --key <key> [--bag <bagUri>] [--yes]",
+    "       lares shore keep-records <uri> --key <key> [--bag <bagUri>] [--yes]",
+    "       lares shore keep-both    <uri> --key <key> [--bag <bagUri>] [--yes]",
+    "       lares shore drafts       <uri>",
+    "       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]",
+    "       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]",
+    "       lares shore settle  --bag <bagUri|slug> --pending",
+    "       lares shore lift-kahua --count <n>",
+    "       lares shore flush",
+    "  --face N      list or answer a lit sibling's shore (its own projector) without wearing it;",
+    "  list          look at the disk, then name each standoff with its key and each pending removal;",
+    "  take-records  write the records' render over the file of one standoff, named by its key;",
+    "  take-disk     land the file's words in the records for one standoff, named by its key;",
+    "  keep-disk     land the file's words whole (no merge) for one standoff, and let its drafts go;",
+    "  keep-records  write the records' render over the file of one standoff, and let its drafts go;",
+    "  keep-both     write the records' render over the file, and keep the file's words as parallel drafts;",
+    "  drafts        name the drafts a carrier's standoffs loaded (titles; `lares tiddler get` reads each);",
+    "  the settling acts (take-*, keep-*) run on a person's hand at their own terminal; --yes approves nothing by itself;",
+    "  restore       write a vanished file back from the records;",
+    "  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);",
+    "  settle        resume a settle word that stalled, over the carriers its record names (--pending);",
+    "  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);",
+    "  flush         write what every island holds in memory to its mirrors now: the daemon's with each lit face's, and every resident wiki's;",
+    "  an answer over more than one carrier names the count that stands pending (--count).",
+  ];
+}
 
 function printUsage(): void {
-  console.log("usage: lares shore [list]");
-  console.log("       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]");
-  console.log("       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]");
-  console.log("       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
-  console.log("       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
-  console.log("       lares shore settle  --bag <bagUri|slug> --pending");
-  console.log("       lares shore lift-kahua --count <n>");
-  console.log("       lares shore flush");
-  console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
-  console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
-  console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
-  console.log("  restore       write a vanished file back from the records;");
-  console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
-  console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
-  console.log("  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);");
-  console.log("  flush         write what the active wiki's and the daemon's islands hold in memory to their mirrors now (other resident wikis stand outside its reach);");
-  console.log("  an answer over more than one carrier names the count that stands pending (--count).");
+  for (const line of shoreHelpLines()) console.error(line);
 }
 
 /** The args one act sends, or the usage fault that stops it. */
 export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Record<string, unknown> } | { readonly usage: string } {
   const bag = args.options["bag"];
-  const withBag = bag ? { bag } : {};
+  const faceText = args.options["face"];
+  if (faceText !== undefined) {
+    if (!/^(?:0|[1-9][0-9]*)$/.test(faceText)) return { usage: `--face names a handle index (a whole number from 0); "${faceText}" names none` };
+    if (!FACE_ACTS.has(act)) return { usage: `${act} takes no --face: only ${[...FACE_ACTS].join(", ")} reach a lit sibling's shore` };
+  }
+  const withBag = { ...(bag ? { bag } : {}), ...(faceText !== undefined ? { face: Number(faceText) } : {}) };
   if (act === "list") return { args: { op: "list", ...withBag } };
   if (act === "flush") return { args: { op: "flush" } };
   if (act === "lift-kahua") {
@@ -102,11 +145,18 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
     if (!bag || !args.flags["pending"]) return { usage: "settle resumes a stalled settle word from its record: lares shore settle --bag <bagUri|slug> --pending" };
     return { args: { op: "settle", bag, pending: true } };
   }
-  if (act === "take-records" || act === "take-disk") {
+  if (act === "take-records" || act === "take-disk" || act === "keep-disk" || act === "keep-records" || act === "keep-both") {
     const uri = args.positional[1];
     const key = args.options["key"];
     if (!uri || !key) return { usage: `${act} names a carrier and the standoff's key: lares shore ${act} <uri> --key <key>` };
-    return { args: { op: act, uri, key, ...withBag } };
+    // keep-records rides take-records; keep-disk rides take-disk, whole.
+    const op = act === "keep-records" ? "take-records" : act === "keep-disk" ? "take-disk" : act;
+    return { args: { op, uri, key, ...withBag, ...(act === "keep-disk" ? { whole: true } : {}) } };
+  }
+  if (act === "drafts") {
+    const uri = args.positional[1];
+    if (!uri) return { usage: "drafts names a carrier: lares shore drafts <uri>" };
+    return { args: { op: "drafts", uri } };
   }
   const uris = args.positional.slice(1);
   const all = Boolean(args.flags["all"]);
@@ -121,17 +171,43 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
 
 /** What a person confirms before an act that writes. */
 function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
-  if (act === "take-records") return `take-records ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
+  if (act === "take-records" || act === "keep-records") return `${act} ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
   if (act === "take-disk") return `take-disk ${String(shaped["uri"])}: the records give way to the file's present words. Proceed? [y/N] `;
+  if (act === "keep-disk") return `keep-disk ${String(shaped["uri"])}: the records give way to the file's present words, whole, with no merge. Proceed? [y/N] `;
+  if (act === "keep-both") return `keep-both ${String(shaped["uri"])}: the file's present bytes give way to the records' render, and the file's words stay as parallel drafts. Proceed? [y/N] `;
   const what = shaped["all"] === true ? `all ${String(shaped["count"])} pending carrier(s)` : (shaped["uris"] as string[]).join(", ");
   return act === "restore"
     ? `restore ${what}: each file returns from the records. Proceed? [y/N] `
     : `remove ${what}: each carrier leaves the wiki, and its records rest under a tombstone. Proceed? [y/N] `;
 }
 
-export async function cmdShore(args: ParsedArgs): Promise<number> {
+/** How this command reads the hand that runs it (`readOwnHand`); a test names another reading. */
+export type ShoreHandRead = () => HandReading;
+const ownHand: ShoreHandRead = () => readOwnHand({ proveRoute: false });
+
+/** The acts that settle a stand-off: a person's hand alone runs them. */
+const SETTLING: ReadonlySet<ShoreAct> = new Set(["take-records", "take-disk", "keep-disk", "keep-records", "keep-both"]);
+
+/**
+ * SETTLING A STAND-OFF STAYS A HAND ACT (operator ruling, 2026-11-23): the command reads its own branch first (the house hand
+ * gate), since take-disk's write rides the ingest leg the vessel's per-op shore gate never sees; an AI harness on it refuses
+ * `shore-needs-hand`, an unread branch `hand-unattested`, and `--yes` approves nothing by itself. Each refusal names the command
+ * the operator runs at their own terminal. `take-records`, `keep-both`, `restore` and `remove` meet the same law at the
+ * vessel's socket (`shoreHandCode`). Null where the act settles nothing or a hand stands.
+ */
+export function shoreHandRefusal(act: ShoreAct, named: Readonly<Record<string, unknown>>, hand: ShoreHandRead = ownHand): { readonly code: "shore-needs-hand" | "hand-unattested"; readonly message: string } | null {
+  if (!SETTLING.has(act)) return null;
+  const read = hand();
+  if (!("refusal" in read)) return null;
+  const line = `lares shore ${act} ${String(named["uri"] ?? "<uri>")} --key ${String(named["key"] ?? "<key>")}${typeof named["bag"] === "string" ? ` --bag ${named["bag"]}` : ""}`;
+  return read.refusal === "hand-act-only"
+    ? { code: "shore-needs-hand", message: `shore-needs-hand: \`lares shore ${act}\` settles a stand-off on a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.` }
+    : { code: "hand-unattested", message: `hand-unattested: \`lares shore ${act}\` settles a stand-off on a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.` };
+}
+
+export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand): Promise<number> {
   const act = (args.positional[0] ?? "list") as ShoreAct;
-  if (!(SHORE_ACTS as readonly string[]).includes(act)) { printUsage(); return 2; }
+  if (!(SHORE_ACTS as readonly string[]).includes(act)) { console.error(`lares shore: unknown act "${act}"`); printUsage(); return 2; }
   const shaped = shoreArgs(act, args);
   if ("usage" in shaped) {
     emit(args, { ok: false, error: { code: "usage", message: shaped.usage }, human: () => { console.error(`lares shore: ${shaped.usage}`); printUsage(); } });
@@ -143,8 +219,15 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return runMirrors({ apply: true, liftKahua: String(shaped.args["count"]), json: wantsJson(args) }, LIVE_MIRROR_DOORS);
   }
 
-  // An act that writes asks first (a person at a TTY), or carries `--yes` (an agent).
-  if (act !== "list" && act !== "settle" && act !== "flush" && !args.flags["yes"]) {
+  // A SETTLING ACT READS THE HAND FIRST, before any confirmation: `--yes` names the intent and approves nothing.
+  const handRefused = shoreHandRefusal(act, { ...shaped.args, uri: args.positional[1], key: args.options["key"] }, hand);
+  if (handRefused !== null) {
+    emit(args, { ok: false, error: { code: handRefused.code, message: handRefused.message }, human: () => console.error(`lares shore ${act}: ${handRefused.message}`) });
+    return 1;
+  }
+
+  // An act that writes asks first (a person at a TTY), or carries `--yes`.
+  if (act !== "list" && act !== "settle" && act !== "flush" && act !== "drafts" && !args.flags["yes"]) {
     if (wantsJson(args)) {
       emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
       return exitFor("usage");
@@ -158,17 +241,10 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
   // SETTLE --PENDING resumes the word a stalled settle left as the bag's record, over those carriers alone.
   if (act === "settle") return resumeSettle(args, String(shaped.args["bag"]));
 
-  let did: string;
-  try { did = await vesselDid(); } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares shore: ${msg}`) });
-    return exitFor("not-found");
-  }
-
-  // FLUSH asks every island that mounts a disk shore, and reads each answer as one (`askShoreFlush`).
+  // FLUSH asks the vessel's whole-island flush through the custody door, and reads each island's answer (`askShoreFlush`).
   if (act === "flush") {
     let reading: ShoreFlushReading;
-    try { reading = await askShoreFlush(did); } catch (err) {
+    try { reading = await askShoreFlush(); } catch (err) {
       const f = verbFailure(err);
       emit(args, { ok: false, error: { code: f.code, message: f.message }, human: () => console.error(`lares shore flush: ${f.message}`) });
       return exitFor(f.code);
@@ -177,25 +253,31 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     emit(args, {
       ok: code === 0, data: { op: "flush", ...reading },
       human: () => {
-        if (reading.islands.length === 0) console.log("neither the active wiki's island nor the daemon island mounts a disk shore: nothing to flush");
+        if (reading.islands.length === 0) console.log("no island mounts a disk shore: nothing to flush");
         for (const part of reading.islands) {
           if (!part.answered) { console.log(`${part.island}: did not answer: ${part.refusal}: ${part.why}`); continue; }
           console.log(`${part.island}: wrote ${part.writtenCount} owed carrier(s) (${part.fileWrites} file write(s)); ${part.unwrittenCount} unwritten`);
-          for (const u of part.unwritten) console.log(`  ${String(u["state"])} ${String(u["uri"])}: ${String(u["why"])}`);
+          for (const u of part.unwritten) console.log(`  ${String(u["state"])} ${String(u["uri"])}${typeof u["face"] === "number" ? ` (h${u["face"]})` : ""}: ${String(u["why"])}`);
         }
-        console.log(`not asked: ${reading.unasked}`);
       },
     });
     return code;
   }
 
+  let did: string;
+  try { did = await vesselDid(); } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares shore: ${msg}`) });
+    return exitFor("not-found");
+  }
+
   // TAKE-DISK rides the ingest leg, under the key (`shore-take-disk.ts`): the island names the standoff's
   // states, and the file lands only where the disk and the records still stand as the person read them.
-  if (act === "take-disk") {
+  if (act === "take-disk" || act === "keep-disk") {
     let taken;
     try {
       taken = await takeDisk(
-        { uri: String(shaped.args["uri"]), key: String(shaped.args["key"]), ...(typeof shaped.args["bag"] === "string" ? { bag: shaped.args["bag"] } : {}) },
+        { uri: String(shaped.args["uri"]), key: String(shaped.args["key"]), ...(typeof shaped.args["bag"] === "string" ? { bag: shaped.args["bag"] } : {}), ...(act === "keep-disk" ? { whole: true } : {}) },
         { ask: (shoreArgs) => askShore(shoreArgs, did), tree: openSyncedTree(), root: larRoot(), did },
       );
     } catch (err) {
@@ -212,14 +294,14 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       emit(args, {
         ok: false, ...(refused.requestId !== undefined ? { requestId: refused.requestId } : {}),
         error: { code: refused.refusal, message: refused.why },
-        human: () => console.error(`lares shore take-disk: ${refused.refusal}: ${refused.why}`),
+        human: () => console.error(`lares shore ${act}: ${refused.refusal}: ${refused.why}`),
       });
       return exitFor(refused.refusal === "standoff-key-moved" ? "conflict" : "verb-error");
     }
     const done = taken;
     emit(args, {
       ok: true, ...(done.requestId !== undefined ? { requestId: done.requestId } : {}),
-      data: { op: "take-disk", bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision, merge: done.merge },
+      data: { op: act, bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision, merge: done.merge },
       human: () => {
         console.log(done.merge.kind === "slots"
           ? `took the disk's side, merged with the records' slot by slot: ${done.uri} (${done.bag}); the merged words at ${done.path} stand in the records`
@@ -327,7 +409,19 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     ok: true, ...(answer.requestId !== undefined ? { requestId: answer.requestId } : {}),
     data: Object.keys(retiredBy).length > 0 ? { ...answer.output, retiredBy } : answer.output,
     human: () => {
-      if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
+      if (act === "take-records" || act === "keep-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
+      if (act === "keep-both") {
+        console.log(`kept both: the records' render stands in ${String(answer.output["uri"])}'s file (${String(answer.output["bag"])}), and ${String(answer.output["keptCount"] ?? 0)} draft(s) of the file's words stay`);
+        for (const t of Array.isArray(answer.output["kept"]) ? (answer.output["kept"] as string[]) : []) console.log(`  ${t}  (\`lares tiddler get "${t}"\`)`);
+        return;
+      }
+      if (act === "drafts") {
+        const rows = Array.isArray(answer.output["drafts"]) ? (answer.output["drafts"] as Array<Record<string, unknown>>) : [];
+        if (rows.length === 0) { console.log(`no stand-off of ${String(answer.output["uri"])} holds a draft`); return; }
+        console.log(`${String(answer.output["draftCount"] ?? rows.length)} draft(s) hold the file's side of ${String(answer.output["uri"])}'s stand-off(s):`);
+        for (const r of rows) console.log(`  ${String(r["title"])}  of ${String(r["of"])}  key ${String(r["standoff"])}${r["kept"] === true ? "  (kept)" : ""}\n      read it: \`lares tiddler get "${String(r["title"])}"\``);
+        return;
+      }
       const reached = answeredRows(answer.output);
       console.log(`${act === "restore" ? "restored" : "removed"} ${reached.doneCount} carrier(s) (${String(answer.output["bag"])})`);
       for (const line of removeReceiptLines(reached.done, answeredBag, named, receipts)) console.log(line);

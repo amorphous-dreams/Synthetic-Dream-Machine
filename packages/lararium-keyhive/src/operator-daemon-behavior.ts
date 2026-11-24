@@ -40,12 +40,13 @@ import {
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
-import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, landsUnderAHand, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
 import { daemonRetiredHome, faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
 import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
 import { litFaceProjections, type LitFaceProjectionMount, type LitFaceProjections } from "./lit-face-projections.js";
 import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTiddlerStore } from "@lararium/mesh";
@@ -66,8 +67,9 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   routesVeilArchive?: (face: string) => boolean;
   /** `shore` — a person's answers at THIS island's disk shore (`lares shore`): the node entry injects the
    *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
-   *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
-  shore?: (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+   *  stays fs-blind. Absent (a browser vessel) → the verb never registers. The asker the vessel's door read rides along, so
+   *  the acts that settle a stand-off answer a person's hand alone. */
+  shore?: (args: Record<string, unknown>, asker?: Hand) => Promise<Record<string, unknown>>;
   /** `events` — the vessel journal read door (`lares events`). Absent → no journal verb stands. */
   events?: (args: Record<string, unknown>, signal?: AbortSignal) => Promise<Record<string, unknown>>;
   /** `journalAppend` — daemon-owned vessel journal writes from non-daemon islands; the invocation names who placed it. */
@@ -173,7 +175,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   }
   return reader;
 }
-import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret } from "./boot-daemon-keyhive.js";
+import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl, CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS } from "@lararium/mesh";
@@ -206,7 +208,8 @@ import { faceSeatTable, type FaceSeat } from "./face-seat-table.js";
 import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_LANE_VERBS, type CrossFacePorts, type FaceEnginePorts, type FaceLanePorts } from "./face-lane.js";
 /** The verbs a lit sibling reaches on its own lane (`face-lane`). */
 export { FACE_LANE_VERBS } from "./face-lane.js";
-import { ownChainStanding, type IslandSessionProof } from "./island-session-proof.js";
+import { faceStanding, type IslandSessionProof } from "./island-session-proof.js";
+import { RealmWriterBook, realmRestPort, type RealmFace } from "./realm-rest.js";
 // The island side of the session sign door, for an island entry that composes this behaviour.
 export { islandSessionDoor } from "./island-session-proof.js";
 import type { RecordSigner } from "@lararium/mesh";
@@ -363,6 +366,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (litInputs.get(key) === faceInputsDigest(face)) return;
       throw new Error(`face-lit-changed: face ${key} stands lit from other inputs (anchor, KEL, edge, bags or veil); drop it before it lights again`);
     }
+    const handle = typeof face.handleIndex === "number" ? `h${face.handleIndex}` : `${key.slice(0, 12)}…`;
+    // A RECARD KEEPS NOTHING UNLESS ITS ARCHIVE RESTS: its card mints a prekey whose secret only the Archive after it holds, so
+    // a face this shore rests no Archive for refuses before anything mints.
+    if (face.recard && (daemonAuth.archiveOpens !== true || !persistVeilArchive || routesVeilArchive?.(face.personaGroupId) === false)) {
+      throw new FaceRecardRefused("archive-unrouted", `this vessel rests no Archive for face ${handle} here, so its card would burn a prekey no kept Archive holds; nothing minted. Unlock the vessel's custody (\`lares vault unlock\`), then \`${recardCommand(face.handleIndex)}\` again`);
+    }
     const lease = await readLeaseUnderFace(ctx.control, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
@@ -375,9 +384,25 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       dyad: await requireDyadReader(dyadReader(ctx, { ...daemonAuth, ...face }), "the Binding Gate")(face.deviceEdge.personaRootDid, face.deviceEdge.deviceVerifyingKey),
       ...(face.veilArchiveBytes ? { veilArchiveBytes: face.veilArchiveBytes } : {}),
       ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+      ...(typeof face.handleIndex === "number" ? { handle: face.handleIndex } : {}),
+      ...(face.recard ? { recard: true as const } : {}),
     });
     try {
-      await namingThePrekey(face.atom.key, async () => { for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag); });
+      const registerOwn = async (): Promise<void> => { for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag); };
+      let recard = joined.recard;
+      try { await namingThePrekey(face.atom.key, registerOwn, face.handleIndex); }
+      catch (error) {
+        if (!face.recard || !(error instanceof FaceHoldsNoPrekeySecret)) throw error;
+        // THE RECARD MEETS THE FAULT AT THE FACE'S OWN BAGS: the ground registered under a prekey this stand still held, and
+        // a later mint met one it did not. The card mints now, before the rest, and they register again.
+        await joined.keyhive.contactCard();
+        try { await registerOwn(); }
+        catch (again) {
+          if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${handle} held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
+          throw again;
+        }
+        recard = { stale: true, reminted: recard?.reminted ?? [] };
+      }
       // THE SIBLING'S ARCHIVE FLOOR, as the mounted face's: its one card mints, then its Archive rests in its own row. Every
       // later ask of this stand (a grant, a workbench seat, a revoke) presents that same card, so the Archive the next light
       // restores holds the secret behind every prekey this stand presented. Without it the face's log runs ahead of its
@@ -389,6 +414,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         exportVeilArchive: () => joined.keyhive.exportArchiveAfterTheCard(),
       });
       await surfaceFloorRefusals(ctx, floor, key);
+      if (recard) {
+        // THE RECARD LANDS ONLY WITH ITS ARCHIVE: a stale stand's card and its fresh Documents live in this Archive alone.
+        if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
+          throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Read the refusing row with \`lares vault status --verbose\` first; where custody reads locked, unlock it (\`lares vault unlock\`) so its Archive rows take writes, then \`${recardCommand(face.handleIndex)}\` again`);
+        }
+        console.warn(recardLine(handle, recard));
+      }
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
@@ -701,25 +733,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    * no realm seats founds its own private cabal of one for a slug no other face of the vessel stands, and none for a slug
    * the ledger already binds; a face seated in two realms for one slug refuses `workbench-two-realms` by name.
    */
-  /**
-   * THE REST GATE (cabal-realm#/the-workbench, OWED): the vessel seals the working document of the wiki it MOUNTS under the
-   * worn face's own content key (`wornFaceWikiBags`; the island's one holder carries the worn face's), so a face seated in
-   * ANOTHER face's realm cannot open that document's rest on this vessel, and a save it made there would seal one document
-   * under two faces (the fault 9d57bb71e named: `reference-unknown`, a working layer neither face loads again). Until a
-   * workbench's rest seals for its realm's roster, such a seat mounts no workbench here and writes its own `personal` layer,
-   * as a face with no seat does; its seat still stands in the realm's Document for the wire and for its own vessels.
-   */
-  const restsUnderAnotherFace = (slug: string, realmId: string, face: string): boolean =>
-    realmId !== privateCabalRealmId(face, slug) && daemonAuth.registerBags.includes(wikiSlotUri(slug, "working"));
-  const restGateNamed = new Set<string>();
   const faceWorkbench = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face: string) => async (slug: string, mint: boolean): Promise<string | null> => {
     const hive = provider();
     if (!hive) return null;
     const realmId = await faceWorkbenchRealm(hive, asLedgerDoc(await workbenchLedgerOf(ctx)), slug, face, mint);
-    if (realmId !== null && hive === kh && restsUnderAnotherFace(slug, realmId, face)) {
-      if (!restGateNamed.has(slug)) { restGateNamed.add(slug); console.log(`[workbench] ${slug}: this face holds a seat in realm ${realmId.slice(0, 12)}…, and the workbench's document rests sealed under its owner face on this vessel; this face mounts none of it and writes its personal layer`); }
-      return null;
-    }
+    // The mount reads the roster, so the realm's writer book follows it. THE REST SEALS FOR THE ROSTER (cabal-realm#/the-workbench):
+    // a face seated in another face's realm mounts the workbench here too, and its holder opens the realm's lockbox.
+    if (realmId !== null) await readRealmBook(ctx, slug);
     return realmId;
   };
   /** Whether one face's hive holds a writer's seat in a wiki's workbench (`workbenchWriterSeat`): a face that holds none writes `personal`. */
@@ -914,7 +934,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // in its own row. The mounted face and every lit sibling stand one each; none borrows another's.
   /** The context the mounted holder stood in; a sibling lit after it seats its own holder in the same. */
   let holderCtx: IslandContext | null = null;
-  const seatOfFace = (keyhive: KeyhiveProvider, entry: FaceSeat, face: {
+  // THE REALM'S WRITER BOOK (realm-rest): for each realm workbench bag, the faces of this vessel its roster seats as writers,
+  // read ahead at each mount and each landing; every face's writer standing reads it at the ask, with each face's chain.
+  const realmBook = new RealmWriterBook();
+  const readRealmBook = async (ctx: IslandContext, slug: string): Promise<void> => {
+    const hives: KeyhiveProvider[] = [];
+    const lit: RealmFace[] = [];
+    for (const [key, { provider }] of providers) {
+      const mounted = provider === kh;
+      hives.push(provider);
+      lit.push({ agent: await provider.vesselIdentifierHex(), chain: () => (mounted ? mountedFace.chain : faces.lit(key)?.chain ?? null) });
+    }
+    await realmBook.read(wikiSlotUri(slug, "working"), hives, (await workbenchLedgerOf(ctx)).doc(), lit);
+  };
+  /** A wrap one face's holder made for a realm's roster: each reader that stands lit on this vessel ingests its operations. */
+  const handRealmOpsOn = async (wrapperHive: KeyhiveProvider, served: readonly string[], wrapper: { eventsForPeer(id: string): Promise<Uint8Array[]> }): Promise<void> => {
+    const named = new Set(served.map((id) => id.trim().toLowerCase().replace(/^0x/, "")));
+    for (const { provider } of providers.values()) {
+      if (provider === wrapperHive) continue;
+      const id = (await provider.vesselIdentifierHex()).trim().toLowerCase().replace(/^0x/, "");
+      if (named.has(id)) await provider.ingestPeerEvents(await wrapper.eventsForPeer(`0x${id}`));
+    }
+  };
+  const seatOfFace = (ctx: IslandContext, keyhive: KeyhiveProvider, entry: FaceSeat, face: {
     readonly groupId: string | null; readonly fleetRoot: string | null; readonly atomKey: () => string;
     readonly bags: () => readonly string[]; readonly dyad: () => DyadReader | undefined;
     /** The face's PersonaGroup, whose own row its Archive rests in: the mounted face's and each lit sibling's alike. */
@@ -957,7 +999,20 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // THE SEAT'S STANDING READS THE VESSEL'S CHAIN OF THIS FACE, as its last reading carried it: before any session of
       // the face asked, no writer stands. A seat roll names no session, so it takes no signer and stays owed by name; a
       // session's own act signs through the door its verb reads (`faces.session`).
-      session: { signer: () => null, standing: ownChainStanding(() => entry.chain, face.bags) },
+      // A REALM WORKBENCH'S BAG reads the realm's writer book (realm-rest): any face the roster seats as a writer stands,
+      // and a revoked writer stands for the versions before its removal (u2). Every other bag reads the face's own chain.
+      session: { signer: () => null, standing: faceStanding({ own: () => entry.chain, bags: face.bags, realmWriters: (bagId) => realmBook.writers(bagId), realmMark: () => realmBook.mark() }) },
+      // THE REST SEALS FOR THE ROSTER (cabal-realm#/the-workbench): a realm workbench's working bag wraps for every hive its
+      // realm seats now, and founds only under the realm owner's seat; a wrap's operations reach each lit sibling's hive here.
+      ...(face.archiveFace ? { realm: realmRestPort({
+        provider: () => keyhive, ledger: async () => (await workbenchLedgerOf(ctx)).doc(), face: face.archiveFace,
+        // THE OWNER'S HANDLE, read off the lit faces: the face whose own derived realm this bag rests in, so the wait names a runnable line.
+        ownerHandle: (realmId, slug) => {
+          const lit = [{ group: daemonAuth.personaGroupId ?? null, handleIndex: daemonAuth.handleIndex }, ...litSiblingFaces().map((f) => ({ group: f.group as string | null, handleIndex: f.handleIndex as number | undefined }))];
+          return lit.find((f) => f.group !== null && privateCabalRealmId(f.group, slug) === realmId)?.handleIndex ?? null;
+        },
+      }) } : {}),
+      handOn: (served, wrapper) => handRealmOpsOn(keyhive, served, wrapper),
       // A report names a result, a founding's opaque locator and a key version: no key, and no bag's name.
       report: (o) => console.log(`[daemon] content-key roll: ${o.result}${o.founding ? ` founding ${o.founding.slice(0, 12)}…` : ""}${o.keyVersion ? ` → version ${o.keyVersion.slice(0, 12)}…` : ""} (${o.raises.length} raise(s))`),
     });
@@ -966,7 +1021,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const standSiblingSeat = (ctx: IslandContext, key: string, face: JoinedFaceAuth, keyhive: KeyhiveProvider): void => {
     if (!sealedStore || faces.lit(key)?.seat) return;
     const entry = faces.light(key, null);
-    entry.seat = seatOfFace(keyhive, entry, {
+    entry.seat = seatOfFace(ctx, keyhive, entry, {
       groupId: face.personaGroupId, fleetRoot: face.deviceEdge.personaRootDid, atomKey: () => face.atom.key,
       bags: () => face.registerBags, dyad: () => dyadReader(ctx, { ...daemonAuth, ...face }), archiveFace: face.personaGroupId,
     });
@@ -983,7 +1038,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // vessel rests nothing, so it wraps nothing.
     if (sealedStore) {
       const fleetRoot = daemonAuth.deviceEdge?.personaRootDid;
-      mountedFace.seat = seatOfFace(keyhive, mountedFace, {
+      mountedFace.seat = seatOfFace(ctx, keyhive, mountedFace, {
         groupId: daemonAuth.personaGroupId ?? null, fleetRoot: fleetRoot ?? null, atomKey: () => faceAtom().key,
         bags: () => daemonAuth.registerBags, dyad: () => dyadReader(ctx), archiveFace: daemonAuth.personaGroupId ?? null,
       });
@@ -1033,6 +1088,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             ? { dyad: await requireDyadReader(dyadReader(ctx), "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
           ...(daemonAuth.veilArchiveBytes ? { veilArchiveBytes: daemonAuth.veilArchiveBytes } : {}),
           ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+          ...(typeof daemonAuth.handleIndex === "number" ? { handle: daemonAuth.handleIndex } : {}),
         });
       } catch (error) {
         const cause = error instanceof Error ? error.message : String(error);
@@ -1074,7 +1130,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         await namingThePrekey(daemonAuth.atom.key, async () => {
           if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
           else for (const bag of faceBags) await keyhive.registerBag(bag);
-        });
+        }, daemonAuth.handleIndex);
       }
       // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
       // The face archive carries the atom's prekeys and capability state. The write door reads
@@ -1764,7 +1820,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
 
       // A person's answers at this island's own disk shore (the daemon wiki's working layer, crossroads).
-      if (shore) registry.register("shore", async (args) => shore(args as Record<string, unknown>));
+      if (shore) registry.register("shore", async (args, context) => shore(args as Record<string, unknown>, context.asker));
       if (events) registry.register("events", async (args, context) => events(args as Record<string, unknown>, context.signal));
       if (journalAppend) registry.register("journal-append", async (args, context) => journalAppend(args as Record<string, unknown>, {
         requestedBy: context.invocation.requestedBy,
@@ -1916,6 +1972,42 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // SHARING BY DELEGATION, NEVER A COPY: the owner face's hive delegates a bag it holds to a grantee face, both lit in this
       // island; the grantee's hive ingests the delegation's events. An owner or grantee that stands shut refuses by name, and the
       // vessel keeps the grant owed behind an opaque flag until both stand lit.
+      /**
+       * THE KEY HOLDER A LANDING HANDS A NEW SEAT ITS LOCKBOX THROUGH (u3): the realm owner's own seat, under the session of
+       * the ask, which must wear that owner face. A workbench whose rest holds no founding answers null (its first seal wraps
+       * for the roster); a seat that can hand nothing answers the cure by name.
+       */
+      const ownerCure = (slug: string, owner: { readonly handleIndex: number }) =>
+        ({ cure: `wear the realm's owner face (\`lares vault unlock --face ${owner.handleIndex}\`, then \`lares wear ${owner.handleIndex}\`) and land the share again (\`lares wiki share ${slug}\`)` });
+      /** The realm owner's own seat under the session of the ask, which must wear that owner face; null where it does not. */
+      const ownerUnderSession = async (owner: { readonly group: string }, context: Parameters<typeof sessionOf>[1] & { readonly asker?: Hand }) => {
+        // A landing signs only under a hand: any other asker leaves the cure to the person (the socket refuses a seat first).
+        if (!landsUnderAHand(context)) return null;
+        const requestId = context.invocation?.requestId;
+        const ask = context.local === true && typeof requestId === "string" && requestId.length > 0 ? { requestId, verb: "share-apply" } : null;
+        let worn: Awaited<ReturnType<typeof faces.session>>;
+        try { worn = await faces.session("share-apply", ask, "lit"); } catch { return null; }
+        const ownerEntry = owner.group === daemonAuth.personaGroupId ? mountedFace
+          : [...litSiblings].filter(([, f]) => f.personaGroupId === owner.group).map(([key]) => faces.lit(key)).find((e) => e !== undefined);
+        const seat = ownerEntry?.seat;
+        return seat && worn.face === ownerEntry ? { seat, signer: worn.signer } : null;
+      };
+      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1] & { readonly asker?: Hand }) => {
+        const bagId = wikiSlotUri(slug, "working");
+        const cure = ownerCure(slug, owner);
+        const under = await ownerUnderSession(owner, context);
+        if (under === null) return cure;
+        const { seat, signer } = under;
+        const reading = await seat.holder.reading(bagId);
+        if ("refusal" in reading) return cure;
+        if (reading.foundings.every((f) => f.heads.length === 0)) return null;
+        return {
+          handOver: async (agentHex: string) => {
+            const handed = await seat.holder.handOver({ bagId, reader: agentHex, signer, chained: true });
+            if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${cure.cure}`);
+          },
+        };
+      };
       const holderOf = (group: string | null) => {
         if (group === null) return null;
         if (kh && daemonAuth.personaGroupId === group) return kh;
@@ -1956,7 +2048,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       // The operator's hand names each face's handle index and pet-name (the CLI reads them off custody); the island adds what
       // it holds lit: each lit face's group and its own catalog half (the worn face's, and each sibling's by its own secret).
-      registry.register("share-apply", async (args) => {
+      registry.register("share-apply", async (args, context) => {
         const named = Array.isArray(args["faces"]) ? (args["faces"] as Array<Record<string, unknown>>) : [];
         // A FACE'S CATALOG HALF OPENS ONLY WHILE THAT FACE STANDS WORN (it rests sealed under the face's own content key, and
         // this island's holder carries the worn face's): the worn face names its half, a lit sibling names none, and the
@@ -2016,15 +2108,23 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const landed = await landWorkbench(row, seats.map(({ face, agentHex, access }) => ({ face, agentHex, access })), {
               provider: ownerHive, ledger: asLedgerDoc(await workbenchLedgerOf(ctx)), ownerFace: owner.group,
               checkoutSourced: isHouseCanonBag(meshBagUri(row.slug)),
+              keyholder: () => realmKeyholder(row.slug, owner, context),
             });
             const keyDoc = workbenchKeyDocs((await workbenchLedgerOf(ctx)).doc(), landed.realmId, row.slug)[0];
             for (const seat of seats) {
               await seat.hive.ingestPeerEvents(await ownerHive.eventsForPeer(seat.agentHex));
               if (keyDoc) adoptWorkbench(seat.hive, row.slug, keyDoc);
             }
-            // THE REST GATE, said at the door: a workbench of the wiki this vessel mounts rests sealed under its owner's key.
-            const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
-            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
+            // The landing moved the roster: the realm's writer book reads it again.
+            await readRealmBook(ctx, row.slug);
+            // ROLL NOW (a revoke rotates at once, not at the next write): the owner's seat rolls the head the removed faces
+            // held, under the share's own session; where none can sign here, the next seal derives the same roll from state.
+            if (landed.removed.length > 0) {
+              const under = await ownerUnderSession(owner, context);
+              const rolled = under === null ? null : await under.seat.rollNow(wikiSlotUri(row.slug, "working"), under.signer);
+              if (rolled === null || "refusal" in rolled) console.log(`[workbench] ${row.slug}: ${landed.removed.length} seat(s) left the realm; the workbench's key rolls at its next seal${rolled !== null && "refusal" in rolled ? ` (roll-now refused: ${rolled.refusal})` : " (no owner session signs here)"}`);
+            }
+            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed };
           },
           // THE UNSHARE TAKES THE READER BACK: the owner's hive revokes the grantee's agent from the bag, by the pair (the delegation id
           // lived only in the process that made it).
@@ -2057,13 +2157,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const slug = typeof args["slug"] === "string" ? args["slug"].trim() : "";
         if (slug === "") throw new VerbRefusal("workbench-seat-incomplete", "workbench-seat-incomplete: name the wiki (`slug`)");
         const realms = ledgerWorkbenchRealms((await workbenchLedgerOf(ctx)).doc(), slug);
-        const face = daemonAuth.personaGroupId;
-        // `restsUnderOwner`: the vessel seals this workbench's document under one face's key (the wiki it mounts), so a seat
-        // another face holds there writes `personal` on this vessel (the rest gate).
-        const restsUnderOwner = face !== undefined && realms.some((realmId) => restsUnderAnotherFace(slug, realmId, face));
         // `realms`: the canon realm ids the ledger binds for the slug, which a local realm label records beside its pet name
         // (`lares realm move`); the ids name realms, never a face, and the label stays on this house.
-        return { ok: true, slug, writeSlot: await slotDocsOf(ctx).writeSlot(slug), bound: realms.length > 0, realms, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
+        return { ok: true, slug, writeSlot: await slotDocsOf(ctx).writeSlot(slug), bound: realms.length > 0, realms };
       }, { summary: "Read the worn face's write layer for a wiki (`working` where it holds a writer's seat in the wiki's workbench or its own write would found one, `personal` otherwise), whether this vessel's ledger binds the wiki's workbench, and the realm ids it binds.", surfaces: [VERB_SURFACE.cli] });
       // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
       // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that
@@ -2517,10 +2613,22 @@ export function presenterFor(input: {
 }
 
 /** A face's registration that meets `PrekeySecretAbsent` refuses by the face's public atom key (`FaceHoldsNoPrekeySecret`). */
-async function namingThePrekey(face: string, register: () => Promise<void>): Promise<void> {
+async function namingThePrekey(face: string, register: () => Promise<void>, handle?: number): Promise<void> {
   try { await register(); }
   catch (error) {
-    if (error instanceof PrekeySecretAbsent) throw new FaceHoldsNoPrekeySecret(face, error);
+    if (error instanceof PrekeySecretAbsent) throw new FaceHoldsNoPrekeySecret(face, error, handle);
     throw error;
   }
+}
+
+/**
+ * What a recard says once its Archive rests: the face keeps its identity, and each bag whose Document it could not hold gains a
+ * fresh one; content sealed under the earlier Document stays unreadable to this face. Bag URIs and the handle only; never a key.
+ */
+export function recardLine(handle: string, recard: BootDaemonKeyhiveRecard): string {
+  if (!recard.stale) return `[daemon] face ${handle} recard: its stand held a live prekey secret, so it lit as it would and nothing was reminted`;
+  const lost = recard.reminted.length === 0
+    ? "every recorded Document it held stays readable"
+    : `${recard.reminted.length} bag Document(s) it held no hand in took fresh Documents, and content sealed under the old ones stays unreadable to this face (share it anew from a stand that holds it): ${recard.reminted.join(", ")}`;
+  return `[daemon] face ${handle} recarded: its identity holds, its card minted before its bags and its Archive rests after that card; ${lost}; content a peer sealed to a card whose secret no kept Archive held reads unreadable (ContentKeyNotHeld: its key may still arrive by sync, or its prekey secret was lost, and then that peer shares it anew)`;
 }

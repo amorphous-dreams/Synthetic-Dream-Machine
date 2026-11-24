@@ -147,9 +147,39 @@ export class ArchiveIdentityMismatch extends Error {
 export class PrekeySecretAbsent extends Error {
   override readonly name = "PrekeySecretAbsent";
   constructor(readonly what: string, cause?: unknown) {
-    super(`holds no prekey secret: its Archive was absent or older than its latest card, so no Document mints for ${what}`, { cause });
+    super(`holds no prekey secret: its Archive stood absent or older than its latest card, so no Document mints for ${what}`, { cause });
   }
 }
+
+/**
+ * Content a RECARD's stand cannot open in a bag it reminted: keyhive found no key (`Key not found`), and this stand replaced
+ * the bag's recorded Document because it held no hand in it (`remintBag`), so the seal most likely belongs to the Document that
+ * left, whose key agreement rested only in an Archive nobody kept. Only a key-not-found fault on a bag reminted under a recard
+ * takes this name; a tamper or any other decrypt fault keeps its own. The refusal names the bag and nothing secret.
+ */
+export class SealedUnderLostDocument extends Error {
+  override readonly name = "SealedUnderLostDocument";
+  constructor(readonly bag: string, cause?: unknown) {
+    super(`content of ${bag} sealed under the Document this recard replaced stays unreadable to this face (Key not found): the stand that holds that Document's Archive never kept it; it shares it anew (\`lares bag share <bag> --read <this face>\` there)`, { cause });
+  }
+}
+
+/**
+ * Content sealed to a key this face holds none of FOR NOW (keyhive's `Key not found`). keyhive answers it for several causes it
+ * does not tell apart: a key update that has not arrived by sync yet (an unknown PCS key), key agreement not yet initialized here,
+ * an epoch before this face's seat, or a prekey whose secret rested only in an Archive nobody kept (a face whose Archive fell
+ * behind its cards; a recard does not bring that secret back). So the name claims no permanent loss. The message keeps keyhive's
+ * own words and names the bag, nothing secret.
+ */
+export class ContentKeyNotHeld extends Error {
+  override readonly name = "ContentKeyNotHeld";
+  constructor(readonly bag: string, cause?: unknown) {
+    super(`this face cannot read content of ${bag} for now (Key not found): its key may still arrive by sync (\`lares vessel roster\` reads who spoke last), or its prekey secret went missing, and then the stand that holds it shares it anew (\`lares bag share <bag> --read <this face>\` there)`, { cause });
+  }
+}
+
+/** keyhive's `DecryptError` for a key this stand does not hold. */
+const KEY_NOT_FOUND = "Key not found";
 
 /** keyhive's own words for `OwnerHoldsNoPrekeySecret` (document.rs), the one generation fault this shore renames. */
 const OWNER_HOLDS_NO_PREKEY_SECRET = "no secret key for the prekey the document's owner is added with";
@@ -196,6 +226,11 @@ export class KeyhiveProvider implements CapabilityProvider {
   /** The one contact card this stand mints (see `contactCard`): the mint itself, in flight or settled; null until
    *  the first ask. */
   private standCard: Promise<Uint8Array> | null = null;
+  /** Each bag whose Document this stand replaced UNDER A RECARD (`markRecard`, then `remintBag`): a key-not-found seal on it
+   *  names the lost Document. Empty on every other stand. */
+  private readonly remintedBags = new Set<string>();
+  /** Whether this stand runs a recard (`markRecard`). */
+  private recarding = false;
   /** CIV-2b — islands whose events already sit in keyhive memory: the self slice seeded eagerly at boot,
    *  every island this vessel minted/adopted live, plus any foreign island a first-access materialized.
    *  A resident island's lazy-load noops. */
@@ -346,6 +381,9 @@ export class KeyhiveProvider implements CapabilityProvider {
     }
   }
 
+  /** Mark this stand a RECARD (`lares vault recard --face N`): each bag it reminted from here on names its lost Document. */
+  markRecard(): void { this.recarding = true; }
+
   /** The Archive of this stand WITH its card's prekey inside: mints the stand's card first when none stands yet. */
   async exportArchiveAfterTheCard(): Promise<Uint8Array> {
     await this.contactCard();
@@ -407,7 +445,9 @@ export class KeyhiveProvider implements CapabilityProvider {
     // the chunk cache through the bag's CURRENT document and would refuse on every one of them.
     this.bagChunks.delete(bagUrl);
     if (prior && this.chunkRest) await this.chunkRest.drop(await this.chunkShelf(bagUrl, prior));
-    return this.registerBag(bagUrl);
+    const minted = await this.registerBag(bagUrl);
+    if (prior && this.recarding) this.remintedBags.add(bagUrl);
+    return minted;
   }
 
   /**
@@ -613,7 +653,15 @@ export class KeyhiveProvider implements CapabilityProvider {
    */
   async decryptContent(bagUrl: string, encryptedBytes: Uint8Array): Promise<Uint8Array> {
     const doc = await this.requireDoc(bagUrl);
-    return this.requireKh().tryDecrypt(doc.docId, KH.Encrypted.fromBytes(encryptedBytes));
+    try {
+      return await this.requireKh().tryDecrypt(doc.docId, KH.Encrypted.fromBytes(encryptedBytes));
+    } catch (error) {
+      // ONLY A KEY NOT FOUND takes a name here; a tamper or any other decrypt fault keeps its own.
+      if (!String(error instanceof Error ? error.message : error).includes(KEY_NOT_FOUND)) throw error;
+      // A BAG A RECARD REMINTED names its lost Document: the seal most likely belongs to the Document that left.
+      if (this.remintedBags.has(bagUrl)) throw new SealedUnderLostDocument(bagUrl, error);
+      throw new ContentKeyNotHeld(bagUrl, error);
+    }
   }
 
   /**

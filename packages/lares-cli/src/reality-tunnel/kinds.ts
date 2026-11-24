@@ -105,9 +105,10 @@ const mentionsScript = (base: string) => (v: unknown): boolean => JSON.stringify
 /**
  * Claude's `hooks.<event>`: the house's command for `base` stands once, at the resolved path. The
  * convergence runs at the COMMAND, never the group: a stale house command re-aims in its own place,
- * under its own group's matcher, and every command outside the house's own stands untouched.
+ * under its own group's matcher, and every command outside the house's own stands untouched. A command placed afresh rides
+ * its own group, under `matcher` where one names a tool, and at the event's head where `first` asks it to run first and alone.
  */
-export const claudeHook = (event: string, base: string, command: Json): Transform =>
+export const claudeHook = (event: string, base: string, command: Json, placing: { readonly matcher?: string; readonly first?: boolean } = {}): Transform =>
   jsonEdit((o) => {
     const hooks = at(o, ["hooks"]);
     const groups = (Array.isArray(hooks[event]) ? (hooks[event] as unknown[]) : []) as Array<Json & { hooks?: unknown[] }>;
@@ -127,7 +128,10 @@ export const claudeHook = (event: string, base: string, command: Json): Transfor
       }
       if (kept.length > 0) next.push({ ...g, hooks: kept });
     }
-    if (!placed) next.push({ hooks: [command] });
+    if (!placed) {
+      const group = { ...(placing.matcher !== undefined ? { matcher: placing.matcher } : {}), hooks: [command] };
+      if (placing.first === true) next.unshift(group); else next.push(group);
+    }
     hooks[event] = next;
   });
 

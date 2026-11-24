@@ -175,7 +175,7 @@ async function boot(storageDir: string, form: Form, s: SealedFixture, opts: { hy
   const assembly = await assembleVessel({
     repo,
     catalogHandle: repo.create<LarDoc>(emptyLarDoc()),
-    waitHandle: <T>(url: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback, WINDOW_MS),
+    waitHandle: <T>(url: string, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, WINDOW_MS),
     systemCanon: async () => ({}),
     loadGenesis: async () => ({
       islandHandle: repo.create<LarDoc>(emptyLarDoc()), coreHash: "probe-core",
@@ -337,7 +337,7 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     writeFileSync(join(syncDir, "peer"), "held sync state");
     const keep = releaseQuarantinedDoc(storageDir, s.sealedId, "kept");
     expect(keep.ok).toBe(false);
-    if (!keep.ok) expect(keep.why).toContain("--release ");
+    if (!keep.ok) expect(keep.why).toContain(`\`lares vessel release ${s.sealedId}\``);
 
     expect(releaseQuarantinedDoc(storageDir, s.sealedId, "restored")).toMatchObject({ ok: true, act: "restored" });
     const shard = join(storageDir, s.sealedId.slice(0, 2));
@@ -380,7 +380,7 @@ d("the probe reads a sealed document as sealed; the keyed load at mount decides 
     faceUp = false;
     const store = sealedStore(storageDir, "pointer", s.key, () => s.sealedId, true);
     const repo = new Repo({ storage: store, network: [] });
-    const fresh = await waitHandle<LarDoc>(repo, s.sealedUrl, () => repo.create<LarDoc>(emptyLarDoc()), WINDOW_MS);
+    const fresh = await waitHandle<LarDoc>(repo, s.sealedUrl, "lar:///ha.ka.ba/bags/probe-reads-sealed", () => repo.create<LarDoc>(emptyLarDoc()), WINDOW_MS);
     expect(fresh.documentId).not.toBe(s.sealedId);
     faceUp = true;
     store.mapMoved();

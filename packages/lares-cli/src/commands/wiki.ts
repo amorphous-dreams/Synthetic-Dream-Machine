@@ -796,6 +796,7 @@ export function wikiFilterPlan(args: ParsedArgs): DoorPlan {
   const out: Record<string, unknown> = { ...engineContainerArgs(args, "wiki filter"), filter, ...targetOf(args) };
   const fields = namesOf(args.options["fields"]);
   if (fields) out["fields"] = fields;
+  if (args.flags["collapse"] === true) out["collapse"] = true;
   const limit = countOf(args.options["limit"], "limit");
   if (limit !== null) out["limit"] = limit;
   const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
@@ -865,7 +866,7 @@ async function cmdWikiAction(args: ParsedArgs): Promise<number> {
   });
 }
 
-interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[] }
+interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[]; bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }> }
 
 /**
  * A FILTER'S ANSWER ARRIVES IN PAGES. One call prints one page and names the cursor of the next on stderr (`--after`
@@ -904,7 +905,10 @@ async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
       human: () => {
         // One title per line; named fields follow their title, tab-joined, so a shell cuts them.
         for (const title of titles) console.log(title);
-        for (const row of rows) console.log([row.title, ...Object.entries(row.fields).map(([name, value]) => `${name}=${value}`)].join("\t"));
+        for (const row of rows) {
+          console.log([row.title, ...(row.bytes === undefined ? [] : [`bytes=${row.bytes}`]), ...Object.entries(row.fields).map(([name, value]) => `${name}=${value}`)].join("\t"));
+          for (const slot of row.slots ?? []) console.log(`  ${slot.slot}\tbytes=${slot.bytes}\t${slot.first ?? ""}`);
+        }
         const shown = titles.length + rows.length;
         if (typeof last["next"] === "string" && last["next"] !== "") console.error(`${shown} of ${last["total"]} · next: --after ${last["next"]}`);
         else console.error(`${shown} of ${last["total"]}`);
@@ -1012,11 +1016,14 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "prune-stale":   { handler: cmdWikiPruneStale,    summary: "Surface stale draft tiddlers (no recent activity) for residency-action-or-prune." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
-  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
+  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine (`--recipe default` the daemon wiki, `--recipe <slug>` any wiki this face reaches): `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--collapse] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. `--collapse` answers each row's bytes and a meme root's slots (`{slot, bytes, first}`) in place of its fields, the skinny has-stack of `lares tiddler get <root> --recipe <slug> --meme --skinny`, and `lares tiddler get <root> --recipe <slug> --meme --slot <name>` unfolds one slot. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`. `--target <h1|pet name>` reads another lit face's daemon wiki (its canon and working layer, never its personal layer) while keeping the face worn." },
   "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine (the daemon wiki or any wiki this face reaches): `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The read reaches stdout; `--target` visits another lit face's read view. `render '<source-filter>' --recipe <slug> --output workbench [--filename <filter>] [--type <mime>] [--template <title>] [--variables <json>] [--overwrite]` writes under rendered/ in that wiki's bound workbench, then answers a manifest. A writer's seat must hold the workbench; existing files refuse without --overwrite." },
   "status":     { handler: cmdWikiStatus,    summary: "Survey catalog, activation and residency; --recipe names each layer and its write reach: `lares wiki status --recipe default` (or `--recipe <slug>`, any wiki this face reaches). The working layer takes every write (this face's personal layer of a wiki where it holds no writer's seat). A wiki's temp layer reads `temp (opt-in, off)` until `projection.temp.<slug>` consents to it. `--target <h1|pet name>` names another lit face's view, whose layers read `write: false`." },
   "act":        { handler: cmdWikiAction, summary: "Run one admitted native action: `wiki act sidebar-layout --recipe <wiki> --expected fixed-fluid --resulting fluid-fixed`." },
 };
+
+/** Every verb the wiki door answers (`help` prints this table). */
+export const WIKI_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS)];
 
 /** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */
 export function wikiHelpLines(): string[] {
@@ -1034,11 +1041,11 @@ export async function cmdWiki(args: ParsedArgs): Promise<number> {
     printWikiHelp();
     return verb ? 0 : 2;
   }
-  const moved: Record<string, string> = { open: "wiki switch <slug> --next-boot", hold: "wiki pin <slug> --rotate", release: "wiki pin <slug> --rotate --release", unpin: "wiki pin <slug> --release", list: "wiki status", active: "wiki status" };
-  if (moved[verb]) { console.error(`lares wiki: moved to \`lares ${moved[verb]}\`.`); return 2; }
+  // The dispatcher's one MOVED table answers `wiki open`, `wiki list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
   if (!entry) {
-    console.error(`lares wiki: unknown verb "${verb}". Run \`lares wiki help\` for the list.`);
+    console.error(`lares wiki: unknown verb "${verb}"`);
+    for (const line of wikiHelpLines()) console.error(line);
     return 2;
   }
   const inner: ParsedArgs = {

@@ -224,7 +224,7 @@ export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, pagePlaneRows, t
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor, makeWikiActionReactor,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor, makeWikiActionReactor, SHORE_COLLAPSE_CONFIG_PREFIX,
 } from "./tiddler-verbs.js";
 export type { NamedWikiEngine, TiddlerVerbOptions } from "./tiddler-verbs.js";
 // The oracle cast: one I Ching cast written as one tiddler through the tiddler door's own put.
@@ -276,7 +276,7 @@ export {
 export type {
   VerbContribution,
   MempalaceProvider, FormPalaceProvider, DaemonVerbProvider, TelemetryProvider,
-  RecallClient, RecalledTrajectoryStub, SubagentEdgePair,
+  RecallClient, RecalledTrajectoryStub, SpiritEdges, SpiritFeed,
 } from "./verb-caps.js";
 
 export * from "./memetic-wikitext-sensorium.js";

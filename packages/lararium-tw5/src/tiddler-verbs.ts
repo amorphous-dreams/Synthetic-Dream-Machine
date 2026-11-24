@@ -5,7 +5,7 @@
  *
  * The contract every skin (this, the CLI's `lares tiddler|wiki`, the MCP seat's `tiddler_*|wiki_*`) carries verbatim:
  *
- *   wiki-filter    { recipe, filter, fields?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
+ *   wiki-filter    { recipe, filter, fields?, collapse?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
  *   tiddler-get    { recipe, title, meme?, grain?, slot?, after?, fields?, maxBytes? }
  *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
@@ -74,13 +74,13 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
 import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
-import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type GrainEcho, type ReadGrain } from "./read-gradient.js";
+import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { staysHome } from "./stay-home.js";
+import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
-import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
+import { pageFilterAnswer, filterCursor, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
@@ -275,8 +275,25 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
  */
 
 
-function refuseWithheld(title: string, verb: string): void {
-  if (staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
+/**
+ * Where a person's stand-off collapse rules rest (`@lararium/node` standoff-collapse, `COLLAPSE_CONFIG_PREFIX`): a rule
+ * there lets the house settle a stand-off with no hand present, so writing one is a hand act like settling one.
+ */
+export const SHORE_COLLAPSE_CONFIG_PREFIX = "$:/config/lares/shore/collapse/";
+
+/**
+ * A COLLAPSE RULE TAKES A HAND'S WRITE ALONE: a seat refuses `hand-act-only`, a line no door read (no asker) refuses
+ * `hand-unattested`, and the refusal names the command the operator runs. The operator's line (`cli`) and a tab write.
+ */
+function refuseUnhandedCollapseRule(title: string, verb: string, asker: VerbContext["asker"]): void {
+  if (!title.startsWith(SHORE_COLLAPSE_CONFIG_PREFIX) || asker === "cli" || asker === "tab") return;
+  const line = `lares ${verb} "${title}"`;
+  if (asker === "seat") throw new VerbRefusal("hand-act-only", `hand-act-only: "${title}" names a rule that settles stand-offs with no hand present, so a person alone writes it; a seat proposes. Ask the operator to run \`${line}\` on their own terminal.`);
+  throw new VerbRefusal("hand-unattested", `hand-unattested: "${title}" names a rule that settles stand-offs with no hand present, and this line's asker reads nothing to attest a person. Run \`${line}\` on a terminal whose processes the host can read.`);
+}
+
+function refuseWithheld(title: string, verb: string, read = false): void {
+  if (read ? withheldFromReads(title) : staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
 }
 
 /**
@@ -314,6 +331,17 @@ type Visible = (title: string, tiddler: EngineTiddler | undefined) => boolean;
  * lives for one verb call. The wiki's indexes (tags, fields, backlinks) still name hidden TITLES; the verb's answer
  * gate drops those and counts them `withheld`. Writes never ride the view.
  */
+/**
+ * A house alert as the view answers it: its open fields alone, each secret shape redacted (`redactedAlertFields`). The view's
+ * `visible` already shut every alert whose kind stays home, or that names a record this reader may not read.
+ */
+function redactedAlert(tiddler: EngineTiddler): EngineTiddler {
+  const title = String(tiddler.fields["title"] ?? "");
+  const fields = redactedAlertFields(title, tiddler.fields as Record<string, unknown>) ?? { title };
+  const Make = (tiddler as unknown as { constructor: new (...fields: unknown[]) => EngineTiddler }).constructor;
+  return new Make(fields);
+}
+
 function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; document: { createElement(tag: string): unknown } } | null): EngineWiki {
   const view = Object.create(wiki) as EngineWiki & Record<string, unknown>;
   view["filterCache"] = Object.create(null);
@@ -321,12 +349,16 @@ function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; 
   view["caches"] = Object.create(null);
   view["globalCache"] = Object.create(null);
   const shown = (title: string): boolean => visible(title, wiki.getTiddler(title));
-  view.getTiddler = (title) => { const tiddler = wiki.getTiddler(title); return tiddler && visible(title, tiddler) ? tiddler : undefined; };
+  view.getTiddler = (title) => {
+    const tiddler = wiki.getTiddler(title);
+    if (!tiddler || !visible(title, tiddler)) return undefined;
+    return isHouseAlert(title) ? redactedAlert(tiddler) : tiddler;
+  };
   view.tiddlerExists = (title) => wiki.tiddlerExists(title) && shown(title);
-  view.each = (callback) => wiki.each((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachShadow = (callback) => wiki.eachShadow((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachTiddlerPlusShadows = (callback) => wiki.eachTiddlerPlusShadows((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
+  view.each = (callback) => wiki.each((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachShadow = (callback) => wiki.eachShadow((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachTiddlerPlusShadows = (callback) => wiki.eachTiddlerPlusShadows((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
   view.allTitles = () => wiki.allTitles().filter(shown);
   view.allShadowTitles = () => wiki.allShadowTitles().filter(shown);
   if (house) {
@@ -359,7 +391,19 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
   wiki.each((tiddler) => { const bag = tiddler.fields[ORIGIN_BAG]; if (typeof bag === "string" && bag !== "") bags.add(bag); });
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
-  const visible: Visible = (title, tiddler) => !staysHome(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
+  // AN ALERT ANSWERS ONLY A READER OF WHAT IT NAMES: each open alert that names a record reads absent where that record stands
+  // in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki does not hold names no bag
+  // the door can check, so it shuts). The alert holds no bag of its own, so `hidden` alone never reaches it.
+  const shutAlerts = new Set<string>();
+  for (const title of wiki.allTitles()) {
+    if (!isOpenAlert(title)) continue;
+    for (const named of alertNamedTitles(title, wiki.getTiddler(title)?.fields ?? {})) {
+      const record = wiki.getTiddler(named);
+      const bag = record ? record.fields[ORIGIN_BAG] : undefined;
+      if (!record || (typeof bag === "string" && bag !== "" && hidden.has(bag))) { shutAlerts.add(title); break; }
+    }
+  }
+  const visible: Visible = (title, tiddler) => !withheldFromReads(title) && !shutAlerts.has(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
   const text = await canonFiltersText(opts.composite, wiki, mayRead);
   const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
   return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
@@ -457,6 +501,25 @@ async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbC
 
 // ── wiki-filter ───────────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * ONE ROW'S COLLAPSED FORM. A meme root answers the bytes of its whole carrier and its slots (`{slot, bytes, first}`), built by the
+ * skinny grain of `memeGradient`, the builder `tiddler get --meme --skinny` reads; a pointer answers the `size` it names; any other
+ * record answers the bytes of its text. The slots unfold one at a time by `tiddler get <root> --meme --slot <name>`.
+ */
+async function collapseOf(
+  sink: Pick<MemeSink, "titles" | "read">, title: string, fields: Record<string, string>,
+): Promise<{ bytes: number; slots?: CarrierSlot[] }> {
+  if (isMemeRoot(title, fields) && !isPointer(fields)) {
+    const meme = await readMeme(title, sink);
+    if (meme !== null) {
+      const read = memeGradient(meme, { grain: "skinny" });
+      return { bytes: read.bytes, slots: read.slots };
+    }
+  }
+  if (isPointer(fields)) return { bytes: Number(fields["size"]) || 0 };
+  return { bytes: byteLength(fields["text"] ?? "") };
+}
+
 export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "wiki-filter");
@@ -474,16 +537,38 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
       else withheld++;
     }
     const names = namesArg(args["fields"]);
-    const rowOf = names === null ? undefined : (title: string): FilterRow => {
+    const collapse = flagOn(args["collapse"]);
+    const limit = countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS);
+    const after = optionalStringArg(args, "after");
+    // THE COLLAPSE LENS: each row of the page's window carries its bytes, and a meme root its slots, read through the one skinny
+    // builder (`collapseOf`: `readMeme` and `memeGradient` at the skinny grain, the has-stack `tiddler get --meme --skinny` answers).
+    // The window reads ahead of the page law, which stays sync; a row the byte cap leaves for the next page costs one wasted read.
+    const collapsed = new Map<string, { bytes: number; slots?: CarrierSlot[]; withheld?: number }>();
+    if (collapse) {
+      // The reader's titles and the wiki's read once for the whole window, never once per row.
+      const readable = view.allTitles();
+      const held = wiki.allTitles();
+      const sink = { titles: () => readable, read: (t: string) => (view.getTiddler(t) as { fields?: TiddlerFields } | undefined)?.fields };
+      const { offset } = filterCursor(titles, after);
+      const readableSet = new Set(readable);
+      for (const title of titles.slice(offset, offset + limit)) {
+        const row = await collapseOf(sink, title, readRecord(view.getTiddler(title)!).fields);
+        // As `tiddler get --meme` names it: slot records this face may not read never enter the slots, and the row says so.
+        const prefix = `${title}#`;
+        const withheldSlots = row.slots === undefined ? 0 : held.filter((t) => t.startsWith(prefix) && !staysHome(t) && !readableSet.has(t)).length;
+        collapsed.set(title, withheldSlots > 0 ? { ...row, withheld: withheldSlots } : row);
+      }
+    }
+    const rowOf = names === null && !collapse ? undefined : (title: string): FilterRow => {
       const tiddler = view.getTiddler(title);
       const held = tiddler ? readRecord(tiddler).fields : {};
       const fields: Record<string, string> = {};
-      for (const name of names) if (typeof held[name] === "string") fields[name] = held[name]!;
-      return { title, fields };
+      for (const name of names ?? []) if (typeof held[name] === "string") fields[name] = held[name]!;
+      return { title, fields, ...collapsed.get(title) };
     };
     const page = pageFilterAnswer(titles, {
-      after: optionalStringArg(args, "after"),
-      limit: countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS),
+      after,
+      limit,
       maxBytes: countArg(args["maxBytes"], WIKI_FILTER_BYTES, 64, WIKI_ANSWER_BYTES_MAX),
       ...(rowOf ? { rowOf } : {}),
     });
@@ -768,7 +853,9 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
       return await bagGet(opts, container, title, args, ctx, asked);
     }
     const anchor = anchorOf(opts, args, "tiddler-get");
-    refuseWithheld(title, "tiddler-get");
+    // AN OPEN HOUSE ALERT READS here (`withheldFromReads`): the wiki's own engine holds it; a bag's store never does. The meme
+    // lens never reads one: an alert holds no meme, so the lens keeps the door's whole stay-home law.
+    refuseWithheld(title, "tiddler-get", !lens);
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const engine = anchor.engine;
     const wiki = engine.wiki;
@@ -784,7 +871,8 @@ export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: Tidd
       const withheld = wiki.allTitles().filter((t) => t.startsWith(prefix) && !staysHome(t) && !view.tiddlerExists(t)).length;
       return memeAnswer(engine, sink, { recipe: anchor.recipe, layer: bag, answered }, title, args, asked, opts.resolveByCid, placeIn, withheld);
     }
-    const tiddler = wiki.getTiddler(title);
+    // A HOUSE ALERT READS THROUGH THE VIEW, so it leaves redacted (`redactedAlert`); every other record reads as the engine holds it.
+    const tiddler = isHouseAlert(title) ? view.getTiddler(title) : wiki.getTiddler(title);
     if (!tiddler) return { ...answered, title, tiddler: null };
     const { fields, bag } = readRecord(tiddler);
     if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
@@ -847,14 +935,15 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
     const form = optionalStringArg(args, "form") ?? "text";
     const outputType = RENDER_FORMS[form];
     if (!outputType) throw new Error(`wiki-render: args.form reads "text" or "html"; got "${form}"`);
-    if (title !== null) refuseWithheld(title, "wiki-render");
+    if (title !== null) refuseWithheld(title, "wiki-render", true);
     const { view, mayRead, pragmas } = await viewFor(opts, anchor, ctx.cap);
     // THE HOUSE'S FUNCTIONS RIDE AFTER THE GLOBAL IMPORT, from canon alone: a working-layer `$:/tags/Global` tiddler never shadows one.
     const globals = pragmas === "" ? GLOBAL_IMPORT : `${GLOBAL_IMPORT}${pragmas}\n\n`;
     const wiki = anchor.engine.wiki;
     let rendered: string;
     if (title !== null) {
-      const tiddler = wiki.getTiddler(title);
+      // An alert renders through the view, so one this reader may not read stands absent here too.
+      const tiddler = isHouseAlert(title) ? view.getTiddler(title) : wiki.getTiddler(title);
       if (!tiddler) throw new VerbRefusal("tiddler-absent", `tiddler-absent: no tiddler stands at "${title}" in wiki "${anchor.recipe}"; wiki-render renders a title that stands, or a span passed as args.text.`);
       const { bag } = readRecord(tiddler);
       if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
@@ -937,6 +1026,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
     if (!title) throw new Error("tiddler-put: args.title is required");
     refuseWithheld(title, "tiddler-put");
     refuseEffectLedgerWrite(title, "tiddler-put");
+    refuseUnhandedCollapseRule(title, "tiddler put", ctx.asker);
     await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
     const { wiki, utils, Tiddler } = anchor.engine;
     const append = typeof args["append"] === "string" ? args["append"] : null;
@@ -1118,6 +1208,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
     refuseEffectLedgerWrite(title, "tiddler-delete");
+    refuseUnhandedCollapseRule(title, "tiddler delete", ctx.asker);
     await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
     const named = optionalStringArg(args, "mode");
     if (named !== null && named !== "kapae" && named !== "reveal") {

@@ -47,6 +47,11 @@ export interface TakeDiskRequest {
   readonly key: string;
   /** The bag a person named; absent = whichever mirror holds the standoff under that key. */
   readonly bag?: string;
+  /**
+   * KEEP THE DISK WHOLE (`lares shore keep-disk`): the file's words land as they stand, with no merge, over the records the
+   * key folded, so a slot both sides moved takes the file's words. Absent, the door merges where both sides moved.
+   */
+  readonly whole?: boolean;
 }
 
 export interface TakeDiskDeps {
@@ -173,8 +178,10 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
     };
   }
 
-  // 2b — the merge: the records' edit and the file's meet against the base's words.
-  const merged = await mergeSides({ uri, key, bag, path, row, named }, deps);
+  // 2b — the merge: the records' edit and the file's meet against the base's words (a person who keeps the disk whole asks none).
+  const merged: Merged = req.whole === true
+    ? { ok: true, text: null, merge: { kind: "whole", why: "the person kept the disk's words whole (`keep-disk`)" } }
+    : await mergeSides({ uri, key, bag, path, row, named }, deps);
   if (!merged.ok) return merged;
   let landing: ScanRow = row;
   if (merged.text !== null) {

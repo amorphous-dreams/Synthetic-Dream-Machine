@@ -57,7 +57,7 @@ import {
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
   writesBag, VerbRefusal, workingLayerOfCanon, canonOfWorkingLayer, isWorkingLayerBag, overrideBaseOf, carrierHashOf, OVERRIDE_BASE_META,
   CONTROL_HOME_ID, SECRET_HOME_ID,
-  yieldToHost,
+  yieldToHost, standoffOf,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
@@ -510,8 +510,10 @@ export function registerActionReactors(table: VerbTable, opts: ActionHandlerOpti
   // serializer (the reciprocal of a multi-tiddler deserialize). Returns the bytes;
   // the gesture writes them to disk (for the operator's upstream PR). Read cap only.
   table.register("REPACK", async (args, ctx) => {
-    const bag = String(args["bag"] ?? "");
-    const packPath = String(args["pack-path"] ?? "");
+    // ROUTING FIELDS READ AS STRINGS OR REFUSE, never coerced (`routing-arg-malformed`).
+    for (const name of ["bag", "pack-path"]) if (args[name] !== undefined && typeof args[name] !== "string") throw new VerbRefusal("routing-arg-malformed", `routing-arg-malformed: REPACK: \`${name}\` names a string`);
+    const bag = (args["bag"] as string | undefined) ?? "";
+    const packPath = (args["pack-path"] as string | undefined) ?? "";
     if (!bag || !packPath) throw new Error("REPACK: `bag` and `pack-path` required");
     refuseTw5DocsReserved(bag, "REPACK");
     const proof = await ctx.cap("read", bag);
@@ -546,10 +548,36 @@ async function executeRepack(access: BagAccess, bag: string, packPath: string, t
 }
 
 /** Per-ACTION-verb reactor factory. */
+/** The carriers of a wave held back for a hand: each address and the key its stand-off stands under (`holdStandoffsForHand`). */
+const HELD_FOR_HAND = new WeakMap<IngestAction, ReadonlyMap<string, string>>();
+
+/** Mark each carrier of a wave that stands off at this island's disk shore: the executor answers it `conflict`, landing nothing. */
+function holdStandoffsForHand(action: IngestAction): void {
+  const held = new Map<string, string>();
+  for (const carrier of action.carriers) {
+    const key = standoffOf(action.toBag, carrier.uri);
+    if (key !== null) held.set(carrier.uri, key);
+  }
+  if (held.size > 0) HELD_FOR_HAND.set(action, held);
+}
+
+/** The row a held carrier answers: a stand-off awaits a person's hand, and the row names the command that settles it. */
+function awaitsHandRow(uri: string, key: string): Record<string, unknown> {
+  return {
+    uri, decision: "conflict", reason: "awaits-hand", grade: "clean",
+    warnings: [`${uri} stands off at this island's disk shore (key ${key}), and settling it runs on a person's hand; nothing landed for it. The operator runs \`lares shore keep-disk ${uri} --key ${key}\` (or \`lares shore keep-records ${uri} --key ${key}\`) at their own terminal.`],
+  };
+}
+
 export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOptions): VerbReactor {
   return async (args, ctx) => {
-    const action = residencyFromContext(verb, args, ctx.invocation);
-    if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+    const parsed = residencyFromContext(verb, args, ctx.invocation);
+    if (!parsed) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+    // A STAND-OFF SETTLES BY A PERSON, ON THIS LEG TOO: a wave's `unattended` flag comes from its caller, so a wave a seat
+    // asked rides unattended whatever it claims, and the gate's no-base verdict stands off rather than adopting a file over
+    // records that say something else. The socket stamps the same on every INGEST a seat or an unread peer sends
+    // (`stampUnattendedIngest`), so a wave routed into a wiki island, where no asker rides, stands off the same way.
+    const action = parsed.verb === "INGEST" && ctx.asker === "seat" && parsed.unattended !== true ? { ...parsed, unattended: true } : parsed;
     // THE TW5 DOCS LIBRARY'S NAME HOLDS ONE RELATION (`tw5-docs-name`): no CREATE mints a bag under it, and no verb writes it,
     // as a destination or as a source, before any cap ask, placement check or store reach.
     if (action.verb === "CREATE") refuseTw5DocsReserved(action.bag, "CREATE");
@@ -563,6 +591,10 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the daemon mount owns it.
     let faceStore: LarTiddlerStore | null = null;
     if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget, ctx.worn);
+    // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a carrier that stands off at this island's disk shore names
+    // a base the gate would trust, so it lands only from a person's line (`take-disk` and `keep-disk` ride exactly such a wave).
+    // From any other asker, and whatever the frame says of itself, THAT carrier answers `conflict` and the rest of the wave lands.
+    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab") holdStandoffsForHand(action);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
@@ -1379,7 +1411,10 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
     }
   };
 
+  const heldForHand = HELD_FOR_HAND.get(action);
   for (const sent of action.carriers) {
+    const awaiting = heldForHand?.get(sent.uri);
+    if (awaiting !== undefined) { results.push(awaitsHandRow(sent.uri, awaiting)); continue; }
     // NO RECORD, NO BASE (face-pools A5): a base the gesture read off the pool's HEAD vouches only for a record the house
     // still holds. Where the records hold nothing under the carrier, it drops, and the carrier weighs as one that holds no
     // base: the file lands as an arrival, and no echo of HEAD pins a base for a record that stands nowhere.

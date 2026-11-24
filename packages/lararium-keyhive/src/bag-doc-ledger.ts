@@ -8,11 +8,18 @@ export interface BagDocLedger {
   drop?(bag: string): Promise<boolean>;
 }
 
+/**
+ * What a durable registration did: each bag whose recorded Document this stand held no hand in, so a fresh Document took its
+ * place (`remintBag`). Content sealed under the Document that left stays unreadable to this face.
+ */
+export interface DurableRegistration { readonly reminted: readonly string[] }
+
 export async function registerBagsDurably({ provider, bags, ledger }: {
   provider: CapabilityProvider;
   bags: readonly string[];
   ledger: BagDocLedger;
-}): Promise<void> {
+}): Promise<DurableRegistration> {
+  const reminted: string[] = [];
   for (const bag of bags) {
     const recorded = await ledger.get(bag);
     if (recorded) {
@@ -20,11 +27,13 @@ export async function registerBagsDurably({ provider, bags, ledger }: {
       if (await provider.holdsHand(bag)) continue;
       const { docId } = await provider.remintBag(bag);
       await ledger.put(bag, docId);
+      reminted.push(bag);
     } else {
       const { docId } = await provider.registerBag(bag);
       await ledger.put(bag, docId);
     }
   }
+  return { reminted };
 }
 
 async function titleFor(bag: string, vessel: boolean, face?: string): Promise<string> {

@@ -19,6 +19,7 @@ import { save as automergeSave } from "@automerge/automerge";
 import { pinnedDoc } from "./pinned-doc.js";
 import { sha256BytesSync, utf8Bytes } from "./crypto.js";
 import { resolveBootDoc } from "./boot-resolver.js";
+import { nameDerivedDocument } from "./wait-handle.js";
 import { CROSSROADS_DOC_URI, bagUri, nexusHandlesUri, nexusRegistryUri } from "./lar-uris.js";
 import { emptyLarDoc, type LarDoc } from "./base-doc.js";
 
@@ -224,6 +225,8 @@ export async function materializeSharedLarDoc(
   label: string,
 ): Promise<DocHandle<LarDoc>> {
   derived.set(url, label);
+  // THE DERIVATION NAMES IT: its owner's key reaches this address, so the vessel's rest keeps a copy a peer pushed first.
+  nameDerivedDocument(repo, url);
   try {
     const existing = await resolveBootDoc<LarDoc>(repo, url, { tideline: "hearth-private", label });
     return existing;   // present (persisted or synced) → use it

@@ -32,7 +32,13 @@ export interface FilterPageQuery {
   /** A title's row where the caller asked for fields; absent, a row reads as its title. */
   readonly rowOf?: (title: string) => FilterRow;
 }
-export interface FilterRow { title: string; fields: Record<string, string>; omitted?: string[] }
+export interface FilterRow {
+  title: string; fields: Record<string, string>; omitted?: string[];
+  /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `tiddler get --meme --slot`. */
+  bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>;
+  /** Slot records of a collapsed meme root that rest in a layer this face may not read, left out of its slots. */
+  withheld?: number;
+}
 export interface FilterPage {
   readonly titles: string[];
   readonly rows?: FilterRow[];
@@ -44,6 +50,16 @@ export interface FilterPage {
   readonly asOf: string;
 }
 
+/** The answer a cursor continues and the offset it names: a cursor from another answer refuses `filter-cursor-stale`, a misshapen one `filter-cursor-malformed`. */
+export function filterCursor(all: readonly string[], after?: string | null): { asOf: string; offset: number } {
+  const asOf = digestOf(all).slice(0, 16);
+  if (after === undefined || after === null || after === "") return { asOf, offset: 0 };
+  const cursor = /^([0-9]{1,9})\.([0-9a-f]{16})$/.exec(after);
+  if (!cursor) throw new VerbRefusal("filter-cursor-malformed", `filter-cursor-malformed: "${after}" reads as no cursor; hand back a page's own \`next\`, or drop \`after\` to read from the first page.`);
+  if (cursor[2] !== asOf) throw new VerbRefusal("filter-cursor-stale", "filter-cursor-stale: the wiki moved and this filter answers another list now; drop `after` and read again from the first page.");
+  return { asOf, offset: Math.min(Number(cursor[1]), all.length) };
+}
+
 /**
  * ONE PAGE OF A FILTER'S ANSWER. A filter re-runs for each page, so the cursor names the answer it continues: an offset
  * and the digest of the whole title list (`asOf`). No clock and no counter decides staleness: a re-run that answers
@@ -52,14 +68,7 @@ export interface FilterPage {
  * its largest fields and names them `omitted`.
  */
 export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery = {}): FilterPage {
-  const asOf = digestOf(all).slice(0, 16);
-  let offset = 0;
-  if (query.after !== undefined && query.after !== null && query.after !== "") {
-    const cursor = /^([0-9]{1,9})\.([0-9a-f]{16})$/.exec(query.after);
-    if (!cursor) throw new VerbRefusal("filter-cursor-malformed", `filter-cursor-malformed: "${query.after}" reads as no cursor; hand back a page's own \`next\`, or drop \`after\` to read from the first page.`);
-    if (cursor[2] !== asOf) throw new VerbRefusal("filter-cursor-stale", "filter-cursor-stale: the wiki moved and this filter answers another list now; drop `after` and read again from the first page.");
-    offset = Math.min(Number(cursor[1]), all.length);
-  }
+  const { asOf, offset } = filterCursor(all, query.after);
   const limit = Math.max(1, Math.min(query.limit ?? WIKI_FILTER_ROWS, WIKI_FILTER_ROWS));
   const maxBytes = Math.max(64, Math.min(query.maxBytes ?? WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX));
   const titles: string[] = [];
@@ -73,12 +82,15 @@ export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery 
       if (titles.length > 0) break;
       // The first row alone outruns the cap: it sheds its largest fields, by name, until it fits.
       if (typeof row !== "string") {
-        const shed: FilterRow = { title: row.title, fields: { ...row.fields }, omitted: [...(row.omitted ?? [])] };
+        const shed: FilterRow = { ...row, fields: { ...row.fields }, omitted: [...(row.omitted ?? [])] };
         for (const name of Object.keys(shed.fields).sort((a, b) => bytesOf(shed.fields[b]) - bytesOf(shed.fields[a]))) {
           if (2 + bytesOf(shed) <= maxBytes) break;
           delete shed.fields[name];
           shed.omitted!.push(name);
         }
+        // A collapsed row's slots shed last, by name: the meme unfolds by `tiddler get --meme --skinny`.
+        if (2 + bytesOf(shed) > maxBytes && shed.slots) { delete shed.slots; shed.omitted!.push("slots"); }
+        if (2 + bytesOf(shed) > maxBytes && shed.bytes !== undefined) { delete shed.bytes; shed.omitted!.push("bytes"); }
         row = shed;
         cost = bytesOf(row);
       }

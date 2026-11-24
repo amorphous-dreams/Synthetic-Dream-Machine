@@ -96,6 +96,8 @@ export interface PulamaServer {
   /** The faces closing now, each with how many sessions have not answered its close. */
   closing(): ReadonlyArray<{ readonly face: number; readonly unanswered: number; readonly note: string }>;
   sessions(): number;
+  /** The face the vessel's wear door last named here (`face.worn`); none since the last lock. */
+  worn?(): number | undefined;
 }
 
 /** What a face's close answers: locked now, closing (sessions still to answer), already shut, or no such face. */
@@ -254,7 +256,7 @@ export function servePulama(a: {
     }
     if (c.kind === "face") {
       const found = await holder.faceStanding(c.selector as FaceRef);
-      if (found !== null && closedTo(s, found.fcid)) throw new PulamaRefused("face-closing", `face h${found.ordinal} is closing, and this session stands outside its close`);
+      if (found !== null && closedTo(s, found.fcid)) throw new PulamaRefused("face-closing", `face h${found.ordinal} closes now, and this session stands outside its close`);
       if (found !== null && !lends(s, found)) {
         throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; this ${c.row} row selects ${JSON.stringify(c.selector)}, face h${found.ordinal}`);
       }
@@ -358,7 +360,7 @@ export function servePulama(a: {
         const { home, file } = recordOf(args);
         await guard(s, home, file, "hot");
         // The claim may have ended while the scope read: a row touched after it would move outside any claim.
-        if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before this row was reached");
+        if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before the pūlama reached this row");
         return op === "records.read" ? claim.records.read(home, file) : claim.records.remove(home, file);
       }
       case "face.standing": {
@@ -640,5 +642,6 @@ export function servePulama(a: {
           ? `face h${c.ordinal}: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand`
           : `face h${c.ordinal}: no session still owes its close; close it again to lock it, or force it by hand` })),
     sessions: () => live.size,
+    worn: () => worn,
   };
 }

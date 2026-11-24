@@ -286,6 +286,28 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(seat).toEqual({ ok: true, data: dataOf(cli) });
   }, 180_000);
 
+  test("collapse: a filter answers each meme root skinny, bytes and slots the skinny get names, on both skins; one slot unfolds by its own get", async () => {
+    const filter = `[[${uriOf(3)}]] [[${uriOf(3)}#/why]]`;
+    const cli = await lar.cli(["wiki", "filter", filter, "--collapse", ...D]);
+    say("CLI wiki filter --collapse", dataOf(cli));
+    expect(cli.code, cli.stderr).toBe(0);
+    const rows = dataOf(cli)["rows"] as Array<{ title: string; bytes: number; slots?: Array<{ slot: string; bytes: number; first: string | null }> }>;
+    expect(rows.map((r) => r.title)).toEqual([uriOf(3), `${uriOf(3)}#/why`]);
+    const meme = await lar.cli(["tiddler", "get", uriOf(3), "--meme", "--skinny", ...D]);
+    const skinny = dataOf(meme)["meme"] as { bytes: number; slots: Array<{ slot: string; bytes: number; first: string | null }> };
+    expect(rows[0]).toMatchObject({ bytes: skinny.bytes, slots: skinny.slots });
+    expect(skinny.slots.map((x) => x.slot)).toContain("#/why");
+    expect(rows[1]!.bytes).toBeGreaterThan(0);
+    expect(rows[1]!.slots, "a slot row is no meme root").toBeUndefined();
+    const unfolded = await lar.cli(["tiddler", "get", uriOf(3), "--meme", "--slot", "#/why", ...D]);
+    expect(String((dataOf(unfolded)["meme"] as { slotText?: string }).slotText)).toContain("Because walk 3 measured it.");
+    const seat = payload((await speak(entry, [{ name: "wiki_filter", arguments: { filter, recipe: "default", collapse: true } }])).results[0]);
+    say("MCP wiki_filter collapse=true", seat);
+    expect(seat).toEqual({ ok: true, data: dataOf(cli) });
+    const plain = await lar.cli(["wiki", "filter", filter, ...D]);
+    expect(dataOf(plain)["titles"]).toEqual([uriOf(3), `${uriOf(3)}#/why`]);
+  }, 180_000);
+
   test("render: the island's own engine wikifies a transcluding span and a slot's title, on both skins", async () => {
     const span = `Why: {{${uriOf(4)}#/why}} (<$count filter="[tag[memory]prefix[${STAGE}]]"/> memories)`;
     const cli = await lar.cli(["wiki", "render", "--text", span, ...D]);

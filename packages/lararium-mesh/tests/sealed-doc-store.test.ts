@@ -190,6 +190,37 @@ describe("one face at two anchors: the store reads the face by every subject the
   });
 });
 
+// A REALM WORKBENCH'S BAG (cabal-realm#/the-workbench): any face the realm seats saves into it through its own session, and a
+// value opens whichever seated writer signed it (the holder read that writer's standing under the roster).
+describe("a realm workbench's bag: every seated face saves, and the store opens any writer the holder verified", () => {
+  it("RW1 — a session of a seated face saves into the owner's bag and reads back under the owner; an unseated face's session refuses", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const owner = faceProofSubjectRef(a.chain.scope);
+    const seated = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
+    const stranger = faceProofSubjectRef((await chain("c", "nexus-test-one")).scope);
+    const storeAs = (subject: string, writer: string, realm?: { keeps(bagId: string): boolean; wears(bagId: string, subject: string): boolean }): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: owner }),
+      sessionFace: () => owner,
+      sessionOf: () => ({ id: `session-of-${subject.slice(-8)}`, subject }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer }; },
+      ...(realm ? { realm } : {}),
+    });
+    const realm = { keeps: (bagId: string) => bagId === BAG, wears: (bagId: string, subject: string) => bagId === BAG && subject === seated };
+    const key = ["doc-realm", "incremental", "c1"];
+    await storeAs(seated, seated, realm).save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    const loaded = await storeAs(owner, seated, realm).load(key);
+    expect(loaded, "the owner reads the seated writer's change: no writer-face-foreign").toBeInstanceOf(Uint8Array);
+    expect(A.load<{ note?: string }>(loaded!).note).toBe(SECRET);
+    // CONTROL: a face the realm does not seat saves nothing into the bag, and with no realm the old law holds.
+    await expect(storeAs(stranger, stranger, realm).save(["doc-realm", "incremental", "c2"], A.save(A.change(A.init<{ n?: number }>(), (d) => { d.n = 1; })))).rejects.toThrow(/session-face-foreign/);
+    expect(await refusalOf(() => storeAs(owner, seated).load(key)), "no realm: one bag, one face").toBe("writer-face-foreign");
+  });
+});
+
 // THE PORT TAKES THE BAG'S FACE (`wornAt(face, subject)`): the worn subject names the worn face alone. A bag of another
 // face never passes the writer check through the worn subject, whichever anchor sealed the value.
 describe("wornAtOf: the worn subject passes the worn face's bags alone", () => {

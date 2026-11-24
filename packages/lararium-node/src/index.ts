@@ -188,7 +188,7 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
-export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./floor-shadow-file.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile, readFloorShadowFileTold, type FloorShadowRead } from "./floor-shadow-file.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc, quarantineHolds, quarantineHoldOf, readQuarantineManifests, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT } from "./doc-load-probe.js";
 export type { QuarantineHold, QuarantineRelease, QuarantineReleaseAct } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
@@ -200,7 +200,7 @@ export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, So
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, tapInboundDocs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
-export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
+export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, fallenHolder, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
 export type { RestingFall, FallAnswer, FallPorts, FallKeeper, FallKeeperPorts, ProbeDoors } from "./engine-fall.js";
 export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
 export { createEngineMeter, findEngineMemories, processWasmOf, readProcessWasm, ENGINE_WASM_CEILING_BYTES, WASM_PAGE_BYTES, ENGINE_METER_MARKS, ENGINE_METER_TICK_MS } from "./engine-meter.js";
@@ -222,7 +222,7 @@ export { PoolTreeRefused, poolGit, POOL_PRE_COMMIT, poolPreCommit, IN_IMAGE_CLI,
   healPoolTrees, liftNestedTrees, commitRealmMove, retagRealmAuthor, type LiftedTree, type PoolInitResult, type PoolOwner, type PoolTreeEnsured } from "./pool-tree.js";
 // HEAD's words for a file with no synced base (face-pools A5): both gates read the pool's last sitting as the base a re-found cleared.
 export { checkoutTracking, type CarrierTracking, type UntrackedReading } from "./checkout-carriers.js";
-export { walledGit, poolPlaceOf, blobAt, poolHeadOf, poolHeads, facePoolHeads, type PoolPlace, type PoolHead, type BaseFromGit } from "./pool-head.js";
+export { walledGit, poolPlaceOf, blobAt, poolHeadOf, poolHeads, facePoolHeads, basePoolText, POOL_BASE_DEPTH, type PoolPlace, type PoolHead, type BaseFromGit, type PoolBase } from "./pool-head.js";
 // The disk→records gesture's pure machinery behind one submit port (tideline-surface #/seam point 1): the CLI fills it with the
 // verb socket, the vessel with its daemon island's INGEST, so the watch over the worn face's pool lands an edit by itself.
 export {
@@ -593,3 +593,7 @@ export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-fr
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
+export { COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, decideCollapse, isCollapseRule, memeSealer, noLineMerge, rulesFor, type CollapseConfig, type CollapseRule, type CollapseToward, type CollapseVerdict } from "./standoff-collapse.js";
+export { StandoffKeeper, keeperWikiOf, standoffActions, standoffAlertWords, standoffDraftTitle, STANDOFF_FIELD, STANDOFF_KEPT_FIELD, STANDOFF_LOADED_FIELD, standoffLoadedDigest, type KeeperOutcome, type StandoffAlert } from "./standoff-drafts.js";
+
+export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";

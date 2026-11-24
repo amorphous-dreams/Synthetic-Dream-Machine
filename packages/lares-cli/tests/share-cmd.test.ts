@@ -18,19 +18,43 @@ import { LocalWaitExpired, type ReceiptAnswer } from "../src/local-connector.js"
 
 const FACES: ShareFace[] = [{ handleIndex: 0, petname: "joshua-fontany" }, { handleIndex: 1, petname: "joshua-fontany-engineer" }, { handleIndex: 2, petname: "the referee" }];
 
-function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<string, unknown> } = {}) {
+function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<string, unknown>; seat?: boolean; refuseSet?: boolean } = {}) {
   let file: string | null = opts.file ?? null;
   const verbs: Array<{ name: string; args: Record<string, unknown> }> = [];
   const out: string[] = [], err: string[] = [];
   const doors: ShareDoors = {
     faces: async () => FACES,
     file: { read: () => file, write: (t) => { file = t; } },
-    verb: async (name, args) => { verbs.push({ name, args }); return opts.vessel === false ? null : (name === "share-apply" ? opts.applied ?? { granted: 1, pending: 1, waiting: [] } : { ok: true }); },
+    verb: async (name, args) => { verbs.push({ name, args }); if (opts.refuseSet === true && name === "share-set") throw new Error("share-needs-hand: refused"); return opts.vessel === false ? null : (name === "share-apply" ? opts.applied ?? { granted: 1, pending: 1, waiting: [] } : { ok: true }); },
     out: (l) => out.push(l), err: (l) => err.push(l),
+    seat: () => opts.seat === true,
   };
   return { doors, verbs, out, err, file: () => file };
 }
 const args = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}) => ({ command: "bag", positional, options, flags });
+
+describe("the share door keeps the file with the door", () => {
+  test("W1 — a refusing share-set leaves the file bytes as they were", async () => {
+    const seeded = fake();
+    await cmdShare("bag", seeded.doors)(args(["notes"], { read: "h1" }));
+    const before = seeded.file();
+    const f = fake({ file: before, refuseSet: true });
+    await expect(cmdShare("bag", f.doors)(args(["notes"], { read: "h2", write: "h2" }))).rejects.toThrow(/share-needs-hand/);
+    expect(f.file(), "the refusal wrote nothing").toBe(before);
+  });
+
+  test("W1 — a seat-marked run writes nothing, asks the vessel nothing, and names the terminal cure", async () => {
+    const f = fake({ seat: true });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], { read: "h1" }))).toBe(1);
+    expect(f.file()).toBeNull();
+    expect(f.verbs).toEqual([]);
+    expect(f.err.join("\n")).toMatch(/share-needs-hand: .*terminal outside any agent harness/);
+    const g = fake({ seat: true, file: null });
+    expect(await cmdShare("bag", g.doors)(args(["notes"], {}, { remove: true }))).toBe(1);
+    expect(g.verbs).toEqual([]);
+    expect(await cmdShare("bag", g.doors)(args([], {}, { list: true })), "a read stays open to a seat").toBe(0);
+  });
+});
 
 describe("the share door", () => {
   test("SH1 — a row writes through, then share-set and share-apply ride", async () => {
