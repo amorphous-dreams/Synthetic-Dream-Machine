@@ -65,7 +65,7 @@ const RELATION_LINE =
 const PROSE_FIRST_SUBS: ReadonlySet<string> = new Set(["status", "unlock"]);
 
 /** Every verb the vault door answers. */
-export const VAULT_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "reseat", "rehive"] as const;
+export const VAULT_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "reseat", "rehive", "recard"] as const;
 
 export async function cmdVault(given: ParsedArgs): Promise<number> {
   const sub = given.positional[0];

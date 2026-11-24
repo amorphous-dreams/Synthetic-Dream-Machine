@@ -414,7 +414,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (recard) {
         // THE RECARD LANDS ONLY WITH ITS ARCHIVE: a stale stand's card and its fresh Documents live in this Archive alone.
         if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
-          throw new FaceRecardRefused("archive-unrested", `face ${handle}'s Archive did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard's arm is spent. Unlock the vessel's custody so its Archive rows take writes (\`lares vault unlock\`), then \`${recardCommand(face.handleIndex)}\` again`);
+          throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Unlock the vessel's custody so its Archive rows take writes (\`lares vault unlock\`), then \`${recardCommand(face.handleIndex)}\` again`);
         }
         console.warn(recardLine(handle, recard));
       }
@@ -2556,8 +2556,8 @@ async function namingThePrekey(face: string, register: () => Promise<void>, hand
 }
 
 /**
- * What a recard says once its Archive rests: the face keeps its identity, and each bag whose Document it could not hold took a
- * fresh one, the content sealed under the old one unreadable to this face. Bag URIs and the handle only; never a key.
+ * What a recard says once its Archive rests: the face keeps its identity, and each bag whose Document it could not hold gains a
+ * fresh one; content sealed under the earlier Document stays unreadable to this face. Bag URIs and the handle only; never a key.
  */
 export function recardLine(handle: string, recard: BootDaemonKeyhiveRecard): string {
   if (!recard.stale) return `[daemon] face ${handle} recard: its stand held a live prekey secret, so it lit as it would and nothing was reminted`;

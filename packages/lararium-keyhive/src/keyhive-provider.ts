@@ -160,7 +160,7 @@ export class PrekeySecretAbsent extends Error {
 export class SealedUnderLostDocument extends Error {
   override readonly name = "SealedUnderLostDocument";
   constructor(readonly bag: string, cause?: unknown) {
-    super(`content of ${bag} sealed under the Document this recard replaced stays unreadable to this face (Key not found): that Document's Archive was never kept; the stand that holds it shares it anew (\`lares bag share <bag> --read <this face>\` there)`, { cause });
+    super(`content of ${bag} sealed under the Document this recard replaced stays unreadable to this face (Key not found): the stand that holds that Document's Archive never kept it; it shares it anew (\`lares bag share <bag> --read <this face>\` there)`, { cause });
   }
 }
 
@@ -174,7 +174,7 @@ export class SealedUnderLostDocument extends Error {
 export class ContentKeyNotHeld extends Error {
   override readonly name = "ContentKeyNotHeld";
   constructor(readonly bag: string, cause?: unknown) {
-    super(`content of ${bag} is unreadable to this face for now (Key not found): its key may still arrive by sync (\`lares vessel roster\` reads who was last heard), or its prekey secret was lost, and then the stand that holds it shares it anew (\`lares bag share <bag> --read <this face>\` there)`, { cause });
+    super(`this face cannot read content of ${bag} for now (Key not found): its key may still arrive by sync (\`lares vessel roster\` reads who spoke last), or its prekey secret went missing, and then the stand that holds it shares it anew (\`lares bag share <bag> --read <this face>\` there)`, { cause });
   }
 }
 

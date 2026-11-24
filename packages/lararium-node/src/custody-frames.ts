@@ -686,7 +686,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "recard", status: "error", errorMessage, refusal: { reason, ...extra } };
     };
     const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
-    if ("refusal" in hand) return refuse(hand.refusal, "a recard is a person's own act at their terminal: a detected AI seat refuses, and the vessel's own route is the gate; nothing moved");
+    if ("refusal" in hand) return refuse(hand.refusal, "a recard asks a person at their terminal: a detected AI seat refuses, and the vessel's own route gates it; nothing moved");
     if (!deps.armRecard || !deps.refusedLights || !deps.replayLend) return refuse("recard-unavailable", "this vessel's custody door recards no face; nothing moved");
     if (deps.pulama) return refuse("recard-under-pulama", `this vessel's custody rests with its pūlama, which lights faces on its own hand; nothing moved. Read the face there: tools/lares-container.sh pulama status`);
     if (!holder.isUnlocked()) return refuse("custody-locked", `${new CustodyLocked().message}: unlock it (\`lares vault unlock\`), then \`lares vault recard --face ${face}\`; nothing moved`);
@@ -695,11 +695,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // THE NO-OP GUARD: only a face whose last light here refused for want of a prekey secret recards.
     const dark = deps.refusedLights().find((r) => r.ordinal === face);
     if (!at.unlocked) return refuse("face-shut", `face h${face} stands shut: open it (\`lares vault unlock --face ${face}\`); a face whose Archive fell behind its cards refuses its light by name, and the recard follows; nothing moved`);
-    if (dark === undefined) return refuse("face-not-stale", `face h${face}'s last light here did not refuse for want of a prekey secret (it stands lit, or still lighting): there is nothing to recard. Read it with \`lares vault status\`; nothing moved`);
+    if (dark === undefined) return refuse("face-not-stale", `the last light of face h${face} here did not refuse for want of a prekey secret (it stands lit, or still lighting): nothing needs a recard. Read it with \`lares vault status\`; nothing moved`);
     if (!STALE_LIGHT.test(dark.cause)) return refuse("face-not-stale", `face h${face} stands dark for another cause (${dark.cause}): a recard cures only a face that holds no prekey secret; clear it with \`lares vault unlock\`; nothing moved`);
     const proof = await holder.proves(credentials);
     if (proof.reading !== "proves") {
-      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing moved (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
+      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what the holder presented; nothing moved (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
       if (proof.reading === "attempts-spent") return refuse("attempts-spent", "this vessel's unlock attempts for this boot stand spent; nothing moved. Stand the vessel again (`lares vessel stand`)");
       return refuse(proof.reading, `the vessel's slot tree reads ${proof.reading}; nothing moved. Read it with \`lares vault status\``);
     }
@@ -707,7 +707,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     try { await deps.replayLend(); }
     catch (e) { return refuse("recard-failed", `the lend did not replay (${e instanceof Error ? e.message : String(e)}): the recard stands armed for face h${face}'s next light; \`lares vault unlock\` replays it`); }
     const after = deps.refusedLights().find((r) => r.ordinal === face);
-    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and the recard's arm is spent: ${after.cause}. Clear what that names, then \`lares vault recard --face ${face}\` again (read the face with \`lares vault status\`)`);
+    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and the recard spent its arm: ${after.cause}. Clear what that names, then \`lares vault recard --face ${face}\` again (read the face with \`lares vault status\`)`);
     deps.onLog(`recard h${face}: lit`);
     return { op: "recard", face, recarded: true };
   };
