@@ -23,6 +23,7 @@ import { emit, exitFor, proseFirst } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, countOf, guardDoor, runDoor, wordOf } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { tableCovers } from "../verb-table.js";
 
 /** The daemon wiki: the pin set and the law config live in the worn face's own. */
 const RECIPE = "default";
@@ -194,14 +195,18 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
   return 0;
 }
 
+/** Every verb the law door answers. */
+export const LAW_VERBS = ["list", "pin", "unpin"] as const;
+type LawVerb = (typeof LAW_VERBS)[number];
+
 export async function cmdLaw(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+  const sub = args.positional[0] as LawVerb | undefined;
   switch (sub) {
     case "list":  return guardDoor(args, "law list", () => lawList(args));
     case "pin":   return guardDoor(args, "law pin", () => lawPin(args, "pin"));
     case "unpin": return guardDoor(args, "law unpin", () => lawPin(args, "unpin"));
     default:
-      if (sub) console.error(`lares law: unknown sub-verb "${sub}"`);
+      if (sub) console.error(`lares law: unknown sub-verb "${tableCovers(sub)}"`);
       for (const line of helpLines("law")) console.error(line);
       return 2;
   }

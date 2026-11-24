@@ -1,5 +1,5 @@
 /**
- * floor — `lares floor status|accept`: the node vessel's binding of the ONE floor pin seam (`@lararium/mesh` `floor-pin`).
+ * floor — `lares vessel floor status|accept`: the node vessel's binding of the ONE floor pin seam (`@lararium/mesh` `floor-pin`).
  *
  * The vessel pins the floor (operator ruling 2026-11-11): one pin per (vessel, Nexus), resting in the vessel's control home,
  * moved only by this vessel's own accept along `prior`. The decisions (status, the accept, the remount) live in the mesh;
@@ -20,13 +20,17 @@
  * ratchet (`genesis-truths`). A place in no Nexus charter still answers that part and refuses only the Nexus part, by name
  * (`nexusRefused`); a place whose store holds no island refuses whole, as before.
  *
+ * THE STATUS NAMES THE FLOOR'S DRIFT (`floorDrift`, `@lararium/mesh` floor-drift): each live public-canon carrier the floor this
+ * vessel serves misses or serves with older bytes, counted by carrier. The default recipe reads house canon through that floor
+ * alone, so a carrier laid after the cut answers nowhere there until a release moves the pin; the lay's lag never sees it.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
-  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
-  type FloorPinLike,
+  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorDriftReading, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
+  type FloorDrift, type FloorDriftReading, type FloorPinLike,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
 import { bootDaemonUrl } from "../boot-face-planes.js";
@@ -39,6 +43,7 @@ import { nodeNexusIsland } from "../nexus-standing.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { daemonGenesisDir } from "../lares-config.js";
 import { foundingRecordLine, readFoundingRecordTruths, type FoundingRecordTruths } from "../genesis-truths.js";
+import { nodeCanonDocUrl, nodeCanonRows } from "./canon-rows.js";
 
 /** A floor door refused by name. */
 export class FloorRefused extends Error {
@@ -77,6 +82,9 @@ export interface NodeFloorOptions {
   readonly fetchFn?: typeof fetch;
   /** The genesis dir whose seed reads as the offer; absent, the daemon's own resolution (`daemonGenesisDir`). */
   readonly genesisDir?: string;
+  /** The catalog the held store names (`StoreDoorDeps.catalogUrl`), where the live canon documents the floor drift weighs resolve;
+   *  absent, no live canon reads and the drift answers null. */
+  readonly catalogUrl?: string | undefined;
 }
 
 /** Bind the node's substrate to the floor pin ports. */
@@ -121,13 +129,38 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   };
 }
 
-/** What `lares floor status` answers: the Nexus part where a charter stands, and both truths always. */
+/** What `lares vessel floor status` answers: the Nexus part where a charter stands, and both truths always. */
 export type FloorStatusRead = Partial<FloorStatus> & {
   /** The founding record beside the seed (offered) and the floor pin, ratchet by ratchet, and its one line. */
   readonly genesis: FoundingRecordTruths & { readonly line: string };
   /** The Nexus part's refusal, by name, where this place stands in no charter. */
   readonly nexusRefused?: { readonly refusal: string; readonly message: string };
+  /** How far the floor this vessel serves trails live public canon, by carrier (`readFloorDriftReading`); null where it does not read. */
+  readonly floorDrift: FloorDrift | null;
+  /** Why `floorDrift` reads null, by name; absent where it reads. */
+  readonly floorDriftWhy?: string;
 };
+
+/**
+ * THE FLOOR'S DRIFT behind live public canon: the floor this vessel serves (the pin, else the genesis floor) against each canon
+ * document the catalog names. A read; it writes nothing. Where it does not read, it answers null WITH the reason, by name: no
+ * catalog here, a floor blob this CAS cannot answer, no live canon document, or the fault a read threw. The drift never takes the
+ * status down with it, and never reads as a zero it did not count.
+ */
+async function nodeFloorDrift(opts: NodeFloorOptions, manifestCid: string | null): Promise<FloorDriftReading> {
+  if (manifestCid === null) return { drift: null, why: "this vessel names no floor manifest (no pin and no genesis floor)" };
+  if (!opts.catalogUrl) return { drift: null, why: "no catalog names live canon beside this store, so no live canon reads here" };
+  try {
+    const docUrlOf = await nodeCanonDocUrl(opts.repo, opts.catalogUrl);
+    return await readFloorDriftReading({
+      manifestCid,
+      blob: async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
+      canonRows: (slug) => nodeCanonRows(opts.repo, docUrlOf, slug),
+    });
+  } catch (e) {
+    return { drift: null, why: `the drift read faulted: ${(e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()}` };
+  }
+}
 
 /**
  * The pinned floor's manifest from this vessel's own CAS (an accept stages it there), or null where it does not read, with its
@@ -143,7 +176,7 @@ function pinnedFloorOf(manifestCid: string, casDir: string): FloorPinLike | null
   return { manifestCid, manifest: read.manifest, offering: offering && "offering" in offering ? offering.offering : null };
 }
 
-/** `lares floor status`: both truths for every place, and the Nexus part where a charter stands. */
+/** `lares vessel floor status`: both truths for every place, and the Nexus part where a charter stands. */
 export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatusRead> {
   let status: FloorStatus | null = null;
   let nexusRefused: FloorRefused | null = null;
@@ -160,12 +193,14 @@ export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatu
     ? "none — this vessel stands in no Nexus charter, so the founding record's genesis floor serves"
     : `${status?.pinned.manifest ?? "?"} does not read from this vessel's CAS`;
   const genesis = { ...truths, line: foundingRecordLine(truths, { pinNote }) };
+  const reading = await nodeFloorDrift(opts, status?.pinned.manifest ?? genesisFloorCidOf(island));
+  const drift = { floorDrift: reading.drift, ...(reading.why !== undefined ? { floorDriftWhy: reading.why } : {}) };
   return nexusRefused
-    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message } }
-    : { ...status!, genesis };
+    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, ...drift }
+    : { ...status!, genesis, ...drift };
 }
 
-/** `lares floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */
+/** `lares vessel floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */
 export async function runFloorAccept(opts: NodeFloorOptions & { readonly target?: string }): Promise<FloorAcceptOutcome & { readonly alerted: readonly string[] }> {
   const ports = await nodeFloorPorts(opts);
   const out = await acceptFloorRelease(ports, opts.target);

@@ -1,10 +1,10 @@
 /**
  * `lares hooks <pause|resume|status>` — the hook-lever on its own.
  *
- * Pauses / resumes capture hooks (whatever runs the `lares capture/subagents/telemetry`
+ * Pauses / resumes capture hooks (whatever runs the `lares sense capture` and `lares sense telemetry`
  * legs on a session event) by writing / removing a marker file a capture hook checks
  * and steps aside on when present. This lets a migration or a
- * `lares palace-teardown` run WITHOUT spawn-contention — the discipline made a
+ * `lares sense teardown` run WITHOUT spawn-contention — the discipline made a
  * switch, so the daemon-minting stops at the source instead of playing whack-a-mole
  * with the spawned children.
  *
@@ -13,8 +13,10 @@
  */
 
 import { hookPauseState, pauseHooks, resumeHooks, hookPauseMarkerPath } from "../hook-pause.js";
-import { emit } from "../render.js";
+import { emit, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { tableCovers } from "../verb-table.js";
 
 function cmdPause(args: ParsedArgs): number {
   const reason = args.options["reason"] ?? "manual";
@@ -72,18 +74,22 @@ function printHelp(): void {
   console.log(`\nMarker file: ${hookPauseMarkerPath()}`);
 }
 
+/** Every verb the hooks door answers. */
+export const HOOKS_VERBS = ["help", "pause", "resume", "status"] as const;
+
 export async function cmdHooks(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
   if (!verb || verb === "help") { printHelp(); return verb ? 0 : 2; }
   const inner: ParsedArgs = {
     command: "hooks", positional: args.positional.slice(1), options: args.options, flags: args.flags,
   };
-  switch (verb) {
+  const v = verb as (typeof HOOKS_VERBS)[number];
+  switch (v) {
+    case "help":   printHelp(); return 0;
     case "pause":  return cmdPause(inner);
     case "resume": return cmdResume(inner);
     case "status": return cmdStatus(inner);
     default:
-      console.error(`lares hooks: unknown verb "${verb}". Run \`lares hooks help\` for the list.`);
-      return 2;
+      return refuseUsage(args, "hooks", helpLines("hooks"), `unknown verb "${tableCovers(v)}"`);
   }
 }

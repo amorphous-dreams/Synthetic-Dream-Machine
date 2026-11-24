@@ -66,7 +66,7 @@ test("PC1 RED — the card reaches the ceremony alone, says what it serves, and 
   expect(c.toPage.every((m) => !("card" in m))).toBe(true);
 });
 
-test("PC2 RED — a mis-typed card asks again by its fault; three misses refuse and nothing writes; CONTROL: spacing and case never matter", async () => {
+test("PC2 RED — a mis-typed card asks again by its fault; five misses refuse and nothing writes, four never do; the words climb from the third miss; CONTROL: spacing and case never matter", async () => {
   const typo = CODE.slice(0, -1) + (CODE.endsWith("0") ? "1" : "0");
   const c = ceremony([typo, CODE.slice(0, 20), CODE.toUpperCase().replace(/-/g, " ")]);
   await readBackOf(c.door);
@@ -74,11 +74,19 @@ test("PC2 RED — a mis-typed card asks again by its fault; three misses refuse 
   expect(c.asks[1]!.words).toMatch(/checksum/);
   expect(c.asks[2]!.words).toMatch(/characters/);
 
-  const miss = ceremony([typo, typo, typo]);
+  const miss = ceremony([typo, typo, typo, typo, typo]);
   const refused = await readBackOf(miss.door).catch((e: unknown) => e);
   expect(refused).toBeInstanceOf(PlaceCardRefused);
   expect((refused as PlaceCardRefused).message).toMatch(/nothing was written/);
-  expect(miss.asks).toHaveLength(3);
+  expect((refused as PlaceCardRefused).message).toMatch(/SPENT/);
+  expect(miss.asks).toHaveLength(5);
+  expect(miss.asks[2]!.words).not.toMatch(/CAREFUL|LAST TRY/);
+  expect(miss.asks[3]!.words).toMatch(/CAREFUL/);
+  expect(miss.asks[4]!.words).toMatch(/LAST TRY/);
+
+  const late = ceremony([typo, typo, typo, typo, CODE]);
+  await readBackOf(late.door);
+  expect(late.asks).toHaveLength(5);
 });
 
 test("PC3 — a declined card refuses by name", async () => {

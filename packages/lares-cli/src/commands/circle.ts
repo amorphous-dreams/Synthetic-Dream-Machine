@@ -39,6 +39,7 @@ import { vesselDid } from "../env.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { tableCovers } from "../verb-table.js";
 
 class UsageError extends Error {}
 
@@ -64,17 +65,21 @@ function readCardFile(path: string): HandleCard {
   catch { throw new UsageError(`--card file "${path}" is not valid JSON`); }
 }
 
+/** Every verb the circle door answers. */
+export const CIRCLE_VERBS = ["add", "card", "remove", "list"] as const;
+
 export async function cmdCircle(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (!sub) { usage(args); return 2; }
   try {
-    switch (sub) {
+    const v = sub as (typeof CIRCLE_VERBS)[number];
+    switch (v) {
       case "add":    return await circleAdd(args);
       case "card":   return await circleCard(args);
       case "remove": return await circleRemove(args);
       case "list":   return await circleList(args);
       default:
-        console.error(`lares circle: unknown sub-verb "${sub}"`);
+        console.error(`lares circle: unknown sub-verb "${tableCovers(v)}"`);
         return usage(args, sub);
     }
   } catch (err) {

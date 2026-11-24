@@ -506,7 +506,7 @@ export function wikisFileToUri(instanceRoot: string, filePath: string): string |
  * no import restores and no adoption copies. Paths read posix, relative to the mirror's holding folder (the wave's source):
  *
  *   - `topDirs`: a workspace's own tooling at the top (`.git`, `.vscode`), the shore's render of a stand-off (`.shore`, for
- *     `lares shore diff`), and the `temp` layer, which mirrors its own bag beside a working folder;
+ *     `lares shore`), and the `temp` layer, which mirrors its own bag beside a working folder;
  *   - `dirSuffixes`: an orphan slot's folder (`<root-stem>.orphans/`): the projector writes it beside its root, and the
  *     family's root carries those slots home;
  *   - `tempFile`: the atomic writer's temp (`fs-atomic.ts`: `<path>.<pid>.<uuid>.tmp`, or `<path>.<pid>.tmp` for a sync write);

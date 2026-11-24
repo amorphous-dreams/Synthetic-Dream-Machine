@@ -24,7 +24,7 @@ import { canonOfferDocUrl, foundingRoster, materializeSharedLarDoc, retireCanonO
 import { readNexusDoc } from "../nexus-doc.js";
 import { heldSeatSigners, type HeldQuorumSigner } from "../held-quorum.js";
 import { NexusCabalError, cabalCore } from "./nexus-cabal.js";
-import { nodeCanonDocUrl, nodeCanonStore } from "./floor-cut.js";
+import { nodeCanonDocUrl, nodeCanonStore } from "./canon-rows.js";
 
 /** The longest a retire waits for its own replica of canon to contain the heads a promotion answered. It bounds the wait alone. */
 export const OFFER_RETIRE_WAIT_MS = 10_000;

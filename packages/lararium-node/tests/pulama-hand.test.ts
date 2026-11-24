@@ -16,6 +16,7 @@ import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { SESSION_DERIVES, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { UNLOCK_ATTEMPTS_PER_BOOT as BOUND } from "../src/custody-holder.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -54,8 +55,8 @@ describe("only the hand door lights the pūlama", () => {
     const dir = scratch(), records = pulamaRecords(dir);
     const lines: string[] = [];
     const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records, onLog: (l) => lines.push(l) });
-    expect(await door({ op: "status" })).toEqual({ op: "status", lit: false, faces: 0, sessions: 0, attemptsLeft: 3, image: null });
-    expect(await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "no-slot-opens", lit: false, attemptsLeft: 2 });
+    expect(await door({ op: "status" })).toEqual({ op: "status", lit: false, faces: 0, sessions: 0, attemptsLeft: BOUND, image: null });
+    expect(await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "no-slot-opens", lit: false, attemptsLeft: BOUND - 1 });
     expect(await door({ op: "light" })).toEqual({ op: "light", reading: "malformed" });
     const lit = await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] });
     expect(lit).toMatchObject({ op: "light", reading: "opens", faceReadings: ["opens"], lit: true, faces: 1 });

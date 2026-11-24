@@ -180,6 +180,9 @@ async function cmdCosign(args: ParsedArgs): Promise<number> {
   }
 }
 
+/** Every verb the edge door answers. */
+export const EDGE_VERBS = ["settle", "cosign", "kapae", "un-kapae"] as const;
+
 export async function cmdEdge(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
   if (verb === "settle") return cmdSettle(args);

@@ -10,7 +10,8 @@
  * it on an explicit yes, into each wiki's working layer the worn face mounts; a workbench that does not mount is named
  * and left. No prompt ever writes the canon bag. A seat (no terminal, or an AI launcher) names the lag and lays nothing.
  *
- * The vessel half: `lares vessel lay --lag` reads both gaps off disk and the worn face's seats, writing nothing; and
+ * The vessel half: `lares vessel lay --lag` reads both gaps off disk and the worn face's seats, writing nothing, and names the
+ * floor's drift behind live canon beside them (`floorDrift`, its own field: lag keeps its meaning, an unread drift reads null); and
  * `lares vessel lay --workbench` walks the checkout's workbench waves alone (no holdings leg, no face roots, no kahua).
  *
  * Every rite port answers from a FAKE; the vessel half runs over a scratch LAR_ROOT (LAR_BAGS set per test, never globally).
@@ -68,6 +69,10 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     await riteKukulu(f.ports, {});
     const text = f.said.join("\n");
     expect(text).toMatch(/canon lags the canon source by 2 carrier\(s\) \(1 new, 1 changed\) in \/workspace\/bags; canon fills through promote and the floor's sealed cut, never from a raise/);
+    // The lag line names the two commands that fill canon, so the cure sits on the line that names the lag.
+    const lagLine = f.said.find((l) => l.includes("canon lags the canon source"))!;
+    expect(lagLine).toContain("`lares meme offer promote <cid>`");
+    expect(lagLine).toContain("`lares nexus release <manifest-file> --cut`");
     expect(text).toMatch(/the workbenches lag the checkout's \/workspace\/wikis by 3 carrier\(s\): sdm 2, lares 1/);
     expect(text).toMatch(/workbench lares does not mount under the worn face \(the worn face holds no writer's seat there\); nothing of it lays/);
   });
@@ -255,6 +260,50 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
     expect(answer).toMatchObject({ ok: true, data: { checkout: true, lag: 1, benchLag: 1 } });
     const { cmdIngest } = await import("../src/commands/ingest.js");
     expect(cmdIngest).not.toHaveBeenCalled();
+  });
+
+  it("RED: `vessel lay --lag --json` names the floor's drift as its own field, never folded into lag; CONTROL: an unread drift reads null, not zero", async () => {
+    const { cmdLay } = await import("../src/commands/lay.js");
+    corpus(true);
+    const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";
+    const drift = { manifest: "f".repeat(64), count: 1, carriers: [CREST], slugs: [{ slug: "lararium", missing: [CREST], older: [] }], unread: [] };
+    const answer = async (read: () => Promise<unknown>): Promise<{ ok: boolean; data: HouseLag & { floorDrift: unknown } }> => {
+      const written: string[] = [];
+      const write = process.stdout.write;
+      process.stdout.write = ((chunk: unknown) => { written.push(String(chunk)); return true; }) as typeof process.stdout.write;
+      try {
+        expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { lag: true, json: true } } as unknown as ParsedArgs, await doors({ writeSlot: "working", bound: true }), read as never)).toBe(0);
+      } finally { process.stdout.write = write; }
+      return JSON.parse(written.join("").trim().split("\n").at(-1)!) as { ok: boolean; data: HouseLag & { floorDrift: unknown } };
+    };
+    const read = await answer(async () => ({ drift }));
+    expect(read.data).toMatchObject({ lag: 1, floorDrift: drift });
+    expect(read.data).not.toHaveProperty("floorDriftWhy");
+    const unread = await answer(async () => ({ drift: null, why: "no standing vessel answers the floor read" }));
+    expect(unread.data).toMatchObject({ lag: 1, floorDriftWhy: "no standing vessel answers the floor read" });
+    expect(unread.data).toHaveProperty("floorDrift", null);
+    const thrown = await answer(async () => { throw new Error("the socket went"); });
+    expect(thrown.data).toMatchObject({ floorDrift: null, floorDriftWhy: "the floor read faulted: the socket went" });
+  });
+
+  it("RED: the human lag names the floor's drift on its own line, by carrier; CONTROL: an unread drift says so", async () => {
+    const { cmdLay } = await import("../src/commands/lay.js");
+    corpus(true);
+    const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";
+    const human = async (read: () => Promise<unknown>): Promise<string[]> => {
+      const out: string[] = [];
+      const log = console.log;
+      console.log = (...a: unknown[]) => { out.push(a.map(String).join(" ")); };
+      try {
+        expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { lag: true, json: false } } as unknown as ParsedArgs, await doors({ writeSlot: "working", bound: true }), read as never)).toBe(0);
+      } finally { console.log = log; }
+      return out;
+    };
+    const lines = await human(async () => ({ drift: { manifest: "f".repeat(64), count: 1, carriers: [CREST], slugs: [{ slug: "lararium", missing: [CREST], older: [] }], unread: [] } }));
+    expect(lines.some((l) => /^lay: canon lags .* by 1 carrier\(s\)/.test(l))).toBe(true);
+    expect(lines).toContain("floor: the floor this vessel serves trails live canon by 1 carrier(s) · lararium 1 missing, 0 older");
+    expect(lines).toContain(`  missing: ${CREST}`);
+    expect(await human(async () => ({ drift: null, why: "no standing vessel answers the floor read" }))).toContain("floor: drift unread (no standing vessel answers the floor read)");
   });
 
   it("RED: `vessel lay --workbench --apply` lays the checkout's workbench waves alone: no holdings ingest, no face root, no share, no kahua", async () => {

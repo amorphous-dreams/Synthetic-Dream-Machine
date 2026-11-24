@@ -16,7 +16,7 @@
  * declaration added no gate a human has to pass.
  */
 import { describe, test, expect } from "vitest";
-import { projectCommands, COMMAND_NAMES } from "../../src/bin/lares.js";
+import { projectCommands, COMMAND_NAMES, COMMANDS } from "../../src/bin/lares.js";
 
 describe("the table projects onto surfaces it declares", () => {
   test("the CLI surface carries the whole command set — no human lost a verb to this", () => {
@@ -43,8 +43,15 @@ describe("the table projects onto surfaces it declares", () => {
     for (const e of cli) {
       expect(typeof e.summary).toBe("string");
       expect(typeof e.signs).toBe("boolean");   // never undefined — a reader never infers the flag
+      expect(e.verbs === null || typeof e.verbs === "object", e.name).toBe(true);   // a table, or null for a door taking arguments
     }
   });
+});
+
+test("the projection carries each row's own verb table, so a witness outside the CLI reads the doors from here", () => {
+  const byName = new Map(projectCommands("cli").map((e) => [e.name, e.verbs]));
+  for (const c of COMMANDS) if (byName.has(c.name)) expect(byName.get(c.name), c.name).toBe(c.verbs);
+  expect(byName.get("vessel")).toEqual(expect.arrayContaining(["request", "lay"]));
 });
 
 describe("the signing hand stays the human's", () => {

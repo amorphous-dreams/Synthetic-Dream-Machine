@@ -124,7 +124,7 @@ export function isWardRow(row: string): boolean { return WARD_RECORD.test(row); 
 /** A ward act refused by name: no credential and no byte of the root rides the error. */
 export class BrowserWardRefused extends Error {
   override readonly name = "BrowserWardRefused";
-  constructor(readonly reading: string, detail = "the face root opened to no ward act in this browser") { super(`${reading}: ${detail}`); }
+  constructor(readonly reading: string, detail = "the face root opened to no ward act in this browser", readonly attemptsLeft?: number) { super(`${reading}: ${detail}`); }
 }
 
 /** Refuse a ward row at a door of unlocked custody: the root opens only fresh, for one ward act. */
