@@ -60,7 +60,7 @@ import {
   yieldToHost, standoffOf,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
-import type { SessionWorn, VerbContext, VerbReactor, VerbTable } from "./verb-dispatcher.js";
+import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { memeticWikitextDeserializer, QUOTEBLOCKED_FIELD, TORN_FIELD } from "./deserializer.js";
@@ -546,15 +546,25 @@ async function executeRepack(access: BagAccess, bag: string, packPath: string, t
 }
 
 /** Per-ACTION-verb reactor factory. */
-/** Refuse a wave that would settle a stand-off with no hand, naming the command the operator runs. */
-function refuseUnhandedStandoff(action: IngestAction, asker: VerbContext["asker"]): void {
+/** The carriers of a wave held back for a hand: each address and the key its stand-off stands under (`holdStandoffsForHand`). */
+const HELD_FOR_HAND = new WeakMap<IngestAction, ReadonlyMap<string, string>>();
+
+/** Mark each carrier of a wave that stands off at this island's disk shore: the executor answers it `conflict`, landing nothing. */
+function holdStandoffsForHand(action: IngestAction): void {
+  const held = new Map<string, string>();
   for (const carrier of action.carriers) {
     const key = standoffOf(action.toBag, carrier.uri);
-    if (key === null) continue;
-    const line = `lares shore keep-disk ${carrier.uri} --key ${key}`;
-    if (asker === "seat") throw new VerbRefusal("hand-act-only", `hand-act-only: ${carrier.uri} stands off at this island's disk shore (key ${key}), and settling it runs on a person's hand; a seat proposes. Ask the operator to run \`${line}\` (or \`lares shore keep-records ${carrier.uri} --key ${key}\`) on their own terminal.`);
-    throw new VerbRefusal("hand-unattested", `hand-unattested: ${carrier.uri} stands off at this island's disk shore (key ${key}), and this wave's line attests no person to settle it. Run \`${line}\` on a terminal whose processes the host can read.`);
+    if (key !== null) held.set(carrier.uri, key);
   }
+  if (held.size > 0) HELD_FOR_HAND.set(action, held);
+}
+
+/** The row a held carrier answers: a stand-off awaits a person's hand, and the row names the command that settles it. */
+function awaitsHandRow(uri: string, key: string): Record<string, unknown> {
+  return {
+    uri, decision: "conflict", reason: "awaits-hand", grade: "clean",
+    warnings: [`${uri} stands off at this island's disk shore (key ${key}), and settling it runs on a person's hand; nothing landed for it. The operator runs \`lares shore keep-disk ${uri} --key ${key}\` (or \`lares shore keep-records ${uri} --key ${key}\`) at their own terminal.`],
+  };
 }
 
 export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOptions): VerbReactor {
@@ -574,13 +584,10 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the daemon mount owns it.
     let faceStore: LarTiddlerStore | null = null;
     if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget, ctx.worn);
-    // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a wave whose carrier stands off at this island's disk shore
-    // names a base the gate would trust, so it lands only from a person's line; `take-disk` and `keep-disk` ride exactly such a
-    // wave. A wave the vessel settles by itself (unattended, no door read) never adopts over a stand-off: its gate answers
-    // `conflict` on the tree's own base.
-    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab" && !(ctx.asker === undefined && action.unattended === true)) {
-      refuseUnhandedStandoff(action, ctx.asker);
-    }
+    // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a carrier that stands off at this island's disk shore names
+    // a base the gate would trust, so it lands only from a person's line (`take-disk` and `keep-disk` ride exactly such a wave).
+    // From any other asker, and whatever the frame says of itself, THAT carrier answers `conflict` and the rest of the wave lands.
+    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab") holdStandoffsForHand(action);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
@@ -1397,7 +1404,10 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
     }
   };
 
+  const heldForHand = HELD_FOR_HAND.get(action);
   for (const sent of action.carriers) {
+    const awaiting = heldForHand?.get(sent.uri);
+    if (awaiting !== undefined) { results.push(awaitsHandRow(sent.uri, awaiting)); continue; }
     // NO RECORD, NO BASE (face-pools A5): a base the gesture read off the pool's HEAD vouches only for a record the house
     // still holds. Where the records hold nothing under the carrier, it drops, and the carrier weighs as one that holds no
     // base: the file lands as an arrival, and no echo of HEAD pins a base for a record that stands nowhere.
