@@ -13,10 +13,7 @@ import subprocess
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-FRONTS = frozenset({
-    "tools/projection-loom/README.md",
-    "tools/projection-loom/docs/HANDOFF.md",
-})
+FRONTS = frozenset({"tools/projection-loom/README.md"})
 CARRIERS = (
     "bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem",
     "bags/lares/ha.ka.ba/lares/docs/projection-loom/handoff.mem",
@@ -42,7 +39,7 @@ MARKDOWN_LINK = re.compile(r'\]\(([^)]*)\)')
 
 
 def inspect_markdown_set(paths: set[str]) -> list[str]:
-    """Exactly two first-party living Markdown fronts, no recursive ledgers."""
+    """Exactly one first-party living Markdown front, no recursive ledgers."""
     errors: list[str] = []
     for missing in sorted(FRONTS - paths):
         errors.append(f"Living Markdown front missing from Git index: {missing}")
@@ -222,7 +219,7 @@ def main() -> None:
         for error in errors:
             print("Loom o-takiage gate: " + error)
         raise SystemExit(1)
-    print("Loom o-takiage gate: two fronts, one workflow, links and Lares frames verified")
+    print("Loom o-takiage gate: one front, one workflow, links and Lares frames verified")
 
 
 if __name__ == "__main__":

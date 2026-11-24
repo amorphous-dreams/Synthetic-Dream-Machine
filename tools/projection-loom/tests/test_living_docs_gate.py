@@ -33,20 +33,20 @@ def test_living_fronts_refuse_recursive_markdown() -> None:
         "tools/projection-loom/docs/ROADMAP.md"
     })
     assert any("Unexpected tracked" in error for error in errors)
-    errors = gate.inspect_markdown_set({"tools/projection-loom/README.md"})
+    errors = gate.inspect_markdown_set(set())
     assert any("front missing" in error for error in errors)
 
 
 def test_relative_front_links_require_real_living_files(tmp_path: Path) -> None:
     front = tmp_path / "tools" / "projection-loom" / "README.md"
-    target = front.parent / "docs" / "HANDOFF.md"
+    target = front.parent / "docs" / "GUIDE.md"
     target.parent.mkdir(parents=True)
     front.write_text(
-        "[Handoff](docs/HANDOFF.md) [Remote](https://github.com/x/y) "
+        "[Guide](docs/GUIDE.md) [Remote](https://github.com/x/y) "
         "[Local](#section)\n",
         encoding="utf-8",
     )
-    target.write_text("# Handoff\n", encoding="utf-8")
+    target.write_text("# Guide\n", encoding="utf-8")
     assert gate.inspect_markdown_links(front, tmp_path) == []
     target.unlink()
     missing = gate.inspect_markdown_links(front, tmp_path)
