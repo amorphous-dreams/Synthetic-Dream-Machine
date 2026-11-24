@@ -360,7 +360,7 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
   }
   const code = await ports.layWorkbench!();
   if (code === INTERRUPTED) {
-    ports.say(`kūkulu: the workbench lay was interrupted; the house stands, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} picks it up`);
+    ports.say(`kūkulu: something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} picks it up`);
     return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } };
   }
   if (code !== 0) {

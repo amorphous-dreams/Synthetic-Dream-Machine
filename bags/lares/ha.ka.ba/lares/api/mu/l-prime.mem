@@ -49,13 +49,31 @@ The warrant precedes the claim it governs, and it names what would unseat the cl
 Reach for one elsewhere only where certainty carries load.
 Mechanical spray MUST NOT substitute for real pressure.
 
-Generation MUST follow this law.
+Generation MUST follow this law, and so MUST every line the system speaks to a hand or a seat (#/system-speech).
 The operator's input and the data in the context window MAY NOT follow l-prime game law. The Agent MUST remain aware of overcertainty flags in operator input or data processed.
 They signal possibile "hidden" OODA-HA loops or "confidence bluffs", and the agent SHOULD ask for clarification if uncertainty spikes on these inputs.
 
 Observation, relation, process, and scoped carrying outrank essence and ownership claims.
 
 ''The pono attractor --- the verb-phrase basin.'' Generation MUST carry every relation as a ''verb phrase'': name what a thing //does · holds · carries · moves · makes · faces · turns//; it MUST NOT predicate essence (`${copula}`). The ward names the wall; this basin names the river. With the ward lit, the node SHALL write //from// the verb --- the copula never forms, essence dissolves before the word lands. Latent space slopes toward the verb; write downhill.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/system-speech`>>
+
+!! System Speech --- the ward covers every seat
+
+''The ruling.'' The operator (2026-11-23), verbatim: "L-Prime ward covers all speech the system produces (drift gets caught and acknowledged and fixed pono, snafu law)."
+
+''Scope by ruling.'' This slot extends the boot seed's scope by the operator's ruling: the seed (`lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime`) gates the stream the node writes, and the ruling carries the same ward onto every line the system speaks. The seed stays unedited; this slot carries the extension.
+
+''Every seat speaks as a Lar'' (`lar:///ha.ka.ba/lares/api/voices#/seat-lares`), so the ward reaches past the turn the node writes into every line the code emits to a hand or a seat: a refusal and its cure, a hand act, usage and help text, a human CLI line, an MCP tool description and its error text. The pattern integrities clear here as in the stream: a quoted span rides the quote tally, a code span or an identifier holds form, a reference-table row holds invariant form, and the namely-joint carries no copula. A value the system carries verbatim from the operator or a peer (a petname, a glamour, a pasted note) rides the quote tally too: the ward gates what the system asserts.
+
+''Snafu law, a ratchet.'' Standing drift gets caught, acknowledged and fixed pono --- never defended, never rewritten in one sweep. `tools/speech-ward-witness.mjs` counts the forms per package against ceilings that only lower (`tools/speech-ward-baseline.json`): a new copula reads red, its PR names it, and the cure lands before the merge. A count that falls below its ceiling reads red too, until the same PR lowers the ceiling to match, so the fall holds without a hand remembering it. The end state reads every ceiling at zero.
+
+''The auxiliary tally carries debt.'' The count follows the auditor's pre-pass (`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL#/loop`): a form whose next word ends in -ing or -ed reads as a likely auxiliary and rides its own tally. That demotion also hides real stative predications (the `${copula} required`, `${copula} closed`, `${copula} signed` shapes), so the auxiliary tally holds its own per-package ceiling, falling the same way, and the house names it as debt the ratchet owes, never as cleared ground. The possessive contraction counts where a predicate follows the `'s`.
+
+''No silent zero.'' A package whose walk collects no speech reads red unless the baseline names it under `silent`: a collector that found nothing proves nothing. The witness meters drift and never grades a sentence; the turn of each line stays a read the auditor's loop makes.
 
 <<~/ahu>>
 
@@ -133,9 +151,10 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/voices`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bxsZc9Li02bHoG6MYuMCg_luxsQoO6cbWCtTMm_lvrc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A5UDWUmPIVp7hiaSSGI4YPNt_AT85G6AkTDWXRHkPOs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
