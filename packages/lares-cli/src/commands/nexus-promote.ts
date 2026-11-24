@@ -34,9 +34,12 @@ function readApproval(path: string): unknown {
   try { return JSON.parse(readFileSync(path, "utf8")); } catch { throw new PromoteError(`cannot read ${path} as an approval file`); }
 }
 
+/** Every verb `lares nexus approve` answers. */
+export const NEXUS_APPROVE_VERBS = ["open", "sign", "check"] as const;
+
 export async function cmdPromote(args: ParsedArgs): Promise<number> {
   const sub = args.positional[1];
-  if (sub !== "open" && sub !== "sign" && sub !== "check") return refuseUsage(args, "nexus approve", helpLines("nexus approve"), sub ? `unknown verb "${sub}"` : undefined);
+  if (sub === undefined || !(NEXUS_APPROVE_VERBS as readonly string[]).includes(sub)) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), sub ? `unknown verb "${sub}"` : undefined);
   const sealHome = larSealHome();
   const aid = args.options["nexus"];
   const nexus = aid !== undefined ? { aid } : {};

@@ -43,7 +43,7 @@ import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, treeKeyEquals,
   openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
   bindWardSlot, commitWardTree, decodeSlotTree, mintWardKey, openWardCarrier, openWardKey,
-  updateWardCarrier, WardRefused, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
+  updateWardCarrier, WardRefused, ATTEMPT_BUDGET, attemptWarning, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
   type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type WardKey,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
@@ -145,7 +145,7 @@ export type FaceUnlock =
   | { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string }
   | { readonly reading: "already-unlocked"; readonly fcid: string; readonly ordinal: number }
   | { readonly reading: "no-slot-opens"; readonly fcid: string; readonly attemptsLeft: number }
-  | { readonly reading: "attempts-spent"; readonly fcid: string }
+  | { readonly reading: "attempts-spent"; readonly fcid: string; readonly attemptsLeft: 0 }
   | { readonly reading: "face-absent" }
   | { readonly reading: "tree-absent"; readonly fcid: string }
   | { readonly reading: "tree-unreadable"; readonly fcid: string; readonly why: string }
@@ -160,7 +160,8 @@ export type FaceActOpening =
 /** The D row a face's directory keeps to authenticate the floor index entry that routed to it. */
 export interface FaceOwnerRecord { readonly fcid: string; readonly group: string | null }
 
-export const UNLOCK_ATTEMPTS_PER_BOOT = 3;
+/** The vessel's, each face's and each ward's unlock bound per boot: the house's one attempt budget (attempt-budget.ts, @lararium/mesh). */
+export const UNLOCK_ATTEMPTS_PER_BOOT = ATTEMPT_BUDGET;
 
 /** Charge an offering against the attempts `left` (THE UNLOCK BOUND): what reaches the open, what a miss costs, and
  *  whether passphrases past the bound stayed unread. */
@@ -511,13 +512,13 @@ export function makeCustodyHolder(a: {
   };
   /** Open the ward key fresh, charged against the face's own attempts (CHARGE FIRST: a miss or a throw keeps the charge). */
   const openWardFresh = async (fcid: string, tree: SlotTree, credentials: readonly Credential[]): Promise<WardKey> => {
-    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) throw new WardRefused("ward-attempts-spent", "this face's unlock attempts are spent until the vessel restarts");
+    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) throw new WardRefused("ward-attempts-spent", attemptWarning(0, "face", UNLOCK_ATTEMPTS_PER_BOOT), 0);
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
     const opened = await openWardKey(tree, charge.offered, nativeKdf);
     if (opened.reading !== "opens") {
       const left = UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0);
-      throw new WardRefused(charge.short || left <= 0 ? "ward-attempts-spent" : "ward-no-slot-opens", `the route opens no slot of this face's ward (${left} attempt(s) left)`);
+      throw new WardRefused(charge.short || left <= 0 ? "ward-attempts-spent" : "ward-no-slot-opens", `the route opens no slot of this face's ward. ${attemptWarning(left, "face", UNLOCK_ATTEMPTS_PER_BOOT)}`, Math.max(0, left));
     }
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
     wardKeys.add(opened.treeKey);
@@ -597,13 +598,13 @@ export function makeCustodyHolder(a: {
     if (!found) return { reading: "face-absent" };
     const { fcid, ordinal } = found;
     if (faces.has(fcid)) return { reading: "already-unlocked", fcid, ordinal };
-    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid };
+    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid, attemptsLeft: 0 };
     // CHARGE FIRST, against the face's own count: a throw or a miss keeps it; anything else refunds it.
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
     const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
     if (opened.reading === "no-slot-opens") {
-      return charge.short ? { reading: "attempts-spent", fcid } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
+      return charge.short ? { reading: "attempts-spent", fcid, attemptsLeft: 0 } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
     }
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
     if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };

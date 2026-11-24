@@ -73,14 +73,30 @@ describe("a browser ward act", () => {
 });
 
 describe("the browser ward spends attempts (S2 cold read, P3)", () => {
-  test("RED: three wrong passphrases spend the page's ward attempts, and the right one then refuses `ward-attempts-spent`; CONTROL: a fresh keystore's right passphrase signs", async () => {
+  test("RED: five wrong passphrases spend the page's ward attempts, each refusal carrying the tries left and the climbing words, and the right one then refuses `ward-attempts-spent`; CONTROL: a fresh keystore's right passphrase signs", async () => {
     const { idbName, face } = await wardedBrowser();
     const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
-    for (let i = 0; i < 3; i++) await expect(browserWardSign(idbName, 0, `wrong ${i}`, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-no-slot-opens" });
+    const refusals: BrowserWardRefused[] = [];
+    for (let i = 0; i < 5; i++) refusals.push(await browserWardSign(idbName, 0, `wrong ${i}`, new Uint8Array([1]), spawnCore(idbName, seen)).then(() => { throw new Error("signed"); }, (e: BrowserWardRefused) => e));
+    expect(refusals.map((r) => r.reading)).toEqual(Array(5).fill("ward-no-slot-opens"));
+    expect(refusals.map((r) => r.attemptsLeft)).toEqual([4, 3, 2, 1, 0]);
+    expect(refusals[1]!.message).not.toMatch(/CAREFUL|LAST TRY/);
+    expect(refusals[2]!.message).toMatch(/CAREFUL/);
+    expect(refusals[3]!.message).toMatch(/LAST TRY/);
+    expect(refusals[4]!.message).toMatch(/SPENT/);
     await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-attempts-spent" });
     const other = await wardedBrowser();
     expect((await browserWardSign(other.idbName, 0, PASS, new Uint8Array([1]), spawnCore(other.idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
-  });
+  }, 180_000);   // five ward misses and a sign beside two foundings
+});
+
+describe("the browser ward burns on the fifth miss, never the fourth", () => {
+  test("CONTROL: after four wrong passphrases the right one still signs", async () => {
+    const { idbName } = await wardedBrowser();
+    const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
+    for (let i = 0; i < 4; i++) await expect(browserWardSign(idbName, 0, `wrong ${i}`, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-no-slot-opens" });
+    expect((await browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
+  }, 180_000);   // four ward derivations and a sign beside one founding
 });
 
 /** The runtime imports an entry evaluates before its own body (type-only imports erase). */

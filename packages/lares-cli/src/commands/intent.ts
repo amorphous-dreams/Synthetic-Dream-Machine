@@ -4,7 +4,9 @@ import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
 import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 
-const acts = new Set(["issue", "show", "ask", "answer", "claim", "takeover", "release", "cancel", "supersede", "release-root", "delegate", "delegate-revoke", "delegations"]);
+/** Every verb the intent door answers. */
+export const INTENT_VERBS = ["issue", "show", "ask", "answer", "claim", "takeover", "release", "cancel", "supersede", "release-root", "delegate", "delegate-revoke", "delegations"] as const;
+const acts: ReadonlySet<string> = new Set(INTENT_VERBS);
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
   if (args.flags["face"] !== undefined) throw new Error("face-malformed: --face needs a whole persona index");
@@ -15,7 +17,7 @@ function faceOf(args: ParsedArgs): { face?: number } {
 
 export async function cmdIntent(args: ParsedArgs): Promise<number> {
   const [act, target] = args.positional;
-  if (!act || !acts.has(act)) return refuseUsage(args, "intent", helpLines("intent"));
+  if (!act || !acts.has(act)) return refuseUsage(args, "intent", helpLines("intent"), act ? `unknown sub-verb "${act}"` : "name a sub-verb");
   try {
     const face = faceOf(args);
     const root = act === "cancel" || act === "supersede" || act === "release-root" || act === "delegate" || act === "delegate-revoke";

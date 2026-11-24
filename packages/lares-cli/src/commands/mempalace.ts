@@ -183,7 +183,7 @@ function cmdStatus(args: ParsedArgs): number {
 
 /**
  * A proc the drain TERMs: the store-HOLDERS *and* the daemon-MINTING spawner jobs
- * (the `lares capture/subagents/telemetry` legs). Holders alone left
+ * (the `lares sense capture` and `lares sense telemetry` legs). Holders alone left
  * a wedged spawner surviving every drain, dead-ending the teardown into --force.
  * The spawner jobs run watermark-idempotent by design, so a TERM stays re-runnable.
  * (The node vessel — holdsStore:false, mintsDaemons:false — stays untouched.)
@@ -274,7 +274,7 @@ export interface QuiesceResult {
 
 /**
  * The quiesce core (shared by `lares mempalace quiesce`, `lares sense quiesce` AND
- * `lares palace-teardown --drain`): when it manages the hooks, pause them FIRST (stop
+ * `lares sense teardown --drain`): when it manages the hooks, pause them FIRST (stop
  * the minting); drain every warm holder AND wedged spawner job the door OWNS (SIGTERM →
  * poll → bounded SIGKILL), then confirm zero. Un-pauses on a clean quiet unless `hold`
  * (a teardown keeps minting suppressed until it finishes). Idempotent.

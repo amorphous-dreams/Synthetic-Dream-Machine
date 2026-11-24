@@ -114,6 +114,34 @@ describe("browser boot custody asks before secret rows rest", () => {
     expect(await snapshot(idbName)).toEqual(before);
   });
 
+  test("RED: the default stand asks five times, never four, and its words climb from the third miss; the verdict carries no tries left", async () => {
+    const idbName = vessel();
+    await generateOrLoadBrowserVesselIdentity(idbName);
+    await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: "right route" });
+    lockBrowserCustody(idbName);
+    const asks: Array<{ attempt: number; of: number; warning?: string }> = [];
+    const verdict = await standBrowserCustody({ idbName, ask: async (q) => { asks.push(q as never); return { kind: "passphrase", passphrase: "wrong route" }; } });
+    expect(asks.map((q) => q.attempt)).toEqual([1, 2, 3, 4, 5]);
+    expect(asks.every((q) => q.of === 5)).toBe(true);
+    expect(asks[0]!.warning).toBeUndefined();
+    expect(asks[1]!.warning).toContain("4 of 5 tries remain");
+    expect(asks[2]!.warning).not.toMatch(/CAREFUL|LAST TRY/);
+    expect(asks[3]!.warning).toMatch(/^CAREFUL/);
+    expect(asks[4]!.warning).toMatch(/^LAST TRY/);
+    expect(verdict).toMatchObject({ reading: "no-slot-opens", attempts: 5, attemptsLeft: 0 });
+    expect((verdict as { warning?: string }).warning).toMatch(/^SPENT/);
+  });
+
+  test("CONTROL: the right route on the fifth ask still opens", async () => {
+    const idbName = vessel();
+    await generateOrLoadBrowserVesselIdentity(idbName);
+    await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: "right route" });
+    lockBrowserCustody(idbName);
+    let n = 0;
+    const verdict = await standBrowserCustody({ idbName, ask: async () => ({ kind: "passphrase", passphrase: ++n === 5 ? "right route" : "wrong route" }) });
+    expect(verdict.reading).toBe("opens");
+  });
+
   test("declining unlock or first bind writes nothing; clear and held states ask only when required", async () => {
     const locked = vessel();
     await generateOrLoadBrowserVesselIdentity(locked);

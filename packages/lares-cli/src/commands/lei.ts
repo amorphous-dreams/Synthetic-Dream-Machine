@@ -326,6 +326,9 @@ async function perFace(args: ParsedArgs, head: Record<string, unknown>, rows: Re
   return 0;
 }
 
+/** Every verb the lei door answers: the four store rows, the pūlama answer's landing, and the terms read. */
+export const LEI_VERBS: readonly string[] = [...Object.keys(ACTS), "land", "terms"];
+
 export async function cmdLei(args: ParsedArgs): Promise<number> {
   if (args.positional[0] === "terms") return cmdLeiTerms(args);
   let plan: LeiPlan;

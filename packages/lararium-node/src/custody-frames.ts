@@ -49,11 +49,17 @@
  */
 import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } from "./ward-credential.js";
 import type { Socket } from "node:net";
-import type { Credential, DocCensusReading, HeldSaves, SlotSpec } from "@lararium/mesh";
+import { attemptWarning, type Credential, type DocCensusReading, type HeldSaves, type SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
 import { clearDaemonMount, daemonMountOrdinal, daemonMountState, mountedFaceOrdinal, restoreDaemonMount, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";
-import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
+
+/** A face's refusal carries its own tries left and the climbing words (attempt-budget.ts); any other reading carries none. */
+const faceTries = (r: { readonly reading: string; readonly attemptsLeft?: number }): { attemptsLeft?: number; warning?: string } => {
+  const left = r.reading === "no-slot-opens" && typeof r.attemptsLeft === "number" ? r.attemptsLeft : r.reading === "attempts-spent" ? 0 : undefined;
+  return left === undefined ? {} : { attemptsLeft: left, warning: attemptWarning(left, "face", UNLOCK_ATTEMPTS_PER_BOOT) };
+};
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
@@ -326,8 +332,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   const unlock = composing(async (credentials: readonly Credential[], sel: { readonly face?: number; readonly all?: boolean }): Promise<CustodyAnswer> => {
     const u = await holder.unlock(credentials);
     if (u.reading !== "opens" && u.reading !== "already-unlocked") {
-      deps.onLog(`unlock: ${u.reading}${u.reading === "no-slot-opens" ? ` (${u.attemptsLeft} attempt(s) left this boot)` : ""}`);
-      return { op: "unlock", ...u, standing: deps.standing() };
+      // THE COUNT RIDES THE REFUSAL (attempt-budget.ts): a miss carries the tries left, the spent reading carries 0, and both
+      // carry the climbing words, so every surface (the CLI, the MCP door) speaks the same tier.
+      const tries = u.reading === "no-slot-opens" ? u.attemptsLeft : u.reading === "attempts-spent" ? 0 : undefined;
+      deps.onLog(`unlock: ${u.reading}${tries !== undefined ? ` (${tries} of ${UNLOCK_ATTEMPTS_PER_BOOT} tries left this boot)` : ""}`);
+      return { op: "unlock", ...u, ...(tries !== undefined ? { attemptsLeft: tries, warning: attemptWarning(tries, "vessel", UNLOCK_ATTEMPTS_PER_BOOT) } : {}), standing: deps.standing() };
     }
     const freshly = u.reading === "opens";
     const openBefore = new Set(holder.unlockedFaces());
@@ -379,12 +388,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
-      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
+      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading, ...faceTries(r) });
       openedOrdinals = [sel.face];
     } else if (standing.length === 1) {
       mounted = standing[0]!;
       const r = await holder.unlockFace({ ordinal: mounted }, credentials);
-      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: mounted, faceReading: r.reading });
+      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: mounted, faceReading: r.reading, ...faceTries(r) });
       openedOrdinals = [mounted];
     } else if (standing.length > 1) {
       return refuseFaces("face-not-named", { faces: standing });
@@ -609,8 +618,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const proof = await holder.proves(credentials);
     if (proof.reading !== "proves") {
       if (proof.reading === "locked") return refuse("custody-locked", new CustodyLocked().message);
-      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing was cut (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
-      if (proof.reading === "attempts-spent") return refuse("attempts-spent", "this vessel's unlock attempts for this boot stand spent; nothing was cut");
+      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing was cut. ${attemptWarning(proof.attemptsLeft, "vessel", UNLOCK_ATTEMPTS_PER_BOOT)}`, { attemptsLeft: proof.attemptsLeft });
+      if (proof.reading === "attempts-spent") return refuse("attempts-spent", `nothing was cut. ${attemptWarning(0, "vessel", UNLOCK_ATTEMPTS_PER_BOOT)}`, { attemptsLeft: 0 });
       return refuse(proof.reading, `the vessel's slot tree reads ${proof.reading}; nothing was cut`);
     }
     const bundleKey = Uint8Array.from(Buffer.from(keyHex, "hex"));

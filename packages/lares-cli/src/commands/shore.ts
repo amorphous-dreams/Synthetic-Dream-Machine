@@ -75,25 +75,32 @@ export type ShoreAct = (typeof SHORE_ACTS)[number];
 /** The acts a lit sibling's shore answers by its face (`--face N`); the rest read the worn face, or no face at all. */
 const FACE_ACTS: ReadonlySet<ShoreAct> = new Set(["list", "take-records", "restore", "remove"]);
 
+/** The shore door's own account: `lares shore --help` prints it, and a refusal ends with it. */
+export function shoreHelpLines(): string[] {
+  return [
+    "usage: lares shore [list] [--face N]",
+    "       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]",
+    "       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]",
+    "       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]",
+    "       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]",
+    "       lares shore settle  --bag <bagUri|slug> --pending",
+    "       lares shore lift-kahua --count <n>",
+    "       lares shore flush",
+    "  --face N      list or answer a lit sibling's shore (its own projector) without wearing it;",
+    "  list          look at the disk, then name each standoff with its key and each pending removal;",
+    "  take-records  write the records' render over the file of one standoff, named by its key;",
+    "  take-disk     land the file's words in the records for one standoff, named by its key;",
+    "  restore       write a vanished file back from the records;",
+    "  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);",
+    "  settle        resume a settle word that stalled, over the carriers its record names (--pending);",
+    "  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);",
+    "  flush         write what every island holds in memory to its mirrors now: the daemon's with each lit face's, and every resident wiki's;",
+    "  an answer over more than one carrier names the count that stands pending (--count).",
+  ];
+}
+
 function printUsage(): void {
-  console.log("usage: lares shore [list] [--face N]");
-  console.log("       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]");
-  console.log("       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]");
-  console.log("       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
-  console.log("       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
-  console.log("       lares shore settle  --bag <bagUri|slug> --pending");
-  console.log("       lares shore lift-kahua --count <n>");
-  console.log("       lares shore flush");
-  console.log("  --face N      list or answer a lit sibling's shore (its own projector) without wearing it;");
-  console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
-  console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
-  console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
-  console.log("  restore       write a vanished file back from the records;");
-  console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
-  console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
-  console.log("  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);");
-  console.log("  flush         write what every island holds in memory to its mirrors now: the daemon's with each lit face's, and every resident wiki's;");
-  console.log("  an answer over more than one carrier names the count that stands pending (--count).");
+  for (const line of shoreHelpLines()) console.error(line);
 }
 
 /** The args one act sends, or the usage fault that stops it. */
@@ -153,7 +160,7 @@ export type ShoreHandRead = () => HandReading;
  */
 export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = () => readOwnHand({ proveRoute: false })): Promise<number> {
   const act = (args.positional[0] ?? "list") as ShoreAct;
-  if (!(SHORE_ACTS as readonly string[]).includes(act)) { printUsage(); return 2; }
+  if (!(SHORE_ACTS as readonly string[]).includes(act)) { console.error(`lares shore: unknown act "${act}"`); printUsage(); return 2; }
   const shaped = shoreArgs(act, args);
   if ("usage" in shaped) {
     emit(args, { ok: false, error: { code: "usage", message: shaped.usage }, human: () => { console.error(`lares shore: ${shaped.usage}`); printUsage(); } });
