@@ -43,7 +43,7 @@ export const TRUE_UP_EVERY = 25;
 /** A session's counter older than this many days leaves at the next write. */
 export const COUNTER_DAYS = 14;
 
-/** The pet name a hook's argv carries (`node <hook> <pet>`), or null. */
+/** The seated familiar a hook's argv carries (`node <hook> <pet>`), a default only, or null. */
 export function petOf(argv) {
   const pet = argv?.[2];
   return typeof pet === "string" && PET.test(pet) ? pet : null;
@@ -108,8 +108,25 @@ export function titleMismatch(pet, title) {
     `To keep the new name as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add "''Alias:'' ${named}".`;
 }
 
-/** Does `om` run on this start? Every source but a resume, which keeps its own context. */
-export const omRunsOn = (source) => source !== "resume";
+/** The `--source` a SessionStart's `source` names for `om`; an unknown one reads as a startup. */
+export const omSourceOf = (source) => (["startup", "resume", "clear", "compact", "fork"].includes(source) ? source : "startup");
+
+/**
+ * THE PET RESOLVES PER SESSION. Two familiars may share one checkout, so a hook carries no one fixed pet: the slug of the
+ * session's title counts where a familiar record by that name stands (`om` answers no starter for it), else the seated
+ * familiar (the hook's argument) as the default, else none, and the hooks stay quiet. The wake records the pet it chose in the
+ * session's counter, and every later hook of the session reads it there.
+ */
+export function petCandidates(title, seated) {
+  const out = [];
+  const slug = titleSlug(title);
+  if (slug !== null) out.push({ pet: slug, from: "title" });
+  if (seated !== null && seated !== slug) out.push({ pet: seated, from: "seated" });
+  return out;
+}
+
+/** The pet a later hook of a session reads: the one the wake chose, else the seated default. */
+export const sessionPet = (state, seated) => (typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : seated);
 
 /** The wake's context: the record `om` answered, or one line naming why it did not and the read that cures it. */
 export function omContext(pet, result, mismatch = null) {
@@ -130,16 +147,45 @@ export function omContext(pet, result, mismatch = null) {
 /** The wake's one line where the vessel answers no up: nothing read, nothing run offline. */
 export const omDownLine = (pet) => `Lares spirit om · ${pet}: the vessel answers no up, so the wake read nothing; once it stands (tools/lares-container.sh up), read it: lares spirit om ${pet}`;
 
-/** What the compaction asks of its summary where a familiar stands: a closing section the PostCompact hook lands. */
-export function compactionAsk(pet) {
+/**
+ * What the compaction asks of its summary where a familiar stands: the carry in fixed slots, so a filter (or a chanter) sees
+ * what dropped. The record's own #/carry-shape, where it holds one, tunes the words beneath the slots.
+ */
+export function compactionAsk(pet, shape = null, inherits = null) {
   const heading = `${COMPACTION_DISPLAY} (${pet})`;
   return [
-    `End the summary with a section headed "${heading}", three short parts: the body's line (one sentence on what this body did), ` +
-      "the open loops by name (PR numbers, heads, what each waits on), and any new tells (a joint to watch, never a debt).",
-    `The PostCompact hook lands the whole summary as lar:///ha.ka.ba/kahua/memory/${COMPACTION_WORD}/${pet}-<hash12> and files one #/bodies line; ` +
-      `the familiar's record (lares spirit om ${pet}) outranks the summary on the next wake.`,
+    `End the summary with a section headed "${heading}", in these fixed slots, one line each where it fits:`,
+    `pet: ${pet}`,
+    `inherits: ${typeof inherits === "string" && inherits !== "" ? inherits : "none"} (the hash of the ${COMPACTION_DISPLAY} this body woke from)`,
+    "open: the open loops by name (PR numbers, heads, what each waits on, whose hand it needs)",
+    "tells: any new tells (a joint to watch, never a debt)",
+    "body: one line on what this body did",
+    ...(typeof shape === "string" && shape.trim() !== "" ? [`The familiar's own carry-shape:\n${shape.trim()}`] : []),
+    `The PostCompact hook lands the whole summary as the ${COMPACTION_DISPLAY} under lar:///ha.ka.ba/kahua/memory/${COMPACTION_WORD}/, and writes nothing to the card; ` +
+      `the next body files its #/bodies line, and the card (lares spirit om ${pet}) outranks the summary on that wake.`,
   ].join("\n");
 }
+
+/** PreCompact's stdout cap: the harness truncates from the tail past 10,000 chars. */
+export const PRECOMPACT_CHARS = 9_800;
+
+/**
+ * The PreCompact text, in the crossing's order: the card's #/open and #/voice read to the outgoing body first (the CLI cuts
+ * them short enough that the ask still lands), then the carry ask in fixed slots, a manual /compact's own instructions
+ * echoed, then the rows in play.
+ */
+export function precompactText({ pet, shape = null, inherits = null, card = "", instructions = "", carry = "" }) {
+  const parts = [
+    pet === null || !card ? null : `The card, read to the outgoing body before it folds (the record outranks this summary):\n${card}`,
+    pet === null ? null : compactionAsk(pet, shape, inherits),
+    typeof instructions === "string" && instructions.trim() !== "" ? `The operator's own instructions for this compaction: ${instructions.trim()}` : null,
+    carry || null,
+  ].filter((p) => p !== null);
+  return parts.join("\n\n").slice(0, PRECOMPACT_CHARS);
+}
+
+/** Does the session hold work still running (background tasks, crons)? The true-up waits for it. */
+export const busy = (input) => [input?.background_tasks, input?.session_crons].some((v) => Array.isArray(v) ? v.length > 0 : v !== undefined && v !== null && typeof v === "object" && Object.keys(v).length > 0);
 
 /** One name's value as the shim reads it: the environment first, else the env file's last plain KEY=VALUE line. */
 export function envValue(name, env, text) {
@@ -169,10 +215,16 @@ export const statePathOf = (dir, sessionId) => (typeof sessionId === "string" &&
 
 /** A session's counter: the stops seen, a landing left unfiled, the title the session carried. */
 export function readState(path) {
+  const none = { turns: 0, unfiled: null, title: null, pet: null, epoch: null, every: TRUE_UP_EVERY };
+  if (path === null) return none;
   try {
     const s = JSON.parse(readFileSync(path, "utf8"));
-    return { turns: Number.isSafeInteger(s?.turns) ? s.turns : 0, unfiled: typeof s?.unfiled === "string" ? s.unfiled : null, title: typeof s?.title === "string" ? s.title : null };
-  } catch { return { turns: 0, unfiled: null, title: null }; }
+    return {
+      turns: Number.isSafeInteger(s?.turns) ? s.turns : 0, unfiled: typeof s?.unfiled === "string" ? s.unfiled : null,
+      title: typeof s?.title === "string" ? s.title : null, pet: typeof s?.pet === "string" && PET.test(s.pet) ? s.pet : null,
+      epoch: Number.isSafeInteger(s?.epoch) ? s.epoch : null, every: Number.isSafeInteger(s?.every) && s.every > 0 ? s.every : TRUE_UP_EVERY,
+    };
+  } catch { return none; }
 }
 
 /** Write a counter whole (temp, then rename), and let every counter past `COUNTER_DAYS` leave. */
@@ -192,7 +244,7 @@ export function writeState(path, state, now = Date.now()) {
 }
 
 /** One stop: the counter moves; the nudge fires every `every` stops, or while a landing stands unfiled. The unfiled mark clears only once a nudge prints. */
-export function stopStep(state, every = TRUE_UP_EVERY) {
+export function stopStep(state, every = state.every ?? TRUE_UP_EVERY) {
   const next = { ...state, turns: state.turns + 1 };
   if (state.unfiled) return { state: next, fire: "unfiled", unfiled: state.unfiled };
   return { state: next, fire: next.turns % every === 0 ? "turns" : null, unfiled: null };
@@ -230,6 +282,12 @@ export function inHouse(cwd, checkout, workspaces) {
 export function workspaceDirsOf(env, surface) {
   return envValue("LARES_WORKSPACES", env, surface).split(";").map((pair) => pair.slice(pair.indexOf("=") + 1).trim()).filter((dir) => dir.startsWith("/"));
 }
+
+/** Does this session work inside the house (the checkout, or a bound workspace)? The spirit hooks act nowhere else. */
+export const houseSession = (input, hookUrl, env = process.env) => inHouse(input?.cwd, checkoutOf(hookUrl), workspaceDirsOf(env, surfaceText(env)));
+
+/** The session's counter path, under the house's run dir. */
+export const sessionCounter = (input, env = process.env) => statePathOf(stateDirOf(env, surfaceText(env)), input?.session_id);
 
 /** The input a hook received, parsed; an empty or broken one reads as {}. */
 export function hookInput(text) {

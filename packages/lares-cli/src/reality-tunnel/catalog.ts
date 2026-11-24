@@ -296,9 +296,11 @@ function homeItem(
       if (pet !== null && !PET_NAME.test(pet)) return base({ unreachable: `the familiar "${pet}" reads as no pet name (lower-case letters, digits and hyphens); run \`lares home tend --familiar <pet-name> --yes\`` });
       if (s["familiar"] === "required" && pet === null) return base({ absent: "no familiar named in this home; `lares home tend --familiar <pet-name> --yes` seats its hooks" });
       const tail = pet === null ? [] : [pet];
+      // `async` lets an event run on without waiting (the hook bounds itself); `status` names the wait the harness shows.
+      const extra = { ...(s["async"] === true ? { async: true } : {}), ...(typeof s["status"] === "string" ? { statusMessage: s["status"] } : {}) };
       const command = str(s, "runner") === "node"
-        ? { type: "command", command: "node", args: [script, ...tail], timeout }
-        : { type: "command", command: [`bash "${script}"`, ...tail.map((t) => `"${t}"`)].join(" "), timeout };
+        ? { type: "command", command: "node", args: [script, ...tail], timeout, ...extra }
+        : { type: "command", command: [`bash "${script}"`, ...tail.map((t) => `"${t}"`)].join(" "), timeout, ...extra };
       const placing = { ...(typeof s["matcher"] === "string" ? { matcher: s["matcher"] } : {}), ...(s["first"] === true ? { first: true } : {}) };
       return base({ transform: claudeHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), command, placing), foreign: jsonForeign });
     }

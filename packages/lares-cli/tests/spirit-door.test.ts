@@ -37,27 +37,42 @@ const NOW = () => new Date("2026-11-24T12:00:00Z");
 const HAND = () => ({ admit: "hand" }) as never;
 const AI = () => ({ refusal: "hand-act-only" }) as never;
 
-const slots = (over: Record<string, number> = {}) => [
+const ID = "abcdef012345";
+const slots = (over: Record<string, number> = {}, extra: readonly string[] = []) => [
   { slot: "#/entry", bytes: over["#/entry"] ?? 900, first: "entry" },
   { slot: "#/open", bytes: over["#/open"] ?? 400, first: "open" },
   { slot: "#/bodies", bytes: over["#/bodies"] ?? 300, first: "bodies" },
+  ...extra.map((slot) => ({ slot, bytes: over[slot] ?? 100, first: slot })),
 ];
 const framed = (slot: string, body: string) => `<<~ ahu slot=\`${slot}\`>>\n\n${body}\n\n<<~/ahu>>\n`;
 
-/** A stage holding one familiar record; `bodies` and `open` hold these words, every write answers by its verb. */
-function stage(opts: { kind?: "familiar" | "spirit"; slotBytes?: Record<string, number>; bodies?: string; open?: string; patch?: string; put?: string; titles?: string[]; ledgerStands?: boolean } = {}) {
+interface StageOpts {
+  kind?: "familiar" | "spirit" | "both" | "none"; slotBytes?: Record<string, number>; bodies?: string; open?: string; patch?: string; put?: string;
+  titles?: string[]; ledgerStands?: boolean; fields?: Record<string, string>; residue?: Record<string, Record<string, string>>;
+  backlinks?: Record<string, string[]>; slotTexts?: Record<string, string>; rows?: Array<{ title: string; fields: Record<string, string> }>;
+}
+
+/** A stage holding one familiar record (or two, or none); its slots hold these words, its fields these, every write answers by its verb. */
+function stage(opts: StageOpts = {}) {
   const kind = opts.kind ?? "familiar";
-  const texts: Record<string, string> = { "#/bodies": opts.bodies ?? "!! Bodies\n\n* one", "#/open": opts.open ?? "!! Open\n\n* a loop" };
+  const standing = (title: unknown): boolean => kind === "both" ? [URI, `${MEMORY_PREFIX}spirit/lares-alpha`].includes(String(title))
+    : kind === "none" ? false : title === `${MEMORY_PREFIX}${kind}/lares-alpha`;
+  const texts: Record<string, string> = { "#/bodies": opts.bodies ?? "!! Bodies\n\n* one", "#/open": opts.open ?? "!! Open\n\n* a loop", ...(opts.slotTexts ?? {}) };
+  const extra = Object.keys(opts.slotTexts ?? {}).filter((slot) => !["#/entry", "#/open", "#/bodies"].includes(slot));
   h.answer = (verb, args) => {
     if (verb === "tiddler-get" && args["meme"] === true) {
-      if (args["title"] !== `${MEMORY_PREFIX}${kind}/lares-alpha`) return { title: args["title"], tiddler: null };
+      if (!standing(args["title"])) return { title: args["title"], tiddler: null };
       if (typeof args["slot"] === "string") {
-        return { has: "has", meme: { uri: args["title"], slotText: framed(String(args["slot"]), texts[String(args["slot"])] ?? "x"), canonicalHash: `partial:${String(args["slot"])}:${FULL}`, bytes: 1600, slots: slots(opts.slotBytes) } };
+        return { has: "has", meme: { uri: args["title"], slotText: framed(String(args["slot"]), texts[String(args["slot"])] ?? "x"), canonicalHash: `partial:${String(args["slot"])}:${FULL}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
       }
-      return { has: "<<~ has name=`rec`>>\n<<~ has name=`#/open`>>", meme: { uri: args["title"], canonicalHash: `skinny:${FULL}`, bytes: 1600, slots: slots(opts.slotBytes) } };
+      return { has: "<<~ has name=`rec`>>\n<<~ has name=`#/open`>>", meme: { uri: args["title"], canonicalHash: `skinny:${FULL}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
     }
-    if (verb === "tiddler-get") return { tiddler: { fields: { title: args["title"], text: "first words\nmore" }, textHash: "sha256-ab" } };
+    if (verb === "tiddler-get") {
+      if (standing(args["title"])) return { tiddler: { fields: { title: args["title"], "spirit-id": ID, ...(opts.fields ?? {}) } } };
+      return { tiddler: { fields: { title: args["title"], text: "first words\nmore", ...(opts.residue?.[String(args["title"])] ?? {}) }, textHash: "sha256-ab" } };
+    }
     if (verb === "meme-patch") return { decision: opts.patch ?? "ingest", canonicalHash: "sha256:" + "11".repeat(32) };
+    if (verb === "meme-put") return { decision: "ingest", canonicalHash: "sha256:" + "22".repeat(32) };
     if (verb === "tiddler-put") {
       // The tiddler door's own law: an append to a title no record holds refuses unless `create` names it.
       const ledger = String(args["title"]).startsWith(`${MEMORY_PREFIX}state/ashes-`);
@@ -66,11 +81,19 @@ function stage(opts: { kind?: "familiar" | "spirit"; slotBytes?: Record<string, 
       }
       return { decision: opts.put ?? "put" };
     }
-    if (verb === "wiki-filter") return { titles: opts.titles ?? [] };
+    if (verb === "wiki-filter") {
+      const filter = String(args["filter"]);
+      const linked = /^\[\[(.+)\]backlinks\[\]\]$/.exec(filter);
+      if (linked) return { titles: opts.backlinks?.[linked[1]!] ?? [] };
+      if (args["fields"]) return { rows: opts.rows ?? [] };
+      return { titles: opts.titles ?? [] };
+    }
     if (verb === "tiddler-delete") return { decision: "removed" };
     return {};
   };
 }
+const puts = (title: string) => h.calls.filter((c) => c.verb === "tiddler-put" && c.args["title"] === title);
+const LEDGER = `${MEMORY_PREFIX}state/ashes-2026-11`;
 
 const argv = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
   ({ command: "spirit", positional, options, flags: { json: true } } as unknown as ParsedArgs);
@@ -81,7 +104,7 @@ async function run(args: ParsedArgs, seams = {}): Promise<{ exit: number; printe
   const log = vi.spyOn(console, "log").mockImplementation((...p: unknown[]) => { chunks.push(p.join(" ") + "\n"); });
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   try {
-    const exit = await cmdSpirit(args, { now: NOW, hand: HAND, ...seams });
+    const exit = await cmdSpirit(args, { now: NOW, hand: HAND, seat: () => false, ...seams });
     return { exit, printed: JSON.parse(chunks.join("").trim().split("\n").at(-1)!) as Record<string, unknown> };
   } finally { out.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
@@ -125,7 +148,7 @@ describe("the pet name resolves the record", () => {
 
   test("a name no record answers refuses spirit-unknown and names the listing", async () => {
     stage();
-    const r = await run(argv(["om", "nobody"]));
+    const r = await run(argv(["ah", "nobody"], { slot: "#/open", text: "y" }));
     expect(r.exit).toBe(3);
     expect(error(r).code).toBe("spirit-unknown");
     expect(error(r).message).toContain("lares wiki filter");
@@ -148,22 +171,22 @@ describe("om wakes under the cap", () => {
     expect(text).toContain("#516 awaits CI");
     expect(text).toContain("lares spirit ah lares-alpha");
     expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
-    expect(text).toContain(`Latest ${COMPACTION_DISPLAY}: none stands under lares-alpha yet.`);
+    expect(text).toContain(`Latest ${COMPACTION_DISPLAY}: none stands yet; this wake reads the card alone.`);
   });
 
   test("the wake names the latest landing by title and hash, so the body checks what it inherited", async () => {
-    const landing = `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-0123456789ab`;
-    stage({ titles: [landing, `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-two-ba9876543210`] });
+    const landing = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-0123456789ab`;
+    stage({ titles: [landing, `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-two-ba9876543210`], residue: { [landing]: { depth: "2", body: "s-1" } } });
     const r = await run(argv(["om", "lares-alpha"]));
-    expect(h.calls.find((c) => c.verb === "wiki-filter")!.args["filter"]).toBe(`[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-]!sort[landed]]`);
+    expect(h.calls.find((c) => c.verb === "wiki-filter")!.args["filter"]).toBe(`[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-]] [prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-]] +[!sort[landed]]`);
     expect(data(r)["latest"]).toBe(landing);
-    expect(String(data(r)["text"])).toContain(`Latest ${COMPACTION_DISPLAY}: ${landing} (hash 0123456789ab)`);
+    expect(String(data(r)["text"])).toContain(`Latest ${COMPACTION_DISPLAY} (testimony, never mandate): ${landing} (hash 0123456789ab, depth 2, body s-1)`);
   });
 
   test("an #/open past the cap cuts with a pointer to the whole slot", () => {
-    const text = omText({ pet: "p", uri: URI, kind: "familiar", has: "has", base: "", bytes: 0, slots: [] }, "x".repeat(20_000));
+    const text = omText({ pet: "p", uri: URI, has: "has" }, { open: "x".repeat(20_000) });
     expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
-    expect(text).toContain("cut at the 9000-char wake cap");
+    expect(text).toContain("#/open cut at the 9000-char wake cap");
   });
 });
 
@@ -260,15 +283,14 @@ describe("hum measures and folds", () => {
     stage({ bodies: "!! Bodies\n\n* one\n* two" });
     const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
     expect(r.exit).toBe(0);
-    const put = h.calls.find((c) => c.verb === "tiddler-put")!;
-    expect(put.args).toMatchObject({ title: `${MEMORY_PREFIX}state/ashes-2026-11`, create: true });
-    expect(h.calls.filter((c) => c.verb === "tiddler-put")).toHaveLength(1);
+    expect(puts(LEDGER)).toHaveLength(1);
+    expect(puts(LEDGER)[0]!.args).toMatchObject({ create: true });
   });
 
   test("a ledger line carries a record's words redacted under the strict reading", async () => {
     stage({ bodies: `!! Bodies\n\n* token ghp_${"A".repeat(36)}\n* two` });
     await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
-    const append = String(h.calls.find((c) => c.verb === "tiddler-put")!.args["append"]);
+    const append = String(puts(LEDGER)[0]!.args["append"]);
     expect(append).not.toContain("ghp_");
   });
 
@@ -278,10 +300,9 @@ describe("hum measures and folds", () => {
     expect(r.exit).toBe(0);
     const verbs = h.calls.map((c) => c.verb);
     expect(verbs.indexOf("tiddler-put")).toBeLessThan(verbs.indexOf("meme-patch"));
-    const put = h.calls.find((c) => c.verb === "tiddler-put")!;
-    expect(put.args["title"]).toBe(`${MEMORY_PREFIX}state/ashes-2026-11`);
-    expect(String(put.args["append"])).toContain("* one");
-    expect(h.calls.at(-1)!.args["replace"]).toBe("!! Bodies\n\n* two");
+    expect(String(puts(LEDGER)[0]!.args["append"])).toContain("* one");
+    expect(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]).toBe("!! Bodies\n\n* two");
+    expect((puts(URI).at(-1)!.args["fields"] as Record<string, string>)["distilled"]).toBe("2026-11-24T12:00:00.000Z");
   });
 
   test("a blank line refuses as usage and names the listing", async () => {
@@ -293,24 +314,20 @@ describe("hum measures and folds", () => {
 });
 
 describe("the compaction verb and residue land after the strict secret-shape guard", () => {
-  test("a compaction lands at <word>/<pet>-<hash12>, stamped landed, and files one #/bodies line", async () => {
+  test("a carry lands at <word>/<spirit-id>-<hash12> with its lineage, writes nothing to the card, and hands back the #/bodies line", async () => {
     stage();
     const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary\nclosing\n* a loop" }));
     expect(r.exit).toBe(0);
     const title = String(data(r)["title"]);
-    expect(title).toMatch(new RegExp(`^${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-[0-9a-f]{12}$`));
-    expect(h.calls.find((c) => c.verb === "tiddler-put")!.args).toMatchObject({ title, create: true, text: "the summary\nclosing\n* a loop", fields: { landed: "2026-11-24T12:00:00.000Z" } });
-    expect(String(h.calls.at(-1)!.args["replace"])).toContain(`* ''2026-11-24 (${COMPACTION_DISPLAY} ${title.slice(-12)}):'' ${title}`);
-    expect(data(r)["filed"]).toBe(true);
+    expect(title).toMatch(new RegExp(`^${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-[0-9a-f]{12}$`));
+    expect(puts(title)[0]!.args).toMatchObject({ create: true, text: "the summary\nclosing\n* a loop", fields: { landed: "2026-11-24T12:00:00.000Z", "spirit-id": ID, parent: "", depth: "1", "record-base": FULL } });
+    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(puts(URI)).toHaveLength(0);
+    expect(data(r)["filed"]).toBe(false);
+    expect(data(r)["bodiesLine"]).toBe(`* ''2026-11-24 (${COMPACTION_DISPLAY} ${title.slice(-12)}) lares-alpha:'' ${title}`);
+    expect(String(data(r)["unfiled"])).toContain("lares spirit ah lares-alpha --slot '#/bodies' --add");
   });
 
-  test("a compaction the bodies budget refuses lands unfiled and says which fold files it", async () => {
-    stage({ bodies: "w".repeat(1000), slotBytes: { "#/bodies": 1000 } });
-    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "summary" }));
-    expect(r.exit).toBe(0);
-    expect(data(r)["filed"]).toBe(false);
-    expect(String(data(r)["unfiled"])).toContain("spirit-slot-over-budget");
-  });
 
   test("a secret-shaped summary lands nothing", async () => {
     stage();
@@ -336,8 +353,10 @@ describe("the compaction verb and residue land after the strict secret-shape gua
 
 describe("otakiage burns the residue and keeps the card", () => {
   const round = `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-0123456789ab`;
-  const hand = `${MEMORY_PREFIX}spirit/lares-alpha-handback-ba9876543210`;
+  const hand = `${MEMORY_PREFIX}spirit/${ID}-handback-ba9876543210`;
   const other = `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-two-0123456789ab`;
+  const fresh = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-aaaaaaaaaaaa`;
+  const old = { landed: "2026-11-01T00:00:00.000Z" };
 
   test("an AI seat refuses hand-act-only and names the command", async () => {
     stage({ titles: [round] });
@@ -347,20 +366,207 @@ describe("otakiage burns the residue and keeps the card", () => {
     expect(h.calls).toEqual([]);
   });
 
-  test("a hand deletes the pet's residue, then burns a line for each removal to the ash ledger, never the record", async () => {
-    stage({ titles: [round, hand, other] });
+  test("the ash lines land ahead of the deletes, a confirm line after, and the card stays", async () => {
+    stage({ titles: [round, hand, other], fields: { distilled: "2026-11-20T00:00:00.000Z" }, residue: { [round]: old, [hand]: old } });
     const r = await run(argv(["otakiage", "lares-alpha"]));
     expect(data(r)["burned"]).toEqual([round, hand]);
     const deleted = h.calls.filter((c) => c.verb === "tiddler-delete").map((c) => c.args["title"]);
     expect(deleted).toEqual([round, hand]);
     expect(deleted).not.toContain(URI);
-    const verbs = h.calls.map((c) => c.verb);
-    expect(verbs.lastIndexOf("tiddler-delete")).toBeLessThan(verbs.indexOf("tiddler-put"));
-    expect(h.calls.find((c) => c.verb === "tiddler-put")!.args["create"]).toBe(true);
+    const ledger = puts(LEDGER);
+    expect(ledger).toHaveLength(2);
+    expect(String(ledger[0]!.args["append"])).toContain(`burning ${round}`);
+    expect(String(ledger[1]!.args["append"])).toContain("burned 2 of 2");
+    const verbs = h.calls.map((c, i) => `${c.verb}@${i}`);
+    const firstPut = h.calls.indexOf(ledger[0]!);
+    expect(h.calls.findIndex((c) => c.verb === "tiddler-delete")).toBeGreaterThan(firstPut);
+    expect(verbs.length).toBeGreaterThan(0);
   });
 
-  test("the residue filter reaches no sibling pet's rounds", () => {
-    expect(residueOf("lares-alpha", [round, hand, other, URI])).toEqual([round, hand]);
+  test("residue the last distill mark leaves uncovered, or that a link still reaches, stays and names why", async () => {
+    stage({ titles: [round, fresh, hand], fields: { distilled: "2026-11-20T00:00:00.000Z" }, residue: { [round]: old, [fresh]: { landed: "2026-11-23T00:00:00.000Z" }, [hand]: old }, backlinks: { [hand]: [`${MEMORY_PREFIX}state/handoff`] } });
+    const r = await run(argv(["otakiage", "lares-alpha"]));
+    expect(data(r)["burned"]).toEqual([round]);
+    const held = data(r)["held"] as Array<{ title: string; why: string }>;
+    expect(held.map((x) => x.title)).toEqual([fresh, hand]);
+    expect(held[0]!.why).toContain("after the last distill mark");
+    expect(held[1]!.why).toContain("1 link(s) still reach it");
+  });
+
+  test("with no distill mark standing, nothing burns", async () => {
+    stage({ titles: [round], residue: { [round]: old } });
+    const r = await run(argv(["otakiage", "lares-alpha"]));
+    expect(data(r)["burned"]).toEqual([]);
+    expect(h.calls.some((c) => c.verb === "tiddler-delete")).toBe(false);
+  });
+
+  test("the residue filter reaches no sibling key's residue", () => {
+    expect(residueOf(["lares-alpha", ID], [round, hand, other, URI])).toEqual([round, hand]);
+  });
+});
+
+describe("the record resolves once, and a stable id keys its residue", () => {
+  test("familiar/<pet> and spirit/<pet> both standing refuses spirit-ambiguous, naming both", async () => {
+    stage({ kind: "both" });
+    const r = await run(argv(["hum", "lares-alpha"]));
+    expect(error(r).code).toBe("spirit-ambiguous");
+    expect(error(r).message).toContain(`${URI} and ${MEMORY_PREFIX}spirit/lares-alpha`);
+  });
+
+  test("a record with no spirit-id mints one once, from its address and base", async () => {
+    stage({ fields: { "spirit-id": "" } });
+    await run(argv(["om", "lares-alpha"]));
+    const minted = puts(URI).find((c) => (c.args["fields"] as Record<string, string> | undefined)?.["spirit-id"]);
+    expect(String((minted!.args["fields"] as Record<string, string>)["spirit-id"])).toMatch(/^[0-9a-f]{12}$/);
+  });
+
+  test("budgets and the cadence read from the record's own fields", async () => {
+    stage({ fields: { "slot-budget": "2000", "true-up-every": "10" } });
+    const grown = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "z".repeat(1500) }));
+    expect(grown.exit).toBe(0);
+    const woke = await run(argv(["om", "lares-alpha"]));
+    expect(data(woke)["every"]).toBe(10);
+  });
+});
+
+describe("fork the body, fence the card", () => {
+  const LEASE = { lease: "body-a 3 2026-11-24T11:00:00.000Z" };
+  test("om --body from another body raises the epoch; the holding body keeps it", async () => {
+    stage({ fields: LEASE });
+    const other = await run(argv(["om", "lares-alpha"], { body: "body-b" }));
+    expect(data(other)["epoch"]).toBe(4);
+    expect(String((puts(URI).at(-1)!.args["fields"] as Record<string, string>)["lease"])).toMatch(/^body-b 4 /);
+    h.calls.length = 0;
+    const same = await run(argv(["om", "lares-alpha"], { body: "body-a" }));
+    expect(data(same)["epoch"]).toBe(3);
+    expect(puts(URI)).toHaveLength(0);
+  });
+
+  test("an AI seat's write bearing a stale epoch, or none, refuses spirit-lease-stale and names the claim", async () => {
+    stage({ fields: LEASE });
+    for (const options of [{}, { epoch: "2" }]) {
+      const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y", ...options }), { seat: () => true });
+      expect(error(r).code).toBe("spirit-lease-stale");
+      expect(error(r).message).toContain("lares spirit om lares-alpha --body <session id>");
+    }
+    const held = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y", epoch: "3" }), { seat: () => true });
+    expect(held.exit).toBe(0);
+  });
+
+  test("a person's terminal writes the leased card freely", async () => {
+    stage({ fields: LEASE });
+    expect((await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }))).exit).toBe(0);
+  });
+
+  test("inside a compaction's crossing, ah refuses spirit-crossing; a lapsed mark lets it land", async () => {
+    stage({ fields: { crossing: "2026-11-24T11:58:00.000Z" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }));
+    expect(error(r).code).toBe("spirit-crossing");
+    stage({ fields: { crossing: "2026-11-24T11:00:00.000Z" } });
+    expect((await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }))).exit).toBe(0);
+  });
+});
+
+describe("om reads by source and reads the carry as testimony", () => {
+  const carry = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-0123456789ab`;
+  const sibling = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-bbbbbbbbbbbb`;
+  test("a resume reads one line", async () => {
+    stage();
+    const r = await run(argv(["om", "lares-alpha"], { source: "resume" }));
+    expect(String(data(r)["text"])).toMatch(/^Lares spirit om · lares-alpha: this body resumes; the card reads f5f5f5f5f5f5 now, and an earlier wake may read stale/);
+    expect(String(data(r)["text"]).split("\n")).toHaveLength(1);
+  });
+
+  test("a fork wakes framed as a fork, holding the raised epoch", async () => {
+    stage({ fields: { lease: "body-a 1 2026-11-24T11:00:00.000Z" } });
+    const r = await run(argv(["om", "lares-alpha"], { source: "fork", body: "body-b" }));
+    expect(String(data(r)["text"])).toMatch(/^You wake as a fork: another body may still wear lares-alpha\. This wake holds the card's lease at epoch 2/);
+  });
+
+  test("a compaction names the carry it inherits by hash and first words", async () => {
+    stage({ titles: [carry], residue: { [carry]: { text: "the body line of the last carry", depth: "1" } } });
+    const r = await run(argv(["om", "lares-alpha"], { source: "compact" }));
+    expect(String(data(r)["text"])).toContain(`This body inherits ${carry} (hash 0123456789ab): "the body line of the last carry"`);
+  });
+
+  test("a precompact marks the crossing and hands back the record's carry-shape", async () => {
+    stage({ slotTexts: { "#/carry-shape": "!! The carry's shape\n\nkeep what only this body knew" } });
+    const r = await run(argv(["om", "lares-alpha"], { source: "precompact" }));
+    expect(data(r)["carryShape"]).toBe("!! The carry's shape\n\nkeep what only this body knew");
+    expect((puts(URI).at(-1)!.args["fields"] as Record<string, string>)["crossing"]).toBe("2026-11-24T12:00:00.000Z");
+  });
+
+  test("the testimony flags a record moved since the carry read it, a deep chain, and a fork", async () => {
+    stage({ titles: [carry, sibling], residue: { [carry]: { "record-base": "sha256:" + "00".repeat(32), depth: "5", parent: "999999999999" }, [sibling]: { parent: "999999999999" } } });
+    const text = String(data(await run(argv(["om", "lares-alpha"])))["text"]);
+    expect(text).toContain("⚠ the record moved since this");
+    expect(text).toContain("stands 5 deep");
+    expect(text).toContain("2 carries name the parent 999999999999: a fork");
+  });
+
+  test("the titles #/attention names unfold with their descriptions inside the cap", async () => {
+    const t1 = "lar:///ha.ka.ba/lares/api/voices";
+    stage({ slotTexts: { "#/attention": `!! Where attention starts\n\n* ''Canon:'' ${t1} · lar:///ha.ka.ba/lares/docs/pono/spirit-circle.` }, rows: [{ title: t1, fields: { description: "the thirteen voices" } }] });
+    const r = await run(argv(["om", "lares-alpha"]));
+    const filterCall = h.calls.find((c) => c.verb === "wiki-filter" && c.args["fields"]);
+    expect(filterCall!.args["filter"]).toBe(`[[${t1}]] [[lar:///ha.ka.ba/lares/docs/pono/spirit-circle]]`);
+    expect(String(data(r)["text"])).toContain(`${t1} — the thirteen voices`);
+    expect(String(data(r)["text"]).length).toBeLessThanOrEqual(OM_CAP_CHARS);
+  });
+});
+
+describe("a first wake writes its own shrine", () => {
+  test("om with no record answers the starter skeleton and the command that lands it", async () => {
+    stage({ kind: "none" });
+    const r = await run(argv(["om", "lares-awakens"]));
+    expect(r.exit).toBe(0);
+    expect(data(r)["starter"]).toBe(true);
+    const text = String(data(r)["text"]);
+    for (const slot of ["#/entry", "#/orders", "#/grant", "#/attention", "#/open", "#/voice", "#/carry-shape", "#/bodies"]) expect(text).toContain(`slot=\`${slot}\``);
+    expect(text).toContain("lares spirit ah lares-awakens --new --file -");
+  });
+
+  test("ah --new wraps the slot blocks in the house frame, reseals, and lands it once", async () => {
+    stage({ kind: "none" });
+    const withFlag = { command: "spirit", positional: ["ah", "lares-awakens"], options: { text: "<<~ ahu slot=`#/entry`>>\n\n! Lares-Awakens\n\n<<~/ahu>>" }, flags: { json: true, new: true } } as unknown as ParsedArgs;
+    h.calls.length = 0;
+    const landed = await run(withFlag);
+    expect(landed.exit).toBe(0);
+    const put = h.calls.find((c) => c.verb === "meme-put")!;
+    expect(put.args["uri"]).toBe(`${MEMORY_PREFIX}familiar/lares-awakens`);
+    expect(String(put.args["text"])).toMatch(/^<<!DOCTYPE/);
+    expect(String(put.args["text"])).toMatch(/<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]+`>>/);
+  });
+
+  test("ah --new where a record stands refuses spirit-exists and names the slot write", async () => {
+    stage();
+    const r = await run({ command: "spirit", positional: ["ah", "lares-alpha"], options: { text: "x" }, flags: { json: true, new: true } } as unknown as ParsedArgs);
+    expect(error(r).code).toBe("spirit-exists");
+    expect(h.calls.some((c) => c.verb === "meme-put")).toBe(false);
+  });
+});
+
+describe("the carry lands with its lineage", () => {
+  const parent = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-0123456789ab`;
+  test("parent, depth, record-base and body ride the carry, and the bodies line it hands back names pet#body8", async () => {
+    stage({ titles: [parent], residue: { [parent]: { depth: "2" } } });
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary", body: "0123456789abcdef" }));
+    const title = String(data(r)["title"]);
+    expect(puts(title)[0]!.args["fields"]).toMatchObject({ parent: "0123456789ab", depth: "3", body: "0123456789abcdef", "record-base": FULL });
+    expect(String(data(r)["bodiesLine"])).toContain(`lares-alpha#01234567:'' ${title}`);
+  });
+
+  test("a waking body ends the crossing the compaction marked", async () => {
+    stage({ fields: { crossing: "2026-11-24T11:59:00.000Z" } });
+    await run(argv(["om", "lares-alpha"], { source: "compact" }));
+    expect(puts(URI).some((c) => (c.args["unset"] as string[] | undefined)?.includes("crossing"))).toBe(true);
+  });
+
+  test("a handback keyed by session and agent lands once per key", async () => {
+    stage();
+    const a = await run(argv(["residue", "om-wright"], { text: "report", key: "s-1:agent-1" }));
+    const b = await run(argv(["residue", "om-wright"], { text: "report", key: "s-1:agent-2" }));
+    expect(data(a)["title"]).not.toBe(data(b)["title"]);
   });
 });
 
