@@ -93,7 +93,9 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
     emit(args, { ok: false, error: { code, message }, ...(data ? { data } : {}), human: () => console.error(`lares ${verb}: ${message}`) });
     return 1;
   };
-  const send = (yes: boolean): Promise<CustodyDoorAnswer | null> => sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}), ...(yes ? { yes: true as const } : {}) });
+  // `--accept-loss` rides as its own word: the wear turns over saves a refused face holds unsealed. `--yes` never carries it.
+  const acceptLoss = args.flags["accept-loss"] === true;
+  const send = (yes: boolean): Promise<CustodyDoorAnswer | null> => sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}), ...(yes ? { yes: true as const } : {}), ...(acceptLoss ? { acceptLoss: true as const } : {}) });
   let a = await send(args.flags["yes"] === true);
   // THE SHORE'S FLUSH LEFT RECORDS UNWRITTEN: a person at a terminal answers whether to turn anyway; an agent carries --yes.
   if (a !== null && a["status"] === "error" && (a["refusal"] as { reason?: unknown } | undefined)?.reason === "shore-unwritten") {

@@ -1774,6 +1774,21 @@ test(`${name}: unlock-face-tells-the-pulama: under a pūlama, a vault unlock --f
   assert.doesNotMatch(refused.calls, / wear \d+(?: --yes)?$/m);
   assert.equal(refused.worn, "1");
 });
+// THE SHIM'S `--yes` SPEAKS FOR THE SHORE ALONE. A face whose light refused may hold saves no seat has sealed, and the wear
+// that composes again would drop them: the vessel refuses `saves-held` whatever `--yes` says, and only a person's own
+// `--accept-loss` turns. The shim never carries that word, and it names the refusal truly, with the vessel's own lines.
+const SAVES_HELD = "lares wear: wearing h2 composes the vessel again, which would drop them, so nothing moved. face h1 holds 1 save(s) in memory that no seat has sealed (its light refused); recard it at your own terminal, keeping its identity: tools/lares-container.sh pulama recard 1 (the face's own passphrase), then lares vault recard --face 1, and its own seat seals them. Or drop them knowingly: wear again with --accept-loss (`lares wear 2 --accept-loss`)";
+test(`${name}: RED shim-wear-never-drops-held-saves: the rebuild's wear carries --yes and no --accept-loss, and a saves-held refusal reads as itself, naming the held face's cure`, { skip }, async () => {
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}', FAKE_WEAR_OUT: SAVES_HELD, FAKE_WEAR_RC: "1" } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /-T lares node \S+ wear 2 --yes$/m);
+  assert.doesNotMatch(r.calls, /accept-loss/);
+  assert.match(r.stderr, /h2 did not turn: a face whose light refused holds saves no seat has sealed/);
+  assert.match(r.stderr, /lares vault recard --face 1/);
+  assert.match(r.stderr, /wear 2 --accept-loss/);
+  assert.doesNotMatch(r.stderr, /outside the lent set or locked/);
+  assert.doesNotMatch(r.stderr, /the shore's flush left records unwritten/);
+});
 // THE SHIM'S OWN WEARS TURN OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first and refuses
 // `shore-unwritten` where records stay unwritten; the shim's post-unlock wears turn a face that was just opened (no hand
 // edited it), so they carry `--yes`. Should the refusal ever surface, the shim names it truly with the flush's reading,

@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, expect, test, vi } from "vitest";
-import { custodyFrameHandler, doorDarkLine, servedDark } from "../src/custody-frames.js";
+import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, servedDark } from "../src/custody-frames.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
@@ -281,15 +281,27 @@ test("P3 A FACE LOCK OF THAT FACE REFUSES TOO: its key never locks over its own 
   expect(h.open.has("2")).toBe(true);
   expect(await h.send({ op: "lock", face: 1 })).toMatchObject({ op: "lock", locked: true, face: 1 });
 });
-test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cures; the same frame carrying yes turns anyway, the person's own word for the loss", async () => {
+test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cures; `yes` speaks for the shore's flush alone and still refuses; only the frame's own `acceptLoss` turns anyway", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
   const answer = await h.send({ op: "wear", face: 1 });
   expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "saves-held" } });
   expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
-  expect(String(answer["errorMessage"])).toContain("--yes");
+  expect(String(answer["errorMessage"])).toContain("lares wear 1 --accept-loss");
+  expect(String(answer["errorMessage"])).not.toContain("--yes");
+  // THE SHIM'S WORD: `yes` turns over records the shore's flush left unwritten, and never drops a held save.
+  expect(await h.send({ op: "wear", face: 1, yes: true })).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
   expect(h.recompose).not.toHaveBeenCalled();
-  expect(await h.send({ op: "wear", face: 1, yes: true })).toMatchObject({ op: "wear", face: 1 });
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: true })).toMatchObject({ op: "wear", face: 1 });
   expect(h.recompose).toHaveBeenCalledOnce();
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: "yes" }), "the word reads true or stays off the frame").toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
+});
+test("NO HELD SAVE DROPS UNNAMED: a composition that ends over a refused face's held saves names the face and the count; with none held it says nothing", () => {
+  const lines = heldSavesLossLines([...HELD, { ordinal: 3, cause: "x", saves: 0 }]);
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain("h2");
+  expect(lines[0]).toContain("1 save(s)");
+  expect(lines[0]).toContain("drop unwritten");
+  expect(heldSavesLossLines([])).toEqual([]);
 });
 test("P3 THE HELD SAVES STAY ON THE CENSUS WHILE A LOCK HOLDS THE FACE: a held face reads no refused light, and its row still stands, with its count", () => {
   const [row] = servedDark([], [0, 2], true, [], HELD);

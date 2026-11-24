@@ -167,10 +167,10 @@ describe("RED lares wear N", () => {
     expect(landings).toEqual([]);
   });
 
-  it("the command table seats `wear`, accepting `face` and `yes` (turn over records the shore's flush left unwritten) alone", () => {
+  it("the command table seats `wear`, accepting `face`, `yes` (turn over records the shore's flush left unwritten) and `accept-loss` (turn over a refused face's held saves) alone", () => {
     const row = COMMANDS.find((c) => c.name === "wear");
     expect(row).toBeDefined();
-    expect(row!.accepts).toEqual(["face", "yes"]);
+    expect(row!.accepts).toEqual(["face", "yes", "accept-loss"]);
   });
 });
 
@@ -254,6 +254,20 @@ describe("RED a wear flushes every shore before it turns the face (the vessel as
     expect(a.error!.message).toContain("lar:///a.b.c/stuck");
     expect(a.error!.message).toContain("wiki:sdm");
     expect(a.error!.message).toContain("lares wear 1 --yes");
+  });
+
+  it("WS3 `--accept-loss` carries `acceptLoss: true` on the wear frame, its own word; `--yes` never carries it, and a saves-held refusal prints the vessel's words", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
+    expect(await wear("1", "--accept-loss")).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, acceptLoss: true }]);
+    frames.length = 0; out.length = 0;
+    door = (frame) => frame["op"] === "custody" ? custody(true)
+      : { op: "wear", status: "error", errorMessage: "wearing h1 composes the vessel again, which would drop them, so nothing moved. face h2 holds 1 save(s) … Or drop them knowingly: wear again with --accept-loss (`lares wear 1 --accept-loss`)", refusal: { reason: "saves-held" } };
+    expect(await wear("1", "--yes")).toBe(1);
+    expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, yes: true }]);
+    const a = answer();
+    expect(a).toMatchObject({ ok: false, error: { code: "saves-held" } });
+    expect(a.error!.message).toContain("lares wear 1 --accept-loss");
   });
 
   it("WS2 `--yes` carries `yes: true` on the wear frame, and the wear prints the flush's reading beside its line", async () => {

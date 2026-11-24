@@ -261,7 +261,9 @@ NO_FACE_REMEMBERED='no face rests remembered (config/last-worn-face reads empty)
 # THE SHIM'S OWN WEAR TURNS OVER THE SHORE'S FLUSH. A wear that turns the face flushes every shore first, and refuses
 # `shore-unwritten` where records stay unwritten. The shim wears only a face just opened, which no hand has touched since, so it
 # carries `--yes`; the wear's own lines (the flush's reading among them) ride stderr. A refusal reads as itself: a
-# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. $1 = the face; sets SW_WHY on a refusal.
+# `shore-unwritten` that ever surfaces names the flush, never a lend or a lock. `--yes` speaks for the shore alone: where a face
+# whose light refused holds unsealed saves, the vessel refuses `saves-held` all the same, and the shim never carries the
+# `--accept-loss` that would drop them; it names the refusal and leaves that word to a person. $1 = the face; sets SW_WHY on a refusal.
 shim_wear() {
   SW_WHY=""
   # shellcheck disable=SC2046
@@ -269,6 +271,7 @@ shim_wear() {
   [ -z "$sw_out" ] || printf '%s\n' "$sw_out" >&2
   [ "$sw_rc" -eq 0 ] && return 0
   case "$sw_out" in
+    *saves-held*|*"save(s) in memory that no seat has sealed"*) SW_WHY="h$1 did not turn: a face whose light refused holds saves no seat has sealed (the lines above name it and the act that lights it, so its own seat seals them); wear h$1 after that, or drop them knowingly with \`lares-container.sh wear $1 --accept-loss\`" ;;
     *shore-unwritten*|*"the shore's flush left records unwritten"*) SW_WHY="h$1 did not turn: the shore's flush left records unwritten (the lines above name each; they rest in the store); wear it with \`lares-container.sh wear $1 --yes\`, or read them with \`lares-container.sh shore\`" ;;
     *) SW_WHY="h$1 stands outside the lent set or locked; wear another face with \`lares-container.sh wear N\`" ;;
   esac

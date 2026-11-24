@@ -72,7 +72,7 @@ import { makeCustodyHolder } from "./custody-holder.js";
 import { isTestScratchRoot, testScratchNotice } from "./test-scratch-notice.js";
 import { heldPlaneLines } from "./doc-load-probe.js";
 import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
-import { custodyFrameHandler, doorDarkLine, type CustodyDoor } from "./custody-frames.js";
+import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
 import { rehiveShutFace } from "./face-rehive.js";
@@ -526,6 +526,9 @@ async function main(): Promise<void> {
     const prior = composition;
     composition = null;
     // THE LIFE REMEMBERS: a teardown here that left a face unsealed, or threw, keeps this life's goodbye unsent at its exit.
+    // NO HELD SAVE DROPS UNNAMED: the doors refuse first (`heldSavesRefusal`); a composition that ends over them all the same
+    // (a person's `--accept-loss`, a mount's close, a pūlama session's drop) says which face lost how many.
+    if (prior !== null) { try { for (const line of heldSavesLossLines(prior.refusedHolds?.() ?? [])) console.warn(`[sealed-rest] ${line}`); } catch { /* a composition half down reads nothing */ } }
     if (prior !== null) await lifeClosed.noteTeardown(() => prior.teardown());
     const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
     composition = out.stood;
