@@ -774,14 +774,24 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * (a tombstone included) shadows whatever lands beneath it. A title living beneath the working layer
    * never draws a save down: the cascade's layer takes it and shadows the lower record.
    */
-  private _saveBag(title: string): SlotUri | null {
-    const routed = this._destination(title);
+  private _saveBag(title: string, probe = false): SlotUri | null {
+    const routed = this._settle(title, this._routeBag(title), probe);
     if (routed === null) return null;
     const lives = this.lastWriteBag.get(title) ?? this.ledger.landedOf(title)?.bag;
     const working = this.store.defaultWritableBagId();
     if (!lives || !working || !this._holdsRecord(lives, title)) return routed;
     const livesAt = this.store.layerIndexOf(lives);
     return livesAt >= this.store.layerIndexOf(working) && livesAt > this.store.layerIndexOf(routed) ? lives as SlotUri : routed;
+  }
+
+  /**
+   * Where a hand's save of `title` would land, asked as a probe: no alert stands and no console line prints. Null where the
+   * cascade routes the title to no layer this composition mounts (a save of it would refuse). A writer that lands words on
+   * a person's behalf (the stand-off keeper) asks first, and writes only where the save lands in the bag it means.
+   */
+  saveBagOf(title: string): SlotUri | null {
+    try { return this._saveBag(title, true); }
+    catch (err) { if (err instanceof UnroutedSaveRefusal) return null; throw err; }
   }
 
   /**
@@ -898,8 +908,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * discards it; its deletion uses the landed ledger's bag and heads.
    *
    * Nothing here decides: the live value stays the CRDT's merge, and the winner's own draft (every
-   * conflicted field live) is the live record, so it is never copied. A parallel draft never fuses
-   * with the projector's disk-conflict surface. A surfacing ON the draft bag itself persists nothing —
+   * conflicted field live) is the live record, so it is never copied. A disk stand-off's drafts arrive by
+   * another road (the keeper's own wiki writes, `@lararium/node` standoff-drafts). A surfacing ON the draft bag itself persists nothing —
    * a draft of a draft is two edit buffers racing, and copying it would mint drafts of drafts.
    */
   onParallelDrafts(change: ParallelDraftsChange): Promise<void> {

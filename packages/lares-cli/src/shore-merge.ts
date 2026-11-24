@@ -20,21 +20,12 @@
  * this merge through the same door, never around it.
  */
 
-import { blobAt, contentHash, poolPlaceOf, runGit, type GitRun } from "@lararium/node";
-import { digestsEqual } from "@lararium/mesh";
-import { mergeCarrier, type MemeSealer } from "@lararium/mesh/meme-merge";
+import { basePoolText as nodeBasePoolText, memeSealer, POOL_BASE_DEPTH, runGit, type GitRun, type PoolBase } from "@lararium/node";
+import { mergeCarrier } from "@lararium/mesh/meme-merge";
 import { mergeTexts } from "@lararium/mesh/meme-merge-git";
-import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
-import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 
-/** The normalize law's shore for a merged `.mem` body: the frame canonical, then the block check stamped over it (the git driver's sealer). */
-export const memeSealer: MemeSealer = (body) => {
-  const res = normalizeMemeSource(body, { grammar: false });
-  if (res.faults.length > 0) return { ok: false, why: res.faults.map((f) => `${f.code}: ${f.message}`).join("; ") };
-  const sealed = stampCarrier(res.text);
-  const verdict = verifyBcc(sealed);
-  return verdict === "ok" || verdict === "head-unbound" ? { ok: true, text: sealed } : { ok: false, why: `the merged carrier reads ${verdict}; no check can seal it` };
-};
+/** The normalize law's shore for a merged `.mem` body (one sealer, `@lararium/node` standoff-collapse). */
+export { memeSealer, POOL_BASE_DEPTH, type PoolBase };
 
 export interface StandoffSides {
   /** The words of the last agreement. */
@@ -53,27 +44,12 @@ export type StandoffMerge =
   | { readonly resolved: true; readonly text: string }
   | { readonly resolved: false; readonly why: string };
 
-/** How many commits of one path the base read walks back, newest first, looking for the base's bytes. */
-export const POOL_BASE_DEPTH = 64;
-
-export type PoolBase = { readonly text: string; readonly commit: string } | { readonly text: null; readonly why: string };
-
 /**
- * THE BASE'S WORDS FROM THE FILE'S OWN GIT HISTORY: the blob of `file` at the newest commit (within `POOL_BASE_DEPTH`)
- * whose bytes hash to `baseDisk`, the base's disk side the key folded. The git run carries no hook env (`runGit`).
+ * THE BASE'S WORDS FROM THE FILE'S OWN GIT HISTORY (`@lararium/node` `basePoolText`, one read for this door and the
+ * stand-off keeper alike); the git run here carries no hook env (`runGit`).
  */
 export function basePoolText(file: string, baseDisk: string, git: GitRun = runGit): PoolBase {
-  const place = poolPlaceOf(file, git);
-  if ("why" in place) return { text: null, why: place.why };
-  const { top, rel } = place;
-  const revs = git(["rev-list", "-n", String(POOL_BASE_DEPTH), "HEAD", "--", rel], top);
-  const commits = revs.code === 0 ? revs.stdout.split("\n").map((l) => l.trim()).filter(Boolean) : [];
-  if (commits.length === 0) return { text: null, why: `the pool's git holds no commit of ${rel}, so no base's words stand in clear` };
-  for (const commit of commits) {
-    const blob = blobAt(top, commit, rel, git);
-    if (blob !== null && digestsEqual(contentHash(blob), baseDisk)) return { text: blob, commit };
-  }
-  return { text: null, why: `no commit of ${rel} in the pool's git (the newest ${commits.length}) holds the base's bytes` };
+  return nodeBasePoolText(file, baseDisk, git);
 }
 
 /** One three-way merge of a carrier's sides: the merged words, or a conflict that names where both moved. */

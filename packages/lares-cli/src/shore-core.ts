@@ -412,6 +412,22 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
   }
 
+  // THE DRAFTS A CARRIER'S STAND-OFFS LOADED, read at both islands as one list, each naming its island (titles alone).
+  if (op === "drafts") {
+    const drafts: Array<Record<string, unknown>> = [];
+    let draftCount = 0;
+    let requestId: string | undefined;
+    for (const island of SHORE_ISLANDS) {
+      const answer = await ask(island)(shoreArgs);
+      if (!answer.ok) { if (holdsNoShore(answer) || answer.refusal === "no-standoff-keeper" || answer.refusal === "shore-op-unknown") continue; return refusedAt(island, answer); }
+      requestId ??= answer.requestId;
+      const rows = Array.isArray(answer.output["drafts"]) ? (answer.output["drafts"] as Array<Record<string, unknown>>) : [];
+      drafts.push(...rows.map((r) => ({ ...r, island })));
+      draftCount += typeof answer.output["draftCount"] === "number" ? (answer.output["draftCount"] as number) : rows.length;
+    }
+    return { ok: true, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}), output: { ok: true, op, uri: shoreArgs["uri"], drafts, draftCount } };
+  }
+
   // AN ANSWER GOES TO THE ISLAND THAT HOLDS ITS STATE, read from what each island lists right now: a key
   // folds the bag and the states, never the island, and a set of carriers may stand at either. Where the
   // state stands at both islands, or a set splits across them, the answer refuses by name and changes nothing.
@@ -421,7 +437,7 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
   const holders: ShoreIsland[] = [];
   const keysSeen: string[] = [];
   // A KEYED ACT names one standoff: the records' side taken, or the records' side read.
-  const keyed = op === "take-records" || op === "render";
+  const keyed = op === "take-records" || op === "render" || op === "keep-both";
   for (const island of reach) {
     // THE LISTING READS THE SHORE THE ANSWER NAMES: a face's answer lists that face's own projector, never the worn face's.
     const listed = await readShoreList(ask(island), { op: "list", ...(keyed && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}), ...(shoreArgs["face"] !== undefined ? { face: shoreArgs["face"] } : {}) });

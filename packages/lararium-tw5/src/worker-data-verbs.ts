@@ -340,12 +340,14 @@ export async function fileWardRefusal(
     const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
     if (standoff === null || (await control.get(auditTitle)) === null) {
       await control.put(
-        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}) }, meta: { authority: "disk-ward" } },
+        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), ...(typeof args["rule"] === "string" && args["rule"] ? { rule: args["rule"] } : {}) }, meta: { authority: "disk-ward" } },
         { kind: "lares-verb", requestId: `ward-${ts}` },
       );
     }
 
-    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag).
+    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag). A row filed for the record
+    // alone (`auditOnly`: a stand-off the person's own collapse rule settled) raises no alert: nothing awaits anyone.
+    if (args["auditOnly"] === true) return { audited: auditTitle, alerted: "none", bagId, uri };
     if (slug) {
       post(mkDaemonWikiAlert({
         wikiSlug: slug,
