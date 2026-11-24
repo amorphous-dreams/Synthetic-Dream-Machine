@@ -145,7 +145,7 @@ async function mountDraft(repo: Repo, draftUrl: string) {
   const keel = {
     repo,
     catalogHandle: repo.create<LarDoc>(emptyLarDoc()),
-    waitHandle: <T>(url: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback, WINDOW_MS),
+    waitHandle: <T>(url: string, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, WINDOW_MS),
     tempStore: () => new MemoryTiddlerStore(),
   } as never;
   const { draftHandle } = await mountWikiSlot(keel, composite, SLOT, async () => draftUrl, async () => null);
@@ -263,7 +263,7 @@ describe("a sealed bag never mounts a writable fallback under an id its map does
     const assembly = await assembleVessel({
       repo,
       catalogHandle: repo.create<LarDoc>(emptyLarDoc()),
-      waitHandle: <T>(url: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback, WINDOW_MS),
+      waitHandle: <T>(url: string, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, WINDOW_MS),
       systemCanon: async () => ({}),
       loadGenesis: async () => ({
         islandHandle: repo.create<LarDoc>(emptyLarDoc()), coreHash: "fallback-core",

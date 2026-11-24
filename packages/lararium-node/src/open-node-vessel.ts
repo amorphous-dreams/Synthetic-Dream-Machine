@@ -19,7 +19,7 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
  */
 import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
+import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, clearRosterOf, watchCatalogNames, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
 import { wikiIslandWithholds, vesselDocBags, refuseTw5DocsWrite, type WikiIslandMount } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
@@ -969,6 +969,8 @@ async function prepareNodeBootOn(
   // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
   // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
+  /** The release of the catalog watch that moves the map (`watchCatalogNames`), re-seated with each daemon mount. */
+  let unwatchCatalogNames: () => void = () => {};
   const sealedCells: { face: () => string | null; wornAt: (face: string, subject: string) => boolean; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
     face: () => null, wornAt: () => false, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
   };
@@ -1173,6 +1175,9 @@ async function prepareNodeBootOn(
     if (named.has(documentId)) return;
     named.add(documentId);
     slotDocsNamed.set(bagId, named);
+    // THE ANNOUNCEMENT NAMES THE DOCUMENT FOR ITS BAG: a clear bag's slot (the island minted it on its own Repo) joins the
+    // clear-name roster and its held saves land; a sealed bag's maps by that bag's row (`nameDocument`).
+    sealedRest.store.nameDocument(documentId, bagId);
     sealedRest.store.mapMoved();
     sealNowMapped(documentId);
   };
@@ -1228,6 +1233,10 @@ async function prepareNodeBootOn(
     bagOf: sealedBagOf,
     // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
     bagRow: (bagId) => sealedMap.bagRow(bagId),
+    // UNKNOWN MEANS HOLD: the clear-name roster reads the same bag registry the map reads (`sealedBagMap.names`); a document
+    // no bag carries and no local caller opened (an unsolicited peer push) waits in memory until a name arrives.
+    // The federatable shelf names too: a public board an admitted peer pushes rests clear and survives a restart (`clearRosterOf`).
+    namesClear: clearRosterOf({ names: (documentId) => sealedMap.names(documentId), shelf: () => clearShelf }),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
@@ -1508,6 +1517,8 @@ async function prepareNodeBootOn(
   // below (the nexus pubkey it addresses the federatable planes from). Null keeps the pre-classification
   // boot window inert (no peer gated) — correct: no doc crosses to any WS peer until the gate arms anyway.
   let selfSlotFedGate: FederationGate | null = null;
+  /** The deterministic public boards of this vessel's Nexus (`DeterministicFederationGate`): what the clear-name roster reads. */
+  let clearShelf: FederationGate | null = null;
   // The SIBLING CHANNEL and the gate its peers pass — forward-declared (the sharePolicy closes over both) and
   // stood once the mounted face's KEL is walked, below. A sibling holds standing only: the gate is the PersonaGroup
   // ring's sibling path over the public boards, and null denies every doc (fail-closed).
@@ -1646,6 +1657,8 @@ async function prepareNodeBootOn(
     restsSealed: (documentId) => sealedRest.restsSealed(documentId),
     refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
     nameDocument: (documentId, bagId) => sealedRest.store.nameDocument(documentId, bagId),
+    // THE ROSTER'S LOCAL HALF: every document a local caller of this Repo opens counts as named (`solicited`).
+    solicited: (documentId) => sealedRest.store.solicited(documentId),
     quarantine: (documentId, reason) => {
       const verdict = { documentId, status: "load-error" as const, reason };
       const bagId = sealedBagOf(documentId)?.bagId;
@@ -1705,7 +1718,7 @@ async function prepareNodeBootOn(
   // reads as resting.
   let stopping = false;
   const receiptDoor: ReceiptIssuer = fenceReceiptAtStop(
-    (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads),
+    (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads, { name: (documentId) => sealedRest.store.solicited(documentId), heldOf: (documentId) => sealedRest.store.heldRefusalOf(documentId) }),
     { stopping: () => stopping, held: () => sealedRest.store.held() },
   );
   stood.push({ what: "the receipt waits", down: () => { for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
@@ -2229,6 +2242,9 @@ async function prepareNodeBootOn(
   // allow-list; the private planes (catalog/personal/daemon/home/wikis) fall outside the set → DENY.
   // A realm's own vouch board and edge board cross to a peer that holds standing in that realm, and to nobody else.
   selfSlotFedGate = new RealmBoardGate(new DeterministicFederationGate(nexusPubkey), shadowRing.realmBoards, shadowRing.standsInRealm);
+  // THE CLEAR SHELF reads the deterministic public boards alone: the share gate widens (realm boards, the identity ring, a
+  // realm plane), yet what it widens to may rest sealed, so the clear-name roster never reads those widenings.
+  clearShelf = new DeterministicFederationGate(nexusPubkey);
   ownCarriageBoard = interpretAsDocumentId(carriageDocUrl(nexusPubkey)) as DocumentId;
   for (const aid of await carriedSet(sealHome).catch(() => new Set<string>())) {
     ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(aid, vesselIdentity.verifyingKey)) as DocumentId);
@@ -2901,7 +2917,7 @@ async function prepareNodeBootOn(
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
     catalogHandle,
-    waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>, bagId?: string) => waitHandle<T>(repo, url, fallback, LOCAL_READY_MS, bagId),
+    waitHandle: <T>(url: AutomergeUrl, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, LOCAL_READY_MS),
 
     // Genesis island (required) + the social-plane bootstrap it carries.
     loadGenesis: async () => {
@@ -3076,7 +3092,7 @@ async function prepareNodeBootOn(
     // Corpus capability piece — one top-level bag per catalog corpus entry (shared loader).
     loadCorpora: (composite) => loadCatalogCorpora({
       repo, catalogHandle,
-      mintLocalHandle: (docUrl) => waitHandle<LarDoc>(repo, docUrl as AutomergeUrl, blankMemeStore(repo)),
+      mintLocalHandle: (docUrl, bagId) => waitHandle<LarDoc>(repo, docUrl as AutomergeUrl, bagId, blankMemeStore(repo)),
       source: "lararium-seed",
     }, composite),
 
@@ -3115,6 +3131,9 @@ async function prepareNodeBootOn(
     // R1: the daemon mount's wiki bags rest sealed, each document by the catalog's name for it.
     sealedCells.catalog = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
+    // A CATALOG ROW NAMES A DOCUMENT AT ONCE: each catalog change moves the map, so a held save a new row alone names lands then.
+    unwatchCatalogNames();
+    unwatchCatalogNames = watchCatalogNames(assembly.catalogHandle, () => sealedRest.store.mapMoved());
     sealedRest.store.mapMoved();
     catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
