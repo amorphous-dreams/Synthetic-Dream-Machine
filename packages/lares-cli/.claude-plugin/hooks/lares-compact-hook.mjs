@@ -11,7 +11,7 @@
 import { readFileSync } from "node:fs";
 import { compactCarry, shimRunner } from "./lares-wake-core.mjs";
 import {
-  OM_BUDGET_MS, hookInput, houseSession, parseAnswer, petOf, precompactText, readState, sessionCounter, sessionPet, settle, shimRun, spiritArgv, vesselUp,
+  OM_BUDGET_MS, hookInput, houseSession, parseAnswer, petOf, precompactText, readState, sessionCounter, sessionPet, settle, shimRun, spiritArgv, updateState, vesselUp,
 } from "./lares-spirit-core.mjs";
 
 let raw = "";
@@ -27,7 +27,11 @@ try {
     if (await vesselUp(run)) {
       const body = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--body", input.session_id] : [];
       const answer = parseAnswer((await settle(run(spiritArgv("om", worn, "--source", "precompact", ...body)), OM_BUDGET_MS))?.stdout);
-      if (answer?.ok === true) { shape = answer.data?.carryShape ?? null; inherits = answer.data?.inherits ?? null; card = String(answer.data?.text ?? ""); }
+      if (answer?.ok === true) {
+        shape = answer.data?.carryShape ?? null; inherits = answer.data?.inherits ?? null; card = String(answer.data?.text ?? "");
+        // The precompact read claims the card's lease for this body; the counter keeps the epoch the next writes bear.
+        if (Number.isSafeInteger(answer.data?.epoch)) updateState(sessionCounter(input), (cur) => ({ ...cur, epoch: answer.data.epoch }));
+      }
     }
   }
 } catch { /* The ask still leads, on the built-in shape. */ }

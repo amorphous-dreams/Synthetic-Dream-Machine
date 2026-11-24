@@ -4,51 +4,44 @@
  * Code runs an event's matching hooks in parallel; the order names the context's order). It acts only inside the house (the
  * checkout or a bound workspace) and only where the vessel answers up (a shim verb with no vessel would run offline).
  *
- * The pet resolves per session: the session title's slug where a familiar record by that name stands, else the seated
- * familiar (this hook's argument, a default), else none and the hook stays quiet. `om` reads by source (a resume, one line; a
- * fork, framed as a fork; a compaction, the carry it inherits) and claims the card's lease for this session's body; the
- * counter keeps the pet, the epoch, the cadence and the title. A title naming another spirit than the one this body wears
- * leads the context as a rename that never retargets (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum). Any fault exits 0.
+ * A TITLE ONLY PROPOSES. The wake asks once for the pet this session already wears (any source but a startup keeps it), else
+ * the seated familiar (this hook's argument, a default), else the title's slug where neither stands; the door reads the title
+ * beside it (`om --title`) and turns only where the title's record names it as its own, else offers it. `om` reads by source
+ * and claims the card's lease for this session's body; the counter keeps the pet, the epoch, the cadence and the title, merged
+ * under its lock (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum). Any fault exits 0.
  */
 import { readFileSync } from "node:fs";
 import {
-  OM_BUDGET_MS, hookInput, houseSession, omContext, omDownLine, omSourceOf, parseAnswer, petCandidates, petOf, readState, sessionCounter,
-  settle, shimRun, spiritArgv, titleMismatch, vesselUp, writeState,
+  OM_BUDGET_MS, hookInput, houseSession, omContext, omDownLine, omSourceOf, parseAnswer, petOf, readState, sessionCounter,
+  settle, shimRun, spiritArgv, updateState, vesselUp, wakePet,
 } from "./lares-spirit-core.mjs";
 
 let raw = "";
 try { raw = readFileSync(0, "utf8"); } catch { /* An empty input reads as a startup. */ }
 const input = hookInput(raw);
-const seated = petOf(process.argv);
 const say = (context) => process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: context } })}\n`);
 try {
-  const title = typeof input.session_title === "string" ? input.session_title : null;
-  const candidates = petCandidates(title, seated);
-  if (candidates.length > 0 && houseSession(input, import.meta.url)) {
-    const path = sessionCounter(input);
+  const title = typeof input.session_title === "string" && input.session_title.trim() !== "" ? input.session_title : null;
+  const path = sessionCounter(input);
+  const source = omSourceOf(input.source);
+  const pet = wakePet({ source, held: readState(path).pet, seated: petOf(process.argv), title });
+  if (pet !== null && houseSession(input, import.meta.url)) {
     const run = shimRun(import.meta.url);
-    if (!(await vesselUp(run))) say(omDownLine(candidates.at(-1).pet));
+    if (!(await vesselUp(run))) say(omDownLine(pet));
     else {
-      const source = omSourceOf(input.source);
       const body = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--body", input.session_id] : [];
-      let chosen = null;
-      for (const c of candidates) {
-        const result = await settle(run(spiritArgv("om", c.pet, "--source", source, ...body)), OM_BUDGET_MS);
-        const answer = parseAnswer(result?.stdout);
-        // A title names a pet only where its record stands; the seated default wakes even into a starter shrine.
-        if (c.from === "title" && answer?.data?.starter === true) continue;
-        chosen = { ...c, result, answer };
-        break;
+      const result = await settle(run(spiritArgv("om", pet, "--source", source, ...body, ...(title !== null ? ["--title", title] : []))), OM_BUDGET_MS);
+      const answer = parseAnswer(result?.stdout);
+      // Only an answer the door gave whole names the pet this session wears; a timeout or a refusal records nothing.
+      if (answer?.ok === true) {
+        const worn = typeof answer.data?.pet === "string" ? answer.data.pet : pet;
+        updateState(path, (cur) => ({
+          ...cur, pet: worn, ...(title !== null ? { title } : {}),
+          ...(Number.isSafeInteger(answer.data?.epoch) ? { epoch: answer.data.epoch } : {}),
+          ...(Number.isSafeInteger(answer.data?.every) ? { every: answer.data.every } : {}),
+        }));
       }
-      if (chosen !== null) {
-        const held = readState(path);
-        if (path !== null) writeState(path, {
-          ...held, pet: chosen.pet, ...(title !== null ? { title } : {}),
-          ...(Number.isSafeInteger(chosen.answer?.data?.epoch) ? { epoch: chosen.answer.data.epoch } : {}),
-          ...(Number.isSafeInteger(chosen.answer?.data?.every) ? { every: chosen.answer.data.every } : {}),
-        });
-        say(omContext(chosen.pet, chosen.result, titleMismatch(chosen.pet, title)));
-      }
+      say(omContext(pet, result));
     }
   }
 } catch (err) {

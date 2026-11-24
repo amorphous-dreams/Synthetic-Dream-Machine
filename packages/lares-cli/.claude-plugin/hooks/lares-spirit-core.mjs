@@ -14,7 +14,7 @@
  * Every part here reads text in, text out, so a test drives it with no vessel; every hook exits 0 on any fault, and none
  * ever blocks a compaction.
  */
-import { mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -97,6 +97,9 @@ export async function vesselUp(run) {
   return seen !== null && observation(seen).up;
 }
 
+/** One shell word, single-quoted: what every suggested command wraps a title or a line in. */
+export const shq = (word) => `'${String(word).replace(/'/g, `'\\''`)}'`;
+
 /** A slug of a session title, as a pet name reads; null where none forms. */
 export function titleSlug(title) {
   const slug = String(title ?? "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 62);
@@ -110,24 +113,23 @@ export function titleMismatch(pet, title) {
   if (slug !== null && (slug === pet || slug.startsWith(`${pet}-`))) return null;
   const named = title.trim().slice(0, 80);
   return `this session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this body stays ${pet} and wakes from ${pet}'s record. ` +
-    `To keep the new name as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add "''Alias:'' ${named}".`;
+    `To keep the new name as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add ${shq(`''renames:'' ${pet} -> ${named}`)}`;
 }
 
 /** The `--source` a SessionStart's `source` names for `om`; an unknown one reads as a startup. */
 export const omSourceOf = (source) => (["startup", "resume", "clear", "compact", "fork"].includes(source) ? source : "startup");
 
 /**
- * THE PET RESOLVES PER SESSION. Two familiars may share one checkout, so a hook carries no one fixed pet: the slug of the
- * session's title counts where a familiar record by that name stands (`om` answers no starter for it), else the seated
- * familiar (the hook's argument) as the default, else none, and the hooks stay quiet. The wake records the pet it chose in the
- * session's counter, and every later hook of the session reads it there.
+ * THE PET THIS WAKE ASKS FOR. A title only proposes: the wake asks for the pet this session already wears (any source but a
+ * startup keeps the pet its counter holds), else the seated familiar (the hook's argument), else, where neither stands, the
+ * title's slug (it takes no other familiar's card). The door reads the title beside the pet (`om --title`) and turns only where
+ * the title's record names it as its own; one read, never a race of candidates.
  */
-export function petCandidates(title, seated) {
-  const out = [];
-  const slug = titleSlug(title);
-  if (slug !== null) out.push({ pet: slug, from: "title" });
-  if (seated !== null && seated !== slug) out.push({ pet: seated, from: "seated" });
-  return out;
+export function wakePet({ source, held, seated, title }) {
+  if (source !== "startup" && typeof held === "string" && PET.test(held)) return held;
+  if (seated !== null) return seated;
+  if (typeof held === "string" && PET.test(held)) return held;
+  return titleSlug(title);
 }
 
 /** The pet a later hook of a session reads: the one the wake chose, else the seated default. */
@@ -232,6 +234,26 @@ export function readState(path) {
   } catch { return none; }
 }
 
+/** Hold a counter's lock for one read-modify-write: a directory made atomically, waited on briefly, broken past a stale age. */
+function withLock(path, act) {
+  const lock = `${path}.lock`;
+  const nap = new Int32Array(new SharedArrayBuffer(4));
+  for (let i = 0; i < 100; i++) {
+    try { mkdirSync(dirname(path), { recursive: true }); mkdirSync(lock); break; }
+    catch {
+      try { if (Date.now() - statSync(lock).mtimeMs > 5_000) rmdirSync(lock); } catch { /* the holder let it go */ }
+      Atomics.wait(nap, 0, 0, 10);
+    }
+  }
+  try { return act(); } finally { try { rmdirSync(lock); } catch { /* already gone */ } }
+}
+
+/** Read-modify-write one counter under its lock, so two hooks of one session never clobber each other's keys. Answers the state written. */
+export function updateState(path, change, now = Date.now()) {
+  if (path === null) return null;
+  return withLock(path, () => { const next = change(readState(path)); writeState(path, next, now); return next; });
+}
+
 /** Write a counter whole (temp, then rename), and let every counter past `COUNTER_DAYS` leave. */
 export function writeState(path, state, now = Date.now()) {
   try {
@@ -256,14 +278,14 @@ export function stopStep(state, every = state.every ?? TRUE_UP_EVERY) {
 }
 
 /** The true-up's words: the doors that true and fold the record, and why they ask now. */
-export function trueUpText(pet, step) {
+export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null) {
   const why = step.fire === "unfiled"
     ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: lares spirit ah ${pet} --slot '#/open' --file <path> (or --add '<line>' on #/bodies or #/voice); ` +
-      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>). The budget refuses growth; you choose what folds.`,
+    `True the record before the next move: lares spirit ah ${pet} --slot '#/open' --file <path> (or --add '<line>' on #/bodies or #/voice)${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}; ` +
+      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}). The budget refuses growth; you choose what folds.`,
   ].join("\n");
 }
 

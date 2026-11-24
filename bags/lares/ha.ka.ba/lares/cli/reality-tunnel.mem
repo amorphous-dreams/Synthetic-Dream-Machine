@@ -169,7 +169,7 @@ file = ".claude/settings.json"
 event = "SessionStart"
 script = "packages/lares-cli/.claude-plugin/hooks/lares-om-hook.mjs"
 runner = "node"
-timeout = 21
+timeout = 14
 first = true
 familiar = "optional"
 status = "the familiar wakes from its card"
@@ -418,6 +418,6 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;piP8thzQNHWNieTwHW7JoSKlOxpwu-GANv-jwS2chbU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;urfpCreJnYq78oFIl1Wa9gCkidUnAcGgIevW3MGxYrQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

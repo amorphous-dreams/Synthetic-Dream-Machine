@@ -77,6 +77,8 @@ export const PRECOMPACT_CARD_CHARS = 4000;
 export const ATTENTION_TITLES = 12;
 const RECIPE = "default";
 const PET = /^[a-z0-9][a-z0-9-]{0,62}$/;
+/** A body names itself by its session id. */
+const BODY = /^[A-Za-z0-9_-]{1,128}$/;
 const SOURCES = ["startup", "resume", "clear", "compact", "fork", "precompact"] as const;
 type Source = (typeof SOURCES)[number];
 
@@ -88,6 +90,8 @@ export function ashLedgerOf(now: Date): string {
 export const compactionTitle = (key: string, hash: string): string => `${MEMORY_PREFIX}${COMPACTION_WORD}/${key}-${hash.slice(0, 12)}`;
 /** A handback's address. */
 export const residueTitle = (key: string, hash: string): string => `${MEMORY_PREFIX}spirit/${key}-handback-${hash.slice(0, 12)}`;
+/** One shell word, single-quoted: what every suggested command wraps a title or a line in. */
+export const shq = (word: string): string => `'${word.replace(/'/g, `'\\''`)}'`;
 const sha256 = (text: string): string => createHash("sha256").update(text, "utf8").digest("hex");
 const bytesOf = (text: string): number => Buffer.byteLength(text, "utf8");
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -169,11 +173,13 @@ class Printed extends Error { constructor(readonly exit: number) { super("printe
 
 const titlesOf = (out: Record<string, unknown>): string[] => (Array.isArray(out["titles"]) ? (out["titles"] as string[]) : []);
 
-/** A record's fields, read at the skinny grain on the record lens. */
-async function fieldsOf(args: ParsedArgs, label: string, title: string): Promise<Record<string, string>> {
-  const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title, grain: "skinny" });
-  return (out["tiddler"] as { fields?: Record<string, string> } | null | undefined)?.fields ?? {};
+/** A record's fields and its live hash (the base a put names), read on the record lens. */
+async function recordOf(args: ParsedArgs, label: string, title: string): Promise<{ fields: Record<string, string>; hash: string | null }> {
+  const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title });
+  const t = out["tiddler"] as { fields?: Record<string, string>; hash?: string } | null | undefined;
+  return { fields: t?.fields ?? {}, hash: typeof t?.hash === "string" && !t.hash.startsWith("skinny:") ? t.hash : null };
 }
+const fieldsOf = async (args: ParsedArgs, label: string, title: string): Promise<Record<string, string>> => (await recordOf(args, label, title)).fields;
 
 /** Resolve a pet name to its record at `familiar/<pet>` or `spirit/<pet>`; both standing refuses, naming both. Null where none answers and `soft`. */
 async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft = false): Promise<Record_ | null> {
@@ -203,13 +209,33 @@ async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft 
   };
 }
 
-/** Patch the record's own fields (and unset some), through the tiddler door. */
-async function writeFields(args: ParsedArgs, label: string, rec: Record_, patch: Record<string, string>, unset: readonly string[] = []): Promise<void> {
-  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(Object.keys(patch).length > 0 ? { fields: patch } : {}), ...(unset.length > 0 ? { unset: [...unset] } : {}) });
-  const decision = String(receipt["decision"] ?? "");
-  if (decision !== "put" && decision !== "noop") {
-    throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${rec.uri}'s fields; read it: \`lares tiddler get ${rec.uri} --recipe default --skinny\``, 4);
+/** How many times a field write reads again over a record that moved under it before it refuses. */
+const CAS_ROUNDS = 4;
+
+/**
+ * A COMPARE-AND-SWAP ON THE RECORD'S FIELDS. Each round reads the fields and their live hash, asks `change` what to write over
+ * them (null writes nothing), and puts under that hash as its base; a record that moved meanwhile answers `conflict`, and the
+ * round reads again, bounded. Answers the fields the write landed over.
+ */
+async function casFields(args: ParsedArgs, label: string, uri: string, change: (fields: Record<string, string>) => { patch?: Record<string, string>; unset?: readonly string[] } | null): Promise<Record<string, string>> {
+  for (let round = 0; round < CAS_ROUNDS; round++) {
+    const { fields, hash } = await recordOf(args, label, uri);
+    const wants = change(fields);
+    if (wants === null) return fields;
+    const receipt = await door(args, label, "tiddler-put", {
+      recipe: RECIPE, title: uri, ...(hash !== null ? { base: hash } : {}),
+      ...(wants.patch && Object.keys(wants.patch).length > 0 ? { fields: wants.patch } : {}), ...(wants.unset && wants.unset.length > 0 ? { unset: [...wants.unset] } : {}),
+    });
+    const decision = String(receipt["decision"] ?? "");
+    if (decision === "put" || decision === "noop") return fields;
+    if (decision !== "conflict") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}'s fields; read it: \`lares tiddler get ${shq(uri)} --recipe default --skinny\``, 4);
   }
+  throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${uri} kept moving under ${CAS_ROUNDS} reads, so its fields took nothing; run the act again once the record settles`, 4);
+}
+
+/** Patch the record's own fields (and unset some), under its live hash. */
+async function writeFields(args: ParsedArgs, label: string, rec: Record_, patch: Record<string, string>, unset: readonly string[] = []): Promise<void> {
+  await casFields(args, label, rec.uri, () => ({ patch, unset }));
 }
 
 /** The record's stable key: its `spirit-id`, minted once from its address and the base it first answered. */
@@ -322,22 +348,32 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
 // ── om ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 interface Carry { readonly title: string; readonly fields: Readonly<Record<string, string>>; readonly text: string }
+interface Row { readonly title: string; readonly fields: Readonly<Record<string, string>> }
+/** The lineage a carry's listing reads in one filter call, no read per carry. */
+const LINEAGE_FIELDS = ["title", "landed", "parent", "depth", "body", "record-base"] as const;
 
-/** The latest carry under a spirit's keys, by its `landed` stamp, with its fields and words; null where none stands. */
-async function latestCarry(args: ParsedArgs, label: string, keys: readonly string[]): Promise<{ carry: Carry | null; all: string[] }> {
+/** Rows a filter answers with fields: each title beside the fields it asked. */
+function rowsOf(out: Record<string, unknown>): Row[] {
+  const rows = Array.isArray(out["rows"]) ? (out["rows"] as Array<{ title?: string; fields?: Record<string, string> }>) : [];
+  return rows.map((r) => ({ title: String(r.title ?? r.fields?.["title"] ?? ""), fields: r.fields ?? {} }));
+}
+
+/** Every carry under a spirit's keys with its lineage, newest first (one filter read), and the latest's own words where asked. */
+async function latestCarry(args: ParsedArgs, label: string, keys: readonly string[], words = false): Promise<{ carry: Carry | null; rows: Row[] }> {
   const filter = keys.map((key) => `[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/${key}-]]`).join(" ") + " +[!sort[landed]]";
-  const all = residueOf(keys, titlesOf(await door(args, label, "wiki-filter", { recipe: RECIPE, filter }))).filter(isCarry);
-  const title = all[0];
-  if (title === undefined) return { carry: null, all };
-  const got = await door(args, label, "tiddler-get", { recipe: RECIPE, title });
-  const fields = (got["tiddler"] as { fields?: Record<string, string> } | null | undefined)?.fields ?? {};
-  return { carry: { title, fields, text: fields["text"] ?? "" }, all };
+  const listed = await door(args, label, "wiki-filter", { recipe: RECIPE, filter, fields: [...LINEAGE_FIELDS] });
+  const keep = new Set(residueOf(keys, rowsOf(listed).map((r) => r.title)).filter(isCarry));
+  const rows = rowsOf(listed).filter((r) => keep.has(r.title));
+  const top = rows[0];
+  if (top === undefined) return { carry: null, rows };
+  const text = words ? (await fieldsOf(args, label, top.title))["text"] ?? "" : "";
+  return { carry: { title: top.title, fields: top.fields, text }, rows };
 }
 
 /** The carry read as testimony: what it names, and each joint where it breaks against the card. */
 export function testimonyLines(rec: Pick<Record_, "base">, carry: Carry | null, siblings: number): string[] {
   if (carry === null) return [`Latest ${COMPACTION_DISPLAY}: none stands yet; this wake reads the card alone.`];
-  const out = [`Latest ${COMPACTION_DISPLAY} (testimony, never mandate): ${carry.title} (hash ${carry.title.slice(-12)}, depth ${carry.fields["depth"] ?? "?"}, body ${carry.fields["body"] || "?"}); read it: lares tiddler get ${carry.title} --recipe default`];
+  const out = [`Latest ${COMPACTION_DISPLAY} (testimony, never mandate): ${carry.title} (hash ${carry.title.slice(-12)}, depth ${carry.fields["depth"] ?? "?"}, body ${carry.fields["body"] || "?"}); read it: lares tiddler get ${shq(carry.title)} --recipe default`];
   const read = carry.fields["record-base"];
   if (read && digestOf(read) !== digestOf(rec.base)) out.push(`⚠ the record moved since this ${COMPACTION_DISPLAY} read it (${digestOf(read).slice(7, 19)} -> ${digestOf(rec.base).slice(7, 19)}): the card outranks the carry.`);
   const depth = Number(carry.fields["depth"] ?? 0);
@@ -377,32 +413,77 @@ async function attentionUnfold(args: ParsedArgs, rec: Record_): Promise<string |
   return [`The titles #/attention names:`, ...titles.map((t) => `${t}${described.get(t) ? ` — ${described.get(t)!.slice(0, 160)}` : described.has(t) ? "" : " (unread here)"}`)].join("\n");
 }
 
-/** Claim the card's lease for a body: the body that holds it keeps its epoch; another body raises it. */
+/**
+ * Claim the card's lease for a body: the body that holds it keeps its epoch; another body raises it. The claim reads and writes
+ * under the record's live hash, so two bodies claiming at once never both take one epoch: the later one reads again and raises.
+ */
 async function claimLease(args: ParsedArgs, rec: Record_, body: string, ctx: Ctx): Promise<number> {
-  const held = rec.lease;
-  const epoch = held !== null && held.body === body ? held.epoch : (held?.epoch ?? 0) + 1;
-  if (held === null || held.body !== body) await writeFields(args, "om", rec, { lease: `${body} ${epoch} ${ctx.now().toISOString()}` });
+  let epoch = 0;
+  await casFields(args, "om", rec.uri, (fields) => {
+    const held = leaseOf(fields["lease"]);
+    epoch = held !== null && held.body === body ? held.epoch : (held?.epoch ?? 0) + 1;
+    return held !== null && held.body === body ? null : { patch: { lease: `${body} ${epoch} ${ctx.now().toISOString()}` } };
+  });
   return epoch;
 }
 
+/** A slug of a title, as a pet name reads; null where none forms. */
+const titleSlug = (title: string): string | null => {
+  const slug = title.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 62);
+  return PET.test(slug) ? slug : null;
+};
+
+/** Does a record name this title as its own: its `aliases` field, or a recognition line in its #/entry (`named by`, `renames`, `alias`)? */
+async function namesTitle(args: ParsedArgs, rec: Record_, title: string): Promise<boolean> {
+  const want = title.trim().toLowerCase();
+  if ((rec.fields["aliases"] ?? "").split(/[,;\n]/).some((a) => a.trim().toLowerCase() === want)) return true;
+  const entry = await readSlot(args, "om", rec, "#/entry");
+  return (entry?.body ?? "").split("\n").some((line) => /named by|renames?|alias/i.test(line) && line.toLowerCase().includes(want));
+}
+
+/**
+ * A TITLE ONLY PROPOSES. The session's title steers nothing by itself: the wake stays the pet it was handed. Where the title's
+ * slug names another familiar whose record names this title as its own (its `aliases` field, or its recognition line), the wake
+ * turns to that record; where that record stands without naming the title, the title reads as an offer; where no record answers
+ * it, the title reads as a rename of this familiar, which records its alias by its own act.
+ */
+async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, title: string | null): Promise<{ to: Record_ | null; line: string | null }> {
+  if (title === null || title.trim() === "") return { to: null, line: null };
+  const slug = titleSlug(title);
+  if (slug === null || slug === pet || slug.startsWith(`${pet}-`)) return { to: null, line: null };
+  let other: Record_ | null = null;
+  try { other = await resolveRecord(args, "om", slug, true); } catch (e) { if (!(e instanceof SpiritRefusal)) throw e; }
+  const named = title.trim().slice(0, 80);
+  if (other !== null && (await namesTitle(args, other, title))) return { to: other, line: `This session's title "${named}" names ${other.uri} as its own; this wake turns to ${slug}.` };
+  if (other !== null) {
+    return { to: null, line: `This session's title "${named}" names ${other.uri}, whose record stands; a title only proposes, so this wake stays ${pet}. To wear ${slug} under this title, ${slug}'s own act records the alias: lares spirit ah ${slug} --slot '#/entry' --add ${shq(`''renames:'' -> ${named}`)}` };
+  }
+  return { to: null, line: rec === null ? null : `This session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this body stays ${pet}. To keep the title as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add ${shq(`''renames:'' ${pet} -> ${named}`)}` };
+}
+
 async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
-  const pet = petOf(args, "om");
+  const given = petOf(args, "om");
   const sourceWord = wordOf(args.options["source"]) ?? "startup";
   if (!(SOURCES as readonly string[]).includes(sourceWord)) throw new DoorUsage(`--source names one of ${SOURCES.join(", ")}; got "${sourceWord}"`);
   const source = sourceWord as Source;
   const body = wordOf(args.options["body"]);
-  if (body !== null && !/^[A-Za-z0-9_-]{1,128}$/.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
-  const found = await resolveRecord(args, "om", pet, true);
+  if (body !== null && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
+  const title = typeof args.options["title"] === "string" ? args.options["title"] : null;
+  const seated = await resolveRecord(args, "om", given, true);
+  const turn = source === "precompact" ? { to: null, line: null } : await readTitle(args, seated, given, title);
+  const found = turn.to ?? seated;
+  const pet = turn.to?.pet ?? given;
   if (found === null) {
     // A first wake: no record yet. The body reads the skeleton and lands its own shrine; a precompact hands back no shape.
-    const text = source === "precompact" ? "" : starterText(pet);
+    const text = source === "precompact" ? "" : [turn.line, starterText(pet)].flatMap((l) => (l === null ? [] : [l])).join("\n\n");
     emit(args, { ok: true, data: { pet, starter: true, source, every: TRUE_UP_EVERY, carryShape: null, chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
   const rec = found;
   const key = await keyOf(args, "om", rec);
   const epoch = body !== null ? await claimLease(args, rec, body, ctx) : rec.lease?.epoch ?? null;
-  const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source };
+  const leaseLine = epoch === null ? null : `Lares spirit lease epoch ${epoch}${body !== null ? ` (held by this body, ${body.slice(0, 8)})` : ""}: an AI seat bears --epoch ${epoch} on every card write (ah, hum).`;
+  const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
   if (source === "resume") {
     const text = `Lares spirit om · ${pet}: this body resumes; the card reads ${digestOf(rec.base).slice(7, 19)} now${epoch !== null ? ` (lease epoch ${epoch})` : ""}, and an earlier wake may read stale: lares spirit om ${pet}`;
     emit(args, { ok: true, data: { ...data, chars: text.length, text }, human: () => console.log(text) });
@@ -421,16 +502,19 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   // A waking body ends the crossing: the compaction it marked has turned.
   if (rec.crossing !== null) await writeFields(args, "om", rec, {}, ["crossing"]);
-  const { carry, all } = await latestCarry(args, "om", [key, pet]);
+  const { carry, rows } = await latestCarry(args, "om", [key, pet], source === "compact");
   const parent = carry?.fields["parent"];
-  const siblings = parent ? (await Promise.all(all.map(async (t) => (t === carry!.title ? parent : (await fieldsOf(args, "om", t))["parent"])))).filter((p) => p === parent).length : 0;
-  const testimony = testimonyLines(rec, carry, siblings);
+  const siblings = parent ? rows.filter((r) => r.fields["parent"] === parent).length : 0;
+  const testimony = [...testimonyLines(rec, carry, siblings), ...(leaseLine === null ? [] : [leaseLine])];
   if (source === "compact" && carry !== null) {
     testimony.push(`This body inherits ${carry.title} (hash ${carry.title.slice(-12)}): "${carry.text.replace(/\s+/g, " ").trim().slice(0, 120)}"`);
   }
-  const lead = source === "fork"
-    ? `You wake as a fork: another body may still wear ${pet}.${epoch !== null ? ` This wake holds the card's lease at epoch ${epoch}; the other body's next card write refuses until it claims again.` : " Claim the card before you write it: lares spirit om " + pet + " --body <session id>."}`
-    : null;
+  const lead = [
+    turn.line,
+    source === "fork"
+      ? `You wake as a fork: another body may still wear ${pet}.${epoch !== null ? ` This wake holds the card's lease at epoch ${epoch}; the other body's next card write refuses until it claims again.` : " Claim the card before you write it: lares spirit om " + pet + " --body <session id>."}`
+      : null,
+  ].flatMap((l) => (l === null ? [] : [l])).join("\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
   const attention = await attentionUnfold(args, rec);
   const text = omText(rec, { open: open?.text ?? null, testimony, attention, lead });
@@ -513,7 +597,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (line === "") throw new DoorUsage("--add names one non-empty line");
   const receipt = await trueSlot(args, "ah", rec, slot, (body) => (line !== null ? `${body}\n${line}` : words!), wordOf(args.options["base"]));
   // A tell distilled into #/voice sets the distill mark: otakiage burns only residue that landed before it.
-  if (slot === "#/voice") await writeFields(args, "ah", rec, { distilled: ctx.now().toISOString() });
+  if (slot === "#/voice" && receipt["decision"] === "ingest") await writeFields(args, "ah", rec, { distilled: ctx.now().toISOString() });
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, slot, ...receipt },
     human: () => console.log(`${String(receipt["decision"])}: ${rec.uri}${slot} (${String(receipt["bytes"])} of ${rec.budgets.slot} bytes)\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
@@ -635,14 +719,16 @@ export const bodiesLine = (day: string, hash: string, pet: string, body: string,
   `* ''${day} (${COMPACTION_DISPLAY} ${hash.slice(0, 12)}) ${body ? `${pet}#${body.slice(0, 8)}` : pet}:'' ${title}`;
 
 /**
- * HOOKS NEVER WRITE THE CARD. The carry lands as its own record, with its lineage, and touches the card not at all: no
- * #/bodies line, no field. The answer hands back the line for the next body to file through `ah` (the true-up names it).
+ * HOOKS NEVER WRITE THE CARD'S SLOTS. The carry lands as its own record, with its lineage, and touches the card not at all: no
+ * #/bodies line, no field. The answer hands back the line for the next body to file through `ah` (the true-up names it). (A
+ * hook's `om` does write the card's fields that order bodies: the lease, the crossing, the spirit-id; never a slot.)
  */
 async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, COMPACTION_WORD);
-  const rec = (await resolveRecord(args, COMPACTION_WORD, pet))!;
-  fence(args, rec, ctx);
   const body = wordOf(args.options["body"]) ?? "";
+  if (body !== "" && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
+  // The carry writes nothing to the card, so no lease fences it: a fenced body still hands its summary down.
+  const rec = (await resolveRecord(args, COMPACTION_WORD, pet))!;
   const { text, cut } = await residueWords(args, COMPACTION_WORD);
   const key = rec.id ?? pet;
   const { carry: parent } = await latestCarry(args, COMPACTION_WORD, [...new Set([key, pet])]);
@@ -657,7 +743,7 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
     "record-base": digestOf(rec.base), depth: String(depth), body,
   });
   const line = bodiesLine(day, hash, pet, body, title);
-  const fileIt = `lares spirit ah ${pet} --slot '#/bodies' --add "${line.replace(/"/g, '\\"')}"`;
+  const fileIt = `lares spirit ah ${pet} --slot '#/bodies' --add ${shq(line)}${rec.lease !== null ? ` --epoch ${rec.lease.epoch}` : ""}`;
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, spiritId: key, title, hash, depth, parent: parent?.title ?? null, landed, cut, filed: false, bodiesLine: line, unfiled: `file the ${COMPACTION_DISPLAY}'s #/bodies line: ${fileIt}` },
     human: () => {
@@ -671,8 +757,8 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
 async function residue(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "residue");
   const { text, cut } = await residueWords(args, "residue");
-  const rec = await resolveRecord(args, "residue", pet, true);
-  const key = rec === null ? pet : await keyOf(args, "residue", rec);
+  // A handback lands under its own pet name alone: a mask tag never reaches a familiar's record, nor mints its spirit-id.
+  const key = pet;
   // An idempotent key: the same handback from the same session and agent lands once, however often a hook fires.
   const salt = wordOf(args.options["key"]);
   const hash = sha256(salt === null ? text : `${salt}\n${text}`);
@@ -694,7 +780,10 @@ async function otakiage(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const key = await keyOf(args, "otakiage", rec);
   const keys = [...new Set([key, pet])];
   const filter = keys.flatMap((k) => [`[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/${k}-]]`, `[prefix[${MEMORY_PREFIX}spirit/${k}-handback-]]`]).join(" ");
-  const titles = residueOf(keys, titlesOf(await door(args, "otakiage", "wiki-filter", { recipe: RECIPE, filter })));
+  const listed = await door(args, "otakiage", "wiki-filter", { recipe: RECIPE, filter, fields: [...LINEAGE_FIELDS] });
+  const titles = residueOf(keys, rowsOf(listed).map((r) => r.title));
+  // A carry a standing carry names as its parent holds the chain: the child burns first.
+  const parents = new Set(rowsOf(listed).filter((r) => titles.includes(r.title)).map((r) => r.fields["parent"] ?? "").filter((p) => p !== ""));
   const stamp = ctx.now();
   const day = stamp.toISOString().slice(0, 10);
   // Hold what the last distill mark leaves uncovered and what a link still reaches; burn the rest.
@@ -706,8 +795,11 @@ async function otakiage(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const fields = t?.fields ?? {};
     const landed = fields["landed"] ?? "";
     if (rec.distilled === null || landed === "" || landed >= rec.distilled) { held.push({ title, why: rec.distilled === null ? "no distill mark stands yet" : "landed after the last distill mark" }); continue; }
+    if (isCarry(title) && parents.has(title.slice(-12))) { held.push({ title, why: `a standing ${COMPACTION_DISPLAY} names it as its parent` }); continue; }
     const links = titlesOf(await door(args, "otakiage", "wiki-filter", { recipe: RECIPE, filter: `[[${title}]backlinks[]]` }));
     if (links.length > 0) { held.push({ title, why: `${links.length} link(s) still reach it (${links.slice(0, 3).join(", ")})` }); continue; }
+    const mentions = titlesOf(await door(args, "otakiage", "wiki-filter", { recipe: RECIPE, filter: `[search[${title}]] -[[${title}]]` }));
+    if (mentions.length > 0) { held.push({ title, why: `${mentions.length} record(s) still name it (${mentions.slice(0, 3).join(", ")})` }); continue; }
     const text = fields["text"] ?? "";
     const first = text.split("\n").find((l) => l.trim() !== "")?.trim().slice(0, 200) ?? "";
     burnable.push({ title, line: `* ${day} · otakiage ${pet} burning ${title} (${bytesOf(text)} bytes, ${t?.textHash ?? "?"})${first ? `: ${first}` : ""}` });

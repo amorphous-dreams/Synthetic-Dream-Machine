@@ -346,7 +346,7 @@ describe("the home radius", () => {
     const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
     const at = (name: string, timeout = 15, extra = {}) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`], timeout, ...extra });
     expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 27)] }]);
-    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 21, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs")] }]);
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs")] }]);
   });
 
   it("a tend with a familiar seats the familiar's hooks, the pet name as each one's default argument: om's group first, the landing async, the true-up, the rename read, the handback async", async () => {
@@ -358,7 +358,7 @@ describe("the home radius", () => {
     const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ matcher?: string; hooks: unknown[] }>>;
     const at = (name: string, timeout: number, args: string[], extra = {}) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`, ...args], timeout, ...extra });
     const pet = ["lares-alpha"];
-    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 21, pet, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, pet, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
     expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 27, pet)] }]);
     expect(hooks["PostCompact"]).toEqual([{ hooks: [at("lares-postcompact-hook.mjs", 33, pet, { async: true, statusMessage: "the hoʻoili lands" })] }]);
     expect(hooks["Stop"]).toEqual([{ hooks: [at("lares-true-up-hook.mjs", 11, pet)] }]);
@@ -369,7 +369,7 @@ describe("the home radius", () => {
     // A tend naming another familiar re-aims each hook in its own place.
     await tend(items("lares-awakens"), l);
     const again = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
-    expect(again["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 21, ["lares-awakens"], { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
+    expect(again["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, ["lares-awakens"], { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
   });
 
   it("with no familiar named, the familiar's hooks seat bare: each resolves its pet per session, from the session's title", async () => {

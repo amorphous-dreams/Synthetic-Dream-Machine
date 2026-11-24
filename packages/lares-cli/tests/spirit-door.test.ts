@@ -56,25 +56,42 @@ interface StageOpts {
   kind?: "familiar" | "spirit" | "both" | "none"; slotBytes?: Record<string, number>; bodies?: string; open?: string; patch?: string; put?: string;
   titles?: string[]; ledgerStands?: boolean; fields?: Record<string, string>; residue?: Record<string, Record<string, string>>;
   backlinks?: Record<string, string[]>; slotTexts?: Record<string, string>; rows?: Array<{ title: string; fields: Record<string, string> }>;
+  /** Other familiars whose records stand, by pet name, each with its fields and its #/entry. */
+  others?: Record<string, { fields?: Record<string, string>; entry?: string }>;
+  /** Records a `[search[...]]` finds naming a title. */
+  mentions?: Record<string, string[]>;
+  /** The record's field puts answer `conflict` this many times before they land. */
+  conflicts?: number;
 }
 
 /** A stage holding one familiar record (or two, or none); its slots hold these words, its fields these, every write answers by its verb. */
 function stage(opts: StageOpts = {}) {
   const kind = opts.kind ?? "familiar";
-  const standing = (title: unknown): boolean => kind === "both" ? [URI, `${MEMORY_PREFIX}spirit/lares-alpha`].includes(String(title))
+  const own = (title: unknown): boolean => kind === "both" ? [URI, `${MEMORY_PREFIX}spirit/lares-alpha`].includes(String(title))
     : kind === "none" ? false : title === `${MEMORY_PREFIX}${kind}/lares-alpha`;
+  const other = (title: unknown): string | null => {
+    const t = String(title);
+    const pet = t.startsWith(`${MEMORY_PREFIX}familiar/`) ? t.slice(`${MEMORY_PREFIX}familiar/`.length) : null;
+    return pet !== null && opts.others?.[pet] ? pet : null;
+  };
+  const standing = (title: unknown): boolean => own(title) || other(title) !== null;
+  let conflicts = opts.conflicts ?? 0;
   const texts: Record<string, string> = { "#/bodies": opts.bodies ?? "!! Bodies\n\n* one", "#/open": opts.open ?? "!! Open\n\n* a loop", ...(opts.slotTexts ?? {}) };
   const extra = Object.keys(opts.slotTexts ?? {}).filter((slot) => !["#/entry", "#/open", "#/bodies"].includes(slot));
   h.answer = (verb, args) => {
     if (verb === "tiddler-get" && args["meme"] === true) {
       if (!standing(args["title"])) return { title: args["title"], tiddler: null };
       if (typeof args["slot"] === "string") {
-        return { has: "has", meme: { uri: args["title"], slotText: framed(String(args["slot"]), texts[String(args["slot"])] ?? "x"), canonicalHash: `partial:${String(args["slot"])}:${FULL}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
+        const o = other(args["title"]);
+        const text = o !== null ? (args["slot"] === "#/entry" ? opts.others![o]!.entry ?? "! entry" : "x") : texts[String(args["slot"])] ?? "x";
+        return { has: "has", meme: { uri: args["title"], slotText: framed(String(args["slot"]), text), canonicalHash: `partial:${String(args["slot"])}:${FULL}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
       }
       return { has: "<<~ has name=`rec`>>\n<<~ has name=`#/open`>>", meme: { uri: args["title"], canonicalHash: `skinny:${FULL}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
     }
     if (verb === "tiddler-get") {
-      if (standing(args["title"])) return { tiddler: { fields: { title: args["title"], "spirit-id": ID, ...(opts.fields ?? {}) } } };
+      const o = other(args["title"]);
+      if (o !== null) return { tiddler: { fields: { title: args["title"], "spirit-id": "fedcba987654", ...(opts.others![o]!.fields ?? {}) }, hash: "sha256-other" } };
+      if (standing(args["title"])) return { tiddler: { fields: { title: args["title"], "spirit-id": ID, ...(opts.fields ?? {}) }, hash: "sha256-rec" } };
       return { tiddler: { fields: { title: args["title"], text: "first words\nmore", ...(opts.residue?.[String(args["title"])] ?? {}) }, textHash: "sha256-ab" } };
     }
     if (verb === "meme-patch") return { decision: opts.patch ?? "ingest", canonicalHash: "sha256:" + "11".repeat(32) };
@@ -85,6 +102,7 @@ function stage(opts: StageOpts = {}) {
       const crossed = ["text", "base", "fields", "unset"].filter((n) => args[n] !== undefined && args[n] !== null);
       if (typeof args["append"] === "string" && crossed.length > 0) return { refuse: `append-alone: an append carries no ${crossed.join(", ")}; send those as their own put. Nothing moved.` };
       const ledger = String(args["title"]).startsWith(`${MEMORY_PREFIX}state/ashes-`);
+      if (standing(args["title"]) && args["fields"] !== undefined && conflicts > 0) { conflicts--; return { decision: "conflict" }; }
       if (ledger && typeof args["append"] === "string" && !opts.ledgerStands && args["create"] !== true) {
         return { refuse: `append-target-missing: no record "${String(args["title"])}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.` };
       }
@@ -94,6 +112,12 @@ function stage(opts: StageOpts = {}) {
       const filter = String(args["filter"]);
       const linked = /^\[\[(.+)\]backlinks\[\]\]$/.exec(filter);
       if (linked) return { titles: opts.backlinks?.[linked[1]!] ?? [] };
+      const searched = /^\[search\[(.+)\]\] -\[\[/.exec(filter);
+      if (searched) return { titles: opts.mentions?.[searched[1]!] ?? [] };
+      if (Array.isArray(args["fields"]) && (args["fields"] as string[]).includes("parent")) {
+        const titles = opts.titles ?? [];
+        return { titles, rows: titles.map((t) => ({ title: t, fields: { title: t, ...(opts.residue?.[t] ?? {}) } })) };
+      }
       if (args["fields"]) return { rows: opts.rows ?? [] };
       return { titles: opts.titles ?? [] };
     }
@@ -531,7 +555,7 @@ describe("om reads by source and reads the carry as testimony", () => {
     const t1 = "lar:///ha.ka.ba/lares/api/voices";
     stage({ slotTexts: { "#/attention": `!! Where attention starts\n\n* ''Canon:'' ${t1} · lar:///ha.ka.ba/lares/docs/pono/spirit-circle.` }, rows: [{ title: t1, fields: { description: "the thirteen voices" } }] });
     const r = await run(argv(["om", "lares-alpha"]));
-    const filterCall = h.calls.find((c) => c.verb === "wiki-filter" && c.args["fields"]);
+    const filterCall = h.calls.find((c) => c.verb === "wiki-filter" && (c.args["fields"] as string[] | undefined)?.includes("description"));
     expect(filterCall!.args["filter"]).toBe(`[[${t1}]] [[lar:///ha.ka.ba/lares/docs/pono/spirit-circle]]`);
     expect(String(data(r)["text"])).toContain(`${t1} — the thirteen voices`);
     expect(String(data(r)["text"]).length).toBeLessThanOrEqual(OM_CAP_CHARS);
@@ -617,6 +641,95 @@ describe.skipIf(wikiSkip)(`the burn lands through the real tiddler-put verb${ski
     expect(ledger.fields["text"]).toContain("* one");
     expect(ledger.fields["text"]).toContain("* two");
     expect(ledger.fields["description"]).toContain("The ash ledger of the 2026-11 o-takiage sittings");
+  });
+});
+
+describe("a title only proposes", () => {
+  test("a title naming another familiar whose record stands without naming it reads as an offer; the wake stays the seated pet", async () => {
+    stage({ others: { "lares-awakens": {} } });
+    const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens" }));
+    expect(data(r)["pet"]).toBe("lares-alpha");
+    expect(String(data(r)["text"])).toContain("a title only proposes, so this wake stays lares-alpha");
+    expect(String(data(r)["text"])).toContain("lares spirit ah lares-awakens --slot '#/entry' --add '");
+    expect(puts(`${MEMORY_PREFIX}familiar/lares-awakens`)).toHaveLength(0);
+  });
+
+  test("a title the other record names as its own (its aliases field) turns the wake to that record", async () => {
+    stage({ others: { "lares-awakens": { fields: { aliases: "Lares-Awakens, the night spirit" } } } });
+    const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens" }));
+    expect(data(r)["pet"]).toBe("lares-awakens");
+    expect(data(r)["turnedFrom"]).toBe("lares-alpha");
+  });
+
+  test("a recognition line in the other record's #/entry counts as naming the title", async () => {
+    stage({ others: { "lares-awakens": { entry: "! Lares-Awakens\n\nNamed by the operator; renames: -> Lares-Awakens" } } });
+    expect(data(await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens" })))["pet"]).toBe("lares-awakens");
+  });
+
+  test("a title no record answers reads as a rename of this familiar, with its own alias act", async () => {
+    stage();
+    const r = await run(argv(["om", "lares-alpha"], { title: "Kahu Night" }));
+    expect(data(r)["pet"]).toBe("lares-alpha");
+    expect(String(data(r)["text"])).toContain("A rename renames, never retargets: this body stays lares-alpha");
+  });
+});
+
+describe("the cold read's cures", () => {
+  test("a lease claim writes under the record's live hash and reads again past a conflict", async () => {
+    stage({ fields: { lease: "body-a 3 2026-11-24T11:00:00.000Z" }, conflicts: 1 });
+    const r = await run(argv(["om", "lares-alpha"], { body: "body-b" }));
+    expect(data(r)["epoch"]).toBe(4);
+    const leasePuts = puts(URI).filter((c) => (c.args["fields"] as Record<string, string> | undefined)?.["lease"]);
+    expect(leasePuts).toHaveLength(2);
+    expect(leasePuts.every((c) => c.args["base"] === "sha256-rec")).toBe(true);
+  });
+
+  test("every om text names the lease epoch the card stands at", async () => {
+    stage({ fields: { lease: "body-a 3 2026-11-24T11:00:00.000Z" } });
+    expect(String(data(await run(argv(["om", "lares-alpha"])))["text"])).toContain("lease epoch 3");
+  });
+
+  test("a #/voice write the door answers noop sets no distill mark", async () => {
+    stage({ patch: "noop" });
+    await run(argv(["ah", "lares-alpha"], { slot: "#/voice", text: "y" }));
+    expect(puts(URI).some((c) => (c.args["fields"] as Record<string, string> | undefined)?.["distilled"])).toBe(false);
+  });
+
+  test("om reads the carries' lineage in one filter, no read per carry", async () => {
+    const a = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-aaaaaaaaaaaa`, b = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-bbbbbbbbbbbb`;
+    stage({ titles: [a, b], residue: { [a]: { parent: "999999999999" }, [b]: { parent: "999999999999" } } });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(String(data(r)["text"])).toContain("2 carries name the parent 999999999999");
+    expect(h.calls.filter((c) => c.verb === "tiddler-get" && (c.args["title"] === a || c.args["title"] === b))).toHaveLength(0);
+  });
+
+  test("otakiage holds a carry a standing carry names as parent, and a residue another record names", async () => {
+    const parent = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-aaaaaaaaaaaa`, child = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-bbbbbbbbbbbb`;
+    const hand = `${MEMORY_PREFIX}spirit/lares-alpha-handback-cccccccccccc`;
+    const old = { landed: "2026-11-01T00:00:00.000Z" };
+    stage({ titles: [parent, child, hand], fields: { distilled: "2026-11-20T00:00:00.000Z" }, residue: { [parent]: old, [child]: { ...old, parent: "aaaaaaaaaaaa" }, [hand]: old }, mentions: { [hand]: [URI] } });
+    const r = await run(argv(["otakiage", "lares-alpha"]));
+    expect(data(r)["burned"]).toEqual([child]);
+    const held = data(r)["held"] as Array<{ title: string; why: string }>;
+    expect(held.find((x) => x.title === parent)!.why).toContain("names it as its parent");
+    expect(held.find((x) => x.title === hand)!.why).toContain("1 record(s) still name it");
+  });
+
+  test("a handback lands under spirit/<pet> alone and never touches a familiar's record", async () => {
+    stage();
+    const r = await run(argv(["residue", "lares-alpha"], { text: "a report" }));
+    expect(String(data(r)["title"])).toMatch(new RegExp(`^${MEMORY_PREFIX}spirit/lares-alpha-handback-[0-9a-f]{12}$`));
+    expect(h.calls.some((c) => c.args["title"] === URI)).toBe(false);
+  });
+
+  test("the carry refuses a malformed --body, lands for a fenced AI seat, and single-quotes the line it hands back", async () => {
+    stage({ fields: { lease: "body-a 3 2026-11-24T11:00:00.000Z" } });
+    expect((await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "s", body: "bad body!" }))).exit).toBe(2);
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary", epoch: "1" }), { seat: () => true });
+    expect(r.exit).toBe(0);
+    const unfiled = String(data(r)["unfiled"]);
+    expect(unfiled).toContain(`--add '* '\\'''\\''2026-11-24`);
+    expect(unfiled.endsWith(" --epoch 3")).toBe(true);
   });
 });
 

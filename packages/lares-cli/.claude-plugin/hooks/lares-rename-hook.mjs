@@ -7,7 +7,7 @@
  * yet. Any fault exits 0 (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum).
  */
 import { readFileSync } from "node:fs";
-import { hookInput, houseSession, petOf, readState, sessionCounter, sessionPet, titleMismatch, writeState } from "./lares-spirit-core.mjs";
+import { hookInput, houseSession, petOf, readState, sessionCounter, sessionPet, titleMismatch, updateState } from "./lares-spirit-core.mjs";
 
 try {
   let raw = "";
@@ -18,7 +18,7 @@ try {
   if (title !== null && path !== null && houseSession(input, import.meta.url)) {
     const held = readState(path);
     if (held.title !== title) {
-      writeState(path, { ...held, title });
+      updateState(path, (cur) => ({ ...cur, title }));
       const pet = sessionPet(held, petOf(process.argv));
       const line = pet === null ? null : titleMismatch(pet, title);
       if (line !== null) process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: line } })}\n`);

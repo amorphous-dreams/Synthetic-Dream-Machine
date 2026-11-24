@@ -8,7 +8,7 @@
  * (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum).
  */
 import { readFileSync } from "node:fs";
-import { busy, hookInput, houseSession, petOf, readState, sessionCounter, sessionPet, shimRun, stopStep, trueUpText, vesselUp, writeState } from "./lares-spirit-core.mjs";
+import { busy, hookInput, houseSession, petOf, readState, sessionCounter, sessionPet, shimRun, stopStep, trueUpText, updateState, vesselUp } from "./lares-spirit-core.mjs";
 
 try {
   let raw = "";
@@ -18,11 +18,12 @@ try {
   const held = readState(path);
   const pet = sessionPet(held, petOf(process.argv));
   if (pet !== null && path !== null && input.stop_hook_active !== true && !busy(input) && houseSession(input, import.meta.url)) {
-    const step = stopStep(typeof input.session_title === "string" ? { ...held, title: input.session_title } : held);
-    writeState(path, step.state);
-    if (step.fire !== null && (await vesselUp(shimRun(import.meta.url)))) {
+    let step = null;
+    updateState(path, (cur) => { step = stopStep(typeof input.session_title === "string" ? { ...cur, title: input.session_title } : cur); return step.state; });
+    if (step !== null && step.fire !== null && (await vesselUp(shimRun(import.meta.url)))) {
       process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "Stop", additionalContext: trueUpText(pet, step) } })}\n`);
-      if (step.fire === "unfiled") writeState(path, { ...step.state, unfiled: null });
+      // Only the mark this nudge named clears: a landing that marked the counter meanwhile stands for the next stop.
+      if (step.fire === "unfiled") updateState(path, (cur) => ({ ...cur, unfiled: cur.unfiled === step.unfiled ? null : cur.unfiled }));
     }
   }
 } catch { /* A nudge that faults lets the stop through. */ }
