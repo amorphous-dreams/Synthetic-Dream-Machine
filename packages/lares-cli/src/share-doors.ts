@@ -10,7 +10,8 @@ import { join } from "node:path";
 import { larConfigHome } from "@lararium/node";
 import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh";
 import { vesselDid } from "./env.js";
-import { runVerb } from "./verb-call.js";
+import { runVerb, runVerbAsFace } from "./verb-call.js";
+import { sealedAct } from "./sealed-act-door.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "./local-connector.js";
 import { readPersonaRoots, sealedPetnameStore } from "./sealed-records.js";
@@ -100,7 +101,10 @@ export const LIVE_SHARE_DOORS: ShareDoors = {
   verb: async (name, args) => {
     try {
       const did = await vesselDid();
-      const r = await readBackOnExpiry(name, () => runVerb(name, args, did), LIVE_READBACK);
+      // THE LANDING RIDES THE WORN FACE'S SESSION: a landing that seats a face hands it a lockbox from the realm owner's holder, and
+      // that holder signs only under the session the ask books (a one-shot line books none, so it reads `signer-unavailable`).
+      const worn = name === "share-apply" ? await sealedAct<{ face: number }>("face.resolve", { worn: true }).then((f) => f.face, () => null) : null;
+      const r = await readBackOnExpiry(name, () => (worn === null ? runVerb(name, args, did) : runVerbAsFace(name, args, worn).then((one) => (one.refusal?.reason === "face-not-open" ? runVerb(name, args, did) : one))), LIVE_READBACK);
       if (r.status === "error") throw new Error(r.errorMessage ?? `${name} refused`);
       return (summaryOutput(r) ?? {}) as Record<string, unknown>;
     } catch (e) {
