@@ -574,18 +574,23 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
-    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|roster|census|fresher|floor|request|rite> [flags]",
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|release|roster|census|fresher|floor|request|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
       "halts it on the port · `lay` lays every disk mirror back into the layer it mirrors (each disk-sourced " +
       "bags/* holding into its canon through INGEST, then every mirror under the projections root into its one layer, each face root " +
-      "(faces/<pet name>) laid where it stands; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing. Compositions ride " +
+      "(faces/<pet name>) laid where it stands; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing, and needs no verb, so it " +
+      "answers a fallen vessel too (the resting engine falls and every held id, read from the files) · `release <documentId>` " +
+      "ends one quarantine hold with the vessel stopped (`--keep` keeps what stands, `--fresh` starts the id empty). Compositions ride " +
       "`vessel rite <petname>`, so a new cap-stack arrives as a rite rather than another top-level verb. " +
       "Advancing the genesis composition is a MESH act — `nexus kahuli` — never a vessel door.",
     examples: [
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
       "lares vessel read --palaces             # health, plus the palace-organ table",
+      "lares vessel read                       # the step-in reading: resting engine falls and held ids, with no verb (answers a fallen vessel)",
+      "lares vessel release <documentId>       # with the vessel stopped: the quarantined bytes return under the id",
+      "lares vessel release <documentId> --keep   # end the hold, keep what stands under the id",
       "lares vessel roster                     # who is home: the worn face, the seats here and far, the lanes, the open vota",
       "lares vessel lay --apply --yes          # lay every holding (idempotent)",
       "lares vessel lay --apply --verbose      # keep full CREATE detail",
@@ -610,6 +615,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "read --json          the reading as one JSON object (every lens; `read vessel` names each document); a pipe reads the terminal's prose",
       "census --docs        every document the stores hold: its class (current · duplicate · orphan · last-version · sealed-unread), who names it, the unnamed list; removes nothing; --json the full rows",
       "request <requestId>  the receipt the vessel's ledger and durable outcome doc hold; reads, never dispatches; --cancel withdraws the request (the operator's own explicit act)",
+      "release <documentId> --keep   end the hold and keep what stands under the id; --fresh starts a plane no sibling carries empty (the bytes stay aside)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
       "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
       "floor seed --genesis <dir>  the genesis dir whose seed reads (else LAR_GENESIS through the one resolver; an image carries /app/genesis); --json carries `seed`, the line the pūlama takes",
@@ -1331,6 +1337,28 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lag                read the house's lag (canon and workbench) and write nothing",
     ],
     next: ["lares shore", "lares vessel read"],
+    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+  },
+
+  "vessel release": {
+    usage: "usage: lares vessel release <documentId> [--keep|--fresh]",
+    synopsis:
+      "THE HAND'S RELEASE OF ONE QUARANTINED ID, with the vessel stopped. It claims the store for its act and refuses by name " +
+      "where a holder answers (a standing vessel, a command mid-act, or a fallen vessel whose process still lives), naming " +
+      "`lares vessel stop`. `lares vessel read` lists the held ids with no verb, and answers a fallen vessel too.",
+    examples: [
+      "lares vessel read                               # the held ids, and why each one holds",
+      "lares vessel stop                               # the release runs with the vessel stopped",
+      "lares vessel release <documentId>               # the quarantined bytes return; the next stand probes them again",
+      "lares vessel release <documentId> --keep        # end the hold, keep what stands under the id",
+      "lares vessel release <documentId> --fresh       # a plane no sibling carries starts empty; the bytes stay aside",
+    ],
+    flags: [
+      "(bare)     the quarantined bytes return under the id",
+      "--keep     end the hold and keep what stands under the id; the moved-aside copy rests where it lies",
+      "--fresh    start the id empty under its own name (refused for a plane a sibling device carries); the bytes stay aside",
+    ],
+    next: ["lares vessel read", "lares vessel stand"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
   },
 

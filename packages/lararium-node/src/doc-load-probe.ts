@@ -423,8 +423,8 @@ export function quarantineHoldOf(storageDir: string, documentId: string): Quaran
   return quarantineHolds(storageDir).find((h) => h.manifest.documentId === documentId) ?? null;
 }
 
-/** The hand act that ends a hold, as the deep vessel lens takes it. */
-export const QUARANTINE_RELEASE_ACT = "with the vessel stopped, `lares vessel read vessel --release <documentId>` returns the bytes (the next stand probes them again), `--release-keep <documentId>` keeps what stands under the id, or `--release-fresh <documentId>` starts a plane no sibling carries empty while the bytes stay aside";
+/** The hand act that ends a hold: the vessel door's own release (`lares vessel release`). */
+export const QUARANTINE_RELEASE_ACT = "with the vessel stopped (`lares vessel stop`), `lares vessel release <documentId>` returns the bytes (the next stand probes them again), `lares vessel release <documentId> --keep` keeps what stands under the id, or `lares vessel release <documentId> --fresh` starts a plane no sibling carries empty while the bytes stay aside";
 
 function heldVerdict(hold: QuarantineHold): ProbeResult {
   const m = hold.manifest;
@@ -477,7 +477,7 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
     catch (err) { if ((err as NodeJS.ErrnoException).code === "ENOENT") return false; throw err; }
   });
   if (act !== "kept" && hasBytes) {
-    return { ok: false, documentId, why: `bytes already stand under this id at ${live}; \`--release-keep ${documentId}\` releases the hold and keeps them` };
+    return { ok: false, documentId, why: `bytes already stand under this id at ${live}; \`lares vessel release ${documentId} --keep\` releases the hold and keeps them` };
   }
   const newest = held[held.length - 1]!.manifest;
   const freshLands = newest.bagId !== undefined && !isFaceScopedBag(newest.bagId);
@@ -485,17 +485,17 @@ export function releaseQuarantinedDoc(storageDir: string, documentId: string, ac
   // NOTHING LEFT TO KEEP OR RETURN: name only the act that can land. Fresh for a plane no sibling carries; for one a sibling
   // carries, a known copy laid back under the id by hand (from a sibling or a keep bundle), then keep.
   const noBytesAnywhere = freshLands
-    ? `\`--release-fresh ${documentId}\` starts the id empty`
-    : `this plane rides to sibling devices, so lay a known copy (from a sibling or a keep bundle) at ${live}, then \`--release-keep ${documentId}\``;
+    ? `\`lares vessel release ${documentId} --fresh\` starts the id empty`
+    : `this plane rides to sibling devices, so lay a known copy (from a sibling or a keep bundle) at ${live}, then \`lares vessel release ${documentId} --keep\``;
   if (act === "kept" && !hasBytes) {
     return { ok: false, documentId, why: moved !== undefined
-      ? `nothing stands under this id, so a keep would free a blank; \`--release ${documentId}\` returns the moved bytes`
+      ? `nothing stands under this id, so a keep would free a blank; \`lares vessel release ${documentId}\` returns the moved bytes`
       : `nothing stands under this id and the moved bytes no longer rest beside the manifest; ${noBytesAnywhere}` };
   }
   if (act === "fresh") {
     if (!freshLands) {
       const plane = newest.bagId === undefined ? "the manifest names no plane, so a sibling may carry it" : `${newest.bagId} rides to this face's sibling devices`;
-      return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. ${moved !== undefined ? `\`--release ${documentId}\` returns the moved bytes` : `Lay a known copy (from a sibling or a keep bundle) at ${live}, then \`--release-keep ${documentId}\``}` };
+      return { ok: false, documentId, why: `${plane}; a fresh history under the same id would hide a sibling's real copy. ${moved !== undefined ? `\`lares vessel release ${documentId}\` returns the moved bytes` : `Lay a known copy (from a sibling or a keep bundle) at ${live}, then \`lares vessel release ${documentId} --keep\``}` };
     }
     if (existsSync(live)) {
       const aside = mkdtempSync(join(dirname(live), "sync-state-aside-"));
@@ -547,7 +547,7 @@ export function heldPlaneLines(prefix: string, manifest: MountManifest): string[
     } else if (e.status === "pending") {
       lines.push(
         `${prefix} PENDING plane — ${e.documentId} (unresolved: ${e.reason ?? "?"}); ` +
-        "mounted read-only, no bytes moved; a clean stop (exit 0) and a fresh stand re-probe it",
+        "mounted read-only, no bytes moved; a clean stop (exit 0) by `lares vessel stop`, then `lares vessel stand`, re-probes it",
       );
     } else if (e.status === "degraded") {
       lines.push(

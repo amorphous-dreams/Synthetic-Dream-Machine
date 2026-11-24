@@ -419,7 +419,7 @@ route_cli() {
         --) break ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
@@ -446,7 +446,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
@@ -487,6 +487,53 @@ route_cli() {
       return "$rc"
     else waited_run $(pass_env) $(tty_flag) offline "$@"; fi
   fi
+}
+
+# THE STEP-IN READ ON THE HOST. A fallen engine answers no verb, and docker itself may reach no CLI (the daemon wedged, the
+# container mid-restart, an exec docker refuses). The fall rests its count beside the store and each quarantined id rests a
+# manifest, both plain files under the hearth bind, so the shim reads them here with no container: the falls file as the
+# vessel wrote it, the ids held in flight, the ids held in quarantine, and the hand act. It opens no store and writes nothing.
+host_read() { # $1 = why docker reaches no CLI
+  hr_store="$HOUSE/hearth/vessel"
+  printf 'lares-container: %s, so the read runs on the host over %s (no verb, nothing opened)\n' "$1" "$hr_store" >&2
+  if [ ! -d "$hr_store" ]; then printf 'store absent: %s (no vessel founded at this house)\n' "$hr_store"; return 0; fi
+  if [ -f "$hr_store/.engine-falls" ]; then
+    printf 'engine falls (%s):\n' "$hr_store/.engine-falls"
+    sed 's/^/  /' "$hr_store/.engine-falls"
+    sed -n 's/.*"inFlight"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$hr_store/.engine-falls" | sort -u | while IFS= read -r hr_id; do
+      printf 'held in flight: %s\n' "$hr_id"
+    done
+  else
+    printf 'engine falls: none resting\n'
+  fi
+  # One line per held id: an id held across several manifests names the last one the glob reads (dated dirs, oldest first).
+  hr_seen=""
+  for hr_m in "$hr_store"/quarantine-torn-snapshots-*/*.manifest.json; do
+    [ -f "$hr_m" ] || continue
+    if grep -q '"released"' "$hr_m"; then continue; fi
+    hr_id=$(sed -n 's/.*"documentId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$hr_m" | head -n 1)
+    hr_seen=$(printf '%s\n' "$hr_seen" | awk -F= -v id="$hr_id" 'NF && $1 != id')
+    hr_seen=$(printf '%s\n%s=%s' "$hr_seen" "$hr_id" "$hr_m")
+  done
+  printf '%s\n' "$hr_seen" | while IFS= read -r hr_row; do
+    [ -n "$hr_row" ] || continue
+    printf 'held in quarantine: %s (%s)\n' "${hr_row%%=*}" "${hr_row#*=}"
+  done
+  printf '%s\n' 'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand'"'"'s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
+}
+
+# `vessel read`: inside the container where docker reaches one, on the host where it reaches none. A fallen engine answers
+# no standing verdict, so the read asks none after it.
+vessel_read() {
+  follow_up=""
+  if ! vr_running=$(compose ps -q --status running lares 2>/dev/null); then host_read "docker compose ps failed"; return 0; fi
+  vr_restarting=$(compose ps -q --status restarting lares 2>/dev/null) || vr_restarting=""
+  if [ -z "$vr_running" ] && [ -n "$vr_restarting" ]; then host_read "the vessel container restarts, so no command reaches it"; return 0; fi
+  if route_cli vessel "$@"; then return 0; else vr_rc=$?; fi
+  case "$vr_rc" in
+    125|126|127) host_read "docker could not run the read (exit $vr_rc)"; return 0 ;;
+  esac
+  return "$vr_rc"
 }
 
 # THE CENSUS BEFORE A STOP, bounded: the census itself waits on its own lines (ten seconds for the custody door, fifteen
@@ -1499,8 +1546,17 @@ case "$verb" in
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi
         fi ;;
-      # Stopping the daemon stops the container's main process: a host act.
+      # Stopping the daemon stops the container's main process: a host act. A fallen engine reads the signal as the hand's
+      # stop: it clears the restart count (and the holds it carries) and exits 0.
       stop) [ "$#" -eq 1 ] || die "vessel stop takes no option through this shim"; compose stop lares ;;
+      # THE STEP-IN READ asks no standing verdict after it: a fallen engine answers none, and the read reads its files.
+      read) vessel_read "$@" ;;
+      # THE RELEASE HOLDS THE STORE: a standing container refuses here, naming the stop, before anything execs; a stopped
+      # one hands the act to the offline door, whose CLI claims the store for it.
+      release)
+        # A PAUSED container still holds the store (its process stands frozen mid-act), so it reads as standing here.
+        if running_vessel || [ -n "$(compose ps -q --status paused lares 2>/dev/null)" ]; then die "vessel release holds the store, and a vessel stands; stop it first with \`lares vessel stop\`, then release again"; fi
+        route_cli "$verb" "$@" ;;
       rite) route_cli "$verb" "$@" ;;
       *) route_cli "$verb" "$@" ;;
     esac ;;
