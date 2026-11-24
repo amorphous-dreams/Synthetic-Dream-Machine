@@ -1264,13 +1264,16 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("wiki_filter"))
     def wiki_filter(filter: str, recipe: "str | None" = None,  # noqa: A002 — TiddlyWiki's own word
                     fields: "list | None" = None, limit: "int | None" = None, after: "str | None" = None,
-                    max_bytes: "int | None" = None, target: "str | None" = None) -> dict:
+                    max_bytes: "int | None" = None, target: "str | None" = None, collapse: bool = False) -> dict:
         """Run A TIDDLYWIKI FILTER in the wiki's own engine and read ONE BOUNDED PAGE of its answer — mirrors `lares wiki
         filter '<filter>'`. The filter language reads as TiddlyWiki's own: `[tag[memory]sort[title]]`, `[search[cursor]]`,
         `[prefix[lar:///ha.ka.ba/kahua/memory/]]`, `[has[status]!status[done]]`; the LINK GRAPH rides it too:
         `[[Title]backlinks[]]`, `[[Title]links[]]`, `[[Title]transcludes[]]`, `[[Title]backtranscludes[]]`. Returns
         {recipe, filter, titles, total, next, asOf}; name `fields` (e.g. ["tags", "status"]) and each row carries them:
-        {…, rows: [{title, fields}], …} in place of `titles`. THE ANSWER PAGES: at most 32 rows and `max_bytes` (default
+        {…, rows: [{title, fields}], …} in place of `titles`. `collapse=True` reads the UPCOMING WORK SKINNY: each row carries
+        `bytes`, and a meme root its `slots: [{slot, bytes, first}]` (the has-stack `tiddler_get(meme=True, grain="skinny")`
+        answers, built by the same code), so one filter surveys N memes; unfold the one you need with
+        `tiddler_get(title=<root>, meme=True, slot="#/name")`. THE ANSWER PAGES: at most 32 rows and `max_bytes` (default
         65536) per call; `total` counts every match and `next` names the cursor of the page behind: hand it back as
         `after` until `next` reads null. A wiki that moved between pages refuses `filter-cursor-stale` (read again from
         the first page). A filter the engine cannot parse refuses `filter-malformed` with the engine's words. `withheld`
@@ -1288,6 +1291,8 @@ def build_mcp(coordinator: LaresCoordinator):
             args["limit"] = limit
         if after:
             args["after"] = after
+        if collapse:
+            args["collapse"] = True
         if max_bytes is not None:
             args["maxBytes"] = max_bytes
         return _meme_wire("wiki-filter", args)

@@ -5,7 +5,7 @@
  *
  * The contract every skin (this, the CLI's `lares tiddler|wiki`, the MCP seat's `tiddler_*|wiki_*`) carries verbatim:
  *
- *   wiki-filter    { recipe, filter, fields?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
+ *   wiki-filter    { recipe, filter, fields?, collapse?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
  *   tiddler-get    { recipe, title, meme?, grain?, slot?, after?, fields?, maxBytes? }
  *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
@@ -74,13 +74,13 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
 import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
-import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type GrainEcho, type ReadGrain } from "./read-gradient.js";
+import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
 import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
-import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
+import { pageFilterAnswer, filterCursor, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
@@ -484,6 +484,25 @@ async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbC
 
 // ── wiki-filter ───────────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * ONE ROW'S COLLAPSED FORM. A meme root answers the bytes of its whole carrier and its slots (`{slot, bytes, first}`), built by the
+ * skinny grain of `memeGradient`, the builder `tiddler get --meme --skinny` reads; a pointer answers the `size` it names; any other
+ * record answers the bytes of its text. The slots unfold one at a time by `tiddler get <root> --meme --slot <name>`.
+ */
+async function collapseOf(
+  sink: Pick<MemeSink, "titles" | "read">, title: string, fields: Record<string, string>,
+): Promise<{ bytes: number; slots?: CarrierSlot[] }> {
+  if (isMemeRoot(title, fields) && !isPointer(fields)) {
+    const meme = await readMeme(title, sink);
+    if (meme !== null) {
+      const read = memeGradient(meme, { grain: "skinny" });
+      return { bytes: read.bytes, slots: read.slots };
+    }
+  }
+  if (isPointer(fields)) return { bytes: Number(fields["size"]) || 0 };
+  return { bytes: byteLength(fields["text"] ?? "") };
+}
+
 export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "wiki-filter");
@@ -501,16 +520,38 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
       else withheld++;
     }
     const names = namesArg(args["fields"]);
-    const rowOf = names === null ? undefined : (title: string): FilterRow => {
+    const collapse = flagOn(args["collapse"]);
+    const limit = countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS);
+    const after = optionalStringArg(args, "after");
+    // THE COLLAPSE LENS: each row of the page's window carries its bytes, and a meme root its slots, read through the one skinny
+    // builder (`collapseOf`: `readMeme` and `memeGradient` at the skinny grain, the has-stack `tiddler get --meme --skinny` answers).
+    // The window reads ahead of the page law, which stays sync; a row the byte cap leaves for the next page costs one wasted read.
+    const collapsed = new Map<string, { bytes: number; slots?: CarrierSlot[]; withheld?: number }>();
+    if (collapse) {
+      // The reader's titles and the wiki's read once for the whole window, never once per row.
+      const readable = view.allTitles();
+      const held = wiki.allTitles();
+      const sink = { titles: () => readable, read: (t: string) => (view.getTiddler(t) as { fields?: TiddlerFields } | undefined)?.fields };
+      const { offset } = filterCursor(titles, after);
+      const readableSet = new Set(readable);
+      for (const title of titles.slice(offset, offset + limit)) {
+        const row = await collapseOf(sink, title, readRecord(view.getTiddler(title)!).fields);
+        // As `tiddler get --meme` names it: slot records this face may not read never enter the slots, and the row says so.
+        const prefix = `${title}#`;
+        const withheldSlots = row.slots === undefined ? 0 : held.filter((t) => t.startsWith(prefix) && !staysHome(t) && !readableSet.has(t)).length;
+        collapsed.set(title, withheldSlots > 0 ? { ...row, withheld: withheldSlots } : row);
+      }
+    }
+    const rowOf = names === null && !collapse ? undefined : (title: string): FilterRow => {
       const tiddler = view.getTiddler(title);
       const held = tiddler ? readRecord(tiddler).fields : {};
       const fields: Record<string, string> = {};
-      for (const name of names) if (typeof held[name] === "string") fields[name] = held[name]!;
-      return { title, fields };
+      for (const name of names ?? []) if (typeof held[name] === "string") fields[name] = held[name]!;
+      return { title, fields, ...collapsed.get(title) };
     };
     const page = pageFilterAnswer(titles, {
-      after: optionalStringArg(args, "after"),
-      limit: countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS),
+      after,
+      limit,
       maxBytes: countArg(args["maxBytes"], WIKI_FILTER_BYTES, 64, WIKI_ANSWER_BYTES_MAX),
       ...(rowOf ? { rowOf } : {}),
     });

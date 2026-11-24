@@ -62,6 +62,69 @@
       }
     },
     {
+      "tool": "wiki_filter",
+      "cli": {
+        "command": "wiki",
+        "positional": [
+          "filter",
+          "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]"
+        ],
+        "options": {
+          "recipe": "default",
+          "limit": "5"
+        },
+        "flags": {
+          "collapse": true
+        }
+      },
+      "mcp": {
+        "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]",
+        "recipe": "default",
+        "limit": 5,
+        "collapse": true
+      },
+      "wire": {
+        "verb": "wiki-filter",
+        "args": {
+          "recipe": "default",
+          "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]",
+          "collapse": true,
+          "limit": 5
+        }
+      },
+      "output": {
+        "recipe": "default",
+        "filter": "[prefix[lar:///ha.ka.ba/kahua/memory/road/]sort[title]]",
+        "rows": [
+          {
+            "title": "lar:///ha.ka.ba/kahua/memory/road/wave/one",
+            "fields": {},
+            "bytes": 412,
+            "slots": [
+              {
+                "slot": "#/entry",
+                "bytes": 96,
+                "first": "! Entry"
+              },
+              {
+                "slot": "#/filters",
+                "bytes": 188,
+                "first": "!! Filters"
+              }
+            ]
+          },
+          {
+            "title": "lar:///ha.ka.ba/kahua/memory/road/wave/two#/entry",
+            "fields": {},
+            "bytes": 96
+          }
+        ],
+        "total": 9,
+        "next": "2.0123456789abcdef",
+        "asOf": "0123456789abcdef"
+      }
+    },
+    {
       "tool": "tiddler_get",
       "cli": {
         "command": "tiddler",

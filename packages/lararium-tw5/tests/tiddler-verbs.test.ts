@@ -443,6 +443,82 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 04", text: "a read rewrite", base: fat.hash }, ctx())).toMatchObject({ decision: "put" });
   });
 
+  test("filter-collapse: a meme root's row carries the same slots and bytes the skinny get answers; a plain row carries its bytes alone; CONTROL: no collapse leaves the rows as they were", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    const skinny = (await get({ ...A, title: MEME, meme: true, grain: "skinny" }, ctx()))["meme"] as { bytes: number; slots: Array<{ slot: string; bytes: number; first: string | null }> };
+    const out = await filter({ ...A, filter: `[[${MEME}]] [[Other]]`, collapse: true }, ctx());
+    const rows = out["rows"] as Array<{ title: string; bytes: number; slots?: unknown[] }>;
+    expect(rows.map((x) => x.title)).toEqual([MEME, "Other"]);
+    expect(rows[0]).toMatchObject({ bytes: skinny.bytes, slots: skinny.slots });
+    expect(skinny.slots.map((s) => s.slot)).toEqual(["#/a", "#/b"]);
+    expect(rows[1]!.bytes).toBe(8);
+    expect(rows[1]!.slots, "a plain row carries no slots").toBeUndefined();
+    const plain = await filter({ ...A, filter: `[[${MEME}]] [[Other]]` }, ctx());
+    expect(plain["titles"]).toEqual([MEME, "Other"]);
+    expect(plain["rows"]).toBeUndefined();
+    const named = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true, fields: ["description"] }, ctx());
+    expect((named["rows"] as Array<Record<string, unknown>>)[0]).toMatchObject({ title: MEME, fields: {}, slots: skinny.slots });
+  });
+
+  test("filter-collapse: the page law counts the collapsed rows' bytes; a cap cuts the page short and the cursor continues", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b", "c", "d"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const first = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 400 }, ctx());
+    const rows = first["rows"] as Array<{ title: string }>;
+    expect(rows[0]!.title).toBe(MEME);
+    expect(JSON.stringify(rows).length).toBeLessThanOrEqual(400);
+    expect(first["next"]).not.toBeNull();
+    expect(rows.length).toBeLessThan(first["total"] as number);
+    const second = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 400, after: first["next"] }, ctx());
+    expect((second["rows"] as Array<{ title: string }>)[0]!.title).not.toBe(MEME);
+  });
+
+  test("filter-collapse: a first row past the byte cap sheds its slots by name and keeps its bytes; the pages join with no title repeated or skipped", async () => {
+    const r = await rig();
+    const many = Array.from({ length: 24 }, (_, i) => `slot${i}`);
+    expect((await placeMeme({ uri: MEME, text: memeText(many) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    const skinny = (await get({ ...A, title: MEME, meme: true, grain: "skinny" }, ctx()))["meme"] as { bytes: number; slots: unknown[] };
+    expect(skinny.slots).toHaveLength(24);
+    const cap = 160;
+    const first = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: cap }, ctx());
+    const rows = first["rows"] as Array<{ title: string; bytes?: number; slots?: unknown[]; omitted?: string[] }>;
+    expect(rows[0]).toMatchObject({ title: MEME, bytes: skinny.bytes });
+    expect(rows[0]!.slots).toBeUndefined();
+    expect(rows[0]!.omitted).toContain("slots");
+    expect(JSON.stringify(rows).length).toBeLessThanOrEqual(cap);
+    const seen: string[] = rows.map((x) => x.title);
+    let after = first["next"] as string | null;
+    while (after) {
+      const page: Record<string, unknown> = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 4096, after }, ctx());
+      seen.push(...(page["rows"] as Array<{ title: string }>).map((x) => x.title));
+      after = page["next"] as string | null;
+    }
+    const whole = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, limit: 32 }, ctx());
+    expect(seen).toEqual(whole["titles"]);
+  });
+
+  test("filter-collapse: a meme root whose slot records rest in an unreadable layer carries withheld on its row, as the meme get names it; CONTROL: a readable family withholds none", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const open = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true }, ctx());
+    expect((open["rows"] as Array<Record<string, unknown>>)[0]!["withheld"]).toBeUndefined();
+    const SECRET = "lar:///ha.ka.ba/bags/secret";
+    const held = r.engine.wiki.getTiddler(`${MEME}#/b`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...held, "$origin-bag": SECRET });
+    const partial: Cap = async (access, bag) => (bag === SECRET ? { ok: false, reason: "no-grant" } : access === "read" || bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+    const out = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true }, ctx(partial));
+    const row = (out["rows"] as Array<{ withheld?: number; slots: Array<{ slot: string }> }>)[0]!;
+    expect(row.withheld).toBe(1);
+    expect(row.slots.map((x) => x.slot)).toEqual(["#/a"]);
+  });
+
   test("RED L1: a word the lens or the grain does not read refuses by name, before anything reads", async () => {
     const r = await rig();
     expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
