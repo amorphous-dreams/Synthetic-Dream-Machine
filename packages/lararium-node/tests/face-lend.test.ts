@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { faceLives, type FaceLifeEffects } from "../src/face-lifecycle.js";
-import { adoptFirstLit, composeRefusalHearing, faceLend, openingNewer, type FaceLendPorts } from "../src/face-lend.js";
+import { adoptFirstLit, composeRefusalHearing, faceLend, openingNewer, settleFaceSaves, type FaceLendPorts } from "../src/face-lend.js";
 
 const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
@@ -53,11 +53,9 @@ describe("the island's refusal of a manifest face reaches that face's own life",
       { ordinal: 2, atomKey: "ef02", opening: v.lives.opening(2)! },
     ], v.lives);
     hear("abcd01", STALE);
-    v.drains.get(1)!.resolve(); await settle();
     expect(v.lives.refusedLights()).toEqual([{ ordinal: 1, cause: STALE }]);
     expect(v.lives.state(2).kind, "another face of the same open keeps standing").toBe("lit");
     hear("0xEF02", STALE);
-    v.drains.get(2)!.resolve(); await settle();
     expect(v.lives.refusedLights().map((r) => r.ordinal)).toEqual([1, 2]);
   });
   test("CONTROLS: a key the open never composed changes nothing; a refusal from an open whose face has since lit anew names a life that left", async () => {
@@ -72,6 +70,25 @@ describe("the island's refusal of a manifest face reaches that face's own life",
     stale("k1", STALE);
     expect(v.lives.state(1).kind, "the new life keeps its island entry").toBe("lit");
     expect(v.lives.refusedLights()).toEqual([]);
+  });
+});
+
+describe("a face's waiting saves at its teardown", () => {
+  const rest = () => {
+    const waiting = new Map([["doc-a", 1], ["doc-b", 2], ["doc-c", 0]]);
+    const forgot: string[][] = [];
+    return { waiting, forgot, ports: { waiting: (id: string) => waiting.get(id) ?? 0, forget: (ids: readonly string[]) => { forgot.push([...ids]); let n = 0; for (const id of ids) { n += waiting.get(id) ?? 0; waiting.delete(id); } return n; } } };
+  };
+  test("RED: a REFUSED face's waiting saves stay held: nothing forgets them, and the count names what waits for its next light", () => {
+    const r = rest();
+    expect(settleFaceSaves(["doc-a", "doc-b", "doc-c"], "refused", r.ports)).toEqual({ dropped: 0, held: 3 });
+    expect(r.forgot, "no save of a refused face leaves memory").toEqual([]);
+    expect(r.ports.waiting("doc-b")).toBe(2);
+  });
+  test("CONTROL: a face that CLOSED (its drain answered) forgets what its documents still carry, as it did", () => {
+    const r = rest();
+    expect(settleFaceSaves(["doc-a", "doc-b", "doc-c"], undefined, r.ports)).toEqual({ dropped: 3, held: 0 });
+    expect(r.forgot).toEqual([["doc-a", "doc-b", "doc-c"]]);
   });
 });
 

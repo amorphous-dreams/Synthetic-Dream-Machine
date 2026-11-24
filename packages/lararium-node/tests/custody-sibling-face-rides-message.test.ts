@@ -255,6 +255,17 @@ test("R9 THE DOOR AND THE CENSUS SAY ONE LINE: the session door's dark line for 
   }
 });
 
+test("R9 THE DARK ROW NAMES ITS HELD SAVES: a refused face whose saves wait in memory reads their count on its row and its line; one with none reads no count", () => {
+  const cause = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [row] = servedDark([{ ordinal: 2, cause, heldSaves: 1 }], [0, 2], true);
+  expect(row).toMatchObject({ face: 2, cause, heldSaves: 1 });
+  expect(row!.note).toContain("1 save(s) of its own wait held in memory");
+  expect(row!.note).toContain("lares vault recard --face 2");
+  const [bare] = servedDark([{ ordinal: 2, cause, heldSaves: 0 }], [0, 2], true);
+  expect(bare!.note).not.toContain("held in memory");
+  expect(doorDarkLine(() => [{ ordinal: 2, cause, heldSaves: 1 }], true)(2)).toBe(row!.note);
+});
+
 test("R9 A REFUSED FACE THAT HOLDS CLOSING NAMES ITSELF: the census and the door read one line for it, naming the saves that hold it and the lock that drives its close again", () => {
   const cause = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
   const [row] = servedDark([], [0, 2], true, [{ ordinal: 2, cause }]);

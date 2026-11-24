@@ -642,7 +642,7 @@ interface StandingComposition {
   /** Hold every face past CLOSED right before the vessel key locks; false where any stands lit. Absent at the floor. */
   readonly holdFaces?: () => boolean;
   /** Each face dark here because its last light refused, with its cause. Absent at the floor. */
-  readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
   /** Each face the island's open refused that still holds closing over unsealed saves, with its cause. Absent at the floor. */
   readonly refusedCloses?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now, awaited. Absent at the floor. */

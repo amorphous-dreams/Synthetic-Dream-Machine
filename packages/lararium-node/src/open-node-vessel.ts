@@ -182,7 +182,7 @@ import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, refreshLitArchives, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed, type LightAnswer } from "./face-lifecycle.js";
-import { adoptFirstLit, composeRefusalHearing, faceLend, type ComposedFace } from "./face-lend.js";
+import { adoptFirstLit, composeRefusalHearing, faceLend, settleFaceSaves, type ComposedFace } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -633,7 +633,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** Hold every face this composition knows past CLOSED right before the vessel key locks; false where any stands lit. */
   holdFaces: () => boolean;
   /** Each face dark here because its last light refused, with its cause (the census names it served-but-dark). */
-  refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
   /** Each face the island's open refused that still holds closing over unsealed saves, with its cause (`FaceLives.refusedCloses`). */
   refusedCloses: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now: every served face neither mounted, lit nor closing at its source lights (the served-but-dark clearing line). */
@@ -853,7 +853,7 @@ interface NodeBootPrep {
   releaseFaces: () => void;
   holdFace: (ordinal: number) => boolean;
   holdFaces: () => boolean;
-  refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
   refusedCloses: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   replayLend: () => Promise<void>;
   armRecard: (ordinal: number) => void;
@@ -1079,13 +1079,19 @@ async function prepareNodeBootOn(
   const siblingPlanes = siblingPlaneMounts();
   /** A sibling's plane mount leaves whole: its two documents leave the Repo's cache and any save of theirs waiting in memory
    *  drops unwritten, so nothing of the pair stays decrypted or replicating while the face stands dark. */
-  const dropSiblingPlanes = (group: string): void => {
+  const dropSiblingPlanes = (group: string, why?: "refused"): string[] => {
     const unmounted = siblingPlanes.drop(group);
-    if (unmounted.length === 0) return;
-    sealedRest.forget(unmounted);
+    if (unmounted.length === 0) return [];
+    // A REFUSED FACE'S PLANE SAVES STAY HELD, as its own documents' do (`settleFaceSaves`).
+    settleFaceSaves(unmounted, why, { forget: (ids) => sealedRest.forget(ids), waiting: (id) => sealedRest.store.waiting(id) });
     for (const id of unmounted) void repo.removeFromCache(id as never).catch(() => {});
     sealedRest.store.mapMoved();
+    return [...unmounted];
   };
+  /** EACH REFUSED FACE'S DOCUMENTS, kept from the teardown its refusal ran: their waiting saves stay held for its next light,
+   *  and the census counts them on the face's dark row. A clean close of the face clears its entry. */
+  const refusedHeldDocs = new Map<number, string[]>();
+  const heldSavesOf = (ordinal: number): number => (refusedHeldDocs.get(ordinal) ?? []).reduce((n, id) => n + sealedRest.store.waiting(id), 0);
   /**
    * EACH FACE LIVES ONE LIFE (`face-lifecycle`): one lifecycle actor per face this composition may light, the mount's beside each
    * sibling's. The actor alone holds a face's opening, its island atom key and its custody opening; the door admits work and
@@ -1106,7 +1112,7 @@ async function prepareNodeBootOn(
     light: (ordinal, opening, live) => lightSlow(ordinal, opening, live),
     drainSaves: (ordinal) => drainFaceSaves(ordinal),
     dropWorker: (_ordinal, atomKey) => daemonVm.dropFace(atomKey),
-    teardownHost: (ordinal) => teardownFaceHost(ordinal),
+    teardownHost: (ordinal, _opening, why) => teardownFaceHost(ordinal, why),
     recompose: (reason) => restartForFaces(reason),
     // A FACE BACK AT DARK REPLAYS THE LEND: a face the lend still serves lights again, under a fresh opening.
     onDark: () => replayLend(),
@@ -2628,14 +2634,18 @@ async function prepareNodeBootOn(
   let siblingPlanesOf: (group: string) => Promise<{ readonly persona: string; readonly intents: string } | null> = async () => null;
   /** Remove the face's owned resources together; an obsolete failure cannot remove its replacement. */
   /** `keepPlanes`: the face's plane mount stays (a re-seat under a fresh entry, whose light just landed that mount). */
-  const removeSibling = (group: string, expected = siblingFaces.get(group), keepPlanes = false): void => {
+  /** `why` "refused": the island refused the face, so its waiting saves stay held in memory for its next light (`settleFaceSaves`). */
+  const removeSibling = (group: string, expected = siblingFaces.get(group), keepPlanes = false, why?: "refused"): void => {
     if (!expected || siblingFaces.get(group) !== expected) return;
     siblingFaces.delete(group);
-    if (!keepPlanes) dropSiblingPlanes(group);
+    const planes = keepPlanes ? [] : dropSiblingPlanes(group, why);
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
-    const dropped = sealedRest.forget(owned);
+    const { dropped, held } = settleFaceSaves(owned, why, { forget: (ids) => sealedRest.forget(ids), waiting: (id) => sealedRest.store.waiting(id) });
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
+    if (why === "refused") refusedHeldDocs.set(expected.ordinal, [...new Set([...(refusedHeldDocs.get(expected.ordinal) ?? []), ...owned, ...planes])]);
+    else refusedHeldDocs.delete(expected.ordinal);
     if (dropped > 0) console.log(`[sealed-rest] face h${expected.ordinal} left: ${dropped} waiting save(s) of its own dropped from memory, none written`);
+    if (held > 0) console.log(`[sealed-rest] face h${expected.ordinal} went dark refused: ${held} waiting save(s) of its own stay held in memory, unwritten, until its next light seals them`);
     dropSiblingSession(group);
     siblingBasesKeepers.get(group)?.stop();
     siblingBasesKeepers.delete(group);
@@ -2670,11 +2680,14 @@ async function prepareNodeBootOn(
     await drainPlans(ordinal, plans, { drain: (session, docs) => sealedRest.drain(session, docs), waiting: (id) => sealedRest.store.waiting(id) });
   };
   /** A closed face's host side drops: what still waits unsaved (from memory, never to disk), its cache, session and keepers. */
-  const teardownFaceHost = (ordinal: number): void => {
-    for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held);
+  const teardownFaceHost = (ordinal: number, why?: "refused"): void => {
+    for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held, false, why);
     // THE LIT LIFE BOUNDS A SIBLING'S PLANE MOUNT: the close takes it whole, whether or not its host side ever stood.
     const closing = faceEntries.get(ordinal);
-    if (closing) dropSiblingPlanes(closing.personaGroupId);
+    if (closing) {
+      const planes = dropSiblingPlanes(closing.personaGroupId, why);
+      if (why === "refused" && planes.length > 0) refusedHeldDocs.set(ordinal, [...new Set([...(refusedHeldDocs.get(ordinal) ?? []), ...planes])]);
+    }
     // THE CUSTODY ID STAYS PAST DARK: the lend sweep the return to dark replays reads it to skip a face its pūlama names closing
     // (the next light reads it afresh).
     faceEntries.delete(ordinal);
@@ -5494,7 +5507,8 @@ async function prepareNodeBootOn(
     holdFace: (ordinal) => { recardArmed.clear(ordinal); return faceLife.hold(ordinal); },
     // Every face reads, none skipped: each past CLOSED takes its hold, and one standing lit answers no.
     holdFaces: () => { recardArmed.clearAll(); return faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal)).every(Boolean); },
-    refusedLights: () => faceLife.refusedLights(),
+    // EACH DARK ROW COUNTS ITS HELD SAVES: what a refused face's teardown kept in memory for its next light.
+    refusedLights: () => faceLife.refusedLights().map((r) => ({ ...r, heldSaves: heldSavesOf(r.ordinal) })),
     refusedCloses: () => faceLife.refusedCloses(),
     replayLend: () => replayLendNow(),
     armRecard: (ordinal) => { recardArmed.arm(ordinal); },

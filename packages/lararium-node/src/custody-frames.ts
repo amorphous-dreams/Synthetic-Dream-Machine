@@ -137,7 +137,7 @@ export type CustodyAnswer =
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
 /** A face its custody serves that stands dark here: its last light refused. The note names the cause and the clearing line. */
-export interface ServedDark { readonly face: number; readonly cause: string; readonly note: string }
+export interface ServedDark { readonly face: number; readonly cause: string; readonly note: string; /** Saves of its own held in memory, unwritten, for its next light. */ readonly heldSaves?: number }
 
 /**
  * The act that lights a served-but-dark face again. A face that holds no prekey secret (`STALE_LIGHT`) refuses every replay of
@@ -149,8 +149,8 @@ export const darkCure = (face: number, cause: string, pulama = false): string =>
     : `recard it at your own terminal, keeping its identity: lares vault recard --face ${face} (the face's own passphrase)`;
 
 /** The served-but-dark line: the face, why its light refused, and the act that lights it again (`darkCure`). */
-export const servedDarkNote = (face: number, cause: string, pulama = false): string =>
-  `h${face} served by custody, dark here: its light refused (${cause}); ${darkCure(face, cause, pulama)}`;
+export const servedDarkNote = (face: number, cause: string, pulama = false, heldSaves = 0): string =>
+  `h${face} served by custody, dark here: its light refused (${cause}); ${darkCure(face, cause, pulama)}${heldSaves > 0 ? `; ${heldSaves} save(s) of its own wait held in memory, unwritten, and seal once it lights` : ""}`;
 
 /**
  * The line for a face the island's open refused that still HOLDS CLOSING: saves of its own wait unsealed, so nothing of it
@@ -159,14 +159,14 @@ export const servedDarkNote = (face: number, cause: string, pulama = false): str
 export const heldClosingNote = (face: number, cause: string): string =>
   `h${face} served by custody, closing here: the island composed without it (${cause}), and saves of its own wait unsealed, so it holds closing and nothing dropped; drive its close again: \`lares vault lock --face ${face}\`, then \`lares vessel census\` reads what lights it`;
 
-type RefusedFace = { readonly ordinal: number; readonly cause: string };
+type RefusedFace = { readonly ordinal: number; readonly cause: string; readonly heldSaves?: number };
 
 /**
  * The served-but-dark set: each face whose light refused here that its custody serves (the lit set), with its note; beside
  * them each served face the island's open refused that still holds closing (`closing`), with the line that drives it again.
  */
 export const servedDark = (refused: readonly RefusedFace[], lit: readonly number[], pulama = false, closing: readonly RefusedFace[] = []): ServedDark[] => [
-  ...refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause, pulama) })),
+  ...refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause, pulama, r.heldSaves ?? 0), ...(r.heldSaves ? { heldSaves: r.heldSaves } : {}) })),
   ...closing.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: heldClosingNote(r.ordinal, r.cause) })),
 ];
 
@@ -178,7 +178,7 @@ export const servedDark = (refused: readonly RefusedFace[], lit: readonly number
 export const doorDarkLine = (refused: () => readonly RefusedFace[], pulama: boolean, closing: () => readonly RefusedFace[] = () => []): ((face: number) => string | null) =>
   (face) => {
     const dark = refused().find((r) => r.ordinal === face);
-    if (dark !== undefined) return servedDarkNote(face, dark.cause, pulama);
+    if (dark !== undefined) return servedDarkNote(face, dark.cause, pulama, dark.heldSaves ?? 0);
     const held = closing().find((r) => r.ordinal === face);
     return held === undefined ? null : heldClosingNote(face, held.cause);
   };
@@ -200,7 +200,7 @@ export interface CustodyFrameDeps {
   /** Hold every face the standing composition knows past CLOSED, right before the vessel key locks; false where any stands lit. */
   readonly holdFaces?: () => boolean;
   /** Each face dark here because its last light refused, with its cause. */
-  readonly refusedLights?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>;
+  readonly refusedLights?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
   /** Each face the island's open refused that still holds closing over unsealed saves, with its cause (`FaceLives.refusedCloses`). */
   readonly refusedCloses?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now (the served-but-dark clearing line), awaited. */

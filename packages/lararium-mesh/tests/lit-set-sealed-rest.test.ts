@@ -197,6 +197,26 @@ describe("the lit set: each open face seals under its own key", () => {
     await r.repo.shutdown();
   });
 
+  // A face the island refused goes dark with its host side down and its waiting saves KEPT: its document leaves the Repo's
+  // cache (nothing of a dark face stays decrypted), and the save it could not seal waits in the store's memory for its next seat.
+  it("LS7 — a refused face's held save outlives its dark: its document leaves the cache, nothing forgets the save, and once the face lights its own session seals it to rest", async () => {
+    const r = await twoFaces();
+    const theirs = docOfB<{ note?: string }>(r, (d) => { d.note = "written while b's light refused"; });
+    await r.repo.flush();
+    const held = r.rest.store.waiting(theirs.documentId);
+    expect(held).toBeGreaterThan(0);
+    await r.repo.removeFromCache(theirs.documentId);
+    expect(r.rest.store.waiting(theirs.documentId), "the save stays held through the dark").toBe(held);
+    expect(restsAny(r.inner, theirs.documentId), "and never reaches disk unsealed").toBe(false);
+    // THE RECARD'S LIGHT: b joins the lit set, and its own session books and seals what waited.
+    r.open.add(r.faceB);
+    expect(await r.rest.rebook(r.sessionB)).toBeGreaterThan(0);
+    expect(r.rest.store.waiting(theirs.documentId)).toBe(0);
+    expect(restsAny(r.inner, theirs.documentId), "the held save rests sealed").toBe(true);
+    expect(r.sealedBy.filter((s) => s.bagId === BAG_B).every((s) => s.subject === r.faceB)).toBe(true);
+    await r.repo.shutdown();
+  });
+
   it("LS6 — each hat its own holder: b's open names b's face and a's names a's, so each opens under its own holder", async () => {
     const r = await twoFaces();
     r.open.add(r.faceB);

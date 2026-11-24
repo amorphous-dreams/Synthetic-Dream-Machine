@@ -70,8 +70,12 @@ export interface FaceLifeEffects {
   drainSaves(ordinal: number, opening: string): Promise<void>;
   /** Tell the island to drop the face's entry: resolve = the island acknowledged, reject = it refused the drop. */
   dropWorker(ordinal: number, atomKey: string): Promise<void>;
-  /** Drop the host side (its documents' waiting saves from memory, its cache, session and keepers). Synchronous. */
-  teardownHost(ordinal: number, opening: string): void;
+  /**
+   * Drop the host side (its cache, session and keepers). Synchronous. After a close its documents' waiting saves leave memory:
+   * the drain answered for them. `why` reads "refused" where the island's open refused the face (`composeRefused`): no drain
+   * could run, so every waiting save of its own stays held in memory, unwritten, for the seat its next light stands.
+   */
+  teardownHost(ordinal: number, opening: string, why?: "refused"): void;
   /**
    * Compose the island again from every face whose actor reads `lit` (the island supervisor). Its open answers the actors through
    * `recomposed`, naming the faces it composed with; this promise only says the restart ran.
@@ -157,15 +161,16 @@ export interface FaceLives {
   adopt(ordinal: number, lit: FaceLit): void;
   /**
    * THE ISLAND'S OPEN REFUSED A FACE ITS MANIFEST CARRIED: the island holds no entry for the life that stood lit under
-   * `at.opening` at that open, so that life ends dark with the refusal's `cause` (`refusedLights`), and the island is asked no
-   * drop. A refusal names ONE life: a face that closed and lit again since lives under another opening and hears nothing, as
-   * does a face dark, lighting or never known.
+   * `at.opening` at that open, so that life goes dark with the refusal's `cause` (`refusedLights`). A refusal names ONE life:
+   * a face that closed and lit again since lives under another opening and hears nothing, as does a face dark, lighting or
+   * never known.
    *
-   * A DRAIN THAT FAILS HOLDS, HERE TOO: the refused life closes by the close's own law. Its saves drain first (a drain with
-   * nothing waiting answers at once); a drain that faults holds it closing with its host side and its waiting saves standing,
-   * no close waiter resolves over them, and the hold names itself (`refusedCloses`, and a log line naming the lock that drives
-   * the close again). A close already under way keeps that law too. A life this refusal ended replays no lend at its dark (a
-   * refused light replays none).
+   * A REFUSAL IS NO CLOSE. The island refused the face the very seat its saves would seal under, so no drain is asked (it
+   * could never answer) and no close waiter stands. The life goes dark at once: each admitted visit refuses, the island is
+   * asked no drop, no lend replays (a refused light replays none), and its host side comes down with `why: "refused"`, which
+   * KEEPS every waiting save of its own held in memory for the seat its next light stands. A close already under way when
+   * the refusal lands keeps the close's own law (its drain decides, no waiter resolves here); while it holds, `refusedCloses`
+   * names it.
    */
   composeRefused(ordinal: number, cause: string, at: { readonly opening: string }): void;
   /**
@@ -358,19 +363,19 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
           effects.log(`[face-life] h${ordinal} closes with no island entry: the island composed without it: ${m.cause}`);
           return [];
         }
-        // THE REFUSED LIFE CLOSES BY THE CLOSE'S OWN LAW: its saves drain before anything drops (a drain with nothing waiting
-        // answers at once), a drain that faults holds it, and the island, which holds no entry, is asked no drop.
-        life.atomKey = null;
-        effects.log(`[face-life] h${ordinal}: the island composed without it (${m.cause}); it closes, its saves draining first`);
-        const out = handle(ordinal, actor, { t: "close", reason: "the island composed without it", custody: undefined, hold: false, waiter: {
-          resolve: () => {},
-          // NO ASKER WAITS ON THIS CLOSE, so its hold names itself: the face, why, and the line that drives the close again.
-          reject: (error) => effects.log(`[face-life] h${ordinal} holds closing: the island composed without it, and its saves did not seal (${describe(error)}); nothing dropped. Drive its close again: \`lares vault lock --face ${ordinal}\``),
-        } });
-        const closing = actor.life;
-        if (closing.kind === "closing") closing.quiet = true;
+        // A REFUSAL IS NO CLOSE: no seat stood to drain under, so the life goes dark at once and its host side comes down
+        // keeping its waiting saves. A refused light replays no lend: the next custody event, close or recard lights it.
+        const out: Array<() => void> = [];
+        for (const visit of life.visits.values()) {
+          if (visit.answered) continue;
+          visit.answered = true;
+          out.push(() => visit.refuse(refusal(ordinal)));
+        }
+        const opening = life.opening;
+        actor.life = { kind: "dark" };
         actor.refused = m.cause;
-        return out;
+        effects.log(`[face-life] h${ordinal} did not light: the island composed without it: ${m.cause}`);
+        return [...out, () => effects.teardownHost(ordinal, opening, "refused")];
       }
       case "close": {
         // A close naming a custody opening this face did not light under (one it knows) answers at once and holds nothing: nothing serves it.

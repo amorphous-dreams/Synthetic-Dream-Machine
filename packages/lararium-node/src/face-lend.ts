@@ -70,6 +70,17 @@ export function composeRefusalHearing(manifest: readonly ComposedFace[], faceLif
   };
 }
 
+/**
+ * A FACE'S WAITING SAVES AT ITS TEARDOWN. A face that closed drained first, so what its documents still carry leaves memory
+ * (`forget`). A face the island REFUSED never held a seat to drain under: nothing forgets its saves, and they wait in memory,
+ * unwritten, until the seat its next light stands books and seals them (`composeSealedRest.rebook`). Answers how many dropped
+ * and how many stay held.
+ */
+export function settleFaceSaves(owned: readonly string[], why: "refused" | undefined, rest: { readonly forget: (documentIds: readonly string[]) => number; readonly waiting: (documentId: string) => number }): { readonly dropped: number; readonly held: number } {
+  if (why === "refused") return { dropped: 0, held: owned.reduce((n, id) => n + rest.waiting(id), 0) };
+  return { dropped: rest.forget(owned), held: 0 };
+}
+
 export interface FaceLend {
   /** Read the served set once and send each face its message. */
   sweep(): Promise<void>;
