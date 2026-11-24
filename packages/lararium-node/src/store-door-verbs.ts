@@ -64,6 +64,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { routingString } from "./routing-arg.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
 
@@ -477,7 +478,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const sight = deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
       if (args["action"] === "staged") return sight;
       if (args["action"] === "get") {
-        const title = String(args["title"]);
+        const title = routingString(args, "title", "kahua-read");
         return { has: hasLine(title, [param("source", "kahua-stage"), param("grain", "item"), param("verified", true)]), ...sight,
           source: "kahua-stage", grain: "item",
           ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} --history` } : {}) };

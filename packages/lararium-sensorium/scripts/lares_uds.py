@@ -232,6 +232,30 @@ def _lines(sock: socket.socket):
         yield json.loads(line.decode())
 
 
+def custody_frame(frame: dict, *, timeout: float = 30.0) -> dict:
+    """Send ONE custody frame (a frame the custody door owns: `{"op": "shore-flush"}`, …) and return its one answer, whole.
+
+    Raises LaresDaemonUnreachable when no vessel holds the socket or it closes with no answer. A refusal comes back as the
+    answer itself (`status: "error"` with its `refusal`), for the caller to name."""
+    path = socket_path()
+    if not os.path.exists(path):
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    try:
+        try:
+            s.connect(path)
+        except (ConnectionRefusedError, FileNotFoundError) as e:
+            raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
+        s.sendall((json.dumps(frame) + "\n").encode())
+        answer = next(_lines(s), None)
+    finally:
+        s.close()
+    if not isinstance(answer, dict):
+        raise LaresDaemonUnreachable(f"the vessel answered no {frame.get('op')!r} frame")
+    return answer
+
+
 def resolve_face(face: "int | None" = None, *, timeout: float = 30.0) -> int:
     """The face a seat acts as: the custody door's `face.resolve` act under the seat's reading (`worn`), one frame, one answer.
 

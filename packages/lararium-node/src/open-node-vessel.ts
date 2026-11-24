@@ -232,6 +232,8 @@ import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
 import { islandAskRefusal, tapInboundDocs, ISOLATE_ENGINE } from "./engine-watch.js";
 import { fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
+import { ROUTING_ARG_MALFORMED, routingObject, routingString } from "./routing-arg.js";
+import { VerbRefusal } from "@lararium/mesh";
 import { flushEveryShore, shoreFlushStandDown, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
@@ -4657,8 +4659,12 @@ async function prepareNodeBootOn(
     // wiki-act places slot-targeted residency verbs in the slot's wiki.
     // Promotion from a working slot stays in that slot's wiki island.
     registry.register("wiki-act", async (args, ctx) => {
-      const verb = String(args["verb"]);
-      const innerArgs = (args["args"] as Record<string, unknown>) ?? {};
+      // THE INNER VERB ROUTES AS A STRING OR REFUSES, never coerced: the socket's per-op hand gate reads the same field strictly.
+      const verb = routingString(args, "verb", "wiki-act");
+      if (verb === "") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act names the verb it carries (\`verb\`)`);
+      // NO NESTING: a wiki-act carries a wiki's verb, never another wiki-act, so no envelope wraps one past a gate that reads one level.
+      if (verb.toLowerCase() === "wiki-act") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act carries a wiki's verb, never another wiki-act`);
+      const innerArgs = routingObject(args, "args", "wiki-act");
       const destination = innerArgs["to-bag"] ?? innerArgs["bag"];
       // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
       const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
@@ -4856,13 +4862,13 @@ async function prepareNodeBootOn(
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.
     registry.register("wiki-hold", async (args) => {
-      const slug = String(args["slug"] ?? "");
+      const slug = routingString(args, "slug", "wiki-hold");
       if (!slug) throw new Error("wiki-hold: `slug` required");
       const held = await wikiActivation.hold(slug);
       return { verb: "wiki-hold", slug, held, holds: [...wikiActivation.held()], budget: wikiActivation.grant.pinBudget };
     });
     registry.register("wiki-release", async (args) => {
-      const slug = String(args["slug"] ?? "");
+      const slug = routingString(args, "slug", "wiki-release");
       if (!slug) throw new Error("wiki-release: `slug` required");
       wikiActivation.release(slug);
       return { verb: "wiki-release", slug, holds: [...wikiActivation.held()] };
@@ -5234,7 +5240,7 @@ async function prepareNodeBootOn(
       for (const { slug, dir, name, tree } of readWorkbenches()) {
         const wsLog = (line: string): void => console.log(`[workspaces] ${line}`);
         // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
-        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, String(args["verb"]), (args["args"] as Record<string, unknown>) ?? {}));
+        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, routingString(args, "verb", "wiki-act"), routingObject(args, "args", "wiki-act")));
         const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
         const wsWatch = armWorkspaceWatch({ workspace: dir, tree, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(tree), log: wsLog }), log: wsLog });
         workspaceWatches.add(wsWatch);
