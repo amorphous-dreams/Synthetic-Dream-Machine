@@ -24,7 +24,7 @@
 # that one command. `vault lock` routes to the CLI like any other verb. No flag, env var or pipe carries a credential.
 # A STOP NEVER DROPS CONTENT SILENTLY. While a vessel stands, `down` asks it first (`vessel census`, by compose exec,
 # bounded): the saves its sealed rest holds in memory and the carriers its disk projector has not settled. A clean
-# answer stops as before; any item, or a census that cannot answer, prints what it learned and refuses, naming two ways
+# answer stops as before, printing each peer's unasked push it names (`census: unasked`); any item, or a census that cannot answer, prints what it learned and refuses, naming two ways
 # on: let it settle, by the way the vessel's state names (`wear N` where faces stand open and none worn, `vault unlock`
 # where the key stands shut, a wait where a worn face holds it), then `down` again; or type `accept-loss` on this terminal. With no
 # terminal it refuses. With no vessel standing, `down` runs as it always has.
@@ -650,7 +650,11 @@ function HeldOnlyLine([string]$out) {
 function CensusBeforeStop {
   $c = RunCensus '--no-json'
   $out = $c.Out; $err = $c.Err; $rc = $c.Rc; $timedOut = $c.TimedOut
-  if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) { return }
+  if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
+    # A PEER'S UNASKED PUSH leaves with the stop (that peer keeps its copy): each line names it, never silent.
+    foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: unasked*' })) { [Console]::Error.WriteLine($l) }
+    return
+  }
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: ...`); say it plainly, not "could not answer".
   if (-not $timedOut -and ($err -split "`r?`n" | Where-Object { $_ -like 'census: vessel locked*' })) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.ps1 vault unlock, then down')

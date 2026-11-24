@@ -70,7 +70,8 @@
 #
 # A STOP NEVER DROPS CONTENT SILENTLY. A stopped container holds no memory to count, so `down` asks the standing vessel
 # first (`vessel census`, by compose exec): the saves its sealed rest holds in memory and the carriers its disk
-# projector has not settled. A clean answer stops as before. Any item, or a census that cannot answer (a wedged vessel,
+# projector has not settled. A clean answer stops as before, printing each peer's unasked push it names (`census: unasked`,
+# memory that leaves with the stop while the pushing peer keeps its copy). Any item, or a census that cannot answer (a wedged vessel,
 # a failed exec, the bound passing), prints what it learned and refuses, naming two ways on: let it settle, by the way the
 # vessel's state names (`wear N` where faces stand open and none worn, `vault unlock` where the key stands shut, a wait
 # where a worn face holds it), then `down` again; or type `accept-loss` on this terminal to stop anyway. With no terminal it
@@ -616,7 +617,11 @@ held_only_line() {
 # Census the standing vessel; return only when the stop may go on (clean, or accept-loss typed).
 census_before_stop() {
   if run_census; then rc=0; else rc=$?; fi
-  if [ "$rc" -eq 0 ] && printf '%s\n' "$census_out" | grep -q '^census: clean'; then return 0; fi
+  if [ "$rc" -eq 0 ] && printf '%s\n' "$census_out" | grep -q '^census: clean'; then
+    # A PEER'S UNASKED PUSH leaves with the stop (that peer keeps its copy): each line names it, never silent.
+    printf '%s\n' "$census_err" | grep '^census: unasked' >&2 || true
+    return 0
+  fi
   # A LOCKED HEARTH: the census names the cure in one line (`census: vessel locked: …`); say it plainly, not "could not answer".
   if [ -z "$census_timed_out" ] && printf '%s\n' "$census_err" | grep -q '^census: vessel locked'; then
     printf '%s\n' 'lares-container: down refuses a silent stop: vessel locked: run tools/lares-container.sh vault unlock, then down' >&2

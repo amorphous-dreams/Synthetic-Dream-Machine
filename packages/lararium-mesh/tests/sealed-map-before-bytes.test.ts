@@ -16,6 +16,9 @@
  *       until a bag names it, then lands clear.
  *   M5  the saves held unnamed stay bounded: past the bound a further unnamed save refuses by name (`unnamed-bound`).
  *   M6  an unmapped load reads back an unnamed save alone, never a sealed-class save that waits unmapped.
+ *   M7  an unnamed row reads its origin off its saves' own bytes: a peer's changes alone read `peerOnly` (that peer keeps its
+ *       copy); a local find and a local change on the same document turn it owed, and a save whose origin reads unknown (no
+ *       watch, bytes that name no actor) stays owed too. Each row names its bytes and its age in saves the store took since.
  *   M4  a catalog row alone names a held document at once: the catalog's own change moves the map (`watchCatalogNames`), so
  *       the held save lands clear with no other event.
  */
@@ -103,9 +106,11 @@ describe("a document named for a sealed bag before its first byte maps as the ba
     expect(f.bytes.has(join([CLEAR_DOC, "incremental", "first"]))).toBe(true);
 
     // UNKNOWN MEANS HOLD: no bag carries it, no caller opened it.
-    await f.rest.store.save(["an-unsolicited-push", "incremental", "first"], A.save(A.from({ note: SECRET })));
+    const pushed = A.save(A.from({ note: SECRET }));
+    await f.rest.store.save(["an-unsolicited-push", "incremental", "first"], pushed);
     expect([...f.bytes.keys()].filter((k) => k.startsWith("an-unsolicited-push"))).toEqual([]);
-    expect(f.rest.store.held()).toEqual([{ documentId: "an-unsolicited-push", refusal: "save-unnamed", saves: 1, bagId: null }]);
+    // No Repo watch stands here, so the store cannot read the save's origin: it stays owed (`peerOnly` false), fail closed.
+    expect(f.rest.store.held()).toEqual([{ documentId: "an-unsolicited-push", refusal: "save-unnamed", saves: 1, bagId: null, bytes: pushed.byteLength, peerOnly: false, heldAcross: 0 }]);
     expect(await f.rest.store.load(["an-unsolicited-push", "incremental", "first"])).toBeDefined();
 
     // A HOUSE CANON BAG CARRIES IT under a lit face: it maps no seal, the roster names it, and it lands clear at the next move.
@@ -185,5 +190,32 @@ describe("a document named for a sealed bag before its first byte maps as the ba
     // AN UNNAMED SAVE reads back from memory.
     await store.save(["an-unnamed-push", "incremental", "a"], Uint8Array.of(7));
     expect(await store.load(["an-unnamed-push", "incremental", "a"])).toEqual(Uint8Array.of(7));
+  });
+
+  test("M7 RED — an unnamed row reads its origin: a peer's push alone reads peerOnly; a local find and change turn it owed; an unread origin stays owed", async () => {
+    const f = fixture();
+    const repo = new Repo({ network: [] });
+    try {
+      f.rest.watch(repo, () => null);
+      // A PEER'S PUSH: a replica of its own actor wrote it; this Repo finds it under the same id, holding no change of its own.
+      const PUSH = "a-peers-unasked-push";
+      const peer = A.from({ note: "the-peers-own-words" }, { actor: "aa".repeat(16) as A.ActorId });
+      const pushed = A.save(peer);
+      const handle = repo.import<{ note: string }>(pushed, { docId: PUSH as never });
+      await f.rest.store.save([PUSH, "snapshot", "a"], pushed);
+      const [peerRow] = f.rest.store.held().filter((h) => h.documentId === PUSH);
+      expect(peerRow).toEqual({ documentId: PUSH, refusal: "save-unnamed", saves: 1, bagId: null, bytes: pushed.byteLength, peerOnly: true, heldAcross: 0 });
+
+      // A LOCAL CHANGE on the found document: its save carries this replica's own actor, and the row turns owed.
+      handle.change((d) => { d.note = "a-local-edit"; });
+      const local = A.getLastLocalChange(handle.doc() as A.Doc<unknown>)!;
+      await f.rest.store.save([PUSH, "incremental", "b"], local);
+      const [touched] = f.rest.store.held().filter((h) => h.documentId === PUSH);
+      expect(touched).toMatchObject({ refusal: "save-unnamed", saves: 2, peerOnly: false, heldAcross: 1, bytes: pushed.byteLength + local.byteLength });
+
+      // AN ORIGIN THE STORE CANNOT READ (bytes that name no actor) stays owed.
+      await f.rest.store.save(["bytes-that-name-no-actor", "incremental", "a"], Uint8Array.of(7));
+      expect(f.rest.store.held().find((h) => h.documentId === "bytes-that-name-no-actor")).toMatchObject({ peerOnly: false });
+    } finally { await repo.shutdown(); }
   });
 });

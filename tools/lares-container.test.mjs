@@ -907,6 +907,16 @@ for (const [name, shim] of shims) {
     assert.match(r.calls, /down --remove-orphans --timeout 5/);
   });
 
+  // AN UNASKED PUSH NEVER HIDES: a clean census over a peer's unasked push stops the vessel, and down prints each `census:
+  // unasked` line on the way, so the person sees what memory leaves with the stop (the peer keeps its own copy).
+  test(`${name}: down-names-unasked-pushes: a clean census beside a peer's unasked push stops, printing each unasked line`, async () => {
+    const UNASKED = "census: unasked  doc doc-peer  3 save(s), 412 byte(s), held across 9 later save(s): a peer pushed it unasked and keeps its copy, so a stop drops nothing here";
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CENSUS_ERR: UNASKED } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.ok(stopped(r.calls), r.calls);
+    assert.ok(r.stderr.includes(UNASKED), r.stderr);
+  });
+
   // THE VESSEL'S LOG OUTLIVES THE DOWN. A down removes the container and its log with it (a captured repro once lost its
   // [wire] lines so), so down saves the last 20000 lines to the house's run/vessel-last.log first, overwritten each
   // down, and names the file in one line. A log that cannot be read never blocks the down.

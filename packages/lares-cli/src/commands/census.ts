@@ -9,11 +9,13 @@
  * stopped container holds no memory to count, so the host shim
  * asks this census at `down`, while the vessel still stands, and refuses a silent stop over a non-empty answer.
  *
- * AN UNASKED PUSH DROPS NOTHING THIS HOUSE OWNS. A `save-unnamed` row names a document a peer pushed that no map, roster or
- * local caller names here (sealed-doc-store, "unknown means hold"): its bytes wait in memory for a name, and the peer that
- * pushed them keeps its own copy. The census names each one (`unasked`, by document and count) and never counts it as an
- * item, so neither `down` nor the keep refuses over it; an owed save (`save-unbooked`, `save-unmapped`, `save-unsealed`)
- * still does.
+ * AN UNASKED PUSH DROPS NOTHING THIS HOUSE OWNS. A `save-unnamed` row the store reads `peerOnly` names a document a peer
+ * pushed that no map, roster or local caller names here (sealed-doc-store, "unknown means hold"), every save of it carrying
+ * that peer's changes alone: its bytes wait in memory for a name, and the peer keeps its own copy. The census names each one
+ * (`unasked`: document, saves, bytes, and its age in saves the store took since) and never counts it as an item, so `down`
+ * stops over it naming it, and the keep's manifest names it as an omission. An unnamed row a local change touched, or one
+ * whose origin the store could not read (no `peerOnly: true`), counts as owed, as every `save-unbooked`, `save-unmapped`
+ * and `save-unsealed` does.
  *
  * Two lines carry it, both read-only and neither asking custody: the custody door's `census` frame (the saves, by
  * document id, never a body) and the `census` act of the shore verb on every island that mounts a disk shore (the
@@ -35,6 +37,9 @@ import { emit } from "../render.js";
 /** How long the custody door's census frame may take to answer. It answers at once, beside the custody chain. */
 export const CENSUS_CUSTODY_MS = 10_000;
 
+/** One peer's unasked push waiting here for a name: its document, saves and bytes, and its age in saves the store took since. */
+export interface UnaskedPush { readonly documentId: string; readonly saves: number; readonly bytes: number; readonly heldAcross: number }
+
 /** One item a stop would drop. */
 export type CensusItem =
   | { readonly kind: "held-save"; readonly refusal: string; readonly documentId: string; readonly saves: number; readonly bagId: string | null }
@@ -47,7 +52,7 @@ export interface CensusReading {
   readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
   /** THE UNASKED PUSHES (`save-unnamed`): a peer's document waiting here for a name; the peer keeps its copy, so a stop drops
    *  nothing this house owns and the census reads clean beside them (absent where none waits). */
-  readonly unasked?: ReadonlyArray<{ readonly documentId: string; readonly saves: number }>;
+  readonly unasked?: readonly UnaskedPush[];
   /** THE LIT SET: each face whose key stands open, each sealing its own memory under its own key (absent where none reads). */
   readonly facesLit?: readonly number[];
   /** THE WORN FACE beside the lit set (present where the lit set reads): the daemon mount, or null where none wears. */
@@ -87,13 +92,14 @@ export const VESSEL_LOCKED_CENSUS = "vessel locked: run `lares vault unlock`, th
 /** The refusals that keep a save in memory: the sealed doc store owns the list (`HELD_REFUSALS`), so a new one never drifts past this door. */
 const HELD_REFUSAL_SET: ReadonlySet<string> = new Set<string>(HELD_REFUSALS);
 
-/** The one held refusal a stop drops nothing over: a peer's unasked push, which that peer keeps. */
+/** The one held refusal a stop may drop nothing over: a peer's unasked push, which that peer keeps (where the store reads it so). */
 const UNASKED_REFUSAL = "save-unnamed";
+const countOf = (v: unknown): number => (Number.isSafeInteger(v) && (v as number) >= 0 ? (v as number) : 0);
 
 /** Read both lines into one census. */
 export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<CensusReading> {
   const items: CensusItem[] = [];
-  const unasked: Array<{ documentId: string; saves: number }> = [];
+  const unasked: UnaskedPush[] = [];
   const unanswered: Array<{ part: string; why: string }> = [];
   if (!lines.socketPresent()) {
     return { clean: false, items, unanswered: [{ part: "the vessel", why: "no vessel answers on this store's socket" }] };
@@ -115,7 +121,11 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
         continue;
       }
       const saves = typeof row["saves"] === "number" ? row["saves"] : 1;
-      if (refusal === UNASKED_REFUSAL) { unasked.push({ documentId, saves }); continue; }
+      // ONLY A ROW THE STORE READ AS A PEER'S ALONE reads unasked; a local touch, or an origin unread, stays owed (fail closed).
+      if (refusal === UNASKED_REFUSAL && row["peerOnly"] === true) {
+        unasked.push({ documentId, saves, bytes: countOf(row["bytes"]), heldAcross: countOf(row["heldAcross"]) });
+        continue;
+      }
       items.push({ kind: "held-save", refusal, documentId, saves, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null });
     }
   }
@@ -145,13 +155,15 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
 }
 
 /** One unasked push as one printed line: its document and count, and why a stop leaves it. Never a body. */
-export const unaskedLine = (u: { readonly documentId: string; readonly saves: number }): string =>
-  `census: unasked  doc ${u.documentId}  ${u.saves} save(s) a peer pushed wait for a name; the peer keeps its copy, so a stop drops nothing here`;
+export const unaskedLine = (u: UnaskedPush): string =>
+  `census: unasked  doc ${u.documentId}  ${u.saves} save(s), ${u.bytes} byte(s), held across ${u.heldAcross} later save(s): a peer pushed it unasked and keeps its copy, so a stop drops nothing here`;
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
 export function censusLine(item: CensusItem): string {
   if (item.kind === "held-save") {
-    return `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
+    const line = `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
+    // AN UNNAMED DOCUMENT COUNTED OWED: a local change touched it, or its origin read unknown, so no peer's copy answers for it.
+    return item.refusal === "save-unnamed" ? `${line}  (no map or roster names it yet, and a local change touched it or its origin reads unknown)` : line;
   }
   if (item.kind === "untracked") return `untracked  ${item.path}  bag ${item.bagId ?? "(none named)"}  island ${item.island}  (an owed commit: commit it, or remove it by hand)`;
   return `carrier  ${item.state}  ${item.uri}  bag ${item.bagId ?? "(none named)"}  island ${item.island}`;
