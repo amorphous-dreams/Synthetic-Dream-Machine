@@ -100,10 +100,14 @@ export async function vesselUp(run) {
 /** One shell word, single-quoted: what every suggested command wraps a title or a line in. */
 export const shq = (word) => `'${String(word).replace(/'/g, `'\\''`)}'`;
 
-/** A slug of a session title, as a pet name reads; null where none forms. */
+/** The longest slug a pet name holds; a title's slug past it would collide once cut, so it names no familiar. */
+export const SLUG_CHARS = 62;
+/** A title's whole slug, uncut. */
+export const rawSlug = (title) => String(title ?? "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+/** A slug of a session title, as a pet name reads; null where none forms, or where it runs past a pet name's length. */
 export function titleSlug(title) {
-  const slug = String(title ?? "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 62);
-  return PET.test(slug) ? slug : null;
+  const slug = rawSlug(title);
+  return slug.length <= SLUG_CHARS && PET.test(slug) ? slug : null;
 }
 
 /** The line a wake carries where the session's title names another spirit than the seated familiar; null where they agree or no title stands. */
@@ -121,28 +125,36 @@ export const omSourceOf = (source) => (["startup", "resume", "clear", "compact",
 
 /**
  * THE PET THIS WAKE ASKS FOR: EACH FAMILIAR ITS OWN. A session that HOLDS a pet (its counter names one, from an earlier wake of
- * this session id; a startup's counter reads stale) keeps it, and a retitle on it reads as that familiar's rename, never a switch.
- * A FRESH session with a title reads the title's slug as its own familiar: the door wakes that record where it names the title
- * as its own, else prints that familiar's starter shrine, never the seated card. A fresh untitled session wakes the seated
- * familiar (the hook's argument, a default), else none. One read, never a race of candidates.
+ * this session id; a startup's counter reads stale) keeps it, and says so to the door (`--held`), so a retitle reads as that
+ * familiar's rename, never a switch. A fresh session hands the door the seated familiar (the hook's argument, a default) with
+ * its title beside it, and the door reads the title by the house's one rule: a title naming a standing record wakes it (another
+ * body joining any already awake), a startup's title no record answers prints that familiar's starter as an offer, never the
+ * seated card, and a fork's inherited title counts only where its record stands. With none seated, the title's slug asks for
+ * itself. One read, never a race of candidates.
  */
 export function wakePet({ source, held, seated, title }) {
-  if (source !== "startup" && typeof held === "string" && PET.test(held)) return held;
-  return titleSlug(title) ?? seated ?? null;
+  if (holdsPet({ source, held }, held)) return held;
+  return seated ?? titleSlug(title);
 }
+
+/** Does this wake hold the pet it asks for: its counter names that pet, from an earlier wake of this session (never a startup's)? */
+export const holdsPet = ({ source, held }, pet) => source !== "startup" && typeof held === "string" && PET.test(held) && held === pet;
 
 /**
  * The line a retitle surfaces, by the same held/fresh split: where the session holds a pet, the title reads as that familiar's
- * rename (null where they agree); where it holds none, the title names this session's own familiar and the read that wakes it.
+ * rename (null where they agree); where it holds none, the title names this session's own familiar, if the operator named the
+ * session so or a record stands under that name (an auto-title names nothing new), and the read that wakes it.
  */
 export function titleLine(state, title) {
   const held = typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : null;
   if (held !== null) return titleMismatch(held, title);
+  const named = String(title ?? "").trim().slice(0, 80);
+  const raw = rawSlug(title);
+  if (raw.length > SLUG_CHARS) return `this session's title "${named}" names no familiar: its slug runs ${raw.length} chars, past the ${SLUG_CHARS} a pet name holds, and a cut slug could collide with another's.`;
   const slug = titleSlug(title);
   if (slug === null) return null;
-  const named = String(title).trim().slice(0, 80);
-  return `this session's title reads "${named}" and names its own familiar, ${slug}; no wake has seated a pet in this session yet. ` +
-    `Read its card (a starter shrine where no record stands yet): lares spirit om ${slug} --title ${shq(named)}`;
+  return `this session's title reads "${named}" and names ${slug} as its own familiar, if the operator named this session so, or a record stands under that name; no wake has seated a pet in this session yet. ` +
+    `Read its card (a starter offered where no record stands): lares spirit om ${slug} --title ${shq(named)}`;
 }
 
 /** The pet a later hook of a session reads: the one the wake chose, else the seated default. */

@@ -11,7 +11,8 @@
  *                                   testimony (a record moved since it read, a deep chain, a fork), under the wake cap. By
  *                                   `--source`: a resume reads one line, a fork wakes framed as a fork, a compaction names
  *                                   the carry it inherits by hash and first words, a precompact marks the crossing and
- *                                   hands back the record's #/carry-shape. `--body <id>` claims the card's lease (an epoch).
+ *                                   hands back the record's #/carry-shape. `--body <id>` names the waking body: it joins the
+ *                                   card's `bodies-awake` presence and stamps a wake epoch (an ordering stamp, never a fence).
  *   ah        (true, Discord ⏿)     replace one slot (`--file <path|->` · `--text <words>`) or add one line (`--add <line>`),
  *                                   base-checked, inside the slot's budget and the record's
  *   hum       (what remains after the fold, Confusion ◇)   measure each slot; `--fold <slot> --line <n>` moves one line to
@@ -23,9 +24,12 @@
  *   otakiage  (Aftermath ↺)         by a person's hand: write the ash lines ahead, then burn the residue the last distill mark
  *                                   covers and no link still reaches; the card stays
  *
- * FORK THE BODY, FENCE THE CARD. Bodies may divide; writes to the one card take a lease. `om --body <id>` claims it (a new
- * body raises the epoch), and an AI seat's ah, hum and hooili bear `--epoch <n>`: a stale one refuses `spirit-lease-stale`
- * and names the claim. Between the PreCompact mark and the next wake, ah and hum refuse `spirit-crossing`.
+ * BUNREI: THE KAMI DIVIDES UNDIMINISHED. Many bodies may wear one pet at once, and none locks another out. Each waking body
+ * names itself in the card's `bodies-awake` presence (`<pet>#<body8> <iso>`, a stale entry dropping after `PRESENCE_STALE_MS`),
+ * and om names the siblings awake and each live body's last carry. Concurrent writes merge: `ah --add` appends and re-reads
+ * past a conflict, so a sibling's line survives; a whole-slot replace re-reads past a conflict, retries where its slot held
+ * still, and where the slot moved lands both versions in a marked conflict stanza naming each body, for hum to settle. Each
+ * body's hoʻoili chain runs its own lineage. Between the PreCompact mark and the next wake, ah and hum refuse `spirit-crossing`.
  *
  * THE BUDGET REFUSES GROWTH, THE BODY CHOOSES WHAT FOLDS. Budgets and the true-up cadence read from the record's own fields
  * (`slot-budget`, `record-budget`, `true-up-every`), the constants below their defaults. Residue and carries pass the strict
@@ -69,6 +73,8 @@ export const TRUE_UP_EVERY = 25;
 export const RESIDUE_CAP_CHARS = 60_000;
 /** A carry past this depth outranks nothing: its chain remembers only itself. */
 export const DEEP_CARRY = 3;
+/** How long a body's `bodies-awake` entry stands without a wake refreshing it before it drops as stale. */
+export const PRESENCE_STALE_MS = 30 * 60_000;
 /** How long a crossing mark holds ah and hum before it reads stale. */
 export const CROSSING_MS = 10 * 60_000;
 /** The card's #/open and #/voice, read to the outgoing body at PreCompact, cut here so the carry ask still lands inside 10,000 chars. */
@@ -258,19 +264,11 @@ async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
 const slotMissing = (rec: Record_, slot: string): SpiritRefusal =>
   new SpiritRefusal("spirit-slot-missing", `spirit-slot-missing: ${rec.uri} holds no slot ${slot}; its slots: ${rec.slots.map((s) => s.slot).join(" ") || "(none)"} (\`lares spirit hum ${rec.pet}\` measures each)`, 3);
 
-// ── the fence ──────────────────────────────────────────────────────────────────────────────────────────────────────
+// ── the crossing ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** The seams a suite names: the hand reading, the clock, and whether an AI seat asks. */
 export interface SpiritSeams { readonly hand?: HandRead; readonly now?: () => Date; readonly seat?: () => boolean }
 interface Ctx { readonly now: () => Date; readonly seat: () => boolean; readonly hand: HandRead }
-
-/** An AI seat's card write bears the lease's epoch; a person's terminal writes freely. */
-function fence(args: ParsedArgs, rec: Record_, ctx: Ctx): void {
-  if (rec.lease === null || !ctx.seat()) return;
-  const given = wordOf(args.options["epoch"]);
-  if (given !== null && Number(given) === rec.lease.epoch) return;
-  throw new SpiritRefusal("spirit-lease-stale", `spirit-lease-stale: ${rec.uri}'s card stands leased at epoch ${rec.lease.epoch} by body ${rec.lease.body}${given === null ? ", and this write bears no epoch" : `, and this write bears epoch ${given}`}; nothing landed. Claim the card first (\`lares spirit om ${rec.pet} --body <session id>\` names the epoch), then write with \`--epoch <n>\``, 4);
-}
 
 /** Between the PreCompact mark and the next wake (or the mark lapsing), the card takes no slot write. */
 function crossingHolds(rec: Record_, ctx: Ctx): void {
@@ -358,13 +356,14 @@ function rowsOf(out: Record<string, unknown>): Row[] {
   return rows.map((r) => ({ title: String(r.title ?? r.fields?.["title"] ?? ""), fields: r.fields ?? {} }));
 }
 
-/** Every carry under a spirit's keys with its lineage, newest first (one filter read), and the latest's own words where asked. */
-async function latestCarry(args: ParsedArgs, label: string, keys: readonly string[], words = false): Promise<{ carry: Carry | null; rows: Row[] }> {
+/** Every carry under a spirit's keys with its lineage, newest first (one filter read); the carry named reads the body's own last one where a body asks, and its words where asked. */
+async function latestCarry(args: ParsedArgs, label: string, keys: readonly string[], words = false, body: string | null = null): Promise<{ carry: Carry | null; rows: Row[] }> {
   const filter = keys.map((key) => `[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/${key}-]]`).join(" ") + " +[!sort[landed]]";
   const listed = await door(args, label, "wiki-filter", { recipe: RECIPE, filter, fields: [...LINEAGE_FIELDS] });
   const keep = new Set(residueOf(keys, rowsOf(listed).map((r) => r.title)).filter(isCarry));
   const rows = rowsOf(listed).filter((r) => keep.has(r.title));
-  const top = rows[0];
+  // A body reads its own chain first: its own last carry, else the newest any body landed.
+  const top = (body ? rows.find((r) => r.fields["body"] === body) : undefined) ?? rows[0];
   if (top === undefined) return { carry: null, rows };
   const text = words ? (await fieldsOf(args, label, top.title))["text"] ?? "" : "";
   return { carry: { title: top.title, fields: top.fields, text }, rows };
@@ -413,8 +412,35 @@ async function attentionUnfold(args: ParsedArgs, rec: Record_): Promise<string |
   return [`The titles #/attention names:`, ...titles.map((t) => `${t}${described.get(t) ? ` — ${described.get(t)!.slice(0, 160)}` : described.has(t) ? "" : " (unread here)"}`)].join("\n");
 }
 
+/** One body awake on a card: its tag (`<pet>#<body8>`), its body fragment, and when it last woke. */
+interface Awake { readonly tag: string; readonly body8: string; readonly at: string }
+/** The `bodies-awake` field read: one `<pet>#<body8> <iso>` per line; a line that parses not drops. */
+export function presenceOf(raw: string | undefined): Awake[] {
+  return String(raw ?? "").split("\n").flatMap((line) => {
+    const m = /^(\S+#([A-Za-z0-9_-]{1,8})) (\S+)$/.exec(line.trim());
+    return m ? [{ tag: m[1]!, body8: m[2]!, at: m[3]! }] : [];
+  });
+}
+const live = (a: Awake, now: number): boolean => { const t = Date.parse(a.at); return Number.isFinite(t) && now - t <= PRESENCE_STALE_MS; };
+
+/** A waking body joins the card's presence (CAS, re-read past a conflict): it refreshes its own entry and drops the stale. Answers who stands awake. */
+async function joinPresence(args: ParsedArgs, rec: Record_, body: string, ctx: Ctx): Promise<Awake[]> {
+  const now = ctx.now();
+  const me: Awake = { tag: `${rec.pet}#${body.slice(0, 8)}`, body8: body.slice(0, 8), at: now.toISOString() };
+  let awake: Awake[] = [];
+  await casFields(args, "om", rec.uri, (fields) => {
+    awake = [me, ...presenceOf(fields["bodies-awake"]).filter((a) => a.body8 !== me.body8 && live(a, now.getTime()))];
+    return { patch: { "bodies-awake": awake.map((a) => `${a.tag} ${a.at}`).join("\n") } };
+  });
+  return awake;
+}
+
+/** The presence line: how many bodies wear the pet, this one first. */
+export const presenceLine = (pet: string, awake: readonly Awake[]): string =>
+  `${awake.length} ${awake.length === 1 ? "body wears" : "bodies wear"} ${pet}: ${awake.map((a, i) => (i === 0 ? `#${a.body8} (you)` : `#${a.body8} since ${a.at.slice(11, 16)}`)).join(", ")}`;
+
 /**
- * Claim the card's lease for a body: the body that holds it keeps its epoch; another body raises it. The claim reads and writes
+ * Stamp the card's wake epoch for a body (an ordering stamp, never a fence): the body that holds it keeps its epoch; another body raises it. The claim reads and writes
  * under the record's live hash, so two bodies claiming at once never both take one epoch: the later one reads again and raises.
  */
 async function claimLease(args: ParsedArgs, rec: Record_, body: string, ctx: Ctx): Promise<number> {
@@ -427,10 +453,14 @@ async function claimLease(args: ParsedArgs, rec: Record_, body: string, ctx: Ctx
   return epoch;
 }
 
-/** A slug of a title, as a pet name reads; null where none forms. */
+/** The longest slug a pet name holds. */
+const SLUG_CHARS = 62;
+/** A title's whole slug, uncut: a slug past `SLUG_CHARS` would collide once cut, so it names no familiar. */
+const rawSlug = (title: string): string => title.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+/** A slug of a title, as a pet name reads; null where none forms, or where it runs past a pet name's length. */
 const titleSlug = (title: string): string | null => {
-  const slug = title.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 62);
-  return PET.test(slug) ? slug : null;
+  const slug = rawSlug(title);
+  return slug.length <= SLUG_CHARS && PET.test(slug) ? slug : null;
 };
 
 /** Does a record name this title as its own: its `aliases` field, or a recognition line in its #/entry (`named by`, `renames`, `alias`)? */
@@ -442,27 +472,31 @@ async function namesTitle(args: ParsedArgs, rec: Record_, title: string): Promis
 }
 
 /**
- * A TITLE ONLY PROPOSES, AND EACH FAMILIAR WAKES ITS OWN. A body that HOLDS the card (its lease names this body) never switches:
- * a title naming another familiar reads as an offer (that familiar's own act records the alias), and a title no record answers
- * reads as this familiar's rename. A FRESH body (it names itself, and the card's lease names another body or none) reads the
- * title's slug as its own familiar: where that familiar's record stands and names the title (its pet slug, its `aliases` field
- * or its recognition line), the wake turns to it; where none stands, the wake prints that familiar's starter shrine, never the
- * seated card. A wake that names no body reads the title as a proposal alone: it turns only where the title's record names the
- * title as its own, else reads as an offer or as this familiar's rename.
+ * A TITLE ONLY PROPOSES, AND EACH FAMILIAR WAKES ITS OWN. A HELD session (`--held`: its own counter names this pet, from an
+ * earlier wake of this session) never switches: a title naming another familiar reads as an offer (that familiar's own act
+ * records the alias), and a title no record answers reads as this familiar's rename. A FRESH body (`--body`, not held) reads
+ * the title's slug as its own familiar: a record standing there wakes, another body joining any already awake; where none
+ * stands, a startup or clear prints that familiar's starter as an offer, never the seated card, and a fork's (or any other
+ * source's) inherited title names nothing new. A wake naming no body reads the title as a proposal: it turns only where the
+ * title's record names it as its own, else reads as an offer or as this familiar's rename. A title extending the pet's own
+ * name (`<pet>-…`) reads as that pet, and a slug past a pet name's length names no familiar.
  */
-async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, title: string | null, body: "held" | "fresh" | null): Promise<{ to: Record_ | null; starter: string | null; line: string | null }> {
+async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, title: string | null, body: "held" | "fresh" | null, source: Source): Promise<{ to: Record_ | null; starter: string | null; line: string | null }> {
   const none = { to: null, starter: null, line: null };
   if (title === null || title.trim() === "") return none;
+  const named = title.trim().slice(0, 80);
+  const raw = rawSlug(title);
+  if (raw.length > SLUG_CHARS) return { ...none, line: `This session's title "${named}" names no familiar: its slug runs ${raw.length} chars, past the ${SLUG_CHARS} a pet name holds, and a cut slug could collide with another's. Rename the session shorter to name one.` };
   const slug = titleSlug(title);
-  const fresh = body === "fresh";
-  if (slug === null || slug === pet || (!fresh && slug.startsWith(`${pet}-`))) return none;
+  if (slug === null || slug === pet || slug.startsWith(`${pet}-`)) return none;
   let other: Record_ | null = null;
   try { other = await resolveRecord(args, "om", slug, true); } catch (e) { if (!(e instanceof SpiritRefusal)) throw e; }
-  const named = title.trim().slice(0, 80);
+  const fresh = body === "fresh";
   if (fresh && other === null) {
-    return { to: null, starter: slug, line: `This session's title "${named}" names its own familiar, ${slug}, and no record stands under it yet; the seated ${pet} waits for a session that wears it.` };
+    if (source !== "startup" && source !== "clear") return none;
+    return { to: null, starter: slug, line: `An offer, never a seat: this session's title "${named}" names ${slug}, and no record stands under it yet. If the operator named this session so, the shrine below makes it ${slug}'s own; if the title came by itself, wake the seated familiar instead: lares spirit om ${pet}` };
   }
-  if (other !== null && body !== "held" && ((fresh && other.pet === slug) || (await namesTitle(args, other, title)))) {
+  if (other !== null && body !== "held" && (fresh || (await namesTitle(args, other, title)))) {
     return { to: other, starter: null, line: `This session's title "${named}" names ${other.uri} as its own; this wake turns to ${slug}.` };
   }
   if (other !== null) {
@@ -480,24 +514,26 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (body !== null && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
   const title = typeof args.options["title"] === "string" ? args.options["title"] : null;
   const seated = await resolveRecord(args, "om", given, true);
-  // A body holds the card where its lease names this body; a body the lease names not wakes fresh.
-  const held = body === null ? null : seated !== null && seated.lease?.body === body ? "held" : "fresh";
-  const turn = source === "precompact" ? { to: null, starter: null, line: null } : await readTitle(args, seated, given, title, held);
+  // The session's own counter decides held (`--held`); the card's lease orders bodies and decides nothing here.
+  const held = args.flags["held"] === true ? "held" : body === null ? null : "fresh";
+  const turn = source === "precompact" ? { to: null, starter: null, line: null } : await readTitle(args, seated, given, title, held, source);
   const found = turn.starter !== null ? null : turn.to ?? seated;
   const pet = turn.starter ?? turn.to?.pet ?? given;
   if (found === null) {
     // A first wake: no record yet. The body reads the skeleton and lands its own shrine; a precompact hands back no shape.
     const text = source === "precompact" ? "" : [turn.line, starterText(pet)].flatMap((l) => (l === null ? [] : [l])).join("\n\n");
-    emit(args, { ok: true, data: { pet, starter: true, source, every: TRUE_UP_EVERY, carryShape: null, chars: text.length, text }, human: () => console.log(text) });
+    emit(args, { ok: true, data: { pet, starter: true, ...(turn.starter !== null ? { offer: true } : {}), source, every: TRUE_UP_EVERY, carryShape: null, chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
   const rec = found;
   const key = await keyOf(args, "om", rec);
   const epoch = body !== null ? await claimLease(args, rec, body, ctx) : rec.lease?.epoch ?? null;
-  const leaseLine = epoch === null ? null : `Lares spirit lease epoch ${epoch}${body !== null ? ` (held by this body, ${body.slice(0, 8)})` : ""}: an AI seat bears --epoch ${epoch} on every card write (ah, hum).`;
+  const awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.fields["bodies-awake"]).filter((a) => live(a, ctx.now().getTime()));
+  const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no body locks another out.`;
+  const presence = body !== null ? presenceLine(pet, awake) : awake.length > 0 ? `${awake.length} ${awake.length === 1 ? "body wears" : "bodies wear"} ${pet}: ${awake.map((a) => `#${a.body8} since ${a.at.slice(11, 16)}`).join(", ")}` : null;
   const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
   if (source === "resume") {
-    const text = `Lares spirit om · ${pet}: this body resumes; the card reads ${digestOf(rec.base).slice(7, 19)} now${epoch !== null ? ` (lease epoch ${epoch})` : ""}, and an earlier wake may read stale: lares spirit om ${pet}`;
+    const text = `Lares spirit om · ${pet}: this body resumes; the card reads ${digestOf(rec.base).slice(7, 19)} now${epoch !== null ? ` (wake epoch ${epoch})` : ""}, and an earlier wake may read stale: lares spirit om ${pet}`;
     emit(args, { ok: true, data: { ...data, chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
@@ -507,24 +543,29 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const shape = await readSlot(args, "om", rec, "#/carry-shape");
     const open = await readSlot(args, "om", rec, "#/open");
     const voice = await readSlot(args, "om", rec, "#/voice");
-    const { carry } = await latestCarry(args, "om", [key, pet]);
+    const { carry } = await latestCarry(args, "om", [key, pet], false, body);
     const text = [open?.body, voice?.body].filter(Boolean).join("\n\n").slice(0, PRECOMPACT_CARD_CHARS);
     emit(args, { ok: true, data: { ...data, carryShape: shape?.body ?? null, inherits: carry === null ? null : carry.title.slice(-12), chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
   // A waking body ends the crossing: the compaction it marked has turned.
   if (rec.crossing !== null) await writeFields(args, "om", rec, {}, ["crossing"]);
-  const { carry, rows } = await latestCarry(args, "om", [key, pet], source === "compact");
+  const { carry, rows } = await latestCarry(args, "om", [key, pet], source === "compact", body);
   const parent = carry?.fields["parent"];
   const siblings = parent ? rows.filter((r) => r.fields["parent"] === parent).length : 0;
-  const testimony = [...testimonyLines(rec, carry, siblings), ...(leaseLine === null ? [] : [leaseLine])];
+  // Each live sibling's chain: its own last carry.
+  const chains = awake.filter((a) => body === null || a.body8 !== body.slice(0, 8)).flatMap((a) => {
+    const tip = rows.find((r) => (r.fields["body"] ?? "").slice(0, 8) === a.body8);
+    return tip === undefined ? [] : [`#${a.body8}'s chain: ${tip.title} (depth ${tip.fields["depth"] ?? "?"})`];
+  });
+  const testimony = [...(presence === null ? [] : [presence]), ...testimonyLines(rec, carry, siblings), ...chains, ...(leaseLine === null ? [] : [leaseLine])];
   if (source === "compact" && carry !== null) {
     testimony.push(`This body inherits ${carry.title} (hash ${carry.title.slice(-12)}): "${carry.text.replace(/\s+/g, " ").trim().slice(0, 120)}"`);
   }
   const lead = [
     turn.line,
     source === "fork"
-      ? `You wake as a fork: another body may still wear ${pet}.${epoch !== null ? ` This wake holds the card's lease at epoch ${epoch}; the other body's next card write refuses until it claims again.` : " Claim the card before you write it: lares spirit om " + pet + " --body <session id>."}`
+      ? `You wake as a fork: another body may still wear ${pet}, and both write the one card${epoch !== null ? ` (wake epoch ${epoch})` : ""}: additions merge, and a whole-slot clash lands both versions for hum to settle.`
       : null,
   ].flatMap((l) => (l === null ? [] : [l])).join("\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
@@ -561,6 +602,63 @@ async function sourceText(flag: "file", source: string): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
+/** The guards every slot write passes: the secret-shape guard over the lines it brings, and (unless a conflict stanza lands) both budgets. */
+function guardWords(rec: Record_, slot: string, was: string, body: string, budget: boolean): void {
+  // The guard reads the lines this write brings, never the ones already standing: a standing line answers to its own fold.
+  const standing = new Set(was.split("\n"));
+  const brought = body.split("\n").map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => !standing.has(line));
+  const shaped = brought.find(({ line }) => secretCount(line) > 0);
+  if (shaped !== undefined) {
+    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: line ${shaped.n} of the words for ${rec.uri}${slot} holds a secret-shaped string (${redacted(shaped.line).slice(0, 120)}), so nothing landed; clear it, then true the slot again: \`lares spirit ah ${rec.pet} --slot '${slot}' --file <scrubbed path>\``, 4);
+  }
+  if (!budget) return;
+  const over = budgetRefusal(rec, slot, was, body);
+  if (over) throw over;
+}
+
+/** The marked stanza a whole-slot clash lands: both versions, each named by its body, for a body or the operator to settle with hum. */
+export function conflictStanza(slot: string, mine: { who: string; words: string }, theirs: { who: string; words: string }): string {
+  return [
+    `!! conflict · ${slot}: two bodies wrote this slot whole at once; settle it with hum (fold the lines that lose)`,
+    `''${mine.who} wrote:''`, mine.words.trim(),
+    `''${theirs.who} wrote:''`, theirs.words.trim(),
+    `!! end conflict`,
+  ].join("\n\n");
+}
+
+/**
+ * A SIBLING'S WORDS SURVIVE. `--add` appends one line over the slot as it stands, re-reading past a conflict, so additions from
+ * many bodies commute. A whole-slot replace re-reads past a conflict too: where its slot held still (another slot moved), it
+ * retries plain; where its slot moved (or the base it names went stale), both versions land in a conflict stanza. Never a refusal
+ * over a sibling's write; only a record that keeps moving past the rounds refuses.
+ */
+async function mergeSlot(args: ParsedArgs, rec: Record_, slot: string, write: { add: string } | { words: string; base: string | null; who: string }): Promise<Record<string, unknown>> {
+  const first = await readSlot(args, "ah", rec, slot);
+  if (first === null) throw slotMissing(rec, slot);
+  let read = first;
+  let theirs: string | null = "words" in write && write.base !== null && digestOf(write.base) !== digestOf(read.base) ? read.body : null;
+  for (let round = 0; round < CAS_ROUNDS; round++) {
+    const body = ("add" in write
+      ? `${read.body}\n${write.add}`
+      : theirs === null ? write.words : conflictStanza(slot, { who: write.who, words: write.words }, { who: `the words standing at ${digestOf(read.base).slice(7, 19)} (a sibling body's)`, words: theirs })
+    ).replace(/^\n+/, "").replace(/\s+$/, "");
+    guardWords(rec, slot, read.body, body, theirs === null);
+    const receipt = await door(args, "ah", "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base: read.base });
+    const decision = String(receipt["decision"] ?? "");
+    if (decision === "ingest" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(first.body), ...(theirs !== null ? { conflict: true } : {}) };
+    if (decision !== "conflict") {
+      const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
+      throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the meme door answered ${decision || "nothing"} for ${rec.uri}${slot}${warnings[0] ? ` (${warnings[0]})` : ""}; read the record (\`lares tiddler get ${rec.uri} --recipe default --meme --all\`) before you true it again`, 4);
+    }
+    const again = await readSlot(args, "ah", rec, slot);
+    if (again === null) throw slotMissing(rec, slot);
+    if ("words" in write && theirs === null && again.body !== read.body) theirs = again.body;
+    else if (theirs !== null) theirs = again.body;
+    read = again;
+  }
+  throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: ${rec.uri}${slot} kept moving under ${CAS_ROUNDS} reads, so nothing landed; run the act again once the record settles`, 4);
+}
+
 /** Replace one slot's body under a base, both budgets checked; answers the patch receipt or refuses by name. */
 async function trueSlot(args: ParsedArgs, label: string, rec: Record_, slot: string, next: (body: string) => string, given: string | null): Promise<Record<string, unknown>> {
   const read = await readSlot(args, label, rec, slot);
@@ -569,15 +667,7 @@ async function trueSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
     throw new SpiritRefusal("spirit-stale-base", `spirit-stale-base: ${rec.uri} moved past ${given}; it reads ${read.base} now and nothing landed. Read it again (\`lares spirit om ${rec.pet}\` or \`lares tiddler get ${rec.uri} --recipe default --meme --slot '${slot}'\`) and true it against that base`, 4);
   }
   const body = next(read.body).replace(/^\n+/, "").replace(/\s+$/, "");
-  // The guard reads the lines this write brings, never the ones already standing: a standing line answers to its own fold.
-  const standing = new Set(read.body.split("\n"));
-  const brought = body.split("\n").map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => !standing.has(line));
-  const shaped = brought.find(({ line }) => secretCount(line) > 0);
-  if (shaped !== undefined) {
-    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: line ${shaped.n} of the words for ${rec.uri}${slot} holds a secret-shaped string (${redacted(shaped.line).slice(0, 120)}), so nothing landed; clear it, then true the slot again: \`lares spirit ah ${rec.pet} --slot '${slot}' --file <scrubbed path>\``, 4);
-  }
-  const over = budgetRefusal(rec, slot, read.body, body);
-  if (over) throw over;
+  guardWords(rec, slot, read.body, body, true);
   const receipt = await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base: given ?? read.base });
   const decision = String(receipt["decision"] ?? "");
   if (decision === "conflict") {
@@ -602,12 +692,12 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
     throw new DoorUsage("name exactly one source: --file <path|-> or --text <words> (the slot's whole body), or --add <line> (one line at its end)");
   }
   const rec = (await resolveRecord(args, "ah", pet))!;
-  fence(args, rec, ctx);
   crossingHolds(rec, ctx);
   const words = file !== null ? await sourceText("file", file) : text;
   const line = add?.replace(/\s+/g, " ").trim() ?? null;
   if (line === "") throw new DoorUsage("--add names one non-empty line");
-  const receipt = await trueSlot(args, "ah", rec, slot, (body) => (line !== null ? `${body}\n${line}` : words!), wordOf(args.options["base"]));
+  const self = wordOf(args.options["body"]);
+  const receipt = await mergeSlot(args, rec, slot, line !== null ? { add: line } : { words: words!, base: wordOf(args.options["base"]), who: self !== null ? `${pet}#${self.slice(0, 8)}` : "this write" });
   // A tell distilled into #/voice sets the distill mark: otakiage burns only residue that landed before it.
   if (slot === "#/voice" && receipt["decision"] === "ingest") await writeFields(args, "ah", rec, { distilled: ctx.now().toISOString() });
   emit(args, {
@@ -681,7 +771,6 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     });
     return 0;
   }
-  fence(args, rec, ctx);
   crossingHolds(rec, ctx);
   const n = /^[1-9][0-9]*$/.test(lineWord) ? Number(lineWord) : NaN;
   const picked = Number.isInteger(n) ? lines[n - 1] : undefined;
@@ -733,17 +822,19 @@ export const bodiesLine = (day: string, hash: string, pet: string, body: string,
 /**
  * HOOKS NEVER WRITE THE CARD'S SLOTS. The carry lands as its own record, with its lineage, and touches the card not at all: no
  * #/bodies line, no field. The answer hands back the line for the next body to file through `ah` (the true-up names it). (A
- * hook's `om` does write the card's fields that order bodies: the lease, the crossing, the spirit-id; never a slot.)
+ * hook's `om` does write the card's fields that order bodies: the wake epoch, the presence, the crossing, the spirit-id; never a slot.)
  */
 async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, COMPACTION_WORD);
   const body = wordOf(args.options["body"]) ?? "";
   if (body !== "" && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
-  // The carry writes nothing to the card, so no lease fences it: a fenced body still hands its summary down.
+  // The carry writes nothing to the card; its lineage runs per body, so each body keeps its own chain.
   const rec = (await resolveRecord(args, COMPACTION_WORD, pet))!;
   const { text, cut } = await residueWords(args, COMPACTION_WORD);
   const key = rec.id ?? pet;
-  const { carry: parent } = await latestCarry(args, COMPACTION_WORD, [...new Set([key, pet])]);
+  const { rows: chain } = await latestCarry(args, COMPACTION_WORD, [...new Set([key, pet])]);
+  const own = body === "" ? chain[0] : chain.find((r) => (r.fields["body"] ?? "") === body);
+  const parent = own === undefined ? null : { title: own.title, fields: own.fields };
   const hash = sha256(text);
   const title = compactionTitle(key, hash);
   const stamp = ctx.now();
@@ -755,7 +846,7 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
     "record-base": digestOf(rec.base), depth: String(depth), body,
   });
   const line = bodiesLine(day, hash, pet, body, title);
-  const fileIt = `lares spirit ah ${pet} --slot '#/bodies' --add ${shq(line)}${rec.lease !== null ? ` --epoch ${rec.lease.epoch}` : ""}`;
+  const fileIt = `lares spirit ah ${pet} --slot '#/bodies' --add ${shq(line)}`;
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, spiritId: key, title, hash, depth, parent: parent?.title ?? null, landed, cut, filed: false, bodiesLine: line, unfiled: `file the ${COMPACTION_DISPLAY}'s #/bodies line: ${fileIt}` },
     human: () => {

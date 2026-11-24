@@ -62,6 +62,9 @@ interface StageOpts {
   mentions?: Record<string, string[]>;
   /** The record's field puts answer `conflict` this many times before they land. */
   conflicts?: number;
+  /** Slot patches answer `conflict` this many times, a sibling body's words landing first (`sibling`, by slot) at each. */
+  patchConflicts?: number;
+  sibling?: Record<string, string>;
 }
 
 /** A stage holding one familiar record (or two, or none); its slots hold these words, its fields these, every write answers by its verb. */
@@ -76,6 +79,7 @@ function stage(opts: StageOpts = {}) {
   };
   const standing = (title: unknown): boolean => own(title) || other(title) !== null;
   let conflicts = opts.conflicts ?? 0;
+  let patchConflicts = opts.patchConflicts ?? 0;
   const texts: Record<string, string> = { "#/bodies": opts.bodies ?? "!! Bodies\n\n* one", "#/open": opts.open ?? "!! Open\n\n* a loop", ...(opts.slotTexts ?? {}) };
   const extra = Object.keys(opts.slotTexts ?? {}).filter((slot) => !["#/entry", "#/open", "#/bodies"].includes(slot));
   h.answer = (verb, args) => {
@@ -94,7 +98,10 @@ function stage(opts: StageOpts = {}) {
       if (standing(args["title"])) return { tiddler: { fields: { title: args["title"], "spirit-id": ID, ...(opts.fields ?? {}) }, hash: "sha256-rec" } };
       return { tiddler: { fields: { title: args["title"], text: "first words\nmore", ...(opts.residue?.[String(args["title"])] ?? {}) }, textHash: "sha256-ab" } };
     }
-    if (verb === "meme-patch") return { decision: opts.patch ?? "ingest", canonicalHash: "sha256:" + "11".repeat(32) };
+    if (verb === "meme-patch") {
+      if (patchConflicts > 0) { patchConflicts--; Object.assign(texts, opts.sibling ?? {}); return { decision: "conflict", canonicalHash: "sha256:" + "33".repeat(32) }; }
+      return { decision: opts.patch ?? "ingest", canonicalHash: "sha256:" + "11".repeat(32) };
+    }
     if (verb === "meme-put") return { decision: "ingest", canonicalHash: "sha256:" + "22".repeat(32) };
     if (verb === "tiddler-put") {
       // The tiddler door's own laws (tiddler-verbs.ts): an append carries no text, base, field patch or unset; an append to a
@@ -237,12 +244,12 @@ describe("ah trues one slot through the meme door", () => {
     expect(h.calls.at(-1)!.args["replace"]).toBe("!! Bodies\n\n* one\n* two");
   });
 
-  test("a stale --base refuses spirit-stale-base and names the read", async () => {
+  test("a stale --base never refuses: both versions land in a conflict stanza for hum to settle", async () => {
     stage();
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y", base: "sha256:" + "00".repeat(32) }));
-    expect(error(r).code).toBe("spirit-stale-base");
-    expect(error(r).message).toContain("lares spirit om lares-alpha");
-    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    expect(r.exit).toBe(0);
+    expect(data(r)["conflict"]).toBe(true);
+    expect(String(h.calls.find((c) => c.verb === "meme-patch")!.args["replace"])).toContain("!! conflict · #/open");
   });
 
   test("a matching --base of another grain lands", async () => {
@@ -251,10 +258,11 @@ describe("ah trues one slot through the meme door", () => {
     expect(r.exit).toBe(0);
   });
 
-  test("a write the door answers conflict on refuses spirit-stale-base", async () => {
+  test("a record that keeps moving past every round refuses spirit-write-refused and names the retry", async () => {
     stage({ patch: "conflict" });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }));
-    expect(error(r).code).toBe("spirit-stale-base");
+    expect(error(r).code).toBe("spirit-write-refused");
+    expect(error(r).message).toContain("kept moving");
   });
 
   test("growth past the slot's budget refuses by name and names hum --fold", async () => {
@@ -482,22 +490,19 @@ describe("fork the body, fence the card", () => {
     stage({ fields: LEASE });
     const other = await run(argv(["om", "lares-alpha"], { body: "body-b" }));
     expect(data(other)["epoch"]).toBe(4);
-    expect(String((puts(URI).at(-1)!.args["fields"] as Record<string, string>)["lease"])).toMatch(/^body-b 4 /);
+    expect(String((puts(URI).find((c) => (c.args["fields"] as Record<string, string> | undefined)?.["lease"])!.args["fields"] as Record<string, string>)["lease"])).toMatch(/^body-b 4 /);
     h.calls.length = 0;
     const same = await run(argv(["om", "lares-alpha"], { body: "body-a" }));
     expect(data(same)["epoch"]).toBe(3);
-    expect(puts(URI)).toHaveLength(0);
+    expect(puts(URI).filter((c) => (c.args["fields"] as Record<string, string> | undefined)?.["lease"])).toHaveLength(0);
   });
 
-  test("an AI seat's write bearing a stale epoch, or none, refuses spirit-lease-stale and names the claim", async () => {
+  test("the epoch orders bodies and never refuses: an AI seat's write bearing a stale epoch, or none, lands", async () => {
     stage({ fields: LEASE });
-    for (const options of [{}, { epoch: "2" }]) {
+    for (const options of [{}, { epoch: "2" }, { epoch: "3" }]) {
       const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y", ...options }), { seat: () => true });
-      expect(error(r).code).toBe("spirit-lease-stale");
-      expect(error(r).message).toContain("lares spirit om lares-alpha --body <session id>");
+      expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     }
-    const held = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y", epoch: "3" }), { seat: () => true });
-    expect(held.exit).toBe(0);
   });
 
   test("a person's terminal writes the leased card freely", async () => {
@@ -527,7 +532,7 @@ describe("om reads by source and reads the carry as testimony", () => {
   test("a fork wakes framed as a fork, holding the raised epoch", async () => {
     stage({ fields: { lease: "body-a 1 2026-11-24T11:00:00.000Z" } });
     const r = await run(argv(["om", "lares-alpha"], { source: "fork", body: "body-b" }));
-    expect(String(data(r)["text"])).toMatch(/^You wake as a fork: another body may still wear lares-alpha\. This wake holds the card's lease at epoch 2/);
+    expect(String(data(r)["text"])).toMatch(/^You wake as a fork: another body may still wear lares-alpha, and both write the one card \(wake epoch 2\)/);
   });
 
   test("a compaction names the carry it inherits by hash and first words", async () => {
@@ -596,7 +601,7 @@ describe("a first wake writes its own shrine", () => {
 describe("the carry lands with its lineage", () => {
   const parent = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-0123456789ab`;
   test("parent, depth, record-base and body ride the carry, and the bodies line it hands back names pet#body8", async () => {
-    stage({ titles: [parent], residue: { [parent]: { depth: "2" } } });
+    stage({ titles: [parent], residue: { [parent]: { depth: "2", body: "0123456789abcdef" } } });
     const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary", body: "0123456789abcdef" }));
     const title = String(data(r)["title"]);
     expect(puts(title)[0]!.args["fields"]).toMatchObject({ parent: "0123456789ab", depth: "3", body: "0123456789abcdef", "record-base": FULL });
@@ -675,36 +680,112 @@ describe("a title only proposes", () => {
 });
 
 describe("each familiar its own: a fresh body's title names its own familiar; a held body's title renames", () => {
-  test("a fresh body (the card's lease names another) whose title no record answers reads the starter for the title's slug, never the seated card", async () => {
-    stage({ fields: { lease: "s-old 3 2026-11-24T11:00:00.000Z" } });
+  test("a fresh startup body whose title no record answers prints the starter as an offer for the title's slug, never the seated card", async () => {
+    stage();
     const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-new" }));
     expect(data(r)["pet"]).toBe("lares-awakens");
-    expect(data(r)["starter"]).toBe(true);
+    expect([data(r)["starter"], data(r)["offer"]]).toEqual([true, true]);
+    expect(String(data(r)["text"])).toContain("An offer, never a seat");
     expect(String(data(r)["text"])).toContain("Lares spirit om · lares-awakens: no record answers this pet name yet");
     expect(String(data(r)["text"])).not.toContain("A rename renames");
     expect(puts(URI)).toHaveLength(0);
   });
 
-  test("a fresh body whose title's slug names a standing familiar wakes that familiar (its pet slug reads the title's)", async () => {
+  test("a fork's title counts only where it names a standing record: no record, and the fork wakes the pet it was handed", async () => {
+    stage();
+    const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-fork", source: "fork" }));
+    expect(data(r)["pet"]).toBe("lares-alpha");
+    expect(data(r)["starter"]).toBeUndefined();
+  });
+
+  test("a fresh body whose title's slug names a standing familiar wakes that familiar", async () => {
     stage({ others: { "lares-awakens": {} } });
     const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-new" }));
     expect(data(r)["pet"]).toBe("lares-awakens");
     expect(data(r)["turnedFrom"]).toBe("lares-alpha");
   });
 
-  test("a held body (it holds the card's lease) never switches: a title another record names as its own reads as an offer", async () => {
-    stage({ fields: { lease: "s-held 3 2026-11-24T11:00:00.000Z" }, others: { "lares-awakens": { fields: { aliases: "Lares-Awakens" } } } });
-    const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-held", source: "compact" }));
+  test("--held never switches: a title another record names as its own reads as an offer", async () => {
+    stage({ others: { "lares-awakens": { fields: { aliases: "Lares-Awakens" } } } });
+    const r = await run({ ...argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-held", source: "compact" }), flags: { json: true, held: true } } as unknown as ParsedArgs);
     expect(data(r)["pet"]).toBe("lares-alpha");
     expect(data(r)["turnedFrom"]).toBeUndefined();
     expect(String(data(r)["text"])).toContain("a title only proposes, so this wake stays lares-alpha");
   });
 
-  test("a held body whose title no record answers reads the rename of the held familiar", async () => {
-    stage({ fields: { lease: "s-held 3 2026-11-24T11:00:00.000Z" } });
-    const r = await run(argv(["om", "lares-alpha"], { title: "Kahu Night", body: "s-held" }));
+  test("--held with a title no record answers reads the rename of the held familiar", async () => {
+    stage();
+    const r = await run({ ...argv(["om", "lares-alpha"], { title: "Kahu Night", body: "s-held" }), flags: { json: true, held: true } } as unknown as ParsedArgs);
     expect(data(r)["pet"]).toBe("lares-alpha");
     expect(String(data(r)["text"])).toContain("A rename renames, never retargets: this body stays lares-alpha");
+  });
+
+  test("the prefix guard stands: a title extending the pet's own name reads as that pet", async () => {
+    stage();
+    const r = await run(argv(["om", "lares-alpha"], { title: "lares-alpha wakes", body: "s-new" }));
+    expect(data(r)["pet"]).toBe("lares-alpha");
+    expect(data(r)["starter"]).toBeUndefined();
+  });
+
+  test("a title whose slug runs past a pet name's 62 chars names no familiar, and the wake says so", async () => {
+    stage();
+    const r = await run(argv(["om", "lares-alpha"], { title: "x".repeat(70), body: "s-new" }));
+    expect(data(r)["pet"]).toBe("lares-alpha");
+    expect(String(data(r)["text"])).toContain("runs 70 chars, past the 62 a pet name holds");
+  });
+});
+
+describe("bunrei: many bodies wear one pet, and none locks another out", () => {
+  test("a waking body adds itself to bodies-awake, drops the stale, and om names each sibling awake", async () => {
+    stage({ fields: { "bodies-awake": "lares-alpha#body-a00 2026-11-24T11:50:00.000Z\nlares-alpha#body-old 2026-11-24T10:00:00.000Z" } });
+    const r = await run(argv(["om", "lares-alpha"], { body: "body-b00-long" }));
+    expect(String(data(r)["text"])).toContain("2 bodies wear lares-alpha: #body-b00 (you), #body-a00 since 11:50");
+    const awake = puts(URI).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["bodies-awake"]).filter(Boolean).at(-1)!;
+    expect(awake).toContain("lares-alpha#body-a00 2026-11-24T11:50:00.000Z");
+    expect(awake).toContain("lares-alpha#body-b00 2026-11-24T12:00:00.000Z");
+    expect(awake).not.toContain("body-old");
+  });
+
+  test("two bodies add #/open lines at once: the later re-reads past the conflict and both lines survive", async () => {
+    stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/open": "!! Open\n\n* a loop\n* body a's line" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* body b's line" }), { seat: () => true });
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const patches = h.calls.filter((c) => c.verb === "meme-patch");
+    expect(String(patches.at(-1)!.args["replace"])).toBe("!! Open\n\n* a loop\n* body a's line\n* body b's line");
+  });
+
+  test("a whole-slot replace whose slot moved under it lands both versions in a conflict stanza naming each body", async () => {
+    stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/open": "!! Open\n\n* body a rewrote it" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* body b rewrote it", body: "body-b00" }), { seat: () => true });
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const landed = String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]);
+    expect(landed).toContain("conflict");
+    expect(landed).toContain("#body-b00");
+    expect(landed).toContain("* body b rewrote it");
+    expect(landed).toContain("* body a rewrote it");
+    expect(data(r)["conflict"]).toBe(true);
+  });
+
+  test("a whole-slot replace whose slot held still past a conflict elsewhere retries plain", async () => {
+    stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/bodies": "!! Bodies\n\n* one\n* two" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* mine" }));
+    expect(r.exit).toBe(0);
+    expect(String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"])).toBe("!! Open\n\n* mine");
+  });
+
+  test("hooili lineage runs per body: a carry's parent reads that body's own last carry, never a sibling's", async () => {
+    const a = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-aaaaaaaaaaaa`;
+    const b = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-bbbbbbbbbbbb`;
+    stage({ titles: [a, b], residue: { [a]: { body: "body-a00", depth: "4", landed: "2026-11-24T11:59:00.000Z" }, [b]: { body: "body-b00", depth: "1", landed: "2026-11-24T11:00:00.000Z" } } });
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary", body: "body-b00" }));
+    expect([data(r)["parent"], data(r)["depth"]]).toEqual([b, 2]);
+  });
+
+  test("om shows each live body's chain: its last carry", async () => {
+    const a = `${MEMORY_PREFIX}${COMPACTION_WORD}/${ID}-aaaaaaaaaaaa`;
+    stage({ fields: { "bodies-awake": "lares-alpha#body-a00 2026-11-24T11:50:00.000Z" }, titles: [a], residue: { [a]: { body: "body-a00-full", depth: "2" } } });
+    const r = await run(argv(["om", "lares-alpha"], { body: "body-b00" }));
+    expect(String(data(r)["text"])).toContain(`#body-a00's chain: ${a}`);
   });
 });
 
@@ -718,9 +799,9 @@ describe("the cold read's cures", () => {
     expect(leasePuts.every((c) => c.args["base"] === "sha256-rec")).toBe(true);
   });
 
-  test("every om text names the lease epoch the card stands at", async () => {
+  test("every om text names the wake epoch the card stands at, an ordering stamp", async () => {
     stage({ fields: { lease: "body-a 3 2026-11-24T11:00:00.000Z" } });
-    expect(String(data(await run(argv(["om", "lares-alpha"])))["text"])).toContain("lease epoch 3");
+    expect(String(data(await run(argv(["om", "lares-alpha"])))["text"])).toContain("wake epoch 3");
   });
 
   test("a #/voice write the door answers noop sets no distill mark", async () => {
@@ -763,7 +844,7 @@ describe("the cold read's cures", () => {
     expect(r.exit).toBe(0);
     const unfiled = String(data(r)["unfiled"]);
     expect(unfiled).toContain(`--add '* '\\'''\\''2026-11-24`);
-    expect(unfiled.endsWith(" --epoch 3")).toBe(true);
+    expect(unfiled).not.toContain("--epoch");
   });
 });
 

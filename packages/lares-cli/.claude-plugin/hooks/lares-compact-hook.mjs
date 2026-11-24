@@ -29,7 +29,7 @@ try {
       const answer = parseAnswer((await settle(run(spiritArgv("om", worn, "--source", "precompact", ...body)), OM_BUDGET_MS))?.stdout);
       if (answer?.ok === true) {
         shape = answer.data?.carryShape ?? null; inherits = answer.data?.inherits ?? null; card = String(answer.data?.text ?? "");
-        // The precompact read claims the card's lease for this body; the counter keeps the epoch the next writes bear.
+        // The precompact read stamps the wake epoch for this body (an ordering stamp); the counter keeps it.
         if (Number.isSafeInteger(answer.data?.epoch)) updateState(sessionCounter(input), (cur) => ({ ...cur, epoch: answer.data.epoch }));
       }
     }
