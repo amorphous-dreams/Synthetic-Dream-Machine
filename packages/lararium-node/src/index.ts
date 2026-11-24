@@ -188,7 +188,7 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
-export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./floor-shadow-file.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile, readFloorShadowFileTold, type FloorShadowRead } from "./floor-shadow-file.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc, quarantineHolds, quarantineHoldOf, readQuarantineManifests, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT } from "./doc-load-probe.js";
 export type { QuarantineHold, QuarantineRelease, QuarantineReleaseAct } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
@@ -593,3 +593,5 @@ export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-fr
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
+
+export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";

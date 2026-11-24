@@ -37,7 +37,7 @@
  *   9. lag          after a raise that stood, the lag reads aloud on every raise: the canon bag behind the canon source (the
  *                   carriers in `bags/` the canon layers lack; canon fills through promote and the floor's sealed cut, never
  *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
- *                   newer sealed floor the release carries than the vessel serves. Where the canon source stands in a checkout
+ *                   newer seed offer (the seed's floor) the release carries than the vessel serves, named by its card. Where the canon source stands in a checkout
  *                   and the owner holds this terminal, the workbench lay's preview (each title a workbench the worn face mounts
  *                   would take) asks once, and the lay (`lares vessel lay --workbench --apply`) runs only on an explicit yes; a
  *                   workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
@@ -189,6 +189,8 @@ export interface RitePorts {
    * the checkout's `wikis/<slug>` and whether the worn face mounts it; null where the vessel reads none. Absent, the rite reads no lag.
    */
   houseLag?(): Promise<HouseLag | null>;
+  /** The floor card the vessel's status refreshed (title only), or null where no vessel answers one. */
+  floorCard?(): Promise<{ readonly title: string } | null>;
   /** One yes-or-no on this terminal (a Ctrl+C reads as no); absent, the rite asks nothing and lays nothing. */
   ask?(question: string): Promise<boolean>;
   /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), run only after the owner's yes; its exit code. */
@@ -326,11 +328,12 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
     if (offer !== null) seedWords = ratchetWords(compareGenesisDigests(offer.record, offer.seed.digests));
   }
   const floor = floorMoved(seedWords);
-  if (floor) ports.say("kūkulu: the release this vessel runs carries a newer sealed floor than the vessel serves (floor moved); the raise names it and stands no floor");
+  const card = floor && ports.floorCard ? await ports.floorCard().catch(() => null) : null;
+  if (floor) ports.say(`kūkulu: the seed offer waits (the seed's floor moved); the raise stands no floor${card ? `; the card ${card.title} names each drift` : ""}: \`lares vessel floor status --grain seed\``);
   const read = await ports.houseLag().catch(() => null);
   if (read === null) {
     ports.say("kūkulu: the lag reads nowhere (the vessel answered no reading); `lares vessel lay --lag` reads it");
-    return { ...out, data: { ...out.data, lag: { read: false, ...(floor ? { floor: "moved" } : {}) } } };
+    return { ...out, data: { ...out.data, lag: { read: false, ...(floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {}) } } };
   }
   const fresh = read.holdings.reduce((n, h) => n + h.new.length, 0), moved = read.holdings.reduce((n, h) => n + h.changed.length, 0);
   ports.say(read.lag === 0
@@ -346,7 +349,7 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
     if (b.mounts === true) continue;
     ports.say(`kūkulu: workbench ${b.slug} does not mount under the worn face (${b.why ?? (b.mounts === null ? "its seat read nowhere" : "no writer's seat")}); nothing of it lays`);
   }
-  const lag = { canon: read.lag, workbench: read.benchLag, checkout: read.checkout, source: read.source, ...(floor ? { floor: "moved" } : {}) };
+  const lag = { canon: read.lag, workbench: read.benchLag, checkout: read.checkout, source: read.source, ...(floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {}) };
   const mounted = lagging.filter((b) => b.mounts === true);
   const offered = mounted.reduce((n, b) => n + b.planned.length, 0);
   if (offered === 0) return { ...out, data: { ...out.data, lag } };
