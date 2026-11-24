@@ -59,6 +59,8 @@ function stand(o: {
   readonly disk?: string; readonly records?: string; readonly path?: string; readonly uri?: string;
   readonly rules?: readonly CollapseRule[]; readonly seed?: readonly Fields[]; readonly base?: string | null;
   readonly deps?: Partial<StandoffKeeperDeps>;
+  /** Whether the stand-off still stands in the projector's set (a vector flips it to end the stand-off). */
+  readonly stands?: { value: boolean };
 } = {}): Stood {
   const uri = o.uri ?? URI;
   const disk = o.disk ?? DISK;
@@ -75,7 +77,7 @@ function stand(o: {
   const took: string[] = [];
   const keeper = new StandoffKeeper({
     wiki,
-    standing: () => [entry],
+    standing: () => (o.stands?.value === false ? [] : [entry]),
     render: () => ({ text: records }),
     takeRecords: async (_b, _u, key) => { took.push(key); return { took: true }; },
     rules: () => new Set(o.rules ?? []),
@@ -175,6 +177,22 @@ describe("a person's drafts stay theirs", () => {
     s.wiki.rows.set(title, edited);
     await s.keeper.weigh({ bagId: BAG, uri: URI, standoff: KEY });
     expect(s.wiki.rows.get(title)).toEqual(edited);
+  });
+});
+
+describe("the mount's sweep keeps a hand's words", () => {
+  test("a draft a hand edited stays when the sweep finds its stand-off gone; an untouched draft leaves", async () => {
+    const stands = { value: true };
+    const s = stand({ stands, disk: sealed(DISK.replace("<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>\n", "<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>\n\nThe file's second words.\n")) });
+    await s.keeper.weigh({ bagId: BAG, uri: URI, standoff: KEY });
+    const drafts = s.keeper.draftsOf(URI).map((d) => d.title);
+    expect(drafts.length, "two drafts load").toBe(2);
+    const [edited, untouched] = drafts as [string, string];
+    s.wiki.rows.set(edited, { ...s.wiki.rows.get(edited)!, text: "the hand's own edit of the draft" });
+    stands.value = false;
+    await s.keeper.sweep();
+    expect(s.wiki.rows.get(edited)?.["text"], "the hand's edit stays").toBe("the hand's own edit of the draft");
+    expect(s.wiki.rows.get(untouched), "the untouched draft leaves").toBeUndefined();
   });
 });
 

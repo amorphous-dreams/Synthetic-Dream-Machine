@@ -57,10 +57,10 @@ import {
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
   writesBag, VerbRefusal, workingLayerOfCanon, canonOfWorkingLayer, isWorkingLayerBag, overrideBaseOf, carrierHashOf, OVERRIDE_BASE_META,
   CONTROL_HOME_ID, SECRET_HOME_ID,
-  yieldToHost,
+  yieldToHost, standoffOf,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
-import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
+import type { SessionWorn, VerbContext, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { memeticWikitextDeserializer, QUOTEBLOCKED_FIELD, TORN_FIELD } from "./deserializer.js";
@@ -546,6 +546,17 @@ async function executeRepack(access: BagAccess, bag: string, packPath: string, t
 }
 
 /** Per-ACTION-verb reactor factory. */
+/** Refuse a wave that would settle a stand-off with no hand, naming the command the operator runs. */
+function refuseUnhandedStandoff(action: IngestAction, asker: VerbContext["asker"]): void {
+  for (const carrier of action.carriers) {
+    const key = standoffOf(action.toBag, carrier.uri);
+    if (key === null) continue;
+    const line = `lares shore keep-disk ${carrier.uri} --key ${key}`;
+    if (asker === "seat") throw new VerbRefusal("hand-act-only", `hand-act-only: ${carrier.uri} stands off at this island's disk shore (key ${key}), and settling it runs on a person's hand; a seat proposes. Ask the operator to run \`${line}\` (or \`lares shore keep-records ${carrier.uri} --key ${key}\`) on their own terminal.`);
+    throw new VerbRefusal("hand-unattested", `hand-unattested: ${carrier.uri} stands off at this island's disk shore (key ${key}), and this wave's line attests no person to settle it. Run \`${line}\` on a terminal whose processes the host can read.`);
+  }
+}
+
 export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOptions): VerbReactor {
   return async (args, ctx) => {
     const action = residencyFromContext(verb, args, ctx.invocation);
@@ -563,6 +574,13 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the daemon mount owns it.
     let faceStore: LarTiddlerStore | null = null;
     if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget, ctx.worn);
+    // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a wave whose carrier stands off at this island's disk shore
+    // names a base the gate would trust, so it lands only from a person's line; `take-disk` and `keep-disk` ride exactly such a
+    // wave. A wave the vessel settles by itself (unattended, no door read) never adopts over a stand-off: its gate answers
+    // `conflict` on the tree's own base.
+    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab" && !(ctx.asker === undefined && action.unattended === true)) {
+      refuseUnhandedStandoff(action, ctx.asker);
+    }
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }

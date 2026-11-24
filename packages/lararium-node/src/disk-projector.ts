@@ -85,7 +85,7 @@ import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, hasEffectRecordKind, type ProjectionClass } from "@lararium/mesh";
+import { watchStandoffs, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, hasEffectRecordKind, type ProjectionClass } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember, isEffectRecordUri } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -458,6 +458,9 @@ export class LarDiskProjector {
    */
   standoffKeeper: import("./standoff-drafts.js").StandoffKeeper | null = null;
 
+  /** The ingest door's watch over this projector's stand-offs, while it runs. */
+  private unwatchStandoffs: (() => void) | null = null;
+
   /**
    * URIs currently being written to disk.
    * File watcher MUST check writing.has(uri) before ingesting — skip own writes.
@@ -582,6 +585,10 @@ export class LarDiskProjector {
    */
   start(tw5: TW5Engine): () => Promise<void> {
     this._tw5 = tw5;
+    // THE INGEST DOOR ASKS THIS SHORE whether a wave's carrier stands off (`standoff-watch`, @lararium/mesh): such a wave
+    // lands only from a person's line, while this projector runs.
+    this.unwatchStandoffs?.();
+    this.unwatchStandoffs = watchStandoffs((bagId, uri) => this.standing().find((s) => s.bagId === bagId && s.uri === uri)?.standoff ?? null);
     const wiki = tw5.$tw.wiki;
     // Group routing: a fragment record's change belongs to its carrier root.
     // Climb `$fragment-parent` one hop at a time (the field points one level
@@ -754,6 +761,8 @@ export class LarDiskProjector {
 
   async stop(): Promise<void> {
     this.stopping = true;
+    this.unwatchStandoffs?.();
+    this.unwatchStandoffs = null;
     this.wakeWaiters();
     await this.gate?.settle();
     this.writing.clear();

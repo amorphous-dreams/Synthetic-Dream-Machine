@@ -63,6 +63,8 @@ export const STANDOFF_PATH_FIELD = "lar-standoff-path";
 export const STANDOFF_BAG_FIELD = "lar-standoff-bag";
 /** A person kept this draft past its stand-off's end (`keep-both`). */
 export const STANDOFF_KEPT_FIELD = "lar-standoff-kept";
+/** The digest of the words the keeper loaded into a draft: a draft whose words read otherwise holds a hand's edit. */
+export const STANDOFF_LOADED_FIELD = "lar-standoff-loaded";
 
 /** The actions an awaiting stand-off offers a person, each a runnable command: `keep-both` and the drafts only where drafts stand. */
 export function standoffActions(uri: string, key: string, withDrafts: boolean): Array<{ readonly action: string; readonly command: string }> {
@@ -159,6 +161,17 @@ export function movedFields(a: Fields | undefined, b: Fields | undefined): strin
   return [...keys].filter((k) => !BOOKKEEPING.has(k) && k !== "title" && fieldValue(a?.[k]) !== fieldValue(b?.[k])).sort();
 }
 
+/** The digest of a draft's words: every field but the bookkeeping, the draft book's own stamps and the loaded mark itself. */
+function loadedDigest(fields: Fields): string {
+  const words = Object.keys(fields).filter((k) => !BOOKKEEPING.has(k) && k !== STANDOFF_LOADED_FIELD && k !== STANDOFF_KEPT_FIELD && !k.startsWith("lar-draft-")).sort();
+  return contentHash(JSON.stringify(words.map((k) => [k, fieldValue(fields[k])])));
+}
+
+/** A draft the keeper may take away: nobody kept it, and its words still read as the keeper loaded them. */
+function untouched(fields: Fields | undefined): boolean {
+  return fields !== undefined && fields[STANDOFF_KEPT_FIELD] !== "yes" && fields[STANDOFF_LOADED_FIELD] === loadedDigest(fields);
+}
+
 const byTitle = (records: readonly Fields[] | null): Map<string, Fields> =>
   new Map((records ?? []).filter((r) => typeof r["title"] === "string").map((r) => [r["title"] as string, r]));
 
@@ -205,7 +218,7 @@ export class StandoffKeeper {
     return this.queue(async () => {
       const leave = this.deps.wiki.titles().filter((t) => {
         const f = this.deps.wiki.get(t);
-        return f?.[STANDOFF_FIELD] === info.standoff && f?.[STANDOFF_KEPT_FIELD] !== "yes" && typeof f?.["draft.of"] === "string";
+        return f?.[STANDOFF_FIELD] === info.standoff && typeof f?.["draft.of"] === "string" && untouched(f);
       });
       if (leave.length > 0) await this.deps.wiki.act((_put, del) => { for (const t of leave) del(t); return leave.length; });
       await this.deps.alert({ clear: true, standoff: info.standoff });
@@ -234,7 +247,7 @@ export class StandoffKeeper {
       const leave = this.deps.wiki.titles().filter((t) => {
         const f = this.deps.wiki.get(t);
         const key = f?.[STANDOFF_FIELD];
-        return typeof key === "string" && typeof f?.["draft.of"] === "string" && f?.[STANDOFF_KEPT_FIELD] !== "yes" && !standing.has(key);
+        return typeof key === "string" && typeof f?.["draft.of"] === "string" && untouched(f) && !standing.has(key);
       });
       if (leave.length > 0) await this.deps.wiki.act((_put, del) => { for (const t of leave) del(t); return leave.length; });
       return leave;
@@ -285,6 +298,7 @@ export class StandoffKeeper {
         [STANDOFF_FIELD]: standoff, [STANDOFF_PATH_FIELD]: path, [STANDOFF_BAG_FIELD]: bagId,
         "lar-conflict-fields": moved.join(" "), "lar-conflict-live": "",
       });
+      draft[STANDOFF_LOADED_FIELD] = loadedDigest(draft);
       fresh.push(draft);
     }
     if (fresh.length > 0) await this.deps.wiki.act((put) => { for (const d of fresh) put(d); return fresh.length; });
@@ -329,7 +343,7 @@ export class StandoffKeeper {
         Object.assign(next, w.fields);
         put(next);
       }
-      for (const d of drafts) if (this.deps.wiki.get(d)?.[STANDOFF_KEPT_FIELD] !== "yes") del(d);
+      for (const d of drafts) if (untouched(this.deps.wiki.get(d))) del(d);
       return writes.length + drafts.length;
     });
     this.deps.audit({ rule: verdict.rule, toward: verdict.toward, bagId, uri, path, standoff, drafts });
@@ -342,7 +356,7 @@ export class StandoffKeeper {
     this.rounds.delete(entry.uri);
     const took = await this.deps.takeRecords(entry.bagId, entry.uri, entry.standoff);
     if (!took.took) return this.awaiting(entry, path, drafts.filter((d) => this.deps.wiki.get(d) !== undefined), `${rule} settled toward the records, and the records' side could not land: ${took.why ?? "the states moved"}`);
-    const leave = drafts.filter((d) => { const f = this.deps.wiki.get(d); return f !== undefined && f[STANDOFF_KEPT_FIELD] !== "yes"; });
+    const leave = drafts.filter((d) => { const f = this.deps.wiki.get(d); return untouched(f); });
     if (leave.length > 0) await this.deps.wiki.act((_put, del) => { for (const d of leave) del(d); return leave.length; });
     this.deps.audit({ rule, toward: "records", bagId: entry.bagId, uri: entry.uri, path, standoff: entry.standoff, drafts });
     return { kind: "collapsed", rule, toward: "records", drafts };
