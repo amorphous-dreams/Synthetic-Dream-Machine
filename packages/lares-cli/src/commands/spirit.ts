@@ -442,23 +442,33 @@ async function namesTitle(args: ParsedArgs, rec: Record_, title: string): Promis
 }
 
 /**
- * A TITLE ONLY PROPOSES. The session's title steers nothing by itself: the wake stays the pet it was handed. Where the title's
- * slug names another familiar whose record names this title as its own (its `aliases` field, or its recognition line), the wake
- * turns to that record; where that record stands without naming the title, the title reads as an offer; where no record answers
- * it, the title reads as a rename of this familiar, which records its alias by its own act.
+ * A TITLE ONLY PROPOSES, AND EACH FAMILIAR WAKES ITS OWN. A body that HOLDS the card (its lease names this body) never switches:
+ * a title naming another familiar reads as an offer (that familiar's own act records the alias), and a title no record answers
+ * reads as this familiar's rename. A FRESH body (it names itself, and the card's lease names another body or none) reads the
+ * title's slug as its own familiar: where that familiar's record stands and names the title (its pet slug, its `aliases` field
+ * or its recognition line), the wake turns to it; where none stands, the wake prints that familiar's starter shrine, never the
+ * seated card. A wake that names no body reads the title as a proposal alone: it turns only where the title's record names the
+ * title as its own, else reads as an offer or as this familiar's rename.
  */
-async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, title: string | null): Promise<{ to: Record_ | null; line: string | null }> {
-  if (title === null || title.trim() === "") return { to: null, line: null };
+async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, title: string | null, body: "held" | "fresh" | null): Promise<{ to: Record_ | null; starter: string | null; line: string | null }> {
+  const none = { to: null, starter: null, line: null };
+  if (title === null || title.trim() === "") return none;
   const slug = titleSlug(title);
-  if (slug === null || slug === pet || slug.startsWith(`${pet}-`)) return { to: null, line: null };
+  const fresh = body === "fresh";
+  if (slug === null || slug === pet || (!fresh && slug.startsWith(`${pet}-`))) return none;
   let other: Record_ | null = null;
   try { other = await resolveRecord(args, "om", slug, true); } catch (e) { if (!(e instanceof SpiritRefusal)) throw e; }
   const named = title.trim().slice(0, 80);
-  if (other !== null && (await namesTitle(args, other, title))) return { to: other, line: `This session's title "${named}" names ${other.uri} as its own; this wake turns to ${slug}.` };
-  if (other !== null) {
-    return { to: null, line: `This session's title "${named}" names ${other.uri}, whose record stands; a title only proposes, so this wake stays ${pet}. To wear ${slug} under this title, ${slug}'s own act records the alias: lares spirit ah ${slug} --slot '#/entry' --add ${shq(`''renames:'' -> ${named}`)}` };
+  if (fresh && other === null) {
+    return { to: null, starter: slug, line: `This session's title "${named}" names its own familiar, ${slug}, and no record stands under it yet; the seated ${pet} waits for a session that wears it.` };
   }
-  return { to: null, line: rec === null ? null : `This session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this body stays ${pet}. To keep the title as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add ${shq(`''renames:'' ${pet} -> ${named}`)}` };
+  if (other !== null && body !== "held" && ((fresh && other.pet === slug) || (await namesTitle(args, other, title)))) {
+    return { to: other, starter: null, line: `This session's title "${named}" names ${other.uri} as its own; this wake turns to ${slug}.` };
+  }
+  if (other !== null) {
+    return { to: null, starter: null, line: `This session's title "${named}" names ${other.uri}, whose record stands; a title only proposes, so this wake stays ${pet}. To wear ${slug} under this title, ${slug}'s own act records the alias: lares spirit ah ${slug} --slot '#/entry' --add ${shq(`''renames:'' -> ${named}`)}` };
+  }
+  return { to: null, starter: null, line: rec === null ? null : `This session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this body stays ${pet}. To keep the title as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add ${shq(`''renames:'' ${pet} -> ${named}`)}` };
 }
 
 async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
@@ -470,9 +480,11 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (body !== null && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
   const title = typeof args.options["title"] === "string" ? args.options["title"] : null;
   const seated = await resolveRecord(args, "om", given, true);
-  const turn = source === "precompact" ? { to: null, line: null } : await readTitle(args, seated, given, title);
-  const found = turn.to ?? seated;
-  const pet = turn.to?.pet ?? given;
+  // A body holds the card where its lease names this body; a body the lease names not wakes fresh.
+  const held = body === null ? null : seated !== null && seated.lease?.body === body ? "held" : "fresh";
+  const turn = source === "precompact" ? { to: null, starter: null, line: null } : await readTitle(args, seated, given, title, held);
+  const found = turn.starter !== null ? null : turn.to ?? seated;
+  const pet = turn.starter ?? turn.to?.pet ?? given;
   if (found === null) {
     // A first wake: no record yet. The body reads the skeleton and lands its own shrine; a precompact hands back no shape.
     const text = source === "precompact" ? "" : [turn.line, starterText(pet)].flatMap((l) => (l === null ? [] : [l])).join("\n\n");

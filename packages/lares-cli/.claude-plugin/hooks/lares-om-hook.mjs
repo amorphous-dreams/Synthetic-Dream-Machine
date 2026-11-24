@@ -4,9 +4,10 @@
  * Code runs an event's matching hooks in parallel; the order names the context's order). It acts only inside the house (the
  * checkout or a bound workspace) and only where the vessel answers up (a shim verb with no vessel would run offline).
  *
- * A TITLE ONLY PROPOSES. The wake asks once for the pet this session already wears (any source but a startup keeps it), else
- * the seated familiar (this hook's argument, a default), else the title's slug where neither stands; the door reads the title
- * beside it (`om --title`) and turns only where the title's record names it as its own, else offers it. `om` reads by source
+ * EACH FAMILIAR ITS OWN. The wake asks once for the pet this session already holds (any source but a startup keeps it; a retitle
+ * then reads as its rename), else a fresh session's title slug (its own familiar: its card, or its starter shrine where no
+ * record stands), else the seated familiar (this hook's argument, a default for an untitled session). The door reads the title
+ * beside it (`om --title`) by the same held/fresh split, the card's lease naming the body that holds it. `om` reads by source
  * and claims the card's lease for this session's body; the counter keeps the pet, the epoch, the cadence and the title, merged
  * under its lock (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum). Any fault exits 0.
  */

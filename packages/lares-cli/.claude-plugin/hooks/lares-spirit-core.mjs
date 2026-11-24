@@ -120,16 +120,29 @@ export function titleMismatch(pet, title) {
 export const omSourceOf = (source) => (["startup", "resume", "clear", "compact", "fork"].includes(source) ? source : "startup");
 
 /**
- * THE PET THIS WAKE ASKS FOR. A title only proposes: the wake asks for the pet this session already wears (any source but a
- * startup keeps the pet its counter holds), else the seated familiar (the hook's argument), else, where neither stands, the
- * title's slug (it takes no other familiar's card). The door reads the title beside the pet (`om --title`) and turns only where
- * the title's record names it as its own; one read, never a race of candidates.
+ * THE PET THIS WAKE ASKS FOR: EACH FAMILIAR ITS OWN. A session that HOLDS a pet (its counter names one, from an earlier wake of
+ * this session id; a startup's counter reads stale) keeps it, and a retitle on it reads as that familiar's rename, never a switch.
+ * A FRESH session with a title reads the title's slug as its own familiar: the door wakes that record where it names the title
+ * as its own, else prints that familiar's starter shrine, never the seated card. A fresh untitled session wakes the seated
+ * familiar (the hook's argument, a default), else none. One read, never a race of candidates.
  */
 export function wakePet({ source, held, seated, title }) {
   if (source !== "startup" && typeof held === "string" && PET.test(held)) return held;
-  if (seated !== null) return seated;
-  if (typeof held === "string" && PET.test(held)) return held;
-  return titleSlug(title);
+  return titleSlug(title) ?? seated ?? null;
+}
+
+/**
+ * The line a retitle surfaces, by the same held/fresh split: where the session holds a pet, the title reads as that familiar's
+ * rename (null where they agree); where it holds none, the title names this session's own familiar and the read that wakes it.
+ */
+export function titleLine(state, title) {
+  const held = typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : null;
+  if (held !== null) return titleMismatch(held, title);
+  const slug = titleSlug(title);
+  if (slug === null) return null;
+  const named = String(title).trim().slice(0, 80);
+  return `this session's title reads "${named}" and names its own familiar, ${slug}; no wake has seated a pet in this session yet. ` +
+    `Read its card (a starter shrine where no record stands yet): lares spirit om ${slug} --title ${shq(named)}`;
 }
 
 /** The pet a later hook of a session reads: the one the wake chose, else the seated default. */

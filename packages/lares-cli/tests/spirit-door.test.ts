@@ -674,6 +674,40 @@ describe("a title only proposes", () => {
   });
 });
 
+describe("each familiar its own: a fresh body's title names its own familiar; a held body's title renames", () => {
+  test("a fresh body (the card's lease names another) whose title no record answers reads the starter for the title's slug, never the seated card", async () => {
+    stage({ fields: { lease: "s-old 3 2026-11-24T11:00:00.000Z" } });
+    const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-new" }));
+    expect(data(r)["pet"]).toBe("lares-awakens");
+    expect(data(r)["starter"]).toBe(true);
+    expect(String(data(r)["text"])).toContain("Lares spirit om · lares-awakens: no record answers this pet name yet");
+    expect(String(data(r)["text"])).not.toContain("A rename renames");
+    expect(puts(URI)).toHaveLength(0);
+  });
+
+  test("a fresh body whose title's slug names a standing familiar wakes that familiar (its pet slug reads the title's)", async () => {
+    stage({ others: { "lares-awakens": {} } });
+    const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-new" }));
+    expect(data(r)["pet"]).toBe("lares-awakens");
+    expect(data(r)["turnedFrom"]).toBe("lares-alpha");
+  });
+
+  test("a held body (it holds the card's lease) never switches: a title another record names as its own reads as an offer", async () => {
+    stage({ fields: { lease: "s-held 3 2026-11-24T11:00:00.000Z" }, others: { "lares-awakens": { fields: { aliases: "Lares-Awakens" } } } });
+    const r = await run(argv(["om", "lares-alpha"], { title: "Lares-Awakens", body: "s-held", source: "compact" }));
+    expect(data(r)["pet"]).toBe("lares-alpha");
+    expect(data(r)["turnedFrom"]).toBeUndefined();
+    expect(String(data(r)["text"])).toContain("a title only proposes, so this wake stays lares-alpha");
+  });
+
+  test("a held body whose title no record answers reads the rename of the held familiar", async () => {
+    stage({ fields: { lease: "s-held 3 2026-11-24T11:00:00.000Z" } });
+    const r = await run(argv(["om", "lares-alpha"], { title: "Kahu Night", body: "s-held" }));
+    expect(data(r)["pet"]).toBe("lares-alpha");
+    expect(String(data(r)["text"])).toContain("A rename renames, never retargets: this body stays lares-alpha");
+  });
+});
+
 describe("the cold read's cures", () => {
   test("a lease claim writes under the record's live hash and reads again past a conflict", async () => {
     stage({ fields: { lease: "body-a 3 2026-11-24T11:00:00.000Z" }, conflicts: 1 });

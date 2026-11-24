@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import {
   COMPACTION_DISPLAY, COMPACTION_WORD, OBSERVE_BUDGET_MS, OM_BUDGET_MS, PRECOMPACT_CHARS, WAKE_CEILING_MS, busy, compactionAsk, handbackPetOf, inHouse,
-  omContext, omSourceOf, petOf, precompactText, readState, sessionPet, stateDirOf, statePathOf, stopStep, titleMismatch, trueUpText, updateState, wakePet, TRUE_UP_EVERY,
+  omContext, omSourceOf, petOf, precompactText, readState, sessionPet, stateDirOf, statePathOf, stopStep, titleLine, titleMismatch, trueUpText, updateState, wakePet, TRUE_UP_EVERY,
 } from "../.claude-plugin/hooks/lares-spirit-core.mjs";
 
 const sourceDir = resolve(import.meta.dirname, "..", ".claude-plugin", "hooks");
@@ -32,13 +32,26 @@ test("the pure parts", async (t) => {
     assert.equal(omSourceOf("other"), "startup");
     assert.equal(omSourceOf(undefined), "startup");
   });
-  await t.test("the wake asks for the pet the session wears (any source but a startup), else the seated, else the title's slug", () => {
+  await t.test("the wake asks for the pet the session holds (any source but a startup); a fresh session's title names its own familiar; else the seated", () => {
     assert.equal(wakePet({ source: "compact", held: "lares-awakens", seated: "lares-alpha", title: "x" }), "lares-awakens");
-    assert.equal(wakePet({ source: "startup", held: "lares-awakens", seated: "lares-alpha", title: "x" }), "lares-alpha");
+    assert.equal(wakePet({ source: "compact", held: "lares-alpha", seated: "lares-alpha", title: "Lares-Awakens" }), "lares-alpha");
+    assert.equal(wakePet({ source: "startup", held: null, seated: "lares-alpha", title: "Lares-Awakens" }), "lares-awakens");
+    assert.equal(wakePet({ source: "startup", held: null, seated: "lares-alpha", title: "Lares-Alpha" }), "lares-alpha");
+    assert.equal(wakePet({ source: "startup", held: "lares-awakens", seated: "lares-alpha", title: null }), "lares-alpha");
+    assert.equal(wakePet({ source: "startup", held: null, seated: "lares-alpha", title: "   " }), "lares-alpha");
     assert.equal(wakePet({ source: "startup", held: null, seated: null, title: "Lares-Awakens" }), "lares-awakens");
     assert.equal(wakePet({ source: "startup", held: null, seated: null, title: null }), null);
     assert.equal(sessionPet({ pet: "lares-awakens" }, "lares-alpha"), "lares-awakens");
     assert.equal(sessionPet({ pet: null }, "lares-alpha"), "lares-alpha");
+  });
+  await t.test("a retitle follows the held/fresh split: a held pet reads a rename; a fresh session's title names its own familiar, never the seated", () => {
+    assert.match(titleLine({ pet: "lares-alpha" }, "Kahu Night"), /the seated familiar reads "lares-alpha"/);
+    assert.equal(titleLine({ pet: "lares-alpha" }, "Lares-Alpha"), null);
+    const fresh = titleLine({ pet: null }, "Lares-Awakens");
+    assert.match(fresh, /names its own familiar, lares-awakens/);
+    assert.match(fresh, /lares spirit om lares-awakens --title 'Lares-Awakens'/);
+    assert.doesNotMatch(fresh, /lares-alpha/);
+    assert.equal(titleLine({ pet: null }, "!!!"), null);
   });
   await t.test("a counter's read-modify-write keeps every key another hook wrote", () => {
     const dir = mkdtempSync(join(tmpdir(), "counter-"));
@@ -174,12 +187,29 @@ test("the hooks, spawned whole", async (t) => {
       assert.equal(calls().split("\n").filter((l) => l.startsWith("spirit om")).length, 1);
       assert.deepEqual([counter("s-om").pet, counter("s-om").epoch, counter("s-om").every, counter("s-om").title], ["lares-alpha", 4, 10, "lares-alpha"]);
     });
-    await t.test("om: the door's turn (a title the other record names as its own) names the pet the counter keeps", () => {
+    await t.test("om: a fresh session's title names its own familiar: a Lares-Awakens startup asks for lares-awakens (its starter), never the seated card", () => {
       reset();
-      plant({ "vessel stand": UP, "spirit om lares-alpha": om("the awakens card", { pet: "lares-awakens" }) });
+      plant({ "vessel stand": UP, "spirit om lares-awakens": STARTER, "spirit om lares-alpha": om("the alpha card", { pet: "lares-alpha" }) });
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "startup", session_id: "s-aw", session_title: "Lares-Awakens" })));
-      assert.equal(out.hookSpecificOutput.additionalContext, "the awakens card");
+      assert.equal(out.hookSpecificOutput.additionalContext, "the starter shrine");
+      assert.ok(calls().split("\n").includes("spirit om lares-awakens --source startup --body s-aw --title Lares-Awakens --json"));
+      assert.ok(!calls().includes("spirit om lares-alpha"));
       assert.equal(counter("s-aw").pet, "lares-awakens");
+    });
+    await t.test("om: a fresh untitled session wakes the seated default", () => {
+      reset();
+      plant({ "vessel stand": UP, "spirit om lares-alpha": om("the alpha card", { pet: "lares-alpha" }) });
+      const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "startup", session_id: "s-untitled" })));
+      assert.equal(out.hookSpecificOutput.additionalContext, "the alpha card");
+      assert.ok(calls().includes("spirit om lares-alpha --source startup --body s-untitled --json"));
+    });
+    await t.test("om: a held session's retitle keeps the held pet and hands the title to the door as a rename", () => {
+      reset();
+      writeFileSync(join(counters, "stop-s-held.json"), JSON.stringify({ turns: 3, pet: "lares-alpha", title: "lares-alpha" }));
+      plant({ "vessel stand": UP, "spirit om lares-alpha": om("the alpha card", { pet: "lares-alpha" }) });
+      spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "compact", session_id: "s-held", session_title: "Lares-Awakens" }));
+      assert.ok(calls().includes("spirit om lares-alpha --source compact --body s-held --title Lares-Awakens --json"));
+      assert.ok(!calls().includes("spirit om lares-awakens"));
     });
     await t.test("om: any source but a startup keeps the pet the session already wears", () => {
       reset();
@@ -345,6 +375,14 @@ test("the hooks, spawned whole", async (t) => {
       assert.match(out.hookSpecificOutput.additionalContext, /never retargets/);
       assert.equal(counter("s-r").title, "Kahu Night");
       assert.equal(spawn("lares-rename-hook.mjs", [], at({ session_id: "s-r", session_title: "Kahu Night" })), "");
+      assert.equal(calls(), "");
+    });
+    await t.test("rename: a fresh session (no held pet) reads its title as its own familiar, never as the seated default's rename", () => {
+      reset();
+      const out = JSON.parse(spawn("lares-rename-hook.mjs", ["lares-alpha"], at({ hook_event_name: "UserPromptSubmit", session_id: "s-fresh", session_title: "Lares-Awakens" })));
+      assert.match(out.hookSpecificOutput.additionalContext, /names its own familiar, lares-awakens/);
+      assert.doesNotMatch(out.hookSpecificOutput.additionalContext, /never retargets/);
+      assert.equal(counter("s-fresh").title, "Lares-Awakens");
       assert.equal(calls(), "");
     });
     await t.test("every hook exits 0 where the shim answers nothing at all", () => {
