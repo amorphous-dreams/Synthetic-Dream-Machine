@@ -50,7 +50,7 @@ test("RED: a sibling's lock and light refresh the relay at once; CONTROL: the ce
   // The drop first clears the face's recard arm (one use, never carried past the face's life), then closes through the actor.
   expect(source).toMatch(/const dropFace = \(ordinal: number\): Promise<void> => \{ recardArmed\.clear\(ordinal\); return faceLife\.close\(/);
   expect(source).toMatch(/dropWorker: \(_ordinal, atomKey\) => daemonVm\.dropFace\(atomKey\)/);
-  const teardownStart = source.indexOf("const teardownFaceHost = (ordinal: number): void =>");
+  const teardownStart = source.indexOf("const teardownFaceHost = (ordinal: number, why?: \"refused\"): void =>");
   expect(teardownStart).toBeGreaterThan(-1);
   expect(source.slice(teardownStart, source.indexOf("\n  };", teardownStart))).toMatch(/intentRelay\??\.refresh\s*\(/);
   const lightStart = source.indexOf("lightSlow = (ordinal, _opening, live) => armedLight(recardArmed, ordinal, async (recard) =>");

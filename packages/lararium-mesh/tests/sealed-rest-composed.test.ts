@@ -61,7 +61,10 @@ describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
     expect(node).toMatch(/for \(const sibling of siblingSessions\.values\(\)\) sibling\.seat\.book\(book\)/);
     expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control, faceRelation: relation/);
     expect(node).toMatch(/siblingBasesKeepers\.set\(group, keepFaceBases\(/);
-    expect(node).toMatch(/const dropped = sealedRest\.forget\(owned\);[\s\S]{0,120}repo\.removeFromCache\(/);
+    // A closed face forgets its saves, a refused one keeps them: the choice lives in `settleFaceSaves` (face-lend.ts), the teardown hands it both doors.
+    expect(node).toMatch(/settleFaceSaves\(owned, why, \{ forget: \(ids\) => sealedRest\.forget\(ids\), keep: \(ids\) => sealedRest\.keep\(ids\) \}\);[\s\S]{0,120}repo\.removeFromCache\(/);
+    const lend = stripped(["lararium-node", "src", "face-lend.ts"]);
+    expect(lend).toMatch(/if \(why === "refused"\) return \{ dropped: 0, held: rest\.keep\(owned\) \};\s*return \{ dropped: rest\.forget\(owned\), held: 0 \};/);
     expect(node).toMatch(/sealedRest\.watch\(repo, standingSaveSessionFor\)/);
     expect(node).toMatch(/openFaces: openFaceSubjects/);
   });

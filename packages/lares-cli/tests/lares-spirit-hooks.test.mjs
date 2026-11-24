@@ -73,9 +73,9 @@ test("the pure parts", async (t) => {
       assert.equal(existsSync(`${path}.lock`), false);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
-  await t.test("the true-up names the lease epoch the card writes bear", () => {
-    assert.match(trueUpText("p", { fire: "turns", state: { turns: 25, epoch: 4 } }), /--epoch 4/);
-    const nudge = trueUpText("p", { fire: "turns", state: { turns: 25, digests: { "#/open": "0123456789abcdef" } } }, null, "s-1");
+  await t.test("the true-up bears the body and no epoch (an ordering stamp the door ignores)", () => {
+    assert.doesNotMatch(trueUpText("p", { fire: "turns", state: { turns: 25, epoch: 4 } }), /--epoch/);
+    const nudge = trueUpText("p", { fire: "turns", state: { turns: 25, digests: { "#/open": "0123456789abcdef" } } }, "s-1");
     assert.match(nudge, /lares spirit ah p --slot '#\/open' --file <path> --base 0123456789abcdef --body s-1/);
     assert.match(nudge, /--add '<line>' on #\/bodies, #\/open or #\/voice --body s-1/);
   });
@@ -268,7 +268,7 @@ test("the hooks, spawned whole", async (t) => {
         assert.ok(calls().includes(`spirit om lares-alpha --source ${source} --body s-${source} --json`));
       }
     });
-    await t.test("compact: the precompact claim's epoch lands in the counter; the true-up's nudge bears it", () => {
+    await t.test("compact: the precompact claim's epoch lands in the counter; the true-up never carries it to the door", () => {
       reset();
       writeFileSync(join(counters, "stop-s-ep.json"), JSON.stringify({ turns: 0, pet: "lares-alpha", unfiled: "file it" }));
       plant({ "vessel stand": UP, "spirit om lares-alpha --source precompact": om("the card", { epoch: 7 }), "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
@@ -276,7 +276,7 @@ test("the hooks, spawned whole", async (t) => {
       assert.equal(counter("s-ep").epoch, 7);
       assert.equal(counter("s-ep").unfiled, "file it");
       const out = JSON.parse(spawn("lares-true-up-hook.mjs", [], at({ session_id: "s-ep" })));
-      assert.match(out.hookSpecificOutput.additionalContext, /--epoch 7/);
+      assert.doesNotMatch(out.hookSpecificOutput.additionalContext, /--epoch/);
     });
     await t.test("om: with the vessel down, the wake reads nothing and names the stand", () => {
       reset();
@@ -317,13 +317,13 @@ test("the hooks, spawned whole", async (t) => {
       assert.ok(calls().includes("spirit om lares-awakens --source precompact --body s-c --json"));
       assert.throws(() => JSON.parse(text));
     });
-    await t.test("postcompact: the summary rides whole on stdin bearing the body and epoch; the line the card awaits marks the counter unfiled", () => {
+    await t.test("postcompact: the summary rides whole on stdin bearing the body alone; the line the card awaits marks the counter unfiled", () => {
       reset();
       writeFileSync(join(counters, "stop-s-1.json"), JSON.stringify({ turns: 0, pet: "lares-alpha", epoch: 4 }));
       plant({ "vessel stand": UP, [`spirit ${COMPACTION_WORD}`]: JSON.stringify({ ok: true, data: { filed: false, unfiled: "file the #/bodies line: lares spirit ah lares-alpha --slot #/bodies --add x" } }) });
       const summary = `the summary\n${"x".repeat(70_000)}\nclosing (lares-alpha)`;
       spawn("lares-postcompact-hook.mjs", [], at({ hook_event_name: "PostCompact", session_id: "s-1", compact_summary: summary }));
-      assert.ok(calls().split("\n").includes(`spirit ${COMPACTION_WORD} lares-alpha --file - --body s-1 --epoch 4 --json`));
+      assert.ok(calls().split("\n").includes(`spirit ${COMPACTION_WORD} lares-alpha --file - --body s-1 --json`));
       assert.equal(readFileSync(fed, "utf8"), summary);
       assert.match(counter("s-1").unfiled, /lares spirit ah lares-alpha --slot #\/bodies --add/);
     });
