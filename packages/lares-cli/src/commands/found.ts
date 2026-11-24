@@ -32,7 +32,7 @@ import { OccupiedStoreRefusal, assertStoreUnoccupied, openBundleKey, readFaceBun
 import { nativeKdf } from "@lararium/mesh/node";
 import {
   runInit, runFoundHearth, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,
-  CustodyLockRefused, HearthFoundingRefused, NameTooLong, occupantCarriers, sSlotsPath,
+  CustodyLockRefused, HearthFoundingRefused, NameTooLong, occupantCarriers, sSlotsPath, ownPeerKind,
 } from "@lararium/node";
 import { larDataDir, larGenesisDir, larIdentityDir, larSealHome } from "../env.js";
 import { CredentialTtyRefusal, gatherCredentials, gatherFoundingRoute } from "../custody-prompt.js";
@@ -60,6 +60,17 @@ export function setFoundingRoute(gather: FoundingRoute): void { gatherRoute = ga
 export type BundleRoute = () => Promise<readonly Credential[]>;
 let gatherBundle: BundleRoute = () => gatherCredentials("lares vessel found --hearth --restore", { kind: "bundle" });
 export function setFoundingBundleRoute(gather: BundleRoute): void { gatherBundle = gather; }
+
+/**
+ * THE HAND BEHIND A RE-SEED. `--force` over a standing custody tree re-seeds the bootstrap and asks no route (a standing tree
+ * needs none), so nothing in the act itself reads a person. This seam reads the process running it: true where a harness mark
+ * stands in its environment or a harness stands on its parent chain, or where that chain cannot be read (an unread chain never
+ * reads as a person; the shim and the host bridge hand the seat mark into the vessel by name). A test installs its own
+ * (`tests/support/found-route.ts`).
+ */
+export type FoundingSeat = () => boolean;
+let readSeat: FoundingSeat = () => ownPeerKind(process.env) !== "hand";
+export function setFoundingSeat(read: FoundingSeat): void { readSeat = read; }
 
 /** The refusals a founding names on one line each, with their advice; every other error keeps its own voice. */
 function foundingRefusal(err: unknown): { name: string; advice: string } | null {
@@ -101,7 +112,13 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
     const io = new FsCustodyIo(homes);
     // A standing tree needs no new route and no census; otherwise the store's shape is read FIRST, the route second.
     let slots: readonly SlotSpec[] = [];
-    if (!(await custodyTreeStands(io, homes))) {
+    const stands = await custodyTreeStands(io, homes);
+    if (stands && args.flags["force"] === true && readSeat()) {
+      console.error("[lares vessel found] refused: hand-act-only: --force over a founded hearth re-seeds its bootstrap and asks no route, so an AI seat never runs it (bare, through `lares vessel rite founding --force`, or through the shim); the act writes nothing.");
+      console.error("  the cure: the operator runs `lares vessel found --force` at their own terminal.");
+      return 1;
+    }
+    if (!stands) {
       // THE STORE'S SHAPE, READ BEFORE ANY ROUTE GETS ASKED: the sealed writer's own founding check, as a read. A
       // store that holds a carrier and no tree refuses `OccupiedStoreRefusal` here, before the operator types anything;
       // the founding itself runs the same check again under its custody claim.

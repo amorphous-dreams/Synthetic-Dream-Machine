@@ -15,7 +15,7 @@ import { windowsProfile } from "../src/reality-tunnel/homes.js";
 import { radiusLock } from "../src/reality-tunnel/lock.js";
 import { briefLine, externalLines, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
 import {
-  claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
+  claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonListForeign, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "../src/reality-tunnel/kinds.js";
 import { CARRIER, declared, homeItems, repoItems } from "../src/reality-tunnel/catalog.js";
@@ -541,6 +541,104 @@ describe("the home radius", () => {
     writeFileSync(join(h.native, ".claude/rules/lares-seed-seat.md"), "the operator's own words\n");
     const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
     expect(rows.find((r) => r.id === "claude.seed-rule")!.state).toBe("foreign");
+  });
+});
+
+describe("json-includes keeps every member of a list at a dotted key path, and every other entry stands", () => {
+  const ALLOW = ["permissions", "allow"];
+  const DOORS = ["Bash(lares:*)", "mcp__lares__*"];
+
+  it("a nested list absent takes every value; a second pass writes nothing", () => {
+    const f = jsonIncludes(ALLOW, DOORS);
+    const once = f('{"model": "m"}\n')!;
+    expect(JSON.parse(once)).toEqual({ model: "m", permissions: { allow: DOORS } });
+    expect(f(once)).toBe(once);
+    expect(JSON.parse(f(null)!)).toEqual({ permissions: { allow: DOORS } });
+  });
+
+  it("an operator's own entries stand in their places, and only the missing values append", () => {
+    const f = jsonIncludes(ALLOW, DOORS);
+    const held = '{"permissions": {"allow": ["Bash(git:*)", "mcp__lares__*"], "deny": ["Bash(rm:*)"], "defaultMode": "auto"}}';
+    const o = JSON.parse(f(held)!);
+    expect(o.permissions).toEqual({ allow: ["Bash(git:*)", "mcp__lares__*", "Bash(lares:*)"], deny: ["Bash(rm:*)"], defaultMode: "auto" });
+    // CONTROL: every value held already moves no byte.
+    const full = '{"permissions":{"allow":["mcp__lares__*","x","Bash(lares:*)"]}}';
+    expect(f(full)).toBe(full);
+  });
+
+  it("a top-level key reads as a path of one, as the repo's exclude row names it", () => {
+    const f = jsonIncludes(["claudeMdExcludes"], ["**/a.md"]);
+    expect(JSON.parse(f('{"claudeMdExcludes": ["b"]}')!)).toEqual({ claudeMdExcludes: ["b", "**/a.md"] });
+  });
+
+  it("a foreign shape on the path refuses and moves no byte: a scalar where the object stands, an object where the list stands", () => {
+    const foreign = jsonListForeign(ALLOW);
+    for (const cur of ['{"permissions": "all"}', '{"permissions": {"allow": "Bash(*)"}}', '{"permissions": []}', "[1]", "{not json"]) {
+      expect(foreign(cur), cur).not.toBeNull();
+      expect(jsonIncludes(ALLOW, DOORS)(cur), cur).toBe(cur);
+    }
+    // CONTROL: an absent file, an empty object and an absent list read as the house's to write.
+    for (const cur of [null, "{}", '{"permissions": {}}', '{"permissions": {"allow": []}}']) expect(foreign(cur), String(cur)).toBeNull();
+  });
+
+  it("the home rows keep Claude's doors open and the host acts the house's gates never see shut, in every home, the Windows profile included", async () => {
+    const root = clone();
+    const native = mkdtempSync(join(dir, "home-"));
+    const windows = mkdtempSync(join(dir, "win-"));
+    for (const d of [".claude", ".codex", ".copilot", ".local/bin"]) mkdirSync(join(native, d), { recursive: true });
+    mkdirSync(join(windows, ".claude"));
+    writeFileSync(join(native, ".claude/settings.json"), '{"permissions": {"allow": ["Bash(git:*)"], "deny": ["Bash(rm -rf:*)"]}, "model": "m"}\n');
+    const h = { native, windows };
+    const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+    const l = ledger();
+    const ids = ["claude.doors-allow", "claude.host-acts-deny", "claude.host-acts-ask", "claude.doors-allow@windows", "claude.host-acts-deny@windows", "claude.host-acts-ask@windows"];
+    const before = read(items(), l);
+    expect(ids.map((id) => before.find((r) => r.id === id)?.state)).toEqual(ids.map(() => "drift"));
+    await tend(items(), l);
+    const d = declared(REPO);
+    const listOf = (id: string): string[] => d.home.find((s) => s.id === id)!["values"] as string[];
+    for (const home of [native, windows]) {
+      const o = JSON.parse(readFileSync(join(home, ".claude/settings.json"), "utf8"));
+      expect(o.permissions.allow).toEqual(expect.arrayContaining(listOf("claude.doors-allow")));
+      expect(o.permissions.deny).toEqual(expect.arrayContaining(listOf("claude.host-acts-deny")));
+      expect(o.permissions.ask).toEqual(expect.arrayContaining(listOf("claude.host-acts-ask")));
+    }
+    const o = JSON.parse(readFileSync(join(native, ".claude/settings.json"), "utf8"));
+    expect(o.permissions.allow[0]).toBe("Bash(git:*)");
+    expect(o.permissions.deny[0]).toBe("Bash(rm -rf:*)");
+    expect(o.model).toBe("m");
+    const after = read(items(), l);
+    expect(ids.map((id) => after.find((r) => r.id === id)?.state)).toEqual(ids.map(() => "aligned"));
+    expect((await tend(items(), l)).wrote).toEqual([]);
+  });
+
+  it("a home whose permissions hold another shape reads foreign, and a tend leaves it as it stands", async () => {
+    const root = clone();
+    const native = mkdtempSync(join(dir, "home-"));
+    mkdirSync(join(native, ".claude"));
+    const held = '{"permissions": {"allow": "everything"}}\n';
+    writeFileSync(join(native, ".claude/settings.json"), held);
+    const items = homeItems({ repo: root, homes: { native, windows: null }, mcp: MCP, claudeCli: false });
+    expect(read(items, ledger()).find((r) => r.id === "claude.doors-allow")!.state).toBe("foreign");
+    const r = await tend(items, ledger());
+    expect(r.refused.length).toBeGreaterThan(0);
+    expect(readFileSync(join(native, ".claude/settings.json"), "utf8")).toBe(held);
+  });
+
+  it("the live carrier's deny list holds the two hearth acts, their shim spellings and the undo that would drop them, and the ask list the acts the operator keeps a prompt on", () => {
+    const valuesOf = (id: string): string[] => declared(REPO).home.find((s) => s.id === id)!["values"] as string[];
+    const deny = valuesOf("claude.host-acts-deny");
+    for (const v of [
+      "Bash(lares reset:*)", "Bash(lares found:*)", "Bash(lares vessel found:*)", "Bash(lares vessel *found*)", "Bash(lares vessel rite founding*)",
+      "Bash(lares home undo:*)", "Bash(lares home *undo*)", "Bash(tools/lares-container.sh reset:*)", "Bash(./tools/lares-container.sh reset:*)",
+      "Bash(*lares-container.sh reset*)", "Bash(*lares-container.sh found*)", "Bash(*lares-container.sh * found*)", "Bash(*lares.mjs reset*)",
+      "Bash(*/lares reset*)", "Edit(~/.claude/settings.json)", "Write(~/.claude/settings.json)",
+    ]) expect(deny, v).toContain(v);
+    const ask = valuesOf("claude.host-acts-ask");
+    for (const v of ["Bash(lares home tend --force*)", "Bash(lares * undo*)", "Bash(lares down*)", "Bash(lares vessel stop*)", "Bash(lares vessel release*)", "Bash(lares rebuild*)"]) {
+      expect(ask, v).toContain(v);
+    }
+    expect(valuesOf("claude.doors-allow")).toEqual(["Bash(lares:*)", "mcp__lares__*"]);
   });
 });
 

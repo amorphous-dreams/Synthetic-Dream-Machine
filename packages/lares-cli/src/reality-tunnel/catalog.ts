@@ -11,7 +11,7 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonSet, owned, seedless, strays,
+  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonListForeign, jsonSet, owned, seedless, strays,
   tomlHook, tomlHookForeign, tomlHooksOwned, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
@@ -83,6 +83,20 @@ export function projectScout(seedPath: string, seed: string, s: Spec): string {
   ].join("\n");
 }
 
+/**
+ * A `json-includes` row, for either radius: `key` names the list by a dotted path (`permissions.allow`), and `values` names
+ * every member it keeps. One row per list keeps the whole set; the operator's other members stand.
+ */
+function includes(s: Spec): Pick<Item, "transform" | "foreign"> {
+  const values = s["values"];
+  if (!Array.isArray(values) || values.length === 0 || !values.every((v) => typeof v === "string" && v !== "")) {
+    throw new Error(`${CARRIER}: item ${s.id} names no \`values\` list of strings`);
+  }
+  const path = str(s, "key").split(".");
+  if (path.some((k) => k === "")) throw new Error(`${CARRIER}: item ${s.id} names a key path with an empty segment`);
+  return { transform: jsonIncludes(path, values as string[]), foreign: jsonListForeign(path) };
+}
+
 const item = (radius: Radius, s: Spec, path: string, rest: Partial<Item>): Item =>
   ({ id: s.id, radius, host: s.host, path, what: s.what, ...rest });
 
@@ -146,7 +160,7 @@ export function repoItems(repo: string, d: Declared = declared(repo), textOf: Te
       case "head-import": return item("repo", s, path, { transform: headLine(str(s, "line"), str(s, "render")) });
       case "seedless": return item("repo", s, path, { transform: seedless(s["render"] as string | undefined) });
       case "toml-top-floor": return item("repo", s, path, { transform: tomlTopFloor(str(s, "key"), Number(s["floor"])), foreign: tomlShapeForeign(str(s, "key"), "number") });
-      case "json-includes": return item("repo", s, path, { transform: jsonIncludes(str(s, "key"), str(s, "value")), foreign: jsonForeign });
+      case "json-includes": return item("repo", s, path, includes(s));
       case "scout": {
         const seed = textOf(d.seed) ?? "";
         const o = owned(projectScout(d.seed, seed, s), SCOUT_MARKER);
@@ -289,6 +303,7 @@ function homeItem(
   switch (s.kind) {
     case "json-floor": return base({ transform: jsonFloor(str(s, "key"), Number(s["floor"])), foreign: jsonForeign });
     case "json-set": return base({ transform: jsonSet([str(s, "key")], s["value"]), foreign: jsonForeign });
+    case "json-includes": return base(includes(s));
     case "claude-hook": {
       // A familiar's hook carries the pet name as its argument (no env var): the tend's `--familiar`, else the one a tend seated.
       const wants = s["familiar"] === "required" || s["familiar"] === "optional";

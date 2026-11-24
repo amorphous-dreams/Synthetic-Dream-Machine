@@ -53,12 +53,40 @@ export const jsonFloor = (key: string, floor: number): Transform =>
 export const jsonSet = (path: readonly string[], value: unknown): Transform =>
   jsonEdit((o) => { at(o, path.slice(0, -1))[path.at(-1)!] = structuredClone(value); });
 
-/** An array at `key` that holds `value`, keeping every other member. */
-export const jsonIncludes = (key: string, value: string): Transform =>
-  jsonEdit((o) => {
-    const list = Array.isArray(o[key]) ? (o[key] as unknown[]) : [];
-    if (!list.includes(value)) o[key] = [...list, value];
+/**
+ * A JSON target whose list path holds another shape: an object that is no object along the way, or a list that is no list
+ * at its end. An absent key anywhere on the path reads as the house's to write.
+ */
+export const jsonListForeign = (path: readonly string[]) => (cur: string | null): string | null => {
+  const why = jsonForeign(cur);
+  if (why || cur === null || cur.trim() === "") return why;
+  let node: unknown = JSON.parse(cur);
+  for (const [i, k] of path.entries()) {
+    const next = (node as Json)[k];
+    if (next === undefined) return null;
+    if (i === path.length - 1 ? !Array.isArray(next) : !isObject(next)) {
+      return `\`${path.slice(0, i + 1).join(".")}\` holds a value of another shape than the house keeps there; the house changes none of it`;
+    }
+    node = next;
+  }
+  return null;
+};
+
+/**
+ * The list at `path` holds every one of `values`: each missing value appends in the order named, and every member another
+ * hand put there stands in its place. A path that holds another shape stands outside the house's ownership.
+ */
+export const jsonIncludes = (path: readonly string[], values: readonly string[]): Transform => {
+  const edit = jsonEdit((o) => {
+    const parent = at(o, path.slice(0, -1));
+    const key = path.at(-1)!;
+    const list = Array.isArray(parent[key]) ? (parent[key] as unknown[]) : [];
+    const missing = [...new Set(values)].filter((v) => !list.includes(v));
+    if (missing.length > 0) parent[key] = [...list, ...missing];
   });
+  const foreign = jsonListForeign(path);
+  return (cur) => (foreign(cur) ? cur : edit(cur));
+};
 
 /**
  * A list converged on one entry: every member that `mentions` the entry's script yields to the

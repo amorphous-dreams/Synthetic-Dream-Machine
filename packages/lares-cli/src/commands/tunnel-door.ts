@@ -12,6 +12,7 @@ import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline/promises";
 import { repoRoot } from "@lararium/mesh/node";
+import { ownPeerKind } from "@lararium/node";
 import { EXIT, Ledger, exitOf, read, tend, undoLocked, type Item, type Reader, type Row, type TendResult } from "../reality-tunnel/engine.js";
 import { homeLedgerDir, repoLedgerDir } from "../reality-tunnel/places.js";
 import { declared, homeItems, repoItems } from "../reality-tunnel/catalog.js";
@@ -100,6 +101,28 @@ async function consent(writes: readonly Row[], args: ParsedArgs): Promise<boolea
   return answer === "y" || answer === "yes";
 }
 
+/**
+ * THE HOME UNDO'S CONSENT. An undo puts back the bytes a tend replaced in the operator's homes, a settings file that lacks the
+ * doors' deny list among them, so it takes `tend`'s consent and one gate more: an AI seat refuses by name before any home or
+ * ledger is read, a terminal asks, and no terminal needs `--yes`.
+ */
+async function undoConsent(args: ParsedArgs, seat: () => boolean): Promise<boolean> {
+  if (seat()) {
+    console.error("lares home undo: refused hand-act-only: an undo puts back the bytes a tend replaced in the operator's homes, a settings file that lacks the doors' deny list among them, so an AI seat never runs it");
+    console.error("  the cure: the operator runs `lares home undo [gen]` at their own terminal");
+    return false;
+  }
+  if (args.flags["yes"] === true) return true;
+  if (!process.stdin.isTTY) {
+    console.error("lares home undo: restores the operator's homes; pass --yes to proceed without a terminal");
+    return false;
+  }
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = (await rl.question(`lares home undo will restore ${args.positional[1] === undefined ? "the last generation" : `generation ${args.positional[1]}`} across the operator's homes; proceed? [y/N] `)).trim().toLowerCase();
+  rl.close();
+  return answer === "y" || answer === "yes";
+}
+
 /** The index as text: what a commit carries, a file the index lacks reading as absent. */
 export const indexText = (repo: string) => (rel: string): string | null => {
   try { return execFileSync("git", ["-C", repo, "show", `:${rel}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }); }
@@ -115,7 +138,13 @@ export function itemsFor(door: Door, staged = false, persist = false, familiar: 
   return { items: homeItems({ repo: repoRoot, homes: resolveHomes({ persist }), familiar }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
 }
 
-export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<number> {
+/**
+ * Whether an AI seat runs this command: a harness mark in its environment, a harness on its parent chain, or a chain that
+ * cannot be read (an unread chain never reads as a person).
+ */
+const harnessSeat = (): boolean => ownPeerKind(process.env) !== "hand";
+
+export async function cmdTunnelDoor(door: Door, args: ParsedArgs, seat: () => boolean = harnessSeat): Promise<number> {
   const verb = args.positional[0];
   if (args.flags["help"] === true || verb === undefined || !(TUNNEL_VERBS as readonly string[]).includes(verb)) {
     return refuseUsage(args, door, helpLines(door), args.flags["help"] === true ? undefined : verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
@@ -130,6 +159,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     console.error(`lares ${door} ${verb}: --familiar names a home's familiar; run \`lares home ${verb} --familiar ${familiar}\``);
     return EXIT.usage;
   }
+  if (door === "home" && verb === "undo" && !(await undoConsent(args, seat))) return EXIT.usage;
   const { items, ledger } = itemsFor(door, args.flags["staged"] === true, verb === "tend" || verb === "undo", familiar);
 
   if (verb === "read") {
