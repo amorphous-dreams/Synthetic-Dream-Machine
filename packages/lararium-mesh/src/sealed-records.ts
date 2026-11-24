@@ -492,6 +492,11 @@ export interface WriterStanding {
     readonly certificate: RecordCertificate; readonly bagId: string;
     readonly keyVersion?: KeyVersionId; readonly followsRemoval?: (act: string) => boolean;
   }): boolean;
+  /**
+   * Does the certificate stand under the chain of the face that OWNS the realm keeping `bagId` (its private cabal of one)? A
+   * realm's from-now admission opens a span only under its owner's hand. Absent: no certificate reads as the owner's.
+   */
+  signedByRealmOwner?(args: { readonly certificate: RecordCertificate; readonly bagId: string }): boolean;
   /** The chain this standing reads writers under, named, or null where none stands yet: a reading taken then counts
    *  no writer, so a holder takes no reading and settles no roll on it. Absent: the standing reads alike always. */
   readonly chainOf?: () => string | null;

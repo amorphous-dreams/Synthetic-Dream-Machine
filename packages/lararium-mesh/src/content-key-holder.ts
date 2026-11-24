@@ -85,7 +85,7 @@ import {
   recordIdOf, recordWriterSubject, signRecord, writerStandsStill,
   type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
   type ReadRecordRefusalName, type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type ResealBody,
-  type ResealVerdict, type SealedRecord, type VerifiedRecord, type WriterStanding,
+  type RecordCertificate, type ResealVerdict, type SealedRecord, type VerifiedRecord, type WriterStanding,
 } from "./sealed-records.js";
 import type { SeatRoll } from "./seat-duties.js";
 import type { SealedStore } from "./sealed-store-rest.js";
@@ -135,8 +135,15 @@ export interface HolderRefusal { readonly refusal: HolderRefusalName; readonly c
 export interface BagEvidence {
   /** This vessel's own ledger counts the raise, on an edge of the bag's own scope. */
   raiseCounts(act: string): boolean;
-  /** This vessel verified the admission act. */
-  admissionVerifies(act: string): boolean;
+  /** This vessel verified the admission act. `by` names the version that cites it: its parents, the history its span
+   *  declares, and the certificate its record signed under, so an act a realm derives binds to who opened what. */
+  admissionVerifies(act: string, by?: AdmissionEvidence): boolean;
+}
+/** The version an admission act opens, as its verified record states it. */
+export interface AdmissionEvidence {
+  readonly parents: readonly KeyVersionId[];
+  readonly history: HistoryDeclaration;
+  readonly certificate: RecordCertificate;
 }
 export interface ContentKeyHolderPorts {
   /** Durable rest for lockboxes, records and index rows. It holds no secret. */
@@ -208,6 +215,8 @@ export interface FoundingReading {
   readonly written:   boolean;
   /** The history its heads' span declared at its opening (`shareable` or `closed`); null where heads sit in unlike spans. */
   readonly history:   HistoryDeclaration | null;
+  /** The admission act that opened its heads' one span, where an admission opened it; absent otherwise. */
+  readonly openedBy?: string;
   /** The readers some counted version's mint could not serve. */
   readonly unserved:  readonly ReaderId[];
   /** Keys a lockbox delivered that no counted record names, with what stopped each record. */
@@ -221,6 +230,12 @@ export interface BagReading {
 }
 /** The act prefix of a roll the holder derives from the boxes it wrapped (a served reader the roster leaves out). */
 export const REALM_STATE_ROLL_ACT = "workbench-removal:roll:";
+/**
+ * The act prefix of a from-now admission a realm workbench's owner derives from the closed heads it admits past: a workbench
+ * founded `closed` before its realm bound it opens a `shareable` span for the roster under this act, the act naming those
+ * heads (never a clock). A seat the realm seats verifies it as the roll's prefix counts: from the realm alone.
+ */
+export const REALM_ADMISSION_ACT = "workbench-admission:from-now:";
 
 export interface MintOutcome { readonly keyVersion: KeyVersionId; readonly founding: BagLocator; readonly unserved: readonly ReaderId[] }
 
@@ -581,7 +596,7 @@ export class ContentKeyHolder {
         // and with none held it proves nothing: no record another writer signed stands in for a proof.
         const result = lineage.count(fact, {
           raiseCounts: (act) => evidence.raiseCounts(act),
-          admissionVerifies: (act) => evidence.admissionVerifies(act),
+          admissionVerifies: (act) => evidence.admissionVerifies(act, { parents: fact.parents, history: fact.history, certificate: verified.certificate }),
           joinProven: () => joinProven(verified, heldParents),
         }, unheld);
         if ("lineage" in result) {
@@ -663,7 +678,8 @@ export class ContentKeyHolder {
       const heldParents = new Map(fact.parents.map((parent) => [parent, line.keys.get(parent)!] as const));
       const evidence = await this.#ports.evidenceOf(bag.bagId);
       const counted = line.lineage.count(factOfRecord(signed.verified), {
-        raiseCounts: (act) => evidence.raiseCounts(act), admissionVerifies: (act) => evidence.admissionVerifies(act),
+        raiseCounts: (act) => evidence.raiseCounts(act),
+        admissionVerifies: (act) => evidence.admissionVerifies(act, { parents: fact.parents, history: fact.history, certificate: signed.verified.certificate }),
         joinProven: () => joinProven(signed.verified, heldParents),
       });
       if (!("lineage" in counted)) return refuse("count-refused", counted.refusal);
@@ -1704,6 +1720,11 @@ export class ContentKeyHolder {
       founding: line.locator, heads: line.lineage.heads(), held: [...this.#usable(line)].sort(ascending), forked: line.lineage.forked(),
       written: written === line.locator,
       history: ((): HistoryDeclaration | null => { const spans = new Set(line.lineage.heads().map((head) => line.lineage.fact(head)!.span)); return spans.size === 1 ? line.lineage.historyOfSpan([...spans][0]!) : null; })(),
+      ...((): { openedBy?: string } => {
+        const spans = new Set(line.lineage.heads().map((head) => line.lineage.fact(head)!.span));
+        const cause = spans.size === 1 ? line.lineage.fact([...spans][0]!)?.cause : undefined;
+        return cause?.kind === "admission" ? { openedBy: cause.act } : {};
+      })(),
       unserved: [...new Set([...line.records.values()].flatMap((record) => [...record.private.unserved]))].sort(ascending),
       uncounted: [...line.why].filter(([version]) => !line.lineage.has(version)).map(([keyVersion, why]) => ({ keyVersion, why })).sort((a, b) => ascending(a.keyVersion, b.keyVersion)),
     }));

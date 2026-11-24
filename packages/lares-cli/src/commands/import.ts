@@ -35,6 +35,7 @@ export async function cmdImport(args: ParsedArgs, doors: BundleDoors = LIVE_BUND
       for (const w of result.daemonWaiting) console.log(`  ${w.petname} stands open, and its own daemon layer lands at its own face's wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
       for (const w of result.kahuaWaiting) console.log(`  ${w.petname} stands unworn, and its ${w.heads} kahua head(s) lift at its own face's wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
       if (result.shares.written.length > 0) console.log(`  shares: ${result.applied ? "wrote" : "would write"} the row(s) for ${result.shares.written.join(", ")} into config/share.tid${result.shares.landed ? ", and landed the shares again" : ""}`);
+      if (result.shares.unhanded !== undefined) console.error(`  ${result.shares.unhanded}`);
       for (const b of result.minted) console.log(`  ${result.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
       for (const [cls, t] of Object.entries(result.tallies)) {
         if (t.landed + t.already + t.planned + t.waiting + t.stoodOff.length + t.refused.length === 0) continue;

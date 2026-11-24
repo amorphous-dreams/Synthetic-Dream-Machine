@@ -31,7 +31,7 @@ import { wearOpenFace } from "./wear.js";
 import { pulamaStands } from "../house-config.js";
 import { emit, exitFor, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
+import { LIVE_SHARE_DOORS, landShares, unhandedLine } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { offerKeepLei, type KeepOfferPorts } from "../keep-at-unlock.js";
 import { keepSlotAtBind, provedRoutes, reseatKeepPair, seatKeepAtUnlock, type CustodyOpenAnswer } from "../keep-seat.js";
@@ -410,7 +410,10 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
     // that face's catalog half and takes its delegation from the owner's hive; one that still waits stays behind its flag.
     if (ok) {
       try {
-        const landed = await landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces());
+        const faces = await LIVE_SHARE_DOORS.faces();
+        const landed = await landShares(LIVE_SHARE_DOORS, faces);
+        const unhanded = unhandedLine(landed, faces);
+        if (unhanded !== null) console.error(unhanded);
         if (landed !== null && Number(landed["granted"] ?? 0) > 0) console.log(`shares: ${Number(landed["granted"])} grant(s) landed for the faces now open`);
         if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
       } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }

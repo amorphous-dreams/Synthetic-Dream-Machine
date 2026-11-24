@@ -23,7 +23,7 @@ import { createInterface } from "node:readline/promises";
 import { canPromptSecret, promptLine } from "../prompt-secret.js";
 import { emit, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
-import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
+import { LIVE_SHARE_DOORS, landShares, unhandedLine } from "../share-doors.js";
 
 /**
  * The harness's own marks, as each AI harness sets them in the shells it runs (Claude Code, Codex's sandbox). A wear sent under
@@ -133,11 +133,12 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
   // a landed share moves nothing.
   const shares = await replayShares();
   emit(args, {
-    ok: true, data: { ...a, ...(shares.landed ? { shares: shares.landed } : {}), ...(shares.waits ? { sharesWait: shares.waits } : {}) },
+    ok: true, data: { ...a, ...(shares.landed ? { shares: shares.landed } : {}), ...(shares.waits ? { sharesWait: shares.waits } : {}), ...(shares.unhanded ? { sharesUnhanded: shares.unhanded } : {}) },
     human: () => {
       console.log(wearLine(a));
       for (const line of shoreLines(a["shore"])) console.log(line);
       for (const line of sharesLines(shares.landed, face)) console.log(line);
+      if (shares.unhanded) console.error(shares.unhanded);
       if (shares.waits) console.error(`shares: the share config waits (${shares.waits}); \`lares wiki share --list\` reads it`);
     },
   });
@@ -154,10 +155,12 @@ function sharesLines(landed: { granted: number; lifted: number; pending: number 
   ];
 }
 
-async function replayShares(): Promise<{ landed: { granted: number; lifted: number; pending: number } | null; waits?: string }> {
+async function replayShares(): Promise<{ landed: { granted: number; lifted: number; pending: number } | null; waits?: string; unhanded?: string }> {
   try {
-    const landed = await landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces());
-    return { landed: landed === null ? null : { granted: Number(landed["granted"] ?? 0), lifted: Number(landed["lifted"] ?? 0), pending: Number(landed["pending"] ?? 0) } };
+    const faces = await LIVE_SHARE_DOORS.faces();
+    const landed = await landShares(LIVE_SHARE_DOORS, faces);
+    const unhanded = unhandedLine(landed, faces);
+    return { landed: landed === null ? null : { granted: Number(landed["granted"] ?? 0), lifted: Number(landed["lifted"] ?? 0), pending: Number(landed["pending"] ?? 0) }, ...(unhanded !== null ? { unhanded } : {}) };
   } catch (e) {
     return { landed: null, waits: e instanceof Error ? e.message : String(e) };
   }

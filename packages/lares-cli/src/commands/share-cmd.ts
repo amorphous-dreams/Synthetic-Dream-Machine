@@ -208,6 +208,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
       doors.out(echo);
       doors.out(`  revoked: ${Number(applied["retracted"] ?? 0)} grant(s) the names this line took out had landed`);
     } else if (retract.length > 0) doors.out(echo);
+    let unhandedSeats = 0;
     if (applied !== null) {
       const carried = Number(applied["carried"] ?? 0), pending = Number(applied["pending"] ?? 0);
       doors.out(`  landed: ${Number(applied["granted"] ?? 0)} grant(s)`
@@ -215,6 +216,13 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         + (pending > 0 ? `; ${pending} wait for a shut face (\`lares vault unlock --face N\`, then share again)` : ""));
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         doors.out(`  workbench: wiki ${String(w["slug"])} rides realm ${String(w["realmId"]).slice(0, 12)}… (${Number(w["members"] ?? 0)} member face(s)${w["founded"] === true ? ", founded now" : ""})`);
+        // A SEAT THAT TOOK NO LOCKBOX names itself and its cure: its saves into the workbench wait until a landing hands one.
+        for (const u of Array.isArray(w["unhanded"]) ? w["unhanded"] as Array<{ handleIndex?: unknown; cause?: unknown }> : []) {
+          unhandedSeats++;
+          const at = typeof u.handleIndex === "number" ? u.handleIndex : null;
+          const who = at === null ? "a seated face" : (() => { const f = faces.find((x) => x.handleIndex === at); return f?.petname ? `${f.petname} (h${at})` : `h${at}`; })();
+          doors.err(`lares ${kind} share: ${who} holds a seat in the workbench of ${String(w["slug"])} and took no lockbox: ${String(u.cause ?? "refused")}`);
+        }
       }
       // THE ROW KEEPS ITS OWNER, by pet-name, in the vessel-local file: after a re-founding the seed re-stands the wiki at
       // that face's wear. The name is the human's own label, so it rests here and in the control document.
@@ -240,6 +248,6 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
       }
     }
     for (const w of resolveShare({ bag: shareEntryBag(row), rows: next, faces }).waiting) doors.err(`  "${w}" names no face here; the row keeps it, and it lands when a face carries that pet-name`);
-    return 0;
+    return unhandedSeats > 0 ? 1 : 0;
   };
 }

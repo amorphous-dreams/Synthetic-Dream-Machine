@@ -120,6 +120,8 @@ export interface RealmWriters {
   readonly seated: readonly SessionOwnChain[];
   /** Each face the roster seated as a writer once and a removal since left out, with the removal acts that left it. */
   readonly former: readonly { readonly chain: SessionOwnChain; readonly removedBy: readonly string[] }[];
+  /** The chain of the face that owns the realm (its private cabal of one), where the roster seats it as a writer; null else. */
+  readonly owner?: SessionOwnChain | null;
 }
 
 /** A chain named by its content: the reading a holder took under one set of writers gives way when the set moves. */
@@ -157,6 +159,10 @@ export function faceStanding(input: {
       const follows = args.followsRemoval;
       if (follows === undefined) return false;
       return realm.former.some((f) => f.removedBy.length > 0 && certificateUnderChain(args.certificate, f.chain) && !f.removedBy.some((act) => follows(act)));
+    },
+    signedByRealmOwner: ({ certificate, bagId }) => {
+      const owner = input.realmWriters?.(bagId)?.owner ?? null;
+      return owner !== null && certificateUnderChain(certificate, owner);
     },
     chainOf: () => {
       const own = base.chainOf!();

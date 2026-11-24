@@ -106,6 +106,8 @@ export interface ShareWorkbenchLanded {
   readonly seated?: number;
   /** The handle index of the face that owns the workbench on this vessel: a vessel-local answer for the operator's own door. */
   readonly owner?: number;
+  /** Each seated member face whose hand-over refused this landing (it holds no lockbox yet), with the refusal and its cure. */
+  readonly unhanded?: readonly { readonly handleIndex: number | null; readonly cause: string }[];
 }
 
 export interface ShareApplied {
@@ -414,8 +416,11 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
         members.push({ handleIndex: index, group: face.group, access: answer.write.includes(index) ? "write" : "read" });
       }
       const tw = performance.now();
-      workbenches.push({ ...(await deps.workbench(row, { handleIndex: owner.handleIndex, group: owner.group }, members)), owner: owner.handleIndex });
-      deps.log?.(`[share-apply] workbench ${row.slug} (${members.length} member face(s)) landed in ${Math.round(performance.now() - tw)}ms`);
+      const bench = await deps.workbench(row, { handleIndex: owner.handleIndex, group: owner.group }, members);
+      workbenches.push({ ...bench, owner: owner.handleIndex });
+      // A SEAT THAT TOOK NO LOCKBOX reads by name, never as landed.
+      for (const u of bench.unhanded ?? []) deps.log?.(`[share-apply] workbench ${row.slug}: ${u.handleIndex === null ? "a seated face" : `h${u.handleIndex}`} took no lockbox: ${u.cause}`);
+      deps.log?.(`[share-apply] workbench ${row.slug} (${members.length} member face(s)) ${(bench.unhanded ?? []).length > 0 ? `seated, ${(bench.unhanded ?? []).length} without a lockbox,` : "landed"} in ${Math.round(performance.now() - tw)}ms`);
     }
   }
   const waiting = new Set<string>();

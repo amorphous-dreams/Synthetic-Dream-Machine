@@ -68,7 +68,7 @@ import {
   mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid, realmFoldersOnDisk } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
-import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
+import { LIVE_SHARE_DOORS, landShares, unhandedLine } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
 import { skipLines, submitIngest, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
@@ -175,6 +175,8 @@ export interface MirrorSeedResult {
     readonly moved: number;
     readonly carried: number; readonly pending: number;
     readonly workbenches: ReadonlyArray<{ readonly slug: string; readonly members: number; readonly founded: boolean; readonly seated: number; readonly removed: number }>;
+    /** The seats the landing left without a lockbox, in one line (`unhandedLine`); absent where every seat took its box. */
+    readonly unhanded?: string;
   };
   /** Each face root the lay refused by name (unmatched, doubly named, colliding, unread), by its folder: it landed nothing, and the rest went on. */
   readonly refusals: ReadonlyArray<{ readonly face: string; readonly code: string; readonly message: string }>;
@@ -502,6 +504,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
         shares = {
           granted, moved: Number(applied["moved"] ?? granted), carried: Number(applied["carried"] ?? 0), pending: Number(applied["pending"] ?? 0),
           workbenches: benches.map((w) => ({ slug: String(w["slug"]), members: Number(w["members"] ?? 0), founded: w["founded"] === true, seated: Number(w["seated"] ?? 0), removed: Array.isArray(w["removed"]) ? w["removed"].length : 0 })),
+          ...((): { unhanded?: string } => { const line = unhandedLine(applied); return line === null ? {} : { unhanded: line }; })(),
         };
       }
     }
@@ -631,6 +634,7 @@ export function mirrorLines(r: MirrorSeedResult): { out: string[]; err: string[]
     const benches = r.shares.workbenches.filter(benchMoved);
     out.push(`  shares: landed ${r.shares.moved} grant(s)${r.shares.moved > 0 && r.shares.carried > 0 ? ` (${r.shares.carried} reach their grantee at that face's next wear)` : ""}${r.shares.pending > 0 ? `; ${r.shares.pending} wait for a shut face` : ""}${benches.length > 0 ? `; workbench seats: ${benches.map((w) => `${w.slug} (${w.members} member face(s)${w.founded ? ", founded now" : ""}${w.seated > 0 ? `, ${w.seated} seated now` : ""}${w.removed > 0 ? `, ${w.removed} unseated` : ""})`).join(", ")}` : ""}`);
   }
+  if (r.shares?.unhanded !== undefined) err.push(`  ${r.shares.unhanded}`);
   for (const b of r.minted) out.push(`  ${r.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
   for (const t of r.layers) {
     out.push(`  ${t.mirror} -> ${t.toBag}: ${r.applied ? `landed ${t.landed}` : `would land ${t.planned}`}${t.kapae > 0 ? ` · kāpae ${t.kapae}` : ""} · stood off ${t.stoodOff.length} · refused ${t.refused.length}${t.skipped.length > 0 ? ` · skipped ${t.skipped.length}` : ""}`);

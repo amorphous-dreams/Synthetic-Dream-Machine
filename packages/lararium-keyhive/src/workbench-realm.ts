@@ -310,6 +310,11 @@ export interface LandedWorkbench {
   readonly seated: number;
   /** The faces a row stopped naming, whose seats this landing revoked. */
   readonly removed: readonly string[];
+  /**
+   * Each member the roster already seated whose hand-over refused this landing, by face, with the refusal and its cure as the
+   * key holder named them: such a seat holds no lockbox yet, and the landing says so rather than read as landed.
+   */
+  readonly unhanded: readonly { readonly face: string; readonly cause: string }[];
 }
 
 /**
@@ -339,6 +344,7 @@ export async function landWorkbench(
     removed.push(face);
   }
   let seated = 0;
+  const unhanded: { face: string; cause: string }[] = [];
   for (const m of fresh) { await admitWorkbenchFace(ports.provider, row.slug, m.agentHex, m.access); seated++; }
   const candidates = new Map<string, string>([[ports.ownerFace, await ports.provider.whoami()], ...members.map((m) => [m.face, m.agentHex] as [string, string])]);
   await projectWorkbenchRoster(ports.provider, ports.ledger, realmId, row.slug, candidates, { notesRemovals: true });
@@ -348,10 +354,11 @@ export async function landWorkbench(
     for (const m of members) {
       if (freshHexes.has(m.agentHex)) { await keyholder.handOver(m.agentHex); continue; }
       // A seat the roster already held: its box is handed again where the holder can (a lockbox a refused landing never gave).
-      try { await keyholder.handOver(m.agentHex); } catch { /* a shut or unreached face takes its box when it next lights */ }
+      // A refusal stays named on the landing, with its cure: the seat moved before, so the landing goes on for the others.
+      try { await keyholder.handOver(m.agentHex); } catch (err) { unhanded.push({ face: m.face, cause: err instanceof Error ? err.message : String(err) }); }
     }
   }
-  return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort() };
+  return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort(), unhanded };
 }
 
 /**
@@ -360,4 +367,14 @@ export async function landWorkbench(
  */
 export function landsUnderAHand(context: { readonly asker?: string }): boolean {
   return context.asker === "cli";
+}
+
+/**
+ * EACH HAND-OVER REFUSAL NAMES ITS OWN CURE (a runnable `lares …` line): a span with no live document to open on, a member the
+ * owner's hive cannot wrap for; any other refusal reads `ownerLine`, the owner's cure (wear the owner face, land again).
+ */
+export function handOverCure(slug: string, refusal: string, ownerLine: string): string {
+  if (refusal === "fresh-base-unavailable") return `open the wiki under the realm's owner face so its live working document stands (\`lares wiki switch ${slug}\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  if (refusal === "wrap-failed" || refusal === "reader-unreached") return `the owner's hive holds no contact card it can wrap for that member: light the member face (\`lares vault unlock --face N\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  return ownerLine;
 }
