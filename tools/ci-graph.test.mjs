@@ -117,7 +117,7 @@ test("G4 RED: the quick job keeps every folded gate as a named step that runs wh
   for (const want of [
     "Every dependency names ONE version", "Every trailer key names a known key", "Generated artifacts must be fresh (build emits no tracked diff)", "Typecheck all packages",
     "noosphere-boot.mem stands where the hooks load it", "generate-parity — the committed parser.c stays the truth",
-    "fold + golden manifest gates (py host)", "wasm builds under the pinned CLI", "fold + parity gates (ts host)",
+    "fold + golden manifest gates (py host)", "Projection Loom gates (stdlib, CAD-free)", "wasm builds under the pinned CLI", "fold + parity gates (ts host)",
     "meme-routes contact against the pristine engine",
     "The log names the engine it met", "Run the hosted witness cell contract-witness",
   ]) {

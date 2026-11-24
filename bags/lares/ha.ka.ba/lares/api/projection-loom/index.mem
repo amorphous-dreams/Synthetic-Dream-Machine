@@ -99,7 +99,7 @@ Every emitted render derives from the CAD model. A STEP model or render transpor
 
 <<~ ahu slot=`#/procedural-helm`>>
 
-This historical reading moved to [[ashes|#ashes]] within the same carrier. The original section bytes remain below verbatim. For live work use #/yin-living and the branch-current `HANDOFF.md`.
+This reading stands in Git: #/git-ashes names the archive commit that holds its bytes. For live work use #/yin-living and the branch-current `HANDOFF.md`.
 
 <<~/ahu>>
 
@@ -203,6 +203,6 @@ The operator released this carrier's displaced historical ahu from the living te
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2sy1chOztAGmWK1yptARlXxQ7R4laYCuZZslHadKk04`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nZQXEh4FhPkP-ivDtwduCNhnQRpBmob1-0ILeM1JIgs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -96,6 +96,6 @@ def test_workflow_surface_refuses_resurrected_projections() -> None:
     assert any("Missing active Loom workflow" in e for e in gate.inspect_workflow_set(set()))
 
 
-def test_surviving_workflows_read_only_with_independent_receipts() -> None:
+def test_the_loom_workflow_stays_read_only() -> None:
     repo = Path(__file__).resolve().parents[3]
     assert gate.inspect_workflow_surface(repo) == []

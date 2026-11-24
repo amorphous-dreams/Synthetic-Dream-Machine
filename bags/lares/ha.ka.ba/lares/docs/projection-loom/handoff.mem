@@ -26,7 +26,7 @@ uri-path  = "ha.ka.ba/lares/docs/projection-loom/handoff"
 
 ''Evidence honesty (2026-11-02):'' Predecessor `a18bd61c` passed repository-wide CI [41387411094] and held-out [41387410859]. The earlier `53de0597` repair removed the hard-coded candidate-receipt expectation and the single over-ceiling narration comment; no change to geometry or threshold. Dedicated native CAD, generalized and Fire had no exact-head runs on those connector-pushed SHAs. `bf980c3c` adds a working-branch push event to the same three existing read-only workflows. GitHub reported all five native/repository/held-out runs on `bf980c3c`; those runs were in progress/queued at this reading, not yet accepted. Every later docs handoff commit requires its own exact-head verification. Never borrow predecessor green.
 
-''Next Aftermath:'' inspect exact-final-SHA CI and held-out verdicts, plus CAD/native, generalized OpenUSD/Blender and AI Fire. Preserve four living workflows; selected native studies retain operator-only dispatch. Do not merge or broaden features. If any check fails, read its real job log and repair the demonstrated cause, not an invented diagnosis. Keep one OODAHAJournal, source/STEP independent authority, two Markdown fronts, 15 sealed carriers, all negative native receipts, operator choice and dissent. The CLI monolith and deeper receipt-study modularity remain potential YIN-only follow-ups, not accepted work.
+''Next Aftermath:'' inspect exact-final-SHA CI and held-out verdicts, plus CAD/native, generalized OpenUSD/Blender and AI Fire. Keep one living workflow (`projection-loom.yml`, operator-dispatched) beside the quick-job gates. Do not merge or broaden features. If any check fails, read its real job log and repair the demonstrated cause, not an invented diagnosis. Keep one OODAHAJournal, source/STEP independent authority, two Markdown fronts, 15 sealed carriers, all negative native receipts, operator choice and dissent. The CLI monolith and deeper receipt-study modularity remain potential YIN-only follow-ups, not accepted work.
 
 <<~/ahu>>
 
@@ -149,13 +149,13 @@ winner, Elyncia promotion or merge was authorized.
 
 <<~ ahu slot=`#/workflow-otakiage-20261031`>>
 
-!! Four-workflow CI and native experiment boundary
+!! One-workflow CI and native experiment boundary
 
-Operator-authorized O-takiage on PR #84: three distinct read-only gates (`projection-loom.yml`, `projection-loom-generalized.yml`, `loom-fire-grammar.yml`) and one read-only, operator-selected native study suite (`projection-loom-studies.yml`) are the only living Projection Loom workflows. Eleven distinct experiments retain their execution steps and artifact uploads in that suite. Twelve former standalone YAML files are retired from the working tree, including all repository-writing recipe/lineage bots and the one-time branch deleter.
+The house CI quick job runs the Loom's stdlib gates (`check_architecture.py`, `check_living_docs.py` and their two tests) on every push, CAD-free. One read-only, operator-dispatched workflow (`projection-loom.yml`) installs the pinned CAD stack and runs the gates and the whole suite. The generalized, AI Fire and native-study workflows, their study outputs and the archived YAML stand on tag `archive/loom/pre-yin-20261123` (`59861af32`), one checkout away.
 
 Full original YAML and ancestral commits are retained on `archive/pr84-before-workflow-otakiage-20261031` at `3e56858541cbc430be78d06498e248bb2a06d37c`. Source receipt commits: `7749a1f9` (manual suite), `b7a1271d` (workflow retirement), `daf53558` (anti-regression gate). A new workflow_dispatch workflow is not a usable GitHub manual control until the workflow file is registered on the default branch. No automatic source mutation, Elyncia promotion, aesthetic winner, branch deletion, or additional OODA-HA helm is authorized by the suite.
 
-The core `scripts/check_living_docs.py` gate refuses new standalone Loom YAML, source-writing workflows and lost experiment uploads. Git holds historical YAML, inputs and committed receipts, but GitHub Actions artifacts expire after their configured retention period. New native evidence requires regenerated, independently audited outputs and exact-head CI. Human navigation remains `tools/projection-loom/docs/HANDOFF.md`.
+The core `scripts/check_living_docs.py` gate refuses any Loom YAML beyond `projection-loom.yml` and any source-writing workflow. Git holds historical YAML, inputs and committed receipts, but GitHub Actions artifacts expire after their configured retention period. New native evidence requires regenerated, independently audited outputs and exact-head CI. Human navigation remains `tools/projection-loom/docs/HANDOFF.md`.
 
 <<~/ahu>>
 <<~ ahu slot=`#/post-move-engineering-roadmap`>>
@@ -207,6 +207,6 @@ The operator released this carrier's displaced historical ahu from the living te
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;qR-6ND6gW0Ctv2X3jCWNfJfymUxV9NKjsUem9Y3PXr8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9PY_zvOFVaGGe359O8rMPmDt89BFSKY20iXGNF4xKlc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
