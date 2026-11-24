@@ -174,6 +174,15 @@ describe("the share door", () => {
     expect(plain.verbs.map((v) => v.name), "CONTROL: a landing that names no owner sets nothing again").toEqual(["share-set", "share-apply"]);
   });
 
+  test("SH12 — a seated face whose hand-over refused reads by name with its cure, and the line exits 1, never a bare landing", async () => {
+    const cause = "seat-needs-keyholder: the owner's holder handed the new seat no lockbox (fresh-base-unavailable); wear the realm's owner face";
+    const f = fake({ applied: { granted: 1, carried: 0, pending: 0, waiting: [], workbenches: [{ slug: "garden", realmId: "realm-0123456789ab", members: 1, owner: 0, unhanded: [{ handleIndex: 1, cause }] }] } });
+    expect(await cmdShare("wiki", f.doors)(args(["garden"], { write: "h1" }))).toBe(1);
+    expect(f.err).toContain(`lares wiki share: joshua-fontany-engineer (h1) holds a seat in the workbench of garden and took no lockbox: ${cause}`);
+    const clean = fake({ applied: { granted: 1, carried: 0, pending: 0, waiting: [], workbenches: [{ slug: "garden", realmId: "realm-0123456789ab", members: 1, owner: 0 }] } });
+    expect(await cmdShare("wiki", clean.doors)(args(["garden"], { write: "h1" })), "CONTROL: every seat handed exits 0").toBe(0);
+  });
+
   // THE REFEREE WALK (road/referee-walk-frictions #2, #3): a re-share changes only the parts it names, and the echo reads the row.
   test("SH11 (red) — a re-share naming --write alone leaves the readers, the note and the workspace standing; the same line again changes nothing", async () => {
     const standing = serializeShareFile([{ slug: "elyncia-referee", kind: "wiki", read: "joshua-fontany", write: "", workspace: "referee-bench", owner: "joshua-fontany", note: "for the walk" }]);

@@ -217,6 +217,12 @@ export interface BagReading {
 }
 /** The act prefix of a roll the holder derives from the boxes it wrapped (a served reader the roster leaves out). */
 export const REALM_STATE_ROLL_ACT = "workbench-removal:roll:";
+/**
+ * The act prefix of a from-now admission a realm workbench's owner derives from the closed heads it admits past: a workbench
+ * founded `closed` before its realm bound it opens a `shareable` span for the roster under this act, the act naming those
+ * heads (never a clock). A seat the realm seats verifies it as the roll's prefix counts: from the realm alone.
+ */
+export const REALM_ADMISSION_ACT = "workbench-admission:from-now:";
 
 export interface MintOutcome { readonly keyVersion: KeyVersionId; readonly founding: BagLocator; readonly unserved: readonly ReaderId[] }
 

@@ -41,6 +41,14 @@
  *   Y6 a projection on a seated face's replica, one that never ingested a later seat, notes no removal: only the owner's
  *      replica (the hand that revokes) reads a seat gone as revoked.
  *
+ * A9 a workbench founded closed before its realm bound it admits from now (research meme
+ *    `lar:///ha.ka.ba/kahua/memory/research/lares-workbench-never-founds`):
+ *   C1 the owner founds the working bag `closed` while no realm binds it; the realm binds and seats a second face; the share
+ *      lands again under the owner's hand: the owner's holder admits from now (a `shareable` span on a fresh base of the current
+ *      document, wrapped for the roster), the seated face opens and saves, the owner opens its save, and the closed span stays
+ *      closed to it. The same landing entered again mints nothing more.
+ *   C2 a seated member whose hand-over refuses reads on the landing by name with its cause, never as landed.
+ *
  * A6 the rest seals for the roster:
  *   G3 a face seated `admin` in another face's realm mounts it and writes `working`; a face seated `read` mounts it, reads it,
  *      and writes `personal`.
@@ -48,11 +56,12 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { describe, expect, test } from "vitest";
+import * as A from "@automerge/automerge";
 import {
-  SealedStore, contentKeyRollSink, memorySealedStoreRest, workbenchRemovals, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
+  SealedStore, contentKeyRollSink, freshBasePort, memorySealedStoreRest, workbenchRemovals, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
-import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
+import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type ContentKeySeatInput, type RealmWriters } from "../src/index.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, landsUnderAHand, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -106,8 +115,9 @@ export function change(body: string): DocumentValue {
  * founding stays owner-only), and hands a wrap's operations to the sibling hives on this vessel. `standing` stands in for the
  * writer standing until slice A2 composes the realm's.
  */
-export function seatRealm(v: Vessel, f: Omit<Face, "seat">, standing: WriterStanding, siblings: readonly Omit<Face, "seat">[] = [], served?: string[][], counted: () => ReadonlySet<string> = () => new Set()): ContentKeySeat {
+export function seatRealm(v: Vessel, f: Omit<Face, "seat">, standing: WriterStanding, siblings: readonly Omit<Face, "seat">[] = [], served?: string[][], counted: () => ReadonlySet<string> = () => new Set(), extra: Partial<ContentKeySeatInput> = {}): ContentKeySeat {
   return seatContentKeys({
+    ...extra,
     countedRaises: counted,
     providers: [f.hive], rest: v.rest,
     values: { read: async (a) => v.values.get(a) ?? null, write: async (a, b) => { v.values.set(a, Uint8Array.from(b)); } },
@@ -544,5 +554,73 @@ describe("A8 — a landing signs under a person's hand alone", () => {
   test("W2: a seat, a tab, a watcher and an ask no door read leave the hand-over's cure to the person; the CLI's own hand lands", () => {
     for (const asker of ["seat", "tab", "watcher", undefined]) expect(landsUnderAHand({ ...(asker !== undefined ? { asker } : {}) }), String(asker)).toBe(false);
     expect(landsUnderAHand({ asker: "cli" })).toBe(true);
+  });
+});
+
+describe("A9 — a workbench founded closed before its realm bound it admits from now", () => {
+  /** The document store's live working document, as the owner's island holds it: its current values alone. */
+  const live = A.save(A.from({ tiddlers: { "the current page": { text: "what the workbench reads now" } } }));
+  const freshBase = freshBasePort((bagId) => (bagId === WORKING ? live : null));
+
+  test("C1: founded closed, then bound and shared: the owner admits from now; the seated face opens and saves; the closed past stays closed", async () => {
+    const v: Vessel = { rest: memorySealedStoreRest(), values: new Map(), ledger: memDoc() };
+    const a = await face("steward", 0xc1), b = await face("engineer", 0xc2);
+    const bOnA = (await a.hive.receiveContactCard(await b.hive.contactCard())).id;
+    await b.hive.receiveContactCard(await a.hive.contactCard());
+
+    // THE OWNER FOUNDS BEFORE ANY REALM BINDS THE WIKI: the founding declares `closed`.
+    const early = seatRealm(v, a, EVERY_WRITER, [b], undefined, undefined, { freshBase });
+    const w0 = change("c1 zero: before the realm bound");
+    expect(said(await early.sealValues({ bagId: WORKING, values: [w0], signer: a.signer }))).toBe("OK");
+    const before = await early.holder.reading(WORKING);
+    expect("foundings" in before && before.foundings.map((f) => f.history), "founded closed: no realm bound it").toEqual(["closed"]);
+    early.lock();
+
+    // THE REALM BINDS, AND AN EARLIER SHARE SEATED THE ENGINEER WITH NO KEY HOLDER LIT.
+    const realmId = (await faceWorkbenchRealm(a.hive, v.ledger, SLUG, "group-steward", true))!;
+    const members = [{ face: "group-engineer", agentHex: bOnA, access: "write" as const }];
+    await landWorkbench({ slug: SLUG }, members, { provider: a.hive, ledger: v.ledger, ownerFace: "group-steward" });
+    const seatA = seatRealm(v, a, EVERY_WRITER, [b], undefined, undefined, { freshBase });
+
+    // THE SHARE LANDS AGAIN UNDER THE OWNER'S HAND: the seated engineer takes its lockbox.
+    const landed = await landWorkbench({ slug: SLUG }, members, {
+      provider: a.hive, ledger: v.ledger, ownerFace: "group-steward",
+      keyholder: async () => ({
+        handOver: async (agentHex: string) => {
+          const out = await seatA.handOverRealm(WORKING, agentHex, a.signer);
+          if ("refusal" in out) throw new Error(said(out));
+        },
+      }),
+    });
+    expect(landed.unhanded, "the seated engineer took its lockbox").toEqual([]);
+    const after = await seatA.holder.reading(WORKING);
+    expect("foundings" in after && after.foundings.map((f) => f.history), "the head's span now reads shareable").toEqual(["shareable"]);
+    const versions = (await new SealedStore(v.rest).records("key-version")).length;
+
+    await b.hive.ingestPeerEvents(await a.hive.eventsForPeer(bOnA));
+    adoptWorkbench(b.hive, SLUG, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!);
+    const seatB = seatRealm(v, b, EVERY_WRITER, [a], undefined, undefined, { freshBase });
+    const w1 = change("c1 one: the steward after the admission"), w2 = change("c1 two: the engineer saves");
+    expect(said(await seatA.sealValues({ bagId: WORKING, values: [w1], signer: a.signer })), "the owner seals under the admitted span").toBe("OK");
+    expect(said(await seatB.sealValues({ bagId: WORKING, values: [w2], signer: b.signer })), "the seated face saves: no bag-unfounded").toBe("OK");
+    expect(said(await seatB.holder.openValue({ bagId: WORKING, role: "change", ref: w1.ref })), "the seated face opens the owner's save").toBe("OK");
+    expect(said(await seatA.holder.openValue({ bagId: WORKING, role: "change", ref: w2.ref })), "the owner opens the seated face's save").toBe("OK");
+    expect(said(await seatB.holder.openValue({ bagId: WORKING, role: "change", ref: w0.ref })), "the closed span stays closed to the newcomer").not.toBe("OK");
+    expect(said(await seatA.holder.openValue({ bagId: WORKING, role: "change", ref: w0.ref })), "and still opens for its owner").toBe("OK");
+
+    // THE SAME LANDING ENTERED AGAIN mints nothing more: the admitted span hands its box as any shareable span does.
+    expect(said(await seatA.handOverRealm(WORKING, bOnA, a.signer))).toBe("OK");
+    expect(await seatA.admitRealmFromNow(WORKING, a.signer), "nothing closed stands at the head").toBe(null);
+    expect((await new SealedStore(v.rest).records("key-version")).length, "no second admission").toBe(versions);
+    expect(said(await seatB.admitRealmFromNow(WORKING, b.signer) ?? {}), "a seated face that owns no realm admits nothing").toBe("OK");
+  });
+
+  test("C2: a seated member's refused hand-over reads on the landing by name, never as landed", async () => {
+    const { v, a, bOnA } = await sharedWorkbench([0xc3, 0xc4]);
+    const landed = await landWorkbench({ slug: SLUG }, [{ face: "group-engineer", agentHex: bOnA, access: "write" }], {
+      provider: a.hive, ledger: v.ledger, ownerFace: "group-steward",
+      keyholder: async () => ({ handOver: async () => { throw new Error("seat-needs-keyholder: the owner's holder handed the new seat no lockbox (history-closed); wear the owner"); } }),
+    });
+    expect(landed.unhanded).toEqual([{ face: "group-engineer", cause: "seat-needs-keyholder: the owner's holder handed the new seat no lockbox (history-closed); wear the owner" }]);
   });
 });

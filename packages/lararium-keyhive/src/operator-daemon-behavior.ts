@@ -2005,8 +2005,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if ("refusal" in reading) return cure;
         if (reading.foundings.every((f) => f.heads.length === 0)) return null;
         return {
+          // A WORKBENCH FOUNDED CLOSED (before its realm bound it) admits the roster from now here, under this same hand.
           handOver: async (agentHex: string) => {
-            const handed = await seat.holder.handOver({ bagId, reader: agentHex, signer, chained: true });
+            const handed = await seat.handOverRealm(bagId, agentHex, signer);
             if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${cure.cure}`);
           },
         };
@@ -2127,7 +2128,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               const rolled = under === null ? null : await under.seat.rollNow(wikiSlotUri(row.slug, "working"), under.signer);
               if (rolled === null || "refusal" in rolled) console.log(`[workbench] ${row.slug}: ${landed.removed.length} seat(s) left the realm; the workbench's key rolls at its next seal${rolled !== null && "refusal" in rolled ? ` (roll-now refused: ${rolled.refusal})` : " (no owner session signs here)"}`);
             }
-            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed };
+            const unhanded = landed.unhanded.map((u) => ({ handleIndex: members.find((m) => m.group === u.face)?.handleIndex ?? null, cause: u.cause }));
+            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(unhanded.length > 0 ? { unhanded } : {}) };
           },
           // THE UNSHARE TAKES THE READER BACK: the owner's hive revokes the grantee's agent from the bag, by the pair (the delegation id
           // lived only in the process that made it).
