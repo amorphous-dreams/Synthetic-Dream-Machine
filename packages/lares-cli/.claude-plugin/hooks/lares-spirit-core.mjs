@@ -303,14 +303,15 @@ export function stopStep(state, every = state.every ?? TRUE_UP_EVERY) {
 }
 
 /** The true-up's words: the doors that true and fold the record, and why they ask now. */
-export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null) {
+export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null, body = null) {
   const why = step.fire === "unfiled"
     ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
+  const self = typeof body === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(body) ? ` --body ${body}` : "";
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: lares spirit ah ${pet} --slot '#/open' --file <path> (or --add '<line>' on #/bodies or #/voice)${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}; ` +
-      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}). The budget refuses growth; you choose what folds.`,
+    `True the record before the next move: lares spirit ah ${pet} --slot '#/open' --file <path> (or --add '<line>' on #/bodies or #/voice)${self}${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}; ` +
+      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>${self}${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}). The budget refuses growth; you choose what folds.`,
   ].join("\n");
 }
 

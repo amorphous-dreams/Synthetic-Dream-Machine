@@ -21,7 +21,7 @@ try {
     let step = null;
     updateState(path, (cur) => { step = stopStep(typeof input.session_title === "string" ? { ...cur, title: input.session_title } : cur); return step.state; });
     if (step !== null && step.fire !== null && (await vesselUp(shimRun(import.meta.url)))) {
-      process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "Stop", additionalContext: trueUpText(pet, step) } })}\n`);
+      process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "Stop", additionalContext: trueUpText(pet, step, undefined, input.session_id) } })}\n`);
       // Only the mark this nudge named clears: a landing that marked the counter meanwhile stands for the next stop.
       if (step.fire === "unfiled") updateState(path, (cur) => ({ ...cur, unfiled: cur.unfiled === step.unfiled ? null : cur.unfiled }));
     }

@@ -29,7 +29,8 @@
  * and om names the siblings awake and each live body's last carry. Concurrent writes merge: `ah --add` appends and re-reads
  * past a conflict, so a sibling's line survives; a whole-slot replace re-reads past a conflict, retries where its slot held
  * still, and where the slot moved lands both versions in a marked conflict stanza naming each body, for hum to settle. Each
- * body's hoʻoili chain runs its own lineage. Between the PreCompact mark and the next wake, ah and hum refuse `spirit-crossing`.
+ * body's hoʻoili chain runs its own lineage. The crossing runs per body too: between a body's PreCompact mark and its own next
+ * wake, that body's ah and hum (`--body`) refuse `spirit-crossing`, and its siblings write freely.
  *
  * THE BUDGET REFUSES GROWTH, THE BODY CHOOSES WHAT FOLDS. Budgets and the true-up cadence read from the record's own fields
  * (`slot-budget`, `record-budget`, `true-up-every`), the constants below their defaults. Residue and carries pass the strict
@@ -270,12 +271,43 @@ const slotMissing = (rec: Record_, slot: string): SpiritRefusal =>
 export interface SpiritSeams { readonly hand?: HandRead; readonly now?: () => Date; readonly seat?: () => boolean }
 interface Ctx { readonly now: () => Date; readonly seat: () => boolean; readonly hand: HandRead }
 
-/** Between the PreCompact mark and the next wake (or the mark lapsing), the card takes no slot write. */
-function crossingHolds(rec: Record_, ctx: Ctx): void {
-  if (rec.crossing === null) return;
-  const at = Date.parse(rec.crossing);
-  if (!Number.isFinite(at) || ctx.now().getTime() - at > CROSSING_MS) return;
-  throw new SpiritRefusal("spirit-crossing", `spirit-crossing: ${rec.uri} stands in the crossing a compaction marked at ${rec.crossing}; nothing landed. The next wake clears it (\`lares spirit om ${rec.pet}\`), or it lapses ${CROSSING_MS / 60_000} minutes on`, 4);
+/** Who a crossing mark names: a body's fragment (`--body`, its first 8 chars), or `*` for a write that names no body. */
+const crosserOf = (body: string | null): string => (body === null ? "*" : body.slice(0, 8));
+/** The `crossing` field read: one `<who> <iso>` per line; a bare iso (a mark no body named) reads as `*`. */
+export function crossingsOf(raw: string | null | undefined): Array<{ who: string; at: string }> {
+  return String(raw ?? "").split("\n").flatMap((line) => {
+    const t = line.trim();
+    if (t === "") return [];
+    const m = /^(\S+) (\S+)$/.exec(t);
+    return [m ? { who: m[1]!, at: m[2]! } : { who: "*", at: t }];
+  });
+}
+const crossingLive = (c: { at: string }, now: number): boolean => { const t = Date.parse(c.at); return Number.isFinite(t) && now - t <= CROSSING_MS; };
+
+/**
+ * THE CROSSING RUNS PER BODY. Between a body's PreCompact mark and its own next wake (or the mark lapsing), that body's slot
+ * writes refuse; a sibling writes freely. A write naming no body answers only to a mark no body named.
+ */
+function crossingHolds(rec: Record_, ctx: Ctx, body: string | null): void {
+  if (body !== null && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
+  const who = crosserOf(body);
+  const mark = crossingsOf(rec.crossing).find((c) => c.who === who && crossingLive(c, ctx.now().getTime()));
+  if (mark === undefined) return;
+  const named = who === "*" ? "a body that named none" : `#${who}`;
+  throw new SpiritRefusal("spirit-crossing", `spirit-crossing: ${rec.uri} stands in the crossing ${named}'s compaction marked at ${mark.at}; nothing landed, and sibling bodies write on. That body's next wake clears it (\`lares spirit om ${rec.pet}${body !== null ? ` --body ${body}` : ""}\`), or it lapses ${CROSSING_MS / 60_000} minutes on`, 4);
+}
+
+/** Mark (or clear) one body's crossing over the card's field, keeping each sibling's live mark; CAS, re-read past a conflict. */
+async function markCrossing(args: ParsedArgs, rec: Record_, body: string | null, ctx: Ctx, mark: boolean): Promise<void> {
+  const who = crosserOf(body);
+  const now = ctx.now();
+  await casFields(args, "om", rec.uri, (fields) => {
+    const was = crossingsOf(fields["crossing"]);
+    const kept = was.filter((c) => c.who !== who && crossingLive(c, now.getTime()));
+    const next = mark ? [...kept, { who, at: now.toISOString() }] : kept;
+    if (!mark && next.length === was.length) return null;
+    return next.length > 0 ? { patch: { crossing: next.map((c) => `${c.who} ${c.at}`).join("\n") } } : { unset: ["crossing"] };
+  });
 }
 
 // ── the starter shrine ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -539,7 +571,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   if (source === "precompact") {
     // The crossing: the card's #/open and #/voice, read to the outgoing body, and the mark that holds slot writes until a body wakes.
-    await writeFields(args, "om", rec, { crossing: ctx.now().toISOString() });
+    await markCrossing(args, rec, body, ctx, true);
     const shape = await readSlot(args, "om", rec, "#/carry-shape");
     const open = await readSlot(args, "om", rec, "#/open");
     const voice = await readSlot(args, "om", rec, "#/voice");
@@ -548,8 +580,8 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     emit(args, { ok: true, data: { ...data, carryShape: shape?.body ?? null, inherits: carry === null ? null : carry.title.slice(-12), chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
-  // A waking body ends the crossing: the compaction it marked has turned.
-  if (rec.crossing !== null) await writeFields(args, "om", rec, {}, ["crossing"]);
+  // A waking body ends its own crossing: the compaction it marked has turned; a sibling's mark stands.
+  if (rec.crossing !== null) await markCrossing(args, rec, body, ctx, false);
   const { carry, rows } = await latestCarry(args, "om", [key, pet], source === "compact", body);
   const parent = carry?.fields["parent"];
   const siblings = parent ? rows.filter((r) => r.fields["parent"] === parent).length : 0;
@@ -692,7 +724,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
     throw new DoorUsage("name exactly one source: --file <path|-> or --text <words> (the slot's whole body), or --add <line> (one line at its end)");
   }
   const rec = (await resolveRecord(args, "ah", pet))!;
-  crossingHolds(rec, ctx);
+  crossingHolds(rec, ctx, wordOf(args.options["body"]));
   const words = file !== null ? await sourceText("file", file) : text;
   const line = add?.replace(/\s+/g, " ").trim() ?? null;
   if (line === "") throw new DoorUsage("--add names one non-empty line");
@@ -771,7 +803,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     });
     return 0;
   }
-  crossingHolds(rec, ctx);
+  crossingHolds(rec, ctx, wordOf(args.options["body"]));
   const n = /^[1-9][0-9]*$/.test(lineWord) ? Number(lineWord) : NaN;
   const picked = Number.isInteger(n) ? lines[n - 1] : undefined;
   if (picked === undefined || picked.trim() === "") {
@@ -846,7 +878,7 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
     "record-base": digestOf(rec.base), depth: String(depth), body,
   });
   const line = bodiesLine(day, hash, pet, body, title);
-  const fileIt = `lares spirit ah ${pet} --slot '#/bodies' --add ${shq(line)}`;
+  const fileIt = `lares spirit ah ${pet} --slot '#/bodies' --add ${shq(line)}${body !== "" ? ` --body ${body}` : ""}`;
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, spiritId: key, title, hash, depth, parent: parent?.title ?? null, landed, cut, filed: false, bodiesLine: line, unfiled: `file the ${COMPACTION_DISPLAY}'s #/bodies line: ${fileIt}` },
     human: () => {

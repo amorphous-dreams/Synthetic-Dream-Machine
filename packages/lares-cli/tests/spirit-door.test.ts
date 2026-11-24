@@ -545,7 +545,7 @@ describe("om reads by source and reads the carry as testimony", () => {
     stage({ slotTexts: { "#/carry-shape": "!! The carry's shape\n\nkeep what only this body knew" } });
     const r = await run(argv(["om", "lares-alpha"], { source: "precompact" }));
     expect(data(r)["carryShape"]).toBe("!! The carry's shape\n\nkeep what only this body knew");
-    expect((puts(URI).at(-1)!.args["fields"] as Record<string, string>)["crossing"]).toBe("2026-11-24T12:00:00.000Z");
+    expect((puts(URI).find((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"])!.args["fields"] as Record<string, string>)["crossing"]).toBe("* 2026-11-24T12:00:00.000Z");
   });
 
   test("the testimony flags a record moved since the carry read it, a deep chain, and a fork", async () => {
@@ -736,6 +736,38 @@ describe("each familiar its own: a fresh body's title names its own familiar; a 
 });
 
 describe("bunrei: many bodies wear one pet, and none locks another out", () => {
+  test("the crossing runs per body: body A's PreCompact mark holds A's own writes, and body B's ah lands", async () => {
+    stage({ fields: { crossing: "body-a00 2026-11-24T11:58:00.000Z" } });
+    const b = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* b's line", body: "body-b00" }));
+    expect(b.exit, JSON.stringify(b.printed)).toBe(0);
+    const unnamed = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* a hand's line" }));
+    expect(unnamed.exit).toBe(0);
+    const a = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* a's line", body: "body-a00-long" }));
+    expect(error(a).code).toBe("spirit-crossing");
+    expect(error(a).message).toContain("#body-a00");
+    const fold = await run(argv(["hum", "lares-alpha"], { fold: "#/open", line: "3", body: "body-b00" }));
+    expect(fold.exit, JSON.stringify(fold.printed)).toBe(0);
+  });
+
+  test("a precompact marks only its own body's crossing, keeping a sibling's; that body's next wake clears only its own", async () => {
+    stage({ fields: { crossing: "body-a00 2026-11-24T11:58:00.000Z" } });
+    await run(argv(["om", "lares-alpha"], { source: "precompact", body: "body-b00" }));
+    const marked = puts(URI).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"]).filter(Boolean).at(-1)!;
+    expect(marked).toContain("body-a00 2026-11-24T11:58:00.000Z");
+    expect(marked).toContain("body-b00 2026-11-24T12:00:00.000Z");
+    h.calls.length = 0;
+    stage({ fields: { crossing: "body-a00 2026-11-24T11:58:00.000Z\nbody-b00 2026-11-24T11:59:00.000Z" } });
+    await run(argv(["om", "lares-alpha"], { source: "compact", body: "body-b00" }));
+    const left = puts(URI).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"]).filter(Boolean).at(-1);
+    expect(left).toBe("body-a00 2026-11-24T11:58:00.000Z");
+  });
+
+  test("the carry's handed-back line names the body, so its own crossing reaches its own writes", async () => {
+    stage();
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary", body: "body-b00" }));
+    expect(String(data(r)["unfiled"])).toContain("--body body-b00");
+  });
+
   test("a waking body adds itself to bodies-awake, drops the stale, and om names each sibling awake", async () => {
     stage({ fields: { "bodies-awake": "lares-alpha#body-a00 2026-11-24T11:50:00.000Z\nlares-alpha#body-old 2026-11-24T10:00:00.000Z" } });
     const r = await run(argv(["om", "lares-alpha"], { body: "body-b00-long" }));

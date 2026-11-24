@@ -71,6 +71,7 @@ test("the pure parts", async (t) => {
   });
   await t.test("the true-up names the lease epoch the card writes bear", () => {
     assert.match(trueUpText("p", { fire: "turns", state: { turns: 25, epoch: 4 } }), /--epoch 4/);
+    assert.match(trueUpText("p", { fire: "turns", state: { turns: 25 } }, null, "s-1"), /lares spirit ah p --slot '#\/open' --file <path> \(or --add '<line>' on #\/bodies or #\/voice\) --body s-1/);
   });
   await t.test("the PreCompact text runs the crossing in order: the card first, the fixed-slot ask, the operator's instructions, then the carry, under the cap", () => {
     const text = precompactText({ pet: "p", shape: "keep what only this body knew", inherits: "0123456789ab", card: "the card's open loops", instructions: "focus on the tests", carry: "x".repeat(20_000) });
