@@ -26,7 +26,7 @@ const ROUTE = "recard-frame-face-route";
 const VESSEL_ROUTE = "recard-frame-vessel-route";
 const STALE = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret: its Archive was absent or older than its latest card";
 
-function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: Array<{ ordinal: number; cause: string }>; proves?: boolean;
+function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: Array<{ ordinal: number; cause: string; heldSaves?: number }>; proves?: boolean;
   staysDark?: boolean; lightThrows?: boolean; lightHeld?: boolean; armUntaken?: boolean; peer?: "ai" | "hand" | "unknown"; pulama?: boolean; granted?: boolean } = {}) {
   const armed: number[] = [];
   const disarmed: number[] = [];
@@ -179,6 +179,13 @@ describe("the custody door's recard frame", () => {
     expect(String(ungranted["errorMessage"])).toContain("tools/lares-container.sh pulama recard 2");
     expect(String(ungranted["errorMessage"])).toContain("lares vault recard --face 2");
     for (const d of [ai, stray, pulama]) { expect(d.armed).toEqual([]); expect(d.proved).toEqual([]); }
+  });
+
+  test("C8b a refused face that holds waiting saves still reads stale: the guard reads the refusal's name, and the recard arms and lights", async () => {
+    const d = door({ pulama: true, granted: true, refused: [{ ordinal: 2, cause: "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret", heldSaves: 1 }] });
+    expect(await d.send(frame(2, { credentials: [] }))).toEqual({ op: "recard", face: 2, recarded: true });
+    expect(d.armed).toEqual([2]);
+    expect(d.lit).toEqual([2]);
   });
 
   test("C9 under a pūlama the guard reads first, the pūlama's grant spends once, and the face lights; a route in the frame refuses", async () => {

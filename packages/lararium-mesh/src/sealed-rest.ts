@@ -477,6 +477,13 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
   /** A face left the lit set: its documents' waiting saves drop from memory (never to disk) and their bookings with them.
    *  Answers how many saves dropped. */
   forget(documentIds: readonly string[]): number;
+  /**
+   * A face went dark REFUSED (the island refused its seat, so no drain ran): its documents' waiting saves stay in memory
+   * (`#waiting`, plain Automerge bytes behind the face gate, never written) for the seat its next light stands. Each
+   * document's own actor is recorded here, before the document leaves the Repo's cache, so the save still books as this
+   * vessel's own change (`session:<id>`) when `rebook` seals it, never as a peer's. Answers how many saves stay held.
+   */
+  keep(documentIds: readonly string[]): number;
   /** V2: does this rest hold `documentId` sealed (mapped now, mapped this process, or a sealed value at rest)? An island
    *  asks before its own store rests a byte of it (`islandRestGuard`). */
   restsSealed(documentId: string): Promise<boolean>;
@@ -522,6 +529,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
 }): SealedRest<S> {
   const book = new SaveBook<S>();
   let watched: { readonly standing: (documentId: string) => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
+  /** The actor of each document `keep` held through its face's dark: the handle that knew it left the Repo's cache. */
+  const keptActors = new Map<string, string>();
   // A session wears a bag's face by its own subject, or by the worn face's subject at another anchor.
   const wears = (face: string | null | undefined, subject: string, bagId?: string): boolean =>
     typeof face === "string" && (subject === face || (input.wornAt?.(face, subject) ?? false) || (bagId !== undefined && (input.realm?.wears(bagId, subject) ?? false)));
@@ -538,10 +547,13 @@ export function composeSealedRest<S extends SaveSession>(input: {
   const sessionOf = (documentId: string, data?: Uint8Array): S | null => {
     if (watched !== null && data !== undefined) {
       const actors = chunkActors(data);
-      const own = watched.actorOf(documentId);
+      // THIS REPLICA'S OWN ACTORS FOR THE DOCUMENT: the live handle's, and the one `keep` recorded before a refused face's
+      // document left the cache. A handle that came back since writes under a fresh actor; the held change still carries the kept one.
+      const live = watched.actorOf(documentId), kept = keptActors.get(documentId) ?? null;
+      const own = actors !== null && [live, kept].some((a) => a !== null && actors.includes(a));
       const session = standingFor(documentId);
       // A handle not ready yet holds no change of this replica's own: what it saves arrived from a peer.
-      if (actors !== null && (own === null || !actors.includes(own))) book.receive(documentId, peerWriterName(actors), session ?? book.of(documentId));
+      if (actors !== null && !own) book.receive(documentId, peerWriterName(actors), session ?? book.of(documentId));
       else if (actors !== null && session !== null) book.book(documentId, session);
       else if (session !== null && book.of(documentId) === null) book.seal(documentId, session);
     }
@@ -584,7 +596,10 @@ export function composeSealedRest<S extends SaveSession>(input: {
         const bag = store.bagOf(id);
         if (bag !== null && wears(bag.face, session.subject, bag.bagId)) book.seal(id, session);
       }
-      return store.reseal();
+      const sealed = await store.reseal();
+      // A kept document whose saves all sealed needs its kept actor no more.
+      for (const id of [...keptActors.keys()]) if (store.waiting(id) === 0) keptActors.delete(id);
+      return sealed;
     },
     async drain(session, documentIds) {
       const ids = new Set(documentIds);
@@ -618,8 +633,19 @@ export function composeSealedRest<S extends SaveSession>(input: {
     },
     forget(documentIds) {
       const dropped = store.forget(documentIds);
-      for (const id of documentIds) book.forget(id);
+      for (const id of documentIds) { book.forget(id); keptActors.delete(id); }
       return dropped;
+    },
+    keep(documentIds) {
+      let held = 0;
+      for (const id of documentIds) {
+        const saves = store.waiting(id);
+        if (saves === 0) continue;
+        held += saves;
+        const actor = watched?.actorOf(id) ?? null;
+        if (actor !== null) keptActors.set(id, actor);
+      }
+      return held;
     },
     restsSealed: (documentId) => store.holdsSealed(documentId),
     async sealMapped(documentId, session) {

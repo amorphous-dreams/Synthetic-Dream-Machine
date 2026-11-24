@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { faceLives, type FaceLifeEffects } from "../src/face-lifecycle.js";
-import { adoptFirstLit, faceLend, openingNewer, type FaceLendPorts } from "../src/face-lend.js";
+import { adoptFirstLit, composeRefusalHearing, faceLend, openingNewer, refusedHoldRows, settleFaceSaves, type FaceLendPorts } from "../src/face-lend.js";
 
 const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
@@ -41,6 +41,72 @@ function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLe
   lend = faceLend(ports);
   return { lives, lend, drains, events, open, mountClosed, faceClosed, lightFace };
 }
+
+describe("the island's refusal of a manifest face reaches that face's own life", () => {
+  const STALE = "FaceHoldsNoPrekeySecret: [daemon-keyhive] it holds none";
+  test("the hearing maps the island's atom key (any case, with or without 0x) to the ordinal the open composed, under the opening it composed", async () => {
+    const v = vessel({ served: [0, 1, 2] });
+    v.lives.adopt(1, { atomKey: "0xAbCd01", custody: null });
+    v.lives.adopt(2, { atomKey: "ef02", custody: null });
+    const hear = composeRefusalHearing([
+      { ordinal: 1, atomKey: "0xAbCd01", opening: v.lives.opening(1)! },
+      { ordinal: 2, atomKey: "ef02", opening: v.lives.opening(2)! },
+    ], v.lives);
+    hear("abcd01", STALE);
+    expect(v.lives.refusedLights()).toEqual([{ ordinal: 1, cause: STALE }]);
+    expect(v.lives.state(2).kind, "another face of the same open keeps standing").toBe("lit");
+    hear("0xEF02", STALE);
+    expect(v.lives.refusedLights().map((r) => r.ordinal)).toEqual([1, 2]);
+  });
+  test("CONTROLS: a key the open never composed changes nothing; a refusal from an open whose face has since lit anew names a life that left", async () => {
+    const v = vessel({ served: [0, 1] });
+    v.lives.adopt(1, { atomKey: "k1", custody: null });
+    const stale = composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)! }], v.lives);
+    composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)! }], v.lives)("someone-else", STALE);
+    expect(v.lives.state(1).kind).toBe("lit");
+    const closed = v.lives.close(1, "lock");
+    v.drains.get(1)!.resolve(); await closed; await settle();
+    await v.lives.light(1);
+    stale("k1", STALE);
+    expect(v.lives.state(1).kind, "the new life keeps its island entry").toBe("lit");
+    expect(v.lives.refusedLights()).toEqual([]);
+  });
+});
+
+describe("a face's waiting saves at its teardown", () => {
+  const rest = () => {
+    const waiting = new Map([["doc-a", 1], ["doc-b", 2], ["doc-c", 0]]);
+    const forgot: string[][] = [], kept: string[][] = [];
+    return { waiting, forgot, kept, ports: {
+      keep: (ids: readonly string[]) => { kept.push([...ids]); return ids.reduce((n, id) => n + (waiting.get(id) ?? 0), 0); },
+      forget: (ids: readonly string[]) => { forgot.push([...ids]); let n = 0; for (const id of ids) { n += waiting.get(id) ?? 0; waiting.delete(id); } return n; },
+    } };
+  };
+  test("RED: a REFUSED face's waiting saves stay held: nothing forgets them, and the count names what waits for its next light", () => {
+    const r = rest();
+    expect(settleFaceSaves(["doc-a", "doc-b", "doc-c"], "refused", r.ports)).toEqual({ dropped: 0, held: 3 });
+    expect(r.forgot, "no save of a refused face leaves memory").toEqual([]);
+    expect(r.kept, "the rest keeps them, recording each document's own actor before it leaves the cache").toEqual([["doc-a", "doc-b", "doc-c"]]);
+    expect(r.waiting.get("doc-b")).toBe(2);
+  });
+  test("CONTROL: a face that CLOSED (its drain answered) forgets what its documents still carry, as it did", () => {
+    const r = rest();
+    expect(settleFaceSaves(["doc-a", "doc-b", "doc-c"], undefined, r.ports)).toEqual({ dropped: 3, held: 0 });
+    expect(r.forgot).toEqual([["doc-a", "doc-b", "doc-c"]]);
+    expect(r.kept).toEqual([]);
+  });
+});
+
+describe("the refused faces that hold saves, as every gate reads them", () => {
+  test("F2 KEYED ON THE SAVES ALONE: a face whose refusal's cause has cleared (a relight began, or one was cut short) still reads while a save waits, under a fallback cause; one whose saves sealed reads nowhere", () => {
+    const held = new Map([[1, 0], [2, 1], [3, 2]]);
+    const causes = new Map<number, string | null>([[2, null], [3, "FaceHoldsNoPrekeySecret: stale"]]);
+    expect(refusedHoldRows([3, 1, 2], (o) => held.get(o) ?? 0, (o) => causes.get(o) ?? null)).toEqual([
+      { ordinal: 2, cause: "its light refused", saves: 1 },
+      { ordinal: 3, cause: "FaceHoldsNoPrekeySecret: stale", saves: 2 },
+    ]);
+  });
+});
 
 describe("the lend watch and the mount's one life", () => {
   test("the mount reads lit from the composition's own turn: the door gates it and a whole lock's close reaches it at once", async () => {

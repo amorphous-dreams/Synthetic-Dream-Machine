@@ -18,8 +18,9 @@ export type CustodyFrame =
   /** A proof that a person holds a route of this vessel, over its held key: opens nothing new, names its opener by index. */
   | { readonly op: "prove"; readonly credentials: readonly Credential[] }
   /** Wear face `face`, one already standing open: no route rides it. It names the face, `seat: "ai"` where an AI seat sent it,
-   *  and `yes: true` where it turns over records the shore's flush left unwritten (`--yes`). */
-  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai"; readonly yes?: true }
+   *  `yes: true` where it turns over records the shore's flush left unwritten (`--yes`), and `acceptLoss: true` where a person
+   *  typed the word that drops the saves a refused face holds (`--accept-loss`; never beside `seat: "ai"`). */
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai"; readonly yes?: true; readonly acceptLoss?: true }
   | { readonly op: "custody" }
   /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */
   | { readonly op: "census" }

@@ -215,6 +215,11 @@ export interface DaemonVmCoreOptions {
    * that face on its origin. Absent, or null for an ordinal: the act carries no group, and its writes ride the engine's actor.
    */
   wornGroupOf?:    (ordinal: number) => string | null;
+  /**
+   * A face the manifest carried that the island's open refused to light (`daemon:face-settled`, op `composed`): its atom key and
+   * the island's reason. The vessel adopted that face lit before the island opened, so it reads the face dark from here.
+   */
+  onFaceRefused?:  (atomKey: string, reason: string) => void;
 }
 
 /** Unified placeVerb request — union of node + browser fields. */
@@ -587,6 +592,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (!isIslandToVesselMsg(raw)) return;
 
     if (raw.type === "daemon:face-settled") {
+      // A MANIFEST FACE'S REFUSAL ANSWERS NO ASK: the vessel hears it by the face's atom key and the island's reason.
+      if (raw.op === "composed") {
+        if (!raw.ok) opts.onFaceRefused?.(raw.atomKey, raw.reason ?? "the island's open refused the face");
+        return;
+      }
       const key = faceKey(raw.atomKey, raw.op);
       const queue = facePending.get(key);
       const ask = queue?.shift();

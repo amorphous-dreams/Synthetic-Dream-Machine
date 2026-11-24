@@ -77,7 +77,7 @@ export type CustodyFrame =
   | { readonly op: "lock"; readonly face?: number }
   /** Wear face `face`: the session's choice among the faces standing open. No credential rides it; `seat: "ai"` marks a frame
    *  an AI seat sent, which the door answers as it answers the operator's own. */
-  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai"; readonly yes?: true }
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai"; readonly yes?: true; readonly acceptLoss?: true }
   | { readonly op: "custody" }
   /** The census of saves held in memory, read before a stop: no credential, no act, no chain. */
   | { readonly op: "census" }
@@ -137,15 +137,81 @@ export type CustodyAnswer =
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
 /** A face its custody serves that stands dark here: its last light refused. The note names the cause and the clearing line. */
-export interface ServedDark { readonly face: number; readonly cause: string; readonly note: string }
+export interface ServedDark { readonly face: number; readonly cause: string; readonly note: string; /** Saves of its own held in memory, unwritten, for its next light. */ readonly heldSaves?: number }
 
-/** The served-but-dark line: the face, why its light refused, and the act that lights it again (the lend's replay). */
-export const servedDarkNote = (face: number, cause: string): string =>
-  `h${face} served by custody, dark here: its light refused (${cause}); clear it with \`lares vault unlock\` (it replays the lend), or the next custody event`;
+/**
+ * The act that lights a served-but-dark face again. A face that holds no prekey secret (`STALE_LIGHT`) refuses every replay of
+ * the lend, so its line names the recard: under a pūlama the face's own route proves at the pūlama's hand door first.
+ */
+export const darkCure = (face: number, cause: string, pulama = false): string =>
+  !STALE_LIGHT.test(cause) ? "clear it with `lares vault unlock` (it replays the lend), or the next custody event"
+    : pulama ? `recard it at your own terminal, keeping its identity: tools/lares-container.sh pulama recard ${face} (the face's own passphrase), then lares vault recard --face ${face}`
+    : `recard it at your own terminal, keeping its identity: lares vault recard --face ${face} (the face's own passphrase)`;
 
-/** The served-but-dark set: each face whose light refused here that its custody serves (the lit set), with its note. */
-export const servedDark = (refused: ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, lit: readonly number[]): ServedDark[] =>
-  refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause) }));
+/** The served-but-dark line: the face, why its light refused, and the act that lights it again (`darkCure`). */
+export const servedDarkNote = (face: number, cause: string, pulama = false, heldSaves = 0): string =>
+  `h${face} served by custody, dark here: its light refused (${cause}); ${darkCure(face, cause, pulama)}${heldSaves > 0 ? `; ${heldSaves} save(s) of its own wait held in memory, unwritten, and seal once it lights` : ""}`;
+
+/**
+ * The line for a face the island's open refused that still HOLDS CLOSING: saves of its own wait unsealed, so nothing of it
+ * dropped. It names the lock that drives the close again; once it reads dark, the served-but-dark line names what lights it.
+ */
+export const heldClosingNote = (face: number, cause: string): string =>
+  `h${face} served by custody, closing here: the island composed without it (${cause}), and saves of its own wait unsealed, so it holds closing and nothing dropped; drive its close again: \`lares vault lock --face ${face}\`, then \`lares vessel census\` reads what lights it`;
+
+type RefusedFace = { readonly ordinal: number; readonly cause: string; readonly heldSaves?: number };
+
+/**
+ * The served-but-dark set: each face whose light refused here that its custody serves (the lit set), with its note; beside
+ * them each served face the island's open refused that still holds closing (`closing`), with the line that drives it again.
+ */
+export const servedDark = (refused: readonly RefusedFace[], lit: readonly number[], pulama = false, closing: readonly RefusedFace[] = [], holding: readonly HeldSaves_[] = []): ServedDark[] => [
+  ...refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause, pulama, r.heldSaves ?? 0), ...(r.heldSaves ? { heldSaves: r.heldSaves } : {}) })),
+  // A FACE A LOCK HOLDS OR SHUT reads no refused light and may stand outside the served set; while it holds saves its row
+  // stands all the same, with their count: the census shows every face the gates would refuse over.
+  ...holding.filter((h) => !refused.some((r) => r.ordinal === h.ordinal && lit.includes(r.ordinal))).map((h) => ({ face: h.ordinal, cause: h.cause, note: servedDarkNote(h.ordinal, h.cause, pulama, h.saves), heldSaves: h.saves })),
+  ...closing.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: heldClosingNote(r.ordinal, r.cause) })),
+];
+
+/** An act the held-saves gate refused: the door answers it by its own name (`saves-held`), never as a fault. */
+export class SavesHeld extends Error { override readonly name = "SavesHeld"; }
+
+/** One refused face that holds unsealed saves in memory. */
+type HeldSaves_ = { readonly ordinal: number; readonly cause: string; readonly saves: number };
+
+/**
+ * NO ACT ENDS THE COMPOSITION OVER A REFUSED FACE'S HELD SAVES. They wait in this composition's memory as plain bytes no
+ * seat has sealed: a lock would drop the key over them, and the next composition would throw them away. `act` names what
+ * would have dropped them, `face` narrows to one face's own lock, and `lossWord` names the person's explicit word for the
+ * loss at that door. Answers the refusal's words, or null where nothing is held.
+ */
+export const heldSavesRefusal = (holding: readonly HeldSaves_[], pulama: boolean, act: string, lossWord: string, face?: number): string | null => {
+  const rows = holding.filter((h) => h.saves > 0 && (face === undefined || h.ordinal === face));
+  if (rows.length === 0) return null;
+  const each = rows.map((h) => `face h${h.ordinal} holds ${h.saves} save(s) in memory that no seat has sealed (its light refused); ${darkCure(h.ordinal, h.cause, pulama)}, and its own seat seals them`).join(". ");
+  return `${act} would drop them, so nothing moved. ${each}. Or drop them knowingly: ${lossWord}`;
+};
+
+/**
+ * THE DOOR AND THE CENSUS SAY ONE LINE: the session door's refusal for a face whose light refused, or that holds closing after
+ * the island's open refused it, carries the note the census prints for it, read live; any other face reads none. `pulama`
+ * reads the one fact both doors hold: whether this vessel's custody rests with a pūlama (`namesPulama`).
+ */
+export const doorDarkLine = (refused: () => readonly RefusedFace[], pulama: boolean, closing: () => readonly RefusedFace[] = () => []): ((face: number) => string | null) =>
+  (face) => {
+    const dark = refused().find((r) => r.ordinal === face);
+    if (dark !== undefined) return servedDarkNote(face, dark.cause, pulama, dark.heldSaves ?? 0);
+    const held = closing().find((r) => r.ordinal === face);
+    return held === undefined ? null : heldClosingNote(face, held.cause);
+  };
+
+/**
+ * THE LOSS A RECOMPOSITION TAKES NAMES ITSELF. A composition that ends with a refused face still holding saves (a wear under
+ * `--accept-loss`, or a recomposition no door gates: a mount's close, a pūlama session's drop) drops them with it. One line
+ * per face says so before the teardown: the face, the count, and that they left unwritten. Null where nothing is held.
+ */
+export const heldSavesLossLines = (holding: ReadonlyArray<{ readonly ordinal: number; readonly cause: string; readonly saves: number }>): string[] =>
+  holding.filter((h) => h.saves > 0).map((h) => `face h${h.ordinal} held ${h.saves} save(s) no seat had sealed (its light refused: ${h.cause}); this composition ends, and they drop unwritten`);
 
 export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
@@ -164,7 +230,11 @@ export interface CustodyFrameDeps {
   /** Hold every face the standing composition knows past CLOSED, right before the vessel key locks; false where any stands lit. */
   readonly holdFaces?: () => boolean;
   /** Each face dark here because its last light refused, with its cause. */
-  readonly refusedLights?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>;
+  readonly refusedLights?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
+  /** Each face the island's open refused that still holds closing over unsealed saves, with its cause (`FaceLives.refusedCloses`). */
+  readonly refusedCloses?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each refused face that holds unsealed saves in memory, held by a lock or not: every act that ends the composition reads it first (`heldSavesRefusal`). */
+  readonly refusedHolds?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string; readonly saves: number }>;
   /** Replay the lend now (the served-but-dark clearing line), awaited. */
   readonly replayLend?: () => Promise<void>;
   /** Close every face through its actor (a whole lock): resolves once each closed; rejects where one did not close whole. */
@@ -238,7 +308,7 @@ export const STALE_LIGHT = /\bFaceHoldsNoPrekeySecret:|\bFaceRecardRefused:[^\n]
 /** The keys a `rehive` frame may carry: the face's own route and the face, nothing beside them. */
 const REHIVE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
-const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat", "yes"]);
+const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat", "yes", "acceptLoss"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots", "purpose", "argsDigest"]);
@@ -369,6 +439,18 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // it replays the lend, so a served face whose light refused lights again (the served-but-dark clearing line).
     if (!freshly && sel.face === undefined && sel.all !== true) { await deps.replayLend?.(); return { op: "unlock", ...u, standing: deps.standing() }; }
     const standing = listFaceOrdinals();
+    // AN UNLOCK THAT WOULD COMPOSE AGAIN over a standing composition leaves a refused face's held saves behind: it refuses HERE,
+    // before any face key opens and before the mount moves. It composes where the mount stood shut, or where the mount would
+    // move (a face named other than the mount, the one standing face, or an opening free to choose because the mount holds no
+    // anchors); read wide, so an unlock that might compose refuses and one that only lights a sibling beside its mount lands.
+    if (!freshly) {
+      const mountMayMove = sel.face !== undefined ? sel.face !== mountedBefore
+        : sel.all === true ? !(mountedBefore !== undefined && await holdsAnchors(mountedBefore))
+        : standing.length === 1 && standing[0] !== mountedBefore;
+      const overSaves = !mountedWasOpen || mountMayMove
+        ? heldSavesRefusal(deps.refusedHolds?.() ?? [], deps.pulama !== undefined, "this unlock composes the vessel again, which", "`tools/lares-container.sh down` asks for the typed accept-loss") : null;
+      if (overSaves !== null) throw new SavesHeld(overSaves);
+    }
     // A pūlama's vessel never reaches here: its unlock frame dials the pūlama (the `deps.pulama` branch), so this direct
     // `lockFace` only ever drops a key this vessel's own holder opened.
     const refuseFaces = async (reading: "face-refused" | "face-not-named", detail: object): Promise<CustodyAnswer> => {
@@ -478,7 +560,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * those records rest in the store, and their mirrors stay behind until the face is worn again. The same frame carrying
    * `yes: true` turns anyway. Either answer carries the flush's reading (`shore`).
    */
-  const wear = composing(async (face: number, yes = false): Promise<CustodyAnswer> => {
+  const wear = composing(async (face: number, yes = false, acceptLoss = false): Promise<CustodyAnswer> => {
     const tellWorn = (): void => {
       if (!deps.pulama) return;
       deps.pulama.tellWorn(face).catch((e: unknown) => deps.onLog(`wear h${face}: the pūlama did not keep the worn face (${(e as { reading?: unknown }).reading ?? (e instanceof Error ? e.name : "refused")}); a restart wears the lowest face served`));
@@ -501,6 +583,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const before = mountedFaceOrdinal();
     // A wear that names the face already worn names it by choice: the mount reads as named, and a lock of that face never slides it on as an opening's mount slides.
     if (before === face) { mountByOpening = false; tellWorn(); return { op: "wear", face, held: true, already: true, standing: deps.standing() }; }
+    // THE WEAR COMPOSES AGAIN, and the composition it leaves takes a refused face's held saves with it: it refuses first, by
+    // name. `acceptLoss: true` alone is the person's word for that loss; `yes` speaks for the shore's flush and nothing else,
+    // so a caller that turns over unwritten shore records (the shim's own wear) never drops a held save with it.
+    const overSaves = acceptLoss ? null : heldSavesRefusal(deps.refusedHolds?.() ?? [], deps.pulama !== undefined, `wearing h${face} composes the vessel again, which`, `wear again with --accept-loss (\`lares wear ${face} --accept-loss\`)`);
+    if (overSaves !== null) return refuse("saves-held", overSaves);
     // THE ROLLBACK RESTORES THE MOUNT EXACTLY: a named face, the default rule, or NO MOUNT (never the default rule in NO MOUNT's place).
     const shore = (await deps.shoreFlush?.()) ?? undefined;
     if (shore !== undefined) {
@@ -542,6 +629,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * `lock --face N`: one face drops its key. The mounted face's lock stands the vessel back at the floor through the same gate the
    * unlock reads (`sovereignStands`); a sibling's lock leaves the sovereign composition standing.
    */
+  /** The held-saves refusal for a lock of `ordinal`, where that face wears the mount (its lock composes again); else null. */
+  const mountLockOverSaves = async (ordinal: number): Promise<string | null> =>
+    mountedFaceOrdinal() === ordinal || await daemonMountOrdinal() === ordinal
+      ? heldSavesRefusal(deps.refusedHolds?.() ?? [], deps.pulama !== undefined, `a lock of face h${ordinal} composes the vessel again, which`, "`tools/lares-container.sh down` asks for the typed accept-loss")
+      : null;
   const lockFaceOf = composing(async (ordinal: number): Promise<CustodyAnswer> => {
     // The hold the door's close set lifts once this lock locked the key or let it be.
     try { return await lockFaceHeld(ordinal); } finally { deps.releaseFace?.(ordinal); }
@@ -550,6 +642,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const named = await holder.faceStanding({ ordinal });
     if (named === null) return { op: "lock", locked: true, was: "locked", face: ordinal, standing: deps.standing() };
     const wasOpen = named.unlocked;
+    // THE MOUNT'S LOCK COMPOSES THE VESSEL AGAIN, and that drops every refused face's held saves: it refuses first (the close
+    // that runs ahead read the same gate). Any other face's lock composes nothing, so it lands: an unmounted refused face may
+    // shut for its rehive, its saves staying held here, counted on the census, until its next light seals them.
+    const overSaves = wasOpen ? await mountLockOverSaves(ordinal) : null;
+    if (overSaves !== null) throw new SavesHeld(overSaves);
     // THE FACE STANDS PAST CLOSED RIGHT BEFORE ITS KEY LOCKS, in this line, whether or not a close ran ahead: a composition that
     // stood again while this lock waited (a wear, an unlock queued ahead of it, whose face read shut when this frame arrived) may
     // have lit the face, and no close of this lock reached that life. The lock then leaves the key open and says so, never closing
@@ -597,6 +694,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       if (!holder.isUnlocked()) return { op: "lock", locked: true, was: "locked", standing: deps.standing() };
       // EVERY FACE STANDS PAST CLOSED RIGHT BEFORE THE VESSEL KEY LOCKS: a composition that stood again while this lock waited may
       // have lit a face its close never reached, and the key then stays open.
+      const overSaves = heldSavesRefusal(deps.refusedHolds?.() ?? [], deps.pulama !== undefined, "a lock of the vessel key", "`tools/lares-container.sh down` asks for the typed accept-loss");
+      if (overSaves !== null) throw new SavesHeld(overSaves);
       if (deps.holdFaces && !deps.holdFaces()) {
         deps.onLog("a face stands lit before the vessel key locked; the key stays open");
         throw new Error("a face stands lit (a composition lit it after this lock's close) before the vessel key locked, so the key stays open; send the lock again");
@@ -841,14 +940,20 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     } else if (op === "wear") {
       const frame = parsed as Record<string, unknown>;
       const face = frame["face"];
-      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0 || (frame["seat"] !== undefined && frame["seat"] !== "ai") || (frame["yes"] !== undefined && frame["yes"] !== true)) {
+      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0 || (frame["seat"] !== undefined && frame["seat"] !== "ai") || (frame["yes"] !== undefined && frame["yes"] !== true) || (frame["acceptLoss"] !== undefined && frame["acceptLoss"] !== true)) {
         deps.onLog("wear: refused (bad-custody-frame)");
-        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) at most `seat: \"ai\"` and `yes: true` (turn over records the shore's flush left unwritten), and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
+        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) at most `seat: \"ai\"`, `yes: true` (turn over records the shore's flush left unwritten) and `acceptLoss: true` (turn over saves a refused face holds unsealed), and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
       // A WEAR MOVES THE MOUNT FOR ANY SEAT: it asks no route and carries no key, and reaches only a face already standing open;
       // unlock and custody stay the operator's own acts.
-      act = () => wear(face as number, frame["yes"] === true);
+      // THE LOSS IS A PERSON'S WORD: an AI seat's frame never carries it (the CLI asks a person to type it at a terminal).
+      if (frame["acceptLoss"] === true && frame["seat"] === "ai") {
+        deps.onLog("wear: refused (accept-loss-needs-hand)");
+        answer(sock, { op, status: "error", errorMessage: "dropping the saves a refused face holds takes a person's own word, typed at their terminal: an AI seat's wear never carries it; nothing moved", refusal: { reason: "accept-loss-needs-hand" } });
+        return true;
+      }
+      act = () => wear(face as number, frame["yes"] === true, frame["acceptLoss"] === true);
     } else if (op === "unlock" && deps.pulama) {
       // A PŪLAMA HOLDS THIS VESSEL'S CUSTODY: the frame's credentials go unread (no route opens anything here), the vessel
       // dials the pūlama again, and the answer names a session or what the pūlama waits on.
@@ -908,12 +1013,17 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       act = face === undefined ? lock : () => lockFaceOf(face as number);
       ahead = face === undefined
         ? (deps.closeFaces ? async () => {
+          // THE GATE READS BEFORE THE CLOSE: a lock that will refuse over held saves drains and closes no lit face.
+          const overSaves = heldSavesRefusal(deps.refusedHolds?.() ?? [], deps.pulama !== undefined, "a lock of the vessel key", "`tools/lares-container.sh down` asks for the typed accept-loss");
+          if (overSaves !== null) throw new SavesHeld(overSaves);
           try { await deps.closeFaces!(); }
           catch (error) { deps.releaseFaces?.(); throw error; }
         } : null)
         : (deps.dropFace && !deps.pulama ? async () => {
           const standing = await holder.faceStanding({ ordinal: face as number });
           if (standing?.unlocked !== true) return;
+          const overSaves = await mountLockOverSaves(face as number);
+          if (overSaves !== null) throw new SavesHeld(overSaves);
           try { await deps.dropFace!(face as number); }
           catch (error) { deps.releaseFace?.(face as number); deps.onLog(`face h${String(face)} provider drop refused: ${String(error)}`); throw error; }
         } : null);
@@ -976,7 +1086,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       const worn = holder.isUnlocked() ? mountedFaceOrdinal() : undefined;
       // `facesDark` names each face the custody serves (lit set) that stands dark here, its light refused, with its clearing line.
       let facesDark: ServedDark[] = [];
-      try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit); } catch { facesDark = []; }
+      try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit, deps.pulama !== undefined, deps.refusedCloses?.() ?? [], deps.refusedHolds?.() ?? []); } catch { facesDark = []; }
       answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(worn !== undefined ? { worn } : {}) });
       return true;
     } else {
@@ -998,6 +1108,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     waiting += 1;
     // AN ACT WHOSE CLOSE RAN AHEAD RUNS TO ITS END though its caller left: it locks the key or lifts the holds its close set, so
     // no face stays dark behind a caller who went away. Its answer goes nowhere.
+    // THE HELD-SAVES GATE ANSWERS BY ITS OWN NAME, wherever in the act it read: nothing moved, and the words carry both cures.
+    const savesHeld = (e: SavesHeld): void => {
+      deps.onLog(`${op}: refused (saves-held); nothing moved`);
+      answer(sock, { op, status: "error", errorMessage: e.message, refusal: { reason: "saves-held" } });
+    };
     const committed = ahead !== null;
     const turn = async (): Promise<CustodyAnswer | null> => {
       waiting -= 1;
@@ -1005,6 +1120,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return act();
     };
     const refused = (e: unknown): void => {
+      if (e instanceof SavesHeld) { savesHeld(e); return; }
       const why = e instanceof Error ? e.message : String(e);
       // An act's own fault never reaches this arm (`runAct` answers it by name); what does names no argument.
       deps.onLog(`${op}: refused — ${why}`);
@@ -1015,6 +1131,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (ahead === null) enqueue();
     else ahead().then(enqueue, (e: unknown) => {
       waiting -= 1;
+      if (e instanceof SavesHeld) { savesHeld(e); return; }
       deps.onLog(`${op}: the face's close faulted, so the key stays open — ${e instanceof Error ? e.message : String(e)}`);
       answer(sock, { op, status: "error", errorMessage: `the face's close faulted, so the key stays open: ${e instanceof Error ? e.message : String(e)}`, refusal: { reason: "face-close-held" } });
     });

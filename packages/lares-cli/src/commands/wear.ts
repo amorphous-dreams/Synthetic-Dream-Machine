@@ -20,6 +20,7 @@
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { helpLines } from "../command-help.js";
 import { createInterface } from "node:readline/promises";
+import { canPromptSecret, promptLine } from "../prompt-secret.js";
 import { emit, proseFirst, refuseUsage, wantsJson } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
@@ -93,7 +94,17 @@ export async function wearOpenFace(args: ParsedArgs, face: number, verb: string)
     emit(args, { ok: false, error: { code, message }, ...(data ? { data } : {}), human: () => console.error(`lares ${verb}: ${message}`) });
     return 1;
   };
-  const send = (yes: boolean): Promise<CustodyDoorAnswer | null> => sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}), ...(yes ? { yes: true as const } : {}) });
+  // `--accept-loss` IS A PERSON'S WORD, TYPED: the flag asks for it, and the wear carries `acceptLoss` only once a person at a
+  // terminal typed `accept-loss` (as the house's `down` asks). An AI seat, a pipe and any other word send no wear. `--yes`
+  // never carries it.
+  let acceptLoss = false;
+  if (args.flags["accept-loss"] === true) {
+    if (seatMarked() || !canPromptSecret()) return refuse("accept-loss-needs-hand", `dropping the saves a refused face holds takes a person's own word, typed at their terminal: run \`lares wear ${face} --accept-loss\` there; nothing moved`);
+    const word = await promptLine(`this wear composes the vessel again, and any save a face whose light refused holds unsealed drops unwritten (\`lares vessel census\` counts them). Type accept-loss to wear h${face} anyway: `);
+    if (word.trim() !== "accept-loss") return refuse("accept-loss-not-typed", "the answer did not read accept-loss; nothing moved, and the face worn stays worn");
+    acceptLoss = true;
+  }
+  const send = (yes: boolean): Promise<CustodyDoorAnswer | null> => sendCustodyFrame({ op: "wear", face, ...(seatMarked() ? { seat: "ai" as const } : {}), ...(yes ? { yes: true as const } : {}), ...(acceptLoss ? { acceptLoss: true as const } : {}) });
   let a = await send(args.flags["yes"] === true);
   // THE SHORE'S FLUSH LEFT RECORDS UNWRITTEN: a person at a terminal answers whether to turn anyway; an agent carries --yes.
   if (a !== null && a["status"] === "error" && (a["refusal"] as { reason?: unknown } | undefined)?.reason === "shore-unwritten") {

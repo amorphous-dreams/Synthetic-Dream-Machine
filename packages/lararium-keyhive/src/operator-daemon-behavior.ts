@@ -194,7 +194,7 @@ import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHa
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
 import { faceDoors } from "./face-doors.js";
-import { readSiblingFacePlanes, recheckSiblingPlanes, intentPlaneSelf, type FaceAnchor } from "@lararium/mesh";
+import { readSiblingFacePlanes, recheckSiblingPlanes, intentPlaneSelf, mkDaemonFaceSettled, type FaceAnchor } from "@lararium/mesh";
 import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
 import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
@@ -439,6 +439,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         } catch (error) { console.warn(`[daemon] face ${key.slice(0, 12)}… handed the worn face no cap events: ${error instanceof Error ? error.message : String(error)}`); }
       }
     } catch (error) {
+      // A LIGHT THAT THROWS LEAVES NO ENTRY: a fault past the provider's seating clears the lit set, so the face reads dark
+      // here as it reads to the vessel, and its next light meets no stale `face-lit-changed`.
+      if (providers.get(key)?.provider === joined.keyhive) { providers.delete(key); litInputs.delete(key); litSiblings.delete(key); }
       await joined.keyhive.dispose();
       throw error;
     }
@@ -2457,7 +2460,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       litInputs.set(bareKey(daemonAuth.atom!.key), faceInputsDigest(daemonAuth));
       for (const face of daemonAuth.joinedFaces ?? []) {
         try { await lightJoinedFace(face, ctx); }
-        catch (error) { console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`); continue; }
+        catch (error) {
+          console.warn(`[daemon] face ${face.atom.key} refused: ${String(error)}`);
+          // THE VESSEL HEARS IT BY NAME: it adopted this face lit before the island opened, and no ask of its own stands
+          // behind a manifest light, so the refusal and its cause ride their own answer (`composed`).
+          ctx.post(mkDaemonFaceSettled(face.atom.key, "composed", false, String(error)));
+          continue;
+        }
         // A SIBLING LIT WITH THE COMPOSITION takes its lit pass here: its door stands on its own queue, never holding the boot.
         const key = bareKey(face.atom.key);
         void litProjectionsOf(ctx)?.light(key, face);

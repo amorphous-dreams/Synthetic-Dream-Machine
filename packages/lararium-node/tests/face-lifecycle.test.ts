@@ -16,6 +16,7 @@ const settle = async (): Promise<void> => { for (let i = 0; i < 8; i++) await Pr
 /** A scripted island: each effect records itself, and the test answers each one by hand. */
 function island() {
   const events: string[] = [];
+  const logs: string[] = [];
   const lights = new Map<number, Deferred<FaceLit> & { live: () => boolean; opening: string }>();
   const drains = new Map<number, Deferred<void>>();
   const drops = new Map<number, Deferred<void>>();
@@ -25,14 +26,14 @@ function island() {
     light(ordinal, opening, live) { events.push(`light h${ordinal} ${opening}`); const d = { ...deferred<FaceLit>(), live, opening }; lights.set(ordinal, d); return d.promise; },
     drainSaves(ordinal) { events.push(`drain h${ordinal}`); const d = deferred(); drains.set(ordinal, d); return d.promise; },
     dropWorker(ordinal, atomKey) { events.push(`drop h${ordinal} ${atomKey}`); const d = deferred(); drops.set(ordinal, d); return d.promise; },
-    teardownHost(ordinal) { events.push(`teardown h${ordinal}`); },
+    teardownHost(ordinal, _opening, why) { events.push(`teardown h${ordinal}${why ? ` ${why}` : ""}`); },
     onDark(ordinal) { events.push(`dark h${ordinal}`); },
     // The island's open reads the actors' lit set at its start, and answers them with it once it stands.
     recompose(reason) { const d = { ...deferred(), litAtStart: lives.lit() }; events.push(`recompose (${reason})`); recomposes.push(d); return d.promise.then(() => lives.recomposed(new Set(d.litAtStart))); },
-    log: () => {},
+    log: (line) => { logs.push(line); },
   };
   lives = faceLives(effects, { nonce: "boot" });
-  return { lives, events, lights, drains, drops, recomposes };
+  return { lives, events, lights, drains, drops, recomposes, logs };
 }
 
 /** Light h<N> through to lit, under atom key `k<N>`. */
@@ -420,6 +421,93 @@ describe("each face lives one life: the lifecycle actor", () => {
     t.lights.get(1)!.resolve({ atomKey: "k1", custody: null });
     expect(await again).toBe("lit");
     expect(t.lives.refusedLights()).toEqual([]);
+  });
+  // The island's first open adopts each lent face lit before the island lights it; a face the island then refused held no
+  // entry there, and read lit here all the same, so the recard guard read it healthy and every act on it rode to no provider.
+  const STALE = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k2 holds no prekey secret";
+  // A REFUSAL IS NO CLOSE. The island refused the face its seat, so nothing could ever drain under it: a drain here would hold
+  // the face closing for good and shut the recard road. It goes dark, and its host side comes down KEEPING its waiting saves.
+  test("R10 COMPOSED WITHOUT IT: a face adopted lit that the island's open refused goes dark at once with the refusal's cause; no drain is asked, no worker drop, no lend replays, its host side comes down marked refused (its saves kept), and its next light runs", async () => {
+    const t = island();
+    t.lives.adopt(2, { atomKey: "k2", custody: null });
+    const refusedVisits: string[] = [];
+    expect(t.lives.admitVisit(2, (reason) => refusedVisits.push(reason.split(":")[0]!))).not.toBeNull();
+    t.lives.composeRefused(2, STALE, { opening: t.lives.opening(2)! });
+    expect(t.lives.state(2)).toEqual({ kind: "dark", held: false });
+    expect(t.lives.refusedLights()).toEqual([{ ordinal: 2, cause: STALE }]);
+    expect(t.lives.refusedCloses()).toEqual([]);
+    // A LOCK'S HOLD HIDES THE REFUSED LIGHT (no recard arms over a held face), and the cause still reads for the saves it holds.
+    expect(t.lives.hold(2)).toBe(true);
+    expect(t.lives.refusedLights()).toEqual([]);
+    expect(t.lives.refusedCause(2)).toBe(STALE);
+    t.lives.release(2);
+    expect(t.lives.admitWork(2), "no work admits on a face the island never held").toBeNull();
+    expect(refusedVisits).toEqual(["face-not-open"]);
+    expect(t.events, "the teardown names its cause, so the vessel keeps the face's waiting saves").toEqual(["teardown h2 refused", "dark h2"]);
+    // THE RECARD'S LIGHT RUNS FROM HERE: the face lights as any dark face does, and the refusal clears.
+    const again = t.lives.light(2);
+    t.lights.get(2)!.resolve({ atomKey: "k2", custody: null });
+    expect(await again).toBe("lit");
+    expect(t.lives.refusedLights()).toEqual([]);
+  });
+  test("R11 A RESTART'S REFUSAL DROPS NO SAVE AND ANSWERS NO CLOSE: a face that lit by its own light, refused at a later open, goes dark the same way (teardown marked refused, no drain, no drop); a close asked after meets a dark face", async () => {
+    const t = island();
+    const opening = await lit(t, 1);
+    t.lives.composeRefused(1, STALE, { opening });
+    expect(t.events.filter((e) => !e.startsWith("light"))).toEqual(["teardown h1 refused"]);
+    expect(t.lives.refusedLights()).toEqual([{ ordinal: 1, cause: STALE }]);
+    await t.lives.close(1, "the pūlama closes it");
+    expect(t.events.filter((e) => e.startsWith("drain") || e.startsWith("drop"))).toEqual([]);
+  });
+  test("R12 THE REFUSAL NAMES ONE LIFE: a refusal for an opening the face no longer lives under (it closed and lit again), a face still lighting, or a face this set never knew changes nothing", async () => {
+    const t = island();
+    t.lives.adopt(2, { atomKey: "k2", custody: null });
+    const first = t.lives.opening(2)!;
+    const closed = t.lives.close(2, "lock");
+    t.drains.get(2)!.resolve(); await closed; t.drops.get(2)!.resolve(); await settle();
+    const second = await lit(t, 2);
+    expect(second).not.toBe(first);
+    t.lives.composeRefused(2, STALE, { opening: first });
+    expect(t.lives.state(2), "the new life keeps standing, with its island entry").toEqual({ kind: "lit", opening: second, atomKey: "k2", custody: null });
+    const lighting = t.lives.light(1);
+    t.lives.composeRefused(1, STALE, { opening: t.lights.get(1)!.opening });
+    expect(t.lives.state(1).kind).toBe("lighting");
+    t.lights.get(1)!.resolve({ atomKey: "k1", custody: null });
+    expect(await lighting).toBe("lit");
+    t.lives.composeRefused(7, STALE, { opening: "boot:99" });
+    expect(t.lives.known(7)).toBe(false);
+  });
+  test("R13 A CLOSE UNDER WAY KEEPS ITS OWN LAW: the refusal resolves no waiter and tears nothing down; the drain decides, the island is asked no drop, and its dark replays no lend", async () => {
+    const t = island();
+    t.lives.adopt(3, { atomKey: "k3", custody: null });
+    let answered = false;
+    const closed = t.lives.close(3, "the pūlama closes it").then(() => { answered = true; });
+    expect(t.events).toEqual(["drain h3"]);
+    t.lives.composeRefused(3, STALE, { opening: t.lives.state(3).kind === "closing" ? (t.lives.state(3) as { opening: string }).opening : "" });
+    await settle();
+    expect(answered, "the close waits on its drain").toBe(false);
+    expect(t.events).toEqual(["drain h3"]);
+    t.drains.get(3)!.resolve(); await closed; await settle();
+    expect(t.events, "no drop for an entry the island never held, and no lend replayed").toEqual(["drain h3", "teardown h3"]);
+    expect(t.lives.refusedLights()).toEqual([{ ordinal: 3, cause: STALE }]);
+  });
+  test("R14 A REFUSAL ENDS WITH THE LIFE IT NAMED: a light asked during a refused close lights at its dark, and the old cause never reads again, at that light or at the next life's own dark", async () => {
+    const t = island();
+    t.lives.adopt(3, { atomKey: "k3", custody: null });
+    const opening = t.lives.opening(3)!;
+    const closed = t.lives.close(3, "the pūlama closes it");
+    t.lives.composeRefused(3, STALE, { opening });
+    expect(t.lives.refusedCloses()).toEqual([{ ordinal: 3, cause: STALE }]);
+    const relit = t.lives.light(3);
+    t.drains.get(3)!.resolve(); await closed; await settle();
+    expect(t.lives.state(3).kind).toBe("lighting");
+    expect(t.lives.refusedCloses()).toEqual([]);
+    t.lights.get(3)!.resolve({ atomKey: "k3", custody: null });
+    expect(await relit).toBe("lit");
+    const again = t.lives.close(3, "lock");
+    t.drains.get(3)!.resolve(); await again; t.drops.get(3)!.resolve(); await settle();
+    expect(t.lives.state(3).kind).toBe("dark");
+    expect(t.lives.refusedLights(), "a life that lit and closed clean carries no refusal of the life before it").toEqual([]);
   });
 });
 

@@ -72,7 +72,7 @@ import { makeCustodyHolder } from "./custody-holder.js";
 import { isTestScratchRoot, testScratchNotice } from "./test-scratch-notice.js";
 import { heldPlaneLines } from "./doc-load-probe.js";
 import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
-import { custodyFrameHandler, type CustodyDoor } from "./custody-frames.js";
+import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
 import { rehiveShutFace } from "./face-rehive.js";
@@ -83,7 +83,7 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
@@ -526,6 +526,9 @@ async function main(): Promise<void> {
     const prior = composition;
     composition = null;
     // THE LIFE REMEMBERS: a teardown here that left a face unsealed, or threw, keeps this life's goodbye unsent at its exit.
+    // NO HELD SAVE DROPS UNNAMED: the doors refuse first (`heldSavesRefusal`); a composition that ends over them all the same
+    // (a person's `--accept-loss`, a mount's close, a pūlama session's drop) says which face lost how many.
+    if (prior !== null) { try { for (const line of heldSavesLossLines(prior.refusedHolds?.() ?? [])) console.warn(`[sealed-rest] ${line}`); } catch { /* a composition half down reads nothing */ } }
     if (prior !== null) await lifeClosed.noteTeardown(() => prior.teardown());
     const out = await composeOrFloor(sovereign && sovereignStands() ? seatedSovereignReaders() : null, ward);
     composition = out.stood;
@@ -549,6 +552,8 @@ async function main(): Promise<void> {
     holdFace: (ordinal) => composition?.holdFace?.(ordinal) ?? true,
     holdFaces: () => composition?.holdFaces?.() ?? true,
     refusedLights: () => composition?.refusedLights?.() ?? [],
+    refusedCloses: () => composition?.refusedCloses?.() ?? [],
+    refusedHolds: () => composition?.refusedHolds?.() ?? [],
     replayLend: async () => { await composition?.replayLend?.(); },
     // A RECARD ARMS THE FACE'S NEXT LIGHT in the standing composition; the door then replays the lend (`face-recard`).
     armRecard: (ordinal) => { if (!composition?.armRecard) throw new Error("composition unavailable"); composition.armRecard(ordinal); },
@@ -641,7 +646,11 @@ interface StandingComposition {
   /** Hold every face past CLOSED right before the vessel key locks; false where any stands lit. Absent at the floor. */
   readonly holdFaces?: () => boolean;
   /** Each face dark here because its last light refused, with its cause. Absent at the floor. */
-  readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
+  /** Each face the island's open refused that still holds closing over unsealed saves, with its cause. Absent at the floor. */
+  readonly refusedCloses?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each refused face that holds unsealed saves in memory, with its cause and their count. Absent at the floor. */
+  readonly refusedHolds?: () => Array<{ readonly ordinal: number; readonly cause: string; readonly saves: number }>;
   /** Replay the lend now, awaited. Absent at the floor. */
   readonly replayLend?: () => Promise<void>;
   /** Arm a face's next light as a recard. Absent at the floor. */
@@ -960,6 +969,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     litOrdinals:  () => result.litOrdinals(),
     // EACH FACE LIVES ONE LIFE: each session verb and act admits on its face's actor, so a face closing takes no new work.
     faceLife:     result.faceLife,
+    // A FACE DARK BECAUSE ITS LIGHT REFUSED ANSWERS BY NAME: the door's `face-not-open` carries the cause and the act that
+    // lights it again (a recard, for a face that holds no prekey secret), so no verb or act waits on a face the island never held.
+    faceDark:     doorDarkLine(() => result.refusedLights(), namesPulama(), () => result.refusedCloses()),
     // A LIT FACE RECEIVES VISITS (`seat-hand`): a read naming another face as its `target` (by ordinal, or by the pet name this
     // vessel holds) admits on that face's actor and delivers through its mailbox; the face the call wears stays worn.
     visitVerbs:   CROSS_FACE_READ_VERBS,
@@ -1072,7 +1084,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     standing: "hearth",
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
-    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
+    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, refusedCloses: result.refusedCloses, refusedHolds: result.refusedHolds, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
     closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
     teardown: () => result.teardown(() => front.detach()),

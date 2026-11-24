@@ -1,11 +1,12 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, expect, test, vi } from "vitest";
-import { custodyFrameHandler, servedDark } from "../src/custody-frames.js";
+import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, servedDark } from "../src/custody-frames.js";
+import { mountedFaceOrdinal } from "../src/node-vessel-identity.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
-function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Promise<void> } = {}) {
+function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Promise<void>; heldSaves?: Array<{ ordinal: number; cause: string; saves: number }> } = {}) {
   const open = new Set(["0"]);
   const holder = {
     unlock: async () => ({ reading: "already-unlocked" }),
@@ -39,6 +40,7 @@ function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Pr
   }
   const handle = custodyFrameHandler({ holder, lightFace, dropFace, releaseFace, releaseFaces, holdFace, holdFaces, replayLend, closeFaces, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false,
     runAct: async () => ({ ran: true }),
+    ...(opts.heldSaves ? { refusedHolds: () => opts.heldSaves! } : {}),
     ...(opts.pulama === true ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [], tellWorn: () => {} } } : {}) } as unknown as Parameters<typeof custodyFrameHandler>[0]);
   const send = (frame: unknown) => new Promise<Record<string, unknown>>((resolve) => {
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line)) }) as unknown as Socket;
@@ -226,6 +228,134 @@ test("R9 SERVED BUT DARK: the census names each face its custody serves that sta
   expect(servedDark([{ ordinal: 1, cause: "daemon-down" }, { ordinal: 3, cause: "x" }], [0, 1])).toEqual([
     { face: 1, cause: "daemon-down", note: "h1 served by custody, dark here: its light refused (daemon-down); clear it with `lares vault unlock` (it replays the lend), or the next custody event" },
   ]);
+});
+
+// An unlock replays the lend and the stale face refuses again: the note that sends a person there cures nothing.
+test("R9 A STALE FACE'S CLEARING LINE NAMES THE RECARD: a face dark for want of a prekey secret reads its recard, at the pūlama's hand door first where custody rests there; never the unlock", () => {
+  const cause = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [lent] = servedDark([{ ordinal: 2, cause }], [0, 2], true);
+  expect(lent!.note).toContain("tools/lares-container.sh pulama recard 2");
+  expect(lent!.note).toContain("lares vault recard --face 2");
+  expect(lent!.note.indexOf("pulama recard 2")).toBeLessThan(lent!.note.indexOf("lares vault recard --face 2"));
+  expect(lent!.note).not.toContain("lares vault unlock");
+  const [own] = servedDark([{ ordinal: 2, cause }], [0, 2]);
+  expect(own!.note).toContain("lares vault recard --face 2");
+  expect(own!.note).not.toContain("pulama recard");
+  expect(own!.note).not.toContain("lares vault unlock");
+});
+
+test("R9 THE DOOR AND THE CENSUS SAY ONE LINE: the session door's dark line for a face reads the census's own note, live from the refused lights; a face with no refused light reads none", () => {
+  const cause = "face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  let refused: Array<{ ordinal: number; cause: string }> = [];
+  for (const pulama of [true, false]) {
+    const line = doorDarkLine(() => refused, pulama);
+    refused = [];
+    expect(line(2)).toBeNull();
+    refused = [{ ordinal: 2, cause }];
+    expect(line(2)).toBe(servedDark(refused, [2], pulama)[0]!.note);
+    expect(line(1)).toBeNull();
+  }
+});
+
+// A refused face's saves wait in this composition's memory as plain bytes, and no seat has sealed them: a lock would drop the
+// key over them and the next composition would throw them away. Every act that ends the composition refuses first, by name.
+const HELD = [{ ordinal: 2, cause: "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret", saves: 1 }];
+test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses by name with both cures (light the face so its seat seals them, or drop them knowingly), before any face closes, and the key stays open", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD });
+  const answer = await h.send({ op: "lock" });
+  expect(answer).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  // THE GATE READS BEFORE THE CLOSE THAT RUNS AHEAD: a refused lock drains and closes no lit face.
+  expect(h.closeFaces).not.toHaveBeenCalled();
+  const words = String(answer["errorMessage"]);
+  expect(words).toContain("h2");
+  expect(words).toContain("1 save(s)");
+  expect(words).toContain("lares vault recard --face 2");
+  expect(words).toContain("accept-loss");
+  expect(h.lock).not.toHaveBeenCalled();
+  expect(h.recompose).not.toHaveBeenCalled();
+  // No close ran, so no hold stands for anything to lift.
+  expect(h.holdFaces).not.toHaveBeenCalled();
+});
+test("F6 A FACE LOCK GATES ONLY WHERE IT WOULD COMPOSE AGAIN: the mounted face's lock refuses saves-held before any close runs; the refused face's own lock (unmounted, the road to its rehive) lands and composes nothing", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1"); h.open.add("2");
+  const mount = await h.send({ op: "lock", face: 0 });
+  expect(mount).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  expect(String(mount["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(h.dropFace, "no close ran ahead of the refused lock").not.toHaveBeenCalled();
+  expect(h.open.has("0")).toBe(true);
+  expect(await h.send({ op: "lock", face: 2 })).toMatchObject({ op: "lock", locked: true, face: 2 });
+  expect(h.open.has("2")).toBe(false);
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("F1 AN UNLOCK THAT WOULD COMPOSE AGAIN REFUSES BEFORE ANYTHING MOVES: no face key opens and the mount stays where it stood; CONTROL: an unlock that only lights a sibling beside the same mount still lands", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD });
+  const answer = await h.send({ op: "unlock", face: 1, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  expect(answer).toMatchObject({ op: "unlock", status: "error", refusal: { reason: "saves-held" } });
+  expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(h.open.has("1"), "no key opened under a refused unlock").toBe(false);
+  expect(mountedFaceOrdinal(), "the mount stays").toBe(0);
+  expect(h.recompose).not.toHaveBeenCalled();
+  await h.send({ op: "unlock", all: true, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  expect(h.lightFace).toHaveBeenCalledExactlyOnceWith(1);
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("F4 THE LOSS IS A PERSON'S WORD: a wear frame carrying acceptLoss from an AI seat refuses accept-loss-needs-hand, and nothing composes", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: true, seat: "ai" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "accept-loss-needs-hand" } });
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cures; `yes` speaks for the shore's flush alone and still refuses; only the frame's own `acceptLoss` turns anyway", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
+  const answer = await h.send({ op: "wear", face: 1 });
+  expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "saves-held" } });
+  expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(String(answer["errorMessage"])).toContain("lares wear 1 --accept-loss");
+  expect(String(answer["errorMessage"])).not.toContain("--yes");
+  // THE SHIM'S WORD: `yes` turns over records the shore's flush left unwritten, and never drops a held save.
+  expect(await h.send({ op: "wear", face: 1, yes: true })).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  expect(h.recompose).not.toHaveBeenCalled();
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: true })).toMatchObject({ op: "wear", face: 1 });
+  expect(h.recompose).toHaveBeenCalledOnce();
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: "yes" }), "the word reads true or stays off the frame").toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
+});
+test("NO HELD SAVE DROPS UNNAMED: a composition that ends over a refused face's held saves names the face and the count; with none held it says nothing", () => {
+  const lines = heldSavesLossLines([...HELD, { ordinal: 3, cause: "x", saves: 0 }]);
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain("h2");
+  expect(lines[0]).toContain("1 save(s)");
+  expect(lines[0]).toContain("drop unwritten");
+  expect(heldSavesLossLines([])).toEqual([]);
+});
+test("P3 THE HELD SAVES STAY ON THE CENSUS WHILE A LOCK HOLDS THE FACE: a held face reads no refused light, and its row still stands, with its count", () => {
+  const [row] = servedDark([], [0, 2], true, [], HELD);
+  expect(row).toMatchObject({ face: 2, heldSaves: 1 });
+  expect(row!.note).toContain("1 save(s) of its own wait held in memory");
+  expect(servedDark([{ ordinal: 2, cause: HELD[0]!.cause, heldSaves: 1 }], [0, 2], true, [], HELD), "one row, never two").toHaveLength(1);
+  // A FACE ITS OWN LOCK SHUT leaves the served set, and its saves still wait here: the row stands wherever the gate would refuse.
+  expect(servedDark([], [0], true, [], HELD)).toMatchObject([{ face: 2, heldSaves: 1 }]);
+});
+
+test("R9 THE DARK ROW NAMES ITS HELD SAVES: a refused face whose saves wait in memory reads their count on its row and its line; one with none reads no count", () => {
+  const cause = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [row] = servedDark([{ ordinal: 2, cause, heldSaves: 1 }], [0, 2], true);
+  expect(row).toMatchObject({ face: 2, cause, heldSaves: 1 });
+  expect(row!.note).toContain("1 save(s) of its own wait held in memory");
+  expect(row!.note).toContain("lares vault recard --face 2");
+  const [bare] = servedDark([{ ordinal: 2, cause, heldSaves: 0 }], [0, 2], true);
+  expect(bare!.note).not.toContain("held in memory");
+  expect(doorDarkLine(() => [{ ordinal: 2, cause, heldSaves: 1 }], true)(2)).toBe(row!.note);
+});
+
+test("R9 A REFUSED FACE THAT HOLDS CLOSING NAMES ITSELF: the census and the door read one line for it, naming the saves that hold it and the lock that drives its close again", () => {
+  const cause = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [row] = servedDark([], [0, 2], true, [{ ordinal: 2, cause }]);
+  expect(row).toMatchObject({ face: 2, cause });
+  expect(row!.note).toContain("closing here");
+  expect(row!.note).toContain("lares vault lock --face 2");
+  expect(servedDark([], [0], true, [{ ordinal: 2, cause }]), "a face the custody does not serve reads nowhere").toEqual([]);
+  const line = doorDarkLine(() => [], true, () => [{ ordinal: 2, cause }]);
+  expect(line(2)).toBe(row!.note);
+  expect(line(1)).toBeNull();
 });
 
 test("R9 THE CLEARING LINE: an unlock over a held key replays the lend, so a served face whose light refused lights again", async () => {

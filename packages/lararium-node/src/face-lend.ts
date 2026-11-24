@@ -54,6 +54,46 @@ export async function adoptFirstLit(faceLife: Pick<FaceLives, "adopt" | "noteCus
   faceLife.noteCustody(ordinal, await noteCustody(ordinal));
 }
 
+/** One face an open of the island composed with: its ordinal, its atom key and the opening it stood lit under. */
+export interface ComposedFace { readonly ordinal: number; readonly atomKey: string; readonly opening: string }
+
+/**
+ * THE ISLAND'S REFUSAL OF A MANIFEST FACE REACHES THAT FACE'S OWN LIFE (`daemon:face-settled`, op `composed`): the island
+ * names the face by its atom key, and this maps it to the ordinal that open composed, under the opening it composed. A key the
+ * open never carried changes nothing; a face that closed and lit again since lives under another opening, and its actor
+ * hears nothing (`composeRefused`).
+ */
+export function composeRefusalHearing(manifest: readonly ComposedFace[], faceLife: Pick<FaceLives, "composeRefused">): (atomKey: string, reason: string) => void {
+  const bare = (key: string): string => key.toLowerCase().replace(/^0x/, "");
+  return (atomKey, reason) => {
+    for (const face of manifest) if (bare(face.atomKey) === bare(atomKey)) faceLife.composeRefused(face.ordinal, reason, { opening: face.opening });
+  };
+}
+
+/**
+ * A FACE'S WAITING SAVES AT ITS TEARDOWN. A face that closed drained first, so what its documents still carry leaves memory
+ * (`forget`). A face the island REFUSED never held a seat to drain under: nothing forgets its saves. They wait in memory as
+ * plain Automerge bytes behind the face gate, unwritten (`keep`, which records each document's actor before it leaves the
+ * Repo's cache), until the seat its next light stands books and seals them (`composeSealedRest.rebook`). Answers how many
+ * dropped and how many stay held.
+ */
+export function settleFaceSaves(owned: readonly string[], why: "refused" | undefined, rest: { readonly forget: (documentIds: readonly string[]) => number; readonly keep: (documentIds: readonly string[]) => number }): { readonly dropped: number; readonly held: number } {
+  if (why === "refused") return { dropped: 0, held: rest.keep(owned) };
+  return { dropped: rest.forget(owned), held: 0 };
+}
+
+/**
+ * THE REFUSED FACES THAT HOLD SAVES, as every gate, the census and the loss line read them: keyed on the saves alone. A
+ * refusal's cause clears when a relight begins (and stays cleared where that light was cut short), while the saves it left
+ * still wait; such a face reads under `fallback`. A face whose saves sealed reads nowhere.
+ */
+export function refusedHoldRows(ordinals: Iterable<number>, heldSavesOf: (ordinal: number) => number, causeOf: (ordinal: number) => string | null, fallback = "its light refused"): Array<{ readonly ordinal: number; readonly cause: string; readonly saves: number }> {
+  return [...ordinals].sort((a, b) => a - b).flatMap((ordinal) => {
+    const saves = heldSavesOf(ordinal);
+    return saves > 0 ? [{ ordinal, cause: causeOf(ordinal) ?? fallback, saves }] : [];
+  });
+}
+
 export interface FaceLend {
   /** Read the served set once and send each face its message. */
   sweep(): Promise<void>;

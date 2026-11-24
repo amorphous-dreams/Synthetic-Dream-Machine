@@ -5,7 +5,8 @@ import { harnessSeatMarked, LocalWaitExpired, UdsUnreachable, udsSocketPath } fr
 
 export class SessionRefused extends Error {
   override readonly name = "SessionRefused";
-  constructor(readonly refusal: string, readonly closed = false) { super(`local session refused: ${refusal}${closed ? " (the session closed)" : ""}`); }
+  /** `words`: the vessel's own line for the refusal, where its door sent one (a dark face's cause and cure); it leads with the refusal's name. */
+  constructor(readonly refusal: string, readonly closed = false, words?: string) { super(`local session refused: ${words ?? refusal}${closed ? " (the session closed)" : ""}`); }
 }
 
 /** A session act's answer and the request id it rode, which recovers its outcome when an answer goes with the socket. */
@@ -66,7 +67,7 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       if (id !== undefined && waiters?.length === 0) pending.delete(id);
       if (answer.kind === "session:refused" && answer.closed === true) sessionClosed = true;
       if (!waiter) continue;
-      if (answer.kind === "session:refused") waiter.reject(new SessionRefused(String(answer.refusal), answer.closed === true));
+      if (answer.kind === "session:refused") waiter.reject(new SessionRefused(String(answer.refusal), answer.closed === true, typeof answer.message === "string" && answer.message ? answer.message : undefined));
       else waiter.resolve(answer);
     }
   });
