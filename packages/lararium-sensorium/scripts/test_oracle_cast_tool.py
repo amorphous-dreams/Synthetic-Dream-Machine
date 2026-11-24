@@ -3,7 +3,7 @@
 The tool mirrors `lares oracle cast`. A cast stands as an ACT: the vessel casts, draws the coins through the platform's
 entropy door (or takes the operator's six typed values), and writes the cast once as a tiddler; the draw lives in the
 tool, never in the prompt, so the seat that asks never picks the figure. The seat names the time of the cast (the verb
-reads no clock) and the caster. The tool's account says the oracle widens attention and never decides.
+reads no clock) and the caster. The tool's account names the throw a blind throw to collide uncertainty with: the throw stands, the reading stays open.
 
     ~/.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_oracle_cast_tool.py -q
 """
@@ -36,7 +36,7 @@ def test_oracle_cast_states_its_annotations_and_its_limit(daemon):
     assert a is not None
     # A cast writes a new record each time: not read-only, not idempotent, never destructive.
     assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == (False, False, False, False)
-    assert "the oracle widens attention and never decides" in tool.description
+    assert "a blind throw to collide uncertainty with: the throw stands, the reading stays open" in tool.description
 
 
 def test_a_house_cast_rides_the_wire_with_the_container_the_caster_and_the_seats_time(daemon):

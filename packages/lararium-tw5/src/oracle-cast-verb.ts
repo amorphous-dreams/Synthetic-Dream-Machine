@@ -14,8 +14,8 @@
  * cast, and a call naming none refuses (`oracle-cast-untimed`).
  *
  * The answer carries the readings the wiki holds for the hexagrams cast (`oracles/doa`, `oracles/e-jing`), each read
- * through the tiddler door's own get, and names the ones this wiki holds none of. The oracle widens attention and
- * never decides.
+ * through the tiddler door's own get, and names the ones this wiki holds none of. The throw stands and the
+ * reading stays open.
  */
 
 import { VerbRefusal } from "@lararium/mesh";

@@ -16,7 +16,7 @@
  *
  * A CAST STANDS AS AN ACT. `castFields` shapes the tiddler a cast writes, under the `casts/` prefix, naming the
  * readings the house imported (`oracles/doa`, `oracles/e-jing`); a surface writes it once, and re-rendering it never
- * casts again. The oracle widens attention and never decides.
+ * casts again. The throw stands and the reading stays open.
  *
  * Platform-blind and pure.
  */
@@ -32,8 +32,8 @@ export const CAST_METHOD = "three-coins";
 /** The source an operator's typed throw names: six lines thrown by a hand with real coins. */
 export const OPERATOR_COINS = "operator:three-coins";
 
-/** The oracle's one limit, said wherever it answers. */
-export const ORACLE_WIDENS = "the oracle widens attention and never decides";
+/** The oracle's pono place, said wherever it answers: a blind throw to collide uncertainty with. */
+export const ORACLE_WIDENS = "a blind throw to collide uncertainty with: the throw stands, the reading stays open";
 
 /** The prefix every cast tiddler's title sits under. */
 export const CAST_TITLE_PREFIX = "lar:///ha.ka.ba/lares/oracle/casts/";

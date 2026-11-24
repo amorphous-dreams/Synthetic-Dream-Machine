@@ -23,7 +23,7 @@ module-type: widget
  * widget reads the time once when it fires and hands it to the core, which reads no clock.
  *
  * `caster` names who cast (default `wiki`). `result` names a tiddler whose text receives the cast's title, so a button
- * can open what it cast. The oracle widens attention and never decides.
+ * can open what it cast. The throw stands and the reading stays open.
  */
 
 import { castFields, castFromCoins, castThreeCoins, parseCoins, type OracleCast } from "@lararium/mesh/oracle-cast";

@@ -200,6 +200,6 @@ describe("oracle-cast — the result as a tiddler, written once", () => {
     expect(text).toContain("16");
     expect(text).toContain("operator:three-coins");
     expect(text).toContain(ORACLE_WIDENS);
-    expect(ORACLE_WIDENS).toBe("the oracle widens attention and never decides");
+    expect(ORACLE_WIDENS).toBe("a blind throw to collide uncertainty with: the throw stands, the reading stays open");
   });
 });
