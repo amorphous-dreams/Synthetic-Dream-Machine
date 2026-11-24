@@ -541,7 +541,7 @@ async function main(): Promise<void> {
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
     ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial(), lent: () => pulama.lends(), tellWorn: (o) => pulama.tellWorn(o) } } : {}),
-    lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
+    lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); return await composition.lightFace(ordinal); },
     dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
     releaseFace: (ordinal) => { composition?.releaseFace?.(ordinal); },
     releaseFaces: () => { composition?.releaseFaces?.(); },
@@ -550,6 +550,9 @@ async function main(): Promise<void> {
     holdFaces: () => composition?.holdFaces?.() ?? true,
     refusedLights: () => composition?.refusedLights?.() ?? [],
     replayLend: async () => { await composition?.replayLend?.(); },
+    // A RECARD ARMS THE FACE'S NEXT LIGHT in the standing composition; the door then replays the lend (`face-recard`).
+    armRecard: (ordinal) => { if (!composition?.armRecard) throw new Error("composition unavailable"); composition.armRecard(ordinal); },
+    disarmRecard: (ordinal) => composition?.disarmRecard?.(ordinal),
     // A WHOLE LOCK CLOSES EVERY FACE THROUGH ITS ACTOR before its key drops: a face whose saves did not seal rejects, and the key stays open.
     closeFaces: async () => { await composition?.closeFaces?.(); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
@@ -627,7 +630,7 @@ interface ComposedAs { readonly standing: ReturnType<typeof standAs>; readonly f
 interface StandingComposition {
   readonly standing: "herm" | "hearth";
   readonly island: NonNullable<SealedActContext["island"]>;
-  readonly lightFace: (ordinal: number) => Promise<void>;
+  readonly lightFace: (ordinal: number) => Promise<"lit" | "refused" | void>;
   readonly dropFace: (ordinal: number) => Promise<void>;
   /** Lift the hold a lock's close set on a face. Absent at the floor. */
   readonly releaseFace?: (ordinal: number) => void;
@@ -641,6 +644,10 @@ interface StandingComposition {
   readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now, awaited. Absent at the floor. */
   readonly replayLend?: () => Promise<void>;
+  /** Arm a face's next light as a recard. Absent at the floor. */
+  readonly armRecard?: (ordinal: number) => void;
+  /** Clear a face's recard arm (the door's finally, once its awaited light settled). Absent at the floor. */
+  readonly disarmRecard?: (ordinal: number) => boolean;
   /** Close every face through its actor, holding each dark (a whole lock, ahead of the key); rejects where a face did not close
    *  whole. Absent at the floor. */
   readonly closeFaces?: () => Promise<unknown>;
@@ -1065,7 +1072,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     standing: "hearth",
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
-    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, replayLend: result.replayLend,
+    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
     closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
     teardown: () => result.teardown(() => front.detach()),

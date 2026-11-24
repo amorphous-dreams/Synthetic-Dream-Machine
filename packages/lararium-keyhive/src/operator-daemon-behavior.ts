@@ -173,7 +173,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   }
   return reader;
 }
-import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret } from "./boot-daemon-keyhive.js";
+import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl, CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS } from "@lararium/mesh";
@@ -363,6 +363,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (litInputs.get(key) === faceInputsDigest(face)) return;
       throw new Error(`face-lit-changed: face ${key} stands lit from other inputs (anchor, KEL, edge, bags or veil); drop it before it lights again`);
     }
+    const handle = typeof face.handleIndex === "number" ? `h${face.handleIndex}` : `${key.slice(0, 12)}…`;
+    // A RECARD KEEPS NOTHING UNLESS ITS ARCHIVE RESTS: its card mints a prekey whose secret only the Archive after it holds, so
+    // a face this shore rests no Archive for refuses before anything mints.
+    if (face.recard && (daemonAuth.archiveOpens !== true || !persistVeilArchive || routesVeilArchive?.(face.personaGroupId) === false)) {
+      throw new FaceRecardRefused("archive-unrouted", `this vessel rests no Archive for face ${handle} here, so its card would burn a prekey no kept Archive holds; nothing minted. Unlock the vessel's custody (\`lares vault unlock\`), then \`${recardCommand(face.handleIndex)}\` again`);
+    }
     const lease = await readLeaseUnderFace(ctx.control, face.personaGroupId, readFace(face.personaKel.chain, face.faceAnchor));
     const joined = await bootDaemonKeyhive({
       atomSeed: meshHexToBytes(face.atom.seed), faceVerifyingKey: face.atom.key,
@@ -375,9 +381,25 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       dyad: await requireDyadReader(dyadReader(ctx, { ...daemonAuth, ...face }), "the Binding Gate")(face.deviceEdge.personaRootDid, face.deviceEdge.deviceVerifyingKey),
       ...(face.veilArchiveBytes ? { veilArchiveBytes: face.veilArchiveBytes } : {}),
       ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+      ...(typeof face.handleIndex === "number" ? { handle: face.handleIndex } : {}),
+      ...(face.recard ? { recard: true as const } : {}),
     });
     try {
-      await namingThePrekey(face.atom.key, async () => { for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag); });
+      const registerOwn = async (): Promise<void> => { for (const bag of face.registerBags.filter((bag) => !isVesselGround(bag))) await joined.keyhive.registerBag(bag); };
+      let recard = joined.recard;
+      try { await namingThePrekey(face.atom.key, registerOwn, face.handleIndex); }
+      catch (error) {
+        if (!face.recard || !(error instanceof FaceHoldsNoPrekeySecret)) throw error;
+        // THE RECARD MEETS THE FAULT AT THE FACE'S OWN BAGS: the ground registered under a prekey this stand still held, and
+        // a later mint met one it did not. The card mints now, before the rest, and they register again.
+        await joined.keyhive.contactCard();
+        try { await registerOwn(); }
+        catch (again) {
+          if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${handle} held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
+          throw again;
+        }
+        recard = { stale: true, reminted: recard?.reminted ?? [] };
+      }
       // THE SIBLING'S ARCHIVE FLOOR, as the mounted face's: its one card mints, then its Archive rests in its own row. Every
       // later ask of this stand (a grant, a workbench seat, a revoke) presents that same card, so the Archive the next light
       // restores holds the secret behind every prekey this stand presented. Without it the face's log runs ahead of its
@@ -389,6 +411,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         exportVeilArchive: () => joined.keyhive.exportArchiveAfterTheCard(),
       });
       await surfaceFloorRefusals(ctx, floor, key);
+      if (recard) {
+        // THE RECARD LANDS ONLY WITH ITS ARCHIVE: a stale stand's card and its fresh Documents live in this Archive alone.
+        if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
+          throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Read the refusing row with \`lares vault status --verbose\` first; where custody reads locked, unlock it (\`lares vault unlock\`) so its Archive rows take writes, then \`${recardCommand(face.handleIndex)}\` again`);
+        }
+        console.warn(recardLine(handle, recard));
+      }
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
@@ -1033,6 +1062,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             ? { dyad: await requireDyadReader(dyadReader(ctx), "the Binding Gate")(daemonAuth.deviceEdge.personaRootDid, daemonAuth.deviceEdge.deviceVerifyingKey) } : {}),
           ...(daemonAuth.veilArchiveBytes ? { veilArchiveBytes: daemonAuth.veilArchiveBytes } : {}),
           ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
+          ...(typeof daemonAuth.handleIndex === "number" ? { handle: daemonAuth.handleIndex } : {}),
         });
       } catch (error) {
         const cause = error instanceof Error ? error.message : String(error);
@@ -1074,7 +1104,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         await namingThePrekey(daemonAuth.atom.key, async () => {
           if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
           else for (const bag of faceBags) await keyhive.registerBag(bag);
-        });
+        }, daemonAuth.handleIndex);
       }
       // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
       // The face archive carries the atom's prekeys and capability state. The write door reads
@@ -2517,10 +2547,22 @@ export function presenterFor(input: {
 }
 
 /** A face's registration that meets `PrekeySecretAbsent` refuses by the face's public atom key (`FaceHoldsNoPrekeySecret`). */
-async function namingThePrekey(face: string, register: () => Promise<void>): Promise<void> {
+async function namingThePrekey(face: string, register: () => Promise<void>, handle?: number): Promise<void> {
   try { await register(); }
   catch (error) {
-    if (error instanceof PrekeySecretAbsent) throw new FaceHoldsNoPrekeySecret(face, error);
+    if (error instanceof PrekeySecretAbsent) throw new FaceHoldsNoPrekeySecret(face, error, handle);
     throw error;
   }
+}
+
+/**
+ * What a recard says once its Archive rests: the face keeps its identity, and each bag whose Document it could not hold gains a
+ * fresh one; content sealed under the earlier Document stays unreadable to this face. Bag URIs and the handle only; never a key.
+ */
+export function recardLine(handle: string, recard: BootDaemonKeyhiveRecard): string {
+  if (!recard.stale) return `[daemon] face ${handle} recard: its stand held a live prekey secret, so it lit as it would and nothing was reminted`;
+  const lost = recard.reminted.length === 0
+    ? "every recorded Document it held stays readable"
+    : `${recard.reminted.length} bag Document(s) it held no hand in took fresh Documents, and content sealed under the old ones stays unreadable to this face (share it anew from a stand that holds it): ${recard.reminted.join(", ")}`;
+  return `[daemon] face ${handle} recarded: its identity holds, its card minted before its bags and its Archive rests after that card; ${lost}; content a peer sealed to a card whose secret no kept Archive held reads unreadable (ContentKeyNotHeld: its key may still arrive by sync, or its prekey secret was lost, and then that peer shares it anew)`;
 }

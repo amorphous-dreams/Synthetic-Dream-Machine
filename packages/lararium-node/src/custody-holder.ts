@@ -257,9 +257,11 @@ export interface CustodyHolder {
    * Open one SHUT face's key for ONE act, without seating it: the same per-face attempt budget, the same `face-owner` and anchors
    * checks against the floor index as `unlockFace`, and no open event, so no composition hears the face open. The key and its
    * custody id come back bound together; the caller zero-fills the key when its act settles. A face already open answers
-   * `already-unlocked` and hands no key. Absent on a holder that serves its custody from elsewhere (a pūlama).
+   * `already-unlocked` and hands no key, unless the act reads a face that stands open (`whileOpen`: a recard proves the face's
+   * own route while its key stands open, the same budget and checks, the held key untouched). Absent on a holder that serves its
+   * custody from elsewhere (a pūlama).
    */
-  openFaceForAct?(face: FaceRef, credentials: readonly Credential[]): Promise<FaceActOpening>;
+  openFaceForAct?(face: FaceRef, credentials: readonly Credential[], act?: { readonly whileOpen?: boolean }): Promise<FaceActOpening>;
   /** Try the credentials against every face's tree and open each one they fit; a face they do not fit stays shut and spends nothing. */
   unlockFaces(credentials: readonly Credential[]): Promise<readonly FaceUnlock[]>;
   /** A reserved face takes the founding ask whose digest could not stand before its first row. */
@@ -639,14 +641,14 @@ export function makeCustodyHolder(a: {
     return null;
   };
   /** One face's key opened and checked (budget, `face-owner`, anchors), never seated: unlock seats it, an act holds it alone. */
-  const doOpenVerified = async (by: FaceRef, credentials: readonly Credential[], opts: { readonly requireAnchors?: boolean } = {}): Promise<
+  const doOpenVerified = async (by: FaceRef, credentials: readonly Credential[], opts: { readonly requireAnchors?: boolean; readonly whileOpen?: boolean } = {}): Promise<
     { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string; readonly group: string | null; readonly fck: FaceCustodyKey }
     | Exclude<FaceUnlock, { readonly reading: "opens" }>
   > => {
     const found = await resolveFace(by);
     if (!found) return { reading: "face-absent" };
     const { fcid, ordinal } = found;
-    if (faces.has(fcid)) return { reading: "already-unlocked", fcid, ordinal };
+    if (faces.has(fcid) && opts.whileOpen !== true) return { reading: "already-unlocked", fcid, ordinal };
     if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid, attemptsLeft: 0 };
     // CHARGE FIRST, against the face's own count: a throw or a miss keeps it; anything else refunds it.
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
@@ -972,8 +974,9 @@ export function makeCustodyHolder(a: {
       unlockChain = run.catch(() => undefined);
       return run;
     },
-    openFaceForAct(face, credentials) {
-      const run = unlockChain.then(() => doOpenVerified(face, credentials, { requireAnchors: true }), () => doOpenVerified(face, credentials, { requireAnchors: true }));
+    openFaceForAct(face, credentials, act) {
+      const open = () => doOpenVerified(face, credentials, { requireAnchors: true, ...(act?.whileOpen === true ? { whileOpen: true } : {}) });
+      const run = unlockChain.then(open, open);
       unlockChain = run.catch(() => undefined);
       return run.then((o): FaceActOpening => (o.reading === "opens" ? { reading: "opens", fcid: o.fcid, ordinal: o.ordinal, groupDigest: o.group, fck: o.fck } : o));
     },
