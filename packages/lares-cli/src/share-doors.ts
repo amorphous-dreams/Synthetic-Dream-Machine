@@ -26,6 +26,8 @@ export interface ShareDoors {
   readonly verb: (name: string, args: Record<string, unknown>) => Promise<Record<string, unknown> | null>;
   readonly out: (line: string) => void;
   readonly err: (line: string) => void;
+  /** Does this run stand under an agent harness's mark? Absent: the process environment answers. */
+  readonly seat?: () => boolean;
 }
 
 const shareFilePath = (): string => join(larConfigHome(), SHARE_CONFIG_FILE);
@@ -131,7 +133,7 @@ export async function landOnFaceSession(open: OpenFaceSession, verb: string, arg
         }
         if (r.state === "abandoned" || r.state === "interrupted") throw new Error(`request-${r.state}: the vessel ${r.state} ${verb} (request ${id}); run it again`);
         if (r.state === "evicted") throw new Error(`retention-gap: the vessel no longer holds the outcome of ${verb} (request ${id})`);
-        if (ports.now() - started >= patience) throw new Error(`${verb} still lands after ${Math.round(patience / 1000)}s of reading its receipt; read its outcome with \`lares vessel request ${id}\``);
+        if (ports.now() - started >= patience) throw new Error(`${verb} still lands after ${Math.round(patience / 1000)}s of reading its receipt; run the same \`lares wiki share\` line again; the session's receipt for request ${id} closes with this session`);
         await ports.pause(1_000);
       }
     }
