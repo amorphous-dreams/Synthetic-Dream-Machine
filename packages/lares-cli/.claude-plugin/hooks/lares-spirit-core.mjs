@@ -100,10 +100,14 @@ export async function vesselUp(run) {
 /** One shell word, single-quoted: what every suggested command wraps a title or a line in. */
 export const shq = (word) => `'${String(word).replace(/'/g, `'\\''`)}'`;
 
-/** A slug of a session title, as a pet name reads; null where none forms. */
+/** The longest slug a pet name holds; a title's slug past it would collide once cut, so it names no familiar. */
+export const SLUG_CHARS = 62;
+/** A title's whole slug, uncut. */
+export const rawSlug = (title) => String(title ?? "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+/** A slug of a session title, as a pet name reads; null where none forms, or where it runs past a pet name's length. */
 export function titleSlug(title) {
-  const slug = String(title ?? "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 62);
-  return PET.test(slug) ? slug : null;
+  const slug = rawSlug(title);
+  return slug.length <= SLUG_CHARS && PET.test(slug) ? slug : null;
 }
 
 /** The line a wake carries where the session's title names another spirit than the seated familiar; null where they agree or no title stands. */
@@ -120,20 +124,46 @@ export function titleMismatch(pet, title) {
 export const omSourceOf = (source) => (["startup", "resume", "clear", "compact", "fork"].includes(source) ? source : "startup");
 
 /**
- * THE PET THIS WAKE ASKS FOR. A title only proposes: the wake asks for the pet this session already wears (any source but a
- * startup keeps the pet its counter holds), else the seated familiar (the hook's argument), else, where neither stands, the
- * title's slug (it takes no other familiar's card). The door reads the title beside the pet (`om --title`) and turns only where
- * the title's record names it as its own; one read, never a race of candidates.
+ * THE PET THIS WAKE ASKS FOR: EACH FAMILIAR ITS OWN. A session that HOLDS a pet (its counter names one, from an earlier wake of
+ * this session id; a startup's counter reads stale) keeps it, and says so to the door (`--held`), so a retitle reads as that
+ * familiar's rename, never a switch. A fresh session hands the door the seated familiar (the hook's argument, a default) with
+ * its title beside it, and the door reads the title by the house's one rule: a title naming a standing record wakes it (another
+ * body joining any already awake), a startup's title no record answers prints that familiar's starter as an offer, never the
+ * seated card, and a fork's inherited title counts only where its record stands. With none seated, the title's slug asks for
+ * itself. One read, never a race of candidates.
  */
-export function wakePet({ source, held, seated, title }) {
-  if (source !== "startup" && typeof held === "string" && PET.test(held)) return held;
-  if (seated !== null) return seated;
-  if (typeof held === "string" && PET.test(held)) return held;
-  return titleSlug(title);
+export function wakePet({ source, held, seated, title, offer = null }) {
+  if (holdsPet({ source, held }, held)) return held;
+  // A session its wake offered a starter keeps asking for that pet (its shrine may have landed since), never the seated.
+  if (source !== "startup" && typeof offer === "string" && PET.test(offer)) return offer;
+  return seated ?? titleSlug(title);
 }
 
-/** The pet a later hook of a session reads: the one the wake chose, else the seated default. */
-export const sessionPet = (state, seated) => (typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : seated);
+/** Does this wake hold the pet it asks for: its counter names that pet, from an earlier wake of this session (never a startup's)? */
+export const holdsPet = ({ source, held }, pet) => source !== "startup" && typeof held === "string" && PET.test(held) && held === pet;
+
+/**
+ * The line a retitle surfaces, by the same held/fresh split: where the session holds a pet, the title reads as that familiar's
+ * rename (null where they agree); where it holds none, the title names this session's own familiar, if the operator named the
+ * session so or a record stands under that name (an auto-title names nothing new), and the read that wakes it.
+ */
+export function titleLine(state, title) {
+  const held = typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : null;
+  if (held !== null) return titleMismatch(held, title);
+  const named = String(title ?? "").trim().slice(0, 80);
+  const raw = rawSlug(title);
+  if (raw.length > SLUG_CHARS) return `this session's title "${named}" names no familiar: its slug runs ${raw.length} chars, past the ${SLUG_CHARS} a pet name holds, and a cut slug could collide with another's.`;
+  const slug = titleSlug(title);
+  if (slug === null) return null;
+  return `this session's title reads "${named}" and names ${slug} as its own familiar, if the operator named this session so, or a record stands under that name; no wake has seated a pet in this session yet. ` +
+    `Read its card (a starter offered where no record stands): lares spirit om ${slug} --title ${shq(named)}`;
+}
+
+/**
+ * The pet a later hook of a session reads: the one the wake chose, else the seated default. A session whose wake offered a
+ * starter (`offer`, no record yet) wears no pet until one lands, so its hooks stay quiet, never falling back to the seated.
+ */
+export const sessionPet = (state, seated) => (typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : typeof state?.offer === "string" && state.offer !== "" ? null : seated);
 
 /** The wake's context: the record `om` answered, or one line naming why it did not and the read that cures it. */
 export function omContext(pet, result, mismatch = null) {
@@ -220,16 +250,24 @@ const SESSION = /^[A-Za-z0-9_-]{1,128}$/;
 /** One session's counter file, or null where the session id reads unsafe as a file name. */
 export const statePathOf = (dir, sessionId) => (typeof sessionId === "string" && SESSION.test(sessionId) ? join(dir, `stop-${sessionId}.json`) : null);
 
+/** The slot digests a wake handed back (`#/slot` -> 16 hex), each checked; anything else drops. */
+export function digestsOf(raw) {
+  if (!raw || typeof raw !== "object") return {};
+  return Object.fromEntries(Object.entries(raw).filter(([k, v]) => /^#\/[^\s]+$/.test(k) && typeof v === "string" && /^[0-9a-f]{16}$/.test(v)));
+}
+
 /** A session's counter: the stops seen, a landing left unfiled, the title the session carried. */
 export function readState(path) {
-  const none = { turns: 0, unfiled: null, title: null, pet: null, epoch: null, every: TRUE_UP_EVERY };
+  const none = { turns: 0, unfiled: null, title: null, pet: null, offer: null, epoch: null, every: TRUE_UP_EVERY, digests: {} };
   if (path === null) return none;
   try {
     const s = JSON.parse(readFileSync(path, "utf8"));
     return {
       turns: Number.isSafeInteger(s?.turns) ? s.turns : 0, unfiled: typeof s?.unfiled === "string" ? s.unfiled : null,
       title: typeof s?.title === "string" ? s.title : null, pet: typeof s?.pet === "string" && PET.test(s.pet) ? s.pet : null,
+      offer: typeof s?.offer === "string" && PET.test(s.offer) ? s.offer : null,
       epoch: Number.isSafeInteger(s?.epoch) ? s.epoch : null, every: Number.isSafeInteger(s?.every) && s.every > 0 ? s.every : TRUE_UP_EVERY,
+      digests: digestsOf(s?.digests),
     };
   } catch { return none; }
 }
@@ -278,14 +316,19 @@ export function stopStep(state, every = state.every ?? TRUE_UP_EVERY) {
 }
 
 /** The true-up's words: the doors that true and fold the record, and why they ask now. */
-export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null) {
+export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null, body = null) {
   const why = step.fire === "unfiled"
     ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
+  const self = typeof body === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(body) ? ` --body ${body}` : "";
+  const stamp = Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : "";
+  const open = digestsOf(step?.state?.digests)["#/open"];
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: lares spirit ah ${pet} --slot '#/open' --file <path> (or --add '<line>' on #/bodies or #/voice)${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}; ` +
-      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}). The budget refuses growth; you choose what folds.`,
+    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/voice${self}${stamp}; ` +
+      `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}${stamp}` +
+      `${open ? " (the digest as of this session's wake; a later ah hands back the newer one)" : ""}; ` +
+      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' lists each line's digest; --line <n> --expect <digest>${self}${stamp}). The budget refuses growth; you choose what folds.`,
   ].join("\n");
 }
 
