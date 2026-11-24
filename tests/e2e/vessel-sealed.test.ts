@@ -31,6 +31,7 @@ import { join } from "node:path";
 import { openStaged, cliFor, foundStagedHearth, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
 import { readFckCarrier } from "../../packages/lararium-mesh/src/fck-envelope.js";
+import { ATTEMPT_BUDGET } from "../../packages/lararium-mesh/src/attempt-budget.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -192,7 +193,8 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     console.error(`vessel-sealed MEASURE ④ stand → exit ${stand.code} node=${JSON.stringify(dataOf(stand)["node"])}`);
     const reading = await custodyReading();
     expect(reading["unlocked"]).toBe(false);
-    expect(reading["attemptsLeft"]).toBe(3);
+    // A fresh boot grants the whole budget its owner names (attempt-budget), never a literal the budget can outgrow.
+    expect(reading["attemptsLeft"]).toBe(ATTEMPT_BUDGET);
     // THE FLOOR WRITES NO IDENTITY. A floor stand holds no archive; an export from it landing over the sealed
     // rows would replace the vessel's identity with an empty one. Every row stands exactly as the hearth left it.
     for (const [file, bytes] of Object.entries(rowsAtRest())) {
