@@ -34,6 +34,7 @@ import {
   type ShareFace, type ShareEntry,
 } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
+import { harnessSeatMarked } from "../local-connector.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs, type ShareDoors } from "../share-doors.js";
 
 /** Resolve `hN` tokens to face N's pet-name (bracketed where it holds a space); every other token stands as written. */
@@ -123,6 +124,11 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     }
     const slug = args.positional[0];
     if (!slug) { doors.err(`lares ${kind} share: name the ${kind} (\`lares ${kind} share <${kind}> --read <names> [--write <names>]\`), or --list`); return 2; }
+    // A SHARE IS A PERSON'S ACT (sealed-store#/the-share-config): a seat-marked run writes no row, in the file or the control document.
+    if ((doors.seat ?? (() => harnessSeatMarked()))()) {
+      doors.err(`lares ${kind} share: share-needs-hand: the shares land by a person's hand; run this line at a terminal outside any agent harness (\`lares ${kind} share ${slug} …\`). Nothing was written.`);
+      return 1;
+    }
     const standing = rows.find((r) => r.slug === slug);
     if (args.flags["remove"] === true) {
       if (!standing) { doors.err(`lares ${kind} share: no row stands for ${slug}; nothing to unshare`); return 2; }
@@ -170,12 +176,13 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     // A NAME TAKEN OUT TAKES ITS GRANT BACK: each face the standing row reads for (or writes for) that the narrowed row leaves out
     // rides the landing as a retraction, and the owner's hive revokes its landed grant (a demoted writer's read lands again).
     const retract = prior ? retractedFaces(prior, row, rows, next, faces) : [];
+    // THE FILE FOLLOWS THE DOOR: the row rests in the file only after the vessel took it (or none stands), so a refusal leaves the bytes as they were.
+    const set = await doors.verb("share-set", shareSetArgs(row));
     doors.file.write(serializeShareFile(next));
     // THE ECHO READS THE RESOLVED ROW, each face once (the answer `--list` gives). A narrowing echoes once its grants left.
     const resolved = resolvedOf(row, next, faces);
     const echo = `share: ${kind} ${slug} reads for ${resolved.read}, writes for ${resolved.write}; ${unchanged ? "unchanged in" : "written to"} config/${SHARE_CONFIG_FILE}`;
     if (retract.length === 0) doors.out(echo);
-    const set = await doors.verb("share-set", shareSetArgs(row));
     if (set === null) {
       if (retract.length > 0) doors.out(echo);
       doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning");

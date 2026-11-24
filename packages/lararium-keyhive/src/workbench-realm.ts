@@ -353,3 +353,11 @@ export async function landWorkbench(
   }
   return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort() };
 }
+
+/**
+ * WHETHER A LANDING ASKS UNDER A PERSON'S HAND: the owner's holder signs a hand-over only for an ask the operator's own CLI placed
+ * (`asker: "cli"`); a seat, a tab, a watcher and an ask no door read leave the cure to the person.
+ */
+export function landsUnderAHand(context: { readonly asker?: string }): boolean {
+  return context.asker === "cli";
+}

@@ -273,7 +273,12 @@ export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-ac
  * `session:call` (an island verb, never a face row), so the socket refuses a seat's call by this code, and the island's own
  * reactor refuses any asker that is not a hand (`retire-needs-hand`).
  */
-export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([["retire-wiki", "retire-needs-hand"]]);
+export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([
+  ["retire-wiki", "retire-needs-hand"],
+  // THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config): `share-set` writes who reads and writes a bag, and `share-apply`
+  // seats faces and hands each a lockbox under the owner's session, so no agent surface reaches either.
+  ["share-set", "share-needs-hand"], ["share-apply", "share-needs-hand"],
+]);
 
 /**
  * The sense lifecycle's hand verbs (`promote`, `retire`, `un-retire`, `purge`): island verbs a session's `session:call` carries,
