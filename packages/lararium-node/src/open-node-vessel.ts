@@ -182,7 +182,7 @@ import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, refreshLitArchives, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed, type LightAnswer } from "./face-lifecycle.js";
-import { adoptFirstLit, composeRefusalHearing, faceLend, settleFaceSaves, type ComposedFace } from "./face-lend.js";
+import { adoptFirstLit, composeRefusalHearing, faceLend, refusedHoldRows, settleFaceSaves, type ComposedFace } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -1096,6 +1096,8 @@ async function prepareNodeBootOn(
   /** EACH REFUSED FACE'S DOCUMENTS, kept from the teardown its refusal ran: their waiting saves stay held for its next light,
    *  and the census counts them on the face's dark row. A clean close of the face clears its entry. */
   const refusedHeldDocs = new Map<number, string[]>();
+  /** Why each such face's light refused, kept from that teardown: its row keeps its cause once a relight clears the actor's. */
+  const refusedHeldCause = new Map<number, string>();
   const heldSavesOf = (ordinal: number): number => (refusedHeldDocs.get(ordinal) ?? []).reduce((n, id) => n + sealedRest.store.waiting(id), 0);
   /**
    * EACH FACE LIVES ONE LIFE (`face-lifecycle`): one lifecycle actor per face this composition may light, the mount's beside each
@@ -2647,8 +2649,11 @@ async function prepareNodeBootOn(
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
     const { dropped, held } = settleFaceSaves(owned, why, { forget: (ids) => sealedRest.forget(ids), keep: (ids) => sealedRest.keep(ids) });
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
-    if (why === "refused") refusedHeldDocs.set(expected.ordinal, [...new Set([...(refusedHeldDocs.get(expected.ordinal) ?? []), ...owned, ...planes])]);
-    else refusedHeldDocs.delete(expected.ordinal);
+    if (why === "refused") {
+      refusedHeldDocs.set(expected.ordinal, [...new Set([...(refusedHeldDocs.get(expected.ordinal) ?? []), ...owned, ...planes])]);
+      const cause = faceLife.refusedCause(expected.ordinal);
+      if (cause !== null) refusedHeldCause.set(expected.ordinal, cause);
+    } else { refusedHeldDocs.delete(expected.ordinal); refusedHeldCause.delete(expected.ordinal); }
     if (dropped > 0) console.log(`[sealed-rest] face h${expected.ordinal} left: ${dropped} waiting save(s) of its own dropped from memory, none written`);
     if (held > 0) console.log(`[sealed-rest] face h${expected.ordinal} went dark refused: ${held} waiting save(s) of its own stay held in memory, unwritten, until its next light seals them`);
     dropSiblingSession(group);
@@ -4154,7 +4159,6 @@ async function prepareNodeBootOn(
       faceStanding: async (face) => await standingCustody()?.faceStanding(face) ?? null,
       faceClosed: async (fcid, opening) => { await standingCustody()?.faceClosed?.(fcid, opening); },
       lightFace: async (ordinal) => { await lightFace(ordinal); },
-      heldSaves: (ordinal) => heldSavesOf(ordinal),
       mountClosed,
       log: (line) => console.warn(line),
     });
@@ -5510,16 +5514,15 @@ async function prepareNodeBootOn(
     closeFaces: (reason, options) => { recardArmed.clearAll(); return faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }); },
     releaseFace,
     releaseFaces: () => { for (const ordinal of faceLife.ordinals()) releaseFace(ordinal); },
-    // A REFUSED FACE'S HELD SAVES HOLD THE KEY OPEN: a dark face reads past CLOSED, and its saves still wait unsealed here, so
-    // no lock lands over them (the custody door names the refusal and its cures first; this answers no behind it).
-    holdFace: (ordinal) => { recardArmed.clear(ordinal); return faceLife.hold(ordinal) && heldSavesOf(ordinal) === 0; },
+    // A REFUSED FACE'S HELD SAVES HOLD THE VESSEL KEY OPEN: a dark face reads past CLOSED, and its saves still wait unsealed
+    // here, so no whole lock lands over them (the custody door names the refusal and its cures first; `holdFaces` answers no behind it).
+    // ONE FACE'S OWN LOCK composes nothing unless it is the mount (the door gates that): an unmounted refused face may shut for
+    // its rehive, its saves staying held in this composition's memory, so its hold reads the actor alone.
+    holdFace: (ordinal) => { recardArmed.clear(ordinal); return faceLife.hold(ordinal); },
     // Every face reads, none skipped: each past CLOSED takes its hold, and one standing lit answers no.
     holdFaces: () => { recardArmed.clearAll(); return faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal) && heldSavesOf(ordinal) === 0).every(Boolean); },
     // EACH REFUSED FACE THAT HOLDS SAVES, whether or not a lock holds it: the gate every composition-ending act reads.
-    refusedHolds: () => [...refusedHeldDocs.keys()].sort((a, b) => a - b).flatMap((ordinal) => {
-      const saves = heldSavesOf(ordinal), cause = faceLife.refusedCause(ordinal);
-      return saves > 0 && cause !== null ? [{ ordinal, cause, saves }] : [];
-    }),
+    refusedHolds: () => refusedHoldRows(refusedHeldDocs.keys(), heldSavesOf, (ordinal) => faceLife.refusedCause(ordinal) ?? refusedHeldCause.get(ordinal) ?? null),
     // EACH DARK ROW COUNTS ITS HELD SAVES: what a refused face's teardown kept in memory for its next light.
     refusedLights: () => faceLife.refusedLights().map((r) => ({ ...r, heldSaves: heldSavesOf(r.ordinal) })),
     refusedCloses: () => faceLife.refusedCloses(),

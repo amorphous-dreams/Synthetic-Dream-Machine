@@ -2,6 +2,7 @@ import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, expect, test, vi } from "vitest";
 import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, servedDark } from "../src/custody-frames.js";
+import { mountedFaceOrdinal } from "../src/node-vessel-identity.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
@@ -259,10 +260,12 @@ test("R9 THE DOOR AND THE CENSUS SAY ONE LINE: the session door's dark line for 
 // A refused face's saves wait in this composition's memory as plain bytes, and no seat has sealed them: a lock would drop the
 // key over them and the next composition would throw them away. Every act that ends the composition refuses first, by name.
 const HELD = [{ ordinal: 2, cause: "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret", saves: 1 }];
-test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses by name with both cures (light the face so its seat seals them, or drop them knowingly), the key stays open and every hold lifts", async () => {
+test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses by name with both cures (light the face so its seat seals them, or drop them knowingly), before any face closes, and the key stays open", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD });
   const answer = await h.send({ op: "lock" });
-  expect(answer).toMatchObject({ status: "error" });
+  expect(answer).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  // THE GATE READS BEFORE THE CLOSE THAT RUNS AHEAD: a refused lock drains and closes no lit face.
+  expect(h.closeFaces).not.toHaveBeenCalled();
   const words = String(answer["errorMessage"]);
   expect(words).toContain("h2");
   expect(words).toContain("1 save(s)");
@@ -270,16 +273,36 @@ test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses b
   expect(words).toContain("accept-loss");
   expect(h.lock).not.toHaveBeenCalled();
   expect(h.recompose).not.toHaveBeenCalled();
-  expect(h.releaseFaces).toHaveBeenCalled();
+  // No close ran, so no hold stands for anything to lift.
+  expect(h.holdFaces).not.toHaveBeenCalled();
 });
-test("P3 A FACE LOCK OF THAT FACE REFUSES TOO: its key never locks over its own held saves; CONTROL: another face's lock lands", async () => {
+test("F6 A FACE LOCK GATES ONLY WHERE IT WOULD COMPOSE AGAIN: the mounted face's lock refuses saves-held before any close runs; the refused face's own lock (unmounted, the road to its rehive) lands and composes nothing", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1"); h.open.add("2");
-  const answer = await h.send({ op: "lock", face: 2 });
-  expect(answer).toMatchObject({ status: "error" });
+  const mount = await h.send({ op: "lock", face: 0 });
+  expect(mount).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  expect(String(mount["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(h.dropFace, "no close ran ahead of the refused lock").not.toHaveBeenCalled();
+  expect(h.open.has("0")).toBe(true);
+  expect(await h.send({ op: "lock", face: 2 })).toMatchObject({ op: "lock", locked: true, face: 2 });
+  expect(h.open.has("2")).toBe(false);
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("F1 AN UNLOCK THAT WOULD COMPOSE AGAIN REFUSES BEFORE ANYTHING MOVES: no face key opens and the mount stays where it stood; CONTROL: an unlock that only lights a sibling beside the same mount still lands", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD });
+  const answer = await h.send({ op: "unlock", face: 1, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  expect(answer).toMatchObject({ op: "unlock", status: "error", refusal: { reason: "saves-held" } });
   expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
-  expect(h.order.filter((o) => o.startsWith("lockFace"))).toEqual([]);
-  expect(h.open.has("2")).toBe(true);
-  expect(await h.send({ op: "lock", face: 1 })).toMatchObject({ op: "lock", locked: true, face: 1 });
+  expect(h.open.has("1"), "no key opened under a refused unlock").toBe(false);
+  expect(mountedFaceOrdinal(), "the mount stays").toBe(0);
+  expect(h.recompose).not.toHaveBeenCalled();
+  await h.send({ op: "unlock", all: true, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  expect(h.lightFace).toHaveBeenCalledExactlyOnceWith(1);
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("F4 THE LOSS IS A PERSON'S WORD: a wear frame carrying acceptLoss from an AI seat refuses accept-loss-needs-hand, and nothing composes", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: true, seat: "ai" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "accept-loss-needs-hand" } });
+  expect(h.recompose).not.toHaveBeenCalled();
 });
 test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cures; `yes` speaks for the shore's flush alone and still refuses; only the frame's own `acceptLoss` turns anyway", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
@@ -308,6 +331,8 @@ test("P3 THE HELD SAVES STAY ON THE CENSUS WHILE A LOCK HOLDS THE FACE: a held f
   expect(row).toMatchObject({ face: 2, heldSaves: 1 });
   expect(row!.note).toContain("1 save(s) of its own wait held in memory");
   expect(servedDark([{ ordinal: 2, cause: HELD[0]!.cause, heldSaves: 1 }], [0, 2], true, [], HELD), "one row, never two").toHaveLength(1);
+  // A FACE ITS OWN LOCK SHUT leaves the served set, and its saves still wait here: the row stands wherever the gate would refuse.
+  expect(servedDark([], [0], true, [], HELD)).toMatchObject([{ face: 2, heldSaves: 1 }]);
 });
 
 test("R9 THE DARK ROW NAMES ITS HELD SAVES: a refused face whose saves wait in memory reads their count on its row and its line; one with none reads no count", () => {

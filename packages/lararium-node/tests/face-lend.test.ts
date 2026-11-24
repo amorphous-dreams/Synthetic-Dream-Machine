@@ -1,11 +1,11 @@
 import { describe, expect, test, vi } from "vitest";
 import { faceLives, type FaceLifeEffects } from "../src/face-lifecycle.js";
-import { adoptFirstLit, composeRefusalHearing, faceLend, openingNewer, settleFaceSaves, type FaceLendPorts } from "../src/face-lend.js";
+import { adoptFirstLit, composeRefusalHearing, faceLend, openingNewer, refusedHoldRows, settleFaceSaves, type FaceLendPorts } from "../src/face-lend.js";
 
 const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
 /** A vessel's lend over a scripted custody: the mount h0 (no island entry), siblings lit by hand, every drain answered by hand. */
-function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLendPorts["faceStanding"]; ordinalOf?: FaceLendPorts["ordinalOf"]; heldSaves?: (ordinal: number) => number } = {}) {
+function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLendPorts["faceStanding"]; ordinalOf?: FaceLendPorts["ordinalOf"] } = {}) {
   const served = opts.served ?? [0, 1];
   const open = opts.open ?? new Set(served);
   const drains = new Map<number, { resolve: () => void; reject: (e: unknown) => void }>();
@@ -36,7 +36,6 @@ function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLe
       return { ordinal, fcid: `f${ordinal}`, unlocked: open.has(ordinal) };
     }),
     ...(opts.ordinalOf ? { ordinalOf: opts.ordinalOf } : {}),
-    ...(opts.heldSaves ? { heldSaves: opts.heldSaves } : {}),
     faceClosed, lightFace, mountClosed, log: () => {},
   };
   lend = faceLend(ports);
@@ -98,17 +97,14 @@ describe("a face's waiting saves at its teardown", () => {
   });
 });
 
-describe("a pūlama's close of a refused face that holds saves", () => {
-  test("P3 NO face.closed ANSWERS OVER HELD SAVES: the pūlama's key never locks while a refused face's saves wait unsealed in this vessel; CONTROL: with none held, the dark face answers at once", async () => {
-    const held = new Map([[1, 1]]);
-    const v = vessel({ served: [0, 1], heldSaves: (ordinal) => held.get(ordinal) ?? 0 });
-    v.lives.adopt(1, { atomKey: "k1", custody: null });
-    v.lives.composeRefused(1, "FaceHoldsNoPrekeySecret: stale", { opening: v.lives.opening(1)! });
-    await expect(v.lend.closing("f1", null)).rejects.toThrow(/h1.*1 save\(s\)/);
-    expect(v.faceClosed).not.toHaveBeenCalled();
-    held.set(1, 0);
-    await v.lend.closing("f1", null);
-    expect(v.faceClosed).toHaveBeenCalledOnce();
+describe("the refused faces that hold saves, as every gate reads them", () => {
+  test("F2 KEYED ON THE SAVES ALONE: a face whose refusal's cause has cleared (a relight began, or one was cut short) still reads while a save waits, under a fallback cause; one whose saves sealed reads nowhere", () => {
+    const held = new Map([[1, 0], [2, 1], [3, 2]]);
+    const causes = new Map<number, string | null>([[2, null], [3, "FaceHoldsNoPrekeySecret: stale"]]);
+    expect(refusedHoldRows([3, 1, 2], (o) => held.get(o) ?? 0, (o) => causes.get(o) ?? null)).toEqual([
+      { ordinal: 2, cause: "its light refused", saves: 1 },
+      { ordinal: 3, cause: "FaceHoldsNoPrekeySecret: stale", saves: 2 },
+    ]);
   });
 });
 

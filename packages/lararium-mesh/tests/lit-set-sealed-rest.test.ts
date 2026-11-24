@@ -225,6 +225,27 @@ describe("the lit set: each open face seals under its own key", () => {
     await r.repo.shutdown();
   });
 
+  // The face lights and a reader finds its document again before the session rebooks: the fresh handle carries a NEW actor, and
+  // the held save's change still names the one that wrote it. Either reads as this vessel's own.
+  it("LS8 — a held save stays this vessel's own though its document came back into the cache under a fresh actor before the rebook", async () => {
+    const r = await twoFaces();
+    const theirs = docOfB<{ note?: string }>(r, (d) => { d.note = "written while b's light refused"; });
+    await r.repo.flush();
+    expect(r.rest.keep([theirs.documentId])).toBeGreaterThan(0);
+    r.open.add(r.faceB);
+    // A handle stands again for the document before the rebook, under an actor the held change never carried.
+    const writer = A.getActorId(theirs.doc() as A.Doc<unknown>);
+    await r.repo.removeFromCache(theirs.documentId);
+    const again = await r.repo.find<{ note?: string }>(theirs.url);
+    expect(again.isReady()).toBe(true);
+    expect(A.getActorId(again.doc() as A.Doc<unknown>), "the fresh handle writes under another actor").not.toBe(writer);
+    expect(await r.rest.rebook(r.sessionB)).toBeGreaterThan(0);
+    const seals = r.sealedBy.filter((s) => s.bagId === BAG_B);
+    expect(seals.filter((s) => s.peer !== undefined), "no peer writer names this vessel's own change").toEqual([]);
+    expect(r.rest.book.writerOf(theirs.documentId)).toBe(`session:${r.sessionB.id}`);
+    await r.repo.shutdown();
+  });
+
   it("LS6 — each hat its own holder: b's open names b's face and a's names a's, so each opens under its own holder", async () => {
     const r = await twoFaces();
     r.open.add(r.faceB);

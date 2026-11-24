@@ -9,11 +9,14 @@ import { join } from "node:path";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 let prompts = 0;
+/** What the person types at a line prompt, and whether a terminal stands to type it on. */
+let typedLine = "";
+let terminal = true;
 vi.mock("../src/prompt-secret.js", () => {
   const asked = (): Promise<string> => { prompts += 1; return Promise.resolve("a-route-nobody-should-be-asked-for"); };
-  // A line prompt answers blank (the default route, no further pin); a hidden one answers the route.
-  const line = (): Promise<string> => { prompts += 1; return Promise.resolve(""); };
-  return { canPromptSecret: () => true, promptLine: line, promptSecret: asked, promptSecretConfirmed: asked, readWardPassphrase: asked };
+  // A line prompt answers blank (the default route, no further pin) unless a test types a word; a hidden one answers the route.
+  const line = (): Promise<string> => { prompts += 1; return Promise.resolve(typedLine); };
+  return { canPromptSecret: () => terminal, promptLine: line, promptSecret: asked, promptSecretConfirmed: asked, readWardPassphrase: asked };
 });
 
 const frames: Array<Record<string, unknown>> = [];
@@ -256,10 +259,23 @@ describe("RED a wear flushes every shore before it turns the face (the vessel as
     expect(a.error!.message).toContain("lares wear 1 --yes");
   });
 
-  it("WS3 `--accept-loss` carries `acceptLoss: true` on the wear frame, its own word; `--yes` never carries it, and a saves-held refusal prints the vessel's words", async () => {
+  it("WS3 `--accept-loss` asks the person to type accept-loss, and only that word sends `acceptLoss: true`; `--yes` never carries it, and a saves-held refusal prints the vessel's words", async () => {
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
-    expect(await wear("1", "--accept-loss")).toBe(0);
-    expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, acceptLoss: true }]);
+    typedLine = "accept-loss"; terminal = true;
+    try {
+      expect(await wear("1", "--accept-loss")).toBe(0);
+      expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, acceptLoss: true }]);
+      // ANY OTHER WORD sends no wear at all: the saves stay.
+      frames.length = 0; out.length = 0; typedLine = "y";
+      expect(await wear("1", "--accept-loss")).toBe(1);
+      expect(frames.filter((f) => f["op"] === "wear")).toEqual([]);
+      expect(answer()).toMatchObject({ ok: false, error: { code: "accept-loss-not-typed" } });
+      // NO TERMINAL, NO WORD: a pipe or a harness cannot speak for the loss.
+      frames.length = 0; out.length = 0; typedLine = "accept-loss"; terminal = false;
+      expect(await wear("1", "--accept-loss")).toBe(1);
+      expect(frames.filter((f) => f["op"] === "wear")).toEqual([]);
+      expect(answer()).toMatchObject({ ok: false, error: { code: "accept-loss-needs-hand" } });
+    } finally { typedLine = ""; terminal = true; }
     frames.length = 0; out.length = 0;
     door = (frame) => frame["op"] === "custody" ? custody(true)
       : { op: "wear", status: "error", errorMessage: "wearing h1 composes the vessel again, which would drop them, so nothing moved. face h2 holds 1 save(s) … Or drop them knowingly: wear again with --accept-loss (`lares wear 1 --accept-loss`)", refusal: { reason: "saves-held" } };

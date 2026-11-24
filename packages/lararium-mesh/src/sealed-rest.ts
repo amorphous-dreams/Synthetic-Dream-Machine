@@ -547,10 +547,13 @@ export function composeSealedRest<S extends SaveSession>(input: {
   const sessionOf = (documentId: string, data?: Uint8Array): S | null => {
     if (watched !== null && data !== undefined) {
       const actors = chunkActors(data);
-      const own = watched.actorOf(documentId) ?? keptActors.get(documentId) ?? null;
+      // THIS REPLICA'S OWN ACTORS FOR THE DOCUMENT: the live handle's, and the one `keep` recorded before a refused face's
+      // document left the cache. A handle that came back since writes under a fresh actor; the held change still carries the kept one.
+      const live = watched.actorOf(documentId), kept = keptActors.get(documentId) ?? null;
+      const own = actors !== null && [live, kept].some((a) => a !== null && actors.includes(a));
       const session = standingFor(documentId);
       // A handle not ready yet holds no change of this replica's own: what it saves arrived from a peer.
-      if (actors !== null && (own === null || !actors.includes(own))) book.receive(documentId, peerWriterName(actors), session ?? book.of(documentId));
+      if (actors !== null && !own) book.receive(documentId, peerWriterName(actors), session ?? book.of(documentId));
       else if (actors !== null && session !== null) book.book(documentId, session);
       else if (session !== null && book.of(documentId) === null) book.seal(documentId, session);
     }

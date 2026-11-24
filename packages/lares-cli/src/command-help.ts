@@ -1190,7 +1190,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "A wear that turns the face flushes every shore first, inside the vessel (the whole-island flush its teardown runs), and prints what each island wrote; " +
       "where a record stays unwritten, or an island gives no answer, it refuses `shore-unwritten` and names each one: a terminal asks whether to turn anyway, and `--yes` turns anyway. " +
       "Where a face whose light refused holds saves no seat has sealed, the wear refuses `saves-held`, since composing again would drop them, and names the act that lights that face so its own seat seals them; " +
-      "`--accept-loss` alone turns anyway, and `--yes` never speaks for it.",
+      "`--accept-loss` alone turns anyway: it asks a person to type `accept-loss` at their terminal, an AI seat or a pipe refuses `accept-loss-needs-hand`, and `--yes` never speaks for it.",
     examples: [
       "lares wear 1                           # move the mount to face h1, a face already standing open",
       "lares wear --face 0                    # the same move, the face named by flag",
@@ -1198,7 +1198,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--face <N>         the face to wear, read where no positional names one",
       "--yes              turn the face even where the shore's flush left records unwritten (they rest in the store; their mirrors wait)",
-      "--accept-loss      turn the face even where a face whose light refused holds unsealed saves: they drop, unwritten (a person's own word; `--yes` never carries it)",
+      "--accept-loss      turn the face even where a face whose light refused holds unsealed saves: they drop, unwritten (asks a person to type accept-loss at a terminal; `--yes` never carries it)",
       "--json             the door's answer as one object, the form a caller parses; a pipe reads the one prose line",
     ],
     next: ["lares vault status", "lares vault unlock   # a vessel holding no key opens here first"],
