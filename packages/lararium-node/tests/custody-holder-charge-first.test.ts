@@ -17,7 +17,7 @@ import { join } from "node:path";
 import { mintFck, type Credential, type FaceCustodyKey } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
-import { makeCustodyHolder } from "../src/custody-holder.js";
+import { makeCustodyHolder, UNLOCK_ATTEMPTS_PER_BOOT as BOUND } from "../src/custody-holder.js";
 import { sSlotsPath, skSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -51,7 +51,7 @@ describe("charge before the open, refund on an open", () => {
     const h = makeCustodyHolder(t);
     t.io.armed = true;
     await expect(h.unlock([pass("wrong-1"), pass("wrong-2")])).rejects.toThrow(/EIO/);
-    expect(h.attemptsLeft()).toBe(1);
+    expect(h.attemptsLeft()).toBe(BOUND - 2);
   });
 
   test("a refusal on the serving tree after the node tree opened keeps the charge: the right route earns no free signal", async () => {
@@ -60,7 +60,7 @@ describe("charge before the open, refund on an open", () => {
     const h = makeCustodyHolder(t);
     t.io.armed = true;
     await expect(h.unlock([pass(RIGHT)])).rejects.toThrow(/EIO/);
-    expect(h.attemptsLeft()).toBe(2);
+    expect(h.attemptsLeft()).toBe(BOUND - 1);
     expect(h.isUnlocked()).toBe(false);
   });
 
@@ -68,9 +68,9 @@ describe("charge before the open, refund on an open", () => {
     const t = stage(() => "");
     await foundCustody({ ...t, slots: [{ t: 1, pins: [pass(RIGHT)] }] });
     const h = makeCustodyHolder(t);
-    expect(await h.unlock([pass("wrong-1")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
+    expect(await h.unlock([pass("wrong-1")])).toEqual({ reading: "no-slot-opens", attemptsLeft: BOUND - 1 });
     expect((await h.unlock([pass("wrong-2"), pass(RIGHT)])).reading).toBe("opens");
-    expect(h.attemptsLeft()).toBe(2);
+    expect(h.attemptsLeft()).toBe(BOUND - 1);
   });
 });
 

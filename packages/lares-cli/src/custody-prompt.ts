@@ -12,7 +12,7 @@
 
 import { stdout } from "node:process";
 import {
-  confirmHeldPaper, confirmPaperPin, draftPaperPin,
+  ATTEMPT_BUDGET, attemptWarning, confirmHeldPaper, confirmPaperPin, draftPaperPin,
   type Credential, type SlotSpec, type PinSpec,
 } from "@lararium/mesh";
 import { canPromptSecret, promptLine, promptSecret, promptSecretConfirmed } from "./prompt-secret.js";
@@ -45,7 +45,7 @@ type Route = "passphrase" | "paper";
 async function askRoute(question: string, allowBoth: boolean, passphraseOnly?: string): Promise<readonly Route[]> {
   // A PASSPHRASE-ONLY ROUTE offers the passphrase alone and refuses a sheet here, before any sheet prints.
   const menu = passphraseOnly !== undefined ? "[p]assphrase" : allowBoth ? "[p]assphrase, [s]heet (paper pin), [b]oth" : "[p]assphrase or [s]heet (paper pin)";
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < ATTEMPT_BUDGET; i++) {
     const a = (await promptLine(`${question} ${menu} (p): `)).trim().toLowerCase();
     if (a === "" || a.startsWith("p")) return ["passphrase"];
     if (passphraseOnly !== undefined && (a.startsWith("s") || a.startsWith("b"))) { say(`  ${passphraseOnly}; choose p`); continue; }
@@ -53,21 +53,21 @@ async function askRoute(question: string, allowBoth: boolean, passphraseOnly?: s
     if (allowBoth && a.startsWith("b")) return ["passphrase", "paper"];
     say("  (choose one of the letters shown)");
   }
-  throw new Error("no route chosen after three tries");
+  throw new Error(`no route chosen after ${ATTEMPT_BUDGET} tries`);
 }
 
 /**
- * A yes or no with NO default: a blank line asks again, and three misses refuse. The answer is the operator's each time it is
+ * A yes or no with NO default: a blank line asks again, and five misses (`ATTEMPT_BUDGET`) refuse. The answer is the operator's each time it is
  * asked; nothing here remembers one.
  */
 export async function askYesNo(question: string): Promise<boolean> {
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < ATTEMPT_BUDGET; i++) {
     const a = (await promptLine(`${question} [y/n]: `)).trim().toLowerCase();
     if (a === "y" || a === "yes") return true;
     if (a === "n" || a === "no") return false;
     say("  (answer y or n; there is no default)");
   }
-  throw new Error("no answer after three tries; nothing was founded");
+  throw new Error(`no answer after ${ATTEMPT_BUDGET} tries; nothing was founded`);
 }
 
 /** Read the sheets of a paper pin, one line each, hidden; a blank line ends the list. */
@@ -146,13 +146,13 @@ async function newPaperPin(): Promise<PinSpec> {
   say();
   draft.sheets.forEach((sheet, i) => say(`    sheet ${i + 1}: ${sheet}`));
   say();
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < ATTEMPT_BUDGET; attempt++) {
     const typed: string[] = [];
     for (let i = 0; i < draft.sheets.length; i++) typed.push((await promptSecret(`  read sheet ${i + 1} back (hidden): `)).trim());
     try { return { kind: "paper", confirmed: confirmPaperPin(draft, typed) }; }
-    catch (err) { say(`  ${(err as Error).message}`); }
+    catch (err) { say(`  ${(err as Error).message}`); if (attempt + 1 < ATTEMPT_BUDGET) say(`  ${attemptWarning(ATTEMPT_BUDGET - attempt - 1, "read-back")}`); }
   }
-  throw new Error("the paper pin did not read back after three tries; nothing was bound");
+  throw new Error(`the paper pin did not read back: ${attemptWarning(0, "read-back")}`);
 }
 
 /** One new pin of the chosen route: a passphrase (double entry) or a drafted, read-back paper pin. */
