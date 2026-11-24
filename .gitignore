@@ -97,3 +97,4 @@ packages/lararium-mesh/.unbuilt-laws/
 
 # Vitest browser mode leaves its per-run cache beside each package it ran in.
 .vitest/
+.worktrees/
